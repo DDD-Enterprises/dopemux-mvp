@@ -179,8 +179,6 @@ class GitHistoryAnalyzer:
 
         except Exception as e:
             return []
-
-            logger.error(f"Error: {e}")
     def _infer_branch_from_subject(self, subject: str) -> Optional[str]:
         """Infer branch type from commit subject."""
         subject_lower = subject.lower()

@@ -71,6 +71,23 @@ fi
 echo "🚀 Starting all Dopemux MCP servers..."
 echo "=========================================="
 
+# Compose validation fails if an `env_file` path is missing, even when the
+# service can run with inherited environment variables. Create placeholders for
+# optional local env files to keep startup resilient.
+ensure_optional_env_file() {
+  local env_path="$1"
+  if [ -f "$env_path" ]; then
+    return 0
+  fi
+  mkdir -p "$(dirname "$env_path")"
+  : > "$env_path"
+  echo "⚠️  Created placeholder env file: $env_path"
+}
+
+ensure_optional_env_file "./task-master-ai/.env"
+ensure_optional_env_file "./task-orchestrator/.env"
+ensure_optional_env_file "./leantime-bridge/.env"
+
 # P0: Validate docker-compose.yml before proceeding
 echo "🔍 Validating docker-compose.yml..."
 if ! docker compose config >/dev/null 2>&1; then
@@ -306,6 +323,13 @@ safe_up serena dopemux-mcp-serena
 echo "⏳ Waiting for workflow servers to stabilize..."
 sleep 10
 
+# Start plane coordinator unless explicitly disabled
+if [ "${DOPEMUX_START_PLANE_COORDINATOR:-1}" = "1" ]; then
+  safe_up plane-coordinator dopemux-mcp-plane-coordinator
+else
+  echo "• Skipping Plane Coordinator (set DOPEMUX_START_PLANE_COORDINATOR=1 to enable)"
+fi
+
 # Optional: Task Orchestrator (stdio MCP; disabled by default to avoid restart loops)
 if [ "${DOPEMUX_START_TASK_ORCHESTRATOR:-0}" = "1" ]; then
   echo "🧭 Starting Task Orchestrator (manual profile)"
@@ -326,6 +350,11 @@ safe_up gptr-mcp dopemux-mcp-gptr-mcp
 safe_up dopemux-gpt-researcher dopemux-gpt-researcher
 safe_up exa dopemux-mcp-exa
 safe_up desktop-commander dopemux-mcp-desktop-commander
+if [ "${ENABLE_LEANTIME:-0}" = "1" ]; then
+  safe_up leantime-bridge dopemux-mcp-leantime-bridge
+else
+  echo "• Skipping Leantime Bridge (set ENABLE_LEANTIME=1 to enable)"
+fi
 
 echo ""
 echo "⏳ Final startup wait..."
@@ -402,7 +431,7 @@ echo "🏥 Health check summary:"
 echo "========================"
 
 # Health check each critical server
-servers=("pal:3003" "litellm:4000" "dope-context:3010")
+servers=("pal:3003" "litellm:4000" "dope-context:3010" "plane-coordinator:8090")
 for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
@@ -453,6 +482,7 @@ echo "🔄 Workflow Servers:"
 echo "   Dope-Context: http://localhost:3010"
 echo "   Task Master:  http://localhost:3005"
 echo "   Serena:       http://localhost:3006"
+echo "   Plane Coord:  http://localhost:8090"
 echo ""
 echo "🔧 Quality & Utility Servers:"
 echo "   GPT Research: http://localhost:3009"
@@ -461,5 +491,6 @@ echo "   Desktop Cmd:  http://localhost:3012"
 echo ""
 echo "📋 PM Integration:"
 echo "   Leantime:     http://localhost:8080 (external)"
+echo "   LT Bridge:    http://localhost:3015"
 echo ""
 echo "🎯 Ready for MCP operations!"

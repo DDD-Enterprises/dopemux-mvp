@@ -271,3 +271,5 @@ ARCHIVE_MANIFEST.txt
 **/logs/**/*.log
 .dopemux/
 quarantine/
+tmp/*
+!tmp/.gitkeep

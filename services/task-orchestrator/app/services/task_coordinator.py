@@ -30,6 +30,8 @@ from enum import Enum
 
 import asyncio
 import logging
+import os
+import os
 
 from app.services.enhanced_orchestrator import OrchestrationTask, TaskStatus
 from app.adapters.conport_adapter import ConPortEventAdapter
@@ -69,7 +71,8 @@ class TaskCoordinator:
         self.conport_adapter = ConPortEventAdapter(workspace_id)
         self.cognitive_guardian = CognitiveLoadBalancer(workspace_id=workspace_id, conport_client=self.conport_adapter)
         self.context_recovery = ContextSwitchRecovery(workspace_id, self.conport_adapter)
-        self.pal_client = TaskOrchestratorPALClient("http://localhost:3003", {})
+        pal_url = os.getenv("PAL_API_URL", "http://localhost:3003")
+        self.pal_client = TaskOrchestratorPALClient(pal_url, {})
 
         # State tracking
         self.coordination_state = CoordinationState(

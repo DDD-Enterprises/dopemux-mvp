@@ -1,10 +1,13 @@
 ---
 id: INFO_ENDPOINT
 title: Info_Endpoint
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Info_Endpoint (explanation) for dopemux documentation and developer workflows.
 ---
 # Leantime Bridge /info Endpoint
 

@@ -19,10 +19,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 from dataclasses import dataclass
-from enum import Enum
-import time
+from datetime import datetime
+import re
 
-from command_parser import CommandParser, ParsedCommand, CommandMode, TargetAgent
+from command_parser import CommandParser, ParsedCommand, TargetAgent
 from agent_spawner import AgentSpawner, AgentType
 from message_bus_v2 import MessageBus, Event, EventType
 from context_protocol import ContextSharingProtocol
@@ -320,11 +320,12 @@ class CommandRouter:
 
             # Save result to ConPort for next agent
             if response:
+                confidence = self._estimate_response_confidence(response)
                 self.context.publish_artifact(
                     artifact_type=f"{parsed.mode.value}_result",
                     agent_type=agent_type.value,
                     content=response,
-                    confidence=0.8,  # TODO: Real confidence from agent
+                    confidence=confidence,
                 )
 
         return {
@@ -364,6 +365,47 @@ class CommandRouter:
         context_str += f"\n# Task\n\n{message}"
 
         return context_str
+
+    def _estimate_response_confidence(self, response: Optional[list[str]]) -> float:
+        """
+        Estimate confidence from raw agent response content.
+
+        Heuristic only: rewards substantive responses and penalizes explicit uncertainty.
+        """
+        if not response:
+            return 0.2
+
+        text = "\n".join(response).strip()
+        if not text:
+            return 0.2
+
+        length = len(text)
+        if length >= 1200:
+            confidence = 0.9
+        elif length >= 600:
+            confidence = 0.82
+        elif length >= 200:
+            confidence = 0.74
+        else:
+            confidence = 0.62
+
+        uncertainty_patterns = [
+            r"\bnot sure\b",
+            r"\bmaybe\b",
+            r"\bmight\b",
+            r"\bi think\b",
+            r"\buncertain\b",
+            r"\bcan't\b",
+            r"\bunable to\b",
+        ]
+        for pattern in uncertainty_patterns:
+            if re.search(pattern, text, flags=re.IGNORECASE):
+                confidence -= 0.08
+
+        if re.search(r"\b(error|exception|failed)\b", text, flags=re.IGNORECASE):
+            confidence -= 0.12
+
+        return max(0.1, min(0.95, confidence))
 
 
 if __name__ == "__main__":

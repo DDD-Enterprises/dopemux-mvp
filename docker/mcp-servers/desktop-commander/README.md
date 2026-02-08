@@ -13,17 +13,18 @@ Desktop Commander provides desktop automation capabilities through MCP, enabling
 
 ```bash
 # Start via Docker Compose
-docker-compose -f docker-compose.master.yml up -d desktop-commander
+cd docker/mcp-servers
+docker compose up -d --build desktop-commander
 
 # Verify X11 connectivity
-docker logs desktop-commander
+docker logs dopemux-mcp-desktop-commander
 ```
 
 ## Configuration
 
 Environment variables:
 - `DISPLAY` - X11 display (default: :0)
-- `PORT` - MCP server port (default: 3012)
+- `MCP_SERVER_PORT` - MCP server port (default: 3012)
 - `XAUTHORITY` - X11 authorization file
 
 ## MCP Tools

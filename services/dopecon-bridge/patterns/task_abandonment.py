@@ -5,12 +5,16 @@ Detects tasks that were started but never progressed,
 suggesting task complexity issues or motivation problems.
 """
 
+import logging
+
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 from .base_pattern import BasePattern, PatternInsight
 
+
+logger = logging.getLogger(__name__)
 
 class TaskAbandonmentPattern(BasePattern):
     """

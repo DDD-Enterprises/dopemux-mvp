@@ -5,6 +5,10 @@ type: how-to
 owner: '@hu3mann'
 last_review: '2026-02-06'
 next_review: '2026-05-06'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Role Switching Quickstart (how-to) for dopemux documentation and developer
+  workflows.
 ---
 # Role Switching Quickstart
 

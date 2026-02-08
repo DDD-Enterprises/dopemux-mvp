@@ -1,10 +1,13 @@
 ---
 id: quick-start-2025
 title: Quick Start 2025
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Quick Start 2025 (explanation) for dopemux documentation and developer workflows.
 ---
 # DDDPG: Quick Start Guide (2025)
 **Last Updated**: 2025-10-29

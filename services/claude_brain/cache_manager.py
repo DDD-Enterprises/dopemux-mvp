@@ -432,6 +432,5 @@ class CacheManager:
             await self.redis.ping()
             return True
         except Exception as e:
-            return False</content>
+            return False
             logger.error(f"Error: {e}")
-</xai:function_call">The file content contains invalid XML/HTML markup. Please provide clean Python code only.

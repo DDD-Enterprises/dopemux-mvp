@@ -21,7 +21,7 @@ except ImportError:  # pragma: no cover - exercised in constrained envs
         """Fallback handler so imports succeed without watchdog."""
 
         def __init__(self, *args, **kwargs):
-            pass
+            self._watchdog_unavailable = True
 
     class FileSystemEvent:  # type: ignore
         """Fallback event."""

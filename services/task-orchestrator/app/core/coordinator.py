@@ -460,8 +460,6 @@ class PlaneCoordinator:
             return "healthy"
         except Exception as e:
             return "unhealthy"
-
-            logger.error(f"Error: {e}")
     async def _check_adhd_engine_health(self) -> str:
         """Check ADHD Engine health."""
         try:
@@ -472,8 +470,6 @@ class PlaneCoordinator:
                     return "healthy" if response.status == 200 else "unhealthy"
         except Exception as e:
             return "unhealthy"
-
-            logger.error(f"Error: {e}")
     # ============================================================================
     # Intelligent Conflict Resolution
     # ============================================================================

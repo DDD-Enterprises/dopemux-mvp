@@ -6,6 +6,7 @@ Subscribes to attention state changes and forwards to ShieldCoordinator.
 
 import asyncio
 import logging
+import os
 from datetime import datetime
 from enum import Enum
 from typing import Callable, Optional
@@ -35,9 +36,15 @@ class ADHDEngineClient:
     - Automatic reconnection on failures
     """
 
-    def __init__(self, base_url: str = "http://localhost:8095", poll_interval: int = 5):
+    def __init__(
+        self,
+        base_url: str = "http://localhost:8095",
+        poll_interval: int = 5,
+        user_id: Optional[str] = None,
+    ):
         self.base_url = base_url.rstrip("/")
         self.poll_interval = poll_interval  # seconds
+        self.user_id = user_id or os.getenv("ADHD_ENGINE_USER_ID") or os.getenv("USER", "current_user")
 
         # State tracking
         self.current_state: Optional[AttentionState] = None
@@ -152,11 +159,9 @@ class ADHDEngineClient:
 
     async def _notify_callbacks(self, new_state: AttentionState):
         """Notify all registered callbacks of state change."""
-        user_id = "current_user"  # TODO: Get from auth
-
         for callback in self.callbacks:
             try:
-                await callback(new_state, user_id)
+                await callback(new_state, self.user_id)
             except Exception as e:
                 logger.error(f"Error in callback {callback.__name__}: {e}", exc_info=True)
 

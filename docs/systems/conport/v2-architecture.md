@@ -1,10 +1,13 @@
 ---
 id: v2-architecture
 title: V2 Architecture
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: V2 Architecture (reference) for dopemux documentation and developer workflows.
 ---
 # ConPort v2 Architecture Documentation
 
@@ -385,6 +388,11 @@ if user_requests_more:
 - **Attention Preservation**: Minimize cognitive interruptions
 
 ## 🔗 Integration Points
+
+Compatibility note (2026-02-07): `semantic_search_conport_v2` in this section
+is a historical v2 design label. Active runtime preserves ConPort semantic
+search as a compatibility path while primary semantic retrieval is routed
+through dope-context/Serena flows.
 
 ### **MCP Tool Interface**
 

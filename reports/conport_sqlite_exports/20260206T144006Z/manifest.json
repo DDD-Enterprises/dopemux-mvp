@@ -1,0 +1,253 @@
+{
+  "generated_at_utc": "2026-02-06T14:40:06.431824+00:00",
+  "repo_root": "/Users/hue/code/dopemux-mvp",
+  "output_root": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z",
+  "include_fts": false,
+  "db_count": 3,
+  "rows_exported_total": 2499,
+  "databases": [
+    {
+      "db_path": "quarantine/2026-02-04/SYSTEM_ARCHIVE/db_backups/context_20251024_181418.db",
+      "db_size_bytes": 4276224,
+      "export_dir": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db",
+      "tables_exported": 10,
+      "tables_skipped": [
+        "custom_data_fts",
+        "custom_data_fts_config",
+        "custom_data_fts_data",
+        "custom_data_fts_docsize",
+        "custom_data_fts_idx",
+        "decisions_fts",
+        "decisions_fts_config",
+        "decisions_fts_data",
+        "decisions_fts_docsize",
+        "decisions_fts_idx"
+      ],
+      "rows_exported_total": 833,
+      "tables": [
+        {
+          "name": "active_context",
+          "rows": 1,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/active_context.jsonl",
+          "sha256": "57b9c3217b953e2dc58bec99823452b9ab671388c05cf8d826c3d74e14b505ee"
+        },
+        {
+          "name": "active_context_history",
+          "rows": 199,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/active_context_history.jsonl",
+          "sha256": "cdaf160f6cd8f78166ee54983e09a675d494a284bc2f41bfc19b5fc5bf855126"
+        },
+        {
+          "name": "alembic_version",
+          "rows": 1,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/alembic_version.jsonl",
+          "sha256": "c1cef6d185f17bddb6540993229f135e1368bfdf16cb5cbb6591b7724ab9b73b"
+        },
+        {
+          "name": "context_links",
+          "rows": 111,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/context_links.jsonl",
+          "sha256": "3827c820f273af6ca51caa5fdfe49615ca17f68b25043659f73fdb8bda964997"
+        },
+        {
+          "name": "custom_data",
+          "rows": 14,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/custom_data.jsonl",
+          "sha256": "50ef2723155783d31681350a3cc1f60c7dea6c1c43a544b889a76d010a9176b3"
+        },
+        {
+          "name": "decisions",
+          "rows": 294,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/decisions.jsonl",
+          "sha256": "308f7314cc8521342d3ac290786f217990cf0caaf83f0fe7bedd0a38ebbb2201"
+        },
+        {
+          "name": "product_context",
+          "rows": 1,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/product_context.jsonl",
+          "sha256": "e05f60315a510b8f31b4dcc8d23ee2603072ac6b094ee046aceab312ec5d1b7e"
+        },
+        {
+          "name": "product_context_history",
+          "rows": 0,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/product_context_history.jsonl",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "progress_entries",
+          "rows": 209,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/progress_entries.jsonl",
+          "sha256": "53eeb4371ce967f9a6285e4da4297027d82c65ddc257171a50e1a15866cc8c44"
+        },
+        {
+          "name": "system_patterns",
+          "rows": 3,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db/system_patterns.jsonl",
+          "sha256": "a4e212b0f024bd53829e2e2d69e1f4d80a14e51202c09e14f8a66368beb0f87b"
+        }
+      ]
+    },
+    {
+      "db_path": "quarantine/2026-02-04/SYSTEM_ARCHIVE/db_backups/context_20251024_181432.db",
+      "db_size_bytes": 4276224,
+      "export_dir": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db",
+      "tables_exported": 10,
+      "tables_skipped": [
+        "custom_data_fts",
+        "custom_data_fts_config",
+        "custom_data_fts_data",
+        "custom_data_fts_docsize",
+        "custom_data_fts_idx",
+        "decisions_fts",
+        "decisions_fts_config",
+        "decisions_fts_data",
+        "decisions_fts_docsize",
+        "decisions_fts_idx"
+      ],
+      "rows_exported_total": 833,
+      "tables": [
+        {
+          "name": "active_context",
+          "rows": 1,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/active_context.jsonl",
+          "sha256": "57b9c3217b953e2dc58bec99823452b9ab671388c05cf8d826c3d74e14b505ee"
+        },
+        {
+          "name": "active_context_history",
+          "rows": 199,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/active_context_history.jsonl",
+          "sha256": "cdaf160f6cd8f78166ee54983e09a675d494a284bc2f41bfc19b5fc5bf855126"
+        },
+        {
+          "name": "alembic_version",
+          "rows": 1,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/alembic_version.jsonl",
+          "sha256": "c1cef6d185f17bddb6540993229f135e1368bfdf16cb5cbb6591b7724ab9b73b"
+        },
+        {
+          "name": "context_links",
+          "rows": 111,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/context_links.jsonl",
+          "sha256": "3827c820f273af6ca51caa5fdfe49615ca17f68b25043659f73fdb8bda964997"
+        },
+        {
+          "name": "custom_data",
+          "rows": 14,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/custom_data.jsonl",
+          "sha256": "50ef2723155783d31681350a3cc1f60c7dea6c1c43a544b889a76d010a9176b3"
+        },
+        {
+          "name": "decisions",
+          "rows": 294,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/decisions.jsonl",
+          "sha256": "308f7314cc8521342d3ac290786f217990cf0caaf83f0fe7bedd0a38ebbb2201"
+        },
+        {
+          "name": "product_context",
+          "rows": 1,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/product_context.jsonl",
+          "sha256": "e05f60315a510b8f31b4dcc8d23ee2603072ac6b094ee046aceab312ec5d1b7e"
+        },
+        {
+          "name": "product_context_history",
+          "rows": 0,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/product_context_history.jsonl",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "progress_entries",
+          "rows": 209,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/progress_entries.jsonl",
+          "sha256": "53eeb4371ce967f9a6285e4da4297027d82c65ddc257171a50e1a15866cc8c44"
+        },
+        {
+          "name": "system_patterns",
+          "rows": 3,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db/system_patterns.jsonl",
+          "sha256": "a4e212b0f024bd53829e2e2d69e1f4d80a14e51202c09e14f8a66368beb0f87b"
+        }
+      ]
+    },
+    {
+      "db_path": "quarantine/2026-02-04/SYSTEM_ARCHIVE/db_backups/context_20251024_181450.db",
+      "db_size_bytes": 4276224,
+      "export_dir": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db",
+      "tables_exported": 10,
+      "tables_skipped": [
+        "custom_data_fts",
+        "custom_data_fts_config",
+        "custom_data_fts_data",
+        "custom_data_fts_docsize",
+        "custom_data_fts_idx",
+        "decisions_fts",
+        "decisions_fts_config",
+        "decisions_fts_data",
+        "decisions_fts_docsize",
+        "decisions_fts_idx"
+      ],
+      "rows_exported_total": 833,
+      "tables": [
+        {
+          "name": "active_context",
+          "rows": 1,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/active_context.jsonl",
+          "sha256": "57b9c3217b953e2dc58bec99823452b9ab671388c05cf8d826c3d74e14b505ee"
+        },
+        {
+          "name": "active_context_history",
+          "rows": 199,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/active_context_history.jsonl",
+          "sha256": "cdaf160f6cd8f78166ee54983e09a675d494a284bc2f41bfc19b5fc5bf855126"
+        },
+        {
+          "name": "alembic_version",
+          "rows": 1,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/alembic_version.jsonl",
+          "sha256": "c1cef6d185f17bddb6540993229f135e1368bfdf16cb5cbb6591b7724ab9b73b"
+        },
+        {
+          "name": "context_links",
+          "rows": 111,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/context_links.jsonl",
+          "sha256": "3827c820f273af6ca51caa5fdfe49615ca17f68b25043659f73fdb8bda964997"
+        },
+        {
+          "name": "custom_data",
+          "rows": 14,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/custom_data.jsonl",
+          "sha256": "50ef2723155783d31681350a3cc1f60c7dea6c1c43a544b889a76d010a9176b3"
+        },
+        {
+          "name": "decisions",
+          "rows": 294,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/decisions.jsonl",
+          "sha256": "308f7314cc8521342d3ac290786f217990cf0caaf83f0fe7bedd0a38ebbb2201"
+        },
+        {
+          "name": "product_context",
+          "rows": 1,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/product_context.jsonl",
+          "sha256": "e05f60315a510b8f31b4dcc8d23ee2603072ac6b094ee046aceab312ec5d1b7e"
+        },
+        {
+          "name": "product_context_history",
+          "rows": 0,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/product_context_history.jsonl",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "progress_entries",
+          "rows": 209,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/progress_entries.jsonl",
+          "sha256": "53eeb4371ce967f9a6285e4da4297027d82c65ddc257171a50e1a15866cc8c44"
+        },
+        {
+          "name": "system_patterns",
+          "rows": 3,
+          "output_file": "/Users/hue/code/dopemux-mvp/reports/conport_sqlite_exports/20260206T144006Z/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db/system_patterns.jsonl",
+          "sha256": "a4e212b0f024bd53829e2e2d69e1f4d80a14e51202c09e14f8a66368beb0f87b"
+        }
+      ]
+    }
+  ]
+}

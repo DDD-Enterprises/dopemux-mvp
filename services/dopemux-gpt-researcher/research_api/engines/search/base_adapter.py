@@ -6,12 +6,15 @@ Ensures consistent result formatting and ADHD-optimized response handling.
 """
 
 import asyncio
+import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+
+logger = logging.getLogger(__name__)
 
 class SearchResultType(str, Enum):
     """Type of search result for different content categories"""
@@ -45,7 +48,8 @@ class SearchMetadata:
     api_cost: Optional[float] = None
     rate_limit_remaining: Optional[int] = None
     search_strategy: Optional[str] = None
-    filters_applied: List[str] = None
+    filters_applied: List[str] = field(default_factory=list)
+    engine_metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -97,10 +101,8 @@ class SearchResult:
             try:
                 from urllib.parse import urlparse
                 self.source_domain = urlparse(self.url).netloc
-            except Exception as e:
+            except Exception:
                 self.source_domain = "unknown"
-
-                logger.error(f"Error: {e}")
         # Estimate reading time based on content length
         if not self.reading_time_minutes and self.content:
             words = len(self.content.split())
@@ -197,11 +199,9 @@ class BaseSearchAdapter(ABC):
             Tuple of (results, metadata)
         """
         start_time = datetime.now()
+        self._validate_search_params(query, max_results, result_types, date_filter, domain_filter)
 
         try:
-            # Validate inputs
-            self._validate_search_params(query, max_results, result_types, date_filter, domain_filter)
-
             # Apply ADHD optimizations
             optimized_query = self._optimize_query_for_adhd(query)
 
@@ -227,6 +227,8 @@ class BaseSearchAdapter(ABC):
 
             return processed_results, metadata
 
+        except ValueError:
+            raise
         except Exception as e:
             # Create error metadata
             query_time = (datetime.now() - start_time).total_seconds() * 1000
@@ -470,12 +472,10 @@ class BaseSearchAdapter(ABC):
     async def test_connection(self) -> bool:
         """Test if the search engine is accessible and working"""
         try:
-            results, metadata = await self.search("test query", max_results=1)
+            await self.search("test query", max_results=1)
             return True
-        except Exception as e:
+        except Exception:
             return False
-
-            logger.error(f"Error: {e}")
     async def get_rate_limit_info(self) -> Dict[str, Any]:
         """Get current rate limit information"""
         return {

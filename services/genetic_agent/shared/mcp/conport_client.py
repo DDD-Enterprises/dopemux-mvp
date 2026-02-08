@@ -1,8 +1,12 @@
 """ConPort MCP client for decision logging and context management."""
 
+import logging
+
 from typing import Dict, Any
 from .base_client import MCPClient
 
+
+logger = logging.getLogger(__name__)
 
 class ConPortClient(MCPClient):
     """Client for ConPort decision logging and context management."""

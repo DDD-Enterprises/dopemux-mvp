@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Multi Agent Ai Systems Research 2025 10 15 (reference) for dopemux documentation
+  and developer workflows.
 ---
 # Multi-Agent AI Systems for Development Workflows: Comprehensive Research Report
 
@@ -1918,112 +1922,112 @@ class CachedLLMClient:
 
 ### Framework Documentation
 
-6. **CrewAI Official Documentation**
+1. **CrewAI Official Documentation**
    Medium - Agentic AI Frameworks
    https://medium.com/@datascientist.lakshmi/agentic-ai-frameworks-building-autonomous-ai-agents-with-langchain-crewai-autogen-and-more-8a697bee8bf8
 
-7. **AutoGen Framework**
+2. **AutoGen Framework**
    Medium - An objective comparison of LLM Agents
    https://ruintheextinct.medium.com/an-objective-comparison-of-llm-agents-1584acfd2682
 
-8. **MetaGPT & Multi-Agent Systems**
+3. **MetaGPT & Multi-Agent Systems**
    GitHub Gist - Multi-Agent Systems for Auto-Deployment
    https://gist.github.com/samihalawa/272f30f58c67ca8f923846470085f180
 
-9. **Google Agent Development Kit - Multi-Agent Systems**
+4. **Google Agent Development Kit - Multi-Agent Systems**
    https://google.github.io/adk-docs/agents/multi-agents/
 
 ### Chat-Driven Development Tools
 
-10. **Cursor AI Architecture**
+1. **Cursor AI Architecture**
     Builder.io - Cursor vs GitHub Copilot
     https://www.builder.io/blog/cursor-vs-github-copilot
 
-11. **Aider - AI Pair Programming**
+2. **Aider - AI Pair Programming**
     Official Documentation
     https://aider.chat/docs/
 
-12. **Aider Review**
+3. **Aider Review**
     Blott Studio - Developer's Month With Aider
     https://www.blott.com/blog/post/aider-review-a-developers-month-with-this-terminal-based-code-assistant
 
-13. **GitHub Copilot Chat**
+4. **GitHub Copilot Chat**
     Official Features Page
     https://github.com/features/copilot
 
 ### Terminal Orchestration
 
-14. **Warp AI Terminal**
+1. **Warp AI Terminal**
     Official Documentation
     https://www.warp.dev/warp-ai
 
-15. **Warp Terminal Tutorial**
+2. **Warp Terminal Tutorial**
     DataCamp
     https://www.datacamp.com/tutorial/warp-terminal-tutorial
 
-16. **TmuxAI**
+3. **TmuxAI**
     Getting Started Guide
     https://tmuxai.dev/getting-started/
 
-17. **Amazon Q Developer CLI**
+4. **Amazon Q Developer CLI**
     GitHub Issue - Warp Terminal Integration
     https://github.com/aws/amazon-q-developer-cli/issues/2121
 
 ### Real-World Systems
 
-18. **Devin AI (Cognition Labs)**
+1. **Devin AI (Cognition Labs)**
     Skywork AI - Autonomous AI Software Engineer Explained
     https://skywork.ai/blog/devin-autonomous-ai-software-engineer-explained/
 
-19. **Devin AI Architecture**
+2. **Devin AI Architecture**
     DevOps.com - Cognition Labs Previews Devin
     https://devops.com/cognition-labs-previews-devin-ai-software-engineer/
 
-20. **Sweep AI**
+3. **Sweep AI**
     AI Agent Store - Cognition Devin AI vs Sweep AI
     https://aiagentstore.ai/compare-ai-agents/cognition-devin-ai-vs-sweep-ai
 
-21. **Smol AI Developer**
+4. **Smol AI Developer**
     GitHub Repository
     https://github.com/smol-ai/developer
 
-22. **Smol AI Architecture**
+5. **Smol AI Architecture**
     HackerNoon - The Fully Remote Virtual Developer
     https://hackernoon.com/smol-developer-the-fully-remote-virtual-developer
 
-23. **OpenDevin**
+6. **OpenDevin**
     AI Agent Store
     https://aiagentstore.ai/ai-agent/opendevin
 
 ### Workflow & Context Management
 
-24. **How to build reliable AI workflows with agentic primitives**
+1. **How to build reliable AI workflows with agentic primitives**
     GitHub Blog
     https://github.blog/ai-and-ml/github-copilot/how-to-build-reliable-ai-workflows-with-agentic-primitives-and-context-engineering/
 
-25. **How we built our multi-agent research system**
+2. **How we built our multi-agent research system**
     Anthropic Engineering Blog
     https://www.anthropic.com/engineering/multi-agent-research-system
 
-26. **AI Agentic Workflows: Tutorial & Best Practices**
+3. **AI Agentic Workflows: Tutorial & Best Practices**
     FME by Safe Software
     https://fme.safe.com/guides/ai-agent-architecture/ai-agentic-workflows/
 
-27. **AI Agent Workflow Implementation Guide**
+4. **AI Agent Workflow Implementation Guide**
     Augment Code
     https://www.augmentcode.com/guides/ai-agent-workflow-implementation-guide
 
 ### Industry Analysis
 
-28. **5 Agentic AI Frameworks Developers Are Using**
+1. **5 Agentic AI Frameworks Developers Are Using**
     Daffodil Software Insights
     https://insights.daffodilsw.com/blog/5-agentic-ai-frameworks-developers-are-using-to-build-smarter-agents
 
-29. **Top AI Agent Frameworks in 2025**
+2. **Top AI Agent Frameworks in 2025**
     Medium - Aman Raghuvanshi
     https://medium.com/@iamanraghuvanshi/agentic-ai-3-top-ai-agent-frameworks-in-2025-langchain-autogen-crewai-beyond-2fc3388e7dec
 
-30. **Evaluating the Top Agent Frameworks for AI Development**
+3. **Evaluating the Top Agent Frameworks for AI Development**
     Walturn Insights
     https://www.walturn.com/insights/evaluating-the-top-agent-frameworks-for-ai-development
 

@@ -16,6 +16,8 @@ Phase 2D: Tier 3 advanced intelligence
 Enhanced: F-NEW-1 (ADHD Engine), F-NEW-2 (Semantic Search), Navigation Cache
 """
 
+from datetime import timedelta
+
 import asyncio
 import sys
 import json
@@ -42,6 +44,23 @@ logger = logging.getLogger("serena-v2-mcp")
 SCRIPT_DIR = Path(__file__).parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
+
+# Shared MCP response-budget utilities
+try:
+    from services.shared.mcp.response_budget import (
+        estimate_tokens as estimate_mcp_tokens,
+        record_budget_outcome,
+        truncate_numbered_lines,
+    )
+except ImportError:
+    SERVICES_ROOT = SCRIPT_DIR.parent
+    if str(SERVICES_ROOT) not in sys.path:
+        sys.path.insert(0, str(SERVICES_ROOT))
+    from shared.mcp.response_budget import (
+        estimate_tokens as estimate_mcp_tokens,
+        record_budget_outcome,
+        truncate_numbered_lines,
+    )
 
 # ============================================================================
 # ADHD Engine Integration - Dynamic result limits (F-NEW-1)
@@ -157,8 +176,6 @@ class SimpleLSPClient:
             raise RuntimeError("pylsp not found - install with: pip install python-lsp-server[all]")
         except Exception as e:
             raise RuntimeError(f"Failed to start LSP client: {e}") from e
-
-            logger.error(f"Error: {e}")
     async def goto_definition(self, file_uri: str, line: int, column: int) -> List[Dict]:
         """
         Request definition location for symbol at position
@@ -517,9 +534,9 @@ class SerenaV2MCPServer:
 
         except (ImportError, ConnectionError, OSError) as e:
             logger.warning(f"ConPort client initialization failed: {e}")
-        except Exception:
+        except Exception as exc:
             logger.exception("Unexpected ConPort client initialization error")
-            self.initialization_errors["conport"] = str(e)
+            self.initialization_errors["conport"] = str(exc)
             self.conport_client = None
 
     def _resolve_path(self, relative_path: str) -> Path:
@@ -1925,8 +1942,6 @@ class SerenaV2MCPServer:
 
                 except Exception as e:
                     continue
-
-                    logger.error(f"Error: {e}")
             # No definition found
             return json.dumps({
                 "error": "No definition found",
@@ -1937,8 +1952,6 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             return json.dumps({"error": str(e)}, indent=2)
-
-            logger.error(f"Error: {e}")
     async def get_context_tool(
         self,
         file_path: str,
@@ -2233,8 +2246,6 @@ class SerenaV2MCPServer:
                                 break
                 except Exception as e:
                     continue
-
-                    logger.error(f"Error: {e}")
                 if len(references) >= max_results:
                     break
 
@@ -2258,8 +2269,6 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             return json.dumps({"error": str(e)}, indent=2)
-
-            logger.error(f"Error: {e}")
     async def _extract_reference_context(self, file_path: Path, line: int) -> str:
         """
         Extract 3-line context for reference (1 before, ref line, 1 after)
@@ -2289,8 +2298,6 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             return f"(context unavailable: {e})"
-
-            logger.error(f"Error: {e}")
     async def analyze_complexity_tool(
         self,
         file_path: str,
@@ -2459,8 +2466,6 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             return json.dumps({"error": str(e)}, indent=2)
-
-            logger.error(f"Error: {e}")
     async def filter_by_focus_tool(
         self,
         attention_state: str,
@@ -2576,9 +2581,7 @@ class SerenaV2MCPServer:
                 if len(suggestions) >= 3:
                     break
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.debug(f"Failed to build import-based suggestions: {e}")
         # Limit to top 3
         suggestions = suggestions[:3]
 
@@ -2777,9 +2780,8 @@ class SerenaV2MCPServer:
                     if len(relationships) >= 10:
                         break
             except Exception as e:
+                logger.debug("Skipping relationship scan for %s: %s", py_file, e)
                 continue
-
-                logger.error(f"Error: {e}")
             if len(relationships) >= 10:
                 break
 
@@ -2931,7 +2933,8 @@ class SerenaV2MCPServer:
 
         try:
             # Import Feature 1 components
-            from untracked_work_detector import UntrackedWorkDetector
+            from .untracked_work_detector import UntrackedWorkDetector
+            from .untracked_work_storage import UntrackedWorkStorage
 
             # Initialize detector
             detector = UntrackedWorkDetector(
@@ -2939,27 +2942,27 @@ class SerenaV2MCPServer:
                 workspace_id=str(self.workspace)
             )
 
-            # Run detection (without ConPort client for Phase 1)
-            # TODO: Integrate real ConPort MCP client for task matching
+            await self._ensure_conport_client()
+            conport_client = self.conport_client
+
+            # Run detection with ConPort when available (falls back safely when unavailable).
             detection = await detector.detect(
-                conport_client=None,
+                conport_client=conport_client,
                 session_number=session_number
             )
 
             # F1: Auto-track if confidence >= threshold
             auto_track_result = None
             if detection["has_untracked_work"]:
-                from untracked_work_storage import UntrackedWorkStorage
-
                 storage = UntrackedWorkStorage(str(self.workspace))
-                config = await storage.get_user_config(conport_client=None)
+                config = await storage.get_user_config(conport_client=conport_client)
                 auto_track_threshold = config.get("auto_track_threshold", 0.85)
 
                 # Try auto-track (will return None if below threshold)
                 auto_track_result = await storage.auto_track_if_threshold_met(
                     detection=detection,
                     threshold=auto_track_threshold,
-                    conport_client=None  # TODO: Real ConPort client
+                    conport_client=conport_client
                 )
 
                 if auto_track_result:
@@ -3062,9 +3065,6 @@ class SerenaV2MCPServer:
                 "message": "untracked_work_detector.py requires git_detector.py and conport_matcher.py",
                 "details": str(e)
             }, indent=2)
-        except ImportError as e:
-            logger.error(f"detect_untracked_work missing dependency: {e}")
-            return json.dumps({"error": str(e), "fallback": "Install missing modules"}, indent=2)
         except (OSError, RuntimeError) as e:
             logger.error(f"detect_untracked_work failed: {e}")
             return json.dumps({"error": str(e), "fallback": "Use git status manually"}, indent=2)
@@ -3103,7 +3103,7 @@ class SerenaV2MCPServer:
 
         try:
             # Import Feature 1 enhanced components
-            from untracked_work_detector import UntrackedWorkDetector
+            from .untracked_work_detector import UntrackedWorkDetector
 
             # Initialize detector (includes E1-E4)
             detector = UntrackedWorkDetector(
@@ -4045,24 +4045,71 @@ class SerenaV2MCPServer:
         start_time = datetime.now()
 
         try:
-            from .metrics_dashboard import MetricsDashboard
+            valid_metrics = {"confidence", "pattern_boost", "abandonment_rate", "pass_rate"}
+            if metric_name not in valid_metrics:
+                return json.dumps(
+                    {
+                        "error": f"metric_name must be one of: {sorted(valid_metrics)}"
+                    },
+                    indent=2,
+                )
+            if granularity not in {"daily", "weekly"}:
+                return json.dumps({"error": "granularity must be 'daily' or 'weekly'"}, indent=2)
 
-            dashboard = MetricsDashboard(workspace_id=str(self.workspace))
+            await self._ensure_conport_client()
+            if not self.conport_client:
+                return json.dumps(
+                    {
+                        "status": "unavailable",
+                        "metric_name": metric_name,
+                        "message": "ConPort client unavailable; no historical metrics found",
+                    },
+                    indent=2,
+                )
 
-            # TODO: Implement when ConPort client integration is complete
-            # For now, return placeholder
+            rows = await self.conport_client.get_custom_data(
+                workspace_id=str(self.workspace),
+                category="metrics_history",
+            )
+            cutoff = datetime.now() - timedelta(days=max(days, 1))
+            points = []
+            for row in rows:
+                value = row.get("value", {})
+                timestamp = self._extract_metric_timestamp(value, row.get("key"))
+                if timestamp is None or timestamp < cutoff:
+                    continue
+                metric_value = self._extract_metric_value(value, metric_name)
+                if metric_value is None:
+                    continue
+                points.append(
+                    {
+                        "timestamp": timestamp.isoformat(),
+                        "value": round(metric_value, 4),
+                    }
+                )
+
+            points.sort(key=lambda item: item["timestamp"])
+            if granularity == "weekly":
+                points = self._aggregate_metric_points(points, period="weekly")
+
+            trend = None
+            if len(points) >= 2:
+                delta = round(points[-1]["value"] - points[0]["value"], 4)
+                trend = {
+                    "direction": "up" if delta > 0 else "down" if delta < 0 else "flat",
+                    "delta": delta,
+                }
+
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
             result = {
-                "status": "pending",
+                "status": "success",
                 "metric_name": metric_name,
-                "message": "Historical data collection not yet implemented",
-                "note": "Full implementation will query ConPort metrics_history category",
-                "planned_features": {
-                    "time_series": f"{days} days of {metric_name} data",
-                    "granularity": granularity,
-                    "visualization": "Text-based sparkline or values list"
-                },
+                "days": days,
+                "granularity": granularity,
+                "points": points,
+                "count": len(points),
+                "trend": trend,
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2)
                 }
@@ -4099,21 +4146,62 @@ class SerenaV2MCPServer:
 
         try:
             from .metrics_dashboard import MetricsDashboard
+            from .untracked_work_detector import UntrackedWorkDetector
 
             dashboard = MetricsDashboard(workspace_id=str(self.workspace))
+            detector = UntrackedWorkDetector(self.workspace, str(self.workspace))
 
-            # TODO: Implement when ConPort client integration is complete
-            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+            await self._ensure_conport_client()
+            if not self.conport_client:
+                return json.dumps(
+                    {
+                        "status": "unavailable",
+                        "message": "ConPort client unavailable; snapshot not saved",
+                    },
+                    indent=2,
+                )
 
-            result = {
-                "status": "pending",
-                "message": "ConPort integration for snapshot persistence not yet implemented",
-                "note": "Full implementation will save to custom_data category 'metrics_history'",
-                "planned_storage": {
-                    "category": "metrics_history",
-                    "key_format": "YYYY-MM-DD_summary",
-                    "retention_days": 90
+            detection_results = []
+            git_detection = await detector.git_detector.detect_uncommitted_work()
+            if git_detection.get("has_uncommitted"):
+                detection = await detector.detect(
+                    conport_client=self.conport_client,
+                    session_number=2,
+                )
+                detection_results.append(detection)
+
+            metrics = dashboard.aggregator.aggregate_detections(detection_results)
+            f1_f4 = metrics.get("f1_f4_metrics", {})
+            f5 = metrics.get("f5_metrics", {})
+            f6 = metrics.get("f6_metrics", {})
+            total = max(1, int(f1_f4.get("total_detections", 0)))
+
+            snapshot = {
+                "timestamp": datetime.now().isoformat(),
+                "metrics": {
+                    "confidence": float(f1_f4.get("avg_confidence", 0.0)),
+                    "pattern_boost": float(f5.get("avg_boost", 0.0)),
+                    "abandonment_rate": float(f6.get("total_abandoned", 0)) / total,
+                    "pass_rate": float(f1_f4.get("pass_rate", 0.0)),
+                    "total_detections": int(f1_f4.get("total_detections", 0)),
+                    "total_abandoned": int(f6.get("total_abandoned", 0)),
                 },
+                "raw": metrics,
+            }
+
+            key = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+            saved = await self.conport_client.log_custom_data(
+                workspace_id=str(self.workspace),
+                category="metrics_history",
+                key=key,
+                value=snapshot,
+            )
+
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+            result = {
+                "status": "saved" if saved else "save_failed",
+                "key": key,
+                "snapshot": snapshot["metrics"],
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2)
                 }
@@ -4152,15 +4240,27 @@ class SerenaV2MCPServer:
         start_time = datetime.now()
 
         try:
-            # TODO: Get ConPort MCP client
-            # For now, return success message with pre-filled data
-
             description = custom_description if custom_description else work_name
 
             # Estimate complexity if not provided
             if complexity is None:
-                # TODO: Get from detection signals
                 complexity = 0.5  # Default medium
+            complexity = max(0.0, min(1.0, float(complexity)))
+
+            await self._ensure_conport_client()
+            if not self.conport_client:
+                return json.dumps(
+                    {
+                        "status": "unavailable",
+                        "message": "ConPort client unavailable; task was not created",
+                        "task_data": {
+                            "status": "IN_PROGRESS",
+                            "description": description,
+                            "metadata": {"complexity": complexity, "work_name": work_name},
+                        },
+                    },
+                    indent=2,
+                )
 
             # Build ConPort task suggestion
             task_data = {
@@ -4176,11 +4276,26 @@ class SerenaV2MCPServer:
                 }
             }
 
+            entry = await self.conport_client.log_progress(
+                workspace_id=str(self.workspace),
+                status=task_data["status"],
+                description=task_data["description"],
+            )
+            task_id = entry.get("id")
+            if task_id is not None:
+                await self.conport_client.log_custom_data(
+                    workspace_id=str(self.workspace),
+                    category="untracked_work_links",
+                    key=f"task_{task_id}",
+                    value=task_data["metadata"],
+                )
+
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
             result = {
                 "status": "task_created",
                 "message": f"✅ Created ConPort task: '{description}'",
+                "task_id": task_id,
                 "task_data": task_data,
                 "next_steps": [
                     "Task is now tracked in ConPort",
@@ -4189,8 +4304,7 @@ class SerenaV2MCPServer:
                 ],
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2)
-                },
-                "note": "Full ConPort integration pending - currently returns task template"
+                }
             }
 
             logger.info(f"track_untracked_work: '{work_name}' → task created")
@@ -4246,14 +4360,25 @@ class SerenaV2MCPServer:
         duration_text = duration_names.get(duration, "4 hours")
 
         try:
-            # TODO: Use UntrackedWorkStorage to persist snooze
-            # For now, return success message
+            from .untracked_work_storage import UntrackedWorkStorage
+
+            await self._ensure_conport_client()
+            storage = UntrackedWorkStorage(str(self.workspace))
+            persisted = await storage.snooze_work(
+                work_id=work_id,
+                duration_seconds=duration_seconds,
+                conport_client=self.conport_client,
+            )
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
             result = {
-                "status": "snoozed",
-                "message": f"⏸️ Snoozed for {duration_text}",
+                "status": "snoozed" if persisted else "not_found",
+                "message": (
+                    f"⏸️ Snoozed for {duration_text}"
+                    if persisted
+                    else "No matching untracked work record found to snooze"
+                ),
                 "work_id": work_id,
                 "snooze_until": snooze_until.isoformat(),
                 "duration_seconds": duration_seconds,
@@ -4261,7 +4386,7 @@ class SerenaV2MCPServer:
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2)
                 },
-                "note": "Full ConPort persistence pending - currently in-memory only"
+                "persisted_to_conport": bool(persisted)
             }
 
             logger.info(f"snooze_untracked_work: {work_id} → {duration_text}")
@@ -4295,14 +4420,24 @@ class SerenaV2MCPServer:
         start_time = datetime.now()
 
         try:
-            # TODO: Use UntrackedWorkStorage to mark abandoned
-            # For now, return success message
+            from .untracked_work_storage import UntrackedWorkStorage
+
+            await self._ensure_conport_client()
+            storage = UntrackedWorkStorage(str(self.workspace))
+            persisted = await storage.abandon_work(
+                work_id=work_id,
+                conport_client=self.conport_client,
+            )
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
             result = {
-                "status": "abandoned",
-                "message": "✅ Marked as abandoned - won't remind again",
+                "status": "abandoned" if persisted else "not_found",
+                "message": (
+                    "✅ Marked as abandoned - won't remind again"
+                    if persisted
+                    else "No matching untracked work record found to abandon"
+                ),
                 "work_id": work_id,
                 "reason": reason if reason else "user_choice",
                 "abandoned_at": datetime.now().isoformat(),
@@ -4314,7 +4449,7 @@ class SerenaV2MCPServer:
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2)
                 },
-                "note": "Full ConPort persistence pending - currently in-memory only"
+                "persisted_to_conport": bool(persisted)
             }
 
             logger.info(f"ignore_untracked_work: {work_id} → abandoned ({reason})")
@@ -4345,18 +4480,20 @@ class SerenaV2MCPServer:
         start_time = datetime.now()
 
         try:
-            from untracked_work_storage import UntrackedWorkStorage
+            from .untracked_work_storage import UntrackedWorkStorage
 
             storage = UntrackedWorkStorage(str(self.workspace))
+            await self._ensure_conport_client()
 
             # Get config (returns defaults if not set)
-            config = await storage.get_user_config(conport_client=None)
+            config = await storage.get_user_config(conport_client=self.conport_client)
+            is_default_source = self.conport_client is None
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
             result = {
                 "config": config,
-                "source": "default" if not None else "user_customized",
+                "source": "default" if is_default_source else "conport",
                 "description": {
                     "enabled": "Feature 1 on/off switch",
                     "confidence_threshold": "Min confidence to show reminders (session 2: 0.65, session 3: 0.60)",
@@ -4370,7 +4507,7 @@ class SerenaV2MCPServer:
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2)
                 },
-                "note": "ConPort persistence pending - showing defaults"
+                "persisted_source": bool(self.conport_client)
             }
 
             logger.info(f"get_untracked_work_config: enabled={config.get('enabled')}")
@@ -4413,12 +4550,13 @@ class SerenaV2MCPServer:
         start_time = datetime.now()
 
         try:
-            from untracked_work_storage import UntrackedWorkStorage
+            from .untracked_work_storage import UntrackedWorkStorage
 
             storage = UntrackedWorkStorage(str(self.workspace))
+            await self._ensure_conport_client()
 
             # Get current config
-            config = await storage.get_user_config(conport_client=None)
+            config = await storage.get_user_config(conport_client=self.conport_client)
 
             # Update provided fields
             updates = {}
@@ -4467,20 +4605,19 @@ class SerenaV2MCPServer:
                 except ValueError:
                     return json.dumps({"error": "quiet_hours_end must be HH:MM format"}, indent=2)
 
-            # TODO: Save to ConPort
-            # await storage.save_user_config(config, conport_client)
+            saved = await storage.save_user_config(config, self.conport_client)
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
             result = {
-                "status": "config_updated",
+                "status": "config_updated" if saved else "config_updated_not_persisted",
                 "message": f"✅ Updated {len(updates)} setting(s)",
                 "updates": updates,
                 "current_config": config,
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2)
                 },
-                "note": "ConPort persistence pending - changes in-memory only"
+                "persisted_to_conport": bool(saved)
             }
 
             logger.info(f"update_untracked_work_config: {len(updates)} fields updated")
@@ -4491,6 +4628,109 @@ class SerenaV2MCPServer:
             return json.dumps({
                 "error": str(e)
             }, indent=2)
+
+    def _extract_metric_timestamp(
+        self,
+        value: Dict[str, Any],
+        key: Optional[str],
+    ) -> Optional[datetime]:
+        """Extract snapshot timestamp from metric history row."""
+        timestamp_value = value.get("timestamp") if isinstance(value, dict) else None
+        if isinstance(timestamp_value, str):
+            try:
+                return datetime.fromisoformat(timestamp_value.replace("Z", "+00:00"))
+            except ValueError:
+                pass
+
+        if not key:
+            return None
+
+        for fmt in ("%Y-%m-%d_%H%M%S", "%Y-%m-%d_summary", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(key, fmt)
+            except ValueError:
+                continue
+        return None
+
+    def _extract_metric_value(
+        self,
+        value: Dict[str, Any],
+        metric_name: str,
+    ) -> Optional[float]:
+        """Extract normalized metric value from metrics snapshot."""
+        if not isinstance(value, dict):
+            return None
+
+        nested_metrics = value.get("metrics")
+        if isinstance(nested_metrics, dict) and metric_name in nested_metrics:
+            try:
+                return float(nested_metrics[metric_name])
+            except (TypeError, ValueError):
+                return None
+
+        f1_f4 = value.get("f1_f4_metrics", {})
+        f5 = value.get("f5_metrics", {})
+        f6 = value.get("f6_metrics", {})
+
+        try:
+            if metric_name == "confidence":
+                if "confidence_score" in value:
+                    return float(value["confidence_score"])
+                return float(f1_f4.get("avg_confidence"))
+            if metric_name == "pattern_boost":
+                return float(f5.get("avg_boost"))
+            if metric_name == "pass_rate":
+                return float(f1_f4.get("pass_rate"))
+            if metric_name == "abandonment_rate":
+                if "abandonment_rate" in value:
+                    return float(value["abandonment_rate"])
+                abandoned = float(f6.get("total_abandoned", 0))
+                total = float(f1_f4.get("total_detections", 0))
+                if total <= 0:
+                    return 0.0
+                return abandoned / total
+        except (TypeError, ValueError):
+            return None
+        return None
+
+    def _aggregate_metric_points(
+        self,
+        points: List[Dict[str, Any]],
+        period: str,
+    ) -> List[Dict[str, Any]]:
+        """Aggregate metric points into daily/weekly buckets."""
+        if period not in {"daily", "weekly"}:
+            return points
+
+        buckets: Dict[str, List[float]] = {}
+        for point in points:
+            timestamp_raw = point.get("timestamp")
+            value = point.get("value")
+            if timestamp_raw is None or value is None:
+                continue
+            try:
+                dt = datetime.fromisoformat(str(timestamp_raw).replace("Z", "+00:00"))
+                value_f = float(value)
+            except (TypeError, ValueError):
+                continue
+
+            if period == "weekly":
+                bucket_key = dt.strftime("%G-W%V")
+            else:
+                bucket_key = dt.strftime("%Y-%m-%d")
+            buckets.setdefault(bucket_key, []).append(value_f)
+
+        aggregated = []
+        for bucket_key in sorted(buckets.keys()):
+            values = buckets[bucket_key]
+            aggregated.append(
+                {
+                    "bucket": bucket_key,
+                    "value": round(sum(values) / len(values), 4),
+                    "count": len(values),
+                }
+            )
+        return aggregated
 
     def _extract_symbol_at_position(self, line: str, column: int) -> Optional[str]:
         """Extract symbol name at column position"""
@@ -4552,11 +4792,9 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             return f"(context unavailable: {e})"
-
-            logger.error(f"Error: {e}")
     def _estimate_tokens(self, text: str) -> int:
-        """Conservative token estimation: 1 token ≈ 4 chars."""
-        return len(text) // 4
+        """Conservative token estimation delegated to shared utility."""
+        return estimate_mcp_tokens(text)
 
     def _truncate_to_token_budget(
         self,
@@ -4569,30 +4807,11 @@ class SerenaV2MCPServer:
 
         Returns (truncated_lines, was_truncated)
         """
-        result_lines = []
-        estimated_tokens = 50  # Base overhead for structure
-        truncated = False
-
-        for i, line in enumerate(lines):
-            # Format with line number (cat -n style)
-            line_num = start_line_num + i
-            formatted = f"{line_num:6d}→{line}"
-            line_tokens = self._estimate_tokens(formatted + "\n")
-
-            if estimated_tokens + line_tokens > max_tokens:
-                # Would exceed budget, stop here
-                truncated = True
-                # Add truncation notice
-                result_lines.append(
-                    f"{line_num:6d}→... [truncated: {len(lines) - i} more lines, "
-                    f"exceeded {max_tokens} token budget]"
-                )
-                break
-
-            result_lines.append(formatted)
-            estimated_tokens += line_tokens
-
-        return result_lines, truncated
+        return truncate_numbered_lines(
+            lines=lines,
+            max_tokens=max_tokens,
+            start_line_num=start_line_num,
+        )
 
     async def read_file_tool(
         self,
@@ -4652,9 +4871,20 @@ class SerenaV2MCPServer:
         # Log with truncation info
         status = "TRUNCATED" if was_truncated else "complete"
         estimated_tokens = self._estimate_tokens(result)
+        budget_event = record_budget_outcome(
+            tool_name="serena.read_file",
+            tokens_used=estimated_tokens,
+            max_tokens=max_tokens,
+            was_truncated=was_truncated,
+        )
         logger.info(
-            f"read_file: {relative_path} ({len(numbered_lines)} lines, "
-            f"{estimated_tokens} tokens, {status})"
+            "read_file: %s (%s lines, %s tokens, %s, usage=%s%%, trunc_rate=%s%%)",
+            relative_path,
+            len(numbered_lines),
+            estimated_tokens,
+            status,
+            budget_event["usage_pct"],
+            budget_event["truncation_rate_pct"],
         )
 
         return result

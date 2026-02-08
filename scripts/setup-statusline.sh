@@ -96,5 +96,4 @@ echo "   - Progressive disclosure based on available space"
 echo ""
 echo "Environment variables you can set:"
 echo "   TMUX_WIDTH_LIMIT=100    # Override default width limit"
-echo "   CONTEXT_AWARE_PRIORITY=true  # Enable context-aware display"</content>
-</xai:function_call">Create setup script for improved statusline
+echo "   CONTEXT_AWARE_PRIORITY=true  # Enable context-aware display"

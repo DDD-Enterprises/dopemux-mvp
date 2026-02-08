@@ -13,6 +13,13 @@ tags:
 - adhd-optimization
 last_review: '2025-10-17'
 next_review: '2026-01-15'
+author: '@hu3mann'
+prelude: 'ADR-180: Automatic Instance Resume After Crashes (adr) for dopemux documentation
+  and developer workflows.'
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
 # ADR-180: Automatic Instance Resume After Crashes
 

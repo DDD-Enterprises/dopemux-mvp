@@ -28,10 +28,10 @@ class ShieldCoordinator:
     def __init__(
         self,
         config: ShieldConfig,
-        adhd_engine_client=None,  # TODO: Import ADHDEngineClient
-        dnd_manager=None,         # TODO: Import DNDManager
-        message_triage=None,      # TODO: Import MessageTriage
-        notification_manager=None # TODO: Import NotificationManager
+        adhd_engine_client=None,
+        dnd_manager=None,
+        message_triage=None,
+        notification_manager=None,
     ):
         self.config = config
         self.adhd_engine = adhd_engine_client
@@ -41,7 +41,7 @@ class ShieldCoordinator:
 
         # State tracking
         self.state = ShieldState(
-            user_id="current_user",  # TODO: Get from auth
+            user_id=getattr(config, "user_id", "current_user"),
             active=False,
             attention_state=AttentionState.SCATTERED,
             mode=config.mode
@@ -62,7 +62,7 @@ class ShieldCoordinator:
 
     async def _connect_to_adhd_engine(self):
         """Connect to ADHD Engine WebSocket and listen for attention state changes."""
-        adhd_ws_url = "ws://localhost:8001/api/v1/ws/stream"  # ADHD Engine WebSocket URL
+        adhd_ws_url = f"{self.config.adhd_engine_url.rstrip('/')}/api/v1/ws/stream"
         user_id = self.state.user_id
 
         while True:  # Reconnect on disconnection
@@ -72,7 +72,7 @@ class ShieldCoordinator:
                     logger.info("Connected to ADHD Engine WebSocket")
 
                     # Send initial state request
-                    await websocket.send_json({"type": "refresh"})
+                    await websocket.send(json.dumps({"type": "refresh"}))
 
                     async for message in websocket:
                         try:
@@ -82,7 +82,7 @@ class ShieldCoordinator:
                                 if attention_state:
                                     # Convert string to AttentionState enum
                                     try:
-                                        attention_enum = AttentionState(attention_state.upper())
+                                        attention_enum = AttentionState(attention_state.lower())
                                         await self.on_attention_state_changed(attention_enum, user_id)
                                     except ValueError:
                                         logger.warning(f"Unknown attention state: {attention_state}")
@@ -322,7 +322,7 @@ class ShieldCoordinator:
         # Display via Desktop Commander notification
         try:
             import httpx
-            desktop_commander_url = "http://localhost:3012/desktop-commander/notify"
+            desktop_commander_url = f"{self.config.desktop_commander_url.rstrip('/')}/desktop-commander/notify"
             notification_data = {
                 "title": "Interruption Shield Deactivated",
                 "message": f"Queued communications summary: {summary}",
@@ -351,10 +351,10 @@ class ShieldCoordinator:
         """Log shield events to ConPort for analytics."""
         try:
             import httpx
-            conport_url = "http://localhost:5455/conport/log_custom_data"  # ConPort MCP server
+            conport_url = f"{self.config.conport_url.rstrip('/')}/conport/log_custom_data"
 
             log_data = {
-                "workspace_id": "/Users/hue/code/dopemux-mvp",  # Current workspace
+                "workspace_id": self.config.workspace_id,
                 "category": "shield_events",
                 "key": f"{event}_{datetime.now().isoformat()}",
                 "value": {
@@ -382,7 +382,7 @@ class ShieldCoordinator:
         try:
             # Log to ConPort
             metrics_data = {
-                "workspace_id": "/Users/hue/code/dopemux-mvp",
+                "workspace_id": self.config.workspace_id,
                 "category": "shield_metrics",
                 "key": f"metrics_{datetime.now().isoformat()}",
                 "value": {
@@ -396,7 +396,7 @@ class ShieldCoordinator:
             }
 
             import httpx
-            conport_url = "http://localhost:5455/conport/log_custom_data"
+            conport_url = f"{self.config.conport_url.rstrip('/')}/conport/log_custom_data"
 
             async with httpx.AsyncClient(timeout=5.0) as client:
                 response = await client.post(conport_url, json=metrics_data)

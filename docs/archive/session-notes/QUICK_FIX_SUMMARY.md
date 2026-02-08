@@ -1,10 +1,13 @@
 ---
 id: QUICK_FIX_SUMMARY
 title: Quick_Fix_Summary
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Quick_Fix_Summary (explanation) for dopemux documentation and developer workflows.
 ---
 # MCP Startup Fix - Quick Reference
 

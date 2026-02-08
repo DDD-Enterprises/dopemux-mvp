@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Research_Knowledge_Graph_Agent_Memory_20251023 (reference) for dopemux documentation
+  and developer workflows.
 ---
 # Multi-Tenant Knowledge Graphs & Agent Memory Architectures: Research Report
 
@@ -1752,76 +1756,76 @@ async def transition_workspace(
 
 ### Industry Documentation
 
-4. **AWS Neptune Multi-Tenancy**
+1. **AWS Neptune Multi-Tenancy**
    *Build multi-tenant architectures on Amazon Neptune*
    AWS Database Blog
    https://aws.amazon.com/blogs/database/build-multi-tenant-architectures-on-amazon-neptune/
 
-5. **Neo4j Multi-Tenancy Patterns**
+2. **Neo4j Multi-Tenancy Patterns**
    *Multi Tenancy in Neo4j: A Worked Example*
    Neo4j Developer Guide
    https://neo4j.com/developer/multi-tenancy-worked-example/
 
-6. **PostgreSQL RLS for Multi-Tenancy**
+3. **PostgreSQL RLS for Multi-Tenancy**
    *Multi-tenant data isolation with PostgreSQL Row Level Security*
    AWS Database Blog
    https://aws.amazon.com/blogs/database/multi-tenant-data-isolation-with-postgresql-row-level-security/
 
-7. **LangGraph Agent Memory**
+4. **LangGraph Agent Memory**
    *Powering Long-Term Memory for Agents With LangGraph and MongoDB*
    MongoDB Blog
    https://www.mongodb.com/company/blog/product-release-announcements/powering-long-term-memory-for-agents-langgraph
 
-8. **Microsoft Semantic Kernel**
+5. **Microsoft Semantic Kernel**
    *Semantic Kernel Agent Framework*
    Microsoft Learn
    https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/
 
-9. **JWT Security Best Practices**
+6. **JWT Security Best Practices**
    *JWT Security Best Practices*
    Curity
    https://curity.io/resources/learn/jwt-best-practices/
 
-10. **Progressive Disclosure UX**
+7. **Progressive Disclosure UX**
     *Progressive Disclosure*
     Nielsen Norman Group
     https://www.nngroup.com/articles/progressive-disclosure/
 
 ### Open Source Projects
 
-11. **Memgraph Multi-Tenancy**
+1. **Memgraph Multi-Tenancy**
     GitHub: https://github.com/memgraph/memgraph
     Blog: https://memgraph.com/blog/why-multi-tenancy-matters-in-graph-databases
 
-12. **Dgraph Multi-Tenancy Discussion**
+2. **Dgraph Multi-Tenancy Discussion**
     GitHub Issue #2693
     https://github.com/dgraph-io/dgraph/issues/2693
 
-13. **Apache AGE**
+3. **Apache AGE**
     Official Site: https://age.apache.org/
     GitHub: https://github.com/apache/age
 
 ### Framework Comparisons
 
-14. **LangChain vs LangGraph vs LlamaIndex**
+1. **LangChain vs LangGraph vs LlamaIndex**
     Xenoss Blog (2025)
     https://xenoss.io/blog/langchain-langgraph-llamaindex-llm-frameworks
 
-15. **CrewAI Multi-Agent Systems**
+2. **CrewAI Multi-Agent Systems**
     CrewAI Documentation
     https://www.crewai.com/
 
 ### ADHD & UX Research
 
-16. **Neurodiversity and UX Resources**
+1. **Neurodiversity and UX Resources**
     Stéphanie Walter Blog
     https://stephaniewalter.design/blog/neurodiversity-and-ux-essential-resources-for-cognitive-accessibility/
 
-17. **ADHD Productivity Tools 2025**
+2. **ADHD Productivity Tools 2025**
     Fluidwave Blog
     https://fluidwave.com/blog/adhd-productivity-apps
 
-18. **Embracing Neurodiversity in UX Design**
+3. **Embracing Neurodiversity in UX Design**
     UX Matters (2024)
     https://www.uxmatters.com/mt/archives/2024/04/embracing-neurodiversity-in-ux-design-crafting-inclusive-digital-environments.php
 

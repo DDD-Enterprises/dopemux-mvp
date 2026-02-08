@@ -23,7 +23,7 @@ from pathlib import Path
 from validate import MigrationValidator
 
 
-class SchemaS witchover:
+class SchemaSwitchover:
     """Handles atomic schema switchover"""
 
     def __init__(self, db_url: str):

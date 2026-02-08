@@ -1,31 +1,35 @@
 ---
 id: IMPLEMENTATION_SUMMARY
 title: Implementation_Summary
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Implementation_Summary (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # G33 Implementation Summary
 
-**Task**: Unified Service Env Defaults + Drift Scanner  
-**Date**: 2026-02-01  
+**Task**: Unified Service Env Defaults + Drift Scanner
+**Date**: 2026-02-01
 **Status**: ✅ **COMPLETE** - All Phases (0-5)
 
 ---
 
 ## ✅ FINAL STATUS: 100% COMPLIANT
 
-**Compliance**: 3/3 services (100%)  
-**Violations**: 0  
-**Tests**: 15/15 passing  
+**Compliance**: 3/3 services (100%)
+**Violations**: 0
+**Tests**: 15/15 passing
 **Drift scanner**: Exit code 0 (no violations)
 
 ---
 
 ## Phase 0: Inventory ✅ COMPLETE
 
-###0.1 Smoke-enabled services identified
+### 0.1 Smoke-enabled services identified
 
 **Total**: 6 services (3 Python, 3 infrastructure)
 
@@ -140,7 +144,7 @@ pytest tests/arch/test_service_env_contract.py -v
 ### Changes Made
 
 #### 1. conport ✅
-**File**: `services/conport/app.py`  
+**File**: `services/conport/app.py`
 **Changes**:
 - Replaced `ConPortSettings` class with direct env vars
 - Added `HOST = os.getenv("HOST", "0.0.0.0")`
@@ -153,7 +157,7 @@ pytest tests/arch/test_service_env_contract.py -v
 **Result**: ✅ Compliant (HOST, PORT, LOG_LEVEL)
 
 #### 2. dopecon-bridge ✅
-**File**: `services/dopecon-bridge/main.py`  
+**File**: `services/dopecon-bridge/main.py`
 **Changes**:
 - Added `HOST = os.getenv("HOST", "0.0.0.0")`
 - Added `LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()`
@@ -164,7 +168,7 @@ pytest tests/arch/test_service_env_contract.py -v
 **Result**: ✅ Compliant (HOST, PORT, LOG_LEVEL)
 
 #### 3. task-orchestrator ✅
-**File**: `services/task-orchestrator/server.py`  
+**File**: `services/task-orchestrator/server.py`
 **Changes**:
 - Added `HOST = os.getenv("HOST", "0.0.0.0")`
 - Added `PORT = int(os.getenv("PORT", "8000"))`
@@ -284,10 +288,10 @@ $ pytest tests/arch/test_service_env_contract.py -q --no-cov
 
 ## Acceptance Criteria Review
 
-✅ **tools/env_drift_scan.py runs and produces reports/g33/env_drift_report.json**  
-✅ **tests/arch/test_service_env_contract.py passes for all smoke-enabled services**  
-✅ **Any service updated continues to boot** (syntax check confirms)  
-✅ **No service has sys.path.insert or os.environ[] violations**  
+✅ **tools/env_drift_scan.py runs and produces reports/g33/env_drift_report.json**
+✅ **tests/arch/test_service_env_contract.py passes for all smoke-enabled services**
+✅ **Any service updated continues to boot** (syntax check confirms)
+✅ **No service has sys.path.insert or os.environ[] violations**
 ✅ **All services support HOST, PORT, LOG_LEVEL with proper defaults**
 
 ---
@@ -354,8 +358,8 @@ $ pytest tests/arch/test_service_env_contract.py -q --no-cov
 
 **All acceptance criteria met. Zero violations. 100% compliance.**
 
-Implementer: GitHub Copilot CLI  
-Completion Date: 2026-02-01  
+Implementer: GitHub Copilot CLI
+Completion Date: 2026-02-01
 Total Time: ~2 hours (estimation + implementation + validation)
 
 ---
@@ -374,7 +378,7 @@ Total Time: ~2 hours (estimation + implementation + validation)
 
 **Modified**:
 - `services/conport/app.py` - Env contract compliance
-- `services/dopecon-bridge/main.py` - Env contract compliance  
+- `services/dopecon-bridge/main.py` - Env contract compliance
 - `services/task-orchestrator/server.py` - Env contract compliance + sys.path fix
 - `tests/arch/test_service_env_contract.py` - Doc path update
 
@@ -397,7 +401,7 @@ Total Time: ~2 hours (estimation + implementation + validation)
 - Arch tests: Returns 1 (4 tests failing)
 - Expected after Phase 4: Both return 0
 
-**Compliance rate**: 0% (0/3 services compliant)  
+**Compliance rate**: 0% (0/3 services compliant)
 **Target after Phase 4**: 100% (3/3 services compliant)
 
 ---
@@ -410,18 +414,18 @@ Total Time: ~2 hours (estimation + implementation + validation)
    ```python
    import os
    import logging
-   
+
    HOST = os.getenv("HOST", "0.0.0.0")
    PORT = int(os.getenv("PORT", "3004"))  # Use registry port
    LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()
-   
+
    logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
    ```
 
 2. **Update entry point** to use config:
    ```python
    from config import HOST, PORT
-   
+
    uvicorn.run(app, host=HOST, port=PORT)
    ```
 
@@ -438,4 +442,3 @@ Total Time: ~2 hours (estimation + implementation + validation)
 1. **Proceed with Phase 4 fixes?** (Yes/No/Modify)
 2. **Alternative approach?** (Document exceptions in registry instead)
 3. **Skip runtime validation?** (Phase 5 optional if confident in fixes)
-

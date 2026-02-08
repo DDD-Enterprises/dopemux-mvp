@@ -34,8 +34,11 @@ class DecisionCard:
 
     def __post_init__(self):
         """Validate Top-3 pattern enforcement"""
-        # Tags can exist but should be limited in display context
-        pass
+        if not self.summary:
+            raise ValueError("DecisionCard.summary is required")
+        if len(self.tags) > 3:
+            logger.debug("Truncating DecisionCard tags from %s to 3", len(self.tags))
+            self.tags = self.tags[:3]
 
 
 @dataclass

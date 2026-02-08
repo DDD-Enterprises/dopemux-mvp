@@ -21,7 +21,7 @@ import pytest
 import time
 from typing import List
 
-import redis.asyncio as redis
+redis = pytest.importorskip("redis.asyncio", reason="redis package not installed")
 
 from cache import MultiTierCache
 from rate_limiter import RateLimiter

@@ -1,6 +1,8 @@
 """FastAPI surface for the DØPEMÜX Roast Engine."""
 
 from __future__ import annotations
+import logging
+
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +16,8 @@ from roast_engine import (
 )
 from roast_engine.models import PresetResponse
 from roast_engine.templates import TEMPLATE_LIBRARY
+
+logger = logging.getLogger(__name__)
 
 PERSONA_NAME = "DØPEMÜX Ritual Daemon"
 
@@ -73,7 +77,6 @@ def generate_roast(request: RoastRequest) -> RoastResponse:
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-        logger.error(f"Error: {e}")
     return RoastResponse(persona=PERSONA_NAME, count=len(roasts), roasts=roasts)
 
 

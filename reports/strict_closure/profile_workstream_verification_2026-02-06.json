@@ -1,0 +1,164 @@
+{
+  "run_timestamp_utc": "2026-02-06T20:05:00Z",
+  "branch": "codex/wave-next",
+  "source_packet": "docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md",
+  "verification_scope": "Profile and auto-detection related tasks from underrepresented ConPort backlog items",
+  "items": [
+    {
+      "task_id": "4.1.1",
+      "description": "Detect current profile from config",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/profile_manager.py:191",
+        "src/dopemux/cli.py:5813"
+      ],
+      "notes": "Active profile marker retrieval exists and current-profile alias is registered."
+    },
+    {
+      "task_id": "4.2.1",
+      "description": "Background detection service",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/auto_detection_service.py:101",
+        "src/dopemux/cli.py:5086"
+      ],
+      "notes": "Service class and CLI enablement command are wired."
+    },
+    {
+      "task_id": "4.2.2",
+      "description": "Suggestion UI design",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/auto_detection_service.py:168",
+        "src/dopemux/auto_detection_service.py:188"
+      ],
+      "notes": "Gentle prompt with yes/no/never flow is present."
+    },
+    {
+      "task_id": "4.2.3",
+      "description": "Suggestion acceptance flow",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/auto_detection_service.py:193",
+        "src/dopemux/auto_detection_service.py:205"
+      ],
+      "notes": "Accept/decline/never branches are implemented and persisted."
+    },
+    {
+      "task_id": "4.2.4",
+      "description": "Configuration options",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/auto_detection_service.py:36",
+        "src/dopemux/auto_detection_service.py:269"
+      ],
+      "notes": "Profile settings include threshold, debounce, and quiet-hours options."
+    },
+    {
+      "task_id": "4.3.1",
+      "description": "dopemux profile create command",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/profile_commands.py:110",
+        "src/dopemux/cli.py:5801"
+      ],
+      "notes": "Create command exists and is registered in primary profile group."
+    },
+    {
+      "task_id": "4.3.2",
+      "description": "dopemux profile edit command",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/profile_commands.py:189",
+        "src/dopemux/cli.py:5805"
+      ],
+      "notes": "Edit command with rollback-on-failure behavior is registered."
+    },
+    {
+      "task_id": "4.3.3",
+      "description": "dopemux profile copy command",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/profile_commands.py:127",
+        "src/dopemux/cli.py:5803"
+      ],
+      "notes": "Copy command is implemented and registered."
+    },
+    {
+      "task_id": "4.3.4",
+      "description": "dopemux profile delete command",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/profile_commands.py:152",
+        "src/dopemux/cli.py:5807"
+      ],
+      "notes": "Delete is implemented as archive-first, with protected-profile guard."
+    },
+    {
+      "task_id": "4.3.5",
+      "description": "dopemux profile current command",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/profile_commands.py:79",
+        "src/dopemux/cli.py:5813"
+      ],
+      "notes": "Current command exposed via alias to active-profile display command."
+    },
+    {
+      "task_id": "4.4.1",
+      "description": "Metrics collection",
+      "verification_status": "partial",
+      "evidence": [
+        "src/dopemux/profile_analytics.py:69",
+        "src/dopemux/profile_analytics.py:100"
+      ],
+      "notes": "Switch metrics are logged to ConPort custom_data; broader tool-usage coverage is not fully demonstrated here."
+    },
+    {
+      "task_id": "4.4.2",
+      "description": "dopemux profile stats command",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/cli.py:5185",
+        "src/dopemux/profile_analytics.py:312"
+      ],
+      "notes": "Stats CLI command uses analytics retrieval and renderer."
+    },
+    {
+      "task_id": "4.4.3",
+      "description": "Analytics dashboard",
+      "verification_status": "partial",
+      "evidence": [
+        "src/dopemux/profile_analytics.py:230",
+        "src/dopemux/profile_analytics.py:243"
+      ],
+      "notes": "Terminal analytics rendering exists; dedicated dashboard surface is not verified."
+    },
+    {
+      "task_id": "4.4.4",
+      "description": "Profile optimization suggestions",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/cli.py:5203",
+        "src/dopemux/cli.py:5218"
+      ],
+      "notes": "Suggestion heuristics are emitted from stats command."
+    },
+    {
+      "task_id": "4.5.2",
+      "description": "dopemux profile init wizard",
+      "verification_status": "implemented",
+      "evidence": [
+        "src/dopemux/cli.py:5055",
+        "src/dopemux/profile_wizard.py:54"
+      ],
+      "notes": "Interactive init wizard is wired through CLI."
+    }
+  ],
+  "summary": {
+    "implemented": 12,
+    "partial": 3,
+    "unverified": 0
+  },
+  "next_action": "Reclassify implemented items out of active unresolved queue and focus implementation on remaining partial/unverified items."
+}

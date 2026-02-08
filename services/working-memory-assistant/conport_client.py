@@ -20,7 +20,14 @@ try:
     from mcp__conport__get_system_patterns import get_system_patterns
     from mcp__conport__link_conport_items import link_conport_items
     from mcp__conport__get_linked_items import get_linked_items
-    from mcp__conport__semantic_search_conport import semantic_search_conport
+
+    # Prefer non-legacy semantic tool if available; fallback to legacy alias.
+    try:
+        from mcp__conport__semantic_search import semantic_search as _semantic_search_tool
+        _semantic_search_tool_name = "mcp__conport__semantic_search"
+    except ImportError:
+        from mcp__conport__semantic_search_conport import semantic_search_conport as _semantic_search_tool
+        _semantic_search_tool_name = "mcp__conport__semantic_search_conport"
 except ImportError:
     # Fallback for development/testing
     logger.info("ConPort MCP tools not available, using mock implementations")
@@ -83,14 +90,16 @@ except ImportError:
 
         return patterns[:limit]
 
-    async def link_conport_items(**kwargs) -> None:
-        pass
+    async def link_conport_items(**kwargs) -> bool:
+        return True
 
     async def get_linked_items(**kwargs) -> List[Dict[str, Any]]:
         return []
 
-    async def semantic_search_conport(**kwargs) -> List[Dict[str, Any]]:
+    async def _semantic_search_tool(**kwargs) -> List[Dict[str, Any]]:
         return []
+
+    _semantic_search_tool_name = "mock_semantic_search_tool"
 
 class ConPortClient:
     """Client for interacting with ConPort knowledge graph"""
@@ -169,12 +178,22 @@ class ConPortClient:
     async def semantic_search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """Perform semantic search across ConPort data"""
         try:
-            result = await semantic_search_conport(
+            result = await _semantic_search_tool(
                 workspace_id=self.workspace_id,
                 query_text=query,
                 top_k=top_k
             )
-            return result.get('results', []) if isinstance(result, dict) else result
+            if isinstance(result, dict):
+                results = result.get('results', [])
+            else:
+                results = result
+            logger.debug(
+                "WMA semantic search via %s: query='%s' results=%s",
+                _semantic_search_tool_name,
+                query,
+                len(results) if isinstance(results, list) else 0,
+            )
+            return results
         except Exception as e:
             logger.error(f"Failed to perform semantic search: {e}")
             return []

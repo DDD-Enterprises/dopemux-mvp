@@ -7,6 +7,7 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+prelude: Readme (reference) for dopemux documentation and developer workflows.
 ---
 # 🚀 START HERE: DopeconBridge Complete Guide
 
@@ -66,18 +67,18 @@ await client.publish_event(
 3. **This document** - Navigation and orientation
 
 ### 🏗️ **Architecture & Planning**
-4. **DOPECONBRIDGE_COMPREHENSIVE_PLAN.md** - Full technical architecture
-5. **DOPECONBRIDGE_MASTER_INDEX.md** - Complete documentation index
-6. **DOPECONBRIDGE_SERVICE_CATALOG.md** - All 19 services detailed
+1. **DOPECONBRIDGE_COMPREHENSIVE_PLAN.md** - Full technical architecture
+2. **DOPECONBRIDGE_MASTER_INDEX.md** - Complete documentation index
+3. **DOPECONBRIDGE_SERVICE_CATALOG.md** - All 19 services detailed
 
 ### 📊 **Completion Reports**
-7. **DOPECONBRIDGE_COMPLETE_FINAL.md** - Final completion report
-8. **DOPECONBRIDGE_FINAL_SUMMARY.md** - Transformation overview
-9. **DOPECONBRIDGE_RENAMING_COMPLETE.md** - Integration Bridge → DopeconBridge
+1. **DOPECONBRIDGE_COMPLETE_FINAL.md** - Final completion report
+2. **DOPECONBRIDGE_FINAL_SUMMARY.md** - Transformation overview
+3. **DOPECONBRIDGE_RENAMING_COMPLETE.md** - Integration Bridge → DopeconBridge
 
 ### 🔧 **Implementation Details**
-10. **DOPECONBRIDGE_PHASE9_CONFIG_UPDATE.md** - Config & genetic agent updates
-11. **verify_dopecon_bridge.sh** - Automated verification script
+1. **DOPECONBRIDGE_PHASE9_CONFIG_UPDATE.md** - Config & genetic agent updates
+2. **verify_dopecon_bridge.sh** - Automated verification script
 
 ---
 

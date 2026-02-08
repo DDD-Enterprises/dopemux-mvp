@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Architecture Audit 2025 10 16 (reference) for dopemux documentation and developer
+  workflows.
 ---
 # Architecture Audit Report - Two-Plane System
 **Date**: 2025-10-16
@@ -242,7 +246,7 @@ ConPort Orchestrator → (TODOs, events not published)
 
 ### Week 7 (Integration Work)
 
-3. **Complete Service Integration** (12 hours)
+1. **Complete Service Integration** (12 hours)
    - Wire all services to DopeconBridge
    - Remove direct database access
    - Enforce authority boundaries
@@ -250,7 +254,7 @@ ConPort Orchestrator → (TODOs, events not published)
 
 ### Long-term
 
-4. **PM Plane Audit** (6-8 hours)
+1. **PM Plane Audit** (6-8 hours)
    - Leantime integration status
    - Task-Master compliance
    - Cross-plane coordination validation

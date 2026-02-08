@@ -1,16 +1,16 @@
 """Vanilla Agent implementation using LLM-based iterative repair."""
 
-from typing import Dict, Any, List
-import asyncio
+import ast
+import time
+
+from typing import Dict, Any, List, Tuple
+import json
 from datetime import datetime
 
-import sys
-sys.path.insert(0, '../services')
-from genetic_agent.core.agent import BaseAgent
-from core.state import AgentState
-from shared.mcp.serena_client import SerenaClient
-from shared.mcp.dope_context_client import DopeContextClient
-from shared.mcp.zen_client import ZenClient
+from ..core.agent import BaseAgent
+from ..core.state import AgentState, DevelopmentMode
+from ..shared.mcp.serena_client import SerenaClient
+from ..shared.mcp.dope_context_client import DopeContextClient
 
 
 class RepairAttempt:
@@ -84,7 +84,6 @@ class VanillaAgent(BaseAgent):
         # Use GPT-Researcher for initial research
         research_query = f"bluesky development ideas for {context['description']}"
         try:
-            from shared.mcp.gptr_client import GPTRClient
             research_results = await self._call_gptr_mcp(research_query)
             research_insights = research_results.get('insights', [])
         except Exception as e:
@@ -136,7 +135,7 @@ Return JSON array with ideas, each with:
 
     async def _call_gptr_mcp(self, query: str) -> Dict[str, Any]:
         """Call GPT-Researcher MCP for research insights."""
-        from shared.mcp.gptr_client import GPTRClient
+        from ..shared.mcp.gptr_client import GPTRClient
 
         # Initialize GPT-Researcher client if not available
         if not hasattr(self, '_gptr_client'):
@@ -232,8 +231,6 @@ Return JSON with:
         """Execute testing mode for validation."""
         self.status.update_state(AgentState.VALIDATING)
 
-        # Get integration from previous phase
-        integration = context.get('integration', {})
         code = context.get('implementation', {}).get('code', context.get('description', ''))
 
         testing_prompt = f"""
@@ -303,7 +300,7 @@ Return JSON with:
 
         # Validation Phase
         self.status.update_state(AgentState.VALIDATING)
-        final_result = await self._finalize_repair(best_repair, context)
+        await self._finalize_repair(best_repair, context)
 
         return {
             "success": best_confidence >= self.config.confidence_threshold,
@@ -398,7 +395,7 @@ Respond with JSON: {{"analysis": "brief analysis", "suggestions": ["suggestion1"
     async def _log_optimization_step(self, iteration: int, analysis: str, suggestions: list) -> None:
         """Log optimization step to ConPort for learning."""
         try:
-            from shared.mcp.conport_client import ConPortClient
+            from ..shared.mcp.conport_client import ConPortClient
 
             log_entry = {
                 "iteration": iteration,
@@ -474,7 +471,7 @@ Do not include any other text, markdown formatting, or explanations outside the 
     async def _call_zen_mcp(self, prompt: str) -> str:
         """Call Zen MCP for LLM-powered code generation."""
         # Import here to avoid circular imports
-        from shared.mcp.zen_client import ZenClient
+        from ..shared.mcp.zen_client import ZenClient
 
         # Initialize Zen client if not already available
         if not hasattr(self, '_zen_client'):
@@ -491,13 +488,50 @@ Do not include any other text, markdown formatting, or explanations outside the 
         return response
 
     async def _validate_repair(self, repair: RepairAttempt, context: Dict[str, Any]) -> float:
-        """Validate repair quality (basic implementation)."""
-        # TODO: Add syntax checking, basic heuristics
-        # For now, cap confidence and add some basic validation
-        if not repair.code or "TODO" in repair.code:
-            return min(repair.confidence, 0.6)  # Penalize incomplete repairs
+        """Validate repair quality with syntax and placeholder checks."""
+        confidence = max(0.0, min(1.0, repair.confidence))
+        code = (repair.code or "").strip()
+        file_path = str(context.get("file_path", ""))
 
-        return min(repair.confidence, 0.9)  # Cap until real testing
+        if not code:
+            return min(confidence, 0.2)
+
+        if self._is_placeholder_repair(code):
+            confidence = min(confidence, 0.45)
+
+        # Only parse as Python when target appears to be Python source.
+        if file_path.endswith(".py"):
+            syntax_ok, _ = self._validate_python_syntax(code)
+            if not syntax_ok:
+                return min(confidence, 0.25)
+            # Reward syntactically valid code slightly.
+            confidence = min(1.0, confidence + 0.05)
+
+        # Keep a conservative cap until full runtime testing is wired.
+        return min(confidence, 0.95)
+
+    def _is_placeholder_repair(self, code: str) -> bool:
+        """Detect placeholder/non-implementations that should score poorly."""
+        lowered = code.lower()
+        placeholder_markers = ("todo", "tbd", "fixme", "error parsing response", "mcp error")
+        if any(marker in lowered for marker in placeholder_markers):
+            return True
+
+        non_comment_lines = [
+            line.strip()
+            for line in code.splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
+        return len(non_comment_lines) == 1 and non_comment_lines[0] == "pass"
+
+    def _validate_python_syntax(self, code: str) -> Tuple[bool, str]:
+        """Return (is_valid, error_message) for Python syntax."""
+        try:
+            tree = ast.parse(code)
+            compile(tree, "<repair>", "exec")
+            return True, ""
+        except (SyntaxError, TypeError, ValueError) as exc:
+            return False, str(exc)
 
     async def _finalize_repair(self, repair: RepairAttempt, context: Dict[str, Any]) -> Dict[str, Any]:
         """Finalize and format the repair result."""

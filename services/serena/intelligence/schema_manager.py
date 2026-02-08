@@ -518,28 +518,6 @@ class SerenaSchemaManager:
             statements.append(current_statement.strip())
 
         return [stmt for stmt in statements if stmt]
-        statements = []
-        current_statement = ""
-
-        for line in sql_content.split('\n'):
-            line = line.strip()
-
-            # Skip comments and empty lines
-            if not line or line.startswith('--'):
-                continue
-
-            current_statement += line + '\n'
-
-            # End of statement
-            if line.endswith(';'):
-                statements.append(current_statement.strip())
-                current_statement = ""
-
-        # Add any remaining statement
-        if current_statement.strip():
-            statements.append(current_statement.strip())
-
-        return statements
 
     async def get_migration_status(self) -> Dict[str, Any]:
         """Get current migration status and history."""

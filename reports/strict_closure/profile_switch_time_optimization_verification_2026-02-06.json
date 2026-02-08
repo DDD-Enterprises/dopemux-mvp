@@ -1,0 +1,30 @@
+{
+  "run_timestamp_utc": "2026-02-07T00:19:00Z",
+  "branch": "codex/wave-next",
+  "backlog_item": "3.3.2: Switch time optimization",
+  "implementation": {
+    "runtime_module": "src/dopemux/profile_commands.py",
+    "changes": [
+      "parallelized save_session and apply_config operations using ThreadPoolExecutor",
+      "added per-step timing capture and total switch timing output",
+      "added target-seconds warning path (default 10 seconds)"
+    ],
+    "tests": [
+      "tests/unit/test_profile_use_command.py::test_switch_full_to_developer_to_full_flow_with_context",
+      "tests/unit/test_profile_use_command.py::test_use_profile_warns_when_switch_exceeds_target"
+    ]
+  },
+  "verification": {
+    "commands": [
+      {
+        "command": "pytest -q --no-cov tests/unit/test_profile_use_command.py",
+        "status": "pass"
+      },
+      {
+        "command": "python -m py_compile src/dopemux/profile_commands.py",
+        "status": "pass"
+      }
+    ]
+  },
+  "status": "implemented"
+}

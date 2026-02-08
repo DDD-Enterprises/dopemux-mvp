@@ -1,19 +1,19 @@
 # MCP Server Status Summary
-**Last Updated**: 2026-02-05 15:30 PST
-**Overall Health**: 13/17 servers running (76%)
+**Last Updated**: 2026-02-06
+**Overall Health**: 14/17 servers running (82%)
 
 ## 🎯 Quick Status Overview
 
 | Category | Count | Status |
 |----------|-------|--------|
-| **Running & Healthy** | 13 | ✅ Operational |
+| **Running & Healthy** | 14 | ✅ Operational |
 | **Removed/Deprecated** | 1 | ❌ Cleaned up |
-| **Needs Investigation** | 2 | ⚠️ Review required |
+| **Needs Investigation** | 1 | ⚠️ Review required |
 | **Optional/Unimplemented** | 1 | 🔵 Future consideration |
 
 ---
 
-## ✅ Running & Healthy (13 servers)
+## ✅ Running & Healthy (14 servers)
 
 ### Critical Path Servers
 | Server | Container | Port | Status | Purpose |
@@ -26,6 +26,7 @@
 |--------|-----------|------|--------|---------|
 | **task-orchestrator** | dopemux-mcp-task-orchestrator | 3014 | ✅ Healthy | 37 workflow tools for task management |
 | **leantime-bridge** | dopemux-mcp-leantime-bridge | 3015 | ✅ Healthy | Project management integration |
+| **plane-coordinator** | dopemux-mcp-plane-coordinator | 8090 | ✅ Healthy | Two-plane coordination API |
 
 ### Knowledge & Navigation
 | Server | Container | Port | Status | Purpose |
@@ -64,7 +65,7 @@
 
 ---
 
-## ⚠️ Needs Investigation (2 servers)
+## ⚠️ Needs Investigation (1 server)
 
 ### mcp-client
 - **Status**: Running but unstable (constant restarts)
@@ -73,15 +74,6 @@
 - **Required for**: task-master-ai and other stdio transport servers
 - **Decision needed**: Mark as optional OR remove if not needed
 - **Recommendation**: Mark as optional/experimental in docker-compose.yml
-
-### plane-coordinator
-- **Status**: Dockerfile exists but implementation missing
-- **Missing files**: plane_coordinator.py, coordination_api.py, sync_engine.py, task_coordinator.py, enhanced_orchestrator.py, adapters/
-- **Issue**: Planned but never implemented
-- **Decision needed**: Implement OR remove from docker-compose.yml
-- **Recommendation**: Remove (unimplemented zombie definition)
-
----
 
 ## 🔵 Optional/Experimental (1 server)
 

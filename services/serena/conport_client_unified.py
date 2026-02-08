@@ -197,6 +197,46 @@ class ConPortDBClient:
             for e in entries
         ]
 
+    async def log_progress(
+        self,
+        workspace_id: str,
+        status: str,
+        description: str,
+        parent_id: Optional[int] = None,
+        linked_item_type: Optional[str] = None,
+        linked_item_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Log progress entry to ConPort.
+
+        Args:
+            workspace_id: Workspace identifier (ignored, uses config)
+            status: Progress status (TODO/IN_PROGRESS/DONE/BLOCKED)
+            description: Human-readable task description
+            parent_id: Optional parent progress entry ID
+            linked_item_type: Optional linked item type
+            linked_item_id: Optional linked item ID
+
+        Returns:
+            Dict matching legacy Serena expectations.
+        """
+        entry = await self.client.log_progress(
+            status=status,
+            description=description,
+            parent_id=parent_id,
+            linked_item_type=linked_item_type,
+            linked_item_id=linked_item_id,
+        )
+        return {
+            "id": entry.id,
+            "status": entry.status,
+            "description": entry.description,
+            "parent_id": entry.parent_id,
+            "linked_item_type": entry.linked_item_type,
+            "linked_item_id": entry.linked_item_id,
+            "timestamp": entry.timestamp,
+        }
+
     async def log_custom_data(
         self, workspace_id: str, category: str, key: str, value: Any
     ) -> bool:

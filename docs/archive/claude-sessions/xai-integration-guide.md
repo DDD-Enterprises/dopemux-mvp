@@ -1,10 +1,14 @@
 ---
 id: xai-integration-guide
 title: Xai Integration Guide
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Xai Integration Guide (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # xAI (Grok) Integration with Dopemux and Claude Pro Max
 

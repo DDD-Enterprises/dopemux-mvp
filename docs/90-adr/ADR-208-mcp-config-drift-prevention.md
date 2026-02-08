@@ -1,6 +1,6 @@
 ---
 title: 'ADR-208: MCP Configuration Drift Prevention via Service Discovery'
-status: Accepted
+status: accepted
 date: 2026-02-03
 author: Dopemux Architecture Team
 tags:
@@ -19,6 +19,12 @@ type: adr
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+prelude: 'ADR-208: MCP Configuration Drift Prevention via Service Discovery (adr)
+  for dopemux documentation and developer workflows.'
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
 # ADR-208: MCP Configuration Drift Prevention via Service Discovery
 

@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Conport Api Audit (explanation) for dopemux documentation and developer workflows.
 ---
 # ConPort API Usage Audit - Task-Orchestrator
 
@@ -50,6 +53,7 @@ Task-Orchestrator has **127 ConPort references** across 8,889 lines of Python co
 ```
 
 ### Component Breakdown
+
 | Component | ConPort Refs | Purpose | Status |
 |-----------|--------------|---------|--------|
 | `automation_workflows.py` | 45 | Sprint automation, context setup | Commented out |

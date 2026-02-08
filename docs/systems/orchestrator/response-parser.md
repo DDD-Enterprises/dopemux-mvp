@@ -1,10 +1,13 @@
 ---
 id: response-parser
 title: Response Parser
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Response Parser (reference) for dopemux documentation and developer workflows.
 ---
 # Response Parser System - Priority 3 Complete
 
@@ -83,7 +86,7 @@ context = manager.format_context_for_agent('claude', max_exchanges=5)
 - Performance tracking
 
 **Supported Providers**:
-- ✅ **Claude**: Prompt-based parsing (`> ` boundaries)
+- ✅ **Claude**: Prompt-based parsing (`>` boundaries)
 - ✅ **Gemini**: Auto-detect JSON mode, fallback to prose
 - ✅ **Codex**: Generic parsing (extensible)
 - ✅ **Unknown**: Generic fallback (robust)

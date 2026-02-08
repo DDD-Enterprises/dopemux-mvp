@@ -1,6 +1,8 @@
 """Shared state management for the Dope layout dashboard."""
 
 from __future__ import annotations
+import logging
+
 
 import asyncio
 import json
@@ -11,6 +13,8 @@ from typing import Callable, Optional
 
 from ..config.settings import DopeLayoutSettings, ModeLiteral
 
+
+logger = logging.getLogger(__name__)
 
 @dataclass(slots=True)
 class DashboardState:

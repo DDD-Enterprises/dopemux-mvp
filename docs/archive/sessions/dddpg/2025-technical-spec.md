@@ -1,10 +1,14 @@
 ---
 id: 2025-technical-spec
 title: 2025 Technical Spec
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: 2025 Technical Spec (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # DDDPG Technical Specification 2025
 **Version**: 2.0

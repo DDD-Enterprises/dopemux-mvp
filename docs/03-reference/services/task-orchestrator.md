@@ -5,12 +5,14 @@ type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Task Orchestrator (reference) for dopemux documentation and developer workflows.
 ---
 # Task Orchestrator
 
 **Extracted from**: DOPESMUX_ULTRA_UI_MVP_COMPLETION.md
 **Date**: 2026-02-02
-
 
 ## Task Orchestrator Features (from Ultra UI MVP)
 

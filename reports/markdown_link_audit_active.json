@@ -1,0 +1,1125 @@
+{
+  "markdown_files": 900,
+  "broken_links": [
+    {
+      "file": "INSTALL.md",
+      "line": 647,
+      "link": "color_orange"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 650,
+      "link": "bg:color_yellow"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 652,
+      "link": "fg:color_yellow"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 655,
+      "link": "fg:color_aqua"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 666,
+      "link": "fg:color_blue"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 669,
+      "link": "fg:color_bg3"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 671,
+      "link": "fg:color_green"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 676,
+      "link": "$style"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 683,
+      "link": "bg:color_aqua"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 687,
+      "link": "bg:color_aqua"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 693,
+      "link": "bg:color_green"
+    },
+    {
+      "file": "INSTALL.md",
+      "line": 701,
+      "link": "bg:color_purple"
+    },
+    {
+      "file": "README.md",
+      "line": 11,
+      "link": "docs/branding/D\u00d8PEMUX_BRAND_SYSTEM.md"
+    },
+    {
+      "file": "README.md",
+      "line": 137,
+      "link": "docs/TERMINAL_SETUP.md"
+    },
+    {
+      "file": "README.md",
+      "line": 448,
+      "link": "./services/dope-context/AUTONOMOUS_INDEXING.md"
+    },
+    {
+      "file": "README.md",
+      "line": 594,
+      "link": "./docs/94-architecture/system-bible.md"
+    },
+    {
+      "file": "README.md",
+      "line": 680,
+      "link": "./docs/94-architecture/system-bible.md"
+    },
+    {
+      "file": "README.md",
+      "line": 681,
+      "link": "./docs/ADHD-ENGINE-DEEP-DIVE-PART1.md"
+    },
+    {
+      "file": "README.md",
+      "line": 712,
+      "link": "docs/02-how-to/DEVELOPING_DOPEMUX_CORE.md"
+    },
+    {
+      "file": "README.md",
+      "line": 1079,
+      "link": "docs/api/workspace.md"
+    },
+    {
+      "file": "README.md",
+      "line": 1080,
+      "link": "docs/troubleshooting/workspaces.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 27,
+      "link": "deployment/DEPLOYMENT-INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 28,
+      "link": "deployment/DEPLOYMENT-CHECKLIST.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 29,
+      "link": "deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 32,
+      "link": "02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 33,
+      "link": "02-how-to/integrations/LEANTIME_API_SETUP_GUIDE.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 50,
+      "link": "systems/conport/CONPORT_EXECUTIVE_SUMMARY.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 51,
+      "link": "systems/conport/CONPORT_SYSTEMS_ANALYSIS.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 52,
+      "link": "systems/conport/CONPORT_INTEGRATION_QUICKSTART.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 53,
+      "link": "systems/conport/CONPORT_COMPARISON_MATRIX.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 54,
+      "link": "systems/conport/CONPORT_README.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 58,
+      "link": "systems/dashboard/TMUX_DASHBOARD_README.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 59,
+      "link": "systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 60,
+      "link": "systems/dashboard/TMUX_METRICS_INVENTORY.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 61,
+      "link": "systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 62,
+      "link": "systems/dashboard/DASHBOARD_ENHANCEMENTS.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 70,
+      "link": "94-architecture/system-bible.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 72,
+      "link": "94-architecture/multi-instance-implementation.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 87,
+      "link": "development/planning/ACTION-PLAN-MASTER.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 88,
+      "link": "development/planning/DDDPG_KICKOFF.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 89,
+      "link": "development/planning/DOPE_LAYOUT_MODULAR_PLAN.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 93,
+      "link": "implementation-plans/00-MASTER-INDEX.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 94,
+      "link": "implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 95,
+      "link": "implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 96,
+      "link": "implementation-plans/component-1-audit-summary.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 103,
+      "link": "PROFILE-YAML-SCHEMA.md"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "line": 107,
+      "link": "FEATURES_INDEX.md"
+    },
+    {
+      "file": "services/dope-query/MULTI_WORKSPACE_GUIDE.md",
+      "line": 334,
+      "link": "../../docs/94-architecture/"
+    },
+    {
+      "file": "services/dope-query/MULTI_WORKSPACE_GUIDE.md",
+      "line": 335,
+      "link": "./queries/README.md"
+    },
+    {
+      "file": "services/dope-query/MULTI_WORKSPACE_GUIDE.md",
+      "line": 337,
+      "link": "./tests/test_multi_workspace.py"
+    },
+    {
+      "file": "docs/03-reference/overview.md",
+      "line": 59,
+      "link": "features/FEATURES_INDEX.md"
+    },
+    {
+      "file": "docs/03-reference/overview.md",
+      "line": 63,
+      "link": "F001-untracked-work-detection.md"
+    },
+    {
+      "file": "docs/03-reference/overview.md",
+      "line": 70,
+      "link": "serena-v2-test-summary.md"
+    },
+    {
+      "file": "docs/03-reference/overview.md",
+      "line": 71,
+      "link": "serena-v2-validation-report.md"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "line": 26,
+      "link": "../deployment/DEPLOYMENT-INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "line": 27,
+      "link": "../deployment/DEPLOYMENT-CHECKLIST.md"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "line": 28,
+      "link": "../deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "line": 41,
+      "link": "integrations/LEANTIME_SETUP_INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "line": 42,
+      "link": "integrations/LEANTIME_API_SETUP_GUIDE.md"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "line": 43,
+      "link": "integrations/LEANTIME_DEPLOYMENT_RECOMMENDATION.md"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "line": 61,
+      "link": "serena-v2-deployment.md"
+    },
+    {
+      "file": "docs/02-how-to/terminal-setup.md",
+      "line": 299,
+      "link": "$style"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "line": 410,
+      "link": "./DEVELOPING_DOPEMUX_CORE.md"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "line": 416,
+      "link": "../94-architecture/system-bible.md"
+    },
+    {
+      "file": "docs/02-how-to/create-llm-archive.md",
+      "line": 279,
+      "link": "../03-reference/code-review-checklist.md"
+    },
+    {
+      "file": "docs/02-how-to/create-llm-archive.md",
+      "line": 280,
+      "link": "../03-reference/security-guidelines.md"
+    },
+    {
+      "file": "docs/02-how-to/create-llm-archive.md",
+      "line": 281,
+      "link": "../04-explanation/architecture/overview.md"
+    },
+    {
+      "file": "docs/02-how-to/create-llm-archive.md",
+      "line": 282,
+      "link": "../04-explanation/systems/adhd-engine.md"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "line": 512,
+      "link": "../../03-reference/services/zen-mcp.md"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "line": 518,
+      "link": "../../docker/mcp-servers/zen/zen-mcp-server/tools/thinkdeep.py"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "line": 519,
+      "link": "../../docker/mcp-servers/zen/zen-mcp-server/models/"
+    },
+    {
+      "file": "docs/02-how-to/multi-instance-workflow.md",
+      "line": 627,
+      "link": "../WORKTREE_SWITCHING_GUIDE.md"
+    },
+    {
+      "file": "docs/02-how-to/mobile-web-setup-guide.md",
+      "line": 386,
+      "link": "../systems/adhd-intelligence/overview.md"
+    },
+    {
+      "file": "docs/02-how-to/mobile-web-setup-guide.md",
+      "line": 387,
+      "link": "../troubleshooting-playbook.md"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "line": 17,
+      "link": "DEPLOYMENT-READY-SUMMARY.md"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "line": 21,
+      "link": "phase-2-security-quality-complete.md"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "line": 50,
+      "link": "phase-1a-inventory.md"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "line": 51,
+      "link": "phase-1b-service-catalog.md"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "line": 52,
+      "link": "phase-1c-dependency-map.md"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "line": 53,
+      "link": "phase-1d-documentation-inventory.md"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "line": 56,
+      "link": "phase-2a-security-scan.md"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "line": 57,
+      "link": "phase-2-security-quality-complete.md"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "line": 60,
+      "link": "phase-3-manual-review-findings.md"
+    },
+    {
+      "file": "docs/01-tutorials/quick-launch-commands.md",
+      "line": 402,
+      "link": "../systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "line": 32,
+      "link": "src/context_portal_mcp/db/models.py"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "line": 32,
+      "link": "src/context_portal_mcp/db/database.py"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "line": 239,
+      "link": "README.md"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "line": 240,
+      "link": "CONTRIBUTING.md"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "line": 300,
+      "link": "README.md"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "line": 300,
+      "link": "v0.2.3_UPDATE_GUIDE.md"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "line": 304,
+      "link": "v0.2.3_UPDATE_GUIDE.md"
+    },
+    {
+      "file": "docs/systems/serena/multi-workspace-guide.md",
+      "line": 546,
+      "link": "./docs/F002_USER_GUIDE.md"
+    },
+    {
+      "file": "docs/systems/serena/multi-workspace-guide.md",
+      "line": 547,
+      "link": "./multi_workspace_wrapper.py"
+    },
+    {
+      "file": "docs/systems/serena/multi-workspace-guide.md",
+      "line": 548,
+      "link": "../../services/shared/complexity_coordinator/"
+    },
+    {
+      "file": "docs/systems/serena/multi-workspace-guide.md",
+      "line": 549,
+      "link": "./adhd_features.py"
+    },
+    {
+      "file": "docs/systems/dope-context/deployment.md",
+      "line": 768,
+      "link": "README.md"
+    },
+    {
+      "file": "docs/systems/dope-context/deployment.md",
+      "line": 768,
+      "link": "API_REFERENCE.md"
+    },
+    {
+      "file": "docs/systems/dope-context/api-reference.md",
+      "line": 667,
+      "link": "PERFORMANCE_TUNING.md"
+    },
+    {
+      "file": "docs/systems/adhd-features/README.md",
+      "line": 39,
+      "link": "../adhd-engine-api.md"
+    },
+    {
+      "file": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "line": 293,
+      "link": "docs/PHASE1_SPRINT_PLAN.md"
+    },
+    {
+      "file": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "line": 315,
+      "link": "../../docs/COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md"
+    },
+    {
+      "file": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "line": 316,
+      "link": "docs/PHASE1_SPRINT_PLAN.md"
+    },
+    {
+      "file": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "line": 317,
+      "link": "README.md"
+    },
+    {
+      "file": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "line": 559,
+      "link": "WORKTREE_SWITCHING_GUIDE.md"
+    },
+    {
+      "file": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "line": 560,
+      "link": "ADVANCED_WORKTREE_WORKFLOWS.md"
+    },
+    {
+      "file": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "line": 561,
+      "link": "troubleshooting/WORKTREE_VALIDATION_REPORT.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 15,
+      "link": "TMUX_DASHBOARD_README.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 16,
+      "link": "TMUX_DASHBOARD_DESIGN.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 17,
+      "link": "TMUX_METRICS_INVENTORY.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 29,
+      "link": "TMUX_DASHBOARD_README.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 30,
+      "link": "DASHBOARD_ENHANCEMENTS.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 33,
+      "link": "TMUX_DASHBOARD_DESIGN.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 34,
+      "link": "TMUX_METRICS_INVENTORY.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 35,
+      "link": "DASHBOARD_IMPLEMENTATION_TRACKER.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 38,
+      "link": "DASHBOARD_ENHANCEMENTS.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 39,
+      "link": "../../implementation-plans/DASHBOARD_SESSION_SUMMARY.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 97,
+      "link": "TMUX_METRICS_INVENTORY.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 116,
+      "link": "DASHBOARD_IMPLEMENTATION_TRACKER.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 125,
+      "link": "DASHBOARD_ENHANCEMENTS.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 135,
+      "link": "../../ADHD_COMPLETE_DOCUMENTATION.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 136,
+      "link": "../../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "line": 137,
+      "link": "../../implementation-plans/"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "line": 15,
+      "link": "./TMUX_METRICS_INVENTORY.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "line": 16,
+      "link": "./TMUX_DASHBOARD_DESIGN.md"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "line": 17,
+      "link": "./dopemux_dashboard.py"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 15,
+      "link": "ADHD_COMPLETE_DOCUMENTATION.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 16,
+      "link": "ADHD_STACK_README.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 17,
+      "link": "ADHD_ARCHITECTURE_DIAGRAM.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 31,
+      "link": "ADHD_COMPLETE_DOCUMENTATION.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 32,
+      "link": "ADHD_STACK_README.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 35,
+      "link": "ADHD_ARCHITECTURE_DIAGRAM.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 36,
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART1.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 37,
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART2.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 38,
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART3.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 39,
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART4.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 42,
+      "link": "../../04-explanation/"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 155,
+      "link": "../../04-explanation/architecture/"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 156,
+      "link": "../../04-explanation/"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 157,
+      "link": "../../03-reference/"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "line": 158,
+      "link": "../../02-how-to/"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "line": 617,
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART1.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "line": 1554,
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART1.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "line": 1554,
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART2.md"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "line": 1554,
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART3.md"
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY10_INDEX.md",
+      "line": 285,
+      "link": "../../dopemux_dashboard.py"
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY9_INDEX.md",
+      "line": 21,
+      "link": "../archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md"
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY9_INDEX.md",
+      "line": 415,
+      "link": "../archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/WORKSPACE_MIGRATION_GUIDE.md",
+      "line": 272,
+      "link": "docs/troubleshooting/workspaces.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/WORKSPACE_MIGRATION_GUIDE.md",
+      "line": 280,
+      "link": "README.md#multi-workspace-usage"
+    },
+    {
+      "file": "docs/archive/completed-projects/WORKSPACE_MIGRATION_GUIDE.md",
+      "line": 281,
+      "link": "docs/api/workspace.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/WORKSPACE_MIGRATION_GUIDE.md",
+      "line": 282,
+      "link": "docs/advanced/workspace-patterns.md"
+    },
+    {
+      "file": "docs/archive/claude-sessions/dopemux-orchestrator-roadmap.md",
+      "line": 803,
+      "link": "self.agent_spawner"
+    },
+    {
+      "file": "docs/archive/implementation-history/RELEASE_NOTES_v0.1.0.md",
+      "line": 182,
+      "link": "CONTRIBUTING.md"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "line": 161,
+      "link": "docs/01-tutorials/"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "line": 164,
+      "link": "docs/02-how-to/"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "line": 167,
+      "link": "docs/03-reference/"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "line": 170,
+      "link": "docs/04-explanation/"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "line": 173,
+      "link": "docs/systems/conport/"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "line": 176,
+      "link": "docs/systems/dashboard/"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "line": 179,
+      "link": "docs/archive/session-notes/"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "line": 182,
+      "link": "docs/development/"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "line": 185,
+      "link": "docs/deployment/"
+    },
+    {
+      "file": "docs/archive/audit-reports/deployment-ready-summary.md",
+      "line": 12,
+      "link": "FINAL-AUDIT-REPORT.md"
+    },
+    {
+      "file": "docs/archive/audit-reports/deployment-ready-summary.md",
+      "line": 20,
+      "link": "FINAL-AUDIT-REPORT.md"
+    },
+    {
+      "file": "docs/archive/audit-reports/deployment-ready-summary.md",
+      "line": 21,
+      "link": "PHASE-1-COMPLETE.md"
+    },
+    {
+      "file": "docs/archive/audit-reports/deployment-ready-summary.md",
+      "line": 22,
+      "link": "audit-overview.md"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 15,
+      "link": "DEPLOYMENT-INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 16,
+      "link": "DEPLOYMENT-CHECKLIST.md"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 17,
+      "link": "DEPLOYMENT-WORKTREE-INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 24,
+      "link": "DEPLOYMENT-INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 34,
+      "link": "DEPLOYMENT-CHECKLIST.md"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 44,
+      "link": "DEPLOYMENT-WORKTREE-INSTRUCTIONS.md"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 89,
+      "link": "../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 90,
+      "link": "../02-how-to/"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 91,
+      "link": "../03-reference/configuration/"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 139,
+      "link": "../02-how-to/"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "line": 140,
+      "link": "../04-explanation/"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "line": 450,
+      "link": "README.md"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "line": 451,
+      "link": "docs/94-architecture/CONPORT_KG_2.0_MASTER_PLAN.md"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "line": 452,
+      "link": "services/dope-context/AUTONOMOUS_INDEXING.md"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "line": 453,
+      "link": "services/shared/conport_client/README.md"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "line": 454,
+      "link": "claudedocs/serena_adhd_cross_system_analysis_20251023.md"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_SUMMARY_WEEK1_DAY1.md",
+      "line": 345,
+      "link": "PRODUCTION_READINESS_PLAN.md"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_SUMMARY_WEEK1_DAY1.md",
+      "line": 346,
+      "link": "PRODUCTION_READINESS_QUICK_REF.md"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_SUMMARY_WEEK1_DAY1.md",
+      "line": 347,
+      "link": "INSTALLER_TESTING_REPORT.md"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_SUMMARY_WEEK1_DAY1.md",
+      "line": 348,
+      "link": "install.sh"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/DASHBOARD_QUICK_REFERENCE.md",
+      "line": 206,
+      "link": "docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/DASHBOARD_QUICK_REFERENCE.md",
+      "line": 207,
+      "link": "TMUX_METRICS_INVENTORY.md"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/DASHBOARD_QUICK_REFERENCE.md",
+      "line": 208,
+      "link": "DASHBOARD_ENHANCEMENTS.md"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/DASHBOARD_QUICK_REFERENCE.md",
+      "line": 209,
+      "link": "docs/implementation-plans/tmux-dashboard-sprint-plan.md"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_PLAN_WEEK1_DAY2.md",
+      "line": 427,
+      "link": "./test_installer_ubuntu.sh"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_PLAN_WEEK1_DAY2.md",
+      "line": 428,
+      "link": "./install.sh"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_PLAN_WEEK1_DAY2.md",
+      "line": 429,
+      "link": "./INSTALLER_TESTING_REPORT.md"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_PLAN_WEEK1_DAY2.md",
+      "line": 430,
+      "link": "./PRODUCTION_READINESS_QUICK_REF.md"
+    },
+    {
+      "file": "docs/archive/sessions/serena/v2/f001-usage-examples.md",
+      "line": 391,
+      "link": "F001_ENHANCED_USER_GUIDE.md"
+    },
+    {
+      "file": "docs/archive/sessions/serena/v2/f001-usage-examples.md",
+      "line": 392,
+      "link": "../F001_TEST_RESULTS.md"
+    },
+    {
+      "file": "docs/archive/sessions/serena/v2/f001-usage-examples.md",
+      "line": 393,
+      "link": "../F001_ENHANCED_BUILD_SUMMARY.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_FINAL_V2.md",
+      "line": 288,
+      "link": "./START_HERE_DOPECONBRIDGE.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_FINAL_V2.md",
+      "line": 579,
+      "link": "./START_HERE_DOPECONBRIDGE.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md",
+      "line": 783,
+      "link": "./context_portal/README.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md",
+      "line": 784,
+      "link": "./docs/mcp-protocol.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md",
+      "line": 785,
+      "link": "./services/dopecon-bridge/EVENTBUS_VALIDATION.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_INDEX.md",
+      "line": 241,
+      "link": "./README.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_INDEX.md",
+      "line": 242,
+      "link": "./docs/04-explanation/"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md",
+      "line": 106,
+      "link": "./README.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md",
+      "line": 112,
+      "link": "./Makefile"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "line": 56,
+      "link": "./DOPECON_BRIDGE_MIGRATION_COMPLETE.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "line": 57,
+      "link": "./DOPECON_BRIDGE_COMPLETE.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "line": 66,
+      "link": "./DOPECON_BRIDGE_QUICK_START.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "line": 73,
+      "link": "./DOPECON_BRIDGE_EXECUTIVE_SUMMARY.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "line": 82,
+      "link": "./services/shared/dopecon_bridge_client/README.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "line": 195,
+      "link": "./DOPECON_BRIDGE_COMPLETE.md"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_DEPLOYMENT_SUMMARY.md",
+      "line": 59,
+      "link": "./START_HERE_DOPECONBRIDGE.md"
+    },
+    {
+      "file": ".claude/scratch/archive/2025-09-claude-sessions/SESSION_STATE_MERGE.md",
+      "line": 12,
+      "link": "./docker/mcp-servers/SERVER_REGISTRY.md"
+    },
+    {
+      "file": ".claude/scratch/archive/2025-09-claude-sessions/SESSION_STATE_MERGE.md",
+      "line": 13,
+      "link": "./docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md"
+    },
+    {
+      "file": ".claude/scratch/archive/2025-09-claude-sessions/SESSION_STATE_MERGE.md",
+      "line": 14,
+      "link": "./docs/METAMCP_ORCHESTRATION_ROADMAP.md"
+    },
+    {
+      "file": ".claude/scratch/archive/2025-09-claude-sessions/SESSION_STATE_MERGE.md",
+      "line": 17,
+      "link": "./docker/mcp-servers/docker-compose.yml"
+    },
+    {
+      "file": "docker/mcp-servers/desktop-commander/README.md",
+      "line": 45,
+      "link": "CONNECTION_GUIDE.md"
+    },
+    {
+      "file": "docker/mcp-servers/desktop-commander/README.md",
+      "line": 46,
+      "link": "DESKTOP_COMMANDER_VALIDATION.md"
+    },
+    {
+      "file": "docker/mcp-servers/leantime-bridge/README.md",
+      "line": 73,
+      "link": "./INFO_ENDPOINT.md"
+    },
+    {
+      "file": "docker/mcp-servers/litellm/README.md",
+      "line": 143,
+      "link": "../../docs/02-architecture/"
+    },
+    {
+      "file": "docker/mcp-servers/litellm/README.md",
+      "line": 144,
+      "link": "../../docs/90-adr/ADR-012-mcp-integration-patterns.md"
+    },
+    {
+      "file": "docker/mcp-servers/pal/pal-mcp-server/docs/custom_models.md",
+      "line": 73,
+      "link": "conf/openrouter_models.json"
+    },
+    {
+      "file": "docker/mcp-servers/pal/pal-mcp-server/docs/custom_models.md",
+      "line": 73,
+      "link": "conf/custom_models.json"
+    }
+  ]
+}

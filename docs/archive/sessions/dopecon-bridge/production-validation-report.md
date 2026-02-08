@@ -1,10 +1,14 @@
 ---
 id: production-validation-report
 title: Production Validation Report
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Production Validation Report (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Production Validation Report - Integration Day 3
 

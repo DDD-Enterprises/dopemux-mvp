@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dashboard_Day6_Quick_Ref (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Dashboard Day 6 - Quick Reference Card 📋
 
@@ -36,7 +40,7 @@ from dashboard.modals_enhanced import (
 from dashboard.service_clients import DataPrefetcher
 ```
 
-### 2. Add Prefetcher (DopemuxDashboard.__init__, line ~987)
+### 2. Add Prefetcher (DopemuxDashboard.**init**, line ~987)
 ```python
 def __init__(self):
     super().__init__()
@@ -180,7 +184,7 @@ After integration works:
 
 Integration:
 - [ ] Added imports to dopemux_dashboard.py
-- [ ] Added prefetcher to __init__
+- [ ] Added prefetcher to **init**
 - [ ] Added prefetcher.start() to on_mount
 - [ ] Added prefetcher.stop() to on_unmount
 - [ ] Ran test_dashboard_day6.py (all pass)

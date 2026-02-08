@@ -57,7 +57,6 @@ Dopemux is a **development platform designed specifically for developers with AD
 
 ## 🏗️ High-Level Architecture
 
-
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         👤 DEVELOPER (You!)                              │
@@ -125,7 +124,6 @@ Dopemux is a **development platform designed specifically for developers with AD
 │  └──────────────┘  └──────────────┘  └──────────────┘                  │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
-
 
 ### Architecture Philosophy
 

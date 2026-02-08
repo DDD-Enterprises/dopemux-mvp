@@ -1,33 +1,30 @@
 """Genetic Agent implementation with GP operators and hybrid approach."""
 
+import ast
 import asyncio
-from typing import Dict, Any, List, Optional, Tuple
+import logging
+import re
 import time
-
-import sys
-sys.path.insert(0, '../services')
-from genetic_agent.core.agent import BaseAgent
-from core.state import AgentState
-from shared.mcp.serena_client import SerenaClient
-from shared.mcp.dope_context_client import DopeContextClient
-from shared.mcp.conport_client import ConPortClient
-from shared.mcp.memory_adapter import MemoryAdapter
-from shared.eventbus import SimpleEventBus as EventBus, Event, EventType
-from shared.mcp.zen_client import ZenClient
+from typing import Dict, Any, List, Optional, Tuple
+from ..core.agent import BaseAgent
+from ..core.state import AgentState
+from ..shared.mcp.serena_client import SerenaClient
+from ..shared.mcp.dope_context_client import DopeContextClient
+from ..shared.mcp.conport_client import ConPortClient
+from ..shared.mcp.memory_adapter import MemoryAdapter
+from ..shared.eventbus import SimpleEventBus as EventBus, Event
+from ..shared.mcp.zen_client import ZenClient
 
 from .gp_operators import GPOperators
-from .population import GPPopulation, GPIndividual
+from .population import GPPopulation
+
+logger = logging.getLogger(__name__)
 
 
 class RepairCandidate:
     """Represents a repair candidate with metadata."""
 
     def __init__(self, code: str, explanation: str, confidence: float, source: str = "unknown"):
-
-import logging
-
-logger = logging.getLogger(__name__)
-
         self.code = code
         self.explanation = explanation
         self.confidence = confidence
@@ -445,7 +442,7 @@ Do not include any other text, markdown formatting, or explanations outside the 
     async def _call_zen_mcp(self, prompt: str) -> str:
         """Call Zen MCP for LLM-powered code generation."""
         # Import here to avoid circular imports
-        from shared.mcp.zen_client import ZenClient
+        from ..shared.mcp.zen_client import ZenClient
 
         # Initialize Zen client if not already available
         if not hasattr(self, '_zen_client'):
@@ -511,13 +508,9 @@ Do not include any other text, markdown formatting, or explanations outside the 
 
     def _evaluate_fitness(self, code: str, context: Dict[str, Any]) -> Tuple[float, Dict[str, float]]:
         """Evaluate fitness using research-based multi-objective scoring."""
-
-        # Component 1: Test Success (100% weight - research priority)
-        # TODO: Replace with actual test execution
-        # For now, use syntax validation as proxy for basic correctness
         tree = self.gp_operators.code_to_tree(code)
         syntax_valid = 1.0 if tree and self.gp_operators.validate_ast(tree) else 0.0
-        test_success = syntax_valid  # Placeholder - would run actual tests
+        test_success = self._estimate_test_success_score(code, syntax_valid, context)
 
         # Component 2: Size Penalty (0.1/line over 50 lines - from Chronicle research)
         lines_of_code = len(code.split('\n'))
@@ -525,33 +518,94 @@ Do not include any other text, markdown formatting, or explanations outside the 
         size_score = max(0.0, 1.0 - size_penalty)  # Convert penalty to score
 
         # Component 3: Lint Penalty (5/error - research-based lint weighting)
-        # TODO: Replace with actual linting
-        # For now, use basic AST complexity as proxy
         complexity_penalty = self.gp_operators.get_tree_complexity(tree) / 100.0 if tree else 1.0
-        lint_penalty = complexity_penalty * 5  # 5 points per "error"
+        lint_errors = float(self._count_lint_issues(code, tree))
+        lint_penalty = min(1.0, lint_errors * 0.1)  # 0.1 penalty per lightweight lint issue
         lint_score = max(0.0, 1.0 - lint_penalty)
 
         # Research-based weighted fitness (GenProg/Chronicle methodology)
         # Test success gets highest priority, followed by code quality metrics
-        fitness = (
+        weighted_sum = (
             1.0 * test_success +           # 100% weight on test success
             0.3 * size_score +             # Size minimization (Chronicle)
             0.2 * lint_score               # Code quality (research standards)
         )
 
         # Normalize to 0.0-1.0 range
-        fitness = min(1.0, max(0.0, fitness))
+        fitness = min(1.0, max(0.0, weighted_sum / 1.5))
 
         components = {
             "test_success": test_success,
             "size_score": size_score,
             "lint_score": lint_score,
             "lines_of_code": lines_of_code,
+            "lint_errors": lint_errors,
             "complexity_penalty": complexity_penalty,
             "raw_fitness": fitness
         }
 
         return fitness, components
+
+    def _estimate_test_success_score(
+        self,
+        code: str,
+        syntax_valid: float,
+        context: Dict[str, Any],
+    ) -> float:
+        """Estimate correctness signal using syntax + bug-fix quality heuristics."""
+        if syntax_valid <= 0:
+            return 0.0
+
+        score = 1.0
+        if self._contains_placeholder_markers(code):
+            score -= 0.55
+
+        file_path = str(context.get("file_path", ""))
+        if file_path.endswith("_test.py") and "assert " not in code:
+            score -= 0.25
+
+        if len(code.strip()) < 20:
+            score -= 0.20
+
+        return max(0.0, min(1.0, score))
+
+    def _contains_placeholder_markers(self, code: str) -> bool:
+        """Detect incomplete generated snippets that should not be trusted."""
+        lowered = code.lower()
+        markers = ("todo", "tbd", "fixme", "error parsing response", "mcp error")
+        if any(marker in lowered for marker in markers):
+            return True
+
+        non_comment = [
+            line.strip()
+            for line in code.splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
+        return len(non_comment) == 1 and non_comment[0] == "pass"
+
+    def _count_lint_issues(self, code: str, tree: Optional[ast.AST]) -> int:
+        """
+        Run lightweight lint checks that don't require external tooling.
+
+        This intentionally captures high-signal issues only.
+        """
+        issues = 0
+        lines = code.splitlines()
+
+        issues += sum(1 for line in lines if line.rstrip() != line)  # trailing whitespace
+        issues += sum(1 for line in lines if "\t" in line)  # tabs in indentation/body
+        issues += len(re.findall(r"except\s*:\s*", code))  # bare except
+        issues += len(re.findall(r"except\s+Exception(?:\s+as\s+\w+)?\s*:\s*pass", code))
+        issues += len(re.findall(r"from\s+\S+\s+import\s+\*", code))
+
+        if tree is not None:
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ExceptHandler) and node.type is None:
+                    issues += 1
+                if isinstance(node, ast.ImportFrom) and any(alias.name == "*" for alias in node.names):
+                    issues += 1
+
+        return issues
 
     def _get_best_candidate(self) -> Optional[RepairCandidate]:
         """Get the candidate with highest confidence."""

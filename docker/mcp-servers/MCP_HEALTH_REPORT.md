@@ -1,8 +1,8 @@
 # MCP Server Health Assessment
-**Generated**: 2026-02-05
+**Generated**: 2026-02-06
 **Purpose**: Comprehensive status of all MCP servers for improvement work
 
-## ✅ Running & Healthy (11/17)
+## ✅ Running & Healthy (12/17)
 
 | Server | Status | Port | Health | Notes |
 |--------|--------|------|--------|-------|
@@ -14,11 +14,12 @@
 | **dope-context** | Up 5h | 3010 | ✅ Healthy | Semantic search |
 | **desktop-commander** | Up 7h | 3012 | ✅ Healthy | Desktop automation |
 | **leantime-bridge** | Up 7h | 3015 | ✅ Healthy | Project management |
+| **plane-coordinator** | Up | 8090 | ✅ Healthy | Two-plane coordination API |
 | **context7** | Up 7h | 3002 | ✅ Healthy | Documentation |
 | **litellm** | Up 5h | - | ✅ Healthy | LLM proxy |
 | **qdrant** | Up 5h | 6333-6334 | ✅ Running | Vector DB |
 
-## ❌ Configured But Not Running (6/17)
+## ❌ Configured But Not Running (5/17)
 
 | Server | Expected Role | Priority | Issue |
 |--------|--------------|----------|-------|
@@ -26,7 +27,6 @@
 | **mas-sequential-thinking** | Multi-step reasoning | MEDIUM | Replaced by Zen? |
 | **redis-primary** | Caching | MEDIUM | Not started |
 | **activity-capture** | ADHD metrics | LOW | Optional feature |
-| **plane-coordinator** | Unknown | LOW | May be deprecated |
 | **task-master-ai** | Unknown | LOW | May be duplicate of task-orchestrator |
 
 ## 🔍 Issues Identified
@@ -36,8 +36,8 @@
 2. **redis-primary** not running - May impact caching performance
 
 ### Medium Priority
-3. **mas-sequential-thinking** unclear status - Documentation says it's critical but Zen may have replaced it
-4. Duplicate/unclear servers: task-master-ai vs task-orchestrator
+3. **mas-sequential-thinking** unclear status - documentation says replaced by Zen/pal
+4. Remaining duplicate/unclear server: task-master-ai vs task-orchestrator
 
 ### Documentation Gaps
 5. No startup time benchmarks
@@ -69,7 +69,7 @@ docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"
 - [ ] Start task-orchestrator container
 - [ ] Investigate redis-primary requirement
 - [ ] Clarify mas-sequential-thinking vs Zen
-- [ ] Remove or fix deprecated servers
+- [ ] Remove or fix deprecated servers (if any remain)
 
 ### Documentation
 - [ ] Add startup procedures for each server

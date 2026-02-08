@@ -7,6 +7,9 @@ id: claude-code-integration-guide
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+prelude: Claude Code Integration Guide (how-to) for dopemux documentation and developer
+  workflows.
 ---
 # Claude Code Integration Guide
 
@@ -15,13 +18,9 @@ next_review: '2026-05-03'
 
 ---
 
-
 ## CCR Integration
 
-
-
 ---
-
 
 ## Git Hooks Setup
 
@@ -253,7 +252,6 @@ This hook system provides seamless Claude Code integration while maintaining the
 
 ---
 
-
 ## Model Display Configuration
 
 # Claude Code (VS Code) Model Display ✅
@@ -379,11 +377,11 @@ Hover over the model indicator to see:
 ls -la ~/.vscode/extensions/dopemux-model-display/
 ```
 
-2. **Restart VS Code:**
+1. **Restart VS Code:**
 - Close all VS Code windows
 - Reopen
 
-3. **Check Developer Console:**
+1. **Check Developer Console:**
 - `Help` → `Toggle Developer Tools`
 - Look for any extension errors
 
@@ -406,7 +404,7 @@ rm /tmp/dopemux_current_model.txt
 "dopemuxModelDisplay.updateInterval": 5000  // Should be > 0
 ```
 
-2. Verify tracker script works:
+1. Verify tracker script works:
 ```bash
 ./scripts/ccr_model_tracker.sh
 ```
@@ -475,7 +473,6 @@ Then restart VS Code.
 **Version**: 1.0.0
 
 ---
-
 
 ## General Integration
 

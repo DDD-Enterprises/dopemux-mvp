@@ -1,10 +1,14 @@
 ---
 id: adhd-color-usage-guidelines
 title: Adhd Color Usage Guidelines
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Adhd Color Usage Guidelines (reference) for dopemux documentation and developer
+  workflows.
 ---
 # ADHD-Optimized Color Usage Guidelines for Dopemux
 **Quick Reference** | **Last Updated**: 2025-10-15 | **Status**: Implementation Ready

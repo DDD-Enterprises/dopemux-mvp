@@ -21,6 +21,12 @@ from datetime import datetime
 from contextlib import asynccontextmanager
 import asyncio
 
+try:
+    from sqlalchemy import create_engine, text
+except ImportError:  # pragma: no cover - optional dependency in some runtimes
+    create_engine = None
+    text = None
+
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -64,6 +70,11 @@ class MigrationManager:
         self.migrations: List[MigrationStep] = []
         self.applied_migrations: Dict[str, MigrationResult] = {}
         self.backup_path = "/opt/conport/backups"
+        self._engine = (
+            create_engine(db_connection_string, future=True)
+            if create_engine is not None
+            else None
+        )
 
     def register_migration(self, migration: MigrationStep):
         """Register a migration step"""
@@ -157,14 +168,23 @@ class MigrationManager:
                 duration=duration,
                 error_message=str(e)
             )
-
-            logger.error(f"Error: {e}")
     async def _execute_sql(self, sql: str):
         """Execute SQL with proper error handling"""
-        # Implementation would use the database connection
-        logger.info(f"Executing SQL: {sql[:100]}...")
-        # Actual database execution would go here
-        pass
+        statement = (sql or "").strip()
+        if not statement:
+            return
+
+        logger.info(f"Executing SQL: {statement[:100]}...")
+
+        if self._engine is None or text is None:
+            logger.warning("SQL execution skipped: SQLAlchemy engine not available")
+            return
+
+        def _run() -> None:
+            with self._engine.begin() as connection:
+                connection.execute(text(statement))
+
+        await asyncio.to_thread(_run)
 
     async def _validate_migration(self, migration: MigrationStep) -> bool:
         """Validate migration was successful"""
@@ -179,8 +199,22 @@ class MigrationManager:
 
     async def _execute_query(self, query: str) -> Any:
         """Execute a query and return results"""
-        # Implementation would execute query and return results
-        pass
+        statement = (query or "").strip()
+        if not statement:
+            return []
+
+        if self._engine is None or text is None:
+            logger.warning("Query execution skipped: SQLAlchemy engine not available")
+            return []
+
+        def _run() -> Any:
+            with self._engine.begin() as connection:
+                result = connection.execute(text(statement))
+                if result.returns_rows:
+                    return [dict(row) for row in result.mappings()]
+                return []
+
+        return await asyncio.to_thread(_run)
 
     async def _create_backup(self) -> str:
         """Create database backup before migration"""

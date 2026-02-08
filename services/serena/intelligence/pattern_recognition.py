@@ -795,8 +795,6 @@ class AdvancedPatternRecognition:
                 return PatternComplexity.CHAOTIC
         except Exception as e:
             return PatternComplexity.MODERATE
-
-            logger.error(f"Error: {e}")
     async def _find_relevant_patterns(
         self, user_session_id: str, context_type: str, learning_phase: LearningPhase
     ) -> List[RecognizedPattern]:

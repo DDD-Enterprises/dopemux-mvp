@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: 05_Promotion_Redaction (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Dope-Memory v1 — Promotion + Redaction
 
@@ -64,43 +68,43 @@ These patterns must be replaced with "[REDACTED]" when found in strings.
 \b(A3T|AKIA|ASIA|AGPA|AIDA|AROA|ANPA|ANVA|ASCA)[A-Z0-9]{16}\b
 ```
 
-2) AWS Secret Access Key (heuristic: 40 base64-ish)
+1) AWS Secret Access Key (heuristic: 40 base64-ish)
 ```
 (?i)\baws(.{0,20})?(secret|access).{0,20}([A-Za-z0-9/+=]{40})\b
 ```
 
-3) Generic Bearer token
+1) Generic Bearer token
 ```
 (?i)\bBearer\s+[A-Za-z0-9\-._~+/]+=*\b
 ```
 
-4) JWT (three base64url parts)
+1) JWT (three base64url parts)
 ```
 \beyJ[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+?\.[A-Za-z0-9\-_]+?\b
 ```
 
-5) Private key blocks
+1) Private key blocks
 ```
 -----BEGIN (RSA|DSA|EC|OPENSSH|PRIVATE) KEY-----[\s\S]+?-----END (RSA|DSA|EC|OPENSSH|PRIVATE) KEY-----
 ```
 
-6) GitHub tokens (classic + fine-grained)
+1) GitHub tokens (classic + fine-grained)
 ```
 \b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}\b
 \bgithub_pat_[A-Za-z0-9_]{80,}\b
 ```
 
-7) Slack tokens
+1) Slack tokens
 ```
 \bxox[baprs]-[A-Za-z0-9-]{10,}\b
 ```
 
-8) OpenAI keys (legacy-style)
+1) OpenAI keys (legacy-style)
 ```
 \bsk-[A-Za-z0-9]{20,}\b
 ```
 
-9) Generic API key assignment patterns
+1) Generic API key assignment patterns
 ```
 (?i)\b(api[_-]?key|token|secret|password)\s*[:=]\s*["']?([A-Za-z0-9\-._~+/]{12,})["']?\b
 ```

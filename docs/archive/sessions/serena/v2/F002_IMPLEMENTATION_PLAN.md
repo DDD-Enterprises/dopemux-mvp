@@ -1,10 +1,14 @@
 ---
 id: F002_IMPLEMENTATION_PLAN
 title: F002_Implementation_Plan
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: F002_Implementation_Plan (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # F002 Multi-Session Support - Implementation Plan
 
@@ -247,23 +251,23 @@ workspace_id | session_id | worktree_path | branch | content | created_at | comp
 3. ✅ Dashboard Formatter (200 lines)
 
 ### Phase 2: Lifecycle (Session Management)
-4. ✅ Session Lifecycle Manager (300 lines)
-5. ✅ Session Manager Coordinator (250 lines)
+1. ✅ Session Lifecycle Manager (300 lines)
+2. ✅ Session Manager Coordinator (250 lines)
 
 ### Phase 3: Database (Schema Migration)
-6. ✅ Create migration SQL script
-7. ✅ Test migration on dev database
+1. ✅ Create migration SQL script
+2. ✅ Test migration on dev database
 
 ### Phase 4: Integration (Wire Everything Together)
-8. ✅ Add MCP tools for session operations
-9. ✅ Update statusline.sh to use sessions
-10. ✅ Integrate into Serena v2 startup
+1. ✅ Add MCP tools for session operations
+2. ✅ Update statusline.sh to use sessions
+3. ✅ Integrate into Serena v2 startup
 
 ### Phase 5: Validation
-11. ✅ Test single session (backward compat)
-12. ✅ Test multi-session (2-3 Claude instances)
-13. ✅ Test worktree detection
-14. ✅ Test session dashboard
+1. ✅ Test single session (backward compat)
+2. ✅ Test multi-session (2-3 Claude instances)
+3. ✅ Test worktree detection
+4. ✅ Test session dashboard
 
 ---
 

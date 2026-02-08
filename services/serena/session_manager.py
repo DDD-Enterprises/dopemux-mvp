@@ -311,10 +311,26 @@ class SessionManager:
             List of session dicts
         """
         try:
-            # TODO: Implement multi-session query when schema migrated
-            # For now, query current active_context
+            workspace_id = self.worktree_info.workspace_id if self.worktree_info else None
+
+            # Prefer multi-session APIs when available.
+            for method_name in ("get_active_sessions", "list_active_sessions", "query_active_sessions"):
+                if not hasattr(conport_client, method_name):
+                    continue
+                result = getattr(conport_client, method_name)(workspace_id=workspace_id)
+                if hasattr(result, "__await__"):
+                    result = await result
+
+                if isinstance(result, list):
+                    return result
+                if isinstance(result, dict):
+                    items = result.get("items") or result.get("sessions") or []
+                    if isinstance(items, list):
+                        return items
+
+            # Fallback: query current active_context
             result = await conport_client.get_active_context(
-                workspace_id=self.worktree_info.workspace_id if self.worktree_info else None
+                workspace_id=workspace_id
             )
 
             # Parse result

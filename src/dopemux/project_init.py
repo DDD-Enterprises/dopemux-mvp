@@ -212,9 +212,6 @@ class ProjectInitializer:
             return bool(stream and stream.isatty())
         except Exception as e:
             return False
-
-
-            logger.error(f"Error: {e}")
 def init_project(workspace: Path, profile: Optional[str], force: bool) -> bool:
     """Run project initialization (called from CLI)."""
     initializer = ProjectInitializer(workspace)

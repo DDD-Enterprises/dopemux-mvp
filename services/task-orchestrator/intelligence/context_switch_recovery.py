@@ -170,6 +170,9 @@ class ContextSwitchRecovery:
         self._previous_state: Optional[Dict[str, Any]] = None
         self._monitoring = False
         self._last_screenshot_path: Optional[str] = None
+        self._window_change_started_at: Optional[datetime] = None
+        self._window_change_candidate: Optional[Any] = None
+        self._window_switch_debounce_seconds = 5.0
 
         # Recovery cache (last 10 switches)
         self._recovery_history: List[ContextSwitch] = []
@@ -298,8 +301,26 @@ class ContextSwitchRecovery:
         if current.get("worktree") != previous.get("worktree"):
             return True
 
-        # Window change (check if sustained)
-        # TODO: Add window change debouncing (5 second minimum)
+        # Window change (debounced to avoid transient focus noise)
+        current_window = current.get("window")
+        previous_window = previous.get("window")
+        if current_window != previous_window:
+            now = current.get("timestamp") or datetime.now()
+            if self._window_change_candidate != current_window:
+                self._window_change_candidate = current_window
+                self._window_change_started_at = now
+                return False
+
+            if self._window_change_started_at:
+                elapsed = (now - self._window_change_started_at).total_seconds()
+                if elapsed >= self._window_switch_debounce_seconds:
+                    self._window_change_candidate = None
+                    self._window_change_started_at = None
+                    return True
+            return False
+
+        self._window_change_candidate = None
+        self._window_change_started_at = None
 
         return False
 
@@ -566,8 +587,6 @@ class ContextSwitchRecovery:
             }
         except Exception as e:
             return {"path": None, "branch": None}
-
-            logger.error(f"Error: {e}")
     async def _capture_screenshot(self):
         """Capture screenshot for visual memory aid."""
         if not self.desktop:

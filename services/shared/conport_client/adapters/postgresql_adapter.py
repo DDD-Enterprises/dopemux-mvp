@@ -55,8 +55,6 @@ class PostgreSQLAGEAdapter:
             raise RuntimeError("asyncpg not installed: pip install asyncpg")
         except Exception as e:
             raise RuntimeError(f"Failed to create PostgreSQL pool: {e}")
-
-            logger.error(f"Error: {e}")
     async def log_decision(
         self,
         workspace_id: str,
@@ -104,7 +102,9 @@ class PostgreSQLAGEAdapter:
         query = "SELECT id, summary, rationale, implementation_details, tags, timestamp FROM ag_catalog.decisions WHERE workspace_id = $1"
         params = [workspace_id]
 
-        # TODO: Add tag filtering
+        if tags:
+            query += f" AND tags && ${len(params) + 1}::text[]"
+            params.append(tags)
 
         query += " ORDER BY timestamp DESC"
 

@@ -26,6 +26,7 @@ class AgentConfigFactory:
     AGENT_TYPE_MAP = {
         'claude': AgentType.CLAUDE,
         'gemini': AgentType.GEMINI,
+        'grok': AgentType.GROK,
         'codex': AgentType.CODEX,
         'aider': AgentType.AIDER,
     }
