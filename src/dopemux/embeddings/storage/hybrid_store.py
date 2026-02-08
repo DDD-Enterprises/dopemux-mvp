@@ -6,7 +6,9 @@ and semantic (vector) search with learned fusion and optional reranking.
 """
 
 import asyncio
+import json
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -28,6 +30,117 @@ from .text_indices import BM25Index
 from .ranking import HybridRanker, RRFFusion
 
 logger = logging.getLogger(__name__)
+
+
+class _NumpyVectorIndex:
+    """Minimal in-memory vector index used when optional native backends are unavailable."""
+
+    def __init__(self, config: AdvancedEmbeddingConfig):
+        self.config = config
+        self.dimension = config.embedding_dimension
+        self.doc_ids: List[str] = []
+        self._vectors = np.empty((0, self.dimension), dtype=np.float32)
+
+    def add_vectors(self, vectors: np.ndarray, ids: List[str]) -> None:
+        arr = np.asarray(vectors, dtype=np.float32)
+        if arr.ndim == 1:
+            arr = arr.reshape(1, -1)
+        if arr.shape[1] != self.dimension:
+            raise VectorStoreError(
+                f"Vector dimension mismatch: expected {self.dimension}, got {arr.shape[1]}"
+            )
+        self._vectors = arr if self._vectors.size == 0 else np.vstack([self._vectors, arr])
+        self.doc_ids.extend(ids)
+
+    def search(self, query_vector: np.ndarray, k: int) -> tuple[List[float], List[int]]:
+        if not self.doc_ids:
+            return [], []
+
+        query = np.asarray(query_vector, dtype=np.float32).reshape(1, -1)
+        if query.shape[1] != self.dimension:
+            raise VectorStoreError(
+                f"Query dimension mismatch: expected {self.dimension}, got {query.shape[1]}"
+            )
+
+        if self.config.distance_metric == "cosine":
+            vec_norm = np.linalg.norm(self._vectors, axis=1)
+            query_norm = np.linalg.norm(query, axis=1)[0]
+            denom = np.maximum(vec_norm * query_norm, 1e-12)
+            similarities = (self._vectors @ query.T).flatten() / denom
+        else:
+            distances = np.linalg.norm(self._vectors - query, axis=1)
+            similarities = 1.0 / (1.0 + distances)
+
+        top_k = min(k, similarities.shape[0])
+        indices = np.argsort(similarities)[::-1][:top_k]
+        scores = similarities[indices]
+        return scores.tolist(), indices.tolist()
+
+    def save(self, path: str) -> None:
+        np.savez(path, vectors=self._vectors, doc_ids=np.array(self.doc_ids, dtype=object))
+
+    def load(self, path: str) -> None:
+        data = np.load(f"{path}.npz", allow_pickle=True)
+        self._vectors = np.asarray(data["vectors"], dtype=np.float32)
+        self.doc_ids = [str(v) for v in data["doc_ids"].tolist()]
+
+    def get_stats(self) -> Dict[str, Any]:
+        return {
+            "initialized": True,
+            "document_count": len(self.doc_ids),
+            "vector_count": len(self.doc_ids),
+            "dimension": self.dimension,
+            "backend": "numpy_fallback",
+        }
+
+
+class _SimpleLexicalIndex:
+    """Token-overlap lexical index fallback when `rank-bm25` is unavailable."""
+
+    def __init__(self):
+        self.documents: List[str] = []
+        self.doc_ids: List[str] = []
+        self._token_pattern = re.compile(r"\b\w+\b")
+
+    def _tokenize(self, text: str) -> set[str]:
+        return set(self._token_pattern.findall(text.lower()))
+
+    def add_documents(self, documents: List[str], ids: List[str]) -> None:
+        self.documents.extend(documents)
+        self.doc_ids.extend(ids)
+
+    def search(self, query: str, k: int) -> List[tuple[str, float]]:
+        query_tokens = self._tokenize(query)
+        if not query_tokens:
+            return []
+
+        scored: List[tuple[str, float]] = []
+        for doc_id, document in zip(self.doc_ids, self.documents):
+            doc_tokens = self._tokenize(document)
+            overlap = len(query_tokens & doc_tokens)
+            if overlap == 0:
+                continue
+            score = overlap / max(len(query_tokens), 1)
+            scored.append((doc_id, float(score)))
+
+        scored.sort(key=lambda item: item[1], reverse=True)
+        return scored[:k]
+
+    def save(self, path: str) -> None:
+        with open(path, "w", encoding="utf-8") as handle:
+            json.dump({"documents": self.documents, "doc_ids": self.doc_ids}, handle)
+
+    def load(self, path: str) -> None:
+        with open(path, "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+        self.documents = list(data.get("documents", []))
+        self.doc_ids = list(data.get("doc_ids", []))
+
+    def get_stats(self) -> Dict[str, Any]:
+        return {
+            "document_count": len(self.doc_ids),
+            "backend": "token_overlap_fallback",
+        }
 
 
 class InMemoryDocumentStore(BaseDocumentStore):
@@ -87,7 +200,12 @@ class HybridVectorStore(VectorStore):
     learned fusion weights and optional cross-encoder reranking.
     """
 
-    def __init__(self, config: AdvancedEmbeddingConfig, persist_directory: Optional[Path] = None):
+    def __init__(
+        self,
+        config: AdvancedEmbeddingConfig,
+        persist_directory: Optional[Path] = None,
+        api_client: Optional[VoyageAPIClient] = None,
+    ):
         """
         Initialize hybrid vector store.
 
@@ -107,15 +225,9 @@ class HybridVectorStore(VectorStore):
             self.document_store = InMemoryDocumentStore()
 
             # Initialize vector index based on configuration
-            if config.index_type.value == "hnsw":
-                self.vector_index = HNSWIndex(config)
-            elif config.index_type.value == "ivf_pq":
-                self.vector_index = FAISSIndex(config)
-            else:
-                # Default to HNSW
-                self.vector_index = HNSWIndex(config)
+            self.vector_index = self._create_vector_index()
 
-            self.bm25_index = BM25Index()
+            self.bm25_index = self._create_text_index()
 
             # Initialize ranker
             if config.enable_learning_to_rank:
@@ -123,9 +235,10 @@ class HybridVectorStore(VectorStore):
             else:
                 self.ranker = RRFFusion()
 
-            # Initialize API client if not using on-premise
-            self.api_client: Optional[VoyageAPIClient] = None
-            if not config.use_on_premise and config.voyage_api_key:
+            # Initialize API client if not using on-premise.
+            # `api_client` is kept for backward-compatible dependency injection in tests.
+            self.api_client: Optional[VoyageAPIClient] = api_client
+            if self.api_client is None and not config.use_on_premise and config.voyage_api_key:
                 self.api_client = VoyageAPIClient(config)
 
             # Metrics tracking
@@ -139,6 +252,113 @@ class HybridVectorStore(VectorStore):
         except Exception as e:
             logger.error(f"❌ Failed to initialize hybrid vector store: {e}")
             raise VectorStoreError(f"Initialization failed: {e}") from e
+
+    def _create_vector_index(self):
+        """Create configured vector index with graceful fallback when optional deps are missing."""
+        try:
+            if self.config.index_type.value == "hnsw":
+                return HNSWIndex(self.config)
+            if self.config.index_type.value == "ivf_pq":
+                return FAISSIndex(self.config)
+            return HNSWIndex(self.config)
+        except ImportError as exc:
+            logger.warning("Vector backend unavailable (%s); falling back to numpy index", exc)
+            return _NumpyVectorIndex(self.config)
+
+    def _create_text_index(self):
+        """Create configured lexical index with graceful fallback when optional deps are missing."""
+        try:
+            return BM25Index()
+        except ImportError as exc:
+            logger.warning("Lexical backend unavailable (%s); falling back to token-overlap index", exc)
+            return _SimpleLexicalIndex()
+
+    async def initialize(self) -> bool:
+        """Compatibility initializer for legacy callers."""
+        return True
+
+    async def validate_connection(self) -> bool:
+        """Validate store/provider readiness."""
+        if self.api_client is None:
+            return True
+        if hasattr(self.api_client, "validate_connection"):
+            return await self.api_client.validate_connection()
+        if hasattr(self.api_client, "test_connection"):
+            return await self.api_client.test_connection()
+        return True
+
+    async def lexical_search(self, query: str, k: int = 10) -> List[SearchResult]:
+        """Run lexical BM25-only search."""
+        results: List[SearchResult] = []
+        for doc_id, score in self.bm25_index.search(query, k):
+            try:
+                doc_data = self.document_store.get_document(doc_id)
+            except VectorStoreError:
+                continue
+            results.append(
+                SearchResult(
+                    doc_id=doc_id,
+                    score=float(score),
+                    content=doc_data["content"],
+                    metadata=doc_data["metadata"],
+                    bm25_score=float(score),
+                )
+            )
+        return results
+
+    async def vector_search(self, query_vector: np.ndarray, k: int = 10) -> List[SearchResult]:
+        """Run vector-only search against the configured vector index."""
+        query_vector_np = np.array(query_vector, dtype=np.float32)
+        scores, indices = self.vector_index.search(query_vector_np, k)
+
+        results: List[SearchResult] = []
+        for score, idx in zip(scores, indices):
+            if idx >= len(self.vector_index.doc_ids):
+                continue
+            doc_id = self.vector_index.doc_ids[idx]
+            try:
+                doc_data = self.document_store.get_document(doc_id)
+            except VectorStoreError:
+                continue
+            results.append(
+                SearchResult(
+                    doc_id=doc_id,
+                    score=float(score),
+                    content=doc_data["content"],
+                    metadata=doc_data["metadata"],
+                    vector_score=float(score),
+                )
+            )
+        return results[:k]
+
+    async def _rebuild_indexes(self) -> None:
+        """Rebuild lexical/vector indices from the document store."""
+        self.vector_index = self._create_vector_index()
+        self.bm25_index = self._create_text_index()
+
+        if not self.document_store.documents:
+            return
+
+        doc_ids = list(self.document_store.documents.keys())
+        doc_contents = [self.document_store.documents[doc_id]["content"] for doc_id in doc_ids]
+        self.bm25_index.add_documents(doc_contents, doc_ids)
+
+        if self.api_client and not self.config.use_on_premise:
+            embeddings = await self.api_client.embed_texts(doc_contents)
+            embeddings_array = np.array(embeddings, dtype=np.float32)
+            self.vector_index.add_vectors(embeddings_array, doc_ids)
+
+    async def update_document(self, doc_id: str, document: Dict[str, Any]) -> None:
+        """Update an existing document and reindex."""
+        content = document.get("content", "")
+        metadata = document.get("metadata", {})
+        self.document_store.store_document(doc_id, content, metadata)
+        await self._rebuild_indexes()
+
+    async def delete_document(self, doc_id: str) -> None:
+        """Delete a single document and reindex."""
+        self.document_store.delete_document(doc_id)
+        await self._rebuild_indexes()
 
     async def add_documents(self, documents: List[Dict[str, Any]]) -> None:
         """
@@ -160,6 +380,8 @@ class HybridVectorStore(VectorStore):
             start_time = time.time()
             doc_contents = []
             doc_ids = []
+            precomputed_embeddings: List[List[float]] = []
+            has_precomputed_embeddings = True
 
             # Prepare documents
             for doc in documents:
@@ -172,9 +394,17 @@ class HybridVectorStore(VectorStore):
 
                 doc_contents.append(content)
                 doc_ids.append(doc_id)
+                if "embedding" in doc and doc["embedding"] is not None:
+                    precomputed_embeddings.append(doc["embedding"])
+                else:
+                    has_precomputed_embeddings = False
 
-            # Generate embeddings if using API
-            if self.api_client and not self.config.use_on_premise:
+            # Prefer precomputed embeddings from upstream pipeline stages when available.
+            if has_precomputed_embeddings and len(precomputed_embeddings) == len(doc_ids):
+                embeddings_array = np.array(precomputed_embeddings, dtype=np.float32)
+                self.vector_index.add_vectors(embeddings_array, doc_ids)
+            # Otherwise generate embeddings if using API.
+            elif self.api_client and not self.config.use_on_premise:
                 try:
                     embeddings = await self.api_client.embed_texts(doc_contents)
                     embeddings_array = np.array(embeddings, dtype=np.float32)
@@ -389,6 +619,7 @@ class HybridVectorStore(VectorStore):
                 "documents": self.document_store.get_stats(),
                 "vector_index": self.vector_index.get_stats(),
                 "bm25_index": self.bm25_index.get_stats(),
+                "lexical_index": self.bm25_index.get_stats(),
                 "ranker": self.ranker.get_stats(),
                 "metrics": self.metrics.get_summary(),
                 "config": {

@@ -84,9 +84,12 @@ class DocumentPipeline(BasePipeline):
         """
         self.start_time = datetime.now()
         self.documents_to_process = documents.copy()
+        self.processed_documents = []
+        self.failed_documents = []
 
         if self.config.enable_progress_tracking:
             logger.info(f"🚀 Starting document pipeline: {len(documents)} documents")
+            print(f"document pipeline: starting {len(documents)} documents")
 
         try:
             # Define pipeline stages
@@ -102,9 +105,16 @@ class DocumentPipeline(BasePipeline):
             stage_results = await self.run_with_stages(stages)
 
             # Calculate final result
-            overall_success = all(r.success for r in stage_results)
-            total_processed = sum(r.processed_items for r in stage_results)
-            total_failed = sum(r.failed_items for r in stage_results)
+            overall_success = all(r.success for r in stage_results) and len(self.failed_documents) == 0
+            total_processed = len(self.processed_documents)
+            total_failed = len(self.failed_documents)
+            all_errors: List[str] = []
+            for stage_result in stage_results:
+                all_errors.extend(stage_result.errors)
+            for failed in self.failed_documents:
+                error_text = failed.get("error")
+                if error_text:
+                    all_errors.append(f"error: {error_text}")
 
             final_result = PipelineResult(
                 success=overall_success,
@@ -112,6 +122,7 @@ class DocumentPipeline(BasePipeline):
                 processed_items=total_processed,
                 failed_items=total_failed,
                 duration_seconds=(datetime.now() - self.start_time).total_seconds(),
+                errors=all_errors,
                 metadata={
                     "documents_input": len(documents),
                     "documents_processed": len(self.processed_documents),
@@ -125,8 +136,12 @@ class DocumentPipeline(BasePipeline):
             if self.config.enable_progress_tracking:
                 if overall_success:
                     logger.info(f"✅ Pipeline completed successfully: {total_processed} documents processed")
+                    print(f"document pipeline: completed {total_processed} documents")
                 else:
                     logger.error(f"⚠️ Pipeline completed with issues: {total_processed} processed, {total_failed} failed")
+                    print(
+                        f"document pipeline: completed with issues ({total_processed} processed, {total_failed} failed)"
+                    )
 
             return final_result
 
@@ -156,25 +171,42 @@ class DocumentPipeline(BasePipeline):
             logger.warning("⚠️ No documents provided for processing")
             return False
 
+        valid_documents: List[Dict[str, Any]] = []
         for i, doc in enumerate(documents):
             if not isinstance(doc, dict):
-                logger.error(f"❌ Document {i} is not a dictionary")
-                return False
+                logger.warning(f"⚠️ Skipping document {i}: not a dictionary")
+                continue
 
             if "id" not in doc:
-                logger.error(f"❌ Document {i} missing required 'id' field")
-                return False
+                logger.warning(f"⚠️ Skipping document {i}: missing required 'id' field")
+                continue
 
             if "content" not in doc:
-                logger.error(f"❌ Document {i} missing required 'content' field")
-                return False
+                logger.warning(f"⚠️ Skipping document {i}: missing required 'content' field")
+                continue
 
             if not isinstance(doc["content"], str):
-                logger.error(f"❌ Document {i} content is not a string")
-                return False
+                logger.warning(f"⚠️ Skipping document {i}: content is not a string")
+                continue
 
             if len(doc["content"].strip()) == 0:
-                logger.warning(f"⚠️ Document {i} has empty content")
+                logger.warning(f"⚠️ Skipping document {i}: empty content")
+                continue
+
+            valid_documents.append(doc)
+
+        if not valid_documents:
+            logger.error("❌ No valid documents provided after validation filtering")
+            return False
+
+        if len(valid_documents) != len(documents):
+            logger.info(
+                "ℹ️ Validation filtered %s invalid document(s); continuing with %s valid document(s)",
+                len(documents) - len(valid_documents),
+                len(valid_documents),
+            )
+
+        self.documents_to_process = valid_documents
 
         return True
 
@@ -207,7 +239,7 @@ class DocumentPipeline(BasePipeline):
         validation_duration = (datetime.now() - validation_start).total_seconds()
 
         return {
-            "documents_count": len(documents),
+            "documents_count": len(self.documents_to_process),
             "vector_store_ready": True,
             "provider_ready": self.provider is not None,
             "integration_status": integration_status,
@@ -235,7 +267,21 @@ class DocumentPipeline(BasePipeline):
 
                 # Generate embeddings if using API
                 if self.provider and not self.config.use_on_premise:
-                    embeddings = await self.provider.embed_texts(batch_content)
+                    embeddings = list(await self.provider.embed_texts(batch_content))
+                    if len(embeddings) != len(batch):
+                        logger.warning(
+                            "⚠️ Provider returned %s embeddings for %s documents; normalizing batch output",
+                            len(embeddings),
+                            len(batch),
+                        )
+                        if embeddings and isinstance(embeddings[0], list):
+                            fallback_embedding = [0.0] * len(embeddings[0])
+                        else:
+                            fallback_embedding = [0.0] * self.config.embedding_dimension
+                        if len(embeddings) < len(batch):
+                            embeddings.extend([fallback_embedding] * (len(batch) - len(embeddings)))
+                        else:
+                            embeddings = embeddings[:len(batch)]
 
                     # Add embeddings to documents
                     for doc, embedding in zip(batch, embeddings):
@@ -395,11 +441,16 @@ class DocumentPipeline(BasePipeline):
         await self.cleanup()
 
         completion_duration = (datetime.now() - completion_start).total_seconds()
+        total_duration = (
+            (datetime.now() - self.start_time).total_seconds()
+            if self.start_time
+            else completion_duration
+        )
 
         return {
             "sync_results": sync_results,
             "completion_duration": completion_duration,
-            "total_pipeline_duration": (datetime.now() - self.start_time).total_seconds()
+            "total_pipeline_duration": total_duration
         }
 
     async def cleanup(self) -> None:

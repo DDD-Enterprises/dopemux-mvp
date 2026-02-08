@@ -141,11 +141,14 @@ class BasePipeline(ABC):
         try:
             # Execute stage function
             result = await stage_func(*args, **kwargs)
+            processed_items, failed_items = self._extract_stage_counts(stage, result)
 
             # Create success result
             stage_result = PipelineResult(
                 success=True,
                 stage=stage,
+                processed_items=processed_items,
+                failed_items=failed_items,
                 duration_seconds=(datetime.now() - stage_start).total_seconds(),
                 metadata={"result": result}
             )
@@ -163,7 +166,7 @@ class BasePipeline(ABC):
                 success=False,
                 stage=stage,
                 duration_seconds=(datetime.now() - stage_start).total_seconds(),
-                errors=[str(e)]
+                errors=[f"error: {e}"]
             )
 
             self.results.append(stage_result)
@@ -184,6 +187,58 @@ class BasePipeline(ABC):
                 logger.error(f"❌ Stage {stage.value} failed: {e}")
 
             return stage_result
+
+    @staticmethod
+    def _coerce_count(value: Any) -> Optional[int]:
+        """Convert a stage metadata value to a non-negative integer count."""
+        if isinstance(value, bool):
+            return int(value)
+        if isinstance(value, int):
+            return max(0, value)
+        if isinstance(value, float):
+            return max(0, int(value))
+        return None
+
+    def _extract_stage_counts(self, stage: PipelineStage, result: Any) -> tuple[int, int]:
+        """Infer processed/failed counts from stage payload metadata."""
+        if not isinstance(result, dict):
+            return 0, 0
+
+        processed_keys = [
+            "processed_count",
+            "stored_count",
+            "results_count",
+            "final_results_count",
+            "documents_count",
+            "documents_synced",
+            "integrations_synced",
+            "enhanced_count",
+            "healthy_integrations",
+            "new_documents",
+            "updated_documents",
+        ]
+        failed_keys = [
+            "failed_count",
+            "documents_failed",
+            "sync_conflicts",
+            "failed_integrations",
+            "errors_count",
+        ]
+
+        processed_values = [self._coerce_count(result.get(key)) for key in processed_keys]
+        failed_values = [self._coerce_count(result.get(key)) for key in failed_keys]
+
+        processed_candidates = [value for value in processed_values if value is not None]
+        failed_candidates = [value for value in failed_values if value is not None]
+
+        processed = max(processed_candidates) if processed_candidates else 0
+        failed = max(failed_candidates) if failed_candidates else 0
+
+        # Validation stages with boolean success still represent one completed checkpoint.
+        if stage == PipelineStage.VALIDATION and processed == 0 and result:
+            processed = 1
+
+        return processed, failed
 
     def register_stage_handler(self, stage: PipelineStage, handler: Callable):
         """Register a handler for a specific pipeline stage."""
@@ -212,10 +267,18 @@ class BasePipeline(ABC):
                 stage, func = stage_def
                 args, kwargs = (), {}
             elif len(stage_def) == 3:
-                stage, func, args = stage_def
+                stage, func, raw_args = stage_def
+                if isinstance(raw_args, tuple):
+                    args = raw_args
+                else:
+                    args = (raw_args,)
                 kwargs = {}
             else:
-                stage, func, args, kwargs = stage_def
+                stage, func, raw_args, kwargs = stage_def
+                if isinstance(raw_args, tuple):
+                    args = raw_args
+                else:
+                    args = (raw_args,)
 
             result = await self.execute_stage(stage, func, *args, **kwargs)
             stage_results.append(result)
