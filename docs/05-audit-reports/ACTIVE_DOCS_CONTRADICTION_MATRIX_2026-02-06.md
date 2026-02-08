@@ -21,8 +21,8 @@ prelude: Active-doc claim parity matrix with severity, ownership, fix action, an
 
 ## Severity Summary
 
-- P0: `1`
-- P1: `3`
+- P0: `0`
+- P1: `0`
 - P2: `95`
 - P3: `0`
 
@@ -30,10 +30,6 @@ prelude: Active-doc claim parity matrix with severity, ownership, fix action, an
 
 | ID | Severity | Claim | Source | Verification | Owner | Fix Action | Evidence |
 |---|---|---|---|---|---|---|---|
-| DPC0305 | P0 | Idea/Epic Stage-1/Stage-2 workflow runtime implementation is missing. | `docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md` | verified_false | `services/task-orchestrator` | Reword roadmap/history claim to **Implemented (with hardening backlog)**: API + coordinator + persistence + CLI are present; keep remaining integration hardening explicit. | `services/task-orchestrator/app/main.py`, `services/task-orchestrator/app/services/workflow_service.py`, `services/task-orchestrator/app/services/workflow_store.py`, `services/task-orchestrator/app/models/workflow.py`, `src/dopemux/cli.py` |
-| DPC0302 | P1 | Only MemoryAgent exists and the other six infrastructure agents are missing. | `docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md` | verified_false | `services/agents` | Update roadmap wording to reflect implemented modules and qualify readiness gaps explicitly. | `services/agents/memory_agent.py`, `services/agents/cognitive_guardian.py`, `services/agents/two_plane_orchestrator.py`, `services/agents/task_decomposer.py`, `services/agents/dopemux_enforcer.py`, `services/agents/tool_orchestrator.py`, `services/agents/workflow_coordinator.py` |
-| DPC0303 | P1 | Auto-resume is fully unbuilt in Dopemux runtime. | `docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md` | verified_false | `src/dopemux/runtime` | Relabel as Partially Implemented with specific reliability/test gaps instead of unbuilt. | `src/dopemux/cli.py`, `src/dopemux/worktree_recovery.py` |
-| DPC0304 | P1 | Task-Orchestrator event adapters are unbuilt. | `docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md` | verified_false | `services/task-orchestrator` | Reword as Partially Implemented and capture adapter quality/test depth gaps. | `services/task-orchestrator/app/adapters/conport_adapter.py`, `services/task-orchestrator/app/services/enhanced_orchestrator.py` |
 | DPC0053 | P2 | Link `../systems/dashboard/TMUX_DASHBOARD_DESIGN.md` in `docs/01-tutorials/quick-launch-commands.md` resolves. | `docs/01-tutorials/quick-launch-commands.md` | verified_false | `docs/maintainers` | Fix the relative link target or update to current canonical doc path. | `docs/01-tutorials/quick-launch-commands.md`, `docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md` |
 | DPC0055 | P2 | Link `../../03-reference/services/zen-mcp.md` in `docs/02-how-to/DEVELOPING_ZEN.md` resolves. | `docs/02-how-to/DEVELOPING_ZEN.md` | verified_false | `docs/maintainers` | Fix the relative link target or update to current canonical doc path. | `docs/02-how-to/DEVELOPING_ZEN.md`, `03-reference/services/zen-mcp.md` |
 | DPC0057 | P2 | Link `../../docker/mcp-servers/zen/zen-mcp-server/tools/thinkdeep.py` in `docs/02-how-to/DEVELOPING_ZEN.md` resolves. | `docs/02-how-to/DEVELOPING_ZEN.md` | verified_false | `docs/maintainers` | Fix the relative link target or update to current canonical doc path. | `docs/02-how-to/DEVELOPING_ZEN.md`, `docker/mcp-servers/zen/zen-mcp-server/tools/thinkdeep.py` |
@@ -135,6 +131,9 @@ prelude: Active-doc claim parity matrix with severity, ownership, fix action, an
 - `verified_false` means the claim is contradicted by current code/config/tests.
 - `partially_true` means claim is directionally true but needs qualification.
 - `unverified` means no executable evidence exists yet; wording must be downgraded or tests added.
+- Resolved on 2026-02-08: previously tracked P0/P1 contradictions (`DPC0305`,
+  `DPC0302`, `DPC0303`, `DPC0304`) were closed by code-truth rewrites in
+  `docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md`.
 - `DPC0305` now has additional parity coverage in active docs and tests:
   `docs/03-reference/services/task-orchestrator.md`,
   `docs/02-how-to/operations/workflow-idea-epic-lifecycle.md`,
