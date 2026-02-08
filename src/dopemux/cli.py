@@ -15,6 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import sys
+import json
 import time
 import shutil
 import socket
@@ -23,7 +24,7 @@ import tempfile
 import shlex
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Optional, Sequence
 import warnings
 import logging
 
@@ -80,6 +81,7 @@ from .mobile import mobile as mobile_commands
 from .mobile.hooks import mobile_task_notification
 from .mobile.runtime import update_tmux_mobile_indicator
 from .tmux import tmux as tmux_commands
+from .memory import CaptureError, emit_capture_event
 
 # Import genetic agent CLI
 try:
@@ -6601,29 +6603,242 @@ def quick(ctx):
 
 @cli.group("trigger")
 def trigger_group():
-    """Internal hook triggers (no-op placeholders)."""
+    """Internal hook triggers."""
     pass
 
+def _parse_trigger_context(context: str) -> dict[str, Any]:
+    """Parse JSON context for trigger-based capture events."""
+    if not context:
+        return {}
+    try:
+        parsed = json.loads(context)
+    except json.JSONDecodeError:
+        return {"raw_context": context}
+
+    if isinstance(parsed, dict):
+        return parsed
+    return {"value": parsed}
+
+
+def _emit_trigger_capture(
+    *,
+    event_type: str,
+    context: dict[str, Any],
+    source_override: str,
+    quiet: bool,
+) -> int:
+    """Write a trigger event to the canonical memory ledger."""
+    source = source_override.strip() if source_override else "claude_hook"
+    session_id = context.get("session_id")
+    if not session_id:
+        session_id = os.getenv("CLAUDE_SESSION_ID")
+
+    event = {
+        "event_type": event_type,
+        "source": source,
+        "session_id": session_id,
+        "payload": context,
+    }
+
+    try:
+        result = emit_capture_event(event, mode="auto")
+    except CaptureError as exc:
+        if not quiet:
+            console.print(f"[red]capture failed: {exc}[/red]")
+        return 1
+    except Exception as exc:
+        if not quiet:
+            console.print(f"[red]capture failed: {exc}[/red]")
+        return 1
+
+    if not quiet:
+        console.print(
+            "[dim]"
+            f"captured {result.event_type} ({result.event_id[:12]}) -> {result.ledger_path}"
+            "[/dim]"
+        )
+    return 0
+
+
+@cli.group("capture")
+def capture_group():
+    """Deterministic memory capture commands."""
+    pass
+
+
+@capture_group.command("emit")
+@click.option("--event", "event_json", required=True, help="JSON event payload")
+@click.option(
+    "--mode",
+    type=click.Choice(["auto", "plugin", "cli", "mcp"], case_sensitive=False),
+    default="auto",
+    show_default=True,
+    help="Capture adapter mode",
+)
+@click.option(
+    "--emit-event-bus",
+    is_flag=True,
+    help="Also emit to activity.events.v1 stream (best effort)",
+)
+@click.option("--quiet", is_flag=True, help="Suppress output")
+def capture_emit(event_json: str, mode: str, emit_event_bus: bool, quiet: bool):
+    """Emit a raw capture event to the canonical per-project ledger."""
+    try:
+        parsed = json.loads(event_json)
+    except json.JSONDecodeError as exc:
+        raise click.ClickException(f"Invalid --event JSON: {exc}") from exc
+
+    if not isinstance(parsed, dict):
+        raise click.ClickException("--event JSON must decode to an object")
+
+    if not parsed.get("event_type") and not parsed.get("type"):
+        raise click.ClickException("--event JSON must include event_type (or type)")
+
+    try:
+        result = emit_capture_event(
+            parsed,
+            mode=mode.lower(),
+            emit_event_bus=emit_event_bus,
+        )
+    except CaptureError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except Exception as exc:
+        raise click.ClickException(f"Capture failed: {exc}") from exc
+
+    if not quiet:
+        console.print(
+            "[green]captured[/green] "
+            f"event_id={result.event_id} mode={result.mode} ledger={result.ledger_path}"
+        )
+
+
+@capture_group.command("note")
+@click.argument("summary", type=str)
+@click.option(
+    "--mode",
+    type=click.Choice(["auto", "plugin", "cli", "mcp"], case_sensitive=False),
+    default="auto",
+    show_default=True,
+    help="Capture adapter mode",
+)
+@click.option("--tag", "tags", multiple=True, help="Optional note tag(s)")
+@click.option("--session-id", type=str, default="", help="Optional session id")
+@click.option("--source", type=str, default="cli", show_default=True, help="Source label")
+@click.option(
+    "--emit-event-bus",
+    is_flag=True,
+    help="Also emit to activity.events.v1 stream (best effort)",
+)
+@click.option("--quiet", is_flag=True, help="Suppress output")
+def capture_note(
+    summary: str,
+    mode: str,
+    tags: tuple[str, ...],
+    session_id: str,
+    source: str,
+    emit_event_bus: bool,
+    quiet: bool,
+):
+    """Capture a manual note event using the shared capture pipeline."""
+    event = {
+        "event_type": "manual.note",
+        "source": source,
+        "session_id": session_id or None,
+        "payload": {
+            "summary": summary,
+            "tags": list(tags),
+        },
+    }
+
+    try:
+        result = emit_capture_event(
+            event,
+            mode=mode.lower(),
+            emit_event_bus=emit_event_bus,
+        )
+    except CaptureError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except Exception as exc:
+        raise click.ClickException(f"Capture failed: {exc}") from exc
+
+    if not quiet:
+        console.print(
+            "[green]captured[/green] "
+            f"event_id={result.event_id} mode={result.mode} ledger={result.ledger_path}"
+        )
+
+
 @trigger_group.command("command-done")
+@click.option("--context", type=str, help="JSON context", default="")
+@click.option(
+    "--event-type",
+    type=str,
+    default="command.done",
+    show_default=True,
+    help="Capture event type",
+)
+@click.option(
+    "--source",
+    type=str,
+    default="claude_hook",
+    show_default=True,
+    help="Capture source label",
+)
 @click.option("--async", "_async", is_flag=True, help="No-op")
 @click.option("--quiet", is_flag=True, help="Suppress output")
-def trigger_command_done(_async: bool, quiet: bool):
+def trigger_command_done(
+    context: str,
+    event_type: str,
+    source: str,
+    _async: bool,
+    quiet: bool,
+):
     if _async and not quiet:
         quiet = True
-    if not quiet:
-        console.print("[dim]command-done trigger received[/dim]")
-    return 0
+    payload = _parse_trigger_context(context)
+    if not payload:
+        payload = {"status": "done"}
+    return _emit_trigger_capture(
+        event_type=event_type,
+        context=payload,
+        source_override=source,
+        quiet=quiet,
+    )
 
 @trigger_group.command("shell-command")
 @click.option("--context", type=str, help="JSON context", default="")
+@click.option(
+    "--event-type",
+    type=str,
+    default="shell.command",
+    show_default=True,
+    help="Capture event type",
+)
+@click.option(
+    "--source",
+    type=str,
+    default="claude_hook",
+    show_default=True,
+    help="Capture source label",
+)
 @click.option("--async", "_async", is_flag=True, help="No-op")
 @click.option("--quiet", is_flag=True, help="Suppress output")
-def trigger_shell_command(context: str, _async: bool, quiet: bool):
+def trigger_shell_command(
+    context: str,
+    event_type: str,
+    source: str,
+    _async: bool,
+    quiet: bool,
+):
     if _async and not quiet:
         quiet = True
-    if not quiet:
-        console.print("[dim]shell-command trigger received[/dim]")
-    return 0
+    payload = _parse_trigger_context(context)
+    return _emit_trigger_capture(
+        event_type=event_type,
+        context=payload,
+        source_override=source,
+        quiet=quiet,
+    )
 
 @cli.command("layouts")
 def layouts():

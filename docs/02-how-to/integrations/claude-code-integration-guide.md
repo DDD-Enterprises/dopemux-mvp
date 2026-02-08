@@ -47,6 +47,25 @@ dopemux hooks --install-shell-hooks
 # This enables pre/post command monitoring for enhanced Claude Code detection
 ```
 
+### 1.1 Capture Mode and Canonical Ledger
+Claude hook capture now writes directly into the deterministic per-project ledger:
+- `repo_root/.dopemux/chronicle.sqlite`
+
+Capture mode selection:
+- `plugin`: force Claude hook capture mode
+- `cli`: force CLI capture mode
+- `mcp`: force MCP capture mode
+- `auto`: infer from runtime context (default)
+
+Examples:
+```bash
+# Emit an explicit hook-style event
+dopemux capture emit --mode plugin --event '{"event_type":"shell.command","payload":{"command":"pytest -q"}}'
+
+# Manual note capture (no implicit prompt injection)
+dopemux capture note "Investigated flaky test in WMA consumer" --tag testing --tag wma
+```
+
 ### 2. Start Hook Monitoring
 ```bash
 # Start monitoring Claude Code activity
