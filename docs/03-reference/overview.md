@@ -59,19 +59,19 @@ Configuration schemas and references.
 Feature specifications and capabilities.
 
 ### Feature Index
-- **[Features Index](features/FEATURES_INDEX.md)** - Complete feature catalog
+- **[Features Index](features/features-index.md)** - Complete feature catalog
 
 ### Feature Specifications
 - **[F001: Untracked Work Detection](F001-ENHANCED-untracked-work-system.md)** - Enhanced work tracking
-- **[F001: Basic Untracked Work](F001-untracked-work-detection.md)** - Basic implementation
+- **[F001: Basic Untracked Work (Historical)](../archive/sessions/serena/v2/f001-usage-examples.md)** - Early implementation notes
 - **[F002: Multi-Session Support](F002-multi-session-support.md)** - Multiple session handling
 
 ### Research & Background
 - **[Python Tmux Research](python-tmux-research.md)** - Technical research on tmux integration
 
 ### Test Reports
-- **[Serena V2 Test Summary](serena-v2-test-summary.md)** - ADHD engine testing
-- **[Serena V2 Validation Report](serena-v2-validation-report.md)** - Production validation
+- **[Serena V2 Test Summary](../archive/test-reports/serena-v2-test-summary.md)** - ADHD engine testing archive
+- **[Serena V2 Validation Report](../archive/test-reports/serena-v2-validation-report.md)** - Production validation archive
 
 ### Design Principles
 - **[ADHD Theme Design Principles](adhd-theme-design-principles.md)** - UI/UX guidelines
