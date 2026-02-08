@@ -615,7 +615,7 @@ The answer involves real-time activity analysis, ConPort task metadata, Redis st
 **Series**: ADHD Engine Deep Dive (Part 2 of 4)
 **Author**: Dopemux Documentation Team
 **Date**: 2025-10-05
-**Prerequisites**: Read [Part 1: Architecture & Philosophy](ADHD-ENGINE-DEEP-DIVE-PART1.md)
+**Prerequisites**: Read [Part 1: Architecture & Philosophy](#part-1-architecture-overview)
 **Reading Time**: ~15 minutes
 
 ---
@@ -1548,7 +1548,7 @@ The answer involves real-time activity pattern analysis, Redis state tracking, b
 **Series**: ADHD Engine Deep Dive (Part 4 of 4 - FINAL)
 **Author**: Dopemux Documentation Team
 **Date**: 2025-10-05
-**Prerequisites**: Read [Part 1](ADHD-ENGINE-DEEP-DIVE-PART1.md), [Part 2](ADHD-ENGINE-DEEP-DIVE-PART2.md), and [Part 3](ADHD-ENGINE-DEEP-DIVE-PART3.md)
+**Prerequisites**: Read [Part 1](#part-1-architecture-overview), [Part 2](#part-2-core-features), and [Part 3](#part-3-advanced-features)
 **Reading Time**: ~12 minutes
 
 ---
