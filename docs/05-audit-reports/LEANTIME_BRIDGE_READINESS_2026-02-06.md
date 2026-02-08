@@ -124,6 +124,8 @@ Implemented:
 4. Deep health now returns `status=needs_setup` with concrete operator action.
 5. Probe script now emits `setup_required_signal_present`.
 6. Compose wiring now preserves backward-compatible token/url variable mapping.
+7. API-key automation probe (`docker/leantime/create_api_key.php`) still fails
+   with unresolved dependency wiring; manual web/API-key flow remains required.
 
 Primary evidence:
 
@@ -133,6 +135,7 @@ Primary evidence:
 4. `compose.yml`
 5. `docker-compose.master.yml`
 6. `docker/mcp-servers/docker-compose.yml`
+7. `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.json`
 
 ## Required Close Criteria
 
@@ -148,3 +151,5 @@ Primary evidence:
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json`
 - `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
+- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.txt`
+- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.json`
