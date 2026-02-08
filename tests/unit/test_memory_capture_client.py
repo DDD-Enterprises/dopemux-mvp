@@ -4,9 +4,11 @@ from pathlib import Path
 
 import pytest
 
+from dopemux.memory import capture_client as capture_client_module
 from dopemux.memory.capture_client import (
     CaptureError,
     emit_capture_event,
+    resolve_capture_mode,
     resolve_repo_root_strict,
 )
 
@@ -98,6 +100,83 @@ def test_duplicate_retry_is_ignored(tmp_path, monkeypatch):
     assert _count_events(first.ledger_path) == 1
 
 
+def test_schema_bootstrap_runs_once_per_ledger(tmp_path, monkeypatch):
+    ledger_path = tmp_path / "chronicle.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+
+    init_calls = {"count": 0}
+    real_initialize_schema = capture_client_module._initialize_schema
+
+    def _counting_initialize_schema(conn, schema_path):
+        init_calls["count"] += 1
+        return real_initialize_schema(conn, schema_path)
+
+    monkeypatch.setattr(
+        capture_client_module,
+        "_initialize_schema",
+        _counting_initialize_schema,
+    )
+
+    emit_capture_event(
+        {
+            "event_type": "shell.command",
+            "payload": {"command": "echo first"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+    )
+    emit_capture_event(
+        {
+            "event_type": "shell.command",
+            "payload": {"command": "echo second"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+    )
+
+    assert init_calls["count"] == 1
+
+
+def test_schema_bootstrap_runs_for_each_distinct_ledger(tmp_path, monkeypatch):
+    first_ledger = tmp_path / "a.sqlite"
+    second_ledger = tmp_path / "b.sqlite"
+
+    init_calls = {"count": 0}
+    real_initialize_schema = capture_client_module._initialize_schema
+
+    def _counting_initialize_schema(conn, schema_path):
+        init_calls["count"] += 1
+        return real_initialize_schema(conn, schema_path)
+
+    monkeypatch.setattr(
+        capture_client_module,
+        "_initialize_schema",
+        _counting_initialize_schema,
+    )
+
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(first_ledger))
+    emit_capture_event(
+        {
+            "event_type": "shell.command",
+            "payload": {"command": "echo one"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+    )
+
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(second_ledger))
+    emit_capture_event(
+        {
+            "event_type": "shell.command",
+            "payload": {"command": "echo two"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+    )
+
+    assert init_calls["count"] == 2
+
+
 def test_repo_root_resolution_is_stable(tmp_path):
     repo = tmp_path / "workspace"
     nested = repo / "a" / "b"
@@ -121,3 +200,134 @@ def test_capture_fails_closed_outside_repo(tmp_path, monkeypatch):
             },
             mode="cli",
         )
+
+
+def test_capture_fails_when_schema_dependency_errors(tmp_path, monkeypatch):
+    ledger_path = tmp_path / "chronicle.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+
+    def _raise_missing_schema(_repo_root):
+        raise CaptureError("WMA schema not found: forced test path")
+
+    monkeypatch.setattr(
+        capture_client_module,
+        "_resolve_wma_schema_path",
+        _raise_missing_schema,
+    )
+
+    with pytest.raises(CaptureError, match="WMA schema not found"):
+        emit_capture_event(
+            {
+                "event_type": "manual.note",
+                "payload": {"summary": "schema failure"},
+            },
+            mode="cli",
+            repo_root=REPO_ROOT,
+        )
+
+
+def test_capture_fails_when_redactor_dependency_errors(tmp_path, monkeypatch):
+    ledger_path = tmp_path / "chronicle.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+
+    def _raise_missing_redactor(_repo_root):
+        raise CaptureError("WMA redactor not found: forced test path")
+
+    monkeypatch.setattr(
+        capture_client_module,
+        "_load_wma_redactor",
+        _raise_missing_redactor,
+    )
+
+    with pytest.raises(CaptureError, match="WMA redactor not found"):
+        emit_capture_event(
+            {
+                "event_type": "manual.note",
+                "payload": {"summary": "redactor failure"},
+            },
+            mode="cli",
+            repo_root=REPO_ROOT,
+        )
+
+
+def test_event_bus_toggle_paths(tmp_path, monkeypatch):
+    ledger_path = tmp_path / "chronicle.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+
+    emitted_events: list[dict] = []
+
+    def _record_event(event):
+        emitted_events.append(event)
+
+    monkeypatch.setattr(capture_client_module, "_emit_to_event_stream", _record_event)
+
+    # Default false path: env unset and no explicit flag
+    monkeypatch.delenv("DOPEMUX_CAPTURE_EMIT_EVENTBUS", raising=False)
+    emit_capture_event(
+        {
+            "event_type": "manual.note",
+            "payload": {"summary": "default false"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+    )
+    assert emitted_events == []
+
+    # Env-driven true path
+    monkeypatch.setenv("DOPEMUX_CAPTURE_EMIT_EVENTBUS", "true")
+    emit_capture_event(
+        {
+            "event_type": "manual.note",
+            "payload": {"summary": "env true"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+    )
+    assert len(emitted_events) == 1
+
+    # Explicit false overrides env true
+    emit_capture_event(
+        {
+            "event_type": "manual.note",
+            "payload": {"summary": "explicit false"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+        emit_event_bus=False,
+    )
+    assert len(emitted_events) == 1
+
+
+def test_mode_resolution_explicit_overrides_all(monkeypatch):
+    monkeypatch.setenv("DOPEMUX_CAPTURE_MODE", "mcp")
+    monkeypatch.setenv("DOPEMUX_CAPTURE_CONTEXT", "plugin")
+    monkeypatch.setenv("CLAUDE_SESSION_ID", "session-1")
+
+    assert resolve_capture_mode("cli", repo_root=REPO_ROOT) == "cli"
+
+
+def test_mode_resolution_env_overrides_config_and_context(monkeypatch):
+    monkeypatch.setenv("DOPEMUX_CAPTURE_MODE", "mcp")
+    monkeypatch.setenv("DOPEMUX_CAPTURE_CONTEXT", "plugin")
+
+    monkeypatch.setattr(
+        capture_client_module,
+        "_read_capture_mode_from_project_config",
+        lambda _repo_root: "cli",
+    )
+
+    assert resolve_capture_mode("auto", repo_root=REPO_ROOT) == "mcp"
+
+
+def test_mode_resolution_config_overrides_context_and_heuristics(monkeypatch):
+    monkeypatch.delenv("DOPEMUX_CAPTURE_MODE", raising=False)
+    monkeypatch.setenv("DOPEMUX_CAPTURE_CONTEXT", "plugin")
+    monkeypatch.setenv("CLAUDE_SESSION_ID", "session-2")
+
+    monkeypatch.setattr(
+        capture_client_module,
+        "_read_capture_mode_from_project_config",
+        lambda _repo_root: "mcp",
+    )
+
+    assert resolve_capture_mode("auto", repo_root=REPO_ROOT) == "mcp"
