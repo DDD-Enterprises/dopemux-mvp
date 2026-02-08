@@ -3119,6 +3119,7 @@ class SerenaV2MCPServer:
                 conport_client=self.conport_client,
                 session_number=session_number
             )
+            enhancements = detection.get("enhancements", {})
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
@@ -3135,8 +3136,6 @@ class SerenaV2MCPServer:
                 }
             else:
                 # Untracked work detected - show enhancements!
-                enhancements = detection["enhancements"]
-
                 result = {
                     "status": "untracked_work_detected",
                     "message": f"⚠️  Untracked work: {detection['work_name']}",
