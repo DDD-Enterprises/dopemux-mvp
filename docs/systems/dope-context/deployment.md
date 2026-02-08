@@ -768,4 +768,4 @@ After deployment:
 3. **Monitor performance**: Track latencies and costs
 4. **Tune parameters**: Adjust based on usage patterns
 
-For questions: See [README.md](README.md) and [API_REFERENCE.md](API_REFERENCE.md)
+For questions: See [architecture.md](architecture.md) and [api-reference.md](api-reference.md)
