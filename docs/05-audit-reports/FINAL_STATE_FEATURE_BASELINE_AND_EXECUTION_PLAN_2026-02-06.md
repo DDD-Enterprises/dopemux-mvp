@@ -251,7 +251,8 @@ Executed verification checks (latest pass on 2026-02-06):
 1. **Registry vs Compose**: `services/registry.yaml` and `compose.yml` diverge materially.
 2. **Naming Drift**: `dope-query` vs `conport`, `adhd-engine` vs `adhd_engine`, `zen` vs `pal`.
 3. **Port Drift**: Smoke-stack mismatches were fixed in this pass; broader multi-compose drift remains.
-4. **Architecture Doc Drift**: `docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md` currently contains frontmatter only.
+4. **Architecture Doc Drift**: ADR-207 body is now restored; remaining drift is
+   cross-doc link integrity and stale references in dependent architecture docs.
 
 ## Additional Gaps Not Fully Captured in the 3 Input Files
 
@@ -394,7 +395,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 ### P0 (Blockers to Production Readiness)
 
 1. Registry/compose/service naming drift across non-smoke stacks (`compose.yml` vs smoke contracts).
-2. Broken architecture source-of-truth docs (ADR-207 empty + link integrity gaps).
+2. Architecture source-of-truth consistency gaps (dependent doc links/references
+   need recheck after ADR-207 restoration).
 3. PAL migration incompleteness (stale Zen references across runtime/docs).
 4. Web UI real-time path still lacks production push transport (currently socket fallback to polling).
 5. Missing Stage 1/Stage 2 workflow implementation from ADR-197 (`workflow_ideas`, `workflow_epics`).
@@ -430,7 +432,7 @@ Goal: establish one deployable truth model.
 
 1. Define canonical service identity map (`service_id`, aliases, canonical ports, canonical compose name).
 2. Repair registry/compose alignment until `tests/arch/test_registry_compose_alignment.py` passes.
-3. Restore ADR-207 canonical body and relink dependent documents.
+3. Validate ADR-207 dependent-document links and stale architecture references.
 4. Fix broken links in `DESIGN_EVOLUTION_2026.md`.
 5. Freeze a signed baseline artifact in `docs/05-audit-reports/`.
 
@@ -563,7 +565,7 @@ Exit criteria:
 ## Immediate Next Work (First Sprint)
 
 1. Fix registry/compose alignment failures and naming map.
-2. Repair ADR-207 and history-doc link integrity.
+2. Complete history-doc and architecture link-integrity recheck (ADR-207 body restored).
 3. Stabilize test harness (async plugin + targeted suite policy).
 4. Resolve `ui-dashboard` build failures.
 5. Implement ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
