@@ -13,6 +13,7 @@ Features:
 """
 
 import os
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -79,6 +80,10 @@ error_handler: GlobalErrorHandler = None
 circuit_breakers = {}
 monitoring: DopemuxMonitoring = None
 
+# Phase 7: Full I/O Wiring globals
+workspace_watcher = None
+output_dispatcher = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -89,13 +94,19 @@ async def lifespan(app: FastAPI):
     - Initialize ADHD accommodation engine
     - Connect to Redis
     - Start 6 background monitoring tasks
+    - Start ADHD Event Listener for implicit triggers
 
     Shutdown:
     - Stop background monitors gracefully
+    - Stop ADHD Event Listener
     - Close Redis connections
     - Clean up resources
     """
-    global engine, error_handler, circuit_breakers, monitoring
+    global engine, error_handler, circuit_breakers, monitoring, workspace_watcher, output_dispatcher
+
+    # Track background tasks for cleanup
+    event_listener_task = None
+    event_listener = None
 
     # STARTUP
     logger.info("=" * 60)
@@ -151,6 +162,81 @@ async def lifespan(app: FastAPI):
         engine = ADHDAccommodationEngine()
         await engine.initialize()
 
+        # Initialize ADHD Event Listener for implicit triggers (Phase 6)
+        try:
+            from event_listener import create_adhd_event_listener
+            
+            # Get EventBus from engine if available, or create connection
+            event_bus = getattr(engine, 'event_bus', None)
+            
+            if event_bus:
+                event_listener = create_adhd_event_listener(event_bus, engine)
+                
+                # Start event listener as background task
+                event_listener_task = asyncio.create_task(
+                    event_listener.start(user_id="default"),
+                    name="adhd_event_listener"
+                )
+                
+                logger.info("✅ ADHD Event Listener started (implicit triggers enabled)")
+            else:
+                logger.warning("⚠️ EventBus not available - ADHD Event Listener not started")
+                
+        except ImportError as e:
+            logger.warning(f"⚠️ ADHD Event Listener not available: {e}")
+        except Exception as e:
+            logger.error(f"❌ Failed to start ADHD Event Listener: {e}")
+
+        # Initialize Output Dispatcher (Phase 7)
+        try:
+            from output_dispatcher import create_output_dispatcher
+            output_dispatcher = create_output_dispatcher(
+                enable_voice=True,
+                enable_push=False
+            )
+            engine.output_dispatcher = output_dispatcher
+            logger.info("✅ Output Dispatcher initialized (Console, Tmux, Voice channels)")
+        except ImportError as e:
+            logger.debug(f"Output Dispatcher not available: {e}")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to initialize Output Dispatcher: {e}")
+
+        # Initialize Workspace Watcher (Phase 7)
+        workspace_path = os.getenv("WORKSPACE_PATH", os.getcwd())
+        if event_bus:
+            try:
+                from workspace_watcher import create_workspace_watcher
+                workspace_watcher = create_workspace_watcher(event_bus, workspace_path)
+                await workspace_watcher.start()
+                logger.info(f"✅ Workspace Watcher started for {workspace_path}")
+            except ImportError as e:
+                logger.debug(f"Workspace Watcher not available: {e}")
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to start Workspace Watcher: {e}")
+
+        # Initialize External Activity Manager (Desktop Commander + Calendar)
+        external_activity_manager = None
+        try:
+            from external_activity import create_external_activity_manager
+            
+            event_bus = getattr(engine, 'event_bus', None)
+            
+            if event_bus:
+                external_activity_manager = create_external_activity_manager(event_bus)
+                await external_activity_manager.start()
+                
+                # Store reference in engine for API access
+                engine.external_activity = external_activity_manager
+                
+                logger.info("✅ External Activity Manager started (Desktop Commander + Calendar)")
+            else:
+                logger.warning("⚠️ EventBus not available - External Activity Manager not started")
+                
+        except ImportError as e:
+            logger.debug(f"External Activity Manager not available: {e}")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to start External Activity Manager: {e}")
+
         logger.info("✅ Startup complete - Service ready!")
         logger.info(f"📊 API Documentation: http://{settings.api_host}:{settings.api_port}/docs")
 
@@ -166,6 +252,28 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 60)
 
     try:
+        # Stop workspace watcher (Phase 7)
+        if workspace_watcher:
+            await workspace_watcher.stop()
+            logger.info("✅ Workspace Watcher stopped")
+        
+        # Stop external activity manager
+        if external_activity_manager:
+            await external_activity_manager.stop()
+            logger.info("✅ External Activity Manager stopped")
+        
+        # Stop event listener
+        if event_listener:
+            await event_listener.stop()
+            logger.info("✅ ADHD Event Listener stopped")
+        
+        if event_listener_task and not event_listener_task.done():
+            event_listener_task.cancel()
+            try:
+                await event_listener_task
+            except asyncio.CancelledError:
+                pass
+        
         if engine:
             await engine.close()
         logger.info("✅ Shutdown complete")
