@@ -109,7 +109,7 @@ class ModelAPIClient:
         elif self.provider == ModelProvider.VOYAGE:
             return await self._voyage_embed(text)
         else:
-            raise NotImplementedError(f"Provider {self.provider} not implemented")
+            raise ValueError(f"Unsupported embedding provider: {self.provider}")
 
     async def _openai_embed(self, text: str) -> List[float]:
         """OpenAI embedding API call."""
