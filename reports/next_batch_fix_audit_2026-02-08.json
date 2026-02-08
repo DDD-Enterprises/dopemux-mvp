@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-08T20:54:25.893026+00:00",
+  "generated_at": "2026-02-08T21:20:28.282514+00:00",
   "scope": {
     "roots": [
       "src",
@@ -13,7 +13,7 @@
     "duplicate_defs": 0,
     "pass_only_functions": 2,
     "notimplemented_raises": 0,
-    "todo_comment_markers": 12,
+    "todo_comment_markers": 9,
     "relative_import_gaps": 0,
     "parse_errors": 0
   },
