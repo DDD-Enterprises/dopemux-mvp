@@ -316,17 +316,157 @@ class DocumentValidator:
 
     def check_orphaned_docs(self) -> List[str]:
         """Find documentation files that aren't referenced by others."""
-        # This would implement graph traversal to find unlinked nodes
-        # For now, return empty list as placeholder
-        orphaned = []
+        docs_dir = self.project_root / 'docs'
+        if not docs_dir.exists():
+            return []
 
-        # TODO: Implement graph traversal to find orphaned documents
-        # This would check for files not referenced by:
-        # - derived_from links
-        # - relates_to references
-        # - arc42 cross-references
+        doc_paths = sorted(p for p in docs_dir.rglob('*.md'))
+        if not doc_paths:
+            return []
+
+        rel_docs = {self._to_rel_path(p): p for p in doc_paths}
+
+        # Pass 1: collect ID -> path mapping from frontmatter.
+        id_to_doc: Dict[str, str] = {}
+        frontmatter_cache: Dict[str, Dict] = {}
+        body_cache: Dict[str, str] = {}
+        for rel_path, abs_path in rel_docs.items():
+            frontmatter, body = self._parse_frontmatter(abs_path.read_text(encoding='utf-8', errors='ignore'))
+            fm = frontmatter if isinstance(frontmatter, dict) else {}
+            frontmatter_cache[rel_path] = fm
+            body_cache[rel_path] = body
+            doc_id = fm.get('id')
+            if isinstance(doc_id, str) and doc_id.strip():
+                id_to_doc[doc_id.strip()] = rel_path
+
+        # Pass 2: build inbound reference graph.
+        inbound_refs: Dict[str, Set[str]] = {rel_path: set() for rel_path in rel_docs}
+        for source_rel in rel_docs:
+            frontmatter = frontmatter_cache.get(source_rel, {})
+
+            # Frontmatter graph links
+            for raw_ref in self._iter_frontmatter_refs(frontmatter):
+                target_rel = self._resolve_doc_reference(raw_ref, source_rel, rel_docs, id_to_doc)
+                if target_rel and target_rel != source_rel:
+                    inbound_refs[target_rel].add(source_rel)
+
+            # Markdown links
+            for raw_link in self._extract_markdown_links(body_cache.get(source_rel, '')):
+                target_rel = self._resolve_doc_reference(raw_link, source_rel, rel_docs, id_to_doc)
+                if target_rel and target_rel != source_rel:
+                    inbound_refs[target_rel].add(source_rel)
+
+        orphaned: List[str] = []
+        for rel_path in sorted(rel_docs):
+            if self._is_orphan_exempt(rel_path):
+                continue
+            if not inbound_refs.get(rel_path):
+                orphaned.append(rel_path)
 
         return orphaned
+
+    def _to_rel_path(self, file_path: Path) -> str:
+        """Convert absolute path to project-relative POSIX path."""
+        return file_path.relative_to(self.project_root).as_posix()
+
+    def _iter_frontmatter_refs(self, frontmatter: Dict) -> List[str]:
+        """Extract references from known frontmatter graph fields."""
+        refs: List[str] = []
+
+        def add_value(value):
+            if isinstance(value, str) and value.strip():
+                refs.append(value.strip())
+            elif isinstance(value, list):
+                for item in value:
+                    if isinstance(item, str) and item.strip():
+                        refs.append(item.strip())
+
+        add_value(frontmatter.get('derived_from'))
+        add_value(frontmatter.get('relates_to'))
+
+        graph_meta = frontmatter.get('graph_metadata', {})
+        if isinstance(graph_meta, dict):
+            add_value(graph_meta.get('relates_to'))
+            add_value(graph_meta.get('derived_from'))
+
+        return refs
+
+    def _extract_markdown_links(self, body: str) -> List[str]:
+        """Extract link targets from markdown content."""
+        # Matches markdown links and images: [text](target), ![alt](target)
+        return re.findall(r'!?\[[^\]]*\]\(([^)]+)\)', body)
+
+    def _resolve_doc_reference(
+        self,
+        raw_ref: str,
+        source_rel: str,
+        rel_docs: Dict[str, Path],
+        id_to_doc: Dict[str, str]
+    ) -> Optional[str]:
+        """Resolve a reference token to a known document path."""
+        if not raw_ref:
+            return None
+
+        ref = raw_ref.strip()
+        if not ref:
+            return None
+
+        # Ignore external and non-doc links
+        lowered = ref.lower()
+        if lowered.startswith(('http://', 'https://', 'mailto:', 'tel:', '#')):
+            return None
+
+        # Drop title suffix in markdown links: path.md "Title"
+        if ' "' in ref:
+            ref = ref.split(' "', 1)[0].strip()
+        # Remove anchor/query.
+        ref = ref.split('#', 1)[0].split('?', 1)[0].strip()
+        if not ref:
+            return None
+
+        # ID reference.
+        if ref in id_to_doc:
+            return id_to_doc[ref]
+
+        # Path reference: normalize relative to source doc directory.
+        source_dir = Path(source_rel).parent
+        if ref.startswith('/'):
+            candidate = ref.lstrip('/')
+        elif ref.startswith('docs/'):
+            candidate = ref
+        else:
+            candidate = (source_dir / ref).as_posix()
+
+        normalized = Path(candidate).as_posix()
+        if normalized in rel_docs:
+            return normalized
+
+        # Support links without extension.
+        if not normalized.endswith('.md'):
+            md_candidate = f"{normalized}.md"
+            if md_candidate in rel_docs:
+                return md_candidate
+            readme_candidate = f"{normalized}/README.md"
+            if readme_candidate in rel_docs:
+                return readme_candidate
+
+        # Fallback: basename matching when unambiguous.
+        basename = Path(normalized).name
+        matches = [p for p in rel_docs if Path(p).name == basename]
+        if len(matches) == 1:
+            return matches[0]
+
+        return None
+
+    def _is_orphan_exempt(self, rel_path: str) -> bool:
+        """Exclude intentionally standalone docs from orphan detection."""
+        if rel_path.startswith('docs/archive/'):
+            return True
+        if rel_path in {'docs/README.md', 'docs/00-MASTER-INDEX.md'}:
+            return True
+        if rel_path.endswith('/README.md'):
+            return True
+        return False
 
     def add_error(self, file_path: str, message: str, line: Optional[int] = None, fixable: bool = False):
         """Add a validation error."""
@@ -359,6 +499,7 @@ class DocumentValidator:
         return len(self.errors) > 0
 
 def main():
+    logging.basicConfig(level=logging.INFO, format='%(message)s')
     parser = argparse.ArgumentParser(description='Validate documentation against knowledge graph schema')
     parser.add_argument('files', nargs='*', help='Specific files to validate (default: all docs)')
     parser.add_argument('--fix', action='store_true', help='Attempt to fix issues automatically')
