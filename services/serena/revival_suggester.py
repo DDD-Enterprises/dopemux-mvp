@@ -148,9 +148,10 @@ class RevivalSuggester:
         # Simple heuristic: shared words in branch names
         branch_score = 0.0
         # Implement branch name similarity if current work has branch context
-        if hasattr(self, 'current_branch') and self.current_branch and 'branch' in work_context:
+        abandoned_branch = abandoned.get("branch")
+        if hasattr(self, 'current_branch') and self.current_branch and abandoned_branch:
             current_words = set(self.current_branch.lower().replace('-', ' ').replace('_', ' ').split())
-            work_words = set(work_context['branch'].lower().replace('-', ' ').replace('_', ' ').split())
+            work_words = set(abandoned_branch.lower().replace('-', ' ').replace('_', ' ').split())
 
             if current_words and work_words:
                 overlap = len(current_words.intersection(work_words))

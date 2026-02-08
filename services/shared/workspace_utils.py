@@ -6,10 +6,14 @@ Provides consistent workspace resolution across all dopemux services.
 Supports single workspace (backward compat) and multiple workspaces (new).
 """
 
+import logging
+
 import os
 from pathlib import Path
 from typing import List, Optional, Union
 
+
+logger = logging.getLogger(__name__)
 
 def resolve_workspaces(
     workspace_path: Optional[str] = None,

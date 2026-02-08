@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-10-17'
 next_review: '2026-01-15'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Serena V2 Mcp Tools (reference) for dopemux documentation and developer workflows.
 ---
 # Serena v2 MCP Server - Tool Reference
 
@@ -1092,3 +1095,6 @@ All tools include performance metrics:
 **Last Updated**: 2025-10-04
 **Server Version**: services/serena/v2/mcp_server.py (2,434 lines)
 **Total Tools**: 15 operational, 1 deferred (semantic_search for Phase 3)
+
+Compatibility note (2026-02-07): semantic search now routes through dope-context/Serena
+preferred paths; ConPort semantic-search remains available only as a compatibility shim.

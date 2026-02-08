@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Redis Infrastructure Verification (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Redis Infrastructure Verification
 
@@ -189,6 +193,7 @@ Conclusion: ✅ Sufficient capacity
 ## Integration Readiness
 
 ### Task-Orchestrator Requirements (from Task 1.1)
+
 | Requirement | Status | Evidence |
 |-------------|--------|----------|
 | Redis running on 6379 | ✅ | Port scan, docker ps |

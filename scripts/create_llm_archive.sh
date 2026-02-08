@@ -183,7 +183,7 @@ test.db
 .env.*
 !.env.example
 !.env.smoke
-cookies.txt
+config/env/cookies.txt
 
 # Large/generated files
 wma_build.log

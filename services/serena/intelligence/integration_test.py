@@ -5,6 +5,8 @@ Comprehensive integration testing to ensure Phase 2 PostgreSQL intelligence
 works seamlessly with Layer 1 Redis performance layer and ADHD features.
 """
 
+import os
+
 import asyncio
 import json
 import logging

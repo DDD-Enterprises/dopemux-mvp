@@ -33,6 +33,10 @@ jobs:
           pip install pre-commit
           pre-commit install --install-hooks
 
+      - name: 🧹 Enforce repo root hygiene
+        run: |
+          python scripts/check_root_hygiene.py --all-files --quiet
+
       - name: 🔍 Run pre-commit (code quality)
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then

@@ -7,6 +7,9 @@ id: worktree-comprehensive-guide
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+prelude: Git Worktree - Comprehensive Guide (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Git Worktree - Comprehensive Guide
 
@@ -14,7 +17,6 @@ next_review: '2026-05-03'
 **Last Updated**: 2026-02-02
 
 ---
-
 
 ## Worktree System Overview
 
@@ -585,7 +587,6 @@ Then share the report with the team.
 
 ---
 
-
 ## Common Use Cases
 
 # Worktree Use Cases - When and Why to Use Worktrees
@@ -1108,7 +1109,6 @@ Combined with Dopemux's multi-instance support and ConPort task isolation, you g
 
 ---
 
-
 ## Switching Between Worktrees
 
 # Worktree Switching - Installation & Usage Guide
@@ -1470,7 +1470,6 @@ python -m dopemux shell-setup --help
 
 ---
 
-
 ## Worktrees and Decision Graph Integration
 
 # Worktrees, ConPort, and Dope Decision Graph
@@ -1568,9 +1567,6 @@ Tip: For project-local ConPort, `conport_url` is typically `http://localhost:300
 
 ---
 
-
 ## Advanced Workflows
-
-
 
 ---

@@ -1,0 +1,42 @@
+{
+  "generated_at_utc": "2026-02-06T14:34:57.383422+00:00",
+  "run_id": "docs-parity-wave1",
+  "inputs": {
+    "inventory_source": [
+      "docs/docs_index.yaml",
+      "docs/**/*.md"
+    ],
+    "excluded_paths": [
+      "docs/archive/**",
+      "SYSTEM_ARCHIVE/**"
+    ],
+    "active_docs_count": 245
+  },
+  "checks": {
+    "link_resolution": {
+      "checked": 228,
+      "broken": 93
+    },
+    "docs_index_path_parity": {
+      "checked": 72,
+      "missing": 0
+    },
+    "curated_claims": {
+      "count": 9,
+      "sources": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md",
+        "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md"
+      ]
+    }
+  },
+  "contradictions": {
+    "total": 99,
+    "by_severity": {
+      "P0": 1,
+      "P1": 3,
+      "P2": 95,
+      "P3": 0
+    }
+  }
+}

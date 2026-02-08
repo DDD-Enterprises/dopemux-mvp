@@ -69,9 +69,8 @@ def rg_paths(pattern: str, base: Path, globs: Optional[List[str]] = None) -> Lis
             try:
                 if re.search(pattern, p.read_text(encoding="utf-8", errors="ignore")):
                     results.append(p)
-            except Exception as e:
+            except Exception:
                 continue
-                logger.error(f"Error: {e}")
         return results
 
 
@@ -81,9 +80,8 @@ def read_first_header(p: Path) -> Optional[str]:
             for line in f:
                 if line.strip().startswith("#"):
                     return line.strip().lstrip("#").strip()
-    except Exception as e:
+    except Exception:
         return None
-        logger.error(f"Error: {e}")
     return None
 
 
@@ -293,4 +291,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -1,10 +1,13 @@
 ---
 id: G31_COMPLETE
 title: G31_Complete
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: G31_Complete (explanation) for dopemux documentation and developer workflows.
 ---
 # G31 Implementation Summary
 
@@ -194,10 +197,10 @@ python tools/ports_health_audit.py --mode runtime
 
 With G31 complete, the foundation is ready for **G32: Service Startup Contract**:
 
-✅ Registry defines ports and health endpoints  
-✅ Validation tooling exists  
-✅ Architecture tests enforce alignment  
-✅ Smoke stack compose is parametric  
+✅ Registry defines ports and health endpoints
+✅ Validation tooling exists
+✅ Architecture tests enforce alignment
+✅ Smoke stack compose is parametric
 
 **Next**: Standardize how services start:
 - FastAPI app location (`app = FastAPI()`)
@@ -238,13 +241,13 @@ docker compose -f docker-compose.smoke.yml down
 
 ## Acceptance Criteria (Final Status)
 
-✅ Registry contains all smoke services with ports/health endpoints  
-✅ docker-compose.smoke.yml uses env vars  
-✅ Architecture tests pass (8/8)  
-✅ Static validation reports no drift  
-✅ .env.smoke is generated from registry  
-✅ Documentation complete  
-⏸️ Smoke stack boot (deferred - requires service images)  
-⏸️ Runtime health checks (deferred - requires running services)  
+✅ Registry contains all smoke services with ports/health endpoints
+✅ docker-compose.smoke.yml uses env vars
+✅ Architecture tests pass (8/8)
+✅ Static validation reports no drift
+✅ .env.smoke is generated from registry
+✅ Documentation complete
+⏸️ Smoke stack boot (deferred - requires service images)
+⏸️ Runtime health checks (deferred - requires running services)
 
 **Overall Status: COMPLETE** (runtime validation deferred until services are built)

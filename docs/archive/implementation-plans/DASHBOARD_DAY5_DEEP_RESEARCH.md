@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dashboard_Day5_Deep_Research (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Dashboard Day 5 - Deep Research & Planning 🔬
 ## Real API Integration Strategy
@@ -29,6 +33,7 @@ We have a complete modal system (4 drill-down views) but all data is mocked. Day
 - **WebSocket** infrastructure ready for live updates
 
 ### Success Criteria
+
 | Metric | Target | Why It Matters |
 |--------|--------|----------------|
 | **Modal Load Time** | < 500ms | ADHD users need instant feedback |

@@ -8,9 +8,13 @@ Called by post-commit git hook.
 ADHD Benefit: Commits = completed work, high-productivity signal
 """
 
+import logging
+
 import asyncio
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # Add DopeconBridge to path
 bridge_path = Path(__file__).parent.parent / "services" / "mcp-dopecon-bridge"

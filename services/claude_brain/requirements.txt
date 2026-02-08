@@ -21,5 +21,4 @@ python-dotenv==1.0.0
 
 # Development
 pytest==7.4.3
-pytest-asyncio==0.21.1</content>
-</xai:function_call">The file content contains invalid XML/HTML markup. Please provide clean Python code only.
+pytest-asyncio==0.21.1

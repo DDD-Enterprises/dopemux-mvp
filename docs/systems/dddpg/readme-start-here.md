@@ -1,10 +1,13 @@
 ---
 id: readme-start-here
 title: Readme Start Here
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Readme Start Here (reference) for dopemux documentation and developer workflows.
 ---
 # DDDPG Service - START HERE 🚀
 
@@ -47,28 +50,28 @@ next_review: '2026-05-03'
 
 ### 📚 **Background/Context**:
 
-4. **ARCHITECTURE_ANALYSIS.md**
+1. **ARCHITECTURE_ANALYSIS.md**
    - Data model deep dive
    - Multi-instance architecture
    - Storage strategy decisions
 
-5. **WEEK4_DAY1_COMPLETE.md**
+2. **WEEK4_DAY1_COMPLETE.md**
    - What we built on Day 1
    - KG integration foundation
    - 19/19 tests passing
 
-6. **WEEK4_PROGRESS.md**
+3. **WEEK4_PROGRESS.md**
    - Week 4 tracker
    - Efficiency metrics (3.5x faster!)
    - Roadmap overview
 
 ### 🔍 **Detailed Specs** (optional reading):
 
-7. **WEEK4_DAY1_DEEP_ANALYSIS.md** - Day 1 decisions
-8. **WEEK4_DAY2_DEEP_RESEARCH.md** - Day 2 research
-9. **WEEK4_DAY2_SPEC.md** - Day 2 technical spec
-10. **WEEK4_DAY2_VALIDATION.md** - Day 2 validation
-11. **STORAGE_DESIGN.md** - Storage architecture
+1. **WEEK4_DAY1_DEEP_ANALYSIS.md** - Day 1 decisions
+2. **WEEK4_DAY2_DEEP_RESEARCH.md** - Day 2 research
+3. **WEEK4_DAY2_SPEC.md** - Day 2 technical spec
+4. **WEEK4_DAY2_VALIDATION.md** - Day 2 validation
+5. **STORAGE_DESIGN.md** - Storage architecture
 
 ---
 

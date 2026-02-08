@@ -93,7 +93,7 @@ class TestTestUtilities:
 
     def test_generate_test_token(self):
         """Test JWT token generation utility."""
-        from tests.utils import generate_test_token
+        from tests.utils import generate_test_token, validate_jwt_token
 
         token = generate_test_token()
         assert token is not None

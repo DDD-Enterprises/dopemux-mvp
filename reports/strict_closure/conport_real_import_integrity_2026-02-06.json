@@ -1,0 +1,52 @@
+{
+  "run_timestamp_utc": "2026-02-06T16:42:08Z",
+  "branch": "codex/wave-next",
+  "target_database": "postgresql://dopemux_age@dopemux-postgres-age:5432/dopemux_knowledge_graph",
+  "source_bundle": "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json",
+  "source_bundle_sha256": "2b658ebd55676e014efe1c4f345645781e4b54db63d48968218967dcbf934803",
+  "source_payload_counts": {
+    "decisions": 294,
+    "progress_entries": 209,
+    "custom_data": 14,
+    "context_links": 111,
+    "system_patterns": 3,
+    "active_context": 1,
+    "product_context": 1
+  },
+  "pre_counts": {
+    "decisions": 1,
+    "progress_entries": 1,
+    "custom_data": 2,
+    "entity_relationships": 0,
+    "workspace_contexts": 1
+  },
+  "post_counts": {
+    "decisions": 295,
+    "progress_entries": 210,
+    "custom_data": 15,
+    "entity_relationships": 0,
+    "workspace_contexts": 2
+  },
+  "delta_counts": {
+    "decisions": 294,
+    "progress_entries": 209,
+    "custom_data": 13,
+    "entity_relationships": 0,
+    "workspace_contexts": 1
+  },
+  "warnings_observed": [
+    "product_context insert hit unique workspace_id constraint in workspace_contexts during this run",
+    "no relationships imported in this run due legacy ID-mapping gap for progress entries"
+  ],
+  "post_run_script_hardening": [
+    "importer now detects target schema dynamically (public/ag_catalog)",
+    "importer now adapts inserts to detected table columns",
+    "progress entry IDs are now added to ID mapping for context_links restoration",
+    "single-row workspace_contexts schema now uses combined-context upsert path"
+  ],
+  "follow_up_closure": {
+    "relationship_backfill_artifact": "reports/strict_closure/conport_relationship_backfill_2026-02-06.json",
+    "final_entity_relationships_count": 111,
+    "context_links_parity": "111/111"
+  }
+}

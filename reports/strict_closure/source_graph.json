@@ -1,0 +1,382 @@
+{
+  "generated_at_utc": "2026-02-06T11:24:00.592396+00:00",
+  "generator": "wave0-strict-closure-v4",
+  "repo_head": "256c344a728529cf0f9e284ad95d4aaba8069f0c",
+  "seed_documents": [
+    "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+    "docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md",
+    "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
+    "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md"
+  ],
+  "nodes": [
+    {
+      "path": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "kind": "seed_doc",
+      "exists": true,
+      "size_bytes": 10505,
+      "sha256": "8278f76598deda69dd615cac6cee9f349a9d6c06631cfebcba46e430f4e43946",
+      "last_modified_utc": "2026-02-06T11:09:47.909735+00:00"
+    },
+    {
+      "path": "docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md",
+      "kind": "seed_doc",
+      "exists": true,
+      "size_bytes": 2893,
+      "sha256": "d741c67dd5531107acdeac5e5aaf2169f448a29915cc27cfd5be33c7f9f37100",
+      "last_modified_utc": "2026-02-06T10:04:08.404701+00:00"
+    },
+    {
+      "path": "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
+      "kind": "seed_doc",
+      "exists": true,
+      "size_bytes": 3813,
+      "sha256": "b36516cb2a914f5cc56b336783fd0193bb300bab2db547f4fbf65a44c037f1c2",
+      "last_modified_utc": "2026-02-06T10:04:08.389450+00:00"
+    },
+    {
+      "path": "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md",
+      "kind": "seed_doc",
+      "exists": true,
+      "size_bytes": 21497,
+      "sha256": "6e56c9f4235800a900e7e7eb700ffdb9b182118bd3262624f501d0b0c2121bda",
+      "last_modified_utc": "2026-02-06T11:19:37.823806+00:00"
+    },
+    {
+      "path": "services/registry.yaml",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 9563,
+      "sha256": "4cbd6334a66e5df2a6a718ef5d94e079eef5f22b0a3cecca10058f3b4142ab55",
+      "last_modified_utc": "2026-02-06T11:03:21.608915+00:00"
+    },
+    {
+      "path": "compose.yml",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 19085,
+      "sha256": "77bac55c8ee61a7c5cdf147eb8aaed2a5bbb1cd2a73c15a63544964e77e65612",
+      "last_modified_utc": "2026-02-06T10:04:15.071144+00:00"
+    },
+    {
+      "path": "docker-compose.smoke.yml",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 6056,
+      "sha256": "807c9690a1a9a01b599a754d2c6b07938445832f982f37094638e1a68eb9911b",
+      "last_modified_utc": "2026-02-06T11:03:32.565382+00:00"
+    },
+    {
+      "path": "tests/arch/test_registry_compose_alignment.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 8082,
+      "sha256": "0edb7eeca488c648454092ce7fc3698b6303846d98ecf818423244d0dc85bec2",
+      "last_modified_utc": "2026-02-02T16:06:37.879459+00:00"
+    },
+    {
+      "path": "services/agents/cognitive_guardian_kg.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 13452,
+      "sha256": "9b190ac7fae90966f9b219f7051c7e164dd699ef018b676ce4984157ca6d6f81",
+      "last_modified_utc": "2026-02-06T11:03:38.143883+00:00"
+    },
+    {
+      "path": "services/agents/test_tool_orchestrator.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 9604,
+      "sha256": "385bc267060e0c4f3063d024e0c4c54091b4b8d09ac6360ab655cda310f6dbc3",
+      "last_modified_utc": "2026-02-06T11:05:21.377372+00:00"
+    },
+    {
+      "path": "services/agents/test_cognitive_guardian_kg.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 10545,
+      "sha256": "b50909f03e4ebd9c0504bf8b01769e92e1225f38caaf71b2591e543838d29d2f",
+      "last_modified_utc": "2026-02-01T09:29:24.611385+00:00"
+    },
+    {
+      "path": "src/integrations/taskmaster_bridge.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 24840,
+      "sha256": "889edfc087808d137ceeab0144fa9ae05555f077702697b37466475eb8995969",
+      "last_modified_utc": "2026-02-06T11:03:51.198654+00:00"
+    },
+    {
+      "path": "tests/unit/test_taskmaster_bridge.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 28879,
+      "sha256": "dd782a8e37e7a184bb4cc0dd8c42fcfd0884d965204034885ea84e66f483f7c9",
+      "last_modified_utc": "2026-02-02T16:06:37.781280+00:00"
+    },
+    {
+      "path": "ui-dashboard/src/App.tsx",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 9538,
+      "sha256": "9f7c45420a9bd22faca3c57c90b92896c82c630b459127dc3b36260be6f49f9b",
+      "last_modified_utc": "2026-02-06T11:18:36.522949+00:00"
+    },
+    {
+      "path": "ui-dashboard/src/components/TaskSequencer.tsx",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 10174,
+      "sha256": "a60db2a22eaa1f9515e7060dcb6355296365ed90dc01e4b8ddca94262e9a8d03",
+      "last_modified_utc": "2026-02-06T11:04:08.704193+00:00"
+    },
+    {
+      "path": "ui-dashboard/index.html",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 314,
+      "sha256": "42be42ffd6a8c528041aaf9944cc1bf639571c8faa5feace648131ed2ed11fdd",
+      "last_modified_utc": "2026-02-06T11:05:04.581137+00:00"
+    },
+    {
+      "path": "ui-dashboard-backend/app.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 12286,
+      "sha256": "82da576852822aa93d1f5c76300beb860e6bfd3384dbf35f6723729e4b7aa67c",
+      "last_modified_utc": "2026-02-06T11:19:05.098447+00:00"
+    },
+    {
+      "path": "ui-dashboard-backend/main.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 301,
+      "sha256": "8587970363bf4bd2eb9e13085ff1455aafe94c5fffe2972bfce86a956e9053e4",
+      "last_modified_utc": "2026-02-06T11:17:17.756290+00:00"
+    },
+    {
+      "path": "ui-dashboard-backend/README.md",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 1064,
+      "sha256": "af4ed7d8b933ebeb8ba1b75dae2844aa3618c6af51175a480507b204af47fb97",
+      "last_modified_utc": "2026-02-06T11:19:46.441573+00:00"
+    },
+    {
+      "path": "services/intelligence/pattern_correlation_engine.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 12800,
+      "sha256": "a24d9f8aa1e3b85cddc86df54bed28ed2441293585d71423f4502211464b29d9",
+      "last_modified_utc": "2026-02-06T11:17:45.474899+00:00"
+    },
+    {
+      "path": "services/complexity_coordinator/unified_complexity.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 15169,
+      "sha256": "21b432763d4afaa02a10890f51ea16c5affc7bdaa338e0a39ae3a05ac08a86a0",
+      "last_modified_utc": "2026-02-06T10:04:15.076804+00:00"
+    },
+    {
+      "path": "services/complexity_coordinator/README.md",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 853,
+      "sha256": "f9cc9348b81d99cd4440b5e4fb6b1f0913fb09e43371c74d5350d6b08039ef47",
+      "last_modified_utc": "2026-02-06T11:22:28.219149+00:00"
+    },
+    {
+      "path": "tests/unit/test_ui_dashboard_backend_api.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 3607,
+      "sha256": "181aef7610467a562b96ef182c74fc99c852792739288cfc0e4959ba7729b7b7",
+      "last_modified_utc": "2026-02-06T11:18:55.582958+00:00"
+    },
+    {
+      "path": "tests/unit/test_pattern_correlation_engine.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 2949,
+      "sha256": "0f7a797f5402922038080dcb9419a301384d936ce953f0cb56a6b7b96dbfa30f",
+      "last_modified_utc": "2026-02-06T11:18:16.569228+00:00"
+    },
+    {
+      "path": "tests/unit/test_unified_complexity_coordinator.py",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 3403,
+      "sha256": "8c678ef2eafeefdf1745bbd0c4f13c2524c1eca4cd71546ef877456c14c06d10",
+      "last_modified_utc": "2026-02-06T11:22:18.620112+00:00"
+    },
+    {
+      "path": "reports/service_inventory_snapshot.json",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 8209,
+      "sha256": "ce549e75f0d36212722880ea14bbfc8b4cf99ef5941e2f1846b885fd9e5521bc",
+      "last_modified_utc": "2026-02-06T09:21:42.432340+00:00"
+    },
+    {
+      "path": "reports/component_feature_inventory.json",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 10745,
+      "sha256": "8913795b2ea34a5a2a7d2779ecc805f18e47964abad685c30ccd3c03aea47dde",
+      "last_modified_utc": "2026-02-06T09:23:37.749136+00:00"
+    },
+    {
+      "path": "reports/component_code_metrics.json",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 4703,
+      "sha256": "f6aa12e27d29425048a4b6045a6f86d3b1eb88eda41984c6f8554f4890f3810d",
+      "last_modified_utc": "2026-02-06T09:24:38.103074+00:00"
+    },
+    {
+      "path": "reports/service_maturity_signals.json",
+      "kind": "evidence",
+      "exists": true,
+      "size_bytes": 5619,
+      "sha256": "6b0b077044cada7da9a2f6c71e47a413d5b73a02f80d7816c1e5fdf0da7faefb",
+      "last_modified_utc": "2026-02-06T09:26:59.547365+00:00"
+    }
+  ],
+  "edges": [
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/CONPORT_MASTER_HISTORY.md",
+      "label": "1. ConPort",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/ADHD_ENGINE_MASTER_HISTORY.md",
+      "label": "2. ADHD Engine",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/TASK_ORCHESTRATOR_MASTER_HISTORY.md",
+      "label": "3. Task Orchestrator",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/SERENA_MASTER_HISTORY.md",
+      "label": "4. Serena",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/DOPECON_BRIDGE_MASTER_HISTORY.md",
+      "label": "5. DopeconBridge",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/WORKING_MEMORY_ASSISTANT_MASTER_HISTORY.md",
+      "label": "6. Working Memory",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/SESSION_DASHBOARD_MASTER_HISTORY.md",
+      "label": "7. Session Manager",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/DOPE_CONTEXT_MASTER_HISTORY.md",
+      "label": "8. Dope Context",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/GENETIC_ML_SERVICES_MASTER_HISTORY.md",
+      "label": "9. Genetic Agent",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/MONITORING_MASTER_HISTORY.md",
+      "label": "10. Monitoring",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/INTELLIGENCE_SUPPORT_MASTER_HISTORY.md",
+      "label": "11. Intelligence",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/TASK_EXECUTION_MASTER_HISTORY.md",
+      "label": "12. Task Execution",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/ENVIRONMENT_SERVICES_MASTER_HISTORY.md",
+      "label": "13. Environment",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/INTEGRATION_SERVICES_MASTER_HISTORY.md",
+      "label": "14. Integrations",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/DATA_QUERY_SERVICES_MASTER_HISTORY.md",
+      "label": "15. Data & Query",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/archive/services/history/NOTIFICATIONS_UI_MASTER_HISTORY.md",
+      "label": "16. Notifications",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
+      "label": "Unbuilt Features",
+      "target_exists": true
+    },
+    {
+      "from": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "to": "docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md",
+      "label": "Project Archaeology",
+      "target_exists": true
+    }
+  ],
+  "verification_commands": [
+    {
+      "command": "pytest -q --no-cov tests/arch/test_registry_compose_alignment.py",
+      "result": "pass",
+      "category": "contract_alignment"
+    },
+    {
+      "command": "pytest -q --no-cov services/agents/test_tool_orchestrator.py services/agents/test_cognitive_guardian_kg.py",
+      "result": "pass",
+      "category": "agent_logic"
+    },
+    {
+      "command": "pytest -q --no-cov tests/unit/test_taskmaster_bridge.py::TestTaskMasterMCPClient::test_parse_prd_failure",
+      "result": "pass",
+      "category": "taskmaster_contract"
+    },
+    {
+      "command": "pytest -q --no-cov tests/unit/test_ui_dashboard_backend_api.py tests/unit/test_pattern_correlation_engine.py tests/unit/test_unified_complexity_coordinator.py",
+      "result": "pass",
+      "category": "new_quality_gates"
+    },
+    {
+      "command": "npm --prefix ui-dashboard run build",
+      "result": "pass",
+      "category": "ui_build"
+    }
+  ]
+}

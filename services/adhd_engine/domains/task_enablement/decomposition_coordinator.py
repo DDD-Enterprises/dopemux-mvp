@@ -8,7 +8,7 @@ Coordinates task decomposition between:
 
 This is the central orchestration layer for automatic and explicit decomposition.
 """
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Awaitable, Callable, Dict, Any, Optional, Tuple, Union
 from dataclasses import dataclass, field
 from datetime import datetime
 import logging
@@ -16,7 +16,6 @@ import asyncio
 
 from .task_decomposition_assistant import (
     TaskDecompositionAssistant,
-    TaskDecomposition,
     TaskComplexity
 )
 from ...core.task_orchestrator_client import TaskOrchestratorClient
@@ -57,7 +56,9 @@ class DecompositionCoordinator:
         self,
         decomposer: TaskDecompositionAssistant,
         task_orchestrator_url: str = "http://localhost:8000",
-        bridge_client = None  # AsyncDopeconBridgeClient
+        bridge_client = None,  # AsyncDopeconBridgeClient
+        adhd_state_provider: Optional[Callable[[], Union[Dict[str, Any], Awaitable[Dict[str, Any]]]]] = None,
+        consent_provider: Optional[Callable[[DecompositionRequest], Union[str, bool, Awaitable[Union[str, bool]]]]] = None,
     ):
         """
         Initialize decomposition coordinator.
@@ -66,10 +67,14 @@ class DecompositionCoordinator:
             decomposer: ADHD Engine task decomposition assistant
             task_orchestrator_url: Task Orchestrator API URL
             bridge_client: DopeconBridge client for events (optional)
+            adhd_state_provider: Optional callback for current ADHD state
+            consent_provider: Optional callback for decomposition consent
         """
         self.decomposer = decomposer
         self.task_orchestrator_url = task_orchestrator_url
         self.bridge_client = bridge_client
+        self.adhd_state_provider = adhd_state_provider
+        self.consent_provider = consent_provider
         self.pending_requests: Dict[str, DecompositionRequest] = {}
         
         logger.info("DecompositionCoordinator initialized")
@@ -107,12 +112,16 @@ class DecompositionCoordinator:
             return (True, f"Task exceeds 2h threshold ({estimated_minutes}min)")
         
         # 2. Complexity-based trigger
-        complexity_result = await self.decomposer.analyze_task_complexity(description)
-        if complexity_result.score > 0.6:
+        complexity_level, _ = self.decomposer.analyze_task_complexity(
+            description,
+            estimated_minutes,
+        )
+        complexity_score = self._complexity_level_to_score(complexity_level)
+        if complexity_score > 0.6:
             return (
                 True,
-                f"High complexity detected ({complexity_result.score:.2f}, "
-                f"level: {complexity_result.complexity_level.value})"
+                f"High complexity detected ({complexity_score:.2f}, "
+                f"level: {complexity_level.value})"
             )
         
         # 3. Keyword trigger
@@ -130,7 +139,8 @@ class DecompositionCoordinator:
         # 4. Paralysis detection (task sitting in TODO >24h)
         if created_at and status == "TODO":
             try:
-                created_dt = datetime.fromisoformat(created_at)
+                created_iso = str(created_at).replace("Z", "+00:00")
+                created_dt = datetime.fromisoformat(created_iso)
                 age_hours = (datetime.now() - created_dt).total_seconds() / 3600
                 if age_hours > 24:
                     return (
@@ -175,19 +185,27 @@ class DecompositionCoordinator:
         """
         energy = adhd_state.get("energy_level", "medium")
         attention = adhd_state.get("attention_state", "focused")
+        task_id = str(task.get("id", "unknown"))
+        task_desc = task.get("description", "Unknown task")
+        request = DecompositionRequest(
+            task_id=task_id,
+            task_description=task_desc,
+            estimated_minutes=int(task.get("estimated_minutes", 30)),
+            complexity_score=float(task.get("complexity_score", 0.5)),
+            reason=reason,
+            adhd_context=adhd_state,
+        )
         
         # Don't interrupt hyperfocus - queue for later
         if attention == "hyperfocus":
             logger.info(
-                f"Queueing decomposition consent request for task {task['id']} "
+                f"Queueing decomposition consent request for task {task_id} "
                 "(user in hyperfocus, will ask later)"
             )
-            # TODO: Queue for later notification
+            self.pending_requests[task_id] = request
             return False
         
         # Build consent message (verbosity based on energy)
-        task_desc = task.get("description", "Unknown task")
-        
         if energy == "low":
             # Minimal message for low energy
             message = (
@@ -216,31 +234,33 @@ Would you like to decompose this task?
 
 Your choice: """
         
-        # Use appropriate notification channel based on attention state
-        if attention == "distracted":
-            # Gentle, non-intrusive notification (future: voice or mobile push)
-            logger.info(f"Gentle notification for distracted user: {message[:100]}...")
-            # TODO: Implement gentle notification (terminal banner, voice, mobile)
-            response = "y"  # Default to yes for now
-        else:
-            # Normal CLI prompt (future: implement proper CLI input)
-            logger.info(f"Consent request: {message}")
-            # TODO: Implement proper CLI prompt
-            response = "y"  # Default to yes for now (will be replaced with actual input)
+        logger.info(
+            f"{'Gentle' if attention == 'distracted' else 'Standard'} decomposition consent request: "
+            f"{message[:120]}..."
+        )
+        response = await self._resolve_consent_response(request, default_response="y")
         
         # Parse response
-        response_lower = response.lower().strip()
+        response_lower = str(response).lower().strip()
         
         if response_lower in ["y", "yes", ""]:
-            logger.info(f"User consented to decompose task {task['id']}")
+            logger.info(f"User consented to decompose task {task_id}")
             return True
         elif response_lower in ["p", "preview"]:
-            logger.info(f"User requested preview for task {task['id']}")
-            # TODO: Generate and show preview
-            # For now, treat as consent
+            preview = self.decomposer.decompose_task(
+                task_id=task_id,
+                task_description=task_desc,
+                time_estimate=int(task.get("estimated_minutes", 30)),
+                current_energy=energy,
+            )
+            preview_steps = [mt.description for mt in preview.micro_tasks[:3]]
+            logger.info(
+                f"Decomposition preview for {task_id}: "
+                f"{' | '.join(preview_steps) if preview_steps else 'no micro-tasks generated'}"
+            )
             return True
         else:
-            logger.info(f"User declined decomposition for task {task['id']}")
+            logger.info(f"User declined decomposition for task {task_id}")
             return False
     
     async def decompose_task(
@@ -284,12 +304,7 @@ Your choice: """
         
         # Get current ADHD state if not provided
         if adhd_context is None:
-            # TODO: Get from ADHD Engine state tracker
-            adhd_context = {
-                "energy_level": "medium",
-                "attention_state": "focused",
-                "cognitive_load": 0.5
-            }
+            adhd_context = await self._get_current_adhd_state()
         
         # Get task from Task Orchestrator
         async with TaskOrchestratorClient(self.task_orchestrator_url) as orch_client:
@@ -304,12 +319,14 @@ Your choice: """
             if not task:
                 raise ValueError(f"Task {task_id} not found in Task Orchestrator")
             
-            complexity = await self.decomposer.analyze_task_complexity(
-                task.get("description", "")
+            complexity_level, _ = self.decomposer.analyze_task_complexity(
+                task.get("description", ""),
+                task.get("estimated_minutes"),
             )
+            complexity_score = self._complexity_level_to_score(complexity_level)
             logger.info(
-                f"Task complexity: {complexity.score:.2f} "
-                f"({complexity.complexity_level.value})"
+                f"Task complexity: {complexity_score:.2f} "
+                f"({complexity_level.value})"
             )
             
             # Determine decomposition method
@@ -350,7 +367,7 @@ Your choice: """
                         "subtask_ids": breakdown.get("subtask_ids", []),
                         "method": method,
                         "total_duration": breakdown.get("total_estimated_minutes"),
-                        "complexity_score": complexity.score,
+                        "complexity_score": complexity_score,
                         "adhd_context": adhd_context
                     },
                     source="adhd-engine"
@@ -396,12 +413,7 @@ Your choice: """
         logger.info(f"Processing {event_type} for task {task_id}")
         
         # Get current ADHD state
-        # TODO: Get from ADHD Engine state tracker
-        adhd_state = {
-            "energy_level": "medium",
-            "attention_state": "focused",
-            "cognitive_load": 0.5
-        }
+        adhd_state = await self._get_current_adhd_state()
         
         # Auto-detection
         should_decompose, reason = await self.should_auto_decompose(
@@ -415,10 +427,14 @@ Your choice: """
         logger.info(f"Task {task_id} needs decomposition: {reason}")
         
         # Estimate subtask count for consent message
-        complexity = await self.decomposer.analyze_task_complexity(
-            task_data.get("description", "")
+        complexity_level, _ = self.decomposer.analyze_task_complexity(
+            task_data.get("description", ""),
+            task_data.get("estimated_minutes"),
         )
-        estimated_subtasks = min(7, max(3, int(complexity.score * 10)))
+        estimated_subtasks = min(
+            7,
+            max(3, int(self._complexity_level_to_score(complexity_level) * 10)),
+        )
         
         # Request user consent
         user_consent = await self.request_decomposition_consent(
@@ -434,3 +450,52 @@ Your choice: """
                 logger.error(f"Auto-decomposition failed for task {task_id}: {e}")
         else:
             logger.info(f"User declined auto-decomposition for task {task_id}")
+
+    def _complexity_level_to_score(self, level: TaskComplexity) -> float:
+        """Map TaskComplexity enum to normalized 0.0-1.0 score."""
+        mapping = {
+            TaskComplexity.TRIVIAL: 0.10,
+            TaskComplexity.SIMPLE: 0.25,
+            TaskComplexity.MODERATE: 0.50,
+            TaskComplexity.COMPLEX: 0.70,
+            TaskComplexity.VERY_COMPLEX: 0.85,
+            TaskComplexity.EPIC: 0.95,
+        }
+        return mapping.get(level, 0.5)
+
+    async def _resolve_consent_response(
+        self,
+        request: DecompositionRequest,
+        default_response: str = "y",
+    ) -> Union[str, bool]:
+        """Resolve consent response via callback when available."""
+        if not self.consent_provider:
+            return default_response
+        try:
+            response = self.consent_provider(request)
+            if asyncio.iscoroutine(response):
+                response = await response
+            return response
+        except Exception as exc:
+            logger.warning(f"Consent provider failed, using default response: {exc}")
+            return default_response
+
+    async def _get_current_adhd_state(self) -> Dict[str, Any]:
+        """
+        Retrieve current ADHD state from provider with safe fallback.
+        """
+        if self.adhd_state_provider:
+            try:
+                state = self.adhd_state_provider()
+                if asyncio.iscoroutine(state):
+                    state = await state
+                if isinstance(state, dict) and state:
+                    return state
+            except Exception as exc:
+                logger.warning(f"ADHD state provider failed, using fallback state: {exc}")
+
+        return {
+            "energy_level": "medium",
+            "attention_state": "focused",
+            "cognitive_load": 0.5,
+        }

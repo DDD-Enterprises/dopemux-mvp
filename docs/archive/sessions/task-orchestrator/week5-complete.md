@@ -1,10 +1,13 @@
 ---
 id: week5-complete
 title: Week5 Complete
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week5 Complete (explanation) for dopemux documentation and developer workflows.
 ---
 # Week 5 Complete: ADHD Routing + Prioritization
 
@@ -20,10 +23,10 @@ next_review: '2026-05-03'
 
 **Files Modified**:
 - `enhanced_orchestrator.py` (+80 lines in commit 04e17ccd)
-  * Import CognitiveGuardian
-  * Initialize ADHD agents
-  * Activate readiness checks
-  * Enable intelligent routing
+  - Import CognitiveGuardian
+  - Initialize ADHD agents
+  - Activate readiness checks
+  - Enable intelligent routing
 
 **Features**:
 1. Energy + complexity + attention matching
@@ -43,10 +46,10 @@ next_review: '2026-05-03'
 
 **Files Created**:
 - `adhd_prioritization_demo.py` (305 lines)
-  * Standalone ADHDTaskPrioritizer class
-  * Energy/complexity scoring algorithm
-  * Human-readable reason generation
-  * Validated demo with 6 test tasks
+  - Standalone ADHDTaskPrioritizer class
+  - Energy/complexity scoring algorithm
+  - Human-readable reason generation
+  - Validated demo with 6 test tasks
 
 **Algorithm**:
 ```python

@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Claude Code Tools Integration Plan (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Claude-Code-Tools Integration Implementation Plan
 
@@ -113,11 +117,11 @@ next_review: '2026-02-08'
 
 **Success Criteria Met**: ✅ All 4 RFC workflow scenarios operational with smooth AI control
 
-3. Interactive Debugging Support
+1. Interactive Debugging Support
    - Automated pdb/script interaction workflows
    - Real-time output monitoring and response
 
-4. Workflow Scenario Validation
+2. Workflow Scenario Validation
    - Interactive script testing
    - Automated debugging with pdb
    - Agent-to-agent collaboration

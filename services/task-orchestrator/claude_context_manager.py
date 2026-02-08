@@ -697,8 +697,6 @@ class ClaudeContextManager:
 
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     async def _write_claude_md(self, content: str) -> None:
         """Write updated content to Claude.md."""
         try:
@@ -766,6 +764,6 @@ This project uses automated PM workflow orchestration with Leantime integration.
             try:
                 await self.monitor_task
             except asyncio.CancelledError:
-                pass
+                logger.debug("Claude.md context monitor cancelled")
 
         logger.info("✅ Claude.md Context Manager shutdown complete")

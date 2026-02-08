@@ -1,10 +1,14 @@
 """PAL MCP Client for multi-model reasoning and code generation."""
 
+import logging
+
 import asyncio
 from typing import Dict, Any, Optional, List
 import httpx
 import json
 
+
+logger = logging.getLogger(__name__)
 
 class PALClient:
     """Client for PAL MCP multi-model reasoning tools."""

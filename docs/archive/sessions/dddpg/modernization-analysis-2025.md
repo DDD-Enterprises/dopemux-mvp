@@ -1,10 +1,14 @@
 ---
 id: modernization-analysis-2025
 title: Modernization Analysis 2025
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Modernization Analysis 2025 (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # DDDPG Service: Deep Modernization Analysis & Build Plan
 **Date**: 2025-10-29

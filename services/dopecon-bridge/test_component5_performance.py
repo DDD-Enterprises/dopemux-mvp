@@ -15,12 +15,16 @@ Tests HTTP communication latency and throughput for cross-plane queries.
 ConPort/UI → DopeconBridge (3016) → Orchestrator (3017) → ConPort MCP
 """
 
+import logging
+
 import asyncio
 import aiohttp
 import time
 import statistics
 from typing import List, Dict, Any
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 # Test configuration
 BRIDGE_URL = "http://localhost:3016"
@@ -86,10 +90,7 @@ async def warmup(session: aiohttp.ClientSession, url: str):
             async with session.get(url) as resp:
                 await resp.json()
         except Exception as e:
-            pass
-
-
-            logger.error(f"Error: {e}")
+            logger.debug("Warmup request failed for %s: %s", url, e)
 async def test_dopecon_bridge_endpoints():
     """Test DopeconBridge → Orchestrator latency."""
     print("\n" + "="*70)

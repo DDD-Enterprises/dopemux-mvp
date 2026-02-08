@@ -26,6 +26,8 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+logger = logging.getLogger(__name__)
+
 # ConPort-KG imports (sys.path approach validated in deep analysis)
 import sys
 import os
@@ -43,8 +45,6 @@ except ImportError as e:
         pass
     class AttentionStateMonitor:
         pass
-
-logger = logging.getLogger(__name__)
 
 
 class DDDPGKG:

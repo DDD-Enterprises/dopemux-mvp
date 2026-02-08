@@ -1,0 +1,77 @@
+{
+  "generated_at_utc": "2026-02-06T14:42:16.066856+00:00",
+  "toolchain": {
+    "snapshot_exporter": "scripts/export_conport_sqlite_snapshot.py",
+    "bundle_builder": "scripts/deploy/migration/build_import_bundle_from_snapshot.py",
+    "importer": "scripts/deploy/migration/import_to_postgresql_age.py"
+  },
+  "bundles_tested": 5,
+  "all_passed": true,
+  "results": [
+    {
+      "bundle": "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp___dopemux__context_db__conport_import_bundle.json",
+      "returncode": 0,
+      "dry_run_passed": true,
+      "counts": {
+        "decisions": 0,
+        "progress_entries": 0,
+        "custom_data": 0,
+        "context_links": 0,
+        "system_patterns": 0,
+        "contexts": 0
+      }
+    },
+    {
+      "bundle": "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+      "returncode": 0,
+      "dry_run_passed": true,
+      "counts": {
+        "decisions": 420,
+        "progress_entries": 496,
+        "custom_data": 52,
+        "context_links": 166,
+        "system_patterns": 7,
+        "contexts": 2
+      }
+    },
+    {
+      "bundle": "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+      "returncode": 0,
+      "dry_run_passed": true,
+      "counts": {
+        "decisions": 294,
+        "progress_entries": 209,
+        "custom_data": 14,
+        "context_links": 111,
+        "system_patterns": 3,
+        "contexts": 2
+      }
+    },
+    {
+      "bundle": "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+      "returncode": 0,
+      "dry_run_passed": true,
+      "counts": {
+        "decisions": 294,
+        "progress_entries": 209,
+        "custom_data": 14,
+        "context_links": 111,
+        "system_patterns": 3,
+        "contexts": 2
+      }
+    },
+    {
+      "bundle": "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json",
+      "returncode": 0,
+      "dry_run_passed": true,
+      "counts": {
+        "decisions": 294,
+        "progress_entries": 209,
+        "custom_data": 14,
+        "context_links": 111,
+        "system_patterns": 3,
+        "contexts": 2
+      }
+    }
+  ]
+}

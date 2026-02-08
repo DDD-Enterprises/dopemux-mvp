@@ -1,0 +1,1128 @@
+{
+  "artifact": "reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json",
+  "generated_at_utc": "2026-02-07T00:00:00Z",
+  "scope": "tracked files under src/services/tests/docs excluding docs/archive, docs/05-audit-reports, docs/06-research",
+  "summary": {
+    "files_with_hits": 38,
+    "code_files": 20,
+    "test_files": 8,
+    "doc_files": 10,
+    "bridge_legacy_route_ref_count": 5,
+    "legacy_endpoint_ref_count": 11,
+    "adhd_endpoint_ref_count": 16,
+    "conport_tool_ref_count": 22
+  },
+  "records": [
+    {
+      "path": "docs/03-reference/serena-v2-mcp-tools.md",
+      "scope": "docs",
+      "hit_count": 2,
+      "hits": [
+        {
+          "line": 1097,
+          "kind": "semantic_token",
+          "text": "**Total Tools**: 15 operational, 1 deferred (semantic_search for Phase 3)"
+        },
+        {
+          "line": 1100,
+          "kind": "semantic_token",
+          "text": "preferred paths; ConPort semantic-search remains available only as a compatibility shim."
+        }
+      ]
+    },
+    {
+      "path": "docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md",
+      "scope": "docs",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 99,
+          "kind": "conport_tool_ref",
+          "text": "- `semantic_search_conport` (deprecated compatibility shim; keyword fallback only, vector retrieval delegated to dope-context/serena)"
+        }
+      ]
+    },
+    {
+      "path": "docs/04-explanation/architecture/ARCHITECTURE-CONSOLIDATION-SYNTHESIS.md",
+      "scope": "docs",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 425,
+          "kind": "conport_tool_ref",
+          "text": "1. Remove `conport/semantic_search_conport` MCP tool"
+        }
+      ]
+    },
+    {
+      "path": "docs/04-explanation/architecture/architecture-3.0-implementation.md",
+      "scope": "docs",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 148,
+          "kind": "semantic_token",
+          "text": "- \u26a0\ufe0f `semantic_search` remains available only as a deprecated keyword-fallback compatibility shim (vector retrieval delegated to dope-context/serena)"
+        }
+      ]
+    },
+    {
+      "path": "docs/systems/agents/week4-spec.md",
+      "scope": "docs",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 667,
+          "kind": "semantic_token",
+          "text": "4. `test_semantic_search_accuracy()` - Search quality"
+        }
+      ]
+    },
+    {
+      "path": "docs/systems/conport/custom-instructions/mem4sprint.md",
+      "scope": "docs",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 139,
+          "kind": "conport_tool_ref",
+          "text": "note: \"Prefer dope-context/Serena retrieval for conceptual queries; use semantic_search_conport only as a compatibility fallback when primary paths are unavailable. Keep retrieved context small and targeted.\""
+        }
+      ]
+    },
+    {
+      "path": "docs/systems/conport/release-notes.md",
+      "scope": "docs",
+      "hit_count": 2,
+      "hits": [
+        {
+          "line": 28,
+          "kind": "conport_tool_ref",
+          "text": "- **Affected Tools:** `get_decisions`, `get_progress`, `get_system_patterns`, `get_custom_data`, `search_decisions_fts`, `search_custom_data_value_fts`, `search_project_glossary_fts`, `get_recent_activity_summary`, `semantic_search_conport`"
+        },
+        {
+          "line": 415,
+          "kind": "conport_tool_ref",
+          "text": "- **New Semantic Search Tool (`semantic_search_conport`)**:"
+        }
+      ]
+    },
+    {
+      "path": "docs/systems/conport/v2-architecture.md",
+      "scope": "docs",
+      "hit_count": 4,
+      "hits": [
+        {
+          "line": 264,
+          "kind": "semantic_token",
+          "text": "async def semantic_search_flow(query_text: str, workspace_id: str):"
+        },
+        {
+          "line": 331,
+          "kind": "semantic_token",
+          "text": "initial_results = await quick_semantic_search(query, limit=5)"
+        },
+        {
+          "line": 392,
+          "kind": "conport_tool_ref",
+          "text": "Compatibility note (2026-02-07): `semantic_search_conport_v2` in this section"
+        },
+        {
+          "line": 404,
+          "kind": "conport_tool_ref",
+          "text": "\"semantic_search_conport_v2\": \"Qdrant-powered semantic search\","
+        }
+      ]
+    },
+    {
+      "path": "docs/systems/dope-context/architecture.md",
+      "scope": "docs",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 702,
+          "kind": "semantic_token",
+          "text": "8. Enhanced MCP tools: `semantic_search`, `docurag_query`"
+        }
+      ]
+    },
+    {
+      "path": "docs/systems/task-orchestrator-analysis.md",
+      "scope": "docs",
+      "hit_count": 2,
+      "hits": [
+        {
+          "line": 358,
+          "kind": "semantic_token",
+          "text": "- `semantic_search()` - Primary semantic task search (prefers primary semantic MCP tool with legacy fallback)"
+        },
+        {
+          "line": 359,
+          "kind": "conport_tool_ref",
+          "text": "- `semantic_search_conport()` - Backward-compatible alias to `semantic_search()`"
+        }
+      ]
+    },
+    {
+      "path": "services/conport/http_server.py",
+      "scope": "code",
+      "hit_count": 3,
+      "hits": [
+        {
+          "line": 624,
+          "kind": "adhd_endpoint_ref",
+          "text": "@app.post(\"/api/adhd/semantic-search\")"
+        },
+        {
+          "line": 625,
+          "kind": "semantic_token",
+          "text": "async def semantic_search("
+        },
+        {
+          "line": 642,
+          "kind": "adhd_endpoint_ref",
+          "text": "\"/api/adhd/semantic-search is deprecated and running in keyword fallback mode; \""
+        }
+      ]
+    },
+    {
+      "path": "services/conport_kg_ui/src/fixtures/decisions.json",
+      "scope": "code",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 30,
+          "kind": "semantic_token",
+          "text": "\"implementation\": \"Deployed PostgreSQL with AGE extension on port 5455, implemented 9 core API operations (decisions, progress, patterns, custom_data, semantic_search, linked_items), added ADHD metadata (complexity scoring, energy matching,"
+        }
+      ]
+    },
+    {
+      "path": "services/dddpg/bridge_adapter.py",
+      "scope": "code",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 133,
+          "kind": "semantic_token",
+          "text": "async def semantic_search("
+        }
+      ]
+    },
+    {
+      "path": "services/dopecon-bridge/dopecon_bridge/conport_semantic_proxy.py",
+      "scope": "code",
+      "hit_count": 5,
+      "hits": [
+        {
+          "line": 14,
+          "kind": "semantic_token",
+          "text": "async def run_semantic_search_with_fallback("
+        },
+        {
+          "line": 22,
+          "kind": "semantic_token",
+          "text": "Query ConPort semantic-search endpoints with compatibility fallback."
+        },
+        {
+          "line": 24,
+          "kind": "adhd_endpoint_ref",
+          "text": "Primary endpoint: `/api/adhd/semantic-search`"
+        },
+        {
+          "line": 25,
+          "kind": "legacy_endpoint_ref",
+          "text": "Fallback endpoint: `/api/semantic-search` (only on 404/405 from primary)"
+        },
+        {
+          "line": 27,
+          "kind": "legacy_endpoint_ref",
+          "text": "endpoints = [\"/api/adhd/semantic-search\", \"/api/semantic-search\"]"
+        }
+      ]
+    },
+    {
+      "path": "services/dopecon-bridge/main.py",
+      "scope": "code",
+      "hit_count": 13,
+      "hits": [
+        {
+          "line": 84,
+          "kind": "semantic_token",
+          "text": "from dopecon_bridge.conport_semantic_proxy import run_semantic_search_with_fallback"
+        },
+        {
+          "line": 578,
+          "kind": "semantic_token",
+          "text": "async def semantic_search("
+        },
+        {
+          "line": 590,
+          "kind": "adhd_endpoint_ref",
+          "text": "Preferred endpoint is `/api/adhd/semantic-search`; fallback to legacy"
+        },
+        {
+          "line": 591,
+          "kind": "legacy_endpoint_ref",
+          "text": "`/api/semantic-search` on 404/405 to preserve no-breaking behavior."
+        },
+        {
+          "line": 607,
+          "kind": "semantic_token",
+          "text": "return await run_semantic_search_with_fallback("
+        },
+        {
+          "line": 1855,
+          "kind": "bridge_legacy_route_ref",
+          "text": "@app.post(\"/conport/semantic_search\")"
+        },
+        {
+          "line": 1856,
+          "kind": "semantic_token",
+          "text": "async def conport_semantic_search(request: ConPortSemanticSearchRequest):"
+        },
+        {
+          "line": 1860,
+          "kind": "bridge_legacy_route_ref",
+          "text": "Preserves the historic `/conport/semantic_search` contract while routing to"
+        },
+        {
+          "line": 1861,
+          "kind": "adhd_endpoint_ref",
+          "text": "ConPort's current endpoint (`/api/adhd/semantic-search`) and falling back"
+        },
+        {
+          "line": 1865,
+          "kind": "semantic_token",
+          "text": "result = await conport_client.semantic_search("
+        },
+        {
+          "line": 1877,
+          "kind": "semantic_token",
+          "text": "logger.error(\"\u274c ConPort semantic_search proxy failed: %s\", exc)"
+        },
+        {
+          "line": 1878,
+          "kind": "semantic_token",
+          "text": "raise HTTPException(status_code=502, detail=f\"ConPort semantic_search proxy failed: {exc}\")"
+        },
+        {
+          "line": 3133,
+          "kind": "semantic_token",
+          "text": "- semantic_search"
+        }
+      ]
+    },
+    {
+      "path": "services/serena/bridge_adapter.py",
+      "scope": "code",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 210,
+          "kind": "semantic_token",
+          "text": "async def semantic_search("
+        }
+      ]
+    },
+    {
+      "path": "services/serena/claude_context_integration.py",
+      "scope": "code",
+      "hit_count": 11,
+      "hits": [
+        {
+          "line": 127,
+          "kind": "semantic_token",
+          "text": "async def enhanced_semantic_search("
+        },
+        {
+          "line": 489,
+          "kind": "semantic_token",
+          "text": "base_results = await self.enhanced_semantic_search("
+        },
+        {
+          "line": 579,
+          "kind": "semantic_token",
+          "text": "return await self.enhanced_semantic_search(query, workspace_path, limit)"
+        },
+        {
+          "line": 589,
+          "kind": "semantic_token",
+          "text": "return await self.enhanced_semantic_search(query, workspace_path, limit)"
+        },
+        {
+          "line": 639,
+          "kind": "semantic_token",
+          "text": "if request_type == \"semantic_search\":"
+        },
+        {
+          "line": 640,
+          "kind": "semantic_token",
+          "text": "await self._prefetch_semantic_search(request)"
+        },
+        {
+          "line": 652,
+          "kind": "semantic_token",
+          "text": "async def _prefetch_semantic_search(self, request: Dict[str, Any]) -> None:"
+        },
+        {
+          "line": 671,
+          "kind": "semantic_token",
+          "text": "results = await self.enhanced_semantic_search("
+        },
+        {
+          "line": 704,
+          "kind": "semantic_token",
+          "text": "await self._prefetch_semantic_search({"
+        },
+        {
+          "line": 723,
+          "kind": "semantic_token",
+          "text": "await self._prefetch_semantic_search({"
+        },
+        {
+          "line": 830,
+          "kind": "semantic_token",
+          "text": "\"semantic_search\","
+        }
+      ]
+    },
+    {
+      "path": "services/serena/layer1_validation.py",
+      "scope": "code",
+      "hit_count": 4,
+      "hits": [
+        {
+          "line": 332,
+          "kind": "semantic_token",
+          "text": "\"semantic_search\": False,"
+        },
+        {
+          "line": 354,
+          "kind": "semantic_token",
+          "text": "search_results = await self.components[\"claude_context\"].enhanced_semantic_search("
+        },
+        {
+          "line": 360,
+          "kind": "semantic_token",
+          "text": "claude_results[\"semantic_search\"] = True"
+        },
+        {
+          "line": 368,
+          "kind": "semantic_token",
+          "text": "\"semantic_search\","
+        }
+      ]
+    },
+    {
+      "path": "services/serena/mcp_server.py",
+      "scope": "code",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 1606,
+          "kind": "semantic_token",
+          "text": "\"phase_2_deferred\": [\"semantic_search\"],"
+        }
+      ]
+    },
+    {
+      "path": "services/session-manager/src/conport_client.py",
+      "scope": "code",
+      "hit_count": 3,
+      "hits": [
+        {
+          "line": 137,
+          "kind": "semantic_token",
+          "text": "def semantic_search("
+        },
+        {
+          "line": 158,
+          "kind": "bridge_legacy_route_ref",
+          "text": "f\"{self.dopecon_bridge_url}/conport/semantic_search\","
+        },
+        {
+          "line": 248,
+          "kind": "semantic_token",
+          "text": "results = client.semantic_search(\"authentication decisions\")"
+        }
+      ]
+    },
+    {
+      "path": "services/session-manager/src/conport_http_client.py",
+      "scope": "code",
+      "hit_count": 4,
+      "hits": [
+        {
+          "line": 354,
+          "kind": "semantic_token",
+          "text": "async def semantic_search("
+        },
+        {
+          "line": 383,
+          "kind": "bridge_legacy_route_ref",
+          "text": "f\"{self.bridge_url}/conport/semantic_search\","
+        },
+        {
+          "line": 803,
+          "kind": "semantic_token",
+          "text": "def semantic_search("
+        },
+        {
+          "line": 830,
+          "kind": "bridge_legacy_route_ref",
+          "text": "f\"{self.bridge_url}/conport/semantic_search\","
+        }
+      ]
+    },
+    {
+      "path": "services/session-manager/src/context_protocol.py",
+      "scope": "code",
+      "hit_count": 4,
+      "hits": [
+        {
+          "line": 184,
+          "kind": "semantic_token",
+          "text": "def semantic_search(self, query: str, top_k: int = 5) -> list[AIArtifact]:"
+        },
+        {
+          "line": 197,
+          "kind": "semantic_token",
+          "text": ">>> artifacts = protocol.semantic_search("
+        },
+        {
+          "line": 206,
+          "kind": "semantic_token",
+          "text": "results = client.semantic_search("
+        },
+        {
+          "line": 296,
+          "kind": "semantic_token",
+          "text": "related = self.semantic_search(task_description, top_k=5)"
+        }
+      ]
+    },
+    {
+      "path": "services/shared/conport_client/README.md",
+      "scope": "code",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 22,
+          "kind": "semantic_token",
+          "text": "\u2502  - semantic_search()                                    \u2502"
+        }
+      ]
+    },
+    {
+      "path": "services/task-orchestrator/app/adapters/conport_adapter.py",
+      "scope": "code",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 1252,
+          "kind": "semantic_token",
+          "text": "result = await self.conport_client.semantic_search("
+        }
+      ]
+    },
+    {
+      "path": "services/task-orchestrator/conport_mcp_client.py",
+      "scope": "code",
+      "hit_count": 20,
+      "hits": [
+        {
+          "line": 8,
+          "kind": "semantic_token",
+          "text": "Component 5: Read operations (get_decisions, get_patterns, semantic_search, etc.)"
+        },
+        {
+          "line": 48,
+          "kind": "semantic_token",
+          "text": "def _resolve_semantic_search_tool(self) -> Any:"
+        },
+        {
+          "line": 50,
+          "kind": "semantic_token",
+          "text": "Resolve semantic-search MCP tool with compatibility fallback."
+        },
+        {
+          "line": 53,
+          "kind": "semantic_token",
+          "text": "- mcp__conport__semantic_search"
+        },
+        {
+          "line": 55,
+          "kind": "conport_tool_ref",
+          "text": "- mcp__conport__semantic_search_conport"
+        },
+        {
+          "line": 57,
+          "kind": "semantic_token",
+          "text": "preferred = getattr(self.mcp_tools, \"mcp__conport__semantic_search\", None)"
+        },
+        {
+          "line": 59,
+          "kind": "semantic_token",
+          "text": "return preferred, \"mcp__conport__semantic_search\""
+        },
+        {
+          "line": 61,
+          "kind": "conport_tool_ref",
+          "text": "legacy = getattr(self.mcp_tools, \"mcp__conport__semantic_search_conport\", None)"
+        },
+        {
+          "line": 63,
+          "kind": "conport_tool_ref",
+          "text": "return legacy, \"mcp__conport__semantic_search_conport\""
+        },
+        {
+          "line": 66,
+          "kind": "semantic_token",
+          "text": "\"No ConPort semantic-search MCP tool found \""
+        },
+        {
+          "line": 67,
+          "kind": "conport_tool_ref",
+          "text": "\"(expected mcp__conport__semantic_search or mcp__conport__semantic_search_conport)\""
+        },
+        {
+          "line": 491,
+          "kind": "semantic_token",
+          "text": "async def semantic_search("
+        },
+        {
+          "line": 533,
+          "kind": "semantic_token",
+          "text": "tool, tool_name = self._resolve_semantic_search_tool()"
+        },
+        {
+          "line": 542,
+          "kind": "semantic_token",
+          "text": "\"ConPort semantic_search via %s: '%s' -> %s results\","
+        },
+        {
+          "line": 550,
+          "kind": "semantic_token",
+          "text": "logger.error(f\"ConPort semantic_search failed: {e}\")"
+        },
+        {
+          "line": 553,
+          "kind": "conport_tool_ref",
+          "text": "async def semantic_search_conport("
+        },
+        {
+          "line": 563,
+          "kind": "semantic_token",
+          "text": "Backward-compatible alias for semantic_search()."
+        },
+        {
+          "line": 567,
+          "kind": "semantic_token",
+          "text": "return await self.semantic_search("
+        },
+        {
+          "line": 798,
+          "kind": "semantic_token",
+          "text": "async def parallel_semantic_search("
+        },
+        {
+          "line": 820,
+          "kind": "semantic_token",
+          "text": "\"method\": \"semantic_search\","
+        }
+      ]
+    },
+    {
+      "path": "services/task-orchestrator/docs/pm-plane-architecture.md",
+      "scope": "code",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 114,
+          "kind": "semantic_token",
+          "text": "- **ConPort**: `log_progress`, `update_progress`, `semantic_search`, `get_decisions`"
+        }
+      ]
+    },
+    {
+      "path": "services/working-memory-assistant/conport_client.py",
+      "scope": "code",
+      "hit_count": 9,
+      "hits": [
+        {
+          "line": 26,
+          "kind": "semantic_token",
+          "text": "from mcp__conport__semantic_search import semantic_search as _semantic_search_tool"
+        },
+        {
+          "line": 27,
+          "kind": "semantic_token",
+          "text": "_semantic_search_tool_name = \"mcp__conport__semantic_search\""
+        },
+        {
+          "line": 29,
+          "kind": "conport_tool_ref",
+          "text": "from mcp__conport__semantic_search_conport import semantic_search_conport as _semantic_search_tool"
+        },
+        {
+          "line": 30,
+          "kind": "conport_tool_ref",
+          "text": "_semantic_search_tool_name = \"mcp__conport__semantic_search_conport\""
+        },
+        {
+          "line": 99,
+          "kind": "semantic_token",
+          "text": "async def _semantic_search_tool(**kwargs) -> List[Dict[str, Any]]:"
+        },
+        {
+          "line": 102,
+          "kind": "semantic_token",
+          "text": "_semantic_search_tool_name = \"mock_semantic_search_tool\""
+        },
+        {
+          "line": 178,
+          "kind": "semantic_token",
+          "text": "async def semantic_search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:"
+        },
+        {
+          "line": 181,
+          "kind": "semantic_token",
+          "text": "result = await _semantic_search_tool("
+        },
+        {
+          "line": 192,
+          "kind": "semantic_token",
+          "text": "_semantic_search_tool_name,"
+        }
+      ]
+    },
+    {
+      "path": "src/dopemux/commands/decisions_commands.py",
+      "scope": "code",
+      "hit_count": 3,
+      "hits": [
+        {
+          "line": 943,
+          "kind": "semantic_token",
+          "text": "def semantic_search_cmd(query: str, top_k: int, type: Optional[str], tag: Optional[str], workspace: Optional[str]):"
+        },
+        {
+          "line": 960,
+          "kind": "semantic_token",
+          "text": "from ..tools.conport_client import semantic_search"
+        },
+        {
+          "line": 976,
+          "kind": "semantic_token",
+          "text": "result = await semantic_search("
+        }
+      ]
+    },
+    {
+      "path": "src/dopemux/mcp/conport_mcp_tools.py",
+      "scope": "code",
+      "hit_count": 3,
+      "hits": [
+        {
+          "line": 371,
+          "kind": "semantic_token",
+          "text": "async def semantic_search(self, workspace_id: str, query: str, entity_types: List[str] = None,"
+        },
+        {
+          "line": 375,
+          "kind": "semantic_token",
+          "text": "\"conport.semantic_search is deprecated and running in keyword fallback mode; \""
+        },
+        {
+          "line": 412,
+          "kind": "semantic_token",
+          "text": "\"Deprecated compatibility shim: ConPort semantic_search uses keyword fallback only. \""
+        }
+      ]
+    },
+    {
+      "path": "src/dopemux/tools/conport_client.py",
+      "scope": "code",
+      "hit_count": 7,
+      "hits": [
+        {
+          "line": 176,
+          "kind": "semantic_token",
+          "text": "async def semantic_search(self, workspace_id: str, query: str, top_k: int = 5,"
+        },
+        {
+          "line": 183,
+          "kind": "adhd_endpoint_ref",
+          "text": "Preferred path is `/api/adhd/semantic-search` (current). Falls back to"
+        },
+        {
+          "line": 184,
+          "kind": "legacy_endpoint_ref",
+          "text": "`/api/semantic-search` for older server variants."
+        },
+        {
+          "line": 202,
+          "kind": "legacy_endpoint_ref",
+          "text": "endpoints = [\"/api/adhd/semantic-search\", \"/api/semantic-search\"]"
+        },
+        {
+          "line": 284,
+          "kind": "semantic_token",
+          "text": "async def semantic_search(query: str, top_k: int = 5, workspace_id: str = \"/Users/hue/code/dopemux-mvp\","
+        },
+        {
+          "line": 294,
+          "kind": "semantic_token",
+          "text": "result = await client.semantic_search("
+        },
+        {
+          "line": 327,
+          "kind": "semantic_token",
+          "text": "search_results = await client.semantic_search("
+        }
+      ]
+    },
+    {
+      "path": "tests/embeddings/integration/test_embedding_system_integration.py",
+      "scope": "tests",
+      "hit_count": 1,
+      "hits": [
+        {
+          "line": 65,
+          "kind": "conport_tool_ref",
+          "text": "client.semantic_search_conport.return_value = []"
+        }
+      ]
+    },
+    {
+      "path": "tests/embeddings/unit/test_integrations.py",
+      "scope": "tests",
+      "hit_count": 3,
+      "hits": [
+        {
+          "line": 142,
+          "kind": "conport_tool_ref",
+          "text": "mock_client.semantic_search_conport.return_value = ["
+        },
+        {
+          "line": 223,
+          "kind": "conport_tool_ref",
+          "text": "mock_client.semantic_search_conport.side_effect = Exception(\"ConPort error\")"
+        },
+        {
+          "line": 282,
+          "kind": "semantic_token",
+          "text": "enable_semantic_search=True"
+        }
+      ]
+    },
+    {
+      "path": "tests/regression/test_serena_enhancements.py",
+      "scope": "tests",
+      "hit_count": 2,
+      "hits": [
+        {
+          "line": 110,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search():"
+        },
+        {
+          "line": 255,
+          "kind": "semantic_token",
+          "text": "results.append((\"Semantic Search (F-NEW-2)\", await test_semantic_search()))"
+        }
+      ]
+    },
+    {
+      "path": "tests/unit/test_conport_client_semantic_search.py",
+      "scope": "tests",
+      "hit_count": 13,
+      "hits": [
+        {
+          "line": 45,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_prefers_adhd_endpoint():"
+        },
+        {
+          "line": 50,
+          "kind": "adhd_endpoint_ref",
+          "text": "\"/api/adhd/semantic-search\","
+        },
+        {
+          "line": 59,
+          "kind": "semantic_token",
+          "text": "result = await client.semantic_search("
+        },
+        {
+          "line": 65,
+          "kind": "adhd_endpoint_ref",
+          "text": "assert result[\"_endpoint_used\"] == \"/api/adhd/semantic-search\""
+        },
+        {
+          "line": 71,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_falls_back_on_404():"
+        },
+        {
+          "line": 75,
+          "kind": "adhd_endpoint_ref",
+          "text": "(\"/api/adhd/semantic-search\", _FakeResponse(404, text_body=\"not found\")),"
+        },
+        {
+          "line": 76,
+          "kind": "legacy_endpoint_ref",
+          "text": "(\"/api/semantic-search\", _FakeResponse(200, payload={\"results\": []})),"
+        },
+        {
+          "line": 80,
+          "kind": "semantic_token",
+          "text": "result = await client.semantic_search("
+        },
+        {
+          "line": 86,
+          "kind": "legacy_endpoint_ref",
+          "text": "assert result[\"_endpoint_used\"] == \"/api/semantic-search\""
+        },
+        {
+          "line": 91,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_no_fallback_on_server_error():"
+        },
+        {
+          "line": 96,
+          "kind": "adhd_endpoint_ref",
+          "text": "\"/api/adhd/semantic-search\","
+        },
+        {
+          "line": 102,
+          "kind": "semantic_token",
+          "text": "result = await client.semantic_search("
+        },
+        {
+          "line": 109,
+          "kind": "adhd_endpoint_ref",
+          "text": "assert result.get(\"endpoint\") == \"/api/adhd/semantic-search\""
+        }
+      ]
+    },
+    {
+      "path": "tests/unit/test_conport_semantic_search_deprecation.py",
+      "scope": "tests",
+      "hit_count": 2,
+      "hits": [
+        {
+          "line": 72,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_deprecated_keyword_fallback_metadata(caplog):"
+        },
+        {
+          "line": 85,
+          "kind": "semantic_token",
+          "text": "result = await tools.semantic_search("
+        }
+      ]
+    },
+    {
+      "path": "tests/unit/test_dopecon_bridge_semantic_proxy.py",
+      "scope": "tests",
+      "hit_count": 12,
+      "hits": [
+        {
+          "line": 74,
+          "kind": "adhd_endpoint_ref",
+          "text": "primary = f\"{base_url}/api/adhd/semantic-search\""
+        },
+        {
+          "line": 75,
+          "kind": "legacy_endpoint_ref",
+          "text": "legacy = f\"{base_url}/api/semantic-search\""
+        },
+        {
+          "line": 84,
+          "kind": "semantic_token",
+          "text": "result = await PROXY_MODULE.run_semantic_search_with_fallback("
+        },
+        {
+          "line": 92,
+          "kind": "legacy_endpoint_ref",
+          "text": "assert result[\"endpoint\"] == \"/api/semantic-search\""
+        },
+        {
+          "line": 100,
+          "kind": "adhd_endpoint_ref",
+          "text": "primary = f\"{base_url}/api/adhd/semantic-search\""
+        },
+        {
+          "line": 101,
+          "kind": "legacy_endpoint_ref",
+          "text": "legacy = f\"{base_url}/api/semantic-search\""
+        },
+        {
+          "line": 110,
+          "kind": "semantic_token",
+          "text": "await PROXY_MODULE.run_semantic_search_with_fallback("
+        },
+        {
+          "line": 117,
+          "kind": "adhd_endpoint_ref",
+          "text": "assert \"/api/adhd/semantic-search returned 500\" in str(exc.value)"
+        },
+        {
+          "line": 125,
+          "kind": "adhd_endpoint_ref",
+          "text": "primary = f\"{base_url}/api/adhd/semantic-search\""
+        },
+        {
+          "line": 129,
+          "kind": "legacy_endpoint_ref",
+          "text": "f\"{base_url}/api/semantic-search\": [],"
+        },
+        {
+          "line": 133,
+          "kind": "semantic_token",
+          "text": "result = await PROXY_MODULE.run_semantic_search_with_fallback("
+        },
+        {
+          "line": 141,
+          "kind": "adhd_endpoint_ref",
+          "text": "assert result[\"endpoint\"] == \"/api/adhd/semantic-search\""
+        }
+      ]
+    },
+    {
+      "path": "tests/unit/test_task_orchestrator_conport_semantic_resolution.py",
+      "scope": "tests",
+      "hit_count": 14,
+      "hits": [
+        {
+          "line": 41,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_prefers_primary_tool():"
+        },
+        {
+          "line": 45,
+          "kind": "semantic_token",
+          "text": "async def mcp__conport__semantic_search(self, **kwargs):"
+        },
+        {
+          "line": 49,
+          "kind": "conport_tool_ref",
+          "text": "async def mcp__conport__semantic_search_conport(self, **kwargs):"
+        },
+        {
+          "line": 54,
+          "kind": "semantic_token",
+          "text": "result = await client.semantic_search("
+        },
+        {
+          "line": 63,
+          "kind": "semantic_token",
+          "text": "assert result.get(\"_tool_used\") == \"mcp__conport__semantic_search\""
+        },
+        {
+          "line": 67,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_uses_legacy_fallback_tool():"
+        },
+        {
+          "line": 71,
+          "kind": "conport_tool_ref",
+          "text": "async def mcp__conport__semantic_search_conport(self, **kwargs):"
+        },
+        {
+          "line": 76,
+          "kind": "semantic_token",
+          "text": "result = await client.semantic_search("
+        },
+        {
+          "line": 85,
+          "kind": "conport_tool_ref",
+          "text": "assert result.get(\"_tool_used\") == \"mcp__conport__semantic_search_conport\""
+        },
+        {
+          "line": 89,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_raises_when_no_tool_available():"
+        },
+        {
+          "line": 95,
+          "kind": "semantic_token",
+          "text": "await client.semantic_search("
+        },
+        {
+          "line": 107,
+          "kind": "semantic_token",
+          "text": "async def mcp__conport__semantic_search(self, **kwargs):"
+        },
+        {
+          "line": 112,
+          "kind": "conport_tool_ref",
+          "text": "result = await client.semantic_search_conport("
+        },
+        {
+          "line": 120,
+          "kind": "semantic_token",
+          "text": "assert result.get(\"_tool_used\") == \"mcp__conport__semantic_search\""
+        }
+      ]
+    },
+    {
+      "path": "tests/unit/test_wma_conport_semantic_resolution.py",
+      "scope": "tests",
+      "hit_count": 10,
+      "hits": [
+        {
+          "line": 21,
+          "kind": "semantic_token",
+          "text": "async def test_wma_semantic_search_uses_configured_tool(monkeypatch):"
+        },
+        {
+          "line": 28,
+          "kind": "semantic_token",
+          "text": "monkeypatch.setattr(WMA_MODULE, \"_semantic_search_tool\", _fake_tool)"
+        },
+        {
+          "line": 29,
+          "kind": "semantic_token",
+          "text": "monkeypatch.setattr(WMA_MODULE, \"_semantic_search_tool_name\", \"test_primary_tool\")"
+        },
+        {
+          "line": 32,
+          "kind": "semantic_token",
+          "text": "results = await client.semantic_search(query=\"auth flow\", top_k=4)"
+        },
+        {
+          "line": 41,
+          "kind": "semantic_token",
+          "text": "async def test_wma_semantic_search_accepts_list_result(monkeypatch):"
+        },
+        {
+          "line": 45,
+          "kind": "semantic_token",
+          "text": "monkeypatch.setattr(WMA_MODULE, \"_semantic_search_tool\", _fake_tool)"
+        },
+        {
+          "line": 48,
+          "kind": "semantic_token",
+          "text": "results = await client.semantic_search(query=\"auth\", top_k=2)"
+        },
+        {
+          "line": 54,
+          "kind": "semantic_token",
+          "text": "async def test_wma_semantic_search_returns_empty_on_tool_error(monkeypatch):"
+        },
+        {
+          "line": 58,
+          "kind": "semantic_token",
+          "text": "monkeypatch.setattr(WMA_MODULE, \"_semantic_search_tool\", _failing_tool)"
+        },
+        {
+          "line": 61,
+          "kind": "semantic_token",
+          "text": "results = await client.semantic_search(query=\"auth\", top_k=2)"
+        }
+      ]
+    }
+  ]
+}

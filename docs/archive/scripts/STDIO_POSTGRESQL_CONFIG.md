@@ -1,10 +1,14 @@
 ---
 id: STDIO_POSTGRESQL_CONFIG
 title: Stdio_Postgresql_Config
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Stdio_Postgresql_Config (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Configuring stdio conport-mcp for PostgreSQL
 

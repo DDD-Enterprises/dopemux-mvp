@@ -140,10 +140,12 @@ class _StubBM25:
 sys.modules.setdefault("rank_bm25", types.SimpleNamespace(BM25Okapi=_StubBM25))
 
 from src.mcp.server import (
+    _search_all_impl,
     _index_workspace_impl,
     _search_code_impl,
     _get_index_status_impl,
     _clear_index_impl,
+    configure_decision_auto_indexing,
     search_code,
     docs_search,
     search_all,
@@ -560,6 +562,72 @@ async def test_search_all_multi_workspace(tmp_path, monkeypatch):
     assert result["workspace_count"] == 2
     assert result["total_results"] == 4  # sum of 2 + 2
     assert len(result["results"]) == 2
+
+
+@pytest.mark.anyio
+async def test_search_all_includes_decisions_when_enabled(tmp_path, monkeypatch):
+    """_search_all_impl should merge decision results when configured."""
+    workspace = tmp_path / "ws"
+    workspace.mkdir()
+
+    monkeypatch.setattr(
+        "src.mcp.server._search_code_impl",
+        AsyncMock(return_value=[{"file_path": "src/a.py"}]),
+    )
+    monkeypatch.setattr(
+        "src.mcp.server._docs_search_impl",
+        AsyncMock(return_value=[{"source_path": "docs/a.md"}]),
+    )
+    monkeypatch.setattr(
+        "src.mcp.server._load_decision_sync_config",
+        lambda _ws: {
+            "enabled": True,
+            "bridge_url": "http://localhost:3016",
+            "limit": 4,
+            "auto_include_in_search_all": True,
+        },
+    )
+    monkeypatch.setattr(
+        "src.mcp.server._search_decisions_impl",
+        AsyncMock(return_value=[{"id": "d1", "summary": "Decision 1"}]),
+    )
+
+    result = await _search_all_impl(
+        query="auth",
+        top_k=9,
+        workspace_path=str(workspace),
+        include_decisions=True,
+    )
+
+    assert result["decision_search_enabled"] is True
+    assert len(result["code_results"]) == 1
+    assert len(result["docs_results"]) == 1
+    assert len(result["decision_results"]) == 1
+    assert result["total_results"] == 3
+
+
+@pytest.mark.anyio
+async def test_configure_decision_auto_indexing_persists_config(tmp_path, monkeypatch):
+    """configure_decision_auto_indexing should save workspace-scoped config."""
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+
+    result = await configure_decision_auto_indexing(
+        workspace_path=str(workspace),
+        enabled=True,
+        bridge_url="http://localhost:3999",
+        decision_limit=7,
+        auto_include_in_search_all=False,
+    )
+
+    config_path = Path(result["config_path"])
+    assert config_path.exists()
+
+    payload = json.loads(config_path.read_text(encoding="utf-8"))
+    assert payload["enabled"] is True
+    assert payload["bridge_url"] == "http://localhost:3999"
+    assert payload["limit"] == 7
+    assert payload["auto_include_in_search_all"] is False
 
 
 @pytest.mark.anyio

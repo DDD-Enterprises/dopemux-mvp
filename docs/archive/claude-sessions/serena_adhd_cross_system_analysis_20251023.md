@@ -1,10 +1,14 @@
 ---
 id: serena_adhd_cross_system_analysis_20251023
 title: Serena_Adhd_Cross_System_Analysis_20251023
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Serena_Adhd_Cross_System_Analysis_20251023 (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Comprehensive Dopemux MCP Ecosystem Analysis
 

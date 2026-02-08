@@ -142,8 +142,9 @@ class AutonomousController:
         result = await self.sync_callback(workspace_path)
 
         # If changes detected, trigger indexing
-        if result and result.get("has_changes", False):
-            changed_count = result.get("total_changes", 0)
+        changed_count = int(result.get("total_changes", result.get("changes", 0))) if result else 0
+        has_changes = bool(result.get("has_changes", changed_count > 0)) if result else False
+        if has_changes:
             logger.info(
                 f"Periodic sync found {changed_count} changes, "
                 f"triggering reindex"

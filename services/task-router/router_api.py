@@ -7,9 +7,10 @@ Integrates F-NEW-6 (session intelligence) + F-NEW-3 (complexity) + matching engi
 
 import asyncio
 import logging
-import json
+import os
 from datetime import datetime
 from typing import Dict, List, Optional
+from urllib.parse import quote
 
 from aiohttp import web, ClientSession
 import redis.asyncio as redis
@@ -95,6 +96,7 @@ class TaskRouterAPI:
         try:
             user_id = request.query.get('user_id')
             count = min(int(request.query.get('count', 3)), 5)  # ADHD-safe: max 5
+            workspace_id = request.query.get('workspace_id')
 
             if not user_id:
                 return web.json_response({'error': 'user_id required'}, status=400)
@@ -105,7 +107,7 @@ class TaskRouterAPI:
             cognitive_state = await self._get_cognitive_state(user_id)
 
             # Step 2: Get TODO tasks from ConPort
-            todo_tasks = await self._get_todo_tasks(user_id)
+            todo_tasks = await self._get_todo_tasks(user_id, workspace_id=workspace_id)
 
             if not todo_tasks:
                 return web.json_response({
@@ -181,6 +183,7 @@ class TaskRouterAPI:
             data = await request.json()
             user_id = data.get('user_id')
             task_id = data.get('task_id')
+            workspace_id = data.get('workspace_id')
 
             if not user_id or not task_id:
                 return web.json_response(
@@ -192,7 +195,7 @@ class TaskRouterAPI:
             cognitive_state = await self._get_cognitive_state(user_id)
 
             # Get task details
-            task = await self._get_task_by_id(user_id, task_id)
+            task = await self._get_task_by_id(user_id, task_id, workspace_id=workspace_id)
             if not task:
                 return web.json_response({'error': 'Task not found'}, status=404)
 
@@ -208,7 +211,7 @@ class TaskRouterAPI:
             # If mismatch, get alternatives
             alternatives = []
             if mismatch_warning:
-                todo_tasks = await self._get_todo_tasks(user_id)
+                todo_tasks = await self._get_todo_tasks(user_id, workspace_id=workspace_id)
                 enriched = await self._enrich_tasks_with_complexity(todo_tasks)
                 alt_suggestions = self.matching_engine.suggest_tasks(
                     cognitive_state, enriched, count=3
@@ -250,12 +253,13 @@ class TaskRouterAPI:
         try:
             data = await request.json()
             user_id = data.get('user_id')
+            workspace_id = data.get('workspace_id')
 
             if not user_id:
                 return web.json_response({'error': 'user_id required'}, status=400)
 
             # Get tasks
-            todo_tasks = await self._get_todo_tasks(user_id)
+            todo_tasks = await self._get_todo_tasks(user_id, workspace_id=workspace_id)
             original_order = [t.task_id for t in todo_tasks]
 
             # Get cognitive state
@@ -289,8 +293,7 @@ class TaskRouterAPI:
     async def _get_cognitive_state(self, user_id: str) -> CognitiveState:
         """Get current cognitive state from F-NEW-6 via Serena MCP."""
         try:
-            # Query ADHD Engine directly for now
-            # TODO: Use Serena MCP when available
+            # Prefer ADHD Engine state endpoint and fall back to defaults.
             async with ClientSession() as session:
                 async with session.get(f"{self.adhd_engine_url}/state/{user_id}") as resp:
                     if resp.status == 200:
@@ -317,69 +320,70 @@ class TaskRouterAPI:
             time_until_break_min=30
         )
 
-    async def _get_todo_tasks(self, user_id: str) -> List[Task]:
-        """Get TODO tasks from ConPort."""
+    async def _get_todo_tasks(self, user_id: str, workspace_id: Optional[str] = None) -> List[Task]:
+        """Get active TODO/IN_PROGRESS tasks from ConPort for routing."""
+        resolved_workspace = self._resolve_workspace_id(user_id, workspace_id)
+        statuses = ("TODO", "IN_PROGRESS")
+        tasks_by_id: Dict[str, Task] = {}
         try:
-            # Query ConPort for IN_PROGRESS and TODO tasks
             async with ClientSession() as session:
-                # Using workspace_id for now (will support user_id in Phase 2)
-                workspace_id = "/Users/hue/code/dopemux-mvp"  # Placeholder
-
-                url = f"{self.conport_url}/api/progress?workspace_id={workspace_id}&status=TODO"
-                async with session.get(url) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        progress_entries = data.get('progress_entries', [])
-
-                        # Convert to Task objects
-                        tasks = []
-                        for entry in progress_entries:
-                            task = Task(
-                                task_id=entry.get('id', ''),
-                                title=entry.get('description', ''),
-                                description=entry.get('description', ''),
-                                complexity=0.5,  # Will be enriched
-                                estimated_minutes=entry.get('estimated_hours', 1) * 60,
-                                priority=entry.get('priority', 'medium'),
-                                task_type=self._infer_task_type(entry.get('description', '')),
-                                requires_focus=False  # Will be determined by complexity
+                for status in statuses:
+                    url = (
+                        f"{self.conport_url}/api/progress"
+                        f"?workspace_id={quote(resolved_workspace, safe='')}"
+                        f"&status={status}"
+                    )
+                    async with session.get(url) as resp:
+                        if resp.status != 200:
+                            logger.debug(
+                                "ConPort progress query failed: workspace=%s status=%s http=%s",
+                                resolved_workspace,
+                                status,
+                                resp.status,
                             )
-                            tasks.append(task)
-
-                        return tasks
+                            continue
+                        data = await resp.json()
+                        progress_entries = self._extract_progress_entries(data)
+                        for entry in progress_entries:
+                            task = self._progress_entry_to_task(entry)
+                            tasks_by_id[task.task_id] = task
         except Exception as e:
             logger.warning(f"Failed to get TODO tasks: {e}")
+        return list(tasks_by_id.values())
 
-        return []
-
-    async def _get_task_by_id(self, user_id: str, task_id: str) -> Optional[Task]:
+    async def _get_task_by_id(
+        self,
+        user_id: str,
+        task_id: str,
+        workspace_id: Optional[str] = None,
+    ) -> Optional[Task]:
         """Get specific task by ID."""
-        tasks = await self._get_todo_tasks(user_id)
+        tasks = await self._get_todo_tasks(user_id, workspace_id=workspace_id)
         for task in tasks:
-            if task.task_id == task_id:
+            if task.task_id == str(task_id):
                 return task
         return None
 
     async def _enrich_tasks_with_complexity(self, tasks: List[Task]) -> List[Task]:
         """Enrich tasks with F-NEW-3 complexity scores."""
-        # For now, use simple heuristics
-        # TODO: Integrate with F-NEW-3 unified complexity when available
-
         for task in tasks:
-            # Infer complexity from description keywords
             desc_lower = task.description.lower()
-
+            base_complexity = task.complexity if 0.0 <= task.complexity <= 1.0 else 0.5
             if any(word in desc_lower for word in ['refactor', 'architecture', 'redesign', 'complex']):
-                task.complexity = 0.8
-                task.requires_focus = True
+                inferred = 0.8
             elif any(word in desc_lower for word in ['implement', 'feature', 'integration']):
-                task.complexity = 0.5
-                task.requires_focus = False
+                inferred = 0.55
             elif any(word in desc_lower for word in ['fix', 'update', 'document', 'readme']):
-                task.complexity = 0.2
-                task.requires_focus = False
+                inferred = 0.25
             else:
-                task.complexity = 0.4  # Default moderate
+                inferred = 0.45
+
+            # Blend source-provided complexity with inferred heuristic.
+            blended = (base_complexity * 0.6) + (inferred * 0.4)
+            if task.priority in {"critical", "high"}:
+                blended = min(1.0, blended + 0.05)
+            task.complexity = max(0.0, min(1.0, blended))
+            task.requires_focus = task.complexity >= 0.65 or task.task_type == "deep_work"
 
         return tasks
 
@@ -413,6 +417,77 @@ class TaskRouterAPI:
             'cognitive_load': state.cognitive_load,
             'time_until_break_min': state.time_until_break_min
         }
+
+    def _resolve_workspace_id(self, user_id: str, workspace_id: Optional[str]) -> str:
+        """Resolve workspace identifier with explicit override first."""
+        if workspace_id:
+            return workspace_id
+        env_workspace = os.getenv("WORKSPACE_ROOT")
+        if env_workspace:
+            return env_workspace
+        if user_id.startswith("/"):
+            return user_id
+        return os.getcwd()
+
+    def _extract_progress_entries(self, payload: Dict) -> List[Dict]:
+        """Normalize ConPort response payload into progress entry list."""
+        if isinstance(payload, list):
+            return [entry for entry in payload if isinstance(entry, dict)]
+        if not isinstance(payload, dict):
+            return []
+        for key in ("progress_entries", "entries", "data", "items"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                return [entry for entry in value if isinstance(entry, dict)]
+        return []
+
+    def _progress_entry_to_task(self, entry: Dict) -> Task:
+        """Convert ConPort progress entry payload to Task object."""
+        description = str(entry.get("description", "") or "")
+        estimated_minutes = self._coerce_int(entry.get("estimated_minutes"))
+        if estimated_minutes is None:
+            estimated_hours = self._coerce_float(entry.get("estimated_hours"))
+            estimated_minutes = int((estimated_hours or 1.0) * 60)
+
+        complexity = self._coerce_float(
+            entry.get("complexity_score", entry.get("complexity", 0.5))
+        )
+        complexity = complexity if complexity is not None else 0.5
+        complexity = max(0.0, min(1.0, complexity))
+
+        priority = str(entry.get("priority", "medium")).lower()
+        task_type = self._infer_task_type(description)
+        requires_focus = complexity >= 0.65 or task_type == "deep_work"
+
+        task_id_value = entry.get("id", entry.get("task_id", ""))
+        task_id = str(task_id_value)
+
+        return Task(
+            task_id=task_id,
+            title=description or f"Task {task_id}",
+            description=description,
+            complexity=complexity,
+            estimated_minutes=max(5, estimated_minutes),
+            priority=priority,
+            task_type=task_type,
+            requires_focus=requires_focus,
+        )
+
+    def _coerce_float(self, value: object) -> Optional[float]:
+        try:
+            if value is None:
+                return None
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _coerce_int(self, value: object) -> Optional[int]:
+        try:
+            if value is None:
+                return None
+            return int(value)
+        except (TypeError, ValueError):
+            return None
 
     async def start_server(self, port: int = 8003):
         """Start the API server."""

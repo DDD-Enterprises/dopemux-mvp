@@ -1,10 +1,14 @@
 ---
 id: CONPORT_TOKEN_LIMIT_FIX
 title: Conport_Token_Limit_Fix
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Conport_Token_Limit_Fix (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # ConPort Token Limit Fix - Progressive Truncation
 

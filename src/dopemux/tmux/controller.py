@@ -1,6 +1,8 @@
 """High-level tmux controller for Dopemux."""
 
 from __future__ import annotations
+import logging
+
 
 import re
 import shlex
@@ -15,7 +17,6 @@ from ..config.manager import (
     ConfigManager,
     TmuxControllerConfig,
     TmuxPresetConfig,
-    TmuxPresetConfig,
 )
 from .common import PaneInfo, TmuxError
 
@@ -23,6 +24,8 @@ try:  # pragma: no cover - optional dependency
     import libtmux  # type: ignore
 except ImportError:  # pragma: no cover - handled gracefully
     libtmux = None  # type: ignore
+
+logger = logging.getLogger(__name__)
 
 
 # PaneInfo moved to .common
@@ -1127,8 +1130,3 @@ class TmuxController:
 
     def _expand_environment(self, env: Dict[str, str]) -> Dict[str, str]:
         return {key: self._expand_text(val) for key, val in env.items()}
-
-    def resolve_pane(self, identifier: Optional[str] = None) -> Optional[PaneInfo]:
-        """Public helper to resolve a pane identifier."""
-        panes = self.list_panes()
-        return self._select_target_pane(panes, identifier)
