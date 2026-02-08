@@ -2,5 +2,30 @@
   "statusLine": {
     "type": "command",
     "command": ".claude/statusline.sh"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "command": "python3 .claude/hooks/prompt_analyzer.py",
+        "timeout": 3000
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "(thinkdeep|morph|batch_edit|refactor|deep_research)",
+        "command": "bash .claude/hooks/check_energy.sh"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "command": "bash .claude/hooks/log_progress.sh"
+      }
+    ],
+    "Stop": [
+      {
+        "command": "bash .claude/hooks/save_context.sh"
+      }
+    ]
   }
 }
