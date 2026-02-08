@@ -211,24 +211,31 @@ class ClaudeCodeHooks:
         """
         Trigger a hook event with safety guarantees.
 
-        Uses Dopemux's trigger command for external integration.
+        Uses Dopemux capture command for direct memory capture.
         """
         try:
-            if event_type == "claude-commands":
-                command = [
-                    "dopemux",
-                    "trigger",
-                    "shell-command",
-                    "--context",
-                    json.dumps(context),
-                    "--async",
-                    "--quiet",
-                ]
-            else:
-                command = ["dopemux", "trigger", "command-done", "--async", "--quiet"]
+            envelope = {
+                "event_type": event_type,
+                "source": "claude_hook",
+                "session_id": os.getenv("CLAUDE_SESSION_ID"),
+                "payload": context,
+            }
+            command = [
+                "dopemux",
+                "capture",
+                "emit",
+                "--mode",
+                "plugin",
+                "--event",
+                json.dumps(envelope, ensure_ascii=True),
+                "--quiet",
+            ]
+            child_env = os.environ.copy()
+            child_env["DOPEMUX_CAPTURE_CONTEXT"] = "plugin"
 
             process = await asyncio.create_subprocess_exec(
                 *command,
+                env=child_env,
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL,
             )
@@ -255,7 +262,7 @@ class ClaudeCodeHooks:
 # Dopemux Claude Code pre-exec hook
 dopemux_trigger_preexec() {{
     local cmd="$1"
-    dopemux trigger shell-command --context "{{\\"command\\": \\"$cmd\\"}}" --async --quiet >/dev/null 2>&1 &
+    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger shell-command --context "{{\\"command\\": \\"$cmd\\"}}" --async --quiet >/dev/null 2>&1 &
     disown 2>/dev/null || true
 }}
 trap 'dopemux_trigger_preexec "$BASH_COMMAND"' DEBUG
@@ -264,7 +271,7 @@ trap 'dopemux_trigger_preexec "$BASH_COMMAND"' DEBUG
             'bash_precmd': '''
 # Dopemux Claude Code post-exec hook
 dopemux_trigger_precmd() {
-    dopemux trigger command-done --async --quiet >/dev/null 2>&1 &
+    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger command-done --async --quiet >/dev/null 2>&1 &
     disown 2>/dev/null || true
 }
 PROMPT_COMMAND="${PROMPT_COMMAND};dopemux_trigger_precmd"
@@ -276,11 +283,11 @@ autoload -U add-zsh-hook
 
 dopemux_preexec() {
     local cmd="$1"
-    dopemux trigger shell-command --context "{\"command\": \"$cmd\"}" --async --quiet >/dev/null 2>&1 &!
+    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger shell-command --context "{\"command\": \"$cmd\"}" --async --quiet >/dev/null 2>&1 &!
 }
 
 dopemux_precmd() {
-    dopemux trigger command-done --async --quiet >/dev/null 2>&1 &!
+    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger command-done --async --quiet >/dev/null 2>&1 &!
 }
 
 add-zsh-hook preexec dopemux_preexec
