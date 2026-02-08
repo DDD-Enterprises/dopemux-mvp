@@ -5,8 +5,8 @@ type: explanation
 owner: '@hu3mann'
 author: Codex
 date: '2026-02-06'
-last_review: '2026-02-07'
-next_review: '2026-02-21'
+last_review: '2026-02-08'
+next_review: '2026-02-22'
 status: draft
 prelude: Prioritized matrix of pending items mined from ConPort historical snapshots that were not clearly represented in the active master fix ledger.
 ---
@@ -75,12 +75,15 @@ Evidence:
 
 1. `Leantime manual setup completion` remains open.
 2. Bridge liveness is up, but upstream readiness is not:
-   - `GET /health?deep=1` returns `503` (`leantime=unreachable`)
-   - `POST /api/tools/list_projects` returns `502` (all method candidates failed)
+   - `GET /health?deep=1` returns `503` (`status=needs_setup`, `leantime=setup_required`)
+   - `POST /api/tools/list_projects` returns `502` with setup-required error
    - `LEANTIME_API_TOKEN` is currently unset in bridge runtime
-3. Supporting container evidence shows persistent Leantime queue failures and redirect-only traffic patterns.
+3. Latest probe shows redirect/install signal still present; queue-fail signal is no longer present in current tail window.
 4. In-wave hardening completed: PM route error contracts now preserve upstream
    status/body context and add explicit setup guidance for Leantime failures.
+   Additional bridge hardening now emits explicit `needs_setup` health state and
+   supports compatibility env fallbacks (`LEANTIME_TOKEN` -> `LEANTIME_API_TOKEN`,
+   `LEANTIME_URL` -> `LEANTIME_API_URL`).
    This reduces operator ambiguity but does not replace required external setup.
 
 Evidence:
@@ -88,6 +91,7 @@ Evidence:
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json`
 - `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
+- `scripts/docs_audit/probe_leantime_bridge_readiness.py`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
 ## Leantime Close Criteria
