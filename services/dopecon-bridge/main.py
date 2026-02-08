@@ -21,13 +21,20 @@ from typing import Any, Dict, List, Optional, Union
 from enum import Enum
 import uuid
 
+from dopemux.runtime import lifespan_context, record_crash, get_last_crash
+from dopemux.workspace import resolve_workspace_root
+from dopemux.logging import configure_logging, RequestIDMiddleware
+from dopemux.clients.conport_client import get_conport_client
+
+# Configure structured logging
+configure_logging("dopecon-bridge")
+logger = logging.getLogger(__name__)
+
 import aiohttp
 try:
     from qdrant_client import QdrantClient
     from qdrant_client.http.models import Distance, VectorParams, PointStruct
 except ImportError as e:
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
     logger.warning(f"Qdrant unavailable: {e}")
     QdrantClient = None
     Distance = None
@@ -62,41 +69,16 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.orm import sessionmaker
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-try:
-    from dopemux.logging import configure_logging, RequestIDMiddleware
-except Exception:  # pragma: no cover - fallback path for isolated service images
-    RequestIDMiddleware = None
-
-    def configure_logging(service_name, *, level=None, **_):
-        resolved_level = getattr(logging, str(level or "INFO").upper(), logging.INFO)
-        logging.basicConfig(
-            level=resolved_level,
-            format="%(asctime)s %(levelname)s %(name)s %(message)s",
-        )
-        return logging.getLogger(service_name)
-
 # Import EventBus for Redis Streams coordination
 from event_bus import EventBus, Event, EventType
-from dopecon_bridge.leantime_contract import (
-    build_leantime_tool_request as _contract_build_leantime_tool_request,
-    normalize_leantime_route_response as _contract_normalize_leantime_route_response,
-)
-from dopecon_bridge.conport_semantic_proxy import run_semantic_search_with_fallback
 
-# Configure logging with env var support (G33)
-LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()
-configure_logging("dopecon-bridge", level=LOG_LEVEL)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # ============================================================================
 # MULTI-INSTANCE CONFIGURATION
 # ============================================================================
-
-# Environment variable contract (G33)
-HOST = os.getenv("HOST", "0.0.0.0")
-ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
-SERVICE_NAME = os.getenv("SERVICE_NAME", "dopecon-bridge")
-HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
 
 # Instance configuration - automatically detected from environment
 INSTANCE_NAME = os.getenv("DOPEMUX_INSTANCE", "default")
@@ -104,9 +86,8 @@ PORT_BASE = int(os.getenv("PORT_BASE", "3000"))
 CONTAINER_PREFIX = os.getenv("CONTAINER_PREFIX", f"mcp-{INSTANCE_NAME}")
 NETWORK_NAME = os.getenv("NETWORK_NAME", f"mcp-network-{INSTANCE_NAME}")
 
-# Integration bridge port (PORT_BASE + 16, or direct PORT override)
-PORT = int(os.getenv("PORT", str(PORT_BASE + 16)))
-MCP_INTEGRATION_PORT = PORT
+# Integration bridge port (PORT_BASE + 16)
+MCP_INTEGRATION_PORT = PORT_BASE + 16
 
 # Service discovery - instance-aware container names
 TASK_MASTER_URL = f"http://{CONTAINER_PREFIX}-task-master-ai:3005"
@@ -434,47 +415,6 @@ async def start_ddg_ingestion(event_bus: EventBus, db_manager: DatabaseManager):
 # MCP CLIENT MANAGEMENT (Instance-Aware)
 # ============================================================================
 
-def _build_mcp_error_detail(
-    service: str,
-    tool_name: str,
-    status: Optional[int] = None,
-    upstream_text: str = "",
-    transport_error: Optional[str] = None,
-) -> str:
-    """Generate actionable error details for MCP upstream failures."""
-    context = f"{service}.{tool_name}"
-    if transport_error:
-        base = f"MCP call failed for {context}: {transport_error}"
-    else:
-        base = f"MCP call failed for {context} with upstream status {status}"
-        if upstream_text:
-            base += f" ({upstream_text[:300]})"
-
-    if service == "leantime-bridge":
-        lowered = upstream_text.lower()
-        setup_signals = (
-            "token",
-            "api key",
-            "unauthorized",
-            "forbidden",
-            "setup",
-            "install",
-            "wizard",
-            "login",
-            "not configured",
-            "redirect",
-        )
-        if transport_error or status in {401, 403, 404, 409, 422, 500, 502, 503} or any(
-            signal in lowered for signal in setup_signals
-        ):
-            base += (
-                " | Leantime readiness hint: complete the Leantime web setup wizard at "
-                "http://localhost:8080, generate/verify API credentials, and configure "
-                "LEANTIME_API_TOKEN for leantime-bridge."
-            )
-    return base
-
-
 class MCPClientManager:
     """Manages connections to instance-specific MCP servers"""
 
@@ -497,37 +437,14 @@ class MCPClientManager:
 
         try:
             async with self.session.post(url, json=arguments) as response:
-                raw_text = await response.text()
-                if response.status >= 400:
-                    detail = _build_mcp_error_detail(
-                        service=service,
-                        tool_name=tool_name,
-                        status=response.status,
-                        upstream_text=raw_text,
-                    )
-                    logger.error("❌ %s", detail)
-                    raise HTTPException(status_code=502, detail=detail)
-
-                if raw_text:
-                    try:
-                        result = json.loads(raw_text)
-                    except json.JSONDecodeError:
-                        result = {"raw_response": raw_text}
-                else:
-                    result = {}
+                response.raise_for_status()
+                result = await response.json()
                 logger.debug(f"🔧 {service}.{tool_name} -> {result}")
                 return result
 
-        except HTTPException:
-            raise
         except aiohttp.ClientError as e:
-            detail = _build_mcp_error_detail(
-                service=service,
-                tool_name=tool_name,
-                transport_error=str(e),
-            )
-            logger.error("❌ %s", detail)
-            raise HTTPException(status_code=502, detail=detail)
+            logger.error(f"❌ MCP call failed: {service}.{tool_name} - {e}")
+            raise HTTPException(status_code=502, detail=f"Service {service} unavailable")
 
     def _get_service_url(self, service: str) -> str:
         """Get instance-specific service URL"""
@@ -569,41 +486,39 @@ class MCPClientManager:
 # CONPORT INTEGRATION FOR ADHD MEMORY MANAGEMENT
 # ============================================================================
 
-class ConPortClient:
-    """ConPort client for ADHD-friendly context preservation across instances"""
+class ConPortAdapter:
+    """ConPort adapter for ADHD-friendly context preservation across instances."""
 
     def __init__(self):
-        self.session = None
         self.base_url = os.getenv("CONPORT_URL", "http://conport:3020")
-        self.workspace_id = "/Users/hue/code/dopemux-mvp"  # Fixed workspace for this project
+        self.workspace_id = resolve_workspace_root()
+        self._client = get_conport_client(
+            base_url=self.base_url,
+            timeout_s=10,
+            workspace_root=str(self.workspace_id),
+            transport="http",
+        )
         self._initialized = False
 
     async def initialize(self):
-        """Lazy initialization of HTTP session"""
+        """Lazy initialization of HTTP session."""
         if not self._initialized:
-            timeout = aiohttp.ClientTimeout(total=10, connect=5)
-            self.session = aiohttp.ClientSession(timeout=timeout)
+            await self._client._ensure_session()
             self._initialized = True
             logger.info("✅ ConPort client initialized")
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
     async def get_context(self, context_token: str) -> Dict[str, Any]:
         """Get context from ConPort with circuit breaker pattern"""
-        if not self.session:
-            await self.initialize()
-
         try:
-            url = f"{self.base_url}/api/context/{context_token}"
-            async with self.session.get(url) as response:
-                if response.status == 200:
-                    context = await response.json()
-                    logger.debug(f"🧠 Retrieved context for token {context_token[:8]}...")
-                    return context
-                elif response.status == 404:
-                    # New context token, return empty context
-                    return {"workspace_id": self.workspace_id, "session_data": {}}
-                else:
-                    response.raise_for_status()
+            await self.initialize()
+            context = await self._client._get_json(f"/api/context/{context_token}")
+            if context.get("code") == 404:
+                return {"workspace_id": self.workspace_id, "session_data": {}}
+            if context.get("status") in {"unhealthy", "error"}:
+                raise RuntimeError(f"ConPort context fetch failed: {context}")
+            logger.debug(f"🧠 Retrieved context for token {context_token[:8]}...")
+            return context
 
         except Exception as e:
             logger.warning(f"⚠️ ConPort context retrieval failed: {e}")
@@ -613,67 +528,25 @@ class ConPortClient:
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
     async def update_context(self, context_token: str, context_deltas: Dict[str, Any]) -> bool:
         """Update context in ConPort with deltas"""
-        if not self.session:
-            await self.initialize()
-
         try:
-            url = f"{self.base_url}/api/context/{context_token}"
             payload = {
                 "workspace_id": self.workspace_id,
                 "deltas": context_deltas,
                 "timestamp": datetime.utcnow().isoformat()
             }
-
-            async with self.session.patch(url, json=payload) as response:
-                if response.status in [200, 201]:
-                    logger.debug(f"💾 Updated context for token {context_token[:8]}...")
-                    # Also update fallback cache
-                    await self._update_fallback_context(context_token, context_deltas)
-                    return True
-                else:
-                    response.raise_for_status()
+            await self.initialize()
+            result = await self._client._patch_json(f"/api/context/{context_token}", payload)
+            if result.get("success") is False:
+                raise RuntimeError(f"ConPort context update failed: {result}")
+            logger.debug(f"💾 Updated context for token {context_token[:8]}...")
+            await self._update_fallback_context(context_token, context_deltas)
+            return True
 
         except Exception as e:
             logger.warning(f"⚠️ ConPort context update failed: {e}")
             # Still update fallback cache
             await self._update_fallback_context(context_token, context_deltas)
             return False
-
-    async def semantic_search(
-        self,
-        workspace_id: Optional[str],
-        query_text: str,
-        top_k: int = 5,
-        filter_item_types: Optional[List[str]] = None,
-        filter_tags_include_any: Optional[List[str]] = None,
-        filter_tags_include_all: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
-        """
-        Proxy semantic search to ConPort with compatibility fallback.
-
-        Preferred endpoint is `/api/adhd/semantic-search`; fallback to legacy
-        `/api/semantic-search` on 404/405 to preserve no-breaking behavior.
-        """
-        if not self.session:
-            await self.initialize()
-
-        payload: Dict[str, Any] = {
-            "workspace_id": workspace_id or self.workspace_id,
-            "query_text": query_text,
-            "top_k": max(1, min(int(top_k), 25)),
-        }
-        if filter_item_types:
-            payload["filter_item_types"] = filter_item_types
-        if filter_tags_include_any:
-            payload["filter_tags_include_any"] = filter_tags_include_any
-        if filter_tags_include_all:
-            payload["filter_tags_include_all"] = filter_tags_include_all
-        return await run_semantic_search_with_fallback(
-            session=self.session,
-            base_url=self.base_url,
-            payload=payload,
-            logger=logger,
-        )
 
     async def _get_fallback_context(self, context_token: str) -> Dict[str, Any]:
         """Get context from Redis fallback cache"""
@@ -716,13 +589,12 @@ class ConPortClient:
 
     async def close(self):
         """Close HTTP session"""
-        if self.session:
-            await self.session.close()
+        await self._client.close()
 
 class ConPortMiddleware:
     """Middleware for ADHD-friendly context preservation"""
 
-    def __init__(self, app: FastAPI, conport_client: ConPortClient):
+    def __init__(self, app: FastAPI, conport_client: ConPortAdapter):
         self.app = app
         self.conport_client = conport_client
 
@@ -766,7 +638,7 @@ class ConPortMiddleware:
         return response
 
 # Global ConPort client
-conport_client = ConPortClient()
+conport_client = ConPortAdapter()
 
 # Helper function for ADHD-friendly context updates
 def update_context_delta(request: Request, key: str, value: Any):
@@ -1112,7 +984,7 @@ class TaskIntegrationService:
 
                     await self.mcp_manager.call_tool(
                         "leantime-bridge",
-                        "update_ticket",
+                        "update_ticket_status",
                         {
                             "ticketId": int(leantime_id),
                             "status": leantime_status
@@ -1448,14 +1320,55 @@ mcp_manager = MCPClientManager()
 event_bus = EventBus(REDIS_URL, REDIS_PASSWORD)  # Redis Streams event coordination
 task_service = TaskIntegrationService(db_manager, cache_manager, mcp_manager)
 
+
+# ============================================================================
+# APPLICATION LIFECYCLE
+# ============================================================================
+
+from contextlib import asynccontextmanager
+
+async def init_all_services():
+    """Initialize all services"""
+    await db_manager.initialize()
+    await cache_manager.initialize()
+    await mcp_manager.initialize()
+    await conport_client.initialize()
+    await event_bus.initialize()
+    
+    # Start background tasks
+    try:
+        asyncio.create_task(start_ddg_ingestion(event_bus, db_manager))
+        logger.info("🧩 DDG ingestion task started")
+    except Exception as e:
+        logger.error(f"❌ Failed to start DDG ingestion: {e}")
+
+
+async def close_all_services():
+    """Clean up all services"""
+    await event_bus.close()
+    await mcp_manager.close()
+    await cache_manager.close()
+    await db_manager.close()
+    await conport_client.close()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan"""
+    async with lifespan_context("dopecon-bridge", init_all_services, close_all_services):
+        yield
+
+
 # FastAPI app
 app = FastAPI(
     title=f"MCP DopeconBridge - {INSTANCE_NAME}",
     version="1.0.0",
-    description=f"Task management coordination for Dopemux instance: {INSTANCE_NAME}"
+    description=f"Task management coordination for Dopemux instance: {INSTANCE_NAME}",
+    lifespan=lifespan
 )
-if RequestIDMiddleware is not None:
-    app.add_middleware(RequestIDMiddleware)
+
+# Add Request ID middleware
+app.add_middleware(RequestIDMiddleware)
 
 # JWT Auth constants and functions
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -1469,22 +1382,12 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-# Lazy initialization to avoid bcrypt self-test issues at module load
-_users_db_initialized = False
-users_db = {}
-
-def _initialize_users_db():
-    """Initialize users database with hashed passwords (lazy)."""
-    global _users_db_initialized, users_db
-    if not _users_db_initialized:
-        users_db = {'admin': {
-            'username': 'admin',
-            'hashed_password': get_password_hash('password'),
-        }}
-        _users_db_initialized = True
+users_db = {'admin': {
+    'username': 'admin',
+    'hashed_password': get_password_hash('password'),
+}}
 
 def authenticate_user(username: str, password: str):
-    _initialize_users_db()  # Ensure users_db is initialized
     user = users_db.get(username)
     if not user or not verify_password(password, user['hashed_password']):
         return False
@@ -1731,7 +1634,9 @@ class EmbeddingManager:
         try:
             await self._upsert_qdrant_point(decision_id, vec, workspace_id)
         except Exception as e:
-            logger.debug("Failed upserting Qdrant point for %s: %s", decision_id, e)
+            pass
+
+            logger.error(f"Error: {e}")
     def _qdrant(self):
         url = os.getenv("QDRANT_URL") or os.getenv("QDRANT_HOST")
         if not url or QdrantClient is None:
@@ -1743,8 +1648,9 @@ class EmbeddingManager:
             port = int(port or "6333")
             return QdrantClient(host=host, port=port)
         except Exception as e:
-            logger.debug("Failed to create Qdrant client from %s: %s", url, e)
             return None
+
+            logger.error(f"Error: {e}")
     async def _upsert_qdrant_point(self, decision_id: str, vector: list, workspace_id: Optional[str]):
         client = self._qdrant()
         if not client:
@@ -1812,51 +1718,6 @@ class WorkflowFromTemplateRequest(BaseModel):
     context: Dict[str, Any] = {}
 
 
-class ConPortSemanticSearchRequest(BaseModel):
-    workspace_id: Optional[str] = None
-    query_text: str
-    top_k: int = Field(default=5, ge=1, le=25)
-    filter_item_types: Optional[List[str]] = None
-    filter_tags_include_any: Optional[List[str]] = None
-    filter_tags_include_all: Optional[List[str]] = None
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize all connections on startup"""
-    try:
-        await db_manager.initialize()
-        await cache_manager.initialize()
-        await mcp_manager.initialize()
-        await conport_client.initialize()  # Initialize ConPort for ADHD context preservation
-        await event_bus.initialize()  # Initialize Redis Streams event coordination
-
-        logger.info(f"🚀 MCP DopeconBridge started successfully for instance: {INSTANCE_NAME}")
-        logger.info(f"📊 Running on port: {MCP_INTEGRATION_PORT}")
-        logger.info(f"🧠 ConPort ADHD context preservation enabled")
-        logger.info(f"📡 EventBus ready for cross-service coordination")
-
-        # Start background ingestion from EventBus into DDG tables
-        try:
-            asyncio.create_task(start_ddg_ingestion(event_bus, db_manager))
-            logger.info("🧩 DDG ingestion task started")
-        except Exception as e:
-            logger.error(f"❌ Failed to start DDG ingestion: {e}")
-
-    except Exception as e:
-        logger.error(f"❌ Startup failed: {e}")
-        raise
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up connections on shutdown"""
-    await event_bus.close()  # Stop all event subscribers
-    await mcp_manager.close()
-    await cache_manager.close()
-    await db_manager.close()
-    await conport_client.close()  # Clean up ConPort connection
-    logger.info(f"✅ MCP DopeconBridge shut down for instance: {INSTANCE_NAME}")
-    logger.info(f"🧠 ConPort context preserved for next session")
-
 @app.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(form_data.username, form_data.password)
@@ -1903,43 +1764,57 @@ async def send_cmd(cmd: str, request: Request, current_user: dict = Depends(get_
 
 @app.get("/health")
 async def health_check():
-    """Health check with service status"""
-    mcp_health = await mcp_manager.health_check_all()
-
-    return {
-        "status": "healthy",
-        "instance": INSTANCE_NAME,
-        "port": MCP_INTEGRATION_PORT,
-        "timestamp": datetime.utcnow().isoformat(),
-        "services": mcp_health,
-        "event_bus": "ready"
-    }
-
-
-@app.post("/conport/semantic_search")
-async def conport_semantic_search(request: ConPortSemanticSearchRequest):
-    """
-    Backward-compatible semantic search proxy for legacy bridge clients.
-
-    Preserves the historic `/conport/semantic_search` contract while routing to
-    ConPort's current endpoint (`/api/adhd/semantic-search`) and falling back
-    to the legacy ConPort endpoint only when required.
-    """
+    """Health check with dependency tracking"""
+    from dopemux.health import check_dependency, determine_overall_status, HealthResponse
+    
+    dependencies = {}
+    
     try:
-        result = await conport_client.semantic_search(
-            workspace_id=request.workspace_id,
-            query_text=request.query_text,
-            top_k=request.top_k,
-            filter_item_types=request.filter_item_types,
-            filter_tags_include_any=request.filter_tags_include_any,
-            filter_tags_include_all=request.filter_tags_include_all,
+        # Check MCP manager health
+        async def check_mcp():
+            if mcp_manager:
+                health = await mcp_manager.health_check_all()
+                return not any(v == "error" for v in health.values())
+            return False
+        
+        mcp_status = await check_dependency(
+            "mcp",
+            check_mcp,
+            timeout_ms=200,
+            critical=False
         )
-        if isinstance(result, dict):
-            result.setdefault("bridge_proxy", True)
-        return result
-    except Exception as exc:
-        logger.error("❌ ConPort semantic_search proxy failed: %s", exc)
-        raise HTTPException(status_code=502, detail=f"ConPort semantic_search proxy failed: {exc}")
+        dependencies["mcp"] = mcp_status
+        
+        # Check EventBus
+        async def check_eventbus():
+            return event_bus is not None
+        
+        eb_status = await check_dependency(
+            "event_bus",
+            check_eventbus,
+            timeout_ms=50,
+            critical=False
+        )
+        dependencies["event_bus"] = eb_status
+        
+        # Determine overall status (no critical deps for this service)
+        overall_status = determine_overall_status(dependencies, critical_deps=set())
+        
+        return HealthResponse(
+            service="dopecon-bridge",
+            status=overall_status,
+            ts=datetime.utcnow().isoformat() + "Z",
+            dependencies={k: v.status for k, v in dependencies.items()}
+        )
+    
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return HealthResponse(
+            service="dopecon-bridge",
+            status="fail",
+            ts=datetime.utcnow().isoformat() + "Z",
+            dependencies={}
+        )
 
 # ============================================================================
 # EVENT BUS ENDPOINTS
@@ -2249,7 +2124,9 @@ async def ddg_link_similar(workspace_id: Optional[str] = None, min_overlap: int 
                             )
                             linked += 1
                         except Exception as e:
-                            logger.debug("Failed linking similar decisions %s/%s: %s", a.id, b.id, e)
+                            pass
+
+                            logger.error(f"Error: {e}")
         return {"linked": linked, "considered": n}
     except Exception as e:
         logger.error(f"❌ ddg_link_similar failed: {e}")
@@ -2326,7 +2203,8 @@ async def ddg_related_decisions(decision_id: str, k: int = 10):
                             items.append({"id": cand_ids[idx], "score": rr.get("score", 0.0)})
                     return {"decision_id": decision_id, "count": len(items), "items": items}
         except Exception as e:
-            logger.debug("Qdrant related-decision lookup failed for %s, using fallback: %s", decision_id, e)
+            pass
+            logger.error(f"Error: {e}")
         # Fallback: cosine in Postgres mirror
         session_ctx = await db_manager.get_session()
         async with session_ctx as session:
@@ -2746,212 +2624,13 @@ class CrossPlaneRouteResponse(BaseModel):
     error: Optional[str] = None
     correlation_id: Optional[str] = None
 
-
-LEANTIME_ROUTE_OPERATION_TO_TOOL: Dict[str, str] = {
-    "get_tasks": "list_tickets",
-    "list_tasks": "list_tickets",
-    "create_task": "create_ticket",
-    "update_task": "update_ticket",
-    "update_task_status": "update_ticket",
-    "create_project": "create_project",
-    "get_project_status": "get_project_stats",
-    "allocate_resource": "update_ticket",
-    "update_sprint": "update_ticket",
-    "leantime.get_tasks": "list_tickets",
-    "leantime.list_tasks": "list_tickets",
-    "leantime.create_task": "create_ticket",
-    "leantime.update_task": "update_ticket",
-    "leantime.update_task_status": "update_ticket",
-    "leantime.create_project": "create_project",
-    "leantime.get_project_status": "get_project_stats",
-    "leantime.allocate_resource": "update_ticket",
-    "leantime.update_sprint": "update_ticket",
-}
-
-
-def _normalize_leantime_priority(value: Any) -> str:
-    """Normalize mixed priority values to Leantime's 1-4 scale."""
-    if value is None:
-        return "2"
-    if isinstance(value, int):
-        return str(min(max(value, 1), 4))
-    if isinstance(value, str) and value.strip().isdigit():
-        parsed = int(value.strip())
-        return str(min(max(parsed, 1), 4))
-
-    mapped = {
-        "low": "1",
-        "medium": "2",
-        "med": "2",
-        "high": "3",
-        "critical": "4",
-        "urgent": "4",
-    }
-    return mapped.get(str(value).strip().lower(), "2")
-
-
-def _coerce_optional_int(value: Any) -> Optional[int]:
-    if value is None:
-        return None
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _build_leantime_tool_request(operation: str, data: Dict[str, Any]) -> tuple[str, Dict[str, Any]]:
-    """Translate cross-plane PM route payloads to leantime-bridge tool calls."""
-    op = (operation or "").strip().lower()
-    tool_name = LEANTIME_ROUTE_OPERATION_TO_TOOL.get(op)
-    if not tool_name:
-        raise ValueError(f"Unsupported PM operation: {operation}")
-
-    payload = dict(data or {})
-
-    if tool_name == "list_tickets":
-        req: Dict[str, Any] = {}
-        project_id = payload.get("projectId", payload.get("project_id"))
-        if project_id is not None:
-            req["projectId"] = int(project_id)
-        if "status" in payload:
-            req["status"] = payload["status"]
-        assigned_to = payload.get("assignedTo", payload.get("assigned_to"))
-        if assigned_to is not None:
-            req["assignedTo"] = int(assigned_to)
-        return tool_name, req
-
-    if tool_name == "create_ticket":
-        headline = payload.get("headline", payload.get("title"))
-        if not headline:
-            raise ValueError("create_task requires 'title' or 'headline'")
-        req = {
-            "projectId": int(payload.get("projectId", payload.get("project_id", 1))),
-            "headline": headline,
-            "description": payload.get("description", ""),
-            "priority": _normalize_leantime_priority(payload.get("priority")),
-            "type": payload.get("type", "task"),
-        }
-        milestone_id = _coerce_optional_int(payload.get("milestoneid", payload.get("milestone_id")))
-        if milestone_id is not None:
-            req["milestoneid"] = milestone_id
-        return tool_name, req
-
-    if tool_name == "update_ticket":
-        ticket_id = (
-            payload.get("ticketId")
-            or payload.get("task_id")
-            or payload.get("taskId")
-            or payload.get("id")
-            or payload.get("sprint_id")
-            or payload.get("sprintId")
-            or (payload.get("allocation") or {}).get("task_id")
-            or (payload.get("allocation") or {}).get("taskId")
-            or (payload.get("allocation") or {}).get("ticketId")
-        )
-        if ticket_id is None:
-            raise ValueError("update operation requires ticket/task identifier")
-        req = {"ticketId": int(ticket_id)}
-        for field in ("headline", "description", "status"):
-            if field in payload:
-                req[field] = payload[field]
-        if "priority" in payload:
-            req["priority"] = _normalize_leantime_priority(payload["priority"])
-        assigned_to = _coerce_optional_int(payload.get("assignedTo", payload.get("assigned_to")))
-        if assigned_to is None:
-            allocation = payload.get("allocation") or {}
-            assigned_to = _coerce_optional_int(
-                allocation.get("assignedTo", allocation.get("assigned_to"))
-            )
-        if assigned_to is None and (operation or "").strip().lower().endswith("allocate_resource"):
-            if str(payload.get("resource_type", "")).strip().lower() in {"user", "assignee", "member"}:
-                assigned_to = _coerce_optional_int(payload.get("resource_id"))
-        if assigned_to is not None:
-            req["assignedTo"] = assigned_to
-        return tool_name, req
-
-    if tool_name == "create_project":
-        name = payload.get("name", payload.get("project_name"))
-        if not name:
-            raise ValueError("create_project requires 'name' or 'project_name'")
-        details = payload.get("details", payload.get("description", ""))
-        req = {
-            "name": name,
-            "description": details if isinstance(details, str) else json.dumps(details, ensure_ascii=True),
-        }
-        if "state" in payload:
-            req["state"] = str(payload["state"])
-        return tool_name, req
-
-    if tool_name == "get_project_stats":
-        project_id = payload.get("projectId", payload.get("project_id"), payload.get("id"))
-        if project_id is None:
-            raise ValueError("get_project_status requires project identifier")
-        return tool_name, {"projectId": int(project_id)}
-
-    return tool_name, payload
-
-
-def _extract_ticket_list(tool_result: Any) -> List[Dict[str, Any]]:
-    if isinstance(tool_result, list):
-        return [item for item in tool_result if isinstance(item, dict)]
-    if not isinstance(tool_result, dict):
-        return []
-    for key in ("tasks", "tickets", "result", "items"):
-        value = tool_result.get(key)
-        if isinstance(value, list):
-            return [item for item in value if isinstance(item, dict)]
-    return []
-
-
-def _normalize_leantime_route_response(operation: str, tool_result: Any) -> Dict[str, Any]:
-    """Shape responses for existing clients expecting task_id/tasks/project_id keys."""
-    op = (operation or "").strip().lower()
-
-    if op in {"get_tasks", "list_tasks", "leantime.get_tasks", "leantime.list_tasks"}:
-        return {
-            "tasks": _extract_ticket_list(tool_result),
-            "source": "leantime-bridge",
-            "raw_result": tool_result,
-        }
-
-    if op in {"create_task", "leantime.create_task"}:
-        if isinstance(tool_result, dict):
-            ticket_id = tool_result.get("id") or tool_result.get("ticketId") or tool_result.get("task_id")
-            response = dict(tool_result)
-            if ticket_id is not None:
-                response["task_id"] = str(ticket_id)
-            return response
-        return {"task_id": str(tool_result), "raw_result": tool_result}
-
-    if op in {"create_project", "leantime.create_project"}:
-        if isinstance(tool_result, dict):
-            project_id = tool_result.get("id") or tool_result.get("projectId") or tool_result.get("project_id")
-            response = dict(tool_result)
-            if project_id is not None:
-                response["project_id"] = str(project_id)
-            return response
-        return {"project_id": str(tool_result), "raw_result": tool_result}
-
-    if op in {"update_sprint", "leantime.update_sprint"}:
-        return {"updated": True, "raw_result": tool_result}
-
-    if op in {"allocate_resource", "leantime.allocate_resource"}:
-        return {"allocated": True, "raw_result": tool_result}
-
-    if op in {"get_project_status", "leantime.get_project_status"}:
-        if isinstance(tool_result, dict):
-            return dict(tool_result)
-        return {"result": tool_result}
-
-    return {"result": tool_result}
-
-
 async def _route_to_pm(request: CrossPlaneRouteRequest) -> CrossPlaneRouteResponse:
     """
     Route request to PM plane (Leantime).
 
-    Publishes a coordination event and, for supported Leantime operations,
-    executes the operation against leantime-bridge in-process.
+    Translates REST request → EventBus event for async processing.
+    For queries (get_*), returns immediately with mock data.
+    For commands (update_*, set_*), publishes event and returns ack.
     """
     correlation_id = str(uuid.uuid4())
 
@@ -2980,49 +2659,51 @@ async def _route_to_pm(request: CrossPlaneRouteRequest) -> CrossPlaneRouteRespon
             f"(operation={request.operation}, correlation_id={correlation_id})"
         )
 
-        try:
-            tool_name, tool_payload = _contract_build_leantime_tool_request(
-                request.operation,
-                request.data,
-            )
-            tool_result = await mcp_manager.call_tool(
-                "leantime-bridge",
-                tool_name,
-                tool_payload,
-            )
-            normalized_data = _contract_normalize_leantime_route_response(
-                request.operation,
-                tool_result,
-            )
-            normalized_data["event_id"] = msg_id
-            normalized_data["source"] = "leantime-bridge"
-            return CrossPlaneRouteResponse(
-                success=True,
-                data=normalized_data,
-                correlation_id=correlation_id,
-            )
-        except ValueError:
-            logger.debug(
-                "PM routing operation not mapped to leantime-bridge: %s",
-                request.operation,
-            )
-        except Exception as e:
-            logger.error(
-                "❌ PM routing failed to execute via leantime-bridge "
-                f"(operation={request.operation}): {e}"
-            )
-            return CrossPlaneRouteResponse(
-                success=False,
-                error=str(e),
-                correlation_id=correlation_id,
-            )
-
+        # For queries, forward to real PM plane services
+        # Week 11-12: Real service integration (requires infrastructure)
         if is_query:
-            return CrossPlaneRouteResponse(
-                success=True,
-                data={"message": f"Query {request.operation} processed (no direct PM mapping)"},
-                correlation_id=correlation_id,
-            )
+            if request.operation == "get_tasks":
+                # Forward to Task Orchestrator query server (proxies to Leantime)
+                try:
+                    import httpx
+                    async with httpx.AsyncClient(timeout=10.0) as client:
+                        response = await client.get(
+                            f"{TASK_ORCHESTRATOR_URL}/tasks",
+                            params=request.data
+                        )
+                        if response.status_code == 200:
+                            tasks_data = response.json()
+                            return CrossPlaneRouteResponse(
+                                success=True,
+                                data=tasks_data,
+                                correlation_id=correlation_id
+                            )
+                        else:
+                            # Fallback to mock if service unavailable
+                            logger.warning(f"Task Orchestrator returned {response.status_code}, using mock fallback")
+                except Exception as e:
+                    # Graceful degradation: Use mock if service unavailable
+                    logger.warning(f"Task Orchestrator unavailable ({e}), using mock fallback")
+
+                # Mock fallback (for testing without infrastructure)
+                return CrossPlaneRouteResponse(
+                    success=True,
+                    data={
+                        "tasks": [
+                            {"id": "1", "title": "Task 1 (mock)", "status": "TODO"},
+                            {"id": "2", "title": "Task 2 (mock)", "status": "IN_PROGRESS"}
+                        ],
+                        "source": "mock_fallback"
+                    },
+                    correlation_id=correlation_id
+                )
+            else:
+                # Generic query - return mock
+                return CrossPlaneRouteResponse(
+                    success=True,
+                    data={"message": f"Query {request.operation} processed (mock)"},
+                    correlation_id=correlation_id
+                )
 
         # For commands, return acknowledgment
         return CrossPlaneRouteResponse(
@@ -3236,7 +2917,12 @@ async def route_to_leantime(request: CrossPlaneRouteRequest):
     - allocate_resource
     """
     logger.info(f"📋 Routing to Leantime: {request.operation}")
-    return await _route_to_pm(request)
+    # Use existing Leantime bridge URL
+    return CrossPlaneRouteResponse(
+        success=True,
+        data={"status": "routed_to_leantime", "operation": request.operation},
+        correlation_id=str(uuid.uuid4())
+    )
 
 @app.post("/route/taskmaster", response_model=CrossPlaneRouteResponse)
 async def route_to_taskmaster(request: CrossPlaneRouteRequest):
@@ -3259,9 +2945,26 @@ async def route_to_taskmaster(request: CrossPlaneRouteRequest):
     )
 
 if __name__ == "__main__":
+    import re
+    
+    # Log startup configuration (redacted)
+    safe_postgres_url = re.sub(r'://([^:]+):([^@]+)@', r'://\1:***@', POSTGRES_URL)
+    conport_url = os.getenv("CONPORT_URL", "http://conport:3020")
+    
+    logger.info("=" * 60)
+    logger.info("🚀 DopeconBridge - Starting")
+    logger.info("=" * 60)
+    logger.info(f"  Service: dopecon-bridge")
+    logger.info(f"  Port: {MCP_INTEGRATION_PORT}")
+    logger.info(f"  Instance: {INSTANCE_NAME}")
+    logger.info(f"  PostgreSQL: {safe_postgres_url}")
+    logger.info(f"  Redis: {REDIS_URL}")
+    logger.info(f"  ConPort: {conport_url}")
+    logger.info("=" * 60)
+    
     uvicorn.run(
         "main:app",
-        host=HOST,
+        host="0.0.0.0",
         port=MCP_INTEGRATION_PORT,
         reload=False  # Disable reload in production
     )

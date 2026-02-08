@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from services.enhanced_orchestrator import OrchestrationTask, TaskStatus
+from task_orchestrator.models import OrchestrationTask, TaskStatus
 
 logger = logging.getLogger(__name__)
 

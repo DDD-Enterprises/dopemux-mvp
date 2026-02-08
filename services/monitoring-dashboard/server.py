@@ -12,9 +12,6 @@ Architecture:
 - Progressive disclosure: overview → details → deep diagnostics
 """
 
-from collections import deque
-from statistics import stdev
-
 import asyncio
 import json
 import logging
@@ -33,36 +30,17 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-# Ensure local service packages are importable in both module and script execution.
-SERVICES_ROOT = Path(__file__).resolve().parents[1]
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-for candidate in (str(SERVICES_ROOT), str(PROJECT_ROOT)):
-    if candidate not in sys.path:
-        sys.path.insert(0, candidate)
-
-# Import the global error handling framework.
-try:
-    from adhd_engine.core.error_handling import (
-        GlobalErrorHandler,
-        with_error_handling,
-        create_dopemux_error,
-        ErrorType,
-        ErrorSeverity,
-        CircuitBreaker,
-        CircuitBreakerConfig,
-        CircuitBreakerState,
-    )
-except ImportError:
-    from ..error_handling import (
-        GlobalErrorHandler,
-        with_error_handling,
-        create_dopemux_error,
-        ErrorType,
-        ErrorSeverity,
-        CircuitBreaker,
-        CircuitBreakerConfig,
-        CircuitBreakerState,
-    )
+# Import the global error handling framework
+from ..error_handling import (
+    GlobalErrorHandler,
+    with_error_handling,
+    create_dopemux_error,
+    ErrorType,
+    ErrorSeverity,
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    CircuitBreakerState
+)
 
 # Add src to path for dopemux imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
@@ -99,43 +77,183 @@ class DashboardResponse(BaseModel):
     services: List[ServiceHealth]
     summary: Dict[str, Any]
 
+@dataclass
+class RecoveryAction:
+    """Automated recovery action with outcome."""
+    service_id: str
+    action_type: str  # 'restart_container', 'clear_cache', 'reset_connections'
+    timestamp: datetime
+    reason: str
+    success: Optional[bool] = None
+    details: Optional[Dict[str, Any]] = None
 
-class ADHDAlertSystem:
-    """Generate ADHD-friendly health alerts with progressive urgency."""
 
-    def __init__(self, dashboard: "MonitoringDashboard"):
+class RecoveryManager:
+    """
+    Automated recovery system for self-healing service operations.
+
+    Handles common failure scenarios with minimal human intervention.
+    """
+
+    def __init__(self, dashboard):
         self.dashboard = dashboard
-        self.last_alert_level: Optional[str] = None
+        self.recovery_strategies = {
+            "container_down": self._recover_container_down,
+            "circuit_breaker_open": self._recover_circuit_breaker,
+            "connection_refused": self._recover_connection_refused,
+            "timeout": self._recover_timeout,
+            "high_memory": self._recover_high_memory
+        }
 
-    async def check_and_generate_alerts(self, response: DashboardResponse) -> Optional[Dict[str, Any]]:
-        thresholds = getattr(self.dashboard, "alert_thresholds", {})
-        critical_threshold = thresholds.get("critical_threshold", 1)
-        warning_threshold = thresholds.get("warning_threshold", 2)
+        # Recovery limits to prevent runaway operations
+        self.max_recovery_attempts = 3
+        self.recovery_cooldown_minutes = 5
+        self.attempts_history = {}  # service_id -> list of recent attempts
 
-        if response.critical_services >= critical_threshold:
-            level = "critical"
-            urgency = "immediate"
-            message = f"{response.critical_services} critical service(s) need immediate attention."
-            recommendation = "Stabilize critical services first, then re-check warnings."
-            break_suggestion = "Take a 5-minute reset after resolving the top issue."
-        elif response.warning_services >= warning_threshold:
-            level = "warning"
-            urgency = "soon"
-            message = f"{response.warning_services} warning service(s) detected."
-            recommendation = "Address warnings in small batches to avoid overload."
-            break_suggestion = "Use a short break before the next debugging batch."
-        else:
-            self.last_alert_level = "none"
+    async def attempt_recovery(self, service_id: str, failure_type: str, service_config: Dict[str, Any]) -> Optional[RecoveryAction]:
+        """
+        Attempt automated recovery for a failed service.
+
+        Returns RecoveryAction if recovery was attempted, None if no recovery available.
+        """
+        if not self.dashboard.recovery_enabled:
             return None
 
-        self.last_alert_level = level
+        # Check recovery attempt limits
+        if not self._can_attempt_recovery(service_id):
+            logger.warning(f"Recovery rate limited for {service_id}")
+            return None
+
+        # Find appropriate recovery strategy
+        strategy = self.recovery_strategies.get(failure_type)
+        if not strategy:
+            logger.debug(f"No recovery strategy for failure type: {failure_type}")
+            return None
+
+        # Attempt recovery
+        recovery_action = RecoveryAction(
+            service_id=service_id,
+            action_type=strategy.__name__.replace('_recover_', ''),
+            timestamp=datetime.now(timezone.utc),
+            reason=f"Automatic recovery for {failure_type}",
+            success=False
+        )
+
+        try:
+            success = await strategy(service_id, service_config)
+            recovery_action.success = success
+            recovery_action.details = {"strategy": strategy.__name__}
+
+            if success:
+                logger.info(f"✅ Recovery successful for {service_id}: {recovery_action.action_type}")
+                recovery_action.details["message"] = "Recovery completed successfully"
+            else:
+                logger.warning(f"❌ Recovery failed for {service_id}: {recovery_action.action_type}")
+                recovery_action.details["message"] = "Recovery attempt failed"
+
+        except Exception as e:
+            logger.error(f"Recovery error for {service_id}: {e}")
+            recovery_action.success = False
+            recovery_action.details = {"error": str(e), "strategy": strategy.__name__}
+
+        # Record the attempt
+        self._record_recovery_attempt(service_id, recovery_action)
+        self.dashboard.recovery_history.append(recovery_action)
+
+        return recovery_action
+
+    def _can_attempt_recovery(self, service_id: str) -> bool:
+        """Check if recovery can be attempted based on rate limits."""
+        now = datetime.now(timezone.utc)
+        cutoff = now - timedelta(minutes=self.recovery_cooldown_minutes)
+
+        if service_id not in self.attempts_history:
+            self.attempts_history[service_id] = []
+
+        # Filter recent attempts
+        recent_attempts = [a for a in self.attempts_history[service_id] if a.timestamp > cutoff]
+
+        # Limit to max attempts per cooldown period
+        return len(recent_attempts) < self.max_recovery_attempts
+
+    def _record_recovery_attempt(self, service_id: str, action: RecoveryAction):
+        """Record recovery attempt for rate limiting."""
+        if service_id not in self.attempts_history:
+            self.attempts_history[service_id] = []
+        self.attempts_history[service_id].append(action)
+
+        # Clean old attempts (keep last 10)
+        if len(self.attempts_history[service_id]) > 10:
+            self.attempts_history[service_id] = self.attempts_history[service_id][-10:]
+
+    async def _recover_container_down(self, service_id: str, service_config: Dict[str, Any]) -> bool:
+        """Attempt to restart a down container."""
+        if service_config.get('discovery') != 'docker':
+            return False
+
+        try:
+            # Use docker-compose to restart the service
+            import subprocess
+            result = subprocess.run(
+                ['docker-compose', '-f', 'docker-compose.staging.yml', 'restart', service_id],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+
+            if result.returncode == 0:
+                # Wait a moment for container to start
+                await asyncio.sleep(5)
+                return True
+
+            logger.warning(f"Container restart failed: {result.stderr}")
+            return False
+
+        except Exception as e:
+            logger.error(f"Container restart error: {e}")
+            return False
+
+    async def _recover_circuit_breaker(self, service_id: str, service_config: Dict[str, Any]) -> bool:
+        """Wait for circuit breaker to recover naturally."""
+        # Circuit breakers recover automatically, just wait for half-open state
+        await asyncio.sleep(60)  # Wait 1 minute for natural recovery
+        return True  # Circuit breaker will handle the rest
+
+    async def _recover_connection_refused(self, service_id: str, service_config: Dict[str, Any]) -> bool:
+        """Try container restart for connection issues."""
+        return await self._recover_container_down(service_id, service_config)
+
+    async def _recover_timeout(self, service_id: str, service_config: Dict[str, Any]) -> bool:
+        """For timeout issues, try clearing any cached connections or restarting."""
+        # For now, just attempt container restart
+        return await self._recover_container_down(service_id, service_config)
+
+    async def _recover_high_memory(self, service_id: str, service_config: Dict[str, Any]) -> bool:
+        """Restart container to clear memory issues."""
+        return await self._recover_container_down(service_id, service_config)
+
+    def get_recovery_stats(self) -> Dict[str, Any]:
+        """Get recovery system statistics."""
+        total_attempts = sum(len(attempts) for attempts in self.attempts_history.values())
+        successful_attempts = sum(
+            len([a for a in attempts if a.success])
+            for attempts in self.attempts_history.values()
+        )
+
         return {
-            "level": level,
-            "urgency": urgency,
-            "message": message,
-            "recommendation": recommendation,
-            "break_suggestion": break_suggestion,
-            "timestamp": datetime.now().isoformat(),
+            "total_recovery_attempts": total_attempts,
+            "successful_recoveries": successful_attempts,
+            "success_rate": successful_attempts / max(1, total_attempts),
+            "services_with_attempts": len(self.attempts_history),
+            "recent_attempts": [
+                {
+                    "service": action.service_id,
+                    "action": action.action_type,
+                    "success": action.success,
+                    "timestamp": action.timestamp.isoformat()
+                }
+                for action in list(self.dashboard.recovery_history)[-5:]  # Last 5
+            ]
         }
 
 
@@ -166,6 +284,11 @@ class MonitoringDashboard:
             "degradation_threshold": 1.5,  # 50% degradation triggers warning
             "bottleneck_threshold": 2000  # > 2s considered bottleneck
         }
+
+        # Automated recovery system
+        self.recovery_manager = RecoveryManager(self)
+        self.recovery_enabled = True
+        self.recovery_history = deque(maxlen=50)  # Track last 50 recovery actions
 
         # ADHD-optimized alert system
         self.alert_system = ADHDAlertSystem(self)
@@ -486,6 +609,44 @@ class MonitoringDashboard:
 
         return None
 
+    async def _attempt_service_recovery(self, service_id: str, health_result: ServiceHealth, service_config: Dict[str, Any]):
+        """Attempt automated recovery for a failed service."""
+        if not self.recovery_enabled:
+            return
+
+        # Determine failure type from health result
+        failure_type = self._classify_failure(health_result)
+
+        # Attempt recovery
+        recovery_action = await self.recovery_manager.attempt_recovery(service_id, failure_type, service_config)
+
+        if recovery_action:
+            logger.info(f"Recovery attempted for {service_id}: {recovery_action.action_type} - {'Success' if recovery_action.success else 'Failed'}")
+
+            # Add recovery information to service details
+            if not health_result.details:
+                health_result.details = {}
+            health_result.details["recovery_attempted"] = True
+            health_result.details["recovery_action"] = recovery_action.action_type
+            health_result.details["recovery_success"] = recovery_action.success
+
+    def _classify_failure(self, health_result: ServiceHealth) -> str:
+        """Classify the type of failure for recovery selection."""
+        message = health_result.message.lower()
+
+        if "circuit breaker" in message and "open" in message:
+            return "circuit_breaker_open"
+        elif "connection refused" in message:
+            return "connection_refused"
+        elif "timeout" in message or "taking longer" in message:
+            return "timeout"
+        elif "service down" in message or "not responding" in message:
+            return "container_down"
+        elif "memory" in message or "resources" in message:
+            return "high_memory"
+        else:
+            return "container_down"  # Default fallback
+
     async def get_services(self) -> Dict[str, Dict[str, Any]]:
         """
         Get current service registry with discovery refresh if needed.
@@ -635,8 +796,7 @@ class MonitoringDashboard:
         if not self.session:
             await self.init_session()
 
-        try:
-            async with self.session.get(url, timeout=timeout) as response:
+        async with self.session.get(url, timeout=timeout) as response:
                 response_time = (datetime.now(timezone.utc) - start_time).total_seconds()
 
                 if response.status == 200:
@@ -648,7 +808,7 @@ class MonitoringDashboard:
                             "response_time": response_time,
                             "details": data
                         }
-                    except Exception as e:
+                    except:
                         # Non-JSON response but 200 status
                         return {
                             "status": HealthLevel.HEALTHY,
@@ -696,7 +856,6 @@ class MonitoringDashboard:
                 "details": {"error": str(e)}
             }
 
-            logger.error(f"Error: {e}")
     async def _check_http_health_direct(self, service_config: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
         """Direct HTTP health check without circuit breaker protection (fallback method)."""
         url = service_config["url"]
@@ -719,7 +878,7 @@ class MonitoringDashboard:
                             "response_time": response_time,
                             "details": data
                         }
-                    except Exception as e:
+                    except:
                         # Non-JSON response but 200 status
                         return {
                             "status": HealthLevel.HEALTHY,
@@ -727,7 +886,6 @@ class MonitoringDashboard:
                             "response_time": response_time,
                             "details": {"response": "non-json"}
                         }
-                        logger.error(f"Error: {e}")
                 elif response.status == 302 and auth_required:
                     # Redirect to login is expected for auth-required services
                     return {
@@ -768,7 +926,6 @@ class MonitoringDashboard:
                 "details": {"error": str(e)}
             }
 
-            logger.error(f"Error: {e}")
     async def _check_fallback_health(self, service_config: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
         """Check health using fallback methods when HTTP fails."""
         fallback_check = service_config.get("fallback_check")
@@ -806,7 +963,6 @@ class MonitoringDashboard:
                     "details": {"check_type": "process_check", "error": str(e)}
                 }
 
-                logger.error(f"Error: {e}")
         elif fallback_check == "docker_check":
             # Check if Docker container is running (for Leantime)
             try:
@@ -839,7 +995,6 @@ class MonitoringDashboard:
                     "details": {"check_type": "docker_check", "error": str(e)}
                 }
 
-                logger.error(f"Error: {e}")
         elif fallback_check == "mcp_ping":
             # Basic MCP connectivity check (simplified)
             try:
@@ -876,7 +1031,6 @@ class MonitoringDashboard:
                     "details": {"check_type": "mcp_ping", "error": str(e)}
                 }
 
-                logger.error(f"Error: {e}")
         # No fallback available or fallback failed
         return {
             "status": HealthLevel.UNKNOWN,
@@ -1004,6 +1158,10 @@ class MonitoringDashboard:
                 if health_result.response_time is not None:
                     self._track_performance(service_id, health_result.response_time)
 
+                # Attempt automated recovery for failed services
+                if health_result.status in [HealthLevel.CRITICAL, HealthLevel.WARNING]:
+                    await self._attempt_service_recovery(service_id, health_result, services_config[service_id])
+
                 if health_result.status == HealthLevel.HEALTHY:
                     healthy_count += 1
                 elif health_result.status == HealthLevel.WARNING:
@@ -1072,18 +1230,35 @@ class MonitoringDashboard:
 
         summary["performance_summary"]["recommendations"] = recommendations[:3]  # Top 3 recommendations
 
+        dashboard_data = DashboardResponse(
+            overall_health=overall_health,
+            total_services=total_services,
+            healthy_services=healthy_count,
+            warning_services=warning_count,
+            critical_services=critical_count,
+            last_update=now,
+            services=services,
+            summary=summary
+        )
+
+        # Cache the result
+        self.cache["dashboard"] = dashboard_data
+        self.last_update = now
+
+        return dashboard_data
+
         # ADHD-optimized summary
-        summary.update({
+        summary = {
             "healthy_percentage": round((healthy_count / len(services)) * 100, 1),
             "adhd_services_count": sum(1 for s in services if s.adhd_optimized),
             "adhd_services_healthy": sum(1 for s in services if s.adhd_optimized and s.status == HealthLevel.HEALTHY),
             "quick_status": "All good" if overall_health == HealthLevel.HEALTHY else "Needs attention" if overall_health == HealthLevel.WARNING else "Critical issues",
             "recommendation": self._get_adhd_recommendation(overall_health, warning_count, critical_count)
-        })
+        }
 
         response = DashboardResponse(
             overall_health=overall_health,
-            total_services=total_services,
+            total_services=len(services),
             healthy_services=healthy_count,
             warning_services=warning_count,
             critical_services=critical_count,
@@ -1231,6 +1406,11 @@ async def get_performance_metrics():
             "total_measurements": sum(len(s["response_times"]) for s in performance_data.values())
         }
     }
+
+@app.get("/api/recovery")
+async def get_recovery_stats():
+    """Get automated recovery system statistics and history."""
+    return dashboard.recovery_manager.get_recovery_stats()
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard_ui():

@@ -48,6 +48,50 @@ class ContextSwitchTracker:
         self.total_recovery_time = 0
         self.current_recovery_start: Optional[datetime] = None
 
+    async def track_switch(
+        self,
+        from_context: str,
+        to_context: str,
+        user_id: str
+    ) -> Dict:
+        """
+        Track a context switch event.
+        
+        Args:
+            from_context: Previous context/file
+            to_context: New context/file
+            user_id: User identifier
+            
+        Returns:
+            Recorded switch event
+        """
+        event = {
+            "user_id": user_id,
+            "from_context": from_context,
+            "to_context": to_context,
+            "timestamp": datetime.now().isoformat(),
+            "switch_detected": True
+        }
+        self.switches_today.append(event)
+        return event
+
+    async def calculate_distraction_score(self, session_id: str) -> float:
+        """
+        Calculate distraction score for a session.
+        
+        Args:
+            session_id: Session identifier
+            
+        Returns:
+            Distraction score (0.0 - 1.0)
+        """
+        # Simple implementation for MVP: ratio of switches to time or similar
+        # For now, return a dummy score based on switches count
+        switches_count = len(self.switches_today)
+        # Normalize to 0-1 range roughly, cap at 1.0
+        score = min(switches_count * 0.1, 1.0)
+        return score
+
     async def get_todays_switches(self) -> Dict:
         """
         Get today's context switch metrics from Activity Capture.

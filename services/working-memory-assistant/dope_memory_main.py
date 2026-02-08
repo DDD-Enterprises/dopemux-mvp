@@ -48,6 +48,9 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 PORT = int(os.getenv("PORT", os.getenv("DOPE_MEMORY_PORT", "3020")))
+MCP_SERVER_PORT = int(os.getenv("MCP_SERVER_PORT", str(PORT)))
+SERVICE_NAME = os.getenv("SERVICE_NAME", "dope-memory")
+HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
 DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memory")))
 DEFAULT_WORKSPACE_ID = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "default")
 DEFAULT_INSTANCE_ID = os.getenv("DOPE_MEMORY_INSTANCE_ID", "A")
@@ -869,12 +872,12 @@ app.add_middleware(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-@app.get("/health")
+@app.get(HEALTH_CHECK_PATH)
 async def health_check():
     """Health check endpoint per registry contract."""
     return {
         "status": "healthy",
-        "service": "dope-memory",
+        "service": SERVICE_NAME,
         "version": "1.0.0",
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
@@ -884,7 +887,7 @@ async def health_check():
 async def root():
     """Root endpoint with service info."""
     return {
-        "service": "dope-memory",
+        "service": SERVICE_NAME,
         "version": "1.0.0",
         "description": "Temporal chronicle and working-context manager",
         "spec_path": "docs/spec/dope-memory/v1/",
