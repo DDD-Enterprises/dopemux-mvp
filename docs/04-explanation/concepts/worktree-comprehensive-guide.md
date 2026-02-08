@@ -558,9 +558,9 @@ A: Restore from backup: `~/.claude.json.backup.*`
 
 ## Related Documentation
 
-- [Worktree Switching Guide](WORKTREE_SWITCHING_GUIDE.md) - Detailed shell integration
-- [Advanced Workflows](ADVANCED_WORKTREE_WORKFLOWS.md) - Power user tips
-- [Troubleshooting](troubleshooting/WORKTREE_VALIDATION_REPORT.md) - Common issues
+- [Worktree Switching Guide](../../02-how-to/multi-instance-workflow.md) - Detailed shell integration
+- [Advanced Workflows](../../02-how-to/deployment-worktree.md) - Power user tips
+- [Troubleshooting](../../02-how-to/troubleshooting.md) - Common issues
 
 ## ConPort Decisions
 
