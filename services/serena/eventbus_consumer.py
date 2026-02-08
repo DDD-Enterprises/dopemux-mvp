@@ -3,6 +3,8 @@ EventBus Consumer for Serena
 Subscribes to ConPort decision events and caches decisions
 """
 
+import os
+
 import asyncio
 import redis.asyncio as redis
 import json
