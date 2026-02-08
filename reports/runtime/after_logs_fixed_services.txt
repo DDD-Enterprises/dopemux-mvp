@@ -1,0 +1,40 @@
+dopecon-bridge-1  | 2026-02-01 07:34:02,540 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1  | 2026-02-01 07:34:02,540 [ERROR] dopecon-bridge: Health check failed: 2 validation errors for HealthResponse
+dopecon-bridge-1  | dependencies.mcp
+dopecon-bridge-1  |   Input should be a valid string [type=string_type, input_value={'status': 'ok', 'latency_ms': 10, 'info': None}, input_type=dict]
+dopecon-bridge-1  |     For further information visit https://errors.pydantic.dev/2.12/v/string_type
+dopecon-bridge-1  | dependencies.event_bus
+dopecon-bridge-1  |   Input should be a valid string [type=string_type, input_value={'status': 'ok', 'latency_ms': 0, 'info': None}, input_type=dict]
+dopecon-bridge-1  |     For further information visit https://errors.pydantic.dev/2.12/v/string_type
+dopecon-bridge-1  | INFO:     127.0.0.1:56094 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1  | 2026-02-01 07:34:12,597 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1  | 2026-02-01 07:34:12,600 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1  | 2026-02-01 07:34:12,603 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1  | 2026-02-01 07:34:12,604 [ERROR] dopecon-bridge: Health check failed: 2 validation errors for HealthResponse
+dopecon-bridge-1  | dependencies.mcp
+dopecon-bridge-1  |   Input should be a valid string [type=string_type, input_value={'status': 'ok', 'latency_ms': 12, 'info': None}, input_type=dict]
+dopecon-bridge-1  |     For further information visit https://errors.pydantic.dev/2.12/v/string_type
+dopecon-bridge-1  | dependencies.event_bus
+dopecon-bridge-1  |   Input should be a valid string [type=string_type, input_value={'status': 'ok', 'latency_ms': 0, 'info': None}, input_type=dict]
+dopecon-bridge-1  |     For further information visit https://errors.pydantic.dev/2.12/v/string_type
+dopecon-bridge-1  | INFO:     127.0.0.1:52614 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | 2026-02-01 07:32:57,691 [INFO] task-orchestrator: ✅ task-orchestrator - READY
+task-orchestrator-1  | 2026-02-01 07:32:57,691 [INFO] task-orchestrator: 🔄 Started priority sync processor
+task-orchestrator-1  | 2026-02-01 07:32:57,691 [INFO] task-orchestrator: ⚖️ Started conflict resolution worker
+task-orchestrator-1  | 2026-02-01 07:32:57,691 [INFO] task-orchestrator: 📦 Started batch optimization worker
+task-orchestrator-1  | 2026-02-01 07:32:57,691 [INFO] task-orchestrator: 🧠 Started ADHD accommodation monitor
+task-orchestrator-1  | 2026-02-01 07:32:57,691 [INFO] task-orchestrator: 📊 Started sync health monitor
+task-orchestrator-1  | 2026-02-01 07:32:57,691 [INFO] task-orchestrator: 🔄 Started event processor
+task-orchestrator-1  | 2026-02-01 07:32:57,691 [INFO] task-orchestrator: 🏥 Started plane health monitor
+task-orchestrator-1  | INFO:     Application startup complete.
+task-orchestrator-1  | INFO:     Uvicorn running on http://0.0.0.0:3014 (Press CTRL+C to quit)
+task-orchestrator-1  | INFO:     127.0.0.1:39654 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:60282 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:56884 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:50266 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:42964 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:35196 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | 2026-02-01 07:33:57,699 [WARNING] task-orchestrator: ⚠️ cognitive plane unhealthy: ['Service adhd_engine is unhealthy']
+task-orchestrator-1  | 2026-02-01 07:33:57,699 [ERROR] task-orchestrator: Health monitor error: HEALTH_CHECK
+task-orchestrator-1  | INFO:     127.0.0.1:35400 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:33566 - "GET /health HTTP/1.1" 200 OK
