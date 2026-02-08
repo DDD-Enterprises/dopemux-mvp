@@ -135,6 +135,51 @@ prelude: Active-doc claim parity matrix with severity, ownership, fix action, an
 - `verified_false` means the claim is contradicted by current code/config/tests.
 - `partially_true` means claim is directionally true but needs qualification.
 - `unverified` means no executable evidence exists yet; wording must be downgraded or tests added.
+- Resolved on 2026-02-08: previously tracked P0/P1 contradictions (`DPC0305`,
+  `DPC0302`, `DPC0303`, `DPC0304`) were closed by code-truth rewrites in
+  `docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md`.
+- `DPC0305` now has additional parity coverage in active docs and tests:
+  `docs/03-reference/services/task-orchestrator.md`,
+  `docs/02-how-to/operations/workflow-idea-epic-lifecycle.md`,
+  `tests/unit/test_task_orchestrator_workflow_api.py`.
+- Resolved on 2026-02-08 (link-drift batch, active docs):
+  `DPC0053`, `DPC0055`, `DPC0057`, `DPC0058`, `DPC0061`, `DPC0064`,
+  `DPC0070`, `DPC0071`, `DPC0072`, `DPC0073`, `DPC0083`, `DPC0084`,
+  `DPC0085`, `DPC0086`, `DPC0087`, `DPC0088`, `DPC0091`, `DPC0092`,
+  `DPC0093`, `DPC0099`, `DPC0122` through `DPC0136`, and `DPC0137`
+  through `DPC0155` via canonical path/case normalization in:
+  `docs/01-tutorials/quick-launch-commands.md`,
+  `docs/02-how-to/DEVELOPING_ZEN.md`,
+  `docs/02-how-to/DEVELOPMENT_SETUP.md`,
+  `docs/02-how-to/create-llm-archive.md`,
+  `docs/02-how-to/mobile-web-setup-guide.md`,
+  `docs/02-how-to/multi-instance-workflow.md`,
+  `docs/02-how-to/overview.md`,
+  `docs/03-reference/systems/adhd-intelligence/overview.md`,
+  `docs/03-reference/systems/dashboard/overview.md`,
+  `docs/03-reference/systems/dashboard/tmux-dashboard-readme.md`.
+- Resolved on 2026-02-08 (link-drift batch, reference/explanation/audit docs):
+  `DPC0105`, `DPC0107`, `DPC0110`, `DPC0111`, `DPC0118`, `DPC0119`,
+  `DPC0120`, `DPC0121`, `DPC0156`, `DPC0157`, `DPC0158`, `DPC0182`,
+  `DPC0184`, `DPC0187`, `DPC0188`, `DPC0189`, `DPC0190`, `DPC0191`,
+  `DPC0192`, and `DPC0193` via canonical path normalization and archive-link
+  retargeting in:
+  `docs/03-reference/overview.md`,
+  `docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md`,
+  `docs/04-explanation/concepts/worktree-comprehensive-guide.md`,
+  `docs/05-audit-reports/audit-overview.md`.
+- Resolved on 2026-02-08 (link-drift batch, systems docs):
+  `DPC0207`, `DPC0208`, `DPC0209`, `DPC0210`, `DPC0213`, `DPC0216`,
+  `DPC0217`, `DPC0218`, `DPC0219`, `DPC0220`, `DPC0221`, `DPC0222`,
+  `DPC0223`, `DPC0224`, `DPC0225`, `DPC0226`, `DPC0227`, `DPC0228`,
+  and `DPC0229` via archive-link retargeting, active-path normalization, and
+  upstream-path de-linking in:
+  `docs/systems/adhd-engine/interruption-shield/quickstart.md`,
+  `docs/systems/adhd-features/README.md`,
+  `docs/systems/conport/release-notes.md`,
+  `docs/systems/dope-context/api-reference.md`,
+  `docs/systems/dope-context/deployment.md`,
+  `docs/systems/serena/multi-workspace-guide.md`.
 
 Artifacts generated in this wave:
 
