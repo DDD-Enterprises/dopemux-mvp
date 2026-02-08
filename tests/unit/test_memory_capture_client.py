@@ -1,4 +1,5 @@
 import json
+import re
 import sqlite3
 from pathlib import Path
 
@@ -98,6 +99,105 @@ def test_duplicate_retry_is_ignored(tmp_path, monkeypatch):
     assert first.inserted is True
     assert second.inserted is False
     assert _count_events(first.ledger_path) == 1
+
+
+def test_raw_activity_event_id_is_primary_key(tmp_path, monkeypatch):
+    ledger_path = tmp_path / "chronicle.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+
+    emit_capture_event(
+        {
+            "event_type": "manual.note",
+            "payload": {"summary": "pk bootstrap"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+    )
+
+    conn = sqlite3.connect(str(ledger_path))
+    try:
+        rows = conn.execute("PRAGMA table_info(raw_activity_events)").fetchall()
+    finally:
+        conn.close()
+
+    by_name = {row[1]: row for row in rows}
+    assert "id" in by_name
+    assert by_name["id"][5] == 1  # pk column in PRAGMA table_info
+
+
+def test_deterministic_event_id_changes_with_payload(tmp_path, monkeypatch):
+    ledger_path = tmp_path / "chronicle.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+
+    event_base = {
+        "event_type": "shell.command",
+        "source": "cli",
+        "ts_utc": "2026-02-08T18:30:00+00:00",
+        "payload": {"command": "pytest -q", "arg": "A"},
+    }
+
+    first = emit_capture_event(event_base, mode="cli", repo_root=REPO_ROOT)
+    second = emit_capture_event(
+        {
+            **event_base,
+            "payload": {"command": "pytest -q", "arg": "B"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+    )
+
+    assert first.event_id != second.event_id
+
+
+def test_default_ledger_path_is_repo_local(tmp_path):
+    repo_root = tmp_path / "repo"
+    nested = repo_root / "nested"
+    schema_dir = repo_root / "services" / "working-memory-assistant" / "chronicle"
+    redactor_dir = repo_root / "services" / "working-memory-assistant" / "promotion"
+
+    (repo_root / ".git").mkdir(parents=True)
+    nested.mkdir(parents=True)
+    schema_dir.mkdir(parents=True)
+    redactor_dir.mkdir(parents=True)
+
+    schema_dir.joinpath("schema.sql").write_text(
+        """
+CREATE TABLE IF NOT EXISTS raw_activity_events (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  instance_id TEXT NOT NULL,
+  session_id TEXT,
+  ts_utc TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  source TEXT NOT NULL,
+  payload_json TEXT NOT NULL,
+  redaction_level TEXT NOT NULL,
+  ttl_days INTEGER NOT NULL,
+  created_at_utc TEXT NOT NULL
+);
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    redactor_dir.joinpath("redactor.py").write_text(
+        """class Redactor:
+    def redact_payload(self, payload):
+        return dict(payload)
+""",
+        encoding="utf-8",
+    )
+
+    result = emit_capture_event(
+        {
+            "event_type": "manual.note",
+            "payload": {"summary": "repo local"},
+        },
+        mode="cli",
+        repo_root=repo_root,
+    )
+
+    assert result.ledger_path == (repo_root / ".dopemux" / "chronicle.sqlite").resolve()
+    assert result.ledger_path.exists()
 
 
 def test_schema_bootstrap_runs_once_per_ledger(tmp_path, monkeypatch):
@@ -331,3 +431,16 @@ def test_mode_resolution_config_overrides_context_and_heuristics(monkeypatch):
     )
 
     assert resolve_capture_mode("auto", repo_root=REPO_ROOT) == "mcp"
+
+
+def test_no_implicit_injection_defaults_in_memory_capture_surfaces():
+    files = [
+        REPO_ROOT / "src" / "dopemux" / "memory" / "capture_client.py",
+        REPO_ROOT / "src" / "dopemux" / "memory" / "global_rollup.py",
+        REPO_ROOT / "src" / "dopemux" / "cli.py",
+    ]
+    pattern = re.compile(r"(auto_?inject|implicit_?inject)\s*=\s*true", re.IGNORECASE)
+
+    for path in files:
+        text = path.read_text(encoding="utf-8")
+        assert not pattern.search(text), f"implicit injection default detected in {path}"
