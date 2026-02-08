@@ -15,9 +15,9 @@ The ADHD Intelligence System, powered by Serena AI, provides cognitive support, 
 
 ## Quick Links
 
-- **[ADHD Complete Documentation](ADHD_COMPLETE_DOCUMENTATION.md)** - Comprehensive system guide
-- **[ADHD Stack README](ADHD_STACK_README.md)** - Technology stack overview
-- **[Architecture Diagram](ADHD_ARCHITECTURE_DIAGRAM.md)** - Visual system architecture
+- **[ADHD Complete Documentation](adhd-complete-documentation.md)** - Comprehensive system guide
+- **[ADHD Stack README](adhd-stack-readme.md)** - Technology stack overview
+- **[Architecture Diagram](../../../04-explanation/architecture/adhd-architecture-diagram.md)** - Visual system architecture
 
 ## Overview
 
@@ -31,18 +31,16 @@ Serena is Dopemux's ADHD intelligence engine that:
 ## Documentation Index
 
 ### Complete Documentation
-- [ADHD Complete Documentation](ADHD_COMPLETE_DOCUMENTATION.md) - Everything about the system
-- [ADHD Stack README](ADHD_STACK_README.md) - Tech stack and components
+- [ADHD Complete Documentation](adhd-complete-documentation.md) - Everything about the system
+- [ADHD Stack README](adhd-stack-readme.md) - Tech stack and components
 
 ### Architecture & Design
-- [Architecture Diagram](ADHD_ARCHITECTURE_DIAGRAM.md) - Visual overview
-- [ADHD Engine Deep Dive Part 1](ADHD-ENGINE-DEEP-DIVE-PART1.md) - Core concepts
-- [ADHD Engine Deep Dive Part 2](ADHD-ENGINE-DEEP-DIVE-PART2.md) - Pattern detection
-- [ADHD Engine Deep Dive Part 3](ADHD-ENGINE-DEEP-DIVE-PART3.md) - Break suggestions
-- [ADHD Engine Deep Dive Part 4](ADHD-ENGINE-DEEP-DIVE-PART4.md) - Integration
+- [Architecture Diagram](../../../04-explanation/architecture/adhd-architecture-diagram.md) - Visual overview
+- [ADHD Engine Deep Dive](adhd-engine-deep-dive.md) - Core concepts, pattern detection, and break strategy
+- [Serena V2 Quick Test](serena-v2-quick-test.md) - Runtime verification guide
 
 ### Component Documentation
-See [04-explanation/](../../04-explanation/) for:
+See [04-explanation/](../../../04-explanation/) for:
 - Component 6: ADHD Intelligence
 - Component 6: Phase 2 Specification
 - Component 6: Phase 3 Specification
@@ -155,10 +153,10 @@ adhd_settings:
 ## Related Documentation
 
 ### In This Repository
-- [Architecture](../../04-explanation/architecture/)
-- [Component Specs](../../04-explanation/)
-- [API Reference](../../03-reference/)
-- [How-To Guides](../../02-how-to/)
+- [Architecture](../../../04-explanation/architecture/)
+- [Component Specs](../../../04-explanation/)
+- [API Reference](../../)
+- [How-To Guides](../../../02-how-to/)
 
 ### External Resources
 - ADHD research papers (see bibliography in docs)

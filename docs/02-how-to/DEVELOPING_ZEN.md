@@ -511,14 +511,14 @@ asyncio.run(test())
 
 ### Documentation
 
-- **[Zen MCP Overview](../../03-reference/services/zen-mcp.md)** - Complete Zen MCP reference
+- **[Zen/PAL Architecture Notes](../04-explanation/design-decisions/tier3-zen-enhanced-design.md)** - Historical Zen design and current migration context
 - **[MCP Protocol Spec](https://spec.modelcontextprotocol.io/)** - MCP standard
 - **[Development Setup](./DEVELOPMENT_SETUP.md)** - General dev mode guide
 
 ### Code References
 
-- **[thinkdeep.py](../../docker/mcp-servers/zen/zen-mcp-server/tools/thinkdeep.py)** - Example tool implementation
-- **[Model clients](../../docker/mcp-servers/zen/zen-mcp-server/models/)** - Model abstraction examples
+- **[thinkdeep.py](../../docker/mcp-servers/pal/pal-mcp-server/tools/thinkdeep.py)** - Example tool implementation
+- **[Model configs](../../docker/mcp-servers/pal/pal-mcp-server/conf/)** - PAL model configuration examples
 
 ### External Resources
 

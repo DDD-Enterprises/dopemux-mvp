@@ -15,9 +15,9 @@ The Dopemux Dashboard is a tmux-based ADHD-optimized interface providing real-ti
 
 ## Quick Links
 
-- **[Dashboard README](TMUX_DASHBOARD_README.md)** - Main documentation and usage guide
-- **[Design Document](TMUX_DASHBOARD_DESIGN.md)** - Architecture and design philosophy
-- **[Metrics Inventory](TMUX_METRICS_INVENTORY.md)** - Complete metrics catalog
+- **[Dashboard README](tmux-dashboard-readme.md)** - Main documentation and usage guide
+- **[Design Document](tmux-dashboard-design.md)** - Architecture and design philosophy
+- **[Metrics Inventory](tmux-metrics-inventory.md)** - Complete metrics catalog
 
 ## Overview
 
@@ -29,17 +29,17 @@ The dashboard provides:
 ## Documentation Index
 
 ### User Guides
-- [Dashboard README](TMUX_DASHBOARD_README.md) - How to use the dashboard
-- [Customization Guide](DASHBOARD_ENHANCEMENTS.md) - Customize your dashboard
+- [Dashboard README](tmux-dashboard-readme.md) - How to use the dashboard
+- [Customization Guide](dashboard-enhancements.md) - Customize your dashboard
 
 ### Design & Architecture
-- [Design Document](TMUX_DASHBOARD_DESIGN.md) - Complete design specification
-- [Metrics Inventory](TMUX_METRICS_INVENTORY.md) - All available metrics
-- [Implementation Tracker](DASHBOARD_IMPLEMENTATION_TRACKER.md) - Development progress
+- [Design Document](tmux-dashboard-design.md) - Complete design specification
+- [Metrics Inventory](tmux-metrics-inventory.md) - All available metrics
+- [Implementation Tracker](dashboard-implementation-tracker.md) - Development progress
 
 ### Implementation Details
-- [Enhancement Plans](DASHBOARD_ENHANCEMENTS.md) - Planned improvements
-- [Session Summaries](../../implementation-plans/DASHBOARD_SESSION_SUMMARY.md) - Development notes
+- [Enhancement Plans](dashboard-enhancements.md) - Planned improvements
+- [Session Summaries](../../../archive/implementation-plans/DASHBOARD_SESSION_SUMMARY.md) - Development notes
 
 ## Dashboard Components
 
@@ -107,7 +107,7 @@ Edit configuration files:
 
 ## Metrics Reference
 
-See [Metrics Inventory](TMUX_METRICS_INVENTORY.md) for complete catalog including:
+See [Metrics Inventory](tmux-metrics-inventory.md) for complete catalog including:
 - Cognitive & focus metrics
 - Task & session metrics
 - System health metrics
@@ -116,7 +116,7 @@ See [Metrics Inventory](TMUX_METRICS_INVENTORY.md) for complete catalog includin
 ## Development
 
 ### Implementation Status
-See [Implementation Tracker](DASHBOARD_IMPLEMENTATION_TRACKER.md)
+See [Implementation Tracker](dashboard-implementation-tracker.md)
 
 Current phase: **Production Ready**
 - ✅ 3-pane bash implementation
@@ -125,7 +125,7 @@ Current phase: **Production Ready**
 - 🚧 Advanced integrations (ongoing)
 
 ### Enhancement Roadmap
-See [Enhancement Plans](DASHBOARD_ENHANCEMENTS.md)
+See [Enhancement Plans](dashboard-enhancements.md)
 
 Planned:
 - Serena V2 integration
@@ -135,9 +135,9 @@ Planned:
 
 ## Related Documentation
 
-- [ADHD Engine Documentation](../../ADHD_COMPLETE_DOCUMENTATION.md)
-- [Architecture Overview](../../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
-- [Implementation Plans](../../implementation-plans/)
+- [ADHD Engine Documentation](../adhd-intelligence/adhd-complete-documentation.md)
+- [Architecture Overview](../../../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
+- [Implementation Plans](../../../archive/implementation-plans/)
 
 ## Troubleshooting
 

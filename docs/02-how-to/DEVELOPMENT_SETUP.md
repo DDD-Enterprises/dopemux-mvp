@@ -410,14 +410,14 @@ dopemux start
 ### Documentation Links
 
 - **For Zen Contributors**: [DEVELOPING_ZEN.md](./DEVELOPING_ZEN.md) - Zen-specific guide
-- **For Core Contributors**: [DEVELOPING_DOPEMUX_CORE.md](./DEVELOPING_DOPEMUX_CORE.md) - Core development guide
+- **For Core Contributors**: [Reference Overview](../03-reference/overview.md) - Core architecture and interface index
 - **For Troubleshooting**: [development-troubleshooting.md](./development-troubleshooting.md) - Common issues
 
 ### Learning Resources
 
 - **Design Document**: [dev-mode-design.md](../04-explanation/design-decisions/dev-mode-design.md) - Complete technical spec
-- **Architecture**: [system-bible.md](../94-architecture/system-bible.md) - System architecture overview
-- **MCP Servers**: [MCP Documentation](../03-reference/services/) - Individual MCP server docs
+- **Architecture**: [system-bible.md](../04-explanation/architecture/system-bible.md) - System architecture overview
+- **MCP Servers**: [MCP Tools Overview](../03-reference/mcp-tools-overview.md) - Active tool catalog and usage patterns
 
 ### Getting Help
 
