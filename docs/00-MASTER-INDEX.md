@@ -42,6 +42,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Multi-Instance Workflow](02-how-to/multi-instance-workflow.md)
 - [Instance State Persistence](02-how-to/instance-state-persistence.md)
 - [Orchestrator Dashboard Quickstart](02-how-to/orchestrator-dashboard.md)
+- [Workflow Idea to Epic Lifecycle](02-how-to/operations/workflow-idea-epic-lifecycle.md)
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
 
 ---
@@ -105,6 +106,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 ### Configuration
 - [Profile YAML Schema](03-reference/configuration/PROFILE-YAML-SCHEMA.md)
 - [MCP Tools Overview](03-reference/mcp-tools-overview.md)
+- [Task Orchestrator Service Reference](03-reference/services/task-orchestrator.md)
 
 ### Features
 - [Features Index](03-reference/features/features-index.md)
