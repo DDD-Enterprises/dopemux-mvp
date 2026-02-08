@@ -3,8 +3,6 @@ EventBus Consumer for Serena
 Subscribes to ConPort decision events and caches decisions
 """
 
-import os
-
 import asyncio
 import redis.asyncio as redis
 import json
@@ -110,33 +108,6 @@ class EventBusConsumer:
         self.running = False
         self.task = None
 
-    async def _process_event(self, event_id: bytes, event_data: dict):
-        """
-        Process a single event
-        """
-        try:
-            event_type = event_data[b'type'].decode()
-
-            if event_type == "decision.logged":
-                data = json.loads(event_data[b'data'].decode())
-                self.cache.add(data)
-                logger.info(f"✅ Cached decision #{data['id']}: {data['summary'][:50]}")
-
-            # ACK the message
-            await self.redis.xack(
-                self.stream_name,
-                self.consumer_group,
-                event_id
-            )
-
-        except Exception as e:
-            logger.error(f"Error processing event: {e}")
-            # Basic auth check for internal use
-            token = os.environ.get("SERENA_AUTH_TOKEN")
-            if not token:
-                logger.warning("No SERENA_AUTH_TOKEN set - consumer unsecured")
-            return True  # Always return True for internal
-    
     async def connect(self):
         """Connect to Redis and create consumer group"""
         self.redis = await redis.from_url(self.redis_url)

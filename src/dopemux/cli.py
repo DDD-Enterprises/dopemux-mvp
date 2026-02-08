@@ -2075,13 +2075,13 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
             console.logger.error(f"[red]❌ Failed to remove worktree for instance {instance_id}[/red]")
 
 
-@cli.command()
+@cli.command(name="status")
 @click.option("--attention", "-a", is_flag=True, help="Show attention metrics")
 @click.option("--context", "-c", is_flag=True, help="Show context information")
 @click.option("--tasks", "-t", is_flag=True, help="Show task progress")
 @click.option("--mobile", "-m", is_flag=True, help="Show Happy mobile status")
 @click.pass_context
-def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
+def session_status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
     """
     📊 Show current session status and metrics
 
@@ -3360,7 +3360,7 @@ def _run_extract_cleanup(
             sys.exit(1)
 
 
-@cli.command()
+@cli.command(name="analyze")
 @click.argument("directory", default=".")
 @click.option("--output", "-o", help="Output directory for analysis results")
 @click.option(
@@ -3372,7 +3372,7 @@ def _run_extract_cleanup(
 @click.option("--extensions", help="Comma-separated list of file extensions to include")
 @click.option("--exclude", help="Comma-separated list of patterns to exclude")
 @click.pass_context
-def analyze(
+def analyze_codebase(
     ctx,
     directory: str,
     output: Optional[str],
@@ -3920,30 +3920,6 @@ def _configure_openrouter_litellm():
     os.environ["CLAUDE_CODE_LLM_PROVIDER"] = "litellm"
     os.environ["CLAUDE_CODE_LLM_BASE_URL"] = "http://localhost:4000"
     os.environ["CLAUDE_CODE_LLM_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
-    
-    console.logger.info("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
-
-
-def _configure_openrouter_litellm():
-    """Configure environment for OpenRouter via LiteLLM"""
-    # Set up OpenRouter models for LiteLLM
-    openrouter_models = [
-        "openrouter-xai-grok-code-fast",
-        "openrouter-openai-gpt-5",
-        "openrouter-openai-gpt-5-mini",
-        "openrouter-openai-gpt-5-codex",
-        "openrouter-google-gemini-2-flash",
-        "openrouter-meta-llama-3.1-405b",
-    ]
-    
-    # Update environment
-    os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
-    os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
-    os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(openrouter_models)
-    
-    # Ensure Zen MCP uses LiteLLM
-    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
-    os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
     
     console.logger.info("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
 
@@ -4906,9 +4882,9 @@ def rollback(ctx, backup_name: Optional[str], list_backups: bool):
         sys.exit(1)
 
 
-@update.command()
+@update.command(name="status")
 @click.pass_context
-def status(ctx):
+def update_status(ctx):
     """
     📊 Show system update status and health
 
@@ -5843,6 +5819,349 @@ except ImportError as e:
 
 
 # ============================================================================
+# Workflow Commands (ADR-197 Stage-1/Stage-2 Runtime)
+# ============================================================================
+
+def _workflow_base_url() -> str:
+    return os.getenv("TASK_ORCHESTRATOR_URL", "http://localhost:8000").rstrip("/")
+
+
+def _workflow_request(
+    method: str,
+    path: str,
+    *,
+    payload: Optional[Dict[str, object]] = None,
+    params: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
+    """Call Task-Orchestrator workflow API with consistent error handling."""
+    import requests
+
+    url = f"{_workflow_base_url()}{path}"
+    try:
+        response = requests.request(method, url, json=payload, params=params, timeout=15)
+    except requests.RequestException as exc:
+        raise click.ClickException(f"workflow request failed: {exc}") from exc
+
+    if response.status_code >= 400:
+        detail = response.text
+        try:
+            body = response.json()
+            if isinstance(body, dict):
+                detail = str(body.get("detail", body))
+        except ValueError:
+            pass
+        raise click.ClickException(
+            f"workflow API error ({response.status_code}) for {method} {path}: {detail}"
+        )
+
+    if not response.content:
+        return {}
+
+    try:
+        data = response.json()
+    except ValueError:
+        return {}
+    if isinstance(data, dict):
+        return data
+    return {"data": data}
+
+
+@cli.group()
+def workflow():
+    """🧩 Manage Stage-1 ideas and Stage-2 epics."""
+    pass
+
+
+@workflow.group()
+def ideas():
+    """💡 Stage-1 idea lifecycle commands."""
+    pass
+
+
+@workflow.group()
+def epics():
+    """📦 Stage-2 epic lifecycle commands."""
+    pass
+
+
+@ideas.command("add")
+@click.option("--title", required=True, help="Idea title")
+@click.option("--description", required=True, help="Idea description")
+@click.option("--source", default="other", show_default=True, help="Idea source label")
+@click.option("--creator", default=lambda: os.getenv("USER", "dopemux"), show_default="env USER")
+@click.option("--tag", "tags", multiple=True, help="Tag (repeatable)")
+def workflow_ideas_add_cmd(
+    title: str,
+    description: str,
+    source: str,
+    creator: str,
+    tags: Sequence[str],
+):
+    payload: Dict[str, object] = {
+        "title": title,
+        "description": description,
+        "source": source,
+        "creator": creator,
+        "tags": list(tags),
+    }
+    result = _workflow_request("POST", "/api/workflow/ideas", payload=payload)
+    console.logger.info(f"[green]✓ Idea created:[/green] {result.get('idea_id')}")
+
+
+@ideas.command("list")
+@click.option("--status", help="Filter by status")
+@click.option("--tag", help="Filter by tag")
+@click.option("--limit", type=int, default=20, show_default=True, help="Max records")
+def workflow_ideas_list_cmd(status: Optional[str], tag: Optional[str], limit: int):
+    params: Dict[str, object] = {"limit": limit}
+    if status:
+        params["status"] = status
+    if tag:
+        params["tag"] = tag
+
+    result = _workflow_request("GET", "/api/workflow/ideas", params=params)
+    ideas_data = result.get("ideas", [])
+    if not isinstance(ideas_data, list):
+        raise click.ClickException("workflow API returned unexpected ideas payload")
+
+    if not ideas_data:
+        console.logger.info("[yellow]No workflow ideas found.[/yellow]")
+        return
+
+    table = Table(title="Workflow Ideas", show_header=True, header_style="bold cyan")
+    table.add_column("ID", style="green")
+    table.add_column("Status")
+    table.add_column("Title")
+    table.add_column("Tags", style="dim")
+    table.add_column("Updated", style="dim")
+
+    for item in ideas_data:
+        if not isinstance(item, dict):
+            continue
+        table.add_row(
+            str(item.get("id", "")),
+            str(item.get("status", "")),
+            str(item.get("title", "")),
+            ", ".join(item.get("tags", []) or []),
+            str(item.get("updated_at", "")),
+        )
+    console.logger.info(table)
+
+
+@ideas.command("update")
+@click.argument("idea_id")
+@click.option("--title", help="New title")
+@click.option("--description", help="New description")
+@click.option("--status", "idea_status", help="New status")
+@click.option("--tag", "tags", multiple=True, help="Replace tags with provided values")
+def workflow_ideas_update_cmd(
+    idea_id: str,
+    title: Optional[str],
+    description: Optional[str],
+    idea_status: Optional[str],
+    tags: Sequence[str],
+):
+    payload: Dict[str, object] = {}
+    if title is not None:
+        payload["title"] = title
+    if description is not None:
+        payload["description"] = description
+    if idea_status is not None:
+        payload["status"] = idea_status
+    if tags:
+        payload["tags"] = list(tags)
+    if not payload:
+        raise click.ClickException("provide at least one field to update")
+
+    result = _workflow_request("PATCH", f"/api/workflow/ideas/{idea_id}", payload=payload)
+    console.logger.info(f"[green]✓ Idea updated:[/green] {result.get('idea_id', idea_id)}")
+
+
+@ideas.command("promote")
+@click.argument("idea_id")
+@click.option("--sync-leantime/--no-sync-leantime", default=True, show_default=True)
+@click.option("--title", help="Epic title override")
+@click.option("--description", help="Epic description override")
+@click.option("--business-value", help="Business value statement")
+@click.option(
+    "--priority",
+    type=click.Choice(["critical", "high", "medium", "low"], case_sensitive=False),
+    default="medium",
+    show_default=True,
+)
+@click.option("--criterion", "criteria", multiple=True, help="Acceptance criterion (repeatable)")
+@click.option("--tag", "tags", multiple=True, help="Additional tags")
+def workflow_ideas_promote_cmd(
+    idea_id: str,
+    sync_leantime: bool,
+    title: Optional[str],
+    description: Optional[str],
+    business_value: Optional[str],
+    priority: str,
+    criteria: Sequence[str],
+    tags: Sequence[str],
+):
+    payload: Dict[str, object] = {
+        "sync_to_leantime": sync_leantime,
+        "priority": priority.lower(),
+    }
+    if title is not None:
+        payload["title"] = title
+    if description is not None:
+        payload["description"] = description
+    if business_value is not None:
+        payload["business_value"] = business_value
+    if criteria:
+        payload["acceptance_criteria"] = list(criteria)
+    if tags:
+        payload["tags"] = list(tags)
+
+    result = _workflow_request(
+        "POST",
+        f"/api/workflow/ideas/{idea_id}/promote",
+        payload=payload,
+    )
+    console.logger.info(
+        "[green]✓ Idea promoted:[/green] "
+        f"{result.get('idea_id')} -> {result.get('epic_id')}"
+    )
+
+
+@epics.command("add")
+@click.option("--title", required=True, help="Epic title")
+@click.option("--description", required=True, help="Epic description")
+@click.option("--business-value", required=True, help="Business value statement")
+@click.option(
+    "--priority",
+    type=click.Choice(["critical", "high", "medium", "low"], case_sensitive=False),
+    default="medium",
+    show_default=True,
+)
+@click.option("--status", "epic_status", default="planned", show_default=True, help="Epic status")
+@click.option("--criterion", "criteria", multiple=True, help="Acceptance criterion (repeatable)")
+@click.option("--tag", "tags", multiple=True, help="Tag (repeatable)")
+def workflow_epics_add_cmd(
+    title: str,
+    description: str,
+    business_value: str,
+    priority: str,
+    epic_status: str,
+    criteria: Sequence[str],
+    tags: Sequence[str],
+):
+    payload: Dict[str, object] = {
+        "title": title,
+        "description": description,
+        "business_value": business_value,
+        "priority": priority.lower(),
+        "status": epic_status,
+        "acceptance_criteria": list(criteria),
+        "tags": list(tags),
+    }
+    result = _workflow_request("POST", "/api/workflow/epics", payload=payload)
+    console.logger.info(f"[green]✓ Epic created:[/green] {result.get('epic_id')}")
+
+
+@epics.command("list")
+@click.option("--status", help="Filter by status")
+@click.option(
+    "--priority",
+    type=click.Choice(["critical", "high", "medium", "low"], case_sensitive=False),
+    help="Filter by priority",
+)
+@click.option("--tag", help="Filter by tag")
+@click.option("--limit", type=int, default=20, show_default=True, help="Max records")
+def workflow_epics_list_cmd(
+    status: Optional[str],
+    priority: Optional[str],
+    tag: Optional[str],
+    limit: int,
+):
+    params: Dict[str, object] = {"limit": limit}
+    if status:
+        params["status"] = status
+    if priority:
+        params["priority"] = priority.lower()
+    if tag:
+        params["tag"] = tag
+
+    result = _workflow_request("GET", "/api/workflow/epics", params=params)
+    epics_data = result.get("epics", [])
+    if not isinstance(epics_data, list):
+        raise click.ClickException("workflow API returned unexpected epics payload")
+
+    if not epics_data:
+        console.logger.info("[yellow]No workflow epics found.[/yellow]")
+        return
+
+    table = Table(title="Workflow Epics", show_header=True, header_style="bold cyan")
+    table.add_column("ID", style="green")
+    table.add_column("Status")
+    table.add_column("Priority")
+    table.add_column("Title")
+    table.add_column("Leantime ID", style="dim")
+    table.add_column("Updated", style="dim")
+
+    for item in epics_data:
+        if not isinstance(item, dict):
+            continue
+        table.add_row(
+            str(item.get("id", "")),
+            str(item.get("status", "")),
+            str(item.get("priority", "")),
+            str(item.get("title", "")),
+            str(item.get("leantime_project_id", "") or ""),
+            str(item.get("updated_at", "")),
+        )
+    console.logger.info(table)
+
+
+@epics.command("update")
+@click.argument("epic_id")
+@click.option("--title", help="New title")
+@click.option("--description", help="New description")
+@click.option("--business-value", help="New business value statement")
+@click.option(
+    "--priority",
+    type=click.Choice(["critical", "high", "medium", "low"], case_sensitive=False),
+    help="New priority",
+)
+@click.option("--status", "epic_status", help="New status")
+@click.option("--criterion", "criteria", multiple=True, help="Replace acceptance criteria")
+@click.option("--tag", "tags", multiple=True, help="Replace tags")
+def workflow_epics_update_cmd(
+    epic_id: str,
+    title: Optional[str],
+    description: Optional[str],
+    business_value: Optional[str],
+    priority: Optional[str],
+    epic_status: Optional[str],
+    criteria: Sequence[str],
+    tags: Sequence[str],
+):
+    payload: Dict[str, object] = {}
+    if title is not None:
+        payload["title"] = title
+    if description is not None:
+        payload["description"] = description
+    if business_value is not None:
+        payload["business_value"] = business_value
+    if priority is not None:
+        payload["priority"] = priority.lower()
+    if epic_status is not None:
+        payload["status"] = epic_status
+    if criteria:
+        payload["acceptance_criteria"] = list(criteria)
+    if tags:
+        payload["tags"] = list(tags)
+    if not payload:
+        raise click.ClickException("provide at least one field to update")
+
+    result = _workflow_request("PATCH", f"/api/workflow/epics/{epic_id}", payload=payload)
+    console.logger.info(f"[green]✓ Epic updated:[/green] {result.get('epic_id', epic_id)}")
+
+
+# ============================================================================
 # Profile Command Compatibility Aliases
 # ============================================================================
 
@@ -6015,13 +6334,13 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
             traceback.print_exc()
 
 
-@code.command()
+@code.command(name="analyze")
 @click.argument('bug_description')
 @click.option('--file', '-f', 'file_path', help='Path to file to analyze')
 @click.option('--line', '-l', type=int, help='Line number to analyze')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.pass_context
-def analyze(ctx, bug_description, file_path, line, verbose):
+def code_analyze(ctx, bug_description, file_path, line, verbose):
     """
     Analyze a bug without attempting repair.
 
@@ -6064,10 +6383,10 @@ def analyze(ctx, bug_description, file_path, line, verbose):
             traceback.print_exc()
 
 
-@code.command()
+@code.command(name="status")
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.pass_context
-def status(ctx, verbose):
+def code_status(ctx, verbose):
     """
     Show code agent status and configuration.
     """
@@ -6146,7 +6465,6 @@ if not hasattr(tmux_commands, 'commands'):
 cli.add_command(tmux_commands, "tmux")
 
 # Register Claude-Code-Tools commands
-from .claude_tools.cli import register_commands
 register_commands(cli)
 
 
