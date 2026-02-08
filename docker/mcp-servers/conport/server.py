@@ -25,13 +25,13 @@ class ConPortServer:
 
         # Build command for mcp-proxy with ConPort server
         cmd = [
-            'uvx', 'mcp-proxy',
+            'mcp-proxy',
             '--transport', 'streamablehttp',
             '--port', str(self.port),
             '--host', '0.0.0.0',
             '--allow-origin', '*',
             '--',
-            'uvx', '--from', 'context-portal-mcp', 'conport-mcp', '--mode', 'stdio'
+            'conport-mcp', '--mode', 'stdio'
         ]
 
         logger.info(f"Running command: {' '.join(cmd)}")
