@@ -5,8 +5,8 @@ type: explanation
 owner: '@hu3mann'
 author: Codex
 date: '2026-02-06'
-last_review: '2026-02-07'
-next_review: '2026-02-21'
+last_review: '2026-02-08'
+next_review: '2026-02-22'
 status: draft
 prelude: Runtime evidence for Leantime bridge integration readiness and manual-setup closure status.
 ---
@@ -55,6 +55,25 @@ Interpretation:
 2. Failure pattern is still consistent with incomplete Leantime setup and/or missing API credentials.
 3. Manual setup closure remains the external gating step.
 
+## Runtime Probe Recheck (2026-02-08)
+
+After bridge hardening and compose compatibility updates:
+
+1. `GET /health` -> `200` (`status=ok`)
+2. `GET /health?deep=1` -> `503` (`status=needs_setup`, `leantime=setup_required`)
+3. `POST /api/tools/list_projects` -> `502` with explicit setup-required error:
+   `Leantime instance requires initial setup at /install before API calls can succeed`
+4. Probe summary now captures:
+   - `setup_required_signal_present=true`
+   - `queue_fail_signal_present=false`
+   - `token_status=unset`
+
+Interpretation:
+
+1. Bridge observability/contract behavior is now explicit and actionable.
+2. Root cause remains external setup completion and token provisioning, not bridge liveness.
+3. PM-plane blocker classification is now deterministic (`needs_setup`), reducing triage ambiguity.
+
 ## Leantime Container Signal Check
 
 From `docker logs --tail=500 leantime`:
@@ -91,6 +110,29 @@ Primary evidence:
 1. `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
 2. `services/dopecon-bridge/tests/test_leantime_route_contract.py`
 3. `scripts/docs_audit/probe_leantime_bridge_readiness.py`
+
+## In-Wave Hardening (2026-02-08)
+
+Implemented:
+
+1. Leantime bridge now supports env compatibility fallbacks:
+   - URL: `LEANTIME_API_URL` or `LEANTIME_URL`
+   - Token: `LEANTIME_API_TOKEN` or `LEANTIME_TOKEN`
+2. API redirect/non-JSON handling now surfaces setup/auth errors explicitly.
+3. Method-fallback execution now short-circuits on terminal setup/auth errors
+   instead of collapsing into a generic candidate-failure summary.
+4. Deep health now returns `status=needs_setup` with concrete operator action.
+5. Probe script now emits `setup_required_signal_present`.
+6. Compose wiring now preserves backward-compatible token/url variable mapping.
+
+Primary evidence:
+
+1. `docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py`
+2. `docker/mcp-servers/leantime-bridge/test_contract_api_tools.py`
+3. `scripts/docs_audit/probe_leantime_bridge_readiness.py`
+4. `compose.yml`
+5. `docker-compose.master.yml`
+6. `docker/mcp-servers/docker-compose.yml`
 
 ## Required Close Criteria
 
