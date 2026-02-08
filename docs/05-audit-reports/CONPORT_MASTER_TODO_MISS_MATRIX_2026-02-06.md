@@ -56,7 +56,7 @@ Follow-on deep extraction now adds `4` additional TODO checkpoint tasks from str
 ## Immediate Integrations Into Master Fix Stream
 
 1. Treat all P1 items above as in-scope for active wave closure.
-2. Promote `Leantime manual setup completion` to explicit dependency gate in release readiness.
+2. Keep Leantime readiness and token automation as explicit release-gated checks (now closed in current environment).
 3. Group Slack, macOS, and ShieldCoordinator items into a single integration sprint track with dedicated verification scenarios.
 4. Keep P2 items in this same push per locked policy (no deferred backlog for this epic run).
 
@@ -72,43 +72,35 @@ Evidence:
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 
-## Remaining P1 Blocker (Evidenced)
+## Leantime P1 Blocker Closure (Evidenced)
 
-1. `Leantime manual setup completion` remains open.
-2. Bridge liveness is up, but upstream readiness is not:
-   - `GET /health?deep=1` returns `503` (`status=needs_setup`, `leantime=setup_required`)
-   - `POST /api/tools/list_projects` returns `502` with setup-required error
-   - `LEANTIME_API_TOKEN` is currently unset in bridge runtime
-3. Latest probe shows redirect/install signal still present; queue-fail signal is no longer present in current tail window.
-4. In-wave hardening completed: PM route error contracts now preserve upstream
-   status/body context and add explicit setup guidance for Leantime failures.
-   Additional bridge hardening now emits explicit `needs_setup` health state and
-   supports compatibility env fallbacks (`LEANTIME_TOKEN` -> `LEANTIME_API_TOKEN`,
-   `LEANTIME_URL` -> `LEANTIME_API_URL`).
-   This reduces operator ambiguity but does not replace required external setup.
-5. Non-interactive API key generation script remains not-ready:
-   runtime probe against `docker/leantime/create_api_key.php` fails with
-   unresolved dependency wiring (`Leantime\\Core\\Db\\Db` constructor dependency).
-   This is now tracked as a separate P1 setup-automation hardening task.
+1. `Leantime manual setup completion` is now closed in current environment.
+2. Bridge readiness now passes:
+   - `GET /health?deep=1` returns `200` (`status=ok`, `leantime=reachable`)
+   - `POST /api/tools/list_projects` returns `200` with real project payload
+   - `LEANTIME_API_TOKEN` is now set in runtime env wiring
+3. Redirect/install and queue-fail probe signals are now false in current tail windows.
+4. Non-interactive API key automation is now functional:
+   - `docker/leantime/create_api_key.php` executes successfully
+   - `docker/leantime/configure_bridge.sh` now updates both env sources and validates bridge health/tool response
 
 Evidence:
 
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json`
 - `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
-- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.txt`
-- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.json`
+- `reports/strict_closure/leantime_api_key_automation_verification_2026-02-08.json`
 - `scripts/docs_audit/probe_leantime_bridge_readiness.py`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
 ## Leantime Close Criteria
 
-1. Complete Leantime web installation wizard at `http://localhost:8080`.
-2. Create/confirm admin user and generate API token from the completed setup.
-3. Valid Leantime API credentials are configured for bridge runtime.
-4. `GET /health?deep=1` returns `200` with upstream reachability.
-5. `POST /api/tools/list_projects` returns `200` and non-empty project payload.
-6. Leantime queue worker failures drop to zero across repeated log windows.
+1. Complete Leantime web installation wizard at `http://localhost:8080`. ✅
+2. Create/confirm admin user and generate API token from the completed setup. ✅
+3. Valid Leantime API credentials are configured for bridge runtime. ✅
+4. `GET /health?deep=1` returns `200` with upstream reachability. ✅
+5. `POST /api/tools/list_projects` returns `200` and non-empty project payload. ✅
+6. Leantime queue worker failures drop to zero across repeated log windows. ✅
 
 ## Secondary Explicit-Task Miss Extraction
 

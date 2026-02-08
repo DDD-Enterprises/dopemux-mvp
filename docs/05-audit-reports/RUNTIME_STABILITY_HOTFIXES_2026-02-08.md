@@ -62,14 +62,15 @@ Genetic agent log signals:
 - `Uvicorn running on http://0.0.0.0:8000`
 - Repeated `/health` 200 responses
 
-Leantime bridge readiness signals:
+Leantime bridge readiness signals (closure recheck):
 
-- `GET /health?deep=1` now returns `status=needs_setup` with actionable guidance
-- `POST /api/tools/list_projects` returns setup-required message (no generic ambiguity)
+- `GET /health?deep=1` returns `200` with `status=ok`
+- `POST /api/tools/list_projects` returns `200` with real project payload
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json` now captures:
-  - `deep_health_status=needs_setup`
-  - `setup_required_signal_present=true`
-  - `token_status=unset`
+  - `deep_health_status=ok`
+  - `setup_required_signal_present=false`
+  - `token_status=set`
+- `reports/strict_closure/leantime_api_key_automation_verification_2026-02-08.json` verifies non-interactive key generation + bridge reconfiguration path
 
 Evidence artifact:
 
@@ -77,5 +78,5 @@ Evidence artifact:
 
 ## Remaining Follow-up
 
-1. Leantime web install and credential provisioning are still external gates:
-   complete `/install`, create API token, and set `LEANTIME_API_TOKEN`.
+1. Keep Leantime readiness closed with regression checks:
+   rerun deep-health/tool probes and verify token/env compatibility in every release wave.
