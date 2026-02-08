@@ -1,305 +1,549 @@
 #!/usr/bin/env python3
-"""
-Ports and Health Audit Tool
-
-Validates that services/registry.yaml, docker-compose.smoke.yml, and runtime all agree
-on ports and health endpoints.
-
-Usage:
-    # Static validation (no runtime required)
-    python tools/ports_health_audit.py --mode static
-
-    # Runtime health checks
-    python tools/ports_health_audit.py --mode runtime
-
-    # Explain drift between registry and compose
-    python tools/ports_health_audit.py --mode static --explain-drift
-
-    # Check specific services
-    python tools/ports_health_audit.py --mode runtime --services conport,dopecon-bridge
-"""
-import argparse
+import os
+import re
 import sys
-import time
+import yaml
+import json
+import argparse
+import subprocess
+import socket
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass, asdict
+from typing import List, Optional, Dict, Any, Tuple
 
-try:
-    import yaml
-except ImportError:
-    print("ERROR: pyyaml not installed. Install with: pip install pyyaml", file=sys.stderr)
-    sys.exit(1)
+# Import registry module
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from src.dopemux.registry import load_registry, get_smoke_services
+from enum import Enum
 
-try:
-    import requests
-except ImportError:
-    print("ERROR: requests not installed. Install with: pip install requests", file=sys.stderr)
-    sys.exit(1)
-
-
-class RegistryLoader:
-    """Load and parse registry.yaml."""
-    
-    def __init__(self, registry_path: Path):
-        self.registry_path = registry_path
-        self.registry = self._load()
-    
-    def _load(self) -> Dict[str, Any]:
-        if not self.registry_path.exists():
-            print(f"ERROR: Registry not found at {self.registry_path}", file=sys.stderr)
-            sys.exit(1)
-        
-        with open(self.registry_path) as f:
-            return yaml.safe_load(f)
-    
-    def get_services(self, smoke_only: bool = False) -> List[Dict[str, Any]]:
-        """Get services from registry."""
-        services = self.registry.get("services", [])
-        if smoke_only:
-            return [s for s in services if s.get("enabled_in_smoke", False)]
-        return services
-    
-    def get_service(self, name: str) -> Optional[Dict[str, Any]]:
-        """Get specific service by name."""
-        for svc in self.get_services():
-            if svc["name"] == name:
-                return svc
-        return None
+from src.dopemux.health.errors import (
+    HealthCheckStatus,
+    classify_health_response,
+    classify_docker_status,
+    get_classification_message,
+    get_suggested_action,
+)
 
 
-class ComposeLoader:
-    """Load and parse docker-compose.smoke.yml."""
-    
-    def __init__(self, compose_path: Path):
-        self.compose_path = compose_path
-        self.compose = self._load()
-    
-    def _load(self) -> Dict[str, Any]:
-        if not self.compose_path.exists():
-            print(f"WARNING: Compose file not found at {self.compose_path}", file=sys.stderr)
-            return {"services": {}}
-        
-        with open(self.compose_path) as f:
-            return yaml.safe_load(f)
-    
-    def get_service_ports(self, service_name: str) -> List[str]:
-        """Get published ports for a service."""
-        services = self.compose.get("services", {})
-        if service_name not in services:
-            return []
-        
-        ports = services[service_name].get("ports", [])
-        return ports
+class HealthCheckError(str, Enum):
+    PASS = "PASS"
+    TIMEOUT = "TIMEOUT"
+    PORT_CLOSED = "PORT_CLOSED"
+    HTTP_FAIL = "HTTP_FAIL"
+    INVALID_JSON = "INVALID_JSON"
+    SHAPE_FAIL = "SHAPE_FAIL"
+    CONTAINER_NOT_FOUND = "CONTAINER_NOT_FOUND"
+    CONTAINER_EXITED = "CONTAINER_EXITED"
+    DEP_MISSING = "DEP_MISSING"
+    SYNTAX_ERROR = "SYNTAX_ERROR"
+    CONFIG_MISSING = "CONFIG_MISSING"
+    CONTAINER_UNHEALTHY = "CONTAINER_UNHEALTHY"
 
 
-class StaticValidator:
-    """Validate registry completeness and detect drift with compose."""
-    
-    def __init__(self, registry: RegistryLoader, compose: ComposeLoader):
-        self.registry = registry
-        self.compose = compose
-        self.issues = []
-    
-    def validate(self, explain_drift: bool = False) -> bool:
-        """Run static validation."""
-        print("🔍 Static Validation")
-        print("=" * 60)
-        
-        smoke_services = self.registry.get_services(smoke_only=True)
-        print(f"Services enabled in smoke stack: {len(smoke_services)}")
-        print()
-        
-        all_valid = True
-        
-        for svc in smoke_services:
-            name = svc["name"]
-            valid = self._validate_service(svc)
-            all_valid = all_valid and valid
-        
-        if explain_drift:
-            self._explain_drift()
-        
-        return all_valid
-    
-    def _validate_service(self, svc: Dict[str, Any]) -> bool:
-        """Validate a single service has required fields."""
-        name = svc["name"]
-        issues = []
-        
-        # Check required fields
-        if "port" not in svc:
-            issues.append("Missing 'port' field")
-        if svc.get("health_path") is None and svc.get("category") not in ["infrastructure"]:
-            issues.append("Missing 'health_path' field")
-        
-        if issues:
-            print(f"❌ {name}: {', '.join(issues)}")
-            self.issues.extend([(name, issue) for issue in issues])
-            return False
-        else:
-            print(f"✅ {name}: port={svc['port']}, health={svc.get('health_path', 'N/A')}")
-            return True
-    
-    def _explain_drift(self):
-        """Explain drift between registry and compose."""
-        print()
-        print("🔄 Drift Analysis")
-        print("=" * 60)
-        
-        smoke_services = self.registry.get_services(smoke_only=True)
-        drift_found = False
-        
-        for svc in smoke_services:
-            name = svc["name"]
-            compose_name = svc.get("compose_service_name", name)
-            
-            # Get compose ports
-            compose_ports = self.compose.get_service_ports(compose_name)
-            
-            if not compose_ports:
-                print(f"⚠️  {name}: Not found in docker-compose.smoke.yml")
-                drift_found = True
-                continue
-            
-            # Parse first port mapping (host:container)
-            registry_port = svc["port"]
-            registry_container_port = svc.get("container_port", registry_port)
-            
-            # Check if ports match
-            expected_mapping = f"{registry_port}:{registry_container_port}"
-            actual_mapping = compose_ports[0] if compose_ports else "None"
-            
-            # Handle env var placeholders in compose
-            if "${" in actual_mapping:
-                print(f"ℹ️  {name}: Using env vars - {actual_mapping} (expected {expected_mapping})")
-            elif actual_mapping.replace("${", "").replace("}", "") == expected_mapping:
-                print(f"✅ {name}: Ports aligned - {expected_mapping}")
-            else:
-                print(f"❌ {name}: Drift detected!")
-                print(f"   Registry: {expected_mapping}")
-                print(f"   Compose:  {actual_mapping}")
-                drift_found = True
-        
-        if not drift_found:
-            print("✅ No drift detected between registry and compose")
+@dataclass
+class ServiceCheck:
+    service: str
+    ok: bool
+    error: Optional[HealthCheckError] = None
+    info: Optional[str] = None
 
 
-class RuntimeHealthChecker:
-    """Check service health at runtime."""
-    
-    def __init__(self, registry: RegistryLoader):
-        self.registry = registry
-    
-    def check(self, service_filter: Optional[List[str]] = None) -> bool:
-        """Run runtime health checks."""
-        print("🏥 Runtime Health Checks")
-        print("=" * 60)
-        
-        smoke_services = self.registry.get_services(smoke_only=True)
-        
-        if service_filter:
-            smoke_services = [s for s in smoke_services if s["name"] in service_filter]
-        
-        if not smoke_services:
-            print("No services to check")
-            return True
-        
-        all_healthy = True
-        results = []
-        
-        for svc in smoke_services:
-            status, msg = self._check_service(svc)
-            results.append((svc["name"], status, msg))
-            all_healthy = all_healthy and status
-        
-        # Print summary
-        print()
-        print("Summary:")
-        print("-" * 60)
-        for name, status, msg in results:
-            symbol = "✅" if status else "❌"
-            print(f"{symbol} {name:20s} {msg}")
-        
-        return all_healthy
-    
-    def _check_service(self, svc: Dict[str, Any]) -> Tuple[bool, str]:
-        """Check health of a single service."""
-        name = svc["name"]
-        health_path = svc.get("health_path")
-        
-        # Infrastructure services use command-based health checks
-        if not health_path:
-            return True, "SKIP (infrastructure)"
-        
-        port = svc["port"]
-        timeout_ms = svc.get("health_timeout_ms", 5000)
-        expected_status = svc.get("health_expected_status", 200)
-        
-        url = f"http://localhost:{port}{health_path}"
-        
+def check_port_open(host: str, port: int, timeout: float = 2.0) -> Tuple[bool, Optional[HealthCheckError]]:
+    try:
+        sock = socket.create_connection((host, port), timeout=timeout)
+        sock.close()
+        return True, None
+    except socket.timeout:
+        return False, HealthCheckError.TIMEOUT
+    except ConnectionRefusedError:
+        return False, HealthCheckError.PORT_CLOSED
+    except OSError:
+        return False, HealthCheckError.PORT_CLOSED
+
+
+def check_health_endpoint(url: str, timeout: float = 2.0) -> Tuple[bool, HealthCheckError, Optional[Dict[str, Any]], Optional[str]]:
+    try:
+        result = subprocess.run(
+            ["curl", "-fsS", "--max-time", str(timeout), url],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        return False, HealthCheckError.TIMEOUT, None, "Timeout"
+    except Exception as exc:
+        return False, HealthCheckError.HTTP_FAIL, None, str(exc)
+
+    if result.returncode != 0:
+        info = (result.stderr or result.stdout or "").strip()
+        return False, HealthCheckError.HTTP_FAIL, None, info
+
+    raw = result.stdout or ""
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return False, HealthCheckError.INVALID_JSON, None, "JSON parse error"
+
+    required_keys = {"status", "service", "ts"}
+    missing = required_keys - set(data.keys())
+    if missing:
+        return False, HealthCheckError.SHAPE_FAIL, None, f"Missing keys: {', '.join(sorted(missing))}"
+
+    return True, HealthCheckError.PASS, data, None
+
+
+def check_docker_status(service_name: str) -> Tuple[Optional[HealthCheckError], Optional[str]]:
+    try:
+        result = subprocess.run(
+            ["docker", "compose", "ps", "-a", service_name],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except FileNotFoundError:
+        return None, None
+    except Exception as exc:
+        return None, str(exc)
+
+    status_output = (result.stdout or result.stderr or "").strip()
+    if not status_output:
+        return HealthCheckError.CONTAINER_NOT_FOUND, f"{service_name} not found"
+
+    lower = status_output.lower()
+    if "unhealthy" in lower:
+        return HealthCheckError.CONTAINER_UNHEALTHY, status_output
+
+    if "exited" in lower:
+        logs_output = ""
         try:
-            resp = requests.get(url, timeout=timeout_ms / 1000)
-            if resp.status_code == expected_status:
-                return True, f"UP (HTTP {resp.status_code})"
-            else:
-                return False, f"UNHEALTHY (HTTP {resp.status_code}, expected {expected_status})"
-        except requests.exceptions.ConnectionError:
-            return False, f"DOWN (connection refused on :{port})"
-        except requests.exceptions.Timeout:
-            return False, f"TIMEOUT (>{timeout_ms}ms)"
-        except Exception as e:
-            return False, f"ERROR ({type(e).__name__})"
+            logs = subprocess.run(
+                ["docker", "compose", "logs", service_name],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            logs_output = (logs.stdout or logs.stderr or "").strip()
+        except Exception:
+            logs_output = ""
 
+        if re.search(r"modulenotfounderror|no module named|importerror", logs_output, re.IGNORECASE):
+            return HealthCheckError.DEP_MISSING, logs_output
+        if re.search(r"syntaxerror|invalid syntax", logs_output, re.IGNORECASE):
+            return HealthCheckError.SYNTAX_ERROR, logs_output
+        if re.search(r"keyerror|config|database_url", logs_output, re.IGNORECASE):
+            return HealthCheckError.CONFIG_MISSING, logs_output
+
+        return HealthCheckError.CONTAINER_EXITED, status_output
+
+    return None, status_output
+
+@dataclass
+class PortHealthEntry:
+    service: str
+    registry_port: Optional[int]
+    detected_port: Optional[int]
+    expose_port: Optional[int]
+    protocol_guess: str  # http, mcp, worker
+    health_route: Optional[str]
+    docker_healthcheck: Optional[str]
+    runtime_status: Optional[HealthCheckStatus]  # Use enum
+    runtime_health: Optional[str]  # Raw health string for backward compat
+    docker_container_status: Optional[str] = None  # Docker container state
+    docker_health_status: Optional[str] = None  # Docker health state
+    status_flags: List[str] = None
+    source_evidence: Dict[str, str] = None
+    classification_msg: Optional[str] = None  # Human-readable classification
+    suggested_action: Optional[str] = None  # Suggested fix
+    
+    def __post_init__(self):
+        if self.status_flags is None:
+            self.status_flags = []
+        if self.source_evidence is None:
+            self.source_evidence = {}
+
+def find_repo_root():
+    cur = Path(__file__).resolve().parent
+    for _ in range(5):
+        if (cur / "services").is_dir():
+            return cur
+        cur = cur.parent
+    return Path.cwd()
+
+def get_dockerfile_info(df_path: Path):
+    if not df_path.exists():
+        return None, None
+    content = df_path.read_text(errors='ignore')
+    
+    expose = None
+    expose_match = re.search(r'(?i)^EXPOSE\s+(\d+)', content, re.M)
+    if expose_match:
+        expose = int(expose_match.group(1))
+        
+    healthcheck = None
+    hc_match = re.search(r'(?i)^HEALTHCHECK\s+.*CMD\s+(.*)', content, re.M)
+    if hc_match:
+        healthcheck = hc_match.group(1).strip()
+        
+    return expose, healthcheck
+
+def scan_code_for_port_and_health(service_path: Path):
+    detected_port = None
+    health_route = None
+    evidence = {}
+
+    # Scan for port
+    port_base = None
+    
+    for py_file in service_path.rglob("*.py"):
+        try:
+            content = py_file.read_text(errors='ignore')
+            
+            # 1. Detect PORT_BASE
+            if not port_base:
+                base_match = re.search(r'PORT_BASE\s*=\s*int\(os\.get?env\(["\']PORT_BASE["\'],\s*["\'](\d+)["\']\)\)', content)
+                if base_match:
+                    port_base = int(base_match.group(1))
+                    evidence['port_base'] = f"PORT_BASE default {port_base} found in {py_file.name}"
+
+            # 2. Port detection
+            if not detected_port:
+                # env default (standard)
+                env_match = re.search(r'os\.get?env\(["\'](\w*PORT\w*)["\'],\s*(?:default=)?(\d+)\)', content)
+                if env_match:
+                    detected_port = int(env_match.group(2))
+                    evidence['port'] = f"os.getenv({env_match.group(1)}, {detected_port}) in {py_file.name}"
+                
+                # uvicorn.run
+                uv_match = re.search(r'uvicorn\.run\(.*port\s*=\s*(\d+)', content)
+                if uv_match:
+                    detected_port = int(uv_match.group(1))
+                    evidence['port'] = f"uvicorn.run(port={detected_port}) in {py_file.name}"
+                
+                # Computed port (PORT_BASE + offset)
+                if port_base:
+                    # Look for things like SERVICE_PORT = PORT_BASE + 16
+                    comp_match = re.search(r'(\w*PORT\w*)\s*=\s*PORT_BASE\s*\+\s*(\d+)', content)
+                    if comp_match:
+                        offset = int(comp_match.group(2))
+                        detected_port = port_base + offset
+                        evidence['port'] = f"PORT_BASE({port_base}) + {offset} in {py_file.name}"
+
+            # 3. Health route detection (unchanged)
+            if not health_route:
+                if re.search(r'@(?:app|router|sub_router)\.get\(["\'](/health|/api/health)["\']\)', content):
+                    health_route = re.search(r'["\'](/health|/api/health)["\']', content).group(0).strip('"\'')
+                    evidence['health'] = f"Route {health_route} found in {py_file.name}"
+                elif re.search(r'web\.get\(["\'](/health)["\']', content): # aiohttp
+                    health_route = "/health"
+                    evidence['health'] = f"aiohttp route /health found in {py_file.name}"
+
+        except Exception:
+            continue
+            
+    return detected_port, health_route, evidence
+
+def get_docker_status(service_name: str, compose_file: Optional[Path] = None) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Get Docker container status and health status.
+    
+    Args:
+        service_name: Docker compose service name
+        compose_file: Path to docker-compose file (optional)
+    
+    Returns:
+        Tuple of (container_status, health_status)
+        container_status: "running", "exited", etc.
+        health_status: "healthy", "unhealthy", "starting", None
+    """
+    try:
+        # Try to find container by service name
+        # Use docker compose ps to get status
+        cmd = ["docker", "compose"]
+        if compose_file:
+            cmd.extend(["-f", str(compose_file)])
+        cmd.extend(["ps", "-a", "--format", "json", service_name])
+        
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+        
+        if result.returncode == 0 and result.stdout.strip():
+            try:
+                # Parse JSON output (one container per line)
+                for line in result.stdout.strip().split('\n'):
+                    if not line:
+                        continue
+                    container_info = json.loads(line)
+                    
+                    # Extract status
+                    state = container_info.get("State", "unknown")
+                    health = container_info.get("Health", "")
+                    
+                    # Health can be empty, "healthy", "unhealthy", "starting"
+                    health_status = health if health else None
+                    
+                    return (state, health_status)
+            except json.JSONDecodeError:
+                pass
+        
+        # Fallback: try docker ps with name filter
+        cmd = ["docker", "ps", "-a", "--filter", f"name={service_name}", "--format", "{{.Status}}"]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+        
+        if result.returncode == 0 and result.stdout.strip():
+            status_str = result.stdout.strip()
+            
+            # Parse status string like "Up 2 minutes (healthy)"
+            if "Up" in status_str:
+                container_status = "running"
+                if "(healthy)" in status_str:
+                    health_status = "healthy"
+                elif "(unhealthy)" in status_str:
+                    health_status = "unhealthy"
+                elif "(health: starting)" in status_str:
+                    health_status = "starting"
+                else:
+                    health_status = None
+                return (container_status, health_status)
+            elif "Exited" in status_str:
+                return ("exited", None)
+        
+        return (None, None)
+        
+    except Exception:
+        return (None, None)
+
+
+def check_runtime_health(port: int, host: str = "127.0.0.1", health_path: str = "/health") -> tuple[HealthCheckStatus, str]:
+    """
+    Probes the service via curl and validates health response shape.
+    
+    Returns:
+        Tuple of (HealthCheckStatus, raw_response_string)
+    """
+    if not port:
+        return (HealthCheckStatus.UNKNOWN, "NO_PORT")
+        
+    url = f"http://{host}:{port}{health_path}"
+    try:
+        # Get full response body to validate shape
+        cmd = ["curl", "-fsS", "--max-time", "2", url]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            # Classify the response
+            status = classify_health_response(
+                http_status=200,
+                response_body=result.stdout,
+                error_msg=None
+            )
+            return (status, result.stdout)
+        else:
+            # Connection failed
+            error_msg = result.stderr or "Connection failed"
+            status = classify_health_response(
+                http_status=None,
+                response_body=None,
+                error_msg=error_msg
+            )
+            return (status, error_msg)
+            
+    except Exception as e:
+        return (HealthCheckStatus.UNKNOWN, str(e))
+
+def audit_service_entry(entry, root: Path, mode: str, host: str, compose_file: Optional[Path] = None) -> PortHealthEntry:
+    """Audit a ServiceRegistryEntry."""
+    name = entry.name
+    svc_path = root / entry.path
+    df_path = svc_path / "Dockerfile" if entry.is_docker else None
+    
+    registry_port = entry.port
+    
+    # Static Analysis
+    expose = None
+    docker_health = None
+    if df_path and df_path.exists():
+        expose, docker_health = get_dockerfile_info(df_path)
+    
+    det_port, det_health, evidence = scan_code_for_port_and_health(svc_path)
+    
+    # Use registry protocol
+    protocol = entry.protocol
+    
+    # Runtime Analysis (if enabled)
+    runtime_status = None
+    runtime_health_raw = None
+    classification_msg = None
+    suggested_action = None
+    docker_container_status = None
+    docker_health_status = None
+    
+    if mode == "runtime" or mode == "both":
+        # Check Docker status first (if dockerized service)
+        if entry.is_docker and entry.compose_service:
+            docker_container_status, docker_health_status = get_docker_status(
+                entry.compose_service, 
+                compose_file
+            )
+            
+            # Classify based on Docker status
+            docker_classification = classify_docker_status(docker_container_status, docker_health_status)
+            
+            if docker_classification:
+                # Docker has a definitive status
+                runtime_status = docker_classification
+                runtime_health_raw = f"docker:{docker_container_status}/{docker_health_status or 'none'}"
+                classification_msg = get_classification_message(docker_classification)
+                suggested_action = get_suggested_action(docker_classification)
+            else:
+                # Container running but no clear issue from Docker, check HTTP health
+                target_port = registry_port or det_port or expose
+                if target_port:
+                    health_path = entry.health_url or det_health or "/health"
+                    status_enum, raw_response = check_runtime_health(target_port, host, health_path)
+                    runtime_status = status_enum
+                    runtime_health_raw = raw_response
+                    classification_msg = get_classification_message(status_enum)
+                    suggested_action = get_suggested_action(status_enum)
+                else:
+                    runtime_status = HealthCheckStatus.UNKNOWN
+                    runtime_health_raw = "NO_PORT"
+        else:
+            # Not a Docker service or no compose mapping, just check HTTP
+            target_port = registry_port or det_port or expose
+            if target_port:
+                health_path = entry.health_url or det_health or "/health"
+                status_enum, raw_response = check_runtime_health(target_port, host, health_path)
+                runtime_status = status_enum
+                runtime_health_raw = raw_response
+                classification_msg = get_classification_message(status_enum)
+                suggested_action = get_suggested_action(status_enum)
+            else:
+                runtime_status = HealthCheckStatus.UNKNOWN
+                runtime_health_raw = "NO_PORT"
+
+    # Flags
+    flags = []
+    if registry_port and det_port and registry_port != det_port:
+        flags.append("REGISTRY_PORT_MISMATCH")
+    if not registry_port and (det_port or expose) and protocol != "worker":
+        flags.append("REGISTRY_MISSING_PORT")
+    if protocol == "http" and not (det_health or docker_health or entry.health_url):
+        flags.append("MISSING_HEALTH_SIGNAL")
+    if expose and det_port and expose != det_port:
+        flags.append("Dockerfile_EXPOSE_MISMATCH")
+    if runtime_status == HealthCheckStatus.RUNTIME_DOWN:
+        flags.append("RUNTIME_DOWN")
+    if runtime_status == HealthCheckStatus.SHAPE_FAIL:
+        flags.append("HEALTH_SHAPE_FAIL")
+    if runtime_status == HealthCheckStatus.CONTAINER_EXITED:
+        flags.append("CONTAINER_EXITED")
+    if runtime_status == HealthCheckStatus.CONTAINER_UNHEALTHY:
+        flags.append("CONTAINER_UNHEALTHY")
+
+    return PortHealthEntry(
+        service=name,
+        registry_port=registry_port,
+        detected_port=det_port,
+        expose_port=expose,
+        protocol_guess=protocol,
+        health_route=det_health or entry.health_url,
+        docker_healthcheck=docker_health,
+        runtime_status=runtime_status,
+        runtime_health=runtime_health_raw,
+        docker_container_status=docker_container_status,
+        docker_health_status=docker_health_status,
+        status_flags=flags,
+        source_evidence=evidence,
+        classification_msg=classification_msg,
+        suggested_action=suggested_action,
+    )
 
 def main():
-    parser = argparse.ArgumentParser(description="Audit service ports and health endpoints")
-    parser.add_argument(
-        "--mode",
-        choices=["static", "runtime"],
-        required=True,
-        help="Validation mode"
-    )
-    parser.add_argument(
-        "--explain-drift",
-        action="store_true",
-        help="Show drift between registry and compose (static mode)"
-    )
-    parser.add_argument(
-        "--services",
-        help="Comma-separated list of services to check (runtime mode)"
-    )
-    parser.add_argument(
-        "--registry",
-        default="services/registry.yaml",
-        help="Registry file path"
-    )
-    parser.add_argument(
-        "--compose",
-        default="docker-compose.smoke.yml",
-        help="Compose file path"
-    )
+    parser = argparse.ArgumentParser(description="Dopemux Port & Health Audit")
+    parser.add_argument("--mode", choices=["static", "runtime", "both"], default="static", help="Audit mode")
+    parser.add_argument("--services", help="Comma-separated list of services to audit")
+    parser.add_argument("--host", default="127.0.0.1", help="Host to probe in runtime mode")
+    parser.add_argument("--smoke-only", action="store_true", help="Only audit smoke-tier services")
+    parser.add_argument("--compose-file", help="Docker compose file path for container status checks")
     args = parser.parse_args()
-    
-    # Resolve paths
-    repo_root = Path(__file__).parent.parent
-    registry_path = repo_root / args.registry
-    compose_path = repo_root / args.compose
-    
-    # Load registry
-    registry = RegistryLoader(registry_path)
-    
-    # Run validation based on mode
-    if args.mode == "static":
-        compose = ComposeLoader(compose_path)
-        validator = StaticValidator(registry, compose)
-        success = validator.validate(explain_drift=args.explain_drift)
-    else:  # runtime
-        service_filter = args.services.split(",") if args.services else None
-        checker = RuntimeHealthChecker(registry)
-        success = checker.check(service_filter)
-    
-    sys.exit(0 if success else 1)
 
+    root = find_repo_root()
+    reports_dir = root / "reports"
+    reports_dir.mkdir(exist_ok=True)
+
+    # Parse compose file path
+    compose_file = None
+    if args.compose_file:
+        compose_file = Path(args.compose_file)
+    elif args.mode in ["runtime", "both"]:
+        # Default to smoke stack for runtime checks
+        compose_file = root / "docker-compose.smoke.yml"
+
+    # Load from registry module
+    try:
+        if args.smoke_only:
+            entries = get_smoke_services()
+        else:
+            entries = load_registry()
+    except Exception as e:
+        print(f"Error: Failed to load registry: {e}")
+        sys.exit(1)
+
+    filter_services = args.services.split(",") if args.services else None
+    
+    results = []
+    for entry in entries:
+        if filter_services and entry.name not in filter_services:
+            continue
+            
+        result = audit_service_entry(entry, root, args.mode, args.host, compose_file)
+        results.append(result)
+
+    # JSON report
+    with open(reports_dir / "ports_health_matrix.json", 'w') as f:
+        json.dump([asdict(r) for r in results], f, indent=2)
+
+    # MD report
+    md_lines = [
+        f"# Port & Health Matrix ({args.mode.upper()})",
+        "",
+        "| Service | Registry | Detected | Expose | Status | Class | Docker | Flags |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for r in results:
+        status_str = str(r.runtime_status.value) if r.runtime_status else "N/A"
+        docker_str = f"{r.docker_container_status or '-'}/{r.docker_health_status or '-'}" if r.docker_container_status else "-"
+        flags_str = ", ".join(r.status_flags) if r.status_flags else "-"
+        
+        md_lines.append(
+            f"| `{r.service}` | {r.registry_port or '-'} | {r.detected_port or '-'} | "
+            f"{r.expose_port or '-'} | {status_str} | {r.classification_msg or 'N/A'} | {docker_str} | {flags_str} |"
+        )
+    
+    # Add action suggestions if runtime mode
+    if args.mode != "static":
+        md_lines.append("")
+        md_lines.append("## Suggested Actions")
+        md_lines.append("")
+        for r in results:
+            if r.runtime_status and r.runtime_status != HealthCheckStatus.HEALTHY:
+                md_lines.append(f"### {r.service}")
+                md_lines.append(f"**Status**: {r.runtime_status.value}")
+                md_lines.append(f"**Action**: {r.suggested_action or 'Check logs'}")
+                md_lines.append("")
+
+    with open(reports_dir / "ports_health_matrix.md", 'w') as f:
+        f.write("\n".join(md_lines))
+
+    print(f"Audit complete in {args.mode} mode. Reports in {reports_dir}")
+    if args.mode != "static":
+        # Print runtime summary to stdout for immediate visibility
+        print("\nRuntime Summary:")
+        for r in results:
+            if r.runtime_status:
+                class_str = r.runtime_status.value
+                print(f"{r.service}: {class_str}")
+                if r.runtime_status != HealthCheckStatus.HEALTHY:
+                    print(f"  → {r.suggested_action}")
 
 if __name__ == "__main__":
     main()

@@ -212,6 +212,26 @@ if command -v dopemux &> /dev/null; then
 fi
 
 # ============================================================================
+# Step 9: ADHD Integration (Optional)
+# ============================================================================
+
+echo
+echo -e "${CYAN}🧠 Step 9/9: ADHD Engine Integration...${NC}"
+
+if [ -f "./scripts/setup/install-adhd-integration.sh" ]; then
+    read -p "   Install ADHD-optimized shell tools/aliases? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${CYAN}   Installing ADHD tools...${NC}"
+        ./scripts/setup/install-adhd-integration.sh
+    else
+        echo -e "${YELLOW}   ⏭️  Skipping ADHD integration${NC}"
+    fi
+else
+    echo -e "${YELLOW}   ⏭️  ADHD installer not found${NC}"
+fi
+
+# ============================================================================
 # Installation Complete!
 # ============================================================================
 
