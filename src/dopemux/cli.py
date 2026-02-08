@@ -6798,12 +6798,14 @@ def trigger_command_done(
     payload = _parse_trigger_context(context)
     if not payload:
         payload = {"status": "done"}
-    return _emit_trigger_capture(
+    exit_code = _emit_trigger_capture(
         event_type=event_type,
         context=payload,
         source_override=source,
         quiet=quiet,
     )
+    if exit_code:
+        raise SystemExit(exit_code)
 
 @trigger_group.command("shell-command")
 @click.option("--context", type=str, help="JSON context", default="")
@@ -6833,12 +6835,14 @@ def trigger_shell_command(
     if _async and not quiet:
         quiet = True
     payload = _parse_trigger_context(context)
-    return _emit_trigger_capture(
+    exit_code = _emit_trigger_capture(
         event_type=event_type,
         context=payload,
         source_override=source,
         quiet=quiet,
     )
+    if exit_code:
+        raise SystemExit(exit_code)
 
 @cli.command("layouts")
 def layouts():
