@@ -160,6 +160,27 @@ All core APIs now include optional `ml_prediction` fields with machine learning 
 - Performance overhead monitoring and auto-adjustment
 - Status endpoint: `/background-service/status`
 
+### Intelligent Accommodation Engine
+The engine now includes three advanced intelligence layers:
+
+#### 1. ML-Based Energy Pattern Learning (`ml/energy_predictor.py`)
+Predicts future energy levels based on historical data to recommend optimal work types.
+- **Inputs**: Time of day, day of week, session duration, complexity trends.
+- **Outputs**: Energy forecast (High/Medium/Low) with confidence score.
+- **Benefit**: Proactively suggests complex tasks during peak energy and lighter tasks during dips.
+
+#### 2. Proactive Context Preservation (`context_preserver.py`)
+Automatically snapshots your "mental model" before breaks or interruptions.
+- **Captures**: Open files, cursor positions, recent decisions, and active task.
+- **Restores**: Provides a "Welcome Back" summary to minimize re-orientation time.
+- **Benefit**: Eliminates the "what was I doing?" cost of context switching.
+
+#### 3. Attention State Calibration (`attention_calibrator.py`)
+Learns your specific behavioral patterns to improve state detection accuracy.
+- **Feedback Loop**: Accepts user corrections ("I wasn't scattered, I was brainstorming").
+- **Adaptation**: Personalizes thresholds for hyperfocus and distraction.
+- **Benefit**: Reduces false positive "break suggestions" when you're deeply focused.
+
 ## 🧠 Specialized Services
 
 ### ADHD Dashboard (`services/adhd-dashboard/`)
@@ -334,9 +355,27 @@ curl http://localhost:8099/health  # break-suggester
 - **Context Preservation**: Mental model maintenance across interruptions
 
 ### MCP Server Integration
-- **Serena**: Code complexity assessments and navigation assistance
-- **Zen**: Multi-model reasoning with ADHD-aware prompting
-- **PAL apilookup**: Documentation lookup for ADHD-friendly patterns
+Access specialized AI tools directly through your MCP client (Claude Desktop, etc.):
+
+#### 1. Serena (Coding Assistant)
+- **Role**: Code navigation & complexity management
+- **Usage**: "Ask Serena to analyze complexity of current file"
+- **Integration**: Feeds complexity metrics to ADHD Engine for task planning
+
+#### 2. ConPort (Memory Graph)
+- **Role**: Long-term memory & decision logging
+- **Usage**: "Check ConPort for recent architectural decisions about auth"
+- **Integration**: Stores user context snapshots and break patterns
+
+#### 3. Pal (Reasoning Engine)
+- **Role**: Multi-model reasoning & research
+- **Usage**: "Use Pal to find ADHD-friendly UI patterns for settings pages"
+- **Integration**: Powers "apilookup" tool for documentation retrieval
+
+#### 4. Task Orchestrator
+- **Role**: Agency & Task Decomposition
+- **Usage**: "Decompose this feature into 25-minute micro-tasks"
+- **Integration**: Syncs breakdown to Leantime and ADHD Dashboard
 
 ### Development Workflow Integration
 1. **Session Start**: Query ADHD state and energy levels

@@ -82,6 +82,8 @@ from app.services.workflow_service import (
 
 configure_logging("task-orchestrator", level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
+SERVICE_NAME = os.getenv("SERVICE_NAME", "task-orchestrator")
+HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
 
 # ============================================================================
 # Pydantic Models for API
@@ -290,12 +292,12 @@ async def handle_coordination_events(event):
 # ============================================================================
 
 
-@app.get("/health")
+@app.get(HEALTH_CHECK_PATH)
 async def health_check():
     """Basic health check endpoint."""
     return {
         "status": "healthy",
-        "service": "task-orchestrator-coordination-api",
+        "service": SERVICE_NAME,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
@@ -305,7 +307,7 @@ async def service_info():
     """Service discovery endpoint - auto-config support (ADR-208)"""
     port = int(os.getenv("MCP_SERVER_PORT", 8000))
     return {
-        "name": "task-orchestrator",
+        "name": SERVICE_NAME,
         "version": "1.0.0",
         "mcp": {
             "protocol": "sse",
@@ -317,7 +319,7 @@ async def service_info():
                 "WORKSPACE_ID": "${WORKSPACE_ID:-}"
             }
         },
-        "health": "/health",
+        "health": HEALTH_CHECK_PATH,
         "description": "Advanced task orchestration and dependency management with 37 tools",
         "metadata": {
             "role": "workflow",

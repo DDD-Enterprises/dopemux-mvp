@@ -48,6 +48,14 @@ except ImportError:
 from . import schemas
 from ..core.models import ADHDProfile, EnergyLevel, AttentionState
 
+# Event emission for implicit triggers (Phase 7)
+try:
+    from event_emitter import emit_claude_prompt, emit_claude_tool, emit_context_saved
+    EVENT_EMISSION_AVAILABLE = True
+except ImportError:
+    EVENT_EMISSION_AVAILABLE = False
+    logger.debug("Event emission not available - hooks won't trigger EventBus")
+
 from .schemas import (
     PredictionOverrideRequest, OverrideResponse, CustomizationSettings,
     PredictionFeedbackRequest, AutomationAdjustmentRequest,
@@ -1371,3 +1379,469 @@ async def adjust_automation_level(
     except Exception as e:
         logger.error(f"Automation level adjustment failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Phase 6: Claude Code Hooks Integration
+# ============================================================================
+
+@router.get("/state")
+async def get_adhd_state(
+    user_id: str = "default",
+    engine = Depends(get_engine)
+):
+    """
+    Get current ADHD state for Claude Code hooks.
+    
+    Used by:
+    - prompt_analyzer.py - Check state before complex requests
+    - check_energy.sh - Validate energy before complex tools
+    - statusline.sh - Display current state
+    
+    Returns simplified state without API key requirement for local hooks.
+    """
+    try:
+        # Get energy level
+        energy_level = engine.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+        energy_str = energy_level.value if hasattr(energy_level, 'value') else str(energy_level).lower()
+        
+        # Get attention state
+        attention_state = engine.current_attention_states.get(user_id, AttentionState.FOCUSED)
+        attention_str = attention_state.value if hasattr(attention_state, 'value') else str(attention_state).lower()
+        
+        # Get session duration
+        session_minutes = 0
+        if hasattr(engine, '_session_start_times') and user_id in engine._session_start_times:
+            from datetime import datetime
+            session_start = engine._session_start_times[user_id]
+            session_minutes = int((datetime.utcnow() - session_start).total_seconds() / 60)
+        
+        return {
+            "energy": energy_str,
+            "attention": attention_str,
+            "session_minutes": session_minutes,
+            "user_id": user_id
+        }
+        
+    except Exception as e:
+        logger.error(f"ADHD state retrieval failed: {e}")
+        return {
+            "energy": "medium",
+            "attention": "focused",
+            "session_minutes": 0,
+            "user_id": user_id
+        }
+
+
+@router.post("/log-intent")
+async def log_user_intent(
+    request: dict,
+    engine = Depends(get_engine)
+):
+    """
+    Log user intent from Claude Code prompt analysis.
+    
+    Used by prompt_analyzer.py UserPromptSubmit hook.
+    Stores intent signals for pattern detection and ADHD awareness.
+    
+    Request body:
+    - prompt_summary: First 100 chars of prompt (for privacy)
+    - signals: Dict of detected ADHD-relevant signals
+    - adhd_state: Current state at time of prompt
+    - timestamp: ISO timestamp
+    """
+    try:
+        prompt_summary = request.get("prompt_summary", "")
+        signals = request.get("signals", {})
+        adhd_state = request.get("adhd_state", {})
+        timestamp = request.get("timestamp")
+        
+        # Store in ConPort for pattern analysis (if available)
+        if hasattr(engine, 'conport') and engine.conport:
+            try:
+                await engine.conport.log_custom_data(
+                    category="claude_intents",
+                    key=f"intent_{timestamp}",
+                    value={
+                        "prompt_hint": prompt_summary[:50],  # Even more truncated for privacy
+                        "signals": signals,
+                        "energy": adhd_state.get("energy"),
+                        "attention": adhd_state.get("attention"),
+                        "timestamp": timestamp
+                    }
+                )
+            except Exception as e:
+                logger.warning(f"Failed to persist intent: {e}")
+        
+        # Store in memory for session pattern detection
+        if not hasattr(engine, '_intent_buffer'):
+            engine._intent_buffer = []
+        
+        engine._intent_buffer.append({
+            "signals": signals,
+            "timestamp": timestamp
+        })
+        
+        # Keep only last 50 intents
+        engine._intent_buffer = engine._intent_buffer[-50:]
+        
+        # Check for patterns that need intervention
+        warnings = []
+        
+        # Pattern: Multiple context switches indicate distraction
+        context_switches = sum(
+            1 for intent in engine._intent_buffer[-10:]
+            if intent.get("signals", {}).get("is_context_switch")
+        )
+        if context_switches >= 3:
+            warnings.append("Multiple context switches detected - consider taking a break")
+        
+        # Pattern: Repeated new feature requests without completion
+        new_features = sum(
+            1 for intent in engine._intent_buffer[-10:]
+            if intent.get("signals", {}).get("is_new_feature_request")
+        )
+        if new_features >= 4:
+            warnings.append("Many new feature requests - consider completing current work first")
+        
+        # Emit event to EventBus for implicit triggering (Phase 7)
+        if EVENT_EMISSION_AVAILABLE:
+            try:
+                await emit_claude_prompt(
+                    prompt_summary=prompt_summary,
+                    signals=signals,
+                    adhd_state=adhd_state
+                )
+            except Exception as e:
+                logger.debug(f"Event emission failed: {e}")
+        
+        return {
+            "recorded": True,
+            "warnings": warnings,
+            "buffer_size": len(engine._intent_buffer)
+        }
+        
+    except Exception as e:
+        logger.error(f"Intent logging failed: {e}")
+        return {"recorded": False, "error": str(e)}
+
+
+@router.post("/save-context")
+async def save_context_for_hook(
+    request: dict,
+    user_id: str = "default",
+    engine = Depends(get_engine)
+):
+    """
+    Save current context from Claude Code hooks.
+    
+    Called by:
+    - prompt_analyzer.py on context switch detection
+    - save_context.sh on Stop hook
+    
+    Triggers WorkingMemorySupport and ContextPreserver.
+    """
+    try:
+        reason = request.get("reason", "unknown")
+        prompt_hint = request.get("prompt_hint", "")
+        files = request.get("files", [])
+        
+        context_saved = False
+        breadcrumb_saved = False
+        
+        # Save via ContextPreserver if available
+        if hasattr(engine, 'context_preserver') and engine.context_preserver:
+            try:
+                await engine.context_preserver.save_context(
+                    user_id=user_id,
+                    reason=reason,
+                    additional_context={"files": files, "prompt_hint": prompt_hint}
+                )
+                context_saved = True
+            except Exception as e:
+                logger.warning(f"Context preserver save failed: {e}")
+        
+        # Save breadcrumb via WorkingMemorySupport if available
+        if hasattr(engine, 'working_memory_support') and engine.working_memory_support:
+            try:
+                await engine.working_memory_support.save_breadcrumb(
+                    user_id=user_id,
+                    description=f"[{reason}] {prompt_hint}"[:100]
+                )
+                breadcrumb_saved = True
+            except Exception as e:
+                logger.warning(f"Breadcrumb save failed: {e}")
+        
+        # Fallback: Store in local state
+        if not context_saved and not breadcrumb_saved:
+            if not hasattr(engine, '_context_snapshots'):
+                engine._context_snapshots = {}
+            
+            engine._context_snapshots[user_id] = {
+                "reason": reason,
+                "prompt_hint": prompt_hint,
+                "files": files,
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            context_saved = True
+        
+        # Emit event to EventBus for implicit triggering (Phase 7)
+        if EVENT_EMISSION_AVAILABLE:
+            try:
+                await emit_context_saved(
+                    user_id=user_id,
+                    reason=reason,
+                    prompt_hint=prompt_hint
+                )
+            except Exception as e:
+                logger.debug(f"Event emission failed: {e}")
+        
+        return {
+            "saved": context_saved or breadcrumb_saved,
+            "context_preserver": context_saved,
+            "breadcrumb": breadcrumb_saved,
+            "reason": reason
+        }
+        
+    except Exception as e:
+        logger.error(f"Context save failed: {e}")
+        return {"saved": False, "error": str(e)}
+
+
+@router.get("/unfinished-work")
+async def get_unfinished_work(
+    user_id: str = "default",
+    engine = Depends(get_engine)
+):
+    """
+    Get count and list of unfinished work items.
+    
+    Used by prompt_analyzer.py to warn when starting new features
+    with many unfinished items.
+    
+    Sources:
+    - ConPort progress entries with status != DONE
+    - Serena UntrackedWorkDetector if available
+    - Local abandoned tasks
+    """
+    try:
+        unfinished_items = []
+        
+        # Get from ConPort if available
+        if hasattr(engine, 'conport') and engine.conport:
+            try:
+                progress_entries = await engine.conport.get_progress(
+                    status="IN_PROGRESS",
+                    limit=50
+                )
+                for entry in progress_entries:
+                    unfinished_items.append({
+                        "id": entry.get("id"),
+                        "title": entry.get("title", "Unknown"),
+                        "status": entry.get("status"),
+                        "last_updated": entry.get("updated_at")
+                    })
+            except Exception as e:
+                logger.warning(f"Failed to get ConPort progress: {e}")
+        
+        # Get from UntrackedWorkDetector if available
+        if hasattr(engine, 'untracked_detector') and engine.untracked_detector:
+            try:
+                untracked = await engine.untracked_detector.detect()
+                for item in untracked.get("items", []):
+                    unfinished_items.append({
+                        "id": f"untracked_{item.get('path', 'unknown')}",
+                        "title": item.get("path", "Untracked work"),
+                        "status": "untracked",
+                        "confidence": item.get("confidence")
+                    })
+            except Exception as e:
+                logger.warning(f"Failed to get untracked work: {e}")
+        
+        # Deduplicate by id
+        seen_ids = set()
+        unique_items = []
+        for item in unfinished_items:
+            if item.get("id") not in seen_ids:
+                seen_ids.add(item.get("id"))
+                unique_items.append(item)
+        
+        return {
+            "count": len(unique_items),
+            "items": unique_items[:10],  # Return top 10 for display
+            "total_available": len(unique_items)
+        }
+        
+    except Exception as e:
+        logger.error(f"Unfinished work retrieval failed: {e}")
+        return {"count": 0, "items": [], "error": str(e)}
+
+
+@router.post("/record-progress")
+async def record_progress_from_hook(
+    request: dict,
+    user_id: str = "default",
+    engine = Depends(get_engine)
+):
+    """
+    Record progress from Claude Code PostToolUse hook.
+    
+    Used by log_progress.sh to track tool usage for:
+    - Pattern detection (rapid tool usage = possible overwhelm)
+    - Session progress tracking
+    - ML training data
+    """
+    try:
+        tool_name = request.get("tool", "unknown")
+        success = request.get("success", True)
+        timestamp = request.get("timestamp")
+        
+        # Store in progress buffer for pattern detection
+        if not hasattr(engine, '_tool_usage_buffer'):
+            engine._tool_usage_buffer = []
+        
+        engine._tool_usage_buffer.append({
+            "tool": tool_name,
+            "success": success,
+            "timestamp": timestamp,
+            "user_id": user_id
+        })
+        
+        # Keep only last 100 tool calls
+        engine._tool_usage_buffer = engine._tool_usage_buffer[-100:]
+        
+        # Check for overwhelm patterns
+        warnings = []
+        recent_tools = engine._tool_usage_buffer[-20:]
+        
+        # Pattern: Many different tools in short time = possible overwhelm
+        unique_tools = len(set(t.get("tool") for t in recent_tools))
+        if unique_tools > 10 and len(recent_tools) >= 15:
+            warnings.append("Rapid context switching between many tools detected")
+        
+        # Pattern: Many failures = frustration
+        failures = sum(1 for t in recent_tools if not t.get("success", True))
+        if failures >= 5:
+            warnings.append("Multiple tool failures detected - consider taking a break")
+        
+        # Update hyperfocus guard if active
+        if hasattr(engine, 'hyperfocus_guard') and engine.hyperfocus_guard:
+            try:
+                engine.hyperfocus_guard.record_progress("tool_use")
+            except Exception:
+                pass
+        
+        # Emit event to EventBus for implicit triggering (Phase 7)
+        if EVENT_EMISSION_AVAILABLE:
+            try:
+                await emit_claude_tool(
+                    tool_name=tool_name,
+                    success=success,
+                    user_id=user_id
+                )
+            except Exception as e:
+                logger.debug(f"Event emission failed: {e}")
+        
+        return {
+            "recorded": True,
+            "tool": tool_name,
+            "warnings": warnings,
+            "buffer_size": len(engine._tool_usage_buffer)
+        }
+        
+    except Exception as e:
+        logger.error(f"Progress recording failed: {e}")
+        return {"recorded": False, "error": str(e)}
+
+
+@router.get("/external-activity")
+async def get_external_activity_metrics(
+    engine = Depends(get_engine)
+):
+    """
+    Get external activity metrics from Desktop Commander and Calendar.
+    
+    Returns:
+    - desktop: Window switches, current app, distraction tracking
+    - calendar: Meetings today, social battery, upcoming meetings
+    """
+    try:
+        if not hasattr(engine, 'external_activity') or not engine.external_activity:
+            return {
+                "available": False,
+                "message": "External Activity Manager not running"
+            }
+        
+        return {
+            "available": True,
+            **engine.external_activity.get_all_metrics()
+        }
+        
+    except Exception as e:
+        logger.error(f"External activity metrics failed: {e}")
+        return {"available": False, "error": str(e)}
+
+
+@router.post("/log-git-event")
+async def log_git_event(
+    request: dict,
+    user_id: str = "default",
+    engine = Depends(get_engine)
+):
+    """
+    Log git event from git hooks.
+    
+    Used by:
+    - hooks/git-post-commit - Logs commits
+    - hooks/git-pre-push - Saves context before push
+    
+    Emits GIT_COMMIT event to EventBus for progress tracking.
+    """
+    try:
+        event_type = request.get("event_type", "git_event")
+        data = request.get("data", {})
+        
+        # Store in activity buffer
+        if not hasattr(engine, '_git_events'):
+            engine._git_events = []
+        
+        engine._git_events.append({
+            "type": event_type,
+            "data": data,
+            "user_id": user_id,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Keep only last 50 events
+        engine._git_events = engine._git_events[-50:]
+        
+        # Emit to EventBus (Phase 7)
+        if EVENT_EMISSION_AVAILABLE:
+            try:
+                from event_emitter import ADHDEventEmitter
+                emitter = await ADHDEventEmitter.get_instance()
+                await emitter.emit(
+                    "git_commit" if event_type == "git_commit" else "git_event",
+                    data,
+                    source="git_hook"
+                )
+            except Exception as e:
+                logger.debug(f"Git event emission failed: {e}")
+        
+        # Update hyperfocus guard - commit = progress
+        if event_type == "git_commit" and hasattr(engine, 'hyperfocus_guard') and engine.hyperfocus_guard:
+            try:
+                engine.hyperfocus_guard.record_progress("git_commit")
+            except Exception:
+                pass
+        
+        return {
+            "recorded": True,
+            "event_type": event_type,
+            "commit_hash": data.get("commit_hash", "")
+        }
+        
+    except Exception as e:
+        logger.error(f"Git event logging failed: {e}")
+        return {"recorded": False, "error": str(e)}
+
