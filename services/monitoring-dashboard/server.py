@@ -796,41 +796,42 @@ class MonitoringDashboard:
         if not self.session:
             await self.init_session()
 
-        async with self.session.get(url, timeout=timeout) as response:
-                response_time = (datetime.now(timezone.utc) - start_time).total_seconds()
+        try:
+            async with self.session.get(url, timeout=timeout) as response:
+                    response_time = (datetime.now(timezone.utc) - start_time).total_seconds()
 
-                if response.status == 200:
-                    try:
-                        data = await response.json()
+                    if response.status == 200:
+                        try:
+                            data = await response.json()
+                            return {
+                                "status": HealthLevel.HEALTHY,
+                                "message": data.get("message", "Service is healthy"),
+                                "response_time": response_time,
+                                "details": data
+                            }
+                        except Exception:
+                            # Non-JSON response but 200 status
+                            return {
+                                "status": HealthLevel.HEALTHY,
+                                "message": "Service responding",
+                                "response_time": response_time,
+                                "details": {"response": "non-json"}
+                            }
+                    elif response.status == 302 and auth_required:
+                        # Redirect to login is expected for auth-required services
                         return {
                             "status": HealthLevel.HEALTHY,
-                            "message": data.get("message", "Service is healthy"),
+                            "message": "Service responding (auth required)",
                             "response_time": response_time,
-                            "details": data
+                            "details": {"redirect": "login_required", "status_code": 302}
                         }
-                    except:
-                        # Non-JSON response but 200 status
+                    else:
                         return {
-                            "status": HealthLevel.HEALTHY,
-                            "message": "Service responding",
-                            "response_time": response_time,
-                            "details": {"response": "non-json"}
+                            "status": HealthLevel.CRITICAL,
+                            "message": f"HTTP {response.status}",
+                            "response_time": None,
+                            "details": {"status_code": response.status}
                         }
-                elif response.status == 302 and auth_required:
-                    # Redirect to login is expected for auth-required services
-                    return {
-                        "status": HealthLevel.HEALTHY,
-                        "message": "Service responding (auth required)",
-                        "response_time": response_time,
-                        "details": {"redirect": "login_required", "status_code": 302}
-                    }
-                else:
-                    return {
-                        "status": HealthLevel.CRITICAL,
-                        "message": f"HTTP {response.status}",
-                        "response_time": None,
-                        "details": {"status_code": response.status}
-                    }
 
         except asyncio.TimeoutError:
             return {
