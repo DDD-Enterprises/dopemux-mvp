@@ -27,6 +27,14 @@ import json
 
 from app.core.sync import MultiDirectionalSyncEngine, SyncDirection, SyncOperation
 from app.services.task_coordinator import TaskCoordinator
+from app.models.workflow import (
+    CreateEpicRequest,
+    CreateIdeaRequest,
+    PromoteIdeaRequest,
+    UpdateEpicRequest,
+    UpdateIdeaRequest,
+)
+from app.services.workflow_service import WorkflowService
 from app.adapters.conport_adapter import ConPortEventAdapter
 from intelligence.cognitive_load_balancer import CognitiveLoadBalancer
 
@@ -146,6 +154,7 @@ class PlaneCoordinator:
         self.task_coordinator = TaskCoordinator(workspace_id)
         self.conport_adapter = ConPortEventAdapter(workspace_id)
         self.cognitive_guardian = CognitiveLoadBalancer(workspace_id=workspace_id)
+        self.workflow_service = WorkflowService(workspace_id=workspace_id)
 
         # Coordination state
         self.plane_health: Dict[PlaneType, PlaneHealth] = {}
@@ -191,6 +200,11 @@ class PlaneCoordinator:
             except asyncio.CancelledError:
                 pass
 
+        try:
+            await self.workflow_service.close()
+        except Exception as exc:
+            logger.warning("Failed to close workflow service cleanly: %s", exc)
+
         await self.sync_engine.redis_client.close()
         logger.info("✅ Plane Coordinator shutdown complete")
 
@@ -229,6 +243,20 @@ class PlaneCoordinator:
                 result = await self._coordinate_decision_logging(source_plane, data, **kwargs)
             elif operation == "recommend_break":
                 result = await self._coordinate_break_recommendation(source_plane, data, **kwargs)
+            elif operation == "create_idea":
+                result = await self._coordinate_idea_creation(source_plane, data, **kwargs)
+            elif operation == "list_ideas":
+                result = await self._coordinate_idea_listing(source_plane, data, **kwargs)
+            elif operation == "update_idea":
+                result = await self._coordinate_idea_update(source_plane, data, **kwargs)
+            elif operation == "promote_idea":
+                result = await self._coordinate_idea_promotion(source_plane, data, **kwargs)
+            elif operation == "create_epic":
+                result = await self._coordinate_epic_creation(source_plane, data, **kwargs)
+            elif operation == "list_epics":
+                result = await self._coordinate_epic_listing(source_plane, data, **kwargs)
+            elif operation == "update_epic":
+                result = await self._coordinate_epic_update(source_plane, data, **kwargs)
             else:
                 raise ValueError(f"Unknown operation: {operation}")
 
@@ -684,6 +712,101 @@ class PlaneCoordinator:
             )
 
         return {"success": True, "message": "Break recommendation coordinated"}
+
+    async def _coordinate_idea_creation(
+        self,
+        source_plane: PlaneType,
+        data: Dict[str, Any],
+        **kwargs,
+    ) -> Dict[str, Any]:
+        request = CreateIdeaRequest(**data)
+        idea = await self.workflow_service.create_idea(request)
+        return {"success": True, "idea": idea.dict()}
+
+    async def _coordinate_idea_listing(
+        self,
+        source_plane: PlaneType,
+        data: Dict[str, Any],
+        **kwargs,
+    ) -> Dict[str, Any]:
+        ideas = await self.workflow_service.list_ideas(
+            status=data.get("status"),
+            tag=data.get("tag"),
+            limit=data.get("limit"),
+        )
+        return {"success": True, "ideas": [item.dict() for item in ideas]}
+
+    async def _coordinate_idea_update(
+        self,
+        source_plane: PlaneType,
+        data: Dict[str, Any],
+        **kwargs,
+    ) -> Dict[str, Any]:
+        idea_id = data.get("idea_id")
+        if not idea_id:
+            raise ValueError("idea_id is required for update_idea")
+        payload = {key: value for key, value in data.items() if key != "idea_id"}
+        request = UpdateIdeaRequest(**payload)
+        idea = await self.workflow_service.update_idea(idea_id, request)
+        return {"success": True, "idea": idea.dict()}
+
+    async def _coordinate_idea_promotion(
+        self,
+        source_plane: PlaneType,
+        data: Dict[str, Any],
+        **kwargs,
+    ) -> Dict[str, Any]:
+        idea_id = data.get("idea_id")
+        if not idea_id:
+            raise ValueError("idea_id is required for promote_idea")
+        payload = {key: value for key, value in data.items() if key != "idea_id"}
+        request = PromoteIdeaRequest(**payload)
+        result = await self.workflow_service.promote_idea(idea_id, request)
+        return {
+            "success": True,
+            "idea": result["idea"].dict(),
+            "epic": result["epic"].dict(),
+            "already_promoted": result["already_promoted"],
+            "warning": result["warning"],
+        }
+
+    async def _coordinate_epic_creation(
+        self,
+        source_plane: PlaneType,
+        data: Dict[str, Any],
+        **kwargs,
+    ) -> Dict[str, Any]:
+        request = CreateEpicRequest(**data)
+        epic = await self.workflow_service.create_epic(request)
+        return {"success": True, "epic": epic.dict()}
+
+    async def _coordinate_epic_listing(
+        self,
+        source_plane: PlaneType,
+        data: Dict[str, Any],
+        **kwargs,
+    ) -> Dict[str, Any]:
+        epics = await self.workflow_service.list_epics(
+            status=data.get("status"),
+            priority=data.get("priority"),
+            tag=data.get("tag"),
+            limit=data.get("limit"),
+        )
+        return {"success": True, "epics": [item.dict() for item in epics]}
+
+    async def _coordinate_epic_update(
+        self,
+        source_plane: PlaneType,
+        data: Dict[str, Any],
+        **kwargs,
+    ) -> Dict[str, Any]:
+        epic_id = data.get("epic_id")
+        if not epic_id:
+            raise ValueError("epic_id is required for update_epic")
+        payload = {key: value for key, value in data.items() if key != "epic_id"}
+        request = UpdateEpicRequest(**payload)
+        epic = await self.workflow_service.update_epic(epic_id, request)
+        return {"success": True, "epic": epic.dict()}
 
     # ============================================================================
     # Event Handlers
