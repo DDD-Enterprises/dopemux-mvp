@@ -82,6 +82,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_live_backlog_delta_2026-02-08.json`
 - `reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json`
 - `reports/strict_closure/runtime_stability_hotfixes_2026-02-08.json`
+- `reports/strict_closure/history_docs_link_integrity_2026-02-08.json`
 - `docs/05-audit-reports/SEMANTIC_SEARCH_REFERENCE_INVENTORY_2026-02-07.md`
 - `docs/05-audit-reports/RUNTIME_STABILITY_HOTFIXES_2026-02-08.md`
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
@@ -256,7 +257,10 @@ Executed verification checks (latest pass on 2026-02-06):
 
 ## Additional Gaps Not Fully Captured in the 3 Input Files
 
-1. Broken relative links in `DESIGN_EVOLUTION_2026.md` to master history artifacts (pathing error).
+1. History-doc link integrity recheck now passes for the three archaeology docs
+   (`DESIGN_EVOLUTION_2026.md`, `PROJECT_ARCHAEOLOGY_REPORT.md`,
+   `UNBUILT_FEATURES_AND_ROADMAP.md`); keep link checks in ongoing parity gates
+   (`reports/strict_closure/history_docs_link_integrity_2026-02-08.json`).
 2. `ui-dashboard-backend` now provides deterministic fallback plus optional live pull integration, but still lacks an event-stream push channel.
 3. Coverage policy (`fail-under=80`) still blocks targeted verification unless `--no-cov` is used.
 4. Multiple service directories have minimal scaffolding and no tests, but remain present in architecture narratives.
