@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import sqlite3
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -20,6 +21,8 @@ except Exception:  # pragma: no cover - optional dependency
 
 
 LOGGER = logging.getLogger(__name__)
+_SCHEMA_INIT_LOCK = threading.Lock()
+_SCHEMA_READY_LEDGER_PATHS: set[str] = set()
 
 CAPTURE_MODE_PLUGIN = "plugin"
 CAPTURE_MODE_CLI = "cli"
@@ -192,6 +195,38 @@ def _initialize_schema(conn: sqlite3.Connection, schema_path: Path) -> None:
     conn.commit()
 
 
+def _schema_table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
+    row = conn.execute(
+        """
+        SELECT 1
+        FROM sqlite_master
+        WHERE type = 'table' AND name = ?
+        LIMIT 1
+        """,
+        (table_name,),
+    ).fetchone()
+    return bool(row)
+
+
+def _ensure_schema_initialized(
+    conn: sqlite3.Connection,
+    schema_path: Path,
+    ledger_path: Path,
+) -> None:
+    ledger_key = str(ledger_path.resolve())
+    if ledger_key in _SCHEMA_READY_LEDGER_PATHS:
+        return
+
+    with _SCHEMA_INIT_LOCK:
+        if ledger_key in _SCHEMA_READY_LEDGER_PATHS:
+            return
+        if _schema_table_exists(conn, "raw_activity_events"):
+            _SCHEMA_READY_LEDGER_PATHS.add(ledger_key)
+            return
+        _initialize_schema(conn, schema_path)
+        _SCHEMA_READY_LEDGER_PATHS.add(ledger_key)
+
+
 def _normalize_payload(raw_payload: Any) -> dict[str, Any]:
     if raw_payload is None:
         return {}
@@ -309,7 +344,11 @@ def emit_capture_event(
     try:
         conn.execute("PRAGMA foreign_keys = ON")
         conn.execute("PRAGMA journal_mode = WAL")
-        _initialize_schema(conn, _resolve_wma_schema_path(root))
+        _ensure_schema_initialized(
+            conn,
+            _resolve_wma_schema_path(root),
+            ledger_path,
+        )
         cur = conn.execute(
             """
             INSERT OR IGNORE INTO raw_activity_events (
@@ -367,4 +406,3 @@ def emit_capture_event(
         source=source,
         event_type=event_type,
     )
-
