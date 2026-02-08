@@ -1,0 +1,276 @@
+## Phase 1 — claude-mem Deep Reverse-Engineering (from uploaded `claude-mem-main.zip`)
+
+### Findings (evidence-based)
+
+#### 1) What claude-mem is, structurally
+
+claude-mem is a **Claude Code hooks + local worker service** system:
+
+* **Hook entrypoint** reads JSON from stdin (Claude Code hook payload), normalizes it via a platform adapter, routes to an event handler, and prints a JSON hook response to stdout (and exits with specific codes).
+  Evidence: `src/cli/hook-command.ts:L11-L36`, `src/cli/adapters/claude-code.ts:L5-L23`.
+
+* A **local HTTP worker** is started/ensured (“ensureWorkerRunning”), and hooks communicate with it over `http://127.0.0.1:<port>/api/...`.
+  Evidence: `src/cli/handlers/context.ts:L15-L53`, `src/cli/handlers/summarize.ts:L19-L57`, `src/cli/handlers/session-complete.ts:L18-L60`, `src/cli/handlers/user-message.ts:L15-L46`.
+
+* The worker persists memory to a **local SQLite DB** under a **data directory** (default `~/.claude-mem`) and optionally syncs to a **vector DB** (“Chroma”) for semantic search.
+  Evidence: default data dir + db path `src/shared/SettingsDefaultsManager.ts:L64-L107` and `src/shared/paths.ts:L26-L52`; SQLite DB initialization `src/services/sqlite/Database.ts:L29-L52`; Chroma sync service description + MCP usage `src/services/sync/ChromaSync.ts:L1-L21`.
+
+#### 2) Control flow and data flow (ASCII diagram)
+
+```
+Claude Code
+  (hook events, JSON on stdin)
+      |
+      v
+src/cli/hook-command.ts
+  - readJsonFromStdin()
+  - adapter.normalizeInput()
+  - handler.execute()
+  - prints hook JSON (additionalContext / continue flags)
+      |
+      | HTTP (127.0.0.1:<workerPort>)
+      v
+Worker Service (bun HTTP server)
+  - session init, summarize, context inject, session complete
+      |
+      +--> SQLite (canonical store)  ~/.claude-mem/claude-mem.db
+      |       - sdk_sessions, observations, session_summaries, user_prompts, ...
+      |
+      +--> Chroma (optional semantic search)
+              - sync SQLite rows -> embeddings via MCP client transport
+```
+
+Key evidence points:
+
+* Hook orchestration: `src/cli/hook-command.ts:L11-L36`
+* Context injection hook fetches `/api/context/inject`: `src/cli/handlers/context.ts:L32-L52`
+* Stop hook requests `/api/sessions/summarize` with extracted last assistant message: `src/cli/handlers/summarize.ts:L26-L57`
+* Worker has a configured default port `37777`: `src/shared/SettingsDefaultsManager.ts:L65-L69`
+
+#### 3) Integration points with Claude Code (how it “hooks in”)
+
+**A) Hook payload fields it expects**
+The Claude Code adapter looks for keys like `session_id`, `cwd`, `prompt`, `tool_name`, `tool_input`, `tool_response`, `transcript_path`.
+Evidence: `src/cli/adapters/claude-code.ts:L6-L16`.
+
+**B) Context injection into Claude Code**
+The `context` hook returns a `hookSpecificOutput` containing `hookEventName: 'SessionStart'` and `additionalContext` (string) that Claude Code injects.
+Evidence: `src/cli/handlers/context.ts:L19-L52`.
+
+**C) Side-channel user UX (stderr banner + tips)**
+At session start, `user-message` fetches formatted context with `colors=true`, writes a banner to stderr, and instructs the user to wrap sensitive content in `<private> ... </private>`.
+Evidence: `src/cli/handlers/user-message.ts:L21-L45`.
+
+**D) Worker lifecycle**
+Hooks call `ensureWorkerRunning()` before doing work (context/summarize/session-complete/user-message).
+Evidence: `src/cli/handlers/context.ts:L15-L26`, `src/cli/handlers/summarize.ts:L19-L24`, `src/cli/handlers/session-complete.ts:L18-L20`, `src/cli/handlers/user-message.ts:L15-L17`.
+
+#### 4) Storage model (formats, schema, locations, lifecycle)
+
+**A) Locations**
+
+* Base data dir default: `~/.claude-mem` (can be overridden by settings/env).
+  Evidence: `src/shared/SettingsDefaultsManager.ts:L83-L88`, `src/shared/paths.ts:L26-L43`.
+* SQLite DB path: `~/.claude-mem/claude-mem.db`.
+  Evidence: `src/shared/paths.ts:L40-L43`.
+* Vector DB dir: `~/.claude-mem/vector-db`.
+  Evidence: `src/shared/paths.ts:L41-L43` and `src/services/sync/ChromaSync.ts:L93-L100` (note it hardcodes `os.homedir()/.claude-mem/vector-db` there).
+
+**B) SQLite schema (core tables)**
+On fresh DB init, it creates:
+
+* `sdk_sessions` (includes `content_session_id`, `memory_session_id`, `project`, `user_prompt`, timestamps, status)
+* `observations` (linked to `memory_session_id`, typed: decision/bugfix/feature/refactor/discovery, timestamps)
+* `session_summaries` (request/investigated/learned/completed/next_steps/files_read/files_edited/notes, timestamps)
+  Evidence: `src/services/sqlite/migrations/runner.ts:L60-L116`.
+
+**C) Lifecycle triggers**
+
+* **Session init**: worker endpoint creates/gets a session and stores the (cleaned) user prompt, using a prompt-number based on `user_prompts` count.
+  Evidence: `src/services/worker/http/routes/SessionRoutes.ts:L646-L730`.
+* **Stop/summarize**: hook extracts last assistant message from transcript and sends it to worker to summarize/persist.
+  Evidence: transcript extraction + POST body in `src/cli/handlers/summarize.ts:L35-L57`.
+* **Session complete**: hook signals worker to remove session from active map via `/api/sessions/complete`.
+  Evidence: `src/cli/handlers/session-complete.ts:L29-L60`.
+
+#### 5) Retrieval behavior (ranking/recency/summarization/prompt injection mechanics)
+
+**A) “Context injection” is produced by worker endpoint**
+Hooks fetch `/api/context/inject?projects=...` and inject its returned text verbatim as additional context.
+Evidence: `src/cli/handlers/context.ts:L32-L52`.
+
+**B) Search tool (MCP server) delegates to SearchManager**
+The MCP server exposes tools including `search`, and calls `searchManager.search(args)`.
+Evidence: `src/servers/mcp-server.ts:L102-L166` (tool registration and handler), `src/services/worker/SearchManager.ts:L120-L158` (search entry).
+
+**C) Search logic: hybrid of SQLite filter-only and Chroma semantic search**
+
+* If **no query text** is provided: it performs **direct SQLite filtering** (enables date filtering), avoiding Chroma/FTS.
+  Evidence: `src/services/worker/SearchManager.ts:L137-L151`.
+* If **query text** is provided and Chroma is available: it queries Chroma for up to 100 matches, then filters by a **90-day recency window**, then hydrates rows from SQLite.
+  Evidence: Chroma query + recency filter + hydration `src/services/worker/SearchManager.ts:L167-L214` and recency cutoff computation `src/services/worker/SearchManager.ts:L173-L180`.
+
+So retrieval has at least two “ranking layers”:
+
+1. Chroma returns semantically-ranked candidates (details depend on Chroma behavior; see Determinism below).
+2. claude-mem enforces a **hard recency window** (90 days) before hydration.
+   Evidence: `src/services/worker/SearchManager.ts:L173-L180`.
+
+#### 6) Implicit workings (assumptions + failure modes)
+
+**A) Assumptions about Claude Code + transcripts**
+
+* claude-mem expects Claude Code to provide a `transcript_path` in Stop hook input, and errors if missing.
+  Evidence: `src/cli/handlers/summarize.ts:L31-L34`.
+* It parses transcripts locally to extract the last assistant message.
+  Evidence: `src/cli/handlers/summarize.ts:L35-L39`.
+
+**B) Assumptions about filesystem layout**
+
+* It assumes Claude Code config dir is `~/.claude` unless `CLAUDE_CONFIG_DIR` is set; plugin marketplace root is under `<CLAUDE_CONFIG_DIR>/plugins/marketplaces/thedotmack`.
+  Evidence: `src/shared/paths.ts:L26-L33`.
+* It assumes git is available to detect “project name” from git root (fallback to cwd).
+  Evidence: `src/shared/paths.ts:L101-L118`.
+
+**C) Windows behavior differences**
+
+* Vector search is explicitly disabled on Windows because MCP subprocess spawning causes visible console windows; it is planned to be re-enabled after switching to a persistent HTTP server.
+  Evidence: `src/services/sync/ChromaSync.ts:L88-L107`.
+
+**D) Concurrency / corruption risks (what I can support from code)**
+
+* SQLite runs in **WAL** mode with `synchronous=NORMAL` and large mmap/cache settings, which is performant but still susceptible to multi-process coordination issues if multiple processes open the same DB without careful transaction discipline. claude-mem does not, in the snippets reviewed, show a cross-process file lock around the DB beyond SQLite’s own locking.
+  Evidence: pragmas `src/services/sqlite/Database.ts:L41-L48`.
+  (Anything beyond that would require auditing all DB access patterns; not claiming more here.)
+
+#### 7) Security/privacy audit (what exists)
+
+**A) Manual privacy tag**
+
+* claude-mem supports `<private>...</private>` to prevent storage. The stripping function removes `<private>` blocks and also removes `<claude-mem-context>` blocks to prevent recursive memory capture from injected context.
+  Evidence: description + regex stripping `src/utils/tag-stripping.ts:L1-L53`.
+* Session-init stores the prompt only after stripping tags; if stripping yields empty content, the prompt is treated as “entirely private” and is not saved.
+  Evidence: `src/services/worker/http/routes/SessionRoutes.ts:L696-L714`.
+
+**B) ReDoS awareness**
+
+* Tag stripping counts tags and warns if over a max threshold to mitigate regex DoS patterns.
+  Evidence: `src/utils/tag-stripping.ts:L16-L47`.
+
+**UNKNOWN (not evidenced yet):** any automatic secret redaction beyond user-supplied `<private>` tags. I have not found (in the files examined so far) a generalized “secret detector” or “fail-closed redaction-before-persist” mechanism.
+
+---
+
+### Determinism audit (evidence-based, with clear limits)
+
+**Observed deterministic elements**
+
+* Many DB queries and indexes sort by epoch timestamps; recency and ordering are based on stored integer epochs (stable given fixed DB contents).
+  Evidence: indexes created with `created_at_epoch DESC` in migration `src/services/sqlite/migrations/runner.ts:L78-L95`, and recency window filtering `src/services/worker/SearchManager.ts:L173-L180`.
+
+**Observed non-deterministic elements**
+
+* **IDs and timestamps**: rows use AUTOINCREMENT ids and `new Date().toISOString()` for migration bookkeeping, and likely timestamps for stored records (not fully traced here), meaning repeated runs create different ids/timestamps.
+  Evidence: AUTOINCREMENT in schema `src/services/sqlite/migrations/runner.ts:L61-L116`; migration insert timestamps `src/services/sqlite/migrations/runner.ts:L119-L120`.
+* **Semantic search**: Chroma-based vector search can be nondeterministic depending on embedding model, approximate nearest neighbor settings, and concurrency. claude-mem also applies a time-relative cutoff using `Date.now()` for the 90-day window, so results change as time passes even with identical DB content.
+  Evidence: Chroma path and query use `queryChroma` and recency cutoff uses `Date.now()` `src/services/worker/SearchManager.ts:L167-L180`.
+
+**UNKNOWN**
+
+* Whether summarization/extraction uses a temperature > 0 or any other nondeterministic LLM settings. That logic likely lives in worker summarization services (not covered in the excerpts above). If you want, I can trace the “summarize” endpoint handler end-to-end next.
+
+---
+
+### Risks (evidence-based)
+
+1. **Privacy is primarily user-driven** via `<private>` tags; if users forget to wrap secrets, content can be persisted (no automatic secret redaction found yet).
+   Evidence: manual tag system `src/utils/tag-stripping.ts:L1-L53`, user guidance `src/cli/handlers/user-message.ts:L40-L44`; absence of evidenced auto-redaction is currently UNKNOWN.
+2. **Vector search introduces nondeterminism** (and recency window changes with wall clock), which may conflict with a “deterministic memory” contract if you port patterns directly.
+   Evidence: `Date.now()` recency filter `src/services/worker/SearchManager.ts:L173-L180`; Chroma usage `src/services/worker/SearchManager.ts:L167-L214`, MCP transport `src/services/sync/ChromaSync.ts:L11-L21`.
+3. **Hard dependency on Claude Code transcript_path for summarization**: missing transcript path causes Stop hook error.
+   Evidence: `src/cli/handlers/summarize.ts:L31-L34`.
+
+---
+
+### Decision
+
+Phase 1 is **complete for the core architecture** (hooks → worker → SQLite + optional Chroma) and for **context injection + privacy tag stripping + search recency behavior**, with evidence.
+
+Phase 1 is **not yet complete** for:
+
+* The full summarization/extraction pipeline inside worker (how it converts raw session content into observations/summaries).
+* The full “tools captured” logic (what events trigger observation writes, file-edit tracking, etc.).
+  Those are **UNKNOWN until we trace the relevant worker route handlers and services**.
+
+---
+
+### Task Packet (ACT only, if you want verification runs)
+
+No operator commands are required to continue the static audit (we have the full source zip). If you want runtime truth (ports, hook payload shapes, actual DB rows), here’s an ACT packet you can run locally.
+
+#### ACT_PACKET: CLAUDE_MEM_RUNTIME_PROBE_v1
+
+**Objective**: Verify worker port, DB path, and generated DB schema on your machine.
+
+**Commands (run in repo root of claude-mem)**
+
+1. Print defaults and resolved paths (no side effects):
+
+```bash
+node -e "console.log('HOME', require('os').homedir())" ; \
+node -e "console.log('CLAUDE_CONFIG_DIR', process.env.CLAUDE_CONFIG_DIR || require('path').join(require('os').homedir(), '.claude'))"
+```
+
+2. Build and start worker (capture port binding):
+
+```bash
+npm install
+npm run worker
+```
+
+3. Confirm worker port is listening (replace 37777 if your settings override it):
+
+```bash
+lsof -iTCP:37777 -sTCP:LISTEN || true
+curl -sS http://127.0.0.1:37777/ | head
+```
+
+4. Inspect SQLite schema created:
+
+```bash
+sqlite3 ~/.claude-mem/claude-mem.db ".tables"
+sqlite3 ~/.claude-mem/claude-mem.db ".schema sdk_sessions"
+sqlite3 ~/.claude-mem/claude-mem.db ".schema observations"
+sqlite3 ~/.claude-mem/claude-mem.db ".schema session_summaries"
+sqlite3 ~/.claude-mem/claude-mem.db ".schema user_prompts"
+```
+
+**Capture rules**
+
+* Paste outputs verbatim, including errors.
+* After each command: `echo $?` and capture exit code.
+
+**Stop conditions**
+
+* If `~/.claude-mem/claude-mem.db` doesn’t exist after worker start, stop and report logs from worker stdout.
+
+---
+
+## End of Phase 1
+
+### What we know (Observed)
+
+* claude-mem integrates via **Claude Code hooks** that call a local **HTTP worker** which persists into **SQLite** and optionally syncs/searches via **Chroma vector DB**.
+  Evidence: `src/cli/hook-command.ts`, `src/cli/handlers/context.ts`, `src/shared/paths.ts`, `src/services/sqlite/Database.ts`, `src/services/sync/ChromaSync.ts`.
+* Memory injection into Claude Code happens through `hookSpecificOutput.additionalContext` from the `context` hook.
+  Evidence: `src/cli/handlers/context.ts:L47-L52`.
+* Privacy control is primarily via tag stripping (`<private>` and `<claude-mem-context>`), with a skip-if-entirely-private behavior during session init.
+  Evidence: `src/utils/tag-stripping.ts:L1-L53`, `src/services/worker/http/routes/SessionRoutes.ts:L696-L714`.
+* Search uses either **SQLite filter-only** mode or **Chroma semantic search + 90-day recency window + SQLite hydration**.
+  Evidence: `src/services/worker/SearchManager.ts:L137-L214`.
+
+### What we don’t know (UNKNOWN)
+
+* Exact summarization/extraction logic used by `/api/sessions/summarize` inside the worker (LLM prompts, determinism settings, how observations are derived). (We only saw the hook-side request sender.)
+  Evidence gap: summarize handler only sends request `src/cli/handlers/summarize.ts:L45-L57`; the worker-side implementation still needs tracing.
+* Any automatic secret detection/redaction beyond `<private>` tags (not found in reviewed files yet).

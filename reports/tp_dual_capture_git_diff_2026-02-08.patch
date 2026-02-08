@@ -1,0 +1,958 @@
+$ git diff -- src/dopemux/cli.py src/dopemux/hooks/claude_code_hooks.py docs/spec/dope-memory/v1/01_architecture.md docs/02-how-to/integrations/claude-code-integration-guide.md
+diff --git a/docs/02-how-to/integrations/claude-code-integration-guide.md b/docs/02-how-to/integrations/claude-code-integration-guide.md
+index e85e1a20..ce558d21 100644
+--- a/docs/02-how-to/integrations/claude-code-integration-guide.md
++++ b/docs/02-how-to/integrations/claude-code-integration-guide.md
+@@ -47,6 +47,25 @@ dopemux hooks --install-shell-hooks
+ # This enables pre/post command monitoring for enhanced Claude Code detection
+ ```
+ 
++### 1.1 Capture Mode and Canonical Ledger
++Claude hook capture now writes directly into the deterministic per-project ledger:
++- `repo_root/.dopemux/chronicle.sqlite`
++
++Capture mode selection:
++- `plugin`: force Claude hook capture mode
++- `cli`: force CLI capture mode
++- `mcp`: force MCP capture mode
++- `auto`: infer from runtime context (default)
++
++Examples:
++```bash
++# Emit an explicit hook-style event
++dopemux capture emit --mode plugin --event '{"event_type":"shell.command","payload":{"command":"pytest -q"}}'
++
++# Manual note capture (no implicit prompt injection)
++dopemux capture note "Investigated flaky test in WMA consumer" --tag testing --tag wma
++```
++
+ ### 2. Start Hook Monitoring
+ ```bash
+ # Start monitoring Claude Code activity
+diff --git a/docs/spec/dope-memory/v1/01_architecture.md b/docs/spec/dope-memory/v1/01_architecture.md
+index a2a194f4..05c7b84d 100644
+--- a/docs/spec/dope-memory/v1/01_architecture.md
++++ b/docs/spec/dope-memory/v1/01_architecture.md
+@@ -94,6 +94,25 @@ Curated entries
+ Reflections (Phase 2)
+ - Durable, derived from curated entries
+ 
++## Capture Adapters and Canonical Ledger
++- Canonical per-project ledger path: `repo_root/.dopemux/chronicle.sqlite`
++- Repo root resolution is deterministic:
++  - Walk upward from current path
++  - First match of `.git/` or `.dopemux/` is authoritative
++  - If no marker exists, capture fails closed with a user-visible error
++- Capture adapters must write through one shared capture client:
++  - `plugin` (Claude hook capture)
++  - `cli` (Dopemux CLI capture)
++  - `mcp` (MCP/bridge capture)
++  - `auto` (context-driven selection)
++- Capture writes append-only `raw_activity_events` with:
++  - redaction before persistence
++  - deterministic idempotency key (`event_id`)
++  - duplicate-safe inserts (`INSERT OR IGNORE`)
++- Injection policy remains explicit:
++  - Capture does not auto-inject prompt context
++  - Retrieval/injection is controlled by explicit tool calls only
++
+ ## Determinism Requirements
+ Ordering
+ - Primary: importance_score DESC
+diff --git a/src/dopemux/cli.py b/src/dopemux/cli.py
+index 43dd2199..cf980c8c 100644
+--- a/src/dopemux/cli.py
++++ b/src/dopemux/cli.py
+@@ -15,6 +15,7 @@ import logging
+ logger = logging.getLogger(__name__)
+ 
+ import sys
++import json
+ import time
+ import shutil
+ import socket
+@@ -23,7 +24,7 @@ import tempfile
+ import shlex
+ from datetime import datetime
+ from pathlib import Path
+-from typing import Dict, Iterable, List, Optional, Sequence
++from typing import Any, Dict, Iterable, List, Optional, Sequence
+ import warnings
+ import logging
+ 
+@@ -80,6 +81,7 @@ from .mobile import mobile as mobile_commands
+ from .mobile.hooks import mobile_task_notification
+ from .mobile.runtime import update_tmux_mobile_indicator
+ from .tmux import tmux as tmux_commands
++from .memory import CaptureError, emit_capture_event
+ 
+ # Import genetic agent CLI
+ try:
+@@ -6601,29 +6603,242 @@ def quick(ctx):
+ 
+ @cli.group("trigger")
+ def trigger_group():
+-    """Internal hook triggers (no-op placeholders)."""
++    """Internal hook triggers."""
+     pass
+ 
++def _parse_trigger_context(context: str) -> dict[str, Any]:
++    """Parse JSON context for trigger-based capture events."""
++    if not context:
++        return {}
++    try:
++        parsed = json.loads(context)
++    except json.JSONDecodeError:
++        return {"raw_context": context}
++
++    if isinstance(parsed, dict):
++        return parsed
++    return {"value": parsed}
++
++
++def _emit_trigger_capture(
++    *,
++    event_type: str,
++    context: dict[str, Any],
++    source_override: str,
++    quiet: bool,
++) -> int:
++    """Write a trigger event to the canonical memory ledger."""
++    source = source_override.strip() if source_override else "claude_hook"
++    session_id = context.get("session_id")
++    if not session_id:
++        session_id = os.getenv("CLAUDE_SESSION_ID")
++
++    event = {
++        "event_type": event_type,
++        "source": source,
++        "session_id": session_id,
++        "payload": context,
++    }
++
++    try:
++        result = emit_capture_event(event, mode="auto")
++    except CaptureError as exc:
++        if not quiet:
++            console.print(f"[red]capture failed: {exc}[/red]")
++        return 1
++    except Exception as exc:
++        if not quiet:
++            console.print(f"[red]capture failed: {exc}[/red]")
++        return 1
++
++    if not quiet:
++        console.print(
++            "[dim]"
++            f"captured {result.event_type} ({result.event_id[:12]}) -> {result.ledger_path}"
++            "[/dim]"
++        )
++    return 0
++
++
++@cli.group("capture")
++def capture_group():
++    """Deterministic memory capture commands."""
++    pass
++
++
++@capture_group.command("emit")
++@click.option("--event", "event_json", required=True, help="JSON event payload")
++@click.option(
++    "--mode",
++    type=click.Choice(["auto", "plugin", "cli", "mcp"], case_sensitive=False),
++    default="auto",
++    show_default=True,
++    help="Capture adapter mode",
++)
++@click.option(
++    "--emit-event-bus",
++    is_flag=True,
++    help="Also emit to activity.events.v1 stream (best effort)",
++)
++@click.option("--quiet", is_flag=True, help="Suppress output")
++def capture_emit(event_json: str, mode: str, emit_event_bus: bool, quiet: bool):
++    """Emit a raw capture event to the canonical per-project ledger."""
++    try:
++        parsed = json.loads(event_json)
++    except json.JSONDecodeError as exc:
++        raise click.ClickException(f"Invalid --event JSON: {exc}") from exc
++
++    if not isinstance(parsed, dict):
++        raise click.ClickException("--event JSON must decode to an object")
++
++    if not parsed.get("event_type") and not parsed.get("type"):
++        raise click.ClickException("--event JSON must include event_type (or type)")
++
++    try:
++        result = emit_capture_event(
++            parsed,
++            mode=mode.lower(),
++            emit_event_bus=emit_event_bus,
++        )
++    except CaptureError as exc:
++        raise click.ClickException(str(exc)) from exc
++    except Exception as exc:
++        raise click.ClickException(f"Capture failed: {exc}") from exc
++
++    if not quiet:
++        console.print(
++            "[green]captured[/green] "
++            f"event_id={result.event_id} mode={result.mode} ledger={result.ledger_path}"
++        )
++
++
++@capture_group.command("note")
++@click.argument("summary", type=str)
++@click.option(
++    "--mode",
++    type=click.Choice(["auto", "plugin", "cli", "mcp"], case_sensitive=False),
++    default="auto",
++    show_default=True,
++    help="Capture adapter mode",
++)
++@click.option("--tag", "tags", multiple=True, help="Optional note tag(s)")
++@click.option("--session-id", type=str, default="", help="Optional session id")
++@click.option("--source", type=str, default="cli", show_default=True, help="Source label")
++@click.option(
++    "--emit-event-bus",
++    is_flag=True,
++    help="Also emit to activity.events.v1 stream (best effort)",
++)
++@click.option("--quiet", is_flag=True, help="Suppress output")
++def capture_note(
++    summary: str,
++    mode: str,
++    tags: tuple[str, ...],
++    session_id: str,
++    source: str,
++    emit_event_bus: bool,
++    quiet: bool,
++):
++    """Capture a manual note event using the shared capture pipeline."""
++    event = {
++        "event_type": "manual.note",
++        "source": source,
++        "session_id": session_id or None,
++        "payload": {
++            "summary": summary,
++            "tags": list(tags),
++        },
++    }
++
++    try:
++        result = emit_capture_event(
++            event,
++            mode=mode.lower(),
++            emit_event_bus=emit_event_bus,
++        )
++    except CaptureError as exc:
++        raise click.ClickException(str(exc)) from exc
++    except Exception as exc:
++        raise click.ClickException(f"Capture failed: {exc}") from exc
++
++    if not quiet:
++        console.print(
++            "[green]captured[/green] "
++            f"event_id={result.event_id} mode={result.mode} ledger={result.ledger_path}"
++        )
++
++
+ @trigger_group.command("command-done")
++@click.option("--context", type=str, help="JSON context", default="")
++@click.option(
++    "--event-type",
++    type=str,
++    default="command.done",
++    show_default=True,
++    help="Capture event type",
++)
++@click.option(
++    "--source",
++    type=str,
++    default="claude_hook",
++    show_default=True,
++    help="Capture source label",
++)
+ @click.option("--async", "_async", is_flag=True, help="No-op")
+ @click.option("--quiet", is_flag=True, help="Suppress output")
+-def trigger_command_done(_async: bool, quiet: bool):
++def trigger_command_done(
++    context: str,
++    event_type: str,
++    source: str,
++    _async: bool,
++    quiet: bool,
++):
+     if _async and not quiet:
+         quiet = True
+-    if not quiet:
+-        console.print("[dim]command-done trigger received[/dim]")
+-    return 0
++    payload = _parse_trigger_context(context)
++    if not payload:
++        payload = {"status": "done"}
++    return _emit_trigger_capture(
++        event_type=event_type,
++        context=payload,
++        source_override=source,
++        quiet=quiet,
++    )
+ 
+ @trigger_group.command("shell-command")
+ @click.option("--context", type=str, help="JSON context", default="")
++@click.option(
++    "--event-type",
++    type=str,
++    default="shell.command",
++    show_default=True,
++    help="Capture event type",
++)
++@click.option(
++    "--source",
++    type=str,
++    default="claude_hook",
++    show_default=True,
++    help="Capture source label",
++)
+ @click.option("--async", "_async", is_flag=True, help="No-op")
+ @click.option("--quiet", is_flag=True, help="Suppress output")
+-def trigger_shell_command(context: str, _async: bool, quiet: bool):
++def trigger_shell_command(
++    context: str,
++    event_type: str,
++    source: str,
++    _async: bool,
++    quiet: bool,
++):
+     if _async and not quiet:
+         quiet = True
+-    if not quiet:
+-        console.print("[dim]shell-command trigger received[/dim]")
+-    return 0
++    payload = _parse_trigger_context(context)
++    return _emit_trigger_capture(
++        event_type=event_type,
++        context=payload,
++        source_override=source,
++        quiet=quiet,
++    )
+ 
+ @cli.command("layouts")
+ def layouts():
+diff --git a/src/dopemux/hooks/claude_code_hooks.py b/src/dopemux/hooks/claude_code_hooks.py
+index d7081512..9536d15f 100644
+--- a/src/dopemux/hooks/claude_code_hooks.py
++++ b/src/dopemux/hooks/claude_code_hooks.py
+@@ -211,24 +211,31 @@ class ClaudeCodeHooks:
+         """
+         Trigger a hook event with safety guarantees.
+ 
+-        Uses Dopemux's trigger command for external integration.
++        Uses Dopemux capture command for direct memory capture.
+         """
+         try:
+-            if event_type == "claude-commands":
+-                command = [
+-                    "dopemux",
+-                    "trigger",
+-                    "shell-command",
+-                    "--context",
+-                    json.dumps(context),
+-                    "--async",
+-                    "--quiet",
+-                ]
+-            else:
+-                command = ["dopemux", "trigger", "command-done", "--async", "--quiet"]
++            envelope = {
++                "event_type": event_type,
++                "source": "claude_hook",
++                "session_id": os.getenv("CLAUDE_SESSION_ID"),
++                "payload": context,
++            }
++            command = [
++                "dopemux",
++                "capture",
++                "emit",
++                "--mode",
++                "plugin",
++                "--event",
++                json.dumps(envelope, ensure_ascii=True),
++                "--quiet",
++            ]
++            child_env = os.environ.copy()
++            child_env["DOPEMUX_CAPTURE_CONTEXT"] = "plugin"
+ 
+             process = await asyncio.create_subprocess_exec(
+                 *command,
++                env=child_env,
+                 stdout=asyncio.subprocess.DEVNULL,
+                 stderr=asyncio.subprocess.DEVNULL,
+             )
+@@ -255,7 +262,7 @@ class ClaudeCodeHooks:
+ # Dopemux Claude Code pre-exec hook
+ dopemux_trigger_preexec() {{
+     local cmd="$1"
+-    dopemux trigger shell-command --context "{{\\"command\\": \\"$cmd\\"}}" --async --quiet >/dev/null 2>&1 &
++    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger shell-command --context "{{\\"command\\": \\"$cmd\\"}}" --async --quiet >/dev/null 2>&1 &
+     disown 2>/dev/null || true
+ }}
+ trap 'dopemux_trigger_preexec "$BASH_COMMAND"' DEBUG
+@@ -264,7 +271,7 @@ trap 'dopemux_trigger_preexec "$BASH_COMMAND"' DEBUG
+             'bash_precmd': '''
+ # Dopemux Claude Code post-exec hook
+ dopemux_trigger_precmd() {
+-    dopemux trigger command-done --async --quiet >/dev/null 2>&1 &
++    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger command-done --async --quiet >/dev/null 2>&1 &
+     disown 2>/dev/null || true
+ }
+ PROMPT_COMMAND="${PROMPT_COMMAND};dopemux_trigger_precmd"
+@@ -276,11 +283,11 @@ autoload -U add-zsh-hook
+ 
+ dopemux_preexec() {
+     local cmd="$1"
+-    dopemux trigger shell-command --context "{\"command\": \"$cmd\"}" --async --quiet >/dev/null 2>&1 &!
++    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger shell-command --context "{\"command\": \"$cmd\"}" --async --quiet >/dev/null 2>&1 &!
+ }
+ 
+ dopemux_precmd() {
+-    dopemux trigger command-done --async --quiet >/dev/null 2>&1 &!
++    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger command-done --async --quiet >/dev/null 2>&1 &!
+ }
+ 
+ add-zsh-hook preexec dopemux_preexec
+
+$ git diff --no-index -- /dev/null src/dopemux/memory/__init__.py
+diff --git a/src/dopemux/memory/__init__.py b/src/dopemux/memory/__init__.py
+new file mode 100644
+index 00000000..4bcf2420
+--- /dev/null
++++ b/src/dopemux/memory/__init__.py
+@@ -0,0 +1,18 @@
++"""Memory capture helpers for Dopemux."""
++
++from .capture_client import (
++    CaptureError,
++    CaptureResult,
++    emit_capture_event,
++    resolve_capture_mode,
++    resolve_repo_root_strict,
++)
++
++__all__ = [
++    "CaptureError",
++    "CaptureResult",
++    "emit_capture_event",
++    "resolve_capture_mode",
++    "resolve_repo_root_strict",
++]
++
+
+$ git diff --no-index -- /dev/null src/dopemux/memory/capture_client.py
+diff --git a/src/dopemux/memory/capture_client.py b/src/dopemux/memory/capture_client.py
+new file mode 100644
+index 00000000..6feefed1
+--- /dev/null
++++ b/src/dopemux/memory/capture_client.py
+@@ -0,0 +1,370 @@
++"""Deterministic memory capture client with a per-project canonical ledger."""
++
++from __future__ import annotations
++
++import hashlib
++import importlib.util
++import json
++import logging
++import os
++import sqlite3
++from dataclasses import dataclass
++from datetime import datetime, timezone
++from pathlib import Path
++from typing import Any, Optional
++
++try:
++    import yaml  # type: ignore
++except Exception:  # pragma: no cover - optional dependency
++    yaml = None
++
++
++LOGGER = logging.getLogger(__name__)
++
++CAPTURE_MODE_PLUGIN = "plugin"
++CAPTURE_MODE_CLI = "cli"
++CAPTURE_MODE_MCP = "mcp"
++CAPTURE_MODE_AUTO = "auto"
++CAPTURE_MODES = {
++    CAPTURE_MODE_PLUGIN,
++    CAPTURE_MODE_CLI,
++    CAPTURE_MODE_MCP,
++    CAPTURE_MODE_AUTO,
++}
++
++
++class CaptureError(RuntimeError):
++    """Raised when capture cannot proceed safely."""
++
++
++@dataclass(frozen=True)
++class CaptureResult:
++    """Structured result for a capture write."""
++
++    event_id: str
++    inserted: bool
++    ledger_path: Path
++    repo_root: Path
++    mode: str
++    source: str
++    event_type: str
++
++
++def _repo_root_from_start(start_path: Path) -> Path:
++    """Walk upward to find a deterministic project root marker."""
++    current = start_path.resolve()
++    if current.is_file():
++        current = current.parent
++
++    candidates = [current, *current.parents]
++    for candidate in candidates:
++        if (candidate / ".git").exists() or (candidate / ".dopemux").exists():
++            return candidate
++
++    raise CaptureError(
++        "Unable to resolve repository root from current path. "
++        "Capture fails closed outside a repo/workspace."
++    )
++
++
++def resolve_repo_root_strict(start_path: Optional[Path] = None) -> Path:
++    """Resolve project root and fail closed when no markers exist."""
++    return _repo_root_from_start(start_path or Path.cwd())
++
++
++def _read_capture_mode_from_project_config(repo_root: Path) -> Optional[str]:
++    """Read capture.mode from .dopemux/config.yaml if present."""
++    config_path = repo_root / ".dopemux" / "config.yaml"
++    if not config_path.exists() or yaml is None:
++        return None
++
++    try:
++        raw = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
++    except Exception:
++        return None
++
++    capture_cfg = raw.get("capture")
++    if not isinstance(capture_cfg, dict):
++        return None
++
++    mode = capture_cfg.get("mode")
++    if isinstance(mode, str):
++        mode = mode.strip().lower()
++        if mode in CAPTURE_MODES:
++            return mode
++    return None
++
++
++def resolve_capture_mode(
++    mode: str = CAPTURE_MODE_AUTO,
++    *,
++    repo_root: Optional[Path] = None,
++) -> str:
++    """Resolve capture mode from explicit argument, env, project config, then auto."""
++    normalized = (mode or CAPTURE_MODE_AUTO).strip().lower()
++    if normalized not in CAPTURE_MODES:
++        raise CaptureError(
++            f"Invalid capture mode '{mode}'. Expected one of: {sorted(CAPTURE_MODES)}"
++        )
++    if normalized != CAPTURE_MODE_AUTO:
++        return normalized
++
++    env_mode = os.getenv("DOPEMUX_CAPTURE_MODE", "").strip().lower()
++    if env_mode in CAPTURE_MODES and env_mode != CAPTURE_MODE_AUTO:
++        return env_mode
++
++    root = repo_root or resolve_repo_root_strict()
++    cfg_mode = _read_capture_mode_from_project_config(root)
++    if cfg_mode and cfg_mode != CAPTURE_MODE_AUTO:
++        return cfg_mode
++
++    capture_context = os.getenv("DOPEMUX_CAPTURE_CONTEXT", "").strip().lower()
++    if capture_context == CAPTURE_MODE_PLUGIN:
++        return CAPTURE_MODE_PLUGIN
++    if capture_context == CAPTURE_MODE_MCP:
++        return CAPTURE_MODE_MCP
++
++    # Claude Code style markers (best-effort)
++    if os.getenv("CLAUDE_SESSION_ID") or os.getenv("CLAUDECODE"):
++        return CAPTURE_MODE_PLUGIN
++
++    return CAPTURE_MODE_CLI
++
++
++def _default_source_for_mode(mode: str) -> str:
++    if mode == CAPTURE_MODE_PLUGIN:
++        return "claude_hook"
++    if mode == CAPTURE_MODE_MCP:
++        return "mcp"
++    return "cli"
++
++
++def _resolve_wma_schema_path(repo_root: Path) -> Path:
++    schema_path = (
++        repo_root
++        / "services"
++        / "working-memory-assistant"
++        / "chronicle"
++        / "schema.sql"
++    )
++    if not schema_path.exists():
++        raise CaptureError(f"WMA schema not found: {schema_path}")
++    return schema_path
++
++
++def _load_wma_redactor(repo_root: Path) -> Any:
++    redactor_path = (
++        repo_root
++        / "services"
++        / "working-memory-assistant"
++        / "promotion"
++        / "redactor.py"
++    )
++    if not redactor_path.exists():
++        raise CaptureError(f"WMA redactor not found: {redactor_path}")
++
++    spec = importlib.util.spec_from_file_location(
++        "dopemux_wma_redactor",
++        str(redactor_path),
++    )
++    if spec is None or spec.loader is None:
++        raise CaptureError(f"Failed to load redactor module from {redactor_path}")
++
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++
++    if not hasattr(module, "Redactor"):
++        raise CaptureError("Redactor class missing in WMA redactor module")
++
++    return module.Redactor()
++
++
++def _resolve_ledger_path(repo_root: Path) -> Path:
++    override = os.getenv("DOPEMUX_CAPTURE_LEDGER_PATH", "").strip()
++    if override:
++        return Path(override).expanduser().resolve()
++    return (repo_root / ".dopemux" / "chronicle.sqlite").resolve()
++
++
++def _initialize_schema(conn: sqlite3.Connection, schema_path: Path) -> None:
++    schema_sql = schema_path.read_text(encoding="utf-8")
++    conn.executescript(schema_sql)
++    conn.commit()
++
++
++def _normalize_payload(raw_payload: Any) -> dict[str, Any]:
++    if raw_payload is None:
++        return {}
++    if isinstance(raw_payload, dict):
++        return raw_payload
++    return {"value": raw_payload}
++
++
++def _stable_json(value: Any) -> str:
++    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
++
++
++def _deterministic_event_id(
++    *,
++    source: str,
++    event_type: str,
++    project_id: str,
++    session_id: Optional[str],
++    ts_utc: str,
++    payload: dict[str, Any],
++) -> str:
++    # Bucket to second precision for retry-idempotency.
++    ts_bucket = ts_utc[:19]
++    fingerprint = "|".join(
++        [
++            source,
++            event_type,
++            project_id,
++            session_id or "",
++            ts_bucket,
++            _stable_json(payload),
++        ]
++    )
++    return hashlib.sha256(fingerprint.encode("utf-8")).hexdigest()
++
++
++def _emit_to_event_stream(event: dict[str, Any]) -> None:
++    """Best-effort Redis stream fan-out for downstream consumers."""
++    try:
++        import redis  # type: ignore
++    except Exception:
++        LOGGER.debug("redis package unavailable; skipping event stream emit")
++        return
++
++    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
++    stream_name = os.getenv("DOPE_MEMORY_INPUT_STREAM", "activity.events.v1")
++    redis_password = os.getenv("REDIS_PASSWORD")
++
++    try:
++        client = redis.Redis.from_url(redis_url, password=redis_password, decode_responses=True)
++        envelope = {
++            "id": event["id"],
++            "ts": event["ts_utc"],
++            "workspace_id": event["workspace_id"],
++            "instance_id": event["instance_id"],
++            "session_id": event.get("session_id") or "",
++            "type": event["event_type"],
++            "source": event["source"],
++            "data": _stable_json(event["payload"]),
++        }
++        client.xadd(stream_name, envelope)
++    except Exception as exc:  # pragma: no cover - best effort
++        LOGGER.debug("event stream emit failed: %s", exc)
++
++
++def emit_capture_event(
++    event: dict[str, Any],
++    *,
++    mode: str = CAPTURE_MODE_AUTO,
++    repo_root: Optional[Path] = None,
++    emit_event_bus: Optional[bool] = None,
++) -> CaptureResult:
++    """Redact + write raw activity event to canonical per-project ledger."""
++    root = repo_root.resolve() if repo_root else resolve_repo_root_strict()
++    selected_mode = resolve_capture_mode(mode, repo_root=root)
++    source = str(event.get("source") or _default_source_for_mode(selected_mode))
++
++    event_type = str(
++        event.get("event_type")
++        or event.get("type")
++        or ""
++    ).strip()
++    if not event_type:
++        raise CaptureError("event_type is required")
++
++    payload = _normalize_payload(event.get("payload", event.get("data")))
++    ts_utc = str(event.get("ts_utc") or event.get("ts") or datetime.now(timezone.utc).isoformat())
++    session_id = event.get("session_id")
++    instance_id = str(event.get("instance_id") or os.getenv("DOPEMUX_INSTANCE_ID", "A"))
++
++    project_id = str(root)
++    workspace_id = str(event.get("workspace_id") or project_id)
++
++    redactor = _load_wma_redactor(root)
++    redacted_payload = redactor.redact_payload(payload)
++    redacted_payload["project_id"] = project_id
++
++    event_id = str(
++        event.get("event_id")
++        or event.get("id")
++        or _deterministic_event_id(
++            source=source,
++            event_type=event_type,
++            project_id=project_id,
++            session_id=session_id,
++            ts_utc=ts_utc,
++            payload=redacted_payload,
++        )
++    )
++
++    ledger_path = _resolve_ledger_path(root)
++    ledger_path.parent.mkdir(parents=True, exist_ok=True)
++
++    conn = sqlite3.connect(str(ledger_path))
++    try:
++        conn.execute("PRAGMA foreign_keys = ON")
++        conn.execute("PRAGMA journal_mode = WAL")
++        _initialize_schema(conn, _resolve_wma_schema_path(root))
++        cur = conn.execute(
++            """
++            INSERT OR IGNORE INTO raw_activity_events (
++                id, workspace_id, instance_id, session_id,
++                ts_utc, event_type, source,
++                payload_json, redaction_level, ttl_days, created_at_utc
++            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
++            """,
++            (
++                event_id,
++                workspace_id,
++                instance_id,
++                session_id,
++                ts_utc,
++                event_type,
++                source,
++                json.dumps(redacted_payload, ensure_ascii=True),
++                "strict",
++                int(event.get("ttl_days", 7)),
++                datetime.now(timezone.utc).isoformat(),
++            ),
++        )
++        conn.commit()
++        inserted = cur.rowcount > 0
++    finally:
++        conn.close()
++
++    should_emit_event_bus = emit_event_bus
++    if should_emit_event_bus is None:
++        should_emit_event_bus = (
++            os.getenv("DOPEMUX_CAPTURE_EMIT_EVENTBUS", "false").strip().lower()
++            in {"1", "true", "yes", "on"}
++        )
++
++    if should_emit_event_bus:
++        _emit_to_event_stream(
++            {
++                "id": event_id,
++                "workspace_id": workspace_id,
++                "instance_id": instance_id,
++                "session_id": session_id,
++                "event_type": event_type,
++                "source": source,
++                "payload": redacted_payload,
++                "ts_utc": ts_utc,
++            }
++        )
++
++    return CaptureResult(
++        event_id=event_id,
++        inserted=inserted,
++        ledger_path=ledger_path,
++        repo_root=root,
++        mode=selected_mode,
++        source=source,
++        event_type=event_type,
++    )
++
+
+$ git diff --no-index -- /dev/null tests/unit/test_memory_capture_client.py
+diff --git a/tests/unit/test_memory_capture_client.py b/tests/unit/test_memory_capture_client.py
+new file mode 100644
+index 00000000..48ae3fe3
+--- /dev/null
++++ b/tests/unit/test_memory_capture_client.py
+@@ -0,0 +1,123 @@
++import json
++import sqlite3
++from pathlib import Path
++
++import pytest
++
++from dopemux.memory.capture_client import (
++    CaptureError,
++    emit_capture_event,
++    resolve_repo_root_strict,
++)
++
++
++REPO_ROOT = Path(__file__).resolve().parents[2]
++
++
++def _count_events(ledger_path: Path) -> int:
++    conn = sqlite3.connect(str(ledger_path))
++    try:
++        return int(conn.execute("SELECT COUNT(*) FROM raw_activity_events").fetchone()[0])
++    finally:
++        conn.close()
++
++
++def test_plugin_and_cli_modes_share_single_ledger(tmp_path, monkeypatch):
++    ledger_path = tmp_path / "chronicle.sqlite"
++    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
++
++    plugin = emit_capture_event(
++        {
++            "event_type": "shell.command",
++            "payload": {"command": "echo plugin"},
++        },
++        mode="plugin",
++        repo_root=REPO_ROOT,
++    )
++    cli = emit_capture_event(
++        {
++            "event_type": "shell.command",
++            "payload": {"command": "echo cli"},
++        },
++        mode="cli",
++        repo_root=REPO_ROOT,
++    )
++
++    assert plugin.ledger_path == cli.ledger_path
++    assert plugin.ledger_path == ledger_path.resolve()
++    assert _count_events(plugin.ledger_path) == 2
++
++
++def test_redaction_is_applied_consistently(tmp_path, monkeypatch):
++    ledger_path = tmp_path / "chronicle.sqlite"
++    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
++
++    result = emit_capture_event(
++        {
++            "event_type": "manual.note",
++            "payload": {
++                "summary": "test",
++                "password": "super-secret",
++                "token_line": "Bearer abcdef123456",
++            },
++        },
++        mode="cli",
++        repo_root=REPO_ROOT,
++    )
++
++    conn = sqlite3.connect(str(result.ledger_path))
++    try:
++        payload_json = conn.execute(
++            "SELECT payload_json FROM raw_activity_events WHERE id = ?", (result.event_id,)
++        ).fetchone()[0]
++    finally:
++        conn.close()
++
++    payload = json.loads(payload_json)
++    assert "password" not in payload
++    assert payload["token_line"].startswith("[REDACTED")
++
++
++def test_duplicate_retry_is_ignored(tmp_path, monkeypatch):
++    ledger_path = tmp_path / "chronicle.sqlite"
++    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
++
++    event = {
++        "event_type": "shell.command",
++        "source": "cli",
++        "ts_utc": "2026-02-08T18:00:00+00:00",
++        "payload": {"command": "pytest -q"},
++    }
++
++    first = emit_capture_event(event, mode="cli", repo_root=REPO_ROOT)
++    second = emit_capture_event(event, mode="cli", repo_root=REPO_ROOT)
++
++    assert first.event_id == second.event_id
++    assert first.inserted is True
++    assert second.inserted is False
++    assert _count_events(first.ledger_path) == 1
++
++
++def test_repo_root_resolution_is_stable(tmp_path):
++    repo = tmp_path / "workspace"
++    nested = repo / "a" / "b"
++    (repo / ".git").mkdir(parents=True)
++    nested.mkdir(parents=True)
++
++    resolved = resolve_repo_root_strict(nested)
++    assert resolved == repo.resolve()
++
++
++def test_capture_fails_closed_outside_repo(tmp_path, monkeypatch):
++    non_repo = tmp_path / "outside"
++    non_repo.mkdir(parents=True)
++    monkeypatch.chdir(non_repo)
++
++    with pytest.raises(CaptureError, match="fails closed"):
++        emit_capture_event(
++            {
++                "event_type": "manual.note",
++                "payload": {"summary": "outside repo"},
++            },
++            mode="cli",
++        )
