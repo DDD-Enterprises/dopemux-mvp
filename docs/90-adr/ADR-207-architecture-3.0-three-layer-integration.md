@@ -3,15 +3,93 @@ id: ADR-207-architecture-3.0-three-layer-integration
 title: Adr 207 Architecture 3.0 Three Layer Integration
 type: adr
 owner: '@hu3mann'
-last_review: '2025-11-10'
+last_review: '2026-02-08'
 next_review: '2026-02-08'
 author: '@hu3mann'
 date: '2026-02-05'
-prelude: Adr 207 Architecture 3.0 Three Layer Integration (adr) for dopemux documentation
-  and developer workflows.
-status: proposed
+prelude: Architecture decision defining the three-layer integration model and service
+  authority boundaries for Dopemux runtime.
+status: accepted
 graph_metadata:
   node_type: ADR
   impact: medium
-  relates_to: []
+  relates_to:
+  - ADR-201-conport-kg-security-hardening
 ---
+
+# Context
+
+The runtime evolved into a distributed stack with overlapping responsibilities
+across infrastructure, MCP services, and coordination services. Historical docs
+and implementation drift created ambiguity about ownership, integration
+contracts, and the correct source of truth for state transitions.
+
+Current code-truth requires:
+
+1. Persistent state and event primitives to be separated from business workflows.
+2. A stable memory and retrieval plane that can be consumed by multiple services.
+3. A coordination plane that can orchestrate UX/workflow behavior without owning
+   foundational data stores.
+4. Compatibility-safe evolution across service naming and environment-variable
+   aliases while preserving existing contracts.
+
+# Decision
+
+Adopt and enforce a three-layer integration architecture:
+
+1. Infrastructure Layer:
+   - Foundational data/runtime services (Postgres/AGE, Redis, Qdrant, MySQL for
+     Leantime) provide persistence, indexing, and event transport.
+2. MCP Layer:
+   - Model-context and knowledge services (for example ConPort, PAL/Zen,
+     dope-context, LiteLLM) provide retrieval, knowledge graph, and tool-facing
+     memory/query interfaces.
+3. Coordination/Cognitive Layer:
+   - Workflow and orchestration services (for example dopecon-bridge,
+     task-orchestrator, adhd-engine, genetic-agent) implement user-facing
+     coordination, ADHD-aware logic, and cross-plane orchestration.
+
+Authority boundaries:
+
+1. ConPort remains the memory/knowledge authority for persisted context and
+   decision traces.
+2. Dopecon-bridge is the primary cross-plane integration boundary for routed
+   events and proxied workflow queries.
+3. Task-orchestrator and adhd-engine consume infrastructure and MCP surfaces but
+   do not become persistence authorities for shared cross-service context.
+4. `services/registry.yaml` and active compose definitions are the operational
+   source of truth for service naming/ports; compatibility aliases are permitted
+   but must be explicit and documented.
+
+Operational constraints:
+
+1. No-breaking-change policy for public API/CLI/config contracts.
+2. Degraded-mode behavior is required when upstream MCP or infrastructure
+   dependencies are unavailable.
+3. Active docs must be maintained as code-truth for architecture ownership and
+   integration paths.
+
+# Consequences
+
+Positive:
+
+1. Clearer ownership boundaries reduce architectural ambiguity and duplicated
+   integration logic.
+2. Cross-plane workflows become easier to test with explicit contract seams.
+3. Runtime hardening can be prioritized per layer (infrastructure reliability,
+   MCP correctness, coordination UX/workflow quality).
+
+Tradeoffs:
+
+1. Migration and naming cleanup work is required where legacy aliases remain.
+2. Some services still need incremental refactors to fully honor boundary
+   ownership (tracked in active audit reports).
+3. Documentation and registry/compose parity must be continuously enforced to
+   prevent drift regression.
+
+Follow-on enforcement expectations:
+
+1. New service introductions must declare layer and authority ownership.
+2. Integration changes must include contract tests for layer boundaries.
+3. Architecture docs and audit artifacts must be refreshed when authority or
+   routing behavior changes.
