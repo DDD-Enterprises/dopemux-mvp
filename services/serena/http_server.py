@@ -7,12 +7,11 @@ Honors Serena's ADHD-first philosophy: progressive disclosure, cognitive load ma
 
 Day 2 Evening Implementation
 """
-import asyncio
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import logging
 
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -52,7 +51,6 @@ try:
     sys.path.insert(0, str(serena_path))
 
     from .metrics_dashboard import MetricsAggregator
-    from .enhanced_lsp import find_symbols  # For MCP endpoint
     AGGREGATOR_AVAILABLE = True
     logger.info("✅ Serena MetricsAggregator available")
 except ImportError as e:
@@ -179,6 +177,55 @@ def format_adhd_friendly(payload: Dict[str, Any]) -> Dict[str, Any]:
     if isinstance(top_patterns, list):
         normalized["top_patterns"] = top_patterns[:5]
     normalized.setdefault("timestamp", datetime.utcnow().isoformat())
+    return normalized
+
+
+def _format_pattern_entries(entries: Any, pattern_type: str) -> List[Dict[str, Any]]:
+    """
+    Normalize top-pattern responses into API payload rows.
+
+    Supports both historical dict responses and current list-of-dicts responses.
+    """
+    normalized: List[Dict[str, Any]] = []
+
+    if isinstance(entries, dict):
+        for pattern, count in entries.items():
+            normalized.append(
+                {
+                    "type": pattern_type,
+                    "pattern": pattern,
+                    "count": int(count),
+                    "description": f"{pattern_type.replace('_', ' ')} pattern: {pattern}",
+                }
+            )
+        return normalized
+
+    if isinstance(entries, list):
+        for item in entries:
+            if not isinstance(item, dict):
+                continue
+            pattern_value = (
+                item.get("value")
+                or item.get("pattern")
+                or item.get("name")
+                or "unknown"
+            )
+            count_value = item.get("frequency")
+            if count_value is None:
+                count_value = item.get("count")
+            if count_value is None:
+                probability = float(item.get("probability", 0.0) or 0.0)
+                count_value = int(round(probability * 100))
+
+            normalized.append(
+                {
+                    "type": pattern_type,
+                    "pattern": str(pattern_value),
+                    "count": int(count_value),
+                    "description": f"{pattern_type.replace('_', ' ')} pattern: {pattern_value}",
+                }
+            )
+
     return normalized
 
 
@@ -363,29 +410,9 @@ async def get_top_patterns(
 
             # Format for API response
             patterns = []
-            for ext, count in top_file_extensions.items():
-                patterns.append({
-                    "type": "file_extension",
-                    "pattern": ext,
-                    "count": count,
-                    "description": f"Files with .{ext} extension"
-                })
-
-            for dir_path, count in top_directories.items():
-                patterns.append({
-                    "type": "directory",
-                    "pattern": dir_path,
-                    "count": count,
-                    "description": f"Work in {dir_path} directory"
-                })
-
-            for branch, count in top_branches.items():
-                patterns.append({
-                    "type": "branch_prefix",
-                    "pattern": branch,
-                    "count": count,
-                    "description": f"Branches starting with {branch}"
-                })
+            patterns.extend(_format_pattern_entries(top_file_extensions, "file_extension"))
+            patterns.extend(_format_pattern_entries(top_directories, "directory"))
+            patterns.extend(_format_pattern_entries(top_branches, "branch_prefix"))
 
             # Sort by count and limit
             patterns.sort(key=lambda x: x["count"], reverse=True)
