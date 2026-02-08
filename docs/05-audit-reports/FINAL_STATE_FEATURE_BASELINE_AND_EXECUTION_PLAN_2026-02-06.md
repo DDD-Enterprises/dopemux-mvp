@@ -137,7 +137,7 @@ Executed verification checks (latest pass on 2026-02-06):
 1. Repository-scale drift is real: code, docs, registry, compose, and tests disagree in multiple critical places.
 2. The three archaeology docs are directionally useful but contain stale assertions.
 3. Core orchestration/event/memory components exist and are non-trivial; immediate contract/test/build blockers found in this pass were remediated, but broader architecture and docs parity work remains.
-4. The largest missing implementation remains the Stage-1/Stage-2 workflow from ADR-197 (Idea/Epic pipeline).
+4. ADR-197 Stage-1/Stage-2 workflow moved to partial implementation status: runtime API + coordinator + persistence are now in place, while CLI parity and deeper integration hardening remain.
 5. The largest systemic risk is governance: no current single source of truth is actually enforced end-to-end despite docs claiming that it is.
 6. Leantime bridge readiness blocker was closed in this wave: deep health and project-list calls now return `200`, and setup/token automation is verified.
 
@@ -148,7 +148,7 @@ Executed verification checks (latest pass on 2026-02-06):
 | 6/7 infrastructure agents are missing | `UNBUILT_FEATURES_AND_ROADMAP.md` | False | Files exist for all 7 modules in `services/agents/` | Implementation exists; readiness is mixed, not missing |
 | Auto-resume is unbuilt | `UNBUILT_FEATURES_AND_ROADMAP.md` | False/Partial | Orphan detection + resume in `src/dopemux/instance_manager.py`, `src/dopemux/worktree_recovery.py`, `src/dopemux/cli.py` | Feature exists; needs stabilization/testing |
 | Task-Orchestrator event adapters are unbuilt | `UNBUILT_FEATURES_AND_ROADMAP.md` | False | Event handlers/adapters present in `services/task-orchestrator/app/services/enhanced_orchestrator.py` and `services/task-orchestrator/app/adapters/conport_insight_publisher.py` | Implemented at code level |
-| Idea -> Epic workflow is missing | `UNBUILT_FEATURES_AND_ROADMAP.md` | True | No runtime references to `workflow_ideas`/`workflow_epics` in services/src | Still a high-priority gap |
+| Idea -> Epic workflow is missing | `UNBUILT_FEATURES_AND_ROADMAP.md` | Partial | Runtime references now exist in `services/task-orchestrator/app/main.py`, `services/task-orchestrator/app/services/workflow_service.py`, `services/task-orchestrator/app/services/workflow_store.py`, `services/task-orchestrator/app/models/workflow.py` | Reclassify as Partially Implemented; close CLI/test/docs hardening gaps |
 | Zen MCP server was deleted (root cause for stalled features) | `PROJECT_ARCHAEOLOGY_REPORT.md` | Partial | `docker/mcp-servers/zen` removed; commit indicates rename to PAL (`refactor: rename zen MCP server to PAL`) | Renamed/rebased, not purely removed; migration incomplete |
 | Persona command system was deleted | `PROJECT_ARCHAEOLOGY_REPORT.md` | True | `git log --diff-filter=D --summary -- .claude/commands` shows bulk deletions | Deterministic prompt library was reduced significantly |
 | DopeconBridge is event-bus centric | `DESIGN_EVOLUTION_2026.md` | True | Redis Streams event bus implementation in `services/dopecon-bridge/event_bus.py` and usage in integrations/tests | Correct |
@@ -403,7 +403,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    need recheck after ADR-207 restoration).
 3. PAL migration incompleteness (stale Zen references across runtime/docs).
 4. Web UI real-time path still lacks production push transport (currently socket fallback to polling).
-5. Missing Stage 1/Stage 2 workflow implementation from ADR-197 (`workflow_ideas`, `workflow_epics`).
+5. ADR-197 Stage 1/Stage 2 remains incomplete: runtime is implemented, but CLI parity and full integration hardening are still open.
 
 ### P1 (High Impact, Not Immediate Blockers)
 
@@ -466,7 +466,7 @@ Goal: stabilize the main operating loop.
 
 1. Finalize DopeconBridge ↔ Task-Orchestrator ↔ ConPort contract versioning.
 2. Formalize WMA + dope-memory runtime boundary and ports.
-3. Implement ADR-197 Stage 1/2 idea/epic workflow primitives and promotion path.
+3. Complete ADR-197 Stage 1/2 closure by adding CLI parity and end-to-end hardening around the implemented idea/epic runtime and promotion path.
 4. Verify auto-resume end-to-end across crash scenarios with deterministic tests.
 
 Exit criteria:
@@ -572,7 +572,7 @@ Exit criteria:
 2. Complete history-doc and architecture link-integrity recheck (ADR-207 body restored).
 3. Stabilize test harness (async plugin + targeted suite policy).
 4. Resolve `ui-dashboard` build failures.
-5. Implement ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
+5. Complete ADR-197 Stage 1/2 parity by wiring CLI commands and expanding integration/doc verification for existing `workflow_ideas` and `workflow_epics` runtime primitives.
 6. Define and execute replay strategy for the remaining historical ConPort bundles with dedupe guardrails.
 7. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
 8. Maintain Leantime readiness closure by re-running `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refreshing strict-closure evidence on each wave.
