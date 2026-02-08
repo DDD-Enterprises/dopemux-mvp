@@ -78,7 +78,9 @@ Generated during this pass:
 - `reports/strict_closure/conport_live_progress_backlog_2026-02-07.csv`
 - `reports/strict_closure/conport_live_backlog_delta_2026-02-07.json`
 - `reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json`
+- `reports/strict_closure/runtime_stability_hotfixes_2026-02-08.json`
 - `docs/05-audit-reports/SEMANTIC_SEARCH_REFERENCE_INVENTORY_2026-02-07.md`
+- `docs/05-audit-reports/RUNTIME_STABILITY_HOTFIXES_2026-02-08.md`
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
@@ -122,6 +124,9 @@ Executed verification checks (latest pass on 2026-02-06):
 - `npm --prefix ui-dashboard run build` (passes)
 - `python scripts/deploy/migration/validate_age_pg_compat_stress.py ...` (passes via `mcp-conport` runtime with `overall_ok=true`)
 - `docker exec dopemux-mcp-leantime-bridge ... /health?deep=1` and `/api/tools/list_projects` (failing with degraded upstream evidence captured)
+- `pytest -q --no-cov tests/unit/test_adhd_engine_settings_contract.py` (passes)
+- `docker compose up -d --build --force-recreate adhd-engine` (container healthy, startup verified)
+- `docker compose up -d --build --force-recreate genetic-agent` (container healthy, startup verified)
 
 ## Executive Findings
 
