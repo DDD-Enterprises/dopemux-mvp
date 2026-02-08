@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-08T20:40:41.515932+00:00",
+  "generated_at": "2026-02-08T20:54:25.893026+00:00",
   "scope": {
     "roots": [
       "src",
@@ -12,8 +12,8 @@
   "totals": {
     "duplicate_defs": 0,
     "pass_only_functions": 2,
-    "notimplemented_raises": 5,
-    "todo_comment_markers": 13,
+    "notimplemented_raises": 0,
+    "todo_comment_markers": 12,
     "relative_import_gaps": 0,
     "parse_errors": 0
   },
@@ -31,28 +31,7 @@
         "line": 60
       }
     ],
-    "notimplemented_raises": [
-      {
-        "file": "services/dddpg/storage/interface.py",
-        "name": "create_relationship",
-        "line": 89
-      },
-      {
-        "file": "services/dddpg/storage/interface.py",
-        "name": "query_graph",
-        "line": 102
-      },
-      {
-        "file": "src/dopemux/embeddings/enhancers/consensus.py",
-        "name": "embed_text",
-        "line": 113
-      },
-      {
-        "file": "src/dopemux/extraction/consensus_validator.py",
-        "name": "embed_text",
-        "line": 112
-      }
-    ],
+    "notimplemented_raises": [],
     "relative_import_gaps": []
   }
 }
