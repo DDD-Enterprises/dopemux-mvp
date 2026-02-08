@@ -129,6 +129,8 @@ Executed verification checks (latest pass on 2026-02-06):
 - `python scripts/deploy/migration/validate_age_pg_compat_stress.py ...` (passes via `mcp-conport` runtime with `overall_ok=true`)
 - `docker exec dopemux-mcp-leantime-bridge ... /health?deep=1` and `/api/tools/list_projects` (both return `200`; upstream install/token gate closed in current environment)
 - `pytest -q --no-cov tests/unit/test_adhd_engine_settings_contract.py` (passes)
+- `pytest -q --no-cov tests/unit/test_task_orchestrator_workflow_api.py tests/unit/test_task_orchestrator_workflow_models.py tests/unit/test_task_orchestrator_workflow_service.py tests/unit/test_cli_workflow_commands.py` (passes)
+- `pytest -q --no-cov tests/unit/test_adhd_engine_task_orchestrator_url.py` (passes)
 - `docker compose up -d --build --force-recreate adhd-engine` (container healthy, startup verified)
 - `docker compose up -d --build --force-recreate genetic-agent` (container healthy, startup verified)
 
@@ -393,6 +395,10 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 50. Live ConPort backlog delta recheck (`2026-02-08` vs `2026-02-07`) confirms no
    newly introduced TODO descriptions and no new master-doc representation gaps:
    `reports/strict_closure/conport_live_backlog_delta_2026-02-08.json`.
+51. Task-orchestrator workflow HTTP contracts are now covered by endpoint-level unit tests (success paths + error mapping for `404/409/503/400`), reducing ADR-197 stage-1/stage-2 drift risk:
+   `tests/unit/test_task_orchestrator_workflow_api.py`.
+52. ADHD engine startup is now resilient to legacy settings objects that do not expose `task_orchestrator_url`; runtime falls back to env/default instead of crashing:
+   `services/adhd_engine/core/engine.py`, `tests/unit/test_adhd_engine_task_orchestrator_url.py`.
 
 ## Prioritized Gap Register
 
