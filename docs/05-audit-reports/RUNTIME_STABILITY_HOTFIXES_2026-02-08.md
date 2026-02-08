@@ -30,12 +30,15 @@ the verification evidence that those blockers are no longer active.
    dependencies caused restart loops.
 5. Genetic agent MCP compatibility drift:
    missing Zen client shim and GPT-Researcher base-client mismatch.
+6. Leantime bridge degraded-health ambiguity:
+   setup-required upstream conditions surfaced only as generic `all candidates failed`.
 
 ## Commits
 
 1. `a9bce589` `fix(adhd-engine): restore missing settings contract for startup`
 2. `3e140f2a` `fix(adhd-engine): wire event emitter redis bus and dedupe monitors`
 3. `132d8503` `fix(genetic-agent): restore package wiring and runtime dependencies`
+4. `4b5a40e8` `fix(genetic-agent): migrate startup wiring to lifespan`
 
 ## Verification Evidence
 
@@ -59,12 +62,20 @@ Genetic agent log signals:
 - `Uvicorn running on http://0.0.0.0:8000`
 - Repeated `/health` 200 responses
 
+Leantime bridge readiness signals:
+
+- `GET /health?deep=1` now returns `status=needs_setup` with actionable guidance
+- `POST /api/tools/list_projects` returns setup-required message (no generic ambiguity)
+- `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json` now captures:
+  - `deep_health_status=needs_setup`
+  - `setup_required_signal_present=true`
+  - `token_status=unset`
+
 Evidence artifact:
 
 - `/Users/hue/code/dopemux-mvp/reports/strict_closure/runtime_stability_hotfixes_2026-02-08.json`
 
 ## Remaining Follow-up
 
-1. Genetic agent still emits FastAPI `@app.on_event` deprecation warning.
-   Functional status is healthy, but this should be modernized to lifespan
-   handlers in a non-breaking cleanup pass.
+1. Leantime web install and credential provisioning are still external gates:
+   complete `/install`, create API token, and set `LEANTIME_API_TOKEN`.
