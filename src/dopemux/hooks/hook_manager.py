@@ -22,6 +22,13 @@ import time
 
 logger = logging.getLogger(__name__)
 
+try:
+    from .claude_code_hooks import claude_hooks
+    CLAUDE_HOOKS_AVAILABLE = True
+except Exception:
+    claude_hooks = None
+    CLAUDE_HOOKS_AVAILABLE = False
+
 
 class HookManager:
     """
@@ -40,6 +47,17 @@ class HookManager:
         }
         self.quiet_mode = True  # Silent by default for ADHD-friendly operation
         self.timeout_ms = 100  # Strict timeout for safety
+        self.monitoring_enabled = False
+
+    def start_monitoring(self) -> None:
+        """Compatibility no-op: mark monitoring enabled."""
+        self.monitoring_enabled = True
+        logger.debug("Hook monitoring enabled")
+
+    def stop_monitoring(self) -> None:
+        """Compatibility no-op: mark monitoring disabled."""
+        self.monitoring_enabled = False
+        logger.debug("Hook monitoring disabled")
 
     def is_hook_enabled(self, hook_type: str) -> bool:
         """Check if a specific hook type is enabled."""
@@ -105,8 +123,7 @@ class HookManager:
             # Never let hook errors affect user workflow
             logger.error(f"Hook execution failed ({hook_type}): {e}")
             if not self.quiet_mode:
-                # Could show user notification here if needed
-                pass
+                logger.debug("Hook error surfaced in non-quiet mode for %s", hook_type)
 
     async def _handle_vscode_hook(self, hook_type: str, context: Dict[str, Any]) -> None:
         """Handle VS Code/editor-specific hooks."""

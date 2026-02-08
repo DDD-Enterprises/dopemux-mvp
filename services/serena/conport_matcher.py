@@ -116,11 +116,32 @@ class ConPortTaskMatcher:
             return []
 
         try:
-            # Query ConPort MCP for IN_PROGRESS tasks
-            # This would use: mcp__conport__get_progress with status_filter="IN_PROGRESS"
+            for method_name in ("get_progress", "list_progress", "get_tasks"):
+                if not hasattr(conport_client, method_name):
+                    continue
+                try:
+                    result = getattr(conport_client, method_name)(
+                        workspace_id=self.workspace_id,
+                        status_filter="IN_PROGRESS",
+                    )
+                    if hasattr(result, "__await__"):
+                        result = await result
+                except TypeError:
+                    # Fallback for clients that don't support status_filter.
+                    result = getattr(conport_client, method_name)(workspace_id=self.workspace_id)
+                    if hasattr(result, "__await__"):
+                        result = await result
 
-            # TODO: Integrate with actual ConPort MCP client
-            # For now, return empty to indicate no tasks found
+                if isinstance(result, dict):
+                    items = result.get("items") or result.get("data") or []
+                elif isinstance(result, list):
+                    items = result
+                else:
+                    items = []
+
+                if items:
+                    return [task for task in items if str(task.get("status", "")).upper() == "IN_PROGRESS"]
+
             return []
 
         except Exception as e:

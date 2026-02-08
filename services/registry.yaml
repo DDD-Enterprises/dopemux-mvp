@@ -15,7 +15,7 @@
 #   description: string - brief service description
 
 version: "1.0"
-last_updated: "2026-02-01"
+last_updated: "2026-02-06"
 
 services:
   # Infrastructure Services
@@ -94,10 +94,10 @@ services:
     health_method: GET
     health_timeout_ms: 10000
     health_expected_status: 200
-    compose_service_name: dope-query
+    compose_service_name: conport
     enabled_in_smoke: true
     category: mcp
-    description: "DopeQuery (formerly ConPort) - Knowledge graph and context management MCP server"
+    description: "DopeQuery (ConPort runtime) - Knowledge graph and context management MCP server"
     env_contract_exceptions:
       - variable: MCP_SERVER_PORT
         reason: "DopeQuery uses PORT directly; MCP_SERVER_PORT is redundant"
@@ -157,3 +157,137 @@ services:
     spec_version: "v1"
     spec_path: "docs/spec/dope-memory/v1/"
 
+  - name: desktop-commander
+    port: 3012
+    container_port: 3012
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: desktop-commander
+    enabled_in_smoke: false
+    category: mcp
+    description: "Desktop Commander MCP - desktop automation and window control"
+
+  - name: leantime-bridge
+    port: 3015
+    container_port: 3015
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: leantime-bridge
+    enabled_in_smoke: false
+    category: coordination
+    description: "Leantime Bridge MCP - project management integration over HTTP/SSE"
+
+  - name: leantime
+    port: 8080
+    container_port: 80
+    health_path: /
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: leantime
+    enabled_in_smoke: false
+    category: coordination
+    description: "Leantime PM application container for strategic planning and ticket workflows"
+
+  - name: plane-coordinator
+    port: 8090
+    container_port: 8090
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: plane-coordinator
+    enabled_in_smoke: false
+    category: coordination
+    description: "Plane Coordinator - two-plane coordination API between PM and cognitive systems"
+
+  # Environment & Sensory Services
+  - name: workspace-watcher
+    port: 8100
+    container_port: 8100
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: workspace-watcher
+    enabled_in_smoke: false
+    category: sensory
+    description: "Workspace Watcher - Real-time file system monitoring and change detection"
+
+  - name: activity-capture
+    port: 8096
+    container_port: 8096
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: activity-capture
+    enabled_in_smoke: false
+    category: sensory
+    description: "Activity Capture - Passive development activity tracking and logging"
+
+  - name: voice-commands
+    port: 3007
+    container_port: 3007
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: voice-commands
+    enabled_in_smoke: false
+    category: sensory
+    description: "Voice Commands - Voice-to-text task decomposition API"
+
+  # Notification & UI Services
+  - name: adhd-notifier
+    port: 8098
+    container_port: 8098
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: adhd-notifier
+    enabled_in_smoke: false
+    category: cognitive
+    description: "ADHD Notifier - Context-aware notification routing and break management"
+
+  - name: adhd-dashboard
+    port: 8097
+    container_port: 8097
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: adhd-dashboard
+    enabled_in_smoke: false
+    category: cognitive
+    description: "ADHD Dashboard - Specific visualization of energy, attention, and cognitive load"
+
+  # Integrations
+  - name: litellm
+    port: 4000
+    container_port: 4000
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: litellm
+    enabled_in_smoke: false
+    category: infrastructure
+    description: "LiteLLM Proxy - Unified OpenAI-compatible interface for all LLM providers (GPT, Grok, Claude)"
+
+  - name: exa
+    port: 3008
+    container_port: 3008
+    health_path: /
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: exa
+    enabled_in_smoke: false
+    category: mcp
+    description: "Exa Search MCP - Neural semantic web search integration"

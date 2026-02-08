@@ -1,10 +1,14 @@
 ---
 id: database-test-results-red-phase
 title: Database Test Results Red Phase
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Database Test Results Red Phase (reference) for dopemux documentation and
+  developer workflows.
 ---
 # Database Testing - RED Phase Results
 

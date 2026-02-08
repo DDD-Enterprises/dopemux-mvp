@@ -101,6 +101,11 @@ class ImplicitAutomationEngine:
             "context_preservations": 0,
             "adhd_optimizations_applied": 0
         }
+        self._sprint_analysis_store: Dict[str, Dict[str, Any]] = {}
+        self._progress_correlation_store: List[Dict[str, Any]] = []
+        self._progress_estimate_store: List[Dict[str, Any]] = []
+        self._retrospective_store: Dict[str, Dict[str, Any]] = {}
+        self._local_task_state: Dict[str, Dict[str, Any]] = {}
 
         # Background workers
         self.workers: List[asyncio.Task] = []
@@ -109,6 +114,7 @@ class ImplicitAutomationEngine:
     async def initialize(self) -> None:
         """Initialize automation engine and register workflows."""
         logger.info("🤖 Initializing Implicit Automation Engine...")
+        self.running = True
 
         # Register default workflows
         await self._register_default_workflows()
@@ -116,7 +122,6 @@ class ImplicitAutomationEngine:
         # Start background processing
         await self._start_automation_workers()
 
-        self.running = True
         logger.info("✅ Implicit Automation Engine ready!")
 
     async def _register_default_workflows(self) -> None:
@@ -316,6 +321,10 @@ class ImplicitAutomationEngine:
             # Update workflow execution metadata
             workflow.last_executed = datetime.now(timezone.utc)
             workflow.execution_count += 1
+            workflow.success_rate = (
+                ((workflow.success_rate * (workflow.execution_count - 1)) + 1.0)
+                / workflow.execution_count
+            )
 
             # Remove from active automations
             self.active_automations.discard(workflow.id)
@@ -327,6 +336,11 @@ class ImplicitAutomationEngine:
 
         except Exception as e:
             logger.error(f"Workflow execution failed: {e}")
+            workflow.execution_count += 1
+            workflow.success_rate = (
+                (workflow.success_rate * (workflow.execution_count - 1))
+                / workflow.execution_count
+            )
             self.active_automations.discard(workflow.id)
             return False
 
@@ -772,55 +786,264 @@ class ImplicitAutomationEngine:
 
     async def _check_workflow_conditions(self, workflow: AutomationWorkflow, data: Dict) -> bool:
         """Check if workflow conditions are met."""
-        return True  # Placeholder
+        conditions = workflow.conditions or {}
+
+        tasks = data.get("tasks", [])
+        if conditions.get("min_tasks") and len(tasks) < int(conditions["min_tasks"]):
+            return False
+        if conditions.get("max_tasks") and len(tasks) > int(conditions["max_tasks"]):
+            return False
+
+        if conditions.get("has_description"):
+            if tasks and any(not str(task.get("description", "")).strip() for task in tasks):
+                return False
+
+        if conditions.get("active_task_exists"):
+            active_tasks = await self._get_active_tasks()
+            if not active_tasks:
+                return False
+
+        if conditions.get("meaningful_change"):
+            if data.get("change_type") in {"metadata", "noop"}:
+                return False
+            if int(data.get("lines_changed", 1)) <= 0:
+                return False
+
+        if conditions.get("sprint_has_completed_tasks"):
+            if not data.get("completed_tasks"):
+                return False
+
+        if conditions.get("context_switch_detected") and not data.get("context_switch_detected", True):
+            return False
+        if conditions.get("preservation_needed") and not data.get("preservation_needed", True):
+            return False
+
+        return True
 
     async def _get_current_cognitive_load(self) -> float:
         """Get current system cognitive load."""
-        return 0.3  # Placeholder
+        if self.serena_client and hasattr(self.serena_client, "get_current_cognitive_load"):
+            try:
+                result = self.serena_client.get_current_cognitive_load(workspace_id=self.workspace_id)
+                if asyncio.iscoroutine(result):
+                    result = await result
+                if isinstance(result, (int, float)):
+                    return max(0.0, min(1.0, float(result)))
+                if isinstance(result, dict):
+                    raw = result.get("cognitive_load", result.get("load", 0.3))
+                    return max(0.0, min(1.0, float(raw)))
+            except Exception as exc:
+                logger.debug("Failed to fetch cognitive load from Serena: %s", exc)
+
+        queue_load = min(1.0, self.automation_queue.qsize() / 10.0)
+        active_load = min(1.0, len(self.active_automations) / max(self.automation_batch_size, 1))
+        return round(max(0.2, queue_load, active_load), 2)
 
     async def _defer_automation(self, trigger: AutomationTrigger, data: Dict, delay_minutes: int) -> None:
         """Defer automation execution."""
-        pass  # Placeholder
+        run_at = datetime.now(timezone.utc) + timedelta(minutes=max(delay_minutes, 1))
+        await self.automation_queue.put(
+            {
+                "run_at": run_at,
+                "trigger": trigger.value if isinstance(trigger, AutomationTrigger) else str(trigger),
+                "data": data,
+            }
+        )
+        self.automation_stats["adhd_optimizations_applied"] += 1
 
     async def _store_sprint_analysis(self, sprint_id: str, analysis: Dict) -> None:
         """Store sprint analysis data."""
-        pass  # Placeholder
+        if not sprint_id:
+            return
+
+        payload = dict(analysis)
+        payload["updated_at"] = datetime.now(timezone.utc).isoformat()
+        self._sprint_analysis_store[sprint_id] = payload
 
     async def _get_active_tasks(self) -> List[Dict[str, Any]]:
         """Get currently active tasks from Leantime."""
-        return []  # Placeholder
+        if self.leantime_client:
+            for method_name in ("get_active_tasks", "list_active_tasks", "get_tasks"):
+                if not hasattr(self.leantime_client, method_name):
+                    continue
+                try:
+                    method = getattr(self.leantime_client, method_name)
+                    if method_name == "get_tasks":
+                        result = method(status="IN_PROGRESS")
+                    else:
+                        result = method()
+                    if asyncio.iscoroutine(result):
+                        result = await result
+                    if isinstance(result, list):
+                        return result
+                except Exception as exc:
+                    logger.debug("Failed loading active tasks via %s: %s", method_name, exc)
+
+        active = []
+        for task in self._local_task_state.values():
+            status = str(task.get("status", "IN_PROGRESS")).upper()
+            if status in {"TODO", "IN_PROGRESS", "BLOCKED"}:
+                active.append(task)
+        return active
 
     async def _calculate_file_task_correlation(self, file_path: str, task: Dict) -> float:
         """Calculate correlation between file and task."""
-        return 0.7  # Placeholder
+        normalized_path = file_path.lower().strip()
+        title = str(task.get("title", task.get("name", ""))).lower()
+        description = str(task.get("description", "")).lower()
+        task_text = f"{title} {description}"
+
+        path_parts = [p for p in re.split(r"[\\/._\\-]+", normalized_path) if len(p) >= 3]
+        overlap = sum(1 for token in set(path_parts) if token in task_text)
+
+        score = 0.15 + min(0.6, overlap * 0.15)
+
+        task_path = str(task.get("file_path", "")).lower()
+        if task_path and task_path in normalized_path:
+            score += 0.2
+
+        task_id = str(task.get("id", "")).lower()
+        if task_id and task_id in normalized_path:
+            score += 0.1
+
+        return max(0.0, min(1.0, score))
 
     async def _explain_correlation(self, file_path: str, task: Dict) -> List[str]:
         """Explain why file correlates to task."""
-        return ["File path matches task description"]  # Placeholder
+        reasons: List[str] = []
+        normalized_path = file_path.lower()
+        title = str(task.get("title", task.get("name", ""))).lower()
+        description = str(task.get("description", "")).lower()
+
+        if any(token in (title + " " + description) for token in re.split(r"[\\/._\\-]+", normalized_path) if token):
+            reasons.append("Path tokens overlap with task title/description")
+        if task.get("file_path") and str(task.get("file_path")).lower() in normalized_path:
+            reasons.append("Task references this file directly")
+        if not reasons:
+            reasons.append("General repository-area match")
+
+        return reasons
 
     async def _store_progress_correlation(self, data: Dict) -> None:
         """Store progress correlation data."""
-        pass  # Placeholder
+        self._progress_correlation_store.append(dict(data))
+        if len(self._progress_correlation_store) > 500:
+            self._progress_correlation_store = self._progress_correlation_store[-500:]
 
     async def _analyze_code_completion(self, file_path: str, task: Dict, correlation: float) -> Dict:
         """Analyze code to estimate completion percentage."""
-        return {"percentage": 50.0, "confidence": 0.8, "changes_analyzed": 5}  # Placeholder
+        raw_progress = task.get("progress_percent", task.get("completion_percentage", 0))
+        try:
+            current_percent = float(raw_progress)
+            if current_percent <= 1.0:
+                current_percent *= 100.0
+        except (TypeError, ValueError):
+            current_percent = 0.0
+
+        increment = max(5.0, min(25.0, correlation * 20.0))
+        percentage = min(100.0, max(current_percent, current_percent + increment))
+        confidence = max(0.5, min(0.95, 0.55 + (correlation * 0.4)))
+        changes_analyzed = max(1, int(round(correlation * 6)))
+
+        return {
+            "percentage": percentage,
+            "confidence": confidence,
+            "changes_analyzed": changes_analyzed,
+        }
 
     async def _store_progress_estimate(self, update: Dict) -> None:
         """Store progress estimate."""
-        pass  # Placeholder
+        self._progress_estimate_store.append(dict(update))
+        if len(self._progress_estimate_store) > 1000:
+            self._progress_estimate_store = self._progress_estimate_store[-1000:]
+
+        task_id = str(update.get("task_id", "")).strip()
+        if task_id:
+            state = self._local_task_state.setdefault(task_id, {"id": task_id})
+            state["progress_percent"] = update.get("completion_percentage", 0.0)
+            state["status"] = "DONE" if float(update.get("completion_percentage", 0.0)) >= 100.0 else "IN_PROGRESS"
+            state["updated_at"] = update.get("timestamp")
 
     async def _batch_update_leantime(self, updates: List[Dict]) -> bool:
         """Batch update Leantime tasks."""
-        return True  # Placeholder
+        if not updates:
+            return True
+        if not self.leantime_client:
+            return True
+
+        success_count = 0
+        if hasattr(self.leantime_client, "batch_update_tasks"):
+            try:
+                result = self.leantime_client.batch_update_tasks(updates)
+                if asyncio.iscoroutine(result):
+                    await result
+                return True
+            except Exception as exc:
+                logger.debug("Leantime batch update failed, falling back to single updates: %s", exc)
+
+        for update in updates:
+            task_id = update.get("task_id")
+            progress = update.get("progress_percent")
+            try:
+                if hasattr(self.leantime_client, "update_task_progress"):
+                    result = self.leantime_client.update_task_progress(task_id, progress)
+                elif hasattr(self.leantime_client, "update_task"):
+                    result = self.leantime_client.update_task(task_id, update)
+                else:
+                    continue
+
+                if asyncio.iscoroutine(result):
+                    await result
+                success_count += 1
+            except Exception as exc:
+                logger.debug("Failed updating Leantime task %s: %s", task_id, exc)
+
+        return success_count > 0
 
     async def _batch_update_conport(self, updates: List[Dict]) -> bool:
         """Batch update ConPort progress."""
-        return True  # Placeholder
+        if not updates:
+            return True
+        if not self.conport_client:
+            return True
+
+        if hasattr(self.conport_client, "batch_update_progress"):
+            try:
+                result = self.conport_client.batch_update_progress(updates)
+                if asyncio.iscoroutine(result):
+                    await result
+                return True
+            except Exception as exc:
+                logger.debug("ConPort batch progress update failed: %s", exc)
+
+        success_count = 0
+        for update in updates:
+            try:
+                if hasattr(self.conport_client, "record_task_progress"):
+                    result = self.conport_client.record_task_progress(update)
+                elif hasattr(self.conport_client, "link_conport_items"):
+                    result = self.conport_client.link_conport_items([update])
+                else:
+                    continue
+                if asyncio.iscoroutine(result):
+                    await result
+                success_count += 1
+            except Exception as exc:
+                logger.debug("ConPort update failed for task %s: %s", update.get("linked_item_id"), exc)
+
+        return success_count > 0
 
     async def _batch_update_local(self, updates: List[Dict]) -> bool:
         """Batch update local ADHD system."""
-        return True  # Placeholder
+        for update in updates:
+            task_id = str(update.get("task_id", "")).strip()
+            if not task_id:
+                continue
+            task_state = self._local_task_state.setdefault(task_id, {"id": task_id})
+            task_state.update(update)
+            progress = float(update.get("progress", 0.0))
+            task_state["status"] = "DONE" if progress >= 1.0 else "IN_PROGRESS"
+        return True
 
     # Health and Monitoring
 
@@ -888,17 +1111,53 @@ class ImplicitAutomationEngine:
     async def _automation_processor(self) -> None:
         """Background automation processor."""
         while self.running:
-            await asyncio.sleep(1)
+            try:
+                item = await asyncio.wait_for(self.automation_queue.get(), timeout=1.0)
+            except asyncio.TimeoutError:
+                continue
+
+            try:
+                run_at = item.get("run_at")
+                if isinstance(run_at, datetime):
+                    now = datetime.now(timezone.utc)
+                    if run_at > now:
+                        await self.automation_queue.put(item)
+                        await asyncio.sleep(min(1.0, (run_at - now).total_seconds()))
+                        continue
+
+                trigger_raw = item.get("trigger")
+                trigger = (
+                    trigger_raw
+                    if isinstance(trigger_raw, AutomationTrigger)
+                    else AutomationTrigger(str(trigger_raw))
+                )
+                await self.trigger_automation(trigger, item.get("data", {}))
+            except Exception as exc:
+                logger.error("Deferred automation processing failed: %s", exc)
+            finally:
+                self.automation_queue.task_done()
 
     async def _workflow_monitor(self) -> None:
         """Monitor workflow health."""
         while self.running:
             await asyncio.sleep(60)
+            for workflow in self.workflows.values():
+                if workflow.execution_count < 5:
+                    continue
+                if workflow.success_rate < 0.7:
+                    logger.warning(
+                        "Workflow %s success rate degraded: %.2f",
+                        workflow.id,
+                        workflow.success_rate,
+                    )
 
     async def _adhd_optimization_monitor(self) -> None:
         """Monitor ADHD optimization effectiveness."""
         while self.running:
             await asyncio.sleep(120)
+            load = await self._get_current_cognitive_load()
+            if load > self.cognitive_load_threshold:
+                self.automation_stats["adhd_optimizations_applied"] += 1
 
     # Additional placeholder methods
     def _analyze_complexity_distribution(self, tasks: List[Dict]) -> Dict:
@@ -919,11 +1178,8 @@ class ImplicitAutomationEngine:
     async def _analyze_energy_utilization(self, sprint_id: str) -> Dict:
         return {}
 
-    async def _store_sprint_analysis(self, sprint_id: str, analysis: Dict) -> None:
-        pass
-
     async def _get_sprint_analysis(self, sprint_id: str) -> Optional[Dict]:
-        return {}
+        return self._sprint_analysis_store.get(sprint_id)
 
     def _generate_positive_insights(self, analysis: Dict) -> List[str]:
         return ["Good sprint velocity maintained"]
@@ -941,7 +1197,50 @@ class ImplicitAutomationEngine:
         return ["Continue using automated decomposition"]
 
     async def _create_leantime_retrospective(self, sprint_id: str, items: Dict) -> None:
-        pass
+        self._retrospective_store[sprint_id] = {
+            "items": items,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        if not self.leantime_client:
+            return
+
+        for method_name in ("create_retrospective", "create_sprint_retrospective", "create_note"):
+            if not hasattr(self.leantime_client, method_name):
+                continue
+            try:
+                method = getattr(self.leantime_client, method_name)
+                if method_name == "create_note":
+                    payload = {"title": f"Sprint {sprint_id} Retrospective", "content": json.dumps(items)}
+                    result = method(payload)
+                else:
+                    result = method(sprint_id=sprint_id, items=items)
+                if asyncio.iscoroutine(result):
+                    await result
+                return
+            except Exception as exc:
+                logger.debug("Leantime retrospective write via %s failed: %s", method_name, exc)
 
     async def _store_retrospective_insights(self, sprint_id: str, items: Dict) -> None:
-        pass
+        self._retrospective_store[sprint_id] = {
+            "items": items,
+            "stored_at": datetime.now(timezone.utc).isoformat(),
+        }
+        if not self.conport_client:
+            return
+
+        payload = {
+            "sprint_id": sprint_id,
+            "type": "retrospective",
+            "insights": items,
+            "source": "implicit_automation_engine",
+        }
+        for method_name in ("store_retrospective", "add_retrospective_insights", "add_observation"):
+            if not hasattr(self.conport_client, method_name):
+                continue
+            try:
+                result = getattr(self.conport_client, method_name)(payload)
+                if asyncio.iscoroutine(result):
+                    await result
+                return
+            except Exception as exc:
+                logger.debug("ConPort retrospective store via %s failed: %s", method_name, exc)

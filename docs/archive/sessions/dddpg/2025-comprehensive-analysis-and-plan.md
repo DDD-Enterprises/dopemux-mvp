@@ -1,10 +1,14 @@
 ---
 id: 2025-comprehensive-analysis-and-plan
 title: 2025 Comprehensive Analysis And Plan
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: 2025 Comprehensive Analysis And Plan (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # DDDPG: Comprehensive Deep Analysis & Strategic Roadmap 2025
 **Service**: DDDPG (Decision-Driven Development Planning Graph)
@@ -547,7 +551,7 @@ class QueryService:
 
 3. **Hybrid Search** (30 min)
    - Combine FTS5 (keyword) + embeddings (semantic)
-   - Weighted scoring: 0.7 * semantic + 0.3 * keyword
+   - Weighted scoring: 0.7 *semantic + 0.3* keyword
    - Deduplication
 
 **Strategic Value**: "Find decisions about authentication" → Works even if word "auth" not used.

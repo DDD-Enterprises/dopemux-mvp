@@ -10,6 +10,8 @@ Usage:
     python mcp_event_wrapper.py --server conport --instance A
 """
 
+import logging
+
 import asyncio
 import json
 import sys
@@ -18,6 +20,8 @@ import argparse
 import subprocess
 from pathlib import Path
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 # Add dopemux to path
 sys.path.insert(0, str(Path(__file__).parent.parent))

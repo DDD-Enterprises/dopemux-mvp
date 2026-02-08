@@ -68,7 +68,7 @@
 
 ## 📊 Current MCP Server Status
 
-### Running & Healthy (12/17)
+### Running & Healthy (13/17)
 - ✅ pal (apilookup, planner, thinkdeep, consensus, debug, codereviewer, secaudit)
 - ✅ conport (memory & decisions)
 - ✅ serena-v2 (code navigation)
@@ -77,15 +77,15 @@
 - ✅ dope-context (semantic search)
 - ✅ desktop-commander (desktop automation)
 - ✅ leantime-bridge (project management)
+- ✅ plane-coordinator (two-plane coordination API)
 - ✅ context7 (documentation)
 - ✅ litellm (LLM proxy)
 - ✅ qdrant (vector DB)
 - ✅ **task-orchestrator** (37 workflow tools) - NOW FIXED!
 
-### Still Down (5/17)
+### Still Down (4/17)
 - ❌ mas-sequential-thinking - May be replaced by Zen/pal
 - ❌ activity-capture - Optional ADHD metrics
-- ❌ plane-coordinator - Purpose unclear
 - ❌ task-master-ai - Possible duplicate of task-orchestrator
 - ❌ mcp-client - Purpose unclear
 
@@ -99,7 +99,7 @@
   - Check if functionality overlaps
   - Decide: fix, replace, or deprecate
 
-- [ ] Review unclear servers (plane-coordinator, task-master-ai, mcp-client)
+- [ ] Review unclear servers (task-master-ai, mcp-client)
   - Determine original purpose
   - Check if still needed
   - Document or deprecate

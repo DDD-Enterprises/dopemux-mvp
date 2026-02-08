@@ -55,9 +55,8 @@ def slug_to_title(slug: str) -> str:
 def section_from_path(p: Path) -> str:
     try:
         rel = p.relative_to(DOCS)
-    except Exception as e:
+    except Exception:
         return "Docs"
-        logger.error(f"Error: {e}")
     parts = list(rel.parts)
     if not parts:
         return "Docs"

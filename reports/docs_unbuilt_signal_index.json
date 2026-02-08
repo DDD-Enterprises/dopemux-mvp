@@ -1,0 +1,2409 @@
+{
+  "top_files": [
+    {
+      "file": "docs/archive/sessions/adhd-engine/conport-tracking-guide.md",
+      "hits": 38,
+      "samples": [
+        [
+          29,
+          "Progress #162: Week 1 - Core Infrastructure (TODO)"
+        ],
+        [
+          31,
+          "\u251c\u2500\u2500 Progress #167: Day 2 - ADHD Engine Integration (TODO) \u2190 NEXT"
+        ],
+        [
+          32,
+          "\u251c\u2500\u2500 Progress #168: Day 3 - ShieldCoordinator Core Logic (TODO)"
+        ],
+        [
+          33,
+          "\u251c\u2500\u2500 Progress #169: Day 4 - ConPort Integration (TODO)"
+        ],
+        [
+          34,
+          "\u2514\u2500\u2500 Progress #170: Day 5 - Productivity Monitoring (TODO)"
+        ],
+        [
+          36,
+          "Progress #163: Week 2 - macOS Integration (TODO)"
+        ],
+        [
+          37,
+          "\u251c\u2500\u2500 Progress #171: Day 6 - macOS Focus Mode (TODO)"
+        ],
+        [
+          38,
+          "\u251c\u2500\u2500 Progress #172: Day 7 - Desktop Commander (TODO)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/04-explanation/architecture/system-bible.md",
+      "hits": 27,
+      "samples": [
+        [
+          461,
+          "5. It writes the new order to its own database with a `PENDING` status and publishes an `OrderCreated` event to the message bus."
+        ],
+        [
+          1117,
+          "* **Full Mouse Support:** Mouse support is only partial (pane resizing) and lacks text selection and pane selection capabilities."
+        ],
+        [
+          2145,
+          "* **Primary Goals:** *[Analysis pending document content. Example: Scalability, High Availability, Decoupling, Security]*"
+        ],
+        [
+          2146,
+          "* **Architectural Style:** *[Analysis pending document content. Example: Event-Driven Microservices, Modular Monolith, CQRS]*"
+        ],
+        [
+          2152,
+          "| *[Analysis pending...]* | *[Analysis pending...]* |"
+        ],
+        [
+          2153,
+          "| *[Analysis pending...]* | *[Analysis pending...]* |"
+        ],
+        [
+          2154,
+          "| *[Analysis pending...]* | *[Analysis pending...]* |"
+        ],
+        [
+          2158,
+          "* **Interaction Methods:** *[Analysis pending document content. Example: Communication occurs primarily via a central Message Bus (e.g., Kafka) for asynchronous events and REST APIs for synchronous requests through an API Gateway.]*"
+        ]
+      ]
+    },
+    {
+      "file": "docs/05-audit-reports/comprehensive-feature-status-summary.md",
+      "hits": 23,
+      "samples": [
+        [
+          28,
+          "| Phase 3: Manual Review (8 services) | \u274c Not Started | 279 | 6-10h |"
+        ],
+        [
+          29,
+          "| Phase 4: Documentation Validation | \u274c Not Started | 280 | 2-4h |"
+        ],
+        [
+          30,
+          "| Phase 6: Integration Testing | \u26a0\ufe0f Partial (pytest issues) | 281 | 2-4h |"
+        ],
+        [
+          31,
+          "| Phase 8: Final Synthesis | \u274c Not Started | 282 | 2h |"
+        ],
+        [
+          37,
+          "| F-NEW-7 Phase 3: Unified Queries | \u274c Not Started | 283 | Unknown |"
+        ],
+        [
+          38,
+          "| Migration 005: F-NEW-7 Implementation | \u274c Not Started | 284 | Unknown |"
+        ],
+        [
+          39,
+          "| F-NEW-8: Break Suggester | \u274c Not Started | N/A | Unknown |"
+        ],
+        [
+          40,
+          "| F-NEW-9: EventBus Wiring | \u274c Not Started | N/A | Unknown |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/completed-projects/INSTALLER_TESTING_REPORT.md",
+      "hits": 20,
+      "samples": [
+        [
+          27,
+          "| macOS (Intel) | \u23f3 Pending | - | Need test machine |"
+        ],
+        [
+          28,
+          "| Ubuntu 22.04 | \u26a0\ufe0f Partial | ~84 sec | Python 3.10 OK, Docker-in-Docker issues |"
+        ],
+        [
+          29,
+          "| Ubuntu 24.04 | \u23f3 Pending | - | - |"
+        ],
+        [
+          30,
+          "| Arch Linux | \u23f3 Pending | - | - |"
+        ],
+        [
+          31,
+          "| Fedora 39 | \u23f3 Pending | - | - |"
+        ],
+        [
+          32,
+          "| WSL2 | \u23f3 Pending | - | Need Windows machine |"
+        ],
+        [
+          75,
+          "**Result:** \u26a0\ufe0f PARTIAL"
+        ],
+        [
+          145,
+          "| Full install (est.) | 3-5 minutes | TBD |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/audit-reports/phase3-adhd-engine-feature-analysis.md",
+      "hits": 14,
+      "samples": [
+        [
+          112,
+          "- **Issues**: Services directory empty, monitor implementations incomplete"
+        ],
+        [
+          115,
+          "**Assessment**: Architecture ready but implementation incomplete."
+        ],
+        [
+          123,
+          "- **Issues**: Trust building service incomplete, prediction accuracy unvalidated"
+        ],
+        [
+          124,
+          "- **Status**: Core ML framework exists but advanced features incomplete"
+        ],
+        [
+          150,
+          "- **Issues**: Orchestration logic incomplete (orchestrator.py placeholders)"
+        ],
+        [
+          165,
+          "- **Implementation**: \u26a0\ufe0f Partially working (endpoints exist but background monitoring incomplete)"
+        ],
+        [
+          176,
+          "- **Issues**: Advanced session management features incomplete"
+        ],
+        [
+          187,
+          "- **Background Services**: Framework exists but implementations incomplete"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/conport-sessions/mcp_system_development.md",
+      "hits": 13,
+      "samples": [
+        [
+          1151,
+          "## \ud83d\udccb Current Todo List Status"
+        ],
+        [
+          1253,
+          "- Clear next steps identified and scoped appropriately"
+        ],
+        [
+          1257,
+          "- Todo list maintained and updated throughout session"
+        ],
+        [
+          1269,
+          "- Review current todo list status"
+        ],
+        [
+          1281,
+          "- Update todo list as each component completes"
+        ],
+        [
+          1306,
+          "**Session Success**: Strong - concrete progress with clear next steps"
+        ],
+        [
+          1311,
+          "**Ready to Resume**: \u2705 All context preserved, next steps clearly defined, development momentum strong"
+        ],
+        [
+          1525,
+          "**Energy Level**: High \u26a1 (good progress, clear next steps)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/05-audit-reports/FINAL-AUDIT-REPORT.md",
+      "hits": 12,
+      "samples": [
+        [
+          57,
+          "**Impact**: Services bypass incomplete bridge via direct SQLite access"
+        ],
+        [
+          98,
+          "**Implementation**: 5/10 (Partial)"
+        ],
+        [
+          126,
+          "- Multiple TODO comments (incomplete features)"
+        ],
+        [
+          190,
+          "- \u26a0\ufe0f Integration guides incomplete"
+        ],
+        [
+          196,
+          "- \u26a0\ufe0f DopeconBridge \"cross-plane coordination\" \u2192 Stubs (incomplete)"
+        ],
+        [
+          207,
+          "| \"DopeconBridge coordination\" | Architecture docs | \u26a0\ufe0f PARTIAL | 80% done, stubs |"
+        ],
+        [
+          208,
+          "| \"Event-driven automation\" | Architecture docs | \u26a0\ufe0f PARTIAL | Infrastructure exists, partial adoption |"
+        ],
+        [
+          218,
+          "| Phase | Planned (Original) | Planned (Optimized) | Actual | Efficiency |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/phase-2-security-quality-complete.md",
+      "hits": 12,
+      "samples": [
+        [
+          16,
+          "**Planned Duration**: 4 hours"
+        ],
+        [
+          28,
+          "**Architecture**: DopeconBridge incomplete (custom_data endpoints are stubs)"
+        ],
+        [
+          159,
+          "**Zen Verdict**: Excellent design, incomplete implementation"
+        ],
+        [
+          210,
+          "**Incomplete (3/10):**"
+        ],
+        [
+          227,
+          "- \u26a0\ufe0f Many TODO comments"
+        ],
+        [
+          228,
+          "- \u26a0\ufe0f Incomplete features"
+        ],
+        [
+          270,
+          "| Metric | Planned | Actual | Saved |"
+        ],
+        [
+          288,
+          "- \u2705 Phase 1: Intelligent Inventory (1.5h / 2h planned)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/component-implementations/COMPONENT_4_CONPORT_MCP_WIRING.md",
+      "hits": 11,
+      "samples": [
+        [
+          15,
+          "**Status**: \u2705 Code Complete (Pending MCP Infrastructure Integration)"
+        ],
+        [
+          231,
+          "**\u23f3 Pending Deployment**:"
+        ],
+        [
+          254,
+          "result = await client.log_progress(workspace_id=\"...\", status=\"TODO\", description=\"Test\")"
+        ],
+        [
+          365,
+          "- Task 4.1 (Review): 15 min (planned: 30 min) \ud83c\udfaf 50% under"
+        ],
+        [
+          366,
+          "- Task 4.2 (MCP Client): 30 min (planned: 45 min) \ud83c\udfaf 33% under"
+        ],
+        [
+          367,
+          "- Task 4.3 (Adapter Methods): 45 min (planned: 60 min) \ud83c\udfaf 25% under"
+        ],
+        [
+          368,
+          "- **Total**: 1.5 hours (planned: 3 hours) \ud83c\udfaf **50% under estimate**"
+        ],
+        [
+          427,
+          "- End-to-end testing pending MCP integration"
+        ]
+      ]
+    },
+    {
+      "file": "docs/systems/conport/custom-instructions/mem4sprint-schema-and-patterns.md",
+      "hits": 10,
+      "samples": [
+        [
+          129,
+          "json: { type: sprint_goal, content: \"<goal statement>\", sprint_id: \"S-YYYY.MM\", status: planned, tags: [], provenance: { agent: planner, tool: mem4sprint, ts: \"\" } }"
+        ],
+        [
+          132,
+          "json: { type: sprint_subtask, content: \"<subtask description>\", sprint_id: \"S-YYYY.MM\", goal_id: \"<goal-id>\", status: planned, tags: [], provenance: { agent: planner, tool: mem4sprint, ts: \"\" } }"
+        ],
+        [
+          135,
+          "json: { type: artifact, content: \"<artifact description>\", artifact_kind: file, status: planned, goal_id: \"<goal-id>\", sprint_id: \"S-YYYY.MM\", tags: [], provenance: { agent: dev, tool: mem4sprint, ts: \"\" } }"
+        ],
+        [
+          138,
+          "json: { type: test, content: \"<test description or assertion>\", status: planned, sprint_id: \"S-YYYY.MM\", goal_id: \"<goal-id>\", tags: [], provenance: { agent: qa, tool: mem4sprint, ts: \"\" } }"
+        ],
+        [
+          147,
+          "json: { type: story, content: \"<story>\", sprint_id: \"S-YYYY.MM\", status: planned, acceptance_criteria: [], tags: [], provenance: { agent: planner, tool: mem4sprint, ts: \"\" } }"
+        ],
+        [
+          150,
+          "json: { type: epic, content: \"<epic>\", status: planned, tags: [], provenance: { agent: architect, tool: mem4sprint, ts: \"\" } }"
+        ],
+        [
+          153,
+          "json: { type: acceptance_criteria, story_id: \"<story-id>\", text: \"<criterion>\", status: pending, tags: [], provenance: { agent: qa, tool: mem4sprint, ts: \"\" } }"
+        ],
+        [
+          182,
+          "status: draft"
+        ]
+      ]
+    },
+    {
+      "file": "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
+      "hits": 10,
+      "samples": [
+        [
+          5,
+          "**Status**: These are \"Vaporware\" - high-value designs waiting for implementation."
+        ],
+        [
+          22,
+          "| **Cognitive Guardian** | `agents/README` | \u23f3 Pending | Break enforcement & focus monitoring agent. |"
+        ],
+        [
+          23,
+          "| **TwoPlaneOrchestrator** | `agents/README` | \u23f3 Pending | Dedicated authority for cross-plane sync. |"
+        ],
+        [
+          24,
+          "| **TaskDecomposer** | `agents/README` | \u23f3 Pending | AI that breaks Epics into Tasks (PRD parsing). |"
+        ],
+        [
+          25,
+          "| **DopemuxEnforcer** | `agents/README` | \u23f3 Pending | Architectural rule validation bot. |"
+        ],
+        [
+          26,
+          "| **ToolOrchestrator** | `agents/README` | \u23f3 Pending | Intelligent routing to optimal MCP models. |"
+        ],
+        [
+          27,
+          "| **WorkflowCoordinator** | `agents/README` | \u23f3 Pending | Multi-step wizard for complex processes. |"
+        ],
+        [
+          28,
+          "| **Auto-Resume** | `ADR-180` | \u274c Unbuilt | `dopemux start` offering to resume orphaned sessions. |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY9_INDEX.md",
+      "hits": 10,
+      "samples": [
+        [
+          64,
+          "**Status:** \ud83d\udfe1 Not started"
+        ],
+        [
+          77,
+          "**Status:** \ud83d\udfe1 Not started"
+        ],
+        [
+          90,
+          "**Status:** \ud83d\udfe1 Not started"
+        ],
+        [
+          139,
+          "| PrometheusSparklineIntegration | 2-3 hrs | \ud83d\udfe1 Not started | HIGH |"
+        ],
+        [
+          140,
+          "| FocusManager | 1-2 hrs | \ud83d\udfe1 Not started | HIGH |"
+        ],
+        [
+          141,
+          "| Keyboard shortcuts | 1-2 hrs | \ud83d\udfe1 Not started | HIGH |"
+        ],
+        [
+          142,
+          "| Help modal | 30 min | \ud83d\udfe1 Not started | MEDIUM |"
+        ],
+        [
+          143,
+          "| Integration tests | 1 hr | \ud83d\udfe1 Not started | HIGH |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/AUDIT-SUMMARY-2025-10-16.md",
+      "hits": 10,
+      "samples": [
+        [
+          33,
+          "### Phase 1: Intelligent Inventory \u2705 (1.5h / 2h planned)"
+        ],
+        [
+          48,
+          "### Phase 2: Security & Quality Scan \u2705 (2h / 4h planned)"
+        ],
+        [
+          78,
+          "- Services tried it, found it incomplete, bypassed it"
+        ],
+        [
+          143,
+          "- Services: Bypass bridge due to incomplete endpoints"
+        ],
+        [
+          163,
+          "- Many TODO comments (incomplete features)"
+        ],
+        [
+          198,
+          "| Phase | Planned | Actual | Savings | % Faster |"
+        ],
+        [
+          212,
+          "### Phase 3: Targeted Manual Review (15h planned \u2192 ~10h actual)"
+        ],
+        [
+          218,
+          "### Phase 4: Documentation Validation (6h planned \u2192 ~4h actual)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/05-audit-reports/phase1-foundation-analysis-complete.md",
+      "hits": 9,
+      "samples": [
+        [
+          28,
+          "- **Critical Gaps**: Missing dashboard service, incomplete integrations, security concerns"
+        ],
+        [
+          29,
+          "- **Production Readiness**: Architecture sound, implementation incomplete"
+        ],
+        [
+          50,
+          "- `interruption-shield/` - **INCOMPLETE** - Focus mode coordination"
+        ],
+        [
+          75,
+          "- **ShieldCoordinator**: Interruption management (incomplete)"
+        ],
+        [
+          132,
+          "- **Interruption Shield**: 8+ TODO comments prevent WebSocket integration"
+        ],
+        [
+          158,
+          "- **Incomplete Core Services**: Interruption Shield, ML validation absent"
+        ],
+        [
+          174,
+          "**Evidence**: 25+ services identified but many with TODOs, missing dashboard, incomplete integrations"
+        ],
+        [
+          178,
+          "**Evidence**: Critical user interface absence, incomplete core functionality, security issues"
+        ]
+      ]
+    },
+    {
+      "file": "docs/04-explanation/archive/session-notes/2025-10/SESSION_SUMMARY_2025-10-19.md",
+      "hits": 9,
+      "samples": [
+        [
+          25,
+          "**Time**: ~2 hours (planned: 4 hours) \ud83c\udfaf 50% under estimate"
+        ],
+        [
+          71,
+          "**Time**: ~2 hours (planned: 4 hours) \ud83c\udfaf 50% under estimate"
+        ],
+        [
+          116,
+          "**Status**: \u2705 Code Complete (Pending MCP Infrastructure)"
+        ],
+        [
+          117,
+          "**Time**: ~1.5 hours (planned: 3 hours) \ud83c\udfaf 50% under estimate"
+        ],
+        [
+          172,
+          "| Component | Planned | Actual | Efficiency |"
+        ],
+        [
+          194,
+          "| Component 4 | Code complete | Pending MCP |"
+        ],
+        [
+          264,
+          "**Deployment Pending**: MCP tools access configuration (3 options documented)"
+        ],
+        [
+          283,
+          "| Component 4 | \u2705 Code Complete | ConPort MCP wiring (pending deployment) |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/04-explanation/archive/session-notes/2025-10/MULTI_USER_TRANSFORMATION_STATUS.md",
+      "hits": 9,
+      "samples": [
+        [
+          49,
+          "**Not Started** - Design complete, implementation pending"
+        ],
+        [
+          58,
+          "**Not Started** - Critical for user onboarding"
+        ],
+        [
+          67,
+          "**Not Started** - Enables contributions"
+        ],
+        [
+          77,
+          "**Not Started** - User-facing guides"
+        ],
+        [
+          94,
+          "| **C: Multi-Project** | \u23f3 Pending | ~5 files | ~300 lines | 3h | ? |"
+        ],
+        [
+          95,
+          "| **D: Setup Scripts** | \u23f3 Pending | 2 files | ~200 lines | 2h | ? |"
+        ],
+        [
+          96,
+          "| **E: Zen Dev Mode** | \u23f3 Pending | ~3 files | ~100 lines | 2h | ? |"
+        ],
+        [
+          97,
+          "| **F: Documentation** | \u23f3 Pending | 4 docs | ~1000 lines | 2h | ? |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_SESSION_SUMMARY.md",
+      "hits": 9,
+      "samples": [
+        [
+          356,
+          "| Cognitive Load | \u23f3 Mock Data | TODO: Add endpoint |"
+        ],
+        [
+          357,
+          "| Flow State | \u23f3 Mock Data | TODO: Add endpoint |"
+        ],
+        [
+          358,
+          "| Session Time | \u23f3 Mock Data | TODO: Add endpoint |"
+        ],
+        [
+          359,
+          "| Tasks Panel | \u23f3 Mock Data | TODO: Day 2 |"
+        ],
+        [
+          360,
+          "| Decisions Panel | \u23f3 Mock Data | TODO: Day 2 |"
+        ],
+        [
+          361,
+          "| Services Panel | \u23f3 Mock Data | TODO: Day 2 |"
+        ],
+        [
+          362,
+          "| Patterns Panel | \u23f3 Mock Data | TODO: Day 2 |"
+        ],
+        [
+          680,
+          "| Phase | Planned | Actual | Variance |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/tmux-dashboard-index.md",
+      "hits": 9,
+      "samples": [
+        [
+          145,
+          "### \ud83d\udccb Phase 3: Quick Wins (PLANNED)"
+        ],
+        [
+          147,
+          "**Status:** Not started"
+        ],
+        [
+          160,
+          "### \ud83c\udfaf Phase 4: Gamification (PLANNED)"
+        ],
+        [
+          162,
+          "**Status:** Not started"
+        ],
+        [
+          174,
+          "### \ud83d\udc8e Phase 5: Power Features (PLANNED)"
+        ],
+        [
+          176,
+          "**Status:** Not started"
+        ],
+        [
+          232,
+          "- \ud83d\udccb Quick wins: PLANNED"
+        ],
+        [
+          233,
+          "- \ud83c\udfaf Gamification: PLANNED"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/serena_adhd_cross_system_analysis_20251023.md",
+      "hits": 9,
+      "samples": [
+        [
+          167,
+          "- \u23f3 ConPort MCP client integration (pending)"
+        ],
+        [
+          347,
+          "- Cross-workspace pattern learning (planned)"
+        ],
+        [
+          418,
+          "**Data Flow**: Direct PostgreSQL + MCP Client (planned)"
+        ],
+        [
+          430,
+          "**Status**: Schema migration ready, MCP client integration pending"
+        ],
+        [
+          433,
+          "**Data Flow**: DopeconBridge HTTP (current) \u2192 Direct SQLite (planned Week 3)"
+        ],
+        [
+          527,
+          "- Stored in: ConPort (planned)"
+        ],
+        [
+          534,
+          "**Duplication**: PARTIAL - Different aspects of session"
+        ],
+        [
+          819,
+          "- \u23f3 ConPort MCP client integration pending"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/conport-api-audit.md",
+      "hits": 8,
+      "samples": [
+        [
+          93,
+          "- Partial update (patch) to active_context"
+        ],
+        [
+          129,
+          "\"status\": \"TODO\",  # or IN_PROGRESS, DONE"
+        ],
+        [
+          235,
+          "status: TaskStatus = TaskStatus.PENDING  # PENDING, IN_PROGRESS, COMPLETED, BLOCKED, NEEDS_BREAK, CONTEXT_SWITCH, PAUSED"
+        ],
+        [
+          265,
+          "\"status\": \"TODO | IN_PROGRESS | DONE | BLOCKED\","
+        ],
+        [
+          275,
+          "**Returns**: `{\"id\": 123, \"timestamp\": \"...\", \"status\": \"TODO\", ...}`"
+        ],
+        [
+          311,
+          "\"status\": status_mapping.get(task.status, \"TODO\"),"
+        ],
+        [
+          358,
+          "status=status_mapping.get(progress[\"status\"], TaskStatus.PENDING),"
+        ],
+        [
+          609,
+          "**Completion Time**: 65 minutes (vs 90 planned) - 28% ahead of schedule"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/DEEP-DOCUMENTATION-ALL-FINDINGS.md",
+      "hits": 8,
+      "samples": [
+        [
+          386,
+          "- **Next Step**: Trace `graph_name` source in age_client.py"
+        ],
+        [
+          414,
+          "**Recommendation**: Full audit pending (2h), but initial scan shows safe patterns"
+        ],
+        [
+          447,
+          "- \ud83d\udfe0 Subprocess: Mostly safe (full audit pending)"
+        ],
+        [
+          603,
+          "**TODO Comments**: High count in some services"
+        ],
+        [
+          607,
+          "- **Indicates**: Incomplete features, technical debt"
+        ],
+        [
+          609,
+          "**Incomplete Features**:"
+        ],
+        [
+          718,
+          "- [ ] ConPort orchestrator bridge TODO review"
+        ],
+        [
+          735,
+          "- [ ] Event-driven coordination (infrastructure exists, partial adoption)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/session-notes/2025-10/RESEARCH-SESSION-STATE.md",
+      "hits": 8,
+      "samples": [
+        [
+          37,
+          "- **Status**: Step 4/5 Complete (Final synthesis pending)"
+        ],
+        [
+          53,
+          "- **Next Step**: Step 5 - Final synthesis and implementation specification"
+        ],
+        [
+          66,
+          "- **Research Status**: Not started"
+        ],
+        [
+          71,
+          "- **Research Status**: Not started"
+        ],
+        [
+          76,
+          "- **Research Status**: Not started"
+        ],
+        [
+          147,
+          "- Decision #18 (pending): libtmux integration best practices"
+        ],
+        [
+          165,
+          "- \u2705 Clear next steps for resume"
+        ],
+        [
+          171,
+          "- [ ] libtmux integration spec (Decision #18 pending)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/agents/week7-complete.md",
+      "hits": 8,
+      "samples": [
+        [
+          460,
+          "**Features** (planned):"
+        ],
+        [
+          508,
+          "- **TODO**: Integrate real Serena MCP complexity analysis"
+        ],
+        [
+          513,
+          "- **TODO**: Pass real ConPort client instance"
+        ],
+        [
+          518,
+          "- **TODO**: Add AST-based pattern detection"
+        ],
+        [
+          561,
+          "**Planned**: 70% code reuse from Serena"
+        ],
+        [
+          575,
+          "**Planned**: 5 days (10 focus blocks)"
+        ],
+        [
+          577,
+          "**Efficiency**: 5x faster than planned"
+        ],
+        [
+          596,
+          "**Efficiency**: 5x faster than planned"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/agents/week6-complete.md",
+      "hits": 8,
+      "samples": [
+        [
+          327,
+          "data={\"status\": \"TODO\"},"
+        ],
+        [
+          362,
+          "**Features** (planned):"
+        ],
+        [
+          404,
+          "**Planned**: 5 days (10 focus blocks)"
+        ],
+        [
+          406,
+          "**Efficiency**: 4x faster than planned"
+        ],
+        [
+          437,
+          "**TODO for Production**:"
+        ],
+        [
+          448,
+          "**TODO for Real Implementation**:"
+        ],
+        [
+          487,
+          "data={\"status\": \"TODO\"}"
+        ],
+        [
+          558,
+          "**Efficiency**: 4x faster than planned"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "hits": 8,
+      "samples": [
+        [
+          148,
+          "### \ud83d\udccb Phase 3: Expansion (PLANNED)"
+        ],
+        [
+          353,
+          "- **Planned:** 15+ additional services"
+        ],
+        [
+          359,
+          "- **Full expansion:** 25 hours (PLANNED)"
+        ],
+        [
+          366,
+          "- \ud83d\udd04 **READY** - Planned, documented, ready to execute"
+        ],
+        [
+          367,
+          "- \ud83d\udccb **PLANNED** - Designed, templates ready"
+        ],
+        [
+          368,
+          "- \u23f3 **PENDING** - Identified, needs planning"
+        ],
+        [
+          460,
+          "**Status:** Core complete \u2705 | Rename ready \ud83d\udd04 | Expansion planned \ud83d\udccb"
+        ],
+        [
+          463,
+          "**Coverage:** 5 services migrated, 15+ planned"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/development/planning/DDDPG_KICKOFF.md",
+      "hits": 8,
+      "samples": [
+        [
+          496,
+          "| 2 | Deployment Modes | 8h | \u23f3 Pending |"
+        ],
+        [
+          497,
+          "| 3 | Migration & Testing | 8h | \u23f3 Pending |"
+        ],
+        [
+          498,
+          "| 4 | Agent Integration | 8h | \u23f3 Pending |"
+        ],
+        [
+          499,
+          "| 5 | Dashboard | 8h | \u23f3 Pending |"
+        ],
+        [
+          500,
+          "| 6 | Polish & Deploy | 8h | \u23f3 Pending |"
+        ],
+        [
+          514,
+          "- \ud83c\udfaf Value: One excellent system vs 3 incomplete"
+        ],
+        [
+          541,
+          "- We're 7-8x faster than planned"
+        ],
+        [
+          545,
+          "**Next Step**: Create `services/conport_v3/` and start Week 1 Day 1!"
+        ]
+      ]
+    },
+    {
+      "file": "docs/90-adr/ADR-197-task-epic-workflow-system.md",
+      "hits": 7,
+      "samples": [
+        [
+          116,
+          "\"status\": str,    # \"planned\", \"in-planning\", \"ready\", \"in-progress\", \"done\""
+        ],
+        [
+          129,
+          "- **Status Authority**: Leantime (planned\u2192active\u2192done)"
+        ],
+        [
+          150,
+          "\"status\": str,  # \"TODO\", \"IN_PROGRESS\", \"BLOCKED\", \"DONE\""
+        ],
+        [
+          167,
+          "- **Status Authority**: Leantime (TODO\u2192In Progress\u2192Done)"
+        ],
+        [
+          250,
+          "\"status\": \"planned\","
+        ],
+        [
+          278,
+          "status=\"TODO\","
+        ],
+        [
+          302,
+          "- User updates status in Leantime: TODO \u2192 IN_PROGRESS"
+        ]
+      ]
+    },
+    {
+      "file": "docs/05-audit-reports/PHASE-4-DOCUMENTATION-VALIDATION-COMPLETE.md",
+      "hits": 7,
+      "samples": [
+        [
+          15,
+          "**Duration**: 1 hour (vs 4h planned = 75% faster!)"
+        ],
+        [
+          90,
+          "- Status: \u26a0\ufe0f PARTIAL (authority code exists, custom_data stubs)"
+        ],
+        [
+          94,
+          "- Status: \u26a0\ufe0f PARTIAL (infrastructure exists, partial adoption)"
+        ],
+        [
+          115,
+          "- DopeconBridge stubs could be more clearly marked as incomplete"
+        ],
+        [
+          116,
+          "- Some feature claims need \"partial\" qualifier (event bus adoption)"
+        ],
+        [
+          131,
+          "- Two-plane architecture docs - Design accurate, implementation partial (disclosed)"
+        ],
+        [
+          154,
+          "**Time**: 1 hour (vs 4h planned)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/session-notes/2025-10/ACHIEVEMENT-2025-10-16.md",
+      "hits": 7,
+      "samples": [
+        [
+          125,
+          "- Planned: 7 days (14 focus blocks)"
+        ],
+        [
+          130,
+          "- Planned: 1 day (2 focus blocks)"
+        ],
+        [
+          135,
+          "- Planned: 8 days (16 focus blocks)"
+        ],
+        [
+          152,
+          "**3 Projects Left** (planned: ~30 days, likely: ~6-8 days at current pace):"
+        ],
+        [
+          154,
+          "- **IP-002**: DopeconBridge (9 days planned \u2192 2-3 days likely)"
+        ],
+        [
+          155,
+          "- **IP-003**: Infrastructure (6-9 days planned \u2192 1-2 days likely, may be mostly done)"
+        ],
+        [
+          156,
+          "- **IP-005**: Orchestrator TUI (14 days planned \u2192 3-4 days likely)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/dddpg/2025-technical-spec.md",
+      "hits": 7,
+      "samples": [
+        [
+          140,
+          "status: DecisionStatus  # DRAFT/ACTIVE/SUPERSEDED/ARCHIVED"
+        ],
+        [
+          466,
+          "| Decision linking | < 100ms | TBD | \u23f3 |"
+        ],
+        [
+          467,
+          "| Task context (composite) | < 200ms | TBD | \u23f3 |"
+        ],
+        [
+          468,
+          "| Work cluster | < 300ms | TBD | \u23f3 |"
+        ],
+        [
+          469,
+          "| Suggestions (cached) | < 50ms | TBD | \u23f3 |"
+        ],
+        [
+          470,
+          "| Suggestions (uncached) | < 500ms | TBD | \u23f3 |"
+        ],
+        [
+          473,
+          "| Event publishing | < 10ms | TBD | \u23f3 |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/development/planning/ACTION-PLAN-MASTER.md",
+      "hits": 7,
+      "samples": [
+        [
+          42,
+          "- **Status**: Done \u2705 / Pending \u26a0\ufe0f / Future \ud83d\udd2e"
+        ],
+        [
+          132,
+          "- Issue: TODO for DopeconBridge event publishing"
+        ],
+        [
+          212,
+          "- Current: Infrastructure exists, partial adoption"
+        ],
+        [
+          240,
+          "- Status: Documented with TODO"
+        ],
+        [
+          386,
+          "- **Impact**: Services bypassed incomplete bridge (rational choice)"
+        ],
+        [
+          387,
+          "- **Learning**: Incomplete implementations worse than no implementation"
+        ],
+        [
+          390,
+          "**5. TODO Counts Misleading** \u2705"
+        ]
+      ]
+    },
+    {
+      "file": "docs/06-research/research-knowledge-graph-agent-memory-20251023.md",
+      "hits": 6,
+      "samples": [
+        [
+          149,
+          "| **Authentication** | JWT + token validation | JWT with caching planned | \u2705 **Aligned** |"
+        ],
+        [
+          272,
+          "- Distributed state (each agent maintains partial view)"
+        ],
+        [
+          456,
+          "| **JWT Validation** | Local + JWKS caching | \u2705 Local validation planned | \u2705 **Good** |"
+        ],
+        [
+          797,
+          "| **Noisy neighbor (multi-tenant)** | \ud83d\udfe1 **MEDIUM** | RLS + resource quotas | \u26a0\ufe0f Partial (no quotas) | Add workspace quotas |"
+        ],
+        [
+          807,
+          "| **Basic short-term memory** | \ud83d\udfe2 **LOW** | Thread-based state | \u26a0\ufe0f Partial | Enhance active_context |"
+        ],
+        [
+          2000,
+          "**Next Steps**:"
+        ]
+      ]
+    },
+    {
+      "file": "docs/05-audit-reports/documentation-audit-2025-10-16.md",
+      "hits": 6,
+      "samples": [
+        [
+          104,
+          "| Task-Orch | \u26a0\ufe0f Partial | ADR-197 only |"
+        ],
+        [
+          117,
+          "**TODO Distribution**: Need to find where TODOs are concentrated"
+        ],
+        [
+          140,
+          "- Migration incomplete (17%)"
+        ],
+        [
+          174,
+          "- Complete incomplete docs"
+        ],
+        [
+          199,
+          "**Status**: Accepted | Proposed | Deprecated"
+        ],
+        [
+          281,
+          "**Quality**: 6/10 (good structure, incomplete coverage)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/systems/conport-kg-ui/research/color-theory.md",
+      "hits": 6,
+      "samples": [
+        [
+          440,
+          "- Partial coverage: **nord13** (#ebcb8b - yellow)"
+        ],
+        [
+          529,
+          "- Partial coverage: **Yellow** (#f1fa8c)"
+        ],
+        [
+          576,
+          "**Palette Structure (Partial - from documentation):**"
+        ],
+        [
+          602,
+          "**Conceptual Recommendations (pending full palette):**"
+        ],
+        [
+          833,
+          "- **Status**: Incomplete hex code mapping"
+        ],
+        [
+          997,
+          "**Next Steps**: Implement Phase 1 (Core ADHD Color System), validate with ADHD user testing, iterate based on longitudinal data, and fill research gaps identified in Section 10."
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY10_MASTER_INDEX.md",
+      "hits": 6,
+      "samples": [
+        [
+          168,
+          "| **1** | Drill-Down Screens | ~400 | 4-5h | \ud83d\udfe1 Not started | dopemux_dashboard.py |"
+        ],
+        [
+          174,
+          "| **2** | Context Menu System | ~200 | 2-3h | \ud83d\udfe1 Not started | dopemux_dashboard.py |"
+        ],
+        [
+          178,
+          "| **3** | Search System | ~150 | 2-3h | \ud83d\udfe1 Not started | dopemux_dashboard.py |"
+        ],
+        [
+          181,
+          "| **4** | Production Hardening | ~200 | 2-3h | \ud83d\udfe1 Not started | dopemux_dashboard.py |"
+        ],
+        [
+          185,
+          "| **5** | Testing | ~300 | 2h | \ud83d\udfe1 Not started | tests/ |"
+        ],
+        [
+          596,
+          "- [ ] Case-insensitive, partial matching works"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/component-1-audit-summary.md",
+      "hits": 6,
+      "samples": [
+        [
+          19,
+          "**Total Duration**: 190 minutes (planned: 240) - **21% ahead of schedule**"
+        ],
+        [
+          182,
+          "| Leantime PM | 8080 | \u2705 Critical | \ud83d\udfe1 Available | Task 1.4 | docker-compose exists, not started |"
+        ],
+        [
+          261,
+          "- ConPort references: 127 (well-planned integration)"
+        ],
+        [
+          344,
+          "**Component 1 Planned**: 240 minutes (4 hours)"
+        ],
+        [
+          611,
+          "- Planned: 4 hours (240 minutes)"
+        ],
+        [
+          649,
+          "**Projected Completion**: 18 hours (vs 20 planned) if pace continues"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/conport-event-schema-design.md",
+      "hits": 6,
+      "samples": [
+        [
+          82,
+          "Task status changes (PENDING \u2192 IN_PROGRESS \u2192 DONE)"
+        ],
+        [
+          222,
+          "status: TaskStatus                # PENDING, IN_PROGRESS, COMPLETED, BLOCKED, etc."
+        ],
+        [
+          255,
+          "\"status\": str,                    # \"TODO\" | \"IN_PROGRESS\" | \"DONE\" | \"BLOCKED\""
+        ],
+        [
+          340,
+          "\"status\": status_mapping.get(task.status, \"TODO\"),"
+        ],
+        [
+          358,
+          "- `status` MUST be one of: TODO, IN_PROGRESS, DONE, BLOCKED"
+        ],
+        [
+          433,
+          "status=status_mapping.get(progress[\"status\"], TaskStatus.PENDING),"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/completed-projects/COMPACT-DASHBOARD-COMPLETE.md",
+      "hits": 6,
+      "samples": [
+        [
+          34,
+          "\u2502 \u2713 \ud83d\udd04 1 in progress \ud83d\udcdd 1 todo \u2022 ADHD Dashboard completion             \u2502"
+        ],
+        [
+          52,
+          "- Todo count (\ud83d\udcdd)"
+        ],
+        [
+          147,
+          "- Todo items"
+        ],
+        [
+          152,
+          "- `GET /api/tasks?status=in_progress,todo`"
+        ],
+        [
+          170,
+          "- Pending sync count"
+        ],
+        [
+          312,
+          "params={\"status\": \"in_progress,todo\", \"limit\": 10},"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/conport-kg-analysis-2025-10-16.md",
+      "hits": 6,
+      "samples": [
+        [
+          31,
+          "- **ADHD Features**: 5/10 (\u2705 excellent design, \u26a0\ufe0f incomplete execution)"
+        ],
+        [
+          166,
+          "- `orchestrator.py:127` - \"TODO: Publish to DopeconBridge\""
+        ],
+        [
+          167,
+          "- `orchestrator.py:211` - \"TODO: Update Serena sidebar\""
+        ],
+        [
+          168,
+          "- `orchestrator.py:254` - \"TODO: Cache for Leantime\""
+        ],
+        [
+          453,
+          "| **Event automation** | \u2705 Excellent | \u26a0\ufe0f Partial | \u274c No bus wiring | \u274c No |"
+        ],
+        [
+          455,
+          "| **Cognitive load tracking** | \u2705 Excellent | \u2705 Complete | \u26a0\ufe0f Manual only | \u26a0\ufe0f Partial |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/gpt-researcher-review.md",
+      "hits": 6,
+      "samples": [
+        [
+          17,
+          "**Status**: \u2705 Production-ready with minor enhancements pending"
+        ],
+        [
+          107,
+          "**The One TODO** (`adapters/conport_adapter.py:339`):"
+        ],
+        [
+          136,
+          "- ConPort integration partial (planning phase stub)"
+        ],
+        [
+          156,
+          "- Status: Adapter exists, integration partial"
+        ],
+        [
+          169,
+          "- Planning phase integration: TODO (1 instance)"
+        ],
+        [
+          206,
+          "**Reality**: 1 TODO in production code (low concern)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/reports/ACCEPTANCE_CHECKLIST.md",
+      "hits": 6,
+      "samples": [
+        [
+          17,
+          "**Status**: Implementation Complete, Pending Validation"
+        ],
+        [
+          179,
+          "- [x] Display next steps on success/failure"
+        ],
+        [
+          217,
+          "**Validation Status**: \u23f3 Pending first run (after port mismatch fix)"
+        ],
+        [
+          228,
+          "**Validation Status**: \u23f3 Pending first run"
+        ],
+        [
+          239,
+          "**Validation Status**: \u23f3 Pending failure scenario"
+        ],
+        [
+          346,
+          "- [ ] Next steps are clear from script output"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_SUMMARY_WEEK1_DAY1.md",
+      "hits": 6,
+      "samples": [
+        [
+          63,
+          "- \u2705 Helpful error messages with next steps"
+        ],
+        [
+          70,
+          "- 10 major test scenarios planned"
+        ],
+        [
+          88,
+          "- **Priority 2 (Packages):** 0% (not started)"
+        ],
+        [
+          89,
+          "- **Priority 3 (First-Run):** 0% (not started)"
+        ],
+        [
+          121,
+          "- \u2705 Clear error messages with next steps"
+        ],
+        [
+          201,
+          "- **Time estimation:** Took 4 hours, planned for 3 (still good!)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/dddpg/2025-session-complete.md",
+      "hits": 6,
+      "samples": [
+        [
+          60,
+          "- Identified next steps (clear & actionable)"
+        ],
+        [
+          111,
+          "- Planned: 3.5 hours"
+        ],
+        [
+          164,
+          "- Semantic search ready (embeddings planned)"
+        ],
+        [
+          221,
+          "- \u2705 Week 4 Days 3-5 planned"
+        ],
+        [
+          225,
+          "- \u2705 Risk mitigation planned"
+        ],
+        [
+          297,
+          "**Week 4 Day 1 proved the velocity** - 3.5x faster than planned while maintaining 100% test coverage and thorough documentation."
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/dddpg/executive-summary.md",
+      "hits": 6,
+      "samples": [
+        [
+          48,
+          "- **Delivered in 1 hour** (vs 3.5 hours planned = **3.5x efficiency!**)"
+        ],
+        [
+          128,
+          "- **Day 1 Planned**: 3.5 hours"
+        ],
+        [
+          152,
+          "**Days 3-4**: Planned"
+        ],
+        [
+          157,
+          "**Day 5**: Planned"
+        ],
+        [
+          301,
+          "- Day 1: 3.5x faster than planned"
+        ],
+        [
+          337,
+          "**Next Step**:"
+        ]
+      ]
+    },
+    {
+      "file": "docs/90-adr/ADR-207-SESSION-SUMMARY.md",
+      "hits": 5,
+      "samples": [
+        [
+          11,
+          "status: proposed"
+        ],
+        [
+          231,
+          "**Status**: \u2705 Fully planned (20 tasks ready)"
+        ],
+        [
+          235,
+          "**Status**: \u23f3 Planned in ADR-207"
+        ],
+        [
+          240,
+          "**Status**: \u23f3 Planned in ADR-207"
+        ],
+        [
+          523,
+          "- \u23f3 ConPort task import pending (next session)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/05-audit-reports/architecture-audit-2025-10-16.md",
+      "hits": 5,
+      "samples": [
+        [
+          27,
+          "- **Implementation**: 5/10 (\u26a0\ufe0f Partial - cognitive plane works, coordination disconnected)"
+        ],
+        [
+          194,
+          "**Severity**: MEDIUM (automation layer incomplete)"
+        ],
+        [
+          268,
+          "| ConPort | Cognitive | \u2705 Yes (decisions) | \u274c Not wired | \u26a0\ufe0f Partial |"
+        ],
+        [
+          287,
+          "- Implementation: Partial (5/10) - cognitive plane works, coordination disconnected"
+        ],
+        [
+          321,
+          "**Key Finding**: Design excellent, integration incomplete"
+        ]
+      ]
+    },
+    {
+      "file": "docs/05-audit-reports/phase3-detailed-analysis.md",
+      "hits": 5,
+      "samples": [
+        [
+          23,
+          "This detailed Phase 3 analysis examines documented features vs implementation across components, using full file contents for precision (e.g., line-specific code examples). Feature completeness averages 80%, with strong API layers but gaps in monitoring/UI. Integration reliability is 75%, with robust ConPort/Redis but incomplete events. End-to-end workflows are 70% functional, blocked by dashboard absence. ADHD effectiveness is 85%, aligning with clinical recommendations (e.g., 25-min sessions from NIH attention studies, progressive disclosure from Sweller's theory to reduce cognitive load)."
+        ],
+        [
+          102,
+          "- **Completeness**: 65%. Logging works, but triggers incomplete (no auto-similarity MATCH)."
+        ],
+        [
+          139,
+          "- **Completeness**: 95%. Full pipeline, but minor formatting (pending restart)."
+        ],
+        [
+          184,
+          "**Feature Completeness**: 80% (ADHD 75%, ConPort 65%, Dope-Context 95%, Serena 80%). APIs/optimizations strong, but monitors/events incomplete."
+        ],
+        [
+          189,
+          "**Key Gaps**: Dashboard missing (ADHD), events incomplete (ConPort), background services empty (ADHD/ConPort). Integration strong via events/Redis, but reliability medium."
+        ]
+      ]
+    },
+    {
+      "file": "docs/05-audit-reports/PHASE-1-COMPLETE.md",
+      "hits": 5,
+      "samples": [
+        [
+          15,
+          "**Planned Duration**: 2 hours"
+        ],
+        [
+          108,
+          "**Gaps**: Service API docs vary, integration guides incomplete"
+        ],
+        [
+          197,
+          "| Metric | Planned | Actual | Variance |"
+        ],
+        [
+          313,
+          "**Time**: 1.5 hours (25% faster than planned)"
+        ],
+        [
+          316,
+          "**Ready**: Phase 2 - Automated Security & Quality Scan (4 hours planned)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY5_DEEP_RESEARCH.md",
+      "hits": 5,
+      "samples": [
+        [
+          113,
+          "- History data (not yet available - TODO)"
+        ],
+        [
+          136,
+          "GET  /api/v1/tasks?status=pending&limit=25"
+        ],
+        [
+          918,
+          "for status in [\"pending\", \"in_progress\", \"completed\"]:"
+        ],
+        [
+          1097,
+          "}.get(task.get(\"status\", \"pending\"), \"\u2753\")"
+        ],
+        [
+          1150,
+          "f\"  {i+1}. [{subtask.get('status', 'pending')}] {subtask['title']}\""
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/phase-1d-documentation-inventory.md",
+      "hits": 5,
+      "samples": [
+        [
+          138,
+          "- \u26a0\ufe0f Implementation partial (bridge disconnected)"
+        ],
+        [
+          147,
+          "- \u26a0\ufe0f Partial adoption (Task-Orchestrator yes, others TBD)"
+        ],
+        [
+          251,
+          "- Integration guides incomplete"
+        ],
+        [
+          266,
+          "**Time**: ~10 minutes (vs 30 min planned - 66% faster!)"
+        ],
+        [
+          273,
+          "| Phase | Planned | Actual | Saved | Method |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/phase-1b-service-catalog.md",
+      "hits": 5,
+      "samples": [
+        [
+          32,
+          "| 8 | ml-risk-assessment | TBD | Python | - | ? |"
+        ],
+        [
+          52,
+          "- DopeconBridge connection planned (Day 4)"
+        ],
+        [
+          252,
+          "- (ML Risk Assessment - TBD)"
+        ],
+        [
+          318,
+          "- ADHD Engine (planned integration)"
+        ],
+        [
+          321,
+          "**Status**: Event bus infrastructure exists, partial adoption"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/reports/G35_FINAL_SUMMARY.md",
+      "hits": 5,
+      "samples": [
+        [
+          172,
+          "- \u23f3 Full stack test pending (blocked by port mismatch)"
+        ],
+        [
+          181,
+          "**Status**: \u23f3 **Pending** (blocked by conport port fix)"
+        ],
+        [
+          186,
+          "**Status**: \u23f3 **Pending** (blocked by conport port fix)"
+        ],
+        [
+          244,
+          "- [ ] **Validation**: Full stack test (pending port fix)"
+        ],
+        [
+          290,
+          "- Actionable next steps \u2705 (displayed after gate)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "hits": 5,
+      "samples": [
+        [
+          170,
+          "**Status**: 5 synergies identified (2 implemented, 2 designed, 1 planned)"
+        ],
+        [
+          176,
+          "- **Status**: Design complete, implementation pending"
+        ],
+        [
+          184,
+          "- **Status**: Design complete, implementation pending"
+        ],
+        [
+          192,
+          "- **Status**: Planned for Phase 2"
+        ],
+        [
+          347,
+          "| Unified Client | TBD | TBD | \u23f3 Planned |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/DASHBOARD_DAY10_QUICK_REFERENCE.md",
+      "hits": 5,
+      "samples": [
+        [
+          49,
+          "| **1** | Drill-Down Screens | ~400 | 4-5h | \ud83d\udfe1 TODO |"
+        ],
+        [
+          50,
+          "| **2** | Context Menus | ~200 | 2-3h | \ud83d\udfe1 TODO |"
+        ],
+        [
+          51,
+          "| **3** | Search System | ~150 | 2-3h | \ud83d\udfe1 TODO |"
+        ],
+        [
+          52,
+          "| **4** | Hardening | ~200 | 2-3h | \ud83d\udfe1 TODO |"
+        ],
+        [
+          53,
+          "| **5** | Testing | ~300 | 2h | \ud83d\udfe1 TODO |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/session-notes/2025-10/TODAY-2025-10-16-SUMMARY.md",
+      "hits": 5,
+      "samples": [
+        [
+          19,
+          "**Efficiency**: 600% faster than planned on IP-001"
+        ],
+        [
+          73,
+          "**Planned**: 7 days (14 focus blocks)"
+        ],
+        [
+          119,
+          "**Planned**: 1 day"
+        ],
+        [
+          148,
+          "- \ud83d\udfe1 ConPort Search: Architecture ready (data integration pending)"
+        ],
+        [
+          269,
+          "**Remaining Work**: ~22-32 days at planned pace, or ~4-5 days at today's pace!"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/agents/week8-complete.md",
+      "hits": 5,
+      "samples": [
+        [
+          292,
+          "**Planned**: 80% code reuse from Zen listmodels"
+        ],
+        [
+          408,
+          "**Features** (planned):"
+        ],
+        [
+          493,
+          "**Planned**: 5 days (10 focus blocks)"
+        ],
+        [
+          495,
+          "**Efficiency**: ~16x faster than planned!"
+        ],
+        [
+          568,
+          "**Efficiency**: 16x faster than planned"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/dddpg/modernization-analysis-2025.md",
+      "hits": 5,
+      "samples": [
+        [
+          17,
+          "**Status**: Week 4 Ready - Foundation Solid, Day 2 Implementation Pending"
+        ],
+        [
+          34,
+          "- **Week 4 Day 1**: Completed in 1 hour (vs 3.5 hours planned - 3.5x efficiency!)"
+        ],
+        [
+          42,
+          "- \u23f3 **Day 2 features pending implementation** (~95 minutes)"
+        ],
+        [
+          269,
+          "- **Planned**: 3.5 hours"
+        ],
+        [
+          568,
+          "- `agent.suggested` - Create draft decision"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/dddpg/2025-comprehensive-analysis-and-plan.md",
+      "hits": 5,
+      "samples": [
+        [
+          165,
+          "- Planned: 3.5 hours"
+        ],
+        [
+          186,
+          "- [ ] **Single entry point** (START_HERE is good, but incomplete)"
+        ],
+        [
+          231,
+          "**Strategic Value**: 60-80% productivity increase for ADHD developers (estimated, pending user studies)."
+        ],
+        [
+          400,
+          "- Graceful degradation (partial results OK)"
+        ],
+        [
+          597,
+          "status=DecisionStatus.DRAFT,"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/dddpg/analysis-complete.md",
+      "hits": 5,
+      "samples": [
+        [
+          53,
+          "- Planned: 3.5 hours"
+        ],
+        [
+          65,
+          "- **Planning**: Helps plan next steps"
+        ],
+        [
+          109,
+          "- \u2705 Tests planned"
+        ],
+        [
+          144,
+          "- Next steps clear"
+        ],
+        [
+          445,
+          "- **Pending Code**: ~400 lines (Day 2)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/serena/v2/F7_COMPLETION_SUMMARY.md",
+      "hits": 5,
+      "samples": [
+        [
+          148,
+          "**Status**: Designed, not yet implemented (TODO comments in code)"
+        ],
+        [
+          168,
+          "- **Level 3 trends**: Shows \"no data\" message (ConPort pending) \u2705"
+        ],
+        [
+          198,
+          "- **Status**: Schema designed, integration pending"
+        ],
+        [
+          231,
+          "F8 was planned as final Phase 2 feature but may be superseded by F7's comprehensive dashboard. Consider:"
+        ],
+        [
+          269,
+          "- Future: ConPort MCP client (already planned)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/02-how-to/multi-instance-workflow.md",
+      "hits": 4,
+      "samples": [
+        [
+          57,
+          "- PLANNED tasks (only visible in owning instance)"
+        ],
+        [
+          296,
+          "| PLANNED     | Current     | Only this instance            |"
+        ],
+        [
+          546,
+          "- Planned for future enhancement"
+        ],
+        [
+          627,
+          "**Next Steps:**"
+        ]
+      ]
+    },
+    {
+      "file": "docs/90-adr/adr-206-code-audit-results-2025-10-16.md",
+      "hits": 4,
+      "samples": [
+        [
+          12,
+          "status: proposed"
+        ],
+        [
+          75,
+          "- Impact: Architecture violation explained (services bypass incomplete bridge)"
+        ],
+        [
+          105,
+          "**Incomplete Work**:"
+        ],
+        [
+          275,
+          "**Next Steps**: Deploy with security fixes, schedule Week 7 integration work"
+        ]
+      ]
+    },
+    {
+      "file": "docs/90-adr/ADR-202-serena-v2-production-validation.md",
+      "hits": 4,
+      "samples": [
+        [
+          12,
+          "status: proposed"
+        ],
+        [
+          66,
+          "- **TODO count**: 0 (vs ConPort orchestrator's all-TODOs)"
+        ],
+        [
+          101,
+          "- ConPort: Excellent design, incomplete execution"
+        ],
+        [
+          177,
+          "**TODO Scan**: Confirmed no stubs"
+        ]
+      ]
+    },
+    {
+      "file": "docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md",
+      "hits": 4,
+      "samples": [
+        [
+          48,
+          "**Architecture** (Current: SQLite, Planned: PostgreSQL AGE):"
+        ],
+        [
+          106,
+          "- **Migration**: PostgreSQL AGE planned (Decision #100, #113)"
+        ],
+        [
+          151,
+          "- Adaptive learning (suggests next steps based on patterns)"
+        ],
+        [
+          428,
+          "- PostgreSQL AGE migration planned (Decisions #100, #113)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/04-explanation/architecture/multi-instance-implementation.md",
+      "hits": 4,
+      "samples": [
+        [
+          190,
+          "- Status-based routing (IN_PROGRESS/PLANNED isolated, others shared)"
+        ],
+        [
+          390,
+          "- Planned for future enhancement"
+        ],
+        [
+          536,
+          "- Planned: 4-6 hours"
+        ],
+        [
+          558,
+          "**Next Steps**:"
+        ]
+      ]
+    },
+    {
+      "file": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "hits": 4,
+      "samples": [
+        [
+          1486,
+          "- Isolated statuses: IN_PROGRESS/PLANNED \u2014 visible only within a worktree\u2019s instance."
+        ],
+        [
+          1493,
+          "- Auto fork (enabled): first progress read copies PLANNED/IN_PROGRESS items from shared into the new instance."
+        ],
+        [
+          1500,
+          "- Copies PLANNED/IN_PROGRESS progress from source (shared or instance) to the target instance."
+        ],
+        [
+          1508,
+          "- Promotes all instance-local PLANNED/IN_PROGRESS entries to shared for the current instance."
+        ]
+      ]
+    },
+    {
+      "file": "docs/04-explanation/archive/session-notes/2025-10/SESSION_2025-10-17_CONPORT_QUICK_WINS.md",
+      "hits": 4,
+      "samples": [
+        [
+          138,
+          "- \u2705 `decisions review` - Lists 14 pending reviews (30+ days old)"
+        ],
+        [
+          141,
+          "- \u2705 `decisions show` - Partial ID matching, rich panel display"
+        ],
+        [
+          271,
+          "## \ud83d\udd2e Next Steps (Phase 2-5)"
+        ],
+        [
+          477,
+          "- Partial UUID matching"
+        ]
+      ]
+    },
+    {
+      "file": "docs/03-reference/systems/conport/conport-kg-status.md",
+      "hits": 4,
+      "samples": [
+        [
+          168,
+          "**Planned but not built**:"
+        ],
+        [
+          176,
+          "**Planned but not built**:"
+        ],
+        [
+          184,
+          "**Planned but not built**:"
+        ],
+        [
+          422,
+          "**Technical Debt**: Low (well-architected, just incomplete)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/deployment-infrastructure-audit.md",
+      "hits": 4,
+      "samples": [
+        [
+          49,
+          "| **Task-Orchestrator** | \u274c **MISSING** | \u274c **MISSING** | TBD | **Not deployed** |"
+        ],
+        [
+          221,
+          "- ADHD summary: Quick feedback, clear next steps"
+        ],
+        [
+          236,
+          "- Clear next steps guidance"
+        ],
+        [
+          739,
+          "**Completion Time**: 35 minutes (vs 45 planned) - 22% ahead of schedule"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY4_COMPLETE.md",
+      "hits": 4,
+      "samples": [
+        [
+          131,
+          "- Collapsible sections planned for v2"
+        ],
+        [
+          142,
+          "- Breadcrumb support planned"
+        ],
+        [
+          186,
+          "**TODO for Day 5:**"
+        ],
+        [
+          237,
+          "- Context is preserved (breadcrumb for nested views planned)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/completed-projects/CONPORT_PRODUCTION_DEPLOYMENT_COMPLETE.md",
+      "hits": 4,
+      "samples": [
+        [
+          18,
+          "**Total Path C**: 3.25 hours (planned: 24 hours) \ud83d\ude80"
+        ],
+        [
+          154,
+          "| Day | Task | Planned | Actual | Status |"
+        ],
+        [
+          161,
+          "**Efficiency**: Built in 13.5% of planned time (7.4x faster!)"
+        ],
+        [
+          295,
+          "**Time**: 3.25 hours (planned: 24 hours)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/phase-2a-security-scan.md",
+      "hits": 4,
+      "samples": [
+        [
+          23,
+          "**Planned**: Use Dope-Context semantic search for vulnerability patterns"
+        ],
+        [
+          144,
+          "**Risk Score**: 5/10 (pending verification of data source)"
+        ],
+        [
+          225,
+          "*Most subprocess usage appears safe (MCP wrappers), full audit pending"
+        ],
+        [
+          286,
+          "**Time**: ~1 hour (faster than 2h planned due to focused grep)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/claude-sessions/SESSION-COMPLETE-HANDOFF.md",
+      "hits": 4,
+      "samples": [
+        [
+          77,
+          "- Impact: Services use direct SQLite because incomplete bridge < working direct access"
+        ],
+        [
+          86,
+          "**3. TODO Count Misleading** \ud83d\udcdd"
+        ],
+        [
+          106,
+          "| ConPort KG | \u26a0\ufe0f Partial | 8/10 | 8/10 | Bridge TODOs |"
+        ],
+        [
+          344,
+          "**Next Steps**: Your choice (deploy, continue audit, or Week 7 integration)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/component-implementations/COMPONENT_6_ADHD_INTELLIGENCE.md",
+      "hits": 4,
+      "samples": [
+        [
+          456,
+          "**Phase 2-4 (Pending)**:"
+        ],
+        [
+          474,
+          "- **Observability Setup**: `services/task-orchestrator/observability/README.md` (TBD)"
+        ],
+        [
+          475,
+          "- **Intelligence Features**: `services/task-orchestrator/intelligence/README.md` (TBD)"
+        ],
+        [
+          501,
+          "**Status**: \u2705 **Phase 1 Complete** | \u23f3 Phases 2-4 Pending"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/component-implementations/COMPONENT_3_INTEGRATION_BRIDGE_WIRING.md",
+      "hits": 4,
+      "samples": [
+        [
+          300,
+          "- Task 3.1 (Configuration review): 30 min (planned: 60 min) \ud83c\udfaf 50% under"
+        ],
+        [
+          301,
+          "- Task 3.2 (Event subscription): 45 min (planned: 75 min) \ud83c\udfaf 40% under"
+        ],
+        [
+          304,
+          "- **Total**: 2 hours (planned: 4 hours) \ud83c\udfaf **50% under estimate**"
+        ],
+        [
+          326,
+          "**Status**: \u2705 Production Ready (pending Component 4 ConPort MCP wiring)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/component-implementations/COMPONENT_5_CROSS_PLANE_QUERIES.md",
+      "hits": 4,
+      "samples": [
+        [
+          43,
+          "- `status`: Filter by status (TODO, IN_PROGRESS, BLOCKED, DONE)"
+        ],
+        [
+          221,
+          "- `status`: TODO, IN_PROGRESS, BLOCKED, DONE"
+        ],
+        [
+          409,
+          "- **Commit**: TBD"
+        ],
+        [
+          417,
+          "**Component 5 Status**: \u2705 Infrastructure Complete | \u23f3 Wiring Pending"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/dddpg/week4-day1-complete.md",
+      "hits": 4,
+      "samples": [
+        [
+          16,
+          "**Duration**: ~1 hour (vs. 3.5 hours planned = 3.5x faster!)"
+        ],
+        [
+          264,
+          "**Estimated Time**: 3.5 hours planned \u2192 ~1 hour likely (based on Day 1 efficiency)"
+        ],
+        [
+          317,
+          "**Planned**: 3.5 hours"
+        ],
+        [
+          366,
+          "**Time**: 1 hour (3.5x faster than planned)"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/dddpg/2025-modernization-roadmap.md",
+      "hits": 4,
+      "samples": [
+        [
+          640,
+          "| **Week 4 Days 3-4** | Semantic Search | 3h | \u23f3 Pending |"
+        ],
+        [
+          641,
+          "| **Week 4 Day 5** | EventBus Integration | 2h | \u23f3 Pending |"
+        ],
+        [
+          642,
+          "| **Week 5 Days 1-2** | Storage Migration | 4h | \u23f3 Pending |"
+        ],
+        [
+          643,
+          "| **Week 5 Days 3-5** | Agents & Dashboard | 6h | \u23f3 Pending |"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/sessions/serena/v2/F002_COMPLETION_SUMMARY.md",
+      "hits": 4,
+      "samples": [
+        [
+          468,
+          "- \u23f3 ConPort integration test (pending migration)"
+        ],
+        [
+          469,
+          "- \u23f3 Multi-session test (pending 2+ instances)"
+        ],
+        [
+          475,
+          "- \u23f3 User guide (pending)"
+        ],
+        [
+          590,
+          "**Integration**: \u23f3 Pending ConPort migration"
+        ]
+      ]
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_ZEN_INTEGRATION_PLAN.md",
+      "hits": 4,
+      "samples": [
+        [
+          227,
+          "### Phase 5: Workflow & Agent Integration \ud83d\udccb (PLANNED)"
+        ],
+        [
+          289,
+          "### Phase 6: Testing Infrastructure \ud83e\uddea (PLANNED)"
+        ],
+        [
+          309,
+          "### Phase 7: Operational Integration \ud83d\ude80 (PLANNED)"
+        ],
+        [
+          331,
+          "### Phase 8: Migration Paths \ud83d\udd04 (PLANNED)"
+        ]
+      ]
+    }
+  ],
+  "total_files": 322
+}

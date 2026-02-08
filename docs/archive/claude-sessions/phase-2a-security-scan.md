@@ -1,10 +1,14 @@
 ---
 id: phase-2a-security-scan
 title: Phase 2A Security Scan
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Phase 2A Security Scan (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Phase 2A: Semantic Vulnerability Detection
 **Date**: 2025-10-16
@@ -236,11 +240,11 @@ self.process = subprocess.Popen(
 
 ### Week 7 (With Integration Work)
 
-3. **Audit Subprocess Calls** (54 instances, 2h)
+1. **Audit Subprocess Calls** (54 instances, 2h)
    - Verify no user input in commands
    - Ensure all use list args (not shell=True)
 
-4. **Verify SQL Injection** (2 instances, 30 min)
+2. **Verify SQL Injection** (2 instances, 30 min)
    - Trace `graph_name` data source
    - Add validation if from user input
 

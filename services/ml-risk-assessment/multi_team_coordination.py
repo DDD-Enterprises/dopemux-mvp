@@ -103,6 +103,7 @@ class MultiTeamCoordinationEngine:
             "cognitive_load_balanced": 0,
             "teams_coordinated": 0
         }
+        self._monitor_task: Optional[asyncio.Task] = None
 
     async def initialize(self) -> None:
         """Initialize the coordination engine."""
@@ -253,18 +254,152 @@ class MultiTeamCoordinationEngine:
 
     async def _load_team_profiles(self) -> None:
         """Load team profiles from ConPort or configuration."""
-        # Implementation would load team data
-        pass
+        loaded_profiles: List[TeamProfile] = []
+
+        if self.conport:
+            for method_name in ("get_team_profiles", "list_team_profiles"):
+                if not hasattr(self.conport, method_name):
+                    continue
+                try:
+                    result = getattr(self.conport, method_name)()
+                    if asyncio.iscoroutine(result):
+                        result = await result
+                    if not result:
+                        continue
+                    for raw in result:
+                        try:
+                            team_type = TeamType(str(raw.get("team_type", TeamType.DEVELOPMENT.value)).lower())
+                        except ValueError:
+                            team_type = TeamType.DEVELOPMENT
+
+                        loaded_profiles.append(
+                            TeamProfile(
+                                team_id=str(raw.get("team_id", f"team_{uuid.uuid4().hex[:6]}")),
+                                team_type=team_type,
+                                capacity=float(raw.get("capacity", 0.7)),
+                                cognitive_load=float(raw.get("cognitive_load", 0.4)),
+                                peak_hours=list(raw.get("peak_hours", ["09:00", "14:00"])),
+                                communication_preference=str(raw.get("communication_preference", "mixed")),
+                                context_switch_cost=float(raw.get("context_switch_cost", 0.2)),
+                                max_parallel_projects=int(raw.get("max_parallel_projects", 3)),
+                                adhd_members=int(raw.get("adhd_members", 0)),
+                                current_projects=set(raw.get("current_projects", [])),
+                            )
+                        )
+                    if loaded_profiles:
+                        break
+                except Exception as exc:
+                    logger.debug("ConPort %s failed while loading team profiles: %s", method_name, exc)
+
+        if not loaded_profiles:
+            loaded_profiles = [
+                TeamProfile(
+                    team_id="engineering",
+                    team_type=TeamType.DEVELOPMENT,
+                    capacity=0.8,
+                    cognitive_load=0.4,
+                    peak_hours=["09:00", "14:00"],
+                    communication_preference="async",
+                    context_switch_cost=0.2,
+                    max_parallel_projects=3,
+                    adhd_members=1,
+                    current_projects=set(),
+                ),
+                TeamProfile(
+                    team_id="qa",
+                    team_type=TeamType.QA,
+                    capacity=0.7,
+                    cognitive_load=0.3,
+                    peak_hours=["10:00", "15:00"],
+                    communication_preference="mixed",
+                    context_switch_cost=0.15,
+                    max_parallel_projects=2,
+                    adhd_members=0,
+                    current_projects=set(),
+                ),
+            ]
+
+        for team in loaded_profiles:
+            self.teams[team.team_id] = team
 
     async def _restore_coordination_state(self) -> None:
         """Restore coordination state from persistent storage."""
-        # Implementation would restore previous state
-        pass
+        if not self.conport:
+            return
+
+        state = None
+        for method_name in ("get_coordination_state", "get_multi_team_coordination_state"):
+            if not hasattr(self.conport, method_name):
+                continue
+            try:
+                result = getattr(self.conport, method_name)()
+                if asyncio.iscoroutine(result):
+                    result = await result
+                if result:
+                    state = result
+                    break
+            except Exception as exc:
+                logger.debug("Failed to restore state via %s: %s", method_name, exc)
+
+        if not state:
+            return
+
+        self.coordination_queue = list(state.get("coordination_queue", []))
+        for item in state.get("dependencies", []):
+            dependency_id = str(item.get("dependency_id") or item.get("id", f"dep_{uuid.uuid4().hex[:8]}"))
+            priority_raw = str(item.get("priority", CoordinationPriority.MEDIUM.value)).lower()
+            try:
+                priority = CoordinationPriority(priority_raw)
+            except ValueError:
+                priority = CoordinationPriority.MEDIUM
+
+            deadline_raw = item.get("deadline")
+            deadline = None
+            if isinstance(deadline_raw, str):
+                try:
+                    deadline = datetime.fromisoformat(deadline_raw)
+                except ValueError:
+                    deadline = None
+            elif isinstance(deadline_raw, datetime):
+                deadline = deadline_raw
+
+            self.dependencies[dependency_id] = CrossTeamDependency(
+                dependency_id=dependency_id,
+                source_team=str(item.get("source_team", "unknown")),
+                target_team=str(item.get("target_team", "unknown")),
+                task_id=str(item.get("task_id", "unknown")),
+                description=str(item.get("description", "")),
+                priority=priority,
+                estimated_effort=float(item.get("estimated_effort", 1.0)),
+                deadline=deadline,
+                blocking_tasks=list(item.get("blocking_tasks", [])),
+                communication_history=list(item.get("communication_history", [])),
+                cognitive_impact=float(item.get("cognitive_impact", 0.1)),
+                created_at=datetime.now(),
+                status=str(item.get("status", "pending")),
+            )
 
     async def _start_coordination_monitor(self) -> None:
         """Start background monitoring for coordination opportunities."""
-        # Implementation would start monitoring loops
-        pass
+        if self._monitor_task and not self._monitor_task.done():
+            return
+        self._monitor_task = asyncio.create_task(self._coordination_monitor_loop())
+
+    async def _coordination_monitor_loop(self) -> None:
+        """Background loop that incrementally resolves detected conflicts."""
+        try:
+            while True:
+                await asyncio.sleep(60)
+                conflicts = await self._detect_coordination_conflicts()
+                if not conflicts:
+                    continue
+                for conflict in conflicts:
+                    await self._resolve_single_conflict(conflict)
+        except asyncio.CancelledError:
+            logger.debug("Coordination monitor loop cancelled")
+            raise
+        except Exception as exc:
+            logger.error("Coordination monitor loop crashed: %s", exc)
 
     async def _calculate_cognitive_impact(
         self, source_team: str, target_team: str,
@@ -284,8 +419,25 @@ class MultiTeamCoordinationEngine:
 
     async def _schedule_coordination(self, dependency: CrossTeamDependency) -> None:
         """Schedule coordination for a dependency."""
-        # Implementation would intelligently schedule coordination
-        pass
+        if dependency.dependency_id not in self.coordination_queue:
+            self.coordination_queue.append(dependency.dependency_id)
+
+        priority_rank = {
+            CoordinationPriority.CRITICAL: 0,
+            CoordinationPriority.HIGH: 1,
+            CoordinationPriority.MEDIUM: 2,
+            CoordinationPriority.LOW: 3,
+            CoordinationPriority.BACKGROUND: 4,
+        }
+
+        def queue_key(dep_id: str) -> Tuple[int, datetime]:
+            dep = self.dependencies.get(dep_id)
+            if not dep:
+                return (999, datetime.max)
+            deadline = dep.deadline or datetime.max
+            return (priority_rank.get(dep.priority, 2), deadline)
+
+        self.coordination_queue.sort(key=queue_key)
 
     async def _analyze_team_workload(self, team_id: str) -> Dict[str, Any]:
         """Analyze current team workload."""
@@ -337,5 +489,40 @@ class MultiTeamCoordinationEngine:
 
     async def _log_team_registration(self, team_profile: TeamProfile) -> None:
         """Log team registration to ConPort."""
-        # Implementation would log to ConPort if available
-        pass
+        if not self.conport:
+            return
+
+        payload = {
+            "team_id": team_profile.team_id,
+            "team_type": team_profile.team_type.value,
+            "capacity": team_profile.capacity,
+            "cognitive_load": team_profile.cognitive_load,
+            "max_parallel_projects": team_profile.max_parallel_projects,
+            "adhd_members": team_profile.adhd_members,
+            "registered_at": datetime.now().isoformat(),
+        }
+
+        for method_name in (
+            "record_team_registration",
+            "upsert_team_profile",
+            "log_coordination_event",
+            "add_observation",
+        ):
+            if not hasattr(self.conport, method_name):
+                continue
+            try:
+                result = getattr(self.conport, method_name)(payload)
+                if asyncio.iscoroutine(result):
+                    await result
+                return
+            except Exception as exc:
+                logger.debug("ConPort %s failed: %s", method_name, exc)
+
+    async def close(self) -> None:
+        """Stop background monitor task."""
+        if self._monitor_task and not self._monitor_task.done():
+            self._monitor_task.cancel()
+            try:
+                await self._monitor_task
+            except asyncio.CancelledError:
+                pass

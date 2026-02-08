@@ -6,6 +6,8 @@ Main entry point for all dopemux commands providing context preservation,
 attention monitoring, and task decomposition for neurodivergent developers.
 """
 
+import aiohttp
+
 import os
 
 import logging
@@ -413,9 +415,8 @@ def _start_minimal_session(
             context=context,
         )
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.error("Minimal Claude launcher failed: %s", e)
+        raise click.ClickException(f"Failed to start Claude Code session: {e}") from e
     if not background:
         console.logger.info("[green]✨ Claude Code is running (minimal mode)\n[/green]")
 
@@ -493,8 +494,8 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
     try:
         workspace_exists = Path.exists(workspace)
         dopemux_exists = Path.exists(dopemux_dir)
-    except TypeError:
-        pass
+    except TypeError as e:
+        logger.debug("Workspace path existence check failed for %s: %s", workspace, e)
 
     if directory and not workspace_exists and not dopemux_exists:
         console.logger.info(f"[red]Directory does not exist: {workspace}[/red]")
@@ -643,6 +644,11 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
     help="Run Claude with a specific role/persona (e.g. quickfix, act, plan, research, all, orchestrator).",
 )
 @click.option(
+    "--profile",
+    "profile_name",
+    help="Apply a specific profile before launch (e.g. developer, full).",
+)
+@click.option(
     "--dry-run",
     is_flag=True,
     help="Preview role/profile effects without launching Claude Code.",
@@ -661,6 +667,7 @@ def start(
     use_alt_routing: bool,
     use_claude_router: bool,
     role: Optional[str],
+    profile_name: Optional[str],
     dry_run: bool,
     **legacy_kwargs,
 ):
@@ -789,9 +796,7 @@ def start(
                     "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.[/yellow]"
                 )
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.debug("LiteLLM health probe failed on port %s: %s", litellm_port, e)
         if not litellm_master_key:
             base_candidate = env_master_key_raw or stored_master_key
             litellm_master_key, regenerated_master_key = ensure_master_key(base_candidate)
@@ -859,14 +864,10 @@ def start(
                 encoding="utf-8",
             )
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            raise click.ClickException(f"Failed to write LiteLLM config: {e}") from e
         if litellm_running:
             console.logger.info(f"[green]✓ LiteLLM proxy already running on port {litellm_port}[/green]")
         else:
-            import subprocess
-
             console.logger.info("[blue]🔄 Starting LiteLLM proxy...[/blue]")
             kill_result = subprocess.run(
                 ["pkill", "-f", "litellm"],
@@ -971,7 +972,8 @@ def start(
     config_manager = ctx.obj["config_manager"]
 
     role_activation = None
-    pending_profile_name: Optional[str] = None
+    explicit_profile_requested = bool(profile_name)
+    pending_profile_name: Optional[str] = profile_name.strip() if profile_name else None
     role_profile = None
     requested_role = role or os.environ.get("DOPEMUX_AGENT_ROLE")
     if requested_role:
@@ -987,7 +989,12 @@ def start(
 
         spec = role_activation.spec
         role_profile = _ensure_role_profile(spec)
-        pending_profile_name = getattr(role_profile, "name", spec.profile_name)
+        if not explicit_profile_requested:
+            pending_profile_name = getattr(role_profile, "name", spec.profile_name)
+        elif role_profile and pending_profile_name != getattr(role_profile, "name", None):
+            console.print(
+                f"[dim]Using explicit profile '{pending_profile_name}' instead of role default '{getattr(role_profile, 'name', spec.profile_name)}'.[/dim]"
+            )
         if role:
             console.print(
                 f"[cyan]🎭 Role activated:[/cyan] {spec.label} "
@@ -1006,8 +1013,6 @@ def start(
                 f"[dim]🎭 Active role:[/dim] {spec.label} "
                 f"[dim]({spec.key})[/dim]"
             )
-    else:
-        pending_profile_name = None
 
     if dry_run:
         console.logger.info("[cyan]Dry run: no tmux or Claude Code processes will be started.[/cyan]")
@@ -1039,7 +1044,11 @@ def start(
             _suggest_server_start(role_activation.missing_required)
 
         if pending_profile_name:
-            profile = role_profile or ProfileManager().get_profile(pending_profile_name)
+            profile_manager = ProfileManager()
+            if role_profile and not explicit_profile_requested:
+                profile = role_profile
+            else:
+                profile = profile_manager.get_profile(pending_profile_name)
             if profile:
                 try:
                     claude_config = ClaudeConfig()
@@ -1080,9 +1089,7 @@ def start(
         else:
             logging.debug("Skipping tmux kill-server (inside tmux: %s)", bool(os.environ.get("TMUX")))
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.debug("tmux kill-server skipped due to error: %s", e)
     cwd_path = Path.cwd()
     project_path = cwd_path
 
@@ -1125,9 +1132,7 @@ def start(
             wire_script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
             check_call([sys.executable, str(wire_script)])
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.debug("ConPort wiring hook failed: %s", e)
     if project_path_real_exists:
         # Worktree Recovery Menu (ADHD-optimized session recovery)
         # Show menu if orphaned worktree sessions exist
@@ -1282,9 +1287,7 @@ def start(
             else:
                 console.logger.info(f"[dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/dim]")
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.debug("Failed applying DOPEMUX_FORCE_INSTANCE_ID override: %s", e)
     # Check if we should use OpenRouter via LiteLLM (for tmux --happy mode)
     if os.getenv("DOPEMUX_USE_OPENROUTER") == "1":
         _configure_openrouter_litellm()
@@ -1314,7 +1317,10 @@ def start(
     active_profile_applied = False
     if pending_profile_name:
         profile_manager = ProfileManager()
-        profile = role_profile or profile_manager.get_profile(pending_profile_name)
+        if role_profile and not explicit_profile_requested:
+            profile = role_profile
+        else:
+            profile = profile_manager.get_profile(pending_profile_name)
         if profile:
             try:
                 claude_config = ClaudeConfig()
@@ -2153,7 +2159,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
 
     if mobile:
         from .mobile.runtime import check_cli_health, list_mobile_panes
-        from .mobile.tmux_utils import TmuxError
+        from .tmux.common import TmuxError
 
         cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
         mobile_cfg = cfg_manager.get_mobile_config()
@@ -2167,8 +2173,6 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         except TmuxError as exc:
             panes = []
             tmux_error = str(exc)
-
-            logger.error(f"Error: {e}")
         mobile_table = Table(title="📱 Mobile Status")
         mobile_table.add_column("Check", style="cyan")
         mobile_table.add_column("Status", style="green")
@@ -5201,7 +5205,12 @@ def profile_auto_status_cmd(ctx):
 def profile_stats_cmd(ctx, days: int):
     """📊 Show profile usage analytics and trends."""
     try:
-        from .profile_analytics import get_stats_sync, display_stats
+        from .profile_analytics import (
+            archive_optimization_suggestions_sync,
+            display_stats,
+            generate_optimization_suggestions,
+            get_stats_sync,
+        )
 
         workspace_id = str(Path.cwd())
 
@@ -5212,24 +5221,64 @@ def profile_stats_cmd(ctx, days: int):
         # Display with visual dashboard
         display_stats(stats, days_back=days)
 
-        # Optimization suggestions (if enough data)
-        if stats.total_switches >= 10:
-            console.logger.info(f"\n[bold]💡 Optimization Suggestions:[/bold]")
+        suggestions = generate_optimization_suggestions(stats)
+        if suggestions:
+            console.logger.info("\n[bold]💡 Optimization Suggestions:[/bold]")
+            for suggestion in suggestions:
+                severity_color = {
+                    "high": "red",
+                    "medium": "yellow",
+                    "low": "cyan",
+                }.get(suggestion.get("severity", "low"), "cyan")
+                console.logger.info(
+                    f"   • [{severity_color}]{suggestion['title']}[/{severity_color}]: "
+                    f"{suggestion['detail']}"
+                )
 
-            # Suggest based on patterns
-            if stats.switch_accuracy < 70:
-                console.logger.info(f"   • [yellow]Low accuracy ({stats.switch_accuracy:.0f}%)[/yellow]: Consider refining auto-detection rules")
+            archived = archive_optimization_suggestions_sync(
+                workspace_id=workspace_id,
+                suggestions=suggestions,
+                stats=stats,
+                days_back=days,
+            )
+            if archived:
+                console.logger.info(
+                    "[dim]✓ Suggestions archived to ConPort for follow-up[/dim]"
+                )
+            else:
+                console.logger.info(
+                    "[yellow]⚠ Could not archive optimization suggestions to ConPort[/yellow]"
+                )
 
-            if stats.auto_switches == 0 and stats.total_switches > 20:
-                console.logger.info(f"   • [cyan]All manual switches[/cyan]: Try 'dopemux profile auto-enable' for suggestions")
+    except Exception as e:
+        console.logger.error(f"[red]Error: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
 
-            if stats.suggestion_declined > stats.suggestion_accepted * 2:
-                console.logger.info(f"   • [yellow]Many declined suggestions[/yellow]: Lower confidence threshold or adjust profile rules")
 
-            # Suggest creating a new profile for common patterns
-            if stats.most_used_profile and stats.usage_by_profile.get(stats.most_used_profile, 0) > stats.total_switches * 0.7:
-                console.logger.info(f"   • [green]Stable workflow detected[/green]: Your '{stats.most_used_profile}' profile is well-matched!")
+@profile.command("analyze-usage")
+@click.option("--days", "-d", type=int, default=90, help="Days of git history to analyze (default: 90)")
+@click.option("--max-commits", type=int, default=500, show_default=True, help="Maximum commits to inspect")
+@click.pass_context
+def profile_analyze_usage_cmd(ctx, days: int, max_commits: int):
+    """🔎 Analyze git usage patterns for profile tuning and init defaults."""
+    try:
+        from .profile_analyzer import GitHistoryAnalyzer
 
+        analyzer = GitHistoryAnalyzer(Path.cwd())
+        analysis = analyzer.analyze(days_back=days, max_commits=max_commits)
+        analyzer.display_analysis(analysis)
+
+        if analysis.total_commits == 0:
+            console.logger.info(
+                "\n[yellow]No recent commits found. Use `dopemux profile init` for default-guided setup.[/yellow]"
+            )
+            return
+
+        console.logger.info("\n[bold]Recommended Next Actions:[/bold]")
+        console.logger.info("   • Generate personalized profile: [white]dopemux profile init[/white]")
+        console.logger.info("   • Apply likely fit: [white]dopemux profile apply developer[/white]")
     except Exception as e:
         console.logger.error(f"[red]Error: {e}[/red]")
         if ctx.obj.get("verbose"):
@@ -5790,44 +5839,45 @@ try:
 
 except ImportError as e:
     # Graceful degradation if dependencies not installed
-    pass  # Commands won't be available but CLI still works
+    logger.debug("Decision commands unavailable: %s", e)
 
 
 # ============================================================================
-# Profile Management Commands (Multi-User Support)
+# Profile Command Compatibility Aliases
 # ============================================================================
 
-@cli.group()
-def profile():
-    """
-    👤 Profile management (multi-project configuration)
-
-    Manage configuration profiles for different project types:
-    - python-ml: ML/AI development with Jupyter
-    - web-dev: Modern web development (React, Next.js, TypeScript)
-    - adhd-default: Universal ADHD-optimized settings
-
-    Profiles control MCP servers, ADHD accommodations, and database strategy.
-    """
-    pass
-
-
-# Import and register profile commands
+# Register supplemental profile-management commands onto the primary profile
+# group declared earlier in this file. This avoids command shadowing caused by
+# redefining the "profile" group multiple times.
 try:
     from .profile_commands import (
-        list_profiles,
         use_profile,
         show_profile,
-        create_profile
+        create_profile,
+        copy_profile,
+        edit_profile,
+        delete_profile,
     )
 
-    profile.add_command(list_profiles, "list")
-    profile.add_command(use_profile, "use")
-    profile.add_command(show_profile, "show")
-    profile.add_command(create_profile, "create")
+    if "create" not in profile.commands:
+        profile.add_command(create_profile, "create")
+    if "copy" not in profile.commands:
+        profile.add_command(copy_profile, "copy")
+    if "edit" not in profile.commands:
+        profile.add_command(edit_profile, "edit")
+    if "delete" not in profile.commands:
+        profile.add_command(delete_profile, "delete")
+    if "apply" not in profile.commands:
+        profile.add_command(use_profile, "apply")
+    if "use" not in profile.commands:
+        profile.add_command(use_profile, "use")
+    if "current" not in profile.commands:
+        profile.add_command(show_profile, "current")
+    if "switch" not in cli.commands:
+        cli.add_command(use_profile, "switch")
 
 except ImportError as e:
-    pass  # Profile commands not available
+    logger.debug("Profile commands unavailable: %s", e)
 
 
 # ============================================================================
@@ -5860,7 +5910,7 @@ try:
     dev.add_command(dev_paths, "paths")
 
 except ImportError as e:
-    pass  # Dev commands not available
+    logger.debug("Dev commands unavailable: %s", e)
 
 
 # Register mobile integration commands
@@ -6463,7 +6513,7 @@ def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_s
 
     except Exception as e:
         console.logger.error(f"[red]❌ Hook command failed: {e}[/red]")
-        if ctx.obj.get("verbose"):
+        if "--debug" in sys.argv:
             raise
         sys.exit(1)
 

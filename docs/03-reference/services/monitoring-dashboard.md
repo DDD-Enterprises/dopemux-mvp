@@ -5,12 +5,15 @@ type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Monitoring Dashboard (reference) for dopemux documentation and developer
+  workflows.
 ---
 # Monitoring Dashboard
 
 **Extracted from**: PHASE1_SERVICES_INTEGRATION_COMPLETED.md
 **Date**: 2026-02-02
-
 
 ## Monitoring & Health Features (from Phase 1)
 

@@ -7,6 +7,7 @@ type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+prelude: Readme (reference) for dopemux documentation and developer workflows.
 ---
 # ADHD Features Reference Documentation
 
@@ -23,11 +24,11 @@ All 11 ADHD accommodation features with detailed technical documentation.
 
 ## Quick Win Features
 
-7. **Overwhelm Circuit Breaker** - 5 signals, 4 severity levels, scaled interventions
-8. **Hyperfocus Protection** - 5 phases, auto-save, notification blocking, crash detection
-9. **End-of-Day Wind Down** - 7-step ritual for session closure
-10. **Weekly Pattern Report** - Friday analysis with insights & recommendations
-11. **Procrastination Detection** - 5 patterns, micro-tasks, gamification
+1. **Overwhelm Circuit Breaker** - 5 signals, 4 severity levels, scaled interventions
+2. **Hyperfocus Protection** - 5 phases, auto-save, notification blocking, crash detection
+3. **End-of-Day Wind Down** - 7-step ritual for session closure
+4. **Weekly Pattern Report** - Friday analysis with insights & recommendations
+5. **Procrastination Detection** - 5 patterns, micro-tasks, gamification
 
 ## Documentation Links
 

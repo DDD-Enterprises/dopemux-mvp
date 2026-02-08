@@ -366,8 +366,6 @@ class SyncPipeline(BasePipeline):
             return True  # Assume new for now
         except Exception as e:
             return True
-
-            logger.error(f"Error: {e}")
     async def _detect_sync_conflicts(self):
         """Detect and handle synchronization conflicts."""
         # Group documents by ID

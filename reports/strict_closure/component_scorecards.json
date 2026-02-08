@@ -1,0 +1,911 @@
+{
+  "generated_at_utc": "2026-02-06T11:24:00.592396+00:00",
+  "generator": "wave0-strict-closure-v4",
+  "weights": {
+    "correctness_and_defect_risk": 20,
+    "business_logic_fitness": 20,
+    "architecture_quality": 15,
+    "integration_and_implicit_automation": 15,
+    "test_quality_and_coverage_relevance": 10,
+    "reliability_and_performance_behavior": 10,
+    "ux_and_workflow_value": 5,
+    "documentation_parity_and_clarity": 5
+  },
+  "components": [
+    {
+      "component": "session_intelligence",
+      "weighted_score": 26.29,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 25.0,
+        "business_logic_fitness": 28.7,
+        "architecture_quality": 20.0,
+        "integration_and_implicit_automation": 37,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 20,
+        "ux_and_workflow_value": 85,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 1,
+        "maturity_score": 0,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "conport_kg_ui",
+      "weighted_score": 26.9,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 25.0,
+        "business_logic_fitness": 26.0,
+        "architecture_quality": 48.0,
+        "integration_and_implicit_automation": 20,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 20,
+        "ux_and_workflow_value": 20,
+        "documentation_parity_and_clarity": 70
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 0,
+        "maturity_score": 1,
+        "has_readme": true,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "taskmaster-mcp-client",
+      "weighted_score": 27.79,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 62,
+        "business_logic_fitness": 20.7,
+        "architecture_quality": 20.0,
+        "integration_and_implicit_automation": 30,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 20,
+        "ux_and_workflow_value": 20,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 1,
+        "maturity_score": 0,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "mcp-client",
+      "weighted_score": 28.34,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 25.0,
+        "business_logic_fitness": 26.7,
+        "architecture_quality": 48.0,
+        "integration_and_implicit_automation": 37,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 35,
+        "ux_and_workflow_value": 20,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 1,
+        "maturity_score": 1,
+        "has_readme": false,
+        "dockerized": true,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "taskmaster",
+      "weighted_score": 29.88,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 25.0,
+        "business_logic_fitness": 29.4,
+        "architecture_quality": 20.0,
+        "integration_and_implicit_automation": 75,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 20,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 2,
+        "maturity_score": 0,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "session-intelligence",
+      "weighted_score": 30.69,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 25.0,
+        "business_logic_fitness": 34.7,
+        "architecture_quality": 48.0,
+        "integration_and_implicit_automation": 27,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 20,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 70
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 1,
+        "maturity_score": 1,
+        "has_readme": true,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "intelligence",
+      "weighted_score": 30.84,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 37.0,
+        "business_logic_fitness": 34.7,
+        "architecture_quality": 28.0,
+        "integration_and_implicit_automation": 27,
+        "test_quality_and_coverage_relevance": 20.0,
+        "reliability_and_performance_behavior": 30,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 25
+      },
+      "signals": {
+        "tests": 3,
+        "test_files": 1,
+        "py_files": 1,
+        "maturity_score": 1,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "slack-integration",
+      "weighted_score": 31.39,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 45.0,
+        "business_logic_fitness": 34.7,
+        "architecture_quality": 28.0,
+        "integration_and_implicit_automation": 20,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 55,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 1,
+        "maturity_score": 1,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "ml-risk-assessment",
+      "weighted_score": 32.03,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 25.0,
+        "business_logic_fitness": 35.4,
+        "architecture_quality": 48.0,
+        "integration_and_implicit_automation": 35,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 20,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 70
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 2,
+        "maturity_score": 1,
+        "has_readme": true,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "dddpg",
+      "weighted_score": 33.19,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 29.0,
+        "business_logic_fitness": 41.7,
+        "architecture_quality": 28.0,
+        "integration_and_implicit_automation": 52,
+        "test_quality_and_coverage_relevance": 8.0,
+        "reliability_and_performance_behavior": 30,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 25
+      },
+      "signals": {
+        "tests": 1,
+        "test_files": 1,
+        "py_files": 11,
+        "maturity_score": 1,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "complexity_coordinator",
+      "weighted_score": 35.54,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 37.0,
+        "business_logic_fitness": 34.7,
+        "architecture_quality": 48.0,
+        "integration_and_implicit_automation": 20,
+        "test_quality_and_coverage_relevance": 20.0,
+        "reliability_and_performance_behavior": 30,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 80
+      },
+      "signals": {
+        "tests": 3,
+        "test_files": 1,
+        "py_files": 1,
+        "maturity_score": 1,
+        "has_readme": true,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "task-router",
+      "weighted_score": 36.47,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 45.0,
+        "business_logic_fitness": 36.1,
+        "architecture_quality": 28.0,
+        "integration_and_implicit_automation": 52,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 55,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 3,
+        "maturity_score": 1,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "monitoring",
+      "weighted_score": 37.53,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 45.0,
+        "business_logic_fitness": 35.4,
+        "architecture_quality": 28.0,
+        "integration_and_implicit_automation": 60,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 55,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 2,
+        "maturity_score": 1,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "workspace-watcher",
+      "weighted_score": 37.53,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 25.0,
+        "business_logic_fitness": 38.9,
+        "architecture_quality": 48.0,
+        "integration_and_implicit_automation": 67,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 20,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 70
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 7,
+        "maturity_score": 1,
+        "has_readme": true,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "ui-dashboard",
+      "weighted_score": 39.85,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 68,
+        "business_logic_fitness": 40.0,
+        "architecture_quality": 55,
+        "integration_and_implicit_automation": 20,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 20,
+        "ux_and_workflow_value": 85,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 0,
+        "maturity_score": 2,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": false
+      }
+    },
+    {
+      "component": "ml-predictions",
+      "weighted_score": 40.19,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 55.0,
+        "business_logic_fitness": 47.7,
+        "architecture_quality": 36.0,
+        "integration_and_implicit_automation": 30,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 65,
+        "ux_and_workflow_value": 50,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 11,
+        "maturity_score": 2,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "voice-commands",
+      "weighted_score": 51.05,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 55.0,
+        "business_logic_fitness": 49.5,
+        "architecture_quality": 64.0,
+        "integration_and_implicit_automation": 62,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 80,
+        "ux_and_workflow_value": 50,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 5,
+        "maturity_score": 3,
+        "has_readme": false,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "claude_brain",
+      "weighted_score": 52.92,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 45.0,
+        "business_logic_fitness": 55.1,
+        "architecture_quality": 84.0,
+        "integration_and_implicit_automation": 52,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 70,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 70
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 13,
+        "maturity_score": 3,
+        "has_readme": true,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "conport",
+      "weighted_score": 53.02,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 55.0,
+        "business_logic_fitness": 48.1,
+        "architecture_quality": 64.0,
+        "integration_and_implicit_automation": 62,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 80,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 3,
+        "maturity_score": 3,
+        "has_readme": false,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "activity-capture",
+      "weighted_score": 55.69,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 55.0,
+        "business_logic_fitness": 50.2,
+        "architecture_quality": 64.0,
+        "integration_and_implicit_automation": 77,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 80,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 6,
+        "maturity_score": 3,
+        "has_readme": false,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "ui-dashboard-backend",
+      "weighted_score": 55.92,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 75.0,
+        "business_logic_fitness": 48.1,
+        "architecture_quality": 64.0,
+        "integration_and_implicit_automation": 30,
+        "test_quality_and_coverage_relevance": 32.0,
+        "reliability_and_performance_behavior": 75,
+        "ux_and_workflow_value": 50,
+        "documentation_parity_and_clarity": 80
+      },
+      "signals": {
+        "tests": 5,
+        "test_files": 1,
+        "py_files": 3,
+        "maturity_score": 3,
+        "has_readme": true,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "src/dopemux",
+      "weighted_score": 57.35,
+      "status_band": "not-production-ready",
+      "dimensions": {
+        "correctness_and_defect_risk": 45.0,
+        "business_logic_fitness": 100.0,
+        "architecture_quality": 44.0,
+        "integration_and_implicit_automation": 75,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 55,
+        "ux_and_workflow_value": 85,
+        "documentation_parity_and_clarity": 15
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 154,
+        "maturity_score": 3,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "dope-query",
+      "weighted_score": 60.78,
+      "status_band": "needs-significant-remediation",
+      "dimensions": {
+        "correctness_and_defect_risk": 73.0,
+        "business_logic_fitness": 58.9,
+        "architecture_quality": 36.0,
+        "integration_and_implicit_automation": 80,
+        "test_quality_and_coverage_relevance": 50.0,
+        "reliability_and_performance_behavior": 65,
+        "ux_and_workflow_value": 85,
+        "documentation_parity_and_clarity": 25
+      },
+      "signals": {
+        "tests": 7,
+        "test_files": 4,
+        "py_files": 27,
+        "maturity_score": 2,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "session-manager",
+      "weighted_score": 61.03,
+      "status_band": "needs-significant-remediation",
+      "dimensions": {
+        "correctness_and_defect_risk": 57.0,
+        "business_logic_fitness": 75.4,
+        "architecture_quality": 64.0,
+        "integration_and_implicit_automation": 52,
+        "test_quality_and_coverage_relevance": 24.0,
+        "reliability_and_performance_behavior": 65,
+        "ux_and_workflow_value": 85,
+        "documentation_parity_and_clarity": 80
+      },
+      "signals": {
+        "tests": 3,
+        "test_files": 3,
+        "py_files": 42,
+        "maturity_score": 3,
+        "has_readme": true,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "adhd-notifier",
+      "weighted_score": 62.3,
+      "status_band": "needs-significant-remediation",
+      "dimensions": {
+        "correctness_and_defect_risk": 61.0,
+        "business_logic_fitness": 59.0,
+        "architecture_quality": 92.0,
+        "integration_and_implicit_automation": 45,
+        "test_quality_and_coverage_relevance": 30.0,
+        "reliability_and_performance_behavior": 80,
+        "ux_and_workflow_value": 40,
+        "documentation_parity_and_clarity": 95
+      },
+      "signals": {
+        "tests": 4,
+        "test_files": 3,
+        "py_files": 10,
+        "maturity_score": 4,
+        "has_readme": true,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "monitoring-dashboard",
+      "weighted_score": 62.98,
+      "status_band": "needs-significant-remediation",
+      "dimensions": {
+        "correctness_and_defect_risk": 55.0,
+        "business_logic_fitness": 53.4,
+        "architecture_quality": 92.0,
+        "integration_and_implicit_automation": 70,
+        "test_quality_and_coverage_relevance": 0.0,
+        "reliability_and_performance_behavior": 80,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 85
+      },
+      "signals": {
+        "tests": 0,
+        "test_files": 0,
+        "py_files": 2,
+        "maturity_score": 4,
+        "has_readme": true,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "adhd-dashboard",
+      "weighted_score": 64.16,
+      "status_band": "needs-significant-remediation",
+      "dimensions": {
+        "correctness_and_defect_risk": 63.0,
+        "business_logic_fitness": 60.8,
+        "architecture_quality": 100.0,
+        "integration_and_implicit_automation": 30,
+        "test_quality_and_coverage_relevance": 14.0,
+        "reliability_and_performance_behavior": 90,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 95
+      },
+      "signals": {
+        "tests": 2,
+        "test_files": 1,
+        "py_files": 4,
+        "maturity_score": 5,
+        "has_readme": true,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "dopemux-gpt-researcher",
+      "weighted_score": 71.89,
+      "status_band": "needs-significant-remediation",
+      "dimensions": {
+        "correctness_and_defect_risk": 79.0,
+        "business_logic_fitness": 77.2,
+        "architecture_quality": 72.0,
+        "integration_and_implicit_automation": 62,
+        "test_quality_and_coverage_relevance": 48.0,
+        "reliability_and_performance_behavior": 90,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 40
+      },
+      "signals": {
+        "tests": 6,
+        "test_files": 6,
+        "py_files": 36,
+        "maturity_score": 4,
+        "has_readme": false,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "agents",
+      "weighted_score": 73.6,
+      "status_band": "needs-significant-remediation",
+      "dimensions": {
+        "correctness_and_defect_risk": 78,
+        "business_logic_fitness": 62.5,
+        "architecture_quality": 72.0,
+        "integration_and_implicit_automation": 70,
+        "test_quality_and_coverage_relevance": 72,
+        "reliability_and_performance_behavior": 75,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 95
+      },
+      "signals": {
+        "tests": 3,
+        "test_files": 2,
+        "py_files": 15,
+        "maturity_score": 4,
+        "has_readme": true,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "dope-context",
+      "weighted_score": 75.75,
+      "status_band": "acceptable-with-targeted-hardening",
+      "dimensions": {
+        "correctness_and_defect_risk": 63.0,
+        "business_logic_fitness": 82.5,
+        "architecture_quality": 100.0,
+        "integration_and_implicit_automation": 77,
+        "test_quality_and_coverage_relevance": 16.0,
+        "reliability_and_performance_behavior": 90,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 95
+      },
+      "signals": {
+        "tests": 2,
+        "test_files": 2,
+        "py_files": 35,
+        "maturity_score": 5,
+        "has_readme": true,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "serena",
+      "weighted_score": 78.65,
+      "status_band": "acceptable-with-targeted-hardening",
+      "dimensions": {
+        "correctness_and_defect_risk": 95.0,
+        "business_logic_fitness": 100.0,
+        "architecture_quality": 44.0,
+        "integration_and_implicit_automation": 77,
+        "test_quality_and_coverage_relevance": 80.0,
+        "reliability_and_performance_behavior": 75,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 25
+      },
+      "signals": {
+        "tests": 10,
+        "test_files": 10,
+        "py_files": 81,
+        "maturity_score": 3,
+        "has_readme": false,
+        "dockerized": false,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "task-orchestrator",
+      "weighted_score": 79.18,
+      "status_band": "acceptable-with-targeted-hardening",
+      "dimensions": {
+        "correctness_and_defect_risk": 83.0,
+        "business_logic_fitness": 88.4,
+        "architecture_quality": 72.0,
+        "integration_and_implicit_automation": 85,
+        "test_quality_and_coverage_relevance": 56.0,
+        "reliability_and_performance_behavior": 90,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 40
+      },
+      "signals": {
+        "tests": 7,
+        "test_files": 7,
+        "py_files": 52,
+        "maturity_score": 4,
+        "has_readme": false,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "genetic_agent",
+      "weighted_score": 82.65,
+      "status_band": "acceptable-with-targeted-hardening",
+      "dimensions": {
+        "correctness_and_defect_risk": 79.0,
+        "business_logic_fitness": 86.0,
+        "architecture_quality": 100.0,
+        "integration_and_implicit_automation": 77,
+        "test_quality_and_coverage_relevance": 46.0,
+        "reliability_and_performance_behavior": 90,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 95
+      },
+      "signals": {
+        "tests": 6,
+        "test_files": 5,
+        "py_files": 40,
+        "maturity_score": 5,
+        "has_readme": true,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "working-memory-assistant",
+      "weighted_score": 93.51,
+      "status_band": "production-strong",
+      "dimensions": {
+        "correctness_and_defect_risk": 100.0,
+        "business_logic_fitness": 92.3,
+        "architecture_quality": 100.0,
+        "integration_and_implicit_automation": 77,
+        "test_quality_and_coverage_relevance": 100.0,
+        "reliability_and_performance_behavior": 90,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 95
+      },
+      "signals": {
+        "tests": 14,
+        "test_files": 13,
+        "py_files": 49,
+        "maturity_score": 5,
+        "has_readme": true,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "adhd_engine",
+      "weighted_score": 96.25,
+      "status_band": "production-strong",
+      "dimensions": {
+        "correctness_and_defect_risk": 100.0,
+        "business_logic_fitness": 100.0,
+        "architecture_quality": 100.0,
+        "integration_and_implicit_automation": 85,
+        "test_quality_and_coverage_relevance": 100.0,
+        "reliability_and_performance_behavior": 90,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 95
+      },
+      "signals": {
+        "tests": 24,
+        "test_files": 17,
+        "py_files": 116,
+        "maturity_score": 5,
+        "has_readme": true,
+        "dockerized": true,
+        "health_signal": true
+      }
+    },
+    {
+      "component": "dopecon-bridge",
+      "weighted_score": 96.25,
+      "status_band": "production-strong",
+      "dimensions": {
+        "correctness_and_defect_risk": 100.0,
+        "business_logic_fitness": 100.0,
+        "architecture_quality": 100.0,
+        "integration_and_implicit_automation": 85,
+        "test_quality_and_coverage_relevance": 100.0,
+        "reliability_and_performance_behavior": 90,
+        "ux_and_workflow_value": 95,
+        "documentation_parity_and_clarity": 95
+      },
+      "signals": {
+        "tests": 25,
+        "test_files": 24,
+        "py_files": 68,
+        "maturity_score": 5,
+        "has_readme": true,
+        "dockerized": true,
+        "health_signal": true
+      }
+    }
+  ],
+  "summary": {
+    "total_components": 36,
+    "production_strong": 3,
+    "acceptable": 4,
+    "needs_significant_remediation": 7,
+    "not_production_ready": 22,
+    "lowest_score_components": [
+      "session_intelligence",
+      "conport_kg_ui",
+      "taskmaster-mcp-client",
+      "mcp-client",
+      "taskmaster",
+      "session-intelligence",
+      "intelligence",
+      "slack-integration",
+      "ml-risk-assessment",
+      "dddpg"
+    ],
+    "highest_score_components": [
+      "adhd-dashboard",
+      "dopemux-gpt-researcher",
+      "agents",
+      "dope-context",
+      "serena",
+      "task-orchestrator",
+      "genetic_agent",
+      "working-memory-assistant",
+      "adhd_engine",
+      "dopecon-bridge"
+    ]
+  }
+}

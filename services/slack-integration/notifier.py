@@ -7,6 +7,8 @@ Sets status during focus time.
 ADHD Benefit: Team visibility, coordinated breaks, status automation
 """
 
+from typing import Dict
+
 import asyncio
 import logging
 import os

@@ -70,7 +70,18 @@ class SerenaIntegration:
     """Integration layer between WMA and Serena LSP"""
 
     def __init__(self):
-        pass
+        self._toolset_ready = all(
+            callable(tool)
+            for tool in (
+                goto_definition,
+                find_references,
+                get_current_file,
+                get_cursor_position,
+                get_navigation_history,
+                analyze_complexity,
+                list_dir,
+            )
+        )
 
     async def get_code_context(self) -> CodeContext:
         """Get comprehensive code context from Serena"""

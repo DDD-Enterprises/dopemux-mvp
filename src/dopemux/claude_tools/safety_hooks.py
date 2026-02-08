@@ -256,8 +256,6 @@ class SafetyHooks:
                 return b'\x00' not in chunk
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     def _count_lines(self, file_path: str) -> int:
         """Count lines in a text file."""
         try:
@@ -265,8 +263,6 @@ class SafetyHooks:
                 return sum(1 for _ in f)
         except Exception as e:
             return 0
-
-            logger.error(f"Error: {e}")
     def log_violation(self, command: str, violation_type: str, context: Optional[Dict] = None) -> None:
         """Log a safety violation."""
         logger.warning(f"Safety violation ({violation_type}): {command}", extra=context or {})

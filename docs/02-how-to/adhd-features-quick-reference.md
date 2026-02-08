@@ -5,6 +5,10 @@ type: how-to
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Adhd Features Quick Reference (how-to) for dopemux documentation and developer
+  workflows.
 ---
 # ADHD Features Quick Reference Card
 

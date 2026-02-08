@@ -1,10 +1,14 @@
 ---
 id: implementation_report
 title: Implementation_Report
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Implementation_Report (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # G31 Implementation Report
 
@@ -109,14 +113,14 @@ CONPORT_PORT=3004
 
 ## Acceptance Criteria Status
 
-✅ `services/registry.yaml` contains all smoke services with ports/health endpoints  
-✅ `docker-compose.smoke.yml` uses env vars from .env.smoke  
-✅ `tests/arch/test_registry_compose_alignment.py` passes (8/8 tests)  
-✅ `tools/ports_health_audit.py --mode static` reports no drift  
-✅ `tools/ports_health_audit.py --mode static --explain-drift` shows aligned ports  
-✅ Documentation explains the single-truth workflow  
-⏸️  Smoke stack boot (deferred - requires building service images)  
-⏸️  Runtime health checks (deferred - requires running services)  
+✅ `services/registry.yaml` contains all smoke services with ports/health endpoints
+✅ `docker-compose.smoke.yml` uses env vars from .env.smoke
+✅ `tests/arch/test_registry_compose_alignment.py` passes (8/8 tests)
+✅ `tools/ports_health_audit.py --mode static` reports no drift
+✅ `tools/ports_health_audit.py --mode static --explain-drift` shows aligned ports
+✅ Documentation explains the single-truth workflow
+⏸️  Smoke stack boot (deferred - requires building service images)
+⏸️  Runtime health checks (deferred - requires running services)
 
 ## Service Registry Coverage
 

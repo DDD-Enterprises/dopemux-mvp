@@ -1,10 +1,13 @@
 ---
 id: implementation-plan
 title: Implementation Plan
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Implementation Plan (reference) for dopemux documentation and developer workflows.
 ---
 # 16-Week Agent Implementation Plan
 

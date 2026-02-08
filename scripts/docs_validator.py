@@ -127,8 +127,6 @@ class DocumentValidator:
         except Exception as e:
             self.add_error(file_path, f"Cannot read file: {e}")
             return False
-
-            logger.error(f"Error: {e}")
         # Validate frontmatter
         frontmatter, body = self._parse_frontmatter(content)
         if not frontmatter:

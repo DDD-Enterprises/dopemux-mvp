@@ -7,11 +7,14 @@ last_review: '2026-02-02'
 next_review: '2026-05-02'
 status: consolidated
 supersedes:
-  - deployment-checklist
-  - deployment-instructions
-  - production-deployment-checklist
+- deployment-checklist
+- deployment-instructions
+- production-deployment-checklist
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dopemux Deployment Guide (how-to) for dopemux documentation and developer
+  workflows.
 ---
-
 # Dopemux Production Deployment Guide
 
 **Comprehensive deployment guide for Dopemux platform**

@@ -1,5 +1,7 @@
 """PAL MCP Client for multi-model reasoning and code generation."""
 
+import logging
+
 import asyncio
 from typing import Dict, Any, Optional, List
 import httpx
@@ -7,6 +9,8 @@ import json
 
 from ..utils.async_helpers import AsyncClientMixin
 
+
+logger = logging.getLogger(__name__)
 
 class PALClient(AsyncClientMixin):
     """Client for PAL MCP multi-model reasoning tools."""

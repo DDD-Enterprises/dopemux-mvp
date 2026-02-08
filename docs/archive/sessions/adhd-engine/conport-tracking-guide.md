@@ -1,10 +1,14 @@
 ---
 id: conport-tracking-guide
 title: Conport Tracking Guide
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Conport Tracking Guide (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Component 7: ConPort Tracking Guide
 

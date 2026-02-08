@@ -1,10 +1,14 @@
 ---
 id: WORKTREE_IMPLEMENTATION_SUMMARY
 title: Worktree_Implementation_Summary
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Worktree_Implementation_Summary (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Worktree Multi-Instance Support - Implementation Summary
 
@@ -126,6 +130,7 @@ else:
 ### Data Isolation Strategy
 
 **Status-Based Routing**:
+
 | Status | Instance ID | Visibility |
 |--------|-------------|------------|
 | IN_PROGRESS | Set to current instance | Isolated to worktree |

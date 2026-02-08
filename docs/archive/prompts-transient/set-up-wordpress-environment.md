@@ -1,10 +1,14 @@
 ---
 id: set-up-wordpress-environment
 title: Set Up Wordpress Environment
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Set Up Wordpress Environment (explanation) for dopemux documentation and
+  developer workflows.
 ---
 ## WordPress Development Environment Setup
 

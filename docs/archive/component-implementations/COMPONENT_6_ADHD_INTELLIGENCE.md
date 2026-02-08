@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Component_6_Adhd_Intelligence (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Component 6: ADHD Intelligence Layer - Phase 1 Complete
 
@@ -61,7 +65,7 @@ Component 6: Intelligence (learns, predicts, adapts, protects)
 **Purpose**: Metrics collection infrastructure for debugging ADHD Intelligence features
 
 **Files Created**:
-1. **services/task-orchestrator/observability/__init__.py** (13 lines)
+1. **services/task-orchestrator/observability/**init**.py** (13 lines)
 2. **services/task-orchestrator/observability/metrics_collector.py** (600+ lines)
    - 20+ Prometheus metrics for ADHD workflows
    - Graceful degradation when Prometheus unavailable
@@ -104,7 +108,7 @@ adhd_context_switch_recovery_seconds  # Histogram (target: < 2s)
 - Automated context restoration achieves < 2 second reorientation
 
 **Files Created**:
-1. **services/task-orchestrator/intelligence/__init__.py** (15 lines)
+1. **services/task-orchestrator/intelligence/**init**.py** (15 lines)
 2. **services/task-orchestrator/intelligence/context_switch_recovery.py** (650+ lines)
 
 **Key Features Implemented**:
@@ -207,10 +211,10 @@ async def get_recovery_statistics() -> Dict[str, Any]:
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| observability/__init__.py | 13 | Module initialization |
+| observability/**init**.py | 13 | Module initialization |
 | observability/metrics_collector.py | 600 | Prometheus metrics collection |
 | observability/adhd_dashboard.py | 350 | Grafana dashboard config |
-| intelligence/__init__.py | 15 | Module initialization |
+| intelligence/**init**.py | 15 | Module initialization |
 | intelligence/context_switch_recovery.py | 650 | Context switch recovery engine |
 
 **Implementation Time**: ~2 hours (Phase 1a + 1b)

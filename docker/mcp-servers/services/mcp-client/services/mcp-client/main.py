@@ -244,7 +244,7 @@ def create_server_configs():
 
     # Desktop Commander (stdio)
     configs['desktop-commander'] = {
-        'command': ['docker', 'exec', 'mcp-desktop-commander', 'python', '/app/mcp_server.py'],
+        'command': ['docker', 'exec', 'dopemux-mcp-desktop-commander', 'python', '/app/server.py'],
         'env': {
             'DISPLAY': os.getenv('DISPLAY', ':0')
         }

@@ -265,8 +265,6 @@ class DocumentProcessor:
                 content = f.read()
         except Exception as e:
             return []  # Skip files that can't be read
-
-            logger.error(f"Error: {e}")
         # Break content into logical sections
         atomic_units = []
 

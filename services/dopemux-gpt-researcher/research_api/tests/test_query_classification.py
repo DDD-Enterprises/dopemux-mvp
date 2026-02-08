@@ -7,14 +7,31 @@ for ADHD-optimized research workflows.
 
 import pytest
 import asyncio
-from ..engines.query_classifier import (
-    QueryClassificationEngine,
-    QueryIntent,
-    ResearchScope,
-    OutputFormat,
-    SearchEngineStrategy
-)
-from ..models.research_task import ResearchType
+from pathlib import Path
+import sys
+
+try:
+    from ..engines.query_classifier import (
+        QueryClassificationEngine,
+        QueryIntent,
+        ResearchScope,
+        OutputFormat,
+        SearchEngineStrategy,
+    )
+    from ..models.research_task import ResearchType
+except ImportError:  # pragma: no cover - direct test execution fallback
+    ROOT = Path(__file__).resolve().parents[1]
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+
+    from engines.query_classifier import (
+        QueryClassificationEngine,
+        QueryIntent,
+        ResearchScope,
+        OutputFormat,
+        SearchEngineStrategy,
+    )
+    from models.research_task import ResearchType
 
 @pytest.fixture
 def classifier():

@@ -6,6 +6,8 @@ Part of Phase 1 Security Hardening
 User management, authentication, and authorization services.
 """
 
+from typing import Tuple
+
 import os
 
 import logging

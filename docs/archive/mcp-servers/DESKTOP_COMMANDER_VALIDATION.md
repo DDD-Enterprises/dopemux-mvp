@@ -1,10 +1,14 @@
 ---
 id: DESKTOP_COMMANDER_VALIDATION
 title: Desktop_Commander_Validation
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Desktop_Commander_Validation (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Desktop-Commander MCP - Token Limit Validation (No Fix Needed)
 

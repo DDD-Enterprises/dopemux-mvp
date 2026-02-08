@@ -77,6 +77,11 @@ except Exception:  # pragma: no cover - fallback path for isolated service image
 
 # Import EventBus for Redis Streams coordination
 from event_bus import EventBus, Event, EventType
+from dopecon_bridge.leantime_contract import (
+    build_leantime_tool_request as _contract_build_leantime_tool_request,
+    normalize_leantime_route_response as _contract_normalize_leantime_route_response,
+)
+from dopecon_bridge.conport_semantic_proxy import run_semantic_search_with_fallback
 
 # Configure logging with env var support (G33)
 LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()
@@ -429,6 +434,47 @@ async def start_ddg_ingestion(event_bus: EventBus, db_manager: DatabaseManager):
 # MCP CLIENT MANAGEMENT (Instance-Aware)
 # ============================================================================
 
+def _build_mcp_error_detail(
+    service: str,
+    tool_name: str,
+    status: Optional[int] = None,
+    upstream_text: str = "",
+    transport_error: Optional[str] = None,
+) -> str:
+    """Generate actionable error details for MCP upstream failures."""
+    context = f"{service}.{tool_name}"
+    if transport_error:
+        base = f"MCP call failed for {context}: {transport_error}"
+    else:
+        base = f"MCP call failed for {context} with upstream status {status}"
+        if upstream_text:
+            base += f" ({upstream_text[:300]})"
+
+    if service == "leantime-bridge":
+        lowered = upstream_text.lower()
+        setup_signals = (
+            "token",
+            "api key",
+            "unauthorized",
+            "forbidden",
+            "setup",
+            "install",
+            "wizard",
+            "login",
+            "not configured",
+            "redirect",
+        )
+        if transport_error or status in {401, 403, 404, 409, 422, 500, 502, 503} or any(
+            signal in lowered for signal in setup_signals
+        ):
+            base += (
+                " | Leantime readiness hint: complete the Leantime web setup wizard at "
+                "http://localhost:8080, generate/verify API credentials, and configure "
+                "LEANTIME_API_TOKEN for leantime-bridge."
+            )
+    return base
+
+
 class MCPClientManager:
     """Manages connections to instance-specific MCP servers"""
 
@@ -451,14 +497,37 @@ class MCPClientManager:
 
         try:
             async with self.session.post(url, json=arguments) as response:
-                response.raise_for_status()
-                result = await response.json()
+                raw_text = await response.text()
+                if response.status >= 400:
+                    detail = _build_mcp_error_detail(
+                        service=service,
+                        tool_name=tool_name,
+                        status=response.status,
+                        upstream_text=raw_text,
+                    )
+                    logger.error("❌ %s", detail)
+                    raise HTTPException(status_code=502, detail=detail)
+
+                if raw_text:
+                    try:
+                        result = json.loads(raw_text)
+                    except json.JSONDecodeError:
+                        result = {"raw_response": raw_text}
+                else:
+                    result = {}
                 logger.debug(f"🔧 {service}.{tool_name} -> {result}")
                 return result
 
+        except HTTPException:
+            raise
         except aiohttp.ClientError as e:
-            logger.error(f"❌ MCP call failed: {service}.{tool_name} - {e}")
-            raise HTTPException(status_code=502, detail=f"Service {service} unavailable")
+            detail = _build_mcp_error_detail(
+                service=service,
+                tool_name=tool_name,
+                transport_error=str(e),
+            )
+            logger.error("❌ %s", detail)
+            raise HTTPException(status_code=502, detail=detail)
 
     def _get_service_url(self, service: str) -> str:
         """Get instance-specific service URL"""
@@ -569,6 +638,42 @@ class ConPortClient:
             # Still update fallback cache
             await self._update_fallback_context(context_token, context_deltas)
             return False
+
+    async def semantic_search(
+        self,
+        workspace_id: Optional[str],
+        query_text: str,
+        top_k: int = 5,
+        filter_item_types: Optional[List[str]] = None,
+        filter_tags_include_any: Optional[List[str]] = None,
+        filter_tags_include_all: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Proxy semantic search to ConPort with compatibility fallback.
+
+        Preferred endpoint is `/api/adhd/semantic-search`; fallback to legacy
+        `/api/semantic-search` on 404/405 to preserve no-breaking behavior.
+        """
+        if not self.session:
+            await self.initialize()
+
+        payload: Dict[str, Any] = {
+            "workspace_id": workspace_id or self.workspace_id,
+            "query_text": query_text,
+            "top_k": max(1, min(int(top_k), 25)),
+        }
+        if filter_item_types:
+            payload["filter_item_types"] = filter_item_types
+        if filter_tags_include_any:
+            payload["filter_tags_include_any"] = filter_tags_include_any
+        if filter_tags_include_all:
+            payload["filter_tags_include_all"] = filter_tags_include_all
+        return await run_semantic_search_with_fallback(
+            session=self.session,
+            base_url=self.base_url,
+            payload=payload,
+            logger=logger,
+        )
 
     async def _get_fallback_context(self, context_token: str) -> Dict[str, Any]:
         """Get context from Redis fallback cache"""
@@ -1007,7 +1112,7 @@ class TaskIntegrationService:
 
                     await self.mcp_manager.call_tool(
                         "leantime-bridge",
-                        "update_ticket_status",
+                        "update_ticket",
                         {
                             "ticketId": int(leantime_id),
                             "status": leantime_status
@@ -1626,9 +1731,7 @@ class EmbeddingManager:
         try:
             await self._upsert_qdrant_point(decision_id, vec, workspace_id)
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.debug("Failed upserting Qdrant point for %s: %s", decision_id, e)
     def _qdrant(self):
         url = os.getenv("QDRANT_URL") or os.getenv("QDRANT_HOST")
         if not url or QdrantClient is None:
@@ -1640,9 +1743,8 @@ class EmbeddingManager:
             port = int(port or "6333")
             return QdrantClient(host=host, port=port)
         except Exception as e:
+            logger.debug("Failed to create Qdrant client from %s: %s", url, e)
             return None
-
-            logger.error(f"Error: {e}")
     async def _upsert_qdrant_point(self, decision_id: str, vector: list, workspace_id: Optional[str]):
         client = self._qdrant()
         if not client:
@@ -1708,6 +1810,15 @@ class WorkflowFromTemplateRequest(BaseModel):
     template_name: str
     project_id: str
     context: Dict[str, Any] = {}
+
+
+class ConPortSemanticSearchRequest(BaseModel):
+    workspace_id: Optional[str] = None
+    query_text: str
+    top_k: int = Field(default=5, ge=1, le=25)
+    filter_item_types: Optional[List[str]] = None
+    filter_tags_include_any: Optional[List[str]] = None
+    filter_tags_include_all: Optional[List[str]] = None
 
 @app.on_event("startup")
 async def startup_event():
@@ -1803,6 +1914,32 @@ async def health_check():
         "services": mcp_health,
         "event_bus": "ready"
     }
+
+
+@app.post("/conport/semantic_search")
+async def conport_semantic_search(request: ConPortSemanticSearchRequest):
+    """
+    Backward-compatible semantic search proxy for legacy bridge clients.
+
+    Preserves the historic `/conport/semantic_search` contract while routing to
+    ConPort's current endpoint (`/api/adhd/semantic-search`) and falling back
+    to the legacy ConPort endpoint only when required.
+    """
+    try:
+        result = await conport_client.semantic_search(
+            workspace_id=request.workspace_id,
+            query_text=request.query_text,
+            top_k=request.top_k,
+            filter_item_types=request.filter_item_types,
+            filter_tags_include_any=request.filter_tags_include_any,
+            filter_tags_include_all=request.filter_tags_include_all,
+        )
+        if isinstance(result, dict):
+            result.setdefault("bridge_proxy", True)
+        return result
+    except Exception as exc:
+        logger.error("❌ ConPort semantic_search proxy failed: %s", exc)
+        raise HTTPException(status_code=502, detail=f"ConPort semantic_search proxy failed: {exc}")
 
 # ============================================================================
 # EVENT BUS ENDPOINTS
@@ -2112,9 +2249,7 @@ async def ddg_link_similar(workspace_id: Optional[str] = None, min_overlap: int 
                             )
                             linked += 1
                         except Exception as e:
-                            pass
-
-                            logger.error(f"Error: {e}")
+                            logger.debug("Failed linking similar decisions %s/%s: %s", a.id, b.id, e)
         return {"linked": linked, "considered": n}
     except Exception as e:
         logger.error(f"❌ ddg_link_similar failed: {e}")
@@ -2191,8 +2326,7 @@ async def ddg_related_decisions(decision_id: str, k: int = 10):
                             items.append({"id": cand_ids[idx], "score": rr.get("score", 0.0)})
                     return {"decision_id": decision_id, "count": len(items), "items": items}
         except Exception as e:
-            pass
-            logger.error(f"Error: {e}")
+            logger.debug("Qdrant related-decision lookup failed for %s, using fallback: %s", decision_id, e)
         # Fallback: cosine in Postgres mirror
         session_ctx = await db_manager.get_session()
         async with session_ctx as session:
@@ -2612,13 +2746,212 @@ class CrossPlaneRouteResponse(BaseModel):
     error: Optional[str] = None
     correlation_id: Optional[str] = None
 
+
+LEANTIME_ROUTE_OPERATION_TO_TOOL: Dict[str, str] = {
+    "get_tasks": "list_tickets",
+    "list_tasks": "list_tickets",
+    "create_task": "create_ticket",
+    "update_task": "update_ticket",
+    "update_task_status": "update_ticket",
+    "create_project": "create_project",
+    "get_project_status": "get_project_stats",
+    "allocate_resource": "update_ticket",
+    "update_sprint": "update_ticket",
+    "leantime.get_tasks": "list_tickets",
+    "leantime.list_tasks": "list_tickets",
+    "leantime.create_task": "create_ticket",
+    "leantime.update_task": "update_ticket",
+    "leantime.update_task_status": "update_ticket",
+    "leantime.create_project": "create_project",
+    "leantime.get_project_status": "get_project_stats",
+    "leantime.allocate_resource": "update_ticket",
+    "leantime.update_sprint": "update_ticket",
+}
+
+
+def _normalize_leantime_priority(value: Any) -> str:
+    """Normalize mixed priority values to Leantime's 1-4 scale."""
+    if value is None:
+        return "2"
+    if isinstance(value, int):
+        return str(min(max(value, 1), 4))
+    if isinstance(value, str) and value.strip().isdigit():
+        parsed = int(value.strip())
+        return str(min(max(parsed, 1), 4))
+
+    mapped = {
+        "low": "1",
+        "medium": "2",
+        "med": "2",
+        "high": "3",
+        "critical": "4",
+        "urgent": "4",
+    }
+    return mapped.get(str(value).strip().lower(), "2")
+
+
+def _coerce_optional_int(value: Any) -> Optional[int]:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _build_leantime_tool_request(operation: str, data: Dict[str, Any]) -> tuple[str, Dict[str, Any]]:
+    """Translate cross-plane PM route payloads to leantime-bridge tool calls."""
+    op = (operation or "").strip().lower()
+    tool_name = LEANTIME_ROUTE_OPERATION_TO_TOOL.get(op)
+    if not tool_name:
+        raise ValueError(f"Unsupported PM operation: {operation}")
+
+    payload = dict(data or {})
+
+    if tool_name == "list_tickets":
+        req: Dict[str, Any] = {}
+        project_id = payload.get("projectId", payload.get("project_id"))
+        if project_id is not None:
+            req["projectId"] = int(project_id)
+        if "status" in payload:
+            req["status"] = payload["status"]
+        assigned_to = payload.get("assignedTo", payload.get("assigned_to"))
+        if assigned_to is not None:
+            req["assignedTo"] = int(assigned_to)
+        return tool_name, req
+
+    if tool_name == "create_ticket":
+        headline = payload.get("headline", payload.get("title"))
+        if not headline:
+            raise ValueError("create_task requires 'title' or 'headline'")
+        req = {
+            "projectId": int(payload.get("projectId", payload.get("project_id", 1))),
+            "headline": headline,
+            "description": payload.get("description", ""),
+            "priority": _normalize_leantime_priority(payload.get("priority")),
+            "type": payload.get("type", "task"),
+        }
+        milestone_id = _coerce_optional_int(payload.get("milestoneid", payload.get("milestone_id")))
+        if milestone_id is not None:
+            req["milestoneid"] = milestone_id
+        return tool_name, req
+
+    if tool_name == "update_ticket":
+        ticket_id = (
+            payload.get("ticketId")
+            or payload.get("task_id")
+            or payload.get("taskId")
+            or payload.get("id")
+            or payload.get("sprint_id")
+            or payload.get("sprintId")
+            or (payload.get("allocation") or {}).get("task_id")
+            or (payload.get("allocation") or {}).get("taskId")
+            or (payload.get("allocation") or {}).get("ticketId")
+        )
+        if ticket_id is None:
+            raise ValueError("update operation requires ticket/task identifier")
+        req = {"ticketId": int(ticket_id)}
+        for field in ("headline", "description", "status"):
+            if field in payload:
+                req[field] = payload[field]
+        if "priority" in payload:
+            req["priority"] = _normalize_leantime_priority(payload["priority"])
+        assigned_to = _coerce_optional_int(payload.get("assignedTo", payload.get("assigned_to")))
+        if assigned_to is None:
+            allocation = payload.get("allocation") or {}
+            assigned_to = _coerce_optional_int(
+                allocation.get("assignedTo", allocation.get("assigned_to"))
+            )
+        if assigned_to is None and (operation or "").strip().lower().endswith("allocate_resource"):
+            if str(payload.get("resource_type", "")).strip().lower() in {"user", "assignee", "member"}:
+                assigned_to = _coerce_optional_int(payload.get("resource_id"))
+        if assigned_to is not None:
+            req["assignedTo"] = assigned_to
+        return tool_name, req
+
+    if tool_name == "create_project":
+        name = payload.get("name", payload.get("project_name"))
+        if not name:
+            raise ValueError("create_project requires 'name' or 'project_name'")
+        details = payload.get("details", payload.get("description", ""))
+        req = {
+            "name": name,
+            "description": details if isinstance(details, str) else json.dumps(details, ensure_ascii=True),
+        }
+        if "state" in payload:
+            req["state"] = str(payload["state"])
+        return tool_name, req
+
+    if tool_name == "get_project_stats":
+        project_id = payload.get("projectId", payload.get("project_id"), payload.get("id"))
+        if project_id is None:
+            raise ValueError("get_project_status requires project identifier")
+        return tool_name, {"projectId": int(project_id)}
+
+    return tool_name, payload
+
+
+def _extract_ticket_list(tool_result: Any) -> List[Dict[str, Any]]:
+    if isinstance(tool_result, list):
+        return [item for item in tool_result if isinstance(item, dict)]
+    if not isinstance(tool_result, dict):
+        return []
+    for key in ("tasks", "tickets", "result", "items"):
+        value = tool_result.get(key)
+        if isinstance(value, list):
+            return [item for item in value if isinstance(item, dict)]
+    return []
+
+
+def _normalize_leantime_route_response(operation: str, tool_result: Any) -> Dict[str, Any]:
+    """Shape responses for existing clients expecting task_id/tasks/project_id keys."""
+    op = (operation or "").strip().lower()
+
+    if op in {"get_tasks", "list_tasks", "leantime.get_tasks", "leantime.list_tasks"}:
+        return {
+            "tasks": _extract_ticket_list(tool_result),
+            "source": "leantime-bridge",
+            "raw_result": tool_result,
+        }
+
+    if op in {"create_task", "leantime.create_task"}:
+        if isinstance(tool_result, dict):
+            ticket_id = tool_result.get("id") or tool_result.get("ticketId") or tool_result.get("task_id")
+            response = dict(tool_result)
+            if ticket_id is not None:
+                response["task_id"] = str(ticket_id)
+            return response
+        return {"task_id": str(tool_result), "raw_result": tool_result}
+
+    if op in {"create_project", "leantime.create_project"}:
+        if isinstance(tool_result, dict):
+            project_id = tool_result.get("id") or tool_result.get("projectId") or tool_result.get("project_id")
+            response = dict(tool_result)
+            if project_id is not None:
+                response["project_id"] = str(project_id)
+            return response
+        return {"project_id": str(tool_result), "raw_result": tool_result}
+
+    if op in {"update_sprint", "leantime.update_sprint"}:
+        return {"updated": True, "raw_result": tool_result}
+
+    if op in {"allocate_resource", "leantime.allocate_resource"}:
+        return {"allocated": True, "raw_result": tool_result}
+
+    if op in {"get_project_status", "leantime.get_project_status"}:
+        if isinstance(tool_result, dict):
+            return dict(tool_result)
+        return {"result": tool_result}
+
+    return {"result": tool_result}
+
+
 async def _route_to_pm(request: CrossPlaneRouteRequest) -> CrossPlaneRouteResponse:
     """
     Route request to PM plane (Leantime).
 
-    Translates REST request → EventBus event for async processing.
-    For queries (get_*), returns immediately with mock data.
-    For commands (update_*, set_*), publishes event and returns ack.
+    Publishes a coordination event and, for supported Leantime operations,
+    executes the operation against leantime-bridge in-process.
     """
     correlation_id = str(uuid.uuid4())
 
@@ -2647,51 +2980,49 @@ async def _route_to_pm(request: CrossPlaneRouteRequest) -> CrossPlaneRouteRespon
             f"(operation={request.operation}, correlation_id={correlation_id})"
         )
 
-        # For queries, forward to real PM plane services
-        # Week 11-12: Real service integration (requires infrastructure)
-        if is_query:
-            if request.operation == "get_tasks":
-                # Forward to Task Orchestrator query server (proxies to Leantime)
-                try:
-                    import httpx
-                    async with httpx.AsyncClient(timeout=10.0) as client:
-                        response = await client.get(
-                            f"{TASK_ORCHESTRATOR_URL}/tasks",
-                            params=request.data
-                        )
-                        if response.status_code == 200:
-                            tasks_data = response.json()
-                            return CrossPlaneRouteResponse(
-                                success=True,
-                                data=tasks_data,
-                                correlation_id=correlation_id
-                            )
-                        else:
-                            # Fallback to mock if service unavailable
-                            logger.warning(f"Task Orchestrator returned {response.status_code}, using mock fallback")
-                except Exception as e:
-                    # Graceful degradation: Use mock if service unavailable
-                    logger.warning(f"Task Orchestrator unavailable ({e}), using mock fallback")
+        try:
+            tool_name, tool_payload = _contract_build_leantime_tool_request(
+                request.operation,
+                request.data,
+            )
+            tool_result = await mcp_manager.call_tool(
+                "leantime-bridge",
+                tool_name,
+                tool_payload,
+            )
+            normalized_data = _contract_normalize_leantime_route_response(
+                request.operation,
+                tool_result,
+            )
+            normalized_data["event_id"] = msg_id
+            normalized_data["source"] = "leantime-bridge"
+            return CrossPlaneRouteResponse(
+                success=True,
+                data=normalized_data,
+                correlation_id=correlation_id,
+            )
+        except ValueError:
+            logger.debug(
+                "PM routing operation not mapped to leantime-bridge: %s",
+                request.operation,
+            )
+        except Exception as e:
+            logger.error(
+                "❌ PM routing failed to execute via leantime-bridge "
+                f"(operation={request.operation}): {e}"
+            )
+            return CrossPlaneRouteResponse(
+                success=False,
+                error=str(e),
+                correlation_id=correlation_id,
+            )
 
-                # Mock fallback (for testing without infrastructure)
-                return CrossPlaneRouteResponse(
-                    success=True,
-                    data={
-                        "tasks": [
-                            {"id": "1", "title": "Task 1 (mock)", "status": "TODO"},
-                            {"id": "2", "title": "Task 2 (mock)", "status": "IN_PROGRESS"}
-                        ],
-                        "source": "mock_fallback"
-                    },
-                    correlation_id=correlation_id
-                )
-            else:
-                # Generic query - return mock
-                return CrossPlaneRouteResponse(
-                    success=True,
-                    data={"message": f"Query {request.operation} processed (mock)"},
-                    correlation_id=correlation_id
-                )
+        if is_query:
+            return CrossPlaneRouteResponse(
+                success=True,
+                data={"message": f"Query {request.operation} processed (no direct PM mapping)"},
+                correlation_id=correlation_id,
+            )
 
         # For commands, return acknowledgment
         return CrossPlaneRouteResponse(
@@ -2905,12 +3236,7 @@ async def route_to_leantime(request: CrossPlaneRouteRequest):
     - allocate_resource
     """
     logger.info(f"📋 Routing to Leantime: {request.operation}")
-    # Use existing Leantime bridge URL
-    return CrossPlaneRouteResponse(
-        success=True,
-        data={"status": "routed_to_leantime", "operation": request.operation},
-        correlation_id=str(uuid.uuid4())
-    )
+    return await _route_to_pm(request)
 
 @app.post("/route/taskmaster", response_model=CrossPlaneRouteResponse)
 async def route_to_taskmaster(request: CrossPlaneRouteRequest):

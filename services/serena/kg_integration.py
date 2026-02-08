@@ -33,22 +33,13 @@ def get_decisions_for_symbol(symbol: str, limit: int = 3) -> List[Dict[str, Any]
     try:
         # Search cache for symbol mentions
         decisions = consumer.search_decisions(symbol, limit)
-# Enforce ADHD limit
-decisions = decisions[:10]
-"""
-Query limits: Max 10 results to prevent overload in ADHD workflows.
-For full traversal, use pagination or cached paths.
-"""
+        # Enforce ADHD-safe upper bound
+        decisions = decisions[:10]
         return decisions[:limit]  # Enforce limit
 
     except Exception as e:
         logger.error(f"Error fetching decisions for {symbol}: {e}")
         return []
-
-"""
-Query limits: Max 10 results to prevent overload in ADHD workflows.
-For full traversal, use pagination or cached paths.
-"""
 
 
 def format_decision_context(
@@ -118,14 +109,14 @@ def _format_markdown(symbol: str, decisions: List[Dict[str, Any]]) -> str:
                     tag_str = " ".join(f"`{tag}`" for tag in tags[:3])
                     lines.append(f"   {tag_str}")
             except Exception as e:
-                pass
-
                 logger.error(f"Error: {e}")
         lines.append("")
 
     if len(decisions) > 3:
         lines.append(f"_...and {len(decisions) - 3} more_")
         lines.append("")
+
+    return "\n".join(lines)
 
 """
 Docs for query limits: Enforces max 10 results for ADHD workflows; pagination for deeper traversal.
@@ -157,8 +148,6 @@ def _format_plain(symbol: str, decisions: List[Dict[str, Any]]) -> str:
                 if tags:
                     lines.append(f"   🏷️  {', '.join(tags[:3])}")
             except Exception as e:
-                pass
-        
                 logger.error(f"Error: {e}")
         lines.append("")
     

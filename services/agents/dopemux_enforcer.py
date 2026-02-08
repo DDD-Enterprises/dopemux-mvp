@@ -12,6 +12,7 @@ Effort: 5 days (10 focus blocks)
 """
 
 import asyncio
+import ast
 import logging
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
@@ -98,6 +99,7 @@ class DopemuxEnforcer:
         self,
         workspace_id: str,
         conport_client: Optional[Any] = None,
+        serena_complexity_provider: Optional[Any] = None,
         serena_workspace: Optional[str] = None,
         strict_mode: bool = False
     ):
@@ -107,12 +109,14 @@ class DopemuxEnforcer:
         Args:
             workspace_id: Absolute path to workspace
             conport_client: ConPort MCP client for logging violations
+            serena_complexity_provider: Optional Serena-style complexity provider
             serena_workspace: Workspace path for Serena (defaults to workspace_id)
             strict_mode: If True, BLOCK critical violations
         """
         self.workspace_id = workspace_id
         self.serena_workspace = serena_workspace or workspace_id
         self.conport_client = conport_client
+        self.serena_complexity_provider = serena_complexity_provider
         self.strict_mode = strict_mode
 
         # Validation rules
@@ -278,19 +282,25 @@ class DopemuxEnforcer:
         Week 7: 70% code reuse from Serena complexity scoring
         """
         violations = []
-
-        # TODO: Integrate with Serena MCP
-        # For now, use simple heuristic
-        line_count = len(content.split('\n'))
-        estimated_complexity = min(1.0, line_count / 500)  # Rough estimate
-
         complexity_thresholds = self.rules["complexity_breaks"]["thresholds"]
+
+        heuristic_complexity = self._estimate_complexity_score(content)
+        serena_complexity = await self._get_serena_complexity_score(file_path)
+        estimated_complexity = max(
+            heuristic_complexity,
+            serena_complexity if serena_complexity is not None else 0.0
+        )
+
+        source = "Serena+heuristic" if serena_complexity is not None else "heuristic"
 
         if estimated_complexity >= complexity_thresholds["critical"]:
             violations.append(ComplianceViolation(
                 type=ViolationType.COMPLEXITY_WARNING,
                 severity=ViolationSeverity.CRITICAL,
-                message=f"Very high complexity ({estimated_complexity:.2f}) - Mandatory break after 25 min",
+                message=(
+                    f"Very high complexity ({estimated_complexity:.2f}, source={source}) - "
+                    f"Mandatory break after 25 min"
+                ),
                 file_path=file_path,
                 suggestion="Break this into smaller functions or take break after 25 minutes"
             ))
@@ -298,7 +308,10 @@ class DopemuxEnforcer:
             violations.append(ComplianceViolation(
                 type=ViolationType.COMPLEXITY_WARNING,
                 severity=ViolationSeverity.WARNING,
-                message=f"High complexity ({estimated_complexity:.2f}) - Break recommended after 25 min",
+                message=(
+                    f"High complexity ({estimated_complexity:.2f}, source={source}) - "
+                    f"Break recommended after 25 min"
+                ),
                 file_path=file_path,
                 suggestion="Consider breaking into smaller functions"
             ))
@@ -306,12 +319,133 @@ class DopemuxEnforcer:
             violations.append(ComplianceViolation(
                 type=ViolationType.COMPLEXITY_WARNING,
                 severity=ViolationSeverity.INFO,
-                message=f"Medium complexity ({estimated_complexity:.2f}) - Suggest break at 25 min",
+                message=(
+                    f"Medium complexity ({estimated_complexity:.2f}, source={source}) - "
+                    f"Suggest break at 25 min"
+                ),
                 file_path=file_path,
                 suggestion="Take break if working longer than 25 minutes"
             ))
 
         return violations
+
+    async def _get_serena_complexity_score(self, file_path: str) -> Optional[float]:
+        """
+        Query an injected Serena complexity provider when available.
+
+        Provider can be either:
+        - object with async/sync analyze_complexity(file_path, symbol="")
+        - callable(file_path) returning score-like payload
+        """
+        provider = self.serena_complexity_provider
+        if provider is None:
+            return None
+
+        try:
+            if hasattr(provider, "analyze_complexity"):
+                response = provider.analyze_complexity(file_path, "")
+            else:
+                response = provider(file_path)
+            if asyncio.iscoroutine(response):
+                response = await response
+            return self._extract_complexity_score(response)
+        except Exception as exc:
+            logger.debug("Serena complexity provider failed for %s: %s", file_path, exc)
+            return None
+
+    def _extract_complexity_score(self, payload: Any) -> Optional[float]:
+        """Extract normalized 0..1 complexity score from provider payload."""
+        if payload is None:
+            return None
+
+        if isinstance(payload, (int, float)):
+            return self._normalize_score(float(payload))
+
+        if not isinstance(payload, dict):
+            return None
+
+        direct_keys = ("score", "complexity", "complexity_score", "overall_score")
+        for key in direct_keys:
+            if key in payload:
+                return self._normalize_score(payload[key])
+
+        nested = payload.get("metrics") or {}
+        if isinstance(nested, dict):
+            for key in ("cyclomatic", "cyclomatic_complexity", "maintainability_risk"):
+                if key in nested:
+                    return self._normalize_score(nested[key])
+        return None
+
+    def _normalize_score(self, raw_score: Any) -> float:
+        """Normalize raw complexity values to 0..1 range."""
+        try:
+            score = float(raw_score)
+        except (TypeError, ValueError):
+            return 0.0
+
+        if score < 0:
+            return 0.0
+        if score <= 1:
+            return score
+        if score <= 100:
+            return min(1.0, score / 100.0)
+        return min(1.0, score / 20.0)  # cyclomatic-style fallback scaling
+
+    def _estimate_complexity_score(self, content: str) -> float:
+        """Heuristic complexity estimate used when Serena is unavailable."""
+        line_count = len([line for line in content.splitlines() if line.strip()])
+        line_factor = min(1.0, line_count / 700.0)
+
+        try:
+            tree = ast.parse(content)
+        except SyntaxError:
+            # If parsing fails, fallback to a conservative medium complexity estimate.
+            return max(0.45, line_factor)
+
+        branch_nodes = sum(
+            1
+            for node in ast.walk(tree)
+            if isinstance(node, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.Match))
+        )
+        branch_factor = min(1.0, branch_nodes / 25.0)
+
+        function_count = sum(
+            1 for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        )
+        function_factor = min(1.0, function_count / 30.0)
+
+        max_nesting = self._compute_max_nesting_depth(tree)
+        nesting_factor = min(1.0, max_nesting / 8.0)
+
+        score = (
+            0.35 * line_factor +
+            0.30 * branch_factor +
+            0.20 * nesting_factor +
+            0.15 * function_factor
+        )
+        return max(0.0, min(1.0, score))
+
+    def _compute_max_nesting_depth(self, tree: ast.AST) -> int:
+        """Compute max control-flow nesting depth for complexity heuristics."""
+        control_nodes = (
+            ast.If,
+            ast.For,
+            ast.AsyncFor,
+            ast.While,
+            ast.Try,
+            ast.With,
+            ast.AsyncWith,
+            ast.Match,
+        )
+
+        def _walk(node: ast.AST, depth: int) -> int:
+            max_depth = depth
+            for child in ast.iter_child_nodes(node):
+                next_depth = depth + 1 if isinstance(child, control_nodes) else depth
+                max_depth = max(max_depth, _walk(child, next_depth))
+            return max_depth
+
+        return _walk(tree, 0)
 
     def _check_tool_preferences(
         self,

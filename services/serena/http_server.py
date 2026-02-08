@@ -165,6 +165,23 @@ MOCK_DETECTIONS_SUMMARY = {
 }
 
 
+def format_adhd_friendly(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize metrics payload for low-cognitive-load API responses."""
+    if not isinstance(payload, dict):
+        return {
+            "source": "unknown",
+            "summary": str(payload),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
+    normalized = dict(payload)
+    top_patterns = normalized.get("top_patterns")
+    if isinstance(top_patterns, list):
+        normalized["top_patterns"] = top_patterns[:5]
+    normalized.setdefault("timestamp", datetime.utcnow().isoformat())
+    return normalized
+
+
 # =============================================================================
 # Startup/Shutdown
 # =============================================================================

@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Roadmap Remaining Work (reference) for dopemux documentation and developer
+  workflows.
 ---
 # Roadmap: Remaining Audit Work
 **Date**: 2025-10-16
@@ -68,7 +72,7 @@ next_review: '2026-02-08'
 
 **Priority 2: Verification Tasks** (2h):
 
-5. **SQL Injection Verification** (30min)
+1. **SQL Injection Verification** (30min)
    ```bash
    # Trace graph_name source in age_client.py
    grep -rn "graph_name\s*=" services/conport_kg/
@@ -76,7 +80,7 @@ next_review: '2026-02-08'
    # If from API param: Add validation
    ```
 
-6. **Subprocess Full Audit** (1h)
+2. **Subprocess Full Audit** (1h)
    ```bash
    # Review all 54 instances
    grep -rn "subprocess\.\|os\.system" services/ --include="*.py" > subprocess_audit.txt
@@ -84,17 +88,17 @@ next_review: '2026-02-08'
    # Check: All use list args (not shell=True)
    ```
 
-7. **DopeconBridge Completion Assessment** (30min)
+3. **DopeconBridge Completion Assessment** (30min)
    - Read kg_endpoints.py custom_data stubs
    - Estimate effort to implement MCP integration
    - Create Week 7 implementation plan
 
 **Priority 3: Remaining Services** (Optional, 2-4h):
 
-8. **Claude-Context** (1h) - Determine if legacy/active
-9. **ConPort Orchestrator** (1h) - Review automation logic
-10. **Task-Orchestrator Wrapper** (30min) - Verify Kotlin integration
-11. **Serena Wrapper** (30min) - Review LSP proxy logic
+1. **Claude-Context** (1h) - Determine if legacy/active
+2. **ConPort Orchestrator** (1h) - Review automation logic
+3. **Task-Orchestrator Wrapper** (30min) - Verify Kotlin integration
+4. **Serena Wrapper** (30min) - Review LSP proxy logic
 
 ---
 

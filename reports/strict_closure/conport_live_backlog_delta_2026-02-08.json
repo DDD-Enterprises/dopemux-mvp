@@ -1,0 +1,16 @@
+{
+  "artifact": "reports/strict_closure/conport_live_backlog_delta_2026-02-08.json",
+  "source_previous": "reports/strict_closure/conport_live_progress_backlog_2026-02-07.csv",
+  "source_current": "reports/strict_closure/conport_live_progress_backlog_2026-02-08.csv",
+  "source_master_doc": "docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md",
+  "summary": {
+    "previous_rows": 134,
+    "current_rows": 134,
+    "new_descriptions_since_previous": 0,
+    "new_missing_in_master_exact": 0,
+    "new_missing_in_master_canonical": 0
+  },
+  "new_rows": [],
+  "new_missing_exact": [],
+  "new_missing_canonical": []
+}

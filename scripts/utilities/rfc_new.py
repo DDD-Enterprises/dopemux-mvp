@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 if len(sys.argv) < 2:
-    sys.exit("Usage: rfc_new.py "Title" [feature_id]")
+    sys.exit('Usage: rfc_new.py "Title" [feature_id]')
 title = sys.argv[1]
 feature = sys.argv[2] if len(sys.argv) > 2 else ""
 base = "docs/91-rfc"; os.makedirs(base, exist_ok=True)
@@ -51,5 +51,5 @@ tags: []
 
 ## Reviewers
 """
-open(path,"w",encoding="utf-8").write(fm)
-logger.info("Created", path)
+open(path, "w", encoding="utf-8").write(fm)
+logger.info(f"Created {path}")

@@ -1,10 +1,14 @@
 ---
 id: SERENA_V2_ENHANCEMENT_SESSION_20251024
 title: Serena_V2_Enhancement_Session_20251024
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Serena_V2_Enhancement_Session_20251024 (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Serena v2 Enhancement Session - October 24, 2025
 

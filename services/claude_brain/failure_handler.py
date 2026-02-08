@@ -382,5 +382,4 @@ class FailureHandler:
 
         # Clear resources
         self.failure_patterns.clear()
-        self.recovery_strategies.clear()</content>
-</xai:function_call">The file content contains invalid XML/HTML markup. Please provide clean Python code only.
+        self.recovery_strategies.clear()

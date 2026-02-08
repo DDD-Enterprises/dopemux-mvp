@@ -1,0 +1,39 @@
+{
+  "run_timestamp_utc": "2026-02-06T23:05:00Z",
+  "branch": "codex/wave-next",
+  "backlog_item": "1.4.1: End-to-end profile flow tests (default/explicit profile paths, validation error handling)",
+  "implementation": {
+    "runtime_changes": [
+      "added additive `dopemux start --profile <name>` option",
+      "explicit profile now participates in dry-run preview and runtime apply paths",
+      "role-derived profile remains default when explicit profile is not provided"
+    ],
+    "code_paths": [
+      "src/dopemux/cli.py"
+    ],
+    "tests_added": [
+      "tests/test_cli.py::TestCLI::test_start_command_profile_dry_run",
+      "tests/test_cli.py::TestCLI::test_start_command_profile_dry_run_unknown_profile"
+    ],
+    "tests_revalidated": [
+      "tests/test_cli.py::TestCLI::test_start_command_role_dry_run"
+    ]
+  },
+  "verification": {
+    "commands": [
+      {
+        "command": "pytest -q --no-cov tests/test_cli.py::TestCLI::test_start_command_profile_dry_run tests/test_cli.py::TestCLI::test_start_command_profile_dry_run_unknown_profile",
+        "status": "pass"
+      },
+      {
+        "command": "pytest -q --no-cov tests/test_cli.py::TestCLI::test_start_command_role_dry_run",
+        "status": "pass"
+      },
+      {
+        "command": "python -m py_compile src/dopemux/cli.py",
+        "status": "pass"
+      }
+    ]
+  },
+  "status": "implemented"
+}

@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional
 import backoff
 from datetime import datetime, timedelta
 
-from core.config import MCPConfig
+from ...core.config import MCPConfig
 
 
 class MCPClient(ABC):

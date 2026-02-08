@@ -4,7 +4,7 @@ title: 'ADR-197: Four-Stage Task/Epic Workflow System with Leantime Integration'
 type: adr
 owner: dopemux-core
 date: 2025-10-04
-status: approved
+status: accepted
 adhd_cognitive_load: 0.7
 adhd_attention_required: high
 tags:
@@ -16,6 +16,13 @@ tags:
 - adhd-optimization
 last_review: '2025-10-17'
 next_review: '2026-01-15'
+author: '@hu3mann'
+prelude: 'ADR-197: Four-Stage Task/Epic Workflow System with Leantime Integration
+  (adr) for dopemux documentation and developer workflows.'
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
 # ADR-197: Four-Stage Task/Epic Workflow System with Leantime Integration
 

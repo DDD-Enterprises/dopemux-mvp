@@ -1,5 +1,8 @@
 """Main application entry point for the Genetic Coding Agent system."""
 
+import logging
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,11 +11,35 @@ from .core.config import AgentConfig
 from .vanilla.vanilla_agent import VanillaAgent
 from .genetic.genetic_agent import GeneticAgent
 
+logger = logging.getLogger(__name__)
+
+# Global agent instances
+vanilla_agent = None
+genetic_agent = None
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """Initialize and tear down agent instances for app lifecycle."""
+    global vanilla_agent, genetic_agent
+
+    config = AgentConfig()
+    vanilla_agent = VanillaAgent(config)
+    genetic_agent = GeneticAgent(config)
+
+    try:
+        yield
+    finally:
+        vanilla_agent = None
+        genetic_agent = None
+
+
 # Create FastAPI app
 app = FastAPI(
     title="Genetic Coding Agent",
     description="Dual-agent system for automated code repair with GP enhancements",
-    version="0.2.0"
+    version="0.2.0",
+    lifespan=lifespan,
 )
 
 # Add CORS middleware
@@ -23,21 +50,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Global agent instances
-vanilla_agent = None
-genetic_agent = None
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize agents on startup."""
-    global vanilla_agent, genetic_agent
-
-    config = AgentConfig()
-    vanilla_agent = VanillaAgent(config)
-    genetic_agent = GeneticAgent(config)
-
 
 @app.get("/")
 async def root():

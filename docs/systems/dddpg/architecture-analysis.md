@@ -1,10 +1,14 @@
 ---
 id: architecture-analysis
 title: Architecture Analysis
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Architecture Analysis (reference) for dopemux documentation and developer
+  workflows.
 ---
 # 🧠 DDDPG Deep Architecture Analysis
 

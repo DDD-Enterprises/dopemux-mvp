@@ -1,22 +1,20 @@
 """Memory adapter for ConPort logging of GP attempts and failure signals."""
 
 import asyncio
+import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 import json
 
 from .conport_client import ConPortClient
 
+logger = logging.getLogger(__name__)
+
 
 class MemoryAdapter:
     """Adapter for logging genetic agent attempts and learning to ConPort."""
 
     def __init__(self, conport_client: ConPortClient, workspace_id: str):
-
-import logging
-
-logger = logging.getLogger(__name__)
-
         self.conport_client = conport_client
         self.workspace_id = workspace_id
         self.session_start_time = datetime.now()

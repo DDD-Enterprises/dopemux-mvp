@@ -176,8 +176,6 @@ THEME_PRESETS: Dict[str, Dict[str, Dict[str, str]]] = {
 }
 
 
-import logging
-
 logger = logging.getLogger(__name__)
 
 def _resolve_theme(config) -> Dict[str, Dict[str, str]]:
@@ -207,7 +205,11 @@ def _resolve_theme(config) -> Dict[str, Dict[str, str]]:
     return merged
 
 
-def _apply_status_theme(session: str, theme: Dict[str, Dict[str, str]]) -> None:
+def _apply_status_theme(
+    controller: TmuxController,
+    session: str,
+    theme: Dict[str, Dict[str, str]],
+) -> None:
     """Set status line styling based on resolved theme."""
     status_style = theme.get("status_style")
     status_left = theme.get("status_left")
@@ -236,7 +238,7 @@ def _apply_theme_to_session(
     status_palette = theme.get("status_palette", {})
 
     try:
-        _apply_status_theme(session, theme)
+        _apply_status_theme(controller, session, theme)
         controller.set_session_option(
             session,
             "pane-border-style",
@@ -387,7 +389,8 @@ def _launch_happy_for_targets(
     if popup_mode and not os.environ.get("TMUX"):
         click.echo("[yellow]⚠️  No active tmux client detected; launching Happy in a pane instead of popup.[/yellow]")
         popup_mode = False
-    command = tmux_utils.build_env_command("happy", env)
+    env_prefix = " ".join(f"{key}={shlex.quote(value)}" for key, value in env.items())
+    command = f"{env_prefix} happy" if env_prefix else "happy"
 
     if popup_mode:
         labels = [label for _, label, _ in resolved] or ["primary"]
@@ -538,26 +541,14 @@ def capture_pane_output(
         click.echo(f"❌ Pane not found: {target}")
         return
     
-    if start is not None:
-        # Assuming line-based indexing where start/end are handled by underlying tmux
-        # Controller capture currently simple. Using direct backend call if needed or upgrading controller.
-        # For now, let's adhere to "replace usage", if I can't support range I'll dump all.
-        # Or better: Add capture_range to controller.
-        pass
-        content = controller.backend.capture_pane(pane.pane_id, lines=None) # Start/end support missing in simple backend capture
-        # To strictly replace:
-        # tmux_utils.get_pane_content(pane_id, start, end)
-        # I did not add `capture_range` to controller plan.
-        # But `capture_pane` in backend accepts `lines`.
-        # I should use `tmux_utils` here or quickly patch backend?
-        # I'll stick with `tmux_utils` for this one specific line OR strictly replace.
-        # "Use controller methods".
-        # I will replace it with `capture` and ignore start/end for now, or use `tmux_utils` and mark as TODO?
-        # No, strict migration.
-        # I will leave this one or use `controller.capture`.
-        content = controller.capture(pane.pane_id, lines=abs(start) if start else None)
-    else:
-        content = controller.capture(pane.pane_id, lines=lines)
+    capture_all = start is not None or end is not None
+    content = controller.capture(pane.pane_id, lines=None if capture_all else lines)
+
+    if capture_all:
+        content_lines = content.splitlines()
+        start_idx = max((start or 1) - 1, 0)
+        end_idx = len(content_lines) if end is None else max(end, 0)
+        content = "\n".join(content_lines[start_idx:end_idx])
     
     click.echo(content)
 
@@ -602,12 +593,12 @@ def list_sessions(ctx: click.Context, attach: bool, session_name: Optional[str])
     """List tmux sessions and optionally attach/switch."""
 
     cfg_manager = _resolve_config_manager(ctx)
+    controller = _get_controller(ctx)
     tmux_cfg = cfg_manager.get_tmux_config()
 
     try:
-        # We assume listing is just a sanity check or UI display here.
-        # Controller doesn't expose list_sessions directly, but we can verify availability.
-        pass
+        panes = controller.backend.list_panes()
+        sessions = sorted({pane.session for pane in panes if pane.session})
     except Exception as exc:
         click.echo(f"❌ Unable to list tmux sessions: {exc}")
         return
@@ -629,18 +620,18 @@ def list_sessions(ctx: click.Context, attach: bool, session_name: Optional[str])
     if not attach:
         return
 
-    session_env = os.environ.get("DOPEMUX_TMUX_SESSION")
-    session_name = None
-    if session_env:
-        session_name = session_env.split(":")[0]
+    target = session_name or (default_session if default_session in sessions else sessions[0])
+    if target not in sessions:
+        click.echo(f"❌ Session '{target}' not found; skipping attach.")
+        return
+
+    inside_tmux = bool(os.environ.get("TMUX"))
+    if inside_tmux:
+        click.echo(f"🔁 Switching to tmux session '{target}'...")
+        controller.switch_client(target)
     else:
-        try:
-            panes = controller.backend.list_panes()
-            active_pane = next((pane for pane in panes if pane.active), panes[0] if panes else None)
-            if active_pane:
-                session_name = active_pane.session
-        except Exception as e:
-            session_name = None
+        click.echo(f"🔗 Attaching to tmux session '{target}'...")
+        controller.attach_session(target)
 
 
 @tmux.command("theme")
@@ -711,18 +702,6 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
         console.log(f"[green]✅ Applied '{preset}' theme to session {session_name}.[/green]")
     except Exception as exc:  # pragma: no cover - tmux errors are environment-specific
         console.log(f"[red]❌ Unable to apply theme: {exc}[/red]")
-    target = session_name or (default_session if default_session in sessions else sessions[0])
-    if target not in sessions:
-        click.echo(f"❌ Session '{target}' not found; skipping attach.")
-        return
-
-    inside_tmux = bool(os.environ.get("TMUX"))
-    if inside_tmux:
-        click.echo(f"🔁 Switching to tmux session '{target}'...")
-        controller.switch_client(target)
-    else:
-        click.echo(f"🔗 Attaching to tmux session '{target}'...")
-        controller.attach_session(target)
 
 
 def _happy_label(pane: Optional[PaneInfo]) -> str:
@@ -847,34 +826,34 @@ def _setup_orchestrator_layout(
 
     # Apply session-wide visual defaults before splitting
     try:
-        tmux_utils.set_session_option(session, "status", "on")
-        tmux_utils.set_session_option(session, "status-interval", "2")
-        tmux_utils.set_session_option(session, "status-left-length", "80")
-        tmux_utils.set_session_option(session, "status-right-length", "140")
-        _apply_status_theme(session, theme)
+        controller.set_session_option(session, "status", "on")
+        controller.set_session_option(session, "status-interval", "2")
+        controller.set_session_option(session, "status-left-length", "80")
+        controller.set_session_option(session, "status-right-length", "140")
+        _apply_status_theme(controller, session, theme)
         default_border_fg = status_palette.get("foreground", "#cdd6f4")
         default_border_bg = status_palette.get("background", "#11111b")
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "pane-border-style",
             f"fg={default_border_fg},bg={default_border_bg}",
         )
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "window-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "window-active-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "@dopemux_title_fg",
             status_palette.get("foreground", "#cdd6f4"),
         )
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "@dopemux_title_bg",
             status_palette.get("background", "#1e1e2e"),
@@ -994,14 +973,14 @@ def _setup_orchestrator_layout(
         style = pane_palette.get(title) or pane_palette.get(short_key)
         if style:
             try:
-                tmux_utils.set_pane_style(pane_id, style)
+                controller.set_pane_style(pane_id, style)
             except Exception as e:
                 pass
 
         border_style = border_palette.get(title) or border_palette.get(short_key)
         if border_style:
             try:
-                tmux_utils.set_pane_border_style(pane_id, border_style)
+                controller.set_pane_border_style(pane_id, border_style)
             except Exception as e:
                 pass
 
@@ -1048,7 +1027,6 @@ def _setup_orchestrator_layout(
                             respect_rate_limit=False,
                         )
                     except Exception as e:
-                        pass
                         logger.error(f"Error: {e}")
             else:
                 if title.startswith("monitor:"):
@@ -1196,7 +1174,7 @@ def _setup_orchestrator_layout(
             respect_rate_limit=False,
         )
 
-    tmux_utils.focus_pane(agent_pane_id)
+    controller.focus_pane(agent_pane_id)
 
     return OrchestratorLayout(
         monitors=[top_monitors_id, monitor_right_id],
@@ -1224,34 +1202,34 @@ def _setup_dope_layout(
     status_palette = theme.get("status_palette", {})
 
     try:
-        tmux_utils.set_session_option(session, "status", "on")
-        tmux_utils.set_session_option(session, "status-interval", "2")
-        tmux_utils.set_session_option(session, "status-left-length", "80")
-        tmux_utils.set_session_option(session, "status-right-length", "160")
-        _apply_status_theme(session, theme)
+        controller.set_session_option(session, "status", "on")
+        controller.set_session_option(session, "status-interval", "2")
+        controller.set_session_option(session, "status-left-length", "80")
+        controller.set_session_option(session, "status-right-length", "160")
+        _apply_status_theme(controller, session, theme)
         default_border_fg = status_palette.get("foreground", "#cdd6f4")
         default_border_bg = status_palette.get("background", "#11111b")
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "pane-border-style",
             f"fg={default_border_fg},bg={default_border_bg}",
         )
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "window-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "window-active-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "@dopemux_title_fg",
             status_palette.get("foreground", "#cdd6f4"),
         )
-        tmux_utils.set_session_option(
+        controller.set_session_option(
             session,
             "@dopemux_title_bg",
             status_palette.get("background", "#1e1e2e"),
@@ -1616,7 +1594,7 @@ def _setup_dope_layout(
                 respect_rate_limit=False,
             )
 
-    tmux_utils.focus_pane(agent_pane_id)
+    controller.focus_pane(agent_pane_id)
 
     return OrchestratorLayout(
         monitors=[monitors_left_id, monitor_right_id],
@@ -1870,7 +1848,7 @@ def agent_switch_role(
         respect_rate_limit=False,
     )
     try:
-        tmux_utils.focus_pane(target_pane)
+        controller.focus_pane(target_pane)
     except Exception as e:
         pass
 
@@ -2417,10 +2395,10 @@ def start_tmux(
     inside_tmux = bool(os.environ.get("TMUX"))
     if attach and not inside_tmux:
         click.echo(f"🔗 Attaching to tmux session '{session}'...")
-        tmux_utils.attach_session(session)
+        controller.attach_session(session)
     else:
         if inside_tmux:
             click.echo(f"🔁 Switching to tmux session '{session}'...")
-            tmux_utils.switch_client(session)
+            controller.switch_client(session)
         else:
             click.echo(f"Session ready. Attach manually with: tmux attach -t {session}")

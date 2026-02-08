@@ -5,6 +5,15 @@ type: adr
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Adr 202 Serena V2 Production Validation (adr) for dopemux documentation and
+  developer workflows.
+status: proposed
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
 # ADR-202: Serena v2 Production Readiness Validation
 
@@ -59,6 +68,7 @@ cypher = f"LIMIT {limit}"  # Direct interpolation
 - **Testing**: Integration tests exist
 
 **Comparison**:
+
 | Service | Files | TODOs | Intelligence Status |
 |---------|-------|-------|---------------------|
 | ConPort KG | 8 | Many | ❌ Stubs (all TODOs) |

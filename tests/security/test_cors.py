@@ -19,7 +19,7 @@ class TestCORSSecurity:
     """Test CORS security configuration."""
 
     @pytest_asyncio.fixture(scope="function")
-    async def client(self):
+    async def client(self, request):
         """Create test client for ADHD Engine."""
         # Start ADHD Engine server for testing
         process = None

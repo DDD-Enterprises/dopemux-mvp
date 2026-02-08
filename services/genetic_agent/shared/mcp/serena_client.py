@@ -1,8 +1,12 @@
 """Serena MCP client for code analysis and navigation."""
 
+import logging
+
 from typing import Dict, Any
 from .base_client import MCPClient
 
+
+logger = logging.getLogger(__name__)
 
 class SerenaClient(MCPClient):
     """Client for Serena code intelligence and analysis."""

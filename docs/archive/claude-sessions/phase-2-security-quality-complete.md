@@ -1,10 +1,14 @@
 ---
 id: phase-2-security-quality-complete
 title: Phase 2 Security Quality Complete
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Phase 2 Security Quality Complete (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Phase 2: Automated Security & Quality Scan - COMPLETE ✅
 
@@ -244,17 +248,17 @@ services/conport_kg/orchestrator.py - Multiple "TODO: DopeconBridge" comments
 
 ### Week 7 (Integration Work) - 12 hours
 
-4. **Complete DopeconBridge** (4-6h)
+1. **Complete DopeconBridge** (4-6h)
    - Implement MCP→ConPort integration
    - Wire custom_data endpoints
    - Test end-to-end
 
-5. **Migrate Services to Bridge** (6-8h)
+2. **Migrate Services to Bridge** (6-8h)
    - Remove direct SQLite access
    - Update ADHD Engine to use HTTP API
    - Wire ConPort orchestrator
 
-6. **Verify Authority Enforcement** (2h)
+3. **Verify Authority Enforcement** (2h)
    - Test X-Source-Plane enforcement
    - Validate PM plane read-only
    - Integration tests

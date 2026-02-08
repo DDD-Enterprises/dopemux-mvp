@@ -6,8 +6,7 @@ import {
   Grid,
   Avatar,
   Chip,
-  LinearProgress,
-  Tooltip
+  LinearProgress
 } from '@mui/material';
 import { Users } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';

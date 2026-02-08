@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: 00 Master Index (explanation) for dopemux documentation and developer workflows.
 ---
 # Dopemux Documentation - Master Index
 
@@ -24,13 +27,13 @@ next_review: '2026-02-08'
 ## How-To Guides
 
 ### Deployment
-- [Production Deployment](deployment/DEPLOYMENT-INSTRUCTIONS.md)
-- [Docker Setup](deployment/DEPLOYMENT-CHECKLIST.md)
-- [Worktree Deployment](deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md)
+- [Production Deployment](02-how-to/deployment-guide.md)
+- [Docker Setup](02-how-to/deployment-guide.md)
+- [Worktree Deployment](02-how-to/deployment-worktree.md)
 
 ### Integrations
-- [Leantime Setup](02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md)
-- [Leantime API Configuration](02-how-to/integrations/LEANTIME_API_SETUP_GUIDE.md)
+- [Leantime Setup](02-how-to/integrations/leantime-integration-guide.md)
+- [Leantime API Configuration](02-how-to/integrations/leantime-integration-guide.md)
 - [MCP Service Discovery Guide](02-how-to/mcp-service-discovery-guide.md)
 - [MCP Tools Overview](03-reference/mcp-tools-overview.md)
 
@@ -46,20 +49,20 @@ next_review: '2026-02-08'
 ## Systems Documentation
 
 ### ConPort System
-**Location:** `systems/conport/`
-- [Executive Summary](systems/conport/CONPORT_EXECUTIVE_SUMMARY.md) - Overview of ConPort systems
-- [Systems Analysis](systems/conport/CONPORT_SYSTEMS_ANALYSIS.md) - Technical deep dive
-- [Integration Quickstart](systems/conport/CONPORT_INTEGRATION_QUICKSTART.md)
-- [Comparison Matrix](systems/conport/CONPORT_COMPARISON_MATRIX.md)
-- [Full Documentation](systems/conport/CONPORT_README.md)
+**Location:** `03-reference/systems/conport/`
+- [Executive Summary](03-reference/systems/conport/conport-kg-status.md) - Current ConPort status and quick overview
+- [Systems Analysis](04-explanation/conport-technical-deep-dive.md) - Technical deep dive
+- [Integration Quickstart](02-how-to/mcp-service-discovery-guide.md)
+- [Comparison Matrix](05-audit-reports/service-maturity-gap-analysis.md)
+- [Full Documentation](03-reference/systems/conport/conport-kg-status.md)
 
 ### Dashboard System
-**Location:** `systems/dashboard/`
-- [Dashboard README](systems/dashboard/TMUX_DASHBOARD_README.md)
-- [Design Document](systems/dashboard/TMUX_DASHBOARD_DESIGN.md)
-- [Metrics Inventory](systems/dashboard/TMUX_METRICS_INVENTORY.md)
-- [Implementation Tracker](systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md)
-- [Enhancement Plans](systems/dashboard/DASHBOARD_ENHANCEMENTS.md)
+**Location:** `03-reference/systems/dashboard/`
+- [Dashboard README](03-reference/systems/dashboard/tmux-dashboard-readme.md)
+- [Design Document](03-reference/systems/dashboard/tmux-dashboard-design.md)
+- [Metrics Inventory](03-reference/systems/dashboard/tmux-metrics-inventory.md)
+- [Implementation Tracker](03-reference/systems/dashboard/dashboard-implementation-tracker.md)
+- [Enhancement Plans](03-reference/systems/dashboard/dashboard-enhancements.md)
 
 ---
 
@@ -67,9 +70,9 @@ next_review: '2026-02-08'
 
 ### Core Architecture
 - [Architecture Overview](04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md) - Complete system architecture
-- [System Bible](94-architecture/system-bible.md) - Consolidated knowledge base
+- [System Bible](04-explanation/architecture/system-bible.md) - Consolidated knowledge base
 - [Three-Layer Integration](90-adr/ADR-207-architecture-3.0-three-layer-integration.md)
-- [Multi-Instance Implementation](94-architecture/multi-instance-implementation.md)
+- [Multi-Instance Implementation](04-explanation/architecture/multi-instance-implementation.md)
 
 ### Architecture Decision Records (ADRs)
 **Location:** `90-adr/`
@@ -83,28 +86,28 @@ next_review: '2026-02-08'
 ## Development
 
 ### Active Planning
-**Location:** `development/planning/`
-- [Master Action Plan](development/planning/ACTION-PLAN-MASTER.md)
-- [DDDPG Kickoff](development/planning/DDDPG_KICKOFF.md)
-- [Layout Plans](development/planning/DOPE_LAYOUT_MODULAR_PLAN.md)
+**Location:** `archive/development/planning/`
+- [Master Action Plan](archive/development/planning/ACTION-PLAN-MASTER.md)
+- [DDDPG Kickoff](archive/development/planning/DDDPG_KICKOFF.md)
+- [Layout Plans](archive/development/planning/DOPE_LAYOUT_MODULAR_PLAN.md)
 
 ### Implementation Plans
-**Location:** `implementation-plans/`
-- [Master Index](implementation-plans/00-MASTER-INDEX.md)
-- [Dashboard Implementation](implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md)
-- [ConPort HTTP Planning](implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md)
-- [Component Summaries](implementation-plans/component-1-audit-summary.md)
+**Location:** `archive/implementation-plans/`
+- [Master Index](archive/implementation-plans/00-MASTER-INDEX.md)
+- [Dashboard Implementation](archive/implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md)
+- [ConPort HTTP Planning](archive/implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md)
+- [Component Summaries](archive/implementation-plans/component-1-audit-summary.md)
 
 ---
 
 ## Reference
 
 ### Configuration
-- [Profile YAML Schema](PROFILE-YAML-SCHEMA.md)
+- [Profile YAML Schema](03-reference/configuration/PROFILE-YAML-SCHEMA.md)
 - [MCP Tools Overview](03-reference/mcp-tools-overview.md)
 
 ### Features
-- [Features Index](FEATURES_INDEX.md)
+- [Features Index](03-reference/features/features-index.md)
 - [Untracked Work Detection](03-reference/F001-ENHANCED-untracked-work-system.md)
 - [Multi-Session Support](03-reference/F002-multi-session-support.md)
 

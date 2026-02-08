@@ -2,11 +2,14 @@
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 try:
     from pymilvus import (
@@ -55,11 +58,6 @@ class EmbeddedUnit:
     """Represents a unit with its embedding."""
 
     unit_id: str
-
-import logging
-
-logger = logging.getLogger(__name__)
-
     doc_uri: str
     doc_type: str
     entity_type: str
@@ -615,9 +613,7 @@ class DocumentEmbedder:
                     recency_score = max(0, 365 - days_old) / 365  # Higher for newer
                     score += recency_score * 0.3
                 except Exception as e:
-                    pass
-
-                    logger.error(f"Error: {e}")
+                    logger.debug("Failed to parse created_at '%s': %s", unit.created_at, e)
             # Specificity score using original playbook weights
             specificity_score = self._calculate_specificity_score(unit)
             score += specificity_score * 0.7

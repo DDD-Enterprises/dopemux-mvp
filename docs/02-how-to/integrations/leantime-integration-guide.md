@@ -7,6 +7,9 @@ id: leantime-integration-guide
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+prelude: Leantime Integration Guide (how-to) for dopemux documentation and developer
+  workflows.
 ---
 # Leantime Integration Guide
 
@@ -14,7 +17,6 @@ next_review: '2026-05-03'
 **Last Updated**: 2026-02-02
 
 ---
-
 
 ## Quick Start Setup
 
@@ -70,21 +72,22 @@ sed -i '' 's/LEANTIME_API_TOKEN=.*/LEANTIME_API_TOKEN=your_new_token/' .env
 ### Step 5: Restart Bridge
 
 ```bash
-docker-compose -f docker/mcp-servers/docker-compose.yml restart leantime-bridge
+cd /Users/hue/code/dopemux-mvp/docker/mcp-servers
+docker compose restart leantime-bridge
 ```
 
 ### Step 6: Test Integration
 
 ```bash
 cd docker/mcp-servers/leantime-bridge
-python test_http_server.py
+python test_info_endpoint.py
 ```
 
 **Expected output**:
 ```
-✓ TEST PASSED: Successfully connected via SSE
-✓ TEST PASSED: MCP initialize successful
-✓ TEST PASSED: Successfully listed tools
+✓ Service metadata fields present
+✓ MCP endpoints exposed
+✓ Leantime health status reported
 ```
 
 ## Verify in Claude
@@ -114,7 +117,7 @@ Show me all projects in Leantime
 **Cause**: Leantime container not running
 **Solution**:
 ```bash
-docker-compose -f docker/leantime/docker-compose.yml up -d
+docker compose up -d mysql_leantime redis_leantime leantime leantime-bridge
 ```
 
 ## Health Check
@@ -127,11 +130,22 @@ docker ps --filter "name=leantime"
 # ✅ leantime - Up (healthy)
 # ✅ mysql_leantime - Up (healthy)
 # ✅ redis_leantime - Up (healthy)
-# ✅ mcp-leantime-bridge - Up (healthy)
+# ✅ dopemux-mcp-leantime-bridge - Up (healthy)
 
 # Test API directly
-curl http://localhost:3015/sse --head
-# Expected: HTTP/1.1 200 OK
+curl http://localhost:3015/health
+# Expected: {"status":"ok",...}
+
+# Deep readiness check (verifies live Leantime API call)
+curl "http://localhost:3015/health?deep=1"
+# Expected: {"status":"ok","leantime":"reachable",...}
+
+curl http://localhost:3015/info | jq
+# Expected: JSON with mcp/endpoints/leantime sections
+
+# REST compatibility endpoint used by dopecon-bridge
+curl http://localhost:3015/api/tools | jq
+# Expected: list of bridge tools
 ```
 
 ## What You Get
@@ -148,7 +162,7 @@ After setup, you can:
 
 - **Documentation**: `LEANTIME_MCP_INTEGRATION_COMPLETE.md`
 - **API Reference**: `docker/mcp-servers/leantime-bridge/HTTP_SERVER_README.md`
-- **Test Suite**: `docker/mcp-servers/leantime-bridge/test_http_server.py`
+- **Test Suite**: `docker/mcp-servers/leantime-bridge/test_info_endpoint.py`
 
 ---
 
@@ -157,7 +171,6 @@ After setup, you can:
 **Next**: Complete installation at http://localhost:8080
 
 ---
-
 
 ## API Configuration
 
@@ -227,7 +240,7 @@ nano docker/mcp-servers/leantime-bridge/.env
 LEANTIME_API_TOKEN=lt_a1b2c_xyz789abc123def456...
 
 # Restart the bridge
-docker-compose -f docker/mcp-servers/docker-compose.yml restart leantime-bridge
+docker compose -f docker/mcp-servers/docker-compose.yml restart leantime-bridge
 ```
 
 ## Method 2: Create API Key via Database (Before Installation)
@@ -406,10 +419,10 @@ After creating your API key:
 echo "LEANTIME_API_TOKEN=lt_your_key_here" >> docker/mcp-servers/leantime-bridge/.env
 
 # 2. Restart bridge
-docker-compose -f docker/mcp-servers/docker-compose.yml restart leantime-bridge
+docker compose -f docker/mcp-servers/docker-compose.yml restart leantime-bridge
 
 # 3. Test from bridge container
-docker exec mcp-leantime-bridge python -c "
+docker exec dopemux-mcp-leantime-bridge python -c "
 import asyncio
 import sys
 sys.path.insert(0, '/app')
@@ -425,7 +438,7 @@ asyncio.run(test())
 
 # 4. Run integration tests
 cd docker/mcp-servers/leantime-bridge
-python test_http_server.py
+python test_info_endpoint.py
 ```
 
 ## Recommended Approach
@@ -482,7 +495,6 @@ python test_http_server.py
 **Next Step**: Install Leantime at http://localhost:8080 and create API key
 
 ---
-
 
 ## Deployment Strategy
 
@@ -812,7 +824,7 @@ curl -X POST http://localhost:8080/api/jsonrpc \
 
 # Test MCP bridge
 cd docker/mcp-servers/leantime-bridge
-python test_http_server.py
+python test_info_endpoint.py
 ```
 
 ### 3. ADHD Feature Testing
@@ -907,7 +919,7 @@ docker exec leantime tail -f /var/log/php_errors.log
 
 ```bash
 # Bridge logs
-docker logs -f mcp-leantime-bridge
+docker logs -f dopemux-mcp-leantime-bridge
 
 # Test connection
 curl http://localhost:3015/sse --head

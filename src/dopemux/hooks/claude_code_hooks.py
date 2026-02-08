@@ -12,6 +12,7 @@ with Claude Code's operation.
 """
 
 import asyncio
+import json
 import os
 import subprocess
 import logging
@@ -212,8 +213,35 @@ class ClaudeCodeHooks:
 
         Uses Dopemux's trigger command for external integration.
         """
-        # TODO: Implement dopemux trigger command or use alternative event system
-        logger.debug(f"Hook event (not processed): {event_type} - {context}")
+        try:
+            if event_type == "claude-commands":
+                command = [
+                    "dopemux",
+                    "trigger",
+                    "shell-command",
+                    "--context",
+                    json.dumps(context),
+                    "--async",
+                    "--quiet",
+                ]
+            else:
+                command = ["dopemux", "trigger", "command-done", "--async", "--quiet"]
+
+            process = await asyncio.create_subprocess_exec(
+                *command,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            await asyncio.wait_for(process.wait(), timeout=2.0)
+
+            if process.returncode != 0:
+                logger.debug("Hook trigger command failed (%s): %s", process.returncode, command)
+        except FileNotFoundError:
+            logger.debug("dopemux executable not found; skipping hook trigger for %s", event_type)
+        except asyncio.TimeoutError:
+            logger.debug("Hook trigger timed out for %s", event_type)
+        except Exception as exc:
+            logger.debug("Hook trigger failed for %s: %s", event_type, exc)
 
     # Shell integration helpers
     def generate_shell_hooks(self) -> Dict[str, str]:

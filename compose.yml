@@ -30,6 +30,12 @@ volumes:
   mcp_logs:
   mcp_cache:
   dope-decision-graph-qdrant-data:
+  leantime_mysql_data:
+  leantime_redis_data:
+  leantime_public_userfiles:
+  leantime_userfiles:
+  leantime_logs:
+  leantime_config:
 
 
 services:
@@ -89,6 +95,102 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+
+  # MySQL (Leantime)
+  mysql_leantime:
+    image: mysql:8.0
+    container_name: mysql_leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-leantime_root_dev}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-leantime}
+      - MYSQL_USER=${MYSQL_USER:-leantime}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
+    command: >
+      --character-set-server=UTF8MB4
+      --collation-server=UTF8MB4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+    volumes:
+      - leantime_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD:-leantime_root_dev} || exit 1"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+      start_period: 30s
+
+  # Redis (Leantime cache/session support)
+  redis_leantime:
+    image: redis:7-alpine
+    container_name: redis_leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    command: >
+      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then
+      exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+      else
+      exec redis-server --appendonly yes;
+      fi'
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    volumes:
+      - leantime_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 5
+      interval: 10s
+
+  # Leantime PM container (canonical stack member)
+  leantime:
+    build:
+      context: ./docker/leantime
+      dockerfile: Dockerfile
+    container_name: leantime
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "8080:80"
+    depends_on:
+      mysql_leantime:
+        condition: service_healthy
+      redis_leantime:
+        condition: service_started
+    environment:
+      - LEAN_DB_HOST=mysql_leantime
+      - LEAN_DB_USER=${MYSQL_USER:-leantime}
+      - LEAN_DB_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
+      - LEAN_DB_DATABASE=${MYSQL_DATABASE:-leantime}
+      - LEAN_DB_PORT=3306
+      - LEAN_SITENAME=${LEAN_SITENAME:-Dopemux Leantime}
+      - LEAN_SESSION_PASSWORD=${LEAN_SESSION_PASSWORD:-dopemux_session_password_minimum_32_chars}
+      - LEAN_APP_URL=${LEAN_APP_URL:-http://localhost:8080}
+      - LEAN_SESSION_EXPIRATION=${LEAN_SESSION_EXPIRATION:-28800}
+      - LEAN_DEBUG=${LEAN_DEBUG:-0}
+      - LEAN_API_ENABLED=${LEAN_API_ENABLED:-true}
+      - LEAN_MCP_ENABLED=${LEAN_MCP_ENABLED:-true}
+      - LEAN_MCP_TOKEN=${LEAN_MCP_TOKEN:-}
+      - LEAN_ADHD_MODE=${LEAN_ADHD_MODE:-true}
+      - LEAN_NOTIFICATION_BATCH=${LEAN_NOTIFICATION_BATCH:-true}
+      - LEAN_CONTEXT_PRESERVATION=${LEAN_CONTEXT_PRESERVATION:-true}
+      - REDIS_HOST=redis_leantime
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    volumes:
+      - leantime_public_userfiles:/var/www/html/public/userfiles
+      - leantime_userfiles:/var/www/html/userfiles
+      - ./docker/leantime/plugins:/var/www/html/app/Plugins
+      - leantime_logs:/var/www/html/storage/logs
+      - leantime_config:/var/www/html/config
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/ >/dev/null || exit 1"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 60s
 
   # Redis UI (optional web interface)
   redis-ui:
@@ -297,6 +399,7 @@ services:
     depends_on:
       - redis-primary
       - conport
+      - leantime
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       timeout: 10s
@@ -490,9 +593,12 @@ services:
     environment:
       - MCP_SERVER_HOST=0.0.0.0
       - MCP_SERVER_PORT=3015
+      - LEANTIME_API_URL=${LEANTIME_API_URL:-${LEANTIME_URL:-http://leantime:80}}
+      - LEANTIME_API_TOKEN=${LEANTIME_API_TOKEN:-${LEANTIME_TOKEN:-}}
       - REDIS_URL=redis://redis-primary:6379
     depends_on:
       - mcp-qdrant
+      - leantime
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3015/health"]
       timeout: 10s

@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Production_Readiness_Plan (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Multi-Workspace Production Readiness Plan
 
@@ -462,16 +466,16 @@ next_review: '2026-05-02'
    - Fallback: Single LSP with workspace context
 
 ### Medium Risk
-3. **Performance with many workspaces**
+1. **Performance with many workspaces**
    - Mitigation: Load testing in phase 3
    - Fallback: Add workspace limits
 
-4. **Docker volume complexity**
+2. **Docker volume complexity**
    - Mitigation: Simple bind mounts first
    - Fallback: Named volumes
 
 ### Low Risk
-5. **Documentation completeness**
+1. **Documentation completeness**
    - Mitigation: Progressive documentation
    - Fallback: Minimal viable docs first
 

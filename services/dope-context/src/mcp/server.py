@@ -10,10 +10,12 @@ MCP Tools:
 """
 
 import asyncio
+import ast
 import json
 import logging
 import os
 import pickle
+import aiohttp
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -33,7 +35,7 @@ except ImportError:  # pragma: no cover - for constrained test envs
         """Fallback request stub."""
 
         def __init__(self, *args, **kwargs):
-            pass
+            self._starlette_unavailable = True
 
     class JSONResponse(dict):  # type: ignore
         """Fallback JSON response stub."""
@@ -373,10 +375,8 @@ def _discover_workspaces_from_snapshots() -> List[Path]:
             try:
                 data = json.loads(file_path.read_text())
                 workspace_str = data.get("workspace_path")
-            except Exception as e:
+            except Exception:
                 continue
-
-                logger.error(f"Error: {e}")
             if workspace_str:
                 workspace_path = Path(workspace_str)
                 break
@@ -1206,8 +1206,6 @@ async def _clear_index_impl(
             cleared.append(label)
         except Exception as exc:
             errors.append({"index": label, "error": str(exc)})
-
-            logger.error(f"Error: {e}")
     if target_normalized in {"code", "both"}:
         await _delete_collection(code_collection, "code")
         bm25_cache_path = _snapshot_dir_for_hash(workspace_hash) / "bm25_index.pkl"
@@ -1500,13 +1498,180 @@ async def docs_search(
     }
 
 
+def _decision_sync_config_path(workspace: Path) -> Path:
+    """Path to workspace-scoped decision search config."""
+    return get_snapshot_dir(workspace) / "decision_sync_config.json"
+
+
+def _default_decision_sync_config() -> Dict[str, Any]:
+    """Default decision-search settings for unified retrieval."""
+    return {
+        "enabled": False,
+        "bridge_url": os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016"),
+        "limit": 6,
+        "auto_include_in_search_all": True,
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+
+
+def _load_decision_sync_config(workspace: Path) -> Dict[str, Any]:
+    """Load decision-search settings; fallback to defaults."""
+    defaults = _default_decision_sync_config()
+    config_path = _decision_sync_config_path(workspace)
+
+    if not config_path.exists():
+        return defaults
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+        if isinstance(payload, dict):
+            defaults.update(payload)
+    except Exception as exc:
+        logger.warning("Failed to load decision sync config at %s: %s", config_path, exc)
+
+    return defaults
+
+
+def _save_decision_sync_config(workspace: Path, config: Dict[str, Any]) -> Path:
+    """Persist decision-search settings for a workspace."""
+    config_path = _decision_sync_config_path(workspace)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+
+    normalized = _default_decision_sync_config()
+    normalized.update(config)
+    normalized["limit"] = max(1, min(int(normalized.get("limit", 6)), 20))
+    normalized["updated_at"] = datetime.utcnow().isoformat()
+
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(normalized, f, indent=2)
+
+    return config_path
+
+
+async def _search_decisions_impl(
+    query: str,
+    top_k: int = 6,
+    workspace_path: Optional[str] = None,
+    bridge_url: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Query ConPort decisions through dopecon-bridge for unified retrieval.
+    """
+    workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    config = _load_decision_sync_config(workspace)
+
+    if not config.get("enabled", False):
+        return []
+
+    target_url = str(bridge_url or config.get("bridge_url") or "").rstrip("/")
+    if not target_url:
+        return []
+
+    limit = max(1, min(int(top_k), 20))
+    params = {"text": query, "limit": limit}
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{target_url}/kg/decisions/search",
+                params=params,
+                timeout=aiohttp.ClientTimeout(total=5.0),
+            ) as response:
+                if response.status != 200:
+                    logger.debug(
+                        "Decision search failed (%s): %s",
+                        response.status,
+                        target_url,
+                    )
+                    return []
+                payload = await response.json()
+    except Exception as exc:
+        logger.debug("Decision search unavailable: %s", exc)
+        return []
+
+    raw_items = payload.get("decisions") or payload.get("items") or []
+    normalized: List[Dict[str, Any]] = []
+    for item in raw_items[:limit]:
+        if not isinstance(item, dict):
+            continue
+        normalized.append(
+            {
+                "id": item.get("id"),
+                "summary": item.get("summary") or item.get("title") or "",
+                "timestamp": item.get("timestamp") or item.get("updated_at"),
+                "source": "conport",
+            }
+        )
+
+    return normalized
+
+
+@mcp.tool()
+async def configure_decision_auto_indexing(
+    workspace_path: Optional[str] = None,
+    enabled: bool = True,
+    bridge_url: Optional[str] = None,
+    decision_limit: int = 6,
+    auto_include_in_search_all: bool = True,
+) -> Dict[str, Any]:
+    """
+    Configure decision retrieval for unified search.
+
+    This enables `search_all` to automatically include ConPort decision matches
+    alongside code and docs results.
+    """
+    workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    current = _load_decision_sync_config(workspace)
+    current.update(
+        {
+            "enabled": enabled,
+            "bridge_url": bridge_url or current.get("bridge_url"),
+            "limit": max(1, min(int(decision_limit), 20)),
+            "auto_include_in_search_all": auto_include_in_search_all,
+        }
+    )
+    config_path = _save_decision_sync_config(workspace, current)
+
+    return {
+        "workspace": str(workspace),
+        "config_path": str(config_path),
+        "config": current,
+        "message": (
+            "Decision retrieval enabled for search_all"
+            if enabled
+            else "Decision retrieval disabled for search_all"
+        ),
+    }
+
+
 async def _search_all_impl(
     query: str,
     top_k: int = 10,
     workspace_path: Optional[str] = None,
+    include_decisions: bool = True,
 ) -> Dict:
     """Implementation of unified search_all tool."""
     workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    decision_config = _load_decision_sync_config(workspace)
+    decision_enabled = bool(
+        include_decisions
+        and decision_config.get("enabled", False)
+        and decision_config.get("auto_include_in_search_all", True)
+    )
+
+    code_top_k = max(1, top_k // 2)
+    docs_top_k = max(1, top_k // 2)
+    decision_top_k = 0
+    code_budget = 4000
+    docs_budget = 4000
+
+    if decision_enabled:
+        code_top_k = max(1, top_k // 3)
+        docs_top_k = max(1, top_k // 3)
+        decision_top_k = max(1, top_k - code_top_k - docs_top_k)
+        code_budget = 3200
+        docs_budget = 3200
 
     # Log metrics for benchmarking
     get_tracker().log_search(
@@ -1518,27 +1683,48 @@ async def _search_all_impl(
 
     logger.info(f"Unified search in workspace: {workspace}")
 
-    # Search both code and docs in parallel (split budget to stay under 10K)
-    # Each gets 4K token budget (4K code + 4K docs + 1K overhead = 9K total)
+    # Search code + docs in parallel, optionally adding ConPort decision retrieval.
     code_results_task = _search_code_impl(
-        query, top_k // 2, use_reranking=False, workspace_path=str(workspace),
-        budget_tokens=4000  # Half budget for unified search
+        query,
+        code_top_k,
+        use_reranking=False,
+        workspace_path=str(workspace),
+        budget_tokens=code_budget,
     )
     docs_results_task = _docs_search_impl(
-        query, top_k // 2, workspace_path=str(workspace), max_content_length=1500,
-        budget_tokens=4000  # Half budget for unified search
+        query,
+        docs_top_k,
+        workspace_path=str(workspace),
+        max_content_length=1500,
+        budget_tokens=docs_budget,
     )
 
-    code_results, docs_results = await asyncio.gather(
-        code_results_task,
-        docs_results_task,
-    )
+    if decision_enabled:
+        decision_results_task = _search_decisions_impl(
+            query=query,
+            top_k=decision_top_k,
+            workspace_path=str(workspace),
+            bridge_url=decision_config.get("bridge_url"),
+        )
+        code_results, docs_results, decision_results = await asyncio.gather(
+            code_results_task,
+            docs_results_task,
+            decision_results_task,
+        )
+    else:
+        code_results, docs_results = await asyncio.gather(
+            code_results_task,
+            docs_results_task,
+        )
+        decision_results = []
 
     return {
         "workspace": str(workspace),
         "code_results": code_results,
         "docs_results": docs_results,
-        "total_results": len(code_results) + len(docs_results),
+        "decision_results": decision_results,
+        "decision_search_enabled": decision_enabled,
+        "total_results": len(code_results) + len(docs_results) + len(decision_results),
     }
 
 
@@ -1548,9 +1734,10 @@ async def search_all(
     top_k: int = 10,
     workspace_path: Optional[str] = None,
     workspace_paths: Optional[List[str]] = None,
+    include_decisions: bool = True,
 ) -> Any:
     """
-    Unified search across BOTH code and docs.
+    Unified search across code, docs, and optional ConPort decisions.
 
     🎯 **WHEN TO USE**:
     - **Complete context**: Need both implementation and documentation together
@@ -1562,12 +1749,14 @@ async def search_all(
 
     Args:
         query: Natural language search query
-        top_k: Total results (split between code and docs, default 10)
+        top_k: Total results budget (default 10)
         workspace_path: Optional workspace path (auto-detects if None)
         workspace_paths: Optional list of workspaces to query sequentially
+        include_decisions: Include decision matches when configured
 
     Returns:
-        Combined results with workspace, code_results, docs_results, total_results
+        Combined results with workspace, code_results, docs_results,
+        decision_results, and total_results.
     """
     targets = _resolve_explicit_workspaces(
         workspace_path,
@@ -1584,6 +1773,7 @@ async def search_all(
             query,
             top_k,
             str(workspace),
+            include_decisions=include_decisions,
         )
         aggregated_results.append(workspace_results)
         total_results += workspace_results.get("total_results", 0)
@@ -1624,6 +1814,8 @@ async def _sync_workspace_impl(
     if not changes.has_changes():
         return {
             "workspace": str(workspace),
+            "has_changes": False,
+            "total_changes": 0,
             "changes": 0,
             "added": 0,
             "modified": 0,
@@ -1645,7 +1837,9 @@ async def _sync_workspace_impl(
             chunker = CodeChunker()
             openai_key = os.getenv("OPENAI_API_KEY")
             context_generator = OpenAIContextGenerator(api_key=openai_key) if openai_key else None
-            embedder = _get_cached_embedder(api_key=_get_voyage_api_key())
+            voyage_key = _get_voyage_api_key()
+            standard_embedder = _get_cached_embedder(api_key=voyage_key)
+            contextualized_embedder = _get_cached_contextualized_embedder(api_key=voyage_key)
 
             config = IndexingConfig(
                 workspace_path=workspace,
@@ -1656,7 +1850,8 @@ async def _sync_workspace_impl(
             pipeline = IndexingPipeline(
                 chunker=chunker,
                 context_generator=context_generator,
-                embedder=embedder,
+                standard_embedder=standard_embedder,
+                contextualized_embedder=contextualized_embedder,
                 vector_search=vector_search,
                 config=config,
             )
@@ -1664,10 +1859,11 @@ async def _sync_workspace_impl(
             # Index only changed files
             changed_files = changes.added + changes.modified
             if changed_files:
+                changed_patterns = [Path(path).as_posix().lstrip("./") for path in changed_files]
                 # Create temporary config with only changed files
                 temp_config = IndexingConfig(
                     workspace_path=workspace,
-                    include_patterns=changed_files,  # Only these specific files
+                    include_patterns=changed_patterns,  # Only these specific files
                     workspace_id=str(workspace),
                 )
                 pipeline.config = temp_config
@@ -1676,8 +1872,34 @@ async def _sync_workspace_impl(
 
             # Delete removed files from collection
             if changes.removed:
-                # TODO: Delete specific point IDs for removed files
-                logger.info(f"Note: {len(changes.removed)} files removed (manual cleanup needed)")
+                all_docs = await vector_search.get_all_payloads()
+                removed_set = {Path(path).as_posix() for path in changes.removed}
+                removed_basenames = {Path(path).name for path in changes.removed}
+                point_ids_to_delete: List[str] = []
+                for doc in all_docs:
+                    source_path = doc.get("file_path") or doc.get("source_path")
+                    point_id = doc.get("id")
+                    if not source_path or not point_id:
+                        continue
+                    source_norm = Path(str(source_path)).as_posix()
+                    if (
+                        source_norm in removed_set
+                        or source_norm.lstrip("./") in removed_set
+                        or Path(source_norm).name in removed_basenames
+                    ):
+                        point_ids_to_delete.append(str(point_id))
+                if point_ids_to_delete:
+                    await vector_search.delete_points(point_ids_to_delete)
+                    logger.info(
+                        "Deleted %s vectors for %s removed files",
+                        len(point_ids_to_delete),
+                        len(changes.removed),
+                    )
+                else:
+                    logger.info(
+                        "No matching vector points found for %s removed files",
+                        len(changes.removed),
+                    )
 
             # Rebuild BM25 index after incremental changes
             try:
@@ -1698,6 +1920,8 @@ async def _sync_workspace_impl(
 
             return {
                 "workspace": str(workspace),
+                "has_changes": changes.total_changes() > 0,
+                "total_changes": changes.total_changes(),
                 "changes": changes.total_changes(),
                 "added": len(changes.added),
                 "modified": len(changes.modified),
@@ -1710,6 +1934,8 @@ async def _sync_workspace_impl(
             logger.error(f"Auto-reindex failed: {reindex_error}")
             return {
                 "workspace": str(workspace),
+                "has_changes": changes.total_changes() > 0,
+                "total_changes": changes.total_changes(),
                 "changes": changes.total_changes(),
                 "added": len(changes.added),
                 "modified": len(changes.modified),
@@ -1721,6 +1947,8 @@ async def _sync_workspace_impl(
     # Just report changes without reindexing
     return {
         "workspace": str(workspace),
+        "has_changes": changes.total_changes() > 0,
+        "total_changes": changes.total_changes(),
         "changes": changes.total_changes(),
         "added": len(changes.added),
         "modified": len(changes.modified),
@@ -2309,9 +2537,103 @@ async def get_chunk_complexity(file_path: str, symbol: str) -> Dict:
 
     Returns complexity score 0.0-1.0 from Tree-sitter analysis.
     """
-    # TODO: Extract from existing chunking pipeline
-    # For now, return moderate complexity
-    return {"complexity": 0.5, "method": "tree-sitter-ast", "file_path": file_path, "symbol": symbol}
+    resolved = Path(file_path).expanduser()
+    if not resolved.is_absolute():
+        resolved = (Path.cwd() / resolved).resolve()
+    if not resolved.exists():
+        return {
+            "complexity": 0.5,
+            "method": "ast-heuristic",
+            "file_path": str(resolved),
+            "symbol": symbol,
+            "reason": "file_not_found",
+        }
+
+    try:
+        source = resolved.read_text(encoding="utf-8", errors="ignore")
+    except Exception as exc:
+        return {
+            "complexity": 0.5,
+            "method": "ast-heuristic",
+            "file_path": str(resolved),
+            "symbol": symbol,
+            "reason": f"read_error:{exc}",
+        }
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        # Fallback heuristic for non-Python files or parse failures.
+        line_count = max(1, len(source.splitlines()))
+        keyword_hits = sum(
+            source.lower().count(keyword)
+            for keyword in ("if ", "for ", "while ", "try:", "except", "class ", "def ")
+        )
+        complexity = min(1.0, 0.15 + (line_count / 400.0) + (keyword_hits / 100.0))
+        return {
+            "complexity": round(complexity, 3),
+            "method": "text-heuristic",
+            "file_path": str(resolved),
+            "symbol": symbol,
+            "line_count": line_count,
+            "keyword_hits": keyword_hits,
+        }
+
+    symbol_node: Optional[ast.AST] = None
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if getattr(node, "name", None) == symbol:
+                symbol_node = node
+                break
+
+    if symbol_node is not None:
+        start = getattr(symbol_node, "lineno", 1)
+        end = getattr(symbol_node, "end_lineno", start)
+        target_source = "\n".join(source.splitlines()[start - 1 : end])
+        target_tree = symbol_node
+    else:
+        start = 1
+        end = len(source.splitlines())
+        target_source = source
+        target_tree = tree
+
+    branch_nodes = (
+        ast.If,
+        ast.For,
+        ast.AsyncFor,
+        ast.While,
+        ast.Try,
+        ast.With,
+        ast.AsyncWith,
+        ast.Match,
+        ast.comprehension,
+    )
+    branch_count = sum(1 for node in ast.walk(target_tree) if isinstance(node, branch_nodes))
+
+    def _max_depth(node: ast.AST, depth: int = 0) -> int:
+        children = list(ast.iter_child_nodes(node))
+        if not children:
+            return depth
+        return max(_max_depth(child, depth + 1) for child in children)
+
+    max_depth = _max_depth(target_tree)
+    line_count = max(1, len(target_source.splitlines()))
+
+    complexity = min(
+        1.0,
+        0.1 + (line_count / 220.0) + (branch_count / 20.0) + (max_depth / 30.0),
+    )
+    return {
+        "complexity": round(complexity, 3),
+        "method": "ast-heuristic",
+        "file_path": str(resolved),
+        "symbol": symbol,
+        "line_count": line_count,
+        "branch_count": branch_count,
+        "max_depth": max_depth,
+        "scope_start_line": start,
+        "scope_end_line": end,
+    }
 
 
 if __name__ == "__main__":

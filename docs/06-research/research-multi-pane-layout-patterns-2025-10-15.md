@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Research_Multi Pane_Layout_Patterns_2025 10 15 (reference) for dopemux documentation
+  and developer workflows.
 ---
 # Multi-Pane Layout Patterns for Developer Productivity
 ## Research Report for Dopemux Two-Plane Architecture
@@ -253,6 +257,7 @@ layout:
 ### Small Terminal Accessibility
 
 **Responsive Breakpoints**
+
 | Terminal Size | Layout Adaptation |
 |--------------|-------------------|
 | < 80 cols    | Single pane only, tab-based switching |
@@ -829,46 +834,46 @@ PM Plane (30%)              Cognitive Plane (70%)
 3. [Developer Productivity - Navigation & Window Management](https://frontendmasters.com/courses/developer-productivity/navigation-window-management/) - Frontend Masters
 
 ### Terminal Multiplexers
-4. [Zellij vs Tmux: Complete Comparison](https://rrmartins.medium.com/zellij-vs-tmux-complete-comparison-or-almost-8e5b57d234ae) - Medium
-5. [From Zellij to Tmux Back to Zellij](https://vadosware.io/post/from-zellij-to-tmux-back-to-zellij) - Vadosware
-6. [About Zellij](https://zellij.dev/about/) - Official Documentation
-7. [Zellij: The Impressions of a Casual tmux User](https://keyholesoftware.com/zellij-the-impressions-of-a-casual-tmux-user/) - Keyhole Software
+1. [Zellij vs Tmux: Complete Comparison](https://rrmartins.medium.com/zellij-vs-tmux-complete-comparison-or-almost-8e5b57d234ae) - Medium
+2. [From Zellij to Tmux Back to Zellij](https://vadosware.io/post/from-zellij-to-tmux-back-to-zellij) - Vadosware
+3. [About Zellij](https://zellij.dev/about/) - Official Documentation
+4. [Zellij: The Impressions of a Casual tmux User](https://keyholesoftware.com/zellij-the-impressions-of-a-casual-tmux-user/) - Keyhole Software
 
 ### IDE Multi-Pane Design
-8. [Custom Layout - Visual Studio Code](https://code.visualstudio.com/docs/configure/custom-layout) - Official Docs
-9. [Editor Layout in Visual Studio Code](https://stevekinney.com/courses/visual-studio-code/vscode-editor-layout) - Steve Kinney
-10. [Comparing IntelliJ IDEA and Visual Studio Code](https://graphite.dev/guides/intellij-vs-vscode) - Graphite
+1. [Custom Layout - Visual Studio Code](https://code.visualstudio.com/docs/configure/custom-layout) - Official Docs
+2. [Editor Layout in Visual Studio Code](https://stevekinney.com/courses/visual-studio-code/vscode-editor-layout) - Steve Kinney
+3. [Comparing IntelliJ IDEA and Visual Studio Code](https://graphite.dev/guides/intellij-vs-vscode) - Graphite
 
 ### Dashboard Design
-11. [Dashboards - Grafana Documentation](https://grafana.com/docs/grafana/latest/dashboards/) - Official Docs
-12. [Grafana Dashboard Best Practices](https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/best-practices/) - Official Docs
-13. [Getting Started with Dashboards - Datadog](https://docs.datadoghq.com/getting_started/dashboards/) - Official Docs
+1. [Dashboards - Grafana Documentation](https://grafana.com/docs/grafana/latest/dashboards/) - Official Docs
+2. [Grafana Dashboard Best Practices](https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/best-practices/) - Official Docs
+3. [Getting Started with Dashboards - Datadog](https://docs.datadoghq.com/getting_started/dashboards/) - Official Docs
 
 ### Accessibility
-14. [Keyboard Accessibility - Windows Apps](https://learn.microsoft.com/en-us/windows/apps/design/accessibility/keyboard-accessibility) - Microsoft Learn
-15. [Tabbed Interfaces](https://inclusive-components.design/tabbed-interfaces/) - Inclusive Components
-16. [Complete Guide To Accessible Front-End Components](https://www.smashingmagazine.com/2021/03/complete-guide-accessible-front-end-components/) - Smashing Magazine
+1. [Keyboard Accessibility - Windows Apps](https://learn.microsoft.com/en-us/windows/apps/design/accessibility/keyboard-accessibility) - Microsoft Learn
+2. [Tabbed Interfaces](https://inclusive-components.design/tabbed-interfaces/) - Inclusive Components
+3. [Complete Guide To Accessible Front-End Components](https://www.smashingmagazine.com/2021/03/complete-guide-accessible-front-end-components/) - Smashing Magazine
 
 ### ADHD-Specific Design
-17. [Software Accessibility for Users with Attention Deficit Disorder](https://www.carlociccarelli.com/post/software-accessibility-for-users-with-attention-deficit-disorder) - Carlo Ciccarelli
-18. [Inclusive UX/UI for Neurodivergent Users](https://medium.com/design-bootcamp/inclusive-ux-ui-for-neurodivergent-users-best-practices-and-challenges-488677ed2c6e) - Medium
-19. [Designing for ADHD Users: A Psychology-Informed Approach](https://medium.com/design-bootcamp/designing-for-adhd-users-a-psychology-informed-approach-d2fc055d5e33) - Medium
-20. [Hacking ADHD - Strategies for the Modern Developer](https://www.ledger.com/blog/hacking-adhd-strategies-for-the-modern-developer) - Ledger
+1. [Software Accessibility for Users with Attention Deficit Disorder](https://www.carlociccarelli.com/post/software-accessibility-for-users-with-attention-deficit-disorder) - Carlo Ciccarelli
+2. [Inclusive UX/UI for Neurodivergent Users](https://medium.com/design-bootcamp/inclusive-ux-ui-for-neurodivergent-users-best-practices-and-challenges-488677ed2c6e) - Medium
+3. [Designing for ADHD Users: A Psychology-Informed Approach](https://medium.com/design-bootcamp/designing-for-adhd-users-a-psychology-informed-approach-d2fc055d5e33) - Medium
+4. [Hacking ADHD - Strategies for the Modern Developer](https://www.ledger.com/blog/hacking-adhd-strategies-for-the-modern-developer) - Ledger
 
 ### Progressive Disclosure
-21. [Progressive Disclosure - NN/G](https://www.nngroup.com/articles/progressive-disclosure/) - Nielsen Norman Group
-22. [What is Progressive Disclosure?](https://www.interaction-design.org/literature/topics/progressive-disclosure) - Interaction Design Foundation
-23. [Progressive Disclosure in UX Design](https://blog.logrocket.com/ux-design/using-progressive-disclosure-complex-content/) - LogRocket
+1. [Progressive Disclosure - NN/G](https://www.nngroup.com/articles/progressive-disclosure/) - Nielsen Norman Group
+2. [What is Progressive Disclosure?](https://www.interaction-design.org/literature/topics/progressive-disclosure) - Interaction Design Foundation
+3. [Progressive Disclosure in UX Design](https://blog.logrocket.com/ux-design/using-progressive-disclosure-complex-content/) - LogRocket
 
 ### Golden Ratio & Split Ratios
-24. [Mastering The Golden Ratio In Design](https://www.elegantthemes.com/blog/design/mastering-the-golden-ratio-in-design) - Elegant Themes
-25. [The Golden Ratio - Principles of Form and Layout](https://www.interaction-design.org/literature/article/the-golden-ratio-principles-of-form-and-layout) - IxDF
-26. [Split-Screen Layouts](https://profiletree.com/split-screen-layouts/) - ProfileTree
+1. [Mastering The Golden Ratio In Design](https://www.elegantthemes.com/blog/design/mastering-the-golden-ratio-in-design) - Elegant Themes
+2. [The Golden Ratio - Principles of Form and Layout](https://www.interaction-design.org/literature/article/the-golden-ratio-principles-of-form-and-layout) - IxDF
+3. [Split-Screen Layouts](https://profiletree.com/split-screen-layouts/) - ProfileTree
 
 ### Terminal UI Design
-27. [Command Line Interface Guidelines](https://clig.dev/) - Open Source Guide
-28. [UX Patterns for CLI Tools](https://lucasfcosta.com/2022/06/01/ux-patterns-cli-tools.html) - Lucas Costa
-29. [CLI UX Best Practices: Progress Displays](https://evilmartians.com/chronicles/cli-ux-best-practices-3-patterns-for-improving-progress-displays) - Evil Martians
+1. [Command Line Interface Guidelines](https://clig.dev/) - Open Source Guide
+2. [UX Patterns for CLI Tools](https://lucasfcosta.com/2022/06/01/ux-patterns-cli-tools.html) - Lucas Costa
+3. [CLI UX Best Practices: Progress Displays](https://evilmartians.com/chronicles/cli-ux-best-practices-3-patterns-for-improving-progress-displays) - Evil Martians
 
 ---
 

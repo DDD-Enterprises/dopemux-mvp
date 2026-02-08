@@ -1,0 +1,1 @@
+"""Leantime MCP bridge package."""

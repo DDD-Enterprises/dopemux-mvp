@@ -1,10 +1,14 @@
 ---
 id: EPIC_SESSION_FINALE
 title: Epic_Session_Finale
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Epic_Session_Finale (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # EPIC SESSION FINALE - ADHD Intelligence Stack Complete
 

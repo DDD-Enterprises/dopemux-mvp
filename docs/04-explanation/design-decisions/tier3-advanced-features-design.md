@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Tier3_Advanced_Features_Design (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Tier 3 Advanced Features - Design Document
 

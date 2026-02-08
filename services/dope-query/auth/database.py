@@ -6,6 +6,9 @@ Part of Phase 1 Security Hardening
 Database connection and session management for authentication.
 """
 
+from typing import Any
+from typing import Dict
+
 import os
 
 import logging
@@ -126,8 +129,6 @@ def get_database_stats() -> Dict[str, Any]:
         }
     except Exception as e:
         return {"error": str(e)}
-
-        logger.error(f"Error: {e}")
 # Initialize database on module import
 try:
     init_database()

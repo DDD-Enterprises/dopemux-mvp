@@ -2,6 +2,9 @@
 Tests for the CLI module.
 """
 
+import ast
+import inspect
+import textwrap
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -207,6 +210,110 @@ class TestCLI:
         assert "Dry run" in result.output
         assert "quickfix" in result.output
         assert any(call["dry_run"] for call in dummy_config.calls)
+
+    def test_start_command_profile_dry_run(self, monkeypatch):
+        """Dry-run with explicit profile should preview profile MCPs."""
+
+        runner = CliRunner()
+        os.environ["DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT"] = "1"
+        monkeypatch.delenv("DOPEMUX_AGENT_ROLE", raising=False)
+
+        from dopemux import cli as dopemux_cli
+
+        class _DummyServer:
+            def __init__(self, enabled=True):
+                self.enabled = enabled
+
+        class DummyConfigState:
+            mcp_servers = {"conport": _DummyServer(True), "zen": _DummyServer(True)}
+
+        class DummyConfigManager:
+            def load_config(self):
+                return DummyConfigState()
+
+        class DummyProfile:
+            name = "developer"
+            mcps = ["conport", "serena", "zen"]
+
+        class DummyProfileManager:
+            def get_profile(self, name):
+                return DummyProfile() if name == "developer" else None
+
+        class DummyClaudeConfig:
+            def __init__(self):
+                self.calls = []
+
+            def apply_profile(self, profile, create_backup=True, dry_run=False):
+                self.calls.append(
+                    {
+                        "profile": profile.name,
+                        "create_backup": create_backup,
+                        "dry_run": dry_run,
+                    }
+                )
+                return {"mcpServers": {name: {} for name in profile.mcps}}
+
+        dummy_config = DummyClaudeConfig()
+        monkeypatch.setattr(dopemux_cli, "ConfigManager", lambda *a, **k: DummyConfigManager())
+        monkeypatch.setattr(dopemux_cli, "ProfileManager", lambda: DummyProfileManager())
+        monkeypatch.setattr(dopemux_cli, "ClaudeConfig", lambda *a, **k: dummy_config)
+
+        result = runner.invoke(cli, ["start", "--profile", "developer", "--dry-run"])
+
+        assert result.exit_code == 0, result.output
+        assert "Dry run" in result.output
+        assert "developer" in result.output
+        assert any(call["dry_run"] for call in dummy_config.calls)
+
+    def test_start_command_profile_dry_run_unknown_profile(self, monkeypatch):
+        """Dry-run with unknown profile should not crash and should warn."""
+
+        runner = CliRunner()
+        os.environ["DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT"] = "1"
+        monkeypatch.delenv("DOPEMUX_AGENT_ROLE", raising=False)
+
+        from dopemux import cli as dopemux_cli
+
+        class _DummyServer:
+            def __init__(self, enabled=True):
+                self.enabled = enabled
+
+        class DummyConfigState:
+            mcp_servers = {"conport": _DummyServer(True)}
+
+        class DummyConfigManager:
+            def load_config(self):
+                return DummyConfigState()
+
+        class DummyProfileManager:
+            def get_profile(self, name):
+                return None
+
+        monkeypatch.setattr(dopemux_cli, "ConfigManager", lambda *a, **k: DummyConfigManager())
+        monkeypatch.setattr(dopemux_cli, "ProfileManager", lambda: DummyProfileManager())
+
+        result = runner.invoke(cli, ["start", "--profile", "missing-profile", "--dry-run"])
+
+        assert result.exit_code == 0, result.output
+        assert "not defined" in result.output
+        assert "Dry run complete" in result.output
+
+    def test_start_command_has_no_local_subprocess_import(self):
+        """Regression: avoid local 'import subprocess' in start() that breaks exception handling."""
+        from dopemux import cli as dopemux_cli
+
+        start_source = inspect.getsource(dopemux_cli.start.callback)
+        module_ast = ast.parse(textwrap.dedent(start_source))
+        start_def = module_ast.body[0]
+
+        local_imports = [
+            node
+            for node in ast.walk(start_def)
+            if isinstance(node, ast.Import)
+            and any(alias.name == "subprocess" for alias in node.names)
+        ]
+
+        assert local_imports == []
 
     def test_invoke_switch_role_script_executes(self, monkeypatch, tmp_path):
         script = tmp_path / "switch-role.sh"

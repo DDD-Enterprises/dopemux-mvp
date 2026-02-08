@@ -1,10 +1,13 @@
 ---
 id: week3-start
 title: Week3 Start
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week3 Start (reference) for dopemux documentation and developer workflows.
 ---
 # Week 3: START HERE 🚀
 

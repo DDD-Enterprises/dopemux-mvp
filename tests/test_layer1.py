@@ -5,6 +5,8 @@ Serena v2 Layer 1 Test Runner
 Standalone test runner for Layer 1 navigation intelligence validation.
 """
 
+import time
+
 import asyncio
 import json
 import logging

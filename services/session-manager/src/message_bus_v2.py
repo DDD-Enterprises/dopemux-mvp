@@ -196,8 +196,10 @@ class InMemoryMessageBus(MessageBus):
                     logger.info(f"⚠️ Event buffer full, dropped event from {event.source}")
                     return False
                 else:
-                    # Wait for space (release lock while waiting)
-                    pass  # TODO: Condition variable wait
+                    # In blocking mode, keep the newest signal and evict the oldest.
+                    # This preserves forward progress without unbounded waits.
+                    self.events.pop(0)
+                    self.metrics_events_dropped += 1
 
             # Add to buffer
             self.events.append(event)
