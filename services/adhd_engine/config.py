@@ -14,6 +14,8 @@ class Settings:
     # Server settings
     api_port: int = int(os.getenv("API_PORT", "8095"))
     host: str = os.getenv("HOST", "0.0.0.0")
+    # Backward/forward-compatible alias used by startup logging paths
+    api_host: str = os.getenv("API_HOST", os.getenv("HOST", "0.0.0.0"))
     
     # CORS settings  
     allowed_origins: List[str] = os.getenv(
@@ -37,11 +39,19 @@ class Settings:
     dopecon_bridge_url: str = os.getenv("DOPECON_BRIDGE_URL", os.getenv("CONPORT_BRIDGE_URL", "http://localhost:3016"))
     dopecon_bridge_token: Optional[str] = os.getenv("DOPECON_BRIDGE_TOKEN")
     dopecon_bridge_source_plane: str = os.getenv("DOPECON_BRIDGE_SOURCE_PLANE", "cognitive_plane")
+    task_orchestrator_url: str = os.getenv("TASK_ORCHESTRATOR_URL", "http://task-orchestrator:8000")
     
     # Monitor settings
     monitor_check_interval: int = int(os.getenv("MONITOR_CHECK_INTERVAL", "60"))
     energy_decay_rate: float = float(os.getenv("ENERGY_DECAY_RATE", "0.95"))
     attention_reset_threshold: int = int(os.getenv("ATTENTION_RESET_THRESHOLD", "300"))
+    energy_monitor_interval: int = int(os.getenv("ENERGY_MONITOR_INTERVAL", "60"))
+    attention_monitor_interval: int = int(
+        os.getenv("ATTENTION_MONITOR_INTERVAL", os.getenv("ATTENTION_CHECK_INTERVAL", "60"))
+    )
+    cognitive_monitor_interval: int = int(os.getenv("COGNITIVE_MONITOR_INTERVAL", "60"))
+    break_monitor_interval: int = int(os.getenv("BREAK_MONITOR_INTERVAL", "60"))
+    hyperfocus_monitor_interval: int = int(os.getenv("HYPERFOCUS_MONITOR_INTERVAL", "60"))
     
     # ML settings
     enable_ml_predictions: bool = os.getenv("ENABLE_ML_PREDICTIONS", "true").lower() == "true"
