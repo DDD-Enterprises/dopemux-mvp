@@ -21,6 +21,7 @@ volumes:
 
 
 
+
 services:
   # Infrastructure: PostgreSQL with AGE extension
   postgres:
