@@ -521,15 +521,6 @@ class CognitiveGuardian:
         logger.info(f"\n🎯 Task Suggestions (Energy: {target_energy}) [SIMULATION]")
         logger.info(f"   ConPort unavailable, showing examples\n")
 
-    def _simulate_task_suggestions(
-        self,
-        target_energy: str,
-        max_suggestions: int
-    ) -> List[Dict[str, Any]]:
-        """Simulation mode for when ConPort unavailable."""
-        logger.info(f"\n🎯 Task Suggestions (Energy: {target_energy}) [SIMULATION]")
-        logger.info(f"   ConPort unavailable, showing examples\n")
-
         if target_energy == "high":
             logger.info("   Suggested (complex tasks):")
             logger.info("   1. Design microservices architecture (complexity: 0.8)")

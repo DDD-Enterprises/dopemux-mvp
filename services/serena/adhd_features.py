@@ -317,99 +317,6 @@ class ADHDCodeNavigator:
             if kind in {5, 6, 12}:  # Class, Function, Method
                 score += 0.3
 
-    async def filter_symbols_for_focus(self, symbols: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Filter symbols for focus mode - show only essential items."""
-        if not symbols:
-            return symbols
-
-        # In focus mode, prioritize:
-        # 1. Public functions/methods (kind 6, 12)
-        # 2. Classes (kind 5)
-        # 3. Important variables/constants (kind 13, 14)
-
-        essential_kinds = {5, 6, 12, 13, 14}  # Class, Function, Method, Variable, Constant
-        filtered_symbols = []
-
-        for symbol in symbols:
-            kind = symbol.get("kind", 0)
-            name = symbol.get("name", "")
-
-            # Include if essential kind
-            if kind in essential_kinds:
-                # Add complexity indicator for ADHD users
-                if self.show_complexity_indicators:
-                    complexity = CodeComplexityAnalyzer.calculate_function_complexity(symbol)
-                    complexity_label, complexity_desc = CodeComplexityAnalyzer.categorize_complexity(complexity)
-
-                    symbol["_adhd_metadata"] = {
-                        "complexity_score": complexity,
-                        "complexity_label": complexity_label,
-                        "complexity_description": complexity_desc,
-                        "focus_mode_filtered": True
-                    }
-
-                filtered_symbols.append(symbol)
-
-        # Sort by complexity (simple first) for ADHD users
-        filtered_symbols.sort(key=lambda s: s.get("_adhd_metadata", {}).get("complexity_score", 0.5))
-
-        # Limit results in focus mode
-        if len(filtered_symbols) > self.focus_mode_limit:
-            truncated = filtered_symbols[:self.focus_mode_limit]
-            logger.debug(f"🎯 Focus mode: showing {len(truncated)}/{len(filtered_symbols)} symbols")
-            return truncated
-
-        return filtered_symbols
-
-    async def apply_progressive_disclosure(
-        self,
-        results: List[Dict[str, Any]],
-        max_initial_items: int = None
-    ) -> List[Dict[str, Any]]:
-        """Apply progressive disclosure to large result sets."""
-        max_items = max_initial_items or self.max_initial_results
-
-        if len(results) <= max_items:
-            return results
-
-        # Sort by relevance/importance for ADHD users
-        sorted_results = self._sort_by_importance(results)
-
-        # Take initial set
-        initial_results = sorted_results[:max_items]
-
-        # Add metadata about remaining items
-        remaining_count = len(results) - max_items
-        disclosure_metadata = {
-            "_progressive_disclosure": {
-                "initial_count": len(initial_results),
-                "total_count": len(results),
-                "remaining_count": remaining_count,
-                "expansion_available": True,
-                "adhd_friendly_message": f"Showing {len(initial_results)} most relevant results. {remaining_count} more available - use 'show more' to expand."
-            }
-        }
-
-        # Add metadata to first result for UI consumption
-        if initial_results:
-            initial_results[0]["_disclosure_info"] = disclosure_metadata
-
-        logger.debug(f"📋 Progressive disclosure: {len(initial_results)}/{len(results)} results shown initially")
-        return initial_results
-
-    def _sort_by_importance(self, results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Sort results by importance for ADHD users."""
-        def importance_score(item):
-            score = 0.5  # Base score
-
-            # Boost based on item type/kind
-            kind = item.get("kind", 0)
-            name = item.get("name", "").lower()
-
-            # Functions and classes are typically more important
-            if kind in {5, 6, 12}:  # Class, Function, Method
-                score += 0.3
-
             # Public items (no underscore prefix) are more important
             if name and not name.startswith("_"):
                 score += 0.2
@@ -431,6 +338,8 @@ class ADHDCodeNavigator:
         if not hasattr(lsp_response, 'result'):
             return lsp_response
 
+        complexity_threshold = await self.get_complexity_threshold()
+
         # Apply complexity filtering
         if isinstance(lsp_response.result, list):
             # Filter out overly complex items in focus mode
@@ -439,7 +348,7 @@ class ADHDCodeNavigator:
             for item in lsp_response.result:
                 complexity = CodeComplexityAnalyzer.calculate_function_complexity(item)
 
-                if complexity <= self.complexity_threshold:
+                if complexity <= complexity_threshold:
                     # Add ADHD metadata
                     item["_adhd_metadata"] = {
                         "complexity_score": complexity,
