@@ -273,3 +273,12 @@ ARCHIVE_MANIFEST.txt
 quarantine/
 tmp/*
 !tmp/.gitkeep
+
+# Artifact and report hygiene
+.claude/*.backup
+services/working-memory-assistant/*.backup
+services/task-orchestrator/*.jar
+reports/stale_audit_*.md
+reports/g34/*.txt
+reports/g33/baseline_*.txt
+reports/g33/post_*.txt
