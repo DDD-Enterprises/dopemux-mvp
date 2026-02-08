@@ -1,7 +1,0 @@
-NAME                                   IMAGE                           COMMAND                  SERVICE             CREATED          STATUS                                     PORTS
-4b78af5ec803_smoke-task-orchestrator   dopemux-mvp-task-orchestrator   "python server.py"       task-orchestrator   16 minutes ago   Restarting (2) 14 seconds ago              
-b6b0f8b7e62c_smoke-qdrant              qdrant/qdrant:latest            "./entrypoint.sh"        qdrant              16 minutes ago   Up About a minute                          0.0.0.0:6333-6334->6333-6334/tcp, [::]:6333-6334->6333-6334/tcp
-fb0d021c114f_smoke-redis               redis:7-alpine                  "docker-entrypoint.s…"   redis               16 minutes ago   Up About a minute (healthy)                0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
-smoke-conport                          dopemux-mvp-conport             "python app.py"          conport             16 minutes ago   Up Less than a second (health: starting)   0.0.0.0:3004->3004/tcp, [::]:3004->3004/tcp
-smoke-dopecon-bridge                   dopemux-mvp-dopecon-bridge      "python main.py"         dopecon-bridge      16 minutes ago   Restarting (2) 15 seconds ago              
-smoke-postgres                         postgres:16-alpine              "docker-entrypoint.s…"   postgres            16 minutes ago   Up About a minute (healthy)                0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
