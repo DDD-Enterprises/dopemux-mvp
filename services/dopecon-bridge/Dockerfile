@@ -42,5 +42,6 @@ LABEL mcp.priority="critical"
 LABEL mcp.description="Central task management coordination layer"
 LABEL mcp.integrates="task-master-ai,task-orchestrator,leantime-bridge"
 
-# Run the integration bridge service via unified package entrypoint
+# Run the integration bridge service
+# Run the integration bridge service
 CMD ["python", "-m", "dopecon_bridge.app"]

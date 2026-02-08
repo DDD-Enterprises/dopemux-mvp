@@ -4,13 +4,13 @@ F-NEW-8: Proactive Break Suggester Service
 Entry point for break suggestion engine.
 """
 
-from .engine import (
+from engine import (
     BreakSuggestionEngine,
     BreakSuggestion,
     get_break_suggestion_engine
 )
 
-from .event_consumer import (
+from event_consumer import (
     BreakSuggestionConsumer,
     run_break_suggester_service
 )
