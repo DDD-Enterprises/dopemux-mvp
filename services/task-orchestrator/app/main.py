@@ -30,7 +30,15 @@ from typing import Dict, List, Any, Optional
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
+from fastapi import (
+    BackgroundTasks,
+    Body,
+    FastAPI,
+    HTTPException,
+    Query,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 import json
@@ -58,6 +66,18 @@ from app.core.coordinator import (
     CoordinationEventType,
     ConflictResolutionStrategy,
     create_plane_coordinator
+)
+from app.models.workflow import (
+    CreateEpicRequest,
+    CreateIdeaRequest,
+    PromoteIdeaRequest,
+    UpdateEpicRequest,
+    UpdateIdeaRequest,
+)
+from app.services.workflow_service import (
+    WorkflowConflictError,
+    WorkflowNotFoundError,
+    WorkflowUnavailableError,
 )
 
 configure_logging("task-orchestrator", level=os.getenv("LOG_LEVEL", "INFO"))
@@ -523,6 +543,147 @@ async def resolve_conflict(conflict_id: str, request: ConflictResolutionRequest)
     except Exception as e:
         logger.error(f"Conflict resolution failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def _handle_workflow_error(exc: Exception) -> None:
+    """Map workflow service exceptions to stable HTTP contracts."""
+    if isinstance(exc, WorkflowNotFoundError):
+        raise HTTPException(status_code=404, detail=str(exc))
+    if isinstance(exc, WorkflowConflictError):
+        raise HTTPException(status_code=409, detail=str(exc))
+    if isinstance(exc, WorkflowUnavailableError):
+        raise HTTPException(status_code=503, detail=str(exc))
+    if isinstance(exc, ValueError):
+        raise HTTPException(status_code=400, detail=str(exc))
+    logger.error("Workflow API failure: %s", exc)
+    raise HTTPException(status_code=500, detail="workflow operation failed")
+
+
+@app.post("/api/workflow/ideas", status_code=201)
+async def create_workflow_idea(request: CreateIdeaRequest):
+    """Create Stage-1 workflow idea."""
+    try:
+        idea = await app.state.coordinator.workflow_service.create_idea(request)
+        return {
+            "idea_id": idea.id,
+            "status": idea.status,
+            "created_at": idea.created_at,
+            "idea": idea.dict(),
+        }
+    except Exception as exc:
+        _handle_workflow_error(exc)
+
+
+@app.get("/api/workflow/ideas")
+async def list_workflow_ideas(
+    status: Optional[str] = Query(None),
+    tag: Optional[str] = Query(None),
+    limit: Optional[int] = Query(None, ge=1, le=200),
+):
+    """List Stage-1 workflow ideas."""
+    try:
+        ideas = await app.state.coordinator.workflow_service.list_ideas(
+            status=status,
+            tag=tag,
+            limit=limit,
+        )
+        return {
+            "count": len(ideas),
+            "ideas": [idea.dict() for idea in ideas],
+        }
+    except Exception as exc:
+        _handle_workflow_error(exc)
+
+
+@app.patch("/api/workflow/ideas/{idea_id}")
+async def update_workflow_idea(idea_id: str, request: UpdateIdeaRequest):
+    """Patch Stage-1 workflow idea fields."""
+    try:
+        idea = await app.state.coordinator.workflow_service.update_idea(idea_id, request)
+        return {
+            "idea_id": idea.id,
+            "status": idea.status,
+            "updated_at": idea.updated_at,
+            "idea": idea.dict(),
+        }
+    except Exception as exc:
+        _handle_workflow_error(exc)
+
+
+@app.post("/api/workflow/ideas/{idea_id}/promote", status_code=201)
+async def promote_workflow_idea(
+    idea_id: str,
+    request: PromoteIdeaRequest = Body(default_factory=PromoteIdeaRequest),
+):
+    """Promote Stage-1 idea into Stage-2 epic."""
+    try:
+        result = await app.state.coordinator.workflow_service.promote_idea(idea_id, request)
+        idea = result["idea"]
+        epic = result["epic"]
+        return {
+            "idea_id": idea.id,
+            "epic_id": epic.id,
+            "leantime_project_id": epic.leantime_project_id,
+            "already_promoted": result["already_promoted"],
+            "warning": result["warning"],
+            "idea": idea.dict(),
+            "epic": epic.dict(),
+        }
+    except Exception as exc:
+        _handle_workflow_error(exc)
+
+
+@app.post("/api/workflow/epics", status_code=201)
+async def create_workflow_epic(request: CreateEpicRequest):
+    """Create Stage-2 workflow epic directly."""
+    try:
+        epic = await app.state.coordinator.workflow_service.create_epic(request)
+        return {
+            "epic_id": epic.id,
+            "status": epic.status,
+            "created_at": epic.created_at,
+            "epic": epic.dict(),
+        }
+    except Exception as exc:
+        _handle_workflow_error(exc)
+
+
+@app.get("/api/workflow/epics")
+async def list_workflow_epics(
+    status: Optional[str] = Query(None),
+    priority: Optional[str] = Query(None),
+    tag: Optional[str] = Query(None),
+    limit: Optional[int] = Query(None, ge=1, le=200),
+):
+    """List Stage-2 workflow epics."""
+    try:
+        epics = await app.state.coordinator.workflow_service.list_epics(
+            status=status,
+            priority=priority,
+            tag=tag,
+            limit=limit,
+        )
+        return {
+            "count": len(epics),
+            "epics": [epic.dict() for epic in epics],
+        }
+    except Exception as exc:
+        _handle_workflow_error(exc)
+
+
+@app.patch("/api/workflow/epics/{epic_id}")
+async def update_workflow_epic(epic_id: str, request: UpdateEpicRequest):
+    """Patch Stage-2 workflow epic fields."""
+    try:
+        epic = await app.state.coordinator.workflow_service.update_epic(epic_id, request)
+        return {
+            "epic_id": epic.id,
+            "status": epic.status,
+            "updated_at": epic.updated_at,
+            "epic": epic.dict(),
+        }
+    except Exception as exc:
+        _handle_workflow_error(exc)
 
 
 @app.websocket("/ws/coordination")
