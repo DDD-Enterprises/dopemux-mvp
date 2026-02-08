@@ -3,73 +3,102 @@ id: task-orchestrator
 title: Task Orchestrator
 type: reference
 owner: '@hu3mann'
-last_review: '2026-02-02'
-next_review: '2026-05-03'
+last_review: '2026-02-08'
+next_review: '2026-05-10'
 author: '@hu3mann'
-date: '2026-02-05'
+date: '2026-02-08'
 prelude: Task Orchestrator (reference) for dopemux documentation and developer workflows.
 ---
 # Task Orchestrator
 
-**Extracted from**: DOPESMUX_ULTRA_UI_MVP_COMPLETION.md
-**Date**: 2026-02-02
+## Runtime Role
 
-## Task Orchestrator Features (from Ultra UI MVP)
+`task-orchestrator` provides coordination APIs and ADR-197 workflow runtime for
+idea and epic lifecycle management.
 
-### ConPort Adapter
-- Bidirectional task transformations (OrchestrationTask ↔ ConPort progress_entry)
-- ADHD metadata preservation (energy, complexity, priority tags)
-- Real-time sync with retry logic and error handling
-- Cross-plane queries for decision enrichment
-- Dependency relationship linking
+Primary runtime module:
+- `services/task-orchestrator/app/main.py`
 
-### Task Coordinator
-- ADHD-aware task orchestration with cognitive load assessment
-- Task batching based on cognitive capacity limits
-- Dependency resolution across task sequences
-- Context switching detection with break recommendations
-- ConPort state synchronization
-- 25-minute focus session management
-- Energy-aware task sequencing
-- Break scheduling optimization
+Workflow business logic:
+- `services/task-orchestrator/app/services/workflow_service.py`
 
-### Cognitive Load Balancer
-- Real-time cognitive load calculation using research-backed formula
-- Load classification: LOW/OPTIMAL/HIGH/CRITICAL with actionable recommendations
-- Background monitoring every 10 seconds
-- Caching system for performance optimization
-- Proactive task complexity adjustment based on current load
-- Energy-aware task sequencing
-- Attention span prediction (18-25 minutes)
-- Break scheduling optimization
-- Task sequence optimization for cognitive flow
+Persistence adapter:
+- `services/task-orchestrator/app/services/workflow_store.py`
 
-**Formula**: Load = 0.4 × task_complexity + 0.2 × (decision_count ÷ 10) + 0.2 × (context_switches ÷ 5) + 0.1 × (time_since_break ÷ 60) + 0.1 × interruption_score
+## Implemented Workflow Scope (ADR-197)
 
-### ADHD Engine Features
-**6 API Endpoints**:
-- POST /api/v1/assess-task - Task complexity assessment
-- GET /api/v1/energy-level/{user_id} - Energy level tracking
-- GET /api/v1/attention-state/{user_id} - Attention monitoring
-- POST /api/v1/recommend-break - Break suggestions
-- POST /api/v1/user-profile - User profile management
-- PUT /api/v1/activity/{user_id} - Activity updates
+Implemented now:
+- Stage-1 Idea lifecycle: create, list, update.
+- Stage-2 Epic lifecycle: create, list, update.
+- Idea promotion to epic (idempotent promote endpoint).
+- Optional Leantime project sync during promote with degraded fallback.
+- ConPort custom-data persistence for ideas and epics.
 
-**6 Background Monitors**:
-- Energy level tracking
-- Attention state monitoring
-- Cognitive load assessment
-- Break suggestion engine
-- Hyperfocus detection
-- Context switching tracker
+Not implemented yet in this service runtime:
+- Stage-3 task decomposition lifecycle from ADR-197.
+- Stage-4 execution loop and automated completion handoff.
 
-**Integration**:
-- Redis persistence for user profiles and state
-- ConPort MCP client integration
-- Docker containerization
+## HTTP API Contracts
 
-### Service Ports
-- ADHD Engine: 8095, 8097
-- Task Orchestrator: 3014
-- ConPort: 3010
-- Leantime: 8080
+### Workflow Endpoints
+
+- `POST /api/workflow/ideas`
+- `GET /api/workflow/ideas`
+- `PATCH /api/workflow/ideas/{idea_id}`
+- `POST /api/workflow/ideas/{idea_id}/promote`
+- `POST /api/workflow/epics`
+- `GET /api/workflow/epics`
+- `PATCH /api/workflow/epics/{epic_id}`
+
+### Coordination Endpoints (existing)
+
+- `POST /api/coordination/operations`
+- `GET /api/coordination/health`
+- `GET /api/coordination/metrics`
+- `POST /api/coordination/events`
+- `GET /api/coordination/conflicts`
+- `POST /api/coordination/conflicts/{conflict_id}/resolve`
+
+### Health and Service Discovery
+
+- `GET /health`
+- `GET /info`
+- `GET /metrics`
+
+## Workflow Error Mapping
+
+Workflow endpoints use stable error contracts:
+- `404` for `WorkflowNotFoundError`
+- `409` for `WorkflowConflictError`
+- `503` for `WorkflowUnavailableError`
+- `400` for validation/value errors
+- `500` for unexpected failures
+
+## Persistence Model
+
+Workflow data is stored via DopeconBridge custom-data records:
+- Category `workflow_ideas`
+- Category `workflow_epics`
+
+Each record stores serialized workflow entities keyed by id:
+- idea id format: `idea_<uuidhex>`
+- epic id format: `epic_<uuidhex>`
+
+## Environment Flags
+
+Workflow runtime toggles:
+- `DOPMUX_WORKFLOW_ENABLE` (default `true`)
+- `DOPMUX_WORKFLOW_DEFAULT_IDEA_LIMIT` (default `50`)
+- `DOPMUX_WORKFLOW_DEFAULT_EPIC_LIMIT` (default `50`)
+- `DOPMUX_WORKFLOW_PROMOTION_SYNC_LEANTIME` (default `true`)
+
+Bridge settings:
+- `DOPECON_BRIDGE_URL` (default `http://localhost:3016`)
+- `DOPECON_BRIDGE_TOKEN` (optional)
+- `DOPECON_BRIDGE_SOURCE_PLANE` (default `cognitive_plane`)
+
+## Compatibility Notes
+
+- Workflow contracts are additive and preserve existing coordination APIs.
+- Idea promotion is idempotent: repeated promote returns existing epic.
+- Leantime sync failure does not fail promotion; warning is returned in payload.
