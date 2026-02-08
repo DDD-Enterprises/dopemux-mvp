@@ -17,24 +17,57 @@ SPEC = importlib.util.spec_from_file_location("task_orch_conport_client_for_test
 TASK_ORCH_MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC and SPEC.loader
 
-# Stub optional dopemux imports used by this module so tests can focus on
-# semantic-tool resolution logic in isolation.
-if "dopemux" not in sys.modules:
-    sys.modules["dopemux"] = types.ModuleType("dopemux")
-if "dopemux.mcp" not in sys.modules:
-    sys.modules["dopemux.mcp"] = types.ModuleType("dopemux.mcp")
-if "dopemux.file_ops" not in sys.modules:
-    sys.modules["dopemux.file_ops"] = types.ModuleType("dopemux.file_ops")
 
-parallel_executor_mod = types.ModuleType("dopemux.mcp.parallel_executor")
-parallel_executor_mod.MCPParallelExecutor = object
-sys.modules["dopemux.mcp.parallel_executor"] = parallel_executor_mod
+def _load_module_with_temporary_stubs():
+    """
+    Load target module with isolated optional-dependency stubs.
 
-batch_handler_mod = types.ModuleType("dopemux.file_ops.batch_handler")
-batch_handler_mod.BatchFileOps = object
-sys.modules["dopemux.file_ops.batch_handler"] = batch_handler_mod
+    Important: restore `sys.modules` afterward so this test file does not poison
+    imports for unrelated tests (for example `dopemux.mcp.*` package imports).
+    """
+    sentinel = object()
+    saved = {}
 
-SPEC.loader.exec_module(TASK_ORCH_MODULE)
+    def _set_stub(name: str, module: types.ModuleType):
+        saved[name] = sys.modules.get(name, sentinel)
+        sys.modules[name] = module
+
+    # Stub optional dopemux imports used by this module so tests can focus on
+    # semantic-tool resolution logic in isolation.
+    if "dopemux" not in sys.modules:
+        dopemux_mod = types.ModuleType("dopemux")
+        dopemux_mod.__path__ = []  # Mark as package.
+        _set_stub("dopemux", dopemux_mod)
+
+    if "dopemux.mcp" not in sys.modules:
+        mcp_mod = types.ModuleType("dopemux.mcp")
+        mcp_mod.__path__ = []  # Mark as package.
+        _set_stub("dopemux.mcp", mcp_mod)
+
+    if "dopemux.file_ops" not in sys.modules:
+        file_ops_mod = types.ModuleType("dopemux.file_ops")
+        file_ops_mod.__path__ = []  # Mark as package.
+        _set_stub("dopemux.file_ops", file_ops_mod)
+
+    parallel_executor_mod = types.ModuleType("dopemux.mcp.parallel_executor")
+    parallel_executor_mod.MCPParallelExecutor = object
+    _set_stub("dopemux.mcp.parallel_executor", parallel_executor_mod)
+
+    batch_handler_mod = types.ModuleType("dopemux.file_ops.batch_handler")
+    batch_handler_mod.BatchFileOps = object
+    _set_stub("dopemux.file_ops.batch_handler", batch_handler_mod)
+
+    try:
+        SPEC.loader.exec_module(TASK_ORCH_MODULE)
+    finally:
+        for name, previous in saved.items():
+            if previous is sentinel:
+                sys.modules.pop(name, None)
+            else:
+                sys.modules[name] = previous
+
+
+_load_module_with_temporary_stubs()
 
 
 @pytest.mark.asyncio
