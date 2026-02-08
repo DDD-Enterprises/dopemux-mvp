@@ -9,6 +9,12 @@ SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestr
 if str(SERVICE_ROOT) not in sys.path:
     sys.path.insert(0, str(SERVICE_ROOT))
 
+# Prevent cross-test module collisions from other services that also expose
+# a top-level `app.py` module on sys.path.
+for module_name in list(sys.modules):
+    if module_name == "app" or module_name.startswith("app."):
+        sys.modules.pop(module_name, None)
+
 from app.models.workflow import (  # noqa: E402
     CreateIdeaRequest,
     PromoteIdeaRequest,
