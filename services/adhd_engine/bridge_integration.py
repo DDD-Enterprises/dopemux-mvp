@@ -14,8 +14,8 @@ from services.shared.dopecon_bridge_client import (
     DopeconBridgeError,
 )
 
-from .config import settings
-from .conport_client_unified import ConPortSQLiteClient
+from config import settings
+from conport_client_unified import ConPortSQLiteClient
 
 logger = logging.getLogger(__name__)
 

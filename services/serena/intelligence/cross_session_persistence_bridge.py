@@ -373,7 +373,7 @@ class CrossSessionPersistenceBridge:
                     "description": "ADHD-optimized progressive function exploration strategy",
                     "tags": ["navigation-strategy", "exploration", "adhd-optimized"],
                     "pattern_data": {
-                        "template_hash": "abc123def456",
+                        "template_hash": "abc123def456",  # pragma: allowlist secret
                         "version": "1.0.0",
                         "strategy_type": "exploration",
                         "success_rate": 0.82
