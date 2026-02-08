@@ -34,7 +34,7 @@ def test_recovery_menu_with_no_orphaned_sessions():
         workspace = Path(tmpdir)
 
         # Initialize git repo
-        subprocess.run(["git", "init"], cwd=workspace, check=True, capture_output=True)
+        subprocess.run(["git", "init", "-b", "main"], cwd=workspace, check=True, capture_output=True)
         subprocess.run(
             ["git", "config", "user.name", "Test"],
             cwd=workspace,
@@ -98,7 +98,7 @@ def test_startup_flow_calls_recovery_menu(mock_menu_class):
 
     # Arguments are positional: WorktreeRecoveryMenu(workspace_id, conport_port)
     assert call_args[0][0] == "/fake/path"  # workspace_id
-    assert call_args[0][1] == 3007  # conport_port
+    assert call_args[0][1] == 3004  # conport_port
 
 
 def test_recovery_menu_integration_error_handling():
@@ -131,7 +131,7 @@ def test_recovery_menu_conport_unavailable():
         workspace = Path(tmpdir)
 
         # Initialize git repo
-        subprocess.run(["git", "init"], cwd=workspace, check=True, capture_output=True)
+        subprocess.run(["git", "init", "-b", "main"], cwd=workspace, check=True, capture_output=True)
         subprocess.run(
             ["git", "config", "user.name", "Test"],
             cwd=workspace,

@@ -6,8 +6,6 @@ Main entry point for all dopemux commands providing context preservation,
 attention monitoring, and task decomposition for neurodivergent developers.
 """
 
-import aiohttp
-
 import os
 
 import logging
@@ -15,7 +13,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 import sys
-import json
 import time
 import shutil
 import socket
@@ -24,7 +21,7 @@ import tempfile
 import shlex
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from typing import Dict, Iterable, List, Optional, Sequence
 import warnings
 import logging
 
@@ -81,13 +78,6 @@ from .mobile import mobile as mobile_commands
 from .mobile.hooks import mobile_task_notification
 from .mobile.runtime import update_tmux_mobile_indicator
 from .tmux import tmux as tmux_commands
-from .memory import (
-    CaptureError,
-    GlobalRollupError,
-    GlobalRollupIndexer,
-    emit_capture_event,
-    resolve_rollup_projects,
-)
 
 # Import genetic agent CLI
 try:
@@ -383,7 +373,7 @@ def _invoke_switch_role_script(role_key: str) -> None:
     try:
         subprocess.run([str(script_path), role_key], check=True)
         console.print(
-            f"[dim]✓ Synced role profile via {script_path} {role_key}[/dim]"
+            f"[dim]✓ Synced MetaMCP role via {script_path} {role_key}[/dim]"
         )
     except subprocess.CalledProcessError as exc:
         console.print(
@@ -423,8 +413,9 @@ def _start_minimal_session(
             context=context,
         )
     except Exception as e:
-        logger.error("Minimal Claude launcher failed: %s", e)
-        raise click.ClickException(f"Failed to start Claude Code session: {e}") from e
+        pass
+
+        logger.error(f"Error: {e}")
     if not background:
         console.logger.info("[green]✨ Claude Code is running (minimal mode)\n[/green]")
 
@@ -502,8 +493,8 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
     try:
         workspace_exists = Path.exists(workspace)
         dopemux_exists = Path.exists(dopemux_dir)
-    except TypeError as e:
-        logger.debug("Workspace path existence check failed for %s: %s", workspace, e)
+    except TypeError:
+        pass
 
     if directory and not workspace_exists and not dopemux_exists:
         console.logger.info(f"[red]Directory does not exist: {workspace}[/red]")
@@ -652,11 +643,6 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
     help="Run Claude with a specific role/persona (e.g. quickfix, act, plan, research, all, orchestrator).",
 )
 @click.option(
-    "--profile",
-    "profile_name",
-    help="Apply a specific profile before launch (e.g. developer, full).",
-)
-@click.option(
     "--dry-run",
     is_flag=True,
     help="Preview role/profile effects without launching Claude Code.",
@@ -675,7 +661,6 @@ def start(
     use_alt_routing: bool,
     use_claude_router: bool,
     role: Optional[str],
-    profile_name: Optional[str],
     dry_run: bool,
     **legacy_kwargs,
 ):
@@ -736,7 +721,7 @@ def start(
             console.logger.info("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
             console.logger.info("[yellow]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/yellow]")
             console.logger.info("\n[cyan]Example:[/cyan]")
-            console.logger.info("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")
+            console.logger.info("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")  # pragma: allowlist secret
             raise click.ClickException("LiteLLM metrics database not configured.")
 
         stored_master_key: Optional[str] = None
@@ -804,7 +789,9 @@ def start(
                     "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.[/yellow]"
                 )
         except Exception as e:
-            logger.debug("LiteLLM health probe failed on port %s: %s", litellm_port, e)
+            pass
+
+            logger.error(f"Error: {e}")
         if not litellm_master_key:
             base_candidate = env_master_key_raw or stored_master_key
             litellm_master_key, regenerated_master_key = ensure_master_key(base_candidate)
@@ -872,10 +859,14 @@ def start(
                 encoding="utf-8",
             )
         except Exception as e:
-            raise click.ClickException(f"Failed to write LiteLLM config: {e}") from e
+            pass
+
+            logger.error(f"Error: {e}")
         if litellm_running:
             console.logger.info(f"[green]✓ LiteLLM proxy already running on port {litellm_port}[/green]")
         else:
+            import subprocess
+
             console.logger.info("[blue]🔄 Starting LiteLLM proxy...[/blue]")
             kill_result = subprocess.run(
                 ["pkill", "-f", "litellm"],
@@ -980,8 +971,7 @@ def start(
     config_manager = ctx.obj["config_manager"]
 
     role_activation = None
-    explicit_profile_requested = bool(profile_name)
-    pending_profile_name: Optional[str] = profile_name.strip() if profile_name else None
+    pending_profile_name: Optional[str] = None
     role_profile = None
     requested_role = role or os.environ.get("DOPEMUX_AGENT_ROLE")
     if requested_role:
@@ -997,12 +987,7 @@ def start(
 
         spec = role_activation.spec
         role_profile = _ensure_role_profile(spec)
-        if not explicit_profile_requested:
-            pending_profile_name = getattr(role_profile, "name", spec.profile_name)
-        elif role_profile and pending_profile_name != getattr(role_profile, "name", None):
-            console.print(
-                f"[dim]Using explicit profile '{pending_profile_name}' instead of role default '{getattr(role_profile, 'name', spec.profile_name)}'.[/dim]"
-            )
+        pending_profile_name = getattr(role_profile, "name", spec.profile_name)
         if role:
             console.print(
                 f"[cyan]🎭 Role activated:[/cyan] {spec.label} "
@@ -1021,6 +1006,8 @@ def start(
                 f"[dim]🎭 Active role:[/dim] {spec.label} "
                 f"[dim]({spec.key})[/dim]"
             )
+    else:
+        pending_profile_name = None
 
     if dry_run:
         console.logger.info("[cyan]Dry run: no tmux or Claude Code processes will be started.[/cyan]")
@@ -1052,11 +1039,7 @@ def start(
             _suggest_server_start(role_activation.missing_required)
 
         if pending_profile_name:
-            profile_manager = ProfileManager()
-            if role_profile and not explicit_profile_requested:
-                profile = role_profile
-            else:
-                profile = profile_manager.get_profile(pending_profile_name)
+            profile = role_profile or ProfileManager().get_profile(pending_profile_name)
             if profile:
                 try:
                     claude_config = ClaudeConfig()
@@ -1097,7 +1080,9 @@ def start(
         else:
             logging.debug("Skipping tmux kill-server (inside tmux: %s)", bool(os.environ.get("TMUX")))
     except Exception as e:
-        logger.debug("tmux kill-server skipped due to error: %s", e)
+        pass
+
+        logger.error(f"Error: {e}")
     cwd_path = Path.cwd()
     project_path = cwd_path
 
@@ -1140,7 +1125,9 @@ def start(
             wire_script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
             check_call([sys.executable, str(wire_script)])
         except Exception as e:
-            logger.debug("ConPort wiring hook failed: %s", e)
+            pass
+
+            logger.error(f"Error: {e}")
     if project_path_real_exists:
         # Worktree Recovery Menu (ADHD-optimized session recovery)
         # Show menu if orphaned worktree sessions exist
@@ -1295,7 +1282,9 @@ def start(
             else:
                 console.logger.info(f"[dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/dim]")
     except Exception as e:
-        logger.debug("Failed applying DOPEMUX_FORCE_INSTANCE_ID override: %s", e)
+        pass
+
+        logger.error(f"Error: {e}")
     # Check if we should use OpenRouter via LiteLLM (for tmux --happy mode)
     if os.getenv("DOPEMUX_USE_OPENROUTER") == "1":
         _configure_openrouter_litellm()
@@ -1325,10 +1314,7 @@ def start(
     active_profile_applied = False
     if pending_profile_name:
         profile_manager = ProfileManager()
-        if role_profile and not explicit_profile_requested:
-            profile = role_profile
-        else:
-            profile = profile_manager.get_profile(pending_profile_name)
+        profile = role_profile or profile_manager.get_profile(pending_profile_name)
         if profile:
             try:
                 claude_config = ClaudeConfig()
@@ -2083,13 +2069,13 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
             console.logger.error(f"[red]❌ Failed to remove worktree for instance {instance_id}[/red]")
 
 
-@cli.command(name="status")
+@cli.command()
 @click.option("--attention", "-a", is_flag=True, help="Show attention metrics")
 @click.option("--context", "-c", is_flag=True, help="Show context information")
 @click.option("--tasks", "-t", is_flag=True, help="Show task progress")
 @click.option("--mobile", "-m", is_flag=True, help="Show Happy mobile status")
 @click.pass_context
-def session_status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
+def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
     """
     📊 Show current session status and metrics
 
@@ -2167,7 +2153,7 @@ def session_status(ctx, attention: bool, context: bool, tasks: bool, mobile: boo
 
     if mobile:
         from .mobile.runtime import check_cli_health, list_mobile_panes
-        from .tmux.common import TmuxError
+        from .mobile.tmux_utils import TmuxError
 
         cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
         mobile_cfg = cfg_manager.get_mobile_config()
@@ -2181,6 +2167,8 @@ def session_status(ctx, attention: bool, context: bool, tasks: bool, mobile: boo
         except TmuxError as exc:
             panes = []
             tmux_error = str(exc)
+
+            logger.error(f"Error: {e}")
         mobile_table = Table(title="📱 Mobile Status")
         mobile_table.add_column("Check", style="cyan")
         mobile_table.add_column("Status", style="green")
@@ -3368,7 +3356,7 @@ def _run_extract_cleanup(
             sys.exit(1)
 
 
-@cli.command(name="analyze")
+@cli.command()
 @click.argument("directory", default=".")
 @click.option("--output", "-o", help="Output directory for analysis results")
 @click.option(
@@ -3380,7 +3368,7 @@ def _run_extract_cleanup(
 @click.option("--extensions", help="Comma-separated list of file extensions to include")
 @click.option("--exclude", help="Comma-separated list of patterns to exclude")
 @click.pass_context
-def analyze_codebase(
+def analyze(
     ctx,
     directory: str,
     output: Optional[str],
@@ -3928,6 +3916,30 @@ def _configure_openrouter_litellm():
     os.environ["CLAUDE_CODE_LLM_PROVIDER"] = "litellm"
     os.environ["CLAUDE_CODE_LLM_BASE_URL"] = "http://localhost:4000"
     os.environ["CLAUDE_CODE_LLM_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
+    
+    console.logger.info("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
+
+
+def _configure_openrouter_litellm():
+    """Configure environment for OpenRouter via LiteLLM"""
+    # Set up OpenRouter models for LiteLLM
+    openrouter_models = [
+        "openrouter-xai-grok-code-fast",
+        "openrouter-openai-gpt-5",
+        "openrouter-openai-gpt-5-mini",
+        "openrouter-openai-gpt-5-codex",
+        "openrouter-google-gemini-2-flash",
+        "openrouter-meta-llama-3.1-405b",
+    ]
+    
+    # Update environment
+    os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+    os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+    os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(openrouter_models)
+    
+    # Ensure Zen MCP uses LiteLLM
+    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
+    os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
     
     console.logger.info("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
 
@@ -4890,9 +4902,9 @@ def rollback(ctx, backup_name: Optional[str], list_backups: bool):
         sys.exit(1)
 
 
-@update.command(name="status")
+@update.command()
 @click.pass_context
-def update_status(ctx):
+def status(ctx):
     """
     📊 Show system update status and health
 
@@ -5189,12 +5201,7 @@ def profile_auto_status_cmd(ctx):
 def profile_stats_cmd(ctx, days: int):
     """📊 Show profile usage analytics and trends."""
     try:
-        from .profile_analytics import (
-            archive_optimization_suggestions_sync,
-            display_stats,
-            generate_optimization_suggestions,
-            get_stats_sync,
-        )
+        from .profile_analytics import get_stats_sync, display_stats
 
         workspace_id = str(Path.cwd())
 
@@ -5205,64 +5212,24 @@ def profile_stats_cmd(ctx, days: int):
         # Display with visual dashboard
         display_stats(stats, days_back=days)
 
-        suggestions = generate_optimization_suggestions(stats)
-        if suggestions:
-            console.logger.info("\n[bold]💡 Optimization Suggestions:[/bold]")
-            for suggestion in suggestions:
-                severity_color = {
-                    "high": "red",
-                    "medium": "yellow",
-                    "low": "cyan",
-                }.get(suggestion.get("severity", "low"), "cyan")
-                console.logger.info(
-                    f"   • [{severity_color}]{suggestion['title']}[/{severity_color}]: "
-                    f"{suggestion['detail']}"
-                )
+        # Optimization suggestions (if enough data)
+        if stats.total_switches >= 10:
+            console.logger.info(f"\n[bold]💡 Optimization Suggestions:[/bold]")
 
-            archived = archive_optimization_suggestions_sync(
-                workspace_id=workspace_id,
-                suggestions=suggestions,
-                stats=stats,
-                days_back=days,
-            )
-            if archived:
-                console.logger.info(
-                    "[dim]✓ Suggestions archived to ConPort for follow-up[/dim]"
-                )
-            else:
-                console.logger.info(
-                    "[yellow]⚠ Could not archive optimization suggestions to ConPort[/yellow]"
-                )
+            # Suggest based on patterns
+            if stats.switch_accuracy < 70:
+                console.logger.info(f"   • [yellow]Low accuracy ({stats.switch_accuracy:.0f}%)[/yellow]: Consider refining auto-detection rules")
 
-    except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
-        if ctx.obj.get("verbose"):
-            raise
-        sys.exit(1)
+            if stats.auto_switches == 0 and stats.total_switches > 20:
+                console.logger.info(f"   • [cyan]All manual switches[/cyan]: Try 'dopemux profile auto-enable' for suggestions")
 
+            if stats.suggestion_declined > stats.suggestion_accepted * 2:
+                console.logger.info(f"   • [yellow]Many declined suggestions[/yellow]: Lower confidence threshold or adjust profile rules")
 
-@profile.command("analyze-usage")
-@click.option("--days", "-d", type=int, default=90, help="Days of git history to analyze (default: 90)")
-@click.option("--max-commits", type=int, default=500, show_default=True, help="Maximum commits to inspect")
-@click.pass_context
-def profile_analyze_usage_cmd(ctx, days: int, max_commits: int):
-    """🔎 Analyze git usage patterns for profile tuning and init defaults."""
-    try:
-        from .profile_analyzer import GitHistoryAnalyzer
+            # Suggest creating a new profile for common patterns
+            if stats.most_used_profile and stats.usage_by_profile.get(stats.most_used_profile, 0) > stats.total_switches * 0.7:
+                console.logger.info(f"   • [green]Stable workflow detected[/green]: Your '{stats.most_used_profile}' profile is well-matched!")
 
-        analyzer = GitHistoryAnalyzer(Path.cwd())
-        analysis = analyzer.analyze(days_back=days, max_commits=max_commits)
-        analyzer.display_analysis(analysis)
-
-        if analysis.total_commits == 0:
-            console.logger.info(
-                "\n[yellow]No recent commits found. Use `dopemux profile init` for default-guided setup.[/yellow]"
-            )
-            return
-
-        console.logger.info("\n[bold]Recommended Next Actions:[/bold]")
-        console.logger.info("   • Generate personalized profile: [white]dopemux profile init[/white]")
-        console.logger.info("   • Apply likely fit: [white]dopemux profile apply developer[/white]")
     except Exception as e:
         console.logger.error(f"[red]Error: {e}[/red]")
         if ctx.obj.get("verbose"):
@@ -5823,388 +5790,44 @@ try:
 
 except ImportError as e:
     # Graceful degradation if dependencies not installed
-    logger.debug("Decision commands unavailable: %s", e)
+    pass  # Commands won't be available but CLI still works
 
 
 # ============================================================================
-# Workflow Commands (ADR-197 Stage-1/Stage-2 Runtime)
+# Profile Management Commands (Multi-User Support)
 # ============================================================================
-
-def _workflow_base_url() -> str:
-    return os.getenv("TASK_ORCHESTRATOR_URL", "http://localhost:8000").rstrip("/")
-
-
-def _workflow_request(
-    method: str,
-    path: str,
-    *,
-    payload: Optional[Dict[str, object]] = None,
-    params: Optional[Dict[str, object]] = None,
-) -> Dict[str, object]:
-    """Call Task-Orchestrator workflow API with consistent error handling."""
-    import requests
-
-    url = f"{_workflow_base_url()}{path}"
-    try:
-        response = requests.request(method, url, json=payload, params=params, timeout=15)
-    except requests.RequestException as exc:
-        raise click.ClickException(f"workflow request failed: {exc}") from exc
-
-    if response.status_code >= 400:
-        detail = response.text
-        try:
-            body = response.json()
-            if isinstance(body, dict):
-                detail = str(body.get("detail", body))
-        except ValueError:
-            pass
-        raise click.ClickException(
-            f"workflow API error ({response.status_code}) for {method} {path}: {detail}"
-        )
-
-    if not response.content:
-        return {}
-
-    try:
-        data = response.json()
-    except ValueError:
-        return {}
-    if isinstance(data, dict):
-        return data
-    return {"data": data}
-
 
 @cli.group()
-def workflow():
-    """🧩 Manage Stage-1 ideas and Stage-2 epics."""
+def profile():
+    """
+    👤 Profile management (multi-project configuration)
+
+    Manage configuration profiles for different project types:
+    - python-ml: ML/AI development with Jupyter
+    - web-dev: Modern web development (React, Next.js, TypeScript)
+    - adhd-default: Universal ADHD-optimized settings
+
+    Profiles control MCP servers, ADHD accommodations, and database strategy.
+    """
     pass
 
 
-@workflow.group()
-def ideas():
-    """💡 Stage-1 idea lifecycle commands."""
-    pass
-
-
-@workflow.group()
-def epics():
-    """📦 Stage-2 epic lifecycle commands."""
-    pass
-
-
-@ideas.command("add")
-@click.option("--title", required=True, help="Idea title")
-@click.option("--description", required=True, help="Idea description")
-@click.option("--source", default="other", show_default=True, help="Idea source label")
-@click.option("--creator", default=lambda: os.getenv("USER", "dopemux"), show_default="env USER")
-@click.option("--tag", "tags", multiple=True, help="Tag (repeatable)")
-def workflow_ideas_add_cmd(
-    title: str,
-    description: str,
-    source: str,
-    creator: str,
-    tags: Sequence[str],
-):
-    payload: Dict[str, object] = {
-        "title": title,
-        "description": description,
-        "source": source,
-        "creator": creator,
-        "tags": list(tags),
-    }
-    result = _workflow_request("POST", "/api/workflow/ideas", payload=payload)
-    console.logger.info(f"[green]✓ Idea created:[/green] {result.get('idea_id')}")
-
-
-@ideas.command("list")
-@click.option("--status", help="Filter by status")
-@click.option("--tag", help="Filter by tag")
-@click.option("--limit", type=int, default=20, show_default=True, help="Max records")
-def workflow_ideas_list_cmd(status: Optional[str], tag: Optional[str], limit: int):
-    params: Dict[str, object] = {"limit": limit}
-    if status:
-        params["status"] = status
-    if tag:
-        params["tag"] = tag
-
-    result = _workflow_request("GET", "/api/workflow/ideas", params=params)
-    ideas_data = result.get("ideas", [])
-    if not isinstance(ideas_data, list):
-        raise click.ClickException("workflow API returned unexpected ideas payload")
-
-    if not ideas_data:
-        console.logger.info("[yellow]No workflow ideas found.[/yellow]")
-        return
-
-    table = Table(title="Workflow Ideas", show_header=True, header_style="bold cyan")
-    table.add_column("ID", style="green")
-    table.add_column("Status")
-    table.add_column("Title")
-    table.add_column("Tags", style="dim")
-    table.add_column("Updated", style="dim")
-
-    for item in ideas_data:
-        if not isinstance(item, dict):
-            continue
-        table.add_row(
-            str(item.get("id", "")),
-            str(item.get("status", "")),
-            str(item.get("title", "")),
-            ", ".join(item.get("tags", []) or []),
-            str(item.get("updated_at", "")),
-        )
-    console.logger.info(table)
-
-
-@ideas.command("update")
-@click.argument("idea_id")
-@click.option("--title", help="New title")
-@click.option("--description", help="New description")
-@click.option("--status", "idea_status", help="New status")
-@click.option("--tag", "tags", multiple=True, help="Replace tags with provided values")
-def workflow_ideas_update_cmd(
-    idea_id: str,
-    title: Optional[str],
-    description: Optional[str],
-    idea_status: Optional[str],
-    tags: Sequence[str],
-):
-    payload: Dict[str, object] = {}
-    if title is not None:
-        payload["title"] = title
-    if description is not None:
-        payload["description"] = description
-    if idea_status is not None:
-        payload["status"] = idea_status
-    if tags:
-        payload["tags"] = list(tags)
-    if not payload:
-        raise click.ClickException("provide at least one field to update")
-
-    result = _workflow_request("PATCH", f"/api/workflow/ideas/{idea_id}", payload=payload)
-    console.logger.info(f"[green]✓ Idea updated:[/green] {result.get('idea_id', idea_id)}")
-
-
-@ideas.command("promote")
-@click.argument("idea_id")
-@click.option("--sync-leantime/--no-sync-leantime", default=True, show_default=True)
-@click.option("--title", help="Epic title override")
-@click.option("--description", help="Epic description override")
-@click.option("--business-value", help="Business value statement")
-@click.option(
-    "--priority",
-    type=click.Choice(["critical", "high", "medium", "low"], case_sensitive=False),
-    default="medium",
-    show_default=True,
-)
-@click.option("--criterion", "criteria", multiple=True, help="Acceptance criterion (repeatable)")
-@click.option("--tag", "tags", multiple=True, help="Additional tags")
-def workflow_ideas_promote_cmd(
-    idea_id: str,
-    sync_leantime: bool,
-    title: Optional[str],
-    description: Optional[str],
-    business_value: Optional[str],
-    priority: str,
-    criteria: Sequence[str],
-    tags: Sequence[str],
-):
-    payload: Dict[str, object] = {
-        "sync_to_leantime": sync_leantime,
-        "priority": priority.lower(),
-    }
-    if title is not None:
-        payload["title"] = title
-    if description is not None:
-        payload["description"] = description
-    if business_value is not None:
-        payload["business_value"] = business_value
-    if criteria:
-        payload["acceptance_criteria"] = list(criteria)
-    if tags:
-        payload["tags"] = list(tags)
-
-    result = _workflow_request(
-        "POST",
-        f"/api/workflow/ideas/{idea_id}/promote",
-        payload=payload,
-    )
-    console.logger.info(
-        "[green]✓ Idea promoted:[/green] "
-        f"{result.get('idea_id')} -> {result.get('epic_id')}"
-    )
-
-
-@epics.command("add")
-@click.option("--title", required=True, help="Epic title")
-@click.option("--description", required=True, help="Epic description")
-@click.option("--business-value", required=True, help="Business value statement")
-@click.option(
-    "--priority",
-    type=click.Choice(["critical", "high", "medium", "low"], case_sensitive=False),
-    default="medium",
-    show_default=True,
-)
-@click.option("--status", "epic_status", default="planned", show_default=True, help="Epic status")
-@click.option("--criterion", "criteria", multiple=True, help="Acceptance criterion (repeatable)")
-@click.option("--tag", "tags", multiple=True, help="Tag (repeatable)")
-def workflow_epics_add_cmd(
-    title: str,
-    description: str,
-    business_value: str,
-    priority: str,
-    epic_status: str,
-    criteria: Sequence[str],
-    tags: Sequence[str],
-):
-    payload: Dict[str, object] = {
-        "title": title,
-        "description": description,
-        "business_value": business_value,
-        "priority": priority.lower(),
-        "status": epic_status,
-        "acceptance_criteria": list(criteria),
-        "tags": list(tags),
-    }
-    result = _workflow_request("POST", "/api/workflow/epics", payload=payload)
-    console.logger.info(f"[green]✓ Epic created:[/green] {result.get('epic_id')}")
-
-
-@epics.command("list")
-@click.option("--status", help="Filter by status")
-@click.option(
-    "--priority",
-    type=click.Choice(["critical", "high", "medium", "low"], case_sensitive=False),
-    help="Filter by priority",
-)
-@click.option("--tag", help="Filter by tag")
-@click.option("--limit", type=int, default=20, show_default=True, help="Max records")
-def workflow_epics_list_cmd(
-    status: Optional[str],
-    priority: Optional[str],
-    tag: Optional[str],
-    limit: int,
-):
-    params: Dict[str, object] = {"limit": limit}
-    if status:
-        params["status"] = status
-    if priority:
-        params["priority"] = priority.lower()
-    if tag:
-        params["tag"] = tag
-
-    result = _workflow_request("GET", "/api/workflow/epics", params=params)
-    epics_data = result.get("epics", [])
-    if not isinstance(epics_data, list):
-        raise click.ClickException("workflow API returned unexpected epics payload")
-
-    if not epics_data:
-        console.logger.info("[yellow]No workflow epics found.[/yellow]")
-        return
-
-    table = Table(title="Workflow Epics", show_header=True, header_style="bold cyan")
-    table.add_column("ID", style="green")
-    table.add_column("Status")
-    table.add_column("Priority")
-    table.add_column("Title")
-    table.add_column("Leantime ID", style="dim")
-    table.add_column("Updated", style="dim")
-
-    for item in epics_data:
-        if not isinstance(item, dict):
-            continue
-        table.add_row(
-            str(item.get("id", "")),
-            str(item.get("status", "")),
-            str(item.get("priority", "")),
-            str(item.get("title", "")),
-            str(item.get("leantime_project_id", "") or ""),
-            str(item.get("updated_at", "")),
-        )
-    console.logger.info(table)
-
-
-@epics.command("update")
-@click.argument("epic_id")
-@click.option("--title", help="New title")
-@click.option("--description", help="New description")
-@click.option("--business-value", help="New business value statement")
-@click.option(
-    "--priority",
-    type=click.Choice(["critical", "high", "medium", "low"], case_sensitive=False),
-    help="New priority",
-)
-@click.option("--status", "epic_status", help="New status")
-@click.option("--criterion", "criteria", multiple=True, help="Replace acceptance criteria")
-@click.option("--tag", "tags", multiple=True, help="Replace tags")
-def workflow_epics_update_cmd(
-    epic_id: str,
-    title: Optional[str],
-    description: Optional[str],
-    business_value: Optional[str],
-    priority: Optional[str],
-    epic_status: Optional[str],
-    criteria: Sequence[str],
-    tags: Sequence[str],
-):
-    payload: Dict[str, object] = {}
-    if title is not None:
-        payload["title"] = title
-    if description is not None:
-        payload["description"] = description
-    if business_value is not None:
-        payload["business_value"] = business_value
-    if priority is not None:
-        payload["priority"] = priority.lower()
-    if epic_status is not None:
-        payload["status"] = epic_status
-    if criteria:
-        payload["acceptance_criteria"] = list(criteria)
-    if tags:
-        payload["tags"] = list(tags)
-    if not payload:
-        raise click.ClickException("provide at least one field to update")
-
-    result = _workflow_request("PATCH", f"/api/workflow/epics/{epic_id}", payload=payload)
-    console.logger.info(f"[green]✓ Epic updated:[/green] {result.get('epic_id', epic_id)}")
-
-
-# ============================================================================
-# Profile Command Compatibility Aliases
-# ============================================================================
-
-# Register supplemental profile-management commands onto the primary profile
-# group declared earlier in this file. This avoids command shadowing caused by
-# redefining the "profile" group multiple times.
+# Import and register profile commands
 try:
     from .profile_commands import (
+        list_profiles,
         use_profile,
         show_profile,
-        create_profile,
-        copy_profile,
-        edit_profile,
-        delete_profile,
+        create_profile
     )
 
-    if "create" not in profile.commands:
-        profile.add_command(create_profile, "create")
-    if "copy" not in profile.commands:
-        profile.add_command(copy_profile, "copy")
-    if "edit" not in profile.commands:
-        profile.add_command(edit_profile, "edit")
-    if "delete" not in profile.commands:
-        profile.add_command(delete_profile, "delete")
-    if "apply" not in profile.commands:
-        profile.add_command(use_profile, "apply")
-    if "use" not in profile.commands:
-        profile.add_command(use_profile, "use")
-    if "current" not in profile.commands:
-        profile.add_command(show_profile, "current")
-    if "switch" not in cli.commands:
-        cli.add_command(use_profile, "switch")
+    profile.add_command(list_profiles, "list")
+    profile.add_command(use_profile, "use")
+    profile.add_command(show_profile, "show")
+    profile.add_command(create_profile, "create")
 
 except ImportError as e:
-    logger.debug("Profile commands unavailable: %s", e)
+    pass  # Profile commands not available
 
 
 # ============================================================================
@@ -6237,7 +5860,7 @@ try:
     dev.add_command(dev_paths, "paths")
 
 except ImportError as e:
-    logger.debug("Dev commands unavailable: %s", e)
+    pass  # Dev commands not available
 
 
 # Register mobile integration commands
@@ -6342,13 +5965,13 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
             traceback.print_exc()
 
 
-@code.command(name="analyze")
+@code.command()
 @click.argument('bug_description')
 @click.option('--file', '-f', 'file_path', help='Path to file to analyze')
 @click.option('--line', '-l', type=int, help='Line number to analyze')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.pass_context
-def code_analyze(ctx, bug_description, file_path, line, verbose):
+def analyze(ctx, bug_description, file_path, line, verbose):
     """
     Analyze a bug without attempting repair.
 
@@ -6391,10 +6014,10 @@ def code_analyze(ctx, bug_description, file_path, line, verbose):
             traceback.print_exc()
 
 
-@code.command(name="status")
+@code.command()
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.pass_context
-def code_status(ctx, verbose):
+def status(ctx, verbose):
     """
     Show code agent status and configuration.
     """
@@ -6473,6 +6096,7 @@ if not hasattr(tmux_commands, 'commands'):
 cli.add_command(tmux_commands, "tmux")
 
 # Register Claude-Code-Tools commands
+from .claude_tools.cli import register_commands
 register_commands(cli)
 
 
@@ -6607,364 +6231,31 @@ def quick(ctx):
     ], check=True)
 
 
-@cli.group("memory")
-def memory_group():
-    """Memory tooling and rollup helpers."""
-    pass
-
-
-@memory_group.group("rollup")
-def memory_rollup_group():
-    """Global read-only rollup index over project chronicles."""
-    pass
-
-
-@memory_rollup_group.command("build")
-@click.option(
-    "--projects-file",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=Path),
-    default=None,
-    help="Path to project list (JSON or newline-delimited paths).",
-)
-@click.option(
-    "--index-path",
-    type=click.Path(file_okay=True, dir_okay=False, path_type=Path),
-    default=None,
-    help="Override global index path (default: ~/.dopemux/global_index.sqlite).",
-)
-@click.option("--quiet", is_flag=True, help="Suppress human-readable output.")
-def memory_rollup_build(
-    projects_file: Optional[Path],
-    index_path: Optional[Path],
-    quiet: bool,
-):
-    """Build or refresh the global rollup index."""
-    try:
-        project_roots = resolve_rollup_projects(projects_file)
-        indexer = GlobalRollupIndexer(index_path=index_path)
-        result = indexer.build(project_roots)
-    except GlobalRollupError as exc:
-        raise click.ClickException(str(exc)) from exc
-    except Exception as exc:
-        raise click.ClickException(f"Rollup build failed: {exc}") from exc
-
-    if not quiet:
-        console.print(
-            "[green]rollup built[/green] "
-            f"projects={result['projects_registered']} "
-            f"pointers={result['pointers_upserted']} "
-            f"index={result['index_path']}"
-        )
-
-
-@memory_rollup_group.command("list")
-@click.option(
-    "--index-path",
-    type=click.Path(file_okay=True, dir_okay=False, path_type=Path),
-    default=None,
-    help="Override global index path (default: ~/.dopemux/global_index.sqlite).",
-)
-def memory_rollup_list(index_path: Optional[Path]):
-    """List projects registered in the global rollup index."""
-    try:
-        indexer = GlobalRollupIndexer(index_path=index_path)
-        projects = indexer.list_projects()
-    except GlobalRollupError as exc:
-        raise click.ClickException(str(exc)) from exc
-    except Exception as exc:
-        raise click.ClickException(f"Rollup list failed: {exc}") from exc
-
-    if not projects:
-        console.print(
-            f"[yellow]no projects registered in {indexer.index_path}[/yellow]"
-        )
-        return
-
-    for row in projects:
-        console.print(
-            f"- {row['project_id']} | {row['repo_root']} | "
-            f"{row['chronicle_path']} | last_seen={row['last_seen_at']}"
-        )
-
-
-@memory_rollup_group.command("search")
-@click.argument("query", type=str, required=False, default="")
-@click.option(
-    "--limit",
-    type=int,
-    default=10,
-    show_default=True,
-    help="Maximum rows to return (1-100).",
-)
-@click.option(
-    "--index-path",
-    type=click.Path(file_okay=True, dir_okay=False, path_type=Path),
-    default=None,
-    help="Override global index path (default: ~/.dopemux/global_index.sqlite).",
-)
-def memory_rollup_search(query: str, limit: int, index_path: Optional[Path]):
-    """Search global rollup pointers (keyword/metadata only, no embeddings)."""
-    try:
-        indexer = GlobalRollupIndexer(index_path=index_path)
-        rows = indexer.search(query, limit=limit)
-    except GlobalRollupError as exc:
-        raise click.ClickException(str(exc)) from exc
-    except Exception as exc:
-        raise click.ClickException(f"Rollup search failed: {exc}") from exc
-
-    if not rows:
-        console.print("[yellow]no rollup matches[/yellow]")
-        return
-
-    for row in rows:
-        console.print(
-            f"- [{row['ts_utc']}] {row['project_id']}:{row['event_id']} "
-            f"{row['event_type']} | {row['summary']}"
-        )
-
-
 @cli.group("trigger")
 def trigger_group():
-    """Internal hook triggers."""
+    """Internal hook triggers (no-op placeholders)."""
     pass
-
-def _parse_trigger_context(context: str) -> dict[str, Any]:
-    """Parse JSON context for trigger-based capture events."""
-    if not context:
-        return {}
-    try:
-        parsed = json.loads(context)
-    except json.JSONDecodeError:
-        return {"raw_context": context}
-
-    if isinstance(parsed, dict):
-        return parsed
-    return {"value": parsed}
-
-
-def _emit_trigger_capture(
-    *,
-    event_type: str,
-    context: dict[str, Any],
-    source_override: str,
-    quiet: bool,
-) -> int:
-    """Write a trigger event to the canonical memory ledger."""
-    source = source_override.strip() if source_override else "claude_hook"
-    session_id = context.get("session_id")
-    if not session_id:
-        session_id = os.getenv("CLAUDE_SESSION_ID")
-
-    event = {
-        "event_type": event_type,
-        "source": source,
-        "session_id": session_id,
-        "payload": context,
-    }
-
-    try:
-        result = emit_capture_event(event, mode="auto")
-    except CaptureError as exc:
-        if not quiet:
-            console.print(f"[red]capture failed: {exc}[/red]")
-        return 1
-    except Exception as exc:
-        if not quiet:
-            console.print(f"[red]capture failed: {exc}[/red]")
-        return 1
-
-    if not quiet:
-        console.print(
-            "[dim]"
-            f"captured {result.event_type} ({result.event_id[:12]}) -> {result.ledger_path}"
-            "[/dim]"
-        )
-    return 0
-
-
-@cli.group("capture")
-def capture_group():
-    """Deterministic memory capture commands."""
-    pass
-
-
-@capture_group.command("emit")
-@click.option("--event", "event_json", required=True, help="JSON event payload")
-@click.option(
-    "--mode",
-    type=click.Choice(["auto", "plugin", "cli", "mcp"], case_sensitive=False),
-    default="auto",
-    show_default=True,
-    help="Capture adapter mode",
-)
-@click.option(
-    "--emit-event-bus",
-    is_flag=True,
-    help="Also emit to activity.events.v1 stream (best effort)",
-)
-@click.option("--quiet", is_flag=True, help="Suppress output")
-def capture_emit(event_json: str, mode: str, emit_event_bus: bool, quiet: bool):
-    """Emit a raw capture event to the canonical per-project ledger."""
-    try:
-        parsed = json.loads(event_json)
-    except json.JSONDecodeError as exc:
-        raise click.ClickException(f"Invalid --event JSON: {exc}") from exc
-
-    if not isinstance(parsed, dict):
-        raise click.ClickException("--event JSON must decode to an object")
-
-    if not parsed.get("event_type") and not parsed.get("type"):
-        raise click.ClickException("--event JSON must include event_type (or type)")
-
-    try:
-        result = emit_capture_event(
-            parsed,
-            mode=mode.lower(),
-            emit_event_bus=emit_event_bus,
-        )
-    except CaptureError as exc:
-        raise click.ClickException(str(exc)) from exc
-    except Exception as exc:
-        raise click.ClickException(f"Capture failed: {exc}") from exc
-
-    if not quiet:
-        console.print(
-            "[green]captured[/green] "
-            f"event_id={result.event_id} mode={result.mode} ledger={result.ledger_path}"
-        )
-
-
-@capture_group.command("note")
-@click.argument("summary", type=str)
-@click.option(
-    "--mode",
-    type=click.Choice(["auto", "plugin", "cli", "mcp"], case_sensitive=False),
-    default="auto",
-    show_default=True,
-    help="Capture adapter mode",
-)
-@click.option("--tag", "tags", multiple=True, help="Optional note tag(s)")
-@click.option("--session-id", type=str, default="", help="Optional session id")
-@click.option("--source", type=str, default="cli", show_default=True, help="Source label")
-@click.option(
-    "--emit-event-bus",
-    is_flag=True,
-    help="Also emit to activity.events.v1 stream (best effort)",
-)
-@click.option("--quiet", is_flag=True, help="Suppress output")
-def capture_note(
-    summary: str,
-    mode: str,
-    tags: tuple[str, ...],
-    session_id: str,
-    source: str,
-    emit_event_bus: bool,
-    quiet: bool,
-):
-    """Capture a manual note event using the shared capture pipeline."""
-    event = {
-        "event_type": "manual.note",
-        "source": source,
-        "session_id": session_id or None,
-        "payload": {
-            "summary": summary,
-            "tags": list(tags),
-        },
-    }
-
-    try:
-        result = emit_capture_event(
-            event,
-            mode=mode.lower(),
-            emit_event_bus=emit_event_bus,
-        )
-    except CaptureError as exc:
-        raise click.ClickException(str(exc)) from exc
-    except Exception as exc:
-        raise click.ClickException(f"Capture failed: {exc}") from exc
-
-    if not quiet:
-        console.print(
-            "[green]captured[/green] "
-            f"event_id={result.event_id} mode={result.mode} ledger={result.ledger_path}"
-        )
-
 
 @trigger_group.command("command-done")
-@click.option("--context", type=str, help="JSON context", default="")
-@click.option(
-    "--event-type",
-    type=str,
-    default="command.done",
-    show_default=True,
-    help="Capture event type",
-)
-@click.option(
-    "--source",
-    type=str,
-    default="claude_hook",
-    show_default=True,
-    help="Capture source label",
-)
 @click.option("--async", "_async", is_flag=True, help="No-op")
 @click.option("--quiet", is_flag=True, help="Suppress output")
-def trigger_command_done(
-    context: str,
-    event_type: str,
-    source: str,
-    _async: bool,
-    quiet: bool,
-):
+def trigger_command_done(_async: bool, quiet: bool):
     if _async and not quiet:
         quiet = True
-    payload = _parse_trigger_context(context)
-    if not payload:
-        payload = {"status": "done"}
-    exit_code = _emit_trigger_capture(
-        event_type=event_type,
-        context=payload,
-        source_override=source,
-        quiet=quiet,
-    )
-    if exit_code:
-        raise SystemExit(exit_code)
+    if not quiet:
+        console.print("[dim]command-done trigger received[/dim]")
+    return 0
 
 @trigger_group.command("shell-command")
 @click.option("--context", type=str, help="JSON context", default="")
-@click.option(
-    "--event-type",
-    type=str,
-    default="shell.command",
-    show_default=True,
-    help="Capture event type",
-)
-@click.option(
-    "--source",
-    type=str,
-    default="claude_hook",
-    show_default=True,
-    help="Capture source label",
-)
 @click.option("--async", "_async", is_flag=True, help="No-op")
 @click.option("--quiet", is_flag=True, help="Suppress output")
-def trigger_shell_command(
-    context: str,
-    event_type: str,
-    source: str,
-    _async: bool,
-    quiet: bool,
-):
+def trigger_shell_command(context: str, _async: bool, quiet: bool):
     if _async and not quiet:
         quiet = True
-    payload = _parse_trigger_context(context)
-    exit_code = _emit_trigger_capture(
-        event_type=event_type,
-        context=payload,
-        source_override=source,
-        quiet=quiet,
-    )
-    if exit_code:
-        raise SystemExit(exit_code)
+    if not quiet:
+        console.print("[dim]shell-command trigger received[/dim]")
+    return 0
 
 @cli.command("layouts")
 def layouts():
@@ -7172,7 +6463,7 @@ def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_s
 
     except Exception as e:
         console.logger.error(f"[red]❌ Hook command failed: {e}[/red]")
-        if "--debug" in sys.argv:
+        if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
 
