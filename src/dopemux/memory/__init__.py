@@ -7,6 +7,12 @@ from .capture_client import (
     resolve_capture_mode,
     resolve_repo_root_strict,
 )
+from .global_rollup import (
+    DEFAULT_GLOBAL_INDEX_PATH,
+    GlobalRollupError,
+    GlobalRollupIndexer,
+    resolve_rollup_projects,
+)
 
 __all__ = [
     "CaptureError",
@@ -14,5 +20,8 @@ __all__ = [
     "emit_capture_event",
     "resolve_capture_mode",
     "resolve_repo_root_strict",
+    "DEFAULT_GLOBAL_INDEX_PATH",
+    "GlobalRollupError",
+    "GlobalRollupIndexer",
+    "resolve_rollup_projects",
 ]
-

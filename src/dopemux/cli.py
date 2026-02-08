@@ -81,7 +81,13 @@ from .mobile import mobile as mobile_commands
 from .mobile.hooks import mobile_task_notification
 from .mobile.runtime import update_tmux_mobile_indicator
 from .tmux import tmux as tmux_commands
-from .memory import CaptureError, emit_capture_event
+from .memory import (
+    CaptureError,
+    GlobalRollupError,
+    GlobalRollupIndexer,
+    emit_capture_event,
+    resolve_rollup_projects,
+)
 
 # Import genetic agent CLI
 try:
@@ -6599,6 +6605,122 @@ def quick(ctx):
         "dopemux", "tmux", "start",
         "--layout", "medium",
     ], check=True)
+
+
+@cli.group("memory")
+def memory_group():
+    """Memory tooling and rollup helpers."""
+    pass
+
+
+@memory_group.group("rollup")
+def memory_rollup_group():
+    """Global read-only rollup index over project chronicles."""
+    pass
+
+
+@memory_rollup_group.command("build")
+@click.option(
+    "--projects-file",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, path_type=Path),
+    default=None,
+    help="Path to project list (JSON or newline-delimited paths).",
+)
+@click.option(
+    "--index-path",
+    type=click.Path(file_okay=True, dir_okay=False, path_type=Path),
+    default=None,
+    help="Override global index path (default: ~/.dopemux/global_index.sqlite).",
+)
+@click.option("--quiet", is_flag=True, help="Suppress human-readable output.")
+def memory_rollup_build(
+    projects_file: Optional[Path],
+    index_path: Optional[Path],
+    quiet: bool,
+):
+    """Build or refresh the global rollup index."""
+    try:
+        project_roots = resolve_rollup_projects(projects_file)
+        indexer = GlobalRollupIndexer(index_path=index_path)
+        result = indexer.build(project_roots)
+    except GlobalRollupError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except Exception as exc:
+        raise click.ClickException(f"Rollup build failed: {exc}") from exc
+
+    if not quiet:
+        console.print(
+            "[green]rollup built[/green] "
+            f"projects={result['projects_registered']} "
+            f"pointers={result['pointers_upserted']} "
+            f"index={result['index_path']}"
+        )
+
+
+@memory_rollup_group.command("list")
+@click.option(
+    "--index-path",
+    type=click.Path(file_okay=True, dir_okay=False, path_type=Path),
+    default=None,
+    help="Override global index path (default: ~/.dopemux/global_index.sqlite).",
+)
+def memory_rollup_list(index_path: Optional[Path]):
+    """List projects registered in the global rollup index."""
+    try:
+        indexer = GlobalRollupIndexer(index_path=index_path)
+        projects = indexer.list_projects()
+    except GlobalRollupError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except Exception as exc:
+        raise click.ClickException(f"Rollup list failed: {exc}") from exc
+
+    if not projects:
+        console.print(
+            f"[yellow]no projects registered in {indexer.index_path}[/yellow]"
+        )
+        return
+
+    for row in projects:
+        console.print(
+            f"- {row['project_id']} | {row['repo_root']} | "
+            f"{row['chronicle_path']} | last_seen={row['last_seen_at']}"
+        )
+
+
+@memory_rollup_group.command("search")
+@click.argument("query", type=str, required=False, default="")
+@click.option(
+    "--limit",
+    type=int,
+    default=10,
+    show_default=True,
+    help="Maximum rows to return (1-100).",
+)
+@click.option(
+    "--index-path",
+    type=click.Path(file_okay=True, dir_okay=False, path_type=Path),
+    default=None,
+    help="Override global index path (default: ~/.dopemux/global_index.sqlite).",
+)
+def memory_rollup_search(query: str, limit: int, index_path: Optional[Path]):
+    """Search global rollup pointers (keyword/metadata only, no embeddings)."""
+    try:
+        indexer = GlobalRollupIndexer(index_path=index_path)
+        rows = indexer.search(query, limit=limit)
+    except GlobalRollupError as exc:
+        raise click.ClickException(str(exc)) from exc
+    except Exception as exc:
+        raise click.ClickException(f"Rollup search failed: {exc}") from exc
+
+    if not rows:
+        console.print("[yellow]no rollup matches[/yellow]")
+        return
+
+    for row in rows:
+        console.print(
+            f"- [{row['ts_utc']}] {row['project_id']}:{row['event_id']} "
+            f"{row['event_type']} | {row['summary']}"
+        )
 
 
 @cli.group("trigger")
