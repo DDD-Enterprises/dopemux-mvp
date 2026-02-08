@@ -21,7 +21,7 @@ import json
 import os
 from datetime import datetime
 
-LEANTIME_URL = "http://localhost:8080"
+LEANTIME_URL = os.getenv("LEANTIME_URL", "http://localhost:8080")
 API_KEY = os.getenv("LEANTIME_API_KEY", "REPLACE_WITH_LEANTIME_API_TOKEN")
 PROJECT_ID = os.getenv("PROJECT_ID", "1")  # Assumed ID for "dopemux dev"
 
@@ -40,7 +40,7 @@ PHASE3_TASKS = [
         "status": "3"
     },
     {
-        "headline": "Phase 3.3: ML Production Integration - Real-time prediction API endpoints",
+        "headline": "Phase 3.3: ML Production Integration - Deploy real-time prediction API endpoints",
         "description": "Deploy ML prediction endpoints for proactive ADHD accommodations",
         "priority": "1",
         "status": "3"
@@ -100,7 +100,7 @@ async def create_task(session, task_data):
 
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"x-api-keuy {API_KEY}"
+        "X-API-Key": API_KEY
     }
 
     try:
