@@ -13,15 +13,16 @@ Usage:
     )
 """
 
+import ast
 import asyncio
-
 import logging
+import math
+import os
+import re
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
-
-import json
-import math
-from typing import Dict, List, Optional
 
 
 # ============================================================================
@@ -152,6 +153,186 @@ async def enrich_search_with_impact(
 # F-NEW-3: Unified Complexity Intelligence
 # ============================================================================
 
+def _repo_root() -> Path:
+    """Resolve repository root from this helper location."""
+    return Path(__file__).resolve().parents[2]
+
+
+def _resolve_file_path(file_path: str) -> Path:
+    """Resolve a path relative to CWD first, then repository root."""
+    candidate = Path(file_path)
+    if candidate.is_absolute():
+        return candidate
+
+    cwd_candidate = Path.cwd() / candidate
+    if cwd_candidate.exists():
+        return cwd_candidate
+
+    return _repo_root() / candidate
+
+
+def _ast_depth(node: ast.AST) -> int:
+    """Estimate maximum AST nesting depth."""
+    children = list(ast.iter_child_nodes(node))
+    if not children:
+        return 1
+    return 1 + max(_ast_depth(child) for child in children)
+
+
+def _find_symbol_node(tree: ast.AST, symbol: Optional[str]) -> Tuple[ast.AST, bool]:
+    """Find function/class node for symbol if available."""
+    if not symbol:
+        return tree, True
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == symbol:
+            return node, True
+
+    return tree, False
+
+
+def _derive_python_scores(file_path: Path, symbol: Optional[str]) -> Tuple[float, float, float, str]:
+    """Derive AST and LSP-like complexity scores from Python source."""
+    source = file_path.read_text(encoding="utf-8", errors="ignore")
+    tree = ast.parse(source, filename=str(file_path))
+    target_node, symbol_found = _find_symbol_node(tree, symbol)
+
+    branch_nodes = (
+        ast.If,
+        ast.For,
+        ast.AsyncFor,
+        ast.While,
+        ast.Try,
+        ast.Match,
+        ast.With,
+        ast.AsyncWith,
+        ast.IfExp,
+        ast.BoolOp,
+        ast.ListComp,
+        ast.SetComp,
+        ast.DictComp,
+        ast.GeneratorExp,
+    )
+
+    walked = list(ast.walk(target_node))
+    branch_count = sum(1 for node in walked if isinstance(node, branch_nodes))
+    call_count = sum(1 for node in walked if isinstance(node, ast.Call))
+    node_count = len(walked)
+    depth = _ast_depth(target_node)
+
+    arg_count = 0
+    if isinstance(target_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        arg_count = (
+            len(target_node.args.posonlyargs)
+            + len(target_node.args.args)
+            + len(target_node.args.kwonlyargs)
+            + (1 if target_node.args.vararg else 0)
+            + (1 if target_node.args.kwarg else 0)
+        )
+
+    ast_score = min(1.0, (branch_count * 2.0 + node_count / 18.0 + depth) / 35.0)
+    lsp_score = min(1.0, (call_count + branch_count * 1.5 + depth + arg_count * 1.2) / 28.0)
+
+    if symbol and not symbol_found:
+        confidence = 0.55
+        source_tag = "python-ast(symbol-not-found)"
+    else:
+        confidence = 0.9
+        source_tag = "python-ast"
+
+    return round(ast_score, 3), round(lsp_score, 3), confidence, source_tag
+
+
+def _derive_text_scores(file_path: Path) -> Tuple[float, float, float, str]:
+    """Fallback complexity estimate for non-Python or parse failures."""
+    try:
+        source = file_path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return 0.5, 0.5, 0.3, "fallback(file-unreadable)"
+
+    lines = [line for line in source.splitlines() if line.strip()]
+    if not lines:
+        return 0.05, 0.05, 0.5, "fallback(empty-file)"
+
+    branch_tokens = ("if ", "for ", "while ", "switch", "case ", "try", "catch", "elif ", "&&", "||")
+    branch_lines = sum(1 for line in lines if any(token in line for token in branch_tokens))
+    avg_line_len = sum(len(line) for line in lines) / len(lines)
+    max_indent = max(len(line) - len(line.lstrip(" \t")) for line in lines)
+
+    ast_score = min(1.0, (len(lines) / 500.0) + (branch_lines / 60.0) + (max_indent / 24.0))
+    lsp_score = min(1.0, (branch_lines / 40.0) + (avg_line_len / 240.0))
+    return round(ast_score, 3), round(lsp_score, 3), 0.45, "fallback(text-heuristic)"
+
+
+def _derive_structural_scores(file_path: Path, symbol: Optional[str]) -> Tuple[float, float, float, str]:
+    """Get structural complexity signals with graceful fallbacks."""
+    if not file_path.exists():
+        return 0.5, 0.5, 0.2, "fallback(file-missing)"
+
+    if file_path.suffix == ".py":
+        try:
+            return _derive_python_scores(file_path, symbol)
+        except (SyntaxError, ValueError):
+            logger.debug("AST parse failed for %s; using text heuristic fallback", file_path)
+            return _derive_text_scores(file_path)
+        except OSError:
+            return 0.5, 0.5, 0.3, "fallback(file-unreadable)"
+
+    return _derive_text_scores(file_path)
+
+
+def _derive_usage_score(symbol: Optional[str]) -> Tuple[float, float, str]:
+    """Estimate usage complexity by counting symbol references in code roots."""
+    if not symbol:
+        return 0.5, 0.3, "fallback(no-symbol)"
+
+    repo = _repo_root()
+    roots = [repo / "src", repo / "services", repo / "scripts", repo / "tests"]
+    pattern = re.compile(rf"\b{re.escape(symbol)}\b")
+
+    total_refs = 0
+    files_with_refs = 0
+
+    for root in roots:
+        if not root.exists():
+            continue
+        for path in root.rglob("*.py"):
+            if "__pycache__" in path.parts:
+                continue
+            try:
+                content = path.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            refs = len(pattern.findall(content))
+            if refs:
+                files_with_refs += 1
+                total_refs += refs
+
+    if total_refs == 0:
+        return 0.1, 0.4, "local-symbol-scan(no-matches)"
+
+    score = min(1.0, (math.log10(total_refs + 1) / 2.2) + (files_with_refs / 120.0))
+    return round(score, 3), 0.75, "local-symbol-scan"
+
+
+def _load_adhd_multiplier(user_id: str) -> Tuple[float, float, str]:
+    """Load optional ADHD multiplier from environment variables."""
+    normalized_user_id = re.sub(r"[^A-Z0-9]", "_", user_id.upper())
+    env_keys = [f"DOPMUX_ADHD_MULTIPLIER_{normalized_user_id}", "DOPMUX_ADHD_MULTIPLIER"]
+
+    for key in env_keys:
+        raw = os.getenv(key)
+        if raw is None:
+            continue
+        try:
+            multiplier = max(0.5, min(2.0, float(raw)))
+            return multiplier, 0.8, f"env:{key}"
+        except ValueError:
+            logger.warning("Ignoring invalid ADHD multiplier %s=%r", key, raw)
+
+    return 1.0, 0.4, "fallback(default)"
+
+
 async def get_unified_complexity(
     file_path: str,
     symbol: Optional[str] = None,
@@ -196,16 +377,17 @@ async def get_unified_complexity(
     LSP_WEIGHT = 0.3
     USAGE_WEIGHT = 0.3
 
-    # TODO: Call actual MCP tools
-    # ast_result = await mcp__dope-context__get_chunk_complexity(file_path, symbol)
-    # lsp_result = await mcp__serena-v2__analyze_complexity(file_path, symbol)
-    # refs_result = await mcp__serena-v2__find_references(file_path, line, 0)
-
-    # Placeholder scores
-    ast_score = 0.5
-    lsp_score = 0.5
-    usage_score = 0.5
-    adhd_mult = 1.0
+    resolved_path = _resolve_file_path(file_path)
+    ast_score, lsp_score, structural_confidence, structural_source = await asyncio.to_thread(
+        _derive_structural_scores,
+        resolved_path,
+        symbol,
+    )
+    usage_score, usage_confidence, usage_source = await asyncio.to_thread(
+        _derive_usage_score,
+        symbol,
+    )
+    adhd_mult, adhd_confidence, adhd_source = _load_adhd_multiplier(user_id)
 
     # Calculate unified score
     base_score = (ast_score * AST_WEIGHT + lsp_score * LSP_WEIGHT + usage_score * USAGE_WEIGHT)
@@ -225,8 +407,14 @@ async def get_unified_complexity(
         'usage_score': round(usage_score, 3),
         'adhd_multiplier': round(adhd_mult, 3),
         'unified_score': round(unified, 3),
-        'confidence': 0.5,
-        'interpretation': interpretation
+        'confidence': round((structural_confidence + usage_confidence + adhd_confidence) / 3.0, 3),
+        'interpretation': interpretation,
+        'sources': {
+            'structure': structural_source,
+            'usage': usage_source,
+            'adhd_multiplier': adhd_source,
+            'resolved_file': str(resolved_path),
+        },
     }
 
 
