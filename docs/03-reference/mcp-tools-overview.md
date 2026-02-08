@@ -5,9 +5,6 @@ type: reference
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
-author: '@hu3mann'
-date: '2026-02-05'
-prelude: Mcp_Tools_Overview (reference) for dopemux documentation and developer workflows.
 ---
 # MCP Tools Overview (Dopemux)
 
@@ -25,10 +22,11 @@ This guide lists Dopemux MCP servers and their key tools with sample Claude usag
   - conport_promote(progress_id, conport_url)
   - conport_promote_all(workspace_id, conport_url)
 
-- mas-sequential-thinking, zen, pal (stdio)
+- mas-sequential-thinking, zen (stdio)
 - serena, exa, leantime-bridge (SSE)
 - task-orchestrator (stdio on-demand)
 - gptr-researcher-stdio (stdio)
+- pal (stdio, includes apilookup for API/SDK documentation)
 
 ## Project Servers (per worktree)
 
