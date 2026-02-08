@@ -28,8 +28,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configuration
-LEANTIME_API_URL = os.getenv("LEANTIME_API_URL", "http://leantime:80")
-LEANTIME_API_TOKEN = os.getenv("LEANTIME_API_TOKEN", "")
+LEANTIME_API_URL = (
+    os.getenv("LEANTIME_API_URL")
+    or os.getenv("LEANTIME_URL")
+    or "http://leantime:80"
+)
+LEANTIME_API_TOKEN = os.getenv("LEANTIME_API_TOKEN") or os.getenv("LEANTIME_TOKEN", "")
 LEAN_TIME_RATE_LIMIT_SECONDS = float(os.getenv("LEAN_TIME_RATE_LIMIT_SECONDS", "1.0"))
 MCP_SERVER_HOST = os.getenv("MCP_SERVER_HOST", "0.0.0.0")
 MCP_SERVER_PORT = int(os.getenv("MCP_SERVER_PORT", "3015"))
@@ -138,8 +142,26 @@ class LeantimeClient:
                 json=payload,
                 headers=headers,
             )
+            if 300 <= response.status_code < 400:
+                location = response.headers.get("location", "")
+                response_text = (response.text or "")[:400]
+                install_hint = "/install" in location.lower() or "/install" in response_text.lower()
+                if install_hint:
+                    raise LeantimeBridgeError(
+                        "Leantime instance requires initial setup at /install before API calls can succeed"
+                    )
+                raise LeantimeBridgeError(
+                    f"Leantime redirected API call ({response.status_code}) to {location or 'unknown target'}"
+                )
             response.raise_for_status()
-            result = response.json()
+            try:
+                result = response.json()
+            except ValueError as exc:
+                body_preview = (response.text or "")[:400]
+                raise LeantimeBridgeError(
+                    f"Leantime returned non-JSON response for {method} (status {response.status_code}): "
+                    f"{body_preview}"
+                ) from exc
 
             if "error" in result:
                 err = result["error"]
@@ -158,6 +180,11 @@ class LeantimeClient:
                 e.response.status_code,
                 e.response.text[:400],
             )
+            if e.response.status_code in {401, 403}:
+                raise LeantimeBridgeError(
+                    "Leantime authentication failed (401/403). "
+                    "Configure LEANTIME_API_TOKEN (or LEANTIME_TOKEN compatibility env) with a valid API key."
+                ) from e
             raise LeantimeBridgeError(
                 f"Leantime HTTP error {e.response.status_code} for {method}"
             ) from e
@@ -441,12 +468,20 @@ async def _call_tool_with_method_fallback(
             return await client.call_api(method, arguments)
         except Exception as exc:
             last_error = exc
+            message = str(exc).lower()
+            terminal_error = (
+                "requires initial setup" in message
+                or "/install" in message
+                or "authentication failed" in message
+            )
             logger.warning(
                 "Leantime method candidate failed for %s: %s (%s)",
                 tool_name,
                 method,
                 str(exc)[:200],
             )
+            if terminal_error:
+                raise
 
     raise LeantimeBridgeError(
         f"All method candidates failed for tool '{tool_name}': "
@@ -537,12 +572,17 @@ async def handle_health(request: Request) -> Response:
             status_code=200,
         )
     except Exception as exc:
+        message = str(exc)
+        setup_required = "/install" in message.lower() or "requires initial setup" in message.lower()
         return JSONResponse(
             {
-                "status": "degraded",
+                "status": "needs_setup" if setup_required else "degraded",
                 "service": "leantime-bridge",
-                "leantime": "unreachable",
-                "error": str(exc),
+                "leantime": "setup_required" if setup_required else "unreachable",
+                "error": message,
+                "action": "Complete Leantime setup at /install and configure LEANTIME_API_TOKEN"
+                if setup_required
+                else None,
             },
             status_code=503,
         )
@@ -560,7 +600,10 @@ async def handle_info(request: Request) -> Response:
             leantime_status = "healthy"
     except Exception as e:
         logger.warning("Leantime health check failed: %s", e)
-        leantime_status = f"unhealthy: {str(e)[:100]}"
+        if "/install" in str(e).lower() or "requires initial setup" in str(e).lower():
+            leantime_status = "setup_required"
+        else:
+            leantime_status = f"unhealthy: {str(e)[:100]}"
 
     info = {
         "name": "leantime-bridge",
@@ -586,6 +629,7 @@ async def handle_info(request: Request) -> Response:
             },
             "env": {
                 "LEANTIME_API_TOKEN": "${LEANTIME_API_TOKEN:-}",
+                "LEANTIME_TOKEN": "${LEANTIME_TOKEN:-}",
             },
         },
         "health": "/health",
