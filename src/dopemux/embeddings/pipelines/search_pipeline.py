@@ -97,7 +97,7 @@ class SearchPipeline(BasePipeline):
         try:
             # Define pipeline stages
             stages = [
-                (PipelineStage.VALIDATION, self._validate_stage, query, search_params),
+                (PipelineStage.VALIDATION, self._validate_stage, (query, search_params)),
                 (PipelineStage.PROCESSING, self._search_stage),
                 (PipelineStage.ENHANCEMENT, self._enhancement_stage),
                 (PipelineStage.COMPLETION, self._completion_stage)
@@ -241,7 +241,7 @@ class SearchPipeline(BasePipeline):
             search_duration = (datetime.now() - search_start).total_seconds()
 
             # Update metrics
-            self.metrics.searches_performed += 1
+            self.metrics.searches_performed = getattr(self.metrics, "searches_performed", 0) + 1
 
             if self.config.enable_progress_tracking:
                 logger.info(f"📊 Found {len(self.raw_results)} results in {search_duration:.2f}s")
@@ -338,12 +338,17 @@ class SearchPipeline(BasePipeline):
         await self.cleanup()
 
         completion_duration = (datetime.now() - completion_start).total_seconds()
+        total_duration = (
+            (datetime.now() - self.start_time).total_seconds()
+            if self.start_time
+            else completion_duration
+        )
 
         return {
             "final_results_count": len(self.enhanced_results),
             "quality_metrics": quality_metrics,
             "completion_duration": completion_duration,
-            "total_pipeline_duration": (datetime.now() - self.start_time).total_seconds()
+            "total_pipeline_duration": total_duration
         }
 
     def _add_adhd_metadata(self):
@@ -446,10 +451,13 @@ class SearchPipeline(BasePipeline):
         """
         if not self.enhanced_results:
             logger.info("🔍 No results found")
+            print("🔍 No results found")
             return
 
         logger.info(f"🔍 Search Results for: '{self.query}'")
         logger.info("=" * 50)
+        print(f"🔍 Search Results for: '{self.query}'")
+        print("=" * 50)
 
         for i, result in enumerate(self.enhanced_results[:max_results]):
             rank = i + 1
@@ -462,13 +470,16 @@ class SearchPipeline(BasePipeline):
 
             logger.info(f"{rank}. {relevance_emoji} Score: {score:.3f} | Read: {reading_time}")
             logger.info(f"   📄 {result.doc_id}")
+            print(f"{rank}. {relevance_emoji} Score: {score:.3f} | Read: {reading_time}")
+            print(f"   📄 {result.doc_id}")
 
             # Show content preview (first 100 chars)
             content_preview = result.content[:100]
             if len(result.content) > 100:
                 content_preview += "..."
             logger.info(f"   💬 {content_preview}")
-            logger.info()
+            print(f"   💬 {content_preview}")
+            print("")
 
         if len(self.enhanced_results) > max_results:
             logger.info(f"   ... and {len(self.enhanced_results) - max_results} more results")

@@ -332,7 +332,7 @@ VALID_MCP_SERVERS = [
     "conport",          # Memory authority (REQUIRED)
     "serena-v2",        # Code navigation and LSP
     "zen",              # Multi-model reasoning
-    "pal",         # Official library documentation
+    "pal",              # Code generation + API/SDK documentation (apilookup)
     "gpt-researcher",   # Deep web research
     "dope-context",     # Hybrid code search
     "desktop-commander", # Desktop automation and control

@@ -63,9 +63,14 @@ class HealthChecker:
                 'url': 'http://localhost:3004/health',
                 'container': 'conport'
             },
-            'pal': {
+            'zen': {
                 'type': 'http',
                 'url': 'http://localhost:3003/health',
+                'container': 'zen'
+            },
+            'pal': {
+                'type': 'http',
+                'url': 'http://localhost:3002/health',
                 'container': 'pal'
             },
             'gptr-mcp': {
@@ -212,6 +217,8 @@ class HealthChecker:
                 return response.status_code == 200
         except Exception as e:
             return False
+
+            logger.error(f"Error: {e}")
     async def _check_docker_health(self, container_name: str) -> bool:
         """Check Docker container health."""
         if not self.docker_client:
@@ -222,6 +229,8 @@ class HealthChecker:
             return container.status == 'running'
         except Exception as e:
             return False
+
+            logger.error(f"Error: {e}")
     async def _check_redis_health(self) -> bool:
         """Check Redis connectivity."""
         try:
@@ -231,9 +240,9 @@ class HealthChecker:
             )
             return result.returncode == 0 and "PONG" in result.stdout
         except Exception as e:
-            logger.debug("Redis health check failed: %s", e)
             return False
 
+            logger.error(f"Error: {e}")
     async def _check_postgres_health(self) -> bool:
         """Check PostgreSQL connectivity."""
         try:
@@ -243,9 +252,9 @@ class HealthChecker:
             )
             return result.returncode == 0
         except Exception as e:
-            logger.debug("Postgres health check failed: %s", e)
             return False
 
+            logger.error(f"Error: {e}")
     async def check_critical_paths(self) -> Dict[str, bool]:
         """
         Check critical application paths beyond basic service health.
@@ -279,7 +288,9 @@ class HealthChecker:
                         response = await client.get("http://localhost:3004/api/status")
                         return response.status_code in [200, 404]  # 404 is ok for basic connectivity
             except Exception as e:
-                logger.debug("ConPort API connectivity check failed, falling back to file check: %s", e)
+                pass
+
+                logger.error(f"Error: {e}")
             return True  # Database file exists
 
         except Exception as e:
@@ -339,8 +350,9 @@ class HealthChecker:
                         test_file.write_text("test")
                         test_file.unlink()
                     except Exception as e:
-                        logger.debug("Write permission probe failed for %s: %s", directory, e)
                         return False
+
+                        logger.error(f"Error: {e}")
             return True
 
         except Exception as e:
