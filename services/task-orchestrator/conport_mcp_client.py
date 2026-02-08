@@ -680,6 +680,62 @@ class ConPortMCPClient:
             logger.error(f"ConPort get_custom_data failed: {e}")
             raise
 
+    async def log_custom_data(
+        self,
+        workspace_id: str,
+        category: str,
+        key: str,
+        value: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Persist custom data to ConPort.
+
+        Args:
+            workspace_id: Absolute path to workspace
+            category: Custom data category
+            key: Key within category
+            value: JSON payload to store
+
+        Returns:
+            Dict with persistence result payload
+
+        Raises:
+            Exception: If MCP call fails
+        """
+        try:
+            params = {
+                "workspace_id": workspace_id,
+                "category": category,
+                "key": key,
+                "value": value,
+            }
+            result = await self.mcp_tools.mcp__conport__log_custom_data(**params)
+            logger.debug("ConPort log_custom_data: category=%s key=%s", category, key)
+            return result
+        except Exception as e:
+            logger.error(f"ConPort log_custom_data failed: {e}")
+            raise
+
+    async def upsert_custom_data(
+        self,
+        workspace_id: str,
+        category: str,
+        key: str,
+        value: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Upsert custom data entry in ConPort.
+
+        ConPort custom-data writes are key-addressed; writes to the same
+        category/key pair replace prior value.
+        """
+        return await self.log_custom_data(
+            workspace_id=workspace_id,
+            category=category,
+            key=key,
+            value=value,
+        )
+
     # ===== PARALLEL OPERATIONS =====
 
     def __init_parallel_components(self):
