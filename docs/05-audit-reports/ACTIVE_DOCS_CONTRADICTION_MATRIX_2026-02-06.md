@@ -138,6 +138,22 @@ prelude: Active-doc claim parity matrix with severity, ownership, fix action, an
   `docs/03-reference/services/task-orchestrator.md`,
   `docs/02-how-to/operations/workflow-idea-epic-lifecycle.md`,
   `tests/unit/test_task_orchestrator_workflow_api.py`.
+- Resolved on 2026-02-08 (link-drift batch, active docs):
+  `DPC0053`, `DPC0055`, `DPC0057`, `DPC0058`, `DPC0061`, `DPC0064`,
+  `DPC0070`, `DPC0071`, `DPC0072`, `DPC0073`, `DPC0083`, `DPC0084`,
+  `DPC0085`, `DPC0086`, `DPC0087`, `DPC0088`, `DPC0091`, `DPC0092`,
+  `DPC0093`, `DPC0099`, `DPC0122` through `DPC0136`, and `DPC0137`
+  through `DPC0155` via canonical path/case normalization in:
+  `docs/01-tutorials/quick-launch-commands.md`,
+  `docs/02-how-to/DEVELOPING_ZEN.md`,
+  `docs/02-how-to/DEVELOPMENT_SETUP.md`,
+  `docs/02-how-to/create-llm-archive.md`,
+  `docs/02-how-to/mobile-web-setup-guide.md`,
+  `docs/02-how-to/multi-instance-workflow.md`,
+  `docs/02-how-to/overview.md`,
+  `docs/03-reference/systems/adhd-intelligence/overview.md`,
+  `docs/03-reference/systems/dashboard/overview.md`,
+  `docs/03-reference/systems/dashboard/tmux-dashboard-readme.md`.
 
 Artifacts generated in this wave:
 

@@ -276,10 +276,10 @@ echo "Creating LLM archive for code review..."
 
 ## Related Documentation
 
-- [Code Review Checklist](../03-reference/code-review-checklist.md)
-- [Security Guidelines](../03-reference/security-guidelines.md)
-- [Architecture Overview](../04-explanation/architecture/overview.md)
-- [ADHD Features](../04-explanation/systems/adhd-engine.md)
+- [Reference Overview](../03-reference/overview.md)
+- [Security Guidelines](../03-reference/security.md)
+- [Architecture Overview](../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
+- [ADHD Features API](../03-reference/adhd-engine-api.md)
 
 ## Script Reference
 

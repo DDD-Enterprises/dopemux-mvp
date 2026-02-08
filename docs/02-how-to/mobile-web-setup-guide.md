@@ -386,8 +386,8 @@ dopemux mobile start
 
 - **[Dopemux README](../../README.md)** - Main project overview
 - **[How-To Guides](overview.md)** - Additional setup guides
-- **[ADHD Intelligence System](../systems/adhd-intelligence/overview.md)** - Cognitive optimization features
-- **[Troubleshooting Guide](../troubleshooting-playbook.md)** - Common issues and solutions
+- **[ADHD Intelligence System](../03-reference/systems/adhd-intelligence/overview.md)** - Cognitive optimization features
+- **[Troubleshooting Guide](troubleshooting.md)** - Common issues and solutions
 
 ---
 

@@ -16,9 +16,9 @@ prelude: Tmux_Dashboard_Readme (reference) for dopemux documentation and develop
 
 ## 📋 Quick Links
 
-- **[Metrics Inventory](./TMUX_METRICS_INVENTORY.md)** - Complete list of available data sources
-- **[Design Document](./TMUX_DASHBOARD_DESIGN.md)** - Research-backed layout and implementation guide
-- **[Dashboard Script](./dopemux_dashboard.py)** - Ready-to-run Python implementation
+- **[Metrics Inventory](./tmux-metrics-inventory.md)** - Complete list of available data sources
+- **[Design Document](./tmux-dashboard-design.md)** - Research-backed layout and implementation guide
+- **[Dashboard Script](../../../../scripts/orchestrator_dashboard.py)** - Ready-to-run Python implementation
 
 ## 🚀 Quick Start
 
@@ -36,13 +36,13 @@ brew install tmux jq curl
 
 ```bash
 # Full Textual dashboard
-python dopemux_dashboard.py
+python scripts/orchestrator_dashboard.py
 
 # In a tmux pane
-tmux split-window -h "python dopemux_dashboard.py"
+tmux split-window -h "python scripts/orchestrator_dashboard.py"
 
 # Simple fallback (no Textual)
-python dopemux_dashboard.py --view=simple
+python scripts/orchestrator_dashboard.py --view=simple
 ```
 
 ### 3. Configure Tmux Status Bar
@@ -120,14 +120,14 @@ set -g status-right '#(curl -s localhost:8001/api/v1/state | jq -r ".energy_icon
 
 ## 📚 Documentation
 
-### Inventory (TMUX_METRICS_INVENTORY.md)
+### Inventory (tmux-metrics-inventory.md)
 Complete catalog of all available metrics:
 - 10 core services (ConPort, ADHD Engine, Serena, etc.)
 - 50+ actionable metrics
 - API endpoints and data access methods
 - Update frequency recommendations
 
-### Design (TMUX_DASHBOARD_DESIGN.md)
+### Design (tmux-dashboard-design.md)
 Research-backed design decisions:
 - Framework comparison (Python Rich/Textual vs alternatives)
 - Layout patterns from btop, k9s, lazygit
@@ -135,7 +135,7 @@ Research-backed design decisions:
 - Progressive disclosure architecture
 - Performance optimization strategies
 
-### Implementation (dopemux_dashboard.py)
+### Implementation (scripts/orchestrator_dashboard.py)
 Production-ready Python dashboard:
 - Async data fetching with caching
 - Textual-based TUI with real-time updates
@@ -147,7 +147,7 @@ Production-ready Python dashboard:
 
 ### Change Update Frequencies
 
-Edit `dopemux_dashboard.py`:
+Edit `scripts/orchestrator_dashboard.py`:
 ```python
 UPDATE_INTERVALS = {
     "adhd_state": 1,      # Real-time (1s)
@@ -158,7 +158,7 @@ UPDATE_INTERVALS = {
 
 ### Modify Color Scheme
 
-Edit `dopemux_dashboard.py`:
+Edit `scripts/orchestrator_dashboard.py`:
 ```python
 COLORS = {
     "success": "green",
@@ -198,7 +198,7 @@ tmux set-option -g status-interval 5
 
 ### High CPU usage?
 ```python
-# Increase cache TTL in dopemux_dashboard.py
+# Increase cache TTL in scripts/orchestrator_dashboard.py
 UPDATE_INTERVALS = {
     "adhd_state": 5,      # Slower updates
     "tasks": 60,
