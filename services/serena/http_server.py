@@ -8,8 +8,10 @@ Honors Serena's ADHD-first philosophy: progressive disclosure, cognitive load ma
 Day 2 Evening Implementation
 """
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Any, Optional
 import logging
+import os
 
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -229,6 +231,23 @@ def _format_pattern_entries(entries: Any, pattern_type: str) -> List[Dict[str, A
     return normalized
 
 
+def _resolve_workspace_path() -> Path:
+    """Resolve workspace path from env, falling back to current runtime cwd."""
+    for env_name in ("SERENA_WORKSPACE_PATH", "WORKSPACE_PATH"):
+        configured = os.getenv(env_name)
+        if configured and configured.strip():
+            return Path(configured).expanduser().resolve()
+    return Path.cwd().resolve()
+
+
+def _resolve_workspace_id(default: str = "dopemux-mvp") -> str:
+    """Resolve logical workspace id for detector metadata/ConPort grouping."""
+    configured = os.getenv("SERENA_WORKSPACE_ID") or os.getenv("WORKSPACE_ID")
+    if configured and configured.strip():
+        return configured.strip()
+    return default
+
+
 # =============================================================================
 # Startup/Shutdown
 # =============================================================================
@@ -317,11 +336,10 @@ async def get_metrics():
         try:
             # Get real detection results from Serena
             from untracked_work_detector import UntrackedWorkDetector
-            from pathlib import Path
 
             # Initialize detector with workspace
-            workspace_path = Path("/Users/hue/code/dopemux-mvp")  # Default workspace
-            detector = UntrackedWorkDetector(workspace_path, "dopemux-mvp")
+            workspace_path = _resolve_workspace_path()
+            detector = UntrackedWorkDetector(workspace_path, _resolve_workspace_id())
 
             # Run detection
             detection_result = await detector.detect(conport_client=None, session_number=1)
@@ -360,11 +378,10 @@ async def get_detections_summary(
         try:
             # Get real detection results from Serena
             from untracked_work_detector import UntrackedWorkDetector
-            from pathlib import Path
 
             # Initialize detector with workspace
-            workspace_path = Path("/Users/hue/code/dopemux-mvp")  # Default workspace
-            detector = UntrackedWorkDetector(workspace_path, "dopemux-mvp")
+            workspace_path = _resolve_workspace_path()
+            detector = UntrackedWorkDetector(workspace_path, _resolve_workspace_id())
 
             # Run detection
             detection_result = await detector.detect(conport_client=None, session_number=1)
@@ -397,11 +414,10 @@ async def get_top_patterns(
         try:
             # Extract top patterns from real metrics
             from untracked_work_detector import UntrackedWorkDetector
-            from pathlib import Path
 
             # Initialize detector with workspace
-            workspace_path = Path("/Users/hue/code/dopemux-mvp")  # Default workspace
-            detector = UntrackedWorkDetector(workspace_path, "dopemux-mvp")
+            workspace_path = _resolve_workspace_path()
+            detector = UntrackedWorkDetector(workspace_path, _resolve_workspace_id())
 
             # Get top patterns from pattern learner
             top_file_extensions = await detector.pattern_learner.get_top_patterns("file_extension", limit=limit)
