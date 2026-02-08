@@ -56,6 +56,14 @@ except ImportError:
     EVENT_EMISSION_AVAILABLE = False
     logger.debug("Event emission not available - hooks won't trigger EventBus")
 
+# Event emission for implicit triggers (Phase 7)
+try:
+    from event_emitter import emit_claude_prompt, emit_claude_tool, emit_context_saved
+    EVENT_EMISSION_AVAILABLE = True
+except ImportError:
+    EVENT_EMISSION_AVAILABLE = False
+    logger.debug("Event emission not available - hooks won't trigger EventBus")
+
 from .schemas import (
     PredictionOverrideRequest, OverrideResponse, CustomizationSettings,
     PredictionFeedbackRequest, AutomationAdjustmentRequest,
