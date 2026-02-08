@@ -5,7 +5,8 @@
  * Creates an API key directly in the database without web UI
  */
 
-// Load Leantime bootstrap
+// Load Leantime runtime dependencies first (required before bootstrap).
+require_once '/var/www/html/vendor/autoload.php';
 require_once '/var/www/html/bootstrap/app.php';
 
 use Leantime\Domain\Api\Services\Api as ApiService;
@@ -78,8 +79,11 @@ try {
         exit(1);
     }
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
+    if (stripos($e->getMessage(), 'install') !== false) {
+        echo "ℹ️  Leantime may not be fully installed yet. Complete /install first.\n";
+    }
     echo "Trace: " . $e->getTraceAsString() . "\n";
     exit(1);
 }
