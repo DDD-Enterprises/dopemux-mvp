@@ -2,13 +2,12 @@
 id: DASHBOARD_DAY9_INDEX
 title: Dashboard_Day9_Index
 type: explanation
+date: '2025-11-10'
+author: '@hu3mann'
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
-author: '@hu3mann'
-date: '2026-02-05'
-prelude: Dashboard_Day9_Index (explanation) for dopemux documentation and developer
-  workflows.
+prelude: Explanation of Dashboard_Day9_Index.
 ---
 # Dashboard Day 9 - Master Index 📚
 
@@ -22,7 +21,7 @@ prelude: Dashboard_Day9_Index (explanation) for dopemux documentation and develo
 ## 📖 QUICK NAVIGATION
 
 ### Start Here (5 minutes)
-👉 **[DASHBOARD_DAY9_SUMMARY.md](../archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md)**
+👉 **[DASHBOARD_DAY9_SUMMARY.md](../../DASHBOARD_DAY9_SUMMARY.md)**
 - 5-minute overview
 - What we're building
 - Why it matters
@@ -95,15 +94,15 @@ prelude: Dashboard_Day9_Index (explanation) for dopemux documentation and develo
 ## ✅ WHAT ALREADY EXISTS (No Work Needed!)
 
 ### Core Components (Leverage These!)
-1. **SparklineGenerator** (Planned)
-   - Would be at: `src/dopemux/utils/sparkline_generator.py`
+1. **SparklineGenerator** ✅
+   - File: `sparkline_generator.py` (302 lines)
    - Unicode rendering, coloring, trend detection
-   - Not yet implemented
+   - No changes needed!
 
-2. **PrometheusClient** (Planned)
-   - Would be at: `src/dopemux/integrations/prometheus_client.py`
+2. **PrometheusClient** ✅
+   - File: `prometheus_client.py`
    - Query execution, caching, error handling
-   - Not yet implemented
+   - No changes needed!
 
 3. **MetricsManager** ✅ (Day 8)
    - File: `dopemux_dashboard.py`
@@ -190,7 +189,7 @@ Polish:     ░░░░░░░░░░░░░░░░░░░░   0% �
 ### Before You Start (10 minutes)
 ```bash
 # 1. Read summary
-cat docs/archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md
+cat DASHBOARD_DAY9_SUMMARY.md
 
 # 2. Check services
 curl http://localhost:9090        # Prometheus
@@ -338,9 +337,9 @@ curl 'http://localhost:9090/api/v1/query?query=adhd_cognitive_load'
 ```
 dopemux-mvp/
 ├── dopemux_dashboard.py              # Main dashboard (EDIT THIS!)
-├── docs/archive/session-notes/
-│   └── 2025-historical/
-│       └── DASHBOARD_DAY9_SUMMARY.md # Quick summary (START HERE!)
+├── sparkline_generator.py            # Sparkline generator (USE THIS!)
+├── prometheus_client.py              # Prometheus client (USE THIS!)
+├── DASHBOARD_DAY9_SUMMARY.md         # Quick summary (START HERE!)
 │
 ├── docs/implementation-plans/
 │   ├── DASHBOARD_DAY9_INDEX.md       # This file!
@@ -417,13 +416,13 @@ git push origin feature/day9-sparklines-keyboard
 
 ### Read First (5 minutes)
 1. This index (you're here!)
-2. [DASHBOARD_DAY9_SUMMARY.md](../archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md)
+2. [DASHBOARD_DAY9_SUMMARY.md](../../DASHBOARD_DAY9_SUMMARY.md)
 
 ### Code With (During implementation)
-1. [DASHBOARD_DAY9_READY.md](./DASHBOARD_DAY9_READY.md)
+3. [DASHBOARD_DAY9_READY.md](./DASHBOARD_DAY9_READY.md)
 
 ### Reference When Needed
-1. [DASHBOARD_DAY9_DEEP_RESEARCH.md](./DASHBOARD_DAY9_DEEP_RESEARCH.md)
+4. [DASHBOARD_DAY9_DEEP_RESEARCH.md](./DASHBOARD_DAY9_DEEP_RESEARCH.md)
 
 ---
 
