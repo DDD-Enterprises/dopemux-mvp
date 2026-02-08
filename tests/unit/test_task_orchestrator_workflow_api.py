@@ -62,8 +62,15 @@ def _epic() -> _Entity:
 
 
 def _load_task_orchestrator_module():
-    if str(SERVICE_ROOT) not in sys.path:
-        sys.path.insert(0, str(SERVICE_ROOT))
+    service_root_str = str(SERVICE_ROOT)
+    if service_root_str in sys.path:
+        sys.path.remove(service_root_str)
+    sys.path.insert(0, service_root_str)
+
+    # Prevent cross-test collisions with other services exposing top-level app.py.
+    for module_name in list(sys.modules):
+        if module_name == "app" or module_name.startswith("app."):
+            sys.modules.pop(module_name, None)
 
     module_name = f"task_orchestrator_main_test_{uuid.uuid4().hex}"
     spec = importlib.util.spec_from_file_location(module_name, MODULE_PATH)
