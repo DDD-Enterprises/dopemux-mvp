@@ -135,6 +135,10 @@ prelude: Active-doc claim parity matrix with severity, ownership, fix action, an
 - `verified_false` means the claim is contradicted by current code/config/tests.
 - `partially_true` means claim is directionally true but needs qualification.
 - `unverified` means no executable evidence exists yet; wording must be downgraded or tests added.
+- `DPC0305` now has additional parity coverage in active docs and tests:
+  `docs/03-reference/services/task-orchestrator.md`,
+  `docs/02-how-to/operations/workflow-idea-epic-lifecycle.md`,
+  `tests/unit/test_task_orchestrator_workflow_api.py`.
 
 Artifacts generated in this wave:
 
