@@ -164,6 +164,18 @@ prelude: Active-doc claim parity matrix with severity, ownership, fix action, an
   `docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md`,
   `docs/04-explanation/concepts/worktree-comprehensive-guide.md`,
   `docs/05-audit-reports/audit-overview.md`.
+- Resolved on 2026-02-08 (link-drift batch, systems docs):
+  `DPC0207`, `DPC0208`, `DPC0209`, `DPC0210`, `DPC0213`, `DPC0216`,
+  `DPC0217`, `DPC0218`, `DPC0219`, `DPC0220`, `DPC0221`, `DPC0222`,
+  `DPC0223`, `DPC0224`, `DPC0225`, `DPC0226`, `DPC0227`, `DPC0228`,
+  and `DPC0229` via archive-link retargeting, active-path normalization, and
+  upstream-path de-linking in:
+  `docs/systems/adhd-engine/interruption-shield/quickstart.md`,
+  `docs/systems/adhd-features/README.md`,
+  `docs/systems/conport/release-notes.md`,
+  `docs/systems/dope-context/api-reference.md`,
+  `docs/systems/dope-context/deployment.md`,
+  `docs/systems/serena/multi-workspace-guide.md`.
 
 Artifacts generated in this wave:
 

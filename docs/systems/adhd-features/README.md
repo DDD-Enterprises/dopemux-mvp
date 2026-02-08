@@ -37,7 +37,7 @@ All 11 ADHD accommodation features with detailed technical documentation.
 - [Quick Reference Card](../../02-how-to/adhd-features-quick-reference.md)
 
 **API Documentation**:
-- [ADHD Engine API Reference](../adhd-engine-api.md)
+- [ADHD Engine API Reference](../../03-reference/adhd-engine-api.md)
 
 **Technical Documentation**:
 - [ADHD Engine README](../../../services/adhd_engine/README.md)
