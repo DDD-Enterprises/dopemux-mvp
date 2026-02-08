@@ -209,17 +209,13 @@ capabilities: ["code_understanding", "navigation_assistance", "working_memory", 
 complements: ["Task-Master-AI (WHAT)", "Task-Orchestrator (WHEN)", "Leantime (STATUS)"]
 ```
 
-### Claude Context (Legacy/Experimental) - Semantic Code Search
+### Claude Context - Semantic Code Search
 - **Container**: `mcp-claude-context`
 - **Port**: `3007`
 - **Role**: `research`
 - **Package**: `@zilliz/claude-context-mcp@latest`
 - **Description**: Repository-wide semantic search and context understanding
 - **Health Check**: `http://localhost:3007/health`
-
-**Status Note:**
-- Not included in default development profile.
-- Treat as legacy/experimental unless a workflow explicitly opts in.
 
 **Key Features:**
 - Vector-based code search
@@ -460,4 +456,4 @@ done
 ---
 
 **📈 Implementation Status**: All servers documented and containerized
-**🎯 Next Phase**: Profile-driven tool exposure and orchestrator policy hardening (see ADR-210)
+**🎯 Next Phase**: MetaMCP orchestration development

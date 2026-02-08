@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 # Profile definitions
 declare -A PROFILES
 PROFILES[minimal]="pal litellm serena qdrant"
-PROFILES[development]="pal litellm serena qdrant dope-context task-orchestrator desktop-commander exa"
+PROFILES[development]="pal litellm serena qdrant dope-context task-orchestrator context7 desktop-commander exa"
 PROFILES[full]=""  # Empty means all services
 
 show_help() {
@@ -26,7 +26,7 @@ show_help() {
     echo -e "  ${GREEN}minimal${NC}      - 5 servers (pal, litellm, serena, qdrant)"
     echo "                   Memory: ~300MB, Startup: ~30s"
     echo ""
-    echo -e "  ${GREEN}development${NC}  - 9 servers (minimal + dope-context, task-orchestrator, etc.)"
+    echo -e "  ${GREEN}development${NC}  - 10 servers (minimal + dope-context, task-orchestrator, etc.)"
     echo "                   Memory: ~700MB, Startup: ~45s"
     echo ""
     echo -e "  ${GREEN}full${NC}         - All servers (13+)"

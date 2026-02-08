@@ -75,10 +75,12 @@ This user has ADHD - context loss is devastating:
 - **ConPort**: ADHD-optimized context & memory
 - **EXA**: High-signal developer research
 
-### Legacy MetaMCP Broker (Archived)
+### MetaMCP Broker System
 
-- **Status**: Legacy/archived concept, not the current runtime authority.
-- **Current Authority**: Profile-driven tool exposure and registry/orchestrator policy (ADR-210).
+- **Endpoint**: `http://localhost:8090`
+- **Status**: 9 connected servers
+- **Features**: Role-based access, ADHD optimizations
+- **Total Tools**: 50+ specialized capabilities
 
 ### Role-Based Access Patterns
 
@@ -139,13 +141,17 @@ mcp__conport__log_custom_data --workspace_id "/Users/hue/code/dopemux-mvp" --cat
 ### Check Operational Status
 
 - Individual servers: `claude mcp list`
+- MetaMCP broker: `curl -s http://localhost:8090/health`
 - ConPort status: `mcp__conport__get_active_context` (should respond)
 
 ### Recovery Commands
 
 ```bash
-# Use profile starter (current runtime)
-cd /Users/hue/code/dopemux-mvp/docker/mcp-servers && ./start-profile.sh development --health
+# Restart MetaMCP broker if needed
+cd /Users/hue/code/dopemux-mvp && python3 start_metamcp_minimal.py &
+
+# Check broker process
+ps aux | grep python3 | grep start_metamcp
 ```
 
 ## Integration Patterns
