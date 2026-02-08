@@ -10,7 +10,7 @@ mcp_servers:
   required:
     - zen              # Multi-model reasoning (thinkdeep, planner, consensus)
     - conport          # Shared knowledge graph (cross-project learning)
-    - pal         # Official documentation lookup
+    - pal  # API/SDK documentation via apilookup         # Official documentation lookup
 
   # Enabled for this profile
   enabled:

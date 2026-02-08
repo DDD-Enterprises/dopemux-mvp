@@ -474,12 +474,17 @@ class SyncPipeline(BasePipeline):
         await self.cleanup()
 
         completion_duration = (datetime.now() - completion_start).total_seconds()
+        total_duration = (
+            (datetime.now() - self.start_time).total_seconds()
+            if self.start_time
+            else completion_duration
+        )
 
         return {
             "sync_timestamp": sync_timestamp.isoformat(),
             "notification_results": notification_results,
             "completion_duration": completion_duration,
-            "total_pipeline_duration": (datetime.now() - self.start_time).total_seconds()
+            "total_pipeline_duration": total_duration
         }
 
     async def cleanup(self) -> None:

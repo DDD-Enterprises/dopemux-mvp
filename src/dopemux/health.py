@@ -7,11 +7,6 @@ with ADHD-optimized reporting and slash command integration.
 """
 
 import json
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 import subprocess
 import time
 from dataclasses import dataclass
@@ -70,13 +65,13 @@ class HealthChecker:
         # Initialize Docker client (optional)
         try:
             self.docker_client = docker.from_env()
-        except Exception as e:
+        except Exception:
             self.docker_client = None
-            logger.debug("Docker client unavailable: %s", e)
+
         # Health check registry
         self.checks = {
             "dopemux_core": self._check_dopemux_core,
-            "claude_code": self._check_claude_code,
+            "dope_brainz": self._check_dope_brainz,
             "mcp_servers": self._check_mcp_servers,
             "docker_services": self._check_docker_services,
             "system_resources": self._check_system_resources,
@@ -104,7 +99,6 @@ class HealthChecker:
                     last_check=datetime.now(),
                 )
 
-                logger.error(f"Error: {e}")
         return results
 
     def quick_status(self) -> Dict[str, str]:
@@ -169,7 +163,6 @@ class HealthChecker:
             )
 
         except Exception as e:
-            logger.debug("Dopemux core check failed: %s", e)
             return ServiceHealth(
                 name="dopemux_core",
                 status=HealthStatus.CRITICAL,
@@ -177,40 +170,6 @@ class HealthChecker:
                 details={"error": str(e)},
             )
 
-    def _check_claude_code(self, detailed: bool = False) -> ServiceHealth:
-        """Check Claude Code integration health."""
-        details = {}
-        try:
-            # Detect Claude Code processes
-            claude_processes = []
-            for proc in psutil.process_iter(["pid", "name", "cmdline"]):
-                try:
-                    cmdline = " ".join(proc.info.get("cmdline") or [])
-                    if "claude" in cmdline.lower() and ("code" in cmdline.lower() or "ccr" in cmdline.lower()):
-                        claude_processes.append({
-                            "pid": proc.info["pid"],
-                            "name": proc.info["name"],
-                            "cmdline": cmdline,
-                        })
-                except (psutil.NoSuchProcess, psutil.AccessDenied):
-                    continue
-            if not claude_processes:
-                status = HealthStatus.WARNING
-                message = "Claude Code not running"
-                details["suggestion"] = "Start Claude Code with 'dopemux start' or 'dopemux code'"
-            else:
-                status = HealthStatus.HEALTHY
-                message = f"Claude Code running ({len(claude_processes)} processes)"
-            if detailed:
-                details["processes"] = claude_processes
-            return ServiceHealth(name="claude_code", status=status, message=message, details=details)
-        except Exception as e:
-            return ServiceHealth(
-                name="claude_code",
-                status=HealthStatus.CRITICAL,
-                message=f"Claude Code check failed: {e}",
-                details={"error": str(e)},
-            )
     def _check_dope_brainz(self, detailed: bool = False) -> ServiceHealth:
         """Check DopeBrainz integration health."""
         details = {}
@@ -248,7 +207,6 @@ class HealthChecker:
             )
 
         except Exception as e:
-            logger.debug("DopeBrainz check failed: %s", e)
             return ServiceHealth(
                 name="dope_brainz",
                 status=HealthStatus.CRITICAL,
@@ -297,7 +255,6 @@ class HealthChecker:
             )
 
         except Exception as e:
-            logger.debug("MCP server check failed: %s", e)
             return ServiceHealth(
                 name="mcp_servers",
                 status=HealthStatus.CRITICAL,
@@ -368,7 +325,6 @@ class HealthChecker:
             )
 
         except Exception as e:
-            logger.debug("Docker services check failed: %s", e)
             return ServiceHealth(
                 name="docker_services",
                 status=HealthStatus.CRITICAL,
@@ -426,7 +382,6 @@ class HealthChecker:
             )
 
         except Exception as e:
-            logger.debug("System resources check failed: %s", e)
             return ServiceHealth(
                 name="system_resources",
                 status=HealthStatus.CRITICAL,
@@ -468,9 +423,8 @@ class HealthChecker:
                             "last_check"
                         )
                         details["focus_score"] = attention_data.get("focus_score", 0)
-                except Exception as e:
+                except Exception:
                     features_inactive.append("attention_monitoring")
-                    logger.debug("Failed reading attention metrics file %s: %s", attention_file, e)
             else:
                 features_inactive.append("attention_monitoring")
 
@@ -483,9 +437,8 @@ class HealthChecker:
                         details["sessions_count"] = len(
                             context_data.get("sessions", [])
                         )
-                except Exception as e:
+                except Exception:
                     features_inactive.append("context_preservation")
-                    logger.debug("Failed reading context metrics file %s: %s", context_file, e)
             else:
                 features_inactive.append("context_preservation")
 
@@ -513,7 +466,6 @@ class HealthChecker:
             )
 
         except Exception as e:
-            logger.debug("ADHD features check failed: %s", e)
             return ServiceHealth(
                 name="adhd_features",
                 status=HealthStatus.CRITICAL,
@@ -547,65 +499,69 @@ class HealthChecker:
             overall_status = "🟢 HEALTHY"
             overall_color = "green"
 
-        # Responsive multi-column layout
-        width = self.console.size.width if self.console.size else 120
-        columns = 1
-        if width >= 150:
-            columns = 3
-        elif width >= 100:
-            columns = 2
+        # Main status table
+        table = Table(title=f"🧠 Dopemux Health Status - {overall_status}")
+        table.add_column("Service", style="cyan", width=20)
+        table.add_column("Status", style="bold", width=12)
+        table.add_column("Message", style="white", width=40)
+        table.add_column("Response", justify="right", style="dim", width=10)
 
-        services = list(results.items())
-        chunk_size = (len(services) + columns - 1) // columns
-        service_chunks = [services[i:i+chunk_size] for i in range(0, len(services), chunk_size)]
+        for service_name, health in results.items():
+            emoji, _, color = health.status.value
 
-        from rich.columns import Columns
-        from rich.table import Table as RichTable
+            table.add_row(
+                service_name.replace("_", " ").title(),
+                f"{emoji} {health.status.value[0].title()}",
+                health.message,
+                f"{health.response_time_ms:.0f}ms",
+            )
 
-        def build_table(chunk):
-            t = RichTable(show_header=True, title=None, box=None, pad_edge=False)
-            t.add_column("Service", style="cyan")
-            t.add_column("Status", style="bold")
-            t.add_column("Latency", style="dim", justify="right")
-            for service_name, health in chunk:
-                emoji, _, color = health.status.value
-                t.add_row(
-                    service_name.replace("_", " ").title(),
-                    f"{emoji} {health.status.value[0].title()}",
-                    f"{health.response_time_ms:.0f}ms",
-                )
-            return t
-
-        # Build unified health panel
-        tables = [build_table(chunk) for chunk in service_chunks]
-        unified = Columns(tables, expand=True)
-        self.console.print(Panel(unified, title=f"Health: {overall_status}", border_style=overall_color))
+        self.console.print(table)
 
         # Detailed information
         if detailed:
-            from rich.live import Live
-            from rich.table import Table as DetailTable
-            detail_tables = []
             for service_name, health in results.items():
                 if health.details:
-                    dt = DetailTable(show_header=True, title=f"📋 {service_name.replace('_', ' ').title()} Details")
-                    dt.add_column("Property", style="cyan")
-                    dt.add_column("Value", style="green")
+                    details_table = Table(
+                        title=f"📋 {service_name.replace('_', ' ').title()} Details"
+                    )
+                    details_table.add_column("Property", style="cyan")
+                    details_table.add_column("Value", style="green")
+
                     for key, value in health.details.items():
                         if isinstance(value, (dict, list)):
                             value_str = (
                                 json.dumps(value, indent=2)
-                                if len(str(value)) < 80
+                                if len(str(value)) < 100
                                 else f"{type(value).__name__}({len(value)} items)"
                             )
                         else:
                             value_str = str(value)
-                        dt.add_row(key.replace("_", " ").title(), value_str)
-                    detail_tables.append(dt)
-            if detail_tables:
-                from rich.columns import Columns
-                self.console.print(Columns(detail_tables))
 
+                        details_table.add_row(key.replace("_", " ").title(), value_str)
+
+                    self.console.print(details_table)
+
+        # Summary panel
+        summary_text = f"""
+🎯 **Health Summary**
+• Healthy: {healthy_count} services
+• Warnings: {warning_count} services
+• Critical: {critical_count} services
+
+💡 **Quick Actions**
+• Run `dopemux start` if Claude Code isn't running
+• Use `dopemux init` for uninitialized projects
+• Check `dopemux status` for detailed ADHD metrics
+        """
+
+        self.console.print(
+            Panel(
+                summary_text.strip(),
+                title="🏥 Health Summary",
+                border_style=overall_color,
+            )
+        )
 
     def format_for_slash_command(self, results: Dict[str, ServiceHealth]) -> str:
         """Format health results for slash command display."""
@@ -620,27 +576,12 @@ class HealthChecker:
 
     def restart_unhealthy_services(self) -> List[str]:
         """Attempt to restart unhealthy services."""
-        results = self.check_all(detailed=True)
+        results = self.check_all()
         restarted = []
 
         for service_name, health in results.items():
             if health.status in [HealthStatus.CRITICAL, HealthStatus.WARNING]:
-                if service_name != "docker_services" or not self.docker_client:
-                    logger.info("No automatic restart hook for service: %s", service_name)
-                    continue
-
-                containers = health.details.get("containers", [])
-                for container in containers:
-                    if container.get("status") == "running":
-                        continue
-                    container_name = container.get("name")
-                    if not container_name:
-                        continue
-                    try:
-                        docker_container = self.docker_client.containers.get(container_name)
-                        docker_container.restart(timeout=10)
-                        restarted.append(container_name)
-                    except Exception as exc:
-                        logger.warning("Failed restarting container %s: %s", container_name, exc)
+                # No automatic restart hooks currently configured
+                pass
 
         return restarted

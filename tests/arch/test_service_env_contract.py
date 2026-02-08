@@ -4,13 +4,13 @@ Architecture Test: Service Environment Contract (G33 Phase 3)
 Enforces the unified service environment contract across all smoke-enabled services.
 Tests that services load mandatory env vars and respect contract exceptions.
 
-Contract Reference: docs/engineering/service_env_contract.md
+Contract Reference: docs/03-reference/service-env-contract.md
 """
 
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Any, Dict, List, Set
 
 import pytest
 import yaml
@@ -18,6 +18,7 @@ import yaml
 
 # Repository root
 REPO_ROOT = Path(__file__).parent.parent.parent
+SMOKE_COMPOSE_PATH = REPO_ROOT / "docker-compose.smoke.yml"
 
 # Mandatory env vars from contract
 MANDATORY_ENV_VARS = {
@@ -46,6 +47,72 @@ def load_registry() -> Dict:
         return yaml.safe_load(f)
 
 
+def load_smoke_compose() -> Dict:
+    """Load smoke-compose file used by contract/runtime checks."""
+    assert SMOKE_COMPOSE_PATH.exists(), f"Smoke compose file not found: {SMOKE_COMPOSE_PATH}"
+    with open(SMOKE_COMPOSE_PATH) as f:
+        return yaml.safe_load(f) or {}
+
+
+def _resolve_service_runtime(service_info: Dict[str, Any]) -> tuple[Path | None, Path | None]:
+    """Resolve runtime source directory and dockerfile path for a service.
+
+    Resolution order:
+    1. `docker-compose.smoke.yml` build metadata for compose_service_name
+    2. `services/<service name>`
+    3. `services/<compose_service_name>`
+    """
+    compose_data = load_smoke_compose()
+    compose_services = compose_data.get("services", {})
+    compose_name = service_info.get("compose_service_name") or service_info["name"]
+    compose_service = compose_services.get(compose_name, {})
+
+    runtime_dir: Path | None = None
+    dockerfile_path: Path | None = None
+
+    build_cfg = compose_service.get("build")
+    if isinstance(build_cfg, dict):
+        context = build_cfg.get("context", ".")
+        context_dir = (REPO_ROOT / context).resolve()
+        dockerfile = build_cfg.get("dockerfile")
+        if dockerfile:
+            candidate = (context_dir / dockerfile).resolve()
+            if not candidate.exists():
+                candidate = (REPO_ROOT / dockerfile).resolve()
+            if candidate.exists():
+                dockerfile_path = candidate
+                runtime_dir = candidate.parent
+        if runtime_dir is None and context_dir.exists():
+            runtime_dir = context_dir
+    elif isinstance(build_cfg, str):
+        context_dir = (REPO_ROOT / build_cfg).resolve()
+        if context_dir.exists():
+            runtime_dir = context_dir
+
+    if runtime_dir is None:
+        service_dir = (REPO_ROOT / "services" / service_info["name"]).resolve()
+        compose_dir = (REPO_ROOT / "services" / compose_name).resolve()
+        if service_dir.exists():
+            runtime_dir = service_dir
+        elif compose_dir.exists():
+            runtime_dir = compose_dir
+
+    return runtime_dir, dockerfile_path
+
+
+def _has_entry_point(service_dir: Path) -> bool:
+    """Return whether service has at least one recognized Python entry point."""
+    entry_points = (
+        "main.py",
+        "app.py",
+        "server.py",
+        "__main__.py",
+        "app/main.py",
+        "dope_memory_main.py",
+    )
+    return any((service_dir / entry).exists() for entry in entry_points)
+
+
 def scan_service_env_vars(service_dir: Path) -> Set[str]:
     """Scan service code for env var usage."""
     env_vars = set()
@@ -66,14 +133,13 @@ def scan_service_env_vars(service_dir: Path) -> Set[str]:
             continue  # Skip unreadable files
 
     # Scan Dockerfile for ENV declarations
-    dockerfile = service_dir / "Dockerfile"
-    if dockerfile.exists():
+    for dockerfile in service_dir.glob("Dockerfile*"):
         try:
             content = dockerfile.read_text()
             matches = re.findall(r'^ENV\s+([A-Z_][A-Z0-9_]*)', content, re.MULTILINE)
             env_vars.update(matches)
         except Exception:
-            pass
+            continue
 
     return env_vars
 
@@ -118,7 +184,7 @@ class TestServiceEnvContract:
 
     def test_contract_documentation_exists(self):
         """Verify contract documentation exists."""
-        doc_path = REPO_ROOT / "docs" / "engineering" / "service_env_contract.md"
+        doc_path = REPO_ROOT / "docs" / "03-reference" / "service-env-contract.md"
         assert doc_path.exists(), (
             f"Contract documentation not found: {doc_path}"
         )
@@ -136,10 +202,11 @@ class TestServiceEnvContract:
         if service.get("category") == "infrastructure":
             pytest.skip(f"Infrastructure service '{service['name']}' uses official image")
 
-        service_dir = REPO_ROOT / "services" / service["name"]
-        assert service_dir.exists(), (
-            f"Service directory not found: {service_dir}\n"
-            f"Service '{service['name']}' is enabled in smoke but has no code directory"
+        runtime_dir, _ = _resolve_service_runtime(service)
+        assert runtime_dir and runtime_dir.exists(), (
+            f"Service runtime directory not found for '{service['name']}'.\n"
+            f"Expected via smoke compose service '{service.get('compose_service_name', service['name'])}' "
+            f"or services/{service['name']}."
         )
 
     @pytest.mark.parametrize("service", get_smoke_enabled_services(load_registry()), ids=lambda s: s["name"])
@@ -149,15 +216,14 @@ class TestServiceEnvContract:
         if service.get("category") == "infrastructure":
             pytest.skip(f"Infrastructure service '{service['name']}' uses official image")
 
-        service_dir = REPO_ROOT / "services" / service["name"]
-
-        # Look for common entry point files
-        entry_points = ["main.py", "app.py", "server.py", "__main__.py"]
-        has_entry = any((service_dir / ep).exists() for ep in entry_points)
+        service_dir, _ = _resolve_service_runtime(service)
+        if service_dir is None:
+            pytest.skip(f"Service runtime directory not resolved: {service['name']}")
+        has_entry = _has_entry_point(service_dir)
 
         assert has_entry, (
             f"Service '{service['name']}' has no entry point.\n"
-            f"Expected one of: {', '.join(entry_points)}\n"
+            f"Expected one of: main.py, app.py, server.py, __main__.py, app/main.py, dope_memory_main.py\n"
             f"Directory: {service_dir}"
         )
 
@@ -165,10 +231,12 @@ class TestServiceEnvContract:
     def test_mandatory_env_vars_loaded(self, service):
         """Test that service loads mandatory env vars (respecting exceptions)."""
         service_name = service["name"]
-        service_dir = REPO_ROOT / "services" / service_name
+        if service.get("category") == "infrastructure":
+            pytest.skip(f"Infrastructure service '{service_name}' uses official image")
+        service_dir, _ = _resolve_service_runtime(service)
 
         # Skip if service directory doesn't exist (infrastructure services)
-        if not service_dir.exists():
+        if service_dir is None or not service_dir.exists():
             pytest.skip(f"Service directory not found: {service_dir}")
 
         # Get env vars used by service
@@ -197,18 +265,20 @@ class TestServiceEnvContract:
             f"   env_contract_exceptions:\n"
             f"     - variable: {missing_mandatory[0]}\n"
             f"       reason: 'Explain why exception needed'\n\n"
-            f"See: docs/engineering/service_env_contract.md"
+            f"See: docs/03-reference/service-env-contract.md"
         )
 
     @pytest.mark.parametrize("service", get_smoke_enabled_services(load_registry()), ids=lambda s: s["name"])
     def test_category_specific_env_vars(self, service):
         """Test that service loads category-specific env vars."""
         service_name = service["name"]
-        service_dir = REPO_ROOT / "services" / service_name
+        if service.get("category") == "infrastructure":
+            pytest.skip(f"Infrastructure service '{service_name}' uses official image")
+        service_dir, _ = _resolve_service_runtime(service)
         category = service.get("category", "unknown")
 
         # Skip if service directory doesn't exist
-        if not service_dir.exists():
+        if service_dir is None or not service_dir.exists():
             pytest.skip(f"Service directory not found: {service_dir}")
 
         # Get category-specific required vars
@@ -236,7 +306,7 @@ class TestServiceEnvContract:
             f"To fix:\n"
             f"1. Add required env vars for '{category}' category\n"
             f"2. OR add exception with justification\n\n"
-            f"See: docs/engineering/service_env_contract.md"
+            f"See: docs/03-reference/service-env-contract.md"
         )
 
     def test_exception_format_valid(self, registry):
@@ -265,20 +335,24 @@ class TestServiceEnvContract:
         """Test that smoke-enabled services have Dockerfiles."""
         service_name = service["name"]
         category = service.get("category", "unknown")
-        service_dir = REPO_ROOT / "services" / service_name
+        service_dir, compose_dockerfile = _resolve_service_runtime(service)
 
         # Infrastructure services may not have Dockerfiles (use official images)
         if category == "infrastructure":
             pytest.skip(f"Infrastructure service '{service_name}' uses official image")
 
         # Skip if service directory doesn't exist
-        if not service_dir.exists():
+        if service_dir is None or not service_dir.exists():
             pytest.skip(f"Service directory not found: {service_dir}")
 
-        dockerfile = service_dir / "Dockerfile"
-        assert dockerfile.exists(), (
+        dockerfile_candidates = list(service_dir.glob("Dockerfile*"))
+        if compose_dockerfile is not None:
+            dockerfile_candidates.append(compose_dockerfile)
+        dockerfile_candidates = [path for path in dockerfile_candidates if path.exists()]
+        assert dockerfile_candidates, (
             f"Service '{service_name}' is smoke-enabled but has no Dockerfile.\n"
-            f"Expected: {dockerfile}\n\n"
+            f"Expected under: {service_dir}\n"
+            f"Compose-resolved Dockerfile: {compose_dockerfile}\n\n"
             f"Smoke-enabled services need Dockerfiles for containerized deployment."
         )
 
