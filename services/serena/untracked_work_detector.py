@@ -44,16 +44,20 @@ class UntrackedWorkDetector:
 
     def __init__(self, workspace: Optional[Path | str] = None, workspace_id: Optional[str] = None):
         # Backward compatibility: if only one argument is supplied, treat it as workspace.
-        if workspace is None and workspace_id:
+        if workspace is None and workspace_id and workspace_id not in {"None", "null"}:
             workspace = workspace_id
 
-        if workspace is None:
+        workspace_text = str(workspace).strip() if workspace is not None else ""
+        if workspace is None or workspace_text in {"", "None", "null"}:
             workspace_path = Path.cwd()
         else:
             workspace_path = Path(workspace).expanduser().resolve()
 
         self.workspace = workspace_path
-        self.workspace_id = workspace_id or str(workspace_path)
+        if workspace_id in {None, "", "None", "null"}:
+            self.workspace_id = str(workspace_path)
+        else:
+            self.workspace_id = workspace_id
 
         # Core dependencies used by MCP tools.
         self.git_detector = GitWorkDetector(self.workspace)
