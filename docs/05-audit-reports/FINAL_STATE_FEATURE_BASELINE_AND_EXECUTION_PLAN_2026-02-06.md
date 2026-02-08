@@ -270,6 +270,10 @@ Executed verification checks (latest pass on 2026-02-06):
 6. Full import/backfill replay across remaining exported historical bundles is still pending a dedupe/merge policy decision (avoid duplicating historical records in active runtime DB).
 7. Historical ConPort backlog extraction surfaced additional unresolved work (132 TODO, 1 BLOCKED) not yet fully reflected in the active prioritized gap register.
 8. Leantime bridge deep integration is now operational (`/health?deep=1` and `/api/tools/list_projects` return `200`), with `LEANTIME_API_TOKEN` wired in runtime.
+9. Serena HTTP API had host-specific path coupling (`/Users/hue/code/dopemux-mvp`) in runtime endpoint code; this was fixed in current wave, but explicit contract tests for workspace-path resolution across container/host runtimes are still missing.
+10. New deterministic capture client module (`src/dopemux/memory/capture_client.py`) is present but not yet wired as the default ingress in CLI/plugin/MCP capture surfaces.
+11. Capture client executes schema bootstrap (`executescript`) on every emit, creating avoidable per-event overhead risk against WMA capture latency targets.
+12. Capture client contract coverage is incomplete (mode precedence, fail-closed repo resolution, redactor/schema dependency failure modes, event-stream toggle behavior).
 
 ## Resolved In Current Wave
 
@@ -278,6 +282,9 @@ Executed verification checks (latest pass on 2026-02-06):
 3. AGE extension registration drift was fixed (`CREATE EXTENSION age`) and validated (`extversion 1.6.0`).
 4. Profile CLI command-shadowing defect was fixed by unifying profile-group registration; `profile apply`, `profile current`, `profile create`, `profile copy`, `profile edit`, `profile delete`, and top-level `switch` are now exposed with command-registration test coverage, and manual switches now log telemetry as best-effort.
 5. Shared MCP response-budget utility is now implemented and integrated in Serena + GPT-Researcher MCP servers with unit test coverage.
+6. Serena HTTP API workspace resolution is now runtime-safe (env/cwd based) and no longer pinned to host-local path assumptions:
+   `services/serena/http_server.py` (`fix(serena): remove hardcoded workspace path in http api`, commit `6a2451cc`).
+7. ADHD engine runtime health recheck after settings-contract hotfix shows sustained healthy state with successful `/health` probes and Dopecon bridge reads (`dopemux-mvp-adhd-engine-1`).
 
 ## ConPort Backlog Misses Extracted Into Master Fix Scope
 
@@ -427,12 +434,16 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
     `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`.
 12. Execute the live true-open packet (`25`) and fold closure evidence back into the master fix stream:
     `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`.
+13. Add Serena HTTP API endpoint tests that verify workspace resolution behavior with and without `SERENA_WORKSPACE_PATH` / `WORKSPACE_PATH`.
+14. Promote `src/dopemux/memory/capture_client.py` from isolated module to explicit runtime contract (owner, ingress points, compatibility surface) and wire it into active capture paths.
+15. Add dedicated capture-client failure-mode and idempotency tests (repo-root fail-closed, missing schema/redactor, mode precedence, deterministic event ID collision behavior).
 
 ### P2 (Optimization and Scale)
 
 1. End-to-end latency/SLO instrumentation for event and recovery flows.
 2. Performance regression suite for ADHD-aware adaptation logic.
 3. Documentation lifecycle controls to prevent future archaeology drift.
+4. Remove per-event schema bootstrap from capture pipeline (`capture_client.emit_capture_event`) by introducing one-time init/migration guard and measure impact on capture latency.
 
 ## Phased Implementation Plan (Detailed and Prioritized)
 
@@ -585,6 +596,9 @@ Exit criteria:
 9. Resolve the secondary explicit-task miss set from `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
 10. Execute and close the full-bundle underrepresented set from `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json` and refresh coverage counts.
 11. Execute and close packet #1 and regenerate packet #2 from remaining uncovered items.
+12. Add Serena HTTP API workspace-resolution tests and pin expected behavior across host/container environments.
+13. Define capture-client ownership and integration plan; wire `src/dopemux/memory/capture_client.py` into the canonical ingress path.
+14. Add capture-client contract/performance tests and remove per-event schema-bootstrap overhead.
 
 ---
 

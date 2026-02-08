@@ -15,10 +15,35 @@ import os
 
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
 import uvicorn
+
+try:
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+except ImportError:
+    class RateLimitExceeded(Exception):
+        """Fallback exception when slowapi is unavailable."""
+
+    class Limiter:  # type: ignore[override]
+        """No-op limiter fallback for environments without slowapi."""
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def limit(self, *args, **kwargs):
+            def decorator(func):
+                return func
+
+            return decorator
+
+    def get_remote_address(_request):
+        return "unknown"
+
+    def _rate_limit_exceeded_handler(_request, _exc):
+        from fastapi.responses import JSONResponse
+
+        return JSONResponse(status_code=429, content={"detail": "Rate limit exceeded"})
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -46,19 +71,20 @@ app.add_middleware(
 
 # Try to import Serena's MetricsAggregator
 try:
-    import sys
-    from pathlib import Path
-    # Add serena v2 to path
-    serena_path = Path(__file__).parent
-    sys.path.insert(0, str(serena_path))
-
     from .metrics_dashboard import MetricsAggregator
     AGGREGATOR_AVAILABLE = True
     logger.info("✅ Serena MetricsAggregator available")
 except ImportError as e:
-    AGGREGATOR_AVAILABLE = False
-    logger.warning(f"⚠️  MetricsAggregator not available: {e}")
-    logger.info("📊 Using mock data for MVP")
+    try:
+        # Script-mode fallback (python services/serena/http_server.py)
+        from metrics_dashboard import MetricsAggregator  # type: ignore
+
+        AGGREGATOR_AVAILABLE = True
+        logger.info("✅ Serena MetricsAggregator available (script fallback import)")
+    except ImportError:
+        AGGREGATOR_AVAILABLE = False
+        logger.warning(f"⚠️  MetricsAggregator not available: {e}")
+        logger.info("📊 Using mock data for MVP")
 
 # Global aggregator instance
 aggregator: Optional[Any] = None
