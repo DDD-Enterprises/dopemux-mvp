@@ -67,6 +67,24 @@ dopemux mobile notify "Hello from Dopemux! 🎉"
 
 **Check your phone**: You should receive a push notification!
 
+### Optional: Customize tmux Theme
+
+Run `dopemux tmux theme` to see the bundled presets (⭐ marks the active theme). Apply one instantly from inside tmux:
+
+```bash
+dopemux tmux theme neon --apply
+```
+
+To make it permanent, add to `dopemux.toml`:
+
+```toml
+[tmux]
+theme = "neon"          # presets: muted (default), neon
+pane_styles = { ... }   # override individual panes
+pane_border_styles = { ... }
+status_style = "bg=#1e1e2e,fg=#cdd6f4"
+```
+
 ---
 
 ## 📱 Common Use Cases

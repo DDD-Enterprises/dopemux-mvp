@@ -272,8 +272,8 @@ Executed verification checks (latest pass on 2026-02-06):
 8. Leantime bridge deep integration is now operational (`/health?deep=1` and `/api/tools/list_projects` return `200`), with `LEANTIME_API_TOKEN` wired in runtime.
 9. Serena HTTP API had host-specific path coupling (`/Users/hue/code/dopemux-mvp`) in runtime endpoint code; this was fixed in current wave, but explicit contract tests for workspace-path resolution across container/host runtimes are still missing.
 10. New deterministic capture client module (`src/dopemux/memory/capture_client.py`) is present but not yet wired as the default ingress in CLI/plugin/MCP capture surfaces.
-11. Capture client executes schema bootstrap (`executescript`) on every emit, creating avoidable per-event overhead risk against WMA capture latency targets.
-12. Capture client contract coverage is incomplete (mode precedence, fail-closed repo resolution, redactor/schema dependency failure modes, event-stream toggle behavior).
+11. Capture client schema bootstrap overhead was remediated with one-time per-ledger initialization guardrails, but explicit latency benchmarking is still pending.
+12. Capture client contract coverage now includes mode precedence, repo fail-closed behavior, idempotent duplicate retries, schema/redactor dependency failures, and event-stream toggle behavior; remaining work is latency benchmarking and contract documentation polish.
 
 ## Resolved In Current Wave
 
@@ -285,6 +285,10 @@ Executed verification checks (latest pass on 2026-02-06):
 6. Serena HTTP API workspace resolution is now runtime-safe (env/cwd based) and no longer pinned to host-local path assumptions:
    `services/serena/http_server.py` (`fix(serena): remove hardcoded workspace path in http api`, commit `6a2451cc`).
 7. ADHD engine runtime health recheck after settings-contract hotfix shows sustained healthy state with successful `/health` probes and Dopecon bridge reads (`dopemux-mvp-adhd-engine-1`).
+8. Capture pipeline schema initialization now runs once per ledger path (instead of per-event bootstrap), with dedicated unit coverage for same-ledger and multi-ledger behavior:
+   `src/dopemux/memory/capture_client.py`, `tests/unit/test_memory_capture_client.py`.
+9. Capture-client contract tests now cover schema dependency failures, redactor dependency failures, and event-stream toggle paths:
+   `tests/unit/test_memory_capture_client.py`.
 
 ## ConPort Backlog Misses Extracted Into Master Fix Scope
 
@@ -436,14 +440,14 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
     `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`.
 13. Add Serena HTTP API endpoint tests that verify workspace resolution behavior with and without `SERENA_WORKSPACE_PATH` / `WORKSPACE_PATH`.
 14. Promote `src/dopemux/memory/capture_client.py` from isolated module to explicit runtime contract (owner, ingress points, compatibility surface) and wire it into active capture paths.
-15. Add dedicated capture-client failure-mode and idempotency tests (repo-root fail-closed, missing schema/redactor, mode precedence, deterministic event ID collision behavior).
+15. Publish capture-client contract guarantees (mode precedence, idempotency, and dependency-failure behavior) in active docs and pair with latency evidence from runtime benchmarks.
 
 ### P2 (Optimization and Scale)
 
 1. End-to-end latency/SLO instrumentation for event and recovery flows.
 2. Performance regression suite for ADHD-aware adaptation logic.
 3. Documentation lifecycle controls to prevent future archaeology drift.
-4. Remove per-event schema bootstrap from capture pipeline (`capture_client.emit_capture_event`) by introducing one-time init/migration guard and measure impact on capture latency.
+4. Measure and enforce capture-path latency after one-time schema initialization change (add regression guardrails for `capture_client.emit_capture_event`).
 
 ## Phased Implementation Plan (Detailed and Prioritized)
 
@@ -598,7 +602,7 @@ Exit criteria:
 11. Execute and close packet #1 and regenerate packet #2 from remaining uncovered items.
 12. Add Serena HTTP API workspace-resolution tests and pin expected behavior across host/container environments.
 13. Define capture-client ownership and integration plan; wire `src/dopemux/memory/capture_client.py` into the canonical ingress path.
-14. Add capture-client contract/performance tests and remove per-event schema-bootstrap overhead.
+14. Publish latency evidence after schema-init optimization and codify capture-client contract guarantees in active docs.
 
 ---
 
