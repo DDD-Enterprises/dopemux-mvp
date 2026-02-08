@@ -76,6 +76,7 @@ how_to:
   profile_usage: "docs/02-how-to/PROFILE-USAGE.md"
   multi_instance: "docs/02-how-to/multi-instance-workflow.md"
   orchestrator_dashboard: "docs/02-how-to/orchestrator-dashboard.md"
+  workflow_idea_epic_lifecycle: "docs/02-how-to/operations/workflow-idea-epic-lifecycle.md"
 
 # Tutorials
 tutorials:
@@ -90,6 +91,7 @@ reference:
   profile_schema: "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md"
   profile_developer_guide: "docs/03-reference/profile-developer-guide.md"
   features_index: "docs/03-reference/features/features-index.md"
+  task_orchestrator_service: "docs/03-reference/services/task-orchestrator.md"
   mcp_tools_overview: "docs/03-reference/mcp-tools-overview.md"
   mcp_token_management_best_practices: "docs/best-practices/mcp-token-management.md"
 
