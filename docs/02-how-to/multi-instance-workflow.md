@@ -627,7 +627,7 @@ Multi-instance support enables ADHD-optimized parallel development with:
 **Next Steps:**
 
 - Start your first multi-instance workflow
-- Review [ConPort Worktree Guide](../WORKTREE_SWITCHING_GUIDE.md)
+- Review [ConPort Worktree Guide](../04-explanation/concepts/worktree-comprehensive-guide.md)
 
 ---
 

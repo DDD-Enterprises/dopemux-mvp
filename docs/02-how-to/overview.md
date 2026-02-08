@@ -26,9 +26,9 @@ prelude: Readme (how-to) for dopemux documentation and developer workflows.
 Step-by-step guides for deploying Dopemux in various environments.
 
 ### Production Deployment
-- **[Production Deployment Guide](../deployment/DEPLOYMENT-INSTRUCTIONS.md)** - Deploy to production environment
-- **[Deployment Checklist](../deployment/DEPLOYMENT-CHECKLIST.md)** - Pre-flight checklist and verification
-- **[Worktree Deployment](../deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md)** - Deploy using git worktrees
+- **[Production Deployment Guide](deployment-guide.md)** - Deploy to production environment
+- **[Deployment Checklist](deployment-guide.md#pre-deployment-checklist)** - Pre-flight checklist and verification
+- **[Worktree Deployment](deployment-worktree.md)** - Deploy using git worktrees
 
 ### Development Environment
 - **[Instance State Persistence](instance-state-persistence.md)** - Maintain state across restarts
@@ -41,9 +41,9 @@ Step-by-step guides for deploying Dopemux in various environments.
 Connect Dopemux with external tools and services.
 
 ### Project Management
-- **[Leantime Setup](integrations/LEANTIME_SETUP_INSTRUCTIONS.md)** - Basic Leantime integration
-- **[Leantime API Configuration](integrations/LEANTIME_API_SETUP_GUIDE.md)** - Advanced API setup
-- **[Leantime Deployment](integrations/LEANTIME_DEPLOYMENT_RECOMMENDATION.md)** - Deployment recommendations
+- **[Leantime Setup](integrations/leantime-integration-guide.md#quick-setup-5-minutes)** - Basic Leantime integration
+- **[Leantime API Configuration](integrations/leantime-integration-guide.md#api-configuration)** - Advanced API setup
+- **[Leantime Deployment](integrations/leantime-integration-guide.md#deployment-strategy)** - Deployment recommendations
 
 ### MCP Servers
 - **[MCP Service Discovery Guide](mcp-service-discovery-guide.md)** - Discover and verify active MCP services
@@ -60,8 +60,8 @@ Day-to-day operational tasks and workflows.
 - **[Instance Slash Commands](instance-slash-commands.md)** - Command reference
 
 ### ADHD Engine
-- **[Serena V2 Deployment](serena-v2-production-deployment.md)** - Deploy ADHD intelligence
-- **[Serena V2 Production Guide](serena-v2-deployment.md)** - Production deployment
+- **[Serena V2 Deployment](serena-v2-production-deployment.md#-quick-start---production-deployment)** - Deploy ADHD intelligence
+- **[Serena V2 Production Guide](serena-v2-production-deployment.md#-integration-architecture)** - Integration and production architecture
 
 ---
 
