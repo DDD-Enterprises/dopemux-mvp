@@ -7,12 +7,10 @@ from typing import Dict, Any, List, Tuple
 import json
 from datetime import datetime
 
-import sys
-sys.path.insert(0, '../services')
-from genetic_agent.core.agent import BaseAgent
-from core.state import AgentState, DevelopmentMode
-from shared.mcp.serena_client import SerenaClient
-from shared.mcp.dope_context_client import DopeContextClient
+from ..core.agent import BaseAgent
+from ..core.state import AgentState, DevelopmentMode
+from ..shared.mcp.serena_client import SerenaClient
+from ..shared.mcp.dope_context_client import DopeContextClient
 
 
 class RepairAttempt:
@@ -137,7 +135,7 @@ Return JSON array with ideas, each with:
 
     async def _call_gptr_mcp(self, query: str) -> Dict[str, Any]:
         """Call GPT-Researcher MCP for research insights."""
-        from shared.mcp.gptr_client import GPTRClient
+        from ..shared.mcp.gptr_client import GPTRClient
 
         # Initialize GPT-Researcher client if not available
         if not hasattr(self, '_gptr_client'):
@@ -397,7 +395,7 @@ Respond with JSON: {{"analysis": "brief analysis", "suggestions": ["suggestion1"
     async def _log_optimization_step(self, iteration: int, analysis: str, suggestions: list) -> None:
         """Log optimization step to ConPort for learning."""
         try:
-            from shared.mcp.conport_client import ConPortClient
+            from ..shared.mcp.conport_client import ConPortClient
 
             log_entry = {
                 "iteration": iteration,
@@ -473,7 +471,7 @@ Do not include any other text, markdown formatting, or explanations outside the 
     async def _call_zen_mcp(self, prompt: str) -> str:
         """Call Zen MCP for LLM-powered code generation."""
         # Import here to avoid circular imports
-        from shared.mcp.zen_client import ZenClient
+        from ..shared.mcp.zen_client import ZenClient
 
         # Initialize Zen client if not already available
         if not hasattr(self, '_zen_client'):

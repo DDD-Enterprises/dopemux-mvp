@@ -4,18 +4,16 @@ import ast
 import asyncio
 import logging
 import re
-import sys
 import time
 from typing import Dict, Any, List, Optional, Tuple
-sys.path.insert(0, '../services')
-from genetic_agent.core.agent import BaseAgent
-from core.state import AgentState
-from shared.mcp.serena_client import SerenaClient
-from shared.mcp.dope_context_client import DopeContextClient
-from shared.mcp.conport_client import ConPortClient
-from shared.mcp.memory_adapter import MemoryAdapter
-from shared.eventbus import SimpleEventBus as EventBus, Event
-from shared.mcp.zen_client import ZenClient
+from ..core.agent import BaseAgent
+from ..core.state import AgentState
+from ..shared.mcp.serena_client import SerenaClient
+from ..shared.mcp.dope_context_client import DopeContextClient
+from ..shared.mcp.conport_client import ConPortClient
+from ..shared.mcp.memory_adapter import MemoryAdapter
+from ..shared.eventbus import SimpleEventBus as EventBus, Event
+from ..shared.mcp.zen_client import ZenClient
 
 from .gp_operators import GPOperators
 from .population import GPPopulation
@@ -444,7 +442,7 @@ Do not include any other text, markdown formatting, or explanations outside the 
     async def _call_zen_mcp(self, prompt: str) -> str:
         """Call Zen MCP for LLM-powered code generation."""
         # Import here to avoid circular imports
-        from shared.mcp.zen_client import ZenClient
+        from ..shared.mcp.zen_client import ZenClient
 
         # Initialize Zen client if not already available
         if not hasattr(self, '_zen_client'):
