@@ -75,6 +75,7 @@ Generated during this pass:
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json`
 - `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
+- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.json`
 - `reports/strict_closure/conport_live_progress_backlog_2026-02-07.csv`
 - `reports/strict_closure/conport_live_backlog_delta_2026-02-07.json`
 - `reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json`
