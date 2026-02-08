@@ -667,7 +667,7 @@ custom_profile = SearchProfile(
 
 ## Performance Metrics
 
-See [PERFORMANCE_TUNING.md](PERFORMANCE_TUNING.md) for detailed optimization guide.
+See [performance-tuning.md](performance-tuning.md) for detailed optimization guide.
 
 **Typical Performance:**
 

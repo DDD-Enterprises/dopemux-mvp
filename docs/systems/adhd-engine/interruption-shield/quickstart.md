@@ -293,7 +293,7 @@ pre-commit run --all-files
 ## Next Steps
 
 1. ✅ **Installation Complete** - You're running!
-2. **Week 1 Implementation** - See [`docs/PHASE1_SPRINT_PLAN.md`](docs/PHASE1_SPRINT_PLAN.md)
+2. **Week 1 Implementation** - See [`phase1-sprint-plan.md`](../../../archive/sessions/adhd-engine/phase1-sprint-plan.md)
 3. **Slack Integration** - Week 3 (see sprint plan)
 4. **Beta Testing** - Week 4 (recruit ADHD developers)
 
@@ -315,9 +315,9 @@ make ci             # Run all CI checks locally
 
 ## Documentation
 
-- **Technical Spec**: [`/docs/COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md`](../../docs/COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md)
-- **Sprint Plan**: [`docs/PHASE1_SPRINT_PLAN.md`](docs/PHASE1_SPRINT_PLAN.md)
-- **README**: [`README.md`](README.md)
+- **Technical Spec**: [`COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md`](../../../archive/component-implementations/COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md)
+- **Sprint Plan**: [`phase1-sprint-plan.md`](../../../archive/sessions/adhd-engine/phase1-sprint-plan.md)
+- **Guide Root**: [`quickstart.md`](quickstart.md)
 
 ## Support
 

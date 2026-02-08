@@ -547,10 +547,10 @@ workspace_paths=[os.path.abspath("../other-project")]
 
 ## See Also
 
-- [Serena F002 Multi-Session Guide](./docs/F002_USER_GUIDE.md)
-- [Multi-Workspace Wrapper Implementation](./multi_workspace_wrapper.py)
-- [Complexity Coordinator](../../services/shared/complexity_coordinator/)
-- [ADHD Engine Integration](./adhd_features.py)
+- [Serena F002 Multi-Session Guide](../../archive/sessions/serena/v2/f002-user-guide.md)
+- [Multi-Workspace Wrapper Implementation](../../../services/serena/multi_workspace_wrapper.py)
+- [Complexity Coordinator](../../../services/shared/complexity_coordinator/)
+- [ADHD Engine Integration](../../../services/serena/adhd_features.py)
 
 ---
 
