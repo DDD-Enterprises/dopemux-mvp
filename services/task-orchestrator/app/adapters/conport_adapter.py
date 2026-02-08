@@ -19,12 +19,19 @@ import aiohttp
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-# Import from parent directory
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from services.enhanced_orchestrator import OrchestrationTask, TaskStatus, AgentType
+try:
+    # Preferred import path when task-orchestrator is loaded as a package.
+    from app.services.enhanced_orchestrator import (
+        AgentType,
+        OrchestrationTask,
+        TaskStatus,
+    )
+except ImportError:  # pragma: no cover - legacy fallback for ad-hoc script execution
+    from services.enhanced_orchestrator import (  # type: ignore
+        AgentType,
+        OrchestrationTask,
+        TaskStatus,
+    )
 
 logger = logging.getLogger(__name__)
 
