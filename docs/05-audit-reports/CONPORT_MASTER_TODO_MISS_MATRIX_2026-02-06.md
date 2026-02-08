@@ -51,6 +51,7 @@ Follow-on deep extraction now adds `4` additional TODO checkpoint tasks from str
 | `Week 2: macOS Integration & Window Management` | P1 | Platform integration | Desktop integration |
 | `Week 4: Beta Testing & Iteration` | P2 | Validation | Product operations |
 | `Leantime manual setup completion` | P1 | External dependency integration | Leantime bridge |
+| `Leantime API key automation script hardening (create_api_key.php)` | P1 | Setup automation reliability | Leantime bridge + DevEx |
 
 ## Immediate Integrations Into Master Fix Stream
 
@@ -85,12 +86,18 @@ Evidence:
    supports compatibility env fallbacks (`LEANTIME_TOKEN` -> `LEANTIME_API_TOKEN`,
    `LEANTIME_URL` -> `LEANTIME_API_URL`).
    This reduces operator ambiguity but does not replace required external setup.
+5. Non-interactive API key generation script remains not-ready:
+   runtime probe against `docker/leantime/create_api_key.php` fails with
+   unresolved dependency wiring (`Leantime\\Core\\Db\\Db` constructor dependency).
+   This is now tracked as a separate P1 setup-automation hardening task.
 
 Evidence:
 
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json`
 - `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
+- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.txt`
+- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.json`
 - `scripts/docs_audit/probe_leantime_bridge_readiness.py`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
