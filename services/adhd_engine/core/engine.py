@@ -18,6 +18,7 @@ Features:
 import asyncio
 import json
 import logging
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -73,6 +74,19 @@ except ImportError:
     CONPORT_KG_INTEGRATION = False
 
 logger = logging.getLogger(__name__)
+
+
+def _resolve_task_orchestrator_url() -> str:
+    """Resolve task-orchestrator URL with compatibility fallback.
+
+    Older settings objects in stale runtime images may not expose
+    ``task_orchestrator_url`` yet. In that case, fall back to env/default so
+    startup can proceed in degraded-but-functional mode.
+    """
+    configured = getattr(settings, "task_orchestrator_url", None)
+    if isinstance(configured, str) and configured.strip():
+        return configured.strip()
+    return os.getenv("TASK_ORCHESTRATOR_URL", "http://task-orchestrator:8000")
 
 # Machine Learning (IP-005 Days 11-12)
 try:
@@ -290,7 +304,7 @@ class ADHDAccommodationEngine:
         self.task_decomposer = TaskDecompositionAssistant()
         self.decomposition_coordinator = DecompositionCoordinator(
             decomposer=self.task_decomposer,
-            task_orchestrator_url=settings.task_orchestrator_url,
+            task_orchestrator_url=_resolve_task_orchestrator_url(),
             bridge_client=self.conport
         )
         self.voice_assistant = VoiceAssistant(adhd_engine=self)
