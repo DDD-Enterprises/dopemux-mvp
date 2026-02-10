@@ -1,3 +1,6 @@
+This repository is governed by .claude/PROJECT_INSTRUCTIONS.md.
+Investigations and redesigns must follow .claude/PRIMER.md
+
 # Two-Plane Architecture Model Configuration
 
 **Purpose**: Mode-aware model routing for PLAN/ACT cognitive states
