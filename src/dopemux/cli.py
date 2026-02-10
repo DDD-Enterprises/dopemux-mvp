@@ -156,14 +156,48 @@ ATTENTION_PROFILE_DEFAULTS = {
 }
 
 
+def _get_routing_allowlist() -> set[str]:
+    """Return the set of environment variable names allowed for export."""
+    return {
+        # Dopemux Identity
+        "DOPEMUX_INSTANCE_ID",
+        "DOPEMUX_WORKSPACE_ID",
+        "DOPEMUX_CLAUDE_VIA_LITELLM",
+        "DOPEMUX_DEFAULT_LITELLM",
+        
+        # Anthropic / LiteLLM Auth
+        "ANTHROPIC_BASE_URL",
+        "ANTHROPIC_API_BASE",
+        "ANTHROPIC_API_KEY",
+        "LITELLM_MASTER_KEY",
+        "DOPEMUX_LITELLM_MASTER_KEY",
+        
+        # Database (if needed for metrics)
+        "DOPEMUX_LITELLM_DB_URL",
+        "LITELLM_DATABASE_URL",
+        "DATABASE_URL",
+        
+        # Claude Code Router (CCR)
+        "CLAUDE_CODE_ROUTER_PORT",
+        "CLAUDE_CODE_ROUTER_HOME",
+        "CLAUDE_CODE_ROUTER_CONFIG",
+        "CLAUDE_CODE_ROUTER_LOG",
+        "CLAUDE_CODE_ROUTER_PROVIDER",
+        "CLAUDE_CODE_ROUTER_MODELS",
+        "CLAUDE_CODE_ROUTER_UPSTREAM_URL",
+        "CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR",
+        "CLAUDE_CODE_ROUTER_UPSTREAM_KEY",
+    }
+
+
 def _persist_instance_env_exports(
     project_root: Path, instance_id: str, env_vars: Dict[str, str]
 ) -> None:
     """
     Persist instance environment variables for use outside Dopemux processes.
 
-    Writes both `export`-style and `.env`-style files so shells and docker-compose
-    can import the current routing context without rerunning Dopemux.
+    Writes both `export`-style and `.env`-style files with a strict allowlist
+    of routing and identity variables.
     """
     try:
         target_dir = project_root / ".dopemux" / "env"
@@ -173,7 +207,22 @@ def _persist_instance_env_exports(
         export_path = target_dir / f"instance_{slug}.sh"
         env_path = target_dir / f"instance_{slug}.env"
 
-        sorted_items = sorted(env_vars.items())
+        allowlist = _get_routing_allowlist()
+        export_secrets = os.environ.get("DOPEMUX_EXPORT_SECRETS") == "1"
+        
+        filtered_vars = {}
+        for k, v in env_vars.items():
+            if k not in allowlist:
+                continue
+                
+            # Pattern-based secret detection
+            is_secret = any(p in k for p in ("API_KEY", "TOKEN", "SECRET", "PASSWORD", "MASTER_KEY"))
+            if is_secret and not export_secrets:
+                continue
+                
+            filtered_vars[k] = v
+            
+        sorted_items = sorted(filtered_vars.items())
 
         with export_path.open("w", encoding="utf-8") as export_file:
             export_file.write("#!/usr/bin/env bash\n")
@@ -668,6 +717,7 @@ def start(
     from .workspace_utils import get_workspace_root
 
     # ── Handle --grok / --codex / --altp provider routing ───────────────
+    provider_proxy_started = False
     _provider_flags = sum([use_grok, use_codex, use_altp])
     if _provider_flags > 0:
         if _provider_flags > 1:
@@ -729,6 +779,7 @@ def start(
                 project_root=Path.cwd(),
                 config_data=config_data,
             )
+            provider_proxy_started = True
         except LiteLLMProxyError as exc:
             raise click.ClickException(str(exc))
 
@@ -744,11 +795,12 @@ def start(
 
         # Export CCR upstream env vars so Claude Code Router uses the new proxy
         os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
-        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://localhost:{litellm_port}/v1/chat/completions"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
         
         if use_altp:
             # For --altp, we map to the tier names defined in generate_multi_target_config
+            # CCR will expose these exact model names to Claude Code
             os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
         else:
             os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
@@ -889,13 +941,8 @@ def start(
             except Exception:
                 logger.error("Unexpected master key write error", exc_info=True)
         config_source: Optional[Path] = None
-        for candidate in (
-            instance_dir / "litellm.config.yaml",
-            Path.cwd() / "litellm.config.yaml",
-        ):
-            if candidate.exists():
-                config_source = candidate
-                break
+        if (instance_dir / "litellm.config.yaml").exists():
+            config_source = instance_dir / "litellm.config.yaml"
 
         if config_source and config_source.exists():
             try:
@@ -911,17 +958,22 @@ def start(
         general_settings = config_data.setdefault("general_settings", {})
         general_settings["master_key"] = litellm_master_key
 
-        try:
-            db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
-        except LiteLLMProxyError as exc:
-            console.logger.error(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
-            console.logger.info("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
-            console.logger.info("\n[cyan]Troubleshooting:[/cyan]")
-            console.logger.info("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
-            console.logger.info("  2. Verify database credentials in .env.routing")
-            console.logger.info("  3. Ensure the 'litellm' database exists")
-            console.logger.info("  4. Test connection: psql <your_database_url>")
-            raise click.ClickException(str(exc))
+        if dry_run:
+            console.print("[dim]⚡ Dry-run: Skipping LiteLLM DB sync[/dim]")
+            db_status_msg = "Dry-run: DB sync skipped"
+            db_enabled = True
+        else:
+            try:
+                db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
+            except LiteLLMProxyError as exc:
+                console.logger.error(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
+                console.logger.info("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
+                console.logger.info("\n[cyan]Troubleshooting:[/cyan]")
+                console.logger.info("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
+                console.logger.info("  2. Verify database credentials in .env.routing")
+                console.logger.info("  3. Ensure the 'litellm' database exists")
+                console.logger.info("  4. Test connection: psql <your_database_url>")
+                raise click.ClickException(str(exc))
 
         if not db_enabled:
             console.logger.info(f"[red]❌ {db_status_msg}[/red]")
@@ -970,7 +1022,7 @@ def start(
             for _ in range(20):
                 try:
                     resp = httpx.get(
-                        f"http://localhost:{litellm_port}/health/readiness",
+                        f"http://127.0.0.1:{litellm_port}/health/readiness",
                         timeout=2,
                     )
                     if resp.status_code == 200:
@@ -999,26 +1051,19 @@ def start(
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-        os.environ["ANTHROPIC_BASE_URL"] = f"http://localhost:{litellm_port}"
+        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
         os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
         os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
         os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
         
         # Configure Claude Code Router to use this LiteLLM instance
-        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://localhost:{litellm_port}/v1/chat/completions"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
         
         # Extract models from litellm config
-        litellm_config = Path.cwd() / "litellm.config.yaml"
-        models_list = []
-        if litellm_config.exists():
-            try:
-                with open(litellm_config) as f:
-                    config = yaml.safe_load(f)
-                    if config and "model_list" in config:
-                        models_list = [m["model_name"] for m in config["model_list"] if "model_name" in m]
-            except Exception as e:
-                console.logger.info(f"[yellow]⚠️  Could not parse litellm.config.yaml: {e}[/yellow]")
+        litellm_config = instance_dir / "litellm.config.yaml"
+        models_list = _load_litellm_models(litellm_config)
         
         if models_list:
             os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(models_list)
@@ -1368,11 +1413,11 @@ def start(
         
         # Force Claude Code to use LiteLLM proxy
         os.environ["ANTHROPIC_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
-        os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
+        os.environ["ANTHROPIC_BASE_URL"] = "http://127.0.0.1:4000"
         
         # Also set for Claude Code Router
         os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
-        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = "http://localhost:4000/v1/chat/completions"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = "http://127.0.0.1:4000/v1/chat/completions"
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
         
         console.logger.info("[green]✅ Forced Claude Code to use LiteLLM proxy[/green]")
@@ -1427,7 +1472,7 @@ def start(
         use_claude_router = True
     litellm_enabled = use_litellm or use_claude_router
 
-    if litellm_enabled and not use_alt_routing and not _direct_provider_routing:
+    if litellm_enabled and not use_alt_routing and not _direct_provider_routing and not provider_proxy_started:
         # Require OpenRouter since LiteLLM proxy is configured to route through it
         if not os.environ.get("OPENROUTER_API_KEY"):
             console.logger.info("[red]❌ OPENROUTER_API_KEY is not set.[/red]")
@@ -1447,6 +1492,9 @@ def start(
             if not litellm_proxy_info.db_enabled:
                 for var in ("DOPEMUX_LITELLM_DB_URL", "LITELLM_DATABASE_URL", "DATABASE_URL"):
                     os.environ.pop(var, None)
+        except Exception as e:
+            logger.exception("Failed to start LiteLLM proxy: %s", e)
+            raise
 
             if litellm_proxy_info.already_running:
                 console.print(
@@ -1559,8 +1607,13 @@ def start(
         # the router (or LiteLLM) master key must be used by Claude to avoid login/API errors.
         os.environ.update(router_env)
         
+        os.environ.update(router_env)
+        
         # Re-export env with router variables so Claude Code can pick them up
-        _persist_instance_env_exports(project_path, instance_id, dict(os.environ))
+        # We explicitly filter here for clarity, though _persist_instance_env_exports has a builtin allowlist.
+        allowlist = _get_routing_allowlist()
+        export_env = {k: os.environ[k] for k in allowlist if k in os.environ}
+        _persist_instance_env_exports(project_path, instance_id, export_env)
 
         if router_info.already_running:
             console.print(

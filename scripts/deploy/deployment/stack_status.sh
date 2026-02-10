@@ -18,7 +18,7 @@ check() {
 check "PAL apilookup" "http://127.0.0.1:3003/health"
 
 # LiteLLM requires auth; just show raw health
-echo -n "LiteLLM: "; curl -s -H "Authorization: Bearer REDACTED_LITELLM_KEY" http://127.0.0.1:4000/health | head -n 1 || echo "unreachable"
+echo -n "LiteLLM: "; curl -s -H "Authorization: Bearer <REDACTED_LITELLM_MASTER_KEY>" http://127.0.0.1:4000/health | head -n 1 || echo "unreachable"
 
 check "ConPort" "http://127.0.0.1:3004/health"
 check "Sequential" "http://127.0.0.1:3011/health"

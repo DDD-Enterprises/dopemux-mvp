@@ -731,7 +731,7 @@ class ConfigManager:
                 else:
                     raise ValueError(f"Unsupported config file format: {path.suffix}")
         except Exception as e:
-            logger.error(f"Warning: Failed to load config file {path}: {e}", file=sys.stderr)
+            logger.error(f"Warning: Failed to load config file {path}: {e}")
             return {}
 
     def _deep_merge(

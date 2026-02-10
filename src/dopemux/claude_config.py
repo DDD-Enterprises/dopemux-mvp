@@ -12,6 +12,7 @@ import logging
 
 
 import json
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -142,6 +143,9 @@ class ClaudeConfig:
         if create_backup and self.config_path.exists():
             backup_path = self.backup_config()
 
+        # Sanitize config before writing
+        config = self._sanitize_config(config)
+
         try:
             # Write to temporary file first (atomic write)
             temp_path = self.config_path.with_suffix(".json.tmp")
@@ -164,6 +168,30 @@ class ClaudeConfig:
             raise ClaudeConfigError(
                 f"Failed to write config: {e}"
             )
+
+    def _sanitize_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize Claude configuration based on environment and schema requirements."""
+        # Work on a copy to avoid mutating the input
+        config = config.copy()
+
+        # 1. Handle DOPEMUX_DISABLE_CLAUDE_HOOKS
+        if os.environ.get("DOPEMUX_DISABLE_CLAUDE_HOOKS") == "1":
+            if "hooks" in config:
+                logger.info("DOPEMUX_DISABLE_CLAUDE_HOOKS is set. Removing hooks section.")
+                del config["hooks"]
+            return config
+
+        # 2. Fix UserPromptSubmit schema if present
+        if "hooks" in config and isinstance(config["hooks"], dict):
+            if "UserPromptSubmit" in config["hooks"]:
+                ups = config["hooks"]["UserPromptSubmit"]
+                if isinstance(ups, list):
+                    for entry in ups:
+                        if isinstance(entry, dict) and "hooks" in entry and "matcher" not in entry:
+                            logger.info("Fixing missing matcher in UserPromptSubmit hook entry.")
+                            entry["matcher"] = ".*"
+
+        return config
 
     def get_mcp_servers(self) -> Dict[str, Dict[str, Any]]:
         """Get the mcpServers section from config.
