@@ -73,9 +73,9 @@ DEFAULT_LITELLM_CONFIG = """model_list:
       api_key: os.environ/XAI_API_KEY
       max_tokens: 131072
 
-  - model_name: xai-grok-code-fast-1
+  - model_name: xai-grok-code-fast
     litellm_params:
-      model: xai/grok-code-fast-1
+      model: xai/grok-code-fast
       api_key: os.environ/XAI_API_KEY
       max_tokens: 131072
 
@@ -106,32 +106,30 @@ litellm_settings:
   model_alias_map:
     grok-4: grok-4-fast
     grok: grok-4-fast
-    grok-code: xai-grok-code-fast-1
-    claude-sonnet: xai-grok-code-fast-1
-    claude-sonnet-4-5-20250929: xai-grok-code-fast-1
-    claude-sonnet-4.5: xai-grok-code-fast-1
-    claude-haiku: xai-grok-code-fast-1
-    claude-opus: openrouter-gpt-5-codex
-    claude-opus-4-1-20250805: openrouter-gpt-5-codex
-    claude-opus-4-20250514: openrouter-gpt-5-codex
-    claude-4: openrouter-gpt-5-codex
-    claude-4-sonnet: xai-grok-code-fast-1
+    grok-code: xai-grok-code-fast
+    claude-sonnet: xai-grok-code-fast
+    claude-sonnet-4-5-20250929: xai-grok-code-fast
+    claude-sonnet-4.5: xai-grok-code-fast
+    claude-haiku: xai-grok-code-fast
+    claude-opus: xai-grok-code-fast
+    claude-opus-4-1-20250805: xai-grok-code-fast
+    claude-opus-4-20250514: xai-grok-code-fast
+    claude-4: xai-grok-code-fast
+    claude-4-sonnet: xai-grok-code-fast
     claude-4-opus: openrouter-gpt-5-codex
-    claude-3.7: xai-grok-code-fast-1
-    claude-3-7-sonnet-20250219: xai-grok-code-fast-1
-    claude-3.5: xai-grok-code-fast-1
-    claude-3-5-sonnet-20240620: xai-grok-code-fast-1
-    anthropic/claude-3-5-sonnet-latest: xai-grok-code-fast-1
-    xai/grok-code-fast-1: xai-grok-code-fast-1
-    gpt-5: openrouter-gpt-5
-    codex: openrouter-gpt-5-codex
+    claude-3.7: xai-grok-code-fast
+    claude-3-7-sonnet-20250219: xai-grok-code-fast
+    claude-3.5: xai-grok-code-fast
+    claude-3-5-sonnet-20240620: xai-grok-code-fast
+    anthropic/claude-3-5-sonnet-latest: xai-grok-code-fast
+    xai/grok-code-fast: xai-grok-code-fast
+    gpt-5: xai-grok-code-fast
+    codex: xai-grok-code-fast
   fallbacks:
     grok-4-fast:
-      - openrouter-gpt-5
-      - openrouter-gpt-5-codex
-    xai-grok-code-fast-1:
+      - xai-grok-code-fast
+    xai-grok-code-fast:
       - grok-4-fast
-      - openrouter-gpt-5-codex
     openrouter-gpt-5:
       - grok-4-fast
       - openrouter-gpt-5-codex
@@ -139,13 +137,299 @@ litellm_settings:
       - openrouter-gpt-5
       - grok-4-fast
   default_fallbacks:
+    - xai-grok-code-fast
     - grok-4-fast
-    - openrouter-gpt-5
-    - openrouter-gpt-5-codex
 
 general_settings:
   master_key: YOUR_MASTER_KEY
 """
+
+
+# ── Provider routing ────────────────────────────────────────────────────────
+
+# Claude model IDs grouped by tier so --altp can map each tier to a
+# different provider while --grok/--codex can flatten them all to one target.
+
+CLAUDE_OPUS_ALIASES = [
+    "claude-opus-4-6",
+    "claude-opus-4-1-20250805", "claude-opus-4-1", "claude-opus-4.1",
+    "claude-opus-4-20250514", "claude-opus-4",
+    "claude-opus", "claude-4-opus",
+    "anthropic/claude-opus-4-6",
+]
+
+CLAUDE_SONNET_ALIASES = [
+    "claude-sonnet-4-5-20250929",
+    "claude-sonnet-4-20250514", "claude-sonnet-4",
+    "claude-sonnet-4-5", "claude-sonnet-4.5",
+    "claude-sonnet", "claude-4", "claude-4-sonnet",
+    "claude-3.7", "claude-3-7-sonnet-20250219",
+    "claude-3.5", "claude-3-5-sonnet-20241022", "claude-3-5-sonnet-20240620",
+    "anthropic/claude-3-5-sonnet-latest",
+    "anthropic/claude-sonnet-4-5-20250929",
+    "anthropic/claude-3-5-sonnet-20241022",
+    "anthropic/claude-3-5-sonnet-20240620",
+    "anthropic/claude-3.7-sonnet-20250219",
+]
+
+CLAUDE_HAIKU_ALIASES = [
+    "claude-haiku-4-5-20251001",
+    "claude-haiku-4-5", "claude-haiku-4.5",
+    "claude-haiku", "claude-3-5-haiku-20241022",
+    "anthropic/claude-haiku-4-5-20251001",
+]
+
+# Combined list for single-target routing (--grok / --codex)
+CLAUDE_MODEL_ALIASES = CLAUDE_OPUS_ALIASES + CLAUDE_SONNET_ALIASES + CLAUDE_HAIKU_ALIASES
+
+
+def generate_single_target_config(
+    target_name: str,
+    litellm_model: str,
+    api_key_env: str,
+    *,
+    max_tokens: int = 131072,
+    extra_litellm_params: Optional[Dict] = None,
+) -> Dict:
+    """Generate a LiteLLM config that routes ALL Claude models to one target.
+
+    Creates a comprehensive model_alias_map so every Claude model ID that
+    Claude Code might send gets redirected to ``target_name``.
+    """
+    alias_map = {mid: target_name for mid in CLAUDE_MODEL_ALIASES}
+
+    litellm_params: Dict = {
+        "model": litellm_model,
+        "api_key": f"os.environ/{api_key_env}",
+        "max_tokens": max_tokens,
+    }
+    if extra_litellm_params:
+        litellm_params.update(extra_litellm_params)
+
+    return {
+        "model_list": [{"model_name": target_name, "litellm_params": litellm_params}],
+        "litellm_settings": {
+            "timeout": 120,
+            "max_retries": 2,
+            "drop_params": True,
+            "model_alias_map": alias_map,
+        },
+        "general_settings": {"master_key": "YOUR_MASTER_KEY"},
+    }
+
+
+# Pre-built provider presets ------------------------------------------------
+
+GROK_PROVIDER = {
+    "name": "grok-code-fast",
+    "model": "xai/grok-code-fast",
+    "api_key_env": "XAI_API_KEY",
+    "max_tokens": 131072,
+    "label": "xAI Grok Code Fast",
+}
+
+CODEX_PROVIDER = {
+    "name": "codex",
+    "model": "openrouter/openai/gpt-5-codex",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "max_tokens": 32768,
+    "label": "OpenAI GPT-5 Codex (via OpenRouter)",
+    "extra_params": {
+        "api_base": "https://openrouter.ai/api/v1",
+        "extra_headers": {
+            "HTTP-Referer": "https://dopemux.local",
+            "X-Title": "Dopemux Codex Routing",
+        },
+    },
+}
+
+_OPENROUTER_PARAMS = {
+    "api_base": "https://openrouter.ai/api/v1",
+    "extra_headers": {
+        "HTTP-Referer": "https://dopemux.local",
+        "X-Title": "Dopemux ALTP Routing",
+    },
+}
+
+ALTP_TARGETS = [
+    {
+        "name": "altp-opus",
+        "model": "xai/grok-code-fast",
+        "api_key_env": "XAI_API_KEY",
+        "max_tokens": 131072,
+        "aliases": CLAUDE_OPUS_ALIASES,
+        "label": "Grok Code Fast (Opus Tier)",
+    },
+    {
+        "name": "altp-sonnet",
+        "model": "xai/grok-code-fast",
+        "api_key_env": "XAI_API_KEY",
+        "max_tokens": 131072,
+        "aliases": CLAUDE_SONNET_ALIASES,
+        "label": "Grok Code Fast",
+    },
+    {
+        "name": "altp-haiku",
+        "model": "xai/grok-code-fast",
+        "api_key_env": "XAI_API_KEY",
+        "max_tokens": 131072,
+        "aliases": CLAUDE_HAIKU_ALIASES,
+        "label": "Grok Code Fast (Haiku Tier)",
+    },
+]
+
+ALTP_PROVIDER = {
+    "name": "altp",
+    "label": "Alternative Provider Routing",
+    "targets": ALTP_TARGETS,
+    "required_keys": ["OPENROUTER_API_KEY", "XAI_API_KEY"],
+}
+
+
+def generate_multi_target_config(targets: list) -> Dict:
+    """Generate a LiteLLM config that routes Claude models to tier-matched targets.
+
+    Each target dict must contain:
+        name, model, api_key_env, aliases, and optionally
+        max_tokens and extra_litellm_params.
+    """
+    model_list = []
+    alias_map: Dict[str, str] = {}
+
+    for target in targets:
+        litellm_params: Dict = {
+            "model": target["model"],
+            "api_key": f"os.environ/{target['api_key_env']}",
+            "max_tokens": target.get("max_tokens", 131072),
+        }
+        extra = target.get("extra_litellm_params")
+        if extra:
+            litellm_params.update(extra)
+
+        model_list.append({"model_name": target["name"], "litellm_params": litellm_params})
+
+        for alias in target["aliases"]:
+            alias_map[alias] = target["name"]
+
+    return {
+        "model_list": model_list,
+        "litellm_settings": {
+            "timeout": 120,
+            "max_retries": 2,
+            "drop_params": True,
+            "model_alias_map": alias_map,
+        },
+        "general_settings": {"master_key": "YOUR_MASTER_KEY"},
+    }
+
+
+def start_simple_proxy(
+    project_root: Path,
+    config_data: Dict,
+    instance_id: str = "A",
+) -> Tuple[int, str]:
+    """Start a lightweight LiteLLM proxy *without* database requirements.
+
+    Kills any existing litellm processes, writes a fresh config, starts
+    the proxy, and waits for it to become healthy.
+
+    Returns:
+        ``(port, master_key)``
+
+    Raises:
+        LiteLLMProxyError: If the proxy cannot be started.
+    """
+    import urllib.request
+    import urllib.error
+
+    instance_dir = project_root / ".dopemux" / "litellm" / instance_id
+    instance_dir.mkdir(parents=True, exist_ok=True)
+
+    # ── master key ──────────────────────────────────────────────────────
+    master_key_path = instance_dir / "master.key"
+    stored_key = None
+    if master_key_path.exists():
+        try:
+            stored_key = master_key_path.read_text(encoding="utf-8").strip()
+        except OSError:
+            pass
+    master_key, _ = ensure_master_key(stored_key)
+    if not stored_key or stored_key != master_key:
+        master_key_path.write_text(master_key, encoding="utf-8")
+
+    # Run in open mode (no auth, localhost-only) to avoid DB dependency
+    gs = config_data.setdefault("general_settings", {})
+    gs["master_key"] = master_key
+
+    # ── write config ────────────────────────────────────────────────────
+    config_path = instance_dir / "litellm.config.yaml"
+    config_path.write_text(
+        yaml.safe_dump(config_data, sort_keys=False, default_flow_style=False),
+        encoding="utf-8",
+    )
+
+    # ── kill existing litellm processes ─────────────────────────────────
+    subprocess.run(
+        ["pkill", "-f", "litellm"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    time.sleep(1.5)
+
+    # ── find available port ─────────────────────────────────────────────
+    port: Optional[int] = None
+    for candidate in (4000, 4001, 4002):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("127.0.0.1", candidate))
+                port = candidate
+                break
+            except OSError:
+                continue
+
+    if port is None:
+        raise LiteLLMProxyError(
+            "Ports 4000-4002 all occupied after cleanup; free a port or stop other services."
+        )
+
+    # ── launch ──────────────────────────────────────────────────────────
+    log_path = instance_dir / "litellm.log"
+    # Dummy key for Claude Code auth header (proxy ignores it in open mode)
+    dummy_key = master_key
+    env = os.environ.copy()
+    # No LITELLM_MASTER_KEY → open mode, no key validation, no DB needed
+    env.pop("LITELLM_MASTER_KEY", None)
+    env["LITELLM_DISABLE_DB"] = "true"
+    env["LITELLM_DISABLE_SPEND_LOGGING"] = "true"
+
+    with open(log_path, "w", encoding="utf-8") as log_file:
+        subprocess.Popen(
+            [
+                "litellm",
+                "--config", str(config_path),
+                "--port", str(port),
+                "--host", "0.0.0.0",
+            ],
+            stdout=log_file,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+            env=env,
+        )
+
+    # ── wait for health ─────────────────────────────────────────────────
+    for _ in range(25):
+        try:
+            url = f"http://127.0.0.1:{port}/health/readiness"
+            with urllib.request.urlopen(url, timeout=2) as resp:
+                if resp.status == 200:
+                    return port, master_key
+        except Exception:
+            pass
+        time.sleep(1)
+
+    raise LiteLLMProxyError(
+        f"LiteLLM proxy not healthy on port {port} after 25s. Check {log_path}"
+    )
 
 
 @dataclass

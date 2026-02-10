@@ -59,6 +59,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Memory capture CLI commands (`dopemux memory rollup`)
+  - `build` - Build global rollup index from project ledgers
+  - `list` - List registered projects in global index
+  - `search` - Search promoted work log entries across projects
+- Comprehensive memory capture CLI reference documentation
+- CLI interface section in Derived Memory Pipeline specification
+
 ### Planned
 - Windows support (chocolatey package)
 - GitHub Actions CI/CD pipeline

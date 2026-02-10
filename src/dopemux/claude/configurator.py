@@ -14,11 +14,8 @@ logger = logging.getLogger(__name__)
 from pathlib import Path
 from typing import Any, Dict
 
-from rich.console import Console
-
 from ..config import ConfigManager
-
-console = Console()
+from ..console import console
 
 
 class ClaudeConfigurator:

@@ -21,11 +21,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-console = Console()
+from .console import console
 
 
 class ADHDErrorMessage:
