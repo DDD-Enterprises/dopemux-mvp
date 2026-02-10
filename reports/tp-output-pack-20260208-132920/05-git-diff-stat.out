@@ -1,6 +1,0 @@
- .claude/mcp-system.md                              | 16 +++++----------
- .claude/modules/coordination/integration-bridge.md |  6 +++---
- docker/mcp-servers/PROFILES_GUIDE.md               | 24 ++++++++++++----------
- docker/mcp-servers/SERVER_REGISTRY.md              |  8 ++++++--
- docker/mcp-servers/start-profile.sh                |  4 ++--
- 5 files changed, 29 insertions(+), 29 deletions(-)

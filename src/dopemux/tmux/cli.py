@@ -1015,6 +1015,10 @@ def _setup_orchestrator_layout(
                 f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
                 f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
                 f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+                f"export CLAUDE_CODE_ROUTER_PROVIDER=litellm; "
+                f"export CLAUDE_CODE_ROUTER_UPSTREAM_URL={shlex.quote(os.environ.get('CLAUDE_CODE_ROUTER_UPSTREAM_URL', ''))}; "
+                f"export CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR=DOPEMUX_LITELLM_MASTER_KEY; "
+                f"export CLAUDE_CODE_ROUTER_MODELS={shlex.quote(os.environ.get('CLAUDE_CODE_ROUTER_MODELS', ''))}; "
             )
         
         orchestrator_prefix = (
@@ -1434,7 +1438,14 @@ def _setup_dope_layout(
                     f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
                     f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
                     f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+                    f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+                    f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+                    f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
                     f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+                    f"export CLAUDE_CODE_ROUTER_PROVIDER=litellm; "
+                    f"export CLAUDE_CODE_ROUTER_UPSTREAM_URL={shlex.quote(os.environ.get('CLAUDE_CODE_ROUTER_UPSTREAM_URL', ''))}; "
+                    f"export CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR=DOPEMUX_LITELLM_MASTER_KEY; "
+                    f"export CLAUDE_CODE_ROUTER_MODELS={shlex.quote(os.environ.get('CLAUDE_CODE_ROUTER_MODELS', ''))}; "
                 )
             
             orchestrator_prefix = (
@@ -1500,6 +1511,10 @@ def _setup_dope_layout(
                 f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
                 f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
                 f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+                f"export CLAUDE_CODE_ROUTER_PROVIDER=litellm; "
+                f"export CLAUDE_CODE_ROUTER_UPSTREAM_URL={shlex.quote(os.environ.get('CLAUDE_CODE_ROUTER_UPSTREAM_URL', ''))}; "
+                f"export CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR=DOPEMUX_LITELLM_MASTER_KEY; "
+                f"export CLAUDE_CODE_ROUTER_MODELS={shlex.quote(os.environ.get('CLAUDE_CODE_ROUTER_MODELS', ''))}; "
             )
         
         agent_prefix = (
@@ -1986,7 +2001,7 @@ def start_tmux(
         for candidate in candidate_keys:
             try:
                 resp = httpx.get(
-                    f"http://localhost:{litellm_port}/health/readiness",
+                    f"http://127.0.0.1:{litellm_port}/health/readiness",
                     timeout=2,
                 )
                 if resp.status_code == 200:
@@ -2018,13 +2033,8 @@ def start_tmux(
                 pass
 
         config_source: Optional[Path] = None
-        for candidate in (
-            instance_dir / "litellm.config.yaml",
-            EnvPath(start_dir) / "litellm.config.yaml",
-        ):
-            if candidate.exists():
-                config_source = candidate
-                break
+        if (instance_dir / "litellm.config.yaml").exists():
+            config_source = instance_dir / "litellm.config.yaml"
 
         if config_source and config_source.exists():
             try:
@@ -2098,7 +2108,7 @@ def start_tmux(
             for _ in range(15):
                 try:
                     resp = httpx.get(
-                        f"http://localhost:{litellm_port}/health/readiness",
+                        f"http://127.0.0.1:{litellm_port}/health/readiness",
                         timeout=2,
                     )
                     if resp.status_code == 200:
@@ -2127,9 +2137,24 @@ def start_tmux(
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-        os.environ["ANTHROPIC_BASE_URL"] = f"http://localhost:{litellm_port}"
+        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
         os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
         os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+
+        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+
+        models: List[str] = []
+        model_list = config_data.get("model_list")
+        if isinstance(model_list, list):
+            models = [
+                m.get("model_name")
+                for m in model_list
+                if isinstance(m, dict) and m.get("model_name")
+            ]
+        if models:
+            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(models)
 
         os.environ["DOPEMUX_LITELLM_DB_URL"] = db_url
         os.environ.setdefault("LITELLM_DATABASE_URL", db_url)

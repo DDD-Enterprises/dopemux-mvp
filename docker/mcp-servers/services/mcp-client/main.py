@@ -275,8 +275,8 @@ def create_server_configs():
         'env': {
             'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', ''),
             'OPENROUTER_API_KEY': os.getenv('OPENROUTER_API_KEY', ''),
-            'GEMINI_API_KEY': os.getenv('GEMINI_API_KEY', ''),
-            'XAI_API_KEY': os.getenv('XAI_API_KEY', ''),
+            'GEMINI_API_KEY': os.getenv('GEMINI_API_KEY', '<REDACTED_GEMINI_KEY>'),
+            'XAI_API_KEY': os.getenv('XAI_API_KEY', '<REDACTED_XAI_KEY>'),
             'DISABLED_TOOLS': 'refactor,testgen,secaudit,docgen,tracer',
             'DEFAULT_MODEL': 'auto',
             'ZEN_DEFAULT_PROVIDER': 'openrouter'
