@@ -4053,28 +4053,6 @@ def _configure_openrouter_litellm():
     console.logger.info("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
 
 
-def _configure_openrouter_litellm():
-    """Configure environment for OpenRouter via LiteLLM"""
-    # Set up OpenRouter models for LiteLLM
-    openrouter_models = [
-        "openrouter-xai-grok-code-fast",
-        "openrouter-openai-gpt-5",
-        "openrouter-openai-gpt-5-mini",
-        "openrouter-openai-gpt-5-codex",
-        "openrouter-google-gemini-2-flash",
-        "openrouter-meta-llama-3.1-405b",
-    ]
-    
-    # Update environment
-    os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
-    os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
-    os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(openrouter_models)
-    
-    # Ensure Zen MCP uses LiteLLM
-    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
-    os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
-    
-    console.logger.info("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
 
 
 def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[dict] = None):
@@ -5051,7 +5029,7 @@ def rollback(ctx, backup_name: Optional[str], list_backups: bool):
 
 @update.command()
 @click.pass_context
-def status(ctx):
+def update_status_cmd(ctx):
     """
     📊 Show system update status and health
 
@@ -5565,6 +5543,22 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
         sys.exit(1)
 
 
+# Register additional profile commands from modules
+try:
+    from .profile_commands import (
+        use_profile,
+        create_profile
+    )
+
+    # Note: 'list' and 'show' are already defined above as inline commands.
+    # We only add unique commands from the module to avoiding conflicts.
+    profile.add_command(use_profile, "use")
+    profile.add_command(create_profile, "create")
+
+except ImportError:
+    pass  # Profile commands not available
+
+
 # Worktree Management Commands (Epic 3)
 # =============================================================================
 
@@ -5940,41 +5934,6 @@ except ImportError as e:
     pass  # Commands won't be available but CLI still works
 
 
-# ============================================================================
-# Profile Management Commands (Multi-User Support)
-# ============================================================================
-
-@cli.group()
-def profile():
-    """
-    👤 Profile management (multi-project configuration)
-
-    Manage configuration profiles for different project types:
-    - python-ml: ML/AI development with Jupyter
-    - web-dev: Modern web development (React, Next.js, TypeScript)
-    - adhd-default: Universal ADHD-optimized settings
-
-    Profiles control MCP servers, ADHD accommodations, and database strategy.
-    """
-    pass
-
-
-# Import and register profile commands
-try:
-    from .profile_commands import (
-        list_profiles,
-        use_profile,
-        show_profile,
-        create_profile
-    )
-
-    profile.add_command(list_profiles, "list")
-    profile.add_command(use_profile, "use")
-    profile.add_command(show_profile, "show")
-    profile.add_command(create_profile, "create")
-
-except ImportError as e:
-    pass  # Profile commands not available
 
 
 # ============================================================================
@@ -6164,7 +6123,7 @@ def analyze(ctx, bug_description, file_path, line, verbose):
 @code.command()
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.pass_context
-def status(ctx, verbose):
+def code_agent_status_cmd(ctx, verbose):
     """
     Show code agent status and configuration.
     """
