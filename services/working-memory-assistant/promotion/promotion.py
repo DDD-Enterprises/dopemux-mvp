@@ -57,13 +57,27 @@ def normalize_event_type(event_type: str) -> str:
 
 @dataclass
 class PromotedEntry:
-    """A promoted work log entry ready for storage."""
+    """A promoted work log entry ready for storage.
+    
+    Per Packet D §4.3: All promoted entries MUST carry provenance metadata
+    to enable explainability after raw event TTL expiry.
+    """
 
+    # Content fields
     category: str
     entry_type: str
     summary: str
     outcome: str
     importance_score: int
+    
+    # Provenance fields (Packet D §4.3 - Injected by promote(), mandatory for storage)
+    source_event_id: Optional[str] = None
+    source_event_type: Optional[str] = None
+    source_adapter: Optional[str] = None
+    source_event_ts_utc: Optional[str] = None
+    promotion_rule: Optional[str] = None
+    
+    # Optional content fields
     workflow_phase: Optional[str] = None
     details: Optional[dict[str, Any]] = None
     reasoning: Optional[str] = None
@@ -73,6 +87,7 @@ class PromotedEntry:
     linked_commits: Optional[list[str]] = None
     linked_chat_range: Optional[dict[str, Any]] = None
     duration_sec: Optional[int] = None
+    supersedes_entry_id: Optional[str] = None
 
 
 class PromotionEngine:
@@ -93,27 +108,64 @@ class PromotionEngine:
         return normalized in PROMOTABLE_EVENT_TYPES
 
     def promote(
-        self, event_type: str, data: dict[str, Any]
+        self, event: dict[str, Any]
     ) -> Optional[PromotedEntry]:
-        """Promote an event to a work log entry.
+        """Promote a raw event to a work log entry.
 
         Args:
-            event_type: The event type (e.g., "decision.logged" or "decision_logged")
-            data: The event data payload (already redacted at ingest)
+            event: Full event envelope with id, event_type, source, ts_utc, payload/data
 
         Returns:
-            PromotedEntry if promotable, None otherwise
+            PromotedEntry with provenance if promotable, None otherwise
+            
+        Raises:
+            ValueError: If required provenance fields are missing or contain sentinel values
         """
+        # Extract provenance fields from event envelope (Packet D §4.3)
+        event_id = event.get("id") or event.get("event_id")
+        event_type = event.get("event_type") or event.get("type", "")
+        source = event.get("source", "")
+        ts_utc = event.get("ts_utc") or event.get("ts", "")
+        data = event.get("payload", event.get("data", {}))
+        
+        # Fail-closed: validate required provenance fields (Packet D §4.5)
+        if not event_id or not event_type or not source or not ts_utc:
+            raise ValueError(
+                f"Promotion requires complete provenance: "
+                f"event_id={bool(event_id)}, event_type={bool(event_type)}, "
+                f"source={bool(source)}, ts_utc={bool(ts_utc)}"
+            )
+        
+        # Sentinel ban (Packet D §7.8): runtime must not accept sentinel values
+        sentinel_values = {'pre_migration', 'unknown', ''}
+        if event_id in sentinel_values or source in sentinel_values:
+            raise ValueError(
+                f"Promotion rejected: sentinel values not allowed in runtime "
+                f"(event_id={event_id}, source={source})"
+            )
+        
         normalized = normalize_event_type(event_type)
         if normalized not in PROMOTABLE_EVENT_TYPES:
             return None
 
         # Dispatch to specific handler (use normalized dotted form)
         handler = getattr(self, f"_promote_{normalized.replace('.', '_')}", None)
-        if handler:
-            return handler(data)
-
-        return None
+        if not handler:
+            return None
+            
+        # Call handler to get content fields
+        promoted = handler(data)
+        if not promoted:
+            return None
+        
+        # Inject provenance fields (Packet D §4.3)
+        promoted.source_event_id = str(event_id)
+        promoted.source_event_type = str(event_type)
+        promoted.source_adapter = str(source)
+        promoted.source_event_ts_utc = str(ts_utc)
+        promoted.promotion_rule = normalized  # Normalized handler name
+        
+        return promoted
 
 
     def _extract_tags(self, data: dict[str, Any]) -> list[str]:
