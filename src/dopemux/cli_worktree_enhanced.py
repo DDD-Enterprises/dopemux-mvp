@@ -13,8 +13,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 from pathlib import Path
-from rich.console import Console
 
+from .console import console
 from .worktree_manager_enhanced import (
     EnhancedWorktreeManager,
     create_worktree_safe,
@@ -23,8 +23,6 @@ from .worktree_manager_enhanced import (
     switch_worktree_safe,
     archive_worktree_safe
 )
-
-console = Console()
 
 
 def register_enhanced_worktree_commands(cli_group):

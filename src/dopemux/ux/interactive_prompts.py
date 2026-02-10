@@ -13,9 +13,8 @@ logger = logging.getLogger(__name__)
 
 import questionary
 from questionary import Choice
-from rich.console import Console
 
-console = Console()
+from ..console import console
 
 
 class InteractivePrompts:

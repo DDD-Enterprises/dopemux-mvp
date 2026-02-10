@@ -26,14 +26,13 @@ from datetime import datetime
 import sys
 import logging
 
+from .console import console
 from .main_worktree_detector import MainWorktreeDetector, ProtectionTrigger
 from .worktree_name_inferrer import WorktreeNameInferrer, suggest_worktree_name
-from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 _last_created_worktree: Optional[Path] = None
 _COPY_DIRECTORIES = [

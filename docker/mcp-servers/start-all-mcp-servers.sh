@@ -317,6 +317,9 @@ sleep 10
 echo "🔄 Starting workflow servers..."
 # dope-context (formerly conport for this stack)
 safe_up dope-context dopemux-mcp-dope-context
+
+# ConPort dashboard & API
+safe_up conport mcp-conport
 # serena
 safe_up serena dopemux-mcp-serena
 

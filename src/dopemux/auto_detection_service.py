@@ -16,13 +16,11 @@ from pathlib import Path
 from typing import Dict, Optional, Set
 import json
 
-from rich.console import Console
 from rich.prompt import Confirm
 
+from .console import console
 from .profile_detector import ProfileDetector, DetectionContext, format_match_summary
 from .config.manager import ConfigManager
-
-console = Console()
 
 
 class AutoDetectionConfig:

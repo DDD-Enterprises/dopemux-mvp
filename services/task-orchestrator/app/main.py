@@ -1,194 +1,84 @@
 """
 Coordination API Service - REST API for Two-Plane Coordination
 
-Provides RESTful endpoints for cross-plane operations and event handling:
-
-- POST /api/coordination/operations - Execute coordination operations
-- GET /api/coordination/health - Plane health status
-- GET /api/coordination/metrics - Coordination analytics
-- POST /api/coordination/events - Emit coordination events
-- GET /api/coordination/conflicts - Active conflicts
-- POST /api/coordination/conflicts/{id}/resolve - Resolve conflicts
-
-Features:
-- Async FastAPI endpoints with proper error handling
-- ADHD-aware request processing (cognitive load consideration)
-- Event-driven coordination with WebSocket support
-- Real-time health monitoring and alerting
-- Conflict resolution workflows
-- Comprehensive logging and telemetry
-
-Created: 2025-11-05
+Provides RESTful endpoints for cross-plane operations and event handling.
 """
-
-from fastapi import Response
 
 import logging
 import os
+import sys
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
+from dopemux.workspace_detection import get_workspace_root
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import (
-    BackgroundTasks,
-    Body,
-    FastAPI,
-    HTTPException,
-    Query,
-    WebSocket,
-    WebSocketDisconnect,
-)
+from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Response
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, validator
 import json
+
+# Add repo root to path
+repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(repo_root, "src"))
 
 try:
     from dopemux.logging import configure_logging, RequestIDMiddleware
-except Exception:  # pragma: no cover - fallback path for isolated service images
+except Exception:
     RequestIDMiddleware = None
-
-    def configure_logging(
-        service_name: str,
-        *,
-        level: str | None = None,
-        **_: Any,
-    ) -> logging.Logger:
-        resolved_level = getattr(logging, (level or "INFO").upper(), logging.INFO)
+    def configure_logging(service_name, *, level=None, **_):
+        resolved_level = getattr(logging, str(level or "INFO").upper(), logging.INFO)
         logging.basicConfig(
             level=resolved_level,
             format="%(asctime)s %(levelname)s %(name)s %(message)s",
         )
         return logging.getLogger(service_name)
+from .core.coordinator import create_plane_coordinator
 
-from app.core.coordinator import (
+# Configure structured logging
+configure_logging("task-orchestrator")
+logger = logging.getLogger(__name__)
+
+# Import shared models from local models
+from .models.coordination import (
     PlaneType,
     CoordinationEventType,
     ConflictResolutionStrategy,
-    create_plane_coordinator
-)
-from app.models.workflow import (
-    CreateEpicRequest,
-    CreateIdeaRequest,
-    PromoteIdeaRequest,
-    UpdateEpicRequest,
-    UpdateIdeaRequest,
-)
-from app.services.workflow_service import (
-    WorkflowConflictError,
-    WorkflowNotFoundError,
-    WorkflowUnavailableError,
+    CoordinationOperationRequest,
+    CoordinationOperationResponse,
+    PlaneHealthResponse,
+    CoordinationMetricsResponse,
+    EmitEventRequest,
+    ConflictResolutionRequest,
+    HealthResponse
 )
 
-configure_logging("task-orchestrator", level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
-SERVICE_NAME = os.getenv("SERVICE_NAME", "task-orchestrator")
-HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
-
-# ============================================================================
-# Pydantic Models for API
-# ============================================================================
-
-
-class CoordinationOperationRequest(BaseModel):
-    """Request model for coordination operations."""
-    operation: str = Field(..., description="Operation name (create_task, update_progress, etc.)")
-    source_plane: str = Field(..., description="Source plane (pm, cognitive, integration)")
-    data: Dict[str, Any] = Field(..., description="Operation-specific data")
-    priority: Optional[int] = Field(5, ge=1, le=10, description="Operation priority (1-10)")
-
-    @validator('source_plane')
-    def validate_source_plane(cls, v):
-        valid_planes = [p.value for p in PlaneType]
-        if v not in valid_planes:
-            raise ValueError(f"source_plane must be one of: {valid_planes}")
-        return v
-
-
-class CoordinationOperationResponse(BaseModel):
-    """Response model for coordination operations."""
-    success: bool
-    operation_id: Optional[str] = None
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class PlaneHealthResponse(BaseModel):
-    """Response model for plane health status."""
-    plane: str
-    status: str
-    last_check: datetime
-    services: Dict[str, str]
-    issues: List[str]
-    metrics: Dict[str, Any] = Field(default_factory=dict)
-
-
-class CoordinationMetricsResponse(BaseModel):
-    """Response model for coordination metrics."""
-    metrics: Dict[str, int]
-    plane_health: Dict[str, Dict[str, Any]]
-    active_conflicts: int
-    timestamp: datetime
-
-
-class EmitEventRequest(BaseModel):
-    """Request model for emitting coordination events."""
-    event_type: str = Field(..., description="Event type (task_created, decision_made, etc.)")
-    source_plane: str = Field(..., description="Source plane")
-    target_plane: str = Field(..., description="Target plane")
-    entity_type: str = Field(..., description="Entity type (task, decision, etc.)")
-    entity_id: str = Field(..., description="Entity ID")
-    data: Dict[str, Any] = Field(default_factory=dict, description="Event data")
-    priority: Optional[int] = Field(5, description="Event priority")
-
-    @validator('event_type')
-    def validate_event_type(cls, v):
-        valid_types = [e.value for e in CoordinationEventType]
-        if v not in valid_types:
-            raise ValueError(f"event_type must be one of: {valid_types}")
-        return v
-
-    @validator('source_plane', 'target_plane')
-    def validate_planes(cls, v):
-        valid_planes = [p.value for p in PlaneType]
-        if v not in valid_planes:
-            raise ValueError(f"plane must be one of: {valid_planes}")
-        return v
-
-
-class ConflictResolutionRequest(BaseModel):
-    """Request model for conflict resolution."""
-    resolution_strategy: str = Field(..., description="Resolution strategy")
-    resolved_value: Optional[Any] = Field(None, description="Manually specified resolved value")
-
-    @validator('resolution_strategy')
-    def validate_strategy(cls, v):
-        valid_strategies = [s.value for s in ConflictResolutionStrategy]
-        if v not in valid_strategies:
-            raise ValueError(f"resolution_strategy must be one of: {valid_strategies}")
-        return v
-
 
 # ============================================================================
 # FastAPI Application
 # ============================================================================
 
+async def init_coordinator():
+    """Initialize plane coordinator"""
+    logger.info("Initializing plane coordinator...")
+    coordinator = await create_plane_coordinator(get_workspace_root())
+    logger.info("Plane coordinator initialized")
+    return {"coordinator": coordinator}
+
+
+async def shutdown_coordinator():
+    """Shutdown plane coordinator"""
+    # Coordinator shutdown handled by lifespan_context
+    pass
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan manager."""
-    # Startup
-    logger.info("🚀 Starting Coordination API Service...")
-    workspace_id = os.environ.get("WORKSPACE_ID", "/app")
-    app.state.coordinator = await create_plane_coordinator(workspace_id)
-    logger.info("✅ Coordination API Service ready")
+    """Application lifespan manager"""
+    async with lifespan_context("task-orchestrator", init_coordinator, shutdown_coordinator) as state:
+        app.state.coordinator = state.get("coordinator")
+        yield
 
-    yield
-
-    # Shutdown
-    logger.info("🛑 Shutting down Coordination API Service...")
-    await app.state.coordinator.shutdown()
-    logger.info("✅ Coordination API Service shutdown complete")
 
 app = FastAPI(
     title="Dopemux Plane Coordination API",
@@ -205,8 +95,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-if RequestIDMiddleware is not None:
-    app.add_middleware(RequestIDMiddleware)
+
+# Request ID middleware
+app.add_middleware(RequestIDMiddleware)
 
 # ============================================================================
 # WebSocket Connection Manager
@@ -292,44 +183,44 @@ async def handle_coordination_events(event):
 # ============================================================================
 
 
-@app.get(HEALTH_CHECK_PATH)
+@app.get("/health")
 async def health_check():
-    """Basic health check endpoint."""
-    return {
-        "status": "healthy",
-        "service": SERVICE_NAME,
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-
-
-@app.get("/info")
-async def service_info():
-    """Service discovery endpoint - auto-config support (ADR-208)"""
-    port = int(os.getenv("MCP_SERVER_PORT", 8000))
-    return {
-        "name": SERVICE_NAME,
-        "version": "1.0.0",
-        "mcp": {
-            "protocol": "sse",
-            "connection": {
-                "type": "sse",
-                "url": f"http://localhost:{port}/sse"
-            },
-            "env": {
-                "WORKSPACE_ID": "${WORKSPACE_ID:-}"
-            }
-        },
-        "health": HEALTH_CHECK_PATH,
-        "description": "Advanced task orchestration and dependency management with 37 tools",
-        "metadata": {
-            "role": "workflow",
-            "priority": "high",
-            "tools_count": 37,
-            "kotlin_backend": True,
-            "two_plane_coordination": True,
-            "adhd_aware": True
-        }
-    }
+    """Standard health check endpoint with dependency tracking"""
+    from .core.health_utils import check_dependency, check_redis, determine_overall_status
+    
+    dependencies = {}
+    
+    try:
+        coordinator = app.state.coordinator
+        
+        # Check Redis if available
+        if hasattr(coordinator, 'redis_client') and coordinator.redis_client:
+            redis_status = await check_dependency(
+                "redis",
+                lambda: check_redis(coordinator.redis_client),
+                timeout_ms=200,
+                critical=False
+            )
+            dependencies["redis"] = redis_status
+        
+        # Determine overall status (no critical deps)
+        overall_status = determine_overall_status(dependencies, critical_deps=set())
+        
+        return HealthResponse(
+            service="task-orchestrator",
+            status=overall_status,
+            ts=datetime.utcnow().isoformat() + "Z",
+            dependencies={k: v.status for k, v in dependencies.items()}
+        )
+    
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return HealthResponse(
+            service="task-orchestrator",
+            status="fail",
+            ts=datetime.utcnow().isoformat() + "Z",
+            dependencies={}
+        )
 
 
 @app.get("/metrics")
@@ -547,147 +438,6 @@ async def resolve_conflict(conflict_id: str, request: ConflictResolutionRequest)
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def _handle_workflow_error(exc: Exception) -> None:
-    """Map workflow service exceptions to stable HTTP contracts."""
-    if isinstance(exc, WorkflowNotFoundError):
-        raise HTTPException(status_code=404, detail=str(exc))
-    if isinstance(exc, WorkflowConflictError):
-        raise HTTPException(status_code=409, detail=str(exc))
-    if isinstance(exc, WorkflowUnavailableError):
-        raise HTTPException(status_code=503, detail=str(exc))
-    if isinstance(exc, ValueError):
-        raise HTTPException(status_code=400, detail=str(exc))
-    logger.error("Workflow API failure: %s", exc)
-    raise HTTPException(status_code=500, detail="workflow operation failed")
-
-
-@app.post("/api/workflow/ideas", status_code=201)
-async def create_workflow_idea(request: CreateIdeaRequest):
-    """Create Stage-1 workflow idea."""
-    try:
-        idea = await app.state.coordinator.workflow_service.create_idea(request)
-        return {
-            "idea_id": idea.id,
-            "status": idea.status,
-            "created_at": idea.created_at,
-            "idea": idea.dict(),
-        }
-    except Exception as exc:
-        _handle_workflow_error(exc)
-
-
-@app.get("/api/workflow/ideas")
-async def list_workflow_ideas(
-    status: Optional[str] = Query(None),
-    tag: Optional[str] = Query(None),
-    limit: Optional[int] = Query(None, ge=1, le=200),
-):
-    """List Stage-1 workflow ideas."""
-    try:
-        ideas = await app.state.coordinator.workflow_service.list_ideas(
-            status=status,
-            tag=tag,
-            limit=limit,
-        )
-        return {
-            "count": len(ideas),
-            "ideas": [idea.dict() for idea in ideas],
-        }
-    except Exception as exc:
-        _handle_workflow_error(exc)
-
-
-@app.patch("/api/workflow/ideas/{idea_id}")
-async def update_workflow_idea(idea_id: str, request: UpdateIdeaRequest):
-    """Patch Stage-1 workflow idea fields."""
-    try:
-        idea = await app.state.coordinator.workflow_service.update_idea(idea_id, request)
-        return {
-            "idea_id": idea.id,
-            "status": idea.status,
-            "updated_at": idea.updated_at,
-            "idea": idea.dict(),
-        }
-    except Exception as exc:
-        _handle_workflow_error(exc)
-
-
-@app.post("/api/workflow/ideas/{idea_id}/promote", status_code=201)
-async def promote_workflow_idea(
-    idea_id: str,
-    request: PromoteIdeaRequest = Body(default_factory=PromoteIdeaRequest),
-):
-    """Promote Stage-1 idea into Stage-2 epic."""
-    try:
-        result = await app.state.coordinator.workflow_service.promote_idea(idea_id, request)
-        idea = result["idea"]
-        epic = result["epic"]
-        return {
-            "idea_id": idea.id,
-            "epic_id": epic.id,
-            "leantime_project_id": epic.leantime_project_id,
-            "already_promoted": result["already_promoted"],
-            "warning": result["warning"],
-            "idea": idea.dict(),
-            "epic": epic.dict(),
-        }
-    except Exception as exc:
-        _handle_workflow_error(exc)
-
-
-@app.post("/api/workflow/epics", status_code=201)
-async def create_workflow_epic(request: CreateEpicRequest):
-    """Create Stage-2 workflow epic directly."""
-    try:
-        epic = await app.state.coordinator.workflow_service.create_epic(request)
-        return {
-            "epic_id": epic.id,
-            "status": epic.status,
-            "created_at": epic.created_at,
-            "epic": epic.dict(),
-        }
-    except Exception as exc:
-        _handle_workflow_error(exc)
-
-
-@app.get("/api/workflow/epics")
-async def list_workflow_epics(
-    status: Optional[str] = Query(None),
-    priority: Optional[str] = Query(None),
-    tag: Optional[str] = Query(None),
-    limit: Optional[int] = Query(None, ge=1, le=200),
-):
-    """List Stage-2 workflow epics."""
-    try:
-        epics = await app.state.coordinator.workflow_service.list_epics(
-            status=status,
-            priority=priority,
-            tag=tag,
-            limit=limit,
-        )
-        return {
-            "count": len(epics),
-            "epics": [epic.dict() for epic in epics],
-        }
-    except Exception as exc:
-        _handle_workflow_error(exc)
-
-
-@app.patch("/api/workflow/epics/{epic_id}")
-async def update_workflow_epic(epic_id: str, request: UpdateEpicRequest):
-    """Patch Stage-2 workflow epic fields."""
-    try:
-        epic = await app.state.coordinator.workflow_service.update_epic(epic_id, request)
-        return {
-            "epic_id": epic.id,
-            "status": epic.status,
-            "updated_at": epic.updated_at,
-            "epic": epic.dict(),
-        }
-    except Exception as exc:
-        _handle_workflow_error(exc)
-
-
 @app.websocket("/ws/coordination")
 async def websocket_endpoint(websocket: WebSocket, client_id: Optional[str] = None):
     """
@@ -830,11 +580,24 @@ if __name__ == "__main__":
 
         logger.info("📡 Event handlers registered for WebSocket broadcasting")
 
+    # Log startup configuration
+    port = int(os.getenv("PORT", 3014))
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+    
+    logger.info("=" * 60)
+    logger.info("🚀 Task Orchestrator - Starting")
+    logger.info("=" * 60)
+    logger.info(f"  Service: task-orchestrator")
+    logger.info(f"  Port: {port}")
+    logger.info(f"  Redis: {redis_url}")
+    logger.info(f"  Workspace: {os.getenv('DOPEMUX_WORKSPACE_ROOT', get_workspace_root())}")
+    logger.info("=" * 60)
+
     # Run the FastAPI application
     uvicorn.run(
-        "app.main:app",
+        "coordination_api:app",
         host="0.0.0.0",
-        port=int(os.environ.get("PORT", 8000)),
+        port=port,
         reload=False,
         log_level="info"
     )

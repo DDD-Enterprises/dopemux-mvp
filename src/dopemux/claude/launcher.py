@@ -21,11 +21,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from rich.console import Console
-
 from ..config import ConfigManager
-
-console = Console()
+from ..console import console
 
 
 class ClaudeNotFoundError(Exception):

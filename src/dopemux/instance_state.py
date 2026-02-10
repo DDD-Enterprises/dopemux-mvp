@@ -19,7 +19,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_CONPORT_PORT = 3007
+DEFAULT_CONPORT_PORT = 3004
 
 
 @dataclass
@@ -263,11 +263,19 @@ class InstanceStateManager:
                 if response.status == 200:
                     result = await response.json()
                     # Result format: [{"category": "...", "key": "...", "value": {...}}, ...]
+                    # OR: {"items": [{"category": "...", "key": "...", "value": {...}}, ...]}
                     states = []
+                    
+                    items = []
                     if isinstance(result, list):
-                        for item in result:
-                            if 'value' in item:
-                                states.append(InstanceState.from_dict(item['value']))
+                        items = result
+                    elif isinstance(result, dict) and "items" in result:
+                        items = result["items"]
+                        
+                    for item in items:
+                        if 'value' in item:
+                            states.append(InstanceState.from_dict(item['value']))
+                    
                     logger.info(f"✅ Loaded {len(states)} instance states")
                     return states
                 else:
@@ -480,10 +488,44 @@ def resolve_conport_port(port: Optional[int] = None) -> int:
         candidates.append(DEFAULT_CONPORT_PORT)
 
     can_probe_local = url_host in (None, "", "localhost", "127.0.0.1")
+
+    async def _async_probe(candidate: int) -> bool:
+        """Probe if port is ConPort via /health."""
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"http://127.0.0.1:{candidate}/health", timeout=0.5) as resp:
+                    return resp.status == 200
+        except Exception:
+            return _port_is_listening(candidate)
+
     if can_probe_local:
-        for candidate in candidates:
-            if _port_is_listening(candidate):
-                return candidate
+        # Try a quick sync check for open ports first to avoid waiting for timeouts on closed ones
+        listening_candidates = [c for c in candidates if _port_is_listening(c)]
+        
+        # If any are listening, try to find one that is actually ConPort
+        if listening_candidates:
+            try:
+                # Use a simple loop for the probe to keep it simple for now
+                for candidate in listening_candidates:
+                    # We use a nested loop with asyncio.run for the probe if not in a running loop
+                    try:
+                        loop = asyncio.get_event_loop()
+                        if loop.is_running():
+                            # If we are in a running loop, we can't use wait/run easily here without blocking
+                            # Fallback to listening check
+                            return candidate
+                        else:
+                            if asyncio.run(_async_probe(candidate)):
+                                return candidate
+                    except Exception:
+                        if _port_is_listening(candidate):
+                            return candidate
+            except Exception:
+                pass
+
+        # Fallback to first listening candidate if probe failed
+        if listening_candidates:
+            return listening_candidates[0]
 
     # Fallback: return first candidate even if nothing is reachable
     return candidates[0]

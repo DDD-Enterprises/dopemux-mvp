@@ -14,12 +14,12 @@ from typing import Optional, Tuple, Sequence, List, Dict
 from dataclasses import dataclass
 
 import click
-from rich.console import Console
 from rich.table import Table
 from rich.prompt import Confirm
 from click.shell_completion import CompletionItem
 
 from ..config import ConfigManager
+from ..console import console
 from .controller import TmuxController, PaneInfo
 from ..mobile.runtime import ensure_dependency, env_for_happy
 from ..mobile import tmux_utils
@@ -30,8 +30,6 @@ from ..litellm_proxy import (
     LiteLLMProxyError,
     sync_litellm_database,
 )
-
-console = Console()
 
 
 @dataclass

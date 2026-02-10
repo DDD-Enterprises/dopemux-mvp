@@ -9,10 +9,11 @@ __version__ = "0.1.0"
 __author__ = "Dopemux Team"
 __email__ = "team@dopemux.dev"
 
-# Core modules
-from . import cli, config
+# Core modules (lightweight)
+from . import global_config
+from . import workspace_detection
 
 # Profile management
 from . import profile_models, profile_parser
 
-__all__ = ["cli", "config", "profile_models", "profile_parser", "__version__"]
+__all__ = ["global_config", "workspace_detection", "profile_models", "profile_parser", "__version__"]
