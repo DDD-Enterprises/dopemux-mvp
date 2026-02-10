@@ -18,11 +18,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+from ..canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
 from ..chronicle.store import ChronicleStore
 from ..promotion import PromotionEngine, Redactor
-
-# Default data directory
-DEFAULT_DATA_DIR = Path.home() / ".dope-memory"
 
 
 @dataclass
@@ -53,37 +51,37 @@ class DopeMemoryMCPServer:
 
     def __init__(
         self,
-        data_dir: Optional[Path] = None,
         workspace_id: Optional[str] = None,
         instance_id: str = "A",
     ):
         """Initialize the MCP server.
 
         Args:
-            data_dir: Directory for SQLite databases (default ~/.dope-memory)
-            workspace_id: Default workspace ID
+            workspace_id: Default workspace ID (absolute repo root path preferred)
             instance_id: Default instance ID
         """
-        self.data_dir = data_dir or DEFAULT_DATA_DIR
-        self.data_dir.mkdir(parents=True, exist_ok=True)
-
         self.default_workspace_id = workspace_id
         self.default_instance_id = instance_id
 
         self.redactor = Redactor()
         self.promotion_engine = PromotionEngine()
 
-        # Lazy store initialization per workspace
+        # Lazy store initialization — keyed by resolved canonical ledger path
         self._stores: dict[str, ChronicleStore] = {}
 
     def _get_store(self, workspace_id: str) -> ChronicleStore:
-        """Get or create a ChronicleStore for a workspace."""
-        if workspace_id not in self._stores:
-            db_path = self.data_dir / workspace_id / "chronicle.db"
+        """Get or create a ChronicleStore for the canonical ledger.
+
+        Resolves workspace_id to the single canonical ledger per ADR-213.
+        Fails closed if repo root cannot be determined.
+        """
+        db_path = resolve_canonical_ledger(workspace_id)
+        path_key = str(db_path)
+        if path_key not in self._stores:
             store = ChronicleStore(db_path)
             store.initialize_schema()
-            self._stores[workspace_id] = store
-        return self._stores[workspace_id]
+            self._stores[path_key] = store
+        return self._stores[path_key]
 
     def _encode_cursor(
         self,
@@ -284,12 +282,23 @@ class DopeMemoryMCPServer:
         if links and links.get("files"):
             linked_files = self.redactor.redact_linked_files(links["files"])
 
+        now_utc = datetime.now(timezone.utc).isoformat()
+        
+        # Manual entry provenance (Packet D §4.3)
+        # We must provide valid provenance even for manual entries
+        source_event_id = f"manual-{uuid.uuid4()}"
+        
         entry_id = store.insert_work_log_entry(
             workspace_id=workspace_id,
             instance_id=instance_id,
             category=category,
             entry_type=entry_type,
             summary=summary[:500],
+            source_event_id=source_event_id,
+            source_event_type="manual.memory_store",
+            source_adapter="mcp-server",
+            source_event_ts_utc=now_utc,
+            promotion_rule="manual",
             session_id=session_id,
             workflow_phase=workflow_phase,
             details=redacted_details,
@@ -530,12 +539,57 @@ class DopeMemoryMCPServer:
         Returns:
             {items: [...], more_count: N, next_token: str|null}
         """
-        # Reuse memory_search with session filter, sorted by ts
-        return self.memory_search(
-            query="",
+        store = self._get_store(workspace_id)
+        
+        # Enforce ADHD boundary
+        top_k = min(max(1, top_k), 50)
+        
+        # Validate cursor
+        decoded_cursor = None
+        if cursor:
+             # Simple cursor: "ts_utc|id" base64 encoded
+             try:
+                 parts = base64.urlsafe_b64decode(cursor.encode()).decode().split("|")
+                 if len(parts) == 2:
+                     decoded_cursor = (parts[0], parts[1])
+             except Exception:
+                 pass
+
+        # Execute replay (source_event_ts_utc ASC)
+        rows = store.replay_work_log(
             workspace_id=workspace_id,
             instance_id=instance_id,
             session_id=session_id,
-            top_k=top_k,
-            cursor=cursor,
+            limit=top_k + 1,
+            cursor=decoded_cursor,
         )
+        
+        has_more = len(rows) > top_k
+        items = rows[:top_k]
+        
+        # Build next_token
+        next_token = None
+        if has_more and items:
+            last = items[-1]
+            raw_token = f"{last['source_event_ts_utc']}|{last['id']}"
+            next_token = base64.urlsafe_b64encode(raw_token.encode()).decode()
+
+        # Format items
+        response_items = []
+        for row in items:
+            response_items.append({
+                "id": row["id"],
+                "ts_utc": row["source_event_ts_utc"],  # Use event time
+                "category": row["category"],
+                "entry_type": row["entry_type"],
+                "summary": row["summary"],
+                "outcome": row["outcome"],
+                "importance_score": row["importance_score"],
+                "details": json.loads(row.get("details_json") or "{}"),
+            })
+
+        return {
+            "items": response_items,
+            "more_count": 1 if has_more else 0, # Approximate
+            "next_token": next_token,
+        }
