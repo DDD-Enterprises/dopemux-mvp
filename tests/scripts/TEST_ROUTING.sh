@@ -6,7 +6,7 @@ echo "🧪 Testing Dopemux LiteLLM Routing"
 echo "=================================="
 echo ""
 
-MASTER_KEY="${LITELLM_MASTER_KEY:-REDACTED_LITELLM_KEY}"
+MASTER_KEY="${LITELLM_MASTER_KEY:-<REDACTED_LITELLM_MASTER_KEY>}"
 
 # Test 1: Health check
 echo "Test 1: Health Check"

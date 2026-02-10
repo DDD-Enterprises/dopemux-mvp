@@ -98,9 +98,9 @@ curl -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
 ### `.env.routing`
 Your API keys and routing config (already set up):
 ```bash
-OPENROUTER_API_KEY=REDACTED_OPENROUTER_KEY
-XAI_API_KEY=REDACTED_XAI_KEY
-LITELLM_MASTER_KEY=REDACTED_LITELLM_KEY
+OPENROUTER_API_KEY=<REDACTED_OPENROUTER_KEY>
+XAI_API_KEY=<REDACTED_XAI_KEY>
+LITELLM_MASTER_KEY=<REDACTED_LITELLM_MASTER_KEY>
 ```
 
 ### `.dopemux/litellm/A/litellm.config.yaml`

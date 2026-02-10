@@ -1,3 +1,0 @@
-NAME                     IMAGE                COMMAND                  SERVICE    CREATED          STATUS                    PORTS
-dopemux-mvp-postgres-1   postgres:15-alpine   "docker-entrypoint.s…"   postgres   30 seconds ago   Up 29 seconds (healthy)   0.0.0.0:5455->5432/tcp, [::]:5455->5432/tcp
-dopemux-mvp-redis-1      redis:7-alpine       "docker-entrypoint.s…"   redis      30 seconds ago   Up 29 seconds (healthy)   0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp

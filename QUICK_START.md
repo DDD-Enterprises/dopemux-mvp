@@ -39,7 +39,7 @@ This will:
 
 ```bash
 export ANTHROPIC_BASE_URL='http://localhost:4000'
-export ANTHROPIC_API_KEY='REDACTED_LITELLM_KEY'
+export ANTHROPIC_API_KEY='<REDACTED_LITELLM_MASTER_KEY>'
 dopemux start
 ```
 
@@ -51,7 +51,7 @@ dopemux start
 
 # Or manually test a model
 curl -X POST http://localhost:4000/v1/chat/completions \
-  -H "Authorization: Bearer REDACTED_LITELLM_KEY" \
+  -H "Authorization: Bearer <REDACTED_LITELLM_MASTER_KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "grok-4-fast",
@@ -144,7 +144,7 @@ pkill -f litellm
 ### "Model not found"
 ```bash
 # List available models
-curl -H "Authorization: Bearer REDACTED_LITELLM_KEY" \
+curl -H "Authorization: Bearer <REDACTED_LITELLM_MASTER_KEY>" \
   http://localhost:4000/v1/models | jq -r '.data[].id'
 ```
 
