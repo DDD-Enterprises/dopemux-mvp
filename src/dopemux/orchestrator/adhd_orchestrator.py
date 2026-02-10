@@ -23,9 +23,8 @@ from ..tmux.controller import TmuxController
 from ..tmux.layouts import EnergyLayoutManager
 from ..adhd.attention_monitor import AttentionMonitor, AttentionState, AttentionMetrics
 from pathlib import Path
-from rich.console import Console
 
-console = Console()
+from ..console import console
 
 class ADHDOrchestrator:
     """

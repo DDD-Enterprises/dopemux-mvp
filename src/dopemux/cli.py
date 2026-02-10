@@ -36,7 +36,6 @@ except ImportError:  # pragma: no cover - optional dependency
         """Fallback load_dotenv when python-dotenv is unavailable."""
         return False
 
-from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -45,6 +44,7 @@ from rich.text import Text
 
 from . import __version__
 from .claude_tools.cli import register_commands
+from .console import console
 
 # Load environment variables from .env file
 load_dotenv()
@@ -58,10 +58,16 @@ from .config import ConfigManager
 from .health import HealthChecker
 from .instance_manager import InstanceManager, detect_instances_sync, detect_orphaned_instances_sync
 from .litellm_proxy import (
+    ALTP_PROVIDER,
+    CODEX_PROVIDER,
     DEFAULT_LITELLM_CONFIG,
-    ensure_master_key,
+    GROK_PROVIDER,
     LiteLLMProxyError,
     LiteLLMProxyManager,
+    ensure_master_key,
+    generate_multi_target_config,
+    generate_single_target_config,
+    start_simple_proxy,
     sync_litellm_database,
 )
 from .profile_manager import ProfileManager
@@ -102,16 +108,6 @@ from .roles.catalog import (
 
 if "-litellm" in sys.argv:
     sys.argv = ["--litellm" if arg == "-litellm" else arg for arg in sys.argv]
-
-console = Console()
-class _ConsoleAdapter:
-    def __init__(self, c):
-        self._c = c
-    def info(self, *args, **kwargs):
-        self._c.print(*args, **kwargs)
-    def error(self, *args, **kwargs):
-        self._c.print(*args, **kwargs)
-console.logger = _ConsoleAdapter(console)
 
 if not _DOTENV_AVAILABLE:  # pragma: no cover - environment warning
     warnings.warn(
@@ -647,6 +643,24 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
     is_flag=True,
     help="Preview role/profile effects without launching Claude Code.",
 )
+@click.option(
+    "--grok",
+    "use_grok",
+    is_flag=True,
+    help="🎯 Route ALL requests to xAI Grok Code Fast 1 (requires XAI_API_KEY)",
+)
+@click.option(
+    "--codex",
+    "use_codex",
+    is_flag=True,
+    help="🎯 Route ALL requests to OpenAI GPT-5 Codex via OpenRouter (requires OPENROUTER_API_KEY)",
+)
+@click.option(
+    "--altp",
+    "use_altp",
+    is_flag=True,
+    help="🎯 Tier-matched routing: opus→GPT-5.2-Codex, sonnet→GPT-5-Mini, haiku→Grok Code Fast 1",
+)
 @click.pass_context
 def start(
     ctx,
@@ -662,6 +676,9 @@ def start(
     use_claude_router: bool,
     role: Optional[str],
     dry_run: bool,
+    use_grok: bool,
+    use_codex: bool,
+    use_altp: bool,
     **legacy_kwargs,
 ):
     """
@@ -679,6 +696,98 @@ def start(
         use_claude_router = legacy_value
 
     from .workspace_utils import get_workspace_root
+
+    # ── Handle --grok / --codex / --altp provider routing ───────────────
+    _provider_flags = sum([use_grok, use_codex, use_altp])
+    if _provider_flags > 0:
+        if _provider_flags > 1:
+            raise click.ClickException("Cannot combine --grok, --codex, and --altp. Pick one.")
+        if use_alt_routing:
+            raise click.ClickException("Cannot combine provider flags with --alt-routing.")
+
+        if use_grok or use_codex:
+            # ── Single-target routing ───────────────────────────────────
+            provider = GROK_PROVIDER if use_grok else CODEX_PROVIDER
+            flag_name = "--grok" if use_grok else "--codex"
+
+            if not os.getenv(provider["api_key_env"]):
+                raise click.ClickException(
+                    f"${provider['api_key_env']} is required for {flag_name}. "
+                    f"Set it in your environment or .env file."
+                )
+
+            console.logger.info(
+                f"[cyan]🎯 {flag_name}: Routing ALL requests → {provider['label']}[/cyan]"
+            )
+
+            config_data = generate_single_target_config(
+                target_name=provider["name"],
+                litellm_model=provider["model"],
+                api_key_env=provider["api_key_env"],
+                max_tokens=provider.get("max_tokens", 131072),
+                extra_litellm_params=provider.get("extra_params"),
+            )
+            _routing_summary = f"Claude Code → LiteLLM → {provider['label']}"
+
+        else:
+            # ── Multi-target tier-matched routing (--altp) ──────────────
+            missing_keys = [
+                k for k in ALTP_PROVIDER["required_keys"] if not os.getenv(k)
+            ]
+            if missing_keys:
+                raise click.ClickException(
+                    f"--altp requires: {', '.join('$' + k for k in missing_keys)}. "
+                    f"Set them in your environment or .env file."
+                )
+
+            console.logger.info("[cyan]🎯 --altp: Tier-matched alternative provider routing[/cyan]")
+            for t in ALTP_PROVIDER["targets"]:
+                tier = t["name"].replace("altp-", "")
+                console.logger.info(f"[dim]   {tier:>6s} → {t['label']} ({t['model']})[/dim]")
+
+            config_data = generate_multi_target_config(ALTP_PROVIDER["targets"])
+            
+            # Auto-enable Claude Code Router for API translation
+            use_claude_router = True
+            console.logger.info("[dim]   Enabling Claude Code Router for API translation (responses → completions)[/dim]")
+            
+            _routing_summary = "Claude Code → CCR → LiteLLM → tier-matched providers"
+
+        console.logger.info("[blue]🔄 Starting LiteLLM proxy (no DB required)...[/blue]")
+        try:
+            litellm_port, litellm_master_key = start_simple_proxy(
+                project_root=Path.cwd(),
+                config_data=config_data,
+            )
+        except LiteLLMProxyError as exc:
+            raise click.ClickException(str(exc))
+
+        console.logger.info(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
+
+        # Wire Claude Code to use the proxy
+        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
+        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
+        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
+        os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+        os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
+        os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+
+        # Export CCR upstream env vars so Claude Code Router uses the new proxy
+        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://localhost:{litellm_port}/v1/chat/completions"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+        
+        if use_altp:
+            # For --altp, we map to the tier names defined in generate_multi_target_config
+            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
+        else:
+            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
+
+        use_litellm = True
+        use_alt_routing = False  # Skip the full alt-routing block below
+
+        console.logger.info(f"[dim]✓ {_routing_summary} (:{litellm_port})[/dim]")
+        console.logger.info("")
 
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
@@ -865,8 +974,6 @@ def start(
         if litellm_running:
             console.logger.info(f"[green]✓ LiteLLM proxy already running on port {litellm_port}[/green]")
         else:
-            import subprocess
-
             console.logger.info("[blue]🔄 Starting LiteLLM proxy...[/blue]")
             kill_result = subprocess.run(
                 ["pkill", "-f", "litellm"],
@@ -1342,12 +1449,15 @@ def start(
         _invoke_switch_role_script(role_activation.spec.key)
 
     litellm_proxy_info = None
+    # --grok/--codex start their own proxy with direct routing
+    # --altp uses CCR as translation layer (not direct routing) due to API compatibility
+    _direct_provider_routing = use_grok or use_codex
     # If --litellm is passed, prefer enabling CCR unless explicitly disabled by user
-    if use_litellm and not use_claude_router:
+    if use_litellm and not use_claude_router and not _direct_provider_routing:
         use_claude_router = True
     litellm_enabled = use_litellm or use_claude_router
 
-    if litellm_enabled and not use_alt_routing:
+    if litellm_enabled and not use_alt_routing and not _direct_provider_routing:
         # Require OpenRouter since LiteLLM proxy is configured to route through it
         if not os.environ.get("OPENROUTER_API_KEY"):
             console.logger.info("[red]❌ OPENROUTER_API_KEY is not set.[/red]")
@@ -1394,7 +1504,7 @@ def start(
             sys.exit(1)
 
     router_info = None
-    if use_claude_router:
+    if use_claude_router and not _direct_provider_routing:
         provider_url = None
         provider_models: List[str] = []
         provider_name = os.environ.get("CLAUDE_CODE_ROUTER_PROVIDER")
@@ -3989,6 +4099,9 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
     status_text.append("🚀 ", style="bold blue")
     status_text.append("Launching containers...")
 
+    startup_successful = False
+    output_lines = []
+    
     try:
         with Live(status_text, console=console, refresh_per_second=4) as live:
             # Start the containers with instance environment
@@ -4003,7 +4116,6 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
             )
 
             # Stream output line by line
-            output_lines = []
             for line in process.stdout:
                 line = line.rstrip()
                 if line:
@@ -4034,7 +4146,21 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
                 for line in output_lines[-10:]:
                     console.logger.info(f"[dim]{line}[/dim]")
                 raise CalledProcessError(process.returncode, process.args)
+        
+        # Mark startup as successful only after the first Live context has fully exited
+        startup_successful = True
 
+    except CalledProcessError as e:
+        console.logger.error("[yellow]⚠️  Failed to start MCP servers (continuing with reduced functionality)[/yellow]")
+        console.logger.info("[dim]   Tip: Run 'dopemux start --no-mcp' to skip this step[/dim]")
+        return  # Exit early to avoid starting the second Live context
+    except Exception as e:
+        console.logger.error(f"[yellow]⚠️  Error during MCP startup: {e}[/yellow]")
+        console.logger.info("[dim]   Continuing with reduced functionality...[/dim]")
+        return  # Exit early to avoid starting the second Live context
+
+    # Only proceed with health checks if startup was successful
+    if startup_successful:
         # Wait for health checks
         console.logger.info("\n[bold blue]🏥 Waiting for services to become healthy...[/bold blue]")
 
@@ -4044,56 +4170,54 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
 
         health_status = {name: False for name, _ in critical_servers}
 
-        with Live(console=console, refresh_per_second=2) as live:
-            while time.time() - start_time < max_wait:
-                status_text = Text()
-                all_healthy = True
+        try:
+            with Live(console=console, refresh_per_second=2) as live:
+                while time.time() - start_time < max_wait:
+                    status_text = Text()
+                    all_healthy = True
 
-                for name, url in critical_servers:
-                    is_healthy = False
-                    try:
-                        response = requests.get(url, timeout=2)
-                        is_healthy = response.status_code == 200
-                    except requests.RequestException:
+                    for name, url in critical_servers:
                         is_healthy = False
+                        try:
+                            response = requests.get(url, timeout=2)
+                            is_healthy = response.status_code == 200
+                        except requests.RequestException:
+                            is_healthy = False
 
-                    health_status[name] = is_healthy
-                    if is_healthy:
-                        status_text.append("✅ ", style="bold green")
+                        health_status[name] = is_healthy
+                        if is_healthy:
+                            status_text.append("✅ ", style="bold green")
+                        else:
+                            status_text.append("⏳ ", style="bold yellow")
+                            all_healthy = False
+                        status_text.append(f"{name}\n")
+
+                    # Add elapsed time
+                    elapsed = int(time.time() - start_time)
+                    status_text.append(f"\n[dim]⏱️  {elapsed}s / {max_wait}s[/dim]")
+
+                    live.update(Panel(status_text, title="[bold]Health Check Status[/bold]", border_style="blue"))
+
+                    if all_healthy:
+                        break
+
+                    time.sleep(2)
+
+            if all_healthy:
+                console.logger.info("\n[bold green]✅ All MCP servers are healthy and ready![/bold green]\n")
+            else:
+                # Show which services failed
+                console.logger.info("\n[yellow]⚠️  Some services are not healthy (continuing anyway):[/yellow]")
+                for name, is_healthy in health_status.items():
+                    if not is_healthy:
+                        console.logger.info(f"  [red]❌ {name}[/red]")
                     else:
-                        status_text.append("⏳ ", style="bold yellow")
-                        all_healthy = False
-                    status_text.append(f"{name}\n")
-
-                # Add elapsed time
-                elapsed = int(time.time() - start_time)
-                status_text.append(f"\n[dim]⏱️  {elapsed}s / {max_wait}s[/dim]")
-
-                live.update(Panel(status_text, title="[bold]Health Check Status[/bold]", border_style="blue"))
-
-                if all_healthy:
-                    break
-
-                time.sleep(2)
-
-        if all_healthy:
-            console.logger.info("\n[bold green]✅ All MCP servers are healthy and ready![/bold green]\n")
-        else:
-            # Show which services failed
-            console.logger.info("\n[yellow]⚠️  Some services are not healthy (continuing anyway):[/yellow]")
-            for name, is_healthy in health_status.items():
-                if not is_healthy:
-                    console.logger.info(f"  [red]❌ {name}[/red]")
-                else:
-                    console.logger.info(f"  [green]✅ {name}[/green]")
-            console.logger.info("[dim]Tip: Check docker logs with: docker-compose -f docker/mcp-servers/docker-compose.yml logs[/dim]\n")
-
-    except CalledProcessError as e:
-        console.logger.error("[yellow]⚠️  Failed to start MCP servers (continuing with reduced functionality)[/yellow]")
-        console.logger.info("[dim]   Tip: Run 'dopemux start --no-mcp' to skip this step[/dim]")
-    except Exception as e:
-        console.logger.error(f"[yellow]⚠️  Error during MCP startup: {e}[/yellow]")
-        console.logger.info("[dim]   Continuing with reduced functionality...[/dim]")
+                        console.logger.info(f"  [green]✅ {name}[/green]")
+                console.logger.info("[dim]Tip: Check docker logs with: docker-compose -f docker/mcp-servers/docker-compose.yml logs[/dim]\n")
+        
+        except Exception as e:
+            console.logger.error(f"[yellow]⚠️  Error during health checks: {e}[/yellow]")
+            console.logger.info("[dim]   Continuing anyway...[/dim]")
 
 
 def _activate_dangerous_mode():
@@ -6098,6 +6222,135 @@ cli.add_command(tmux_commands, "tmux")
 # Register Claude-Code-Tools commands
 from .claude_tools.cli import register_commands
 register_commands(cli)
+
+
+# ============================================================================
+# Memory Capture & Global Rollup Commands
+# ============================================================================
+
+@cli.group()
+def memory():
+    """🧠 Memory capture and global rollup operations."""
+    pass
+
+
+@memory.group()
+def rollup():
+    """📊 Global rollup index operations."""
+    pass
+
+
+@rollup.command()
+@click.option(
+    "--projects-file",
+    type=click.Path(exists=True, path_type=Path),
+    help="File containing list of project roots (newline or JSON)",
+)
+@click.option(
+    "--index-path",
+    type=click.Path(path_type=Path),
+    help="Global index path (default: ~/.dopemux/global_index.sqlite)",
+)
+def build(projects_file: Optional[Path], index_path: Optional[Path]):
+    """Build global rollup index from project ledgers (read-only)."""
+    from dopemux.memory.global_rollup import (
+        GlobalRollupIndexer,
+        resolve_rollup_projects,
+        GlobalRollupError,
+    )
+
+    try:
+        roots = resolve_rollup_projects(projects_file=projects_file)
+        console.logger.info(f"[cyan]Resolved {len(roots)} project(s)[/cyan]")
+
+        indexer = GlobalRollupIndexer(index_path=index_path)
+        result = indexer.build(roots)
+
+        console.logger.info(f"[green]✓[/green] Projects registered: {result['projects_registered']}")
+        console.logger.info(f"[green]✓[/green] Pointers indexed: {result['pointers_upserted']}")
+        console.logger.info(f"[green]✓[/green] Index: {result['index_path']}")
+
+    except GlobalRollupError as e:
+        console.logger.error(f"[red]✗ Rollup error:[/red] {e}")
+        raise click.Abort()
+
+
+@rollup.command()
+@click.option(
+    "--index-path",
+    type=click.Path(path_type=Path),
+    help="Global index path (default: ~/.dopemux/global_index.sqlite)",
+)
+def list(index_path: Optional[Path]):
+    """List registered projects in global rollup index."""
+    from dopemux.memory.global_rollup import GlobalRollupIndexer
+    from rich.table import Table
+
+    indexer = GlobalRollupIndexer(index_path=index_path)
+
+    projects = indexer.list_projects()
+
+    if not projects:
+        console.logger.info("[yellow]No projects registered in global index[/yellow]")
+        return
+
+    table = Table(title="Registered Projects")
+    table.add_column("Project ID", style="cyan")
+    table.add_column("Repo Root", style="green")
+    table.add_column("Last Seen", style="yellow")
+
+    for proj in projects:
+        table.add_row(
+            proj["project_id"],
+            proj["repo_root"],
+            proj["last_seen_at"],
+        )
+
+    console.logger.info(table)
+
+
+@rollup.command()
+@click.argument("query")
+@click.option(
+    "--limit",
+    type=int,
+    default=10,
+    help="Max results (default: 10, max: 100)",
+)
+@click.option(
+    "--index-path",
+    type=click.Path(path_type=Path),
+    help="Global index path (default: ~/.dopemux/global_index.sqlite)",
+)
+def search(query: str, limit: int, index_path: Optional[Path]):
+    """Search global rollup index for promoted work log entries."""
+    from dopemux.memory.global_rollup import GlobalRollupIndexer
+    from rich.table import Table
+
+    indexer = GlobalRollupIndexer(index_path=index_path)
+
+    results = indexer.search(query, limit=limit)
+
+    if not results:
+        console.logger.info(f"[yellow]No results for: {query}[/yellow]")
+        return
+
+    table = Table(title=f"Search Results: {query}")
+    table.add_column("Timestamp", style="cyan")
+    table.add_column("Type", style="yellow")
+    table.add_column("Summary", style="green")
+    table.add_column("Project", style="blue", overflow="fold")
+
+    for row in results:
+        table.add_row(
+            row["ts_utc"],
+            row["event_type"],
+            row["summary"][:80] + ("..." if len(row["summary"]) > 80 else ""),
+            row["project_id"][-40:],  # Last 40 chars of path
+        )
+
+    console.logger.info(table)
+    console.logger.info(f"\n[dim]Showing {len(results)} of up to {limit} results[/dim]")
 
 
 # ============================================================================

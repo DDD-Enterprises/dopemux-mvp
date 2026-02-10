@@ -27,18 +27,16 @@ import tempfile
 import time
 import threading
 
-from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 
 # Import enhanced backend functions
+from .console import console
 from .worktree_manager_enhanced import (
     list_worktrees_adhd,
     switch_worktree_safe,
     cleanup_worktrees_safe,
 )
-
-console = Console()
 
 # Cache for current worktree detection (30 second TTL)
 _WORKTREE_CACHE = {

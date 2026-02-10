@@ -890,7 +890,8 @@ class SerenaV2MCPServer:
                             },
                             "items": {
                                 "type": "array",
-                                "description": "Items to filter (symbols, files, references)"
+                                "description": "Items to filter (symbols, files, references)",
+                                "items": {"type": "object"}
                             }
                         },
                         "required": ["attention_state", "items"]
