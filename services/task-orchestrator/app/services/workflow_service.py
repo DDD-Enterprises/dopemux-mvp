@@ -10,7 +10,19 @@ from typing import Dict, List, Optional
 from uuid import uuid4
 
 # Ensure repo-root imports work in isolated service runtime.
-REPO_ROOT = Path(__file__).resolve().parents[4]
+def _find_repo_root():
+    curr = Path(__file__).resolve().parent
+    while curr.parent != curr:
+        if (curr / "services").exists() and (curr / "src").exists():
+            return curr
+        curr = curr.parent
+    # Fallback to a reasonable default if markers not found
+    try:
+        return Path(__file__).resolve().parents[4]
+    except IndexError:
+        return Path(__file__).resolve().parents[2]
+
+REPO_ROOT = _find_repo_root()
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -19,7 +31,7 @@ from services.shared.dopecon_bridge_client import (  # type: ignore
     DopeconBridgeConfig,
 )
 
-from app.models.workflow import (
+from ..models.workflow import (
     CreateEpicRequest,
     CreateIdeaRequest,
     PromoteIdeaRequest,
@@ -30,7 +42,7 @@ from app.models.workflow import (
     normalize_tags,
     utc_now_iso,
 )
-from app.services.workflow_store import WorkflowStore, WorkflowStoreError
+from .workflow_store import WorkflowStore, WorkflowStoreError
 
 logger = logging.getLogger(__name__)
 
