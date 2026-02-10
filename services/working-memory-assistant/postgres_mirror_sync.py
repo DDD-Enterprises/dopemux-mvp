@@ -19,6 +19,7 @@ from typing import Any, Optional
 
 import asyncpg
 
+from canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
 from chronicle.store import ChronicleStore
 
 logger = logging.getLogger(__name__)
@@ -45,12 +46,10 @@ class PostgresMirrorSync:
     def __init__(
         self,
         postgres_url: str = POSTGRES_URL,
-        data_dir: Optional[Path] = None,
         sync_interval_sec: int = SYNC_INTERVAL_SEC,
         batch_size: int = BATCH_SIZE,
     ):
         self.postgres_url = postgres_url
-        self.data_dir = data_dir or Path.home() / ".dope-memory"
         self.sync_interval_sec = sync_interval_sec
         self.batch_size = batch_size
 
@@ -114,27 +113,36 @@ class PostgresMirrorSync:
             logger.warning(f"⚠️  Could not ensure Postgres schema: {e}")
 
     def _get_store(self, workspace_id: str) -> ChronicleStore:
-        """Get or create ChronicleStore for workspace."""
-        if workspace_id not in self._stores:
-            db_path = self.data_dir / workspace_id / "chronicle.db"
-            if not db_path.exists():
-                return None
+        """Get or create ChronicleStore for the canonical ledger.
+
+        Resolves workspace_id to the single canonical ledger per ADR-213.
+        Returns None if canonical ledger does not exist yet.
+        """
+        try:
+            db_path = resolve_canonical_ledger(workspace_id)
+        except CanonicalLedgerError:
+            return None
+        if not db_path.exists():
+            return None
+        path_key = str(db_path)
+        if path_key not in self._stores:
             store = ChronicleStore(db_path)
             store.initialize_schema()
-            self._stores[workspace_id] = store
-        return self._stores[workspace_id]
+            self._stores[path_key] = store
+        return self._stores[path_key]
 
     def _discover_workspaces(self) -> list[str]:
-        """Discover all workspace directories with chronicle databases."""
-        workspaces = []
-        if not self.data_dir.exists():
-            return workspaces
+        """Discover workspaces with canonical chronicle ledgers.
 
-        for item in self.data_dir.iterdir():
-            if item.is_dir() and (item / "chronicle.db").exists():
-                workspaces.append(item.name)
-
-        return workspaces
+        Returns workspace_ids (canonical ledger paths) for sync.
+        """
+        try:
+            ledger = resolve_canonical_ledger()
+            if ledger.exists():
+                return [str(ledger)]
+        except CanonicalLedgerError:
+            pass
+        return []
 
     async def start(self) -> None:
         """Start the sync worker."""

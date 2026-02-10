@@ -1,6 +1,7 @@
 """Tests for EventBus consumer."""
 
 import json
+import os
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 import sys
@@ -12,27 +13,36 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from eventbus_consumer import EventBusConsumer
 
 
+def _make_consumer(tmp_path, monkeypatch=None, **kwargs):
+    """Create an EventBusConsumer with canonical ledger pointed at tmp_path."""
+    ledger = tmp_path / "chronicle.sqlite"
+    if monkeypatch:
+        monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger))
+    else:
+        os.environ["DOPEMUX_CAPTURE_LEDGER_PATH"] = str(ledger)
+    return EventBusConsumer(
+        redis_url=kwargs.pop("redis_url", "redis://localhost:6379"),
+        **kwargs,
+    )
+
+
 class TestEventBusConsumer:
     """Tests for EventBusConsumer class."""
 
-    def test_consumer_init(self, tmp_path):
+    def test_consumer_init(self, tmp_path, monkeypatch):
         """Test consumer initialization with defaults."""
-        consumer = EventBusConsumer(
-            redis_url="redis://localhost:6379",
-            data_dir=tmp_path,
-        )
+        consumer = _make_consumer(tmp_path, monkeypatch)
         assert consumer.redis_url == "redis://localhost:6379"
-        assert consumer.data_dir == tmp_path
         assert consumer.input_stream == "activity.events.v1"
         assert consumer.output_stream == "memory.derived.v1"
         assert consumer.consumer_group == "dope-memory-ingestor"
         assert consumer._running is False
 
-    def test_consumer_custom_streams(self, tmp_path):
+    def test_consumer_custom_streams(self, tmp_path, monkeypatch):
         """Test consumer with custom stream names."""
-        consumer = EventBusConsumer(
-            redis_url="redis://localhost:6379",
-            data_dir=tmp_path,
+        consumer = _make_consumer(
+            tmp_path,
+            monkeypatch,
             input_stream="custom.input.v1",
             output_stream="custom.output.v1",
             consumer_group="custom-group",
@@ -41,12 +51,9 @@ class TestEventBusConsumer:
         assert consumer.output_stream == "custom.output.v1"
         assert consumer.consumer_group == "custom-group"
 
-    def test_parse_event_basic(self, tmp_path):
+    def test_parse_event_basic(self, tmp_path, monkeypatch):
         """Test parsing a basic event from Redis message."""
-        consumer = EventBusConsumer(
-            redis_url="redis://localhost:6379",
-            data_dir=tmp_path,
-        )
+        consumer = _make_consumer(tmp_path, monkeypatch)
 
         msg_data = {
             b"id": b"event-123",
@@ -68,12 +75,9 @@ class TestEventBusConsumer:
         assert event["source"] == "test-source"
         assert event["data"]["title"] == "Test Decision"
 
-    def test_parse_event_legacy_event_type(self, tmp_path):
+    def test_parse_event_legacy_event_type(self, tmp_path, monkeypatch):
         """Test parsing event with legacy event_type field."""
-        consumer = EventBusConsumer(
-            redis_url="redis://localhost:6379",
-            data_dir=tmp_path,
-        )
+        consumer = _make_consumer(tmp_path, monkeypatch)
 
         msg_data = {
             b"event_type": b"task.completed",
@@ -87,24 +91,20 @@ class TestEventBusConsumer:
         assert event["type"] == "task.completed"
         assert event["event_type"] == "task.completed"
 
-    def test_get_store_creates_directories(self, tmp_path):
-        """Test that get_store creates necessary directories."""
-        consumer = EventBusConsumer(
-            redis_url="redis://localhost:6379",
-            data_dir=tmp_path,
-        )
+    def test_get_store_creates_canonical_ledger(self, tmp_path, monkeypatch):
+        """Test that get_store creates the canonical ledger."""
+        ledger = tmp_path / "chronicle.sqlite"
+        monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger))
+        consumer = _make_consumer(tmp_path, monkeypatch)
 
         store = consumer._get_store("new-workspace")
 
         assert store is not None
-        assert (tmp_path / "new-workspace" / "chronicle.db").exists()
+        assert ledger.exists()
 
-    def test_get_store_reuses_existing(self, tmp_path):
+    def test_get_store_reuses_existing(self, tmp_path, monkeypatch):
         """Test that get_store reuses existing store."""
-        consumer = EventBusConsumer(
-            redis_url="redis://localhost:6379",
-            data_dir=tmp_path,
-        )
+        consumer = _make_consumer(tmp_path, monkeypatch)
 
         store1 = consumer._get_store("workspace-1")
         store2 = consumer._get_store("workspace-1")
@@ -116,12 +116,9 @@ class TestEventBusConsumerIntegration:
     """Integration tests that verify end-to-end processing."""
 
     @pytest.mark.asyncio
-    async def test_process_decision_logged_event(self, tmp_path):
+    async def test_process_decision_logged_event(self, tmp_path, monkeypatch):
         """Test processing a decision.logged event end-to-end."""
-        consumer = EventBusConsumer(
-            redis_url="redis://localhost:6379",
-            data_dir=tmp_path,
-        )
+        consumer = _make_consumer(tmp_path, monkeypatch)
 
         # Mock the derived event publishing (no Redis connection)
         consumer.redis_client = AsyncMock()
@@ -157,12 +154,9 @@ class TestEventBusConsumerIntegration:
         assert "SQLite" in entries[0]["summary"]
 
     @pytest.mark.asyncio
-    async def test_process_unpromoted_event(self, tmp_path):
+    async def test_process_unpromoted_event(self, tmp_path, monkeypatch):
         """Test processing an event that should not be promoted."""
-        consumer = EventBusConsumer(
-            redis_url="redis://localhost:6379",
-            data_dir=tmp_path,
-        )
+        consumer = _make_consumer(tmp_path, monkeypatch)
 
         consumer.redis_client = AsyncMock()
 
@@ -192,12 +186,9 @@ class TestEventBusConsumerIntegration:
         assert len(file_entries) == 0
 
     @pytest.mark.asyncio
-    async def test_publish_derived_event(self, tmp_path):
+    async def test_publish_derived_event(self, tmp_path, monkeypatch):
         """Test publishing derived events to output stream."""
-        consumer = EventBusConsumer(
-            redis_url="redis://localhost:6379",
-            data_dir=tmp_path,
-        )
+        consumer = _make_consumer(tmp_path, monkeypatch)
 
         mock_redis = AsyncMock()
         mock_redis.xadd.return_value = b"1234567890-0"

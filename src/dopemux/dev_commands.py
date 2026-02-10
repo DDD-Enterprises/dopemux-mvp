@@ -4,22 +4,12 @@
 from pathlib import Path
 
 import click
-from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich import box
 
+from .console import console
 from .dev_mode import DevMode
-
-console = Console()
-class _ConsoleAdapter:
-    def __init__(self, c):
-        self._c = c
-    def info(self, *args, **kwargs):
-        self._c.print(*args, **kwargs)
-    def error(self, *args, **kwargs):
-        self._c.print(*args, **kwargs)
-console.logger = _ConsoleAdapter(console)
 
 
 import logging

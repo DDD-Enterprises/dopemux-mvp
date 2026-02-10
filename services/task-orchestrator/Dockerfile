@@ -8,13 +8,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
-COPY requirements.txt .
+COPY services/task-orchestrator/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy application code and dopemux package
+COPY services/task-orchestrator /app/services/task-orchestrator
+COPY src/dopemux /app/dopemux
 
 # Set up environment
 ENV PYTHONPATH=/app
@@ -28,4 +29,4 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD curl -f http://localhost:3014/health || exit 1
 
 # Run the task orchestrator service
-CMD ["python", "-m", "task_orchestrator.app"]
+CMD ["python", "-m", "services.task-orchestrator.app"]

@@ -8,6 +8,7 @@ Covers:
 """
 
 import json
+import os
 import pytest
 import tempfile
 from datetime import datetime, timedelta, timezone
@@ -23,9 +24,9 @@ class TestReflectionGenerator:
     def setup_method(self):
         """Create temp database and server."""
         self.temp_dir = tempfile.mkdtemp()
-        self.data_dir = Path(self.temp_dir) / "data"
+        self.ledger_path = Path(self.temp_dir) / "chronicle.sqlite"
+        os.environ["DOPEMUX_CAPTURE_LEDGER_PATH"] = str(self.ledger_path)
         self.server = DopeMemoryMCPServer(
-            data_dir=self.data_dir,
             workspace_id="test_ws",
             instance_id="A",
         )
@@ -219,9 +220,9 @@ class TestTrajectoryManager:
     def setup_method(self):
         """Create temp database and server."""
         self.temp_dir = tempfile.mkdtemp()
-        self.data_dir = Path(self.temp_dir) / "data"
+        self.ledger_path = Path(self.temp_dir) / "chronicle.sqlite"
+        os.environ["DOPEMUX_CAPTURE_LEDGER_PATH"] = str(self.ledger_path)
         self.server = DopeMemoryMCPServer(
-            data_dir=self.data_dir,
             workspace_id="test_ws",
             instance_id="A",
         )
@@ -314,9 +315,9 @@ class TestMemoryReflections:
     def setup_method(self):
         """Create temp database and server."""
         self.temp_dir = tempfile.mkdtemp()
-        self.data_dir = Path(self.temp_dir) / "data"
+        self.ledger_path = Path(self.temp_dir) / "chronicle.sqlite"
+        os.environ["DOPEMUX_CAPTURE_LEDGER_PATH"] = str(self.ledger_path)
         self.server = DopeMemoryMCPServer(
-            data_dir=self.data_dir,
             workspace_id="test_ws",
             instance_id="A",
         )
