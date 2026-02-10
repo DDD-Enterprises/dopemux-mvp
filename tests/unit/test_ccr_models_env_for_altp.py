@@ -2,7 +2,7 @@ import os
 import pytest
 from unittest.mock import patch, MagicMock
 from click.testing import CliRunner
-from dopemux.cli import start
+from dopemux.cli import cli
 
 @patch("dopemux.cli.LiteLLMProxyManager")
 @patch("dopemux.cli.DopeBrainzRouterManager")
@@ -29,15 +29,28 @@ def test_ccr_models_env_for_altp(mock_which, mock_start_proxy, mock_router_cls, 
     env["ALTP_SONNET_KEY"] = "sk-sonnet"
     env["ALTP_HAIKU_KEY"] = "sk-haiku"
     
-    with patch("dopemux.cli.Path") as mock_path:
+    with patch("dopemux.cli.Path") as mock_path, \
+         patch("dopemux.workspace_utils.get_workspace_root") as mock_get_root:
+        
         mock_path.cwd.return_value = MagicMock()
         mock_path.exists.return_value = True
         mock_path.return_value.exists.return_value = True
+        mock_get_root.return_value = MagicMock()
 
         with patch.dict(os.environ, env):
-            result = runner.invoke(start, ["--altp", "--dry-run"])
+            result = runner.invoke(cli, ["start", "--altp", "--dry-run"])
             
+            print(f"OUTPUT: {result.output}")
+            if result.exception:
+                print(f"EXCEPTION: {result.exception}")
+
             assert result.exit_code == 0
+
+            print(f"Router CLS calls: {mock_router_cls.mock_calls}")
+            print(f"Router Instance calls: {mock_router_instance.mock_calls}")
+
+            # Check if router class was instantiated
+            assert mock_router_cls.called, "DopeBrainzRouterManager was not instantiated"
             
             # Check mock_router_instance.ensure_started call args
             args, kwargs = mock_router_instance.ensure_started.call_args
