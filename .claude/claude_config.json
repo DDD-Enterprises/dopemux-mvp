@@ -6,16 +6,10 @@
       "args": [
         "exec",
         "-i",
-        "mcp-conport_main",
-        "uvx",
-        "--from",
-        "context-portal-mcp",
-        "conport-mcp"
-      ],
-      "env": {
-        "DOPEMUX_INSTANCE_ID": "main",
-        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
-      }
+        "mcp-conport",
+        "python",
+        "conport_mcp_stdio.py"
+      ]
     },
     "gpt-researcher_wrapped": {
       "command": "python",
