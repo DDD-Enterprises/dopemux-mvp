@@ -21,12 +21,31 @@ Usage:
 """
 import sys
 import json
-import requests
 from datetime import datetime
 from typing import Dict, List, Any
+from urllib import request as urllib_request
+from urllib.error import URLError, HTTPError
 
 # ADHD Engine API endpoint
 ADHD_ENGINE_URL = "http://localhost:8080/api/v1"
+
+
+def _http_json(method: str, url: str, payload: Dict[str, Any] | None = None, timeout: float = 2.0) -> Dict[str, Any] | None:
+    """Helper to perform JSON HTTP requests using standard library."""
+    try:
+        data = None
+        headers = {"Content-Type": "application/json"}
+        if payload is not None:
+            data = json.dumps(payload).encode("utf-8")
+        
+        req = urllib_request.Request(url, data=data, headers=headers, method=method)
+        with urllib_request.urlopen(req, timeout=timeout) as resp:
+            body = resp.read()
+            if not body:
+                return None
+            return json.loads(body.decode("utf-8"))
+    except (HTTPError, URLError, TimeoutError, ValueError, ConnectionRefusedError):
+        return None
 
 
 def analyze_prompt(prompt: str) -> Dict[str, bool]:
@@ -87,12 +106,9 @@ def analyze_prompt(prompt: str) -> Dict[str, bool]:
 
 def get_adhd_context() -> Dict[str, Any]:
     """Get current ADHD state for context injection."""
-    try:
-        resp = requests.get(f"{ADHD_ENGINE_URL}/state", timeout=2)
-        if resp.status_code == 200:
-            return resp.json()
-    except requests.exceptions.RequestException:
-        pass
+    data = _http_json("GET", f"{ADHD_ENGINE_URL}/state", timeout=2)
+    if isinstance(data, dict):
+        return data
     
     return {
         "energy": "unknown",
@@ -103,46 +119,29 @@ def get_adhd_context() -> Dict[str, Any]:
 
 def check_unfinished_work() -> Dict[str, Any]:
     """Check for unfinished work that might conflict."""
-    try:
-        resp = requests.get(f"{ADHD_ENGINE_URL}/unfinished-work", timeout=2)
-        if resp.status_code == 200:
-            return resp.json()
-    except requests.exceptions.RequestException:
-        pass
+    data = _http_json("GET", f"{ADHD_ENGINE_URL}/unfinished-work", timeout=2)
+    if isinstance(data, dict):
+        return data
     
     return {"count": 0, "items": []}
 
 
 def log_intent(prompt_summary: str, signals: Dict, adhd_state: Dict):
     """Log intent to ADHD Engine (non-blocking)."""
-    try:
-        requests.post(
-            f"{ADHD_ENGINE_URL}/log-intent",
-            json={
-                "prompt_summary": prompt_summary,
-                "signals": signals,
-                "adhd_state": adhd_state,
-                "timestamp": datetime.now().isoformat()
-            },
-            timeout=1
-        )
-    except requests.exceptions.RequestException:
-        pass  # Non-blocking, don't fail the hook
+    _http_json("POST", f"{ADHD_ENGINE_URL}/log-intent", payload={
+        "prompt_summary": prompt_summary,
+        "signals": signals,
+        "adhd_state": adhd_state,
+        "timestamp": datetime.now().isoformat()
+    }, timeout=1)
 
 
 def save_context_on_switch(prompt_hint: str):
     """Trigger context save on detected switch."""
-    try:
-        requests.post(
-            f"{ADHD_ENGINE_URL}/save-context",
-            json={
-                "reason": "context_switch_detected",
-                "prompt_hint": prompt_hint[:50]
-            },
-            timeout=1
-        )
-    except requests.exceptions.RequestException:
-        pass
+    _http_json("POST", f"{ADHD_ENGINE_URL}/save-context", payload={
+        "reason": "context_switch_detected",
+        "prompt_hint": prompt_hint[:50]
+    }, timeout=1)
 
 
 def build_context_injection(
@@ -269,3 +268,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
