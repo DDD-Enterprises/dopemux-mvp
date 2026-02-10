@@ -1,8 +1,0 @@
-Audit complete in runtime mode. Reports in /Users/hue/code/dopemux-mvp/reports
-
-Runtime Summary:
-conport: SHAPE_FAIL
-  → Update /health endpoint to return {status, service, ts}
-task-orchestrator: HEALTHY
-dopecon-bridge: SHAPE_FAIL
-  → Update /health endpoint to return {status, service, ts}

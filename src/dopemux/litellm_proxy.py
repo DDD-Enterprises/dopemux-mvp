@@ -282,7 +282,7 @@ ALTP_PROVIDER = {
     "name": "altp",
     "label": "Alternative Provider Routing",
     "targets": ALTP_TARGETS,
-    "required_keys": ["OPENROUTER_API_KEY", "XAI_API_KEY"],
+    "required_keys": [],
 }
 
 
@@ -368,7 +368,21 @@ def start_simple_proxy(
         encoding="utf-8",
     )
 
-    # ── kill existing litellm processes ─────────────────────────────────
+    # ── check existing ──────────────────────────────────────────────────
+    port_candidates = (4000, 4001, 4002)
+    for p in port_candidates:
+        try:
+            url = f"http://127.0.0.1:{p}/health/readiness"
+            with urllib.request.urlopen(url, timeout=1) as resp:
+                if resp.status == 200:
+                    logger.info(f"LiteLLM proxy already running on port {p}")
+                    return p, master_key
+        except Exception:
+            continue
+
+    # ── kill existing litellm processes if none were healthy ─────────────
+    # Only kill if we really need to start a new one and ports are blocked
+    # but since this is 'simple' proxy, we usually want a fresh one if none are healthy.
     subprocess.run(
         ["pkill", "-f", "litellm"],
         stdout=subprocess.DEVNULL,
@@ -378,7 +392,7 @@ def start_simple_proxy(
 
     # ── find available port ─────────────────────────────────────────────
     port: Optional[int] = None
-    for candidate in (4000, 4001, 4002):
+    for candidate in port_candidates:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
                 s.bind(("127.0.0.1", candidate))
@@ -394,8 +408,6 @@ def start_simple_proxy(
 
     # ── launch ──────────────────────────────────────────────────────────
     log_path = instance_dir / "litellm.log"
-    # Dummy key for Claude Code auth header (proxy ignores it in open mode)
-    dummy_key = master_key
     env = os.environ.copy()
     # No LITELLM_MASTER_KEY → open mode, no key validation, no DB needed
     env.pop("LITELLM_MASTER_KEY", None)
@@ -408,7 +420,7 @@ def start_simple_proxy(
                 "litellm",
                 "--config", str(config_path),
                 "--port", str(port),
-                "--host", "0.0.0.0",
+                "--host", "127.0.0.1",  # Explicitly bind to 127.0.0.1
             ],
             stdout=log_file,
             stderr=subprocess.STDOUT,
@@ -480,6 +492,12 @@ def sync_litellm_database(instance_dir: Path, db_url: str) -> tuple[str, bool]:
     if prisma_cli is None:
         return (
             "⚠️  LiteLLM metrics disabled (Prisma CLI not installed - install with `pip install prisma`)",
+            False,
+        )
+
+    if not getattr(litellm, "__file__", None):
+        return (
+            "⚠️  LiteLLM metrics disabled (cannot locate litellm package path)",
             False,
         )
 
@@ -797,7 +815,7 @@ class LiteLLMProxyManager:
             req = urllib.request.Request(url, method='GET')
             with urllib.request.urlopen(req, timeout=2.0) as response:
                 return response.status == 200
-        except Exception as e:
+        except Exception:
             return False
     def _launch_proxy_process(
         self,
