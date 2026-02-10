@@ -2,5 +2,50 @@
   "statusLine": {
     "type": "command",
     "command": ".claude/statusline.sh"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/prompt_analyzer.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "thinkdeep|morph|batch_edit|refactor|deep_research",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check_energy.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log_progress.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/save_context.sh"
+          }
+        ]
+      }
+    ]
   }
 }

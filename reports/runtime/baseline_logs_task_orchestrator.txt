@@ -1,0 +1,1630 @@
+task-orchestrator-1  | 2026-02-01 07:28:56,273 - enhanced_orchestrator - WARNING - Redis cache not available - using in-memory fallback
+task-orchestrator-1  | 2026-02-01 07:28:56,274 - enhanced_orchestrator - WARNING - EventBus not available: No module named 'event_bus'
+task-orchestrator-1  | 2026-02-01 07:28:56,291 - enhanced_orchestrator - WARNING - CognitiveGuardian not available: No module named 'cognitive_guardian'
+task-orchestrator-1  | /app/services/task-orchestrator/coordination_api.py:561: DeprecationWarning: 
+task-orchestrator-1  |         on_event is deprecated, use lifespan event handlers instead.
+task-orchestrator-1  | 
+task-orchestrator-1  |         Read more about it in the
+task-orchestrator-1  |         [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+task-orchestrator-1  |         
+task-orchestrator-1  |   @app.on_event("startup")
+task-orchestrator-1  | 2026-02-01 07:28:56,527 [INFO] task-orchestrator: ============================================================
+task-orchestrator-1  | 2026-02-01 07:28:56,527 [INFO] task-orchestrator: 🚀 Task Orchestrator - Starting
+task-orchestrator-1  | 2026-02-01 07:28:56,527 [INFO] task-orchestrator: ============================================================
+task-orchestrator-1  | 2026-02-01 07:28:56,527 [INFO] task-orchestrator:   Service: task-orchestrator
+task-orchestrator-1  | 2026-02-01 07:28:56,527 [INFO] task-orchestrator:   Port: 3014
+task-orchestrator-1  | 2026-02-01 07:28:56,527 [INFO] task-orchestrator:   Redis: redis://redis:6379
+task-orchestrator-1  | 2026-02-01 07:28:56,527 [INFO] task-orchestrator:   Workspace: /app/services/task-orchestrator
+task-orchestrator-1  | 2026-02-01 07:28:56,527 [INFO] task-orchestrator: ============================================================
+task-orchestrator-1  | INFO:     Started server process [1]
+task-orchestrator-1  | INFO:     Waiting for application startup.
+task-orchestrator-1  | 2026-02-01 07:28:56,563 [INFO] task-orchestrator: 🚀 task-orchestrator - Starting up
+task-orchestrator-1  | 2026-02-01 07:28:56,563 [INFO] task-orchestrator: Initializing plane coordinator...
+task-orchestrator-1  | 2026-02-01 07:28:56,563 [INFO] task-orchestrator: 🚀 Initializing Plane Coordinator...
+task-orchestrator-1  | 2026-02-01 07:28:56,563 [INFO] task-orchestrator: 🔄 Initializing Multi-Directional Sync Engine...
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: 👥 Sync workers started
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: ✅ Multi-Directional Sync Engine ready!
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: ✅ Plane Coordinator ready
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: Plane coordinator initialized
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: ✅ task-orchestrator - READY
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: 🔄 Started priority sync processor
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: ⚖️ Started conflict resolution worker
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: 📦 Started batch optimization worker
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: 🧠 Started ADHD accommodation monitor
+task-orchestrator-1  | 2026-02-01 07:28:56,566 [INFO] task-orchestrator: 📊 Started sync health monitor
+task-orchestrator-1  | 2026-02-01 07:28:56,567 [INFO] task-orchestrator: 🔄 Started event processor
+task-orchestrator-1  | 2026-02-01 07:28:56,567 [INFO] task-orchestrator: 🏥 Started plane health monitor
+task-orchestrator-1  | INFO:     Application startup complete.
+task-orchestrator-1  | INFO:     Uvicorn running on http://0.0.0.0:3014 (Press CTRL+C to quit)
+task-orchestrator-1  | 2026-02-01 07:29:00,745 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:36302 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | 2026-02-01 07:29:05,819 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:55568 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | 2026-02-01 07:29:10,868 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:55584 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | 2026-02-01 07:29:20,918 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:56694 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | 2026-02-01 07:29:30,964 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:39136 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | 2026-02-01 07:29:41,021 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:43568 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | 2026-02-01 07:29:51,069 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:46214 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | 2026-02-01 07:29:56,573 [WARNING] task-orchestrator: ⚠️ cognitive plane unhealthy: ['Service adhd_engine is unhealthy']
+task-orchestrator-1  | 2026-02-01 07:29:56,573 [ERROR] task-orchestrator: Health monitor error: HEALTH_CHECK
+task-orchestrator-1  | 2026-02-01 07:30:01,122 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:46850 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | 2026-02-01 07:30:11,173 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:39366 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | 2026-02-01 07:30:21,227 [ERROR] task-orchestrator: Health check failed: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...ok', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  | INFO:     127.0.0.1:52658 - "GET /health HTTP/1.1" 500 Internal Server Error
+task-orchestrator-1  | ERROR:    Exception in ASGI application
+task-orchestrator-1  |   + Exception Group Traceback (most recent call last):
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 76, in collapse_excgroups
+task-orchestrator-1  |   |     yield
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+task-orchestrator-1  |   |     async with anyio.create_task_group() as task_group:
+task-orchestrator-1  |   |   File "/usr/local/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+task-orchestrator-1  |   |     raise BaseExceptionGroup(
+task-orchestrator-1  |   | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+task-orchestrator-1  |   +-+---------------- 1 ----------------
+task-orchestrator-1  |     | Traceback (most recent call last):
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     |     return await self.app(scope, receive, send)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, _send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     |     with collapse_excgroups():
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     |     response: Response = await call_next(request)
+task-orchestrator-1  |     |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     |     raise app_exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     |     await route.handle(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     |     await self.app(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     |     raise exc
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     |     await app(scope, receive, sender)
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     |     response = await f(request)
+task-orchestrator-1  |     |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |     |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     |     return await dependant.call(**values)
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     |     return HealthResponse(
+task-orchestrator-1  |     |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |     |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |     | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  |     | ts
+task-orchestrator-1  |     |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     |     For further information visit https://errors.pydantic.dev/2.12/v/missing
+task-orchestrator-1  |     +------------------------------------
+task-orchestrator-1  | 
+task-orchestrator-1  | During handling of the above exception, another exception occurred:
+task-orchestrator-1  | 
+task-orchestrator-1  | Traceback (most recent call last):
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 401, in run_asgi
+task-orchestrator-1  |     result = await app(  # type: ignore[func-returns-value]
+task-orchestrator-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+task-orchestrator-1  |     return await self.app(scope, receive, send)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+task-orchestrator-1  |     await super().__call__(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, _send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+task-orchestrator-1  |     with collapse_excgroups():
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/contextlib.py", line 158, in __exit__
+task-orchestrator-1  |     self.gen.throw(typ, value, traceback)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_utils.py", line 82, in collapse_excgroups
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+task-orchestrator-1  |     response = await self.dispatch_func(request, call_next)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/dopemux/logging/middleware.py", line 32, in dispatch
+task-orchestrator-1  |     response: Response = await call_next(request)
+task-orchestrator-1  |                          ^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+task-orchestrator-1  |     raise app_exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+task-orchestrator-1  |     await self.app(scope, receive_or_disconnect, send_no_error)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+task-orchestrator-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+task-orchestrator-1  |     await self.middleware_stack(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+task-orchestrator-1  |     await route.handle(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+task-orchestrator-1  |     await self.app(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+task-orchestrator-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+task-orchestrator-1  |     raise exc
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+task-orchestrator-1  |     await app(scope, receive, sender)
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+task-orchestrator-1  |     response = await f(request)
+task-orchestrator-1  |                ^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+task-orchestrator-1  |     raw_response = await run_endpoint_function(
+task-orchestrator-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+task-orchestrator-1  |     return await dependant.call(**values)
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/app/services/task-orchestrator/coordination_api.py", line 208, in health_check
+task-orchestrator-1  |     return HealthResponse(
+task-orchestrator-1  |            ^^^^^^^^^^^^^^^
+task-orchestrator-1  |   File "/usr/local/lib/python3.11/site-packages/pydantic/main.py", line 250, in __init__
+task-orchestrator-1  |     validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+task-orchestrator-1  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+task-orchestrator-1  | pydantic_core._pydantic_core.ValidationError: 1 validation error for HealthResponse
+task-orchestrator-1  | ts
+task-orchestrator-1  |   Field required [type=missing, input_value={'service': 'task-orchest...il', 'dependencies': {}}, input_type=dict]
+task-orchestrator-1  |     For further information visit https://errors.pydantic.dev/2.12/v/missing

@@ -24,13 +24,12 @@ from typing import List, Optional, Tuple
 
 import asyncpg
 import click
-from rich.console import Console
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 from rich.text import Text
 
-console = Console()
+from ..console import console
 
 
 # ============================================================================

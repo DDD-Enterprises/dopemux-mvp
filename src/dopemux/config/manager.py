@@ -227,6 +227,12 @@ class TmuxControllerConfig(BaseModel):
     dual_agent_default: bool = False
     secondary_agent_command: Optional[str] = None
     pane_styles: Dict[str, str] = Field(default_factory=dict)
+    pane_border_styles: Dict[str, str] = Field(default_factory=dict)
+    status_style: Optional[str] = None
+    status_left: Optional[str] = None
+    status_right: Optional[str] = None
+    status_palette: Dict[str, str] = Field(default_factory=dict)
+    theme: Optional[str] = None
 
     @field_validator("allowed_sessions")
     @classmethod
@@ -492,6 +498,37 @@ class ConfigManager:
                     "agent:primary": "fg=#cdd6f4,bg=#1f1d2e",
                     "agent:secondary": "fg=#b4befe,bg=#262335",
                 },
+                "pane_border_styles": {
+                    "monitor:worktree": "fg=#a6e3a1,bg=#181825",
+                    "monitor:logs": "fg=#89dceb,bg=#181825",
+                    "monitor:metrics": "fg=#f9e2af,bg=#181825",
+                    "orchestrator:control": "fg=#f5f5f7,bg=#11111b",
+                    "sandbox:shell": "fg=#f5c2e7,bg=#11111b",
+                    "agent:primary": "fg=#cdd6f4,bg=#11111b",
+                    "agent:secondary": "fg=#b4befe,bg=#11111b",
+                },
+                "status_style": "bg=#1e1e2e,fg=#cdd6f4",
+                "status_left": (
+                    "#[fg=#1e1e2e,bg=#89b4fa]"
+                    "#[fg=#11111b,bg=#89b4fa,bold] DOPMUX "
+                    "#[fg=#89b4fa,bg=#1e1e2e] "
+                    "#[fg=#a6e3a1]#H #[default]"
+                ),
+                "status_right": (
+                    "#[fg=#f5c2e7]  %R #[fg=#89dceb]%a %b %d "
+                    "#[fg=#cdd6f4]#{window_index}:#{window_name} "
+                    "#[fg=#f9e2af]#{pane_index}:#{pane_title}"
+                ),
+                "status_palette": {
+                    "accent": "#89b4fa",
+                    "background": "#1e1e2e",
+                    "foreground": "#cdd6f4",
+                    "warning": "#f9e2af",
+                    "success": "#a6e3a1",
+                    "info": "#89dceb",
+                    "alert": "#f5c2e7",
+                },
+                "theme": "muted",
                 "presets": {
                     "bash": {
                         "command": "${SHELL:/bin/bash}",
@@ -552,20 +589,18 @@ class ConfigManager:
             },
             "pal": {
                 "enabled": True,
-                "command": "uvx",
+                "command": "uv",
                 "args": [
-                    "--from",
-                    "git+https://github.com/BeehiveInnovations/pal-mcp-server.git",
-                    "pal-mcp-server",
+                    "run",
+                    "--directory",
+                    "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server",
+                    "python",
+                    "server.py"
                 ],
                 "env": {
-                    "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-                    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
-                    "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-                    "XAI_API_KEY": "${XAI_API_KEY}",
                     "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
                     "DEFAULT_MODEL": "auto",
-                    "PAL_DEFAULT_PROVIDER": "openrouter",
+                    "PAL_DEFAULT_PROVIDER": "openrouter"
                 },
                 "timeout": 30,
                 "auto_restart": True,
@@ -648,7 +683,6 @@ class ConfigManager:
                 "mcp_servers": [
                     "mas-sequential-thinking",
                     "pal",
-                    "claude-context",
                 ],
                 "adhd_adaptations": {
                     "focus_duration_avg": 30,
@@ -662,7 +696,7 @@ class ConfigManager:
                     ".claude/context.md",
                     ".claude/llms.md",
                 ],
-                "mcp_servers": ["pal", "claude-context", "morphllm-fast-apply"],
+                "mcp_servers": ["pal", "morphllm-fast-apply"],
                 "adhd_adaptations": {
                     "focus_duration_avg": 25,
                     "visual_complexity": "minimal",
@@ -678,7 +712,6 @@ class ConfigManager:
                 "mcp_servers": [
                     "mas-sequential-thinking",
                     "pal",
-                    "claude-context",
                 ],
                 "adhd_adaptations": {
                     "focus_duration_avg": 35,

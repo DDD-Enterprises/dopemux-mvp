@@ -1,0 +1,10 @@
+time="2026-01-31T21:58:39-08:00" level=warning msg="No services to build"
+ Network dopemux-mvp_default Creating 
+ Network dopemux-mvp_default Created 
+time="2026-01-31T21:58:39-08:00" level=warning msg="Found orphan containers ([b6b0f8b7e62c 4839fbc0e892 23d6d3faf92a add2b0ac0ea0 428fa2233735 b62e6538cec2 4512bea59328 62b4d3d831ac 3725d50f4830 be5a688d7be3 5038baf5b90c 6bc7b3b183d3 c63af833abc9 00991b052806 2b511fd6479f]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container dopemux-mvp-postgres-1 Creating 
+ Container fb0d021c114f Recreate 
+ Container dopemux-mvp-postgres-1 Created 
+ Container dopemux-mvp-conport-1 Creating 
+ Container fb0d021c114f Error response from daemon: No such container: fb0d021c114f485bf4fb1c5fb8bbe8905864a11abbf0439ef297d1231c658461 
+Error response from daemon: No such container: fb0d021c114f485bf4fb1c5fb8bbe8905864a11abbf0439ef297d1231c658461

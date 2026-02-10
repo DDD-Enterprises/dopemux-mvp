@@ -21,11 +21,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-console = Console()
+from .console import console
 
 
 class ADHDErrorMessage:
@@ -91,7 +90,7 @@ class ADHDErrorMessage:
             padding=(1, 2)
         )
 
-        console.logger.info(panel)
+        console.print(panel)
 
 
 # Common Error Messages Library
@@ -209,7 +208,7 @@ def show_error(error_key: str, **kwargs):
         **kwargs: Additional context to interpolate into message
     """
     if error_key not in WORKTREE_ERRORS:
-        console.logger.error(f"[red]Unknown error: {error_key}[/red]")
+        console.print(f"[red]Unknown error: {error_key}[/red]")
         return
 
     error = WORKTREE_ERRORS[error_key]

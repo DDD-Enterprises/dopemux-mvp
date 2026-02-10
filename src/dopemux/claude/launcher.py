@@ -21,11 +21,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from rich.console import Console
-
 from ..config import ConfigManager
-
-console = Console()
+from ..console import console
 
 
 class ClaudeNotFoundError(Exception):
@@ -103,13 +100,13 @@ class ClaudeLauncher:
                     )
                     if result.returncode == 0 and "claude" in result.stdout.lower():
                         self.claude_path = path
-                        console.log(f"[green]✓ Found Claude Code at {path}[/green]")
+                        console.logger.info(f"[green]✓ Found Claude Code at {path}[/green]")
                         return
                 except (subprocess.TimeoutExpired, subprocess.SubprocessError):
                     continue
 
         # Not found
-        console.log("[yellow]⚠️ Claude Code not found in standard locations[/yellow]")
+        console.logger.info("[yellow]⚠️ Claude Code not found in standard locations[/yellow]")
 
     def is_available(self) -> bool:
         """Check if Claude Code is available."""
@@ -189,10 +186,16 @@ Alternative: Set CLAUDE_PATH environment variable
         # (CLAUDE_NO_BROWSER and CLAUDE_CODE_SKIP_PERMISSIONS). The CLI
         # does not accept a --no-browser flag in some versions.
 
-        # Launch process
-        console.print(
-            f"[blue]🚀 Launching Claude Code with ADHD optimizations...[/blue]"
+        # Launch process with sexy output
+        from rich.panel import Panel
+        
+        launch_msg = Panel(
+            "🚀 [bold cyan]Launching Claude Code[/bold cyan]\n"
+            "[dim]ADHD optimizations • Context awareness • MCP tools enabled[/dim]",
+            border_style="cyan",
+            padding=(0, 2)
         )
+        console.print(launch_msg)
 
         if background:
             # Detached background process
@@ -324,6 +327,7 @@ Alternative: Set CLAUDE_PATH environment variable
                 claude_home.mkdir(parents=True, exist_ok=True)
                 env["CLAUDE_PLATFORM_HOME"] = str(claude_home)
             except Exception as e:
+                pass
                 logger.error(f"Error: {e}")
             # Remove any residual OAuth-related env to prevent mixed auth modes
             for k in list(env.keys()):
@@ -348,7 +352,7 @@ Alternative: Set CLAUDE_PATH environment variable
         # This allows MCP servers to use the key while Claude Code uses OAuth
 
         if not via_litellm:
-            console.log("[dim]ℹ️  Claude Pro Max: Authenticate through the app[/dim]")
+            console.logger.info("[dim]ℹ️  Claude Pro Max: Authenticate through the app[/dim]")
 
         # Add other API keys for MCP server fallback
         # These are needed by MCP servers for fallback when Claude Pro Max hits rate limits
@@ -465,12 +469,13 @@ Alternative: Set CLAUDE_PATH environment variable
             # Install Node.js packages
             node_packages = [
                 "@zilliz/claude-context-mcp",
+                "pal",
                 "morphllm-fast-apply-mcp",
                 "exa-mcp",
             ]
 
             for package in node_packages:
-                console.log(f"[blue]Installing {package}...[/blue]")
+                console.logger.info(f"[blue]Installing {package}...[/blue]")
                 result = subprocess.run(
                     ["npm", "install", "-g", package], capture_output=True, text=True
                 )
@@ -480,13 +485,10 @@ Alternative: Set CLAUDE_PATH environment variable
                     )
 
             # Install Python packages
-            python_packages = [
-                "context-portal-mcp",  # Removed task-master-ai (crashes)
-                "git+https://github.com/BeehiveInnovations/pal-mcp-server.git",
-            ]
+            python_packages = ["context-portal-mcp"]  # Removed task-master-ai (crashes)
 
             for package in python_packages:
-                console.log(f"[blue]Installing {package}...[/blue]")
+                console.logger.info(f"[blue]Installing {package}...[/blue]")
                 result = subprocess.run(
                     ["pip", "install", package], capture_output=True, text=True
                 )
@@ -498,7 +500,7 @@ Alternative: Set CLAUDE_PATH environment variable
             return True
 
         except Exception as e:
-            console.log(f"[red]Error installing dependencies: {e}[/red]")
+            console.logger.error(f"[red]Error installing dependencies: {e}[/red]")
             return False
 
     def _cleanup(self) -> None:
@@ -516,13 +518,17 @@ Alternative: Set CLAUDE_PATH environment variable
                         process.wait(timeout=2)
             except Exception as e:
                 # Silent cleanup - don't spam errors on exit
-                logger.debug("Failed terminating spawned process during cleanup: %s", e)
+                pass
+
+                logger.error(f"Error: {e}")
         # Clean up temporary settings files
         for temp_file in self._temp_files:
             try:
                 temp_file.unlink(missing_ok=True)
             except Exception as e:
-                logger.debug("Failed removing temporary settings file %s: %s", temp_file, e)
+                pass
+
+                logger.error(f"Error: {e}")
         # Clear tracking lists
         self._spawned_processes.clear()
         self._temp_files.clear()

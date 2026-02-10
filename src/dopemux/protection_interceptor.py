@@ -26,14 +26,13 @@ from datetime import datetime
 import sys
 import logging
 
+from .console import console
 from .main_worktree_detector import MainWorktreeDetector, ProtectionTrigger
 from .worktree_name_inferrer import WorktreeNameInferrer, suggest_worktree_name
-from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 _last_created_worktree: Optional[Path] = None
 _COPY_DIRECTORIES = [
@@ -81,8 +80,8 @@ def check_main_protection_interactive(
         offer_creation: Whether to offer creating worktree
 
     Returns:
-        True if user should exit (chose to stay in main without changes),
-        False if should continue (user proceeded or created worktree)
+        True if caller should exit/restart (blocked, user exited, or new worktree created),
+        False if caller should continue in current process/worktree.
     """
     detector = MainWorktreeDetector(workspace_path, enforce_protection=enforce)
     trigger = detector.check_protection_needed()
@@ -103,8 +102,15 @@ def check_main_protection_interactive(
             console.print("[yellow]⚠️ Warning shown - proceeding anyway[/yellow]")
             return False  # Continue
 
-    # Offer interactive worktree creation
-    return _offer_worktree_creation(workspace_path, trigger)
+    # Offer interactive worktree creation.
+    # If a new worktree was created, signal caller to restart/switch even if
+    # the nested helper returns "continue in main" semantics.
+    global _last_created_worktree
+    _last_created_worktree = None
+    should_exit = _offer_worktree_creation(workspace_path, trigger)
+    if not should_exit and _last_created_worktree:
+        return True
+    return should_exit
 
 
 def _display_protection_warning(trigger: ProtectionTrigger) -> None:
@@ -128,20 +134,30 @@ def _offer_worktree_creation(
     trigger: ProtectionTrigger
 ) -> bool:
     """
-    Offer to create worktree for uncommitted changes.
+    Offer to create worktree for uncommitted changes with sexy UI.
 
     Returns:
         True if user wants to exit (chose not to create),
         False if worktree created or user wants to continue
     """
-    console.print("[cyan]💡 What would you like to do?[/cyan]\n")
-    console.print("  1. [green]Create worktree[/green] - Move changes to new worktree (recommended)")
-    console.print("  2. [blue]Stay in main[/blue] - Continue in main worktree (not recommended)")
-    console.print("  3. [dim]Exit[/dim] - Clean up manually and restart\n")
+    from rich.table import Table
+    
+    # Create beautiful option table
+    options = Table.grid(padding=(0, 4))
+    options.add_column(style="bold", justify="right")
+    options.add_column(style="", justify="left")
+    
+    options.add_row("1.", "[green]✨ Create worktree[/green] - Move changes to new worktree [dim](recommended)[/dim]")
+    options.add_row("2.", "[blue]⚡ Stay in main[/blue] - Continue in main worktree [dim](not recommended)[/dim]")
+    options.add_row("3.", "[dim]🚪 Exit[/dim] - Clean up manually and restart")
+    
+    console.print("\n[cyan bold]💡 What would you like to do?[/cyan bold]\n")
+    console.print(options)
+    console.print()
 
-    # Get user choice with input validation
+    # Get user choice with styled input
     try:
-        choice = console.input("[cyan]Choose (1/2/3) [[bold]1[/bold]]: [/cyan]").strip() or "1"
+        choice = console.input("[cyan]Choose [bold](1/2/3)[/bold] [[bold green]1[/bold green]]: [/cyan]").strip() or "1"
     except (KeyboardInterrupt, EOFError):
         console.print("\n[dim]Cancelled - exiting[/dim]")
         return True  # Exit

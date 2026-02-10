@@ -25,17 +25,17 @@ from dataclasses import dataclass, asdict, field
 from enum import Enum
 import json
 
-from app.core.sync import MultiDirectionalSyncEngine, SyncDirection, SyncOperation
-from app.services.task_coordinator import TaskCoordinator
-from app.models.workflow import (
+from .sync import MultiDirectionalSyncEngine, SyncDirection, SyncOperation
+from ..services.task_coordinator import TaskCoordinator
+from ..models.workflow import (
     CreateEpicRequest,
     CreateIdeaRequest,
     PromoteIdeaRequest,
     UpdateEpicRequest,
     UpdateIdeaRequest,
 )
-from app.services.workflow_service import WorkflowService
-from app.adapters.conport_adapter import ConPortEventAdapter
+from ..services.workflow_service import WorkflowService
+from ..adapters.conport_adapter import ConPortEventAdapter
 from intelligence.cognitive_load_balancer import CognitiveLoadBalancer
 
 logger = logging.getLogger(__name__)

@@ -94,7 +94,7 @@ Curated entries
 Reflections (Phase 2)
 - Durable, derived from curated entries
 
-## Capture Adapters and Canonical Ledger
+## Capture Adapters and Canonical Ledger (ADR-213)
 - Canonical per-project ledger path: `repo_root/.dopemux/chronicle.sqlite`
 - Repo root resolution is deterministic:
   - Walk upward from current path
@@ -105,6 +105,11 @@ Reflections (Phase 2)
   - `cli` (Dopemux CLI capture)
   - `mcp` (MCP/bridge capture)
   - `auto` (context-driven selection)
+- **Dual-Capture Convergence** (ADR-213):
+  - All modes write to the **same canonical ledger**
+  - Same event from different modes produces **identical event_id**
+  - Event ID is content-based, mode-independent (enables idempotent retry)
+  - Duplicate events deduplicate via `INSERT OR IGNORE`
 - Capture writes append-only `raw_activity_events` with:
   - redaction before persistence
   - deterministic idempotency key (`event_id`)
@@ -112,6 +117,21 @@ Reflections (Phase 2)
 - Injection policy remains explicit:
   - Capture does not auto-inject prompt context
   - Retrieval/injection is controlled by explicit tool calls only
+
+### Capture Mode Matrix
+
+| Mode | Trigger | Ledger Path | Event ID | Use Case |
+|------|---------|-------------|----------|----------|
+| **plugin** | Claude Code hooks | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Auto-capture during Claude sessions |
+| **cli** | `dopemux memory capture` | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Manual/scripted capture |
+| **mcp** | MCP tool calls | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Bridge from external tools |
+| **auto** | Context-driven selection | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Smart mode resolution |
+
+**Key Properties** (ADR-213):
+- All modes write to **same ledger**
+- All modes produce **identical event_id** for same content
+- All modes share **single schema** and redaction pipeline
+- Capture fails closed without valid repo root
 
 ## Determinism Requirements
 Ordering

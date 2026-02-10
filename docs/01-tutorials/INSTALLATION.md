@@ -2,12 +2,12 @@
 id: INSTALLATION
 title: Installation
 type: tutorial
+date: '2025-11-15'
+author: '@hu3mann'
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
-author: '@hu3mann'
-date: '2026-02-05'
-prelude: Installation (tutorial) for dopemux documentation and developer workflows.
+prelude: Tutorial for Installation.
 ---
 # Dopemux Installation Guide
 
@@ -51,7 +51,7 @@ source "$(python3 scripts/workspace_env_path.py)"
 # 5. Edit .env with your API keys
 nano .env
 # Required: OPENAI_API_KEY, VOYAGEAI_API_KEY
-# Optional: ANTHROPIC_API_KEY, GEMINI_API_KEY, OPENROUTER_API_KEY, XAI_API_KEY
+# Optional: ANTHROPIC_API_KEY, GEMINI_API_KEY, CONTEXT7_API_KEY
 
 # 6. Verify installation
 dopemux health
@@ -115,18 +115,16 @@ nano .env
 **Optional Keys** (enhanced functionality):
 - `ANTHROPIC_API_KEY` - Claude models (Zen MCP)
 - `GEMINI_API_KEY` - Google Gemini (Zen MCP)
-- `OPENROUTER_API_KEY` - PAL apilookup via PAL MCP
-- `XAI_API_KEY` - xAI models (PAL MCP)
+- `CONTEXT7_API_KEY` - Documentation access
 - `EXA_API_KEY` - Neural web search
 - `TAVILY_API_KEY` - Research (GPT-Researcher)
 
 **Get API Keys**:
-- OpenAI: https://platform.openai.com/api-keys
+- OpenAI: https://platform.openai.com/
 - Voyage AI: https://www.voyageai.com/
 - Anthropic: https://console.anthropic.com/
 - Google Gemini: https://makersuite.google.com/app/apikey
-- OpenRouter: https://openrouter.ai/
-- xAI: https://console.x.ai/
+- Context7: https://context7.com/
 
 ### **Step 4: Verify Installation**
 
@@ -138,7 +136,7 @@ dopemux health
 ```
 ✅ ConPort: Healthy
 ✅ Zen MCP: Healthy
-✅ PAL apilookup: Healthy
+✅ Context7: Healthy
 ...
 ```
 
@@ -289,25 +287,26 @@ dopemux decisions patterns tags            # See auto-detected patterns
 ```
 
 **Advanced Usage**:
-- See workspace documentation in `docs/03-reference/` for multi-project workflows
-- See CLI documentation for profile customization
-- See MCP integration guides in `docs/02-how-to/`
+- See `MULTI_PROJECT.md` for multi-project workflows
+- See `PROFILES.md` for profile customization
+- See [CONTRIBUTING_ZEN.md](../CONTRIBUTING_ZEN.md) for Zen MCP development
 
 ---
 
 ## 📚 Additional Resources
 
-- **Architecture**: [../04-explanation/architecture/](../04-explanation/architecture/)
-- **Reference Docs**: [../03-reference/overview.md](../03-reference/overview.md)
-- **How-To Guides**: [../02-how-to/overview.md](../02-how-to/overview.md)
+- **User Guide**: [MULTI_PROJECT.md](MULTI_PROJECT.md)
+- **Profile Reference**: [PROFILES.md](PROFILES.md)
+- **Architecture**: [System Bible](../94-architecture/system-bible.md)
+- **Troubleshooting**: [Troubleshooting Playbook](../troubleshooting-playbook.md)
 
 ---
 
 ## 🆘 Getting Help
 
 - **Issues**: https://github.com/DDD-Enterprises/dopemux-mvp/issues
-- **Discussions**: https://github.com/DDD-Enterprises/dopemux-mvp/discussions
-- **Documentation**: https://docs.dopemux.dev
+- **Support**: https://github.com/DDD-Enterprises/dopemux-mvp/issues
+- **Documentation**: https://github.com/DDD-Enterprises/dopemux-mvp/tree/main/docs
 
 ---
 

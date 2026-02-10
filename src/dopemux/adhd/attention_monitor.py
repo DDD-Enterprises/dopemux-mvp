@@ -21,9 +21,7 @@ from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from ..config.manager import AttentionConfig
 
-from rich.console import Console
-
-console = Console()
+from ..console_utils import console
 
 
 @dataclass

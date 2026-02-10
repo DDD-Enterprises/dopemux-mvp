@@ -8,6 +8,7 @@ Implements 'dopemux init' wizard that:
 3. Creates .dopemux/ directory structure
 4. Sets active profile
 5. Creates database directories
+6. Installs template files
 """
 
 import os
@@ -16,17 +17,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Optional, List
 import click
-from rich.console import Console
 from rich.prompt import Prompt, Confirm
 from rich.panel import Panel
 
+from .console import console
 from .profile_manager import ProfileManager, DopemuxProfile
 
-console = Console()
 
 
 class ProjectInitializer:
@@ -160,6 +161,7 @@ class ProjectInitializer:
             console.logger.info("[dim]Run: dopemux profile list[/dim]")
             return False
 
+
         # Step 2: Create .dopemux/ structure
         console.logger.info(f"\n📁 Creating .dopemux/ directory...")
         self.dopemux_dir.mkdir(exist_ok=True)
@@ -175,7 +177,10 @@ class ProjectInitializer:
             config_file.write_text("# Project-specific configuration overrides\n# Merged with profile settings\n")
             console.logger.info(f"   Created: .dopemux/config.yaml")
 
-        # Step 5: Summary
+        # Step 5: Install templates
+        self.install_templates()
+
+        # Step 6: Summary
         console.logger.info(f"\n✅ [bold green]Initialization complete![/bold green]")
         console.logger.info(f"\n[bold]Next steps:[/bold]")
         console.logger.info(f"  1. Review profile: [cyan]dopemux profile show[/cyan]")
@@ -183,6 +188,51 @@ class ProjectInitializer:
         console.logger.info(f"  3. (Optional) Edit: [dim].dopemux/config.yaml[/dim]")
 
         return True
+
+    def install_templates(self) -> None:
+        """
+        Install virgin template files from src/dopemux/templates/init/.
+
+        Recursively copies template directory structure to workspace, preserving
+        directory hierarchy. Skips files that already exist.
+        """
+        console.logger.info(f"\n📝 Installing templates...")
+
+        # Locate templates directory relative to this file
+        templates_root = Path(__file__).parent / "templates" / "init"
+
+        if not templates_root.exists():
+            console.logger.info("[yellow]   Warning: Template directory not found, skipping templates[/yellow]")
+            return
+
+        # Recursively copy all template files
+        template_count = 0
+        for template_path in templates_root.rglob("*"):
+            if not template_path.is_file():
+                continue
+
+            # Calculate relative path from templates_root
+            rel_path = template_path.relative_to(templates_root)
+            dest_path = self.workspace / rel_path
+
+            # Skip if file already exists
+            if dest_path.exists():
+                continue
+
+            # Create parent directories if needed
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Copy the template file
+            try:
+                shutil.copy2(template_path, dest_path)
+                template_count += 1
+                console.logger.info(f"   Created: {rel_path}")
+            except (OSError, IOError) as e:
+                logger.warning(f"Failed to copy template {rel_path}: {e}")
+
+        if template_count > 0:
+            console.logger.info(f"   Installed {template_count} template files")
+
 
     def _prompt_profile_selection(self, profiles: Optional[List[DopemuxProfile]] = None) -> str:
         """Prompt user to select a profile."""

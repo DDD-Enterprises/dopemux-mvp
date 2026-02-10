@@ -1,0 +1,64 @@
+[
+  {
+    "service": "conport",
+    "registry_port": 8005,
+    "detected_port": 8005,
+    "expose_port": 8005,
+    "protocol_guess": "http",
+    "health_route": "/health",
+    "docker_healthcheck": null,
+    "runtime_status": "HEALTHY",
+    "runtime_health": "{\"status\":\"ok\",\"service\":\"conport\",\"ts\":\"2026-02-01T08:23:45.173393\",\"version\":\"1.0.0\"}",
+    "docker_container_status": "created",
+    "docker_health_status": null,
+    "status_flags": [],
+    "source_evidence": {
+      "port": "os.getenv(PORT, 8005) in http_server.py",
+      "health": "Route /health found in http_server.py"
+    },
+    "classification_msg": "Service is healthy and responding correctly",
+    "suggested_action": "No action needed"
+  },
+  {
+    "service": "task-orchestrator",
+    "registry_port": 3014,
+    "detected_port": 3014,
+    "expose_port": 3014,
+    "protocol_guess": "http",
+    "health_route": "/health",
+    "docker_healthcheck": null,
+    "runtime_status": "HEALTHY",
+    "runtime_health": "{\"status\":\"ok\",\"service\":\"task-orchestrator\",\"ts\":\"2026-02-01T08:23:45.293653Z\",\"version\":null,\"dependencies\":{}}",
+    "docker_container_status": "running",
+    "docker_health_status": "healthy",
+    "status_flags": [],
+    "source_evidence": {
+      "port": "os.getenv(PORT, 3014) in coordination_api.py",
+      "health": "Route /health found in coordination_api.py",
+      "port_base": "PORT_BASE default 3000 found in query_server.py"
+    },
+    "classification_msg": "Service is healthy and responding correctly",
+    "suggested_action": "No action needed"
+  },
+  {
+    "service": "dopecon-bridge",
+    "registry_port": 3016,
+    "detected_port": 3016,
+    "expose_port": 3016,
+    "protocol_guess": "mcp",
+    "health_route": "/health",
+    "docker_healthcheck": null,
+    "runtime_status": "HEALTHY",
+    "runtime_health": "{\"status\":\"ok\",\"service\":\"dopecon-bridge\",\"ts\":\"2026-02-01T08:23:45.409358Z\",\"version\":null,\"dependencies\":{\"mcp\":\"ok\",\"event_bus\":\"ok\"}}",
+    "docker_container_status": "running",
+    "docker_health_status": "healthy",
+    "status_flags": [],
+    "source_evidence": {
+      "health": "Route /health found in kg_endpoints.py",
+      "port_base": "PORT_BASE default 3000 found in main.py",
+      "port": "PORT_BASE(3000) + 16 in main.py"
+    },
+    "classification_msg": "Service is healthy and responding correctly",
+    "suggested_action": "No action needed"
+  }
+]

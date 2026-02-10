@@ -70,7 +70,7 @@ def git_repo():
         repo_path = Path(tmpdir)
 
         # Initialize git repo
-        subprocess.run(["git", "init"], cwd=repo_path, check=True, capture_output=True)
+        subprocess.run(["git", "init", "-b", "main"], cwd=repo_path, check=True, capture_output=True)
         subprocess.run(
             ["git", "config", "user.name", "Test User"],
             cwd=repo_path,

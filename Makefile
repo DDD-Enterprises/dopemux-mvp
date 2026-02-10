@@ -1,6 +1,6 @@
 # Dopemux Development Makefile
 
-.PHONY: help install install-dev test test-unit test-integration test-coverage clean lint format type-check build docs serve-docs task-packet
+.PHONY: help install install-dev test test-unit test-integration test-coverage clean lint format type-check build docs serve-docs
 
 # Default target
 help:
@@ -28,7 +28,6 @@ help:
 	@echo "  build          Build distribution packages"
 	@echo "  docs           Build documentation"
 	@echo "  serve-docs     Serve documentation locally"
-	@echo "  task-packet    Collect multi-service debug packet (TASK_ID=<name> SINCE=2h SERVICES=all)"
 	@echo ""
 	@echo "Docs Audit:"
 	@echo "  docs-audit     Scan docs, create report + triage + rename plan (dry)"
@@ -150,43 +149,31 @@ pm-down:
 pm-logs:
 	cd docker/leantime && docker-compose logs -f
 
-# ---- DopeconBridge Integration ----
-bridge-status:
-	@echo "DopeconBridge Status:"
-	@curl -s http://localhost:3016/health || echo "❌ Bridge offline"
-	@echo ""
+# ============================================
+# ADHD Dashboard & Orchestrator
+# ============================================
 
-bridge-stats:
-	@curl -s http://localhost:3016/stats | jq . || echo "❌ Bridge offline"
+orchestrator:  ## Launch full Dopemux orchestrator environment (4 panes)
+	@./scripts/launch-dopemux-orchestrator.sh
 
-bridge-test-event:
-	@curl -X POST http://localhost:3016/events \
-	  -H "Content-Type: application/json" \
-	  -d '{"event_type": "test.makefile", "data": {"test": true}, "stream": "dopemux:events"}' | jq .
+minimal:  ## Launch minimal environment (2 panes: dashboard + CLI)
+	@./scripts/launch-dopemux-minimal.sh
 
-bridge-logs:
-	@docker logs -f dopecon-bridge 2>/dev/null || docker logs -f mcp-conport-bridge 2>/dev/null || echo "❌ Bridge container not found"
+dashboard:  ## Launch standalone 3-pane ADHD dashboard (bash version)
+	@test -f scripts/launch-adhd-dashboard.sh && ./scripts/launch-adhd-dashboard.sh || echo "❌ Dashboard script not found"
 
-bridge-up:
-	@docker-compose -f docker-compose.master.yml up -d dopecon-bridge || \
-	 docker-compose -f docker/mcp-servers/docker-compose.yml up -d conport-bridge
+attach:  ## Attach to existing orchestrator session
+	@tmux attach -t dopemux-orchestrator || echo "❌ No session found. Run 'make orchestrator' first"
 
-bridge-down:
-	@docker-compose -f docker-compose.master.yml stop dopecon-bridge || \
-	 docker-compose -f docker/mcp-servers/docker-compose.yml stop conport-bridge
+attach-minimal:  ## Attach to minimal session
+	@tmux attach -t dmx || echo "❌ No session found. Run 'make minimal' first"
 
-bridge-restart: bridge-down bridge-up
-	@echo "✓ DopeconBridge restarted"
+kill-orchestrator:  ## Kill orchestrator tmux session
+	@tmux kill-session -t dopemux-orchestrator 2>/dev/null && echo "✅ Orchestrator session killed" || echo "ℹ️  No session to kill"
 
-bridge-validate:
-	@python3 scripts/validate_integration_bridge.py
+kill-minimal:  ## Kill minimal session
+	@tmux kill-session -t dmx 2>/dev/null && echo "✅ Minimal session killed" || echo "ℹ️  No session to kill"
 
-bridge-client-test:
-	@pytest tests/shared/test_dopecon_bridge_client.py -v
+list-sessions:  ## List all tmux sessions
+	@tmux list-sessions 2>/dev/null || echo "No tmux sessions running"
 
-# ---- Debugging / Investigation ----
-task-packet:
-	@python3 scripts/collect_task_packet.py \
-		--task-id "$(or $(TASK_ID),investigation)" \
-		--since "$(or $(SINCE),2h)" \
-		--services "$(or $(SERVICES),all)"

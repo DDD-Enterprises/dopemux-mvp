@@ -27,7 +27,12 @@ class ConPortAdapter(BaseIntegration):
     ADHD-optimized knowledge graph integration.
     """
 
-    def __init__(self, config: AdvancedEmbeddingConfig, workspace_id: str):
+    def __init__(
+        self,
+        config: AdvancedEmbeddingConfig,
+        workspace_id: str,
+        conport_client: Optional[Any] = None,
+    ):
         """
         Initialize ConPort adapter.
 
@@ -36,7 +41,9 @@ class ConPortAdapter(BaseIntegration):
             workspace_id: ConPort workspace identifier
         """
         super().__init__(config)
+        self.integration_name = "conport"
         self.workspace_id = workspace_id
+        self.conport_client = conport_client
         self.connection_status = "unknown"
         self.last_sync_time: Optional[datetime] = None
 
@@ -59,11 +66,11 @@ class ConPortAdapter(BaseIntegration):
             True if ConPort is accessible and responsive
         """
         try:
-            # Mock ConPort health check - in practice this would call MCP
-            # Example: await mcp_conport.get_product_context(workspace_id=self.workspace_id)
-
-            # Simulate connection check
-            await asyncio.sleep(0.1)  # Simulate network delay
+            if self.conport_client and hasattr(self.conport_client, "get_active_context"):
+                await self.conport_client.get_active_context(workspace_id=self.workspace_id)
+            else:
+                # Simulate connection check when no client is injected.
+                await asyncio.sleep(0.1)
 
             self.connection_status = "healthy"
             logger.info("✅ ConPort connection validated")
@@ -273,14 +280,23 @@ class ConPortAdapter(BaseIntegration):
 
             for doc, embedding in zip(documents, embeddings):
                 try:
-                    # Mock storage - would use actual MCP calls
-                    # Example: await mcp_conport.store_embedding(
-                    #     workspace_id=self.workspace_id,
-                    #     doc_id=doc['id'],
-                    #     embedding=embedding,
-                    #     metadata=doc['metadata']
-                    # )
-
+                    if self.conport_client and hasattr(self.conport_client, "log_custom_data"):
+                        content = doc.get("content", "")
+                        adhd_document = await self._add_adhd_metadata(
+                            {"id": doc.get("id"), "content": content, "metadata": doc.get("metadata", {})}
+                        )
+                        await self.conport_client.log_custom_data(
+                            workspace_id=self.workspace_id,
+                            category="DocumentEmbeddings",
+                            key=f"{doc.get('id', 'unknown')}_embedding",
+                            value={
+                                "document_id": doc.get("id"),
+                                "embedding_vector": embedding,
+                                "embedding_dimension": len(embedding),
+                                "metadata": doc.get("metadata", {}),
+                                "adhd_metadata": adhd_document["adhd_metadata"],
+                            },
+                        )
                     stored_count += 1
 
                 except Exception as e:
@@ -310,6 +326,21 @@ class ConPortAdapter(BaseIntegration):
         """
         try:
             enhanced_results = []
+            query = str(context.get("query", ""))
+            related_decisions = await self._get_relevant_decisions(query)
+            project_patterns: List[Dict[str, Any]] = []
+
+            if self.conport_client and hasattr(self.conport_client, "get_custom_data"):
+                try:
+                    raw_patterns = await self.conport_client.get_custom_data(
+                        workspace_id=self.workspace_id,
+                        category="ProjectPatterns",
+                    )
+                    if isinstance(raw_patterns, list):
+                        project_patterns = raw_patterns
+                except Exception:
+                    # Gracefully degrade if custom-data lookups are unavailable.
+                    project_patterns = []
 
             for result in results:
                 enhanced_result = result  # Copy original result
@@ -338,11 +369,15 @@ class ConPortAdapter(BaseIntegration):
                         "dependencies": await self._get_task_dependencies(result.doc_id)
                     })
 
-                # Add ADHD-friendly context tags
+                minutes = self._estimate_focus_time(result.content)
                 enhanced_result.metadata["adhd_context"] = {
                     "urgency": self._calculate_urgency(result),
                     "complexity": self._calculate_complexity(result),
-                    "focus_time_needed": self._estimate_focus_time(result)
+                    "focus_time_needed": self._format_focus_minutes(minutes),
+                }
+                enhanced_result.metadata["conport_context"] = {
+                    "related_decisions": related_decisions,
+                    "project_patterns": project_patterns,
                 }
 
                 enhanced_results.append(enhanced_result)
@@ -381,36 +416,120 @@ class ConPortAdapter(BaseIntegration):
 
     def _calculate_urgency(self, result: SearchResult) -> str:
         """Calculate ADHD-friendly urgency indicator."""
-        # Simplified urgency calculation
-        if "blocker" in result.content.lower() or "urgent" in result.content.lower():
+        urgency_level = self._calculate_urgency_level(result.content)
+        if urgency_level >= 4:
             return "high"
-        elif "todo" in result.content.lower():
+        if urgency_level >= 3:
             return "medium"
-        else:
-            return "low"
+        return "low"
 
     def _calculate_complexity(self, result: SearchResult) -> str:
         """Calculate ADHD-friendly complexity indicator."""
-        # Simplified complexity calculation based on content length
-        content_length = len(result.content)
-        if content_length > 1000:
+        complexity_score = self._calculate_complexity_score(result.content)
+        if complexity_score >= 4:
             return "high"
-        elif content_length > 300:
+        if complexity_score >= 2.5:
             return "medium"
-        else:
-            return "low"
+        return "low"
 
-    def _estimate_focus_time(self, result: SearchResult) -> str:
-        """Estimate focus time needed for ADHD time management."""
-        complexity = self._calculate_complexity(result)
-
-        time_mapping = {
-            "low": "5-15 minutes",
-            "medium": "20-45 minutes",
-            "high": "1-2 hours (break into chunks)"
+    async def _add_adhd_metadata(self, document: Dict[str, Any]) -> Dict[str, Any]:
+        """Attach ADHD-oriented metadata fields to a document payload."""
+        content = str(document.get("content", ""))
+        adhd_metadata = {
+            "urgency_level": self._calculate_urgency_level(content),
+            "complexity_score": self._calculate_complexity_score(content),
+            "estimated_focus_time": self._estimate_focus_time(content),
+            "context_tags": self._extract_context_tags(content),
         }
+        updated = dict(document)
+        updated["adhd_metadata"] = adhd_metadata
+        return updated
 
-        return time_mapping.get(complexity, "unknown")
+    async def _get_relevant_decisions(self, query: str) -> List[Dict[str, Any]]:
+        """Fetch recent ConPort decisions relevant to the current query."""
+        if not self.conport_client or not hasattr(self.conport_client, "get_recent_activity_summary"):
+            return []
+        try:
+            summary = await self.conport_client.get_recent_activity_summary(
+                workspace_id=self.workspace_id,
+                limit=20,
+                query=query,
+            )
+            decisions = summary.get("decisions", []) if isinstance(summary, dict) else []
+            return decisions if isinstance(decisions, list) else []
+        except Exception:
+            return []
+
+    def _calculate_urgency_level(self, content: str) -> float:
+        """Return urgency from 1-5 based on language cues."""
+        text = content.lower()
+        if any(term in text for term in ["critical", "urgent", "immediate", "asap", "blocker"]):
+            return 4.5
+        if any(term in text for term in ["soon", "priority", "important", "next sprint"]):
+            return 3.0
+        if any(term in text for term in ["backlog", "future", "reference", "someday"]):
+            return 1.5
+        return 2.0
+
+    def _calculate_complexity_score(self, content: str) -> float:
+        """Return complexity from 1-5 using length and technical cues."""
+        text = content.lower()
+        length = len(content)
+        technical_markers = [
+            "algorithm",
+            "architecture",
+            "neural",
+            "optimization",
+            "distributed",
+            "pipeline",
+            "concurrency",
+            "embedding",
+        ]
+        marker_count = sum(1 for marker in technical_markers if marker in text)
+
+        base = 1.0
+        if length > 1000:
+            base += 2.0
+        elif length > 300:
+            base += 1.0
+
+        complexity = min(5.0, base + (marker_count * 0.5))
+        return max(1.0, complexity)
+
+    def _estimate_focus_time(self, content: str) -> int:
+        """Estimate focus time in minutes for a piece of content."""
+        words = max(1, len(content.split()))
+        base_minutes = words / 180.0 * 60.0
+        complexity_score = self._calculate_complexity_score(content)
+        complexity_multiplier = 0.8 + (complexity_score / 5.0)
+        minutes = int(round(base_minutes * complexity_multiplier))
+        if complexity_score >= 2.0:
+            minutes += 2
+        return max(3, min(120, minutes))
+
+    def _format_focus_minutes(self, minutes: int) -> str:
+        """Format minute estimate for user-facing metadata fields."""
+        if minutes <= 15:
+            return "5-15 minutes"
+        if minutes <= 45:
+            return "20-45 minutes"
+        return "1-2 hours (break into chunks)"
+
+    def _extract_context_tags(self, content: str) -> List[str]:
+        """Generate lightweight tags to help ADHD context switching."""
+        tags: List[str] = []
+        text = content.lower()
+        if any(term in text for term in ["ml", "machine learning", "neural", "model"]):
+            tags.append("ml")
+        if any(term in text for term in ["api", "endpoint", "http", "fastapi"]):
+            tags.append("api")
+        if any(term in text for term in ["architecture", "design", "system"]):
+            tags.append("architecture")
+        if any(term in text for term in ["docs", "documentation", "guide"]):
+            tags.append("documentation")
+        if not tags:
+            tags.append("general")
+        return tags
 
     def get_integration_status(self) -> Dict[str, Any]:
         """

@@ -28,7 +28,7 @@ from dopecon_bridge_client import (
 
 # Import orchestrator types
 try:
-    from services.enhanced_orchestrator import OrchestrationTask, TaskStatus, AgentType
+    from task_orchestrator.models import OrchestrationTask, TaskStatus, AgentType
 except ImportError:
     # Fallback for when run from different context
     OrchestrationTask = None

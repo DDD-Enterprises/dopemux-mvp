@@ -39,7 +39,7 @@ class MemoryConfig:
     def __init__(self):
         self.database_url = os.getenv(
             "DATABASE_URL",
-            "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory",
+            "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory",  # pragma: allowlist secret
         )
         self.milvus_host = os.getenv("MILVUS_HOST", "localhost")
         self.milvus_port = int(os.getenv("MILVUS_PORT", "19530"))

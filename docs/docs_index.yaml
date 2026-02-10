@@ -14,7 +14,7 @@ entry_points:
 systems:
   conport:
     overview: "docs/03-reference/systems/conport/conport-kg-status.md"
-    technical: "docs/04-explanation/conport-technical-deep-dive.md"
+    technical: "docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md"
     integration: "docs/02-how-to/mcp-service-discovery-guide.md"
     comparison: "docs/05-audit-reports/service-maturity-gap-analysis.md"
     readme: "docs/03-reference/systems/conport/conport-kg-status.md"
@@ -94,12 +94,16 @@ reference:
   task_orchestrator_service: "docs/03-reference/services/task-orchestrator.md"
   mcp_tools_overview: "docs/03-reference/mcp-tools-overview.md"
   mcp_token_management_best_practices: "docs/best-practices/mcp-token-management.md"
+  memory_capture_cli: "docs/03-reference/memory-capture-cli.md"
 
 # Explanation & Deep Dives
 explanation:
   directory: "docs/04-explanation/"
-  serena_v2: "docs/04-explanation/serena-v2-technical-deep-dive.md"
-  conport: "docs/04-explanation/conport-technical-deep-dive.md"
+  serena_v2: "docs/04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md"
+  conport: "docs/04-explanation/technical-deep-dives/conport-technical-deep-dive.md"
+  dope_memory: "docs/04-explanation/technical-deep-dives/DOPE-MEMORY-DEEP-DIVE.md"
+  adhd_engine: "docs/04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART1.md"
+  dope_context: "docs/04-explanation/technical-deep-dives/DOPEMUX-CONTEXT-DEEP-DIVE.md"
 
 # Archive - Historical documents
 archive:
