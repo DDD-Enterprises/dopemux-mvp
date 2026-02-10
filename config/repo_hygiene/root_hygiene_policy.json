@@ -53,6 +53,7 @@
     "mcp-proxy-config.json",
     "package.json",
     "pyproject.toml",
+    "MANIFEST.in",
     "pytest.ini",
     "requirements*.txt",
     "dopemux.rb",
@@ -95,32 +96,54 @@
   ],
   "destination_hints": [
     {
-      "patterns": ["*_REPORT.md", "*_STATUS.md", "*_PLAN.md", "*_PROGRESS.md"],
+      "patterns": [
+        "*_REPORT.md",
+        "*_STATUS.md",
+        "*_PLAN.md",
+        "*_PROGRESS.md"
+      ],
       "destination": "docs/05-audit-reports/",
       "purpose": "durable human-readable reports"
     },
     {
-      "patterns": ["*.json", "*.xml", "*.zip", "*.tar", "*.tar.gz", "*.tgz"],
+      "patterns": [
+        "*.json",
+        "*.xml",
+        "*.zip",
+        "*.tar",
+        "*.tar.gz",
+        "*.tgz"
+      ],
       "destination": "reports/",
       "purpose": "generated machine outputs and bundles"
     },
     {
-      "patterns": ["*.log"],
+      "patterns": [
+        "*.log"
+      ],
       "destination": "logs/",
       "purpose": "runtime logs"
     },
     {
-      "patterns": ["*.py", "*.sh", "*.rb"],
+      "patterns": [
+        "*.py",
+        "*.sh",
+        "*.rb"
+      ],
       "destination": "scripts/",
       "purpose": "reusable automation scripts"
     },
     {
-      "patterns": ["*.sql"],
+      "patterns": [
+        "*.sql"
+      ],
       "destination": "scripts/sql/",
       "purpose": "SQL migrations or utility queries"
     },
     {
-      "patterns": ["*.md"],
+      "patterns": [
+        "*.md"
+      ],
       "destination": "docs/",
       "purpose": "project documentation"
     }

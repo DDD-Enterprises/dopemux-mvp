@@ -538,36 +538,6 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
         logger.error(f"Git hook installation failed: {e}")
     except Exception:
         logger.error("Unexpected git hook install error", exc_info=True)
-    # Install project templates (.claude/ and docs/)
-    try:
-        repo_root = Path(__file__).resolve().parents[2]
-        # .claude/claude.md
-        src_claude = repo_root / ".claude" / "claude.md"
-        dst_claude_dir = workspace / ".claude"
-        dst_claude_dir.mkdir(parents=True, exist_ok=True)
-        dst_claude = dst_claude_dir / "claude.md"
-        if not dst_claude.exists():
-            if src_claude.exists():
-                import shutil
-                shutil.copy2(src_claude, dst_claude)
-                click.echo("📝 Installed project Claude guide (.claude/claude.md)")
-            else:
-                dst_claude.write_text("# Project Claude Guide\n\nSee global Dopemux docs for MCP usage.")
-        # docs templates
-        dst_docs = workspace / "docs"
-        dst_docs.mkdir(parents=True, exist_ok=True)
-        for name in ["WORKTREES_AND_DECISION_GRAPH.md", "MCP_TOOLS_OVERVIEW.md"]:
-            src = repo_root / "docs" / name
-            dst = dst_docs / name
-            if not dst.exists():
-                if src.exists():
-                    import shutil
-                    shutil.copy2(src, dst)
-                    click.echo(f"📝 Installed docs/{name}")
-    except (OSError, shutil.Error) as e:
-        logger.error(f"Docs/template installation failed: {e}")
-    except Exception as e:
-        logger.error("Unexpected docs/template install error", exc_info=True)
 @cli.command()
 @click.option("--instance", "-i", help="Instance id (feature branch name)")
 @click.option("--project", "-p", help="Project root (defaults to CWD)")
