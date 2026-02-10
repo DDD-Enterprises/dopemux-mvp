@@ -14,12 +14,19 @@ COPY services/task-orchestrator/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code and dopemux package
-COPY services/task-orchestrator /app/services/task-orchestrator
+COPY services/task-orchestrator/app /app/app
+COPY services/task-orchestrator/intelligence /app/intelligence
+COPY services/task-orchestrator/task_orchestrator /app/task_orchestrator
+COPY services/task-orchestrator/pal_client.py /app/pal_client.py
+COPY services/shared /app/services/shared
 COPY src/dopemux /app/dopemux
 
 # Set up environment
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app \
+  PYTHONUNBUFFERED=1 \
+  COORDINATION_API_PORT=3014 \
+  PORT=3014 \
+  WORKSPACE_ID=/workspace
 
 # Expose service port
 EXPOSE 3014
@@ -29,4 +36,4 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
   CMD curl -f http://localhost:3014/health || exit 1
 
 # Run the task orchestrator service
-CMD ["python", "-m", "services.task-orchestrator.app"]
+CMD ["python", "-m", "app.main"]
