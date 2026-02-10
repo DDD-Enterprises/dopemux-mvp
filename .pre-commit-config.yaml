@@ -101,7 +101,9 @@ repos:
               if [[ "$normalized" =~ ^\./(\.github/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(examples/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(tests/resources/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(src/dopemux/templates/) ]]; then continue; fi
               if [[ "$normalized" =~ /\.pytest_cache/ ]]; then continue; fi
+
 
               # Root project docs and common standards docs anywhere
               if [[ "$normalized" =~ ^\./[A-Z][A-Z_0-9-]*\.md$ ]]; then continue; fi
