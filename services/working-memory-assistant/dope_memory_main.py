@@ -134,6 +134,7 @@ class DopeMemoryMCPServer:
         filters: Optional[dict[str, Any]] = None,
         top_k: int = 3,
         cursor: Optional[str] = None,
+        include_superseded: bool = False,
     ) -> ToolResponse:
         """Search work log entries with trajectory boost applied to ranking."""
         try:
@@ -174,6 +175,7 @@ class DopeMemoryMCPServer:
                 time_range=f.get("time_range"),
                 limit=fetch_limit + 1,
                 cursor=decoded_cursor,
+                include_superseded=include_superseded,
             )
 
             # Apply trajectory boost to ranking
@@ -211,7 +213,7 @@ class DopeMemoryMCPServer:
 
             response_items = []
             for row in items:
-                response_items.append({
+                item = {
                     "id": row["id"],
                     "ts_utc": row["ts_utc"],
                     "summary": row["summary"],
@@ -223,7 +225,14 @@ class DopeMemoryMCPServer:
                     "tags": json.loads(row.get("tags_json", "[]")),
                     # Include boost metadata for debugging (optional)
                     "_boost_applied": row.get("_boost_applied", 0.0),
-                })
+                }
+                # Include chain annotations when superseded entries are shown (Packet F §5.2)
+                if include_superseded:
+                    item["is_head"] = row.get("is_head", True)
+                    item["superseded_by"] = row.get("superseded_by")
+                    item["supersedes"] = row.get("supersedes")
+                    item["chain_position"] = row.get("chain_position")
+                response_items.append(item)
 
             return ToolResponse(
                 success=True,
@@ -431,8 +440,14 @@ class DopeMemoryMCPServer:
         session_id: str,
         top_k: int = 3,
         cursor: Optional[str] = None,
+        mode: str = "replay_current",
     ) -> ToolResponse:
-        """Replay session entries chronologically."""
+        """Replay session entries chronologically.
+        
+        Modes (Packet F §5.3):
+        - replay_current (default): Only chain heads (corrected narrative)
+        - replay_full: All entries including superseded, with annotations
+        """
         try:
              store = self._get_store(workspace_id)
              top_k = min(max(1, top_k), 50)
@@ -452,6 +467,7 @@ class DopeMemoryMCPServer:
                  session_id=session_id,
                  limit=top_k + 1,
                  cursor=decoded_cursor,
+                 mode=mode,
              )
              
              has_more = len(rows) > top_k
@@ -465,7 +481,7 @@ class DopeMemoryMCPServer:
 
              response_items = []
              for row in items:
-                 response_items.append({
+                 item = {
                      "id": row["id"],
                      "ts_utc": row["source_event_ts_utc"],
                      "category": row["category"],
@@ -474,7 +490,14 @@ class DopeMemoryMCPServer:
                      "outcome": row["outcome"],
                      "importance_score": row["importance_score"],
                      "details": json.loads(row.get("details_json") or "{}"),
-                 })
+                 }
+                 # Include chain annotations in replay_full mode (Packet F §5.3)
+                 if mode == "replay_full":
+                     item["is_head"] = row.get("is_head", True)
+                     item["superseded_by"] = row.get("superseded_by")
+                     item["supersedes"] = row.get("supersedes")
+                     item["chain_position"] = row.get("chain_position")
+                 response_items.append(item)
 
              return ToolResponse(
                  success=True,
@@ -486,6 +509,51 @@ class DopeMemoryMCPServer:
              )
         except Exception as e:
             logger.error(f"memory_replay_session error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
+    def memory_correct(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        entry_id: str,
+        correction_type: str,
+        corrected_summary: Optional[str] = None,
+        corrected_tags: Optional[list[str]] = None,
+        corrected_category: Optional[str] = None,
+        corrected_entry_type: Optional[str] = None,
+        corrected_outcome: Optional[str] = None,
+    ) -> ToolResponse:
+        """Supersede an existing work log entry with a corrected version.
+        
+        The original entry is preserved immutably; a new entry replaces it.
+        Per Packet F §6.
+        """
+        try:
+            store = self._get_store(workspace_id)
+            new_id = store.correct_entry(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                entry_id=entry_id,
+                correction_type=correction_type,
+                corrected_summary=corrected_summary,
+                corrected_tags=corrected_tags,
+                corrected_category=corrected_category,
+                corrected_entry_type=corrected_entry_type,
+                corrected_outcome=corrected_outcome,
+            )
+            return ToolResponse(
+                success=True,
+                data={
+                    "corrected": True,
+                    "new_entry_id": new_id,
+                    "superseded_entry_id": entry_id,
+                    "correction_type": correction_type,
+                },
+            )
+        except ValueError as e:
+            return ToolResponse(success=False, data={"corrected": False}, error=str(e))
+        except Exception as e:
+            logger.error(f"memory_correct error: {e}")
             return ToolResponse(success=False, data={}, error=str(e))
 
     # ─────────────────────────────────────────────────────────────────
@@ -591,7 +659,7 @@ class DopeMemoryMCPServer:
         session_id: Optional[str] = None,
         limit: int = 3,
     ) -> ToolResponse:
-        """Fetch recent reflection cards using ChronicleStore."""
+        """Fetch recent reflection cards with staleness detection (Packet F §7.1)."""
         try:
             store = self._get_store(workspace_id)
             reflections = store.get_reflection_cards(
@@ -675,6 +743,7 @@ class MemorySearchRequest(BaseModel):
     time_range: Optional[str] = None
     top_k: int = Field(default=3, ge=1, le=20)
     cursor: Optional[str] = None
+    include_superseded: bool = False
 
 
 class MemoryStoreRequest(BaseModel):
@@ -735,6 +804,21 @@ class MemoryReplaySessionRequest(BaseModel):
     session_id: str
     top_k: int = Field(default=3, ge=1, le=20)
     cursor: Optional[str] = None
+    mode: str = Field(default="replay_current", pattern=r"^(replay_current|replay_full)$")
+
+
+class MemoryCorrectRequest(BaseModel):
+    """Request for memory_correct tool (Packet F §6.5)."""
+
+    workspace_id: str = DEFAULT_WORKSPACE_ID
+    instance_id: str = DEFAULT_INSTANCE_ID
+    entry_id: str
+    correction_type: str = Field(pattern=r"^(summary|tags|category|outcome|retraction)$")
+    corrected_summary: Optional[str] = None
+    corrected_tags: Optional[list[str]] = None
+    corrected_category: Optional[str] = None
+    corrected_entry_type: Optional[str] = None
+    corrected_outcome: Optional[str] = None
 
 
 class MemoryGenerateReflectionRequest(BaseModel):
@@ -951,6 +1035,7 @@ async def root():
             "memory_mark_issue",
             "memory_link_resolution",
             "memory_replay_session",
+            "memory_correct",
         ],
     }
 
@@ -982,6 +1067,7 @@ async def memory_search(request: MemorySearchRequest):
         filters=filters if filters else None,
         top_k=request.top_k,
         cursor=request.cursor,
+        include_superseded=request.include_superseded,
     )
 
     if not result.success:
@@ -1087,6 +1173,30 @@ async def memory_replay_session(request: MemoryReplaySessionRequest):
         session_id=request.session_id,
         top_k=request.top_k,
         cursor=request.cursor,
+        mode=request.mode,
+    )
+
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.error)
+    return result.data
+
+
+@app.post("/tools/memory_correct")
+async def memory_correct(request: MemoryCorrectRequest):
+    """Supersede a work log entry with a corrected version (Packet F)."""
+    if not mcp_server:
+        raise HTTPException(status_code=503, detail="MCP server not initialized")
+
+    result = mcp_server.memory_correct(
+        workspace_id=request.workspace_id,
+        instance_id=request.instance_id,
+        entry_id=request.entry_id,
+        correction_type=request.correction_type,
+        corrected_summary=request.corrected_summary,
+        corrected_tags=request.corrected_tags,
+        corrected_category=request.corrected_category,
+        corrected_entry_type=request.corrected_entry_type,
+        corrected_outcome=request.corrected_outcome,
     )
 
     if not result.success:
