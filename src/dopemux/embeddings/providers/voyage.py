@@ -8,6 +8,7 @@ with ADHD-optimized error handling and comprehensive cost tracking.
 import asyncio
 import logging
 import time
+from types import SimpleNamespace
 from typing import Dict, List, Optional
 
 import httpx
@@ -349,6 +350,10 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
             logger.error(f"❌ Voyage API connection test failed: {e}")
             return False
 
+    async def validate_connection(self) -> bool:
+        """Backward-compatible alias for connection health checks."""
+        return await self.test_connection()
+
     def reset_usage_tracking(self):
         """Reset usage tracking counters (e.g., for monthly reset)."""
         self.total_tokens = 0
@@ -370,3 +375,13 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
             "embedding_requests": self.embedding_requests,
             "rerank_requests": self.rerank_requests
         }
+
+    async def get_health_metrics(self):
+        """Return provider health metrics in an attribute-friendly object."""
+        return SimpleNamespace(
+            provider_name="voyage",
+            total_requests=self.total_requests,
+            total_tokens=self.total_tokens,
+            embedding_requests=self.embedding_requests,
+            rerank_requests=self.rerank_requests,
+        )

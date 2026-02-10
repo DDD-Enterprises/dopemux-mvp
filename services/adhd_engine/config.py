@@ -34,7 +34,7 @@ class Settings:
     
     # ConPort / DopeconBridge
     conport_url: str = os.getenv("CONPORT_URL", "http://localhost:3010")
-    zen_url: str = os.getenv("ZEN_URL", "http://localhost:3003")
+    pal_url: str = os.getenv("PAL_URL", os.getenv("ZEN_URL", "http://localhost:3003"))  # Backward compat with ZEN_URL
     workspace_id: str = os.getenv("ADHD_WORKSPACE_ID", os.getcwd())
     dopecon_bridge_url: str = os.getenv("DOPECON_BRIDGE_URL", os.getenv("CONPORT_BRIDGE_URL", "http://localhost:3016"))
     dopecon_bridge_token: Optional[str] = os.getenv("DOPECON_BRIDGE_TOKEN")
@@ -59,6 +59,14 @@ class Settings:
 
     # Background prediction service (Phase 3.4)
     enable_background_predictions: bool = os.getenv("ENABLE_BACKGROUND_PREDICTIONS", "true").lower() == "true"
+
+    # Mobile Push (Phase 10.3)
+    enable_mobile_push: bool = os.getenv("ENABLE_MOBILE_PUSH", "false").lower() == "true"
+    ntfy_topic: str = os.getenv("NTFY_TOPIC", "adhd-dopemux-dev")
+
+    # ML Loop (Phase 10.4)
+    ml_retrain_interval_hours: int = int(os.getenv("ML_RETRAIN_INTERVAL_HOURS", "24"))
+    min_training_samples: int = int(os.getenv("MIN_TRAINING_SAMPLES", "50"))
 
 
 # Global settings instance

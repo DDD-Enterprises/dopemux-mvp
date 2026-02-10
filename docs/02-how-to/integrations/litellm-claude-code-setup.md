@@ -52,7 +52,7 @@ DEEPSEEK_API_KEY=your-deepseek-key  # If using DeepSeek direct
 
 **Get API Keys**:
 - OpenRouter: https://openrouter.ai/keys
-- OpenAI: https://platform.openai.com/api-keys
+- OpenAI: https://platform.openai.com/
 - Google AI Studio: https://aistudio.google.com/app/apikey
 - DeepSeek: https://platform.deepseek.com/api-keys
 

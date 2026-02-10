@@ -69,7 +69,7 @@ class CustomProvider(OpenAICompatibleProvider):
         # For Ollama and other providers that don't require authentication,
         # set a dummy API key to avoid OpenAI client header issues
         if not api_key:
-            api_key = "dummy-key-for-unauthenticated-endpoint"
+            api_key = "dummy-key-for-unauthenticated-endpoint"  # pragma: allowlist secret
             logging.debug("Using dummy API key for unauthenticated custom endpoint")
 
         logging.info(f"Initializing Custom provider with endpoint: {base_url}")

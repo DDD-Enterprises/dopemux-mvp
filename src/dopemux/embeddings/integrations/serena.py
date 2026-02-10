@@ -6,8 +6,10 @@ for semantic code search, documentation embedding, and ADHD-optimized
 development workflow integration.
 """
 
+import ast
 import asyncio
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
@@ -28,18 +30,30 @@ class SerenaAdapter(BaseIntegration):
     ADHD-optimized development workflows.
     """
 
-    def __init__(self, config: AdvancedEmbeddingConfig, project_root: str):
+    def __init__(
+        self,
+        config: AdvancedEmbeddingConfig,
+        project_root: Optional[str] = None,
+        serena_client: Optional[Any] = None,
+    ):
         """
         Initialize Serena adapter.
 
         Args:
             config: Embedding configuration
             project_root: Root directory of the project
+            serena_client: Optional Serena MCP/API client
         """
         super().__init__(config)
-        self.project_root = Path(project_root)
+        resolved_root = project_root or os.getcwd()
+        self.project_root = Path(resolved_root)
+        self.integration_name = "serena"
+        self.serena_client = serena_client
         self.connection_status = "unknown"
         self.last_sync_time: Optional[datetime] = None
+        self.supported_languages = [
+            "python", "javascript", "typescript", "java", "cpp", "go", "rust"
+        ]
 
         # File patterns to include/exclude
         self.include_patterns = {
@@ -72,7 +86,7 @@ class SerenaAdapter(BaseIntegration):
             "go": r"^type\s+(\w+)\s+struct"
         }
 
-        logger.info(f"🔌 Serena adapter initialized for project: {project_root}")
+        logger.info(f"🔌 Serena adapter initialized for project: {self.project_root}")
 
     async def validate_connection(self) -> bool:
         """
@@ -82,6 +96,14 @@ class SerenaAdapter(BaseIntegration):
             True if project root exists and is accessible
         """
         try:
+            if self.serena_client and hasattr(self.serena_client, "health_check"):
+                health = await self.serena_client.health_check()
+                healthy_statuses = {"healthy", "ok", "ready", "connected"}
+                status = str(health.get("status", "")).lower() if isinstance(health, dict) else ""
+                is_healthy = status in healthy_statuses or bool(health)
+                self.connection_status = "healthy" if is_healthy else f"error: {health}"
+                return is_healthy
+
             if not self.project_root.exists():
                 self.connection_status = f"error: project root not found at {self.project_root}"
                 return False
@@ -189,7 +211,7 @@ class SerenaAdapter(BaseIntegration):
 
                     # Extract code metadata
                     file_ext = file_path.suffix.lower()
-                    language = self._detect_language(file_ext)
+                    language = self._detect_language_from_extension(file_ext)
                     functions = self._extract_functions(content, language)
                     classes = self._extract_classes(content, language)
 
@@ -359,7 +381,7 @@ class SerenaAdapter(BaseIntegration):
         """Get relative path from project root."""
         return file_path.relative_to(self.project_root)
 
-    def _detect_language(self, file_ext: str) -> str:
+    def _detect_language_from_extension(self, file_ext: str) -> str:
         """Detect programming language from file extension."""
         language_map = {
             ".py": "python",
@@ -374,6 +396,22 @@ class SerenaAdapter(BaseIntegration):
             ".hpp": "cpp"
         }
         return language_map.get(file_ext, "unknown")
+
+    async def _detect_language(self, code: str, filename: str = "") -> str:
+        """Detect language from filename and content heuristics."""
+        ext = Path(filename).suffix.lower()
+        by_ext = self._detect_language_from_extension(ext)
+        if by_ext != "unknown":
+            return by_ext
+
+        text = code.strip()
+        if re.search(r"^\s*def\s+\w+\(", text, flags=re.MULTILINE):
+            return "python"
+        if re.search(r"^\s*function\s+\w+\(", text, flags=re.MULTILINE):
+            return "javascript"
+        if ":" in text and re.search(r"function\s+\w+\([^)]*\)\s*:\s*\w+", text):
+            return "typescript"
+        return "unknown"
 
     def _extract_functions(self, content: str, language: str) -> Dict[str, str]:
         """Extract function definitions from code."""
@@ -487,7 +525,25 @@ class SerenaAdapter(BaseIntegration):
 
             for doc, embedding in zip(documents, embeddings):
                 try:
-                    # Store embedding with file metadata for code navigation
+                    if self.serena_client and hasattr(self.serena_client, "store_code_analysis"):
+                        content = str(doc.get("content", ""))
+                        metadata = doc.get("metadata", {})
+                        file_path = metadata.get("file_path") or doc.get("id", "unknown")
+                        language = metadata.get("type")
+                        if language not in self.supported_languages:
+                            language = await self._detect_language(content, file_path)
+
+                        structure = await self._analyze_code_structure(content, language)
+                        complexity = await self._calculate_complexity(content, language)
+                        await self.serena_client.store_code_analysis(
+                            file_path=file_path,
+                            language=language,
+                            functions=structure["functions"],
+                            classes=structure["classes"],
+                            complexity_score=complexity,
+                            embedding=embedding,
+                            metadata=metadata,
+                        )
                     stored_count += 1
 
                 except Exception as e:
@@ -517,6 +573,23 @@ class SerenaAdapter(BaseIntegration):
 
             for result in results:
                 enhanced_result = result  # Copy original result
+                serena_context: Dict[str, Any] = {}
+
+                if self.serena_client:
+                    try:
+                        if hasattr(self.serena_client, "search_similar_code"):
+                            serena_context["similar_code"] = await self.serena_client.search_similar_code(
+                                query=context.get("query", result.content),
+                                language=context.get("language", result.metadata.get("type", "unknown")),
+                            )
+                        if hasattr(self.serena_client, "get_function_documentation"):
+                            serena_context["function_docs"] = await self.serena_client.get_function_documentation(
+                                function_name=result.doc_id,
+                                language=context.get("language", result.metadata.get("type", "unknown")),
+                            )
+                    except Exception as e:
+                        logger.warning(f"⚠️ Serena context lookup failed: {e}")
+                        serena_context = {}
 
                 # Add code-specific enhancements
                 if result.metadata.get("type") == "code":
@@ -547,6 +620,8 @@ class SerenaAdapter(BaseIntegration):
                         }
                     })
 
+                if serena_context:
+                    enhanced_result.metadata["serena_context"] = serena_context
                 enhanced_results.append(enhanced_result)
 
             return enhanced_results
@@ -594,6 +669,118 @@ class SerenaAdapter(BaseIntegration):
         """Find code files related to documentation."""
         # Mock implementation - would analyze mentions and links
         return []
+
+    async def _analyze_code_structure(self, code: str, language: str) -> Dict[str, Any]:
+        """Extract classes and functions from source code."""
+        classes: List[Dict[str, Any]] = []
+        functions: List[Dict[str, Any]] = []
+
+        try:
+            if language == "python":
+                tree = ast.parse(code)
+                for node in tree.body:
+                    if isinstance(node, ast.ClassDef):
+                        classes.append({"name": node.name, "line": node.lineno})
+                    elif isinstance(node, ast.FunctionDef):
+                        functions.append({"name": node.name, "line": node.lineno})
+                return {"classes": classes, "functions": functions}
+
+            # Generic fallback for non-Python languages.
+            class_pattern = re.compile(r"\bclass\s+([A-Za-z_]\w*)")
+            function_pattern = re.compile(r"\b([A-Za-z_]\w*)\s*\([^)]*\)\s*\{?")
+            for match in class_pattern.finditer(code):
+                classes.append({"name": match.group(1)})
+            for match in function_pattern.finditer(code):
+                name = match.group(1)
+                if name not in {"if", "for", "while", "switch", "catch"}:
+                    functions.append({"name": name})
+        except SyntaxError:
+            return {"classes": [], "functions": []}
+        except Exception:
+            return {"classes": [], "functions": []}
+
+        return {"classes": classes, "functions": functions}
+
+    async def _calculate_complexity(self, code: str, language: str) -> int:
+        """Calculate a lightweight cyclomatic-style complexity score."""
+        control_terms = [
+            "if",
+            "elif",
+            "else",
+            "for",
+            "while",
+            "except",
+            "case",
+            "catch",
+            " and ",
+            " or ",
+            "&&",
+            "||",
+        ]
+        lowered = f" {code.lower()} "
+        complexity = 1
+        for term in control_terms:
+            if term.strip() in {"&&", "||"}:
+                complexity += lowered.count(term)
+            else:
+                complexity += len(re.findall(rf"\b{re.escape(term.strip())}\b", lowered))
+        return max(1, complexity)
+
+    async def _generate_documentation(self, code: str, symbol_name: str) -> Dict[str, Any]:
+        """Generate or fetch function documentation from Serena."""
+        if self.serena_client and hasattr(self.serena_client, "generate_documentation"):
+            try:
+                docs = await self.serena_client.generate_documentation(
+                    code=code,
+                    symbol_name=symbol_name,
+                )
+                if isinstance(docs, dict):
+                    return docs
+            except Exception:
+                pass
+        return {
+            "summary": f"Documentation for {symbol_name}",
+            "parameters": {},
+            "returns": "Unknown",
+            "complexity": "Unknown",
+            "examples": [],
+        }
+
+    async def _find_related_patterns(self, query_code: str, language: str) -> List[Dict[str, Any]]:
+        """Find related implementation patterns via Serena, when available."""
+        if self.serena_client and hasattr(self.serena_client, "find_similar_patterns"):
+            try:
+                patterns = await self.serena_client.find_similar_patterns(
+                    query_code=query_code,
+                    language=language,
+                )
+                if isinstance(patterns, list):
+                    return patterns
+            except Exception:
+                pass
+        return []
+
+    def _is_code_file(self, file_name: str) -> bool:
+        """Return whether a filename looks like source code."""
+        return Path(file_name).suffix.lower() in {
+            ".py", ".js", ".ts", ".java", ".cpp", ".c", ".go", ".rs", ".h", ".hpp"
+        }
+
+    def _extract_imports(self, code: str, language: str) -> Set[str]:
+        """Extract import/module dependencies from source code."""
+        imports: Set[str] = set()
+        if language == "python":
+            for line in code.splitlines():
+                line = line.strip()
+                if line.startswith("import "):
+                    modules = [part.strip() for part in line[len("import "):].split(",")]
+                    for module in modules:
+                        imports.add(module.split()[0].split(".")[0])
+                elif line.startswith("from ") and " import " in line:
+                    module = line[len("from "):].split(" import ", 1)[0].strip()
+                    if module:
+                        imports.add(module.split(".")[0])
+        return imports
 
     def get_integration_status(self) -> Dict[str, Any]:
         """

@@ -14,15 +14,15 @@ from typing import Optional, Tuple, Sequence, List, Dict
 from dataclasses import dataclass
 
 import click
-from rich.console import Console
 from rich.table import Table
 from rich.prompt import Confirm
 from click.shell_completion import CompletionItem
 
 from ..config import ConfigManager
+from ..console import console
 from .controller import TmuxController, PaneInfo
 from ..mobile.runtime import ensure_dependency, env_for_happy
-# tmux_utils refactored out to controller
+from ..mobile import tmux_utils
 from ..roles.catalog import available_roles, resolve_role, RoleNotFoundError
 from ..litellm_proxy import (
     DEFAULT_LITELLM_CONFIG,
@@ -30,16 +30,6 @@ from ..litellm_proxy import (
     LiteLLMProxyError,
     sync_litellm_database,
 )
-
-console = Console()
-class _ConsoleAdapter:
-    def __init__(self, c):
-        self._c = c
-    def info(self, *args, **kwargs):
-        self._c.print(*args, **kwargs)
-    def error(self, *args, **kwargs):
-        self._c.print(*args, **kwargs)
-console.logger = _ConsoleAdapter(console)
 
 
 @dataclass
@@ -93,7 +83,6 @@ HOUSE_THEME = {
         "#[fg=#a6e3a1]#H #[default]"
     ),
     "status_right": (
-        "#[fg=#fab387]#{E:@adhd_icon} #[default]"
         "#[fg=#a6e3a1]#{@dopemux_mobile_indicator:-📱 idle} #[default]"
         "#[fg=#b4befe]#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo '🤖') #[default]"
         "#[fg=#f5c2e7]  %R #[fg=#89dceb]%a %b %d "
@@ -152,7 +141,6 @@ NEON_THEME = {
         "#[fg=#94fadb]#H #[default]"
     ),
     "status_right": (
-        "#[fg=#f5f26d]#{E:@adhd_icon} #[default]"
         "#[fg=#94fadb]#{@dopemux_mobile_indicator:-📱 idle} #[default]"
         "#[fg=#ffcf78]#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo '🤖') #[default]"
         "#[fg=#ff8bd1]  %R #[fg=#7dfbf6]%a %b %d "
@@ -176,12 +164,11 @@ THEME_PRESETS: Dict[str, Dict[str, Dict[str, str]]] = {
 }
 
 
-logger = logging.getLogger(__name__)
-
 def _resolve_theme(config) -> Dict[str, Dict[str, str]]:
     """Merge theme preset with user overrides from configuration."""
     theme_key = (getattr(config, "theme", None) or "muted").lower()
     base = THEME_PRESETS.get(theme_key, HOUSE_THEME)
+
     merged = {
         "pane_styles": dict(base.get("pane_styles", {})),
         "pane_border_styles": dict(base.get("pane_border_styles", {})),
@@ -190,6 +177,7 @@ def _resolve_theme(config) -> Dict[str, Dict[str, str]]:
         "status_left": base.get("status_left"),
         "status_right": base.get("status_right"),
     }
+
     # Apply config overrides
     merged["pane_styles"].update(getattr(config, "pane_styles", {}) or {})
     merged["pane_border_styles"].update(getattr(config, "pane_border_styles", {}) or {})
@@ -205,11 +193,7 @@ def _resolve_theme(config) -> Dict[str, Dict[str, str]]:
     return merged
 
 
-def _apply_status_theme(
-    controller: TmuxController,
-    session: str,
-    theme: Dict[str, Dict[str, str]],
-) -> None:
+def _apply_status_theme(session: str, theme: Dict[str, Dict[str, str]]) -> None:
     """Set status line styling based on resolved theme."""
     status_style = theme.get("status_style")
     status_left = theme.get("status_left")
@@ -217,14 +201,13 @@ def _apply_status_theme(
 
     try:
         if status_style:
-            controller.set_session_option(session, "status-style", status_style)
+            tmux_utils.set_session_option(session, "status-style", status_style)
         if status_left:
-            controller.set_session_option(session, "status-left", status_left)
+            tmux_utils.set_session_option(session, "status-left", status_left)
         if status_right:
-            controller.set_session_option(session, "status-right", status_right)
-    except Exception as e:
+            tmux_utils.set_session_option(session, "status-right", status_right)
+    except Exception:
         pass
-
 
 
 def _apply_theme_to_session(
@@ -238,41 +221,40 @@ def _apply_theme_to_session(
     status_palette = theme.get("status_palette", {})
 
     try:
-        _apply_status_theme(controller, session, theme)
-        controller.set_session_option(
+        _apply_status_theme(session, theme)
+        tmux_utils.set_session_option(
             session,
             "pane-border-style",
             f"fg={status_palette.get('foreground', '#cdd6f4')},bg={status_palette.get('background', '#11111b')}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "pane-active-border-style",
             f"fg={status_palette.get('warning', '#ffcf78')},bg={status_palette.get('background', '#11111b')}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "window-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "window-active-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "@dopemux_title_fg",
             status_palette.get("foreground", "#cdd6f4"),
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "@dopemux_title_bg",
             status_palette.get("background", "#1e1e2e"),
         )
-        controller.set_session_option(session, "aggressive-resize", "on")
-    except Exception as e:
+        tmux_utils.set_session_option(session, "aggressive-resize", "on")
+    except Exception:
         pass
-
 
     panes = controller.backend.list_panes()
     for pane in panes:
@@ -284,16 +266,14 @@ def _apply_theme_to_session(
         border_style = border_palette.get(title) or border_palette.get(key)
         if style:
             try:
-                controller.set_pane_style(pane.pane_id, style)
-            except Exception as e:
+                tmux_utils.set_pane_style(pane.pane_id, style)
+            except Exception:
                 pass
-
         if border_style:
             try:
-                controller.set_pane_border_style(pane.pane_id, border_style)
-            except Exception as e:
+                tmux_utils.set_pane_border_style(pane.pane_id, border_style)
+            except Exception:
                 pass
-
 
 def _get_controller(ctx: click.Context, force_cli_backend: bool = False) -> TmuxController:
     manager = ctx.obj.get("config_manager") if ctx.obj else None
@@ -389,16 +369,15 @@ def _launch_happy_for_targets(
     if popup_mode and not os.environ.get("TMUX"):
         click.echo("[yellow]⚠️  No active tmux client detected; launching Happy in a pane instead of popup.[/yellow]")
         popup_mode = False
-    env_prefix = " ".join(f"{key}={shlex.quote(value)}" for key, value in env.items())
-    command = f"{env_prefix} happy" if env_prefix else "happy"
+    command = tmux_utils.build_env_command("happy", env)
 
     if popup_mode:
         labels = [label for _, label, _ in resolved] or ["primary"]
         label_text = ", ".join(labels)
         try:
-            controller.display_popup(command, width="85%", height="90%")
+            tmux_utils.display_popup(command, width="85%", height="90%")
             click.echo(f"🪟 Happy popup launched for {label_text}. Close it when connected.")
-        except Exception as exc:
+        except tmux_utils.TmuxError as exc:
             click.echo(f"❌ Failed to launch Happy popup: {exc}")
         return
 
@@ -458,7 +437,7 @@ def list_panes(ctx: click.Context, session: Optional[str]) -> None:
             "✅" if pane.active else "",
         )
 
-    console.log(table)
+    console.print(table)
 
 
 @tmux.command("open")
@@ -541,14 +520,10 @@ def capture_pane_output(
         click.echo(f"❌ Pane not found: {target}")
         return
     
-    capture_all = start is not None or end is not None
-    content = controller.capture(pane.pane_id, lines=None if capture_all else lines)
-
-    if capture_all:
-        content_lines = content.splitlines()
-        start_idx = max((start or 1) - 1, 0)
-        end_idx = len(content_lines) if end is None else max(end, 0)
-        content = "\n".join(content_lines[start_idx:end_idx])
+    if start is not None:
+        content = tmux_utils.get_pane_content(pane.pane_id, start, end or -1)
+    else:
+        content = tmux_utils.capture_pane(pane.pane_id, lines)
     
     click.echo(content)
 
@@ -593,13 +568,11 @@ def list_sessions(ctx: click.Context, attach: bool, session_name: Optional[str])
     """List tmux sessions and optionally attach/switch."""
 
     cfg_manager = _resolve_config_manager(ctx)
-    controller = _get_controller(ctx)
     tmux_cfg = cfg_manager.get_tmux_config()
 
     try:
-        panes = controller.backend.list_panes()
-        sessions = sorted({pane.session for pane in panes if pane.session})
-    except Exception as exc:
+        sessions = tmux_utils.list_sessions()
+    except tmux_utils.TmuxError as exc:
         click.echo(f"❌ Unable to list tmux sessions: {exc}")
         return
 
@@ -615,24 +588,23 @@ def list_sessions(ctx: click.Context, attach: bool, session_name: Optional[str])
     for name in sessions:
         table.add_row(name, "⭐" if name == default_session else "")
 
-    console.log(table)
+    console.print(table)
 
     if not attach:
         return
 
-    target = session_name or (default_session if default_session in sessions else sessions[0])
-    if target not in sessions:
-        click.echo(f"❌ Session '{target}' not found; skipping attach.")
-        return
-
-    inside_tmux = bool(os.environ.get("TMUX"))
-    if inside_tmux:
-        click.echo(f"🔁 Switching to tmux session '{target}'...")
-        controller.switch_client(target)
+    session_env = os.environ.get("DOPEMUX_TMUX_SESSION")
+    session_name = None
+    if session_env:
+        session_name = session_env.split(":")[0]
     else:
-        click.echo(f"🔗 Attaching to tmux session '{target}'...")
-        controller.attach_session(target)
-
+        try:
+            panes = controller.backend.list_panes()
+            active_pane = next((pane for pane in panes if pane.active), panes[0] if panes else None)
+            if active_pane:
+                session_name = active_pane.session
+        except Exception:
+            session_name = None
 
 @tmux.command("theme")
 @click.argument("preset", required=False, type=click.Choice(sorted(THEME_PRESETS.keys())))
@@ -647,7 +619,7 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
 
     if not preset:
         current = (tmux_cfg.theme or "muted").lower()
-        console.log("\n[bold cyan]🎨 Dopemux tmux theme presets[/bold cyan]")
+        console.print("\n[bold cyan]🎨 Dopemux tmux theme presets[/bold cyan]")
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Preset")
         table.add_column("Status")
@@ -664,7 +636,7 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
                 status,
                 f"accent {accent} · info {info} · alert {alert}",
             )
-        console.log(table)
+        console.print(table)
         console.print(
             "\nUse `dopemux tmux theme <preset> --apply` inside tmux to switch, "
             "or set `tmux.theme = \"<preset>\"` in dopemux.toml for a permanent change.\n"
@@ -672,11 +644,11 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
         return
 
     theme = THEME_PRESETS[preset]
-    console.log(f"[cyan]Previewing theme:[/cyan] [bold]{preset}[/bold]")
-    console.log(f"Status palette: {theme['status_palette']}")
+    console.print(f"[cyan]Previewing theme:[/cyan] [bold]{preset}[/bold]")
+    console.print(f"Status palette: {theme['status_palette']}")
 
     if not apply:
-        console.log("\n[yellow]Tip:[/yellow] Run again with --apply from inside tmux to apply live.")
+        console.print("\n[yellow]Tip:[/yellow] Run again with --apply from inside tmux to apply live.")
         return
 
     session_env = os.environ.get("DOPEMUX_TMUX_SESSION")
@@ -689,19 +661,30 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
             active_pane = next((pane for pane in panes if pane.active), panes[0] if panes else None)
             if active_pane:
                 session_name = active_pane.session
-        except Exception as e:
+        except Exception:
             session_name = None
 
-
     if not session_name:
-        console.log("[red]❌ No active tmux session detected. Use --apply from inside tmux.[/red]")
+        console.print("[red]❌ No active tmux session detected. Use --apply from inside tmux.[/red]")
         return
 
     try:
         _apply_theme_to_session(controller, session_name, theme)
-        console.log(f"[green]✅ Applied '{preset}' theme to session {session_name}.[/green]")
+        console.print(f"[green]✅ Applied '{preset}' theme to session {session_name}.[/green]")
     except Exception as exc:  # pragma: no cover - tmux errors are environment-specific
-        console.log(f"[red]❌ Unable to apply theme: {exc}[/red]")
+        console.print(f"[red]❌ Unable to apply theme: {exc}[/red]")
+    target = session_name or (default_session if default_session in sessions else sessions[0])
+    if target not in sessions:
+        click.echo(f"❌ Session '{target}' not found; skipping attach.")
+        return
+
+    inside_tmux = bool(os.environ.get("TMUX"))
+    if inside_tmux:
+        click.echo(f"🔁 Switching to tmux session '{target}'...")
+        tmux_utils.switch_client(target)
+    else:
+        click.echo(f"🔗 Attaching to tmux session '{target}'...")
+        tmux_utils.attach_session(target)
 
 
 def _happy_label(pane: Optional[PaneInfo]) -> str:
@@ -742,13 +725,13 @@ def _prepare_orchestrator_base(
         # If we just created the session, the window already exists with the correct name
         if not created_new_session:
             try:
-                controller.kill_window(session, window_name)
-            except Exception:
+                tmux_utils.kill_window(session, window_name)
+            except tmux_utils.TmuxError:
                 pass
             else:
                 # Killing the final window implicitly destroys the session; recreate it so splits work.
-                if not controller.session_exists(session):
-                    controller.create_session(
+                if not tmux_utils.session_exists(session):
+                    tmux_utils.create_session(
                         session,
                         start_directory=start_dir,
                         window_name=window_name,
@@ -758,7 +741,7 @@ def _prepare_orchestrator_base(
         # Only create new window if we didn't just create the session
         if created_new_session or recreated_session:
             # Use the existing window from session creation/recreation
-            controller.select_window(session, window_name)
+            tmux_utils.select_window(session, window_name)
             # Get the pane from the window we created
             refreshed = controller.backend.list_panes()
             base_pane = next(
@@ -768,15 +751,14 @@ def _prepare_orchestrator_base(
             if base_pane is None:
                 raise click.ClickException("Unable to find pane in newly created session")
         else:
-            pane_id = controller.new_window(
+            pane_id = tmux_utils.new_window(
+                window_name,
+                shell_cmd,
                 session=session,
-                window_name=window_name,
-                command=shell_cmd,
-                attach=False,
                 start_directory=start_dir,
-                environment={},
+                attach=False,
             )
-            controller.select_window(session, window_name)
+            tmux_utils.select_window(session, window_name)
             base_pane = controller.resolve_pane(pane_id)
     else:
         # When invoked from inside the orchestrator window, reuse the active pane
@@ -788,11 +770,10 @@ def _prepare_orchestrator_base(
                 and pane.pane_id != base_pane.pane_id
             ):
                 try:
-                    controller.close_pane(pane.pane_id)
-                except Exception as e:
+                    controller.backend.kill_pane(pane.pane_id)
+                except Exception:
                     pass
-
-        controller.select_window(session, window_name)
+        tmux_utils.select_window(session, window_name)
 
     if created_new_session:
         # Window was already created with the correct name, no need to kill "main"
@@ -816,7 +797,6 @@ def _setup_orchestrator_layout(
     start_dir: str,
     config,
     dual_agent: bool,
-    pm_mode: bool = False,
 ) -> OrchestratorLayout:
     shell_cmd = os.environ.get("SHELL", "/bin/bash")
     theme = _resolve_theme(config)
@@ -826,41 +806,40 @@ def _setup_orchestrator_layout(
 
     # Apply session-wide visual defaults before splitting
     try:
-        controller.set_session_option(session, "status", "on")
-        controller.set_session_option(session, "status-interval", "2")
-        controller.set_session_option(session, "status-left-length", "80")
-        controller.set_session_option(session, "status-right-length", "140")
-        _apply_status_theme(controller, session, theme)
+        tmux_utils.set_session_option(session, "status", "on")
+        tmux_utils.set_session_option(session, "status-interval", "2")
+        tmux_utils.set_session_option(session, "status-left-length", "80")
+        tmux_utils.set_session_option(session, "status-right-length", "140")
+        _apply_status_theme(session, theme)
         default_border_fg = status_palette.get("foreground", "#cdd6f4")
         default_border_bg = status_palette.get("background", "#11111b")
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "pane-border-style",
             f"fg={default_border_fg},bg={default_border_bg}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "window-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "window-active-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "@dopemux_title_fg",
             status_palette.get("foreground", "#cdd6f4"),
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "@dopemux_title_bg",
             status_palette.get("background", "#1e1e2e"),
         )
-    except Exception as e:
+    except Exception:
         pass
-
 
     # Create bottom agent band (new pane below base). Reserve ~30% height for agents.
     agent_pane_id = controller.backend.split_window(
@@ -910,12 +889,11 @@ def _setup_orchestrator_layout(
         for p in existing:
             if (p.title or "").strip() == "orchestrator:control" and p.pane_id != orchestrator_id:
                 try:
-                    controller.close_pane(p.pane_id)
-                except Exception as e:
+                    controller.backend.kill_pane(p.pane_id)
+                except Exception:
                     pass
-    except Exception as e:
+    except Exception:
         pass
-
 
     # Split monitors into two columns (60% / 40%)
     monitor_right_id = controller.backend.split_window(
@@ -933,10 +911,9 @@ def _setup_orchestrator_layout(
     window_name = "0"
     click.echo(f"[dim]Debug: base_pane.window={base_pane.window}, pane_id={base_pane.pane_id}[/dim]")
     try:
-        controller.rename_window(session, window_name, "dopemux")
+        tmux_utils.rename_window(session, window_name, "dopemux")
     except Exception as e:
         click.echo(f"[dim]Note: Could not rename window: {e}[/dim]")
-
 
     # Build bottom row: agent:primary | agent:secondary (if enabled)
     secondary_agent_id: Optional[str] = None
@@ -965,25 +942,19 @@ def _setup_orchestrator_layout(
 
     for pane_id, title in pane_titles:
         short_key = title.split(":")[0] if ":" in title else title
-        try:
-            controller.backend.rename_pane(pane_id, title)
-        except Exception:
-            pass
-        
+        tmux_utils.set_pane_title(pane_id, title)
         style = pane_palette.get(title) or pane_palette.get(short_key)
         if style:
             try:
-                controller.set_pane_style(pane_id, style)
-            except Exception as e:
+                tmux_utils.set_pane_style(pane_id, style)
+            except Exception:
                 pass
-
         border_style = border_palette.get(title) or border_palette.get(short_key)
         if border_style:
             try:
-                controller.set_pane_border_style(pane_id, border_style)
-            except Exception as e:
+                tmux_utils.set_pane_border_style(pane_id, border_style)
+            except Exception:
                 pass
-
 
     monitor_commands = getattr(config, "monitor_commands", {}) or {}
 
@@ -998,48 +969,33 @@ def _setup_orchestrator_layout(
         interval = 8
         return f"while true; do clear; {raw}; sleep {interval}; done"
 
-    if pm_mode:
-        project_dir = shlex.quote(start_dir)
-        try:
-            for pane_id in (top_monitors_id, monitor_right_id):
-                controller.send_keys(
-                    pane_id,
-                    f"cd {project_dir}; clear; bash scripts/pm-dashboard.sh pm",
-                    enter=True,
-                    raw=True,
-                    respect_rate_limit=False,
-                )
-        except Exception as e:
-            pass
-
-    else:
-        for pane_id, title in pane_titles:
-            cmd = monitor_commands.get(title)
-            if cmd:
-                prepared = _prepare_monitor_command(cmd)
-                if prepared:
-                    try:
-                        controller.send_keys(
-                            pane_id,
-                            prepared,
-                            enter=True,
-                            raw=True,
-                            respect_rate_limit=False,
-                        )
-                    except Exception as e:
-                        logger.error(f"Error: {e}")
-            else:
-                if title.startswith("monitor:"):
-                    placeholder = (
-                        f"clear; printf '📊 Configure monitor_commands[\"{title}\"] in dopemux.toml.\\n'"
-                    )
+    for pane_id, title in pane_titles:
+        cmd = monitor_commands.get(title)
+        if cmd:
+            prepared = _prepare_monitor_command(cmd)
+            if prepared:
+                try:
                     controller.send_keys(
                         pane_id,
-                        placeholder,
+                        prepared,
                         enter=True,
                         raw=True,
                         respect_rate_limit=False,
                     )
+                except Exception:
+                    pass
+        else:
+            if title.startswith("monitor:"):
+                placeholder = (
+                    f"clear; printf '📊 Configure monitor_commands[\"{title}\"] in dopemux.toml.\\n'"
+                )
+                controller.send_keys(
+                    pane_id,
+                    placeholder,
+                    enter=True,
+                    raw=True,
+                    respect_rate_limit=False,
+                )
 
     orchestrator_cmd = (
         getattr(config, "orchestrator_command", None) or "dopemux start --role orchestrator --no-recovery"
@@ -1067,7 +1023,6 @@ def _setup_orchestrator_layout(
             f"export DOPEMUX_TMUX_SESSION={session}; "
             f"unset DOPEMUX_NON_INTERACTIVE; "
             f"export DOPEMUX_AGENT_ROLE=orchestrator; "
-            f"export ZEN_THINKING_MODE=deep; export ZEN_THINKING_LEVEL=high; export ZEN_MULTI_MODEL=1; "
             f"export DOPEMUX_SANDBOX_PANE={sandbox_id}; "
             f"export DOPEMUX_AGENT_PANE={agent_pane_id}; "
         )
@@ -1151,13 +1106,13 @@ def _setup_orchestrator_layout(
     )
 
     if secondary_agent_id:
-        secondary_cmd = getattr(config, "secondary_agent_command", None) or ("dopemux start --role research" if pm_mode else "dopemux start --role secondary")
+        secondary_cmd = getattr(config, "secondary_agent_command", None) or "dopemux start --role secondary"
         secondary_prefix = (
             f"{litellm_env}"
             f"export DOPEMUX_DEFAULT_LITELLM=1; "
             f"export DOPEMUX_TMUX_SESSION={session}; "
             f"export DOPEMUX_NON_INTERACTIVE=1; "
-            f"export DOPEMUX_AGENT_ROLE={'research' if pm_mode else 'secondary'}; "
+            f"export DOPEMUX_AGENT_ROLE=secondary; "
             f"export DOPEMUX_ORCHESTRATOR_PANE={orchestrator_id}; "
             f"export DOPEMUX_PRIMARY_AGENT_PANE={agent_pane_id}; "
         )
@@ -1174,7 +1129,7 @@ def _setup_orchestrator_layout(
             respect_rate_limit=False,
         )
 
-    controller.focus_pane(agent_pane_id)
+    tmux_utils.focus_pane(agent_pane_id)
 
     return OrchestratorLayout(
         monitors=[top_monitors_id, monitor_right_id],
@@ -1193,7 +1148,6 @@ def _setup_dope_layout(
     config,
     dual_agent: bool,
     bootstrap: bool,
-    pm_mode: bool = False,
 ) -> OrchestratorLayout:
     shell_cmd = os.environ.get("SHELL", "/bin/bash")
     theme = _resolve_theme(config)
@@ -1202,45 +1156,84 @@ def _setup_dope_layout(
     status_palette = theme.get("status_palette", {})
 
     try:
-        controller.set_session_option(session, "status", "on")
-        controller.set_session_option(session, "status-interval", "2")
-        controller.set_session_option(session, "status-left-length", "80")
-        controller.set_session_option(session, "status-right-length", "160")
-        _apply_status_theme(controller, session, theme)
+        tmux_utils.set_session_option(session, "status", "on")
+        tmux_utils.set_session_option(session, "status-interval", "2")
+        tmux_utils.set_session_option(session, "status-left-length", "80")
+        tmux_utils.set_session_option(session, "status-right-length", "160")
+        _apply_status_theme(session, theme)
         default_border_fg = status_palette.get("foreground", "#cdd6f4")
         default_border_bg = status_palette.get("background", "#11111b")
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "pane-border-style",
             f"fg={default_border_fg},bg={default_border_bg}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "window-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "window-active-style",
             f"bg={status_palette.get('background', '#11111b')}",
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "@dopemux_title_fg",
             status_palette.get("foreground", "#cdd6f4"),
         )
-        controller.set_session_option(
+        tmux_utils.set_session_option(
             session,
             "@dopemux_title_bg",
             status_palette.get("background", "#1e1e2e"),
         )
-    except Exception as e:
+    except Exception:
         pass
 
-
-    # Bottom band for agents (~25% height - increased from 18%)
-    agent_pane_id = controller.backend.split_window(
+    # Create top row with metrics bar (15% height, horizontal split for 1/3 width)
+    top_row_id = controller.backend.split_window(
         target=base_pane.pane_id,
+        command=shell_cmd,
+        vertical=True,
+        start_directory=start_dir,
+        focus=False,
+        environment={},
+        session=session,
+        percent=15,
+    )
+
+    # Split top row horizontally into 3 parts, metrics bar is 1/3 width
+    metrics_placeholder_1 = controller.backend.split_window(
+        target=top_row_id,
+        command=shell_cmd,
+        vertical=False,
+        start_directory=start_dir,
+        focus=False,
+        environment={},
+        session=session,
+        percent=33,
+    )
+
+    metrics_placeholder_2 = controller.backend.split_window(
+        target=top_row_id,
+        command=shell_cmd,
+        vertical=False,
+        start_directory=start_dir,
+        focus=False,
+        environment={},
+        session=session,
+        percent=50,
+    )
+
+    metrics_bar_id = top_row_id  # The remaining 1/3 is metrics bar
+
+    # Now work with the remaining space (85% height)
+    remaining_id = base_pane.pane_id
+
+    # Create bottom band for agents (~25% of remaining height)
+    agent_pane_id = controller.backend.split_window(
+        target=remaining_id,
         command=shell_cmd,
         vertical=True,
         start_directory=start_dir,
@@ -1250,47 +1243,48 @@ def _setup_dope_layout(
         percent=25,
     )
 
-    top_stack_id = base_pane.pane_id
+    # Middle section (~75% of remaining)
+    middle_section_id = remaining_id
 
-    # Create middle band (~55% of remaining space - increased from 45%)
+    # Create middle band within middle section (~60% height)
     middle_band_id = controller.backend.split_window(
-        target=top_stack_id,
+        target=middle_section_id,
         command=shell_cmd,
         vertical=True,
         start_directory=start_dir,
         focus=False,
         environment={},
         session=session,
-        percent=65,
+        percent=70,
     )
 
-    monitors_parent_id = top_stack_id
+    # Monitors section (~30% of middle section)
+    monitors_section_id = middle_section_id
 
-    # Allocate metrics bar (~10% of monitors area - reduced from 12%)
-    metrics_bar_id = controller.backend.split_window(
-        target=monitors_parent_id,
-        command=shell_cmd,
-        vertical=True,
-        start_directory=start_dir,
-        focus=False,
-        environment={},
-        session=session,
-        percent=10,
-    )
-
-    monitors_left_id = monitors_parent_id
-
-    # Create right monitor (35% width - reduced from 40%)
-    monitor_right_id = controller.backend.split_window(
-        target=monitors_left_id,
+    # Split monitors horizontally into 3 equal columns
+    monitor_1_id = controller.backend.split_window(
+        target=monitors_section_id,
         command=shell_cmd,
         vertical=False,
         start_directory=start_dir,
         focus=False,
         environment={},
         session=session,
-        percent=35,
+        percent=33,
     )
+
+    monitor_2_id = controller.backend.split_window(
+        target=monitors_section_id,
+        command=shell_cmd,
+        vertical=False,
+        start_directory=start_dir,
+        focus=False,
+        environment={},
+        session=session,
+        percent=50,
+    )
+
+    monitor_3_id = monitors_section_id  # Remaining third
 
     # Split middle band into orchestrator (75%) and sandbox (25%)
     # Increased orchestrator from 70% to 75% for more content space
@@ -1313,19 +1307,17 @@ def _setup_dope_layout(
             if (p.title or "").strip() == "orchestrator:control" and p.pane_id != orchestrator_id:
                 try:
                     controller.backend.kill_pane(p.pane_id)
-                except Exception as e:
+                except Exception:
                     pass
-    except Exception as e:
+    except Exception:
         pass
-
 
     window_name = "0"
     click.echo(f"[dim]Debug: base_pane.window={base_pane.window}, pane_id={base_pane.pane_id}[/dim]")
     try:
-        controller.rename_window(session, window_name, "dopemux")
+        tmux_utils.rename_window(session, window_name, "dopemux")
     except Exception as exc:
         click.echo(f"[dim]Note: Could not rename window: {exc}[/dim]")
-
 
     secondary_agent_id: Optional[str] = None
     if dual_agent:
@@ -1341,117 +1333,79 @@ def _setup_dope_layout(
         )
 
     pane_titles = [
-        (monitors_left_id, "📊 monitor:adhd"),
-        (monitor_right_id, "⚙️ monitor:system"),
+        (monitor_1_id, "📊 monitor:adhd"),
+        (monitor_2_id, "⚙️ monitor:system"),
+        (monitor_3_id, "🔍 monitor:worktree"),
         (orchestrator_id, "🎯 orchestrator:control"),
         (sandbox_id, "🎮 sandbox:shell"),
         (agent_pane_id, "🤖 agent:primary"),
         (metrics_bar_id, "📈 metrics:bar"),
+        (metrics_placeholder_1, "metrics:spacer1"),
+        (metrics_placeholder_2, "metrics:spacer2"),
     ]
     if secondary_agent_id:
         pane_titles.append((secondary_agent_id, "🤖 agent:secondary"))
 
     for pane_id, title in pane_titles:
         short_key = title.split(":")[0] if ":" in title else title
-        controller.set_pane_title(pane_id, title)
+        tmux_utils.set_pane_title(pane_id, title)
         style = pane_palette.get(title) or pane_palette.get(short_key)
         if style:
             try:
-                controller.set_pane_style(pane_id, style)
-            except Exception as e:
+                tmux_utils.set_pane_style(pane_id, style)
+            except Exception:
                 pass
-
         border_style = border_palette.get(title) or border_palette.get(short_key)
         if border_style:
             try:
-                controller.set_pane_border_style(pane_id, border_style)
-            except Exception as e:
+                tmux_utils.set_pane_border_style(pane_id, border_style)
+            except Exception:
                 pass
-
 
     python_exec = sys.executable or shutil.which("python3") or "python3"
     python_cmd = shlex.quote(python_exec)
     project_dir = shlex.quote(start_dir)
 
     if bootstrap:
-        if pm_mode:
-            pm_cmd_left = (
-                f"cd {project_dir}; "
-                "clear; printf '📋 PM Dashboard (Epics/Tasks) ...\\n'; "
-                "bash scripts/pm-dashboard.sh pm"
-            )
-            controller.send_keys(
-                monitors_left_id,
-                pm_cmd_left,
-                enter=True,
-                raw=True,
-                respect_rate_limit=False,
-            )
+        dashboard_left_cmd = (
+            f"cd {project_dir}; "
+            "clear; printf '💡 Loading Neon dashboard (implementation) ...\\n'; "
+            "export NEON_DASHBOARD_PANE_ROLE=left; "
+            f"{python_cmd} scripts/neon_dashboard/core/app.py"
+        )
+        controller.send_keys(
+            monitors_left_id,
+            dashboard_left_cmd,
+            enter=True,
+            raw=True,
+            respect_rate_limit=False,
+        )
 
-            pm_cmd_right = (
-                f"cd {project_dir}; "
-                "clear; printf '🧠 PM Orchestrator (Zen) ...\\n'; "
-                "DASHBOARD_MODE=pm bash scripts/pm-dashboard.sh orchestrator"
-            )
-            controller.send_keys(
-                monitor_right_id,
-                pm_cmd_right,
-                enter=True,
-                raw=True,
-                respect_rate_limit=False,
-            )
+        dashboard_right_cmd = (
+            f"cd {project_dir}; "
+            "clear; printf '🧭 Loading Neon dashboard (system/PM) ...\\n'; "
+            "export NEON_DASHBOARD_PANE_ROLE=right; "
+            f"{python_cmd} scripts/neon_dashboard/core/app.py"
+        )
+        controller.send_keys(
+            monitor_right_id,
+            dashboard_right_cmd,
+            enter=True,
+            raw=True,
+            respect_rate_limit=False,
+        )
 
-            metrics_cmd = (
-                f"cd {project_dir}; "
-                "while true; do clear; dopemux bridge stats || dopemux health; sleep 15; done"
-            )
-            controller.send_keys(
-                metrics_bar_id,
-                metrics_cmd,
-                enter=True,
-                raw=True,
-                respect_rate_limit=False,
-            )
-        else:
-            dashboard_left_cmd = (
-                f"cd {project_dir}; "
-                "clear; printf '💡 Loading Neon dashboard (implementation) ...\\n'; "
-                "export NEON_DASHBOARD_PANE_ROLE=left; "
-                f"{python_cmd} scripts/neon_dashboard/core/app.py"
-            )
-            controller.send_keys(
-                monitors_left_id,
-                dashboard_left_cmd,
-                enter=True,
-                raw=True,
-                respect_rate_limit=False,
-            )
-
-            dashboard_right_cmd = (
-                f"cd {project_dir}; "
-                "clear; printf '🧭 Loading Neon dashboard (system/PM) ...\\n'; "
-                "export NEON_DASHBOARD_PANE_ROLE=right; "
-                f"{python_cmd} scripts/neon_dashboard/core/app.py"
-            )
-            controller.send_keys(
-                monitor_right_id,
-                dashboard_right_cmd,
-                enter=True,
-                raw=True,
-                respect_rate_limit=False,
-            )
-
-            metrics_cmd = (
-                f"cd {project_dir}; "
-                "while true; do clear; dopemux health; sleep 10; done"
-            )
-            controller.send_keys(
-                metrics_bar_id,
-                metrics_cmd,
-                enter=True,
-                raw=True,
-                respect_rate_limit=False,
-            )
+        metrics_cmd = (
+            f"cd {project_dir}; "
+            "while true; do clear; dopemux health; sleep 10; done"
+        )
+        controller.send_keys(
+            metrics_bar_id,
+            metrics_cmd,
+            enter=True,
+            raw=True,
+            respect_rate_limit=False,
+        )
     else:
         for pane_id in (monitors_left_id, monitor_right_id, metrics_bar_id):
             controller.send_keys(
@@ -1489,7 +1443,6 @@ def _setup_dope_layout(
                 f"export DOPEMUX_TMUX_SESSION={session}; "
                 f"unset DOPEMUX_NON_INTERACTIVE; "
                 f"export DOPEMUX_AGENT_ROLE=orchestrator; "
-                f"export ZEN_THINKING_MODE=deep; export ZEN_THINKING_LEVEL=high; export ZEN_MULTI_MODEL=1; "
                 f"export DOPEMUX_SANDBOX_PANE={sandbox_id}; "
                 f"export DOPEMUX_AGENT_PANE={agent_pane_id}; "
             )
@@ -1571,13 +1524,13 @@ def _setup_dope_layout(
         )
 
         if secondary_agent_id:
-            secondary_cmd = getattr(config, "secondary_agent_command", None) or ("dopemux start --role research" if pm_mode else "dopemux start --role secondary")
+            secondary_cmd = getattr(config, "secondary_agent_command", None) or "dopemux start --role secondary"
             secondary_prefix = (
                 f"{litellm_env_agent}"
                 f"export DOPEMUX_DEFAULT_LITELLM=1; "
                 f"export DOPEMUX_TMUX_SESSION={session}; "
                 f"export DOPEMUX_NON_INTERACTIVE=1; "
-                f"export DOPEMUX_AGENT_ROLE={'research' if pm_mode else 'secondary'}; "
+                f"export DOPEMUX_AGENT_ROLE=secondary; "
                 f"export DOPEMUX_ORCHESTRATOR_PANE={orchestrator_id}; "
                 f"export DOPEMUX_PRIMARY_AGENT_PANE={agent_pane_id}; "
             )
@@ -1594,7 +1547,7 @@ def _setup_dope_layout(
                 respect_rate_limit=False,
             )
 
-    controller.focus_pane(agent_pane_id)
+    tmux_utils.focus_pane(agent_pane_id)
 
     return OrchestratorLayout(
         monitors=[monitors_left_id, monitor_right_id],
@@ -1736,7 +1689,6 @@ def stop_session(ctx: click.Context, session_name: Optional[str], force: bool) -
         click.echo(f"❌ Failed to stop session: {exc}")
 
 
-
 @tmux.group("agent")
 def agent_group() -> None:
     """Agent pane utilities."""
@@ -1823,9 +1775,8 @@ def agent_switch_role(
     try:
         controller.send_key(target_pane, "C-c")
         controller.send_key(target_pane, "Enter")
-    except Exception as e:
+    except Exception:
         pass
-
 
     command = [
         "clear",
@@ -1848,10 +1799,9 @@ def agent_switch_role(
         respect_rate_limit=False,
     )
     try:
-        controller.focus_pane(target_pane)
-    except Exception as e:
+        tmux_utils.focus_pane(target_pane)
+    except Exception:
         pass
-
 
     click.echo(
         f"😀 Requested role switch in pane {target_pane}: {spec.label} ({spec.key})"
@@ -1943,7 +1893,7 @@ def start_tmux(
                 handlers=[logging.FileHandler(log_path, encoding="utf-8")],
             )
             os.environ["DOPEMUX_DEBUG_LOG"] = str(log_path)
-        except Exception as e:
+        except Exception:
             pass
 
     logging.debug("dopemux tmux start: session=%s layout=%s dual_agent=%s cwd=%s bootstrap=%s attach=%s", session, layout, dual_agent, start_dir, bootstrap, attach)
@@ -1982,9 +1932,8 @@ def start_tmux(
                 loaded = db_url_path.read_text(encoding="utf-8").strip()
                 if loaded:
                     db_url = loaded
-            except Exception as e:
+            except Exception:
                 pass
-
 
         if not db_url:
             console.print("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
@@ -1997,9 +1946,8 @@ def start_tmux(
         if master_key_path.exists():
             try:
                 stored_master_key = master_key_path.read_text(encoding="utf-8").strip()
-            except Exception as e:
+            except Exception:
                 stored_master_key = None
-
 
         env_master_key_raw = (os.getenv("LITELLM_MASTER_KEY") or "").strip()
         candidate_keys: List[str] = []
@@ -2019,11 +1967,8 @@ def start_tmux(
                     return False
 
         litellm_port = 4000
-        # probe a range for availability
-        for candidate in range(4000, 4011):
-            if is_port_available(candidate):
-                litellm_port = candidate
-                break
+        if not is_port_available(litellm_port):
+            # Port 4000 is taken, try 4001
             litellm_port = 4001
             if not is_port_available(litellm_port):
                 # Port 4001 is also taken, try 4002
@@ -2032,7 +1977,7 @@ def start_tmux(
                     console.print("[red]❌ Ports 4000-4002 are all in use.[/red]")
                     console.print("[yellow]   Free up a port or stop an existing LiteLLM instance.[/yellow]")
                     raise click.ClickException("No available ports for LiteLLM proxy.")
-            console.log(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
+            console.print(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
 
         litellm_master_key = ""
         regenerated_master_key = False
@@ -2069,9 +2014,8 @@ def start_tmux(
         if not stored_master_key or stored_master_key != litellm_master_key:
             try:
                 master_key_path.write_text(litellm_master_key, encoding="utf-8")
-            except Exception as e:
+            except Exception:
                 pass
-
 
         config_source: Optional[Path] = None
         for candidate in (
@@ -2099,21 +2043,21 @@ def start_tmux(
         try:
             db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
         except LiteLLMProxyError as exc:
-            console.log(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
-            console.log("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
-            console.log("\n[cyan]Troubleshooting:[/cyan]")
-            console.log("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
-            console.log("  2. Verify database credentials in .env.routing")
-            console.log("  3. Ensure the 'litellm' database exists")
-            console.log("  4. Test connection: psql <your_database_url>")
+            console.print(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
+            console.print("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
+            console.print("\n[cyan]Troubleshooting:[/cyan]")
+            console.print("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
+            console.print("  2. Verify database credentials in .env.routing")
+            console.print("  3. Ensure the 'litellm' database exists")
+            console.print("  4. Test connection: psql <your_database_url>")
             raise click.ClickException(str(exc))
 
         if not db_enabled:
-            console.log(f"[red]❌ {db_status_msg}[/red]")
-            console.log("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
+            console.print(f"[red]❌ {db_status_msg}[/red]")
+            console.print("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
             raise click.ClickException("LiteLLM metrics database not ready.")
 
-        console.log(f"[dim]{db_status_msg}[/dim]")
+        console.print(f"[dim]{db_status_msg}[/dim]")
         general_settings["database_url"] = db_url
 
         config_path = instance_dir / "litellm.config.yaml"
@@ -2122,22 +2066,21 @@ def start_tmux(
                 yaml.safe_dump(config_data, sort_keys=False, default_flow_style=False),
                 encoding="utf-8",
             )
-        except Exception as e:
+        except Exception:
             pass
 
-
         if litellm_running:
-            console.log("[green]✓ LiteLLM already running[/green]")
+            console.print("[green]✓ LiteLLM already running[/green]")
         else:
-            console.log("[blue]🔄 Starting LiteLLM proxy...[/blue]")
+            console.print("[blue]🔄 Starting LiteLLM proxy...[/blue]")
             kill_result = subprocess.run(
                 ["pkill", "-f", "litellm"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
             if kill_result.returncode not in (0, 1):
-                console.log("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
-                console.log(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
+                console.print("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
+                console.print(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
                 raise click.ClickException("LiteLLM proxy still running.")
 
             time.sleep(1)
@@ -2150,7 +2093,7 @@ def start_tmux(
                     start_new_session=True,
                 )
 
-            console.log("[dim]⏳ Waiting for LiteLLM...[/dim]")
+            console.print("[dim]⏳ Waiting for LiteLLM...[/dim]")
             ready = False
             for _ in range(15):
                 try:
@@ -2172,15 +2115,15 @@ def start_tmux(
                 time.sleep(1)
 
             if not ready:
-                console.log("[red]❌ LiteLLM proxy did not become healthy.[/red]")
-                console.log(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
-                console.log("\n[cyan]Common issues:[/cyan]")
-                console.log("  • Database connection failed (check PostgreSQL is running)")
-                console.log(f"  • Port {litellm_port} became busy during startup")
-                console.log("  • Configuration error in litellm.config.yaml")
+                console.print("[red]❌ LiteLLM proxy did not become healthy.[/red]")
+                console.print(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
+                console.print("\n[cyan]Common issues:[/cyan]")
+                console.print("  • Database connection failed (check PostgreSQL is running)")
+                console.print(f"  • Port {litellm_port} became busy during startup")
+                console.print("  • Configuration error in litellm.config.yaml")
                 raise click.ClickException("LiteLLM proxy failed to start.")
 
-            console.log(f"[green]✅ LiteLLM ready on port {litellm_port}[/green]")
+            console.print(f"[green]✅ LiteLLM ready on port {litellm_port}[/green]")
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
@@ -2195,21 +2138,21 @@ def start_tmux(
             try:
                 db_url_path.parent.mkdir(parents=True, exist_ok=True)
                 db_url_path.write_text(db_url, encoding="utf-8")
-            except Exception as e:
+            except Exception:
                 pass
-        console.log("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
-        console.log("[dim]✓ Environment configured for LiteLLM routing[/dim]")
-        console.log("")
+        console.print("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
+        console.print("[dim]✓ Environment configured for LiteLLM routing[/dim]")
+        console.print("")
 
     # Determine layout and window name before creating session
     layout_choice = layout or getattr(tmux_cfg, "default_layout", None) or "medium"
     orchestrator_window = getattr(tmux_cfg, "orchestrator_window", None) or "dopemux"
     initial_window = orchestrator_window if layout_choice in ("orchestrator", "dope") else "main"
 
-    session_already_exists = controller.session_exists(session)
+    session_already_exists = tmux_utils.session_exists(session)
     if not session_already_exists:
         try:
-            controller.create_session(session, start_directory=start_dir, window_name=initial_window)
+            tmux_utils.create_session(session, start_directory=start_dir, window_name=initial_window)
             click.echo(f"✨ Created tmux session '{session}'")
             
             # Give tmux server time to fully initialize the session
@@ -2217,38 +2160,30 @@ def start_tmux(
             time.sleep(0.5)
             
             # Verify session was created
-            if not controller.session_exists(session):
+            if not tmux_utils.session_exists(session):
                 raise click.ClickException(f"Session '{session}' was not created successfully")
-        except Exception as e:
+        except tmux_utils.TmuxError as e:
             raise click.ClickException(f"Failed to create tmux session: {e}")
     else:
         click.echo(f"ℹ️  Reusing existing tmux session '{session}'")
 
     # Enable pane title display
     try:
-        controller.enable_pane_titles(session)
+        tmux_utils.enable_pane_titles(session)
         click.echo("[dim]✓ Pane titles enabled[/dim]")
-    except Exception as e:
+    except tmux_utils.TmuxError as e:
         click.echo(f"[yellow]⚠ Could not enable pane titles: {e}[/yellow]")
 
     # Enforce alternate-provider routing via LiteLLM/OpenRouter for all panes
     try:
-        controller.set_environment(session, "DOPEMUX_DEFAULT_LITELLM", "1")
+        tmux_utils.set_environment(session, "DOPEMUX_DEFAULT_LITELLM", "1")
         click.echo("[dim]✓ Environment configured[/dim]")
-    except Exception as e:
+    except tmux_utils.TmuxError as e:
         click.echo(f"[yellow]⚠ Could not set environment: {e}[/yellow]")
 
     split_vertical = layout_choice != "low"
 
     layout_handles: Optional[OrchestratorLayout] = None
-    # Detect PM mode from config
-    try:
-        dope_cfg = cfg_manager.load_config().dope_layout
-        pm_mode = getattr(dope_cfg, "default_mode", "implementation") == "pm"
-    except Exception as e:
-        pm_mode = False
-
-
     if layout_choice == "orchestrator":
         try:
             base_pane = _prepare_orchestrator_base(
@@ -2262,7 +2197,6 @@ def start_tmux(
             click.echo(f"[red]❌ Error preparing orchestrator base: {e}[/red]")
             raise
         
-
         try:
             layout_handles = _setup_orchestrator_layout(
                 controller,
@@ -2271,12 +2205,10 @@ def start_tmux(
                 start_dir,
                 tmux_cfg,
                 dual_agent,
-                pm_mode,
             )
         except Exception as e:
             click.echo(f"[red]❌ Error setting up orchestrator layout: {e}[/red]")
             raise
-
     elif layout_choice == "dope":
         try:
             base_pane = _prepare_orchestrator_base(
@@ -2290,7 +2222,6 @@ def start_tmux(
             click.echo(f"[red]❌ Error preparing orchestrator base: {e}[/red]")
             raise
 
-
         try:
             layout_handles = _setup_dope_layout(
                 controller,
@@ -2300,20 +2231,18 @@ def start_tmux(
                 tmux_cfg,
                 dual_agent,
                 bootstrap,
-                pm_mode,
             )
         except Exception as e:
             click.echo(f"[red]❌ Error setting up Dope layout: {e}[/red]")
             raise
-
     else:
         all_panes = [pane for pane in controller.backend.list_panes() if pane.session == session]
         if not all_panes:
             raise click.ClickException(f"Unable to locate panes in tmux session '{session}'")
 
         base_pane = next((pane for pane in all_panes if pane.active), all_panes[0])
-        controller.set_pane_title(base_pane.pane_id, "shell:main")
-        controller.rename_window(session, base_pane.window or "0", "dopemux")
+        tmux_utils.set_pane_title(base_pane.pane_id, "shell:main")
+        tmux_utils.rename_window(session, base_pane.window or "0", "dopemux")
 
     claude_cmd = "dopemux start"
     if provider:
@@ -2395,10 +2324,10 @@ def start_tmux(
     inside_tmux = bool(os.environ.get("TMUX"))
     if attach and not inside_tmux:
         click.echo(f"🔗 Attaching to tmux session '{session}'...")
-        controller.attach_session(session)
+        tmux_utils.attach_session(session)
     else:
         if inside_tmux:
             click.echo(f"🔁 Switching to tmux session '{session}'...")
-            controller.switch_client(session)
+            tmux_utils.switch_client(session)
         else:
             click.echo(f"Session ready. Attach manually with: tmux attach -t {session}")

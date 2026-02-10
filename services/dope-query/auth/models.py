@@ -93,7 +93,7 @@ class UserCreate(BaseModel):
             "example": {
                 "email": "user@example.com",
                 "username": "johndoe",
-                "password": "securepassword123"
+                "password": "securepassword123"  # pragma: allowlist secret
             }
         }
 
@@ -106,7 +106,7 @@ class UserLogin(BaseModel):
         json_schema_extra = {
             "example": {
                 "email": "user@example.com",
-                "password": "securepassword123"
+                "password": "securepassword123"  # pragma: allowlist secret
             }
         }
 

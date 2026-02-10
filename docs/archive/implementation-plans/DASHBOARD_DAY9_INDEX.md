@@ -180,7 +180,7 @@ Polish:     ░░░░░░░░░░░░░░░░░░░░   0% �
    - Alternative implementations
 
 2. **Textual Focus Management**
-   - https://github.com/Textualize/textual/discussions/1234
+   - https://github.com/Textualize/textual/discussions
    - Focus state, CSS styling
 
 ---

@@ -1,0 +1,6 @@
+NAME                            IMAGE                         COMMAND                  SERVICE             CREATED              STATUS                          PORTS
+smoke-g30-conport-1             smoke-g30-conport             "python app.py"          conport             About a minute ago   Up About a minute (healthy)     0.0.0.0:8005->8005/tcp, [::]:8005->8005/tcp
+smoke-g30-dopecon-bridge-1      smoke-g30-dopecon-bridge      "python main.py"         dopecon-bridge      About a minute ago   Up About a minute (unhealthy)   0.0.0.0:3016->3016/tcp, [::]:3016->3016/tcp
+smoke-g30-postgres-1            postgres:15-alpine            "docker-entrypoint.s…"   postgres            About a minute ago   Up About a minute (healthy)     0.0.0.0:5455->5432/tcp, [::]:5455->5432/tcp
+smoke-g30-redis-1               redis:7-alpine                "docker-entrypoint.s…"   redis               About a minute ago   Up About a minute (healthy)     0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp
+smoke-g30-task-orchestrator-1   smoke-g30-task-orchestrator   "python coordination…"   task-orchestrator   About a minute ago   Up About a minute (unhealthy)   0.0.0.0:3014->3014/tcp, [::]:3014->3014/tcp

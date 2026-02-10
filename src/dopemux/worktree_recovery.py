@@ -12,11 +12,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+import inspect
+import os
 import subprocess
 import asyncio
 import logging
 
-from .instance_state import InstanceState, InstanceStateManager
+from .instance_state import (
+    InstanceState,
+    InstanceStateManager,
+    resolve_conport_port,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -72,13 +78,11 @@ class WorktreeRecoveryMenu:
         self.workspace_id = workspace_id
         self.manager = InstanceStateManager(workspace_id, conport_port)
         # Allow override via env var; default extended to 30 days
-        import os
         try:
             env_days = int(os.getenv("DOPEMUX_RECOVERY_MAX_DAYS", "0"))
             self.max_age_days = env_days if env_days > 0 else max_age_days
-        except Exception as e:
+        except Exception:
             self.max_age_days = max_age_days
-            logger.error(f"Error: {e}")
         self.timeout_seconds = timeout_seconds
 
     async def find_recoverable_sessions(self) -> List[RecoveryOption]:
@@ -129,20 +133,20 @@ class WorktreeRecoveryMenu:
         if not options:
             return
 
-        logger.info("\n" + "=" * 70)
-        logger.info("🔄 Found orphaned worktree sessions - would you like to recover one?")
-        logger.info("=" * 70)
+        print("\n" + "=" * 70)
+        print("🔄 Found orphaned worktree sessions - would you like to recover one?")
+        print("=" * 70)
 
         for opt in options:
-            logger.info(opt.format_menu_line())
+            print(opt.format_menu_line())
 
-        logger.info(f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s; press Enter)")
+        print(f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s; press Enter)")
 
         if has_more:
-            logger.info("  a. 📋 Show all recoverable sessions")
+            print("  a. 📋 Show all recoverable sessions")
 
-        logger.info("\n" + "=" * 70)
-        logger.info("💡 Tip: Choose a session to restore context and continue where you left off")
+        print("\n" + "=" * 70)
+        print("💡 Tip: Choose a session to restore context and continue where you left off")
 
     async def get_user_input_async(self, prompt: str, timeout: int) -> Optional[str]:
         """
@@ -165,8 +169,7 @@ class WorktreeRecoveryMenu:
             # stdin is not a real file (e.g., in pytest) - return None immediately
             return None
 
-        sys.stdout.write(prompt)
-        sys.stdout.flush()
+        print(prompt, end='', flush=True)
 
         # Use selector for async-compatible input
         selector = selectors.DefaultSelector()
@@ -199,7 +202,7 @@ class WorktreeRecoveryMenu:
                 await asyncio.sleep(0.1)  # Yield to event loop
 
         except asyncio.TimeoutError:
-            logger.info("")  # Newline after timeout
+            print()  # Newline after timeout
             return None
         finally:
             selector.unregister(sys.stdin)
@@ -259,11 +262,11 @@ class WorktreeRecoveryMenu:
                     logger.info(f"✅ User selected: {selected.git_branch}")
                     return selected
                 else:
-                    logger.info(f"❌ Invalid choice: {choice_num}. Using default (main).")
+                    print(f"❌ Invalid choice: {choice_num}. Using default (main).")
                     return None
 
             except ValueError:
-                logger.info(f"❌ Invalid input: '{user_input}'. Using default (main).")
+                print(f"❌ Invalid input: '{user_input}'. Using default (main).")
                 return None
 
         except asyncio.TimeoutError:
@@ -392,9 +395,9 @@ class WorktreeRecoveryMenu:
         # Find recoverable sessions
         options = await self.find_recoverable_sessions()
 
-        # Fallback to git worktree list only if ConPort is unavailable
-        if not options and not self.manager.conport_available:
-            logger.info("ConPort unavailable - using git worktree fallback")
+        # Fallback to git worktree list if ConPort unavailable
+        if not options:
+            logger.warning("⚠️ ConPort unavailable - trying git worktree fallback")
             options = await self.fallback_to_git_worktree_list()
 
         if not options:
@@ -402,9 +405,7 @@ class WorktreeRecoveryMenu:
             return None
 
         # Check if there are more sessions
-        has_more = False
-        if self.manager.conport_available:
-            has_more = await self.check_has_more_sessions()
+        has_more = await self.check_has_more_sessions()
 
         while True:  # Loop for "show all" handling
             # Display menu
@@ -420,10 +421,10 @@ class WorktreeRecoveryMenu:
                 if all_options:
                     options = all_options
                     has_more = False  # No more to show
-                    logger.info("")  # Blank line before re-display
+                    print()  # Blank line before re-display
                     continue
                 else:
-                    logger.info("⚠️ No additional sessions found.")
+                    print("⚠️ No additional sessions found.")
                     has_more = False
                     continue
 
@@ -439,7 +440,7 @@ class WorktreeRecoveryMenu:
 # Synchronous wrapper for CLI usage
 def show_recovery_menu_sync(
     workspace_id: str,
-    conport_port: int = 3004
+    conport_port: Optional[int] = None
 ) -> Optional[str]:
     """
     Synchronous wrapper for show_recovery_menu.
@@ -453,11 +454,22 @@ def show_recovery_menu_sync(
     """
     async def _run_with_cleanup():
         """Run menu and ensure cleanup of aiohttp sessions."""
-        menu = WorktreeRecoveryMenu(workspace_id, conport_port)
+        resolved_port = resolve_conport_port(conport_port)
+        menu = WorktreeRecoveryMenu(workspace_id, resolved_port)
         try:
             return await menu.show_recovery_menu()
         finally:
-            # Ensure aiohttp session is closed
-            await menu.manager._close_session()
+            manager = getattr(menu, "manager", None)
+            cleanup = getattr(manager, "_close_session", None)
+            if cleanup:
+                try:
+                    if inspect.iscoroutinefunction(cleanup):
+                        await cleanup()
+                    else:
+                        maybe_result = cleanup()
+                        if inspect.isawaitable(maybe_result):
+                            await maybe_result
+                except Exception as exc:  # pragma: no cover - best effort cleanup
+                    logger.debug("Recovery menu cleanup skipped: %s", exc)
 
     return asyncio.run(_run_with_cleanup())

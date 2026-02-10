@@ -22,18 +22,18 @@ pytestmark = pytest.mark.phase2  # Mark all tests in this module as phase2
 
 
 @pytest.fixture
-def temp_db():
+def temp_db(monkeypatch):
     """Create temporary database for testing."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        data_dir = Path(tmpdir)
-        yield data_dir
+        ledger = Path(tmpdir) / "chronicle.sqlite"
+        monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger))
+        yield Path(tmpdir)
 
 
 @pytest.fixture
 def server(temp_db):
-    """Create DopeMemoryMCPServer instance with temp database."""
+    """Create DopeMemoryMCPServer instance with canonical ledger."""
     return DopeMemoryMCPServer(
-        data_dir=temp_db,
         workspace_id="test_ws",
         instance_id="test_inst",
     )

@@ -1,3 +1,6 @@
+This repository is governed by .claude/PROJECT_INSTRUCTIONS.md.
+Investigations and redesigns must follow .claude/PRIMER.md
+
 # Agent-Specific Model Configuration
 
 **Purpose**: Individual agent behavior and model specialization

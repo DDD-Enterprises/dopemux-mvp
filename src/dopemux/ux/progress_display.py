@@ -17,13 +17,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 from typing import Optional, Dict, Any
-from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeRemainingColumn
 from rich.text import Text
 from rich.table import Table
 
-console = Console()
+from ..console import console
 
 
 class ProgressDisplay:

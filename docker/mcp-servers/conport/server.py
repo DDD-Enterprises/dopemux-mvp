@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class ConPortServer:
     def __init__(self):
         self.process = None
-        self.port = int(os.getenv('MCP_SERVER_PORT', 3004))
+        self.port = int(os.getenv('MCP_PROXY_PORT', os.getenv('MCP_SERVER_PORT', 3005)))
         self.shutdown_event = asyncio.Event()
 
     async def start(self):
@@ -25,13 +25,13 @@ class ConPortServer:
 
         # Build command for mcp-proxy with ConPort server
         cmd = [
-            'uvx', 'mcp-proxy',
+            'mcp-proxy',
             '--transport', 'streamablehttp',
             '--port', str(self.port),
             '--host', '0.0.0.0',
             '--allow-origin', '*',
             '--',
-            'uvx', '--from', 'context-portal-mcp', 'conport-mcp', '--mode', 'stdio'
+            'conport-mcp', '--mode', 'stdio'
         ]
 
         logger.info(f"Running command: {' '.join(cmd)}")

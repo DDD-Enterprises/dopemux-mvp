@@ -36,6 +36,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 # Use absolute imports now that we've fixed the path
+from canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
 from chronicle.store import ChronicleStore
 from promotion.redactor import Redactor
 from promotion.promotion import PromotionEngine
@@ -48,7 +49,9 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 PORT = int(os.getenv("PORT", os.getenv("DOPE_MEMORY_PORT", "3020")))
-DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memory")))
+MCP_SERVER_PORT = int(os.getenv("MCP_SERVER_PORT", str(PORT)))
+SERVICE_NAME = os.getenv("SERVICE_NAME", "dope-memory")
+HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
 DEFAULT_WORKSPACE_ID = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "default")
 DEFAULT_INSTANCE_ID = os.getenv("DOPE_MEMORY_INSTANCE_ID", "A")
 
@@ -75,27 +78,28 @@ class DopeMemoryMCPServer:
 
     def __init__(
         self,
-        data_dir: Path,
         workspace_id: str,
         instance_id: str = "A",
     ):
-        self.data_dir = data_dir
-        self.data_dir.mkdir(parents=True, exist_ok=True)
         self.default_workspace_id = workspace_id
         self.default_instance_id = instance_id
         self.redactor = Redactor()
         self.promotion_engine = PromotionEngine()
+        # Keyed by resolved canonical ledger path
         self._stores: dict[str, ChronicleStore] = {}
 
     def _get_store(self, workspace_id: str) -> ChronicleStore:
-        """Get or create a ChronicleStore for a workspace."""
-        if workspace_id not in self._stores:
-            db_path = self.data_dir / workspace_id / "chronicle.db"
-            db_path.parent.mkdir(parents=True, exist_ok=True)
+        """Get or create a ChronicleStore for the canonical ledger.
+
+        Resolves workspace_id to the single canonical ledger per ADR-213.
+        """
+        db_path = resolve_canonical_ledger(workspace_id)
+        path_key = str(db_path)
+        if path_key not in self._stores:
             store = ChronicleStore(db_path)
             store.initialize_schema()
-            self._stores[workspace_id] = store
-        return self._stores[workspace_id]
+            self._stores[path_key] = store
+        return self._stores[path_key]
 
     def _encode_cursor(
         self, importance_score: int, ts_utc: str, entry_id: str, scope_hash: str
@@ -130,6 +134,7 @@ class DopeMemoryMCPServer:
         filters: Optional[dict[str, Any]] = None,
         top_k: int = 3,
         cursor: Optional[str] = None,
+        include_superseded: bool = False,
     ) -> ToolResponse:
         """Search work log entries with trajectory boost applied to ranking."""
         try:
@@ -170,6 +175,7 @@ class DopeMemoryMCPServer:
                 time_range=f.get("time_range"),
                 limit=fetch_limit + 1,
                 cursor=decoded_cursor,
+                include_superseded=include_superseded,
             )
 
             # Apply trajectory boost to ranking
@@ -207,7 +213,7 @@ class DopeMemoryMCPServer:
 
             response_items = []
             for row in items:
-                response_items.append({
+                item = {
                     "id": row["id"],
                     "ts_utc": row["ts_utc"],
                     "summary": row["summary"],
@@ -219,7 +225,14 @@ class DopeMemoryMCPServer:
                     "tags": json.loads(row.get("tags_json", "[]")),
                     # Include boost metadata for debugging (optional)
                     "_boost_applied": row.get("_boost_applied", 0.0),
-                })
+                }
+                # Include chain annotations when superseded entries are shown (Packet F §5.2)
+                if include_superseded:
+                    item["is_head"] = row.get("is_head", True)
+                    item["superseded_by"] = row.get("superseded_by")
+                    item["supersedes"] = row.get("supersedes")
+                    item["chain_position"] = row.get("chain_position")
+                response_items.append(item)
 
             return ToolResponse(
                 success=True,
@@ -260,12 +273,22 @@ class DopeMemoryMCPServer:
             if links and links.get("files"):
                 linked_files = self.redactor.redact_linked_files(links["files"])
 
+            now_utc = datetime.now(timezone.utc).isoformat()
+            
+            # Manual entry provenance (Packet D §4.3)
+            source_event_id = f"manual-{uuid.uuid4()}"
+
             entry_id = store.insert_work_log_entry(
                 workspace_id=workspace_id,
                 instance_id=instance_id,
                 category=category,
                 entry_type=entry_type,
                 summary=summary[:500],
+                source_event_id=source_event_id,
+                source_event_type="manual.memory_store",
+                source_adapter="mcp-server",
+                source_event_ts_utc=now_utc,
+                promotion_rule="manual",
                 session_id=session_id,
                 details=redacted_details,
                 reasoning=reasoning[:2000] if reasoning else None,
@@ -417,16 +440,121 @@ class DopeMemoryMCPServer:
         session_id: str,
         top_k: int = 3,
         cursor: Optional[str] = None,
+        mode: str = "replay_current",
     ) -> ToolResponse:
-        """Replay session entries chronologically."""
-        return self.memory_search(
-            query="",
-            workspace_id=workspace_id,
-            instance_id=instance_id,
-            session_id=session_id,
-            top_k=top_k,
-            cursor=cursor,
-        )
+        """Replay session entries chronologically.
+        
+        Modes (Packet F §5.3):
+        - replay_current (default): Only chain heads (corrected narrative)
+        - replay_full: All entries including superseded, with annotations
+        """
+        try:
+             store = self._get_store(workspace_id)
+             top_k = min(max(1, top_k), 50)
+             
+             decoded_cursor = None
+             if cursor:
+                 try:
+                     parts = base64.urlsafe_b64decode(cursor.encode()).decode().split("|")
+                     if len(parts) == 2:
+                         decoded_cursor = (parts[0], parts[1])
+                 except Exception:
+                     pass
+            
+             rows = store.replay_work_log(
+                 workspace_id=workspace_id,
+                 instance_id=instance_id,
+                 session_id=session_id,
+                 limit=top_k + 1,
+                 cursor=decoded_cursor,
+                 mode=mode,
+             )
+             
+             has_more = len(rows) > top_k
+             items = rows[:top_k]
+             
+             next_token = None
+             if has_more and items:
+                 last = items[-1]
+                 raw_token = f"{last['source_event_ts_utc']}|{last['id']}"
+                 next_token = base64.urlsafe_b64encode(raw_token.encode()).decode()
+
+             response_items = []
+             for row in items:
+                 item = {
+                     "id": row["id"],
+                     "ts_utc": row["source_event_ts_utc"],
+                     "category": row["category"],
+                     "entry_type": row["entry_type"],
+                     "summary": row["summary"],
+                     "outcome": row["outcome"],
+                     "importance_score": row["importance_score"],
+                     "details": json.loads(row.get("details_json") or "{}"),
+                 }
+                 # Include chain annotations in replay_full mode (Packet F §5.3)
+                 if mode == "replay_full":
+                     item["is_head"] = row.get("is_head", True)
+                     item["superseded_by"] = row.get("superseded_by")
+                     item["supersedes"] = row.get("supersedes")
+                     item["chain_position"] = row.get("chain_position")
+                 response_items.append(item)
+
+             return ToolResponse(
+                 success=True,
+                 data={
+                     "items": response_items,
+                     "more_count": 1 if has_more else 0,
+                     "next_token": next_token,
+                 },
+             )
+        except Exception as e:
+            logger.error(f"memory_replay_session error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
+    def memory_correct(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        entry_id: str,
+        correction_type: str,
+        corrected_summary: Optional[str] = None,
+        corrected_tags: Optional[list[str]] = None,
+        corrected_category: Optional[str] = None,
+        corrected_entry_type: Optional[str] = None,
+        corrected_outcome: Optional[str] = None,
+    ) -> ToolResponse:
+        """Supersede an existing work log entry with a corrected version.
+        
+        The original entry is preserved immutably; a new entry replaces it.
+        Per Packet F §6.
+        """
+        try:
+            store = self._get_store(workspace_id)
+            new_id = store.correct_entry(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                entry_id=entry_id,
+                correction_type=correction_type,
+                corrected_summary=corrected_summary,
+                corrected_tags=corrected_tags,
+                corrected_category=corrected_category,
+                corrected_entry_type=corrected_entry_type,
+                corrected_outcome=corrected_outcome,
+            )
+            return ToolResponse(
+                success=True,
+                data={
+                    "corrected": True,
+                    "new_entry_id": new_id,
+                    "superseded_entry_id": entry_id,
+                    "correction_type": correction_type,
+                },
+            )
+        except ValueError as e:
+            return ToolResponse(success=False, data={"corrected": False}, error=str(e))
+        except Exception as e:
+            logger.error(f"memory_correct error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
 
     # ─────────────────────────────────────────────────────────────────
     # Phase 2: Reflection + Trajectory
@@ -531,7 +659,7 @@ class DopeMemoryMCPServer:
         session_id: Optional[str] = None,
         limit: int = 3,
     ) -> ToolResponse:
-        """Fetch recent reflection cards using ChronicleStore."""
+        """Fetch recent reflection cards with staleness detection (Packet F §7.1)."""
         try:
             store = self._get_store(workspace_id)
             reflections = store.get_reflection_cards(
@@ -615,6 +743,7 @@ class MemorySearchRequest(BaseModel):
     time_range: Optional[str] = None
     top_k: int = Field(default=3, ge=1, le=20)
     cursor: Optional[str] = None
+    include_superseded: bool = False
 
 
 class MemoryStoreRequest(BaseModel):
@@ -675,6 +804,21 @@ class MemoryReplaySessionRequest(BaseModel):
     session_id: str
     top_k: int = Field(default=3, ge=1, le=20)
     cursor: Optional[str] = None
+    mode: str = Field(default="replay_current", pattern=r"^(replay_current|replay_full)$")
+
+
+class MemoryCorrectRequest(BaseModel):
+    """Request for memory_correct tool (Packet F §6.5)."""
+
+    workspace_id: str = DEFAULT_WORKSPACE_ID
+    instance_id: str = DEFAULT_INSTANCE_ID
+    entry_id: str
+    correction_type: str = Field(pattern=r"^(summary|tags|category|outcome|retraction)$")
+    corrected_summary: Optional[str] = None
+    corrected_tags: Optional[list[str]] = None
+    corrected_category: Optional[str] = None
+    corrected_entry_type: Optional[str] = None
+    corrected_outcome: Optional[str] = None
 
 
 class MemoryGenerateReflectionRequest(BaseModel):
@@ -755,11 +899,9 @@ async def lifespan(app: FastAPI):
     global mcp_server, eventbus_consumer, eventbus_task, retention_task
     global mirror_sync, mirror_sync_task
 
-    logger.info(f"Initializing Dope-Memory MCP server with data_dir={DATA_DIR}")
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    logger.info("Initializing Dope-Memory MCP server (canonical ledger mode)")
 
     mcp_server = DopeMemoryMCPServer(
-        data_dir=DATA_DIR,
         workspace_id=DEFAULT_WORKSPACE_ID,
         instance_id=DEFAULT_INSTANCE_ID,
     )
@@ -769,10 +911,9 @@ async def lifespan(app: FastAPI):
         try:
             from eventbus_consumer import EventBusConsumer
 
-            logger.info(f"Starting EventBus consumer for real-time ingestion")
+            logger.info("Starting EventBus consumer for real-time ingestion")
             eventbus_consumer = EventBusConsumer(
                 redis_url=REDIS_URL,
-                data_dir=DATA_DIR,
             )
             await eventbus_consumer.initialize()
             eventbus_task = asyncio.create_task(eventbus_consumer.start())
@@ -794,10 +935,9 @@ async def lifespan(app: FastAPI):
         try:
             from postgres_mirror_sync import PostgresMirrorSync
 
-            logger.info(f"Starting Postgres mirror sync")
+            logger.info("Starting Postgres mirror sync")
             mirror_sync = PostgresMirrorSync(
                 postgres_url=POSTGRES_URL,
-                data_dir=DATA_DIR,
             )
             await mirror_sync.initialize()
             mirror_sync_task = asyncio.create_task(mirror_sync.start())
@@ -869,12 +1009,12 @@ app.add_middleware(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-@app.get("/health")
+@app.get(HEALTH_CHECK_PATH)
 async def health_check():
     """Health check endpoint per registry contract."""
     return {
         "status": "healthy",
-        "service": "dope-memory",
+        "service": SERVICE_NAME,
         "version": "1.0.0",
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
@@ -884,7 +1024,7 @@ async def health_check():
 async def root():
     """Root endpoint with service info."""
     return {
-        "service": "dope-memory",
+        "service": SERVICE_NAME,
         "version": "1.0.0",
         "description": "Temporal chronicle and working-context manager",
         "spec_path": "docs/spec/dope-memory/v1/",
@@ -895,6 +1035,7 @@ async def root():
             "memory_mark_issue",
             "memory_link_resolution",
             "memory_replay_session",
+            "memory_correct",
         ],
     }
 
@@ -926,6 +1067,7 @@ async def memory_search(request: MemorySearchRequest):
         filters=filters if filters else None,
         top_k=request.top_k,
         cursor=request.cursor,
+        include_superseded=request.include_superseded,
     )
 
     if not result.success:
@@ -1031,6 +1173,30 @@ async def memory_replay_session(request: MemoryReplaySessionRequest):
         session_id=request.session_id,
         top_k=request.top_k,
         cursor=request.cursor,
+        mode=request.mode,
+    )
+
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.error)
+    return result.data
+
+
+@app.post("/tools/memory_correct")
+async def memory_correct(request: MemoryCorrectRequest):
+    """Supersede a work log entry with a corrected version (Packet F)."""
+    if not mcp_server:
+        raise HTTPException(status_code=503, detail="MCP server not initialized")
+
+    result = mcp_server.memory_correct(
+        workspace_id=request.workspace_id,
+        instance_id=request.instance_id,
+        entry_id=request.entry_id,
+        correction_type=request.correction_type,
+        corrected_summary=request.corrected_summary,
+        corrected_tags=request.corrected_tags,
+        corrected_category=request.corrected_category,
+        corrected_entry_type=request.corrected_entry_type,
+        corrected_outcome=request.corrected_outcome,
     )
 
     if not result.success:

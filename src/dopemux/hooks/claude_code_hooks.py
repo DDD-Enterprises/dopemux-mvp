@@ -15,6 +15,7 @@ import asyncio
 import json
 import os
 import subprocess
+import sys
 import logging
 from typing import Dict, Any, Optional, List
 from pathlib import Path
@@ -72,15 +73,47 @@ class ClaudeCodeHooks:
             ]
 
         if self.monitoring_task is None:
-            self.monitoring_task = asyncio.create_task(self._monitor_activity())
-            logger.info("Claude Code monitoring started")
+            # Start monitoring daemon in background process
+            import subprocess
+            daemon_path = Path(__file__).parent / "monitor_daemon.py"
+            cmd = [sys.executable, str(daemon_path)]
+            if workspace_path:
+                cmd.append(workspace_path)
+
+            self.monitoring_process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            logger.info("Claude Code monitoring started in background process")
+            self.monitoring_task = self.monitoring_process.pid
+
+            # Save status to file for status check
+            status_file = Path.home() / '.dopemux' / 'hook_status.json'
+            status_file.parent.mkdir(parents=True, exist_ok=True)
+            import json
+            with open(status_file, 'w') as f:
+                json.dump({
+                    'monitoring_active': True,
+                    'watched_paths': [str(p) for p in self.watched_paths],
+                    'pid': self.monitoring_process.pid
+                }, f)
 
     def stop_monitoring(self) -> None:
         """Stop monitoring Claude Code activity."""
         if self.monitoring_task:
-            self.monitoring_task.cancel()
+            if hasattr(self, 'monitoring_process') and self.monitoring_process:
+                self.monitoring_process.terminate()
+                self.monitoring_process.wait()
+                self.monitoring_process = None
             self.monitoring_task = None
             logger.info("Claude Code monitoring stopped")
+
+            # Update status file
+            status_file = Path.home() / '.dopemux' / 'hook_status.json'
+            if status_file.exists():
+                import json
+                with open(status_file, 'r') as f:
+                    data = json.load(f)
+                data['monitoring_active'] = False
+                with open(status_file, 'w') as f:
+                    json.dump(data, f)
 
     async def _monitor_activity(self) -> None:
         """Main monitoring loop for Claude Code activity."""
@@ -297,10 +330,33 @@ add-zsh-hook precmd dopemux_precmd
 
     def get_status(self) -> Dict[str, Any]:
         """Get current hook system status."""
+        # Check if daemon process is running
+        import subprocess
+        try:
+            result = subprocess.run(['pgrep', '-f', 'monitor_daemon.py'], capture_output=True, text=True)
+            monitoring_active = bool(result.stdout.strip())
+        except:
+            monitoring_active = False
+
+        # Get watched paths from a simple file or default
+        watched_paths = []
+        try:
+            status_file = Path.home() / '.dopemux' / 'hook_status.json'
+            if status_file.exists():
+                import json
+                with open(status_file) as f:
+                    data = json.load(f)
+                    watched_paths = data.get('watched_paths', [])
+        except:
+            pass
+
+        if not watched_paths:
+            watched_paths = [str(Path.cwd())]
+
         return {
             'active_hooks': self.active_hooks.copy(),
-            'monitoring_active': self.monitoring_task is not None,
-            'watched_paths': [str(p) for p in self.watched_paths],
+            'monitoring_active': monitoring_active,
+            'watched_paths': watched_paths,
             'quiet_mode': self.quiet_mode
         }
 
