@@ -14,8 +14,9 @@ import uvicorn
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Get port from environment
+# Get ports from environment
 PORT = int(os.getenv('MCP_SERVER_PORT', 3004))
+MCP_PROXY_PORT = int(os.getenv('MCP_PROXY_PORT', 3005))
 INFO_PORT = PORT + 1000  # Parallel HTTP server on 4004
 
 app = FastAPI(title="ConPort Info Server")
@@ -32,10 +33,10 @@ async def service_info():
         "name": "conport",
         "version": "1.0.0",
         "mcp": {
-            "protocol": "sse",
+            "protocol": "streamablehttp",
             "connection": {
-                "type": "sse",
-                "url": f"http://localhost:{PORT}/sse"
+                "type": "streamablehttp",
+                "url": f"http://localhost:{MCP_PROXY_PORT}/mcp"
             },
             "env": {
                 "WORKSPACE_ID": "${WORKSPACE_ID:-}",
@@ -51,7 +52,8 @@ async def service_info():
             "priority": "high",
             "mcp_proxy_wrapped": True,
             "info_port": INFO_PORT,
-            "mcp_port": PORT
+            "mcp_port": MCP_PROXY_PORT,
+            "rest_port": PORT
         }
     }
 

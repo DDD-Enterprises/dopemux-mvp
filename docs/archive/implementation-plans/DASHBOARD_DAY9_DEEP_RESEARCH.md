@@ -1194,7 +1194,7 @@ mprof plot
 
 ### Code Examples
 1. [Sparklines in Python](https://github.com/deeplook/sparklines)
-2. [Textual Focus Management](https://github.com/Textualize/textual/discussions/1234)
+2. [Textual Focus Management](https://github.com/Textualize/textual/discussions)
 3. [Prometheus Client Examples](https://github.com/prometheus/client_python/tree/master/examples)
 
 ---

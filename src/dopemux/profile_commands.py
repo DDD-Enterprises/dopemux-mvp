@@ -19,14 +19,12 @@ from datetime import datetime
 from time import perf_counter
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
-from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich import box
 
+from .console import console
 from .profile_manager import ProfileManager
-
-console = Console()
 
 def detect_workspace() -> Path:
     """Detect current workspace (git root or cwd)."""

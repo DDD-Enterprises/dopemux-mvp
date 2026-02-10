@@ -17,10 +17,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
 
-from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-console = Console()
+from ..console import console
 
 
 @dataclass

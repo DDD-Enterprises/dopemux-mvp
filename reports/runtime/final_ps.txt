@@ -1,0 +1,3 @@
+smoke-g30-conport-1             smoke-g30-conport             "python app.py"          conport             49 seconds ago   Up 47 seconds (healthy)   0.0.0.0:8005->8005/tcp, [::]:8005->8005/tcp
+smoke-g30-dopecon-bridge-1      smoke-g30-dopecon-bridge      "python main.py"         dopecon-bridge      49 seconds ago   Up 47 seconds (healthy)   0.0.0.0:3016->3016/tcp, [::]:3016->3016/tcp
+smoke-g30-task-orchestrator-1   smoke-g30-task-orchestrator   "python coordination…"   task-orchestrator   49 seconds ago   Up 47 seconds (healthy)   0.0.0.0:3014->3014/tcp, [::]:3014->3014/tcp

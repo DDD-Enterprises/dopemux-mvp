@@ -1,74 +1,17 @@
 # Paths to exclude from link checking
-exclude_path = [
-  "docs/94-architecture/c4/",
-  "docs/archive/**",
-  "docs/04-explanation/archive/**",
-  "docs/06-research/**"
-]
+exclude_path = ["docs/94-architecture/c4/"]
 
 # Exclude localhost URLs (documentation examples, dev servers)
 exclude = [
-  # Localhost and dev servers
   "http://localhost:.*",
   "https://localhost:.*",
-  "http://0\\.0\\.0\\.0:.*",
-  "https://0\\.0\\.0\\.0:.*",
-  "http://host\\.docker\\.internal:.*",
-  "http://[a-z0-9-]+:[0-9]+.*",
-  # Internal service hosts
-  "http://.*:6333.*",  # Qdrant
-  "http://.*-mcp:.*",  # MCP services (e.g., conport-mcp:5000)
-  "http://.*-bridge:.*",  # Bridge services (e.g., dopecon-bridge:3016)
-  "http://leantime:.*",  # Leantime internal
-  # Local file links are validated elsewhere in docs tooling
-  "file://.*",
-  "https://docs\\.dopemux\\.dev.*",  # Internal docs site (not yet deployed)
-  # Placeholder/example URLs
-  "https://yourdomain\\.com.*",
-  "https://.*\\.yourdomain\\.com.*",
-  "https://your-.*\\.com.*",  # your-happy-server.com, your-happy-webapp.com, etc.
-  "https://YOUR_.*",
-  "https://myapp\\.com.*",
-  "https://my-relay\\.com.*",
-  "http://b\\.com.*",
-  "http://test2\\.com.*",
-  "http://host:port",  # Malformed placeholder
-  ".*yourdomain\\.tld.*",  # *.yourdomain.tld placeholders
-  # GitHub placeholder links
-  ".*github\\.com/DDD-Enterprises/dopemux-mvp/issues/new.*",  # Issue creation links
-  ".*github\\.com/DDD-Enterprises/dopemux-mvp/discussions/new.*",  # Discussion creation links
-  ".*github\\.com/your-repo/.*",  # Placeholder repo links
-  ".*github\\.com/your-org/.*",  # Placeholder org links
-  ".*github\\.com/YOUR_.*",  # Placeholder org/user links (uppercase)
-  ".*github\\.com/dopemux/.*",  # Old org name
-  ".*githubusercontent\\.com/dopemux/.*",  # Old org raw content
-  # External sites requiring authentication
-  "https://api\\.openai\\.com/.*",  # Requires API key
-  "https://platform\\.openai\\.com/.*",
-  # External documentation that may be unavailable or relocated
-  "https://docs\\.leantime\\.io/.*",
-  "https://textual\\.textualize\\.io/guide/async/.*",
-  "https://www\\.ably\\.io/blog/.*",
-  "https://github\\.com/prometheus/client_python/tree/master/.*",
-  "https://hogonext\\.com/.*",
-  # External sites with paywalls or access restrictions
-  "https://devops\\.com/.*",
-  "https://medium\\.com/.*",
-  "https://.*\\.medium\\.com/.*",
-  "https://dl\\.acm\\.org/.*",
-  "https://www\\.researchgate\\.net/.*",
-  # Timeout-prone sites
-  "https://fme\\.safe\\.com/.*",
-  "https://fastercapital\\.com/.*",  # Known to have 522 errors
-  # Missing documentation files (to be created separately)
-  "file://.*WORKTREE_SWITCHING_GUIDE.*",
-  "file://.*ADHD-ENGINE-DEEP-DIVE-PART1.*",
-  "file://.*api/workspace\\.md",
-  "file://.*troubleshooting/workspaces\\.md",
-  "file://.*phase-1[a-d]-.*",
-  "file://.*phase-2-security-quality-complete.*",
-  "file://.*phase-2a-security-scan.*",
-  "file://.*phase-3-manual-review-findings.*"
+  "http://0.0.0.0:.*",
+  "http://qdrant:.*",
+  "https://www.researchgate.net/.*",
+  "https://github.com/DDD-Enterprises/dopemux-mvp(\\.git|$|/.*)",
+  "https://docs.dopemux.dev.*",
+  "https://get.dopemux.dev.*",
+  "https://dopemux.dev.*"
 ]
 
 # Accept 404s for localhost (fallback if regex doesn't catch all)
@@ -78,11 +21,4 @@ exclude_loopback = true
 max_concurrency = 8
 
 # Accept certain status codes that are acceptable
-accept = [200, 201, 204, 307, 401, 429, 502]
-
-# Include unsupported links (don't treat as errors)
-include_verbatim = true
-
-# Timeout settings
-timeout = 30
-max_retries = 2
+accept = [200, 201, 204, 429]

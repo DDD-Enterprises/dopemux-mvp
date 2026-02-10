@@ -17,15 +17,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from rich.console import Console
 from typing import Optional
 
+from ..console import console
 from .integration import get_global_integration
 from .agent_communication import AgentMessage
 from .debugging_support import DebuggerType
 from ..adhd.context_manager import ContextManager
-
-console = Console()
 
 
 # Tmux commands removed - use 'dopemux tmux' instead

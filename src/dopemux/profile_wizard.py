@@ -15,14 +15,12 @@ from typing import Dict, List, Optional
 
 import click
 import yaml
-from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 
+from .console import console
 from .profile_analyzer import GitHistoryAnalyzer
 from .profile_models import Profile, ADHDConfig, AutoDetection
-
-console = Console()
 
 
 class ProfileWizard:

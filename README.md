@@ -1,49 +1,289 @@
-# Dopemux MVP — Ritual Daemon Edition
 
-```
-━━━◆ Ø ◆━━━
-[LIVE] Dopemuse online. Luxury filth plus lab precision. I roast myself first, then your backlog.
-[CONSENT CHECK? y/N]
-```
 
-**Terminal-native ADHD accommodations, horny brand voice, and precision tooling for devs who crave ritualized focus**
-
-> Need the full aesthetic spec? See [DØPEMÜX Brand System](docs/branding/DØPEMUX_BRAND_SYSTEM.md). All surfaces — UI, tmux, CLI, docs — must honor that contract. Logged. Hydrate.
-
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
-![Python](https://img.shields.io/badge/python-3.10+-green)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
-![PyPI](https://img.shields.io/badge/pypi-dopemux-blue)
-![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)
-
-## 🎯 What is Dopemux?
-
-DØPEMÜX is the filthy brain-gremlin living in your terminal: a cognitive ops stack that keeps receipts, preserves dopamine, and drips aftercare summaries on command. Real-time statusline awareness, persistent memory graphs, adaptive ritual scripts — all kink-coded, all consent-first, all logged.
-
-### Key Features
-
-- **🧠 ADHD-Optimized Statusline** - Real-time context awareness without breaking focus
-- **📊 ConPort Knowledge Graph** - Persistent memory and decision logging across sessions
-- **🌉 DopeconBridge** - Single integration point for cross-plane communication & KG access
-- **⚡ Adaptive Energy Tracking** - Monitor and adapt to your energy levels
-- **👁️ Attention State Management** - Detect and accommodate different attention states
-- **☕ Smart Break Reminders** - Context-aware break suggestions
-- **🔄 Session Continuity** - Resume work exactly where you left off
-- **🗂️ Multi-Workspace Support** - Seamlessly work across multiple projects with isolated contexts
+# Dopemux MVP — Cognitive Ops Stack
+![Version](https://img.shields.io/badge/version-0.1.0-blue) ![Python](https://img.shields.io/badge/python-3.10+-green) ![License](https://img.shields.io/badge/license-MIT-lightgrey) ![PyPI](https://img.shields.io/badge/pypi-dopemux-blue) ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)
 
 ---
 
-## 🗂️ Multi-Workspace Architecture
+## Table of Contents
 
-Dopemux now supports **multiple workspaces** with complete isolation and cross-workspace queries.
+- [Why Dopemux?](#why-dopemux)
+- [Project Name and Description](#project-name-and-description)
+- [Quick Start](#quick-start)
+- [Technology Stack](#technology-stack)
+- [Project Architecture](#project-architecture)
+- [Project Structure](#project-structure)
+- [Key Features](#key-features)
+- [Development Workflow](#development-workflow)
+- [Coding Standards](#coding-standards)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [Community & Support](#community--support)
+- [License](#license)
+- [FAQ & Troubleshooting](#faq--troubleshooting)
+- [Further Reading](#further-reading)
 
-### What is a Workspace?
+---
 
-A workspace is a distinct project or codebase with its own:
-- Isolated cognitive state (energy, attention, breaks)
-- Separate knowledge graph (decisions, tasks, context)
-- Independent session history
-- Workspace-specific configurations
+## Why Dopemux?
+
+Dopemux is built for developers who want to maximize focus, context retention, and productivity—especially those with ADHD or who thrive on ritualized workflows. It provides:
+
+- Persistent, context-rich development sessions
+- Real-time cognitive and project state awareness
+- Seamless multi-workspace management
+- Adaptive accommodations for energy and attention
+- A consent-first, developer-centric experience
+
+If you want your terminal, services, and dashboard to work together to keep you in flow, Dopemux is for you.
+
+---
+
+
+## Project Name and Description
+
+**Dopemux MVP** is an ADHD-aware cognitive ops stack for developers. It unifies a Python CLI/library, FastAPI service fleet, Next.js dashboard, and multi-workspace architecture to deliver persistent context, adaptive workflows, and real-time statusline awareness. Dopemux is designed for focus, context retention, and developer ritual.
+
+> See the [DØPEMÜX Brand System](docs/branding/DØPEMUX_BRAND_SYSTEM.md) for the full aesthetic and UX contract.
+
+---
+
+## Quick Start
+
+**For detailed installation instructions, see [docs/04-installation.md](docs/04-installation.md).**
+
+```bash
+# 1. Clone repository
+git clone https://github.com/DDD-Enterprises/dopemux-mvp
+cd dopemux-mvp
+
+# 2. Install dependencies (single source of truth)
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+pre-commit install --install-hooks
+
+# 3. Generate workspace configs and set up environment
+python scripts/render_workspace_configs.py --set-default
+source "$(python scripts/workspace_env_path.py)"
+
+# 4. Start services
+docker compose -f docker-compose.smoke.yml up --build -d
+python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
+
+# 5. Run CLI
+dopemux --help
+```
+
+See [docs/04-installation.md](docs/04-installation.md), [INSTALL.md](INSTALL.md), and [QUICK_START.md](QUICK_START.md) for more.
+
+---
+
+
+## Technology Stack
+
+- **Python** 3.10+ ([pyproject.toml](pyproject.toml))
+- **FastAPI** (service APIs)
+- **Next.js** (dashboard UI, [ui-dashboard/](ui-dashboard/))
+- **Docker Compose** (service orchestration)
+- **PostgreSQL AGE** (graph backend)
+- **Redis** (event bus)
+- **tmux, jq, curl, sqlite3** (tooling)
+- **Pytest, Ruff, Black, isort, mypy** (testing/linting)
+
+See [pyproject.toml](pyproject.toml), [requirements.txt](requirements.txt), and [package.json](package.json) for full dependency details.
+
+---
+
+
+## Project Architecture
+
+Dopemux uses a two-plane architecture:
+
+- **Project Management Plane**: Leantime, Task-Master, Task-Orchestrator (task/project authority)
+- **Cognitive Plane**: Serena LSP, ConPort Knowledge Graph, ADHD Engine (context, reasoning, energy)
+- **DopeconBridge**: Integration gateway for cross-plane event routing and authority enforcement
+
+All cross-service communication is event-driven (Redis PubSub), and shared schemas are reused from [services/shared/src/dopemux_services_shared](services/shared/src/dopemux_services_shared). Service registry and entrypoints are defined in [services/registry.yaml](services/registry.yaml).
+
+> **Diagram:**
+> ![Architecture Diagram Placeholder](docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
+
+See [Architecture Overview](docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md) and [System Bible](docs/94-architecture/system-bible.md) for diagrams and details.
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Python 3.10+
+- Git 2.30+
+- Docker 20.10+ (recommended)
+- tmux, jq, curl, sqlite3
+
+### Installation
+
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .[dev]
+pre-commit install --install-hooks
+```
+
+Generate workspace configs and set up your environment:
+
+```bash
+python scripts/render_workspace_configs.py --set-default
+source "$(python scripts/workspace_env_path.py)"
+```
+
+Start the smoke stack and audit services:
+
+```bash
+docker compose -f docker-compose.smoke.yml up --build -d
+python tools/ports_health_audit.py --mode runtime --services conport,task-orchestrator,dopecon-bridge
+```
+
+See [INSTALL.md](INSTALL.md) and [QUICK_START.md](QUICK_START.md) for more.
+
+---
+
+
+## Project Structure
+
+- **src/dopemux/**: Core CLI, library, canonical clients
+- **services/**: FastAPI services (task orchestrator, working-memory-assistant, etc.)
+- **ui-dashboard/**: Next.js dashboard UI
+- **tools/**: Build, audit, and migration scripts
+- **docs/**: Architecture, engineering rituals, branding
+- **tests/**: Unit, contract, and smoke tests
+- **reports/**: Coverage, build matrix, inventories
+- **docker-compose.*.yml**: Stack definitions
+- **pyproject.toml, requirements.txt**: Python dependencies
+
+See [docs/03-reference/00-repo-map.md](docs/03-reference/00-repo-map.md) for a full map.
+
+---
+
+
+## Key Features
+
+- **CLI**: Python-based, terminal-native, ADHD-optimized statusline
+- **Services**: FastAPI microservices for context, orchestration, and knowledge graph
+- **Dashboard**: Next.js UI for visualizing context, energy, and project state
+- **Persistent ConPort knowledge graph** and decision log
+- **DopeconBridge** for cross-plane event routing
+- **Adaptive energy and attention tracking** (ADHD Engine)
+- **Smart break reminders and hyperfocus protection**
+- **Multi-workspace support** with complete data isolation
+- **Autonomous code/docs semantic search** (dope-context)
+- **Unified ConPort client and multi-session support**
+- **Mobile mode with Happy client**
+
+> **Screenshot/Diagram Placeholder:**
+> ![Dashboard Screenshot Placeholder](docs/SCREENSHOT_DASHBOARD_PLACEHOLDER.png)
+
+---
+
+
+## Development Workflow
+
+
+**Contributor Checklist:**
+
+- [ ] Use `dopemux worktree` for isolated git worktrees (no direct edits to main branches)
+- [ ] Install requirements and pre-commit hooks before running lint/tests
+- [ ] Run `python tools/quick_checks.py fast|ci|contracts|smoke` for tiered validation
+- [ ] Ensure 80%+ coverage (see pytest.ini)
+- [ ] Use workflows in `.github/workflows/` for CI, security, and coverage
+- [ ] Update `services/registry.yaml` and compose files together for service changes
+- [ ] Run `python tools/docker_build_matrix.py --mode build --scoreboard` after Docker/service edits
+- [ ] Update reports/docs after tool outputs change
+- [ ] Never commit secrets or env files
+
+See [docs/engineering/refactor_gates.md](docs/engineering/refactor_gates.md) for migration/refactor checklists.
+
+---
+
+
+## Coding Standards
+
+- Mirror style and structure from `src/dopemux/`, `services/*`, and `tests/`
+- Preserve architectural boundaries: core logic in `src/dopemux/`, services in `services/`, UI in `ui-dashboard/`
+- Use canonical clients from `src/dopemux/clients/`
+- Follow event-driven patterns and shared schemas
+- No cross-layer imports; respect boundaries enforced by `tests/arch/`
+- Run `pre-commit run --all-files` before PRs
+
+See [copilot-instructions.md](.github/copilot/copilot-instructions.md) for more.
+
+---
+
+
+## Testing
+
+- **Unit tests**: `pytest -q` (see `tests/unit/`)
+- **Contract tests**: `pytest tests/contracts/`
+- **Smoke tests**: `python tools/quick_checks.py smoke`
+- **Coverage**: 80% minimum enforced by `pytest.ini`
+- **Linting/Typecheck**: `pre-commit run --all-files` (includes ruff, black, isort, mypy)
+
+See [docs/03-reference/03-testing.md](docs/03-reference/03-testing.md) for full details.
+
+---
+
+
+## Contributing
+
+Contributions are welcome! Focus areas include ADHD accommodations, statusline, energy/attention tracking, and context preservation. Follow code exemplars in `src/dopemux/`, `services/`, and `tests/`. See [copilot-instructions.md](.github/copilot/copilot-instructions.md) for project-specific rules.
+
+---
+
+## Community & Support
+
+- [GitHub Issues](https://github.com/DDD-Enterprises/dopemux-mvp/issues) — Bug reports & feature requests
+- [Issues](https://github.com/DDD-Enterprises/dopemux-mvp/issues) — Community Q&A
+- [Contact](mailto:support@dopemux.dev) — Direct support
+
+---
+
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+## FAQ & Troubleshooting
+
+**Q: Statusline shows 📴 disconnected?**
+A: ConPort database not accessible. Check `context_portal/context.db` exists, or initialize with `mcp__conport__get_active_context --workspace_id $(pwd)`.
+
+**Q: Session time not showing?**
+A: Invalid session_start timestamp. Reset with `mcp__conport__update_active_context --workspace_id $(pwd) --patch_content '{"session_start": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"}'`.
+
+**Q: ADHD Engine shows 💤?**
+A: Service not running. Start with `cd services/adhd-engine && uvicorn main:app --port 8095 --reload`.
+
+**Q: Coverage below 80%?**
+A: Rerun tests with `pytest -q` and check `coverage.xml` for gaps.
+
+**Q: Docker build hangs?**
+A: Run `docker builder prune` before `python tools/docker_build_matrix.py --mode build --scoreboard`.
+
+For more, see [Troubleshooting Guide](docs/troubleshooting/workspaces.md).
+
+---
+
+
+## Further Reading
+
+- [Documentation Index](docs/INDEX.md)
+- [Architecture Overview](docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
+- [ConPort Technical Deep Dive](docs/04-explanation/conport-technical-deep-dive.md)
+- [Serena LSP Deep Dive](docs/04-explanation/serena-v2-technical-deep-dive.md)
+- [ADHD Engine](docs/ADHD-ENGINE-DEEP-DIVE-PART1.md)
+- [Multi-Workspace Guide](MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md)
+- [Changelog](CHANGELOG.md)
 
 ### Quick Multi-Workspace Setup
 
@@ -79,6 +319,26 @@ dopemux workspace switch ~/code/another-project
 - Gentle reminders when switching workspaces
 
 See [Multi-Workspace Guide](#multi-workspace-usage) for detailed usage.
+
+---
+
+## 📐 Engineering Rituals
+
+Every migration PR must tick the [Refactor Gates](docs/engineering/refactor_gates.md) checklist before reviewers are invited. It freezes the HTTP contract, verifies containers, and defends the boundary layers so refactors stay predictable.
+
+### Testing
+
+Dopemux uses a tiered testing approach for fast feedback and CI parity:
+
+**Quick testing commands:**
+```bash
+python tools/quick_checks.py fast        # Tier 0: Fast checks (< 2 min) - arch + unit
+python tools/quick_checks.py ci          # Tier 1: CI parity (5-10 min) - full validation
+python tools/quick_checks.py contracts   # Tier 2: Contract tests (requires services)
+python tools/quick_checks.py smoke       # Tier 3: Full smoke stack (10-15 min)
+```
+
+**See [Testing Guide](docs/03-reference/03-testing.md) for complete tier definitions, CI workflow stages, and troubleshooting.**
 
 ---
 
@@ -263,7 +523,7 @@ my-project bugfix/login-redirect
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-org/dopemux-mvp
+git clone https://github.com/DDD-Enterprises/dopemux-mvp
 cd dopemux-mvp
 
 # 2. Generate workspace-aware configs (one-time per clone)
@@ -332,19 +592,11 @@ dopemux start --role plan
 
 # Retarget the primary agent pane from the orchestrator session
 dopemux tmux agent switch-role act
-
-# Launch with an explicit profile
-dopemux start --profile developer
-
-# Preview profile effects without launch
-dopemux start --profile developer --dry-run
 ```
 
 The CLI rewrites `~/.claude/settings.json`, sets `DOPEMUX_AGENT_ROLE`, and warns if any required MCP services are offline (with suggested `dopemux mcp ...` commands to start them). Inside the orchestrator tmux session you can retarget agent panes on demand with `dopemux tmux agent switch-role ...`.
 
 Supported personas: `quickfix`, `act`, `plan`, `research`, `all`, `developer`, `architect`, `reviewer`, `debugger`, and `ops` (legacy aliases such as `orchestrator`/`agent` continue to work).
-
-Profile command reference: `docs/02-how-to/PROFILE-USAGE.md`.
 
 Note on authentication modes:
 - Default (`dopemux start`): Claude Code uses OAuth (Claude Pro/Max). No API key passed to the app.
@@ -358,7 +610,7 @@ Note on authentication modes:
 - Project‑level ConPort is auto‑wired into `.claude/claude_config.json` on `dopemux start` and on `scripts/stack_up_all.sh`.
 - A git `post-checkout` hook is installed to wire new worktrees automatically.
 - ConPort uses stdio via `docker exec` targeting the instance container `mcp-conport[_<instance>]`.
-- Global MCP servers (PAL, MAS, PAL apilookup, Exa, Serena, Leantime Bridge, Task Orchestrator, GPT Researcher) are wired into Claude Desktop globally.
+- Global MCP servers (Zen, MAS, Context7, Exa, Serena, Leantime Bridge, Task Orchestrator, GPT Researcher) are wired into Claude Desktop globally.
 
 Read more: `docs/WORKTREES_AND_DECISION_GRAPH.md`.
 
@@ -393,7 +645,7 @@ Your statusline should now show:
 
 **No service** should access ConPort DB or Redis directly - all via DopeconBridge.
 
-[📖 DopeconBridge Documentation](docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_SESSION_SUMMARY.md)
+[📖 DopeconBridge Documentation](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)
 
 ### ConPort Knowledge Graph
 
@@ -416,24 +668,35 @@ Your statusline should now show:
 
 [📖 ConPort Documentation](./docs/04-explanation/conport-technical-deep-dive.md)
 
-### ADHD Engine
+### ADHD Engine - 11 Cognitive Accommodation Features
 
-**Adaptive accommodation system:**
+**Complete ADHD support system with ML-powered insights:**
 
-- **Energy Tracking** - Monitor cognitive energy levels
-- **Attention States** - Detect focus, scattered, overwhelmed states
-- **Break Management** - Smart break recommendations
-- **Hyperfocus Protection** - Gentle reminders during deep work
-- **Accommodation Stats** - Track what helps you be productive
+#### Core Features (Phase 3)
+1. **ML Energy Pattern Learning** - Predicts optimal work times from 2+ weeks of data
+2. **Context Preservation** - Auto-saves mental model before breaks for effortless resume
+3. **Attention Calibration** - Learns YOUR focus patterns through feedback
+4. **Correlation Engine** - Discovers hidden productivity patterns across all services
+5. **Voice Assistant** - Hands-free status queries ("How's my focus?")
+6. **Mobile Push** - Break reminders on phone (Ntfy free, Pushover paid)
+
+#### Quick Win Features (NEW)
+7. **Overwhelm Circuit Breaker** - 5 overwhelm signals → scaled interventions (check-in → forced break)
+8. **Hyperfocus Protection** - Auto-saves every 5min, gentle reminders at 90/120min, crash detection
+9. **End-of-Day Wind Down** - 7-step ritual: stats → wins → thoughts → tomorrow prep → recovery
+10. **Weekly Pattern Report** - Friday analysis with best focus windows + personalized recommendations
+11. **Procrastination Detection** - Detects 5 patterns (research rabbit holes, task switching, etc.) → gentle micro-tasks
 
 **How it helps:**
 
-- Adapts task complexity to energy level
-- Suggests breaks before burnout
-- Protects deep focus states
-- Learns your productivity patterns
+- Prevents overwhelm cascades and burnout crashes
+- Protects deep work while preventing exhaustion
+- Reduces next-day anxiety with structured closures
+- Data-driven improvements from weekly insights
+- Non-judgmental procrastination interventions
+- Learns and adapts to your unique patterns
 
-[📖 ADHD Engine Documentation](./services/adhd_engine/README.md)
+[📖 ADHD Features User Guide](./docs/02-how-to/adhd-features-user-guide.md) | [📖 API Reference](./docs/03-reference/adhd-engine-api.md) | [📖 Technical Documentation](./services/adhd_engine/README.md)
 
 ### Dope-Context - Semantic Search (NEW in v2.1)
 
@@ -459,8 +722,8 @@ Your statusline should now show:
 
 **Specialized AI reasoning and tooling:**
 
-- **PAL MCP** - Multi-model reasoning (thinkdeep, planner, consensus, debug, codereview)
-- **PAL apilookup** - Official library documentation (React, Vue, Next.js, etc.)
+- **Zen MCP** - Multi-model reasoning (thinkdeep, planner, consensus, debug, codereview)
+- **Context7** - Official library documentation (React, Vue, Next.js, etc.)
 - **GPT-Researcher** - Deep multi-source web research
 - **Exa** - Neural semantic search
 - **Serena LSP** - Semantic code intelligence with unified ConPort client (NEW)
@@ -646,9 +909,6 @@ mcp__conport__get_active_context --workspace_id $(pwd)
 # Check logs
 cat /tmp/statusline_debug.json | jq .
 tail -20 /tmp/statusline_debug.log
-
-# Build a full multi-service investigation packet
-python3 scripts/collect_task_packet.py --task-id statusline-debug --since 30m --services all
 ```
 
 ### Session time not showing
@@ -694,74 +954,13 @@ uvicorn main:app --port 8095 --reload
 
 Dopemux is designed by and for developers with ADHD. Contributions welcome!
 
-### 🚀 Quick Start for Contributors
+**Areas of focus:**
 
-**Ready to contribute? Get set up in 5-10 minutes:**
-
-```bash
-# 1. Fork and clone
-git clone https://github.com/YOUR_USER/dopemux-mvp.git ~/code/dopemux-mvp
-cd ~/code/dopemux-mvp
-
-# 2. Install in editable mode
-pip install -e ".[dev]"
-
-# 3. Verify dev mode
-dopemux dev status
-# Should show: "✅ ACTIVE"
-
-# 4. Make changes and test immediately!
-```
-
-**📖 Comprehensive Documentation:**
-
-- **[Development Setup Guide](docs/02-how-to/DEVELOPMENT_SETUP.md)** - 5-minute quick start for all scenarios
-- **[Developing Zen MCP](docs/02-how-to/DEVELOPING_ZEN.md)** - Contribute to Zen MCP tools
-- **[Developing Dopemux Core](docs/02-how-to/DEVELOPING_DOPEMUX_CORE.md)** - Work on CLI, profiles, commands
-- **[Troubleshooting Guide](docs/02-how-to/development-troubleshooting.md)** - Common issues and solutions
-
-### 🎯 Development Features
-
-**Automatic Dev Mode Detection:**
-- ✅ Editable install for instant code changes
-- ✅ Test database isolation (never corrupt production data)
-- ✅ DEBUG logging for visibility
-- ✅ Service skipping for faster iteration
-
-**Check your dev mode status:**
-```bash
-dopemux dev status    # Shows detected paths, settings
-dopemux dev paths     # Lists component dev locations
-```
-
-### 🌟 Areas of Focus
-
-We're especially interested in contributions to:
-
-- **ADHD Accommodations** - New patterns and strategies
-- **Statusline** - Enhanced visualizations and indicators
-- **Energy/Attention Tracking** - Improved state detection
-- **Break Management** - Smarter break recommendations
-- **Context Preservation** - Better session continuity
-- **Documentation** - Clear, ADHD-friendly guides
-- **Testing** - Coverage and quality improvements
-
-### 📋 Contribution Workflow
-
-1. **Fork** the repository on GitHub
-2. **Clone** to `~/code/dopemux-mvp` (auto-enables dev mode)
-3. **Create branch**: `git checkout -b feature/your-feature`
-4. **Make changes** - they take effect immediately!
-5. **Test**: `pytest tests/ -v`
-6. **Commit**: Use conventional commits (`feat:`, `fix:`, `docs:`)
-7. **Push** and create **Pull Request**
-
-### 💡 Getting Help
-
-- **First-time contributors**: Start with [Development Setup](docs/02-how-to/DEVELOPMENT_SETUP.md)
-- **Questions**: Open a GitHub Issue with `question` label
-- **Bugs**: Check [Troubleshooting](docs/02-how-to/development-troubleshooting.md) first
-- **Ideas**: Open a GitHub Discussion
+- ADHD accommodation patterns
+- Statusline improvements
+- Energy/attention tracking
+- Break management strategies
+- Context preservation techniques
 
 ---
 
@@ -1083,6 +1282,6 @@ dopemux workspace reset
 ```
 
 For more details, see:
-- [Multi-Workspace Implementation Guide](docs/systems/multi-workspace/README.md)
+- [Multi-Workspace Implementation Guide](MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md)
 - [Workspace API Reference](docs/api/workspace.md)
 - [Troubleshooting Guide](docs/troubleshooting/workspaces.md)

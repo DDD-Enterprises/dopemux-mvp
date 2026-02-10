@@ -14,11 +14,8 @@ logger = logging.getLogger(__name__)
 from pathlib import Path
 from typing import Any, Dict
 
-from rich.console import Console
-
 from ..config import ConfigManager
-
-console = Console()
+from ..console import console
 
 
 class ClaudeConfigurator:
@@ -581,19 +578,19 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         servers = {
             "python": """
 - **mas-sequential-thinking**: Complex reasoning for architecture
-- **pal**: Python documentation and patterns
+- **pal**: API/SDK documentation via apilookup
 - **dope-context**: Semantic code search with hybrid search
 - **morphllm-fast-apply**: Code transformations
 """,
             "javascript": """
-- **pal**: React/Vue/Node.js documentation
+- **pal**: API/SDK documentation (React/Vue/Node.js)
 - **dope-context**: Codebase semantic search with reranking
 - **morphllm-fast-apply**: Framework migrations
 - **exa**: Web research for best practices
 """,
             "rust": """
 - **mas-sequential-thinking**: Systems design reasoning
-- **pal**: Rust documentation and crates
+- **pal**: API/SDK documentation (Rust docs and crates)
 - **dope-context**: Large codebase navigation with AST chunking
 - **morphllm-fast-apply**: Code modernization
 """,
@@ -602,7 +599,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         return servers.get(
             template,
             """
-- **pal**: Language documentation
+- **pal**: API/SDK documentation via apilookup
 - **dope-context**: Semantic code + docs search
 - **morphllm-fast-apply**: Transformations
 """,
@@ -615,7 +612,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         config_file = project_path / ".dopemux" / "config.yaml"
 
         if not config_file.exists():
-            console.log("[red]No Dopemux configuration found in project[/red]")
+            console.logger.info("[red]No Dopemux configuration found in project[/red]")
             return
 
         import yaml
@@ -639,7 +636,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         with open(config_file, "w") as f:
             yaml.dump(config, f, default_flow_style=False, indent=2)
 
-        console.log(f"[green]✓ Updated project configuration[/green]")
+        console.logger.info(f"[green]✓ Updated project configuration[/green]")
 
     def get_project_status(self, project_path: Path) -> Dict[str, Any]:
         """Get project configuration status."""

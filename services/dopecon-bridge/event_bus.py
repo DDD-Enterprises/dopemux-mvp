@@ -23,15 +23,110 @@ logger = logging.getLogger(__name__)
 
 
 class EventType(str, Enum):
-    """Defined event types for Dopemux coordination"""
-    TASKS_IMPORTED = "tasks_imported"
+    """Defined event types for Dopemux coordination.
+    
+    Event categories:
+    - Session: Work session lifecycle
+    - Progress: Task completion and progress
+    - Activity: File/window/app activity (from watchers)
+    - ADHD State: Energy, attention, and state changes
+    - Detection: Outputs from ADHD detectors
+    - Calendar/Social: Meeting and communication events
+    - Medication: Medication tracking events
+    - User Actions: Explicit user-triggered events
+    """
+    
+    # ─────────────────────────────────────────────────────────────
+    # Session Events
+    # ─────────────────────────────────────────────────────────────
     SESSION_STARTED = "session_started"
     SESSION_PAUSED = "session_paused"
     SESSION_COMPLETED = "session_completed"
+    SESSION_RESUMED = "session_resumed"
+    
+    # ─────────────────────────────────────────────────────────────
+    # Progress Events
+    # ─────────────────────────────────────────────────────────────
+    TASKS_IMPORTED = "tasks_imported"
+    TASK_STARTED = "task_started"
+    TASK_COMPLETED = "task_completed"
+    TASK_SWITCHED = "task_switched"
     PROGRESS_UPDATED = "progress_updated"
     DECISION_LOGGED = "decision_logged"
+    GIT_COMMIT = "git_commit"
+    
+    # ─────────────────────────────────────────────────────────────
+    # Activity Events (from Workspace Watcher, Desktop Commander)
+    # ─────────────────────────────────────────────────────────────
+    FILE_OPENED = "file_opened"
+    FILE_SAVED = "file_saved"
+    FILE_CLOSED = "file_closed"
+    FILE_ACTIVITY = "file_activity"           # Generic file action
+    WINDOW_SWITCHED = "window_switched"       # Desktop Commander
+    APP_FOCUSED = "app_focused"               # Desktop Commander
+    TAB_SWITCHED = "tab_switched"             # Browser MCP
+    IDLE_DETECTED = "idle_detected"
+    ACTIVITY_RESUMED = "activity_resumed"
+    
+    # ─────────────────────────────────────────────────────────────
+    # ADHD State Events
+    # ─────────────────────────────────────────────────────────────
     ADHD_STATE_CHANGED = "adhd_state_changed"
+    ENERGY_CHANGED = "energy_changed"
+    ATTENTION_CHANGED = "attention_changed"
+    BREAK_SUGGESTED = "break_suggested"
+    BREAK_ACCEPTED = "break_accepted"
+    BREAK_REFUSED = "break_refused"
+    BREAK_COMPLETED = "break_completed"
     BREAK_REMINDER = "break_reminder"
+    
+    # ─────────────────────────────────────────────────────────────
+    # Detection Events (outputs from ADHD services)
+    # ─────────────────────────────────────────────────────────────
+    HYPERFOCUS_DETECTED = "hyperfocus_detected"
+    HYPERFOCUS_WARNING = "hyperfocus_warning"
+    HYPERFOCUS_CRITICAL = "hyperfocus_critical"
+    OVERWHELM_DETECTED = "overwhelm_detected"
+    OVERWHELM_CIRCUIT_BREAKER = "overwhelm_circuit_breaker"
+    PROCRASTINATION_DETECTED = "procrastination_detected"
+    CONTEXT_SWITCH_DETECTED = "context_switch_detected"
+    UNTRACKED_WORK_DETECTED = "untracked_work_detected"
+    ABANDONMENT_WARNING = "abandonment_warning"
+    
+    # ─────────────────────────────────────────────────────────────
+    # Calendar/Social Events
+    # ─────────────────────────────────────────────────────────────
+    MEETING_STARTED = "meeting_started"
+    MEETING_ENDED = "meeting_ended"
+    MEETING_UPCOMING = "meeting_upcoming"     # Warning before meeting
+    SOCIAL_BATTERY_LOW = "social_battery_low"
+    SOCIAL_BATTERY_CRITICAL = "social_battery_critical"
+    
+    # ─────────────────────────────────────────────────────────────
+    # Medication Events
+    # ─────────────────────────────────────────────────────────────
+    MEDICATION_LOGGED = "medication_logged"
+    MEDICATION_REMINDER = "medication_reminder"
+    MEDICATION_WINDOW_ENTERED = "medication_window_entered"
+    MEDICATION_WINDOW_EXITING = "medication_window_exiting"
+    
+    # ─────────────────────────────────────────────────────────────
+    # User Actions (explicit user-triggered)
+    # ─────────────────────────────────────────────────────────────
+    USER_FEEDBACK = "user_feedback"
+    THOUGHT_CAPTURED = "thought_captured"
+    CONTEXT_SAVED = "context_saved"
+    CONTEXT_RESTORED = "context_restored"
+    WIND_DOWN_STARTED = "wind_down_started"
+    WIND_DOWN_COMPLETED = "wind_down_completed"
+    
+    # ─────────────────────────────────────────────────────────────
+    # Claude Code Integration Events
+    # ─────────────────────────────────────────────────────────────
+    CLAUDE_PROMPT_RECEIVED = "claude_prompt_received"
+    CLAUDE_TOOL_STARTED = "claude_tool_started"
+    CLAUDE_TOOL_COMPLETED = "claude_tool_completed"
+    CLAUDE_SESSION_STOPPED = "claude_session_stopped"
 
 
 @dataclass

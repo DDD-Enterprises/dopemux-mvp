@@ -10,7 +10,19 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
 # Ensure repo-root imports work in isolated service runtime.
-REPO_ROOT = Path(__file__).resolve().parents[4]
+def _find_repo_root():
+    curr = Path(__file__).resolve().parent
+    while curr.parent != curr:
+        if (curr / "services").exists() and (curr / "src").exists():
+            return curr
+        curr = curr.parent
+    # Fallback to a reasonable default if markers not found
+    try:
+        return Path(__file__).resolve().parents[4]
+    except IndexError:
+        return Path(__file__).resolve().parents[2]
+
+REPO_ROOT = _find_repo_root()
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 

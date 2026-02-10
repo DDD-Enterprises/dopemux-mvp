@@ -8,7 +8,7 @@ mcp_servers:
   required:
     - zen
     - conport
-    - pal
+    - pal  # API/SDK documentation via apilookup
 
   enabled:
     - serena-lsp
