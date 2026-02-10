@@ -38,7 +38,7 @@ sys.path.insert(0, str(parent_dir))
 
 # Use models from task_orchestrator package
 from task_orchestrator.models import OrchestrationTask, TaskStatus
-from adapters.conport_adapter import ConPortEventAdapter
+from ..adapters.conport_adapter import ConPortEventAdapter
 from intelligence.cognitive_load_balancer import CognitiveLoadBalancer
 from intelligence.context_switch_recovery import ContextSwitchRecovery
 from pal_client import TaskOrchestratorPALClient
