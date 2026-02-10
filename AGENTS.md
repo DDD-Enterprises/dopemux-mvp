@@ -1,3 +1,6 @@
+This repository is governed by .claude/PROJECT_INSTRUCTIONS.md.
+Investigations and redesigns must follow .claude/PRIMER.md
+
 # Dopemux-MVP AI Agent Guide
 
 This document helps AI assistants quickly orient themselves to the dopemux-mvp codebase.

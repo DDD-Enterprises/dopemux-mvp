@@ -1,3 +1,6 @@
+This repository is governed by .claude/PROJECT_INSTRUCTIONS.md.
+Investigations and redesigns must follow .claude/PRIMER.md
+
 # Dopemux Copilot Instructions (Repository Policy)
 
 These instructions apply to all GitHub Copilot contributions in this repository.

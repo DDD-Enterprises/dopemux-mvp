@@ -169,8 +169,8 @@ services:
   # Task Orchestrator - Advanced task orchestration and dependency management
   task-orchestrator:
     build:
-      context: ../../services/task-orchestrator
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: services/task-orchestrator/Dockerfile
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-task-orchestrator"
     # Now always-on MCP server
     restart: unless-stopped
@@ -248,8 +248,8 @@ services:
   # Plane Coordinator - Two-plane architecture coordination service
   plane-coordinator:
     build:
-      context: ../../services/task-orchestrator
-      dockerfile: Dockerfile.coordination
+      context: ../../
+      dockerfile: services/task-orchestrator/Dockerfile.coordination
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-plane-coordinator"
     restart: unless-stopped
     networks:
