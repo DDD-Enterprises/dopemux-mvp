@@ -65,6 +65,17 @@ CREATE TABLE IF NOT EXISTS work_log_entries (
 
   parent_entry_id TEXT,
 
+  -- Provenance fields (Packet D §4.3 - Mandatory for all post-migration promotions)
+  source_event_id TEXT NOT NULL,
+  source_event_type TEXT NOT NULL,
+  source_adapter TEXT NOT NULL,
+  source_event_ts_utc TEXT NOT NULL,
+  promotion_rule TEXT NOT NULL,
+  promotion_ts_utc TEXT NOT NULL,
+
+  -- Supersession support (Packet D §6.2)
+  supersedes_entry_id TEXT,
+
   created_at_utc TEXT NOT NULL,
   updated_at_utc TEXT NOT NULL
 );
@@ -122,6 +133,9 @@ CREATE TABLE IF NOT EXISTS reflection_cards (
   top_blockers_json TEXT NOT NULL DEFAULT '[]',
   progress_json TEXT NOT NULL DEFAULT '{}',
   next_suggested_json TEXT NOT NULL DEFAULT '[]',
+
+  -- Provenance: which work_log_entries were used to generate this reflection
+  source_entry_ids_json TEXT NOT NULL DEFAULT '[]',
 
   promotion_candidates_json TEXT NOT NULL DEFAULT '[]',
   created_at_utc TEXT NOT NULL
