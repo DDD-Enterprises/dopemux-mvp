@@ -56,6 +56,7 @@ class DopeBrainzRouterManager:
         self.router_home = self.instance_home / ".dope-brainz-router"
         self.router_home = self.instance_home / ".dope-brainz-router"
 
+        self.claude_home = self.instance_home / ".claude"
         self.config_path = self.router_home / "config.json"
         self.api_key_path = self.router_home / "api.key"
         self.pid_path = self.router_home / ".dope-brainz-router.pid"
@@ -77,7 +78,7 @@ class DopeBrainzRouterManager:
     ) -> Path:
         """Create or update the router configuration for this instance."""
         if not provider_models:
-            raise ClaudeCodeRouterError("At least one upstream model must be provided")
+            raise DopeBrainzRouterError("At least one upstream model must be provided")
 
         self._ensure_directories()
         api_key = self._ensure_api_key()
@@ -169,8 +170,8 @@ class DopeBrainzRouterManager:
         provider_key: Optional[str] = None,
         provider_key_env_var: Optional[str] = None,
         router_overrides: Optional[Dict[str, str]] = None,
-        startup_timeout: float = 20.0,
-    ) -> ClaudeCodeRouterInfo:
+        startup_timeout: float = 45.0,
+    ) -> DopeBrainzRouterInfo:
         """Ensure the router process is running with the desired configuration."""
         self.prepare_config(
             provider_url=provider_url,
@@ -185,9 +186,22 @@ class DopeBrainzRouterManager:
         if already_running:
             return self._build_info(already_running=True)
 
+        # Search for ccr in PATH and common NVM locations
         executable = shutil.which("ccr")
         if not executable:
-            raise ClaudeCodeRouterError(
+            # Try common NVM paths
+            home = Path.home()
+            nvm_paths = [
+                home / ".nvm" / "versions" / "node" / "v22.18.0" / "bin" / "ccr",
+                home / ".nvm" / "current" / "bin" / "ccr",
+            ]
+            for nvm_path in nvm_paths:
+                if nvm_path.exists():
+                    executable = str(nvm_path)
+                    break
+        
+        if not executable:
+            raise DopeBrainzRouterError(
                 "ccr executable not found. Install with `npm install -g @musistudio/claude-code-router`."
             )
 
@@ -195,13 +209,13 @@ class DopeBrainzRouterManager:
         self._launch_router_process(executable, env)
 
         if not self._wait_until_ready(startup_timeout):
-            raise ClaudeCodeRouterError(
+            raise DopeBrainzRouterError(
                 f"Claude Code Router did not become ready on {self.host}:{self.port}"
             )
 
         return self._build_info(already_running=False)
 
-    def build_client_env(self, info: ClaudeCodeRouterInfo) -> Dict[str, str]:
+    def build_client_env(self, info: DopeBrainzRouterInfo) -> Dict[str, str]:
         """Environment variables for clients that should use the router."""
         return {
             "ANTHROPIC_BASE_URL": info.base_url,
@@ -235,7 +249,7 @@ class DopeBrainzRouterManager:
         except json.JSONDecodeError:
             backup_path = self.config_path.with_suffix(".corrupt")
             self.config_path.replace(backup_path)
-            raise ClaudeCodeRouterError(
+            raise DopeBrainzRouterError(
                 f"Existing router config was invalid JSON. Moved to {backup_path}."
             )
 
@@ -329,7 +343,7 @@ class DopeBrainzRouterManager:
         env = os.environ.copy()
         env.update(self._process_env_overrides)
         if self._provider_key_env_var and self._provider_key_env_var not in env:
-            raise ClaudeCodeRouterError(
+            raise DopeBrainzRouterError(
                 f"Upstream credential {self._provider_key_env_var} missing from environment"
             )
         return env
@@ -349,7 +363,8 @@ class DopeBrainzRouterManager:
     def _wait_until_ready(self, timeout: float) -> bool:
         deadline = time.time() + timeout
         while time.time() < deadline:
-            if self._is_running() and self._is_port_in_use():
+            # Only check port - CCR doesn't create a PID file
+            if self._is_port_in_use():
                 return True
             time.sleep(0.3)
         return False
@@ -363,10 +378,10 @@ class DopeBrainzRouterManager:
             except OSError:
                 return False
 
-    def _build_info(self, *, already_running: bool) -> ClaudeCodeRouterInfo:
+    def _build_info(self, *, already_running: bool) -> DopeBrainzRouterInfo:
         if not self._api_key:
-            raise ClaudeCodeRouterError("Router API key not initialized")
-        return ClaudeCodeRouterInfo(
+            raise DopeBrainzRouterError("Router API key not initialized")
+        return DopeBrainzRouterInfo(
             host=self.host,
             port=self.port,
             config_path=self.config_path,
@@ -378,7 +393,7 @@ class DopeBrainzRouterManager:
 
 
 __all__ = [
-    "ClaudeCodeRouterError",
-    "ClaudeCodeRouterInfo",
+    "DopeBrainzRouterError",
+    "DopeBrainzRouterInfo",
     "ClaudeCodeRouterManager",
 ]

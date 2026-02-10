@@ -683,7 +683,6 @@ class ConfigManager:
                 "mcp_servers": [
                     "mas-sequential-thinking",
                     "pal",
-                    "claude-context",
                 ],
                 "adhd_adaptations": {
                     "focus_duration_avg": 30,
@@ -697,7 +696,7 @@ class ConfigManager:
                     ".claude/context.md",
                     ".claude/llms.md",
                 ],
-                "mcp_servers": ["pal", "claude-context", "morphllm-fast-apply"],
+                "mcp_servers": ["pal", "morphllm-fast-apply"],
                 "adhd_adaptations": {
                     "focus_duration_avg": 25,
                     "visual_complexity": "minimal",
@@ -713,7 +712,6 @@ class ConfigManager:
                 "mcp_servers": [
                     "mas-sequential-thinking",
                     "pal",
-                    "claude-context",
                 ],
                 "adhd_adaptations": {
                     "focus_duration_avg": 35,

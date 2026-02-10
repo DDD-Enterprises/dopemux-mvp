@@ -19,7 +19,7 @@ Define a deterministic, auditable pipeline from raw capture to derived memory
 products without implicit injection and without introducing a second authority
 for project truth.
 
-## Stage 0: Capture
+## Stage 0: Capture (ADR-213: Dual-Capture Design)
 
 Inputs:
 
@@ -38,6 +38,14 @@ Rules:
 2. Redact payload before persistence.
 3. Generate deterministic `event_id` for retry-idempotency.
 4. Use duplicate-safe insert semantics (`INSERT OR IGNORE`).
+
+**Dual-Capture Convergence** (ADR-213):
+
+- All capture modes (`plugin`, `cli`, `mcp`, `auto`) write to **same canonical ledger**
+- Same event from different modes produces **identical event_id**
+- Event ID is content-based (hash of event_type + payload + ts_utc), mode-independent
+- Enables idempotent retry: capturing same event twice via different modes deduplicates correctly
+- Capture fails closed (raises `CaptureError`) if repo root cannot be resolved
 
 ## Stage 1: Normalize
 
@@ -90,7 +98,7 @@ Rules:
 1. Derived artifacts must retain provenance pointers.
 2. Derived artifacts must not back-write into raw capture history.
 
-## Stage 4: Global Rollup (Read-Only Index)
+## Stage 4: Global Rollup (Read-Only Index, ADR-213)
 
 Purpose:
 
@@ -102,19 +110,70 @@ Storage:
 2. `projects` registry table.
 3. `promoted_pointers` table with bounded summaries and metadata pointers.
 
-Rules:
+Rules (ADR-213 Read-Only Guarantees):
 
-1. Rollup reads project ledgers in read-only mode.
+1. Rollup reads project ledgers in **read-only mode** (SQLite URI: `file:path?mode=ro`)
 2. Rollup stores pointers and bounded redacted summaries only.
-3. Rollup never writes into project ledgers.
+3. **Rollup NEVER writes into project ledgers** (architectural invariant)
 4. Rollup never overrides per-project truth.
 5. Deterministic ordering: `ts_utc DESC`, `event_id ASC`.
+
+**Critical Invariants**:
+
+- Project ledger `repo_root/.dopemux/chronicle.sqlite` is **single source of truth**
+- Global rollup is an **index only**, not a second authority
+- Opening project ledgers with read-only SQLite connection prevents accidental writes
+- Any attempt to write to project ledger from rollup code will fail with `OperationalError`
 
 ## Injection Contract
 
 1. Injection is explicit only through tool/command calls.
 2. No default auto-injection in capture, rollup, or retrieval pathways.
 3. Responses must include provenance (`project_id`, `event_id`, timestamps).
+
+## CLI Interface
+
+### Global Rollup Commands
+
+Build and query the global rollup index using the `dopemux memory rollup` command group:
+
+**Build Index:**
+```bash
+dopemux memory rollup build --projects-file projects.txt
+```
+
+Creates or updates the global rollup index at `~/.dopemux/global_index.sqlite` by reading project ledgers in read-only mode.
+
+**List Registered Projects:**
+```bash
+dopemux memory rollup list
+```
+
+Displays all projects registered in the global index with their repository roots and last-seen timestamps.
+
+**Search Across Projects:**
+```bash
+dopemux memory rollup search "authentication" --limit 10
+```
+
+Searches promoted work log entries across all registered projects using LIKE patterns. Results include timestamp, event type, summary, and originating project.
+
+**Options:**
+- `--index-path PATH` - Override default global index location
+- `--projects-file PATH` - Specify projects list (newline or JSON format)
+- `--limit N` - Maximum search results (default: 10, max: 100)
+
+### Read-Only Guarantees (ADR-213)
+
+All global rollup operations follow these guarantees:
+
+1. Project ledgers are opened in read-only mode (`file:path?mode=ro`)
+2. Only pointers and bounded summaries are stored in global index
+3. **No writes back to project ledgers occur** (architectural invariant)
+4. Deterministic ordering is preserved: `ts_utc DESC`, `event_id ASC`
+5. Project ledger remains single source of truth
+
+**See**: ADR-213 for dual-capture design and global rollup guarantees
 
 ## Out of Scope (This Spec Version)
 
