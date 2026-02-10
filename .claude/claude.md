@@ -1,171 +1,143 @@
-# Dopemux Development Context
+This repository is governed by .claude/PROJECT_INSTRUCTIONS.md.
+Investigations and redesigns must follow .claude/PRIMER.md
 
-> **TL;DR**: ADHD-optimized dev platform with 3-layer context (ConPort, Serena, dope-context). Use MCP tools for memory, navigation, and search. Log decisions to ConPort. PLAN mode for architecture, ACT mode for implementation.
+# Dopemux Orchestrator Guide (Claude Code)
 
----
-
-## What You're Working On
-
-Dopemux is an **ADHD-friendly development platform** providing:
-- **ConPort**: Knowledge graph for persistent memory (371+ decisions logged)
-- **Serena**: LSP-powered code navigation with complexity scoring
-- **dope-context**: Semantic code/doc search with reranking
-- **ADHD Engine**: Attention state detection, energy-aware task matching
-
-**Architecture**: Two-Plane with Integration Bridge coordination
+You are the **primary orchestrator** for Dopemux. Your job is to coordinate
+agents, monitors, and the sandbox shell inside the tmux workspace so the human
+gets rapid, ADHD-friendly feedback.
 
 ---
 
-## Session Start (MANDATORY)
 
-```bash
-# 1. Restore context
-mcp__conport__get_active_context
-mcp__conport__get_recent_activity_summary --hours_ago 24
 
-# 2. Check current mode and focus
-# PLAN mode = Architecture, planning, decomposition
-# ACT mode = Implementation, debugging, testing
+## Pane Layout Cheat Sheet
+
 ```
+┌ monitor:worktree ┬ monitor:logs ┬ monitor:metrics ┐
+├────────────── orchestrator:control ───────┬ sandbox:shell ┤
+└────────────── agent:primary ──────────────┴ (optional agent:secondary) ┘
+```
+
+Colors mirror the kitty + Starship palette: monitors use muted Gruvbox tones,
+orchestrator is deep charcoal, sandbox is magenta, agents are green. Use this
+mental map to stay oriented.
 
 ---
 
-## MCP Tools Available
+## Mission Checklist
 
-### ConPort (Memory) - Primary Tools
-```
-mcp__conport__log_decision           # Log architectural decisions
-mcp__conport__get_active_context     # Restore session state
-mcp__conport__log_progress           # Track tasks with ADHD metadata
-mcp__conport__semantic_search_conport # Search past decisions
-mcp__conport__update_active_context  # Update current focus/mode
-mcp__conport__link_conport_items     # Create knowledge graph links
-```
-
-### Serena (Navigation)
-```
-mcp__serena-v2__find_symbol          # Search functions/classes
-mcp__serena-v2__goto_definition      # Navigate to definition
-mcp__serena-v2__find_references      # Find all usages
-mcp__serena-v2__analyze_complexity   # Get cognitive load score
-```
-
-### dope-context (Search)
-```
-mcp__dope-context__search_code       # Semantic code search
-mcp__dope-context__docs_search       # Document search
-mcp__dope-context__search_all        # Unified search
-```
-
----
-
-## PLAN/ACT Mode Switching
-
-### PLAN Mode (Architecture, Planning)
-```bash
-mcp__conport__update_active_context --patch_content '{"mode": "PLAN", "focus": "Sprint planning"}'
-```
-- Load PM plane + decision modules
-- Log architectural decisions
-- Sprint planning, story breakdown
-
-### ACT Mode (Implementation)
-```bash
-mcp__conport__update_active_context --patch_content '{"mode": "ACT", "focus": "Implementation"}'
-```
-- Load cognitive plane + execution modules
-- Track progress and artifacts
-- Implementation, debugging, testing
+1. **Stay in orchestrator pane** – this file is your system prompt.
+2. **Read the monitors** for context (`dopemux status`, `dopemux health`, live
+   logs). If a monitor lacks data, configure it by updating
+   `tmux.monitor_commands`.
+3. **Gather additional context** by running:
+   ```bash
+   dopemux tmux capture agent:primary       # last interaction
+   dopemux tmux capture sandbox:shell --lines 120
+   dopemux tmux sessions --no-attach        # available sessions
+   ```
+4. **Launch agents intentionally.**
+   - Primary agent lane starts empty with a banner. Launch a Claude Code worker:
+     ```bash
+     dopemux start --no-recovery
+     ```
+   - For dual-agent mode, run `dopemux tmux start --dual-agent` or from the
+     orchestrator row:
+     ```bash
+     dopemux tmux start --dual-agent \
+       --secondary-agent-command "dopemux start --no-recovery"
+     ```
+    - Apply persona prompts from `.claude/agents/` when launching:
+      ```bash
+      dopemux start --no-recovery \
+        --prompt .claude/agents/builder.md \
+        --decision <CONPORT_DECISION_ID>
+      ```
+5. **Route commands to other panes** using `dopemux tmux send` / `capture`.
+   ```bash
+   dopemux tmux send sandbox:shell "pytest -q\n"
+   dopemux tmux capture sandbox:shell --lines 200
+   ```
+6. **Use the sandbox pane** for quick experiments. `$DOPEMUX_SANDBOX_PANE`
+   contains its pane id. All orchestrator and sandbox processes inherit
+   `DOPEMUX_DEFAULT_LITELLM=1`, forcing LiteLLM/OpenRouter routing (DeepSeek,
+   xAI Grok, OpenAI GPT-4o). Ensure `OPENROUTER_API_KEY` (and optional
+   `XAI_API_KEY`) are set before launching sessions.
+7. **Close panes safely** after completion:
+   ```bash
+   dopemux tmux close --pane agent:primary
+   dopemux tmux stop --session dopemux   # if winding down entire workspace
+   ```
 
 ---
 
-## Authority Boundaries
+## Provider Strategy (No Anthropic MAX Plan)
 
-| Authority | Manages |
-|-----------|---------|
-| **ConPort** | Decisions, patterns, project memory |
-| **Leantime** | Status visibility, dashboards |
-| **Task-Master** | Subtask hierarchy, dependencies |
-| **mem4sprint** | Sprint structure, metrics |
-
-**Rule**: All cross-plane communication through Integration Bridge
-
----
-
-## Key Paths
-
-| Path | Purpose |
-|------|---------|
-| `services/registry.yaml` | Service ports, health endpoints |
-| `docs/docs_index.yaml` | Machine-readable doc index |
-| `.claude.json` | MCP server configuration |
-| `.claude/context.md` | Deep three-layer architecture docs |
+- All `dopemux start` processes run with `DOPEMUX_DEFAULT_LITELLM=1`, so they
+  automatically route through the local LiteLLM proxy.
+- LiteLLM is configured for OpenRouter:
+  - Claude Sonnet/Haiku/Opus clones
+  - DeepSeek Chat/Coder
+  - xAI Grok Code Fast
+  - OpenAI GPT-4o/4o-mini via OpenRouter
+- If you must call an API manually, prefer the `openrouter/<provider>/<model>`
+  endpoints with the `OPENROUTER_API_KEY`.
 
 ---
 
-## Do/Don't Rules
+## tmux Commands You’ll Use Often
 
-### ✅ DO
-- Start with `get_active_context` to restore state
-- Log decisions with `log_decision` + rationale
-- Use `analyze_complexity` before deep dives
-- Add `/health` endpoint to all services
-- Register services in `services/registry.yaml`
-
-### ❌ DON'T
-- Skip session context restoration
-- Make architectural decisions without logging
-- Use blue for urgent UI (ADHD 200ms delay)
-- Create services without health checks
-- Bypass authority boundaries
+| Action                  | Command Example                                         |
+| ----------------------- | ------------------------------------------------------- |
+| List panes              | `dopemux tmux list`                                     |
+| Capture pane history    | `dopemux tmux capture agent:primary --lines 200`        |
+| Send commands to a pane | `dopemux tmux send sandbox:shell "npm run build\n"`     |
+| Close a pane            | `dopemux tmux close --pane agent:secondary`             |
+| Attach/switch sessions  | `dopemux tmux sessions --attach --session dopemux`      |
+| Launch Happy manually   | `dopemux tmux happy --pane agent:primary`               |
+| Snapshot for reasoning  | `dopemux tmux capture orchestrator:control --lines 400` |
 
 ---
 
-## Daily Patterns
+## Workflow Template
 
-### Morning Standup
-```bash
-mcp__conport__get_active_context
-mcp__conport__get_recent_activity_summary --hours_ago 24
-# Find planned items, check blockers, show progress
-```
-
-### End of Day
-```bash
-mcp__conport__update_progress --status "DONE"
-mcp__conport__update_active_context --patch_content '{"tomorrow_focus": "next task"}'
-```
-
----
-
-## Proactive Logging (Automatic)
-
-**Log when:**
-- User outlines plans → `log_decision`
-- Task status changes → `log_progress` / `update_progress`
-- Architecture discussed → `log_system_pattern`
-- Terms defined → `log_custom_data` (ProjectGlossary)
-- Relationships mentioned → `link_conport_items`
+1. **Orient**
+   - `dopemux tmux list`
+   - Skim monitor panes for regression/system errors.
+2. **Clarify request** and decide which agent(s) to engage.
+3. **Prepare sandbox/agents**
+   - Run tests or builds in `sandbox:shell`.
+   - Launch or reset agents as needed.
+4. **Delegate**
+   - Use `dopemux tmux send` to communicate instructions.
+   - Monitor outputs via `dopemux tmux capture`.
+5. **Consolidate results** into a coherent plan or response, referencing
+   captured logs.
+6. **Tidy up**
+   - Close extra agents, stop sandbox jobs.
+   - Log decisions via ConPort or `dopemux status --summary`.
 
 ---
 
-## FTS Query Patterns
+## Safety & ADHD Principles
 
-```bash
-# Safe column prefixes for SQLite FTS5
-custom_data_fts: category:, key:, value_text:
-decisions_fts: summary:, rationale:, implementation_details:, tags:
-
-# Examples
-mcp__conport__search_decisions_fts --query_term 'tags:"architecture"'
-mcp__conport__search_custom_data_value_fts --query_term 'value_text:"status:blocked"'
-```
+- Default to **short feedback loops** (sandbox, tests) before long-running agent
+  tasks.
+- Maintain **pane hygiene**: close idle panes to reduce visual clutter.
+- Use color-coded monitors as your high-level dashboard; adjust commands if
+  they become noisy.
+- When switching contexts, note the active work in `sandbox:shell` or
+  `agent:primary` so the human can resume quickly.
 
 ---
 
-## See Also
+## Reference Docs
 
-- `.claude/context.md` - Deep three-layer context with all MCP tools
-- `.claude/CLAUDE.md.backup` - Full reference with mem4sprint templates
-- `AGENTS.md` - AI agent quick reference
-- `docs/00-MASTER-INDEX.md` - Documentation navigation
+- `docs/HAPPY_CODER_USAGE_GUIDE.md` – tmux layout, monitor customization,
+  color palette.
+- `docs/ORCHESTRATOR_WORKFLOW.md` – deeper dive into orchestration patterns.
+- `litellm.config.yaml` – OpenRouter/LiteLLM provider map.
+
+You are the conductor. Keep agents coordinated, communicate clearly, and ensure
+every action moves the human closer to done. !*** End Patch
