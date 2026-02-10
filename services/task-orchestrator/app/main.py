@@ -73,6 +73,18 @@ async def shutdown_coordinator():
 
 
 @asynccontextmanager
+async def lifespan_context(name: str, startup_func, shutdown_func):
+    """Helper to manage service lifespan with startup and shutdown hooks"""
+    logger.info(f"Starting {name} lifespan context...")
+    state = await startup_func()
+    try:
+        yield state
+    finally:
+        logger.info(f"Shutting down {name} lifespan context...")
+        await shutdown_func()
+
+
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     async with lifespan_context("task-orchestrator", init_coordinator, shutdown_coordinator) as state:
@@ -595,7 +607,7 @@ if __name__ == "__main__":
 
     # Run the FastAPI application
     uvicorn.run(
-        "coordination_api:app",
+        "app.main:app",
         host="0.0.0.0",
         port=port,
         reload=False,
