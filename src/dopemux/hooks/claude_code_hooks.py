@@ -291,36 +291,75 @@ class ClaudeCodeHooks:
         Returns shell scripts that can be added to .bashrc, .zshrc, etc.
         """
         return {
-            'bash_preexec': f'''
-# Dopemux Claude Code pre-exec hook
-dopemux_trigger_preexec() {{
-    local cmd="$1"
-    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger shell-command --context "{{\\"command\\": \\"$cmd\\"}}" --async --quiet >/dev/null 2>&1 &
+            'bash_preexec': r'''
+# Dopemux Claude Code pre-exec hook (bash)
+DOPEMUX_SAW_RELEVANT_CMD=0
+
+dopemux_trigger_preexec() {
+    local full="$1"
+    local cmd="${full%% *}"
+
+    if [[ "$cmd" != "claude" && "$cmd" != "dopemux" ]]; then
+        return 0
+    fi
+
+    DOPEMUX_SAW_RELEVANT_CMD=1
+
+    # JSON safety: escape backslashes then quotes
+    local safe="${full//\\/\\\\}"
+    safe="${safe//\"/\\\"}"
+
+    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger shell-command --context "{\"command\": \"$safe\"}" --async --quiet >/dev/null 2>&1 &
     disown 2>/dev/null || true
-}}
+}
 trap 'dopemux_trigger_preexec "$BASH_COMMAND"' DEBUG
 ''',
 
-            'bash_precmd': '''
-# Dopemux Claude Code post-exec hook
+            'bash_precmd': r'''
+# Dopemux Claude Code post-exec hook (bash)
 dopemux_trigger_precmd() {
-    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger command-done --async --quiet >/dev/null 2>&1 &
-    disown 2>/dev/null || true
+    if [[ "${DOPEMUX_SAW_RELEVANT_CMD:-0}" -eq 1 ]]; then
+        DOPEMUX_SAW_RELEVANT_CMD=0
+        DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger command-done --async --quiet >/dev/null 2>&1 &
+        disown 2>/dev/null || true
+    fi
 }
-PROMPT_COMMAND="${PROMPT_COMMAND};dopemux_trigger_precmd"
+
+if [[ -n "${PROMPT_COMMAND:-}" ]]; then
+    PROMPT_COMMAND="dopemux_trigger_precmd;${PROMPT_COMMAND}"
+else
+    PROMPT_COMMAND="dopemux_trigger_precmd"
+fi
 ''',
 
-            'zsh_hooks': '''
+            'zsh_hooks': r'''
 # Dopemux Claude Code hooks for zsh
 autoload -U add-zsh-hook
 
+typeset -g DOPEMUX_SAW_RELEVANT_CMD=0
+
 dopemux_preexec() {
-    local cmd="$1"
-    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger shell-command --context "{\"command\": \"$cmd\"}" --async --quiet >/dev/null 2>&1 &!
+    local full="$1"
+    local cmd="${full%% *}"
+
+    if [[ "$cmd" != "claude" && "$cmd" != "dopemux" ]]; then
+        return 0
+    fi
+
+    DOPEMUX_SAW_RELEVANT_CMD=1
+
+    # JSON safety: escape backslashes then quotes
+    local safe="${full//\\/\\\\}"
+    safe="${safe//\"/\\\"}"
+
+    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger shell-command --context "{\"command\": \"$safe\"}" --async --quiet >/dev/null 2>&1 &!
 }
 
 dopemux_precmd() {
-    DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger command-done --async --quiet >/dev/null 2>&1 &!
+    if (( DOPEMUX_SAW_RELEVANT_CMD )); then
+        DOPEMUX_SAW_RELEVANT_CMD=0
+        DOPEMUX_CAPTURE_CONTEXT=plugin dopemux trigger command-done --async --quiet >/dev/null 2>&1 &!
+    fi
 }
 
 add-zsh-hook preexec dopemux_preexec
