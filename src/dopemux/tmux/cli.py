@@ -1378,7 +1378,7 @@ def _setup_dope_layout(
             f"{python_cmd} scripts/neon_dashboard/core/app.py"
         )
         controller.send_keys(
-            monitors_left_id,
+            monitor_1_id,
             dashboard_left_cmd,
             enter=True,
             raw=True,
@@ -1392,7 +1392,7 @@ def _setup_dope_layout(
             f"{python_cmd} scripts/neon_dashboard/core/app.py"
         )
         controller.send_keys(
-            monitor_right_id,
+            monitor_2_id,
             dashboard_right_cmd,
             enter=True,
             raw=True,
@@ -1411,7 +1411,7 @@ def _setup_dope_layout(
             respect_rate_limit=False,
         )
     else:
-        for pane_id in (monitors_left_id, monitor_right_id, metrics_bar_id):
+        for pane_id in (monitor_1_id, monitor_2_id, monitor_3_id, metrics_bar_id):
             controller.send_keys(
                 pane_id,
                 "clear; printf '🟢 Dope layout pane ready. Run dashboard manually when ready.\\n'",
@@ -1565,7 +1565,7 @@ def _setup_dope_layout(
     tmux_utils.focus_pane(agent_pane_id)
 
     return OrchestratorLayout(
-        monitors=[monitors_left_id, monitor_right_id],
+        monitors=[monitor_1_id, monitor_2_id, monitor_3_id],
         orchestrator=orchestrator_id,
         agent=agent_pane_id,
         sandbox=sandbox_id,
