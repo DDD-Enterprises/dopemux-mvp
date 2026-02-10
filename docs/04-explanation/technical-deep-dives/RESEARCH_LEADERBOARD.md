@@ -30,9 +30,9 @@ This document tracks the audit and research progress for all core components of 
 | Plane Coordinator | [x] 100% | Phase 4 | Crashing         | 2026-02-09 |
 | Workspace Watcher | [x] 100% | Phase 4 | Not Running      | 2026-02-09 |
 | Activity Capture  | [x] 100% | Phase 4 | Unhealthy (Bug)  | 2026-02-09 |
-| Voice Commands    | [ ] 0%   | Phase 0 | -                | -          |
-| ADHD Notifier     | [ ] 0%   | Phase 0 | -                | -          |
-| ADHD Dashboard    | [ ] 0%   | Phase 0 | -                | -          |
+| Voice Commands    | [x] 100% | Phase 4 | Not Running      | 2026-02-09 |
+| ADHD Notifier     | [x] 100% | Phase 4 | Not Running      | 2026-02-09 |
+| ADHD Dashboard    | [x] 100% | Phase 4 | Not Running      | 2026-02-09 |
 | LiteLLM           | [ ] 0%   | Phase 0 | -                | -          |
 | Exa               | [ ] 0%   | Phase 0 | -                | -          |
 | Genetic Agent     | [ ] 0%   | Phase 0 | -                | -          |
