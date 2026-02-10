@@ -1,3 +1,15 @@
+---
+id: DESKTOP-COMMANDER-DEEP-DIVE
+title: Desktop Commander Deep Dive
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-09'
+last_review: '2026-02-09'
+next_review: '2026-05-10'
+prelude: Desktop Commander Deep Dive (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Desktop Commander: Deep Technical Analysis
 
 ## SECTION 1: TECHNICAL REPORT
