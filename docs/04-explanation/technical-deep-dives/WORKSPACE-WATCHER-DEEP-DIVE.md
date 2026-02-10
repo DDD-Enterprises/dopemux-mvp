@@ -1,3 +1,15 @@
+---
+id: WORKSPACE-WATCHER-DEEP-DIVE
+title: Workspace Watcher Deep Dive
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-09'
+last_review: '2026-02-09'
+next_review: '2026-05-10'
+prelude: Workspace Watcher Deep Dive (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Workspace Watcher: Deep Technical Analysis
 
 ## SECTION 1: TECHNICAL REPORT
