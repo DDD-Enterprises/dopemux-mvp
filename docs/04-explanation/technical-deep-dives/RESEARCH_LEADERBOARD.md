@@ -16,29 +16,29 @@ This document tracks the audit and research progress for all core components of 
 
 ## Research Status Overview
 
-| Component         | Status   | Phase   | Health    | Last Audit |
-| :---------------- | :------- | :------ | :-------- | :--------- |
-| **Dope-Memory**   | [/] 80%  | Phase 4 | Critical  | 2026-02-09 |
-| Serena v2         | [/] 30%  | Phase 1 | Stable    | 2026-02-09 |
-| ConPort           | [x] 100% | Phase 4 | Critical  | 2026-02-09 |
-| dope-context      | [ ] 0%   | Phase 0 | -         | -          |
-| ADHD Engine       | [x] 100% | Phase 1 | Unhealthy | 2026-02-09 |
-| DopeconBridge     | [ ] 0%   | Phase 0 | -         | -          |
-| Task Orchestrator | [ ] 0%   | Phase 0 | -         | -          |
-| Desktop Commander | [ ] 0%   | Phase 0 | -         | -          |
-| Leantime Bridge   | [ ] 0%   | Phase 0 | -         | -          |
-| Plane Coordinator | [ ] 0%   | Phase 0 | -         | -          |
-| Workspace Watcher | [ ] 0%   | Phase 0 | -         | -          |
-| Activity Capture  | [ ] 0%   | Phase 0 | -         | -          |
-| Voice Commands    | [ ] 0%   | Phase 0 | -         | -          |
-| ADHD Notifier     | [ ] 0%   | Phase 0 | -         | -          |
-| ADHD Dashboard    | [ ] 0%   | Phase 0 | -         | -          |
-| LiteLLM           | [ ] 0%   | Phase 0 | -         | -          |
-| Exa               | [ ] 0%   | Phase 0 | -         | -          |
-| Genetic Agent     | [ ] 0%   | Phase 0 | -         | -          |
-| MCP Client        | [ ] 0%   | Phase 0 | -         | -          |
-| PAL               | [ ] 0%   | Phase 0 | -         | -          |
-| GPT Researcher    | [ ] 0%   | Phase 0 | -         | -          |
+| Component         | Status   | Phase   | Health           | Last Audit |
+| :---------------- | :------- | :------ | :--------------- | :--------- |
+| **Dope-Memory**   | [/] 80%  | Phase 4 | Critical         | 2026-02-09 |
+| Serena v2         | [/] 30%  | Phase 1 | Stable           | 2026-02-09 |
+| ConPort           | [x] 100% | Phase 4 | Critical         | 2026-02-09 |
+| dope-context      | [x] 100% | Phase 1 | Mock/Placeholder | 2026-02-09 |
+| ADHD Engine       | [x] 100% | Phase 1 | Unhealthy        | 2026-02-09 |
+| DopeconBridge     | [ ] 0%   | Phase 0 | -                | -          |
+| Task Orchestrator | [ ] 0%   | Phase 0 | -                | -          |
+| Desktop Commander | [x] 100% | Phase 4 | Stopped          | 2026-02-09 |
+| Leantime Bridge   | [x] 100% | Phase 4 | Healthy          | 2026-02-09 |
+| Plane Coordinator | [x] 100% | Phase 4 | Crashing         | 2026-02-09 |
+| Workspace Watcher | [x] 100% | Phase 4 | Not Running      | 2026-02-09 |
+| Activity Capture  | [x] 100% | Phase 4 | Unhealthy (Bug)  | 2026-02-09 |
+| Voice Commands    | [ ] 0%   | Phase 0 | -                | -          |
+| ADHD Notifier     | [ ] 0%   | Phase 0 | -                | -          |
+| ADHD Dashboard    | [ ] 0%   | Phase 0 | -                | -          |
+| LiteLLM           | [ ] 0%   | Phase 0 | -                | -          |
+| Exa               | [ ] 0%   | Phase 0 | -                | -          |
+| Genetic Agent     | [ ] 0%   | Phase 0 | -                | -          |
+| MCP Client        | [ ] 0%   | Phase 0 | -                | -          |
+| PAL               | [ ] 0%   | Phase 0 | -                | -          |
+| GPT Researcher    | [ ] 0%   | Phase 0 | -                | -          |
 
 ## Active Audits Summary
 
@@ -46,6 +46,11 @@ This document tracks the audit and research progress for all core components of 
 - **Audit Date**: 2026-02-09
 - **Finding**: Implementation exists in `working-memory-assistant` but is missing from runtime orchestration.
 - **Next Step**: Port 3020 verification and orchestration logic.
+
+### Dope Context
+- **Audit Date**: 2026-02-09
+- **Finding**: **Potemkin Village**. Service is running a "Simple Mock Server" (`simple_server.py`) that returns hardcoded responses. Real architecture (Voyage/Qdrant) exists in code but is dormant.
+- **Status**: Healthy (Mock).
 
 ### ADHD Engine
 - **Audit Date**: 2026-02-09
