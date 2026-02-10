@@ -441,7 +441,7 @@ for server in "${servers[@]}"; do
 
   if [ "$name" = "litellm" ]; then
     # LiteLLM requires auth header; use repo master key
-    if curl -sf -H "Authorization: Bearer REDACTED_LITELLM_KEY" "http://localhost:$port/health" &>/dev/null; then
+    if curl -sf -H "Authorization: Bearer ${LITELLM_MASTER_KEY}" "http://localhost:$port/health" &>/dev/null; then
       echo "✅ $name - Healthy"
     else
       echo "❌ $name - Unhealthy (port $port)"

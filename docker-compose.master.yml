@@ -186,7 +186,7 @@ services:
     depends_on:
       - dopemux-postgres-age
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f -H 'Authorization: Bearer REDACTED_LITELLM_KEY' http://localhost:4000/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f -H 'Authorization: Bearer ${LITELLM_MASTER_KEY}' http://localhost:4000/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -532,7 +532,7 @@ services:
     networks:
       - dopemux-network
     environment:
-      - OPENAI_API_KEY=REDACTED_LITELLM_KEY
+      - OPENAI_API_KEY=${LITELLM_MASTER_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - XAI_API_KEY=${XAI_API_KEY}
