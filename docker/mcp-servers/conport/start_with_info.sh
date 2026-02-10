@@ -7,9 +7,13 @@ echo "Starting ConPort with service discovery support..."
 python info_server.py &
 INFO_PID=$!
 
-# Start main MCP server (enhanced_server.py)
+# Start REST API server on port 3004 (for Docker service-to-service)
 python enhanced_server.py &
-MCP_PID=$!
+REST_PID=$!
 
-# Wait for both processes
-wait $INFO_PID $MCP_PID
+# Start MCP protocol server on port 3005 (for Claude Code)
+MCP_PROXY_PORT=3005 python server.py &
+PROXY_PID=$!
+
+# Wait for all processes
+wait $INFO_PID $REST_PID $PROXY_PID

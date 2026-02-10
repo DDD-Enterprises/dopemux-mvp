@@ -2,434 +2,89 @@
 
 **Purpose**: Generate comprehensive, source-validated technical analysis of Dopemux components for integration design, validation, and living documentation.
 
-**Target Components**: Serena v2, ConPort, dope-context, ADHD Engine, DopeconBridge, Task Orchestrator
+**Target Components**: Serena v2, ConPort, dope-context, ADHD Engine, DopeconBridge, Task Orchestrator, Dope-Memory, Desktop Commander, Leantime Bridge, Plane Coordinator, Workspace Watcher, Activity Capture, Voice Commands, ADHD Notifier, ADHD Dashboard, LiteLLM, Exa, Genetic Agent, MCP Client, PAL, GPT Researcher
 
 ---
 
-## RESEARCH PROTOCOL
+## RESEARCH PROTOCOL (Aligned with PRIMER.md)
 
-### Phase 1: Evidence Gathering (15-20 min)
+### Phase 0: Scope Lock (5 min)
+Before starting research on a component, explicitly define:
+- **Plane under analysis**: (Memory, PM, ADHD, Search, Bridge, etc.)
+- **In-scope / out-of-scope**: Specific sub-modules or integration points.
+- **Success criteria**: What constitutes a "complete" deep dive for this component.
+- **Stop conditions**: When to halt (e.g., missing specific source files).
+
+### Phase 1: Inventory (15-20 min)
+Produce an evidence-based inventory of the component's structure. No opinions or analysis yet.
 
 **Step 1.1: Historical Decision Mining**
-```
-Tool: mcp__conport__search_decisions_fts
-Queries:
-  - "{component_name} architecture"
-  - "{component_name} design"
-  - "{component_name} performance"
-  - "{component_name} integration"
-  - "{component_name} testing"
-
-Extract:
-  - Strategic decisions and rationale
-  - Architecture evolution timeline
-  - Performance benchmarks (actual measurements)
-  - Integration patterns
-  - Known issues and resolutions
-  - Design trade-offs
-```
+- Tool: `mcp__conport__search_decisions_fts`
+- Extract: Strategic decisions, architecture evolution, performance benchmarks.
 
 **Step 1.2: Source Code Architecture Analysis**
-```
-Tool: mcp__serena-v2__read_file + mcp__serena-v2__find_symbol
-
-Files to Read:
-  - {component_root}/__init__.py (module structure, exports)
-  - {component_root}/README.md (if exists)
-  - {component_root}/ARCHITECTURE.md (if exists)
-  - {component_root}/*_COMPLETION_SUMMARY.md (feature status)
-  - tests/{component}/*.py (test structure, coverage)
-
-Extract:
-  - Component count and organization
-  - Class/module hierarchy
-  - Public API surface (__all__ exports)
-  - Dependency graph (imports)
-  - Type definitions
-  - Performance targets (from comments/docstrings)
-```
+- Tool: `mcp__serena-v2__read_file` + `mcp__serena-v2__find_symbol`
+- Extract: Module structure, public API surface, dependency graph.
 
 **Step 1.3: File System Validation**
-```
-Tool: Bash commands
+- Tool: Bash commands (`find`, `wc -l`, `ls -la`, `git log`)
+- Extract: Exact file counts, line counts (prod vs. test), directory organization.
 
-Commands:
-  - find {component_root} -name "*.py" | wc -l
-  - find {component_root} -name "*.py" -exec wc -l {} + | tail -1
-  - find {component_root} -name "test_*.py" | wc -l
-  - ls -la {component_root}/ (directory structure)
-  - git log --oneline {component_root}/ --since="30 days ago" | wc -l
+### Phase 2: Failure & Drift Analysis (10-15 min)
+Identify and label gaps between specification and implementation.
 
-Extract:
-  - Exact file counts
-  - Total line counts (production vs test)
-  - Recent commit activity
-  - Directory organization
-```
+**Labeling Requirement**:
+- **[Observed]**: Direct evidence from code, logs, or command output.
+- **[Inferred]**: Reasoned conclusion, but lacks direct primary source verification.
 
-**Step 1.4: Runtime Validation**
-```
-Tool: Bash (Docker, health checks)
+**Focus Areas**:
+- Determinism leaks, provenance breaks, trust boundary violations.
 
-Commands:
-  - docker ps --filter "name={component}" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-  - curl -s http://localhost:{port}/health (if applicable)
-  - curl -s http://localhost:{port}/metrics (if applicable)
+### Phase 3: Design Delta (Research Context)
+In the context of research, this phase identifies:
+- What the current shape of the component enables vs. what the spec intended.
+- Constraints imposed by the existing implementation on future integrations.
 
-Extract:
-  - Container status (if Dockerized)
-  - Health check status
-  - Runtime metrics (if exposed)
-  - Port mappings
-```
-
-**Step 1.5: Test Coverage Analysis**
-```
-Tool: mcp__serena-v2__read_file + Bash
-
-Files to Read:
-  - tests/{component}/conftest.py (fixtures, setup)
-  - tests/{component}/test_*.py (all test files)
-  - pytest.ini or pyproject.toml (test config)
-  - .coverage or htmlcov/ (coverage reports)
-
-Commands:
-  - pytest tests/{component}/ -v --tb=short
-  - pytest tests/{component}/ --cov={component} --cov-report=term
-
-Extract:
-  - Total test count
-  - Test organization (unit, integration, E2E)
-  - Coverage percentage
-  - Test execution time
-  - Common fixtures and patterns
-```
-
-**Step 1.6: Performance Data Mining**
-```
-Tool: mcp__conport__search_decisions_fts + Grep
-
-Search for:
-  - "performance", "benchmark", "timing", "latency"
-  - "{component_name} test", "{component_name} validation"
-  - Numeric patterns: "ms", "seconds", "faster", "slower"
-
-Grep patterns:
-  - Performance-related comments in code
-  - Timing decorators (@timed, @performance_monitor)
-  - Logging statements with timing
-
-Extract:
-  - Measured performance data (not targets)
-  - Comparison metrics (X times faster than Y)
-  - Performance regression notes
-  - Optimization history
-```
-
-**Step 1.7: Integration Pattern Analysis**
-```
-Tool: Grep + mcp__serena-v2__find_symbol
-
-Search for:
-  - Import statements from other components
-  - MCP tool calls (mcp__*)
-  - Database queries (PostgreSQL, Redis, ConPort)
-  - API calls (HTTP, gRPC)
-  - Event emissions/subscriptions
-
-Extract:
-  - Direct dependencies
-  - Integration patterns (how components connect)
-  - Data flow paths
-  - Event-driven interactions
-  - API contracts
-```
+### Phase 4: Reports (Technical Deep Dive)
+Compose the final research report following the "Report Structure" below.
 
 ---
 
-### Phase 2: Cross-Validation (5-10 min)
+## QUALITY STANDARDS (Non-Negotiable)
 
-**Validation Matrix**:
-```
-For each major claim, verify with 2+ sources:
-
-Example:
-Claim: "31 components in Serena v2"
-Source 1: __init__.py header comment ✓
-Source 2: Count of imports in __all__ ✓
-Source 3: ConPort Decision #109 ✓
-Confidence: 100%
-
-If sources conflict:
-  - Document discrepancy
-  - Investigate further (read actual code)
-  - Note which source is likely outdated
-  - Update confidence level
-```
-
-**Cross-Validation Checklist**:
-- [ ] Component count matches imports
-- [ ] Performance claims have measured data
-- [ ] Architecture description matches code structure
-- [ ] Test coverage claims match pytest output
-- [ ] Integration points verified in source code
-- [ ] Container status matches deployment claims
+1. **Protocol over Cleverness**: Follow the phases in order. Do not skip to Phase 4.
+2. **Current Implementation Wins**: Documentation is wrong if it contradicts current code behavior.
+3. **Auditability**: Every claim must have a citation (File:Line, Decision ID, Command Output).
+4. **Final Rule**: **If it is not auditable, it does not exist.**
 
 ---
 
-### Phase 3: Report Composition (20-30 min per part)
-
-**Part Structure** (repeat for each part):
+## REPORT STRUCTURE
 
 ```markdown
-## Part {N}: {Section Title}
+# {Component Name}: Deep Technical Analysis
 
-### {N}.1 {Subsection}
+## SECTION 1: TECHNICAL REPORT
+### Executive Summary & Strategic Intent
+### Architecture & Core Components (Validated)
+### Advanced Features & Intelligence
+### Integration Patterns & Data Flow
+### Testing, Performance, Limitations & Opportunities
 
-**Purpose**: [What this component/feature does]
-
-**File(s)**: [Exact file paths]
-
-**Core Capabilities**:
-- [Capability 1 with code example/snippet]
-- [Capability 2 with code example/snippet]
-- [Capability 3 with code example/snippet]
-
-**Architecture**:
-```
-[ASCII diagram or structured description]
-```
-
-**Data Flow**:
-```
-[Step-by-step data flow with file references]
-```
-
-**Integration Points**:
-- **{Other Component}**: [How they interact, file:line references]
-- **{External Service}**: [Connection method, configuration]
-
-**Performance Characteristics**:
-- **Typical**: [Median/average from measurements]
-- **Best Case**: [Optimal scenario]
-- **Worst Case**: [Degraded scenario]
-- **ADHD Target**: [Required performance for ADHD users]
-- **Actual vs Target**: [Multiplier comparison]
-
-**Testing**:
-- **Coverage**: [Percentage from pytest --cov]
-- **Test Count**: [Unit/Integration/E2E breakdown]
-- **Key Tests**: [Most important test scenarios]
-- **Test Execution Time**: [How long tests take]
-
-**Strengths**:
-- [What this component does exceptionally well]
-- [Unique capabilities or optimizations]
-
-**Limitations**:
-- [Known constraints or bottlenecks]
-- [Areas needing improvement]
-- [Dependencies causing issues]
-
-**Opportunities**:
-- [Future enhancement possibilities]
-- [Integration opportunities]
-- [Performance optimization potential]
-
-**ADHD Accommodations**:
-- [Specific ADHD features in this component]
-- [How it reduces cognitive load]
-- [Progressive disclosure patterns]
-
----
-
-### {N}.2 [Next Subsection]
-[Repeat structure]
-```
-
----
-
-### Phase 4: Evidence Documentation (10-15 min per part)
-
-**Evidence Structure**:
-
-```markdown
-## Part {N}: Evidence Trail
-
-### Source 1: ConPort Decisions
-**Query**: [Exact search query used]
-**Results**: {count} decisions found
-**Decision IDs**: [List of decision IDs with summaries]
-
-**Extracted Data**:
-- [Claim 1] → Decision #{id}, timestamp {date}
-  - Quote: "[exact quote from decision]"
-  - Confidence: [High/Medium/Low based on decision completeness]
-
-- [Claim 2] → Decision #{id}, timestamp {date}
-  - Quote: "[exact quote]"
-  - Confidence: [High/Medium/Low]
-
-**Validation Notes**:
-- [Any discrepancies found]
-- [Cross-references to other decisions]
-
----
-
-### Source 2: Source Code Files
-**Files Read**: [List of file paths]
-
-**File 1**: {path}
-**Lines**: {start}-{end}
-**Extracted**:
-```
-[Relevant code snippet or structure]
-```
-**Data Points**:
-- [Component count, class names, etc.]
-- [Performance targets from comments]
-
-**File 2**: {path}
-[Repeat]
-
----
-
-### Source 3: File System Queries
-**Commands**:
-```bash
-[Exact command executed]
-```
-**Output**:
-```
-[Raw output]
-```
-**Extracted Data**:
-- File count: {number}
-- Line count: {number}
-- [Other metrics]
-
----
-
-### Source 4: Runtime Validation
-[Container status, health checks, etc.]
-
----
-
-### Source 5: Test Execution
-**Command**:
-```bash
-pytest tests/{component}/ -v
-```
-**Output Summary**:
-- Tests passed: {count}
-- Tests failed: {count}
-- Coverage: {percentage}
-
-**Key Test Results**:
-[Relevant test output showing performance, functionality]
-
----
-
+## SECTION 2: EVIDENCE TRAIL
+### Inventory Evidence (Phase 1)
+- Source code snippets
+- Decision IDs
+- File system counts
+### Failure & Drift Findings (Phase 2)
 ### Cross-Validation Summary
-**Claims Validated**: {count}
-**Confidence Levels**:
-- High (2+ sources): {count} claims
-- Medium (1 source): {count} claims
-- Low (inferred): {count} claims
 
-**Conflicts Found**: {count}
-[Details of any conflicting information]
-
-**Evidence Quality Score**: {percentage}
-[Based on source reliability, cross-validation, recency]
+## SECTION 3: LIVING DOCUMENTATION METADATA
+- Last Validated: {timestamp}
+- Confidence Level: {percentage}
+- Evidence Quality Score: {score}
+- Evolution Log: [Chronological list of updates]
 ```
-
----
-
-## EXECUTION INSTRUCTIONS
-
-### For New Component Research:
-
-1. **Initialize Document**:
-```bash
-# Create component deep-dive doc
-touch docs/{COMPONENT_NAME}-DEEP-DIVE.md
-
-# Copy structure template
-# Section 1: TECHNICAL REPORT
-# Section 2: EVIDENCE TRAIL
-# Section 3: EVOLUTION LOG
-```
-
-2. **Execute Research Protocol**:
-- Run Phase 1 (Evidence Gathering) completely
-- Document all sources and data
-- Run Phase 2 (Cross-Validation)
-- Note confidence levels
-
-3. **Compose Report Part**:
-- Follow Part Structure template
-- Include all subsections (Purpose, Architecture, Performance, Testing, etc.)
-- Reference evidence explicitly (Decision #X, File Y:line Z)
-
-4. **Document Evidence**:
-- Follow Evidence Structure template
-- Include raw data (commands, outputs, quotes)
-- Document validation process
-- Note confidence levels
-
-5. **Append to Document**:
-```python
-# Read existing document
-existing = read_file(f"docs/{COMPONENT}-DEEP-DIVE.md")
-
-# Append new report part to Section 1
-section1_end = existing.find("## SECTION 2:")
-new_report = existing[:section1_end] + f"\n\n### Part {N}: {title}\n{content}\n" + existing[section1_end:]
-
-# Append evidence to Section 2
-section2_end = existing.find("## Document Evolution Log")
-final = new_report[:section2_end] + f"\n\n### Part {N}: Evidence\n{evidence}\n" + new_report[section2_end:]
-
-# Write back
-write_file(f"docs/{COMPONENT}-DEEP-DIVE.md", final)
-```
-
-6. **Update Evolution Log**:
-```markdown
-- **{timestamp}**: Part {N} added - {brief_summary} ({word_count} words, {evidence_sources} sources)
-```
-
----
-
-## QUALITY STANDARDS
-
-### Report Quality Checklist:
-- [ ] Every claim has evidence citation
-- [ ] Performance data is measured (not estimated)
-- [ ] Code examples reference actual files
-- [ ] Integration points verified in source
-- [ ] Limitations honestly documented
-- [ ] Opportunities grounded in architecture
-- [ ] ADHD features explicitly identified
-- [ ] Cross-component interactions mapped
-
-### Evidence Quality Checklist:
-- [ ] 2+ sources for major claims
-- [ ] Raw data included (not just summaries)
-- [ ] Commands/queries documented exactly
-- [ ] Timestamps on historical data
-- [ ] Confidence levels justified
-- [ ] Conflicts investigated
-- [ ] Source reliability assessed
-
-### Technical Accuracy Checklist:
-- [ ] File paths verified to exist
-- [ ] Line numbers accurate (if cited)
-- [ ] Class/function names match source
-- [ ] Architecture diagrams match imports
-- [ ] Performance numbers from actual tests
-- [ ] Test coverage from pytest output
 
 ---
 
@@ -458,6 +113,96 @@ write_file(f"docs/{COMPONENT}-DEEP-DIVE.md", final)
 - **Key Evidence**: Task Orchestrator extraction, Week 1 migration, FastAPI service
 - **Critical Files**: engine.py, activity_tracker.py, conport_client.py
 - **Integration**: ConPort (task queries), Serena (complexity matching), statusline (display)
+
+### Dope-Memory:
+- **Focus Areas**: Temporal spine, working context, reflection cards, trajectory boosting
+- **Key Evidence**: docs/spec/dope-memory/v1/ (Full Spec), 00_overview.md, 07_mcp_contracts.md
+- **Critical Files**: store.py (implied), memory_graph.py (implied)
+- **Integration**: DopeQuery (facts), DopeContext (semantic), EventBus (activity)
+
+### Desktop Commander:
+- **Focus Areas**: Desktop automation, window management, screenshots, cross-platform (macOS/Linux)
+- **Key Evidence**: server.py (FastAPI), integration_bridge_connector.py
+- **Critical Files**: server.py, Dockerfile
+- **Integration**: ADHD Engine (enforcing breaks), PAL (executing actions)
+
+### Leantime Bridge:
+- **Focus Areas**: Project management synchronization, ticket creation, status updates
+- **Key Evidence**: test_contract_api_tools.py, leantime_bridge/ directory
+- **Critical Files**: leantime_client.py, http_server.py
+- **Integration**: Task Orchestrator (sync), Leantime Container (HTTP API)
+
+### Plane Coordinator:
+- **Focus Areas**: Two-plane architecture coordination (PM Plane <-> Cognitive Plane)
+- **Key Evidence**: services/task-orchestrator/Dockerfile.coordination, app/coordination/
+- **Critical Files**: main.py (port 8090)
+- **Integration**: ConPort, ADHD Engine, Redis Events
+
+### Workspace Watcher:
+- **Focus Areas**: Passive file activity detection, coding vs reading distinction
+- **Key Evidence**: file_activity_checker.py, workspace_mapper.py
+- **Critical Files**: file_activity_checker.py
+- **Integration**: Activity Capture (reports), ADHD Engine (inference)
+
+### Activity Capture:
+- **Focus Areas**: Aggregating development metrics (switches, edits) for ADHD Engine
+- **Key Evidence**: activity_tracker.py, event_subscriber.py
+- **Critical Files**: activity_tracker.py
+- **Integration**: Workspace Watcher (input), ADHD Engine (output via HTTP)
+
+### Voice Commands:
+- **Focus Areas**: Voice-to-task decomposition, ADHD context awareness
+- **Key Evidence**: voice_task_decomposer.py, voice_api.py
+- **Critical Files**: voice_task_decomposer.py
+- **Integration**: Zen/PAL (decomposition), ADHD Engine (context)
+
+### ADHD Notifier:
+- **Focus Areas**: Desktop notifications, break reminders, hyperfocus alerts
+- **Key Evidence**: notify.py (osascript/notify-send), mobile_push.py
+- **Critical Files**: notify.py
+- **Integration**: ADHD Engine (triggers), Desktop OS (delivery)
+
+### ADHD Dashboard:
+- **Focus Areas**: Real-time visualization of cognitive state, WebSocket updates
+- **Key Evidence**: services/adhd-dashboard/backend.py, Redis PubSub
+- **Critical Files**: backend.py
+- **Integration**: Redis (events), Activity Capture (metrics), ADHD Engine (state)
+
+### LiteLLM:
+- **Focus Areas**: Universal LLM proxy, model routing (Grok, O3, GPT-5)
+- **Key Evidence**: litellm.config.yaml
+- **Critical Files**: litellm.config.yaml
+- **Integration**: All MCP servers (as model provider), PAL
+
+### Exa:
+- **Focus Areas**: Neural web search, content extraction, similar finding
+- **Key Evidence**: docker/mcp-servers/exa/exa_server.py
+- **Critical Files**: exa_server.py
+- **Integration**: PAL (research fallback), GPT Researcher
+
+### Genetic Agent:
+- **Focus Areas**: Auto-code repair, genetic programming evolution, dual-agent mode
+- **Key Evidence**: services/genetic_agent/main.py, genetic/genetic_agent.py
+- **Critical Files**: main.py, genetic_agent.py
+- **Integration**: PAL (LLM), DopeContext (RAG), Unit Tests (fitness function)
+
+### MCP Client:
+- **Focus Areas**: Custom MCP client implementation, stdio + HTTP transport
+- **Key Evidence**: services/mcp-client/main.py
+- **Critical Files**: main.py
+- **Integration**: All MCP Servers (connection)
+
+### PAL (Zen):
+- **Focus Areas**: Primary reasoning engine, multi-model support, tool orchestration
+- **Key Evidence**: docker/mcp-servers/pal/pal_http_wrapper.py, pal-mcp-server/
+- **Critical Files**: server.py (upstream), pal_http_wrapper.py
+- **Integration**: All other components (orchestrator)
+
+### GPT Researcher:
+- **Focus Areas**: Deep recursive research, report generation
+- **Key Evidence**: docker/mcp-servers/gptr-mcp/wrapper.py
+- **Critical Files**: wrapper.py, server.py (upstream)
+- **Integration**: Exa (search source), PAL (triggers)
 
 ---
 
@@ -489,42 +234,6 @@ To resume research in new session:
 2. Check Evolution Log for last completed part
 3. Continue with next part number
 4. Maintain same evidence quality standards
-```
-
----
-
-## DELIVERABLE FORMAT
-
-**Final Document Structure**:
-```
-# {Component Name}: Deep Technical Analysis
-
-## SECTION 1: TECHNICAL REPORT
-### Part 1: Executive Summary & Strategic Intent
-### Part 2: Architecture & Core Components
-### Part 3: Advanced Features & Intelligence
-### Part 4: Integration Patterns & Data Flow
-### Part 5: Testing, Performance, Limitations & Opportunities
-
-## SECTION 2: EVIDENCE TRAIL
-### Part 1: Evidence Sources & Validation
-### Part 2: Architecture Evidence
-### Part 3: Advanced Features Evidence
-### Part 4: Integration Evidence
-### Part 5: Testing & Performance Evidence
-
-## SECTION 3: COMPONENT INTERACTION MAP
-[How this component interacts with all other Dopemux components]
-
-## SECTION 4: LIVING DOCUMENTATION METADATA
-- Last Validated: {timestamp}
-- Source Code Version: {git commit hash}
-- Test Coverage: {percentage}
-- Evidence Quality Score: {score}
-- Next Review Date: {date}
-
-## Document Evolution Log
-[Chronological log of all updates]
 ```
 
 ---

@@ -26,16 +26,14 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
 from .auto_configurator import WorktreeAutoConfigurator
+from .console import console
 from .workspace_detection import get_workspace_root, get_workspace_info, validate_workspace
 from .worktree_templates import WorktreeTemplateManager
-
-console = Console()
 
 
 class WorktreeDiagnostics:

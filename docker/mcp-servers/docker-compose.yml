@@ -1,6 +1,8 @@
 # Dopemux MCP Servers - Complete Docker Orchestration
 # Based on ADR-007 (Routing Logic) and ADR-012 (MCP Integration Patterns)
 
+name: dopemux
+
 services:
   # === CRITICAL PATH SERVERS (Priority: High) ===
 
@@ -37,14 +39,16 @@ services:
   #     - "mcp.priority=highest"
   #     - "mcp.description=Multi-model orchestration"
 
-  # LiteLLM - Unified LLM proxy with routing and fallbacks
   litellm:
     build:
       context: ../../
       dockerfile: docker/mcp-servers/litellm/Dockerfile
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-litellm"
     restart: unless-stopped
-    network_mode: host # Use host networking to access postgres on localhost:5432
+    networks:
+      - dopemux-network
+    ports:
+      - "4000:4000"
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=sk-master-dopemux-local-20251101
@@ -52,13 +56,11 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-master-dopemux-local-20251101}
-      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@localhost:5432/litellm
+      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm
       - LITELLM_LOG=INFO
       - LITELLM_DROP_PARAMS=true
-    # Note: network_mode: host means no port mapping needed (uses host's port 4000)
     healthcheck:
-      # Using proc filesystem since ps not available and host networking prevents localhost curl
-      test: [ "CMD-SHELL", "test -e /proc/1/exe || exit 1" ]
+      test: [ "CMD", "curl", "-sf", "http://localhost:4000/health" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -131,11 +133,44 @@ services:
       - "mcp.priority=high"
       - "mcp.description=Custom MCP client for stdio server integration"
 
+  # ConPort - Knowledge Graph Dashboard & API
+  conport:
+    build:
+      context: ../..
+      dockerfile: services/conport/Dockerfile
+    container_name: mcp-conport
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+      - mcp-network
+    environment:
+      - MCP_SERVER_PORT=3004
+      - POSTGRES_HOST=dopemux-postgres-age
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=dopemux_age
+      - POSTGRES_PASSWORD=dopemux_age_dev_password
+      - POSTGRES_DB=dopemux_knowledge_graph
+      - LOG_LEVEL=INFO
+    ports:
+      - "3004:3004"
+    volumes:
+      - mcp_conport_logs:/app/logs
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3004/health" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    labels:
+      - "mcp.role=dashboard"
+      - "mcp.priority=high"
+      - "mcp.description=Knowledge graph dashboard and API (Postgres backed)"
+
   # Task Orchestrator - Advanced task orchestration and dependency management
   task-orchestrator:
     build:
-      context: ../../services/task-orchestrator
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: services/task-orchestrator/Dockerfile
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-task-orchestrator"
     # Now always-on MCP server
     restart: unless-stopped
@@ -213,8 +248,8 @@ services:
   # Plane Coordinator - Two-plane architecture coordination service
   plane-coordinator:
     build:
-      context: ../../services/task-orchestrator
-      dockerfile: Dockerfile.coordination
+      context: ../../
+      dockerfile: services/task-orchestrator/Dockerfile.coordination
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-plane-coordinator"
     restart: unless-stopped
     networks:
@@ -615,6 +650,8 @@ services:
 networks:
   dopemux-network:
     external: true
+  mcp-network:
+    external: true
     name: dopemux-network
   leantime-net:
     external: true
@@ -638,6 +675,9 @@ volumes:
   mcp_task_master_logs:
     driver: local
     name: mcp_task_master_logs
+  mcp_conport_logs:
+    driver: local
+    name: mcp_conport_logs
   mcp_task_orchestrator_data:
     driver: local
     name: mcp_task_orchestrator_data

@@ -11,7 +11,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 ---
 # Dopemux Documentation - Master Index
 
-**Quick Navigation:** [Getting Started](#getting-started) | [How-To Guides](#how-to) | [Systems](#systems) | [Architecture](#architecture) | [Archive](#archive)
+**Quick Navigation:** [Getting Started](#getting-started) | [How-To Guides](#how-to) | [Systems](#systems) | [Architecture](#architecture) | [Research Progress](04-explanation/technical-deep-dives/RESEARCH_LEADERBOARD.md) | [Archive](#archive)
 
 ---
 
@@ -25,6 +25,11 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 ---
 
 ## How-To Guides
+
+### ADHD Features
+- **[ADHD Features User Guide](02-how-to/adhd-features-user-guide.md)** - Complete guide to all 11 cognitive features
+- **[ADHD Quick Reference](02-how-to/adhd-features-quick-reference.md)** - Quick command reference card
+- **[ADHD Engine API](03-reference/adhd-engine-api.md)** - Full API documentation
 
 ### Deployment
 - [Production Deployment](02-how-to/deployment-guide.md)
@@ -52,7 +57,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 ### ConPort System
 **Location:** `03-reference/systems/conport/`
 - [Executive Summary](03-reference/systems/conport/conport-kg-status.md) - Current ConPort status and quick overview
-- [Systems Analysis](04-explanation/conport-technical-deep-dive.md) - Technical deep dive
+- [Systems Analysis](04-explanation/technical-deep-dives/conport-technical-deep-dive.md) - Technical deep dive
 - [Integration Quickstart](02-how-to/mcp-service-discovery-guide.md)
 - [Comparison Matrix](05-audit-reports/service-maturity-gap-analysis.md)
 - [Full Documentation](03-reference/systems/conport/conport-kg-status.md)
@@ -114,8 +119,11 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Multi-Session Support](03-reference/F002-multi-session-support.md)
 
 ### Technical Deep Dives
-- [Serena V2 Technical Deep Dive](04-explanation/serena-v2-technical-deep-dive.md)
-- [ConPort Technical Deep Dive](04-explanation/conport-technical-deep-dive.md)
+- [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)
+- [ConPort Technical Deep Dive](04-explanation/technical-deep-dives/conport-technical-deep-dive.md)
+- [Dope-Memory Deep Dive](04-explanation/technical-deep-dives/DOPE-MEMORY-DEEP-DIVE.md)
+- [ADHD Engine Deep Dive](04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART1.md)
+- [Dopemux Context Deep Dive](04-explanation/technical-deep-dives/DOPEMUX-CONTEXT-DEEP-DIVE.md)
 
 ---
 

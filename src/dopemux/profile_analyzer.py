@@ -17,10 +17,9 @@ from datetime import datetime, time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from rich.console import Console
 from rich.table import Table
 
-console = Console()
+from .console import console
 
 
 @dataclass

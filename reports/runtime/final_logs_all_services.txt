@@ -1,0 +1,150 @@
+conport-1  | 2026-02-01 08:14:05,212 [INFO] conport: 127.0.0.1:39574 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:14:15,265 [INFO] conport: 127.0.0.1:38302 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:14:25,315 [INFO] conport: 127.0.0.1:39570 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:14:35,363 [INFO] conport: 127.0.0.1:33532 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:14:45,415 [INFO] conport: 127.0.0.1:55430 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:14:55,463 [INFO] conport: 127.0.0.1:58452 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:15:05,518 [INFO] conport: 127.0.0.1:37266 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:15:15,575 [INFO] conport: 127.0.0.1:37232 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:15:25,634 [INFO] conport: 127.0.0.1:37632 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:15:35,692 [INFO] conport: 127.0.0.1:37864 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:15:45,738 [INFO] conport: 127.0.0.1:50512 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:15:55,790 [INFO] conport: 127.0.0.1:50986 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:16:05,836 [INFO] conport: 127.0.0.1:40626 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:16:15,888 [INFO] conport: 127.0.0.1:59390 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:16:25,946 [INFO] conport: 127.0.0.1:41716 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:16:35,995 [INFO] conport: 127.0.0.1:33532 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:16:46,037 [INFO] conport: 127.0.0.1:33628 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:16:56,087 [INFO] conport: 127.0.0.1:56994 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:17:06,137 [INFO] conport: 127.0.0.1:59068 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:17:16,196 [INFO] conport: 127.0.0.1:54608 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:17:26,250 [INFO] conport: 127.0.0.1:47862 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:17:36,307 [INFO] conport: 127.0.0.1:34546 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:17:46,332 [INFO] conport: 127.0.0.1:35062 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:17:56,394 [INFO] conport: 127.0.0.1:57780 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:18:06,456 [INFO] conport: 127.0.0.1:36126 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:18:16,530 [INFO] conport: 127.0.0.1:37092 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:18:26,579 [INFO] conport: 127.0.0.1:60692 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:18:27,462 [INFO] conport: 192.168.65.1:31135 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:18:36,636 [INFO] conport: 127.0.0.1:51194 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:18:46,693 [INFO] conport: 127.0.0.1:40772 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:18:56,744 [INFO] conport: 127.0.0.1:47798 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:19:06,792 [INFO] conport: 127.0.0.1:54780 - "GET /health HTTP/1.1" 200
+conport-1  | 2026-02-01 08:19:16,861 [INFO] conport: 127.0.0.1:60372 - "GET /health HTTP/1.1" 200
+conport-1         | 2026-02-01 08:19:26,921 [INFO] conport: 127.0.0.1:41922 - "GET /health HTTP/1.1" 200
+conport-1         | 2026-02-01 08:19:36,973 [INFO] conport: 127.0.0.1:34668 - "GET /health HTTP/1.1" 200
+conport-1         | 2026-02-01 08:19:47,029 [INFO] conport: 127.0.0.1:33542 - "GET /health HTTP/1.1" 200
+conport-1         | 2026-02-01 08:19:57,087 [INFO] conport: 127.0.0.1:38936 - "GET /health HTTP/1.1" 200
+conport-1         | 2026-02-01 08:20:07,136 [INFO] conport: 127.0.0.1:49102 - "GET /health HTTP/1.1" 200
+conport-1         | 2026-02-01 08:20:14,337 [INFO] conport: 192.168.65.1:45372 - "GET /health HTTP/1.1" 200
+conport-1         | 2026-02-01 08:20:17,196 [INFO] conport: 127.0.0.1:51494 - "GET /health HTTP/1.1" 200
+conport-1         | 2026-02-01 08:20:27,253 [INFO] conport: 127.0.0.1:44770 - "GET /health HTTP/1.1" 200
+conport-1         | 2026-02-01 08:20:37,305 [INFO] conport: 127.0.0.1:36304 - "GET /health HTTP/1.1" 200
+task-orchestrator-1  | INFO:     127.0.0.1:48204 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:60080 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:33542 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:56828 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1  | 2026-02-01 08:20:01,474 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     127.0.0.1:58600 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | 2026-02-01 08:16:25,190 [WARNING] task-orchestrator: ⚠️ cognitive plane unhealthy: ['Service adhd_engine is unhealthy']
+task-orchestrator-1  | 2026-02-01 08:16:25,190 [ERROR] task-orchestrator: Health monitor error: HEALTH_CHECK
+task-orchestrator-1  | INFO:     127.0.0.1:57710 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:20:11,529 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:20:11,532 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+task-orchestrator-1  | INFO:     127.0.0.1:33732 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:48458 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:35540 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:45782 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:20:11,536 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     127.0.0.1:59702 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:20:14,580 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:20:14,584 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:20:14,587 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     192.168.65.1:55515 - "GET /health HTTP/1.1" 200 OK
+conport-1            | 2026-02-01 08:20:47,351 [INFO] conport: 127.0.0.1:41842 - "GET /health HTTP/1.1" 200
+conport-1            | 2026-02-01 08:20:57,399 [INFO] conport: 127.0.0.1:51530 - "GET /health HTTP/1.1" 200
+conport-1            | 2026-02-01 08:21:07,460 [INFO] conport: 127.0.0.1:41098 - "GET /health HTTP/1.1" 200
+conport-1            | 2026-02-01 08:21:17,506 [INFO] conport: 127.0.0.1:41886 - "GET /health HTTP/1.1" 200
+dopecon-bridge-1     | 2026-02-01 08:20:21,592 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:20:21,595 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+conport-1            | 2026-02-01 08:21:27,558 [INFO] conport: 127.0.0.1:45472 - "GET /health HTTP/1.1" 200
+conport-1            | 2026-02-01 08:21:37,607 [INFO] conport: 127.0.0.1:51430 - "GET /health HTTP/1.1" 200
+conport-1            | 2026-02-01 08:21:47,660 [INFO] conport: 127.0.0.1:45818 - "GET /health HTTP/1.1" 200
+conport-1            | 2026-02-01 08:21:57,722 [INFO] conport: 127.0.0.1:41484 - "GET /health HTTP/1.1" 200
+dopecon-bridge-1     | 2026-02-01 08:20:21,598 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     127.0.0.1:60808 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:20:31,648 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:20:31,651 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+task-orchestrator-1  | INFO:     127.0.0.1:53434 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | 2026-02-01 08:17:25,195 [WARNING] task-orchestrator: ⚠️ cognitive plane unhealthy: ['Service adhd_engine is unhealthy']
+dopecon-bridge-1     | 2026-02-01 08:20:31,655 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     127.0.0.1:48740 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | 2026-02-01 08:17:25,195 [ERROR] task-orchestrator: Health monitor error: HEALTH_CHECK
+task-orchestrator-1  | INFO:     127.0.0.1:38314 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:52420 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:52794 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:49268 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:20:41,703 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:20:41,707 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:20:41,710 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     127.0.0.1:36706 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:20:51,773 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:20:51,775 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:20:51,778 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+task-orchestrator-1  | INFO:     127.0.0.1:53680 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:52142 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | 2026-02-01 08:18:25,202 [WARNING] task-orchestrator: ⚠️ cognitive plane unhealthy: ['Service adhd_engine is unhealthy']
+task-orchestrator-1  | 2026-02-01 08:18:25,202 [ERROR] task-orchestrator: Health monitor error: HEALTH_CHECK
+task-orchestrator-1  | INFO:     127.0.0.1:49644 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | INFO:     127.0.0.1:36068 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:52768 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:50274 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:34142 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:37760 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:46166 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | 2026-02-01 08:19:25,209 [WARNING] task-orchestrator: ⚠️ cognitive plane unhealthy: ['Service adhd_engine is unhealthy']
+task-orchestrator-1  | 2026-02-01 08:19:25,210 [ERROR] task-orchestrator: Health monitor error: HEALTH_CHECK
+task-orchestrator-1  | INFO:     127.0.0.1:46464 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:21:01,826 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:01,828 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:01,831 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+task-orchestrator-1  | INFO:     127.0.0.1:59110 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:32848 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:49104 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:56688 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     192.168.65.1:63962 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:52464 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | INFO:     127.0.0.1:43448 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:21:11,876 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:11,878 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:11,881 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+task-orchestrator-1  | 2026-02-01 08:20:25,215 [WARNING] task-orchestrator: ⚠️ cognitive plane unhealthy: ['Service adhd_engine is unhealthy']
+task-orchestrator-1  | 2026-02-01 08:20:25,215 [ERROR] task-orchestrator: Health monitor error: HEALTH_CHECK
+task-orchestrator-1  | INFO:     127.0.0.1:46522 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:55454 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:49480 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:43912 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:60716 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:51258 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | 2026-02-01 08:21:25,219 [WARNING] task-orchestrator: ⚠️ cognitive plane unhealthy: ['Service adhd_engine is unhealthy']
+task-orchestrator-1  | 2026-02-01 08:21:25,219 [ERROR] task-orchestrator: Health monitor error: HEALTH_CHECK
+task-orchestrator-1  | INFO:     127.0.0.1:40006 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:41896 - "GET /health HTTP/1.1" 200 OK
+task-orchestrator-1  | INFO:     127.0.0.1:51904 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | INFO:     127.0.0.1:60250 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:21:21,929 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:21,932 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:21,934 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     127.0.0.1:59208 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:21:31,986 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:31,989 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:31,992 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     127.0.0.1:50084 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:21:42,040 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:42,043 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:42,045 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     127.0.0.1:38030 - "GET /health HTTP/1.1" 200 OK
+dopecon-bridge-1     | 2026-02-01 08:21:52,107 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-master-ai:3005 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:52,111 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-task-orchestrator:3014 ssl:default [Name or service not known]
+dopecon-bridge-1     | 2026-02-01 08:21:52,114 [ERROR] dopecon-bridge: Error: Cannot connect to host mcp-default-leantime-bridge:3015 ssl:default [Name or service not known]
+dopecon-bridge-1     | INFO:     127.0.0.1:56538 - "GET /health HTTP/1.1" 200 OK

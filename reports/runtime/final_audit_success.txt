@@ -1,0 +1,6 @@
+Audit complete in runtime mode. Reports in /Users/hue/code/dopemux-mvp/reports
+
+Runtime Summary:
+conport: HEALTHY
+task-orchestrator: HEALTHY
+dopecon-bridge: HEALTHY

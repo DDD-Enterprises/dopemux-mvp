@@ -26,10 +26,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Tuple
 
-from rich.console import Console
 from rich.prompt import Confirm
 
-console = Console()
+from .console import console
 
 
 class ShellIntegrationInstaller:

@@ -8,8 +8,6 @@ Created: 2025-10-19 (Task 2.3)
 Specification: docs/implementation-plans/conport-event-schema-design.md
 """
 
-import asyncio
-
 import logging
 from dataclasses import dataclass, asdict
 from datetime import datetime
@@ -20,7 +18,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from services.enhanced_orchestrator import AgentType
+from task_orchestrator.models import AgentType
 
 logger = logging.getLogger(__name__)
 
@@ -241,7 +239,7 @@ class ConPortInsightPublisher:
             summary=zen_result.get("summary", "Zen analysis result"),
             rationale=zen_result.get("rationale", zen_result.get("findings", "")),
             implementation_details=zen_result.get("details", zen_result.get("recommendations", "")),
-            agent_type=AgentType.ZEN,
+            agent_type=AgentType.PAL,
             confidence=zen_result.get("confidence", 0.7),
             alternatives_considered=zen_result.get("alternatives", []),
             related_task_id=task_id,
@@ -375,7 +373,7 @@ def create_architecture_decision(
     summary: str,
     rationale: str,
     implementation_details: str,
-    agent_type: AgentType = AgentType.ZEN,
+    agent_type: AgentType = AgentType.PAL,
     confidence: float = 0.8,
     task_id: Optional[str] = None
 ) -> AIDecisionEvent:

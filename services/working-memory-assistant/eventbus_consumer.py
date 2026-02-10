@@ -21,6 +21,7 @@ from typing import Any, Optional
 
 import redis.asyncio as redis
 
+from canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
 from chronicle.store import ChronicleStore
 from promotion.redactor import Redactor
 from promotion.promotion import PromotionEngine
@@ -35,7 +36,6 @@ REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 INPUT_STREAM = os.getenv("DOPE_MEMORY_INPUT_STREAM", "activity.events.v1")
 OUTPUT_STREAM = os.getenv("DOPE_MEMORY_OUTPUT_STREAM", "memory.derived.v1")
 CONSUMER_GROUP = os.getenv("DOPE_MEMORY_CONSUMER_GROUP", "dope-memory-ingestor")
-DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memory")))
 
 # Phase 2 Configuration
 # All timing parameters are configurable via environment variables
@@ -221,14 +221,12 @@ class EventBusConsumer:
         self,
         redis_url: str = REDIS_URL,
         redis_password: Optional[str] = REDIS_PASSWORD,
-        data_dir: Path = DATA_DIR,
         input_stream: str = INPUT_STREAM,
         output_stream: str = OUTPUT_STREAM,
         consumer_group: str = CONSUMER_GROUP,
     ):
         self.redis_url = redis_url
         self.redis_password = redis_password
-        self.data_dir = data_dir
         self.input_stream = input_stream
         self.output_stream = output_stream
         self.consumer_group = consumer_group
@@ -237,6 +235,7 @@ class EventBusConsumer:
         self.redis_client: Optional[redis.Redis] = None
         self.redactor = Redactor()
         self.promotion_engine = PromotionEngine()
+        # Keyed by resolved canonical ledger path
         self._stores: dict[str, ChronicleStore] = {}
         self._running = False
         
@@ -273,22 +272,24 @@ class EventBusConsumer:
                     raise
                 # Group already exists
 
-            # Ensure data directory
-            self.data_dir.mkdir(parents=True, exist_ok=True)
+            # Data directory creation is handled by resolve_canonical_ledger()
 
         except Exception as e:
             logger.error(f"❌ Failed to initialize EventBus consumer: {e}")
             raise
 
     def _get_store(self, workspace_id: str) -> ChronicleStore:
-        """Get or create ChronicleStore for workspace."""
-        if workspace_id not in self._stores:
-            db_path = self.data_dir / workspace_id / "chronicle.db"
-            db_path.parent.mkdir(parents=True, exist_ok=True)
+        """Get or create ChronicleStore for the canonical ledger.
+
+        Resolves workspace_id to the single canonical ledger per ADR-213.
+        """
+        db_path = resolve_canonical_ledger(workspace_id)
+        path_key = str(db_path)
+        if path_key not in self._stores:
             store = ChronicleStore(db_path)
             store.initialize_schema()
-            self._stores[workspace_id] = store
-        return self._stores[workspace_id]
+            self._stores[path_key] = store
+        return self._stores[path_key]
 
     async def start(self) -> None:
         """Start consuming events."""
@@ -408,25 +409,26 @@ class EventBusConsumer:
         )
 
         # Step 3: Attempt promotion
-        # The promotion engine expects the data payload fields at top level
-        entry = self.promotion_engine.promote(event_type, redacted_data)
+        # Build full event envelope for promotion engine (Packet D §4.3)
+        event_envelope = {
+            "id": event.get("id", str(uuid.uuid4())),
+            "event_type": event_type,
+            "type": event_type,  # Alias for compatibility
+            "source": source,
+            "ts_utc": event.get("ts", datetime.now(timezone.utc).isoformat()),
+            "ts": event.get("ts", datetime.now(timezone.utc).isoformat()),  # Alias
+            "payload": redacted_data,
+            "data": redacted_data,  # Alias
+        }
+        
+        entry = self.promotion_engine.promote(event_envelope)
 
         if entry:
-            entry_id = store.insert_work_log_entry(
+            entry_id = store.insert_promoted_entry(
                 workspace_id=workspace_id,
                 instance_id=instance_id,
-                category=entry.category,
-                entry_type=entry.entry_type,
-                summary=entry.summary,
+                promoted=entry,
                 session_id=event.get("session_id"),
-                importance_score=entry.importance_score,
-                tags=entry.tags,
-                details=entry.details,
-                reasoning=entry.reasoning,
-                outcome=entry.outcome,
-                linked_files=entry.linked_files,
-                linked_commits=entry.linked_commits,
-                linked_decisions=entry.linked_decisions,
             )
 
             logger.info(f"✅ Promoted {event_type} -> {entry.category}/{entry.entry_type} ({entry_id})")

@@ -2,9 +2,13 @@
   "mcpServers": {
     "pal": {
       "type": "stdio",
-      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/.venv/bin/python",
+      "command": "uv",
       "args": [
-        "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/server.py"
+        "run",
+        "--directory",
+        "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server",
+        "python",
+        "server.py"
       ],
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
@@ -56,7 +60,7 @@
       "type": "sse",
       "url": "http://localhost:3015/sse",
       "env": {
-        "LEANTIME_API_TOKEN": "REPLACE_WITH_LEANTIME_API_TOKEN"
+        "LEANTIME_API_TOKEN": "${LEANTIME_API_TOKEN:-}"
       },
       "description": "Leantime project management integration bridge"
     },
@@ -103,12 +107,13 @@
       "type": "stdio",
       "command": "python3",
       "args": [
-        "/Users/hue/code/dopemux-mvp/services/task-orchestrator/server.py"
+        "/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py"
       ],
       "env": {
-        "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
+        "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp",
+        "PYTHONPATH": "/Users/hue/code/dopemux-mvp/services/task-orchestrator"
       },
-      "description": "Advanced task orchestration and dependency management with 37 tools"
+      "description": "Advanced task orchestration and dependency management"
     }
   }
 }

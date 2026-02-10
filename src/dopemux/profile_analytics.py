@@ -17,11 +17,10 @@ from typing import Any, Dict, List, Optional
 
 import aiohttp
 import asyncio
-from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 
-console = Console()
+from .console import console
 
 
 @dataclass

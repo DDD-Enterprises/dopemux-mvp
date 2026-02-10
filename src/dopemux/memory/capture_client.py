@@ -241,21 +241,29 @@ def _stable_json(value: Any) -> str:
 
 def _deterministic_event_id(
     *,
-    source: str,
     event_type: str,
-    project_id: str,
     session_id: Optional[str],
     ts_utc: str,
     payload: dict[str, Any],
 ) -> str:
+    """Generate deterministic event_id from semantic content only.
+    
+    Per Packet D §3.3: event_id is content-addressed, excluding adapter-specific
+    metadata (source, project_id) to enable cross-adapter convergence.
+    
+    Fingerprint formula: event_type | session_id_or_empty | ts_bucket | stable_json(payload)
+    
+    Note: session_id_or_empty MUST be empty string ("") when session_id is None,
+    not a sentinel value, to keep event_id stable across adapters and environments.
+    """
     # Bucket to second precision for retry-idempotency.
     ts_bucket = ts_utc[:19]
+    # Normalize session_id to empty string if None (per Packet D clarification)
+    session_id_normalized = session_id or ""
     fingerprint = "|".join(
         [
-            source,
             event_type,
-            project_id,
-            session_id or "",
+            session_id_normalized,
             ts_bucket,
             _stable_json(payload),
         ]
@@ -322,20 +330,22 @@ def emit_capture_event(
 
     redactor = _load_wma_redactor(root)
     redacted_payload = redactor.redact_payload(payload)
-    redacted_payload["project_id"] = project_id
 
+    # Generate event_id BEFORE injecting project_id (Packet D §3.3)
+    # project_id is machine-specific and must not affect event identity
     event_id = str(
         event.get("event_id")
         or event.get("id")
         or _deterministic_event_id(
-            source=source,
             event_type=event_type,
-            project_id=project_id,
             session_id=session_id,
             ts_utc=ts_utc,
             payload=redacted_payload,
         )
     )
+
+    # Inject project_id AFTER event_id generation for storage/routing only
+    redacted_payload["project_id"] = project_id
 
     ledger_path = _resolve_ledger_path(root)
     ledger_path.parent.mkdir(parents=True, exist_ok=True)

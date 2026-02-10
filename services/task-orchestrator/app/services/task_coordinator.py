@@ -30,11 +30,15 @@ from enum import Enum
 
 import asyncio
 import logging
-import os
-import os
 
-from app.services.enhanced_orchestrator import OrchestrationTask, TaskStatus
-from app.adapters.conport_adapter import ConPortEventAdapter
+import sys
+from pathlib import Path
+parent_dir = Path(__file__).parent
+sys.path.insert(0, str(parent_dir))
+
+# Use models from task_orchestrator package
+from task_orchestrator.models import OrchestrationTask, TaskStatus
+from ..adapters.conport_adapter import ConPortEventAdapter
 from intelligence.cognitive_load_balancer import CognitiveLoadBalancer
 from intelligence.context_switch_recovery import ContextSwitchRecovery
 from pal_client import TaskOrchestratorPALClient
@@ -71,8 +75,7 @@ class TaskCoordinator:
         self.conport_adapter = ConPortEventAdapter(workspace_id)
         self.cognitive_guardian = CognitiveLoadBalancer(workspace_id=workspace_id, conport_client=self.conport_adapter)
         self.context_recovery = ContextSwitchRecovery(workspace_id, self.conport_adapter)
-        pal_url = os.getenv("PAL_API_URL", "http://localhost:3003")
-        self.pal_client = TaskOrchestratorPALClient(pal_url, {})
+        self.pal_client = TaskOrchestratorPALClient("http://localhost:3003", {})
 
         # State tracking
         self.coordination_state = CoordinationState(
@@ -89,6 +92,9 @@ class TaskCoordinator:
         self.focus_session_duration = 1500  # 25 minutes in seconds
         self.break_duration = 300  # 5 minute breaks
         self.max_context_switches = 2
+        
+        # Task storage (in-memory for now, will sync to ConPort)
+        self.tasks: Dict[str, OrchestrationTask] = {}
 
     async def coordinate_tasks(
         self,
@@ -209,7 +215,7 @@ class TaskCoordinator:
                 'original_task': task,
                 'subtasks': subtasks,
                 'execution_order': zen_breakdown.get('execution_order', []),
-                'total_duration': zen_breakdown.get('total_duration', task.estimated_duration),
+                'total_duration': zen_breakdown.get('total_duration', task.estimated_minutes),
                 'break_points': zen_breakdown.get('break_points', []),
                 'progress_checkpoints': zen_breakdown.get('progress_checkpoints', []),
                 'strategy': 'zen_breakdown'
@@ -221,11 +227,101 @@ class TaskCoordinator:
                 'original_task': task,
                 'subtasks': [task],  # Return original task unchanged
                 'execution_order': [task.id],
-                'total_duration': task.estimated_duration,
+                'total_duration': task.estimated_minutes,
                 'break_points': [],
                 'progress_checkpoints': [],
                 'strategy': 'fallback'
             }
+
+    async def get_task(self, task_id: str) -> Optional[OrchestrationTask]:
+        """
+        Retrieve task by ID from in-memory storage or ConPort.
+        
+        Args:
+            task_id: Task ID to retrieve
+            
+        Returns:
+            OrchestrationTask or None if not found
+        """
+        # Check in-memory cache first
+        if task_id in self.tasks:
+            logger.debug(f"Found task {task_id} in memory cache")
+            return self.tasks[task_id]
+        
+        # Try to fetch from ConPort
+        try:
+            logger.info(f"Fetching task {task_id} from ConPort")
+            # This is a simplified version - real implementation would query ConPort
+            # via the adapter and transform back to OrchestrationTask
+            # For now, return None to force explicit task creation
+            return None
+        except Exception as e:
+            logger.warning(f"Failed to fetch task {task_id} from ConPort: {e}")
+            return None
+    
+    async def store_task(self, task: OrchestrationTask) -> bool:
+        """
+        Store task in memory and optionally sync to ConPort.
+        
+        Args:
+            task: OrchestrationTask to store
+            
+        Returns:
+            True if stored successfully
+        """
+        try:
+            self.tasks[task.id] = task
+            logger.debug(f"Stored task {task.id} in memory cache")
+            
+            # Optionally sync to ConPort in background
+            # (Don't await to avoid blocking)
+            asyncio.create_task(self._sync_task_to_conport(task))
+            
+            return True
+        except Exception as e:
+            logger.error(f"Failed to store task {task.id}: {e}")
+            return False
+    
+    async def _sync_task_to_conport(self, task: OrchestrationTask):
+        """Background sync of task to ConPort."""
+        try:
+            await self.conport_adapter.create_or_update_task(task, self.workspace_id)
+            logger.debug(f"Synced task {task.id} to ConPort")
+        except Exception as e:
+            logger.warning(f"Failed to sync task {task.id} to ConPort: {e}")
+
+    async def schedule_subtasks(
+        self,
+        subtasks: List[OrchestrationTask],
+        adhd_context: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Generate ADHD-aware schedule for subtasks.
+        
+        Args:
+            subtasks: List of subtasks to schedule
+            adhd_context: Current ADHD state
+            
+        Returns:
+            Schedule dict with timing and break recommendations
+        """
+        try:
+            total_minutes = sum(st.estimated_minutes for st in subtasks)
+            energy = adhd_context.get('energy_level', 'medium')
+            
+            # Simple scheduling logic - could be enhanced with Pal
+            schedule = {
+                'total_duration_minutes': total_minutes,
+                'estimated_completion': datetime.now().isoformat(),
+                'recommended_sessions': (total_minutes // 25) + 1,  # 25min focus sessions
+                'break_after_minutes': 25 if energy == 'low' else 45,
+                'subtask_order': [st.id for st in subtasks]
+            }
+            
+            return schedule
+        except Exception as e:
+            logger.warning(f"Failed to generate schedule: {e}")
+            return None
 
     async def _assess_cognitive_batch(
         self,

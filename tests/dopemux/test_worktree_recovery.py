@@ -225,7 +225,7 @@ async def test_fallback_to_git_worktree_list(temp_workspace):
     import subprocess
 
     # Initialize git repo
-    subprocess.run(["git", "init"], cwd=temp_workspace, check=True, capture_output=True)
+    subprocess.run(["git", "init", "-b", "main"], cwd=temp_workspace, check=True, capture_output=True)
     subprocess.run(["git", "config", "user.name", "Test"], cwd=temp_workspace, check=True, capture_output=True)
     subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=temp_workspace, check=True, capture_output=True)
 

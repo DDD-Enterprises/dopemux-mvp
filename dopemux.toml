@@ -1,0 +1,15 @@
+[tmux]
+# Dopemux tmux layout configuration
+layout = "dope"
+theme = "muted"
+
+[tmux.monitor_commands]
+# Monitor pane commands for dope layout
+"monitor:adhd" = "python dopemux_dashboard.py --view=compact"
+"monitor:system" = "python dopemux_dashboard.py --view=detail"
+"monitor:metrics" = "dopemux health"
+
+[tmux.pane_styles]
+"monitor:adhd" = "fg=#a6e3a1,bg=#1e1e2e"
+"monitor:system" = "fg=#89dceb,bg=#1e1e2e"
+"monitor:metrics" = "fg=#f9e2af,bg=#1e1e2e"

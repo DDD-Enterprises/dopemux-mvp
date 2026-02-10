@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import logging
 import os
 import secrets
 import shutil
@@ -13,8 +12,6 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
-
-logger = logging.getLogger(__name__)
 
 
 class DopeBrainzRouterError(RuntimeError):
@@ -57,12 +54,12 @@ class DopeBrainzRouterManager:
         self.base_dir = self.project_root / ".dopemux" / "dope-brainz-router"
         self.instance_home = self.base_dir / instance_id
         self.router_home = self.instance_home / ".dope-brainz-router"
-        self.dope_brainz_home = self.instance_home / ".dope-brainz"
+        self.router_home = self.instance_home / ".dope-brainz-router"
 
+        self.claude_home = self.instance_home / ".claude"
         self.config_path = self.router_home / "config.json"
         self.api_key_path = self.router_home / "api.key"
-        # CCR creates PID file with its own name (.claude-code-router.pid)
-        self.pid_path = self.router_home / ".claude-code-router.pid"
+        self.pid_path = self.router_home / ".dope-brainz-router.pid"
         self.log_path = self.instance_home / "dope-brainz-router.log"
 
         self._api_key: Optional[str] = None
@@ -173,8 +170,8 @@ class DopeBrainzRouterManager:
         provider_key: Optional[str] = None,
         provider_key_env_var: Optional[str] = None,
         router_overrides: Optional[Dict[str, str]] = None,
-        startup_timeout: float = 20.0,
-    ) -> ClaudeCodeRouterInfo:
+        startup_timeout: float = 45.0,
+    ) -> DopeBrainzRouterInfo:
         """Ensure the router process is running with the desired configuration."""
         self.prepare_config(
             provider_url=provider_url,
@@ -189,7 +186,20 @@ class DopeBrainzRouterManager:
         if already_running:
             return self._build_info(already_running=True)
 
+        # Search for ccr in PATH and common NVM locations
         executable = shutil.which("ccr")
+        if not executable:
+            # Try common NVM paths
+            home = Path.home()
+            nvm_paths = [
+                home / ".nvm" / "versions" / "node" / "v22.18.0" / "bin" / "ccr",
+                home / ".nvm" / "current" / "bin" / "ccr",
+            ]
+            for nvm_path in nvm_paths:
+                if nvm_path.exists():
+                    executable = str(nvm_path)
+                    break
+        
         if not executable:
             raise DopeBrainzRouterError(
                 "ccr executable not found. Install with `npm install -g @musistudio/claude-code-router`."
@@ -227,18 +237,9 @@ class DopeBrainzRouterManager:
 
         # Claude Code Router expects the legacy Claude desktop layout under $HOME/.claude
         # Ensure the directories exist so CCR doesn't crash while scanning for projects.
-        self.dope_brainz_home.mkdir(parents=True, exist_ok=True)
-        (self.dope_brainz_home / "projects").mkdir(parents=True, exist_ok=True)
-        (self.dope_brainz_home / "sessions").mkdir(parents=True, exist_ok=True)
-        
-        # CCR is hardcoded to look for .claude-code-router in $HOME
-        # Create symlink so it finds our .dope-brainz-router directory
-        ccr_legacy_path = self.instance_home / ".claude-code-router"
-        if not ccr_legacy_path.exists():
-            try:
-                ccr_legacy_path.symlink_to(self.router_home, target_is_directory=True)
-            except OSError as exc:
-                logger.debug("Could not create router symlink %s -> %s: %s", ccr_legacy_path, self.router_home, exc)
+        self.claude_home.mkdir(parents=True, exist_ok=True)
+        (self.claude_home / "projects").mkdir(parents=True, exist_ok=True)
+        (self.claude_home / "sessions").mkdir(parents=True, exist_ok=True)
 
     def _load_config(self) -> Dict[str, object]:
         if not self.config_path.exists():
@@ -322,8 +323,8 @@ class DopeBrainzRouterManager:
         except OSError:
             try:
                 self.pid_path.unlink(missing_ok=True)
-            except OSError as exc:
-                logger.debug("Could not remove stale PID file %s: %s", self.pid_path, exc)
+            except OSError:
+                pass
             return False
 
     def _read_pid(self) -> Optional[int]:
@@ -334,8 +335,8 @@ class DopeBrainzRouterManager:
         except ValueError:
             try:
                 self.pid_path.unlink()
-            except OSError as exc:
-                logger.debug("Could not clean invalid PID file %s: %s", self.pid_path, exc)
+            except OSError:
+                pass
             return None
 
     def _build_process_env(self) -> Dict[str, str]:
@@ -362,7 +363,8 @@ class DopeBrainzRouterManager:
     def _wait_until_ready(self, timeout: float) -> bool:
         deadline = time.time() + timeout
         while time.time() < deadline:
-            if self._is_running() and self._is_port_in_use():
+            # Only check port - CCR doesn't create a PID file
+            if self._is_port_in_use():
                 return True
             time.sleep(0.3)
         return False
@@ -390,17 +392,8 @@ class DopeBrainzRouterManager:
         )
 
 
-# Backward compatibility aliases
-ClaudeCodeRouterError = DopeBrainzRouterError
-ClaudeCodeRouterInfo = DopeBrainzRouterInfo
-ClaudeCodeRouterManager = DopeBrainzRouterManager
-
-
 __all__ = [
     "DopeBrainzRouterError",
     "DopeBrainzRouterInfo",
-    "DopeBrainzRouterManager",
-    "ClaudeCodeRouterError",
-    "ClaudeCodeRouterInfo",
     "ClaudeCodeRouterManager",
 ]

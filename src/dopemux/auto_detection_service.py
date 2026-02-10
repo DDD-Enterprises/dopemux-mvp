@@ -16,13 +16,11 @@ from pathlib import Path
 from typing import Dict, Optional, Set
 import json
 
-from rich.console import Console
 from rich.prompt import Confirm
 
+from .console import console
 from .profile_detector import ProfileDetector, DetectionContext, format_match_summary
 from .config.manager import ConfigManager
-
-console = Console()
 
 
 class AutoDetectionConfig:
@@ -64,7 +62,7 @@ class AutoDetectionConfig:
                 self.never_suggest = set(data.get('never_suggest', []))
 
         except Exception as e:
-            console.logger.info(f"[yellow]⚠️  Could not load config from {config_file}: {e}[/yellow]")
+            console.print(f"[yellow]⚠️  Could not load config from {config_file}: {e}[/yellow]")
 
     def save(self, config_file: Path) -> None:
         """Save configuration to file."""
@@ -181,21 +179,21 @@ class AutoDetectionService:
         - Clear confidence display
         - Option to never ask again
         """
-        console.logger.info(f"\n[cyan]💡 Profile Suggestion[/cyan]")
-        console.logger.info(format_match_summary(match))
+        console.print(f"\n[cyan]💡 Profile Suggestion[/cyan]")
+        console.print(format_match_summary(match))
 
         # Ask with [y/N/never] options
-        console.logger.info(f"\n[bold]Switch to '{profile_name}' profile?[/bold]")
-        console.logger.info("[dim]  y = Yes, switch now[/dim]")
-        console.logger.info("[dim]  N = No, not now (default)[/dim]")
-        console.logger.info("[dim]  never = Never suggest this profile again[/dim]")
+        console.print(f"\n[bold]Switch to '{profile_name}' profile?[/bold]")
+        console.print("[dim]  y = Yes, switch now[/dim]")
+        console.print("[dim]  N = No, not now (default)[/dim]")
+        console.print("[dim]  never = Never suggest this profile again[/dim]")
 
         choice = input("\nChoice [y/N/never]: ").strip().lower()
 
         # Handle "never"
         if choice == "never":
             self.config.never_suggest.add(profile_name)
-            console.logger.info(f"[yellow]✓ Will not suggest '{profile_name}' again[/yellow]")
+            console.print(f"[yellow]✓ Will not suggest '{profile_name}' again[/yellow]")
             # Save updated config
             config_file = self.workspace_root / ".dopemux" / "profile-settings.yaml"
             self.config.save(config_file)
@@ -245,10 +243,10 @@ class AutoDetectionService:
         """
         iteration = 0
 
-        console.logger.info("[cyan]🔍 Auto-detection service started[/cyan]")
-        console.logger.info(f"   Check interval: {self.config.check_interval_seconds}s")
-        console.logger.info(f"   Confidence threshold: {self.config.confidence_threshold:.0%}")
-        console.logger.info(f"   Quiet hours: {self.config.quiet_hours_start}-{self.config.quiet_hours_end}")
+        console.print("[cyan]🔍 Auto-detection service started[/cyan]")
+        console.print(f"   Check interval: {self.config.check_interval_seconds}s")
+        console.print(f"   Confidence threshold: {self.config.confidence_threshold:.0%}")
+        console.print(f"   Quiet hours: {self.config.quiet_hours_start}-{self.config.quiet_hours_end}")
 
         try:
             while max_iterations is None or iteration < max_iterations:
@@ -256,14 +254,14 @@ class AutoDetectionService:
                 suggested = self.run_detection_cycle()
 
                 if suggested:
-                    console.logger.info(f"[green]✓ Switched to '{suggested}' profile[/green]")
+                    console.print(f"[green]✓ Switched to '{suggested}' profile[/green]")
 
                 # Wait for next check
                 time.sleep(self.config.check_interval_seconds)
                 iteration += 1
 
         except KeyboardInterrupt:
-            console.logger.info("\n[yellow]Auto-detection service stopped[/yellow]")
+            console.print("\n[yellow]Auto-detection service stopped[/yellow]")
 
 
 def create_default_settings(output_file: Path) -> None:
@@ -275,7 +273,7 @@ def create_default_settings(output_file: Path) -> None:
     """
     config = AutoDetectionConfig()
     config.save(output_file)
-    console.logger.info(f"[green]✅ Created default settings at {output_file}[/green]")
+    console.print(f"[green]✅ Created default settings at {output_file}[/green]")
 
 
 if __name__ == "__main__":

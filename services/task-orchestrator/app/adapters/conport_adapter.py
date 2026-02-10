@@ -19,19 +19,12 @@ import aiohttp
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-try:
-    # Preferred import path when task-orchestrator is loaded as a package.
-    from app.services.enhanced_orchestrator import (
-        AgentType,
-        OrchestrationTask,
-        TaskStatus,
-    )
-except ImportError:  # pragma: no cover - legacy fallback for ad-hoc script execution
-    from services.enhanced_orchestrator import (  # type: ignore
-        AgentType,
-        OrchestrationTask,
-        TaskStatus,
-    )
+# Import from parent directory
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from task_orchestrator.models import OrchestrationTask, TaskStatus, AgentType
 
 logger = logging.getLogger(__name__)
 
@@ -1256,7 +1249,7 @@ class ConPortEventAdapter:
             logger.info(f"🔍 Semantic search for similar tasks: '{task_description}'")
 
             # Semantic search ConPort for similar progress entries
-            result = await self.conport_client.semantic_search(
+            result = await self.conport_client.semantic_search_conport(
                 workspace_id=self.workspace_id,
                 query_text=task_description,
                 top_k=limit,
