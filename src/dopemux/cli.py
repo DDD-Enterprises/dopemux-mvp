@@ -1597,11 +1597,8 @@ def start(
 
         # Print DopeBrainzRouterManager class info before usage.
         console.print("   Enabling Claude Code Router for API translation (responses → completions)")
-        console.logger.info(
-            f"Router config: port={port_base}, models={os.environ.get('CLAUDE_CODE_ROUTER_MODELS')}"
-        )
-        print(f"DEBUG: DopeBrainzRouterManager class is: {DopeBrainzRouterManager}")
-        print(f"DEBUG: DopeBrainzRouterManager module: {DopeBrainzRouterManager.__module__}")
+
+
 
         router_manager = DopeBrainzRouterManager(project_path, instance_id, port_base)
 
