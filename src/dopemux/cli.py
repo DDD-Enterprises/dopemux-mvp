@@ -715,6 +715,15 @@ def start(
         use_claude_router = legacy_value
 
     from .workspace_utils import get_workspace_root
+    from .agent_validator import validate_agents_in_workspace
+
+    # Preflight: Validate and fix agents
+    try:
+        workspace_root = get_workspace_root()
+        if workspace_root:
+            validate_agents_in_workspace(workspace_root)
+    except Exception as e:
+        console.logger.warning(f"Agent validation warning: {e}")
 
     # ── Handle --grok / --codex / --altp provider routing ───────────────
     provider_proxy_started = False
