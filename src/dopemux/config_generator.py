@@ -176,6 +176,8 @@ class ConfigGenerator:
         # Write new config with atomic swap and rollback-on-failure safety.
         output_path.parent.mkdir(parents=True, exist_ok=True)
         try:
+            # Validate before writing
+            self._validate_config_structure(new_config)
             self._atomic_write_json(output_path, new_config)
         except Exception:
             if backup_path and backup_path.exists():
@@ -183,6 +185,17 @@ class ConfigGenerator:
             raise
 
         return output_path
+
+    def _validate_config_structure(self, config: Dict[str, Any]) -> None:
+        """Validate configuration structure before writing."""
+        if not isinstance(config, dict):
+            raise ValueError("Configuration must be a dictionary")
+        if "mcpServers" in config:
+            if not isinstance(config["mcpServers"], dict):
+                raise ValueError("'mcpServers' must be a dictionary")
+            for name, server in config["mcpServers"].items():
+                if not isinstance(server, dict):
+                    raise ValueError(f"MCP server '{name}' config must be a dictionary")
 
     def _atomic_write_json(self, output_path: Path, data: Dict[str, Any]) -> None:
         """

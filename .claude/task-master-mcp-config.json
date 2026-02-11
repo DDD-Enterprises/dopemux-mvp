@@ -2,7 +2,11 @@
   "mcpServers": {
     "task-master-ai": {
       "command": "npx",
-      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
+      "args": [
+        "-y",
+        "--package=task-master-ai",
+        "task-master-ai"
+      ],
       "env": {
         "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
         "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
@@ -19,7 +23,9 @@
     },
     "leantime-mcp": {
       "command": "node",
-      "args": ["src/integrations/leantime_mcp_server.js"],
+      "args": [
+        "src/integrations/leantime_mcp_server.js"
+      ],
       "env": {
         "LEANTIME_API_URL": "${LEANTIME_API_URL:-http://localhost:8080}",
         "LEANTIME_API_TOKEN": "${LEANTIME_API_TOKEN}",
@@ -29,13 +35,18 @@
     },
     "mas-sequential-thinking": {
       "command": "uv",
-      "args": ["--directory", "docker/mcp-servers/mcp-server-mas-sequential-thinking", "run", "mcp-server-mas-sequential-thinking"],
+      "args": [
+        "--directory",
+        "docker/mcp-servers/mcp-server-mas-sequential-thinking",
+        "run",
+        "mcp-server-mas-sequential-thinking"
+      ],
       "env": {
         "LLM_PROVIDER": "github",
         "GITHUB_TOKEN": "${GITHUB_TOKEN}",
         "GITHUB_TEAM_MODEL_ID": "openai/gpt-5",
         "GITHUB_AGENT_MODEL_ID": "openai/gpt-5-min",
-        "EXA_API_KEY": "8f180834-2db5-4574-8b68-f8512628ee66",
+        "EXA_API_KEY": "${EXA_API_KEY}",
         "ENABLE_CONTEXT_PRESERVATION": "true",
         "ENABLE_GENTLE_GUIDANCE": "true",
         "MAX_THINKING_STEPS": "10"
