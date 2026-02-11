@@ -4,17 +4,7 @@
     "command": ".claude/statusline.sh"
   },
   "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 .claude/hooks/prompt_analyzer.py",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
+    "UserPromptSubmit": [],
     "PreToolUse": [
       {
         "matcher": "thinkdeep|morph|batch_edit|refactor|deep_research",

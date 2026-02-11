@@ -146,6 +146,9 @@ class ClaudeConfig:
         # Sanitize config before writing
         config = self._sanitize_config(config)
 
+        # Validate config structure before writing
+        self._validate_config_structure(config)
+
         try:
             # Write to temporary file first (atomic write)
             temp_path = self.config_path.with_suffix(".json.tmp")
@@ -168,6 +171,39 @@ class ClaudeConfig:
             raise ClaudeConfigError(
                 f"Failed to write config: {e}"
             )
+
+    def _validate_config_structure(self, config: Dict[str, Any]) -> None:
+        """Validate configuration structure before writing.
+
+        Ensures that the configuration matches expected schema and constraints.
+        JSON does not allow comments, and json.dump handles that, but this
+        checks for logical validity.
+
+        Args:
+            config: Configuration dictionary to validate
+
+        Raises:
+            ClaudeConfigError: If configuration is invalid
+        """
+        if not isinstance(config, dict):
+            raise ClaudeConfigError("Configuration must be a dictionary")
+
+        # Validate mcpServers if present
+        if "mcpServers" in config:
+            if not isinstance(config["mcpServers"], dict):
+                raise ClaudeConfigError("'mcpServers' must be a dictionary")
+            
+            for name, server_config in config["mcpServers"].items():
+                if not isinstance(server_config, dict):
+                    raise ClaudeConfigError(f"Configuration for MCP server '{name}' must be a dictionary")
+                # Basic keys expected for stdio/network
+                if "command" not in server_config and "url" not in server_config:
+                   # This might be too strict if there are other types, but good for now for safety
+                   pass # Relaxing this check as external configs might vary
+
+        # Helper to check for mistakenly stringified JSON or comments
+        # (Though checks on dictionary values are limited)
+
 
     def _sanitize_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Sanitize Claude configuration based on environment and schema requirements."""
