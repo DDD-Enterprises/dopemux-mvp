@@ -190,6 +190,12 @@ Put files in these locations:
 
 Root-level files are allowlisted. If a new root file or top-level directory is truly intentional, update `config/repo_hygiene/root_hygiene_policy.json` in the same change.
 
+## Planes
+
+Specialized investigation and redesign workflows for subsystems.
+
+- **PM Plane**: `docs/planes/pm/HUB.md` (kickoff prompt: `docs/planes/pm/SUPERVISOR.md`)
+
 ## Searching the Codebase
 
 ### Find Documentation
