@@ -209,10 +209,19 @@ async def _invalidate_user_caches(user_id: str):
 # Dependency injection for engine instance
 def get_engine():
     """Get global engine instance."""
+    global engine
+    # In Docker, main might be in services.adhd_engine.main or just main
     try:
-        from adhd_engine import main as engine_main
+        from services.adhd_engine import main as engine_main
     except ImportError:
-        import main as engine_main  # type: ignore
+        try:
+            from .. import main as engine_main
+        except (ImportError, ValueError):
+            try:
+                from adhd_engine import main as engine_main
+            except ImportError:
+                import main as engine_main  # type: ignore
+    
     if not engine_main.engine:
         raise HTTPException(status_code=503, detail="Engine not initialized")
     return engine_main.engine

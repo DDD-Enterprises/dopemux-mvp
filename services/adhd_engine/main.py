@@ -107,6 +107,7 @@ async def lifespan(app: FastAPI):
     # Track background tasks for cleanup
     event_listener_task = None
     event_listener = None
+    event_bus = None
 
     # STARTUP
     logger.info("=" * 60)
