@@ -121,7 +121,7 @@ class ADHDAccommodationEngine:
         self.redis_pool = None  # Shared Redis connection pool
 
         # MCP clients
-        self.pal_client = ADHDPALClient(settings.zen_url, settings)
+        self.pal_client = ADHDPALClient(settings.pal_url, settings)
 
         # ADHD state tracking
         self.user_profiles: Dict[str, ADHDProfile] = {}
