@@ -10,8 +10,9 @@ import json
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set, Callable
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from enum import Enum
+from collections import deque
 
 import redis.asyncio as redis
 
@@ -92,6 +93,32 @@ class CoordinationEvent:
             self.created_at = datetime.now(timezone.utc)
 
 
+@dataclass
+class SuppressionTelemetry:
+    """Telemetry for event suppression analysis."""
+    # Lifetime counters
+    events_received: int = 0
+    events_passed: int = 0
+    events_suppressed: int = 0
+
+    # Per-rule suppression counters (6 suppression rules)
+    suppressed_by_custom_filter: int = 0
+    suppressed_by_deep_focus_priority: int = 0
+    suppressed_by_deep_focus_interrupt: int = 0
+    suppressed_by_energy_level: int = 0
+    suppressed_by_flood: int = 0
+    suppressed_by_expiry: int = 0
+
+    # Per-event-type breakdown
+    per_event_type: Dict[str, Dict[str, int]] = field(default_factory=dict)
+
+    # Per-priority breakdown
+    per_priority: Dict[str, Dict[str, int]] = field(default_factory=dict)
+
+    # Start time for rate calculations
+    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+
 class EventCoordinator:
     """
     Event-driven coordination system for seamless PM automation.
@@ -129,6 +156,9 @@ class EventCoordinator:
             "adhd_accommodations": 0,
             "sync_conflicts": 0
         }
+
+        # Suppression telemetry
+        self.suppression_telemetry = SuppressionTelemetry()
 
     async def initialize(self) -> None:
         """Initialize event coordination system."""
@@ -193,7 +223,11 @@ class EventCoordinator:
                 )
                 self.workers.append(worker)
 
-        logger.info(f"👥 Started {len(self.workers)} event processing workers")
+        # Start telemetry logger
+        telemetry_worker = asyncio.create_task(self._telemetry_logger())
+        self.workers.append(telemetry_worker)
+
+        logger.info(f"👥 Started {len(self.workers)} event processing workers (including telemetry logger)")
 
     async def _event_worker(self, priority: EventPriority, worker_id: str) -> None:
         """Event processing worker for specific priority level."""
@@ -217,6 +251,34 @@ class EventCoordinator:
 
         logger.debug(f"🛑 Event worker {worker_id} stopped")
 
+    async def _telemetry_logger(self) -> None:
+        """Background task to log suppression telemetry every 60 seconds."""
+        logger.debug("📊 Telemetry logger started")
+
+        while self.running:
+            try:
+                await asyncio.sleep(60.0)  # Log every 60 seconds
+
+                report = self.get_suppression_report()
+                summary = report["summary"]
+
+                logger.info(
+                    f"📊 Suppression Telemetry: "
+                    f"received={summary['events_received']}, "
+                    f"passed={summary['events_passed']}, "
+                    f"suppressed={summary['events_suppressed']}, "
+                    f"signal/noise={summary['signal_noise_ratio']:.2f}, "
+                    f"suppression_rate={summary['suppression_rate_pct']:.1f}%"
+                )
+
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Telemetry logger error: {e}")
+                await asyncio.sleep(1.0)
+
+        logger.debug("📊 Telemetry logger stopped")
+
     async def _process_event(self, event: CoordinationEvent, worker_id: str) -> None:
         """Process individual coordination event."""
         try:
@@ -231,6 +293,7 @@ class EventCoordinator:
             # Check if event has expired
             if event.expires_at and datetime.now(timezone.utc) > event.expires_at:
                 logger.warning(f"⏰ Event expired: {event.id}")
+                self._record_suppression(event, "expiry")
                 return
 
             # Get processors for this event type
@@ -322,33 +385,55 @@ class EventCoordinator:
     async def _should_process_event(self, event: CoordinationEvent) -> bool:
         """Determine if event should be processed based on ADHD state."""
         try:
+            # Track that we received an event
+            self.suppression_telemetry.events_received += 1
+            event_type_str = event.event_type.value
+            priority_str = event.priority.name
+
+            # Initialize per-event-type tracking
+            if event_type_str not in self.suppression_telemetry.per_event_type:
+                self.suppression_telemetry.per_event_type[event_type_str] = {"received": 0, "suppressed": 0}
+            self.suppression_telemetry.per_event_type[event_type_str]["received"] += 1
+
+            # Initialize per-priority tracking
+            if priority_str not in self.suppression_telemetry.per_priority:
+                self.suppression_telemetry.per_priority[priority_str] = {"received": 0, "suppressed": 0}
+            self.suppression_telemetry.per_priority[priority_str]["received"] += 1
+
             # Apply custom filters
             for filter_func in self.event_filters:
                 if not await filter_func(event):
+                    self._record_suppression(event, "custom_filter")
                     return False
 
             # Check focus mode restrictions
             if self.current_focus_mode == "deep":
                 # In deep focus, only allow critical events
                 if event.priority not in [EventPriority.CRITICAL, EventPriority.HIGH]:
+                    self._record_suppression(event, "deep_focus_priority")
                     return False
 
                 # Block interrupting events unless critical
                 if not event.interruption_allowed and event.priority != EventPriority.CRITICAL:
+                    self._record_suppression(event, "deep_focus_interrupt")
                     return False
 
             # Check energy level matching
             if self.current_energy_level == "low":
                 # Low energy: avoid high cognitive load events
                 if event.cognitive_load > 0.7:
+                    self._record_suppression(event, "energy_level")
                     return False
 
             # Check for event flooding (ADHD protection)
             recent_events = await self._get_recent_event_count(event.event_type)
             if recent_events > 10:  # More than 10 similar events in last minute
                 logger.warning(f"🌊 Event flooding detected: {event.event_type}")
+                self._record_suppression(event, "flood")
                 return False
 
+            # Event passed all filters
+            self.suppression_telemetry.events_passed += 1
             return True
 
         except Exception as e:
@@ -364,6 +449,26 @@ class EventCoordinator:
 
         except Exception as e:
             return 0
+
+    def _record_suppression(self, event: CoordinationEvent, rule: str) -> None:
+        """Record event suppression with rule and metadata."""
+        # Increment overall suppression counter
+        self.suppression_telemetry.events_suppressed += 1
+
+        # Increment per-rule counter
+        rule_attr = f"suppressed_by_{rule}"
+        current_count = getattr(self.suppression_telemetry, rule_attr, 0)
+        setattr(self.suppression_telemetry, rule_attr, current_count + 1)
+
+        # Update per-event-type suppression
+        event_type_str = event.event_type.value
+        if event_type_str in self.suppression_telemetry.per_event_type:
+            self.suppression_telemetry.per_event_type[event_type_str]["suppressed"] += 1
+
+        # Update per-priority suppression
+        priority_str = event.priority.name
+        if priority_str in self.suppression_telemetry.per_priority:
+            self.suppression_telemetry.per_priority[priority_str]["suppressed"] += 1
     # Default Event Processors
 
     async def _process_task_created(self, event: CoordinationEvent) -> None:
@@ -781,6 +886,48 @@ class EventCoordinator:
         except Exception as exc:
             logger.error("Failed to setup sprint progress automation for %s: %s", sprint_id, exc)
 
+    def get_suppression_report(self) -> Dict[str, Any]:
+        """Get comprehensive suppression telemetry report."""
+        t = self.suppression_telemetry
+
+        # Calculate signal/noise ratio
+        signal_noise_ratio = (
+            t.events_passed / t.events_received if t.events_received > 0 else 0.0
+        )
+        suppression_rate_pct = (
+            (t.events_suppressed / t.events_received * 100) if t.events_received > 0 else 0.0
+        )
+
+        # Calculate runtime
+        runtime_seconds = (datetime.now(timezone.utc) - t.started_at).total_seconds()
+        runtime_minutes = runtime_seconds / 60.0
+
+        return {
+            "summary": {
+                "events_received": t.events_received,
+                "events_passed": t.events_passed,
+                "events_suppressed": t.events_suppressed,
+                "signal_noise_ratio": round(signal_noise_ratio, 3),
+                "suppression_rate_pct": round(suppression_rate_pct, 1),
+                "runtime_minutes": round(runtime_minutes, 1)
+            },
+            "per_rule_breakdown": {
+                "custom_filter": t.suppressed_by_custom_filter,
+                "deep_focus_priority": t.suppressed_by_deep_focus_priority,
+                "deep_focus_interrupt": t.suppressed_by_deep_focus_interrupt,
+                "energy_level": t.suppressed_by_energy_level,
+                "flood": t.suppressed_by_flood,
+                "expiry": t.suppressed_by_expiry
+            },
+            "per_event_type": t.per_event_type,
+            "per_priority": t.per_priority,
+            "adhd_state": {
+                "focus_mode": self.current_focus_mode,
+                "energy_level": self.current_energy_level,
+                "context_switches": self.active_context_switches
+            }
+        }
+
     # Health and Monitoring
 
     async def get_coordination_health(self) -> Dict[str, Any]:
@@ -821,6 +968,7 @@ class EventCoordinator:
                     "context_switches": self.active_context_switches,
                     "last_break": self.last_break_time.isoformat()
                 },
+                "suppression_telemetry": self.get_suppression_report(),
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
 
