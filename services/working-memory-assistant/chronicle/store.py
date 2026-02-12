@@ -14,7 +14,7 @@ import sqlite3
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 try:
     from ulid import ULID
@@ -38,7 +38,7 @@ SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 class ChronicleStore:
     """SQLite canonical store for Dope-Memory chronicle data."""
 
-    def __init__(self, db_path: str | Path):
+    def __init__(self, db_path: Union[str, Path]):
         """Initialize the chronicle store.
 
         Args:
@@ -470,17 +470,7 @@ class ChronicleStore:
         promoted: Any,  # PromotedEntry from promotion.promotion
         session_id: Optional[str] = None,
     ) -> str:
-        """Convenience method to insert a PromotedEntry object.
-        
-        Args:
-            workspace_id: Workspace identifier
-            instance_id: Instance identifier
-            promoted: PromotedEntry dataclass instance with all fields populated
-            session_id: Optional session override
-            
-        Returns:
-            The generated entry ID (deterministic)
-        """
+        """Convenience method to insert a PromotedEntry object."""
         return self.insert_work_log_entry(
             workspace_id=workspace_id,
             instance_id=instance_id,
@@ -505,6 +495,82 @@ class ChronicleStore:
             linked_chat_range=promoted.linked_chat_range,
             supersedes_entry_id=promoted.supersedes_entry_id,
             duration_sec=promoted.duration_sec,
+        )
+
+    def insert_corrected_work_log_entry(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        supersedes_entry_id: str,
+        correction_type: str,  # "update" or "retraction"
+        summary: str,
+        *,
+        session_id: Optional[str] = None,
+        reason: Optional[str] = None,
+        details: Optional[dict[str, Any]] = None,
+        outcome: Optional[str] = None,
+        importance_score: Optional[int] = None,
+    ) -> str:
+        """Insert a corrected entry that supersedes an existing one (Packet F §3.3).
+        
+        Correction Types:
+        - update: Corrects or adds information.
+        - retraction: Retracts the original. Creates a tombstone.
+        """
+        # 1. Resolve target head (Packet F §6.5)
+        # First check if the entry exists
+        target = self.get_entry_by_id(workspace_id, instance_id, supersedes_entry_id)
+        if not target:
+            raise ValueError(f"Target entry {supersedes_entry_id} not found.")
+
+        # Ensure we are targeting the head of the chain
+        if self._is_entry_superseded(supersedes_entry_id):
+            real_head = self._resolve_chain_head(supersedes_entry_id)
+            raise ValueError(
+                f"Target {supersedes_entry_id} is already superseded. Target head {real_head} instead."
+            )
+
+        # 2. Prepare correction semantics (Packet F §4.1)
+        # Use target's metadata to preserve context
+        final_category = target["category"]
+        final_entry_type = target["entry_type"]
+        final_workflow_phase = target["workflow_phase"]
+        
+        # Override defaults or use target values
+        final_outcome = outcome or target["outcome"]
+        final_importance_score = importance_score if importance_score is not None else target["importance_score"]
+        
+        # Provenance: manual correction convention
+        source_event_id = f"manual:{_generate_ulid()}"
+        now_utc = datetime.now(timezone.utc).isoformat()
+
+        if correction_type == "retraction":
+            # Retraction tombstone semantics (Packet F §4.1)
+            final_summary = f"[RETRACTED] {summary}"
+            final_outcome = "abandoned"
+            final_importance_score = min(final_importance_score, 3) # Lower importance
+        else:
+            final_summary = summary
+
+        # 3. Perform insertion
+        return self.insert_work_log_entry(
+            workspace_id=workspace_id,
+            instance_id=instance_id,
+            category=final_category,
+            entry_type=final_entry_type,
+            summary=final_summary,
+            source_event_id=source_event_id,
+            source_event_type=f"correction.{correction_type}",
+            source_adapter="mcp-server",
+            source_event_ts_utc=now_utc,
+            promotion_rule=f"correction.{correction_type}",
+            session_id=session_id or target["session_id"],
+            workflow_phase=final_workflow_phase,
+            details=details,
+            reasoning=reason,
+            outcome=final_outcome,
+            importance_score=final_importance_score,
+            supersedes_entry_id=supersedes_entry_id,
         )
     
     def replay_work_log(

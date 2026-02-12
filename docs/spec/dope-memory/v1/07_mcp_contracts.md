@@ -199,6 +199,32 @@ Returns a chronological replay of curated entries for a session with Top-3 defau
 }
 ```
 
+## Tool: memory_correct (Packet F §6)
+Mechanically supersedes or retracts an existing entry.
+
+### Request
+```json
+{
+  "workspace_id": "string",
+  "instance_id": "string",
+  "entry_id": "string",
+  "correction_type": "update|retraction",
+  "summary": "string",
+  "reason": "string|null",
+  "details": "object|null",
+  "outcome": "string|null",
+  "importance_score": "number|null"
+}
+```
+
+### Response
+```json
+{
+  "entry_id": "string",
+  "created": true
+}
+```
+
 ## Output Determinism Notes
 - memory_search ordering is deterministic per retrieval spec.
 - memory_recap uses deterministic selection:
