@@ -1,0 +1,17 @@
+287:def _stable_json(value: Any) -> str:
+291:def _deterministic_event_id(
+301:    metadata (source, project_id) to enable cross-adapter convergence.
+303:    Fingerprint formula: event_type | session_id_or_empty | ts_bucket | stable_json(payload)
+309:    ts_bucket = ts_utc[:19]
+312:    fingerprint = "|".join(
+316:            ts_bucket,
+317:            _stable_json(payload),
+320:    return hashlib.sha256(fingerprint.encode("utf-8")).hexdigest()
+345:            "data": _stable_json(event["payload"]),
+400:    project_id = str(root)
+401:    workspace_id = str(event.get("workspace_id") or project_id)
+406:    # Generate event_id BEFORE injecting project_id (Packet D §3.3)
+407:    # project_id is machine-specific and must not affect event identity
+411:        or _deterministic_event_id(
+419:    # Inject project_id AFTER event_id generation for storage/routing only
+420:    redacted_payload["project_id"] = project_id
