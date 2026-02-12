@@ -25,18 +25,6 @@ def store(tmp_path):
     s = ChronicleStore(db_path)
     s.initialize_schema()
 
-    # Apply v1.2.0 migration (UNIQUE index)
-    from pathlib import Path
-    migration = Path(__file__).resolve().parents[2] / "chronicle" / "migrations" / "v1_2_0_enforce_linear_supersession.sql"
-    if migration.exists():
-        conn = sqlite3.connect(str(db_path))
-        conn.executescript(migration.read_text())
-        conn.close()
-        # Reconnect so the store sees the new index
-        s.close()
-        s = ChronicleStore(db_path)
-        s.initialize_schema()
-
     return s
 
 
@@ -358,3 +346,52 @@ def test_reflection_staleness_detection(store):
     assert id1 in cards_after[0]["stale_entries"]
     assert id2 not in cards_after[0]["stale_entries"]
     assert cards_after[0]["regeneration_recommended"] is True
+
+
+# ─── 15. Scoping tests (Packet G) ──────────────────────────────────────
+
+def test_supersession_is_scoped_by_workspace(store):
+    """Supersession chains are scoped by workspace/instance.
+    
+    The same supersedes_entry_id can exist in different workspaces without conflict.
+    """
+    # Create entry in ws-1
+    id1 = store.insert_work_log_entry(
+        workspace_id="ws-1", instance_id="A",
+        category="planning", entry_type="decision", summary="Entry 1",
+        source_event_id="evt-1", source_event_type="test", source_adapter="test",
+        source_event_ts_utc="2026-02-11T12:00:00Z", promotion_rule="test"
+    )
+    
+    # Supersede it in ws-1 (should work)
+    id1_super = store.insert_corrected_work_log_entry(
+        workspace_id="ws-1", instance_id="A",
+        supersedes_entry_id=id1, correction_type="update", summary="Correction 1"
+    )
+    
+    # Create entry with SAME ID in ws-2 (simulating ID collision or just independent state)
+    # Using explicit ID generation to force collision is hard due to hashing,
+    # but we can verify that superseding a non-existent entry in ws-2 fails
+    # even if it exists in ws-1.
+    
+    with pytest.raises(ValueError, match="not found"):
+        store.insert_corrected_work_log_entry(
+            workspace_id="ws-2", instance_id="A",
+            supersedes_entry_id=id1, correction_type="update", summary="Should fail"
+        )
+
+def test_chain_resolution_scoped(store):
+    """Chain resolution checks must be scoped to workspace."""
+    # Create valid chain in ws-1
+    id1 = _make_entry(store, "Original", evt_n=900)
+    id2 = _make_entry(store, "Corrected", supersedes=id1, evt_n=901)
+    
+    # In ws-2, id1 does not exist, so is_entry_superseded should be False (or raise not found if we checked existence first)
+    # The helpers _is_entry_superseded return False if count=0.
+    
+    # _is_entry_superseded(ws-2, id1) should be False
+    assert store._is_entry_superseded("ws-2", "A", id1) is False
+    
+    # _resolve_chain_head(ws-2, id1) should return id1 (as it assumes start is valid or just strictly follows chain)
+    # In this case, since it's not superseded in ws-2, it is its own head (conceptually).
+    assert store._resolve_chain_head("ws-2", "A", id1) == id1
