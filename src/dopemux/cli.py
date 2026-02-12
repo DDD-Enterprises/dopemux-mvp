@@ -104,6 +104,7 @@ from .roles.catalog import (
     resolve_role,
     RoleNotFoundError,
 )
+from .memory.capture_client import CaptureError, emit_capture_event
 
 
 if "-litellm" in sys.argv:
@@ -6707,7 +6708,7 @@ def quick(ctx):
 
 @cli.group("trigger")
 def trigger_group():
-    """Internal hook triggers (no-op placeholders)."""
+    """Internal hook triggers."""
     pass
 
 @trigger_group.command("command-done")
@@ -6716,6 +6717,14 @@ def trigger_group():
 def trigger_command_done(_async: bool, quiet: bool):
     if _async and not quiet:
         quiet = True
+    try:
+        emit_capture_event(
+            {"event_type": "command.done", "payload": {}},
+            mode="auto",
+            emit_event_bus=False,
+        )
+    except CaptureError:
+        sys.exit(1)
     if not quiet:
         console.print("[dim]command-done trigger received[/dim]")
     return 0
@@ -6725,11 +6734,124 @@ def trigger_command_done(_async: bool, quiet: bool):
 @click.option("--async", "_async", is_flag=True, help="No-op")
 @click.option("--quiet", is_flag=True, help="Suppress output")
 def trigger_shell_command(context: str, _async: bool, quiet: bool):
+    import json
+
     if _async and not quiet:
         quiet = True
+    payload: dict = {}
+    if context:
+        try:
+            parsed_context = json.loads(context)
+            payload = parsed_context if isinstance(parsed_context, dict) else {"context": parsed_context}
+        except json.JSONDecodeError:
+            payload = {"raw_context": context}
+    try:
+        emit_capture_event(
+            {"event_type": "shell.command", "payload": payload},
+            mode="auto",
+            emit_event_bus=False,
+        )
+    except CaptureError:
+        sys.exit(1)
     if not quiet:
         console.print("[dim]shell-command trigger received[/dim]")
     return 0
+
+
+@cli.group("capture")
+def capture_group():
+    """Capture events into Chronicle."""
+    pass
+
+
+@capture_group.command("emit")
+@click.option("--event", type=str, required=True, help="Event JSON object")
+@click.option(
+    "--mode",
+    type=click.Choice(["plugin", "cli", "mcp", "auto"]),
+    default="auto",
+    help="Capture mode",
+)
+@click.option("--repo-root", type=click.Path(exists=True, path_type=Path), default=None)
+def capture_emit(event: str, mode: str, repo_root: Optional[Path]):
+    import json
+
+    try:
+        event_data = json.loads(event)
+    except json.JSONDecodeError as exc:
+        raise click.ClickException(f"Invalid JSON: {exc}")
+
+    if not isinstance(event_data, dict):
+        raise click.ClickException("event must decode to an object")
+
+    emit_capture_event(
+        event_data,
+        mode=mode,
+        repo_root=repo_root,
+        emit_event_bus=False,
+    )
+
+
+@capture_group.command("note", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
+@click.pass_context
+def capture_note(ctx: click.Context):
+    args = list(ctx.args)
+    if not args:
+        raise click.ClickException("summary is required")
+
+    summary = args[0]
+    mode = "auto"
+    tags: List[str] = []
+    session_id: Optional[str] = None
+    source = "cli"
+
+    i = 1
+    while i < len(args):
+        arg = args[i]
+        if arg == "--mode":
+            i += 1
+            if i >= len(args):
+                raise click.ClickException("--mode requires a value")
+            mode = args[i]
+        elif arg == "--tag":
+            i += 1
+            if i >= len(args):
+                raise click.ClickException("--tag requires a value")
+            tags.append(args[i])
+        elif arg == "--session-id":
+            i += 1
+            if i >= len(args):
+                raise click.ClickException("--session-id requires a value")
+            session_id = args[i]
+        elif arg == "--source":
+            i += 1
+            if i >= len(args):
+                raise click.ClickException("--source requires a value")
+            source = args[i]
+        else:
+            raise click.ClickException(f"Unknown option: {arg}")
+        i += 1
+
+    event = {
+        "event_type": "manual.note",
+        "source": source,
+        "payload": {
+            "summary": summary,
+            "tags": tags,
+        },
+    }
+    if session_id:
+        event["session_id"] = session_id
+
+    emit_capture_event(
+        event,
+        mode=mode,
+        emit_event_bus=False,
+    )
+
+
+capture_note.allow_extra_args = True
+capture_note.ignore_unknown_options = True
 
 @cli.command("layouts")
 def layouts():
