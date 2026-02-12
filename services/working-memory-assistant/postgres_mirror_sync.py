@@ -31,6 +31,8 @@ POSTGRES_URL = os.getenv(
 )
 SYNC_INTERVAL_SEC = int(os.getenv("MIRROR_SYNC_INTERVAL_SEC", "60"))  # Default: 1 minute
 BATCH_SIZE = int(os.getenv("MIRROR_SYNC_BATCH_SIZE", "100"))
+TARGET_SCHEMA_VERSION = "v1.0.3"
+MIRROR_SCHEMA_RESET = os.getenv("MIRROR_SCHEMA_RESET", "false").strip().lower() == "true"
 
 
 class PostgresMirrorSync:
@@ -57,10 +59,10 @@ class PostgresMirrorSync:
         self._running = False
         self._stores: dict[str, ChronicleStore] = {}
 
-        # Bookmarks: workspace_id -> last_synced_ts
-        self._work_log_bookmarks: dict[str, str] = {}
+        # Bookmarks: (workspace_id, ledger_path) -> last_synced_ts
+        self._work_log_bookmarks: dict[tuple[str, str], str] = {}
         self._raw_event_bookmarks: dict[str, str] = {}
-        self._issue_link_bookmarks: dict[str, str] = {}
+        self._issue_link_bookmarks: dict[tuple[str, str], str] = {}
 
     async def initialize(self) -> None:
         """Initialize Postgres connection pool."""
@@ -75,6 +77,7 @@ class PostgresMirrorSync:
 
             # Ensure schema exists
             await self._ensure_schema()
+            await self._load_bookmarks()
 
         except Exception as e:
             logger.error(f"❌ Failed to initialize Postgres mirror sync: {e}")
@@ -87,41 +90,79 @@ class PostgresMirrorSync:
 
         try:
             schema_path = Path(__file__).parent / "chronicle" / "postgres_mirror.sql"
+            reset_schema_path = Path(__file__).parent / "chronicle" / "postgres_mirror_reset.sql"
             if not schema_path.exists():
                 logger.warning(f"⚠️  Postgres mirror schema not found: {schema_path}")
                 return
 
             async with self.pool.acquire() as conn:
+                if MIRROR_SCHEMA_RESET:
+                    if not reset_schema_path.exists():
+                        raise RuntimeError(
+                            f"MIRROR_SCHEMA_RESET=true but reset SQL not found: {reset_schema_path}"
+                        )
+                    logger.warning("💣 MIRROR_SCHEMA_RESET=true, executing destructive reset")
+                    reset_sql = reset_schema_path.read_text()
+                    await conn.execute(reset_sql)
+                    logger.warning("💣 Mirror schema reset completed")
+                else:
+                    logger.info("🪞 Mirror schema reset skipped (MIRROR_SCHEMA_RESET=false)")
+
                 # Check if already migrated
                 exists = await conn.fetchval(
                     "SELECT 1 FROM information_schema.tables WHERE table_name = 'dm_schema_migrations'"
                 )
                 if exists:
                     version = await conn.fetchval(
-                        "SELECT version FROM dm_schema_migrations ORDER BY applied_at DESC LIMIT 1"
+                        "SELECT version FROM dm_schema_migrations WHERE version = $1 LIMIT 1",
+                        TARGET_SCHEMA_VERSION,
                     )
-                    if version == "v1.0.0":
-                        logger.info("✅ Postgres mirror schema already at v1.0.0")
+                    if version == TARGET_SCHEMA_VERSION:
+                        logger.info(
+                            "✅ Postgres mirror schema already at %s",
+                            TARGET_SCHEMA_VERSION,
+                        )
                         return
 
                 # Apply schema
                 schema_sql = schema_path.read_text()
                 await conn.execute(schema_sql)
-                logger.info("✅ Applied Postgres mirror schema v1.0.0")
+                logger.info("✅ Applied Postgres mirror schema %s", TARGET_SCHEMA_VERSION)
 
         except Exception as e:
             logger.warning(f"⚠️  Could not ensure Postgres schema: {e}")
 
-    def _get_store(self, workspace_id: str) -> ChronicleStore:
-        """Get or create ChronicleStore for the canonical ledger.
+    async def _load_bookmarks(self) -> None:
+        """Load persisted bookmarks into memory."""
+        if not self.pool:
+            return
 
-        Resolves workspace_id to the single canonical ledger per ADR-213.
-        Returns None if canonical ledger does not exist yet.
-        """
-        try:
-            db_path = resolve_canonical_ledger(workspace_id)
-        except CanonicalLedgerError:
-            return None
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT workspace_id, ledger_path, last_work_log_created_at, last_issue_link_created_at
+                FROM dm_mirror_bookmarks
+                """
+            )
+
+        loaded = 0
+        for row in rows:
+            workspace_id = row["workspace_id"]
+            ledger_path = row["ledger_path"]
+            work_log_ts = row["last_work_log_created_at"]
+            issue_link_ts = row["last_issue_link_created_at"]
+            key = (workspace_id, ledger_path)
+            if work_log_ts:
+                self._work_log_bookmarks[key] = work_log_ts.isoformat()
+            if issue_link_ts:
+                self._issue_link_bookmarks[key] = issue_link_ts.isoformat()
+            loaded += 1
+
+        logger.info("🪞 Loaded mirror bookmarks for %d workspace(s)", loaded)
+
+    def _get_store(self, ledger_path: str) -> Optional[ChronicleStore]:
+        """Get or create a ChronicleStore for the given canonical ledger path."""
+        db_path = Path(ledger_path)
         if not db_path.exists():
             return None
         path_key = str(db_path)
@@ -152,15 +193,21 @@ class PostgresMirrorSync:
         self._running = True
         logger.info(f"📤 Postgres mirror sync started (interval: {self.sync_interval_sec}s)")
 
+        # Force one immediate cycle so startup failures are visible immediately.
+        try:
+            await self._sync_all_workspaces()
+        except Exception:
+            logger.exception("❌ Mirror sync immediate tick failed")
+
         while self._running:
             try:
-                await self._sync_all_workspaces()
                 await asyncio.sleep(self.sync_interval_sec)
+                await self._sync_all_workspaces()
             except asyncio.CancelledError:
                 logger.info("📤 Postgres mirror sync stopping")
                 break
-            except Exception as e:
-                logger.error(f"❌ Mirror sync error: {e}")
+            except Exception:
+                logger.exception("❌ Mirror sync loop error")
                 await asyncio.sleep(self.sync_interval_sec)
 
     async def stop(self) -> None:
@@ -172,47 +219,67 @@ class PostgresMirrorSync:
 
     async def _sync_all_workspaces(self) -> None:
         """Sync all discovered workspaces."""
-        workspaces = self._discover_workspaces()
-        if not workspaces:
+        logger.info("🪞 Mirror sync tick start")
+        ledger_paths = self._discover_workspaces()
+        workspace_id = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "default").strip() or "default"
+        logger.info(
+            "🪞 Mirror sync discovered ledgers: %s workspace_id=%s",
+            ledger_paths,
+            workspace_id,
+        )
+        if not ledger_paths:
             return
 
-        for workspace_id in workspaces:
+        for ledger_path in ledger_paths:
             try:
-                await self._sync_workspace(workspace_id)
+                await self._sync_workspace(workspace_id, ledger_path)
             except Exception as e:
-                logger.warning(f"⚠️  Failed to sync workspace {workspace_id}: {e}")
+                logger.warning(
+                    "⚠️  Failed to sync workspace=%s ledger=%s: %s",
+                    workspace_id,
+                    ledger_path,
+                    e,
+                )
 
-    async def _sync_workspace(self, workspace_id: str) -> None:
+    async def _sync_workspace(self, workspace_id: str, ledger_path: str) -> None:
         """Sync a single workspace to Postgres."""
-        store = self._get_store(workspace_id)
+        store = self._get_store(ledger_path)
         if not store:
             return
 
         # Sync work log entries
-        work_log_count = await self._sync_work_log_entries(workspace_id, store)
+        work_log_count = await self._sync_work_log_entries(workspace_id, ledger_path, store)
 
         # Sync raw events (optional, may skip if too many)
-        raw_event_count = await self._sync_raw_events(workspace_id, store)
+        raw_event_count = await self._sync_raw_events(workspace_id, ledger_path, store)
 
         # Sync issue links
-        issue_link_count = await self._sync_issue_links(workspace_id, store)
+        issue_link_count = await self._sync_issue_links(workspace_id, ledger_path, store)
+
+        if work_log_count > 0 or issue_link_count > 0:
+            await self._persist_bookmarks(workspace_id, ledger_path)
 
         total = work_log_count + raw_event_count + issue_link_count
         if total > 0:
             logger.info(
-                f"📤 Synced {workspace_id}: "
-                f"{work_log_count} work log, {raw_event_count} raw, {issue_link_count} links"
+                "📤 Synced workspace=%s ledger=%s: %d work log, %d raw, %d links",
+                workspace_id,
+                ledger_path,
+                work_log_count,
+                raw_event_count,
+                issue_link_count,
             )
 
     async def _sync_work_log_entries(
-        self, workspace_id: str, store: ChronicleStore
+        self, workspace_id: str, ledger_path: str, store: ChronicleStore
     ) -> int:
         """Sync work log entries to Postgres."""
         if not self.pool:
             return 0
 
         # Get last synced timestamp
-        last_ts = self._work_log_bookmarks.get(workspace_id, "1970-01-01T00:00:00Z")
+        bookmark_key = (workspace_id, ledger_path)
+        last_ts = self._work_log_bookmarks.get(bookmark_key, "1970-01-01T00:00:00Z")
 
         # Query new entries from SQLite
         conn = store.connect()
@@ -234,36 +301,45 @@ class PostgresMirrorSync:
 
         rows = cursor.fetchall()
         if not rows:
+            logger.info(
+                "🪞 work_log_entries sync workspace=%s ledger=%s selected=0 inserted=0 skipped=0 last_ts=%s",
+                workspace_id,
+                ledger_path,
+                last_ts,
+            )
             return 0
 
         # Insert into Postgres
         count = 0
+        skipped = 0
+        skipped_samples: list[str] = []
         async with self.pool.acquire() as pg_conn:
             for row in rows:
                 try:
                     await pg_conn.execute(
                         """
                         INSERT INTO dm_work_log_entries (
-                            id, workspace_id, instance_id, session_id, ts,
+                            id, workspace_id, ledger_path, instance_id, session_id, ts,
                             category, entry_type, workflow_phase, summary, details,
                             reasoning, outcome, importance_score, tags,
                             linked_files, linked_commits, linked_decisions,
                             linked_chat_range, parent_entry_id, duration_seconds,
                             created_at, updated_at
-                        ) VALUES ($1, $2::uuid, $3, $4::uuid, $5::timestamptz,
-                                  $6, $7, $8, $9, $10::jsonb,
-                                  $11, $12, $13, $14::text[],
-                                  $15::jsonb, $16::text[], $17::uuid[],
-                                  $18::jsonb, $19::uuid, $20,
-                                  $21::timestamptz, $22::timestamptz)
+                        ) VALUES ($1, $2, $3, $4, $5, $6::timestamptz,
+                                  $7, $8, $9, $10, $11::jsonb,
+                                  $12, $13, $14, $15::text[],
+                                  $16::jsonb, $17::text[], $18::text[],
+                                  $19::jsonb, $20, $21,
+                                  $22::timestamptz, $23::timestamptz)
                         ON CONFLICT (id) DO UPDATE SET
                             updated_at = EXCLUDED.updated_at
                         """,
                         row[0],  # id
-                        self._to_uuid(workspace_id),  # workspace_id as UUID
+                        workspace_id,
+                        ledger_path,
                         row[2],  # instance_id
-                        self._to_uuid(row[3]),  # session_id
-                        row[4],  # ts_utc
+                        row[3],  # session_id
+                        self._to_datetime(row[4]),  # ts_utc
                         row[5],  # category
                         row[6],  # entry_type
                         row[7],  # workflow_phase
@@ -275,22 +351,37 @@ class PostgresMirrorSync:
                         json.loads(row[13] or "[]"),  # tags_json -> array
                         row[14],  # linked_files_json
                         json.loads(row[15] or "[]"),  # linked_commits_json -> array
-                        self._to_uuid_array(row[16]),  # linked_decisions_json -> UUID[]
+                        self._to_text_array(row[16]),
                         row[17],  # linked_chat_range_json
-                        self._to_uuid(row[18]),  # parent_entry_id
+                        row[18],  # parent_entry_id
                         row[19],  # duration_sec
-                        row[20],  # created_at_utc
-                        row[21],  # updated_at_utc
+                        self._to_datetime(row[20]),  # created_at_utc
+                        self._to_datetime(row[21]),  # updated_at_utc
                     )
                     count += 1
-                    self._work_log_bookmarks[workspace_id] = row[20]  # created_at_utc
+                    self._work_log_bookmarks[bookmark_key] = row[20]  # created_at_utc
                 except Exception as e:
-                    logger.debug(f"Skip work log {row[0]}: {e}")
+                    skipped += 1
+                    if len(skipped_samples) < 3:
+                        skipped_samples.append(f"{row[0]}: {e}")
+                    logger.debug("Skip work log %s: %s", row[0], e)
+
+        logger.info(
+            "🪞 work_log_entries sync workspace=%s ledger=%s selected=%d inserted=%d skipped=%d last_ts=%s",
+            workspace_id,
+            ledger_path,
+            len(rows),
+            count,
+            skipped,
+            last_ts,
+        )
+        if skipped_samples:
+            logger.info("🪞 work_log_entries skip_samples=%s", skipped_samples)
 
         return count
 
     async def _sync_raw_events(
-        self, workspace_id: str, store: ChronicleStore
+        self, workspace_id: str, ledger_path: str, store: ChronicleStore
     ) -> int:
         """Sync raw events to Postgres (limited batch)."""
         # For raw events, we only sync recent ones to avoid overwhelming Postgres
@@ -298,13 +389,14 @@ class PostgresMirrorSync:
         return 0  # Skip for Phase 1, implement in Phase 2 if needed
 
     async def _sync_issue_links(
-        self, workspace_id: str, store: ChronicleStore
+        self, workspace_id: str, ledger_path: str, store: ChronicleStore
     ) -> int:
         """Sync issue links to Postgres."""
         if not self.pool:
             return 0
 
-        last_ts = self._issue_link_bookmarks.get(workspace_id, "1970-01-01T00:00:00Z")
+        bookmark_key = (workspace_id, ledger_path)
+        last_ts = self._issue_link_bookmarks.get(bookmark_key, "1970-01-01T00:00:00Z")
 
         conn = store.connect()
         cursor = conn.execute(
@@ -321,44 +413,62 @@ class PostgresMirrorSync:
 
         rows = cursor.fetchall()
         if not rows:
+            logger.info(
+                "🪞 issue_links sync workspace=%s ledger=%s selected=0 inserted=0 skipped=0 last_ts=%s",
+                workspace_id,
+                ledger_path,
+                last_ts,
+            )
             return 0
 
         count = 0
+        skipped = 0
+        skipped_samples: list[str] = []
         async with self.pool.acquire() as pg_conn:
             for row in rows:
                 try:
                     await pg_conn.execute(
                         """
                         INSERT INTO dm_issue_links (
-                            id, workspace_id, instance_id, issue_entry_id,
+                            id, workspace_id, ledger_path, instance_id, issue_entry_id,
                             resolution_entry_id, confidence, evidence_window_min, created_at
-                        ) VALUES ($1::uuid, $2::uuid, $3, $4::uuid, $5::uuid, $6, $7, $8::timestamptz)
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::timestamptz)
                         ON CONFLICT (id) DO NOTHING
                         """,
-                        self._to_uuid(row[0]),
-                        self._to_uuid(workspace_id),
-                        row[2],
-                        self._to_uuid(row[3]),
-                        self._to_uuid(row[4]),
-                        row[5],
-                        row[6],
-                        row[7],
+                        row[0],
+                        workspace_id,
+                        ledger_path,
+                        row[2],  # instance_id
+                        row[3],  # issue_entry_id
+                        row[4],  # resolution_entry_id
+                        row[5],  # confidence
+                        row[6],  # evidence_window_min
+                        self._to_datetime(row[7]),  # created_at_utc
                     )
                     count += 1
-                    self._issue_link_bookmarks[workspace_id] = row[7]
+                    self._issue_link_bookmarks[bookmark_key] = row[7]
                 except Exception as e:
-                    logger.debug(f"Skip issue link {row[0]}: {e}")
+                    skipped += 1
+                    if len(skipped_samples) < 3:
+                        skipped_samples.append(f"{row[0]}: {e}")
+                    logger.debug("Skip issue link %s: %s", row[0], e)
+
+        logger.info(
+            "🪞 issue_links sync workspace=%s ledger=%s selected=%d inserted=%d skipped=%d last_ts=%s",
+            workspace_id,
+            ledger_path,
+            len(rows),
+            count,
+            skipped,
+            last_ts,
+        )
+        if skipped_samples:
+            logger.info("🪞 issue_links skip_samples=%s", skipped_samples)
 
         return count
 
-    def _to_uuid(self, value: Any) -> Optional[str]:
-        """Convert value to UUID string or None."""
-        if value is None or value == "":
-            return None
-        return str(value)
-
-    def _to_uuid_array(self, json_str: Optional[str]) -> Optional[list[str]]:
-        """Convert JSON array string to UUID array."""
+    def _to_text_array(self, json_str: Optional[str]) -> Optional[list[str]]:
+        """Convert JSON array string to text array."""
         if not json_str:
             return None
         try:
@@ -366,6 +476,43 @@ class PostgresMirrorSync:
             return [str(x) for x in items] if items else None
         except json.JSONDecodeError:
             return None
+
+    def _to_datetime(self, value: Any) -> Optional[datetime]:
+        """Convert ISO datetime strings to datetime for asyncpg."""
+        if value is None or value == "":
+            return None
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, str):
+            normalized = value.replace("Z", "+00:00")
+            return datetime.fromisoformat(normalized)
+        raise TypeError(f"Unsupported datetime value type: {type(value)}")
+
+    async def _persist_bookmarks(self, workspace_id: str, ledger_path: str) -> None:
+        """Persist in-memory bookmarks for a workspace+ledger to Postgres."""
+        if not self.pool:
+            return
+
+        key = (workspace_id, ledger_path)
+        work_log_ts = self._to_datetime(self._work_log_bookmarks.get(key))
+        issue_link_ts = self._to_datetime(self._issue_link_bookmarks.get(key))
+
+        async with self.pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO dm_mirror_bookmarks (
+                    workspace_id, ledger_path, last_work_log_created_at, last_issue_link_created_at, updated_at
+                ) VALUES ($1, $2, $3::timestamptz, $4::timestamptz, now())
+                ON CONFLICT (workspace_id, ledger_path) DO UPDATE SET
+                    last_work_log_created_at = EXCLUDED.last_work_log_created_at,
+                    last_issue_link_created_at = EXCLUDED.last_issue_link_created_at,
+                    updated_at = now()
+                """,
+                workspace_id,
+                ledger_path,
+                work_log_ts,
+                issue_link_ts,
+            )
 
 
 async def run_mirror_sync() -> None:
