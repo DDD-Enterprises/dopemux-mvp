@@ -1,0 +1,41 @@
+PM-INV-00: Phase 0 Evidence Capture Commands
+Run from repo root. Capture outputs verbatim into PM-INV-00.outputs/.
+
+Tooling:
+- Preferred: rg (ripgrep)
+- Fallback: grep -rnE
+Exclude: .git/** and quarantine/** by default.
+
+0) Baseline snapshot
+- git rev-parse HEAD
+- git status --porcelain
+
+1) Service inventory
+- ls -la services
+- find services -maxdepth 2 -type f -name "Dockerfile" -o -name "pyproject.toml" -o -name "package.json"
+
+2) PM surface scan (rg preferred)
+- rg -n --hidden --glob '!.git/**' --glob '!quarantine/**' "task[-_ ]orchestrator|taskmaster|leantime|workflow|state transition|kanban|backlog|todo|triage|milestone|sprint" .
+Fallback:
+- grep -rnE --exclude-dir=.git --exclude-dir=quarantine "task[-_ ]orchestrator|taskmaster|leantime|workflow|state transition|kanban|backlog|todo|triage|milestone|sprint" .
+
+3) Task state + lifecycle scan
+- rg -n --hidden --glob '!.git/**' --glob '!quarantine/**' "Enum|Status|State|Transition|lifecycle" services/task-orchestrator services/taskmaster src/dopemux
+Fallback:
+- grep -rnE --exclude-dir=.git --exclude-dir=quarantine "Enum|Status|State|Transition|lifecycle" services/task-orchestrator services/taskmaster src/dopemux
+
+4) Event bus scan
+- rg -n --hidden --glob '!.git/**' --glob '!quarantine/**' "event_bus|EventBus|activity\.events\.v1|memory\.derived\.v1|xadd|xread|stream|publish|subscribe" services src/dopemux
+Fallback:
+- grep -rnE --exclude-dir=.git --exclude-dir=quarantine "event_bus|EventBus|activity\.events\.v1|memory\.derived\.v1|xadd|xread|stream|publish|subscribe" services src/dopemux
+
+5) ConPort/DopeQuery decision linkage scan (explicit absence allowed)
+- rg -n --hidden --glob '!.git/**' --glob '!quarantine/**' "conport|dopequery|decision|rationale|link_conport" services/task-orchestrator services/taskmaster src/dopemux
+Fallback:
+- grep -rnE --exclude-dir=.git --exclude-dir=quarantine "conport|dopequery|decision|rationale|link_conport" services/task-orchestrator services/taskmaster src/dopemux
+
+6) Tests inventory (PM-related)
+- find . -maxdepth 4 -type d \( -name "tests" -o -name "__tests__" \)
+- rg -n --hidden --glob '!.git/**' --glob '!quarantine/**' "task|workflow|state|transition|leantime|orchestrator|pm" tests services/*/tests
+Fallback:
+- grep -rnE --exclude-dir=.git --exclude-dir=quarantine "task|workflow|state|transition|leantime|orchestrator|pm" tests services/*/tests
