@@ -1,3 +1,14 @@
+---
+id: README
+title: Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-12'
+last_review: '2026-02-12'
+next_review: '2026-05-13'
+prelude: Readme (explanation) for dopemux documentation and developer workflows.
+---
 npm run build -- ttf-unhinted::IosevkaHueEditorQP📦 Dopemux Task Packets
 Deterministic Execution Units · Binding Change Control
 ════════════════════════════════════════════════════════════

@@ -1,3 +1,15 @@
+---
+id: PM_PLANE_PHASE0_SCOPE_LOCK_OPUS
+title: Pm Plane Phase0 Scope Lock Opus
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-12'
+last_review: '2026-02-12'
+next_review: '2026-05-13'
+prelude: Pm Plane Phase0 Scope Lock Opus (explanation) for dopemux documentation and
+  developer workflows.
+---
 # PM / Task Management Plane — Phase 0 Scope Lock
 
 ### Ready-to-run prompt for Opus (Investigator / Architect)

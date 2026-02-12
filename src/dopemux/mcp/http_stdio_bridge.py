@@ -1,112 +1,162 @@
 #!/usr/bin/env python3
-"""
-MCP Stdio to HTTP Bridge
+"""Bridge stdio JSON-RPC traffic to an MCP HTTP endpoint."""
 
-Reads JSON-RPC messages from stdin and forwards them to an MCP HTTP endpoint.
-Writes responses back to stdout.
-"""
-import sys
+from __future__ import annotations
+
+import argparse
 import json
 import logging
-import argparse
-import urllib.request
+import os
+import socket
+import sys
 import urllib.error
-from typing import Dict, Any, Optional
+import urllib.request
+from json import JSONDecodeError
+from typing import Any, Dict, Optional
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=sys.stderr
-)
-logger = logging.getLogger("mcp-bridge")
 
-def send_rpc_error(rpc_id: Optional[str], code: int, message: str, data: Optional[Any] = None):
-    """Send a JSON-RPC error response to stdout."""
-    error_obj = {
-        "jsonrpc": "2.0",
-        "error": {
-            "code": code,
-            "message": message
-        },
-        "id": rpc_id
+JSONRPC_VERSION = "2.0"
+PARSE_ERROR_CODE = -32700
+INVALID_REQUEST_CODE = -32600
+INTERNAL_ERROR_CODE = -32603
+SERVER_ERROR_CODE = -32000
+DEFAULT_TIMEOUT = 30.0
+
+logger = logging.getLogger(__name__)
+
+
+def _jsonrpc_error(
+    request_id: Any, code: int, message: str, data: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    payload: Dict[str, Any] = {
+        "jsonrpc": JSONRPC_VERSION,
+        "id": request_id,
+        "error": {"code": code, "message": message},
     }
     if data:
-        error_obj["error"]["data"] = data
-    
-    print(json.dumps(error_obj), flush=True)
+        payload["error"]["data"] = data
+    return payload
 
-def forward_request(base_url: str, request_data: Dict[str, Any], timeout: float = 30.0):
-    """Forward JSON-RPC request to HTTP endpoint."""
-    url = f"{base_url.rstrip('/')}/mcp"
-    headers = {'Content-Type': 'application/json'}
-    
+
+def _write_stdout(payload: Dict[str, Any]) -> None:
+    sys.stdout.write(json.dumps(payload, separators=(",", ":")))
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+
+
+def _resolve_timeout(cli_timeout: Optional[float]) -> float:
+    if cli_timeout is not None:
+        return cli_timeout
+
+    raw_timeout = os.getenv("DOPEMUX_MCP_BRIDGE_TIMEOUT")
+    if not raw_timeout:
+        return DEFAULT_TIMEOUT
+
     try:
-        data = json.dumps(request_data).encode('utf-8')
-        req = urllib.request.Request(url, data=data, headers=headers, method='POST')
-        
-        with urllib.request.urlopen(req, timeout=timeout) as response:
-            if response.status != 200:
-                logger.error(f"HTTP Error {response.status}: {response.reason}")
-                send_rpc_error(
-                    request_data.get("id"), 
-                    -32000, 
-                    f"HTTP Error {response.status}: {response.reason}"
-                )
-                return
+        parsed = float(raw_timeout)
+    except ValueError:
+        return DEFAULT_TIMEOUT
 
-            response_data = response.read().decode('utf-8')
-            # The MCP HTTP spec says the response body IS the JSON-RPC response
-            # We just print it to stdout as a single line
-            print(response_data.strip(), flush=True)
-            
-    except urllib.error.URLError as e:
-        logger.error(f"Connection error to {url}: {e}")
-        send_rpc_error(
-            request_data.get("id"),
-            -32000,
-            f"Connection error: {e}"
-        )
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        send_rpc_error(
-            request_data.get("id"),
-            -32603,
-            f"Internal error: {e}"
-        )
+    return parsed if parsed > 0 else DEFAULT_TIMEOUT
 
-def main():
-    parser = argparse.ArgumentParser(description="MCP Stdio to HTTP Bridge")
-    parser.add_argument("--base-url", required=True, help="Base URL of the MCP server (e.g., http://localhost:3004)")
-    parser.add_argument("--timeout", type=float, default=30.0, help="Request timeout in seconds")
+
+def _forward_request(base_url: str, request_data: Dict[str, Any], timeout: float) -> Dict[str, Any]:
+    endpoint = f"{base_url.rstrip('/')}/mcp"
+    request_body = json.dumps(request_data).encode("utf-8")
+    request = urllib.request.Request(
+        endpoint,
+        data=request_body,
+        method="POST",
+        headers={
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            body = response.read().decode("utf-8").strip()
+    except urllib.error.HTTPError as exc:
+        detail = ""
+        if exc.fp is not None:
+            detail = exc.fp.read().decode("utf-8", errors="replace").strip()
+        message = f"HTTP {exc.code} from MCP endpoint"
+        if detail:
+            message = f"{message}: {detail[:400]}"
+        raise RuntimeError(message) from exc
+    except urllib.error.URLError as exc:
+        reason = exc.reason
+        if isinstance(reason, socket.timeout):
+            raise RuntimeError(f"Timeout contacting MCP endpoint after {timeout}s") from exc
+        raise RuntimeError(f"Connection error to MCP endpoint: {reason}") from exc
+    except socket.timeout as exc:
+        raise RuntimeError(f"Timeout contacting MCP endpoint after {timeout}s") from exc
+
+    if not body:
+        raise RuntimeError("Empty response body from MCP endpoint")
+
+    try:
+        parsed = json.loads(body)
+    except JSONDecodeError as exc:
+        raise RuntimeError(f"Invalid JSON response from MCP endpoint: {body[:200]}") from exc
+
+    if not isinstance(parsed, dict):
+        raise RuntimeError("Invalid MCP response payload: expected JSON object")
+
+    return parsed
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Bridge stdio JSON-RPC to MCP HTTP")
+    parser.add_argument("--base-url", required=True, help="MCP server base URL (for example: http://localhost:3004)")
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=None,
+        help="HTTP timeout in seconds (defaults to DOPEMUX_MCP_BRIDGE_TIMEOUT or 30)",
+    )
     args = parser.parse_args()
 
-    logger.info(f"Starting bridge to {args.base_url}")
+    logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
+    timeout = _resolve_timeout(args.timeout)
 
     while True:
+        line = sys.stdin.readline()
+        if line == "":
+            return 0
+
+        line = line.strip()
+        if not line:
+            continue
+
+        request_id: Any = None
         try:
-            line = sys.stdin.readline()
-            if not line:
-                break
-            
-            line = line.strip()
-            if not line:
-                continue
-                
-            try:
-                request = json.loads(line)
-            except json.JSONDecodeError:
-                logger.error("Invalid JSON received")
-                send_rpc_error(None, -32700, "Parse error")
-                continue
-                
-            forward_request(args.base_url, request, args.timeout)
-            
-        except KeyboardInterrupt:
-            break
-        except Exception as e:
-            logger.error(f"Main loop error: {e}")
-            break
+            request_data = json.loads(line)
+        except JSONDecodeError:
+            _write_stdout(_jsonrpc_error(None, PARSE_ERROR_CODE, "Parse error"))
+            continue
+
+        if not isinstance(request_data, dict):
+            _write_stdout(_jsonrpc_error(None, INVALID_REQUEST_CODE, "Invalid Request"))
+            continue
+
+        request_id = request_data.get("id")
+        try:
+            response = _forward_request(args.base_url, request_data, timeout)
+        except Exception as exc:
+            logger.debug("Bridge forward error", exc_info=True)
+            _write_stdout(
+                _jsonrpc_error(
+                    request_id,
+                    SERVER_ERROR_CODE,
+                    "Bridge transport error",
+                    {"detail": str(exc)},
+                )
+            )
+            continue
+
+        _write_stdout(response)
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

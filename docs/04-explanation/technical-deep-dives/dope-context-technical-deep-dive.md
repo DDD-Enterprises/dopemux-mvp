@@ -4,8 +4,13 @@ title: Dope Context Technical Deep Dive
 type: explanation
 owner: '@hu3mann'
 status: draft
+author: '@hu3mann'
+date: '2026-02-12'
+last_review: '2026-02-12'
+next_review: '2026-05-13'
+prelude: Dope Context Technical Deep Dive (explanation) for dopemux documentation
+  and developer workflows.
 ---
-
 # Dope Context: Technical Deep Dive & Audit
 
 ## 1. System Identity
@@ -45,12 +50,9 @@ The active service is a **Mock Server** running a simple FastAPI shell:
 - **Purpose**: Likely a placeholder to allow other services (like Orchestrator) to boot without failing on missing dependencies.
 
 ## 4. Recommendations
-1.  **Acknowledge Technical Debt**: The current implementation is a placeholder. It provides zero functional value for actual context retrieval.
-2.  **Activation Path**:
-    -   The "real" code exists in `src/`.
-    -   Requires bringing up Qdrant (verified in `docker-compose`?) and configuring Voyage AI keys.
-    -   Switch `Dockerfile` entrypoint to the real MCP server.
-3.  **Risk**: Any agent relying on this for context is hallucinating capability.
+1. **Acknowledge Technical Debt**: The current implementation is a placeholder. It provides zero functional value for actual context retrieval.
+1. **Activation Path**: The "real" code exists in `src/`. It requires bringing up Qdrant (verified in `docker-compose`?) and configuring Voyage AI keys, then switching the `Dockerfile` entrypoint to the real MCP server.
+1. **Risk**: Any agent relying on this for context is hallucinating capability.
 
 ## 5. Audit Log
 - **2026-02-09**: Initial audit confirmed "Potemkin" status. Service is running but fake.

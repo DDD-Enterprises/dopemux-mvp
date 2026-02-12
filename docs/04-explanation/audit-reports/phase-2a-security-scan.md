@@ -5,8 +5,11 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-12'
+prelude: Phase 2A Security Scan (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # Phase 2A Security Scan
 
 This report is mirrored in the audit reports directory.
