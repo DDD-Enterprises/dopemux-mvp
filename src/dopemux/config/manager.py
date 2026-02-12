@@ -8,6 +8,7 @@ with support for environment variable substitution and ADHD-specific defaults.
 from __future__ import annotations
 import logging
 import os
+import shlex
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -200,7 +201,7 @@ class DopeLayoutServicesConfig(BaseModel):
     activity_capture_url: str = "http://localhost:3006"
     serena_url: str = "http://localhost:3010"
     litellm_url: str = "http://localhost:4000"
-    docker_compose_bin: str = "docker-compose"
+    docker_compose_bin: str = "docker compose"
 
 
 class DopeLayoutConfig(BaseModel):
@@ -321,6 +322,9 @@ class ConfigManager:
         # Start with defaults
         config_dict = self._get_default_config()
 
+        user_config: Dict[str, Any] = {}
+        project_config: Dict[str, Any] = {}
+
         # Load and merge user config
         if self.paths.user_config.exists():
             user_config = self._load_file(self.paths.user_config)
@@ -330,6 +334,19 @@ class ConfigManager:
         if self.paths.project_config.exists():
             project_config = self._load_file(self.paths.project_config)
             config_dict = self._deep_merge(config_dict, project_config)
+
+        # If the user has not explicitly configured mcp_servers, regenerate from
+        # the canonical registry using the effective mode after all merges.
+        explicit_mcp_servers = ("mcp_servers" in user_config) or ("mcp_servers" in project_config)
+        if not explicit_mcp_servers:
+            mcp_mode = str(config_dict.get("mcp_mode", "auto"))
+            dope_layout = config_dict.get("dope_layout", {}) or {}
+            services = dope_layout.get("services", {}) or {}
+            docker_compose_bin = str(services.get("docker_compose_bin", "docker compose"))
+            config_dict["mcp_servers"] = self._get_default_mcp_servers(
+                mcp_mode=mcp_mode,
+                docker_compose_bin=docker_compose_bin,
+            )
 
         # Substitute environment variables
         config_dict = self._substitute_env_vars(config_dict)
@@ -439,6 +456,7 @@ class ConfigManager:
         """Get default configuration."""
         return {
             "version": "1.0",
+            "mcp_mode": "auto",
             "adhd_profile": {
                 "focus_duration_avg": 25,
                 "break_interval": 5,
@@ -447,7 +465,10 @@ class ConfigManager:
                 "notification_style": "gentle",
                 "visual_complexity": "minimal",
             },
-            "mcp_servers": self._get_default_mcp_servers(),
+            "mcp_servers": self._get_default_mcp_servers(
+                mcp_mode="auto",
+                docker_compose_bin="docker compose",
+            ),
             "attention": {
                 "enabled": True,
                 "sample_interval": 5,
@@ -569,86 +590,130 @@ class ConfigManager:
                     "activity_capture_url": "http://localhost:3006",
                     "serena_url": "http://localhost:3010",
                     "litellm_url": "http://localhost:4000",
-                    "docker_compose_bin": "docker-compose",
+                    "docker_compose_bin": "docker compose",
                 },
                 "state_file": None,
             },
             "project_templates": self._get_project_templates(),
         }
 
-    def _detect_docker_mode(self) -> bool:
-        """Check if Docker services are running."""
+    def _parse_docker_compose_bin(self, docker_compose_bin: Optional[str]) -> List[str]:
+        """Parse docker compose launcher config into command tokens."""
+        raw = (docker_compose_bin or "").strip()
+        if not raw:
+            return ["docker", "compose"]
+
+        tokens = shlex.split(raw)
+        if not tokens:
+            return ["docker", "compose"]
+
+        if tokens == ["docker"]:
+            return ["docker", "compose"]
+
+        return tokens
+
+    def _detect_docker_mode(
+        self,
+        registry: Optional[MCPRegistry] = None,
+        docker_compose_bin: str = "docker compose",
+    ) -> bool:
+        """Check whether required docker MCP services are running."""
         try:
-            # Check if canonical docker compose services are up
-            # We look for a few key services from the registry
-            cmd = ["docker", "compose", "-f", "docker/mcp-servers/docker-compose.yml", "ps", "--services", "--filter", "status=running"]
+            registry = registry or MCPRegistry()
+            required_defs = [
+                server
+                for server in registry.default_servers()
+                if server.required_for_auto and server.docker
+            ]
+            if not required_defs:
+                return False
+
+            compose_file = required_defs[0].docker.compose_file
+            compose_cmd = self._parse_docker_compose_bin(docker_compose_bin)
+            cmd = compose_cmd + [
+                "-f",
+                compose_file,
+                "ps",
+                "--services",
+                "--filter",
+                "status=running",
+            ]
             result = subprocess.run(
-                cmd, 
-                capture_output=True, 
-                text=True, 
-                check=False
+                cmd,
+                capture_output=True,
+                text=True,
+                check=False,
             )
             if result.returncode != 0:
                 return False
-                
-            running_services = set(result.stdout.strip().splitlines())
-            # If at least one critical service is running, assume Docker mode
-            # (conport, serena, or pal are good indicators)
-            return bool(running_services.intersection({"conport", "serena", "pal"}))
+
+            running_services = set(line.strip() for line in result.stdout.splitlines() if line.strip())
+            required_services = {
+                server.docker.service
+                for server in required_defs
+                if server.docker
+            }
+            return required_services.issubset(running_services)
         except FileNotFoundError:
             return False
-        except Exception as e:
-            logger.debug(f"Docker detection failed: {e}")
+        except Exception as exc:
+            logger.debug("Docker mode detection failed: %s", exc)
             return False
 
-    def _generate_server_config(self, registry: MCPRegistry, name: str, mcp_mode: str) -> Optional[Dict[str, Any]]:
+    def _generate_server_config(
+        self,
+        registry: MCPRegistry,
+        name: str,
+        mcp_mode: str,
+        docker_compose_bin: str = "docker compose",
+    ) -> Optional[Dict[str, Any]]:
         """Generate MCPServerConfig for a given server name based on mode."""
         server_def = registry.get_server(name)
         if not server_def:
             return None
 
-        # Determine effective mode
-        if mcp_mode == "auto":
-            is_docker = self._detect_docker_mode()
-            mode = "docker" if is_docker else "local"
-        else:
-            mode = mcp_mode
+        mode = mcp_mode
+        if mode == "auto":
+            mode = "docker" if self._detect_docker_mode(registry, docker_compose_bin) else "local"
 
         if mode == "docker":
             if server_def.transport in ("http", "http-sse"):
-                # Use bridge
+                if not server_def.docker or server_def.docker.port is None:
+                    return None
                 return {
                     "enabled": True,
                     "command": "python",
                     "args": [
-                        "-m", 
-                        "dopemux.mcp.http_stdio_bridge", 
-                        "--base-url", 
-                        f"http://localhost:{server_def.docker.port}"
+                        "-m",
+                        "dopemux.mcp.http_stdio_bridge",
+                        "--base-url",
+                        f"http://localhost:{server_def.docker.port}",
                     ],
                     "env": {},
                     "timeout": 30,
                     "auto_restart": True,
                 }
-            elif server_def.transport == "stdio":
-                # Use docker exec
+
+            if server_def.transport == "stdio":
+                if not server_def.docker:
+                    return None
+                compose_tokens = self._parse_docker_compose_bin(docker_compose_bin)
+                full_tokens = compose_tokens + [
+                    "-f",
+                    server_def.docker.compose_file,
+                    "exec",
+                    "-T",
+                    server_def.docker.service,
+                ] + list(server_def.docker.exec)
                 return {
                     "enabled": True,
-                    "command": "docker",
-                    "args": [
-                        "compose", 
-                        "-f", 
-                        server_def.docker.compose_file, 
-                        "exec", 
-                        "-T", 
-                        server_def.docker.service
-                    ] + (server_def.local.args if server_def.local else []),
+                    "command": full_tokens[0],
+                    "args": full_tokens[1:],
                     "env": {},
                     "timeout": 30,
                     "auto_restart": True,
                 }
-        
-        # Local mode (fallback or explicit)
+
         if server_def.local and server_def.local.command:
             return {
                 "enabled": True,
@@ -658,111 +723,78 @@ class ConfigManager:
                 "timeout": 30,
                 "auto_restart": True,
             }
-            
+
         return None
 
-    def _get_default_mcp_servers(self) -> Dict[str, Dict[str, Any]]:
-        """Get default MCP server configurations."""
-        registry = MCPRegistry()
-        defaults = {}
-        
-        # Helper to merge with manual overrides if needed (though we aim to replace them)
-        # For now, we regenerate defaults from registry for known keys
-        
-        # 1. Define the list of defaults we want to ship
-        default_keys = [
-            "mas-sequential-thinking",
-            "pal",
-            "claude-context",
-            "morphllm-fast-apply",
-            "exa", # Manual override below as it might not be in registry or needs API key
-            "zen",
-            # "leantime", # Disabled by default
-        ]
+    def _get_default_mcp_servers(
+        self,
+        mcp_mode: str = "auto",
+        docker_compose_bin: str = "docker compose",
+    ) -> Dict[str, Dict[str, Any]]:
+        """Build default MCP servers from the canonical registry."""
+        try:
+            registry = MCPRegistry()
+        except Exception as exc:
+            logger.error("Failed to load MCP registry defaults: %s", exc)
+            return {}
 
-        # 2. Try to generate from registry first
-        # We don't have access to the configured mode here easily without loading config,
-        # but defaults are usually static. 
-        # However, we want defaults to be smart.
-        # But _get_default_config is called BEFORE loading user config.
-        # So we default to "auto" behavior which checks Docker presence NOW.
-        is_docker = self._detect_docker_mode()
-        effective_mode = "docker" if is_docker else "local"
-        
-        for key in default_keys:
-            generated = self._generate_server_config(registry, key, effective_mode)
+        effective_mode = mcp_mode
+        if mcp_mode == "auto":
+            effective_mode = "docker" if self._detect_docker_mode(registry, docker_compose_bin) else "local"
+
+        defaults: Dict[str, Dict[str, Any]] = {}
+        for server in registry.default_servers():
+            generated = self._generate_server_config(
+                registry,
+                server.name,
+                effective_mode,
+                docker_compose_bin=docker_compose_bin,
+            )
             if generated:
-                defaults[key] = generated
+                defaults[server.name] = generated
 
-        # 3. Apply overrides/fallbacks for things not fully in registry or needing env vars
-        # (This preserves existing behavior for API keys even if command changes)
-        
-        # MAS Sequential Thinking
-        if "mas-sequential-thinking" in defaults:
-            defaults["mas-sequential-thinking"]["env"] = {
-                "LLM_PROVIDER": "openai",
-                "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-                "EXA_API_KEY": "${EXA_API_KEY}",
-            }
-        else:
-             # Fallback if not in registry (should be)
-             defaults["mas-sequential-thinking"] = {
-                "enabled": False, 
-                "command": "python",
-                "args": ["-m", "mcp_server_mas_sequential_thinking"],
-                "env": {
-                    "LLM_PROVIDER": "openai",
-                    "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-                    "EXA_API_KEY": "${EXA_API_KEY}",
-                },
-                "timeout": 60,
-                "auto_restart": True,
-            }
-            
-        # PAL
-        if "pal" in defaults:
-             defaults["pal"]["env"] = {
-                "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
-                "DEFAULT_MODEL": "auto",
-                "PAL_DEFAULT_PROVIDER": "openrouter"
-            }
-        
-        # Claude Context
-        if "claude-context" in defaults:
-            defaults["claude-context"]["env"] = {
+        env_overrides: Dict[str, Dict[str, str]] = {
+            "claude-context": {
                 "VOYAGE_API_KEY": "${VOYAGE_API_KEY}",
                 "OPENAI_API_KEY": "${OPENAI_API_KEY}",
                 "QDRANT_URL": "localhost",
                 "QDRANT_PORT": "6333",
-            }
+            },
+            "pal": {
+                "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
+                "DEFAULT_MODEL": "auto",
+                "PAL_DEFAULT_PROVIDER": "openrouter",
+            },
+            "mas-sequential-thinking": {
+                "LLM_PROVIDER": "openai",
+                "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+                "EXA_API_KEY": "${EXA_API_KEY}",
+            },
+            "exa": {
+                "EXA_API_KEY": "${EXA_API_KEY}",
+            },
+            "zen": {
+                "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+                "XAI_API_KEY": "${XAI_API_KEY}",
+                "GEMINI_API_KEY": "${GEMINI_API_KEY}",
+                "GROQ_API_KEY": "${GROQ_API_KEY}",
+                "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+                "ZEN_DISABLED_TOOLS": "chat,explain,translate,summarize",
+                "ZEN_DEFAULT_MODEL": os.getenv("ZEN_DEFAULT_MODEL", "openai/gpt-4o"),
+                "ZEN_FALLBACK_MODELS": os.getenv(
+                    "ZEN_FALLBACK_MODELS", "xai/grok-beta,groq/llama-3.1-70b"
+                ),
+                "LITELLM_PROXY": os.getenv("LITELLM_PROXY", "http://localhost:4000"),
+                "LITELLM_MASTER_KEY": os.getenv("DOPEMUX_LITELLM_MASTER_KEY", ""),
+            },
+        }
 
-        # Exa (registry might map it, but we need API key)
-        if "exa" not in defaults: # If registry didn't handle it
-             defaults["exa"] = {
-                "enabled": True,
-                "command": "npx",
-                "args": ["-y", "exa-mcp"],
-                "env": {"EXA_API_KEY": "${EXA_API_KEY}"},
-                "timeout": 30,
-                "auto_restart": True,
-            }
-        else:
-             defaults["exa"]["env"] = {"EXA_API_KEY": "${EXA_API_KEY}"}
-
-        # Zen
-        if "zen" in defaults:
-            defaults["zen"]["env"] = {
-                    "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-                    "XAI_API_KEY": "${XAI_API_KEY}",
-                    "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-                    "GROQ_API_KEY": "${GROQ_API_KEY}",
-                    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
-                    "ZEN_DISABLED_TOOLS": "chat,explain,translate,summarize",
-                    "ZEN_DEFAULT_MODEL": os.getenv("ZEN_DEFAULT_MODEL", "openai/gpt-4o"),
-                    "ZEN_FALLBACK_MODELS": os.getenv("ZEN_FALLBACK_MODELS", "xai/grok-beta,groq/llama-3.1-70b"),
-                    "LITELLM_PROXY": os.getenv("LITELLM_PROXY", "http://localhost:4000"),
-                    "LITELLM_MASTER_KEY": os.getenv("DOPEMUX_LITELLM_MASTER_KEY", ""),
-            }
+        for server_name, env in env_overrides.items():
+            if server_name not in defaults:
+                continue
+            merged_env = dict(defaults[server_name].get("env", {}))
+            merged_env.update(env)
+            defaults[server_name]["env"] = merged_env
 
         return defaults
 
@@ -777,7 +809,9 @@ class ConfigManager:
                     ".claude/llms.md",
                 ],
                 "mcp_servers": [
-                    "mas-sequential-thinking",
+                    "conport",
+                    "serena",
+                    "claude-context",
                     "pal",
                 ],
                 "adhd_adaptations": {
@@ -792,7 +826,7 @@ class ConfigManager:
                     ".claude/context.md",
                     ".claude/llms.md",
                 ],
-                "mcp_servers": ["pal", "morphllm-fast-apply"],
+                "mcp_servers": ["conport", "claude-context", "pal", "morphllm-fast-apply"],
                 "adhd_adaptations": {
                     "focus_duration_avg": 25,
                     "visual_complexity": "minimal",
@@ -806,7 +840,9 @@ class ConfigManager:
                     ".claude/llms.md",
                 ],
                 "mcp_servers": [
-                    "mas-sequential-thinking",
+                    "conport",
+                    "serena",
+                    "claude-context",
                     "pal",
                 ],
                 "adhd_adaptations": {

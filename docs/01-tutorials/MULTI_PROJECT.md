@@ -5,8 +5,11 @@ type: tutorial
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-12'
+prelude: Multi-Project Workflows (tutorial) for dopemux documentation and developer
+  workflows.
 ---
-
 # Multi-Project Workflows
 
 Use Dopemux workspaces and git worktrees to keep projects isolated.

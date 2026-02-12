@@ -5378,9 +5378,34 @@ def profile_stats_cmd(ctx, days: int):
 
 
 @profile.command("analyze-usage")
-def profile_analyze_usage_cmd():
-    """Analyze profile usage trends."""
-    console.logger.info("[yellow]profile analyze-usage is not implemented yet[/yellow]")
+@click.option("--days", "days_back", type=click.IntRange(1), default=90, show_default=True, help="Days of git history to analyze")
+@click.option(
+    "--max-commits",
+    type=click.IntRange(1),
+    default=500,
+    show_default=True,
+    help="Maximum commits to scan",
+)
+@click.option(
+    "--repo-path",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="Repository path (defaults to current directory)",
+)
+@click.pass_context
+def profile_analyze_usage_cmd(ctx, days_back: int, max_commits: int, repo_path: Optional[Path]):
+    """Analyze git usage patterns to suggest profile defaults."""
+    try:
+        from .profile_analyzer import GitHistoryAnalyzer
+
+        analyzer = GitHistoryAnalyzer(repo_path=repo_path or Path.cwd())
+        analysis = analyzer.analyze(days_back=days_back, max_commits=max_commits)
+        analyzer.display_analysis(analysis)
+    except Exception as e:
+        console.logger.error(f"[red]Error: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
 
 
 @profile.command("show")
