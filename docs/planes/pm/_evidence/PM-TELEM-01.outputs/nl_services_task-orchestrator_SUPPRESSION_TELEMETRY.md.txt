@@ -1,0 +1,183 @@
+     1	# Event Coordinator Suppression Telemetry
+     2	
+     3	**Status**: ✅ Implemented and Tested
+     4	**Purpose**: Answer PM Phase 2 open question: "What is the measured event-rate reduction after suppression rules?"
+     5	
+     6	## Overview
+     7	
+     8	Added comprehensive telemetry to the EventCoordinator to track which suppression rules suppress what events, and measure the overall signal/noise ratio.
+     9	
+    10	## Implementation
+    11	
+    12	### 1. SuppressionTelemetry Dataclass
+    13	
+    14	New dataclass tracking:
+    15	- **Lifetime counters**: `events_received`, `events_passed`, `events_suppressed`
+    16	- **Per-rule counters**: Tracks all 6 suppression rules:
+    17	  - `suppressed_by_custom_filter`
+    18	  - `suppressed_by_deep_focus_priority`
+    19	  - `suppressed_by_deep_focus_interrupt`
+    20	  - `suppressed_by_energy_level`
+    21	  - `suppressed_by_flood`
+    22	  - `suppressed_by_expiry`
+    23	- **Per-event-type breakdown**: `{event_type: {"received": N, "suppressed": N}}`
+    24	- **Per-priority breakdown**: `{priority: {"received": N, "suppressed": N}}`
+    25	- **Start timestamp**: For rate calculations
+    26	
+    27	### 2. Instrumentation
+    28	
+    29	Modified `_should_process_event()` to track:
+    30	- Event reception at entry
+    31	- Per-type and per-priority tracking
+    32	- Rule-specific suppression on each return path
+    33	- Pass-through on final `return True`
+    34	
+    35	Added `_record_suppression()` helper:
+    36	- Increments `events_suppressed`
+    37	- Updates per-rule counter
+    38	- Updates per-event-type and per-priority dicts
+    39	
+    40	Modified `_process_event()`:
+    41	- Added `suppressed_by_expiry` counter on expiry path
+    42	
+    43	### 3. Reporting
+    44	
+    45	New `get_suppression_report()` method returns:
+    46	
+    47	```python
+    48	{
+    49	    "summary": {
+    50	        "events_received": int,
+    51	        "events_passed": int,
+    52	        "events_suppressed": int,
+    53	        "signal_noise_ratio": float,      # passed / received
+    54	        "suppression_rate_pct": float,     # (suppressed / received) * 100
+    55	        "runtime_minutes": float
+    56	    },
+    57	    "per_rule_breakdown": {
+    58	        "custom_filter": int,
+    59	        "deep_focus_priority": int,
+    60	        "deep_focus_interrupt": int,
+    61	        "energy_level": int,
+    62	        "flood": int,
+    63	        "expiry": int
+    64	    },
+    65	    "per_event_type": {
+    66	        "task_created": {"received": N, "suppressed": N},
+    67	        ...
+    68	    },
+    69	    "per_priority": {
+    70	        "CRITICAL": {"received": N, "suppressed": N},
+    71	        ...
+    72	    },
+    73	    "adhd_state": {
+    74	        "focus_mode": str,
+    75	        "energy_level": str,
+    76	        "context_switches": int
+    77	    }
+    78	}
+    79	```
+    80	
+    81	### 4. Health Endpoint Integration
+    82	
+    83	Added `"suppression_telemetry": self.get_suppression_report()` to `get_coordination_health()`.
+    84	
+    85	### 5. Background Logging
+    86	
+    87	New `_telemetry_logger()` task:
+    88	- Logs summary every 60 seconds
+    89	- Started automatically with workers
+    90	- Format: `received=N, passed=N, suppressed=N, signal/noise=X.XX, suppression_rate=X.X%`
+    91	
+    92	## Testing
+    93	
+    94	Created comprehensive test suite (`tests/test_suppression_telemetry.py`) with 14 test cases:
+    95	
+    96	1. ✅ **Baseline pass-through** - No suppression
+    97	2. ✅ **Custom filter suppression** - Custom filter rule
+    98	3. ✅ **Deep focus priority suppression** - Low priority in deep focus
+    99	4. ✅ **Deep focus interrupt suppression** - Non-interrupting events
+   100	5. ✅ **Energy level suppression** - High cognitive load when low energy
+   101	6. ✅ **Flood suppression** - Event flooding detection
+   102	7. ✅ **Expiry suppression** - Expired events
+   103	8. ✅ **Per-event-type tracking** - Event type breakdown
+   104	9. ✅ **Per-priority tracking** - Priority breakdown
+   105	10. ✅ **Report structure** - Correct fields present
+   106	11. ✅ **Signal/noise ratio calculation** - Math accuracy
+   107	12. ✅ **Zero events edge case** - No division by zero
+   108	13. ✅ **Rule short-circuit ordering** - First match wins
+   109	14. ✅ **Telemetry in health endpoint** - Integration
+   110	
+   111	All tests pass: `14 passed in 0.09s`
+   112	
+   113	## Usage
+   114	
+   115	### Query Current State
+   116	
+   117	```python
+   118	coordinator = await create_event_coordinator()
+   119	report = coordinator.get_suppression_report()
+   120	
+   121	print(f"Signal/Noise Ratio: {report['summary']['signal_noise_ratio']:.2f}")
+   122	print(f"Suppression Rate: {report['summary']['suppression_rate_pct']:.1f}%")
+   123	print(f"Top suppression rule: {max(report['per_rule_breakdown'], key=report['per_rule_breakdown'].get)}")
+   124	```
+   125	
+   126	### Monitor via Health Endpoint
+   127	
+   128	```python
+   129	health = await coordinator.get_coordination_health()
+   130	telemetry = health["suppression_telemetry"]
+   131	```
+   132	
+   133	### Check Logs
+   134	
+   135	The telemetry logger outputs every 60 seconds:
+   136	```
+   137	INFO: 📊 Suppression Telemetry: received=150, passed=120, suppressed=30, signal/noise=0.80, suppression_rate=20.0%
+   138	```
+   139	
+   140	## Performance
+   141	
+   142	- **Hot path overhead**: Minimal (~3 dict increments per event)
+   143	- **Memory**: O(unique_event_types + unique_priorities) - typically < 100 entries
+   144	- **No external dependencies**: Pure in-memory counters
+   145	
+   146	## Open Question Answer
+   147	
+   148	**Q**: "What is the measured event-rate reduction after suppression rules?"
+   149	
+   150	**A**: Now measurable via `suppression_rate_pct` in the report:
+   151	- 0% = No suppression (all events processed)
+   152	- 50% = Half of events suppressed
+   153	- 100% = All events suppressed
+   154	
+   155	**Per-rule breakdown** shows which rules contribute most to suppression.
+   156	
+   157	## Future Enhancements
+   158	
+   159	Potential additions:
+   160	1. Persist telemetry to Redis for historical analysis
+   161	2. Add time-series tracking (hourly/daily rates)
+   162	3. Alert on excessive suppression (> 80%)
+   163	4. Dashboard visualization
+   164	5. Per-worker telemetry breakdown
+   165	
+   166	## Files Modified
+   167	
+   168	1. `services/task-orchestrator/event_coordinator.py`:
+   169	   - Added imports: `field`, `deque`
+   170	   - New `SuppressionTelemetry` dataclass
+   171	   - Modified `_should_process_event()` with tracking
+   172	   - New `_record_suppression()` helper
+   173	   - Modified `_process_event()` for expiry tracking
+   174	   - New `get_suppression_report()` method
+   175	   - Updated `get_coordination_health()`
+   176	   - New `_telemetry_logger()` background task
+   177	   - Modified `_start_event_workers()` to start telemetry logger
+   178	
+   179	2. `services/task-orchestrator/tests/__init__.py`:
+   180	   - Created empty package init
+   181	
+   182	3. `services/task-orchestrator/tests/test_suppression_telemetry.py`:
+   183	   - Created comprehensive test suite (14 tests, ~220 lines)
