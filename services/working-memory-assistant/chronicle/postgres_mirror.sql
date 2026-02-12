@@ -1,18 +1,18 @@
--- Dope-Memory v1 Postgres Mirror Schema
+-- Dope-Memory v1.0.3 Postgres Mirror Schema
 -- See: docs/spec/dope-memory/v1/03_data_model_postgres.md
 --
 -- This is the Postgres mirror of the SQLite canonical store.
--- Run this migration to create tables for multi-service access.
+-- Safe-by-default: idempotent and non-destructive.
 
--- Enable UUID extension if not already enabled
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Raw activity events mirror
 CREATE TABLE IF NOT EXISTS dm_raw_activity_events (
-  id UUID PRIMARY KEY,
-  workspace_id UUID NOT NULL,
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  ledger_path TEXT NOT NULL DEFAULT '/data/chronicle.sqlite',
   instance_id TEXT NOT NULL,
-  session_id UUID,
+  session_id TEXT,
 
   ts TIMESTAMPTZ NOT NULL,
   event_type TEXT NOT NULL,
@@ -25,18 +25,28 @@ CREATE TABLE IF NOT EXISTS dm_raw_activity_events (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+ALTER TABLE dm_raw_activity_events
+  ADD COLUMN IF NOT EXISTS ledger_path TEXT NOT NULL DEFAULT '/data/chronicle.sqlite';
+UPDATE dm_raw_activity_events
+  SET workspace_id = 'default'
+  WHERE workspace_id = ledger_path;
+
 CREATE INDEX IF NOT EXISTS dm_raw_idx_ws_ts
   ON dm_raw_activity_events(workspace_id, instance_id, ts DESC);
+
+CREATE INDEX IF NOT EXISTS dm_raw_idx_ws_ledger_ts
+  ON dm_raw_activity_events(workspace_id, ledger_path, ts DESC);
 
 CREATE INDEX IF NOT EXISTS dm_raw_idx_type_ts
   ON dm_raw_activity_events(event_type, ts DESC);
 
 -- Work log entries mirror
 CREATE TABLE IF NOT EXISTS dm_work_log_entries (
-  id UUID PRIMARY KEY,
-  workspace_id UUID NOT NULL,
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  ledger_path TEXT NOT NULL DEFAULT '/data/chronicle.sqlite',
   instance_id TEXT NOT NULL,
-  session_id UUID,
+  session_id TEXT,
 
   ts TIMESTAMPTZ NOT NULL,
   duration_seconds INT,
@@ -54,19 +64,31 @@ CREATE TABLE IF NOT EXISTS dm_work_log_entries (
 
   tags TEXT[] NOT NULL DEFAULT '{}',
 
-  linked_decisions UUID[],
+  linked_decisions TEXT[],
   linked_files JSONB,
   linked_commits TEXT[],
   linked_chat_range JSONB,
 
-  parent_entry_id UUID,
+  parent_entry_id TEXT,
 
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+ALTER TABLE dm_work_log_entries
+  ADD COLUMN IF NOT EXISTS ledger_path TEXT NOT NULL DEFAULT '/data/chronicle.sqlite';
+UPDATE dm_work_log_entries
+  SET workspace_id = 'default'
+  WHERE workspace_id = ledger_path;
+
 CREATE INDEX IF NOT EXISTS dm_idx_ws_ts
   ON dm_work_log_entries(workspace_id, instance_id, ts DESC);
+
+CREATE INDEX IF NOT EXISTS dm_work_idx_ws_ledger_created
+  ON dm_work_log_entries(workspace_id, ledger_path, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS dm_work_idx_ws_ledger_ts
+  ON dm_work_log_entries(workspace_id, ledger_path, ts DESC);
 
 CREATE INDEX IF NOT EXISTS dm_idx_cat_type
   ON dm_work_log_entries(category, entry_type);
@@ -117,12 +139,13 @@ CREATE INDEX IF NOT EXISTS dm_ref_idx_ws_ts
 
 -- Issue links mirror
 CREATE TABLE IF NOT EXISTS dm_issue_links (
-  id UUID PRIMARY KEY,
-  workspace_id UUID NOT NULL,
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  ledger_path TEXT NOT NULL DEFAULT '/data/chronicle.sqlite',
   instance_id TEXT NOT NULL,
 
-  issue_entry_id UUID NOT NULL,
-  resolution_entry_id UUID NOT NULL,
+  issue_entry_id TEXT NOT NULL,
+  resolution_entry_id TEXT NOT NULL,
 
   confidence REAL NOT NULL DEFAULT 0.7,
   evidence_window_min INT NOT NULL DEFAULT 30,
@@ -130,11 +153,50 @@ CREATE TABLE IF NOT EXISTS dm_issue_links (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+ALTER TABLE dm_issue_links
+  ADD COLUMN IF NOT EXISTS ledger_path TEXT NOT NULL DEFAULT '/data/chronicle.sqlite';
+UPDATE dm_issue_links
+  SET workspace_id = 'default'
+  WHERE workspace_id = ledger_path;
+
 CREATE INDEX IF NOT EXISTS dm_issue_idx_issue
   ON dm_issue_links(issue_entry_id);
 
 CREATE INDEX IF NOT EXISTS dm_issue_idx_resolution
   ON dm_issue_links(resolution_entry_id);
+
+CREATE INDEX IF NOT EXISTS dm_issue_idx_ws_ledger_created
+  ON dm_issue_links(workspace_id, ledger_path, created_at DESC);
+
+-- Mirror bookmarks, keyed by (workspace_id, ledger_path)
+CREATE TABLE IF NOT EXISTS dm_mirror_bookmarks (
+  workspace_id TEXT NOT NULL,
+  ledger_path TEXT NOT NULL DEFAULT '/data/chronicle.sqlite',
+  last_work_log_created_at TIMESTAMPTZ,
+  last_issue_link_created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (workspace_id, ledger_path)
+);
+
+ALTER TABLE dm_mirror_bookmarks
+  ADD COLUMN IF NOT EXISTS ledger_path TEXT;
+UPDATE dm_mirror_bookmarks
+  SET ledger_path = '/data/chronicle.sqlite'
+  WHERE ledger_path IS NULL OR ledger_path = '';
+UPDATE dm_mirror_bookmarks
+  SET workspace_id = 'default'
+  WHERE workspace_id = ledger_path;
+ALTER TABLE dm_mirror_bookmarks
+  ALTER COLUMN ledger_path SET DEFAULT '/data/chronicle.sqlite';
+ALTER TABLE dm_mirror_bookmarks
+  ALTER COLUMN ledger_path SET NOT NULL;
+ALTER TABLE dm_mirror_bookmarks
+  DROP CONSTRAINT IF EXISTS dm_mirror_bookmarks_pkey;
+ALTER TABLE dm_mirror_bookmarks
+  ADD CONSTRAINT dm_mirror_bookmarks_pkey PRIMARY KEY (workspace_id, ledger_path);
+
+CREATE INDEX IF NOT EXISTS dm_mirror_bookmarks_ws_ledger_idx
+  ON dm_mirror_bookmarks(workspace_id, ledger_path);
 
 -- Migration tracking
 CREATE TABLE IF NOT EXISTS dm_schema_migrations (
@@ -143,5 +205,5 @@ CREATE TABLE IF NOT EXISTS dm_schema_migrations (
 );
 
 INSERT INTO dm_schema_migrations (version)
-VALUES ('v1.0.0')
+VALUES ('v1.0.3')
 ON CONFLICT (version) DO NOTHING;
