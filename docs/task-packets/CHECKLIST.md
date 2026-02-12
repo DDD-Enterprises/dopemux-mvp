@@ -1,3 +1,14 @@
+---
+id: CHECKLIST
+title: Checklist
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-12'
+last_review: '2026-02-12'
+next_review: '2026-05-13'
+prelude: Checklist (explanation) for dopemux documentation and developer workflows.
+---
 ✅ Dopemux Enforcement Checklist
 Process Integrity · Determinism · Audit Safety
 ════════════════════════════════════════════════════════════

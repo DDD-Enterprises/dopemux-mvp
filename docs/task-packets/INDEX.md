@@ -1,3 +1,14 @@
+---
+id: INDEX
+title: Index
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-12'
+last_review: '2026-02-12'
+next_review: '2026-05-13'
+prelude: Index (explanation) for dopemux documentation and developer workflows.
+---
 📑 Dopemux Task Packet Index
 Canonical Registry · Execution History · Change Traceability
 ════════════════════════════════════════════════════════════
@@ -19,18 +30,24 @@ A packet changes status
 A packet is superseded by another packet
 ────────────────────────────────────────────────────────────
 🟡 Active Task Packets
-Packet ID	Subsystem	Title	Status	Related ADR
-PACKET_031	Memory	Dual Capture Adapters, Single Ledger	Executing	ADR-213
-PACKET_032	Memory	Chronicle Promotion Guards	Pending Audit	ADR-214
+| Packet ID | Subsystem | Title | Status | Related ADR |
+| --- | --- | --- | --- | --- |
+| PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
+| PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
+
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets
-Packet ID	Subsystem	Title	Completion Date	Outcome
-PACKET_021	Memory	Deterministic Chronicle Schema	2026-01-18	Accepted
-PACKET_024	Infra	MCP Health Surface Hardening	2026-01-26	Accepted
+| Packet ID | Subsystem | Title | Completion Date | Outcome |
+| --- | --- | --- | --- | --- |
+| PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
+| PACKET_024 | Infra | MCP Health Surface Hardening | 2026-01-26 | Accepted |
+
 ────────────────────────────────────────────────────────────
 ⚪ Superseded Task Packets
-Packet ID	Superseded By	Reason
-PACKET_017	PACKET_021	Incomplete determinism guarantees
+| Packet ID | Superseded By | Reason |
+| --- | --- | --- |
+| PACKET_017 | PACKET_021 | Incomplete determinism guarantees |
+
 ────────────────────────────────────────────────────────────
 🧠 Index Maintenance Rules
 Never delete historical packets

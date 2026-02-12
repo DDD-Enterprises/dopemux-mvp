@@ -1,3 +1,9 @@
-from .registry import MCPRegistry, MCPServerDefinition, DockerConfig
+from .registry import DEFAULT_COMPOSE_FILE, DockerConfig, LocalConfig, MCPRegistry, MCPServerDefinition
 
-__all__ = ["MCPRegistry", "MCPServerDefinition", "DockerConfig"]
+__all__ = [
+    "DEFAULT_COMPOSE_FILE",
+    "DockerConfig",
+    "LocalConfig",
+    "MCPRegistry",
+    "MCPServerDefinition",
+]

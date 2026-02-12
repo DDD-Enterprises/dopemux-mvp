@@ -579,19 +579,20 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
             "python": """
 - **mas-sequential-thinking**: Complex reasoning for architecture
 - **pal**: API/SDK documentation via apilookup
-- **dope-context**: Semantic code search with hybrid search
+- **claude-context**: Python documentation and semantic code search
+- **conport**: Decision tracking and architecture memory
 - **morphllm-fast-apply**: Code transformations
 """,
             "javascript": """
 - **pal**: API/SDK documentation (React/Vue/Node.js)
-- **dope-context**: Codebase semantic search with reranking
+- **claude-context**: Codebase semantic search with reranking
 - **morphllm-fast-apply**: Framework migrations
 - **exa**: Web research for best practices
 """,
             "rust": """
 - **mas-sequential-thinking**: Systems design reasoning
-- **pal**: API/SDK documentation (Rust docs and crates)
-- **dope-context**: Large codebase navigation with AST chunking
+- **pal**: Rust documentation and crates API references
+- **claude-context**: Large codebase navigation with AST chunking
 - **morphllm-fast-apply**: Code modernization
 """,
         }
@@ -600,7 +601,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
             template,
             """
 - **pal**: API/SDK documentation via apilookup
-- **dope-context**: Semantic code + docs search
+- **claude-context**: Semantic code + docs search
 - **morphllm-fast-apply**: Transformations
 """,
         )

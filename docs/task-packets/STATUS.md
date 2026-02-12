@@ -1,3 +1,14 @@
+---
+id: STATUS
+title: Status
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-12'
+last_review: '2026-02-12'
+next_review: '2026-05-13'
+prelude: Status (explanation) for dopemux documentation and developer workflows.
+---
 📊 Dopemux Execution Status
 Subsystem Health · Change Velocity · Risk Awareness
 ════════════════════════════════════════════════════════════

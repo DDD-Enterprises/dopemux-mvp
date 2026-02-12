@@ -1,100 +1,138 @@
-# Dopemux MCP Server Registry
-# Canonical source of truth for MCP connectivity
-#
-# Schema:
-#   name: <canonical-key>
-#   transport: http | http-sse | stdio
-#   docker:
-#     service: <compose-service-name>
-#     port: <int> (if http)
-#     health_url: <string> (optional)
-#   local:
-#     command: <string> (optional)
-#     args: <list[string]> (optional)
+# Canonical MCP registry for Dopemux.
+# This file is the source of truth for MCP server naming and transport metadata.
 
 servers:
   conport:
     transport: http
+    default_enabled: true
+    required_for_auto: true
     docker:
       service: conport
+      compose_file: docker/mcp-servers/docker-compose.yml
       port: 3004
       health_url: http://localhost:3004/health
-    
-  serena:
-    transport: http
-    docker:
-      service: serena
-      port: 3006
-      health_url: http://localhost:3006/health
-      
-  desktop-commander:
-    transport: http
-    docker:
-      service: desktop-commander
-      port: 3012
-      health_url: http://localhost:3012/health
-      
-  gpt-researcher:
-    transport: http
-    docker:
-      service: gptr-mcp
-      port: 3009
-      health_url: http://localhost:3009/health
-      
-  leantime-bridge:
-    transport: http
-    docker:
-      service: leantime-bridge
-      port: 3015
-      health_url: http://localhost:3015/health
-      
-  claude-context:
-    transport: http
-    docker:
-      service: claude-context
-      port: 3007
-      health_url: http://localhost:3007/health
-    local:
-      command: npx
-      args: ["-y", "@zilliz/claude-context-mcp@latest"]
-      
-  pal:
-    transport: http
-    docker:
-      service: pal
-      port: 3003
-      health_url: http://localhost:3003/health
     local:
       command: uvx
-      args: ["pal-mcp-server", "start"]
-      
-  mas-sequential-thinking:
+      args:
+        - --from
+        - context-portal-mcp
+        - conport-mcp
+
+  serena:
     transport: http
+    default_enabled: true
+    required_for_auto: true
     docker:
-      service: mas-sequential-thinking
-      port: 3001
-      # Note: MAS uses port liveness, not /health, but we'll define the base URL for the bridge
-      health_url: http://localhost:3001
+      service: serena
+      compose_file: docker/mcp-servers/docker-compose.yml
+      port: 3006
+      health_url: http://localhost:3006/health
+    local:
+      command: serena
+      args:
+        - start-mcp-server
+
+  desktop-commander:
+    transport: http
+    default_enabled: true
+    required_for_auto: false
+    docker:
+      service: desktop-commander
+      compose_file: docker/mcp-servers/docker-compose.yml
+      port: 3012
+      health_url: http://localhost:3012/health
+
+  gpt-researcher:
+    transport: http
+    default_enabled: true
+    required_for_auto: false
+    docker:
+      service: dopemux-gpt-researcher
+      compose_file: docker/mcp-servers/docker-compose.yml
+      port: 8000
+      health_url: http://localhost:8000/health
+
+  leantime-bridge:
+    transport: http-sse
+    default_enabled: true
+    required_for_auto: false
+    docker:
+      service: leantime-bridge
+      compose_file: docker/mcp-servers/docker-compose.yml
+      port: 3015
+      health_url: http://localhost:3015/health
+
+  claude-context:
+    transport: http
+    default_enabled: true
+    required_for_auto: true
+    docker:
+      service: dope-context
+      compose_file: docker/mcp-servers/docker-compose.yml
+      port: 3010
+      health_url: http://localhost:3010/health
+    local:
+      command: npx
+      args:
+        - -y
+        - "@zilliz/claude-context-mcp@latest"
+
+  dope-context:
+    transport: http
+    default_enabled: false
+    required_for_auto: false
+    docker:
+      service: dope-context
+      compose_file: docker/mcp-servers/docker-compose.yml
+      port: 3010
+      health_url: http://localhost:3010/health
+
+  pal:
+    transport: stdio
+    default_enabled: false
+    required_for_auto: false
+    local:
+      command: uvx
+      args:
+        - pal-mcp-server
+        - start
+
+  zen:
+    transport: stdio
+    default_enabled: false
+    required_for_auto: false
+    local:
+      command: npx
+      args:
+        - -y
+        - zen-mcp
+
+  mas-sequential-thinking:
+    transport: stdio
+    default_enabled: false
+    required_for_auto: false
     local:
       command: python
-      args: ["-m", "mcp_server_mas_sequential_thinking"]
-      
-  zen:
-    transport: http
-    docker:
-      service: zen
-      port: 3003
-      health_url: http://localhost:3003/health
+      args:
+        - -m
+        - mcp_server_mas_sequential_thinking
+
+  exa:
+    transport: stdio
+    default_enabled: false
+    required_for_auto: false
     local:
       command: npx
-      args: ["-y", "zen-mcp"]
-    
+      args:
+        - -y
+        - exa-mcp
+
   morphllm-fast-apply:
-    transport: http
-    docker:
-      service: morphllm-fast-apply
-      port: 3011
-      health_url: http://localhost:3011/health
+    transport: stdio
+    default_enabled: false
+    required_for_auto: false
     local:
       command: npx
-      args: ["-y", "morphllm-fast-apply-mcp"]
+      args:
+        - -y
+        - morphllm-fast-apply-mcp

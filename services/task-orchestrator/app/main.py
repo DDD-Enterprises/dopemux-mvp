@@ -32,25 +32,69 @@ except Exception:
             format="%(asctime)s %(levelname)s %(name)s %(message)s",
         )
         return logging.getLogger(service_name)
-from .core.coordinator import create_plane_coordinator
+try:
+    from .core.coordinator import create_plane_coordinator
+except ImportError:  # pragma: no cover - direct module loading in tests
+    from app.core.coordinator import create_plane_coordinator
 
 # Configure structured logging
 configure_logging("task-orchestrator")
 logger = logging.getLogger(__name__)
 
 # Import shared models from local models
-from .models.coordination import (
-    PlaneType,
-    CoordinationEventType,
-    ConflictResolutionStrategy,
-    CoordinationOperationRequest,
-    CoordinationOperationResponse,
-    PlaneHealthResponse,
-    CoordinationMetricsResponse,
-    EmitEventRequest,
-    ConflictResolutionRequest,
-    HealthResponse
-)
+try:
+    from .models.coordination import (
+        PlaneType,
+        CoordinationEventType,
+        ConflictResolutionStrategy,
+        CoordinationOperationRequest,
+        CoordinationOperationResponse,
+        PlaneHealthResponse,
+        CoordinationMetricsResponse,
+        EmitEventRequest,
+        ConflictResolutionRequest,
+        HealthResponse
+    )
+except ImportError:  # pragma: no cover - direct module loading in tests
+    from app.models.coordination import (
+        PlaneType,
+        CoordinationEventType,
+        ConflictResolutionStrategy,
+        CoordinationOperationRequest,
+        CoordinationOperationResponse,
+        PlaneHealthResponse,
+        CoordinationMetricsResponse,
+        EmitEventRequest,
+        ConflictResolutionRequest,
+        HealthResponse
+    )
+
+try:
+    from .models.workflow import (
+        CreateIdeaRequest,
+        UpdateIdeaRequest,
+        PromoteIdeaRequest,
+        CreateEpicRequest,
+        UpdateEpicRequest,
+    )
+    from .services.workflow_service import (
+        WorkflowConflictError,
+        WorkflowNotFoundError,
+        WorkflowUnavailableError,
+    )
+except ImportError:  # pragma: no cover - direct module loading in tests
+    from app.models.workflow import (
+        CreateIdeaRequest,
+        UpdateIdeaRequest,
+        PromoteIdeaRequest,
+        CreateEpicRequest,
+        UpdateEpicRequest,
+    )
+    from app.services.workflow_service import (
+        WorkflowConflictError,
+        WorkflowNotFoundError,
+        WorkflowUnavailableError,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +153,8 @@ app.add_middleware(
 )
 
 # Request ID middleware
-app.add_middleware(RequestIDMiddleware)
+if RequestIDMiddleware is not None:
+    app.add_middleware(RequestIDMiddleware)
 
 # ============================================================================
 # WebSocket Connection Manager
@@ -198,7 +243,10 @@ async def handle_coordination_events(event):
 @app.get("/health")
 async def health_check():
     """Standard health check endpoint with dependency tracking"""
-    from .core.health_utils import check_dependency, check_redis, determine_overall_status
+    try:
+        from .core.health_utils import check_dependency, check_redis, determine_overall_status
+    except ImportError:  # pragma: no cover - direct module loading in tests
+        from app.core.health_utils import check_dependency, check_redis, determine_overall_status
     
     dependencies = {}
     
@@ -266,6 +314,142 @@ task_orchestrator_health_status 1
 """
 
     return Response(content=metrics_output, media_type="text/plain; version=0.0.4; charset=utf-8")
+
+
+def _workflow_to_dict(entity: Any) -> Dict[str, Any]:
+    if hasattr(entity, "model_dump"):
+        return entity.model_dump()
+    if hasattr(entity, "dict"):
+        return entity.dict()
+    return dict(entity)
+
+
+def _workflow_service():
+    coordinator = getattr(app.state, "coordinator", None)
+    service = getattr(coordinator, "workflow_service", None)
+    if service is None:
+        raise HTTPException(status_code=503, detail="workflow service unavailable")
+    return service
+
+
+def _raise_workflow_http(exc: Exception) -> None:
+    if isinstance(exc, WorkflowNotFoundError):
+        raise HTTPException(status_code=404, detail=str(exc))
+    if isinstance(exc, WorkflowConflictError):
+        raise HTTPException(status_code=409, detail=str(exc))
+    if isinstance(exc, WorkflowUnavailableError):
+        raise HTTPException(status_code=503, detail=str(exc))
+    if isinstance(exc, ValueError):
+        raise HTTPException(status_code=400, detail=str(exc))
+    raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/workflow/ideas", status_code=201)
+async def create_workflow_idea(request: CreateIdeaRequest):
+    try:
+        idea = await _workflow_service().create_idea(request)
+        idea_data = _workflow_to_dict(idea)
+        return {
+            "idea_id": idea_data.get("id"),
+            "status": idea_data.get("status"),
+            "idea": idea_data,
+        }
+    except Exception as exc:
+        _raise_workflow_http(exc)
+
+
+@app.get("/api/workflow/ideas")
+async def list_workflow_ideas(
+    status: Optional[str] = None,
+    tag: Optional[str] = None,
+    limit: int = 20,
+):
+    try:
+        ideas = await _workflow_service().list_ideas(status=status, tag=tag, limit=limit)
+        payload = [_workflow_to_dict(item) for item in ideas]
+        return {"count": len(payload), "ideas": payload}
+    except Exception as exc:
+        _raise_workflow_http(exc)
+
+
+@app.patch("/api/workflow/ideas/{idea_id}")
+async def update_workflow_idea(idea_id: str, request: UpdateIdeaRequest):
+    try:
+        idea = await _workflow_service().update_idea(idea_id, request)
+        idea_data = _workflow_to_dict(idea)
+        return {
+            "idea_id": idea_data.get("id"),
+            "status": idea_data.get("status"),
+            "idea": idea_data,
+        }
+    except Exception as exc:
+        _raise_workflow_http(exc)
+
+
+@app.post("/api/workflow/ideas/{idea_id}/promote", status_code=201)
+async def promote_workflow_idea(idea_id: str, request: PromoteIdeaRequest):
+    try:
+        result = await _workflow_service().promote_idea(idea_id, request)
+        idea_data = _workflow_to_dict(result["idea"])
+        epic_data = _workflow_to_dict(result["epic"])
+        return {
+            "idea_id": idea_data.get("id"),
+            "epic_id": epic_data.get("id"),
+            "already_promoted": bool(result.get("already_promoted", False)),
+            "warning": result.get("warning"),
+            "idea": idea_data,
+            "epic": epic_data,
+        }
+    except Exception as exc:
+        _raise_workflow_http(exc)
+
+
+@app.post("/api/workflow/epics", status_code=201)
+async def create_workflow_epic(request: CreateEpicRequest):
+    try:
+        epic = await _workflow_service().create_epic(request)
+        epic_data = _workflow_to_dict(epic)
+        return {
+            "epic_id": epic_data.get("id"),
+            "status": epic_data.get("status"),
+            "epic": epic_data,
+        }
+    except Exception as exc:
+        _raise_workflow_http(exc)
+
+
+@app.get("/api/workflow/epics")
+async def list_workflow_epics(
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    tag: Optional[str] = None,
+    limit: int = 20,
+):
+    try:
+        epics = await _workflow_service().list_epics(
+            status=status,
+            priority=priority,
+            tag=tag,
+            limit=limit,
+        )
+        payload = [_workflow_to_dict(item) for item in epics]
+        return {"count": len(payload), "epics": payload}
+    except Exception as exc:
+        _raise_workflow_http(exc)
+
+
+@app.patch("/api/workflow/epics/{epic_id}")
+async def update_workflow_epic(epic_id: str, request: UpdateEpicRequest):
+    try:
+        epic = await _workflow_service().update_epic(epic_id, request)
+        epic_data = _workflow_to_dict(epic)
+        return {
+            "epic_id": epic_data.get("id"),
+            "status": epic_data.get("status"),
+            "epic": epic_data,
+        }
+    except Exception as exc:
+        _raise_workflow_http(exc)
 
 
 @app.post("/api/coordination/operations", response_model=CoordinationOperationResponse)

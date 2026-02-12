@@ -1,66 +1,111 @@
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import Mock
+
 from dopemux.config.manager import ConfigManager
+from dopemux.mcp.registry import MCPRegistry, MCPServerDefinition
 
-@pytest.fixture
-def mock_registry():
-    """Mock the MCP registry for testing."""
-    with patch("dopemux.config.manager.MCPRegistry") as MockRegistry:
-        registry_instance = MockRegistry.return_value
-        
-        # Setup mock server definition
-        mock_server = MagicMock()
-        mock_server.name = "test-server"
-        mock_server.transport = "http"
-        mock_server.docker.service = "test-service"
-        mock_server.docker.port = 8888
-        mock_server.docker.compose_file = "docker-compose.yml"
-        # Important: set local to None to avoid MagicMock concatenation errors
-        mock_server.local = None
-        
-        registry_instance.get_server.return_value = mock_server
-        yield registry_instance
 
-def test_config_generation_docker_http(mock_registry):
-    """Test config generation for HTTP server in Docker mode."""
-    # Mock _detect_docker_mode to return True
-    with patch.object(ConfigManager, "_detect_docker_mode", return_value=True):
-        manager = ConfigManager()
-        
-        # Test _generate_server_config directly
-        config = manager._generate_server_config(mock_registry, "test-server", "docker")
-        
-        assert config is not None
-        assert config["command"] == "python"
-        assert "-m" in config["args"]
-        assert "dopemux.mcp.http_stdio_bridge" in config["args"]
-        assert "--base-url" in config["args"]
-        assert "http://localhost:8888" in config["args"]
+def _iter_string_values(payload):
+    if isinstance(payload, dict):
+        for value in payload.values():
+            yield from _iter_string_values(value)
+    elif isinstance(payload, list):
+        for value in payload:
+            yield from _iter_string_values(value)
+    elif isinstance(payload, str):
+        yield payload
 
-def test_config_generation_docker_stdio(mock_registry):
-    """Test config generation for stdio server in Docker mode."""
-    mock_server = mock_registry.get_server.return_value
-    mock_server.transport = "stdio"
-    
-    with patch.object(ConfigManager, "_detect_docker_mode", return_value=True):
-        manager = ConfigManager()
-        config = manager._generate_server_config(mock_registry, "test-server", "docker")
-        
-        assert config is not None
-        assert config["command"] == "docker"
-        assert "compose" in config["args"]
-        assert "exec" in config["args"]
-        assert "-T" in config["args"]
-        assert "test-service" in config["args"]
+
+def test_template_mcp_names_exist_in_registry():
+    """Template MCP names must resolve against canonical registry keys."""
+    manager = ConfigManager()
+    registry = MCPRegistry()
+    registry_names = {server.name for server in registry.list_servers()}
+    templates = manager._get_project_templates()
+
+    for template_name, template in templates.items():
+        for server_name in template.get("mcp_servers", []):
+            assert (
+                server_name in registry_names
+            ), f"Template '{template_name}' references unknown MCP server '{server_name}'"
+
+
+def test_config_generation_docker_http_uses_bridge():
+    """HTTP and HTTP-SSE servers should use the stdio-to-HTTP bridge in docker mode."""
+    manager = ConfigManager()
+    server = MCPServerDefinition(
+        name="http-server",
+        transport="http",
+        docker={
+            "service": "http-server",
+            "compose_file": "docker/mcp-servers/docker-compose.yml",
+            "port": 8888,
+        },
+    )
+    registry = Mock()
+    registry.get_server.return_value = server
+
+    config = manager._generate_server_config(
+        registry,
+        "http-server",
+        "docker",
+        docker_compose_bin="docker compose",
+    )
+
+    assert config is not None
+    assert config["command"] == "python"
+    assert config["args"] == [
+        "-m",
+        "dopemux.mcp.http_stdio_bridge",
+        "--base-url",
+        "http://localhost:8888",
+    ]
+
+
+def test_config_generation_docker_stdio_uses_compose_exec():
+    """True stdio servers in docker mode must use docker compose exec -T."""
+    manager = ConfigManager()
+    server = MCPServerDefinition(
+        name="stdio-server",
+        transport="stdio",
+        docker={
+            "service": "stdio-service",
+            "compose_file": "docker/mcp-servers/docker-compose.yml",
+            "exec": ["python", "-m", "stdio.server"],
+        },
+    )
+    registry = Mock()
+    registry.get_server.return_value = server
+
+    config = manager._generate_server_config(
+        registry,
+        "stdio-server",
+        "docker",
+        docker_compose_bin="docker compose",
+    )
+
+    assert config is not None
+    assert config["command"] == "docker"
+    assert config["args"] == [
+        "compose",
+        "-f",
+        "docker/mcp-servers/docker-compose.yml",
+        "exec",
+        "-T",
+        "stdio-service",
+        "python",
+        "-m",
+        "stdio.server",
+    ]
+
 
 def test_no_host_paths_in_defaults():
-    """Test that default configuration does not contain host-specific paths."""
-    config_manager = ConfigManager()
-    defaults = config_manager._get_default_mcp_servers()
-    
-    for name, config in defaults.items():
-        args = config.get("args", [])
-        
-        for arg in args:
-            if isinstance(arg, str):
-                assert "/Users/" not in arg, f"Found host path in {name}: {arg}"
+    """Default config generation must never hardcode local absolute user paths."""
+    manager = ConfigManager()
+    defaults = manager._get_default_mcp_servers(
+        mcp_mode="docker",
+        docker_compose_bin="docker compose",
+    )
+
+    for server_name, config in defaults.items():
+        for value in _iter_string_values(config):
+            assert "/Users/" not in value, f"Found host path in {server_name}: {value}"
