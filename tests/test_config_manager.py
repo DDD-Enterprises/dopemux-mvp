@@ -283,3 +283,56 @@ class TestConfigManager:
         assert "files" in python_template
         assert "mcp_servers" in python_template
         assert "adhd_adaptations" in python_template
+
+    def test_repair_legacy_mcp_servers(self, temp_config_dir):
+        """Legacy dope-context and mas path defaults should be repaired on load."""
+        user_config = temp_config_dir / "config.yaml"
+        user_config.write_text(
+            yaml.safe_dump(
+                {
+                    "mcp_mode": "local",
+                    "mcp_servers": {
+                        "dope-context": {
+                            "enabled": True,
+                            "command": "bash",
+                            "args": ["services/dope-context/run_mcp.sh"],
+                            "env": {"OPENAI_API_KEY": "${OPENAI_API_KEY}"},
+                            "timeout": 30,
+                            "auto_restart": True,
+                        },
+                        "mas-sequential-thinking": {
+                            "enabled": True,
+                            "command": "python",
+                            "args": ["/Users/hue/code/mcp-server-mas-sequential-thinking/main.py"],
+                            "env": {"OPENAI_API_KEY": "${OPENAI_API_KEY}"},
+                            "timeout": 30,
+                            "auto_restart": True,
+                        },
+                    },
+                }
+            )
+        )
+
+        with patch("dopemux.config.manager.ConfigManager._init_paths") as mock_init:
+            from dopemux.config.manager import ConfigPaths
+
+            mock_init.return_value = ConfigPaths(
+                global_config=temp_config_dir / "global.yaml",
+                user_config=user_config,
+                project_config=temp_config_dir / "project.yaml",
+                cache_dir=temp_config_dir / "cache",
+                data_dir=temp_config_dir / "data",
+            )
+
+            manager = ConfigManager()
+            with patch.object(
+                manager,
+                "_get_default_config",
+                return_value={"version": "1.0", "mcp_mode": "local", "mcp_servers": {}},
+            ):
+                loaded = manager.load_config()
+
+        assert "dope-context" not in loaded.mcp_servers
+        assert "claude-context" in loaded.mcp_servers
+        assert "mas-sequential-thinking" in loaded.mcp_servers
+        assert "/Users/" not in " ".join(loaded.mcp_servers["mas-sequential-thinking"].args)
