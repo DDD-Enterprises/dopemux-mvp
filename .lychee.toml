@@ -12,7 +12,8 @@ exclude = [
   "https://docs.dopemux.dev.*",
   "https://get.dopemux.dev.*",
   "https://dopemux.dev.*",
-  "http://packet\\.md/.*"
+  "http://packet\\.md/.*",
+  "http://[A-Za-z0-9._-]+\\.md/.*"
 ]
 
 # Accept 404s for localhost (fallback if regex doesn't catch all)

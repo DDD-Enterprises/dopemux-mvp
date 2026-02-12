@@ -522,6 +522,7 @@ class DopeMemoryMCPServer:
         corrected_category: Optional[str] = None,
         corrected_entry_type: Optional[str] = None,
         corrected_outcome: Optional[str] = None,
+        idempotency_key: Optional[str] = None,
     ) -> ToolResponse:
         """Supersede an existing work log entry with a corrected version.
         
@@ -530,16 +531,14 @@ class DopeMemoryMCPServer:
         """
         try:
             store = self._get_store(workspace_id)
-            new_id = store.correct_entry(
+            new_id = store.insert_corrected_work_log_entry(
                 workspace_id=workspace_id,
                 instance_id=instance_id,
-                entry_id=entry_id,
+                supersedes_entry_id=entry_id,
                 correction_type=correction_type,
-                corrected_summary=corrected_summary,
-                corrected_tags=corrected_tags,
-                corrected_category=corrected_category,
-                corrected_entry_type=corrected_entry_type,
-                corrected_outcome=corrected_outcome,
+                summary=corrected_summary or "Retraction" if correction_type == "retraction" else corrected_summary or "Correction",
+                outcome=corrected_outcome,
+                idempotency_key=idempotency_key,
             )
             return ToolResponse(
                 success=True,
@@ -819,6 +818,7 @@ class MemoryCorrectRequest(BaseModel):
     corrected_category: Optional[str] = None
     corrected_entry_type: Optional[str] = None
     corrected_outcome: Optional[str] = None
+    idempotency_key: Optional[str] = None
 
 
 class MemoryGenerateReflectionRequest(BaseModel):
@@ -1197,6 +1197,7 @@ async def memory_correct(request: MemoryCorrectRequest):
         corrected_category=request.corrected_category,
         corrected_entry_type=request.corrected_entry_type,
         corrected_outcome=request.corrected_outcome,
+        idempotency_key=request.idempotency_key,
     )
 
     if not result.success:
