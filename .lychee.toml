@@ -11,7 +11,8 @@ exclude = [
   "https://github.com/DDD-Enterprises/dopemux-mvp(\\.git|$|/.*)",
   "https://docs.dopemux.dev.*",
   "https://get.dopemux.dev.*",
-  "https://dopemux.dev.*"
+  "https://dopemux.dev.*",
+  "http://packet\\.md/.*"
 ]
 
 # Accept 404s for localhost (fallback if regex doesn't catch all)
