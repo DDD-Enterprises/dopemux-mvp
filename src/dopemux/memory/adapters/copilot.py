@@ -7,6 +7,7 @@ content-addressed deduplication and consistent Chronicle schema.
 
 from typing import Optional
 from datetime import datetime, timezone
+from pathlib import Path
 
 try:
     from services.copilot_transcript_ingester.parser import JSONLParser
