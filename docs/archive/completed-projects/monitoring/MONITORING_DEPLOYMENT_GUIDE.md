@@ -181,8 +181,8 @@ docker restart <service>
 # Check if service is running
 docker ps | grep <service>
 
-# Test endpoint from inside Docker network
-docker exec prometheus curl http://<service>:<port>/metrics
+# Test endpoint from inside Docker network (replace host/port as needed)
+docker exec prometheus curl http://localhost:9090/metrics
 
 # Check Prometheus logs
 docker logs dopemux-prometheus | grep <service>
