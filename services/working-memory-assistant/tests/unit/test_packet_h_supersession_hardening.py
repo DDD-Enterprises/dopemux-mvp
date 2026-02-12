@@ -166,3 +166,107 @@ def test_memory_correct_response_envelope_is_stable(
     )
     assert failure["success"] is False
     assert isinstance(failure.get("error"), str) and failure["error"]
+
+
+def test_memory_correct_idempotency(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """memory_correct with same idempotency_key yields same entry_id (idempotent)."""
+    ledger_path = tmp_path / "idempotent.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+    server = DopeMemoryMCPServer()
+
+    stored = server.memory_store(
+        workspace_id="ws-1",
+        instance_id="A",
+        category="planning",
+        entry_type="decision",
+        summary="original",
+    )
+    original_id = stored["entry_id"]
+
+    idemp_key = "fix-123"
+    
+    # 1. First correction
+    resp1 = server.memory_correct(
+        workspace_id="ws-1",
+        instance_id="A",
+        entry_id=original_id,
+        correction_type="update",
+        summary="corrected once",
+        idempotency_key=idemp_key,
+    )
+    assert resp1["success"] is True
+    id1 = resp1["entry_id"]
+
+    # 2. Second correction (retry with same key)
+    resp2 = server.memory_correct(
+        workspace_id="ws-1",
+        instance_id="A",
+        entry_id=original_id,
+        correction_type="update",
+        summary="corrected twice", # summary is different but key is same
+        idempotency_key=idemp_key,
+    )
+    assert resp2["success"] is True
+    id2 = resp2["entry_id"]
+
+    # Entry IDs must be identical
+    assert id1 == id2
+    
+    # Verify only one correction entry exists in DB
+    from chronicle.store import ChronicleStore
+    store = ChronicleStore(ledger_path)
+    conn = store.connect()
+    count = conn.execute(
+        "SELECT COUNT(*) FROM work_log_entries WHERE supersedes_entry_id = ?",
+        (original_id,)
+    ).fetchone()[0]
+    assert count == 1
+
+
+def test_all_mcp_tools_return_success_field(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """All MCP tools must return the success field."""
+    ledger_path = tmp_path / "global_success.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+    server = DopeMemoryMCPServer()
+
+    # 1. memory_store
+    resp = server.memory_store(
+        workspace_id="ws-1",
+        instance_id="A",
+        category="planning",
+        entry_type="decision",
+        summary="test",
+    )
+    assert resp.get("success") is True
+
+    # 2. memory_search
+    resp = server.memory_search(query="test", workspace_id="ws-1", instance_id="A")
+    assert resp.get("success") is True
+
+    # 3. memory_recap
+    resp = server.memory_recap(workspace_id="ws-1", instance_id="A")
+    assert resp.get("success") is True
+
+    # 4. memory_mark_issue
+    # Will fail because entry doesn't exist, but should have success field
+    resp = server.memory_mark_issue(
+        workspace_id="ws-1", instance_id="A", issue_entry_id="any", description="test"
+    )
+    assert "success" in resp
+    assert resp["success"] is False
+
+    # 5. memory_link_resolution
+    # Link will fail because entry doesn't exist, but it should return success: False envelope
+    resp = server.memory_link_resolution(
+        workspace_id="ws-1", instance_id="A", issue_entry_id="a", resolution_entry_id="b"
+    )
+    assert resp.get("success") is False
+    assert "error" in resp
+
+    # 6. memory_replay_session
+    resp = server.memory_replay_session(
+        workspace_id="ws-1", instance_id="A", session_id="sess-1"
+    )
+    assert resp.get("success") is True
