@@ -353,12 +353,66 @@ class ConfigManager:
 
         # Validate and create config object
         self._config = DopemuxConfig(**config_dict)
+        self._repair_legacy_mcp_servers(self._config)
 
         # Remove servers requested for deprecation
         for deprecated in ("repo_prompt", "trigger"):
             self._config.mcp_servers.pop(deprecated, None)
 
         return self._config
+
+    def _repair_legacy_mcp_servers(self, config: DopemuxConfig) -> None:
+        """Repair known-broken legacy MCP entries in existing user configs."""
+        if not config.mcp_servers:
+            return
+
+        try:
+            registry = MCPRegistry()
+        except Exception:
+            return
+
+        compose_bin = config.dope_layout.services.docker_compose_bin
+        configured_mode = config.mcp_mode
+
+        def _generate(name: str) -> Optional[Dict[str, Any]]:
+            generated = self._generate_server_config(
+                registry,
+                name,
+                configured_mode,
+                docker_compose_bin=compose_bin,
+            )
+            if generated:
+                return generated
+            return self._generate_server_config(
+                registry,
+                name,
+                "local",
+                docker_compose_bin=compose_bin,
+            )
+
+        # Repair legacy dope-context wrapper when referenced script is missing.
+        dope_context = config.mcp_servers.get("dope-context")
+        if dope_context:
+            missing_wrapper = any(
+                isinstance(arg, str) and "services/dope-context/run_mcp.sh" in arg
+                for arg in dope_context.args
+            ) and not Path("services/dope-context/run_mcp.sh").exists()
+            if missing_wrapper:
+                replacement = _generate("claude-context")
+                if replacement:
+                    repaired = MCPServerConfig(**replacement)
+                    repaired.env.update(dope_context.env)
+                    config.mcp_servers["claude-context"] = repaired
+                config.mcp_servers.pop("dope-context", None)
+
+        # Repair host-specific mas-sequential-thinking path.
+        mas_server = config.mcp_servers.get("mas-sequential-thinking")
+        if mas_server and any(isinstance(arg, str) and "/Users/" in arg for arg in mas_server.args):
+            replacement = _generate("mas-sequential-thinking")
+            if replacement:
+                repaired = MCPServerConfig(**replacement)
+                repaired.env.update(mas_server.env)
+                config.mcp_servers["mas-sequential-thinking"] = repaired
 
     def save_user_config(self, config: DopemuxConfig) -> None:
         """Save user configuration to file."""
