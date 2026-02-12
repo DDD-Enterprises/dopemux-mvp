@@ -15,9 +15,9 @@ echo ""
 
 # 1) Stop canonical project cleanly (compose.yml)
 if [ -f "compose.yml" ]; then
-  echo "📦 Stopping canonical dopemux-mvp project..."
-  docker compose -p dopemux-mvp -f compose.yml down --remove-orphans || true
-  echo "✓ Stopped dopemux-mvp"
+  echo "📦 Stopping canonical dopemux project..."
+  docker compose -p dopemux -f compose.yml down --remove-orphans || true
+  echo "✓ Stopped dopemux"
   echo ""
 fi
 
@@ -43,10 +43,10 @@ echo ""
 echo "✓ All projects stopped"
 echo ""
 
-# 3) Remove any remaining stopped containers with dopemux-mvp label
-echo "🧹 Removing exited/stale dopemux-mvp containers..."
+# 3) Remove any remaining stopped containers with dopemux label
+echo "🧹 Removing exited/stale dopemux containers..."
 STALE_CONTAINERS=$(docker ps -a \
-  --filter "label=com.docker.compose.project=dopemux-mvp" \
+  --filter "label=com.docker.compose.project=dopemux" \
   --filter "status=exited" \
   --format '{{.ID}}' || true)
 
@@ -64,8 +64,8 @@ echo "╚═══════════════════════�
 echo ""
 echo "Next steps:"
 echo "  1. Start canonical stack:"
-echo "     docker compose -p dopemux-mvp -f compose.yml up -d --remove-orphans --force-recreate"
+echo "     docker compose -p dopemux -f compose.yml up -d --remove-orphans --force-recreate"
 echo ""
 echo "  2. Check status:"
-echo "     docker compose -p dopemux-mvp -f compose.yml ps"
+echo "     docker compose -p dopemux -f compose.yml ps"
 echo ""

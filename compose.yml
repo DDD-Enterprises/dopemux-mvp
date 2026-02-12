@@ -19,6 +19,8 @@
 # - Use `docker compose up --scale service=N` for replicas
 # - This file replaces compose.master.yml, compose.staging.yml, etc.
 
+name: dopemux
+
 networks:
   dopemux-network:
     external: true
@@ -380,8 +382,8 @@ services:
   # Task Orchestrator - ADHD Task Coordination (Scaled to 2 replicas)
   task-orchestrator:
     build:
-      context: ./services/task-orchestrator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/task-orchestrator/Dockerfile
     restart: unless-stopped
     networks:
       - dopemux-network

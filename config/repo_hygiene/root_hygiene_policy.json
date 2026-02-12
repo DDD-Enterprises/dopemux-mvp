@@ -5,6 +5,7 @@
     ".github",
     "SYSTEM_ARCHIVE",
     "components",
+    "compose",
     "config",
     "dashboard",
     "docker",
