@@ -33,5 +33,5 @@ This folder stores raw, verbatim evidence captured during PM Plane phases.
 - explicit absence: 0 hits + command
 
 ## Quarantine
-`quarantine/**` is excluded by default to prevent stale session artifacts from polluting evidence.
+quarantine/** is excluded by default to prevent stale session artifacts from polluting evidence.
 Include it only when explicitly investigating provenance drift.
