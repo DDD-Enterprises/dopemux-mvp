@@ -1,0 +1,654 @@
+services/task-orchestrator/event_coordinator.py:14:from enum import Enum
+services/task-orchestrator/event_coordinator.py:21:class EventType(str, Enum):
+services/task-orchestrator/event_coordinator.py:48:class EventPriority(int, Enum):
+services/task-orchestrator/event_coordinator.py:160:        # Task lifecycle processors
+services/task-orchestrator/event_coordinator.py:165:        # Sprint lifecycle processors
+src/dopemux/adhd/task_decomposer.py:19:from enum import Enum
+src/dopemux/adhd/task_decomposer.py:31:class TaskStatus(Enum):
+src/dopemux/adhd/task_decomposer.py:32:    """Simple task lifecycle states."""
+src/dopemux/adhd/task_decomposer.py:47:    status: TaskStatus = TaskStatus.PENDING
+src/dopemux/adhd/task_decomposer.py:62:        status_value = data.get("status", TaskStatus.PENDING.value)
+src/dopemux/adhd/task_decomposer.py:64:            status = TaskStatus(status_value)
+src/dopemux/adhd/task_decomposer.py:66:            status = TaskStatus.PENDING
+src/dopemux/adhd/task_decomposer.py:171:                "completed": task.status is TaskStatus.COMPLETED,
+src/dopemux/adhd/task_decomposer.py:172:                "in_progress": task.status is TaskStatus.IN_PROGRESS,
+src/dopemux/adhd/task_decomposer.py:188:    # State transitions
+src/dopemux/adhd/task_decomposer.py:197:        task.status = TaskStatus.IN_PROGRESS
+src/dopemux/adhd/task_decomposer.py:210:        task.status = TaskStatus.COMPLETED
+src/dopemux/adhd/task_decomposer.py:228:            task.status = TaskStatus.COMPLETED
+src/dopemux/adhd/task_decomposer.py:230:        elif normalized > 0 and task.status is TaskStatus.PENDING:
+src/dopemux/adhd/task_decomposer.py:231:            task.status = TaskStatus.IN_PROGRESS
+services/task-orchestrator/docs/pm-plane-architecture.md:91:#### User State Tracking
+services/task-orchestrator/docs/pm-plane-architecture.md:93:- **Attention State**: focused/scattered/transitioning detection
+src/dopemux/adhd/attention_monitor.py:40:class AttentionState:
+src/dopemux/adhd/attention_monitor.py:82:        # State tracking
+src/dopemux/adhd/attention_monitor.py:83:        self._current_state = AttentionState.NORMAL
+src/dopemux/adhd/attention_monitor.py:158:        # State distribution
+src/dopemux/adhd/attention_monitor.py:321:            return AttentionState.DISTRACTED
+src/dopemux/adhd/attention_monitor.py:329:            return AttentionState.HYPERFOCUS
+src/dopemux/adhd/attention_monitor.py:333:            return AttentionState.SCATTERED
+src/dopemux/adhd/attention_monitor.py:337:            return AttentionState.FOCUSED
+src/dopemux/adhd/attention_monitor.py:340:        return AttentionState.NORMAL
+src/dopemux/adhd/attention_monitor.py:345:            # State change
+src/dopemux/adhd/attention_monitor.py:350:            if new_state == AttentionState.FOCUSED:
+src/dopemux/adhd/attention_monitor.py:398:            1 for m in metrics_list if m.attention_state == AttentionState.FOCUSED
+src/dopemux/adhd/attention_monitor.py:415:        if current_metrics["attention_state"] == AttentionState.SCATTERED:
+src/dopemux/adhd/attention_monitor.py:424:        elif current_metrics["attention_state"] == AttentionState.HYPERFOCUS:
+src/dopemux/adhd/attention_monitor.py:467:            "attention_state": AttentionState.NORMAL,
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:11:**Status**: ✅ FULLY COMPLETE
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:123:**Status**: Operational with task synchronization
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:172:└── Status Synchronization
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:329:**Completion Status**: ✅ 100% Complete
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:15:from enum import Enum
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:763:                info_parts.append(f"Status: Successfully retrieved {', '.join(status_parts)} from Dopemux knowledge base.")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:765:                info_parts.append("Status: No specific patterns or documentation found in knowledge base for this task type.")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1682:class TaskStatus(str, Enum):
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1694:class AgentType(str, Enum):
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1715:    status: TaskStatus = TaskStatus.PENDING
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2829:                if task.status == TaskStatus.IN_PROGRESS:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2847:            task.status = TaskStatus.NEEDS_BREAK
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2926:    def _map_leantime_status(self, leantime_status: str) -> TaskStatus:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2929:            "0": TaskStatus.PENDING,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2930:            "1": TaskStatus.IN_PROGRESS,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2931:            "2": TaskStatus.COMPLETED,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2932:            "3": TaskStatus.BLOCKED,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2933:            "6": TaskStatus.NEEDS_BREAK,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2934:            "7": TaskStatus.CONTEXT_SWITCH,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2936:        return status_map.get(leantime_status, TaskStatus.PENDING)
+src/dopemux/profile_models.py:13:from enum import Enum
+src/dopemux/profile_models.py:42:class EnergyPreference(str, Enum):
+src/dopemux/profile_models.py:52:class AttentionMode(str, Enum):
+services/task-orchestrator/test_conport_sync.py:21:from enhanced_orchestrator import OrchestrationTask, TaskStatus, AgentType
+services/task-orchestrator/test_conport_sync.py:39:        status=TaskStatus.IN_PROGRESS,
+services/task-orchestrator/test_conport_sync.py:54:        logger.info(f"   Status: {progress_data['status']}")
+services/task-orchestrator/test_conport_sync.py:93:        status=TaskStatus.PENDING,
+services/task-orchestrator/test_conport_sync.py:133:                status=TaskStatus.PENDING
+services/task-orchestrator/test_conport_sync.py:140:                status=TaskStatus.PENDING
+services/task-orchestrator/performance_optimizer.py:16:from enum import Enum
+services/task-orchestrator/performance_optimizer.py:23:class ProductivityMetric(str, Enum):
+services/task-orchestrator/performance_optimizer.py:34:class OptimizationStrategy(str, Enum):
+src/dopemux/orchestrator/adhd_orchestrator.py:24:from ..adhd.attention_monitor import AttentionMonitor, AttentionState, AttentionMetrics
+src/dopemux/orchestrator/adhd_orchestrator.py:76:            AttentionState.SCATTERED: "low",
+src/dopemux/orchestrator/adhd_orchestrator.py:77:            AttentionState.DISTRACTED: "low",
+src/dopemux/orchestrator/adhd_orchestrator.py:78:            AttentionState.NORMAL: "medium",
+src/dopemux/orchestrator/adhd_orchestrator.py:79:            AttentionState.FOCUSED: "high",
+src/dopemux/orchestrator/adhd_orchestrator.py:80:            AttentionState.HYPERFOCUS: "high"
+src/dopemux/orchestrator/adhd_orchestrator.py:99:    def _publish_attention_state(self, session: str, state: AttentionState) -> None:
+src/dopemux/orchestrator/adhd_orchestrator.py:102:            AttentionState.SCATTERED: "🌫️",
+src/dopemux/orchestrator/adhd_orchestrator.py:103:            AttentionState.DISTRACTED: "🐿️",
+src/dopemux/orchestrator/adhd_orchestrator.py:104:            AttentionState.NORMAL: "👤",
+src/dopemux/orchestrator/adhd_orchestrator.py:105:            AttentionState.FOCUSED: "🧠",
+src/dopemux/orchestrator/adhd_orchestrator.py:106:            AttentionState.HYPERFOCUS: "🔥"
+services/task-orchestrator/task_decomposition_endpoint.py:168:    from task_orchestrator.models import OrchestrationTask, TaskStatus
+services/task-orchestrator/task_decomposition_endpoint.py:178:            status=TaskStatus.PENDING,
+services/task-orchestrator/claude_context_manager.py:16:from enum import Enum
+services/task-orchestrator/claude_context_manager.py:21:class ContextMode(str, Enum):
+services/task-orchestrator/claude_context_manager.py:31:class ADHDState(str, Enum):
+services/task-orchestrator/claude_context_manager.py:55:    adhd_state: ADHDState = ADHDState.FOCUSED
+services/task-orchestrator/claude_context_manager.py:112:        self.adhd_adaptations: Dict[ADHDState, Dict[str, Any]] = {}
+services/task-orchestrator/claude_context_manager.py:203:## 🧠 ADHD Status: {{adhd_state}}
+services/task-orchestrator/claude_context_manager.py:269:            ADHDState.SCATTERED: {
+services/task-orchestrator/claude_context_manager.py:276:            ADHDState.FOCUSED: {
+services/task-orchestrator/claude_context_manager.py:283:            ADHDState.HYPERFOCUS: {
+services/task-orchestrator/claude_context_manager.py:291:            ADHDState.LOW_ENERGY: {
+services/task-orchestrator/claude_context_manager.py:299:            ADHDState.BREAK_MODE: {
+services/task-orchestrator/claude_context_manager.py:384:        adhd_state: ADHDState,
+services/task-orchestrator/claude_context_manager.py:397:            if adhd_state == ADHDState.HYPERFOCUS:
+services/task-orchestrator/claude_context_manager.py:399:            elif adhd_state == ADHDState.LOW_ENERGY:
+services/task-orchestrator/claude_context_manager.py:508:                self.adhd_adaptations[ADHDState.FOCUSED]
+services/task-orchestrator/claude_context_manager.py:723:### Current Status
+services/task-orchestrator/intelligence/switch_cost_calculator.py:99:        adhd_state: Optional[any] = None,  # ADHDState object
+services/task-orchestrator/intelligence/switch_cost_calculator.py:100:        flow_state: Optional[any] = None  # FlowState object
+services/task-orchestrator/test_conport_http_integration.py:10:from enhanced_orchestrator import OrchestrationTask, TaskStatus
+services/task-orchestrator/test_conport_http_integration.py:43:            status=TaskStatus.PENDING,
+services/task-orchestrator/test_conport_http_integration.py:57:                success = await adapter.update_task_status("test_task_http_integration", TaskStatus.IN_PROGRESS)
+src/dopemux/mobile/runtime.py:34:class MobileStatus:
+src/dopemux/mobile/runtime.py:385:def get_mobile_status(config_manager: ConfigManager, controller: Optional[TmuxController] = None) -> MobileStatus:
+src/dopemux/mobile/runtime.py:400:    return MobileStatus(
+src/dopemux/mobile/runtime.py:409:def format_mobile_indicator(status: MobileStatus) -> str:
+src/dopemux/mobile/runtime.py:461:def _persist_mobile_status(config_manager: ConfigManager, status: MobileStatus) -> None:
+services/task-orchestrator/intelligence/predictive_orchestrator.py:42:from enum import Enum
+services/task-orchestrator/intelligence/predictive_orchestrator.py:47:class RecommendationSource(Enum):
+services/task-orchestrator/intelligence/predictive_orchestrator.py:488:    Status: Week 4 implementation (ready for use)
+services/task-orchestrator/intelligence/predictive_orchestrator.py:689:    - Transition to ML when training threshold met (10+ outcomes)
+services/task-orchestrator/intelligence/predictive_orchestrator.py:694:    Status: Week 4+ implementation (ready for production)
+services/task-orchestrator/test_coordination_integration.py:148:        from enhanced_orchestrator import OrchestrationTask, TaskStatus
+services/task-orchestrator/test_coordination_integration.py:154:            status=TaskStatus.PENDING,
+src/dopemux/claude_tools/debugging_support.py:16:from enum import Enum
+src/dopemux/claude_tools/debugging_support.py:24:class DebugState(Enum):
+src/dopemux/claude_tools/debugging_support.py:33:class DebuggerType(Enum):
+src/dopemux/claude_tools/debugging_support.py:47:    state: DebugState
+src/dopemux/claude_tools/debugging_support.py:146:                state=DebugState.RUNNING,
+src/dopemux/claude_tools/debugging_support.py:191:                session.state = DebugState.IDLE
+src/dopemux/claude_tools/debugging_support.py:233:    def continue_execution(self, session: DebugSession) -> DebugState:
+src/dopemux/claude_tools/debugging_support.py:250:            session.state = DebugState.RUNNING
+src/dopemux/claude_tools/debugging_support.py:259:    def step_execution(self, session: DebugSession, step_type: str = 'step') -> DebugState:
+src/dopemux/claude_tools/debugging_support.py:287:                session.state = DebugState.BREAKPOINT
+src/dopemux/claude_tools/debugging_support.py:289:                session.state = DebugState.FINISHED
+src/dopemux/claude_tools/debugging_support.py:291:                session.state = DebugState.RUNNING
+src/dopemux/claude_tools/debugging_support.py:395:            session.state = DebugState.FINISHED
+src/dopemux/claude_tools/debugging_support.py:505:            if session.state != DebugState.FINISHED:
+src/dopemux/extraction/consensus_validator.py:18:from enum import Enum
+src/dopemux/extraction/consensus_validator.py:27:class ModelProvider(str, Enum):
+services/task-orchestrator/adhd_prioritization_demo.py:23:from enum import Enum
+services/task-orchestrator/adhd_prioritization_demo.py:28:class EnergyLevel(str, Enum):
+services/task-orchestrator/adhd_prioritization_demo.py:35:class AttentionState(str, Enum):
+services/task-orchestrator/adhd_prioritization_demo.py:43:class UserState:
+services/task-orchestrator/adhd_prioritization_demo.py:46:    attention: AttentionState
+services/task-orchestrator/adhd_prioritization_demo.py:61:        user_state: UserState
+services/task-orchestrator/adhd_prioritization_demo.py:87:        if user_state.attention == AttentionState.FOCUSED:
+services/task-orchestrator/adhd_prioritization_demo.py:96:        elif user_state.attention == AttentionState.SCATTERED:
+services/task-orchestrator/adhd_prioritization_demo.py:105:        elif user_state.attention == AttentionState.HYPERFOCUS:
+services/task-orchestrator/adhd_prioritization_demo.py:122:        user_state: UserState
+services/task-orchestrator/adhd_prioritization_demo.py:138:        user_state: UserState,
+services/task-orchestrator/adhd_prioritization_demo.py:256:    user_state = UserState(
+services/task-orchestrator/adhd_prioritization_demo.py:258:        attention=AttentionState.FOCUSED,
+services/task-orchestrator/adhd_prioritization_demo.py:262:    logger.info(f"\n📊 Current User State:")
+src/dopemux/startup_hints.py:113:        "title": "Statusline HUD",
+src/dopemux/error_handling.py:22:from enum import Enum
+src/dopemux/error_handling.py:28:class ErrorType(Enum):
+src/dopemux/error_handling.py:42:class ErrorSeverity(Enum):
+src/dopemux/error_handling.py:108:class CircuitBreakerState(Enum):
+src/dopemux/error_handling.py:138:    States:
+src/dopemux/error_handling.py:146:        self.state = CircuitBreakerState.CLOSED
+src/dopemux/error_handling.py:183:        if self.state == CircuitBreakerState.CLOSED:
+src/dopemux/error_handling.py:185:        elif self.state == CircuitBreakerState.OPEN:
+src/dopemux/error_handling.py:190:                    self._transition_to(CircuitBreakerState.HALF_OPEN)
+src/dopemux/error_handling.py:193:        elif self.state == CircuitBreakerState.HALF_OPEN:
+src/dopemux/error_handling.py:206:        if self.state == CircuitBreakerState.HALF_OPEN:
+src/dopemux/error_handling.py:208:                self._transition_to(CircuitBreakerState.CLOSED)
+src/dopemux/error_handling.py:218:        if self.state == CircuitBreakerState.CLOSED:
+src/dopemux/error_handling.py:220:                self._transition_to(CircuitBreakerState.OPEN)
+src/dopemux/error_handling.py:221:        elif self.state == CircuitBreakerState.HALF_OPEN:
+src/dopemux/error_handling.py:223:            self._transition_to(CircuitBreakerState.OPEN)
+src/dopemux/error_handling.py:225:    def _transition_to(self, new_state: CircuitBreakerState):
+src/dopemux/error_handling.py:226:        """Transition to new circuit breaker state."""
+src/dopemux/error_handling.py:236:            "reason": f"Consecutive failures: {self.stats.consecutive_failures}" if new_state == CircuitBreakerState.OPEN else "Recovery test" if new_state == CircuitBreakerState.HALF_OPEN else f"Consecutive successes: {self.stats.consecutive_successes}"
+services/task-orchestrator/intelligence/sequence_optimizer.py:26:from enum import Enum
+services/task-orchestrator/intelligence/sequence_optimizer.py:38:class SequencingStrategy(Enum):
+services/task-orchestrator/intelligence/sequence_optimizer.py:120:        current_state: any,  # ADHDState
+services/task-orchestrator/intelligence/sequence_optimizer.py:121:        flow_state: Optional[any] = None,  # FlowState
+src/dopemux/extraction/advanced_embeddings.py:20:from enum import Enum
+src/dopemux/extraction/advanced_embeddings.py:28:class IndexType(str, Enum):
+src/dopemux/extraction/advanced_embeddings.py:35:class SecurityLevel(str, Enum):
+src/dopemux/extraction/advanced_embeddings.py:207:            logger.info("🚀 Embedding Pipeline Status")
+src/dopemux/update/manager.py:17:from enum import Enum
+src/dopemux/update/manager.py:30:from .progress import ProgressTracker, UpdateState
+src/dopemux/update/manager.py:37:class UpdateResult(Enum):
+src/dopemux/update/manager.py:92:        # State management
+src/dopemux/update/manager.py:95:        self.current_state: Optional[UpdateState] = None
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:44:from enum import Enum
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:50:class LoadStatus(Enum):
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:106:    status: LoadStatus
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:500:    def _classify_load(self, load: float) -> LoadStatus:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:503:            return LoadStatus.LOW
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:505:            return LoadStatus.OPTIMAL if 0.6 <= load else LoadStatus.LOW
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:507:            return LoadStatus.HIGH
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:509:            return LoadStatus.CRITICAL
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:562:                if load.status == LoadStatus.CRITICAL:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:567:                if load.status == LoadStatus.OPTIMAL and self.metrics:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:610:        logger.info(f"Status: {load.status.value}")
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:663:        if current_load.status == LoadStatus.CRITICAL:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:669:        elif current_load.status == LoadStatus.HIGH:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:675:        elif current_load.status == LoadStatus.OPTIMAL:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:679:        elif current_load.status == LoadStatus.LOW:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:756:        if current_load.status in [LoadStatus.LOW, LoadStatus.OPTIMAL]:
+src/dopemux/cli.py:1725:        from .instance_state import save_instance_state_sync, InstanceState
+src/dopemux/cli.py:1743:        state = InstanceState(
+src/dopemux/cli.py:1939:        table.add_column("Status", style="green")
+src/dopemux/cli.py:2249:        table.add_column("Status", style="yellow")
+src/dopemux/cli.py:2252:            "Current State",
+src/dopemux/cli.py:2286:            table.add_column("Status", style="green")
+src/dopemux/cli.py:2319:        mobile_table = Table(title="📱 Mobile Status")
+src/dopemux/cli.py:2321:        mobile_table.add_column("Status", style="green")
+src/dopemux/cli.py:2466:        table.add_column("Status", style="blue")
+src/dopemux/cli.py:2670:    # Status overview
+src/dopemux/cli.py:2674:    table = Table(title="🤖 Claude Auto Responder Status")
+src/dopemux/cli.py:2678:    table.add_row("Status", f"{status_emoji} {status['status'].title()}")
+src/dopemux/cli.py:2685:        table.add_row("Attention State", status["attention_state"])
+src/dopemux/cli.py:4214:                    live.update(Panel(status_text, title="[bold]Health Check Status[/bold]", border_style="blue"))
+src/dopemux/cli.py:5061:        console.logger.info("[cyan]📊 Dopemux System Status[/cyan]\n")
+src/dopemux/cli.py:5091:        console.logger.error(f"[red]❌ Status command failed: {e}[/red]")
+src/dopemux/cli.py:5318:        console.logger.info(f"\n[bold]Auto-Detection Status:[/bold] {status}")
+src/dopemux/cli.py:5489:            table.add_column("Status", style="white")
+src/dopemux/cli.py:5841:        table.add_column("Status")
+src/dopemux/cli.py:6157:            console.logger.info("[blue]🧠 Vanilla Code Agent Status[/blue]")
+src/dopemux/cli.py:6167:            console.logger.info("\n[yellow]Host MCP Service Status (localhost):[/yellow]")
+src/dopemux/cli.py:6202:        console.logger.error(f"[red]❌ Status check failed: {e}[/red]")
+src/dopemux/cli.py:6870:            console.logger.info("[bold]Claude Code Hook Status:[/bold]")
+src/dopemux/tmux/cli.py:625:        table.add_column("Status")
+src/dopemux/tmux/cli.py:648:    console.print(f"Status palette: {theme['status_palette']}")
+src/dopemux/claude_tools/agent_communication.py:16:from enum import Enum
+src/dopemux/claude_tools/agent_communication.py:24:class CommunicationMode(Enum):
+src/dopemux/claude_tools/agent_communication.py:31:class AgentRole(Enum):
+services/task-orchestrator/intelligence/context_switch_recovery.py:42:from enum import Enum
+services/task-orchestrator/intelligence/context_switch_recovery.py:47:class SwitchReason(Enum):
+services/task-orchestrator/intelligence/context_switch_recovery.py:169:        # State tracking
+services/task-orchestrator/deployment_orchestration.py:15:from enum import Enum
+services/task-orchestrator/deployment_orchestration.py:23:class DeploymentStage(str, Enum):
+services/task-orchestrator/deployment_orchestration.py:33:class DeploymentStatus(str, Enum):
+services/task-orchestrator/deployment_orchestration.py:34:    """Status of deployment operations."""
+services/task-orchestrator/deployment_orchestration.py:43:class TestType(str, Enum):
+services/task-orchestrator/deployment_orchestration.py:68:    # Status tracking
+services/task-orchestrator/deployment_orchestration.py:69:    status: DeploymentStatus
+services/task-orchestrator/deployment_orchestration.py:424:            task.status = DeploymentStatus.RUNNING
+services/task-orchestrator/deployment_orchestration.py:443:                    task.status = DeploymentStatus.SUCCESS
+services/task-orchestrator/deployment_orchestration.py:447:                    task.status = DeploymentStatus.FAILED
+services/task-orchestrator/deployment_orchestration.py:453:                task.status = DeploymentStatus.FAILED
+services/task-orchestrator/deployment_orchestration.py:458:            task.status = DeploymentStatus.FAILED
+services/task-orchestrator/deployment_orchestration.py:556:            if task.status in [DeploymentStatus.PENDING, DeploymentStatus.RUNNING]:
+services/task-orchestrator/deployment_orchestration.py:567:                            if task.status == DeploymentStatus.SUCCESS)
+services/task-orchestrator/deployment_orchestration.py:573:                         if task.status not in [DeploymentStatus.SUCCESS, DeploymentStatus.FAILED]]
+services/task-orchestrator/deployment_orchestration.py:586:        completed_tasks = [t for t in deployment.tasks if t.status != DeploymentStatus.PENDING]
+services/task-orchestrator/deployment_orchestration.py:588:            success_rate = sum(1 for t in completed_tasks if t.status == DeploymentStatus.SUCCESS) / len(completed_tasks)
+services/task-orchestrator/deployment_orchestration.py:608:        running_tasks = [t for t in deployment.tasks if t.status == DeploymentStatus.RUNNING]
+services/task-orchestrator/deployment_orchestration.py:615:        running_tasks = [t for t in deployment.tasks if t.status == DeploymentStatus.RUNNING]
+src/dopemux/update/progress.py:17:from enum import Enum
+src/dopemux/update/progress.py:29:class UpdateState(Enum):
+src/dopemux/update/progress.py:83:        self.current_state = UpdateState.INITIALIZING
+src/dopemux/update/progress.py:99:        self.current_state = UpdateState.DISCOVERING
+src/dopemux/claude_tools/tmux_cli.py:8:- Manage pane lifecycle
+src/dopemux/claude_tools/tmux_cli.py:284:            Status information dictionary
+src/dopemux/profile_detector.py:127:            # Signal 3: ADHD State (20 points) - OPTIONAL
+src/dopemux/profile_detector.py:483:            # Signal 3: ADHD State (20 points) - OPTIONAL
+src/dopemux/cli_worktree_enhanced.py:91:        Status indicators:
+services/task-orchestrator/adhd_engine.py:14:from enum import Enum
+services/task-orchestrator/adhd_engine.py:22:class EnergyLevel(str, Enum):
+services/task-orchestrator/adhd_engine.py:31:class AttentionState(str, Enum):
+services/task-orchestrator/adhd_engine.py:40:class CognitiveLoadLevel(str, Enum):
+services/task-orchestrator/adhd_engine.py:123:        self.current_attention_states: Dict[str, AttentionState] = {}
+services/task-orchestrator/adhd_engine.py:210:            current_attention = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+services/task-orchestrator/adhd_engine.py:349:        attention_state: AttentionState,
+services/task-orchestrator/adhd_engine.py:356:                AttentionState.SCATTERED: {
+services/task-orchestrator/adhd_engine.py:361:                AttentionState.TRANSITIONING: {
+services/task-orchestrator/adhd_engine.py:366:                AttentionState.FOCUSED: {
+services/task-orchestrator/adhd_engine.py:371:                AttentionState.HYPERFOCUSED: {
+services/task-orchestrator/adhd_engine.py:376:                AttentionState.OVERWHELMED: {
+services/task-orchestrator/adhd_engine.py:383:            state_config = compatibility_matrix.get(attention_state, compatibility_matrix[AttentionState.FOCUSED])
+services/task-orchestrator/adhd_engine.py:409:        attention: AttentionState,
+services/task-orchestrator/adhd_engine.py:434:            if attention == AttentionState.SCATTERED and task_data.get("estimated_minutes", 0) > 15:
+services/task-orchestrator/adhd_engine.py:467:            if complexity_level == CognitiveLoadLevel.HIGH and attention != AttentionState.HYPERFOCUSED:
+services/task-orchestrator/adhd_engine.py:581:    async def _assess_attention_state(self, user_id: str) -> AttentionState:
+services/task-orchestrator/adhd_engine.py:594:                attention_state = AttentionState.OVERWHELMED
+services/task-orchestrator/adhd_engine.py:596:                attention_state = AttentionState.SCATTERED
+services/task-orchestrator/adhd_engine.py:598:                attention_state = AttentionState.HYPERFOCUSED
+services/task-orchestrator/adhd_engine.py:600:                attention_state = AttentionState.FOCUSED
+services/task-orchestrator/adhd_engine.py:602:                attention_state = AttentionState.TRANSITIONING
+services/task-orchestrator/adhd_engine.py:616:            return AttentionState.FOCUSED
+services/task-orchestrator/adhd_engine.py:776:                    if current_attention == AttentionState.HYPERFOCUSED:
+services/task-orchestrator/adhd_engine.py:951:    async def _log_attention_change(self, user_id: str, previous: AttentionState, current: AttentionState) -> None:
+services/task-orchestrator/adhd_engine.py:993:            AttentionState.OVERWHELMED: 1.0,
+services/task-orchestrator/adhd_engine.py:994:            AttentionState.SCATTERED: 0.8,
+services/task-orchestrator/adhd_engine.py:995:            AttentionState.TRANSITIONING: 0.6,
+services/task-orchestrator/adhd_engine.py:996:            AttentionState.FOCUSED: 0.35,
+services/task-orchestrator/adhd_engine.py:997:            AttentionState.HYPERFOCUSED: 0.75,
+services/task-orchestrator/adhd_engine.py:1003:            attention = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+services/task-orchestrator/adhd_engine.py:1019:            attention = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+services/task-orchestrator/adhd_engine.py:1021:                AttentionState.OVERWHELMED,
+services/task-orchestrator/adhd_engine.py:1022:                AttentionState.SCATTERED,
+services/task-orchestrator/adhd_engine.py:1023:                AttentionState.HYPERFOCUSED,
+src/dopemux/litellm_proxy.py:476:        Status message for logging
+src/dopemux/update/phases.py:201:        table.add_column("Status", style="green")
+src/dopemux/update/phases.py:705:        table.add_column("Status")
+services/task-orchestrator/observability/adhd_dashboard.py:12:2. Focus & Flow State Timeline
+services/task-orchestrator/observability/adhd_dashboard.py:147:            "title": "🌊 Flow State Timeline",
+src/dopemux/worktree_diagnostics.py:242:        table.add_column("Status", style="bold")
+src/dopemux/claude_tools/cli.py:191:    console.log("[cyan]Safety Hooks Status:[/cyan]")
+src/dopemux/ux/progress_display.py:8:- Status indicators without overwhelming details
+src/dopemux/ux/progress_display.py:66:            message: Status message
+src/dopemux/ux/progress_display.py:143:            status_info: Status information to display
+src/dopemux/ux/progress_display.py:150:            ("Status", status_info.get("status", "Unknown")),
+src/dopemux/ux/progress_display.py:163:            title="System Status",
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR.md:5:## Status
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR.md:35:State the decision in one paragraph.
+services/task-orchestrator/demo_component6_e2e.py:30:    LoadStatus,
+services/task-orchestrator/demo_component6_e2e.py:60:class MockADHDState:
+services/task-orchestrator/demo_component6_e2e.py:94:def create_scenario_fresh_morning() -> MockADHDState:
+services/task-orchestrator/demo_component6_e2e.py:96:    return MockADHDState(
+services/task-orchestrator/demo_component6_e2e.py:109:def create_scenario_afternoon_transition() -> MockADHDState:
+services/task-orchestrator/demo_component6_e2e.py:111:    return MockADHDState(
+services/task-orchestrator/demo_component6_e2e.py:124:def create_scenario_overwhelmed_evening() -> MockADHDState:
+services/task-orchestrator/demo_component6_e2e.py:126:    return MockADHDState(
+services/task-orchestrator/demo_component6_e2e.py:150:def print_adhd_state(state: MockADHDState, scenario_name: str):
+services/task-orchestrator/demo_component6_e2e.py:167:    logger.info(f"   Status: {load.status.value.upper()}")
+services/task-orchestrator/demo_component6_e2e.py:189:    logger.info(f"   Categories: ADHD State (8), Temporal (6), Task Attributes (7), Historical (4), Derived (5)")
+services/task-orchestrator/demo_component6_e2e.py:229:async def demo_scenario(scenario_name: str, state: MockADHDState, tasks: List[MockTask]):
+services/task-orchestrator/demo_component6_e2e.py:384:        "Scenario 2: Mid-Afternoon (Medium Energy, Transitioning)",
+src/dopemux/update/rollback.py:43:        # State tracking
+services/task-orchestrator/dopemux-vscode/src/extension.ts:34:        vscode.commands.registerCommand('dopemux.showStatus', () => {
+services/task-orchestrator/observability/metrics_collector.py:26:from enum import Enum
+services/task-orchestrator/observability/metrics_collector.py:36:class MetricType(Enum):
+services/task-orchestrator/observability/metrics_collector.py:128:        # Focus Duration & Flow State Metrics
+src/dopemux/events/types.py:9:from enum import Enum
+src/dopemux/events/types.py:14:class EventPriority(str, Enum):
+src/dopemux/events/types.py:41:    class Action(str, Enum):
+src/dopemux/events/types.py:57:    class Action(str, Enum):
+src/dopemux/events/types.py:73:    class StateType(str, Enum):
+src/dopemux/events/types.py:79:    state_type: StateType = Field(..., description="Type of ADHD state")
+src/dopemux/events/types.py:90:    class Action(str, Enum):
+src/dopemux/events/types.py:101:    """Events related to tmux session lifecycle."""
+src/dopemux/events/types.py:105:    class Action(str, Enum):
+src/dopemux/mcp/broker.py:20:- Tmux UI: Status updates and notifications
+src/dopemux/mcp/broker.py:28:from enum import Enum
+src/dopemux/mcp/broker.py:41:from .token_manager import BudgetStatus, TokenBudgetManager
+src/dopemux/mcp/broker.py:46:class BrokerStatus(Enum):
+src/dopemux/mcp/broker.py:151:class SessionState:
+src/dopemux/mcp/broker.py:157:    budget_status: Optional[BudgetStatus] = None
+src/dopemux/mcp/broker.py:171:    - Session lifecycle and context preservation
+src/dopemux/mcp/broker.py:178:        self.status = BrokerStatus.STARTING
+src/dopemux/mcp/broker.py:192:        self.active_sessions: Dict[str, SessionState] = {}
+src/dopemux/mcp/broker.py:279:            self.status = BrokerStatus.READY
+src/dopemux/mcp/broker.py:287:            self.status = BrokerStatus.FAILED
+src/dopemux/mcp/broker.py:312:        self.status = BrokerStatus.FAILED
+src/dopemux/mcp/broker.py:637:    def _get_or_create_session(self, session_id: str) -> SessionState:
+src/dopemux/mcp/broker.py:640:            self.active_sessions[session_id] = SessionState(session_id=session_id)
+src/dopemux/mcp/broker.py:824:    async def _verify_tool_access(self, session: SessionState, tool_name: str) -> bool:
+src/dopemux/mcp/broker.py:913:            self.status = BrokerStatus.FAILED
+src/dopemux/mcp/broker.py:919:            self.status = BrokerStatus.READY
+src/dopemux/mcp/broker.py:921:            self.status = BrokerStatus.DEGRADED
+src/dopemux/mcp/broker.py:923:            self.status = BrokerStatus.FAILED
+src/dopemux/templates/init/docs/task-packets/CHECKLIST.md:25:☐ State changes are explicit and auditable
+src/dopemux/claude_tools/command_interceptor.py:14:from enum import Enum
+src/dopemux/claude_tools/command_interceptor.py:21:class InterceptionResult(Enum):
+services/task-orchestrator/dopemux-vscode/package.json:27:        "command": "dopemux.showStatus",
+services/task-orchestrator/dopemux-vscode/package.json:28:        "title": "Show Dopemux Hook Status"
+src/dopemux/commands/decisions_commands.py:537:# Energy Status Command (Bonus!)
+src/dopemux/commands/decisions_commands.py:1431:                console.log("\n[bold]📊 Outcome Status:[/bold]")
+src/dopemux/templates/init/docs/task-packets/STATUS.md:1:📊 Dopemux Execution Status
+src/dopemux/templates/init/docs/task-packets/STATUS.md:9:🧭 Status Legend
+src/dopemux/templates/init/docs/task-packets/STATUS.md:14:🧠 Subsystem Status
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR_LIGHT.md:5:## Status
+services/task-orchestrator/task_orchestrator/models.py:9:from enum import Enum
+services/task-orchestrator/task_orchestrator/models.py:13:class TaskStatus(str, Enum):
+services/task-orchestrator/task_orchestrator/models.py:24:class AgentType(str, Enum):
+services/task-orchestrator/task_orchestrator/models.py:41:    status: TaskStatus = TaskStatus.PENDING
+services/task-orchestrator/task_orchestrator/adhd/__init__.py:14:from ..models import OrchestrationTask, OrchestratorMetrics, TaskStatus
+src/dopemux/dev_commands.py:46:        title="[bold]🔧 Development Mode Status[/bold]",
+src/dopemux/dev_commands.py:99:    table.add_column("Status", style="yellow")
+src/dopemux/mcp/server_manager.py:2:MCP Server Manager: Connection and lifecycle management for MCP servers
+src/dopemux/mcp/server_manager.py:4:The MCP Server Manager handles the complex lifecycle management of multiple MCP
+src/dopemux/mcp/server_manager.py:31:from enum import Enum
+src/dopemux/mcp/server_manager.py:41:class ServerTransport(Enum):
+src/dopemux/mcp/server_manager.py:49:class ServerStatus(Enum):
+src/dopemux/mcp/server_manager.py:64:    status: ServerStatus
+src/dopemux/mcp/server_manager.py:73:        return self.status in [ServerStatus.READY, ServerStatus.DEGRADED]
+src/dopemux/mcp/server_manager.py:88:            status=ServerStatus.UNKNOWN, last_check=datetime.now(), response_time_ms=0.0
+src/dopemux/mcp/server_manager.py:105:    Manages lifecycle and connections for all MCP servers.
+src/dopemux/mcp/server_manager.py:274:                connection.health.status = ServerStatus.FAILED
+src/dopemux/mcp/server_manager.py:371:        connection.health.status = ServerStatus.STARTING
+src/dopemux/mcp/server_manager.py:395:            connection.health.status = ServerStatus.FAILED
+src/dopemux/mcp/server_manager.py:494:                if health.status == ServerStatus.READY:
+src/dopemux/mcp/server_manager.py:524:            status = ServerStatus.READY if success else ServerStatus.FAILED
+src/dopemux/mcp/server_manager.py:544:                status=ServerStatus.FAILED,
+src/dopemux/mcp/server_manager.py:747:            connection.health.status = ServerStatus.STOPPED
+services/task-orchestrator/task_orchestrator/mcp/__init__.py:13:from ..models import TaskStatus
+src/dopemux/event_bus.py:14:from enum import Enum
+src/dopemux/event_bus.py:20:# Helper Enums
+src/dopemux/event_bus.py:21:class Priority(str, Enum):
+src/dopemux/event_bus.py:28:class CognitiveLoad(str, Enum):
+src/dopemux/worktree_manager_enhanced.py:593:        table.add_column("Status", justify="center")
+src/dopemux/worktree_manager_enhanced.py:597:            # Status indicators
+src/dopemux/ui/dashboard.py:14:class ADHDStatePanel(Static):
+src/dopemux/ui/dashboard.py:143:        table.add_columns("Service", "Status", "Latency", "Metrics")
+src/dopemux/ui/dashboard.py:269:        yield ADHDStatePanel(id="adhd-state")
+src/dopemux/claude/configurator.py:151:### Critical State (Always Preserved)
+src/dopemux/claude/configurator.py:157:### Context-Specific State
+src/dopemux/claude/configurator.py:236:### Attention State Based
+src/dopemux/claude/configurator.py:496:            f"### {template.title()} Session State\n- Project-specific state tracking",
+src/dopemux/claude/configurator.py:502:**Focused State ({template})**:
+src/dopemux/claude/configurator.py:508:**Scattered State ({template})**:
+src/dopemux/claude/configurator.py:514:**Hyperfocus State ({template})**:
+src/dopemux/mcp/observability.py:21:- Role Manager: Transition and escalation metrics
+src/dopemux/mcp/observability.py:30:from enum import Enum
+src/dopemux/mcp/observability.py:36:class MetricType(Enum):
+src/dopemux/mcp/observability.py:45:class AlertSeverity(Enum):
+services/task-orchestrator/app/services/task_coordinator.py:29:from enum import Enum
+services/task-orchestrator/app/services/task_coordinator.py:40:from task_orchestrator.models import OrchestrationTask, TaskStatus
+services/task-orchestrator/app/services/task_coordinator.py:49:class CoordinationState:
+services/task-orchestrator/app/services/task_coordinator.py:80:        # State tracking
+services/task-orchestrator/app/services/task_coordinator.py:81:        self.coordination_state = CoordinationState(
+services/task-orchestrator/app/services/task_coordinator.py:118:        self.coordination_state.active_tasks = [t.id for t in tasks if t.status == TaskStatus.IN_PROGRESS]
+services/task-orchestrator/app/services/task_coordinator.py:210:                    status=TaskStatus.PENDING
+services/task-orchestrator/app/services/task_coordinator.py:406:                    if dep_task and dep_task.status != TaskStatus.COMPLETED:
+services/task-orchestrator/app/services/task_coordinator.py:472:                    task.status = TaskStatus.IN_PROGRESS
+services/task-orchestrator/app/services/task_coordinator.py:558:                title="Coordination State",
+services/task-orchestrator/app/services/task_coordinator.py:559:                description="ADHD Task Coordination State",
+services/task-orchestrator/app/services/task_coordinator.py:560:                status=TaskStatus.IN_PROGRESS,
+services/task-orchestrator/app/services/task_coordinator.py:604:            status=TaskStatus.PENDING
+services/task-orchestrator/app/services/task_coordinator.py:613:            status=TaskStatus.PENDING
+services/task-orchestrator/automation_workflows.py:14:from enum import Enum
+services/task-orchestrator/automation_workflows.py:20:class AutomationType(str, Enum):
+services/task-orchestrator/automation_workflows.py:30:class AutomationTrigger(str, Enum):
+services/task-orchestrator/app/models/coordination.py:4:from enum import Enum
+services/task-orchestrator/app/models/coordination.py:6:class PlaneType(str, Enum):
+services/task-orchestrator/app/models/coordination.py:11:class CoordinationEventType(str, Enum):
+services/task-orchestrator/app/models/coordination.py:23:class ConflictResolutionStrategy(str, Enum):
+src/dopemux/worktree_recovery.py:22:    InstanceState,
+src/dopemux/worktree_recovery.py:23:    InstanceStateManager,
+src/dopemux/worktree_recovery.py:79:        self.manager = InstanceStateManager(workspace_id, conport_port)
+src/dopemux/mcp/__init__.py:12:- SessionManager: ADHD-friendly session lifecycle management
+src/dopemux/mcp/__init__.py:26:from .token_manager import BudgetStatus, TokenBudgetManager
+src/dopemux/mcp/__init__.py:36:    "BudgetStatus",
+src/dopemux/ui/dashboard_detail.py:80:        task_table.add_columns("ID", "Type", "Summary", "Status")
+src/dopemux/ui/dashboard_detail.py:83:        health_table.add_columns("Service", "Status", "Latency (ms)", "Version")
+src/dopemux/analysis/extractor.py:431:        table.add_column("Status", style="yellow")
+services/task-orchestrator/app/core/coordinator.py:25:from enum import Enum
+services/task-orchestrator/app/core/coordinator.py:44:class PlaneType(str, Enum):
+services/task-orchestrator/app/core/coordinator.py:51:class CoordinationEventType(str, Enum):
+services/task-orchestrator/app/core/coordinator.py:104:class ConflictResolutionStrategy(str, Enum):
+services/task-orchestrator/app/models/workflow.py:12:IdeaStatus = Literal["new", "under-review", "approved", "rejected", "promoted"]
+services/task-orchestrator/app/models/workflow.py:14:EpicStatus = Literal["planned", "in-planning", "ready", "in-progress", "done"]
+services/task-orchestrator/app/models/workflow.py:56:    status: IdeaStatus = "new"
+services/task-orchestrator/app/models/workflow.py:94:    status: EpicStatus = "planned"
+services/task-orchestrator/app/models/workflow.py:149:    status: Optional[IdeaStatus] = None
+services/task-orchestrator/app/models/workflow.py:169:    status: EpicStatus = "planned"
+services/task-orchestrator/app/models/workflow.py:191:    status: Optional[EpicStatus] = None
+services/task-orchestrator/app/adapters/conport_adapter.py:27:from task_orchestrator.models import OrchestrationTask, TaskStatus, AgentType
+services/task-orchestrator/app/adapters/conport_adapter.py:111:        TaskStatus.PENDING: "TODO",
+services/task-orchestrator/app/adapters/conport_adapter.py:112:        TaskStatus.IN_PROGRESS: "IN_PROGRESS",
+services/task-orchestrator/app/adapters/conport_adapter.py:113:        TaskStatus.COMPLETED: "DONE",
+services/task-orchestrator/app/adapters/conport_adapter.py:114:        TaskStatus.BLOCKED: "BLOCKED",
+services/task-orchestrator/app/adapters/conport_adapter.py:115:        TaskStatus.NEEDS_BREAK: "IN_PROGRESS",  # ConPort doesn't have NEEDS_BREAK
+services/task-orchestrator/app/adapters/conport_adapter.py:116:        TaskStatus.CONTEXT_SWITCH: "IN_PROGRESS",  # Treat as in-progress
+services/task-orchestrator/app/adapters/conport_adapter.py:117:        TaskStatus.PAUSED: "BLOCKED"  # Paused = temporarily blocked
+services/task-orchestrator/app/adapters/conport_adapter.py:191:        "TODO": TaskStatus.PENDING,
+services/task-orchestrator/app/adapters/conport_adapter.py:192:        "IN_PROGRESS": TaskStatus.IN_PROGRESS,
+services/task-orchestrator/app/adapters/conport_adapter.py:193:        "DONE": TaskStatus.COMPLETED,
+services/task-orchestrator/app/adapters/conport_adapter.py:194:        "BLOCKED": TaskStatus.BLOCKED
+services/task-orchestrator/app/adapters/conport_adapter.py:262:        status=status_mapping.get(progress["status"], TaskStatus.PENDING),
+services/task-orchestrator/app/services/multi_team_coordination.py:15:from enum import Enum
+services/task-orchestrator/app/services/multi_team_coordination.py:21:class TeamType(str, Enum):
+services/task-orchestrator/app/services/multi_team_coordination.py:31:class CoordinationPriority(str, Enum):
+src/dopemux/mcp/session_manager.py:2:Session Manager: ADHD-friendly session lifecycle management
+src/dopemux/mcp/session_manager.py:4:The Session Manager handles the complete lifecycle of MetaMCP sessions with
+src/dopemux/mcp/session_manager.py:30:from enum import Enum
+src/dopemux/mcp/session_manager.py:37:class SessionPhase(Enum):
+src/dopemux/mcp/session_manager.py:51:class CheckpointType(Enum):
+src/dopemux/mcp/session_manager.py:147:class SessionState:
+src/dopemux/mcp/session_manager.py:176:    Manages session lifecycle with ADHD accommodations and context preservation.
+src/dopemux/mcp/session_manager.py:200:        self.active_sessions: Dict[str, SessionState] = {}
+src/dopemux/mcp/session_manager.py:213:    ) -> SessionState:
+src/dopemux/mcp/session_manager.py:221:        session_state = SessionState(
+src/dopemux/mcp/session_manager.py:253:    async def get_session(self, session_id: str) -> Optional[SessionState]:
+src/dopemux/mcp/session_manager.py:727:    async def _save_session_state(self, session: SessionState) -> None:
+src/dopemux/mcp/session_manager.py:785:    async def _load_session_state(self, session_id: str) -> Optional[SessionState]:
+src/dopemux/mcp/session_manager.py:797:            session_state = SessionState(
+services/task-orchestrator/app/core/sync.py:14:from enum import Enum
+services/task-orchestrator/app/core/sync.py:23:class SyncDirection(str, Enum):
+services/task-orchestrator/app/core/sync.py:34:class ConflictResolution(str, Enum):
+services/task-orchestrator/app/core/sync.py:647:            # Status conflicts: prefer most recent update
+services/task-orchestrator/app/adapters/schema_mapping.py:20:from task_orchestrator.models import OrchestrationTask, TaskStatus
+services/task-orchestrator/app/adapters/schema_mapping.py:303:# Status Mapping
+services/task-orchestrator/app/adapters/schema_mapping.py:306:# Status mapping constants
+services/task-orchestrator/app/adapters/schema_mapping.py:308:    TaskStatus.PENDING: "TODO",
+services/task-orchestrator/app/adapters/schema_mapping.py:309:    TaskStatus.IN_PROGRESS: "IN_PROGRESS",
+services/task-orchestrator/app/adapters/schema_mapping.py:310:    TaskStatus.COMPLETED: "DONE",
+services/task-orchestrator/app/adapters/schema_mapping.py:311:    TaskStatus.BLOCKED: "BLOCKED",
+services/task-orchestrator/app/adapters/schema_mapping.py:312:    TaskStatus.NEEDS_BREAK: "IN_PROGRESS",      # Lossy: ConPort doesn't have NEEDS_BREAK
+services/task-orchestrator/app/adapters/schema_mapping.py:313:    TaskStatus.CONTEXT_SWITCH: "IN_PROGRESS",   # Lossy: Treated as in-progress
+services/task-orchestrator/app/adapters/schema_mapping.py:314:    TaskStatus.PAUSED: "BLOCKED"                # Lossy: Paused = temporarily blocked
+services/task-orchestrator/app/adapters/schema_mapping.py:318:    "TODO": TaskStatus.PENDING,
+services/task-orchestrator/app/adapters/schema_mapping.py:319:    "IN_PROGRESS": TaskStatus.IN_PROGRESS,
+services/task-orchestrator/app/adapters/schema_mapping.py:320:    "DONE": TaskStatus.COMPLETED,
+services/task-orchestrator/app/adapters/schema_mapping.py:321:    "BLOCKED": TaskStatus.BLOCKED
+services/task-orchestrator/app/adapters/schema_mapping.py:325:def map_task_status_to_conport(status: TaskStatus) -> str:
+services/task-orchestrator/app/adapters/schema_mapping.py:326:    """Map TaskStatus enum to ConPort status string."""
+services/task-orchestrator/app/adapters/schema_mapping.py:330:def map_conport_status_to_task(status: str) -> TaskStatus:
+services/task-orchestrator/app/adapters/schema_mapping.py:331:    """Map ConPort status string to TaskStatus enum."""
+services/task-orchestrator/app/adapters/schema_mapping.py:332:    return CONPORT_STATUS_TO_TASK_STATUS.get(status, TaskStatus.PENDING)
+services/task-orchestrator/app/core/health_utils.py:10:class DependencyStatus:
+services/task-orchestrator/app/core/health_utils.py:20:) -> DependencyStatus:
+services/task-orchestrator/app/core/health_utils.py:25:        return DependencyStatus(
+services/task-orchestrator/app/core/health_utils.py:31:        return DependencyStatus(
+services/task-orchestrator/app/core/health_utils.py:38:        return DependencyStatus(
+services/task-orchestrator/app/core/health_utils.py:54:def determine_overall_status(dependencies: Dict[str, DependencyStatus], critical_deps: set = None) -> str:
+services/task-orchestrator/app/adapters/bridge_adapter.py:31:    from task_orchestrator.models import OrchestrationTask, TaskStatus, AgentType
+services/task-orchestrator/app/adapters/bridge_adapter.py:35:    TaskStatus = None
+src/dopemux/instance_state.py:2:Instance State Persistence for Session Recovery.
+src/dopemux/instance_state.py:26:class InstanceState:
+src/dopemux/instance_state.py:57:    def from_dict(cls, data: dict) -> 'InstanceState':
+src/dopemux/instance_state.py:81:class InstanceStateManager:
+src/dopemux/instance_state.py:157:    async def save_instance_state(self, state: InstanceState) -> bool:
+src/dopemux/instance_state.py:162:            state: InstanceState to persist
+src/dopemux/instance_state.py:196:    async def load_instance_state(self, instance_id: str) -> Optional[InstanceState]:
+src/dopemux/instance_state.py:204:            InstanceState if found, None otherwise
+src/dopemux/instance_state.py:227:                        return InstanceState.from_dict(result['value'])
+src/dopemux/instance_state.py:241:    async def list_all_instance_states(self) -> List[InstanceState]:
+src/dopemux/instance_state.py:246:            List of InstanceState objects
+src/dopemux/instance_state.py:277:                            states.append(InstanceState.from_dict(item['value']))
+src/dopemux/instance_state.py:324:    async def find_orphaned_instances(self) -> List[InstanceState]:
+src/dopemux/instance_state.py:329:            List of orphaned InstanceState objects
+src/dopemux/instance_state.py:342:    ) -> List[InstanceState]:
+src/dopemux/instance_state.py:354:            Filtered list of orphaned InstanceState objects
+src/dopemux/instance_state.py:537:    state: InstanceState,
+src/dopemux/instance_state.py:545:        state: InstanceState to persist
+src/dopemux/instance_state.py:553:    manager = InstanceStateManager(workspace_id, resolved_port)
+src/dopemux/instance_state.py:564:) -> Optional[InstanceState]:
+src/dopemux/instance_state.py:574:        InstanceState if found, None otherwise
+src/dopemux/instance_state.py:577:    manager = InstanceStateManager(workspace_id, resolved_port)
+src/dopemux/instance_state.py:587:) -> List[InstanceState]:
+src/dopemux/instance_state.py:596:        List of all InstanceState objects
+src/dopemux/instance_state.py:599:    manager = InstanceStateManager(workspace_id, resolved_port)
+src/dopemux/instance_state.py:623:    manager = InstanceStateManager(workspace_id, resolved_port)
+services/task-orchestrator/app/services/predictive_risk_assessment.py:16:from enum import Enum
+services/task-orchestrator/app/services/predictive_risk_assessment.py:23:class RiskLevel(str, Enum):
+services/task-orchestrator/app/services/predictive_risk_assessment.py:32:class RiskCategory(str, Enum):
+services/task-orchestrator/app/services/external_dependency_integration.py:15:from enum import Enum
+services/task-orchestrator/app/services/external_dependency_integration.py:22:class DependencyType(str, Enum):
+services/task-orchestrator/app/services/external_dependency_integration.py:32:class DependencyStatus(str, Enum):
+services/task-orchestrator/app/services/external_dependency_integration.py:33:    """Status of external dependencies."""
+services/task-orchestrator/app/services/external_dependency_integration.py:38:    UNKNOWN = "unknown"                  # Status unclear
+services/task-orchestrator/app/services/external_dependency_integration.py:53:    # Status tracking
+services/task-orchestrator/app/services/external_dependency_integration.py:54:    current_status: DependencyStatus
+services/task-orchestrator/app/services/external_dependency_integration.py:76:    status: DependencyStatus
+services/task-orchestrator/app/services/external_dependency_integration.py:103:        # Status tracking
+services/task-orchestrator/app/services/external_dependency_integration.py:183:                            status = DependencyStatus.HEALTHY
+services/task-orchestrator/app/services/external_dependency_integration.py:186:                            status = DependencyStatus.HEALTHY
+services/task-orchestrator/app/services/external_dependency_integration.py:189:                            status = DependencyStatus.DOWN
+services/task-orchestrator/app/services/external_dependency_integration.py:192:                            status = DependencyStatus.DEGRADED
+services/task-orchestrator/app/services/external_dependency_integration.py:196:                    status = DependencyStatus.DOWN
+services/task-orchestrator/app/services/external_dependency_integration.py:200:                    status = DependencyStatus.DOWN
+services/task-orchestrator/app/services/external_dependency_integration.py:225:            if status == DependencyStatus.HEALTHY:
+services/task-orchestrator/app/services/external_dependency_integration.py:331:                current_status=DependencyStatus.UNKNOWN,
+services/task-orchestrator/app/services/external_dependency_integration.py:352:                current_status=DependencyStatus.UNKNOWN,
+services/task-orchestrator/app/services/external_dependency_integration.py:390:                if result and result.status != DependencyStatus.HEALTHY:
+services/task-orchestrator/app/services/external_dependency_integration.py:431:        self, dependency: ExternalDependency, status: DependencyStatus, error: Optional[str]
+services/task-orchestrator/app/services/external_dependency_integration.py:436:        if status == DependencyStatus.DOWN:
+services/task-orchestrator/app/services/external_dependency_integration.py:444:        elif status == DependencyStatus.DEGRADED:
+services/task-orchestrator/app/services/external_dependency_integration.py:455:        self, dependency: ExternalDependency, status: DependencyStatus
+services/task-orchestrator/app/services/external_dependency_integration.py:484:                          if dep.current_status == DependencyStatus.HEALTHY)
+services/task-orchestrator/app/services/external_dependency_integration.py:504:                                    if dep.current_status == DependencyStatus.DOWN
+services/task-orchestrator/app/services/external_dependency_integration.py:559:            logger.info(f"⚠️ Dependency Status: {len(alerts)} services need attention")
+services/task-orchestrator/app/main.py:535:        logger.error(f"Status check failed: {e}")
+src/dopemux/health.py:14:from enum import Enum
+src/dopemux/health.py:26:class HealthStatus(Enum):
+src/dopemux/health.py:40:    status: HealthStatus
+src/dopemux/health.py:95:                    status=HealthStatus.CRITICAL,
+src/dopemux/health.py:127:                    status=HealthStatus.CRITICAL,
+src/dopemux/health.py:143:                status = HealthStatus.WARNING
+src/dopemux/health.py:146:                status = HealthStatus.HEALTHY
+src/dopemux/health.py:168:                status=HealthStatus.CRITICAL,
+src/dopemux/health.py:195:                status = HealthStatus.WARNING
+src/dopemux/health.py:199:                status = HealthStatus.HEALTHY
+src/dopemux/health.py:212:                status=HealthStatus.CRITICAL,
+src/dopemux/health.py:242:                status = HealthStatus.WARNING
+src/dopemux/health.py:245:                status = HealthStatus.HEALTHY
+src/dopemux/health.py:260:                status=HealthStatus.CRITICAL,
+src/dopemux/health.py:272:                status=HealthStatus.WARNING,
+src/dopemux/health.py:300:                status = HealthStatus.HEALTHY
+src/dopemux/health.py:307:                    status = HealthStatus.HEALTHY
+src/dopemux/health.py:312:                    status = HealthStatus.WARNING
+src/dopemux/health.py:330:                status=HealthStatus.CRITICAL,
+src/dopemux/health.py:355:                status = HealthStatus.WARNING
+src/dopemux/health.py:358:                status = HealthStatus.HEALTHY
+src/dopemux/health.py:387:                status=HealthStatus.CRITICAL,
+src/dopemux/health.py:403:                    status=HealthStatus.WARNING,
+src/dopemux/health.py:447:                status = HealthStatus.WARNING
+src/dopemux/health.py:450:                status = HealthStatus.HEALTHY
+src/dopemux/health.py:453:                status = HealthStatus.WARNING
+src/dopemux/health.py:471:                status=HealthStatus.CRITICAL,
+src/dopemux/health.py:483:            1 for h in results.values() if h.status == HealthStatus.CRITICAL
+src/dopemux/health.py:486:            1 for h in results.values() if h.status == HealthStatus.WARNING
+src/dopemux/health.py:489:            1 for h in results.values() if h.status == HealthStatus.HEALTHY
+src/dopemux/health.py:503:        table = Table(title=f"🧠 Dopemux Health Status - {overall_status}")
+src/dopemux/health.py:505:        table.add_column("Status", style="bold", width=12)
+src/dopemux/health.py:583:            if health.status in [HealthStatus.CRITICAL, HealthStatus.WARNING]:
+src/dopemux/analysis/processor.py:392:        table.add_column("Status", style="yellow")
+src/dopemux/mcp/token_manager.py:29:from enum import Enum
+src/dopemux/mcp/token_manager.py:35:class BudgetStatus(Enum):
+src/dopemux/mcp/token_manager.py:46:class BudgetState:
+src/dopemux/mcp/token_manager.py:74:    def status(self) -> BudgetStatus:
+src/dopemux/mcp/token_manager.py:79:            return BudgetStatus.EXCEEDED
+src/dopemux/mcp/token_manager.py:81:            return BudgetStatus.CRITICAL
+src/dopemux/mcp/token_manager.py:83:            return BudgetStatus.WARNING
+src/dopemux/mcp/token_manager.py:85:            return BudgetStatus.MODERATE
+src/dopemux/mcp/token_manager.py:87:            return BudgetStatus.HEALTHY
+src/dopemux/mcp/token_manager.py:163:        self.session_budgets: Dict[str, BudgetState] = {}
+src/dopemux/mcp/token_manager.py:233:    ) -> BudgetState:
+src/dopemux/mcp/token_manager.py:243:        budget_state = BudgetState(
+src/dopemux/mcp/token_manager.py:264:    async def switch_role_budget(self, session_id: str, new_role: str) -> BudgetState:
+src/dopemux/mcp/token_manager.py:301:    ) -> BudgetState:
+src/dopemux/mcp/token_manager.py:345:    async def get_budget_status(self, session_id: str) -> Optional[BudgetState]:
+src/dopemux/mcp/token_manager.py:424:        if budget_state.status in [BudgetStatus.WARNING, BudgetStatus.CRITICAL]:
+src/dopemux/mcp/token_manager.py:442:        if budget_state.status == BudgetStatus.CRITICAL:
+src/dopemux/mcp/token_manager.py:623:    async def _check_budget_warnings(self, budget_state: BudgetState) -> None:
+src/dopemux/mcp/token_manager.py:625:        if budget_state.status == BudgetStatus.WARNING:
+src/dopemux/mcp/token_manager.py:631:        elif budget_state.status == BudgetStatus.CRITICAL:
+src/dopemux/mcp/token_manager.py:637:        elif budget_state.status == BudgetStatus.EXCEEDED:
+src/dopemux/mcp/token_manager.py:708:    async def _save_budget_state(self, budget_state: BudgetState) -> None:
+src/dopemux/mcp/token_manager.py:731:    async def load_budget_state(self, session_id: str) -> Optional[BudgetState]:
+src/dopemux/mcp/token_manager.py:744:                    budget_state = BudgetState(
+src/dopemux/worktree_commands.py:264:        Status string: "clean", "dirty", "unknown"
+src/dopemux/embeddings/core/metrics.py:76:            logger.info("🚀 Embedding Pipeline Status")
+src/dopemux/embeddings/core/config.py:10:from enum import Enum
+src/dopemux/embeddings/core/config.py:16:class IndexType(str, Enum):
+src/dopemux/embeddings/core/config.py:26:class SecurityLevel(str, Enum):
+src/dopemux/embeddings/enhancers/consensus.py:17:from enum import Enum
+src/dopemux/embeddings/enhancers/consensus.py:40:class ModelProvider(str, Enum):
+src/dopemux/mcp/roles.py:26:from enum import Enum
+src/dopemux/mcp/roles.py:32:class EscalationTrigger(Enum):
+src/dopemux/embeddings/pipelines/sync_pipeline.py:550:            logger.info("✅ Overall Status: SUCCESS")
+src/dopemux/embeddings/pipelines/sync_pipeline.py:552:            logger.error("❌ Overall Status: FAILED")
+src/dopemux/embeddings/integrations/base.py:71:            Status dictionary with connection info
+src/dopemux/mcp/hooks.py:21:from enum import Enum
+src/dopemux/mcp/hooks.py:27:class OptimizationAction(Enum):
+src/dopemux/mcp/hooks.py:50:class BudgetStatus:
+src/dopemux/mcp/hooks.py:188:        self, call: Dict[str, Any], budget: BudgetStatus
+src/dopemux/mcp/hooks.py:238:        self, call: Dict[str, Any], budget: BudgetStatus
+src/dopemux/mcp/hooks.py:289:        self, call: Dict[str, Any], budget: BudgetStatus
+src/dopemux/mcp/hooks.py:346:        self, call: Dict[str, Any], budget: BudgetStatus
+src/dopemux/mcp/hooks.py:389:        self, call: Dict[str, Any], method: str, budget: BudgetStatus
+src/dopemux/mcp/hooks.py:438:        self, call: Dict[str, Any], projected_cost: int, budget: BudgetStatus
+src/dopemux/mcp/hooks.py:468:    async def _handle_budget_near_cap(self, call: Dict[str, Any], budget: BudgetStatus):
+src/dopemux/mcp/hooks.py:580:            return BudgetStatus(
+src/dopemux/embeddings/error_handling.py:21:    CircuitBreakerState,
+src/dopemux/embeddings/error_handling.py:47:    "CircuitBreakerState",
+src/dopemux/embeddings/integrations/conport.py:539:            Status dictionary with connection and sync information
+src/dopemux/embeddings/integrations/serena.py:790:            Status dictionary with project and sync information
+src/dopemux/mcp/conport_mcp_tools.py:23:from enum import Enum
+src/dopemux/mcp/conport_mcp_tools.py:35:class EntityType(Enum):
+src/dopemux/mcp/conport_mcp_tools.py:40:class RelationshipType(Enum):
+src/dopemux/embeddings/pipelines/base.py:12:from enum import Enum
+src/dopemux/embeddings/pipelines/base.py:21:class PipelineStage(str, Enum):
+src/dopemux/embeddings/pipelines/base.py:340:            logger.info("✅ Overall Status: SUCCESS")
+src/dopemux/embeddings/pipelines/base.py:342:            logger.error("❌ Overall Status: FAILED")

@@ -1,0 +1,1373 @@
+services/taskmaster/server.py:52:    - ConPort integration for decision tracking
+services/task-orchestrator/event_coordinator.py:386:            await self._setup_conport_tracking(event)
+services/task-orchestrator/event_coordinator.py:536:    async def _setup_conport_tracking(self, event: CoordinationEvent) -> None:
+services/task-orchestrator/event_coordinator.py:544:                target_systems=["conport"],
+services/task-orchestrator/event_coordinator.py:627:        return "conport"
+services/task-orchestrator/docs/tools-documentation.md:10:4. **Decision Management (6 tools)** - Architecture and technical decision tracking
+services/task-orchestrator/docs/tools-documentation.md:178:### 27. log_architecture_decision
+services/task-orchestrator/docs/tools-documentation.md:179:**Description**: Log architecture decisions with rationale
+services/task-orchestrator/docs/tools-documentation.md:180:**Input**: Decision details, rationale, confidence
+services/task-orchestrator/docs/tools-documentation.md:182:**Use Case**: Track architectural decisions for future reference
+services/task-orchestrator/docs/tools-documentation.md:184:### 28. track_decision_impact
+services/task-orchestrator/docs/tools-documentation.md:185:**Description**: Track impact of decisions on project outcomes
+services/task-orchestrator/docs/tools-documentation.md:188:**Use Case**: Learn from decision outcomes to improve future decisions
+services/task-orchestrator/docs/tools-documentation.md:190:### 29. review_decision_history
+services/task-orchestrator/docs/tools-documentation.md:191:**Description**: Review historical decisions for patterns
+services/task-orchestrator/docs/tools-documentation.md:192:**Input**: Time range, decision type
+services/task-orchestrator/docs/tools-documentation.md:194:**Use Case**: Identify recurring decision patterns
+services/task-orchestrator/docs/tools-documentation.md:196:### 30. validate_decision_consistency
+services/task-orchestrator/docs/tools-documentation.md:197:**Description**: Validate new decisions against existing architecture
+services/task-orchestrator/docs/tools-documentation.md:198:**Input**: New decision, existing decisions
+services/task-orchestrator/docs/tools-documentation.md:202:### 31. generate_decision_template
+services/task-orchestrator/docs/tools-documentation.md:203:**Description**: Generate standardized decision templates
+services/task-orchestrator/docs/tools-documentation.md:205:**Output**: Pre-formatted decision template
+services/task-orchestrator/docs/tools-documentation.md:206:**Use Case**: Standardize decision documentation
+services/task-orchestrator/docs/tools-documentation.md:208:### 32. assess_decision_risk
+services/task-orchestrator/docs/tools-documentation.md:209:**Description**: Assess risk of proposed decisions
+services/task-orchestrator/docs/tools-documentation.md:212:**Use Case**: Evaluate decision safety before implementation
+services/task-orchestrator/docs/tools-documentation.md:238:**Use Case**: Guide decision-making based on risk tolerance
+services/task-orchestrator/docs/tools-documentation.md:281:3. **Service Coordination**: Use service coordination tools with decision management for enterprise deployments
+src/dopemux/adhd/context_manager.py:5:files, cursor positions, mental model, and decision history.
+src/dopemux/adhd/context_manager.py:41:        self.decisions = kwargs.get("decisions", [])
+src/dopemux/adhd/context_manager.py:62:            "decisions": self.decisions,
+src/dopemux/adhd/context_manager.py:711:            decisions=self._get_recent_decisions(),
+src/dopemux/adhd/context_manager.py:812:    def _get_recent_decisions(self) -> List[Dict[str, Any]]:
+src/dopemux/adhd/context_manager.py:813:        """Get recent development decisions."""
+services/task-orchestrator/docs/pm-plane-architecture.md:37:- **API**: MCP protocol with progress logging and decision tracking
+services/task-orchestrator/docs/pm-plane-architecture.md:38:- **Data Model**: Progress entries, decisions, patterns, relationships
+services/task-orchestrator/docs/pm-plane-architecture.md:70:- **Event Types**: task_updated, decision_logged, progress_changed
+services/task-orchestrator/docs/pm-plane-architecture.md:75:- **Human Override**: Critical decisions flagged for manual review
+services/task-orchestrator/docs/pm-plane-architecture.md:114:- **ConPort**: `log_progress`, `update_progress`, `semantic_search`, `get_decisions`
+services/task-orchestrator/docs/pm-plane-architecture.md:130:5. Default → ConPort (decision logging)
+services/task-orchestrator/docs/pm-plane-architecture.md:155:await conport_client.log_progress(
+services/task-orchestrator/docs/pm-plane-architecture.md:170:  "conport_id": 789,
+services/task-orchestrator/docs/pm-plane-architecture.md:185:  "target_systems": ["conport", "task_orchestrator"],
+src/dopemux/profile_models.py:143:        mcps: List of MCP server names to load (conport required)
+src/dopemux/profile_models.py:168:        description="List of MCP server names to load (conport required)",
+src/dopemux/profile_models.py:193:    def validate_conport_required(cls, v: List[str]) -> List[str]:
+src/dopemux/profile_models.py:194:        """Validate that 'conport' is present in MCP list."""
+src/dopemux/profile_models.py:195:        if "conport" not in v:
+src/dopemux/profile_models.py:197:                "Profile is invalid: 'conport' is required in all profiles (memory authority). "
+src/dopemux/profile_models.py:198:                "Fix: Add 'conport' to mcps array"
+src/dopemux/profile_models.py:220:                    "mcps": ["conport", "serena-v2", "dope-context"],
+src/dopemux/profile_models.py:316:                            "mcps": ["conport", "serena-v2"]
+src/dopemux/profile_models.py:322:                            "mcps": ["conport", "zen", "gpt-researcher"]
+src/dopemux/profile_models.py:332:    "conport",          # Memory authority (REQUIRED)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:305:        # 6. Apply self-consistency for critical decisions
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:430:        - Chain-of-thought reasoning for complex decisions
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:459:                1. Task Type Classification: Determine if this is planning/decision-making, implementation/coding, analysis/research, or validation/review
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:465:                - Complex architecture decisions → ZEN (multi-perspective validation)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:499:                Example 1 - Good Fit: "Database schema design" → CONPORT (architectural decision logging)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:645:            # ConPort integration (historical decisions)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:647:                if hasattr(self.brain, 'orchestrator') and self.brain.orchestrator and self.brain.orchestrator.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:648:                    recent_decisions = await self.brain.orchestrator.conport_adapter.get_recent_decisions(limit=3)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:649:                    enhancements["recent_patterns"] = [d.get("summary", "") for d in recent_decisions]
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:984:                    "Strategic roadmap creation → CONPORT (decision tracking)",
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1697:    CONPORT = "conport"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1710:    conport_id: Optional[int] = (
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1798:        # Tasks now queried from ConPort via conport_adapter
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1799:        self.conport_adapter = (
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1927:            from adapters.conport_adapter import ConPortEventAdapter
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1928:            from conport_mcp_client import ConPortMCPClient
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1931:            conport_client = ConPortMCPClient(self.mcp_tools)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1932:            self.conport_adapter = ConPortEventAdapter(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1933:                workspace_id=self.workspace_id, conport_client=conport_client
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1940:            self.conport_adapter = None
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1947:                    "decision_logging",
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:1985:                conport_client=None,  # Could wire ConPort client if needed
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2106:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2107:                conport_id = await self.conport_adapter.create_task_in_conport(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2110:                orchestration_task.conport_id = conport_id
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2112:                    f"📊 Task stored in ConPort: {orchestration_task.title} (ID: {conport_id})"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2127:                target_systems=["conport", "local_adhd"],
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2166:                if target_system == "conport":
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2167:                    await self._sync_to_conport(event)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2180:    async def _sync_to_conport(self, event: SyncEvent) -> None:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2181:        """Sync event to ConPort for decision/progress tracking."""
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2194:                if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2195:                    conport_id = (
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2196:                        await self.conport_adapter.create_task_in_conport_from_sync(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2201:                        f"📊 Synced to ConPort: {event.task_id} -> ConPort ID: {conport_id}"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2352:                        claude_decision = agent_map.get(recommendation)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2353:                        if claude_decision:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2354:                            logger.info(f"🧠 Claude recommended agent: {claude_decision.value}")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2356:                            return claude_decision
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2384:                for keyword in ["decision", "architecture", "pattern", "strategy"]
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2445:            1. Task type (decision-making, coding, analysis, planning)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2526:                dispatch_success = await self._dispatch_to_conport(task)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2551:    async def _dispatch_to_conport(self, task: OrchestrationTask) -> bool:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2553:        Dispatch task to ConPort for decision/progress tracking.
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2561:            if task.conport_id:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2563:                logger.info(f"📊 ConPort update: {task.title} (ID: {task.conport_id})")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2565:                await mcp__conport__update_progress(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2567:                    progress_id=task.conport_id,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2572:                logger.debug(f"Updated ConPort progress entry {task.conport_id}")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2578:                result = await mcp__conport__log_progress(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2584:                task.conport_id = result["id"]
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2588:            # If this is a decision/architecture task, also log to decisions
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2589:            if "decision" in task.title.lower() or "architecture" in task.title.lower():
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2590:                logger.info(f"💡 Logging architecture decision: {task.title}")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2592:                # Would call: await mcp__conport__log_decision(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2595:                #     rationale=task.description,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2648:            #         if task.conport_id:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2649:            #             await mcp__conport__update_progress(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2651:            #                 progress_id=task.conport_id,
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2800:    async def _get_task_count_from_conport(self) -> int:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2803:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2804:                all_tasks = await self.conport_adapter.get_all_tasks_from_conport()
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2818:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2819:                active_tasks = await self.conport_adapter.get_all_tasks_from_conport(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3033:            elif event_type == "task.decision_logged":
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3034:                await self._handle_decision_logged(event_data)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3055:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3059:                await self.conport_adapter.sync_imported_tasks(task_count, sprint_id)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3076:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3080:                await self.conport_adapter.update_task_status(task_id, "IN_PROGRESS")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3094:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3096:                await self.conport_adapter.update_task_status(task_id, "BLOCKED")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3109:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3111:                await self.conport_adapter.update_task_status(task_id, "DONE")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3128:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3130:                await self.conport_adapter.update_task_progress(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3137:    async def _handle_decision_logged(self, event: Dict[str, Any]) -> None:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3138:        """Handle decision_logged event from Integration Bridge."""
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3140:            decision_summary = event.data.get("summary", "")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3141:            decision_id = event.data.get("decision_id", "")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3143:            logger.info(f"📥 Decision logged: {decision_summary} (ID: {decision_id})")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3145:            # Link decision to relevant tasks in ConPort
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3146:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3148:                    f"📊 Linking decision {decision_id} to related tasks in ConPort"
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3150:                await self.conport_adapter.link_decision_to_tasks(decision_id)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3153:            logger.error(f"Failed to handle decision_logged: {e}")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3167:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3171:                await self.conport_adapter.adjust_task_recommendations(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3189:            if self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3191:                await self.conport_adapter.update_task_status(task_id, "IN_PROGRESS")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3260:                "orchestrated_tasks": await self._get_task_count_from_conport(),
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3344:            if not self.conport_adapter:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3348:            progress_entries = await self.conport_adapter.get_progress_entries(
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:18:#### 1. ConPort Adapter (`conport_adapter.py`)
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:19:**Location**: `services/task-orchestrator/adapters/conport_adapter.py`
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:24:- Cross-plane queries for decision enrichment
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:28:- `orchestration_task_to_conport_progress()`: Task → ConPort transformation
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:29:- `conport_progress_to_orchestration_task()`: Reverse transformation
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:77:     + 0.2 × (decision_count ÷ 10)
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:111:- ✅ Task 309: Implement conport_adapter.py
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:146:- **Relationship Mapping**: Dependencies, decisions, and task connections
+services/task-orchestrator/docs/DOPESMUX_ULTRA_UI_MVP_COMPLETION.md:240:- **ConPort**: Operational with 143 decisions logged
+services/task-orchestrator/test_conport_sync.py:22:from adapters.conport_adapter import ConPortEventAdapter, safe_orchestration_task_to_conport_progress, safe_conport_progress_to_orchestration_task
+services/task-orchestrator/test_conport_sync.py:51:    progress_data = safe_orchestration_task_to_conport_progress(task, WORKSPACE_ID)
+services/task-orchestrator/test_conport_sync.py:59:        restored_task = safe_conport_progress_to_orchestration_task(progress_data)
+services/task-orchestrator/test_conport_sync.py:81:async def test_conport_adapter_operations():
+services/task-orchestrator/test_conport_sync.py:101:    conport_id = await adapter.create_task_in_conport(test_task)
+services/task-orchestrator/test_conport_sync.py:102:    if conport_id is None:  # Mock returns None
+services/task-orchestrator/test_conport_sync.py:103:        logger.info("✅ Adapter create_task_in_conport handled gracefully (mock)")
+services/task-orchestrator/test_conport_sync.py:105:        logger.info(f"✅ Task created with ConPort ID: {conport_id}")
+services/task-orchestrator/test_conport_sync.py:108:    tasks = await adapter.get_all_tasks_from_conport()
+services/task-orchestrator/test_conport_sync.py:112:    await adapter.sync_dependencies_to_conport(test_task)
+services/task-orchestrator/test_conport_sync.py:164:        ("ConPort Adapter Operations", test_conport_adapter_operations),
+src/dopemux/orchestrator/adhd_orchestrator.py:230:        # Log the decision
+src/dopemux/orchestrator/adhd_orchestrator.py:233:            context=f"User decision: {selected_action}"
+services/task-orchestrator/conport_mcp_client.py:8:Component 5: Read operations (get_decisions, get_patterns, semantic_search, etc.)
+services/task-orchestrator/conport_mcp_client.py:53:        - mcp__conport__semantic_search
+services/task-orchestrator/conport_mcp_client.py:55:        - mcp__conport__semantic_search_conport
+services/task-orchestrator/conport_mcp_client.py:57:        preferred = getattr(self.mcp_tools, "mcp__conport__semantic_search", None)
+services/task-orchestrator/conport_mcp_client.py:59:            return preferred, "mcp__conport__semantic_search"
+services/task-orchestrator/conport_mcp_client.py:61:        legacy = getattr(self.mcp_tools, "mcp__conport__semantic_search_conport", None)
+services/task-orchestrator/conport_mcp_client.py:63:            return legacy, "mcp__conport__semantic_search_conport"
+services/task-orchestrator/conport_mcp_client.py:67:            "(expected mcp__conport__semantic_search or mcp__conport__semantic_search_conport)"
+services/task-orchestrator/conport_mcp_client.py:116:            result = await self.mcp_tools.mcp__conport__log_progress(**params)
+services/task-orchestrator/conport_mcp_client.py:160:            result = await self.mcp_tools.mcp__conport__update_progress(**params)
+services/task-orchestrator/conport_mcp_client.py:204:            result = await self.mcp_tools.mcp__conport__get_progress(**params)
+services/task-orchestrator/conport_mcp_client.py:213:    async def link_conport_items(
+services/task-orchestrator/conport_mcp_client.py:228:            source_item_type: Type of source item (progress_entry, decision, etc.)
+services/task-orchestrator/conport_mcp_client.py:255:            result = await self.mcp_tools.mcp__conport__link_conport_items(**params)
+services/task-orchestrator/conport_mcp_client.py:289:            result = await self.mcp_tools.mcp__conport__update_active_context(**params)
+services/task-orchestrator/conport_mcp_client.py:298:    async def log_decision(
+services/task-orchestrator/conport_mcp_client.py:302:        rationale: Optional[str] = None,
+services/task-orchestrator/conport_mcp_client.py:307:        Log decision to ConPort.
+services/task-orchestrator/conport_mcp_client.py:312:            rationale: Optional decision rationale
+services/task-orchestrator/conport_mcp_client.py:328:            if rationale:
+services/task-orchestrator/conport_mcp_client.py:329:                params["rationale"] = rationale
+services/task-orchestrator/conport_mcp_client.py:338:            result = await self.mcp_tools.mcp__conport__log_decision(**params)
+services/task-orchestrator/conport_mcp_client.py:340:            logger.debug(f"ConPort log_decision: {summary}")
+services/task-orchestrator/conport_mcp_client.py:344:            logger.error(f"ConPort log_decision failed: {e}")
+services/task-orchestrator/conport_mcp_client.py:351:    async def get_decisions(
+services/task-orchestrator/conport_mcp_client.py:359:        Get decisions from ConPort.
+services/task-orchestrator/conport_mcp_client.py:363:            limit: Optional limit on number of decisions
+services/task-orchestrator/conport_mcp_client.py:364:            tags_filter_include_any: Filter decisions that include ANY of these tags
+services/task-orchestrator/conport_mcp_client.py:365:            tags_filter_include_all: Filter decisions that include ALL of these tags
+services/task-orchestrator/conport_mcp_client.py:368:            Dict with {"result": [decisions]}
+services/task-orchestrator/conport_mcp_client.py:386:            result = await self.mcp_tools.mcp__conport__get_decisions(**params)
+services/task-orchestrator/conport_mcp_client.py:388:            logger.debug(f"ConPort get_decisions: {len(result.get('result', []))} decisions")
+services/task-orchestrator/conport_mcp_client.py:392:            logger.error(f"ConPort get_decisions failed: {e}")
+services/task-orchestrator/conport_mcp_client.py:430:            result = await self.mcp_tools.mcp__conport__get_system_patterns(**params)
+services/task-orchestrator/conport_mcp_client.py:453:            item_type: Type of item (decision, progress_entry, system_pattern)
+services/task-orchestrator/conport_mcp_client.py:482:            result = await self.mcp_tools.mcp__conport__get_linked_items(**params)
+services/task-orchestrator/conport_mcp_client.py:553:    async def semantic_search_conport(
+services/task-orchestrator/conport_mcp_client.py:598:            result = await self.mcp_tools.mcp__conport__get_active_context(**params)
+services/task-orchestrator/conport_mcp_client.py:607:    async def search_decisions_fts(
+services/task-orchestrator/conport_mcp_client.py:614:        Full-text search across decisions.
+services/task-orchestrator/conport_mcp_client.py:622:            Dict with matching decisions
+services/task-orchestrator/conport_mcp_client.py:635:            result = await self.mcp_tools.mcp__conport__search_decisions_fts(**params)
+services/task-orchestrator/conport_mcp_client.py:637:            logger.debug(f"ConPort search_decisions_fts: '{query_term}' -> {len(result.get('results', []))} results")
+services/task-orchestrator/conport_mcp_client.py:641:            logger.error(f"ConPort search_decisions_fts failed: {e}")
+services/task-orchestrator/conport_mcp_client.py:674:            result = await self.mcp_tools.mcp__conport__get_custom_data(**params)
+services/task-orchestrator/conport_mcp_client.py:712:            result = await self.mcp_tools.mcp__conport__log_custom_data(**params)
+services/task-orchestrator/conport_mcp_client.py:824:    async def batch_log_decisions(
+services/task-orchestrator/conport_mcp_client.py:827:        decisions: List[Dict[str, Any]],
+services/task-orchestrator/conport_mcp_client.py:831:        Log multiple decisions in parallel.
+services/task-orchestrator/conport_mcp_client.py:835:            decisions: List of decision dicts (each with summary, rationale, etc.)
+services/task-orchestrator/conport_mcp_client.py:839:            List of results, one per decision
+services/task-orchestrator/conport_mcp_client.py:844:        for decision in decisions:
+services/task-orchestrator/conport_mcp_client.py:845:            decision_with_workspace = {**decision, "workspace_id": workspace_id}
+services/task-orchestrator/conport_mcp_client.py:847:                "method": "log_decision",
+services/task-orchestrator/conport_mcp_client.py:848:                "kwargs": decision_with_workspace
+services/task-orchestrator/conport_mcp_client.py:851:        logger.info(f"Batch logging {len(decisions)} decisions in parallel")
+services/task-orchestrator/performance_optimizer.py:77:    rationale: str
+services/task-orchestrator/performance_optimizer.py:106:    def __init__(self, conport_client=None, pal_client=None):
+services/task-orchestrator/performance_optimizer.py:107:        self.conport = conport_client
+services/task-orchestrator/performance_optimizer.py:301:        if self.conport:
+services/task-orchestrator/performance_optimizer.py:303:                if not hasattr(self.conport, method_name):
+services/task-orchestrator/performance_optimizer.py:306:                    result = getattr(self.conport, method_name)()
+services/task-orchestrator/performance_optimizer.py:487:                rationale="Match high-energy tasks to peak hours for better focus",
+src/dopemux/orchestrator/main_orchestrator.py:15:from ..tools.conport_client import ConPortClient
+src/dopemux/orchestrator/main_orchestrator.py:58:        self.conport_client = ConPortClient()
+src/dopemux/orchestrator/main_orchestrator.py:127:        if not method or not hasattr(self.conport_client, method):
+src/dopemux/orchestrator/main_orchestrator.py:134:                self.conport_client,
+src/dopemux/orchestrator/main_orchestrator.py:140:            return await getattr(self.conport_client, method)(**kwargs)
+services/task-orchestrator/test_integration_bridge_events.py:100:        decision_logged_event = {
+services/task-orchestrator/test_integration_bridge_events.py:102:            "event_type": "decision_logged",
+services/task-orchestrator/test_integration_bridge_events.py:105:                "decision_id": "test-decision-001"
+services/task-orchestrator/test_integration_bridge_events.py:112:            json=decision_logged_event
+services/task-orchestrator/task_decomposition_endpoint.py:54:    conport_persisted: bool = False
+services/task-orchestrator/task_decomposition_endpoint.py:63:    conport_adapter,  # ConPortEventAdapter instance (via DopeconBridge)
+services/task-orchestrator/task_decomposition_endpoint.py:83:        conport_adapter: ConPort adapter for persistence
+services/task-orchestrator/task_decomposition_endpoint.py:190:    conport_persisted = False
+services/task-orchestrator/task_decomposition_endpoint.py:195:        await conport_adapter.update_progress_entry(
+services/task-orchestrator/task_decomposition_endpoint.py:209:            subtask_entry = await conport_adapter.create_progress_entry(
+services/task-orchestrator/task_decomposition_endpoint.py:223:            await conport_adapter.link_items(
+services/task-orchestrator/task_decomposition_endpoint.py:231:        conport_persisted = True
+services/task-orchestrator/task_decomposition_endpoint.py:294:        conport_persisted=conport_persisted,
+src/dopemux/auto_configurator.py:89:            if "conport" in mcp_servers:
+src/dopemux/auto_configurator.py:90:                conport_config = mcp_servers["conport"]
+src/dopemux/auto_configurator.py:91:                args = conport_config.get("args", [])
+src/dopemux/auto_configurator.py:172:            if "conport" in mcp_servers:
+src/dopemux/auto_configurator.py:173:                old_args = mcp_servers["conport"].get("args", []).copy()
+src/dopemux/auto_configurator.py:174:                new_args = self._update_conport_args(old_args, workspace)
+src/dopemux/auto_configurator.py:178:                        mcp_servers["conport"]["args"] = new_args
+src/dopemux/auto_configurator.py:229:    def _update_conport_args(self, args: List[str], workspace: Path) -> List[str]:
+services/task-orchestrator/claude_context_manager.py:63:    recent_decisions: List[Dict[str, Any]] = None
+services/task-orchestrator/claude_context_manager.py:77:        if self.recent_decisions is None:
+services/task-orchestrator/claude_context_manager.py:78:            self.recent_decisions = []
+services/task-orchestrator/claude_context_manager.py:201:- ✅ **Decision Linking**: Code changes linked to architectural decisions in ConPort
+services/task-orchestrator/test_conport_http_integration.py:9:from adapters.conport_adapter import ConPortEventAdapter
+services/task-orchestrator/test_conport_http_integration.py:15:async def test_conport_adapter():
+services/task-orchestrator/test_conport_http_integration.py:23:    conport_url = os.getenv("CONPORT_URL", "http://localhost:8005")
+services/task-orchestrator/test_conport_http_integration.py:24:    logger.info(f"📡 Using ConPort URL: {conport_url}")
+services/task-orchestrator/test_conport_http_integration.py:26:    async with ConPortEventAdapter(workspace_id, conport_url) as adapter:
+services/task-orchestrator/test_conport_http_integration.py:32:            entries = await adapter.get_all_tasks_from_conport()
+services/task-orchestrator/test_conport_http_integration.py:38:        logger.info("📝 Testing create_task_in_conport...")
+services/task-orchestrator/test_conport_http_integration.py:51:            conport_id = await adapter.create_task_in_conport(test_task)
+services/task-orchestrator/test_conport_http_integration.py:52:            if conport_id:
+services/task-orchestrator/test_conport_http_integration.py:53:                logger.info(f"✅ Created test task in ConPort with ID: {conport_id}")
+services/task-orchestrator/test_conport_http_integration.py:72:    asyncio.run(test_conport_adapter())
+services/task-orchestrator/test_coordination_integration.py:143:        from adapters.conport_adapter import safe_orchestration_task_to_conport_progress
+services/task-orchestrator/test_coordination_integration.py:160:        progress_data = safe_orchestration_task_to_conport_progress(test_task, "/Users/hue/code/dopemux-mvp")
+services/task-orchestrator/orchestrator_integration_test.py:115:async def test_conport_integration():
+services/task-orchestrator/orchestrator_integration_test.py:116:    """Test integration with ConPort for decision logging."""
+services/task-orchestrator/orchestrator_integration_test.py:119:    # Simulate ConPort decision logging
+services/task-orchestrator/orchestrator_integration_test.py:120:    test_decisions = [
+services/task-orchestrator/orchestrator_integration_test.py:123:            "rationale": "Enables ADHD-optimized cross-team workflow orchestration",
+services/task-orchestrator/orchestrator_integration_test.py:129:    for decision in test_decisions:
+services/task-orchestrator/orchestrator_integration_test.py:130:        logger.info(f"✅ Would log to ConPort: {decision['summary']}")
+services/task-orchestrator/orchestrator_integration_test.py:158:        ("ConPort Integration", test_conport_integration),
+src/dopemux/extraction/synthesizer.py:5:optimized for ADHD-friendly consumption and strategic decision making.
+src/dopemux/extraction/synthesizer.py:426:        # Next actions (chunked decision support)
+services/task-orchestrator/deployment_orchestration.py:115:    - Smart rollback decision making
+services/task-orchestrator/deployment_orchestration.py:121:    def __init__(self, conport_client=None, pal_client=None):
+services/task-orchestrator/deployment_orchestration.py:122:        self.conport = conport_client
+services/task-orchestrator/intelligence/predictive_orchestrator.py:65:        rationale: Human-readable explanation
+services/task-orchestrator/intelligence/predictive_orchestrator.py:77:    rationale: str
+services/task-orchestrator/intelligence/predictive_orchestrator.py:144:            logger.info(f"  Rationale: {rec.rationale}")
+services/task-orchestrator/intelligence/predictive_orchestrator.py:222:                rationale=self._generate_rationale(task, context, score),
+services/task-orchestrator/intelligence/predictive_orchestrator.py:338:    def _generate_rationale(
+services/task-orchestrator/intelligence/predictive_orchestrator.py:565:            # Generate rationale from features
+services/task-orchestrator/intelligence/predictive_orchestrator.py:567:            rationale = self._generate_ml_rationale(
+services/task-orchestrator/intelligence/predictive_orchestrator.py:579:                rationale=rationale,
+services/task-orchestrator/intelligence/predictive_orchestrator.py:646:    def _generate_ml_rationale(
+services/task-orchestrator/intelligence/predictive_orchestrator.py:652:        """Generate human-readable rationale from ML prediction."""
+services/task-orchestrator/intelligence/predictive_orchestrator.py:805:                rec.rationale += " (rule-based - ML training)"
+services/task-orchestrator/intelligence/predictive_orchestrator.py:830:                rec.rationale += " (rule-based fallback)"
+services/task-orchestrator/intelligence/predictive_orchestrator.py:945:                rec.rationale = f"ML + Rules: {ml_rec.rationale}"
+services/task-orchestrator/intelligence/predictive_orchestrator.py:996:            logger.info(f"  {rec.rationale}")
+services/task-orchestrator/pal_client.py:158:  "rationale": "detailed reasoning for prioritization"
+services/task-orchestrator/pal_client.py:183:                        'rationale': 'Fallback to original order'
+services/task-orchestrator/pal_client.py:194:                'rationale': 'Zen prioritization unavailable'
+src/dopemux/worktree_name_inferrer.py:5:decision paralysis and naming cognitive load.
+src/dopemux/worktree_name_inferrer.py:7:ADHD Optimization: Smart defaults > manual naming decisions.
+src/dopemux/worktree_name_inferrer.py:279:        ADHD Optimization: One clear choice, no decisions needed.
+services/task-orchestrator/intelligence/dynamic_batcher.py:38:    confidence: float  # 0.0-1.0 confidence in decision
+services/task-orchestrator/intelligence/dynamic_batcher.py:57:    Performance: < 50ms per re-batch decision
+services/task-orchestrator/intelligence/dynamic_batcher.py:352:        decision = check_rebatch(batch, completed_task, current_state, previous_state)
+services/task-orchestrator/intelligence/dynamic_batcher.py:353:        if decision.should_rebatch:
+services/task-orchestrator/intelligence/dynamic_batcher.py:354:            logger.info(f"Re-batching recommended: {decision.reason}")
+services/task-orchestrator/intelligence/dynamic_batcher.py:355:            # Re-batch with decision.recommended_strategy
+src/dopemux/profile_wizard.py:32:        "conport",
+src/dopemux/profile_wizard.py:100:            selected_mcps = ["serena-v2", "conport"]
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:13:     + 0.2 * (decision_count / 10)   # Working memory load
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:80:            "decision_count": 0.2,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:98:        decision_count_load: Load from active decisions
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:112:    decision_count_load: float = 0.0
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:126:            "decision_count_load": self.decision_count_load,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:143:            conport_client=conport,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:159:        "decision_count": 0.2,       # Working memory load
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:168:        conport_client: Optional[Any] = None,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:180:            conport_client: ConPort MCP client (None for demo mode)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:188:            For demo/testing, you can omit workspace_id and conport_client.
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:193:        self.conport = conport_client
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:218:        decision_count: int = 0,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:234:            decision_count: Active decisions
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:290:            decision_count_load=0.2 * min(decision_count / 10.0, 1.0),
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:305:             + 0.2 * (decision_count / 10)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:318:        task_complexity, decision_count, switch_count, interruptions = await asyncio.gather(
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:320:            self._get_cached_decision_count(),
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:330:        decision_load = self.weights["decision_count"] * min(decision_count / 10.0, 1.0)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:335:        total_load = task_load + decision_load + switch_load + break_load + interrupt_load
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:346:                "decision_count": decision_count,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:353:            decision_count_load=decision_load,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:394:    async def _get_cached_decision_count(self) -> int:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:395:        """Get in-progress decision count (cached 30 seconds)."""
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:396:        cache_key = "decision_count"
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:402:        if not self.conport:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:408:            in_progress = await self.conport.get_progress(
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:415:            logger.debug("Failed to fetch decision count: %s", e)
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:479:        if not self.conport:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:483:            last_break = await self.conport.get_custom_data(
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:589:    conport_client: Any,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:597:        conport_client: ConPort MCP client
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:606:            conport_client=conport
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:615:        conport_client=conport_client,
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:637:    def __init__(self, workspace_id: str, conport_client: Any):
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:639:        self.conport_client = conport_client
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:642:            conport_client=conport_client
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:766:async def get_task_adjuster(workspace_id: str, conport_client: Any) -> CognitiveTaskAdjuster:
+services/task-orchestrator/intelligence/cognitive_load_balancer.py:770:    return CognitiveTaskAdjuster(workspace_id, conport_client)
+src/dopemux/worktree_recovery.py:5:- Max 3 options to reduce decision paralysis
+src/dopemux/worktree_recovery.py:24:    resolve_conport_port,
+src/dopemux/worktree_recovery.py:65:        conport_port: int = 3004,
+src/dopemux/worktree_recovery.py:74:            conport_port: ConPort API port
+src/dopemux/worktree_recovery.py:79:        self.manager = InstanceStateManager(workspace_id, conport_port)
+src/dopemux/worktree_recovery.py:443:    conport_port: Optional[int] = None
+src/dopemux/worktree_recovery.py:450:        conport_port: ConPort API port
+src/dopemux/worktree_recovery.py:457:        resolved_port = resolve_conport_port(conport_port)
+src/dopemux/claude_tools/session_manager.py:58:        self.conport_available = self._check_conport_availability()
+src/dopemux/claude_tools/session_manager.py:60:    def _check_conport_availability(self) -> bool:
+src/dopemux/claude_tools/session_manager.py:69:            from ..tools.conport_client import ConPortClient
+src/dopemux/claude_tools/session_manager.py:70:            self.conport_client = ConPortClient(self.workspace_id)
+src/dopemux/claude_tools/session_manager.py:76:    def _store_session_in_conport(self, session_data: Dict[str, Any]) -> bool:
+src/dopemux/claude_tools/session_manager.py:86:        if not self.conport_available:
+src/dopemux/claude_tools/session_manager.py:91:            result = self.conport_client.log_custom_data(
+src/dopemux/claude_tools/session_manager.py:101:    def _retrieve_sessions_from_conport(self) -> List[Dict[str, Any]]:
+src/dopemux/claude_tools/session_manager.py:108:        if not self.conport_available:
+src/dopemux/claude_tools/session_manager.py:112:            result = self.conport_client.get_custom_data(category="claude_tools_sessions")
+src/dopemux/update/phases.py:283:        conport_db = self.project_root / ".dopemux" / "conport.db"
+src/dopemux/update/phases.py:284:        if conport_db.exists():
+src/dopemux/update/phases.py:285:            shutil.copy2(conport_db, db_backup_dir / "conport.db")
+src/dopemux/update/phases.py:587:            mcp_services = ["mas-sequential-thinking", "conport", "zen", "pal"]
+services/task-orchestrator/intelligence/context_switch_recovery.py:18:2. Automatic context capture (screenshots, files, cursor, decisions)
+services/task-orchestrator/intelligence/context_switch_recovery.py:28:- ConPort: Recent decisions, in-progress tasks
+services/task-orchestrator/intelligence/context_switch_recovery.py:95:    recent_decisions: List[Dict[str, Any]] = field(default_factory=list)
+services/task-orchestrator/intelligence/context_switch_recovery.py:119:    - Captures current context (screenshot, files, decisions)
+services/task-orchestrator/intelligence/context_switch_recovery.py:128:            conport_client=conport,
+services/task-orchestrator/intelligence/context_switch_recovery.py:145:        conport_client: Any,
+services/task-orchestrator/intelligence/context_switch_recovery.py:156:            conport_client: ConPort MCP client for decisions/tasks
+services/task-orchestrator/intelligence/context_switch_recovery.py:163:        self.conport = conport_client
+services/task-orchestrator/intelligence/context_switch_recovery.py:368:        - Last 3 decisions made (from ConPort)
+services/task-orchestrator/intelligence/context_switch_recovery.py:396:            in_progress = await self.conport.get_progress(
+services/task-orchestrator/intelligence/context_switch_recovery.py:404:        # 4. Recent decisions
+services/task-orchestrator/intelligence/context_switch_recovery.py:406:            decisions = await self.conport.get_decisions(
+services/task-orchestrator/intelligence/context_switch_recovery.py:410:            recovery.recent_decisions = decisions.get("result", [])
+services/task-orchestrator/intelligence/context_switch_recovery.py:412:            logger.info(f"⚠️  Could not retrieve decisions: {e}")
+services/task-orchestrator/intelligence/context_switch_recovery.py:461:         Last decision: Use SHA-256 for code challenge."
+services/task-orchestrator/intelligence/context_switch_recovery.py:480:        if recovery.recent_decisions:
+services/task-orchestrator/intelligence/context_switch_recovery.py:481:            last_decision = recovery.recent_decisions[0]
+services/task-orchestrator/intelligence/context_switch_recovery.py:482:            decision_summary = last_decision.get("summary", "")
+services/task-orchestrator/intelligence/context_switch_recovery.py:483:            if decision_summary:
+services/task-orchestrator/intelligence/context_switch_recovery.py:484:                summary_parts.append(f"\n\n💡 Last decision: {decision_summary}")
+services/task-orchestrator/intelligence/context_switch_recovery.py:500:        - Recent decisions
+services/task-orchestrator/intelligence/context_switch_recovery.py:633:            await self.conport.log_custom_data(
+src/dopemux/startup_hints.py:74:        "description": "Log architectural decisions with rationale to ConPort",
+src/dopemux/startup_hints.py:75:        "usage": "dopemux decisions list --workspace .",
+src/dopemux/startup_hints.py:203:        "usage": "dopemux decisions list (query recorded sessions)",
+src/dopemux/events/types.py:60:        DECISION_LOGGED = "decision_logged"
+src/dopemux/update/rollback.py:340:            conport_backup = db_backup_dir / "conport.db"
+src/dopemux/update/rollback.py:341:            if conport_backup.exists():
+src/dopemux/update/rollback.py:342:                conport_target = self.project_root / ".dopemux" / "conport.db"
+src/dopemux/update/rollback.py:343:                shutil.copy2(conport_backup, conport_target)
+src/dopemux/mcp/parallel_executor.py:121:            results = await executor.execute_batch(conport_client, calls)
+src/dopemux/mcp/parallel_executor.py:182:                conport_client, 'log_progress', progress_specs
+src/dopemux/mcp/parallel_executor.py:207:    conport_client: Any,
+src/dopemux/mcp/parallel_executor.py:215:        conport_client: ConPortMCPClient instance
+src/dopemux/mcp/parallel_executor.py:224:        conport_client, 'log_progress', progress_entries
+src/dopemux/mcp/parallel_executor.py:229:    conport_client: Any,
+src/dopemux/mcp/parallel_executor.py:237:        conport_client: ConPortMCPClient instance
+src/dopemux/mcp/parallel_executor.py:246:        conport_client, 'update_progress', updates
+src/dopemux/claude_config.py:34:    "conport": "conport",
+src/dopemux/claude/configurator.py:231:- Key decisions and rationale
+src/dopemux/claude/configurator.py:249:- Context at time of decision
+src/dopemux/claude/configurator.py:303:- Use premium models for complex architecture decisions
+src/dopemux/config_generator.py:287:            "conport": 20,
+src/dopemux/dev_mode.py:24:        "conport": [
+src/dopemux/dev_mode.py:25:            "~/code/conport-mcp",
+src/dopemux/dev_mode.py:26:            "~/conport-mcp"
+src/dopemux/dev_mode.py:72:            component: Component name (zen, conport, serena, etc.)
+src/dopemux/embeddings/integrations/__init__.py:9:from .conport import ConPortAdapter
+src/dopemux/config/manager.py:189:    conport_url: str = "http://localhost:3009"
+src/dopemux/config/manager.py:560:                    "conport_url": "http://localhost:3009",
+src/dopemux/update/health.py:61:            'conport': {
+src/dopemux/update/health.py:64:                'container': 'conport'
+src/dopemux/update/health.py:266:            'conport_database': await self._check_conport_database(),
+src/dopemux/update/health.py:274:    async def _check_conport_database(self) -> bool:
+src/dopemux/update/health.py:278:            conport_db = self.project_root / ".dopemux" / "conport.db"
+src/dopemux/update/health.py:279:            if not conport_db.exists():
+src/dopemux/update/health.py:305:            core_mcp_servers = ['mas-sequential-thinking', 'conport', 'zen']
+src/dopemux/cli.py:121:    "conport": "conport",
+src/dopemux/cli.py:272:    required = sorted({"conport", * (spec.required_servers or [])})
+src/dopemux/cli.py:593:def wire_conport(instance: Optional[str], project: Optional[str]):
+src/dopemux/cli.py:597:    Writes .claude/claude_config.json with a `conport` stdio server that
+src/dopemux/cli.py:598:    docker-execs into the correct container (mcp-conport[_<instance>]).
+src/dopemux/cli.py:601:        script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
+src/dopemux/cli.py:1256:            wire_script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
+src/dopemux/cli.py:1272:                    conport_port=3004  # Default ConPort port for instance A
+src/dopemux/cli.py:1758:            conport_port=3004  # Always save via instance A's ConPort
+src/dopemux/cli.py:1779:                state = load_instance_state_sync(instance_id, workspace_id, conport_port=3004)
+src/dopemux/cli.py:1783:                    save_instance_state_sync(state, workspace_id, conport_port=3004)
+src/dopemux/cli.py:1798:    Captures open files, cursor positions, mental model, and recent decisions
+src/dopemux/cli.py:1927:        conport_port=3004  # Always query via instance A's ConPort
+src/dopemux/cli.py:2040:    state = load_instance_state_sync(instance_id, workspace_id, conport_port=3004)
+src/dopemux/cli.py:2116:    save_instance_state_sync(state, workspace_id, conport_port=3004)
+src/dopemux/cli.py:2176:                if cleanup_instance_state_sync(wt_id, workspace_id, conport_port=3004):
+src/dopemux/cli.py:2213:            if cleanup_instance_state_sync(instance_id, workspace_id, conport_port=3004):
+src/dopemux/cli.py:3714:            subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"], check=True)
+src/dopemux/cli.py:3801:                'conport-mcp',
+src/dopemux/cli.py:4501:    Process chatlog files using core extractors (decisions, features, research)
+src/dopemux/cli.py:4578:        persist_to_conport=True,
+src/dopemux/cli.py:4681:    • Stakeholder extraction (roles, responsibilities, decision makers)
+src/dopemux/cli.py:4769:        persist_to_conport=True,
+src/dopemux/cli.py:5868:def decisions():
+src/dopemux/cli.py:5872:    Manage and analyze decisions logged in ConPort with ADHD-optimized
+src/dopemux/cli.py:5877:        review    - Review decisions pending attention
+src/dopemux/cli.py:5878:        stats     - Show decision statistics with charts
+src/dopemux/cli.py:5886:@decisions.group()
+src/dopemux/cli.py:5892:    and optimize decision-making timing.
+src/dopemux/cli.py:5897:@decisions.group()
+src/dopemux/cli.py:5902:    Auto-detect decision patterns from history:
+src/dopemux/cli.py:5911:# Import and register decision commands
+src/dopemux/cli.py:5913:    from .commands.decisions_commands import (
+src/dopemux/cli.py:5914:        review_decisions,
+src/dopemux/cli.py:5915:        decision_stats,
+src/dopemux/cli.py:5918:        show_decision,
+src/dopemux/cli.py:5919:        list_decisions,
+src/dopemux/cli.py:5921:        graph_decision,
+src/dopemux/cli.py:5924:        query_decisions,
+src/dopemux/cli.py:5929:    decisions.add_command(review_decisions, "review")
+src/dopemux/cli.py:5930:    decisions.add_command(decision_stats, "stats")
+src/dopemux/cli.py:5931:    decisions.add_command(show_decision, "show")
+src/dopemux/cli.py:5932:    decisions.add_command(list_decisions, "list")
+src/dopemux/cli.py:5933:    decisions.add_command(graph_decision, "graph")
+src/dopemux/cli.py:5934:    decisions.add_command(update_outcome, "update-outcome")
+src/dopemux/cli.py:5935:    decisions.add_command(enhanced_stats, "stats-enhanced")
+src/dopemux/cli.py:5936:    decisions.add_command(query_decisions, "query")
+src/dopemux/cli.py:5968:    - ~/code/conport-mcp (ConPort development)
+src/dopemux/cli.py:6159:            console.logger.info(f"Container ConPort URL: {config.conport_url}")
+src/dopemux/port_config.py:12:def get_conport_port(instance_id: Optional[str] = None) -> int:
+src/dopemux/port_config.py:28:        port = get_conport_port()  # Returns 3004 (or 3007 for ConPort MCP)
+src/dopemux/port_config.py:32:        port = get_conport_port()  # Returns 4004
+src/dopemux/port_config.py:35:        port = get_conport_port('B')  # Returns 3037 (3030 + 7)
+src/dopemux/port_config.py:58:def get_conport_url(instance_id: Optional[str] = None) -> str:
+src/dopemux/port_config.py:69:        url = get_conport_url()  # "http://localhost:3004"
+src/dopemux/port_config.py:71:    port = get_conport_port(instance_id)
+src/dopemux/profile_analyzer.py:280:        mcps.add("conport")
+src/dopemux/profile_analyzer.py:318:            suggested_mcps=["serena-v2", "conport", "dope-context"]
+src/dopemux/embeddings/integrations/conport.py:5:ADHD-optimized context management, decision tracking, and knowledge graph
+src/dopemux/embeddings/integrations/conport.py:34:        conport_client: Optional[Any] = None,
+src/dopemux/embeddings/integrations/conport.py:44:        self.integration_name = "conport"
+src/dopemux/embeddings/integrations/conport.py:46:        self.conport_client = conport_client
+src/dopemux/embeddings/integrations/conport.py:52:            "decisions": "architectural_decisions",
+src/dopemux/embeddings/integrations/conport.py:69:            if self.conport_client and hasattr(self.conport_client, "get_active_context"):
+src/dopemux/embeddings/integrations/conport.py:70:                await self.conport_client.get_active_context(workspace_id=self.workspace_id)
+src/dopemux/embeddings/integrations/conport.py:88:        Retrieves decisions, patterns, progress entries, and custom data
+src/dopemux/embeddings/integrations/conport.py:111:                ("decisions", self._sync_decisions),
+src/dopemux/embeddings/integrations/conport.py:153:    async def _sync_decisions(self, workspace_id: str) -> List[Dict[str, Any]]:
+src/dopemux/embeddings/integrations/conport.py:154:        """Sync architectural decisions from ConPort."""
+src/dopemux/embeddings/integrations/conport.py:156:        # Example: decisions = await mcp_conport.get_decisions(workspace_id=workspace_id, limit=100)
+src/dopemux/embeddings/integrations/conport.py:158:        decisions = []  # Placeholder for actual data
+src/dopemux/embeddings/integrations/conport.py:161:        for decision in decisions:
+src/dopemux/embeddings/integrations/conport.py:163:                "id": f"decision_{decision.get('id')}",
+src/dopemux/embeddings/integrations/conport.py:164:                "content": f"{decision.get('summary', '')} {decision.get('rationale', '')}",
+src/dopemux/embeddings/integrations/conport.py:166:                    "type": "decision",
+src/dopemux/embeddings/integrations/conport.py:167:                    "source": "conport",
+src/dopemux/embeddings/integrations/conport.py:168:                    "category": self.document_categories["decisions"],
+src/dopemux/embeddings/integrations/conport.py:169:                    "timestamp": decision.get('created_at'),
+src/dopemux/embeddings/integrations/conport.py:170:                    "tags": decision.get('tags', []),
+src/dopemux/embeddings/integrations/conport.py:171:                    "implementation_details": decision.get('implementation_details')
+src/dopemux/embeddings/integrations/conport.py:190:                    "source": "conport",
+src/dopemux/embeddings/integrations/conport.py:212:                    "source": "conport",
+src/dopemux/embeddings/integrations/conport.py:234:                    "source": "conport",
+src/dopemux/embeddings/integrations/conport.py:256:                    "source": "conport",
+src/dopemux/embeddings/integrations/conport.py:283:                    if self.conport_client and hasattr(self.conport_client, "log_custom_data"):
+src/dopemux/embeddings/integrations/conport.py:288:                        await self.conport_client.log_custom_data(
+src/dopemux/embeddings/integrations/conport.py:317:        Adds project context, related decisions, linked progress items,
+src/dopemux/embeddings/integrations/conport.py:330:            related_decisions = await self._get_relevant_decisions(query)
+src/dopemux/embeddings/integrations/conport.py:333:            if self.conport_client and hasattr(self.conport_client, "get_custom_data"):
+src/dopemux/embeddings/integrations/conport.py:335:                    raw_patterns = await self.conport_client.get_custom_data(
+src/dopemux/embeddings/integrations/conport.py:349:                if result.doc_id.startswith("decision_"):
+src/dopemux/embeddings/integrations/conport.py:350:                    # Add related decisions and progress
+src/dopemux/embeddings/integrations/conport.py:352:                        "conport_type": "decision",
+src/dopemux/embeddings/integrations/conport.py:360:                        "conport_type": "pattern",
+src/dopemux/embeddings/integrations/conport.py:367:                        "conport_type": "progress",
+src/dopemux/embeddings/integrations/conport.py:378:                enhanced_result.metadata["conport_context"] = {
+src/dopemux/embeddings/integrations/conport.py:379:                    "related_decisions": related_decisions,
+src/dopemux/embeddings/integrations/conport.py:398:        """Get implementation status of a decision."""
+src/dopemux/embeddings/integrations/conport.py:448:    async def _get_relevant_decisions(self, query: str) -> List[Dict[str, Any]]:
+src/dopemux/embeddings/integrations/conport.py:449:        """Fetch recent ConPort decisions relevant to the current query."""
+src/dopemux/embeddings/integrations/conport.py:450:        if not self.conport_client or not hasattr(self.conport_client, "get_recent_activity_summary"):
+src/dopemux/embeddings/integrations/conport.py:453:            summary = await self.conport_client.get_recent_activity_summary(
+src/dopemux/embeddings/integrations/conport.py:458:            decisions = summary.get("decisions", []) if isinstance(summary, dict) else []
+src/dopemux/embeddings/integrations/conport.py:459:            return decisions if isinstance(decisions, list) else []
+src/dopemux/embeddings/integrations/conport.py:542:            "integration_type": "conport",
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR_RECORD.md:15:* <bullet decision>
+src/dopemux/mcp/session_manager.py:78:    decisions_made: List[str] = field(default_factory=list)
+src/dopemux/mcp/session_manager.py:127:    decisions_made: int = 0
+src/dopemux/mcp/session_manager.py:610:            decisions_made=context_data.get("decisions_made", []),
+src/dopemux/mcp/session_manager.py:632:                "decisions_made": snapshot.decisions_made,
+src/dopemux/mcp/session_manager.py:853:                    decisions_made=metrics_data.get("decisions_made", 0),
+src/dopemux/instance_manager.py:108:        conport_port = port_base + 7
+src/dopemux/instance_manager.py:116:                    f"http://localhost:{conport_port}/health",
+src/dopemux/instance_manager.py:272:        conport_port = 3004 if instance_id == 'A' or not instance_id else (port_base + 7)
+src/dopemux/instance_manager.py:287:            "CONPORT_PORT": str(conport_port),
+src/dopemux/instance_manager.py:453:    conport_port: Optional[int] = None
+src/dopemux/instance_manager.py:464:        conport_port: ConPort port (default 3007 for instance A)
+src/dopemux/instance_manager.py:477:        resolve_conport_port,
+src/dopemux/instance_manager.py:480:    resolved_port = resolve_conport_port(conport_port)
+src/dopemux/instance_state.py:86:    def __init__(self, workspace_id: str, conport_port: int = 3004):
+src/dopemux/instance_state.py:92:            conport_port: ConPort HTTP API port (default 3004 for MCP ConPort)
+src/dopemux/instance_state.py:95:        self.conport_url = f"http://localhost:{conport_port}"
+src/dopemux/instance_state.py:98:        self._conport_available: bool = True
+src/dopemux/instance_state.py:101:    def conport_available(self) -> bool:
+src/dopemux/instance_state.py:103:        return self._conport_available
+src/dopemux/instance_state.py:110:    def _mark_conport_ok(self) -> None:
+src/dopemux/instance_state.py:112:        self._conport_available = True
+src/dopemux/instance_state.py:114:    def _mark_conport_error(self, exc: Exception) -> None:
+src/dopemux/instance_state.py:116:        self._conport_available = False
+src/dopemux/instance_state.py:130:    def _log_conport_error(self, action: str, exc: Exception) -> None:
+src/dopemux/instance_state.py:179:                f"{self.conport_url}/api/custom_data",
+src/dopemux/instance_state.py:183:                self._mark_conport_ok()
+src/dopemux/instance_state.py:192:            self._mark_conport_error(e)
+src/dopemux/instance_state.py:193:            self._log_conport_error("saving instance state", e)
+src/dopemux/instance_state.py:217:                f"{self.conport_url}/api/custom_data",
+src/dopemux/instance_state.py:221:                self._mark_conport_ok()
+src/dopemux/instance_state.py:237:            self._mark_conport_error(e)
+src/dopemux/instance_state.py:238:            self._log_conport_error("loading instance state", e)
+src/dopemux/instance_state.py:258:                f"{self.conport_url}/api/custom_data",
+src/dopemux/instance_state.py:262:                self._mark_conport_ok()
+src/dopemux/instance_state.py:286:            self._mark_conport_error(e)
+src/dopemux/instance_state.py:287:            self._log_conport_error("listing instance states", e)
+src/dopemux/instance_state.py:346:        ADHD Optimization: Limits results to reduce decision paralysis.
+src/dopemux/instance_state.py:401:                f"{self.conport_url}/api/custom_data",
+src/dopemux/instance_state.py:405:                self._mark_conport_ok()
+src/dopemux/instance_state.py:417:            self._mark_conport_error(e)
+src/dopemux/instance_state.py:418:            self._log_conport_error("cleaning instance state", e)
+src/dopemux/instance_state.py:441:def resolve_conport_port(port: Optional[int] = None) -> int:
+src/dopemux/instance_state.py:539:    conport_port: Optional[int] = None
+src/dopemux/instance_state.py:547:        conport_port: ConPort API port
+src/dopemux/instance_state.py:552:    resolved_port = resolve_conport_port(conport_port)
+src/dopemux/instance_state.py:563:    conport_port: Optional[int] = None
+src/dopemux/instance_state.py:571:        conport_port: ConPort API port
+src/dopemux/instance_state.py:576:    resolved_port = resolve_conport_port(conport_port)
+src/dopemux/instance_state.py:586:    conport_port: Optional[int] = None
+src/dopemux/instance_state.py:593:        conport_port: ConPort API port
+src/dopemux/instance_state.py:598:    resolved_port = resolve_conport_port(conport_port)
+src/dopemux/instance_state.py:609:    conport_port: Optional[int] = None
+src/dopemux/instance_state.py:617:        conport_port: ConPort API port
+src/dopemux/instance_state.py:622:    resolved_port = resolve_conport_port(conport_port)
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR.md:35:State the decision in one paragraph.
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR.md:79:How do we move from current state to the decision?
+src/dopemux/mcp/token_manager.py:654:            "conport": 300,
+src/dopemux/commands/decisions_commands.py:6:1. Decision review command - Interactive review workflow for overdue decisions
+src/dopemux/commands/decisions_commands.py:39:async def get_conport_connection():
+src/dopemux/commands/decisions_commands.py:50:        console.log("[dim]Make sure mcp-conport container is running (docker ps | grep conport)[/dim]")
+src/dopemux/commands/decisions_commands.py:79:async def get_decisions_needing_review(
+src/dopemux/commands/decisions_commands.py:85:    Query decisions that need review.
+src/dopemux/commands/decisions_commands.py:102:    FROM decisions
+src/dopemux/commands/decisions_commands.py:124:@click.option("--overdue", is_flag=True, help="Show only overdue decisions (>90 days)")
+src/dopemux/commands/decisions_commands.py:127:def review_decisions(overdue: bool, interactive: bool, workspace: Optional[str]):
+src/dopemux/commands/decisions_commands.py:129:    🔔 Review decisions pending review
+src/dopemux/commands/decisions_commands.py:131:    Quick Win #1: Simple review workflow for decisions older than 30 days.
+src/dopemux/commands/decisions_commands.py:132:    Shows decisions needing attention and optionally prompts for updates.
+src/dopemux/commands/decisions_commands.py:136:        dopemux decisions review              # Show all pending reviews
+src/dopemux/commands/decisions_commands.py:137:        dopemux decisions review --overdue    # Show only >90 days old
+src/dopemux/commands/decisions_commands.py:138:        dopemux decisions review -i           # Interactive mode
+src/dopemux/commands/decisions_commands.py:150:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:155:            # Get decisions needing review
+src/dopemux/commands/decisions_commands.py:156:            decisions = await get_decisions_needing_review(conn, workspace_id, overdue)
+src/dopemux/commands/decisions_commands.py:158:            if not decisions:
+src/dopemux/commands/decisions_commands.py:159:                console.log("\n[green]✅ No decisions need review! All caught up.[/green]")
+src/dopemux/commands/decisions_commands.py:164:            table = Table(title=f"\n📋 Decisions Pending Review ({len(decisions)})", show_header=True)
+src/dopemux/commands/decisions_commands.py:170:            for decision in decisions:
+src/dopemux/commands/decisions_commands.py:171:                decision_id = str(decision['id'])
+src/dopemux/commands/decisions_commands.py:172:                age_days = int(decision['age_days'])
+src/dopemux/commands/decisions_commands.py:173:                summary = decision['summary'][:60] + "..." if len(decision['summary']) > 60 else decision['summary']
+src/dopemux/commands/decisions_commands.py:174:                tags = ", ".join(decision['tags'] or [])[:18] if decision['tags'] else ""
+src/dopemux/commands/decisions_commands.py:188:                    decision_id,
+src/dopemux/commands/decisions_commands.py:217:async def get_decision_statistics(
+src/dopemux/commands/decisions_commands.py:222:    """Gather decision statistics for the workspace."""
+src/dopemux/commands/decisions_commands.py:226:    # Total decisions
+src/dopemux/commands/decisions_commands.py:228:        "SELECT COUNT(*) FROM decisions WHERE workspace_id = $1 AND created_at > $2",
+src/dopemux/commands/decisions_commands.py:235:        FROM decisions
+src/dopemux/commands/decisions_commands.py:242:    # Recent decisions (last 7 days)
+src/dopemux/commands/decisions_commands.py:244:        "SELECT COUNT(*) FROM decisions WHERE workspace_id = $1 AND created_at > NOW() - INTERVAL '7 days'",
+src/dopemux/commands/decisions_commands.py:260:def decision_stats(since: int, workspace: Optional[str]):
+src/dopemux/commands/decisions_commands.py:262:    📈 Show decision statistics with charts
+src/dopemux/commands/decisions_commands.py:264:    Quick Win #2: Aggregate statistics showing decision patterns,
+src/dopemux/commands/decisions_commands.py:269:        dopemux decisions stats              # Last 30 days
+src/dopemux/commands/decisions_commands.py:270:        dopemux decisions stats --since 90   # Last 90 days
+src/dopemux/commands/decisions_commands.py:282:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:287:            stats = await get_decision_statistics(conn, workspace_id, since)
+src/dopemux/commands/decisions_commands.py:289:            decision_rows = await conn.fetch(
+src/dopemux/commands/decisions_commands.py:291:                SELECT created_at, tags, outcome_status, confidence_level, decision_type
+src/dopemux/commands/decisions_commands.py:292:                FROM decisions
+src/dopemux/commands/decisions_commands.py:298:            decisions = [dict(row) for row in decision_rows]
+src/dopemux/commands/decisions_commands.py:301:                console.log(f"\n[yellow]No decisions found in the last {since} days.[/yellow]")
+src/dopemux/commands/decisions_commands.py:302:                console.log("[dim]Start logging decisions with ConPort MCP![/dim]")
+src/dopemux/commands/decisions_commands.py:329:            # Enhanced ADHD Insights - analyze decision patterns for ADHD optimization
+src/dopemux/commands/decisions_commands.py:333:            successful_decisions = sum(1 for d in decisions if d.get('outcome_status') == 'successful')
+src/dopemux/commands/decisions_commands.py:334:            failed_decisions = sum(1 for d in decisions if d.get('outcome_status') == 'failed')
+src/dopemux/commands/decisions_commands.py:335:            mixed_decisions = sum(1 for d in decisions if d.get('outcome_status') == 'mixed')
+src/dopemux/commands/decisions_commands.py:336:            total_with_outcome = successful_decisions + failed_decisions + mixed_decisions
+src/dopemux/commands/decisions_commands.py:339:                success_rate = (successful_decisions / total_with_outcome) * 100
+src/dopemux/commands/decisions_commands.py:340:                console.log(f"  ✅ Success Rate: {success_rate:.1f}% ({successful_decisions}/{total_with_outcome} completed)")
+src/dopemux/commands/decisions_commands.py:342:                if failed_decisions > 0:
+src/dopemux/commands/decisions_commands.py:343:                    console.log(f"  ⚠️  Failure Rate: {(failed_decisions/total_with_outcome)*100:.1f}% - Consider reviewing decision process")
+src/dopemux/commands/decisions_commands.py:344:                if mixed_decisions > 0:
+src/dopemux/commands/decisions_commands.py:345:                    console.log(f"  ⚖️  Mixed Outcomes: {(mixed_decisions/total_with_outcome)*100:.1f}% - Partial wins need follow-up")
+src/dopemux/commands/decisions_commands.py:347:                console.log(f"  ⏳ No outcomes tracked yet - start logging decision results!")
+src/dopemux/commands/decisions_commands.py:350:            recent_decisions = [d for d in decisions if d['created_at'] > since_date]
+src/dopemux/commands/decisions_commands.py:351:            if recent_decisions:
+src/dopemux/commands/decisions_commands.py:352:                daily_rate = len(recent_decisions) / since
+src/dopemux/commands/decisions_commands.py:353:                console.log(f"  📈 Decision Velocity: {daily_rate:.1f} decisions/day")
+src/dopemux/commands/decisions_commands.py:358:                    console.log(f"  🐌 Low velocity - may indicate decision paralysis or overload")
+src/dopemux/commands/decisions_commands.py:360:            # Confidence Level Analysis (ADHD decision quality)
+src/dopemux/commands/decisions_commands.py:362:            for d in decisions:
+src/dopemux/commands/decisions_commands.py:376:                        console.log(f"     ⚠️  Many low-confidence decisions - may indicate rushed choices")
+src/dopemux/commands/decisions_commands.py:378:                        console.log(f"     ✅ Strong confidence pattern - good decision hygiene!")
+src/dopemux/commands/decisions_commands.py:381:            decision_types = {}
+src/dopemux/commands/decisions_commands.py:382:            for d in decisions:
+src/dopemux/commands/decisions_commands.py:383:                dec_type = d.get('decision_type', 'UNKNOWN')
+src/dopemux/commands/decisions_commands.py:384:                decision_types[dec_type] = decision_types.get(dec_type, 0) + 1
+src/dopemux/commands/decisions_commands.py:386:            if decision_types:
+src/dopemux/commands/decisions_commands.py:387:                most_common = max(decision_types.items(), key=lambda x: x[1])
+src/dopemux/commands/decisions_commands.py:388:                diversity = len(decision_types)
+src/dopemux/commands/decisions_commands.py:393:                    console.log(f"     ⚠️  Low decision diversity - consider broadening decision scope")
+src/dopemux/commands/decisions_commands.py:395:                    console.log(f"     🎭 Complex portfolio - may benefit from decision categorization")
+src/dopemux/commands/decisions_commands.py:398:            urgent_decisions = [d for d in decisions if (datetime.now() - d['created_at']).days < 1]
+src/dopemux/commands/decisions_commands.py:399:            if urgent_decisions:
+src/dopemux/commands/decisions_commands.py:400:                urgent_rate = len(urgent_decisions) / len(decisions) * 100
+src/dopemux/commands/decisions_commands.py:401:                console.log(f"  ⏰ Time Pressure: {urgent_rate:.0f}% decisions made same-day")
+src/dopemux/commands/decisions_commands.py:404:                    console.log(f"     🚨 High urgency pattern - consider implementing decision buffers")
+src/dopemux/commands/decisions_commands.py:406:                    console.log(f"     🧘 Low urgency - good for thoughtful decision-making")
+src/dopemux/commands/decisions_commands.py:410:            for d in decisions:
+src/dopemux/commands/decisions_commands.py:424:                    console.log(f"     🗂️  Rich tagging system - excellent for decision retrieval!")
+src/dopemux/commands/decisions_commands.py:433:                recommendations.append("📈 Decision quality review needed - consider implementing decision checklists")
+src/dopemux/commands/decisions_commands.py:436:            if recent_decisions and daily_rate > 5:
+src/dopemux/commands/decisions_commands.py:437:                recommendations.append("⚡ High decision load - implement 25-minute focus sessions with breaks")
+src/dopemux/commands/decisions_commands.py:441:                recommendations.append("🎯 Build confidence through small wins - start with low-risk decisions")
+src/dopemux/commands/decisions_commands.py:444:            if len(decision_types) < 3:
+src/dopemux/commands/decisions_commands.py:445:                recommendations.append("🎭 Expand decision variety - include technical, process, and strategic decisions")
+src/dopemux/commands/decisions_commands.py:448:            if urgent_decisions and len(urgent_decisions) > len(decisions) * 0.7:
+src/dopemux/commands/decisions_commands.py:449:                recommendations.append("⏰ Reduce decision urgency - implement decision review buffers")
+src/dopemux/commands/decisions_commands.py:500:    Track your energy levels to correlate with decision quality later.
+src/dopemux/commands/decisions_commands.py:515:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:528:            console.log("[dim]   Phase 4 will add energy correlation with decision quality[/dim]")
+src/dopemux/commands/decisions_commands.py:553:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:608:async def get_decision_by_id(
+src/dopemux/commands/decisions_commands.py:611:    decision_id: str
+src/dopemux/commands/decisions_commands.py:613:    """Fetch a single decision with full details."""
+src/dopemux/commands/decisions_commands.py:619:        rationale,
+src/dopemux/commands/decisions_commands.py:620:        decision_type,
+src/dopemux/commands/decisions_commands.py:625:    FROM decisions
+src/dopemux/commands/decisions_commands.py:632:        row = await conn.fetchrow(query, workspace_id, decision_id)
+src/dopemux/commands/decisions_commands.py:640:@click.argument("decision_id")
+src/dopemux/commands/decisions_commands.py:642:def show_decision(decision_id: str, workspace: Optional[str]):
+src/dopemux/commands/decisions_commands.py:644:    🔍 Show detailed decision information
+src/dopemux/commands/decisions_commands.py:646:    Quick Win B1: Detailed view of a single decision with full rationale,
+src/dopemux/commands/decisions_commands.py:651:        dopemux decisions show c4b0b       # Partial ID match
+src/dopemux/commands/decisions_commands.py:652:        dopemux decisions show a6f86-...   # Full UUID
+src/dopemux/commands/decisions_commands.py:658:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:663:            decision = await get_decision_by_id(conn, workspace_id, decision_id)
+src/dopemux/commands/decisions_commands.py:665:            if not decision:
+src/dopemux/commands/decisions_commands.py:666:                console.log(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
+src/dopemux/commands/decisions_commands.py:670:            # Display decision in rich panel
+src/dopemux/commands/decisions_commands.py:673:            content.append(f"{decision['summary']}\n")
+src/dopemux/commands/decisions_commands.py:676:            content.append(f"{decision['rationale']}\n")
+src/dopemux/commands/decisions_commands.py:679:            content.append(f"  Type: [yellow]{decision['decision_type']}[/yellow]")
+src/dopemux/commands/decisions_commands.py:680:            content.append(f"  Confidence: [yellow]{decision['confidence_level']}[/yellow]")
+src/dopemux/commands/decisions_commands.py:681:            content.append(f"  Created: [dim]{decision['created_at'].strftime('%Y-%m-%d %I:%M%p')}[/dim]")
+src/dopemux/commands/decisions_commands.py:683:            age_days = (datetime.now(decision['created_at'].tzinfo) - decision['created_at']).days
+src/dopemux/commands/decisions_commands.py:686:            if decision['tags']:
+src/dopemux/commands/decisions_commands.py:687:                tags_str = ", ".join(decision['tags'])
+src/dopemux/commands/decisions_commands.py:692:                title=f"[bold]Decision {str(decision['id'])[:8]}[/bold]",
+src/dopemux/commands/decisions_commands.py:701:            console.log("[dim]  • Related decisions (genealogy)[/dim]")
+src/dopemux/commands/decisions_commands.py:714:@click.option("--limit", "-n", default=20, help="Number of decisions to show (default: 20)")
+src/dopemux/commands/decisions_commands.py:715:@click.option("--type", "-t", help="Filter by decision type")
+src/dopemux/commands/decisions_commands.py:718:def list_decisions(limit: int, type: Optional[str], tag: Optional[str], workspace: Optional[str]):
+src/dopemux/commands/decisions_commands.py:720:    📋 List recent decisions with filtering
+src/dopemux/commands/decisions_commands.py:722:    Quick Win B2: Searchable decision list with type and tag filtering.
+src/dopemux/commands/decisions_commands.py:726:        dopemux decisions list                    # 20 most recent
+src/dopemux/commands/decisions_commands.py:727:        dopemux decisions list -n 50              # 50 most recent
+src/dopemux/commands/decisions_commands.py:728:        dopemux decisions list --type technical   # Technical decisions only
+src/dopemux/commands/decisions_commands.py:729:        dopemux decisions list --tag adhd         # ADHD-related decisions
+src/dopemux/commands/decisions_commands.py:735:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:745:                decision_type,
+src/dopemux/commands/decisions_commands.py:749:            FROM decisions
+src/dopemux/commands/decisions_commands.py:758:                query += f" AND decision_type = ${param_count}"
+src/dopemux/commands/decisions_commands.py:771:                console.log(f"\n[yellow]No decisions found.[/yellow]")
+src/dopemux/commands/decisions_commands.py:790:                decision_id = str(row['id'])[:8]
+src/dopemux/commands/decisions_commands.py:793:                dec_type = row['decision_type']
+src/dopemux/commands/decisions_commands.py:796:                table.add_row(decision_id, age_str, dec_type, summary)
+src/dopemux/commands/decisions_commands.py:800:            console.log(f"\n[dim]Tip: Use 'dopemux decisions show <ID>' for full details[/dim]")
+src/dopemux/commands/decisions_commands.py:824:    Foundation for Phase 4 decision-energy correlation.
+src/dopemux/commands/decisions_commands.py:828:        dopemux decisions energy analytics         # Last 30 days
+src/dopemux/commands/decisions_commands.py:829:        dopemux decisions energy analytics -d 90   # Last 90 days
+src/dopemux/commands/decisions_commands.py:835:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:853:                console.log(f"[dim]Log more with: dopemux decisions energy log [low|medium|high][/dim]")
+src/dopemux/commands/decisions_commands.py:914:                console.log(f"  ✅ Schedule complex decisions during high-energy times")
+src/dopemux/commands/decisions_commands.py:939:@click.option("--type", "-t", help="Filter by item type (decision, progress_entry, system_pattern)")
+src/dopemux/commands/decisions_commands.py:952:        dopemux decisions search "ADHD optimization patterns"     # Find related insights
+src/dopemux/commands/decisions_commands.py:953:        dopemux decisions search "performance bottlenecks" -k 10  # More results
+src/dopemux/commands/decisions_commands.py:954:        dopemux decisions search "genetic agent" --type decision  # Filter by type
+src/dopemux/commands/decisions_commands.py:955:        dopemux decisions search "mcp" --tag integration          # Filter by tag
+src/dopemux/commands/decisions_commands.py:959:        from ..tools.conport_client import semantic_search
+src/dopemux/commands/decisions_commands.py:999:                item_type = item.get("metadata", {}).get("conport_item_type", "unknown")
+src/dopemux/commands/decisions_commands.py:1000:                item_id = item.get("metadata", {}).get("conport_item_id", "unknown")
+src/dopemux/commands/decisions_commands.py:1011:                    "decision": ("🧠", "cyan"),
+src/dopemux/commands/decisions_commands.py:1041:async def get_decision_relationships(
+src/dopemux/commands/decisions_commands.py:1044:    decision_id: str,
+src/dopemux/commands/decisions_commands.py:1048:    Fetch decision genealogy (ancestors and descendants).
+src/dopemux/commands/decisions_commands.py:1050:    Returns structure with decision details and relationships.
+src/dopemux/commands/decisions_commands.py:1052:    # First, get the target decision
+src/dopemux/commands/decisions_commands.py:1053:    target_decision = await get_decision_by_id(conn, workspace_id, decision_id)
+src/dopemux/commands/decisions_commands.py:1055:    if not target_decision:
+src/dopemux/commands/decisions_commands.py:1058:    # Get ancestors (decisions this one builds upon)
+src/dopemux/commands/decisions_commands.py:1061:        -- Base case: start with target decision
+src/dopemux/commands/decisions_commands.py:1063:            dr.source_decision_id as decision_id,
+src/dopemux/commands/decisions_commands.py:1066:        FROM ag_catalog.decision_relationships dr
+src/dopemux/commands/decisions_commands.py:1067:        WHERE dr.target_decision_id = $1
+src/dopemux/commands/decisions_commands.py:1073:            dr.source_decision_id,
+src/dopemux/commands/decisions_commands.py:1076:        FROM ag_catalog.decision_relationships dr
+src/dopemux/commands/decisions_commands.py:1077:        JOIN ancestry a ON dr.target_decision_id = a.decision_id
+src/dopemux/commands/decisions_commands.py:1081:        a.decision_id,
+src/dopemux/commands/decisions_commands.py:1085:        d.decision_type,
+src/dopemux/commands/decisions_commands.py:1088:    JOIN decisions d ON d.id = a.decision_id
+src/dopemux/commands/decisions_commands.py:1093:    # Get descendants (decisions that build upon this one)
+src/dopemux/commands/decisions_commands.py:1096:        -- Base case: start with target decision
+src/dopemux/commands/decisions_commands.py:1098:            dr.target_decision_id as decision_id,
+src/dopemux/commands/decisions_commands.py:1101:        FROM ag_catalog.decision_relationships dr
+src/dopemux/commands/decisions_commands.py:1102:        WHERE dr.source_decision_id = $1
+src/dopemux/commands/decisions_commands.py:1108:            dr.target_decision_id,
+src/dopemux/commands/decisions_commands.py:1111:        FROM ag_catalog.decision_relationships dr
+src/dopemux/commands/decisions_commands.py:1112:        JOIN descendants d ON dr.source_decision_id = d.decision_id
+src/dopemux/commands/decisions_commands.py:1116:        d.decision_id,
+src/dopemux/commands/decisions_commands.py:1120:        dec.decision_type,
+src/dopemux/commands/decisions_commands.py:1123:    JOIN decisions dec ON dec.id = d.decision_id
+src/dopemux/commands/decisions_commands.py:1129:        ancestors = await conn.fetch(ancestors_query, target_decision['id'], max_depth, workspace_id)
+src/dopemux/commands/decisions_commands.py:1130:        descendants = await conn.fetch(descendants_query, target_decision['id'], max_depth, workspace_id)
+src/dopemux/commands/decisions_commands.py:1133:            "target": target_decision,
+src/dopemux/commands/decisions_commands.py:1141:            "target": target_decision,
+src/dopemux/commands/decisions_commands.py:1147:def render_decision_tree(graph_data: dict) -> str:
+src/dopemux/commands/decisions_commands.py:1149:    Render ASCII decision genealogy tree.
+src/dopemux/commands/decisions_commands.py:1175:            lines.append(f"{indent}↑ {rel:12} #{str(anc['decision_id'])[:8]} - {anc['summary'][:40]}")
+src/dopemux/commands/decisions_commands.py:1177:    # Show target decision
+src/dopemux/commands/decisions_commands.py:1180:    lines.append(f"  [dim]({target['decision_type']}, {target['created_at'].strftime('%Y-%m-%d')})[/dim]")
+src/dopemux/commands/decisions_commands.py:1184:        lines.append("\n[dim]Descendants (extend this decision):[/dim]")
+src/dopemux/commands/decisions_commands.py:1188:            lines.append(f"{indent}↓ {rel:12} #{str(desc['decision_id'])[:8]} - {desc['summary'][:40]}")
+src/dopemux/commands/decisions_commands.py:1191:        lines.append("\n[dim]No related decisions found (orphan decision)[/dim]")
+src/dopemux/commands/decisions_commands.py:1192:        lines.append("[dim]Link decisions using ConPort MCP: link_conport_items()[/dim]")
+src/dopemux/commands/decisions_commands.py:1198:@click.argument("decision_id")
+src/dopemux/commands/decisions_commands.py:1201:def graph_decision(decision_id: str, depth: int, workspace: Optional[str]):
+src/dopemux/commands/decisions_commands.py:1203:    🌳 Show decision genealogy graph
+src/dopemux/commands/decisions_commands.py:1205:    Phase 2 feature: Visualize decision relationships (ancestors/descendants)
+src/dopemux/commands/decisions_commands.py:1206:    showing how decisions build upon each other.
+src/dopemux/commands/decisions_commands.py:1210:        dopemux decisions graph c4b0b        # Show genealogy
+src/dopemux/commands/decisions_commands.py:1211:        dopemux decisions graph a6f86 -d 5   # Deeper traversal
+src/dopemux/commands/decisions_commands.py:1217:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:1222:            graph_data = await get_decision_relationships(conn, workspace_id, decision_id, depth)
+src/dopemux/commands/decisions_commands.py:1225:                console.log(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
+src/dopemux/commands/decisions_commands.py:1229:            tree = render_decision_tree(graph_data)
+src/dopemux/commands/decisions_commands.py:1257:async def update_decision_outcome(
+src/dopemux/commands/decisions_commands.py:1259:    decision_id: str,
+src/dopemux/commands/decisions_commands.py:1263:    """Update decision outcome after review."""
+src/dopemux/commands/decisions_commands.py:1266:        UPDATE decisions
+src/dopemux/commands/decisions_commands.py:1273:    """, outcome_status, outcome_notes, decision_id)
+src/dopemux/commands/decisions_commands.py:1277:@click.argument("decision_id")
+src/dopemux/commands/decisions_commands.py:1281:def update_outcome(decision_id: str, outcome: str, notes: Optional[str], workspace: Optional[str]):
+src/dopemux/commands/decisions_commands.py:1283:    ✏️  Update decision outcome after review
+src/dopemux/commands/decisions_commands.py:1285:    Phase 2 feature: Mark decision as successful/failed/mixed/abandoned
+src/dopemux/commands/decisions_commands.py:1290:        dopemux decisions update-outcome c4b0b successful
+src/dopemux/commands/decisions_commands.py:1291:        dopemux decisions update-outcome a6f86 failed -n "Performance issues"
+src/dopemux/commands/decisions_commands.py:1292:        dopemux decisions update-outcome 960ea mixed -n "Partially implemented"
+src/dopemux/commands/decisions_commands.py:1298:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:1303:            # Verify decision exists first
+src/dopemux/commands/decisions_commands.py:1304:            decision = await get_decision_by_id(conn, workspace_id, decision_id)
+src/dopemux/commands/decisions_commands.py:1306:            if not decision:
+src/dopemux/commands/decisions_commands.py:1307:                console.log(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
+src/dopemux/commands/decisions_commands.py:1311:            await update_decision_outcome(conn, decision_id, outcome, notes)
+src/dopemux/commands/decisions_commands.py:1323:            console.log(f"   Decision: [cyan]{decision['summary'][:60]}[/cyan]")
+src/dopemux/commands/decisions_commands.py:1343:    📈 Enhanced decision statistics with confidence distribution
+src/dopemux/commands/decisions_commands.py:1353:        dopemux decisions stats-enhanced
+src/dopemux/commands/decisions_commands.py:1354:        dopemux decisions stats-enhanced --since 90
+src/dopemux/commands/decisions_commands.py:1360:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:1369:                "SELECT COUNT(*) FROM decisions WHERE workspace_id = $1 AND created_at > $2",
+src/dopemux/commands/decisions_commands.py:1374:                console.log(f"\n[yellow]No decisions found in the last {since} days.[/yellow]")
+src/dopemux/commands/decisions_commands.py:1380:                FROM decisions
+src/dopemux/commands/decisions_commands.py:1395:                FROM decisions
+src/dopemux/commands/decisions_commands.py:1402:                SELECT decision_type, COUNT(*) as count
+src/dopemux/commands/decisions_commands.py:1403:                FROM decisions
+src/dopemux/commands/decisions_commands.py:1405:                GROUP BY decision_type
+src/dopemux/commands/decisions_commands.py:1413:                f"Period: Last {since} days | Total: {total} decisions",
+src/dopemux/commands/decisions_commands.py:1451:                dec_type = row['decision_type']
+src/dopemux/commands/decisions_commands.py:1463:                FROM decisions
+src/dopemux/commands/decisions_commands.py:1470:                console.log(f"  ⚠️  {review_count} decisions need review (>30 days old)")
+src/dopemux/commands/decisions_commands.py:1472:                console.log(f"  ✅ All decisions reviewed or recent")
+src/dopemux/commands/decisions_commands.py:1477:                console.log(f"  ⚠️  {low_conf} low-confidence decisions may need revisiting")
+src/dopemux/commands/decisions_commands.py:1495:def query_decisions(filter_expression: str, limit: int, workspace: Optional[str]):
+src/dopemux/commands/decisions_commands.py:1497:    🔍 Query decisions with flexible filter expressions
+src/dopemux/commands/decisions_commands.py:1505:        type = architectural               # Architectural decisions
+src/dopemux/commands/decisions_commands.py:1512:        dopemux decisions query "age > 90"
+src/dopemux/commands/decisions_commands.py:1513:        dopemux decisions query "type = architectural AND outcome = successful"
+src/dopemux/commands/decisions_commands.py:1514:        dopemux decisions query "confidence = low" -n 10
+src/dopemux/commands/decisions_commands.py:1520:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:1547:                    where_clause += f" AND decision_type = ${param_count}"
+src/dopemux/commands/decisions_commands.py:1571:                    id, summary, decision_type, confidence_level,
+src/dopemux/commands/decisions_commands.py:1574:                FROM decisions
+src/dopemux/commands/decisions_commands.py:1583:                console.log(f"\n[yellow]No decisions match: {filter_expression}[/yellow]")
+src/dopemux/commands/decisions_commands.py:1595:                decision_id = str(row['id'])[:8]
+src/dopemux/commands/decisions_commands.py:1597:                dec_type = row['decision_type'][:10]
+src/dopemux/commands/decisions_commands.py:1601:                table.add_row(decision_id, f"{age_days}d", dec_type, conf, summary)
+src/dopemux/commands/decisions_commands.py:1604:            console.log(f"\n[dim]Tip: Use 'dopemux decisions show <ID>' for details[/dim]")
+src/dopemux/commands/decisions_commands.py:1626:    # Fetch all decisions with tags
+src/dopemux/commands/decisions_commands.py:1627:    decisions = await conn.fetch("""
+src/dopemux/commands/decisions_commands.py:1628:        SELECT id, tags, outcome_status, confidence_level, decision_type
+src/dopemux/commands/decisions_commands.py:1629:        FROM decisions
+src/dopemux/commands/decisions_commands.py:1635:    if len(decisions) < min_support:
+src/dopemux/commands/decisions_commands.py:1643:    for decision in decisions:
+src/dopemux/commands/decisions_commands.py:1644:        tags = set(decision['tags'])
+src/dopemux/commands/decisions_commands.py:1672:        lift = confidence / (tag_counts[tag2] / len(decisions))
+src/dopemux/commands/decisions_commands.py:1675:        cluster_decisions = [d for d in decisions
+src/dopemux/commands/decisions_commands.py:1678:        successful = sum(1 for d in cluster_decisions
+src/dopemux/commands/decisions_commands.py:1680:        total_with_outcome = sum(1 for d in cluster_decisions
+src/dopemux/commands/decisions_commands.py:1691:            "sample_size": len(cluster_decisions),
+src/dopemux/commands/decisions_commands.py:1692:            "decisions_with_outcome": total_with_outcome
+src/dopemux/commands/decisions_commands.py:1712:        INSERT INTO decision_patterns (
+src/dopemux/commands/decisions_commands.py:1752:    provide recommendations for new decisions.
+src/dopemux/commands/decisions_commands.py:1756:        dopemux decisions patterns tags                  # Show tag clusters
+src/dopemux/commands/decisions_commands.py:1757:        dopemux decisions patterns tags --min-support 3  # Require 3+ occurrences
+src/dopemux/commands/decisions_commands.py:1758:        dopemux decisions patterns tags --save           # Save to database
+src/dopemux/commands/decisions_commands.py:1764:        conn = await get_conport_connection()
+src/dopemux/commands/decisions_commands.py:1773:                console.log("[dim]Try lowering --min-support or add more tagged decisions[/dim]")
+src/dopemux/commands/decisions_commands.py:1806:                    console.log(f"   Success rate: {sr:.0%} ({cluster['decisions_with_outcome']}/{cluster['sample_size']} decisions completed)")
+src/dopemux/commands/decisions_commands.py:1822:                        "success_count": int(cluster['success_rate'] * cluster['decisions_with_outcome'])
+src/dopemux/commands/decisions_commands.py:1833:                console.log(f"✅ Saved {saved} patterns to decision_patterns table")
+src/dopemux/commands/decisions_commands.py:1841:                console.log(f"  • When tagging decisions, consider these frequent combinations")
+src/dopemux/commands/decisions_commands.py:1843:                # Suggest tags for next decision
+src/dopemux/commands/decisions_commands.py:1844:                console.log(f"\n[dim]Next time you tag a decision with '{clusters[0]['tags'][0]}', the system can suggest '{clusters[0]['tags'][1]}'[/dim]")
+src/dopemux/templates/init/.claude/PROJECT_INSTRUCTIONS.MD:84:Updates risk register / decision log when applicable
+src/dopemux/templates/init/.claude/claude.md:55:        --decision <CONPORT_DECISION_ID>
+src/dopemux/templates/init/.claude/claude.md:119:   - Log decisions via ConPort or `dopemux status --summary`.
+src/dopemux/mcp/roles.py:242:        This helps ADHD users by reducing decision overhead and providing
+src/dopemux/mcp/roles.py:401:        This provides ADHD users with clear, limited options to reduce decision paralysis.
+src/dopemux/templates/init/docs/90-adr/TEMPLATE_ADR_LIGHT.md:11:One-paragraph decision plus 2-5 bullet invariants.
+src/dopemux/templates/init/docs/task-packets/CHECKLIST.md:37:☐ No architectural decisions hidden in Task Packets
+services/task-orchestrator/demo_component6_e2e.py:224:        logger.info(f"      Rationale: {rec.rationale}")
+services/task-orchestrator/demo_component6_e2e.py:264:    logger.info(f"   Rationale: {'High capacity - show more options' if adaptive_count >= 3 else 'Overwhelmed - limit choices to reduce decision fatigue'}")
+services/task-orchestrator/demo_component6_e2e.py:411:    logger.info("   → Prevents decision paralysis\n")
+src/dopemux/ux/interactive_prompts.py:24:    Limits choices to prevent decision paralysis, provides clear defaults,
+src/dopemux/templates/init/.claude/PRIMER.md:60:* Deep semantics and truth-model decisions are not mixed with implementation.
+src/dopemux/templates/init/.claude/PRIMER.md:89:* Updates risk register / decision log
+src/dopemux/templates/init/.claude/PRIMER.md:153:* ADRs that freeze decisions
+services/task-orchestrator/automation_workflows.py:75:        conport_client: Any = None,
+services/task-orchestrator/automation_workflows.py:80:        self.conport_client = conport_client
+services/task-orchestrator/automation_workflows.py:142:                {"type": "setup_conport_context", "priority": 3},
+services/task-orchestrator/automation_workflows.py:362:            elif action_type == "setup_conport_context":
+services/task-orchestrator/automation_workflows.py:363:                return await self._action_setup_conport_context(trigger_data)
+services/task-orchestrator/automation_workflows.py:479:    async def _action_setup_conport_context(self, trigger_data: Dict[str, Any]) -> bool:
+services/task-orchestrator/automation_workflows.py:499:            await self.conport_client.update_active_context(patch_content=sprint_context)
+services/task-orchestrator/automation_workflows.py:597:            conport_updates = []
+services/task-orchestrator/automation_workflows.py:613:                conport_status = "IN_PROGRESS" if completion_percentage < 100 else "DONE"
+services/task-orchestrator/automation_workflows.py:614:                conport_updates.append({
+services/task-orchestrator/automation_workflows.py:615:                    "status": conport_status,
+services/task-orchestrator/automation_workflows.py:631:                self._batch_update_conport(conport_updates),
+services/task-orchestrator/automation_workflows.py:1003:    async def _batch_update_conport(self, updates: List[Dict]) -> bool:
+services/task-orchestrator/automation_workflows.py:1007:        if not self.conport_client:
+services/task-orchestrator/automation_workflows.py:1010:        if hasattr(self.conport_client, "batch_update_progress"):
+services/task-orchestrator/automation_workflows.py:1012:                result = self.conport_client.batch_update_progress(updates)
+services/task-orchestrator/automation_workflows.py:1022:                if hasattr(self.conport_client, "record_task_progress"):
+services/task-orchestrator/automation_workflows.py:1023:                    result = self.conport_client.record_task_progress(update)
+services/task-orchestrator/automation_workflows.py:1024:                elif hasattr(self.conport_client, "link_conport_items"):
+services/task-orchestrator/automation_workflows.py:1025:                    result = self.conport_client.link_conport_items([update])
+services/task-orchestrator/automation_workflows.py:1228:        if not self.conport_client:
+services/task-orchestrator/automation_workflows.py:1238:            if not hasattr(self.conport_client, method_name):
+services/task-orchestrator/automation_workflows.py:1241:                result = getattr(self.conport_client, method_name)(payload)
+src/dopemux/memory/lane_policy.py:29:    - Audit logging for all policy decisions
+src/dopemux/templates/init/docs/task-packets/README.md:46:Or an explicit Supervisor decision with justification
+src/dopemux/templates/init/docs/task-packets/README.md:51:A design decision has been frozen
+src/dopemux/templates/init/docs/task-packets/README.md:110:Risks / decisions updated
+src/dopemux/mcp/conport_mcp_tools.py:7:decisions, work items, artifacts, and knowledge graph relationships.
+src/dopemux/mcp/conport_mcp_tools.py:10:- decisions/* namespace: Atomic decision nodes
+src/dopemux/mcp/conport_mcp_tools.py:36:    DECISION = "decision"
+src/dopemux/mcp/conport_mcp_tools.py:50:    """Cross-project decision node"""
+src/dopemux/mcp/conport_mcp_tools.py:54:    rationale: Optional[str] = None
+src/dopemux/mcp/conport_mcp_tools.py:64:            self.id = f"decisions/{datetime.now().strftime('%Y-%m-%d')}-{str(uuid.uuid4())[:8]}"
+src/dopemux/mcp/conport_mcp_tools.py:135:    async def add_decision(self, workspace_id: str, title: str, rationale: str = None,
+src/dopemux/mcp/conport_mcp_tools.py:138:        """Log a new decision with rationale and links"""
+src/dopemux/mcp/conport_mcp_tools.py:139:        decision = Decision(
+src/dopemux/mcp/conport_mcp_tools.py:143:            rationale=rationale,
+src/dopemux/mcp/conport_mcp_tools.py:152:                INSERT INTO decisions (id, workspace_id, title, rationale,
+src/dopemux/mcp/conport_mcp_tools.py:155:            """, decision.id, decision.workspace_id, decision.title,
+src/dopemux/mcp/conport_mcp_tools.py:156:                 decision.rationale, decision.implementation_details,
+src/dopemux/mcp/conport_mcp_tools.py:157:                 decision.who, decision.tags, json.dumps(decision.links))
+src/dopemux/mcp/conport_mcp_tools.py:159:        return {"decision_id": decision.id, "status": "logged"}
+src/dopemux/mcp/conport_mcp_tools.py:161:    async def get_decisions(self, workspace_id: str, since: datetime = None,
+src/dopemux/mcp/conport_mcp_tools.py:163:        """Retrieve decisions with optional filtering"""
+src/dopemux/mcp/conport_mcp_tools.py:165:            SELECT id, title, rationale, who, when_ts, tags, links
+src/dopemux/mcp/conport_mcp_tools.py:166:            FROM decisions
+src/dopemux/mcp/conport_mcp_tools.py:375:            "conport.semantic_search is deprecated and running in keyword fallback mode; "
+src/dopemux/mcp/conport_mcp_tools.py:384:                    'decision'::text AS entity_type,
+src/dopemux/mcp/conport_mcp_tools.py:388:                FROM decisions
+src/dopemux/mcp/conport_mcp_tools.py:390:                  AND (summary ILIKE $2 OR rationale ILIKE $2)
+src/dopemux/mcp/conport_mcp_tools.py:391:                  AND ($4::text[] IS NULL OR 'decision' = ANY($4))
+src/dopemux/mcp/conport_mcp_tools.py:431:def register_conport_tools(mcp_server, db_pool):
+src/dopemux/mcp/conport_mcp_tools.py:438:            name="conport_decisions_add",
+src/dopemux/mcp/conport_mcp_tools.py:439:            description="Log a new decision with rationale and links",
+src/dopemux/mcp/conport_mcp_tools.py:445:                    "rationale": {"type": "string"},
+src/dopemux/mcp/conport_mcp_tools.py:453:        lambda args: tools.add_decision(**args)
+src/dopemux/mcp/conport_mcp_tools.py:458:            name="conport_decisions_get",
+src/dopemux/mcp/conport_mcp_tools.py:459:            description="Retrieve decisions with optional filtering",
+src/dopemux/mcp/conport_mcp_tools.py:471:        lambda args: tools.get_decisions(**args)
+src/dopemux/mcp/conport_mcp_tools.py:477:            name="conport_work_upcoming_add",
+src/dopemux/mcp/conport_mcp_tools.py:499:            name="conport_work_upcoming_next",
+src/dopemux/mcp/conport_mcp_tools.py:517:            name="conport_artifacts_attach",
+src/dopemux/mcp/conport_mcp_tools.py:538:            name="conport_graph_link",
+src/dopemux/mcp/conport_mcp_tools.py:544:                    "source_type": {"type": "string", "enum": ["decision", "work_item", "artifact"]},
+src/dopemux/mcp/conport_mcp_tools.py:546:                    "target_type": {"type": "string", "enum": ["decision", "work_item", "artifact"]},
+src/dopemux/mcp/conport_mcp_tools.py:559:            name="conport_graph_query",
+src/dopemux/profile_manager.py:174:                    "required": ["zen", "conport", "pal"],
+src/dopemux/profile_manager.py:183:                    "conport": {"mode": "shared", "path": "~/.dopemux/databases/conport.db"},
+src/dopemux/ui/dashboard.py:89:    decisions_today = reactive(23)
+src/dopemux/ui/dashboard.py:105:                # ConPort decisions API at 8005
+src/dopemux/ui/dashboard.py:106:                decisions_resp = await client.get("http://localhost:8005/api/adhd/decisions/recent")
+src/dopemux/ui/dashboard.py:107:                if decisions_resp.status_code == 200:
+src/dopemux/ui/dashboard.py:108:                    decisions_data = decisions_resp.json()
+src/dopemux/ui/dashboard.py:109:                    self.decisions_today = len(decisions_data.get("today", []))
+src/dopemux/ui/dashboard.py:126:            f"Decisions: {self.decisions_today} (↑5 today)"
+services/task-orchestrator/task_orchestrator/app.py:159:            get_conport_adapter
+services/task-orchestrator/task_orchestrator/app.py:164:        conport_adapter = get_conport_adapter()
+services/task-orchestrator/task_orchestrator/app.py:172:            conport_adapter=conport_adapter,
+src/dopemux/analysis/extractor.py:52:    components, architectural decisions, and research insights.
+src/dopemux/analysis/extractor.py:102:            "decisions": EntityPattern(
+src/dopemux/analysis/extractor.py:104:                regex=r"(?:decision|chosen|selected|opted):\s*([^.\n]+)",
+src/dopemux/analysis/extractor.py:105:                description="Architectural and design decisions",
+src/dopemux/tmux/cli.py:1770:    required_servers = set(spec.required_servers or []) | {"conport"}
+src/dopemux/tools/conport_client.py:81:    async def log_decision(self, workspace_id: str, summary: str, rationale: str,
+src/dopemux/tools/conport_client.py:84:        Log important decision with rationale - crucial for ADHD memory support
+src/dopemux/tools/conport_client.py:87:        decision_data = {
+src/dopemux/tools/conport_client.py:90:            "rationale": rationale,
+src/dopemux/tools/conport_client.py:96:                f"{self.base_url}/api/decisions",
+src/dopemux/tools/conport_client.py:97:                json=decision_data,
+src/dopemux/tools/conport_client.py:102:                    logger.info(f"Logged decision: {summary}")
+src/dopemux/tools/conport_client.py:107:            logger.error(f"Failed to log decision: {e}")
+src/dopemux/tools/conport_client.py:110:    async def get_decisions(self, workspace_id: str) -> Dict[str, Any]:
+src/dopemux/tools/conport_client.py:111:        """Get decision history for workspace"""
+src/dopemux/tools/conport_client.py:115:                f"{self.base_url}/api/decisions",
+src/dopemux/tools/conport_client.py:120:                    logger.info(f"Retrieved {len(result.get('decisions', []))} decisions for {workspace_id}")
+src/dopemux/tools/conport_client.py:125:            logger.error(f"Failed to get decisions: {e}")
+src/dopemux/tools/conport_client.py:264:async def save_decision(summary: str, rationale: str, alternatives: List[str] = None,
+src/dopemux/tools/conport_client.py:266:    """Quick function to save important decisions"""
+src/dopemux/tools/conport_client.py:269:        result = await client.log_decision(workspace_id, summary, rationale, alternatives)
+src/dopemux/tools/conport_client.py:317:        # Test decision logging
+src/dopemux/tools/conport_client.py:318:        decision = await client.log_decision(
+src/dopemux/tools/conport_client.py:324:        logger.info(f"Decision: {decision}")
+src/dopemux/mcp/hooks.py:490:            "conport": 300,
+src/dopemux/ui/dashboard_detail.py:105:                resp = await client.get("http://localhost:8005/api/adhd/decisions/recent", timeout=1.0)
+src/dopemux/ui/dashboard_detail.py:107:                    decisions = resp.json().get("today", [])
+src/dopemux/ui/dashboard_detail.py:109:                    # Append decisions (this is naive, normally would merge)
+src/dopemux/ui/dashboard_detail.py:110:                    for d in decisions[:10]:
+src/dopemux/profile_analytics.py:61:    def __init__(self, workspace_id: str, conport_port: int = 3004):
+src/dopemux/profile_analytics.py:67:            conport_port: ConPort HTTP API port
+src/dopemux/profile_analytics.py:70:        self.conport_url = f"http://localhost:{conport_port}"
+src/dopemux/profile_analytics.py:116:                    f"{self.conport_url}/api/custom_data",
+src/dopemux/profile_analytics.py:143:                    f"{self.conport_url}/api/custom_data",
+src/dopemux/profile_analytics.py:225:                    f"{self.conport_url}/api/custom_data",
+src/dopemux/profile_analytics.py:482:    conport_port: int = 3004
+src/dopemux/profile_analytics.py:485:    analytics = ProfileAnalytics(workspace_id, conport_port)
+src/dopemux/profile_analytics.py:501:    conport_port: int = 3004
+src/dopemux/profile_analytics.py:504:    analytics = ProfileAnalytics(workspace_id, conport_port)
+src/dopemux/profile_analytics.py:513:    conport_port: int = 3004,
+src/dopemux/profile_analytics.py:516:    analytics = ProfileAnalytics(workspace_id, conport_port)
+services/task-orchestrator/app/services/task_coordinator.py:41:from ..adapters.conport_adapter import ConPortEventAdapter
+services/task-orchestrator/app/services/task_coordinator.py:75:        self.conport_adapter = ConPortEventAdapter(workspace_id)
+services/task-orchestrator/app/services/task_coordinator.py:76:        self.cognitive_guardian = CognitiveLoadBalancer(workspace_id=workspace_id, conport_client=self.conport_adapter)
+services/task-orchestrator/app/services/task_coordinator.py:77:        self.context_recovery = ContextSwitchRecovery(workspace_id, self.conport_adapter)
+services/task-orchestrator/app/services/task_coordinator.py:179:                    "rationale": zen_prioritization.get('rationale', 'Zen-optimized sequencing')
+services/task-orchestrator/app/services/task_coordinator.py:278:            asyncio.create_task(self._sync_task_to_conport(task))
+services/task-orchestrator/app/services/task_coordinator.py:285:    async def _sync_task_to_conport(self, task: OrchestrationTask):
+services/task-orchestrator/app/services/task_coordinator.py:288:            await self.conport_adapter.create_or_update_task(task, self.workspace_id)
+services/task-orchestrator/app/services/task_coordinator.py:476:                    await self.conport_adapter.update_task_in_conport(task)
+services/task-orchestrator/app/services/task_coordinator.py:539:        await self.conport_adapter.log_progress(
+services/task-orchestrator/app/services/task_coordinator.py:555:        await self.conport_adapter.update_task_in_conport(
+services/task-orchestrator/task_orchestrator/models.py:26:    CONPORT = "conport"
+services/task-orchestrator/task_orchestrator/models.py:38:    conport_id: Optional[int] = None
+services/task-orchestrator/app/services/predictive_risk_assessment.py:86:    def __init__(self, conport_client=None, pal_client=None):
+services/task-orchestrator/app/services/predictive_risk_assessment.py:87:        self.conport = conport_client
+services/task-orchestrator/app/services/predictive_risk_assessment.py:187:            if self.conport:
+services/task-orchestrator/app/services/predictive_risk_assessment.py:300:        if self.conport:
+services/task-orchestrator/app/services/predictive_risk_assessment.py:302:                if not hasattr(self.conport, method_name):
+services/task-orchestrator/app/services/predictive_risk_assessment.py:305:                    result = getattr(self.conport, method_name)()
+services/task-orchestrator/app/services/predictive_risk_assessment.py:594:        if not self.conport:
+services/task-orchestrator/app/services/predictive_risk_assessment.py:623:            if not hasattr(self.conport, method_name):
+services/task-orchestrator/app/services/predictive_risk_assessment.py:626:                result = getattr(self.conport, method_name)(payload)
+services/task-orchestrator/task_orchestrator/core.py:205:_conport_adapter = None
+services/task-orchestrator/task_orchestrator/core.py:235:def get_conport_adapter():
+services/task-orchestrator/task_orchestrator/core.py:237:    global _conport_adapter
+services/task-orchestrator/task_orchestrator/core.py:238:    if _conport_adapter is None:
+services/task-orchestrator/task_orchestrator/core.py:242:        from adapters.conport_adapter import ConPortEventAdapter
+services/task-orchestrator/task_orchestrator/core.py:243:        _conport_adapter = ConPortEventAdapter(workspace_id=settings.workspace_id)
+services/task-orchestrator/task_orchestrator/core.py:245:    return _conport_adapter
+services/task-orchestrator/task_orchestrator/config.py:38:    conport_url: str = field(default_factory=lambda: os.getenv("CONPORT_URL", "http://conport:8005"))
+services/task-orchestrator/task_orchestrator/agents/__init__.py:35:                capabilities=["decision_logging", "progress_tracking", "context_management"],
+services/task-orchestrator/task_orchestrator/agents/__init__.py:102:                   for keyword in ["decision", "architecture", "pattern", "strategy"]):
+services/task-orchestrator/app/services/external_dependency_integration.py:95:    def __init__(self, conport_client=None, pal_client=None):
+services/task-orchestrator/app/services/external_dependency_integration.py:96:        self.conport = conport_client
+services/task-orchestrator/app/models/coordination.py:15:    DECISION_MADE = "decision_made"
+services/task-orchestrator/app/adapters/schema_mapping.py:8:Specification: docs/implementation-plans/conport-event-schema-design.md
+services/task-orchestrator/app/adapters/schema_mapping.py:325:def map_task_status_to_conport(status: TaskStatus) -> str:
+services/task-orchestrator/app/adapters/schema_mapping.py:330:def map_conport_status_to_task(status: str) -> TaskStatus:
+services/task-orchestrator/app/adapters/schema_mapping.py:339:def extract_conport_id_from_task_id(task_id: str) -> Optional[int]:
+services/task-orchestrator/app/adapters/schema_mapping.py:343:    Handles format: "conport-{id}" → {id}
+services/task-orchestrator/app/adapters/schema_mapping.py:346:        task_id: OrchestrationTask.id (may be "conport-123" or custom format)
+services/task-orchestrator/app/adapters/schema_mapping.py:351:    if task_id.startswith("conport-"):
+services/task-orchestrator/app/adapters/schema_mapping.py:355:            logger.warning(f"Invalid conport task_id format: {task_id}")
+services/task-orchestrator/app/adapters/schema_mapping.py:365:    Build ConPort link_conport_items calls for task dependencies.
+services/task-orchestrator/app/adapters/schema_mapping.py:372:        List of link specs ready for ConPort link_conport_items() calls
+services/task-orchestrator/app/adapters/schema_mapping.py:374:    if not hasattr(task, 'conport_id') or task.conport_id is None:
+services/task-orchestrator/app/adapters/schema_mapping.py:375:        logger.warning(f"Task {task.id} has no conport_id, cannot build dependency links")
+services/task-orchestrator/app/adapters/schema_mapping.py:388:        if not hasattr(dep_task, 'conport_id') or dep_task.conport_id is None:
+services/task-orchestrator/app/adapters/schema_mapping.py:389:            logger.warning(f"Dependency task {dependency_id} has no conport_id")
+services/task-orchestrator/app/adapters/schema_mapping.py:394:            "source_item_id": task.conport_id,
+services/task-orchestrator/app/adapters/schema_mapping.py:395:            "target_item_id": dep_task.conport_id,
+services/task-orchestrator/app/adapters/schema_mapping.py:522:def validate_conport_progress_data(progress_data: Dict[str, Any]) -> Tuple[bool, List[str]]:
+services/task-orchestrator/app/adapters/schema_mapping.py:527:        progress_data: Dict ready for mcp__conport__log_progress()
+services/task-orchestrator/app/adapters/schema_mapping.py:588:    from .conport_adapter import safe_orchestration_task_to_conport_progress
+services/task-orchestrator/app/adapters/schema_mapping.py:592:        progress_data = safe_orchestration_task_to_conport_progress(task, workspace_id)
+services/task-orchestrator/app/adapters/schema_mapping.py:616:    from .conport_adapter import safe_conport_progress_to_orchestration_task
+services/task-orchestrator/app/adapters/schema_mapping.py:620:        task = safe_conport_progress_to_orchestration_task(progress)
+services/task-orchestrator/app/services/multi_team_coordination.py:85:    def __init__(self, conport_client=None, pal_client=None):
+services/task-orchestrator/app/services/multi_team_coordination.py:86:        self.conport = conport_client
+services/task-orchestrator/app/services/multi_team_coordination.py:125:            if self.conport:
+services/task-orchestrator/app/services/multi_team_coordination.py:262:        if self.conport and hasattr(self.conport, "get_team_profiles"):
+services/task-orchestrator/app/services/multi_team_coordination.py:264:                result = self.conport.get_team_profiles()
+services/task-orchestrator/app/services/multi_team_coordination.py:324:        if not self.conport:
+services/task-orchestrator/app/services/multi_team_coordination.py:329:            if not hasattr(self.conport, method_name):
+services/task-orchestrator/app/services/multi_team_coordination.py:332:                result = getattr(self.conport, method_name)()
+services/task-orchestrator/app/services/multi_team_coordination.py:490:        if not self.conport:
+services/task-orchestrator/app/services/multi_team_coordination.py:509:            if not hasattr(self.conport, method_name):
+services/task-orchestrator/app/services/multi_team_coordination.py:512:                result = getattr(self.conport, method_name)(payload)
+services/task-orchestrator/app/core/coordinator.py:38:from ..adapters.conport_adapter import ConPortEventAdapter
+services/task-orchestrator/app/core/coordinator.py:56:    DECISION_MADE = "decision_made"
+services/task-orchestrator/app/core/coordinator.py:155:        self.conport_adapter = ConPortEventAdapter(workspace_id)
+services/task-orchestrator/app/core/coordinator.py:242:            elif operation == "log_decision":
+services/task-orchestrator/app/core/coordinator.py:243:                result = await self._coordinate_decision_logging(source_plane, data, **kwargs)
+services/task-orchestrator/app/core/coordinator.py:368:                await self._handle_decision_made_event(event)
+services/task-orchestrator/app/core/coordinator.py:444:                health.services["conport"] = await self._check_conport_health()
+services/task-orchestrator/app/core/coordinator.py:483:    async def _check_conport_health(self) -> str:
+services/task-orchestrator/app/core/coordinator.py:669:    async def _coordinate_decision_logging(
+services/task-orchestrator/app/core/coordinator.py:675:        """Coordinate decision logging across planes."""
+services/task-orchestrator/app/core/coordinator.py:676:        decision_data = data["decision"]
+services/task-orchestrator/app/core/coordinator.py:680:            id=f"sync_decision_{decision_data.get('id', 'unknown')}_{int(datetime.now().timestamp())}",
+services/task-orchestrator/app/core/coordinator.py:684:            entity_type="decision",
+services/task-orchestrator/app/core/coordinator.py:685:            entity_id=decision_data.get("id", "unknown"),
+services/task-orchestrator/app/core/coordinator.py:686:            source_data=decision_data,
+services/task-orchestrator/app/core/coordinator.py:845:    async def _handle_decision_made_event(self, event: CoordinationEvent) -> None:
+services/task-orchestrator/app/core/coordinator.py:846:        """Handle decision logging events."""
+services/task-orchestrator/app/core/coordinator.py:854:            {"action": "log_decision", "data": event.data},
+services/task-orchestrator/app/core/sync.py:25:    LEANTIME_TO_CONPORT = "leantime→conport"
+services/task-orchestrator/app/core/sync.py:27:    CONPORT_TO_LEANTIME = "conport→leantime"
+services/task-orchestrator/app/core/sync.py:29:    LOCAL_TO_CONPORT = "local→conport"
+services/task-orchestrator/app/core/sync.py:30:    CONPORT_TO_LOCAL = "conport→local"
+services/task-orchestrator/app/core/sync.py:38:    CONPORT_WINS = "conport_wins"          # ConPort decisions win
+services/task-orchestrator/app/core/sync.py:52:    entity_type: str  # task, decision, progress, context
+services/task-orchestrator/app/core/sync.py:138:            "conport": None,     # ConPort MCP client
+services/task-orchestrator/app/core/sync.py:270:                success = await self._sync_leantime_to_conport(operation)
+services/task-orchestrator/app/core/sync.py:274:                success = await self._sync_conport_to_leantime(operation)
+services/task-orchestrator/app/core/sync.py:278:                success = await self._sync_local_to_conport(operation)
+services/task-orchestrator/app/core/sync.py:280:                success = await self._sync_conport_to_local(operation)
+services/task-orchestrator/app/core/sync.py:320:    async def _sync_leantime_to_conport(self, operation: SyncOperation) -> bool:
+services/task-orchestrator/app/core/sync.py:325:            conport_client = self.system_connectors.get("conport")
+services/task-orchestrator/app/core/sync.py:327:            if conport_client is None:
+services/task-orchestrator/app/core/sync.py:334:                    "status": self._map_status_to_conport(source_data.get("status", "pending")),
+services/task-orchestrator/app/core/sync.py:342:                await conport_client.log_progress(**progress_data)
+services/task-orchestrator/app/core/sync.py:357:                await conport_client.update_active_context(patch_content=sprint_context)
+services/task-orchestrator/app/core/sync.py:367:    async def _sync_conport_to_leantime(self, operation: SyncOperation) -> bool:
+services/task-orchestrator/app/core/sync.py:373:            if entity_type == "decision":
+services/task-orchestrator/app/core/sync.py:374:                # ConPort decision → Leantime task/comment
+services/task-orchestrator/app/core/sync.py:375:                decision_data = source_data
+services/task-orchestrator/app/core/sync.py:377:                # Check if decision affects existing Leantime tasks
+services/task-orchestrator/app/core/sync.py:378:                affected_tasks = await self._find_affected_leantime_tasks(decision_data)
+services/task-orchestrator/app/core/sync.py:381:                    # Add decision context as task comment
+services/task-orchestrator/app/core/sync.py:384:                        "comment": f"📋 Related Decision: {decision_data.get('summary', '')}\n"
+services/task-orchestrator/app/core/sync.py:385:                                 f"Rationale: {decision_data.get('rationale', 'Not specified')}",
+services/task-orchestrator/app/core/sync.py:392:                logger.debug(f"📝 Synced ConPort decision to {len(affected_tasks)} Leantime tasks")
+services/task-orchestrator/app/core/sync.py:484:            if agent_result.get("agent_type") == "conport":
+services/task-orchestrator/app/core/sync.py:490:                target_systems.extend(["leantime", "conport"])
+services/task-orchestrator/app/core/sync.py:543:            elif target_system == "conport":
+services/task-orchestrator/app/core/sync.py:544:                conport_client = self.system_connectors.get("conport")
+services/task-orchestrator/app/core/sync.py:545:                if conport_client is None:
+services/task-orchestrator/app/core/sync.py:549:                # Log agent work as ConPort decision/progress
+services/task-orchestrator/app/core/sync.py:550:                if agent_result.get("type") == "decision":
+services/task-orchestrator/app/core/sync.py:551:                    decision_data = {
+services/task-orchestrator/app/core/sync.py:553:                        "rationale": agent_result.get("rationale", "AI-generated decision"),
+services/task-orchestrator/app/core/sync.py:559:                    await conport_client.log_decision(**decision_data)
+services/task-orchestrator/app/core/sync.py:688:                conflict.resolution_reason = "ConPort decision/pattern is authoritative"
+services/task-orchestrator/app/core/sync.py:833:    def _map_status_to_conport(self, leantime_status: str) -> str:
+services/task-orchestrator/app/core/sync.py:845:    def _map_status_to_leantime(self, conport_status: str) -> str:
+services/task-orchestrator/app/core/sync.py:855:        return status_map.get(conport_status, "0")
+services/task-orchestrator/app/core/sync.py:857:    async def _find_affected_leantime_tasks(self, decision_data: Dict[str, Any]) -> List[str]:
+services/task-orchestrator/app/core/sync.py:858:        """Find Leantime tasks affected by ConPort decision."""
+services/task-orchestrator/app/core/sync.py:859:        # Placeholder - would analyze decision content and find related tasks
+src/dopemux/roles/catalog.py:64:        required_servers=["conport", "serena", "pal"],
+src/dopemux/roles/catalog.py:75:        required_servers=["conport", "serena", "zen"],
+src/dopemux/roles/catalog.py:86:        required_servers=["conport", "zen"],
+src/dopemux/roles/catalog.py:102:        required_servers=["conport", "zen", "pal"],
+src/dopemux/roles/catalog.py:127:        required_servers=["conport", "serena", "zen"],
+src/dopemux/roles/catalog.py:137:        required_servers=["conport", "zen", "pal"],
+src/dopemux/roles/catalog.py:145:        description="Code review and decision verification workflows.",
+src/dopemux/roles/catalog.py:147:        required_servers=["conport", "serena", "zen"],
+src/dopemux/roles/catalog.py:157:        required_servers=["conport", "serena", "zen"],
+src/dopemux/roles/catalog.py:167:        required_servers=["conport", "desktop-commander"],
+src/dopemux/roles/catalog.py:241:    # Always require conport to preserve core memory functionality
+src/dopemux/roles/catalog.py:242:    required.add("conport")
+services/task-orchestrator/app/adapters/bridge_adapter.py:107:    async def push_task_to_conport(
+services/task-orchestrator/app/adapters/bridge_adapter.py:160:                    "conport_entry_id": result.get("id"),
+services/task-orchestrator/app/adapters/bridge_adapter.py:168:                "conport_entry_id": result.get("id"),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:4:Publishes AI agent decisions and insights to ConPort knowledge graph.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:5:Enables automatic linking between decisions and related tasks.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:8:Specification: docs/implementation-plans/conport-event-schema-design.md
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:33:    Event representing an AI agent decision to be logged in ConPort.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:35:    Based on Task 2.1 specification for AI decision capture pattern.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:38:    summary: str                           # Concise decision statement
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:39:    rationale: str                         # Why this decision was made
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:40:    implementation_details: str            # How to implement this decision
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:43:    agent_type: AgentType                  # Which AI agent made the decision
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:49:    related_conport_progress_id: Optional[int] = None  # ConPort progress_entry ID
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:55:    decision_id: Optional[int] = None      # ConPort decision ID (set after creation)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:71:    def to_conport_decision(self) -> Dict[str, Any]:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:73:        Convert to ConPort decision format.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:75:        Returns dict ready for mcp__conport__log_decision() call.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:79:            "rationale": self.rationale,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:91:    Publisher for AI agent insights and decisions to ConPort knowledge graph.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:94:    - Log AI decisions to ConPort
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:96:    - Batch decision logging
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:100:        publisher = ConPortInsightPublisher(workspace_id, conport_client)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:101:        decision_id = await publisher.log_ai_decision(ai_decision_event)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:102:        await publisher.link_decision_to_task(decision_id, task_conport_id)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:105:    def __init__(self, workspace_id: str, conport_client: Any = None):
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:111:            conport_client: ConPort MCP client (optional, uses placeholder if None)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:114:        self.conport_client = conport_client
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:115:        self.decision_cache: Dict[str, AIDecisionEvent] = {}  # Local cache
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:121:    async def log_ai_decision(self, event: AIDecisionEvent) -> Optional[int]:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:123:        Log AI agent decision to ConPort.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:129:            ConPort decision ID if successful, None otherwise
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:133:            decision_data = event.to_conport_decision()
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:134:            decision_data["workspace_id"] = self.workspace_id
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:137:            decision_id = await self._resilient_log_decision(decision_data)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:139:            if decision_id:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:140:                # Store decision ID in event
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:141:                event.decision_id = decision_id
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:144:                if event.related_conport_progress_id:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:145:                    await self.link_decision_to_task(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:146:                        decision_id,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:147:                        event.related_conport_progress_id
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:150:                logger.info(f"✅ Logged AI decision to ConPort: {event.summary[:50]}... (ID: {decision_id})")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:151:                return decision_id
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:154:                self.decision_cache[event.summary] = event
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:155:                logger.warning(f"⚠️ ConPort unavailable, cached decision locally")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:159:            logger.error(f"Failed to log AI decision: {e}")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:162:    async def link_decision_to_task(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:164:        decision_id: int,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:165:        task_conport_id: int,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:169:        Link AI decision to related task in ConPort knowledge graph.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:172:            decision_id: ConPort decision ID
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:173:            task_conport_id: ConPort progress_entry ID
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:180:            if not self.conport_client:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:184:            # Call ConPort link_conport_items
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:185:            await self.conport_client.link_conport_items(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:187:                source_item_type="decision",
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:188:                source_item_id=str(decision_id),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:190:                target_item_id=str(task_conport_id),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:192:                description=f"AI decision {decision_id} {relationship_type} task {task_conport_id}"
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:195:            logger.info(f"📎 Linked decision {decision_id} to task {task_conport_id} ({relationship_type})")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:199:            logger.error(f"Failed to link decision to task: {e}")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:202:    async def batch_log_decisions(self, events: List[AIDecisionEvent]) -> List[Optional[int]]:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:204:        Log multiple AI decisions to ConPort.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:210:            List of ConPort decision IDs (None for failures)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:212:        decision_ids = []
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:215:            decision_id = await self.log_ai_decision(event)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:216:            decision_ids.append(decision_id)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:218:        successful = sum(1 for id in decision_ids if id is not None)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:219:        logger.info(f"✅ Batch logged {successful}/{len(events)} AI decisions to ConPort")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:221:        return decision_ids
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:240:            rationale=zen_result.get("rationale", zen_result.get("findings", "")),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:262:            rationale=serena_result.get("analysis", ""),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:284:            rationale=taskmaster_result.get("complexity_analysis", ""),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:297:    async def _resilient_log_decision(self, decision_data: Dict) -> Optional[int]:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:299:        Log decision to ConPort with retry logic.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:301:        Returns ConPort decision ID if successful, None otherwise.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:307:                if self.conport_client:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:309:                    result = await self.conport_client.log_decision(**decision_data)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:313:                    logger.warning("ConPort client not configured for decision logging")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:338:            "cached_decisions": len(self.decision_cache),
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:339:            "cache_size_bytes": sum(len(str(v)) for v in self.decision_cache.values())
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:342:    async def flush_cache_to_conport(self) -> int:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:344:        Flush locally cached decisions to ConPort.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:346:        Returns number of decisions successfully flushed.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:348:        if not self.decision_cache:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:354:        for summary, event in self.decision_cache.items():
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:355:            decision_id = await self.log_ai_decision(event)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:356:            if decision_id:
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:362:        self.decision_cache = failed_events
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:364:        logger.info(f"✅ Flushed {flushed} cached decisions to ConPort, {len(failed_events)} remain")
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:372:def create_architecture_decision(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:374:    rationale: str,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:381:    Convenience function to create architecture decision event.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:385:        rationale: Why this decision
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:387:        agent_type: Which agent made decision (default: Zen)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:396:        rationale=rationale,
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:406:def create_code_review_decision(
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:415:    Convenience function to create code review decision event.
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:430:        rationale=findings,
+services/task-orchestrator/app/adapters/conport_adapter.py:13:Specification: docs/implementation-plans/conport-event-schema-design.md
+services/task-orchestrator/app/adapters/conport_adapter.py:86:def orchestration_task_to_conport_progress(
+services/task-orchestrator/app/adapters/conport_adapter.py:100:        Dict ready for mcp__conport__log_progress() call
+services/task-orchestrator/app/adapters/conport_adapter.py:168:def conport_progress_to_orchestration_task(progress: Dict[str, Any]) -> OrchestrationTask:
+services/task-orchestrator/app/adapters/conport_adapter.py:257:        id=f"conport-{progress['id']}",  # Prefix to identify source
+services/task-orchestrator/app/adapters/conport_adapter.py:258:        conport_id=progress['id'],
+services/task-orchestrator/app/adapters/conport_adapter.py:284:def safe_orchestration_task_to_conport_progress(
+services/task-orchestrator/app/adapters/conport_adapter.py:310:        progress_data = orchestration_task_to_conport_progress(task, workspace_id)
+services/task-orchestrator/app/adapters/conport_adapter.py:325:def safe_conport_progress_to_orchestration_task(progress: Dict[str, Any]) -> Optional[OrchestrationTask]:
+services/task-orchestrator/app/adapters/conport_adapter.py:332:        return conport_progress_to_orchestration_task(progress)
+services/task-orchestrator/app/adapters/conport_adapter.py:354:        adapter = ConPortEventAdapter(workspace_id, conport_url)
+services/task-orchestrator/app/adapters/conport_adapter.py:355:        await adapter.sync_task_to_conport(orchestration_task)
+services/task-orchestrator/app/adapters/conport_adapter.py:356:        tasks = await adapter.get_all_tasks_from_conport()
+services/task-orchestrator/app/adapters/conport_adapter.py:359:    def __init__(self, workspace_id: str, conport_url: str = "http://localhost:8005"):
+services/task-orchestrator/app/adapters/conport_adapter.py:365:            conport_url: ConPort HTTP API base URL
+services/task-orchestrator/app/adapters/conport_adapter.py:368:        self.conport_url = conport_url.rstrip('/')
+services/task-orchestrator/app/adapters/conport_adapter.py:398:    async def create_task_in_conport(self, task: OrchestrationTask) -> Optional[int]:
+services/task-orchestrator/app/adapters/conport_adapter.py:406:            progress_data = safe_orchestration_task_to_conport_progress(task, self.workspace_id)
+services/task-orchestrator/app/adapters/conport_adapter.py:412:            conport_id = await self._resilient_log_progress(progress_data)
+services/task-orchestrator/app/adapters/conport_adapter.py:414:            if conport_id:
+services/task-orchestrator/app/adapters/conport_adapter.py:415:                logger.info(f"✅ Created task in ConPort: {task.title} (ID: {conport_id})")
+services/task-orchestrator/app/adapters/conport_adapter.py:417:                task.conport_id = conport_id
+services/task-orchestrator/app/adapters/conport_adapter.py:418:                return conport_id
+services/task-orchestrator/app/adapters/conport_adapter.py:429:    async def create_task_in_conport_from_sync(self, event: Any) -> Optional[int]:
+services/task-orchestrator/app/adapters/conport_adapter.py:446:            conport_id = await self._resilient_log_progress(progress_data)
+services/task-orchestrator/app/adapters/conport_adapter.py:448:            if conport_id:
+services/task-orchestrator/app/adapters/conport_adapter.py:449:                logger.info(f"✅ Synced task to ConPort: {event.task_id} (ID: {conport_id})")
+services/task-orchestrator/app/adapters/conport_adapter.py:450:                return conport_id
+services/task-orchestrator/app/adapters/conport_adapter.py:459:    async def update_task_in_conport(
+services/task-orchestrator/app/adapters/conport_adapter.py:471:            if not hasattr(task, 'conport_id') or task.conport_id is None:
+services/task-orchestrator/app/adapters/conport_adapter.py:472:                logger.error(f"Cannot update task {task.id}: no conport_id")
+services/task-orchestrator/app/adapters/conport_adapter.py:477:                progress_id=task.conport_id,
+services/task-orchestrator/app/adapters/conport_adapter.py:484:                logger.info(f"✅ Updated task in ConPort: {task.title} (ID: {task.conport_id})")
+services/task-orchestrator/app/adapters/conport_adapter.py:494:    async def get_all_tasks_from_conport(
+services/task-orchestrator/app/adapters/conport_adapter.py:511:            progress_entries = await self._get_progress_from_conport(
+services/task-orchestrator/app/adapters/conport_adapter.py:519:                task = safe_conport_progress_to_orchestration_task(progress)
+services/task-orchestrator/app/adapters/conport_adapter.py:532:    async def sync_dependencies_to_conport(self, task: OrchestrationTask) -> bool:
+services/task-orchestrator/app/adapters/conport_adapter.py:534:        Sync task dependencies to ConPort using link_conport_items.
+services/task-orchestrator/app/adapters/conport_adapter.py:543:            if not hasattr(task, 'conport_id') or task.conport_id is None:
+services/task-orchestrator/app/adapters/conport_adapter.py:544:                logger.error(f"Cannot sync dependencies for task {task.id}: no conport_id")
+services/task-orchestrator/app/adapters/conport_adapter.py:549:                # Find ConPort ID for dependency (assumes conport-{id} format)
+services/task-orchestrator/app/adapters/conport_adapter.py:550:                if dependency_id.startswith("conport-"):
+services/task-orchestrator/app/adapters/conport_adapter.py:551:                    dep_conport_id = int(dependency_id.split("-")[1])
+services/task-orchestrator/app/adapters/conport_adapter.py:557:                await self._link_conport_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:558:                    source_id=task.conport_id,
+services/task-orchestrator/app/adapters/conport_adapter.py:559:                    target_id=dep_conport_id,
+services/task-orchestrator/app/adapters/conport_adapter.py:588:                url = f"{self.conport_url}/api/progress/log"
+services/task-orchestrator/app/adapters/conport_adapter.py:637:                url = f"{self.conport_url}/api/progress/{progress_id}"
+services/task-orchestrator/app/adapters/conport_adapter.py:670:    async def _get_progress_from_conport(
+services/task-orchestrator/app/adapters/conport_adapter.py:682:            url = f"{self.conport_url}/api/progress"
+services/task-orchestrator/app/adapters/conport_adapter.py:714:    async def _link_conport_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:728:            url = f"{self.conport_url}/api/links"
+services/task-orchestrator/app/adapters/conport_adapter.py:769:        conport_ids = []
+services/task-orchestrator/app/adapters/conport_adapter.py:772:            conport_id = await self.create_task_in_conport(task)
+services/task-orchestrator/app/adapters/conport_adapter.py:773:            conport_ids.append(conport_id)
+services/task-orchestrator/app/adapters/conport_adapter.py:775:        successful = sum(1 for id in conport_ids if id is not None)
+services/task-orchestrator/app/adapters/conport_adapter.py:778:        return conport_ids
+services/task-orchestrator/app/adapters/conport_adapter.py:785:            updates: List of {"conport_id": int, "status": str, "description": str}
+services/task-orchestrator/app/adapters/conport_adapter.py:794:                progress_id=update["conport_id"],
+services/task-orchestrator/app/adapters/conport_adapter.py:827:            if self.conport_client:
+services/task-orchestrator/app/adapters/conport_adapter.py:829:                await self.conport_client.update_active_context(
+services/task-orchestrator/app/adapters/conport_adapter.py:852:            task_id: Task ID (format: "orch_{leantime_id}" or "conport-{conport_id}")
+services/task-orchestrator/app/adapters/conport_adapter.py:860:            if task_id.startswith("conport-"):
+services/task-orchestrator/app/adapters/conport_adapter.py:861:                conport_id = int(task_id.split("-")[1])
+services/task-orchestrator/app/adapters/conport_adapter.py:864:                all_tasks = await self.get_all_tasks_from_conport(tags_filter=["task-orchestrator"])
+services/task-orchestrator/app/adapters/conport_adapter.py:871:                if not matching_task or not hasattr(matching_task, 'conport_id'):
+services/task-orchestrator/app/adapters/conport_adapter.py:875:                conport_id = matching_task.conport_id
+services/task-orchestrator/app/adapters/conport_adapter.py:879:                progress_id=conport_id,
+services/task-orchestrator/app/adapters/conport_adapter.py:945:    async def link_decision_to_tasks(self, decision_id: str) -> bool:
+services/task-orchestrator/app/adapters/conport_adapter.py:947:        Link decision to related tasks in ConPort (for decision_logged event).
+services/task-orchestrator/app/adapters/conport_adapter.py:950:            decision_id: ConPort decision ID
+services/task-orchestrator/app/adapters/conport_adapter.py:957:            active_tasks = await self.get_all_tasks_from_conport(status_filter="IN_PROGRESS")
+services/task-orchestrator/app/adapters/conport_adapter.py:959:            # Link decision to all active tasks (they likely contributed to the decision)
+services/task-orchestrator/app/adapters/conport_adapter.py:962:                if hasattr(task, 'conport_id') and task.conport_id:
+services/task-orchestrator/app/adapters/conport_adapter.py:963:                    await self._link_conport_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:964:                        source_id=int(decision_id) if decision_id.isdigit() else 0,
+services/task-orchestrator/app/adapters/conport_adapter.py:965:                        target_id=task.conport_id,
+services/task-orchestrator/app/adapters/conport_adapter.py:971:            logger.info(f"✅ Linked decision {decision_id} to {linked_count} tasks")
+services/task-orchestrator/app/adapters/conport_adapter.py:975:            logger.error(f"Failed to link decision to tasks: {e}")
+services/task-orchestrator/app/adapters/conport_adapter.py:991:            if self.conport_client:
+services/task-orchestrator/app/adapters/conport_adapter.py:992:                await self.conport_client.update_active_context(
+services/task-orchestrator/app/adapters/conport_adapter.py:1014:    async def enrich_task_with_decisions(
+services/task-orchestrator/app/adapters/conport_adapter.py:1020:        Query ConPort for decisions relevant to a task.
+services/task-orchestrator/app/adapters/conport_adapter.py:1022:        Use before task execution to provide decision context and guidance.
+services/task-orchestrator/app/adapters/conport_adapter.py:1026:            tags: Tags to filter decisions (e.g., ["oauth", "authentication"])
+services/task-orchestrator/app/adapters/conport_adapter.py:1029:            List of relevant decision dicts with summary, rationale, tags
+services/task-orchestrator/app/adapters/conport_adapter.py:1036:        if not self.conport_client:
+services/task-orchestrator/app/adapters/conport_adapter.py:1037:            logger.warning("⚠️ ConPort client not configured, cannot query decisions")
+services/task-orchestrator/app/adapters/conport_adapter.py:1041:            logger.info(f"🔍 Querying ConPort decisions for task '{task.title}' with tags: {tags}")
+services/task-orchestrator/app/adapters/conport_adapter.py:1043:            # Query ConPort for decisions matching any of the tags
+services/task-orchestrator/app/adapters/conport_adapter.py:1044:            result = await self.conport_client.get_decisions(
+services/task-orchestrator/app/adapters/conport_adapter.py:1050:            decisions = result.get("result", [])
+services/task-orchestrator/app/adapters/conport_adapter.py:1051:            logger.info(f"📚 Found {len(decisions)} relevant decisions")
+services/task-orchestrator/app/adapters/conport_adapter.py:1053:            # Optionally link decisions to task in ConPort
+services/task-orchestrator/app/adapters/conport_adapter.py:1054:            if decisions and hasattr(task, 'conport_id') and task.conport_id:
+services/task-orchestrator/app/adapters/conport_adapter.py:1055:                for decision in decisions[:3]:  # Link top 3 most relevant
+services/task-orchestrator/app/adapters/conport_adapter.py:1057:                        await self._link_conport_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:1058:                            source_item_type="decision",
+services/task-orchestrator/app/adapters/conport_adapter.py:1059:                            source_item_id=str(decision['id']),
+services/task-orchestrator/app/adapters/conport_adapter.py:1061:                            target_item_id=str(task.conport_id),
+services/task-orchestrator/app/adapters/conport_adapter.py:1066:                        logger.debug(f"Could not link decision {decision['id']} to task: {e}")
+services/task-orchestrator/app/adapters/conport_adapter.py:1068:            return decisions
+services/task-orchestrator/app/adapters/conport_adapter.py:1071:            logger.error(f"❌ Failed to query decisions: {e}")
+services/task-orchestrator/app/adapters/conport_adapter.py:1096:        if not self.conport_client:
+services/task-orchestrator/app/adapters/conport_adapter.py:1106:            result = await self.conport_client.get_system_patterns(
+services/task-orchestrator/app/adapters/conport_adapter.py:1139:        if not self.conport_client:
+services/task-orchestrator/app/adapters/conport_adapter.py:1146:            result = await self.conport_client.get_active_context(
+services/task-orchestrator/app/adapters/conport_adapter.py:1175:        Use to discover implicit dependencies through decision/pattern links.
+services/task-orchestrator/app/adapters/conport_adapter.py:1186:                {"type": "decision", "id": 161, "relationship": "depends_on"},
+services/task-orchestrator/app/adapters/conport_adapter.py:1190:        if not self.conport_client:
+services/task-orchestrator/app/adapters/conport_adapter.py:1198:            result = await self.conport_client.get_linked_items(
+services/task-orchestrator/app/adapters/conport_adapter.py:1244:        if not self.conport_client:
+services/task-orchestrator/app/adapters/conport_adapter.py:1252:            result = await self.conport_client.semantic_search_conport(
+services/task-orchestrator/app/adapters/conport_adapter.py:1282:    def get_task_by_conport_id(self, conport_id: int, tasks: List[OrchestrationTask]) -> Optional[OrchestrationTask]:
+services/task-orchestrator/app/adapters/conport_adapter.py:1285:            if hasattr(task, 'conport_id') and task.conport_id == conport_id:
