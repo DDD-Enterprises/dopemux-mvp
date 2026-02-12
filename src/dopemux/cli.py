@@ -6379,7 +6379,13 @@ def capture():
     default=None,
     help="Project repository root (default: auto-detect)",
 )
-def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path]):
+@click.option(
+    "--lane",
+    type=str,
+    default=None,
+    help="Lane identifier for policy enforcement (e.g., agent:primary)",
+)
+def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path], lane: Optional[str]):
     """
     Emit a capture event to Chronicle.
 
@@ -6421,6 +6427,7 @@ def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path]):
             mode=mode,
             repo_root=repo_root,
             emit_event_bus=False,  # Don't emit to event bus for manual captures
+            lane=lane,
         )
 
         # Output result
