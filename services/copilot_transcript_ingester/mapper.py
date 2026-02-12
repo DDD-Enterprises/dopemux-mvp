@@ -15,6 +15,7 @@ class EventTypeMapper:
     COPILOT_TO_CHRONICLE = {
         "session.start": "copilot:session:start",
         "session.end": "copilot:session:end",
+        "session.error": "copilot:session:error",
         "user.message": "copilot:input:user_message",
         "assistant.turn_start": "copilot:ai:turn_start",
         "assistant.message": "copilot:ai:response_start",
