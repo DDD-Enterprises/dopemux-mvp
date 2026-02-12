@@ -5,60 +5,58 @@ type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-02-11'
-last_review: '2026-02-11'
-next_review: '2026-05-12'
+last_review: '2026-02-12'
+next_review: '2026-05-13'
 prelude: Readme (explanation) for dopemux documentation and developer workflows.
 ---
 # PM Plane
 
-Purpose: Evidence-first audit, minimal redesign, and task-packet implementation of the Dopemux PM / Task-Management plane.
-
-This plane is governed by strict phases. Do not skip phases.
+Purpose: evidence-first audit, redesign constraints, and deterministic rails for the Dopemux PM/task-management plane.
 
 ## Non-negotiables
-- No fabrication. If not evidenced, mark UNKNOWN or MISSING.
-- Evidence-first. Every architectural claim must cite:
-  - file path + line range, or
-  - command output, or
-  - explicit absence (0 hits + command).
-- Current state > historical docs.
-- Task Packets are law for code changes.
-- ADHD-first. Default outputs are minimal; progressive disclosure only.
-- Trinity boundaries: PM must not become a shadow Dope-Memory or DopeQuery store.
+- No fabrication. If not evidenced, mark `UNKNOWN` and add `Evidence needed: ...`.
+- Evidence-first. Load-bearing claims require file+line citations or command evidence.
+- Current implementation is source of truth.
+- Trinity boundaries are explicit: PM vs Memory vs Search ownership must be called out.
 
-## How to run
-1) Run Phase 0 evidence capture:
-   - See: docs/planes/pm/_evidence/PM-INV-00.commands.txt
-   - Paste outputs into: docs/planes/pm/_evidence/PM-INV-00.outputs/
-2) Write Phase 0 deliverables:
-   - docs/planes/pm/PM_PLANE_INVENTORY.md
-   - docs/planes/pm/PM_PLANE_GAPS.md
-3) Only after Phase 0 stop conditions clear:
-   - Phase 1: PM_FRICTION_MAP.md
-   - Phase 2: PM_ADHD_REQUIREMENTS.md + PM_OUTPUT_BOUNDARIES.md
-   - Phase 3: PM_ARCHITECTURE.md + ADR-PM-### set
-   - Phase 4: implementation via Task Packets
-   - Phase 5: PM_WORKFLOWS_DERIVED.md (derived only)
+## Pass Workflow (A/B/C)
 
-## Phase 0 stop condition
-If any PM-critical service is missing or non-functional, stop after documenting it in PM_PLANE_GAPS.md.
-Do not proceed to Phase 1.
+1. Pass A (`pm-plane/fric-01`)
+- Capture Phase 1 evidence in `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`.
+- Draft:
+  - `docs/planes/pm/PM_FRICTION_MAP.md`
+  - `docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md`
+- Create handoff:
+  - `docs/planes/pm/_handoff/PM-FRIC-01_HANDOFF.md`
 
-## Deliverables
-- Phase 0:
-  - PM_PLANE_INVENTORY.md
-  - PM_PLANE_GAPS.md
-- Phase 1:
-  - PM_FRICTION_MAP.md
-  - SIGNAL_VS_NOISE_ANALYSIS.md (create when Phase 1 begins)
-- Phase 2:
-  - PM_ADHD_REQUIREMENTS.md
-  - PM_OUTPUT_BOUNDARIES.md
-- Phase 3:
-  - PM_ARCHITECTURE.md
-  - ADR-PM-### set
-- Phase 4:
-  - Task Packets A/B/C
-- Phase 5:
-  - PM_WORKFLOWS_DERIVED.md
-  - PM_PRESETS.md (optional)
+1. Pass B (`pm-plane/fric-02-critique`)
+- Tighten the two Phase 1 docs for citation integrity and PM/Memory/Search boundaries.
+- Add handoff:
+  - `docs/planes/pm/_handoff/PM-FRIC-02_HANDOFF.md`
+
+1. Pass C (`pm-plane/rails-01`)
+- Add deterministic verifier rails:
+  - `scripts/pm_phase1_verify.sh`
+- Add harness/evidence note:
+  - `docs/planes/pm/_evidence/PM-RAILS-01.outputs/test_discovery_plan.txt`
+- Keep this README aligned with the workflow and verifier usage.
+
+## Evidence Locations
+- Phase 0 evidence: `docs/planes/pm/_evidence/PM-INV-00.outputs/`
+- Phase 1 friction evidence: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
+- Rails notes: `docs/planes/pm/_evidence/PM-RAILS-01.outputs/`
+- Handoffs: `docs/planes/pm/_handoff/`
+
+## Verification Commands
+- Phase 0 verifier:
+```bash
+bash scripts/pm_phase0_verify.sh
+```
+- Phase 1 verifier:
+```bash
+bash scripts/pm_phase1_verify.sh
+```
+
+Expected success output:
+- `OK: PM Phase 0 verification passed`
+- `OK: PM Phase 1 verification passed`
