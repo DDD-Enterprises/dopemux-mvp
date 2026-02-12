@@ -1,3 +1,6 @@
+# LEGACY - DO NOT USE
+# This file is deprecated. Use compose.yml with -p dopemux.
+
 # Dopemux Master Docker Compose - Complete Stack Orchestration
 #
 # This master compose file coordinates all Dopemux services:

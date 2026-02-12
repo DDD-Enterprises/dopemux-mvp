@@ -4,6 +4,9 @@
 #
 # Staging Deployment Configuration for Dopemux
 
+# LEGACY - DO NOT USE
+# This file is deprecated. Use compose.yml with -p dopemux.
+
 version: '3.8'
 
 # Staging Deployment Configuration for Dopemux
