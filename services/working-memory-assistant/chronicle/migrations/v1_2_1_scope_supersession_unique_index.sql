@@ -2,6 +2,9 @@
 -- Version: v1.2.1
 -- Purpose: Scope supersession uniqueness to workspace and instance to prevent cross-workspace contamination.
 
+-- SAFETY: Wrapped in transaction to prevent partial index removal (fork vulnerability).
+BEGIN TRANSACTION;
+
 -- Ensure final state is deterministic:
 -- 1) remove legacy global unique index
 -- 2) rebuild scoped index in case prior environments created a divergent definition
@@ -16,3 +19,5 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_worklog_supersedes_unique_scoped
 -- Version bump
 INSERT OR IGNORE INTO schema_migrations (version, applied_at_utc)
 VALUES ('v1.2.1', datetime('now'));
+
+COMMIT;

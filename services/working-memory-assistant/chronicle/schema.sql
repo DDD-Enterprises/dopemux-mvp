@@ -171,4 +171,4 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 );
 
 INSERT OR IGNORE INTO schema_migrations (version, applied_at_utc)
-VALUES ('v1.0.0', datetime('now'));
+VALUES ('v1.2.1', datetime('now'));
