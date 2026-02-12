@@ -1,0 +1,4 @@
+69:  source_event_id TEXT NOT NULL,
+74:  promotion_ts_utc TEXT NOT NULL,
+96:CREATE UNIQUE INDEX IF NOT EXISTS idx_worklog_supersedes_unique_scoped
+143:  source_entry_ids_json TEXT NOT NULL DEFAULT '[]',
