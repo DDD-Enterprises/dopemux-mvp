@@ -306,6 +306,7 @@ def emit_capture_event(
     mode: str = CAPTURE_MODE_AUTO,
     repo_root: Optional[Path] = None,
     emit_event_bus: Optional[bool] = None,
+    lane: Optional[str] = None,
 ) -> CaptureResult:
     """Redact + write raw activity event to canonical per-project ledger."""
     root = repo_root.resolve() if repo_root else resolve_repo_root_strict()
@@ -319,6 +320,28 @@ def emit_capture_event(
     ).strip()
     if not event_type:
         raise CaptureError("event_type is required")
+
+    # Lane policy enforcement (CLI-INT-005)
+    from .lane_policy import LanePolicy, get_current_lane
+
+    # Detect lane from parameter, event, or environment
+    lane_id = lane or event.get("lane") or get_current_lane()
+
+    # Enforce lane policy if lane is specified
+    if lane_id or selected_mode == "plugin":  # Plugin mode always requires lane
+        policy = LanePolicy(root)
+        if not policy.should_capture(lane_id, event_type):
+            # Policy denied - return non-inserted result
+            dummy_path = root / ".dopemux" / "chronicle.sqlite"
+            return CaptureResult(
+                event_id="",
+                inserted=False,
+                ledger_path=dummy_path,
+                repo_root=root,
+                mode=selected_mode,
+                source=source,
+                event_type=event_type,
+            )
 
     payload = _normalize_payload(event.get("payload", event.get("data")))
     ts_utc = str(event.get("ts_utc") or event.get("ts") or datetime.now(timezone.utc).isoformat())
