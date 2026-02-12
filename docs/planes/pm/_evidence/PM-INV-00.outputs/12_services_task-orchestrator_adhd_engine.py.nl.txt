@@ -1,0 +1,1101 @@
+     1	"""
+     2	ADHD Accommodation Engine for Task Orchestrator
+     3	
+     4	Comprehensive neurodivergent developer support with intelligent accommodations,
+     5	cognitive load management, and seamless workflow optimization.
+     6	"""
+     7	
+     8	import asyncio
+     9	import json
+    10	import logging
+    11	from datetime import datetime, timedelta, timezone
+    12	from typing import Any, Dict, List, Optional, Set, Callable, Tuple
+    13	from dataclasses import dataclass, asdict
+    14	from enum import Enum
+    15	import statistics
+    16	
+    17	import redis.asyncio as redis
+    18	
+    19	logger = logging.getLogger(__name__)
+    20	
+    21	
+    22	class EnergyLevel(str, Enum):
+    23	    """Developer energy levels for task matching."""
+    24	    VERY_LOW = "very_low"      # Post-hyperfocus crash, need simple tasks
+    25	    LOW = "low"                # Limited capacity, easy wins only
+    26	    MEDIUM = "medium"          # Normal capacity, standard tasks
+    27	    HIGH = "high"              # Peak performance, complex tasks OK
+    28	    HYPERFOCUS = "hyperfocus"  # Intense concentration, single complex task
+    29	
+    30	
+    31	class AttentionState(str, Enum):
+    32	    """Current attention state tracking."""
+    33	    SCATTERED = "scattered"        # Difficulty focusing, need structure
+    34	    TRANSITIONING = "transitioning"# Moving between tasks/contexts
+    35	    FOCUSED = "focused"           # Good concentration, productive
+    36	    HYPERFOCUSED = "hyperfocused" # Intense focus, needs protection
+    37	    OVERWHELMED = "overwhelmed"   # Too much information, need reduction
+    38	
+    39	
+    40	class CognitiveLoadLevel(str, Enum):
+    41	    """Cognitive load assessment levels."""
+    42	    MINIMAL = "minimal"       # 0.0-0.2: Very easy, autopilot tasks
+    43	    LOW = "low"              # 0.2-0.4: Easy tasks, minimal thinking
+    44	    MODERATE = "moderate"    # 0.4-0.6: Standard tasks, normal effort
+    45	    HIGH = "high"            # 0.6-0.8: Complex tasks, focused attention
+    46	    EXTREME = "extreme"      # 0.8-1.0: Very complex, peak concentration
+    47	
+    48	
+    49	@dataclass
+    50	class ADHDProfile:
+    51	    """Developer ADHD profile for personalized accommodations."""
+    52	    user_id: str
+    53	
+    54	    # Core ADHD characteristics
+    55	    hyperfocus_tendency: float = 0.7        # 0.0-1.0, higher = more likely to hyperfocus
+    56	    distraction_sensitivity: float = 0.6    # 0.0-1.0, higher = more easily distracted
+    57	    context_switch_penalty: float = 0.4     # 0.0-1.0, higher = harder to switch contexts
+    58	    break_resistance: float = 0.3           # 0.0-1.0, higher = resists taking breaks
+    59	
+    60	    # Energy patterns
+    61	    energy_pattern: str = "variable"        # stable, variable, cyclical
+    62	    peak_hours: List[int] = None           # Hours when energy is typically highest
+    63	    crash_indicators: List[str] = None      # Signs of energy crash
+    64	
+    65	    # Focus preferences
+    66	    optimal_task_duration: int = 25         # Minutes of optimal focus time
+    67	    max_task_duration: int = 90            # Maximum before forced break
+    68	    preferred_complexity: str = "moderate"  # minimal, low, moderate, high
+    69	    focus_music_preference: bool = True     # Prefers background music/noise
+    70	
+    71	    # Accommodation preferences
+    72	    visual_progress_bars: bool = True       # Wants visual progress feedback
+    73	    gentle_reminders: bool = True          # Prefers gentle vs sharp reminders
+    74	    celebration_feedback: bool = True       # Wants completion celebrations
+    75	    break_activity_suggestions: bool = True # Wants break activity ideas
+    76	
+    77	    def __post_init__(self):
+    78	        if self.peak_hours is None:
+    79	            self.peak_hours = [9, 10, 14, 15]  # Default morning and afternoon peaks
+    80	        if self.crash_indicators is None:
+    81	            self.crash_indicators = ["excessive_scrolling", "task_switching", "procrastination"]
+    82	
+    83	
+    84	@dataclass
+    85	class AccommodationRecommendation:
+    86	    """Recommendation for ADHD accommodation."""
+    87	    accommodation_type: str
+    88	    urgency: str  # immediate, soon, when_convenient
+    89	    message: str
+    90	    action_required: bool
+    91	    suggested_actions: List[str]
+    92	    cognitive_benefit: str
+    93	    implementation_effort: str  # minimal, low, moderate, high
+    94	
+    95	
+    96	class ADHDAccommodationEngine:
+    97	    """
+    98	    Comprehensive ADHD accommodation engine for seamless development workflow.
+    99	
+   100	    Features:
+   101	    - Real-time energy level and attention state monitoring
+   102	    - Personalized accommodation recommendations
+   103	    - Intelligent task routing based on cognitive capacity
+   104	    - Break timing and hyperfocus protection
+   105	    - Context switching minimization
+   106	    - Cognitive load balancing across all systems
+   107	    """
+   108	
+   109	    def __init__(
+   110	        self,
+   111	        redis_url: str = "redis://localhost:6379",
+   112	        workspace_id: str = "/Users/hue/code/dopemux-mvp"
+   113	    ):
+   114	        self.redis_url = redis_url
+   115	        self.workspace_id = workspace_id
+   116	
+   117	        # Redis connection for state persistence
+   118	        self.redis_client: Optional[redis.Redis] = None
+   119	
+   120	        # ADHD state tracking
+   121	        self.user_profiles: Dict[str, ADHDProfile] = {}
+   122	        self.current_energy_levels: Dict[str, EnergyLevel] = {}
+   123	        self.current_attention_states: Dict[str, AttentionState] = {}
+   124	        self.active_accommodations: Dict[str, List[AccommodationRecommendation]] = {}
+   125	
+   126	        # Cognitive load monitoring
+   127	        self.cognitive_load_history: List[Tuple[datetime, float]] = []
+   128	        self.context_switch_history: List[Tuple[datetime, str, str]] = []
+   129	        self.break_history: List[Tuple[datetime, str, int]] = []
+   130	
+   131	        # Accommodation statistics
+   132	        self.accommodation_stats = {
+   133	            "recommendations_made": 0,
+   134	            "breaks_suggested": 0,
+   135	            "energy_optimizations": 0,
+   136	            "cognitive_load_reductions": 0,
+   137	            "context_switch_preventions": 0,
+   138	            "hyperfocus_protections": 0
+   139	        }
+   140	
+   141	        # Background monitoring
+   142	        self.monitoring_tasks: List[asyncio.Task] = []
+   143	        self.running = False
+   144	
+   145	    async def initialize(self) -> None:
+   146	        """Initialize ADHD accommodation engine."""
+   147	        logger.info("🧠 Initializing ADHD Accommodation Engine...")
+   148	        self.running = True
+   149	
+   150	        # Initialize Redis connection
+   151	        self.redis_client = redis.from_url(
+   152	            self.redis_url,
+   153	            db=5,  # Separate DB for ADHD data
+   154	            decode_responses=True
+   155	        )
+   156	        await self.redis_client.ping()
+   157	
+   158	        # Load existing user profiles
+   159	        await self._load_user_profiles()
+   160	
+   161	        # Start background monitoring
+   162	        await self._start_accommodation_monitoring()
+   163	
+   164	        logger.info("✅ ADHD Accommodation Engine ready!")
+   165	
+   166	    async def _load_user_profiles(self) -> None:
+   167	        """Load ADHD profiles from persistent storage."""
+   168	        try:
+   169	            # Load profiles from Redis
+   170	            profile_keys = await self.redis_client.keys("adhd:profile:*")
+   171	
+   172	            for key in profile_keys:
+   173	                user_id = key.split(":")[-1]
+   174	                profile_data = await self.redis_client.get(key)
+   175	
+   176	                if profile_data:
+   177	                    profile = ADHDProfile(**json.loads(profile_data))
+   178	                    self.user_profiles[user_id] = profile
+   179	
+   180	            logger.info(f"📋 Loaded {len(self.user_profiles)} ADHD profiles")
+   181	
+   182	        except Exception as e:
+   183	            logger.error(f"Failed to load ADHD profiles: {e}")
+   184	
+   185	    async def _start_accommodation_monitoring(self) -> None:
+   186	        """Start background monitoring tasks."""
+   187	        monitors = [
+   188	            self._energy_level_monitor(),
+   189	            self._attention_state_monitor(),
+   190	            self._cognitive_load_monitor(),
+   191	            self._break_timing_monitor(),
+   192	            self._hyperfocus_protection_monitor(),
+   193	            self._context_switch_analyzer()
+   194	        ]
+   195	
+   196	        self.monitoring_tasks = [asyncio.create_task(monitor) for monitor in monitors]
+   197	        logger.info("👥 ADHD monitoring systems started")
+   198	
+   199	    # Core Accommodation Methods
+   200	
+   201	    async def assess_task_suitability(
+   202	        self,
+   203	        user_id: str,
+   204	        task_data: Dict[str, Any]
+   205	    ) -> Dict[str, Any]:
+   206	        """Assess if task is suitable for user's current ADHD state."""
+   207	        try:
+   208	            # Get current user state
+   209	            current_energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+   210	            current_attention = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+   211	            user_profile = self.user_profiles.get(user_id)
+   212	
+   213	            if not user_profile:
+   214	                # Create default profile
+   215	                user_profile = ADHDProfile(user_id=user_id)
+   216	                self.user_profiles[user_id] = user_profile
+   217	
+   218	            # Calculate task cognitive load
+   219	            task_complexity = task_data.get("complexity_score", 0.5)
+   220	            estimated_duration = task_data.get("estimated_minutes", 25)
+   221	
+   222	            cognitive_load = self._calculate_task_cognitive_load(
+   223	                task_complexity, estimated_duration, task_data
+   224	            )
+   225	
+   226	            # Energy matching assessment
+   227	            energy_match_score = self._assess_energy_match(
+   228	                current_energy, cognitive_load, user_profile
+   229	            )
+   230	
+   231	            # Attention state compatibility
+   232	            attention_compatibility = self._assess_attention_compatibility(
+   233	                current_attention, task_data, cognitive_load
+   234	            )
+   235	
+   236	            # Overall suitability score
+   237	            suitability_score = (energy_match_score * 0.5 + attention_compatibility * 0.5)
+   238	
+   239	            # Generate recommendations
+   240	            recommendations = await self._generate_task_recommendations(
+   241	                user_profile, current_energy, current_attention, task_data, cognitive_load
+   242	            )
+   243	
+   244	            return {
+   245	                "suitability_score": suitability_score,
+   246	                "energy_match": energy_match_score,
+   247	                "attention_compatibility": attention_compatibility,
+   248	                "cognitive_load": cognitive_load,
+   249	                "cognitive_load_level": self._categorize_cognitive_load(cognitive_load),
+   250	                "recommendations": recommendations,
+   251	                "accommodations_needed": self._identify_needed_accommodations(
+   252	                    user_profile, cognitive_load, suitability_score
+   253	                ),
+   254	                "optimal_timing": self._suggest_optimal_timing(user_profile, current_energy),
+   255	                "adhd_insights": {
+   256	                    "hyperfocus_risk": self._assess_hyperfocus_risk(user_profile, task_data),
+   257	                    "distraction_risk": self._assess_distraction_risk(user_profile, current_attention),
+   258	                    "context_switch_impact": self._assess_context_switch_impact(user_profile)
+   259	                }
+   260	            }
+   261	
+   262	        except Exception as e:
+   263	            logger.error(f"Task suitability assessment failed: {e}")
+   264	            return {"error": str(e)}
+   265	
+   266	    def _calculate_task_cognitive_load(
+   267	        self,
+   268	        complexity: float,
+   269	        duration: int,
+   270	        task_data: Dict[str, Any]
+   271	    ) -> float:
+   272	        """Calculate cognitive load for task."""
+   273	        try:
+   274	            # Base load from complexity
+   275	            base_load = complexity * 0.4
+   276	
+   277	            # Duration factor (longer tasks = higher load)
+   278	            duration_factor = min(duration / 60.0, 0.3)  # Max 0.3 for duration
+   279	
+   280	            # Task type factor
+   281	            task_type_loads = {
+   282	                "research": 0.2,
+   283	                "implementation": 0.3,
+   284	                "debugging": 0.4,
+   285	                "architecture": 0.3,
+   286	                "testing": 0.2,
+   287	                "documentation": 0.1
+   288	            }
+   289	
+   290	            task_description = task_data.get("description", "").lower()
+   291	            task_type_load = 0.2  # Default
+   292	
+   293	            for task_type, load in task_type_loads.items():
+   294	                if task_type in task_description:
+   295	                    task_type_load = load
+   296	                    break
+   297	
+   298	            # Dependencies factor (more dependencies = higher load)
+   299	            dependencies = task_data.get("dependencies", [])
+   300	            dependency_load = min(len(dependencies) * 0.05, 0.1)
+   301	
+   302	            # Total cognitive load
+   303	            total_load = min(
+   304	                base_load + duration_factor + task_type_load + dependency_load,
+   305	                1.0
+   306	            )
+   307	
+   308	            return total_load
+   309	
+   310	        except Exception as e:
+   311	            return 0.5  # Default moderate load
+   312	    def _assess_energy_match(
+   313	        self,
+   314	        current_energy: EnergyLevel,
+   315	        cognitive_load: float,
+   316	        profile: ADHDProfile
+   317	    ) -> float:
+   318	        """Assess how well task matches current energy level."""
+   319	        try:
+   320	            energy_scores = {
+   321	                EnergyLevel.VERY_LOW: 0.1,
+   322	                EnergyLevel.LOW: 0.3,
+   323	                EnergyLevel.MEDIUM: 0.6,
+   324	                EnergyLevel.HIGH: 0.8,
+   325	                EnergyLevel.HYPERFOCUS: 1.0
+   326	            }
+   327	
+   328	            current_capacity = energy_scores[current_energy]
+   329	
+   330	            # Perfect match gets highest score
+   331	            if abs(current_capacity - cognitive_load) < 0.2:
+   332	                return 1.0
+   333	
+   334	            # Penalize mismatches
+   335	            mismatch_penalty = abs(current_capacity - cognitive_load)
+   336	            energy_match = max(0.0, 1.0 - (mismatch_penalty * 2))
+   337	
+   338	            # Apply profile adjustments
+   339	            if current_energy == EnergyLevel.HYPERFOCUS and profile.hyperfocus_tendency > 0.8:
+   340	                # High hyperfocus tendency - can handle higher loads
+   341	                energy_match += 0.2
+   342	
+   343	            return min(energy_match, 1.0)
+   344	
+   345	        except Exception as e:
+   346	            return 0.5
+   347	    def _assess_attention_compatibility(
+   348	        self,
+   349	        attention_state: AttentionState,
+   350	        task_data: Dict[str, Any],
+   351	        cognitive_load: float
+   352	    ) -> float:
+   353	        """Assess task compatibility with attention state."""
+   354	        try:
+   355	            compatibility_matrix = {
+   356	                AttentionState.SCATTERED: {
+   357	                    "max_cognitive_load": 0.3,
+   358	                    "preferred_duration": 10,
+   359	                    "complexity_penalty": 0.5
+   360	                },
+   361	                AttentionState.TRANSITIONING: {
+   362	                    "max_cognitive_load": 0.4,
+   363	                    "preferred_duration": 15,
+   364	                    "complexity_penalty": 0.3
+   365	                },
+   366	                AttentionState.FOCUSED: {
+   367	                    "max_cognitive_load": 0.8,
+   368	                    "preferred_duration": 25,
+   369	                    "complexity_penalty": 0.0
+   370	                },
+   371	                AttentionState.HYPERFOCUSED: {
+   372	                    "max_cognitive_load": 1.0,
+   373	                    "preferred_duration": 90,
+   374	                    "complexity_penalty": -0.2  # Bonus for complex tasks
+   375	                },
+   376	                AttentionState.OVERWHELMED: {
+   377	                    "max_cognitive_load": 0.1,
+   378	                    "preferred_duration": 5,
+   379	                    "complexity_penalty": 0.8
+   380	                }
+   381	            }
+   382	
+   383	            state_config = compatibility_matrix.get(attention_state, compatibility_matrix[AttentionState.FOCUSED])
+   384	
+   385	            # Check cognitive load compatibility
+   386	            max_load = state_config["max_cognitive_load"]
+   387	            if cognitive_load > max_load:
+   388	                load_compatibility = max_load / max(cognitive_load, 0.1)
+   389	            else:
+   390	                load_compatibility = 1.0
+   391	
+   392	            # Check duration compatibility
+   393	            task_duration = task_data.get("estimated_minutes", 25)
+   394	            preferred_duration = state_config["preferred_duration"]
+   395	            duration_compatibility = 1.0 - abs(task_duration - preferred_duration) / max(preferred_duration, task_duration)
+   396	
+   397	            # Apply complexity penalty/bonus
+   398	            complexity_adjustment = state_config["complexity_penalty"]
+   399	            adjusted_compatibility = max(0.0, min(1.0, (load_compatibility + duration_compatibility) / 2 - complexity_adjustment))
+   400	
+   401	            return adjusted_compatibility
+   402	
+   403	        except Exception as e:
+   404	            return 0.5
+   405	    async def _generate_task_recommendations(
+   406	        self,
+   407	        profile: ADHDProfile,
+   408	        energy: EnergyLevel,
+   409	        attention: AttentionState,
+   410	        task_data: Dict[str, Any],
+   411	        cognitive_load: float
+   412	    ) -> List[AccommodationRecommendation]:
+   413	        """Generate ADHD-specific task recommendations."""
+   414	        recommendations = []
+   415	
+   416	        try:
+   417	            # Energy-based recommendations
+   418	            if energy in [EnergyLevel.VERY_LOW, EnergyLevel.LOW] and cognitive_load > 0.4:
+   419	                recommendations.append(AccommodationRecommendation(
+   420	                    accommodation_type="energy_mismatch",
+   421	                    urgency="soon",
+   422	                    message="💙 This task might be challenging at your current energy level",
+   423	                    action_required=False,
+   424	                    suggested_actions=[
+   425	                        "Take a 10-minute energizing break",
+   426	                        "Switch to a simpler task first",
+   427	                        "Break this task into smaller pieces"
+   428	                    ],
+   429	                    cognitive_benefit="Prevents frustration and preserves energy",
+   430	                    implementation_effort="minimal"
+   431	                ))
+   432	
+   433	            # Attention state recommendations
+   434	            if attention == AttentionState.SCATTERED and task_data.get("estimated_minutes", 0) > 15:
+   435	                recommendations.append(AccommodationRecommendation(
+   436	                    accommodation_type="attention_fragmentation",
+   437	                    urgency="immediate",
+   438	                    message="🌀 Consider breaking this task down - attention seems scattered",
+   439	                    action_required=True,
+   440	                    suggested_actions=[
+   441	                        "Use 10-minute focus blocks",
+   442	                        "Start with the simplest part",
+   443	                        "Enable focus mode to reduce distractions"
+   444	                    ],
+   445	                    cognitive_benefit="Improves focus and reduces overwhelm",
+   446	                    implementation_effort="low"
+   447	                ))
+   448	
+   449	            # Hyperfocus protection
+   450	            if energy == EnergyLevel.HYPERFOCUS and task_data.get("estimated_minutes", 0) > 60:
+   451	                recommendations.append(AccommodationRecommendation(
+   452	                    accommodation_type="hyperfocus_protection",
+   453	                    urgency="when_convenient",
+   454	                    message="🚀 Hyperfocus detected - setting up protection boundaries",
+   455	                    action_required=False,
+   456	                    suggested_actions=[
+   457	                        "Automatic break reminders every 30 minutes",
+   458	                        "Hydration reminders",
+   459	                        "Eye rest breaks"
+   460	                    ],
+   461	                    cognitive_benefit="Prevents hyperfocus burnout and maintains health",
+   462	                    implementation_effort="minimal"
+   463	                ))
+   464	
+   465	            # Task complexity recommendations
+   466	            complexity_level = self._categorize_cognitive_load(cognitive_load)
+   467	            if complexity_level == CognitiveLoadLevel.HIGH and attention != AttentionState.HYPERFOCUSED:
+   468	                recommendations.append(AccommodationRecommendation(
+   469	                    accommodation_type="complexity_warning",
+   470	                    urgency="soon",
+   471	                    message="🧠 High complexity task - consider optimal timing",
+   472	                    action_required=False,
+   473	                    suggested_actions=[
+   474	                        "Schedule during peak energy hours",
+   475	                        "Ensure minimal distractions",
+   476	                        "Prepare supporting resources"
+   477	                    ],
+   478	                    cognitive_benefit="Sets up conditions for success",
+   479	                    implementation_effort="low"
+   480	                ))
+   481	
+   482	            return recommendations
+   483	
+   484	        except Exception as e:
+   485	            logger.error(f"Failed to generate recommendations: {e}")
+   486	            return []
+   487	
+   488	    # Monitoring Systems
+   489	
+   490	    async def _energy_level_monitor(self) -> None:
+   491	        """Monitor and track user energy levels."""
+   492	        logger.info("⚡ Started energy level monitoring")
+   493	
+   494	        while self.running:
+   495	            try:
+   496	                # Monitor energy indicators across all users
+   497	                for user_id in self.user_profiles.keys():
+   498	                    await self._assess_current_energy_level(user_id)
+   499	
+   500	                # Check every 5 minutes
+   501	                await asyncio.sleep(300)
+   502	
+   503	            except Exception as e:
+   504	                logger.error(f"Energy level monitoring error: {e}")
+   505	                await asyncio.sleep(600)
+   506	
+   507	    async def _assess_current_energy_level(self, user_id: str) -> EnergyLevel:
+   508	        """Assess current energy level for user."""
+   509	        try:
+   510	            # Get recent activity indicators
+   511	            activity_data = await self._get_recent_activity(user_id)
+   512	
+   513	            # Analyze patterns
+   514	            task_completion_rate = activity_data.get("completion_rate", 0.5)
+   515	            context_switches = activity_data.get("context_switches", 0)
+   516	            break_compliance = activity_data.get("break_compliance", 1.0)
+   517	            time_since_last_break = activity_data.get("minutes_since_break", 0)
+   518	
+   519	            # Energy assessment algorithm
+   520	            energy_score = 0.6  # Base energy level
+   521	
+   522	            # Task completion indicates energy
+   523	            if task_completion_rate > 0.8:
+   524	                energy_score += 0.3
+   525	            elif task_completion_rate < 0.3:
+   526	                energy_score -= 0.4
+   527	
+   528	            # High context switching indicates scattered energy
+   529	            if context_switches > 5:
+   530	                energy_score -= 0.3
+   531	
+   532	            # Break compliance indicates energy management
+   533	            if break_compliance < 0.5:
+   534	                energy_score -= 0.2
+   535	
+   536	            # Time since break affects energy
+   537	            if time_since_last_break > 60:  # More than 1 hour
+   538	                energy_score -= 0.3
+   539	
+   540	            # Map score to energy level
+   541	            if energy_score >= 0.9:
+   542	                current_energy = EnergyLevel.HYPERFOCUS
+   543	            elif energy_score >= 0.7:
+   544	                current_energy = EnergyLevel.HIGH
+   545	            elif energy_score >= 0.4:
+   546	                current_energy = EnergyLevel.MEDIUM
+   547	            elif energy_score >= 0.2:
+   548	                current_energy = EnergyLevel.LOW
+   549	            else:
+   550	                current_energy = EnergyLevel.VERY_LOW
+   551	
+   552	            # Update tracking
+   553	            previous_energy = self.current_energy_levels.get(user_id)
+   554	            self.current_energy_levels[user_id] = current_energy
+   555	
+   556	            # Log energy change if significant
+   557	            if previous_energy and previous_energy != current_energy:
+   558	                await self._log_energy_change(user_id, previous_energy, current_energy)
+   559	
+   560	            return current_energy
+   561	
+   562	        except Exception as e:
+   563	            logger.error(f"Energy assessment failed for {user_id}: {e}")
+   564	            return EnergyLevel.MEDIUM
+   565	
+   566	    async def _attention_state_monitor(self) -> None:
+   567	        """Monitor attention state patterns."""
+   568	        logger.info("👁️ Started attention state monitoring")
+   569	
+   570	        while self.running:
+   571	            try:
+   572	                for user_id in self.user_profiles.keys():
+   573	                    await self._assess_attention_state(user_id)
+   574	
+   575	                await asyncio.sleep(180)  # Check every 3 minutes
+   576	
+   577	            except Exception as e:
+   578	                logger.error(f"Attention monitoring error: {e}")
+   579	                await asyncio.sleep(300)
+   580	
+   581	    async def _assess_attention_state(self, user_id: str) -> AttentionState:
+   582	        """Assess current attention state for user."""
+   583	        try:
+   584	            # Get attention indicators
+   585	            indicators = await self._get_attention_indicators(user_id)
+   586	
+   587	            rapid_switching = indicators.get("context_switches_per_hour", 0) > 10
+   588	            task_abandonment = indicators.get("abandoned_tasks", 0) > 2
+   589	            focus_duration = indicators.get("average_focus_duration", 25)
+   590	            distraction_events = indicators.get("distraction_events", 0)
+   591	
+   592	            # Assess attention state
+   593	            if task_abandonment > 3 or distraction_events > 10:
+   594	                attention_state = AttentionState.OVERWHELMED
+   595	            elif rapid_switching and focus_duration < 10:
+   596	                attention_state = AttentionState.SCATTERED
+   597	            elif focus_duration > 60 and distraction_events < 2:
+   598	                attention_state = AttentionState.HYPERFOCUSED
+   599	            elif focus_duration > 20 and distraction_events < 5:
+   600	                attention_state = AttentionState.FOCUSED
+   601	            else:
+   602	                attention_state = AttentionState.TRANSITIONING
+   603	
+   604	            # Update tracking
+   605	            previous_state = self.current_attention_states.get(user_id)
+   606	            self.current_attention_states[user_id] = attention_state
+   607	
+   608	            # Log state change
+   609	            if previous_state and previous_state != attention_state:
+   610	                await self._log_attention_change(user_id, previous_state, attention_state)
+   611	
+   612	            return attention_state
+   613	
+   614	        except Exception as e:
+   615	            logger.error(f"Attention assessment failed for {user_id}: {e}")
+   616	            return AttentionState.FOCUSED
+   617	
+   618	    async def _cognitive_load_monitor(self) -> None:
+   619	        """Monitor overall cognitive load across all tasks."""
+   620	        logger.info("🧠 Started cognitive load monitoring")
+   621	
+   622	        while self.running:
+   623	            try:
+   624	                # Calculate system-wide cognitive load
+   625	                total_load = await self._calculate_system_cognitive_load()
+   626	
+   627	                # Store in history
+   628	                self.cognitive_load_history.append((datetime.now(timezone.utc), total_load))
+   629	
+   630	                # Keep only recent history (last 24 hours)
+   631	                cutoff_time = datetime.now(timezone.utc) - timedelta(hours=24)
+   632	                self.cognitive_load_history = [
+   633	                    (timestamp, load) for timestamp, load in self.cognitive_load_history
+   634	                    if timestamp > cutoff_time
+   635	                ]
+   636	
+   637	                # Check for cognitive overload
+   638	                if total_load > 2.0:  # High system-wide load
+   639	                    await self._handle_cognitive_overload()
+   640	
+   641	                await asyncio.sleep(120)  # Check every 2 minutes
+   642	
+   643	            except Exception as e:
+   644	                logger.error(f"Cognitive load monitoring error: {e}")
+   645	                await asyncio.sleep(300)
+   646	
+   647	    async def _break_timing_monitor(self) -> None:
+   648	        """Monitor break timing and compliance."""
+   649	        logger.info("☕ Started break timing monitor")
+   650	
+   651	        while self.running:
+   652	            try:
+   653	                for user_id, profile in self.user_profiles.items():
+   654	                    await self._check_break_timing(user_id, profile)
+   655	
+   656	                await asyncio.sleep(60)  # Check every minute
+   657	
+   658	            except Exception as e:
+   659	                logger.error(f"Break timing monitoring error: {e}")
+   660	                await asyncio.sleep(300)
+   661	
+   662	    async def _check_break_timing(self, user_id: str, profile: ADHDProfile) -> None:
+   663	        """Check if user needs break recommendation."""
+   664	        try:
+   665	            # Get last break time
+   666	            last_break_key = f"adhd:last_break:{user_id}"
+   667	            last_break_str = await self.redis_client.get(last_break_key)
+   668	
+   669	            if last_break_str:
+   670	                last_break = datetime.fromisoformat(last_break_str)
+   671	                time_since_break = (datetime.now(timezone.utc) - last_break).total_seconds() / 60
+   672	            else:
+   673	                time_since_break = profile.optimal_task_duration + 5  # Force initial break check
+   674	
+   675	            # Check if break is needed
+   676	            break_needed = False
+   677	            break_reason = ""
+   678	
+   679	            if time_since_break >= profile.max_task_duration:
+   680	                break_needed = True
+   681	                break_reason = "maximum_duration_reached"
+   682	            elif time_since_break >= profile.optimal_task_duration * 2:
+   683	                break_needed = True
+   684	                break_reason = "extended_work_period"
+   685	
+   686	            # Check current energy level
+   687	            current_energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+   688	            if current_energy == EnergyLevel.VERY_LOW and time_since_break >= 15:
+   689	                break_needed = True
+   690	                break_reason = "low_energy_recovery"
+   691	
+   692	            if break_needed:
+   693	                await self._recommend_break(user_id, break_reason, time_since_break)
+   694	
+   695	        except Exception as e:
+   696	            logger.error(f"Break timing check failed for {user_id}: {e}")
+   697	
+   698	    async def _recommend_break(self, user_id: str, reason: str, work_duration: float) -> None:
+   699	        """Recommend break with personalized ADHD messaging."""
+   700	        try:
+   701	            profile = self.user_profiles.get(user_id)
+   702	
+   703	            # Customize break message based on profile and reason
+   704	            break_messages = {
+   705	                "maximum_duration_reached": f"🛡️ You've been focused for {work_duration:.0f} minutes - time for a healthy break!",
+   706	                "extended_work_period": f"☕ Great work! After {work_duration:.0f} minutes, a break will help maintain productivity",
+   707	                "low_energy_recovery": f"💙 Low energy detected - a short break might help recharge",
+   708	                "hyperfocus_protection": f"🚀 Hyperfocus mode detected - protecting your wellbeing with a break reminder"
+   709	            }
+   710	
+   711	            message = break_messages.get(reason, f"☕ Break recommended after {work_duration:.0f} minutes of work")
+   712	
+   713	            # Personalize break suggestions
+   714	            break_suggestions = ["5-minute walk", "Hydrate", "Stretch"]
+   715	
+   716	            if profile and profile.break_activity_suggestions:
+   717	                break_suggestions.extend([
+   718	                    "Deep breathing exercise",
+   719	                    "Look away from screen (20-20-20 rule)",
+   720	                    "Quick snack if needed"
+   721	                ])
+   722	
+   723	            # Create break recommendation
+   724	            break_recommendation = AccommodationRecommendation(
+   725	                accommodation_type="break_timing",
+   726	                urgency="soon",
+   727	                message=message,
+   728	                action_required=not profile.break_resistance > 0.7 if profile else True,
+   729	                suggested_actions=break_suggestions,
+   730	                cognitive_benefit="Prevents burnout and maintains sustained productivity",
+   731	                implementation_effort="minimal"
+   732	            )
+   733	
+   734	            # Store recommendation
+   735	            if user_id not in self.active_accommodations:
+   736	                self.active_accommodations[user_id] = []
+   737	
+   738	            self.active_accommodations[user_id].append(break_recommendation)
+   739	
+   740	            # Store in Redis for UI consumption
+   741	            break_data = {
+   742	                "user_id": user_id,
+   743	                "reason": reason,
+   744	                "work_duration": work_duration,
+   745	                "message": message,
+   746	                "suggestions": break_suggestions,
+   747	                "timestamp": datetime.now(timezone.utc).isoformat()
+   748	            }
+   749	
+   750	            await self.redis_client.lpush(
+   751	                f"adhd:break_recommendations:{self.workspace_id}",
+   752	                json.dumps(break_data)
+   753	            )
+   754	
+   755	            # Trim to keep recent recommendations
+   756	            await self.redis_client.ltrim(
+   757	                f"adhd:break_recommendations:{self.workspace_id}",
+   758	                0, 9  # Keep 10 most recent
+   759	            )
+   760	
+   761	            self.accommodation_stats["breaks_suggested"] += 1
+   762	            logger.info(f"☕ Break recommended for {user_id}: {reason}")
+   763	
+   764	        except Exception as e:
+   765	            logger.error(f"Break recommendation failed: {e}")
+   766	
+   767	    async def _hyperfocus_protection_monitor(self) -> None:
+   768	        """Monitor for hyperfocus states and provide protection."""
+   769	        logger.info("🛡️ Started hyperfocus protection monitor")
+   770	
+   771	        while self.running:
+   772	            try:
+   773	                for user_id, profile in self.user_profiles.items():
+   774	                    current_attention = self.current_attention_states.get(user_id)
+   775	
+   776	                    if current_attention == AttentionState.HYPERFOCUSED:
+   777	                        await self._apply_hyperfocus_protection(user_id, profile)
+   778	
+   779	                await asyncio.sleep(300)  # Check every 5 minutes
+   780	
+   781	            except Exception as e:
+   782	                logger.error(f"Hyperfocus protection error: {e}")
+   783	                await asyncio.sleep(600)
+   784	
+   785	    async def _apply_hyperfocus_protection(self, user_id: str, profile: ADHDProfile) -> None:
+   786	        """Apply hyperfocus protection measures."""
+   787	        try:
+   788	            # Get hyperfocus session duration
+   789	            session_start_key = f"adhd:hyperfocus_start:{user_id}"
+   790	            session_start_str = await self.redis_client.get(session_start_key)
+   791	
+   792	            if session_start_str:
+   793	                session_start = datetime.fromisoformat(session_start_str)
+   794	                session_duration = (datetime.now(timezone.utc) - session_start).total_seconds() / 60
+   795	            else:
+   796	                # Start tracking hyperfocus session
+   797	                await self.redis_client.setex(
+   798	                    session_start_key,
+   799	                    7200,  # 2 hours
+   800	                    datetime.now(timezone.utc).isoformat()
+   801	                )
+   802	                session_duration = 0
+   803	
+   804	            # Apply protection based on duration
+   805	            if session_duration > profile.max_task_duration:
+   806	                # Force break recommendation
+   807	                await self._recommend_break(user_id, "hyperfocus_protection", session_duration)
+   808	
+   809	                # Temporarily reduce task complexity recommendations
+   810	                await self._adjust_task_recommendations_for_protection(user_id)
+   811	
+   812	                self.accommodation_stats["hyperfocus_protections"] += 1
+   813	
+   814	            elif session_duration > profile.optimal_task_duration * 1.5:
+   815	                # Gentle warning
+   816	                warning_data = {
+   817	                    "user_id": user_id,
+   818	                    "message": "🎯 You've been in hyperfocus for a while - consider a brief break soon",
+   819	                    "session_duration": session_duration,
+   820	                    "timestamp": datetime.now(timezone.utc).isoformat()
+   821	                }
+   822	
+   823	                await self.redis_client.lpush(
+   824	                    f"adhd:hyperfocus_warnings:{self.workspace_id}",
+   825	                    json.dumps(warning_data)
+   826	                )
+   827	
+   828	        except Exception as e:
+   829	            logger.error(f"Hyperfocus protection failed for {user_id}: {e}")
+   830	
+   831	    # Utility Methods
+   832	
+   833	    def _categorize_cognitive_load(self, load: float) -> CognitiveLoadLevel:
+   834	        """Categorize cognitive load into ADHD-friendly levels."""
+   835	        if load <= 0.2:
+   836	            return CognitiveLoadLevel.MINIMAL
+   837	        elif load <= 0.4:
+   838	            return CognitiveLoadLevel.LOW
+   839	        elif load <= 0.6:
+   840	            return CognitiveLoadLevel.MODERATE
+   841	        elif load <= 0.8:
+   842	            return CognitiveLoadLevel.HIGH
+   843	        else:
+   844	            return CognitiveLoadLevel.EXTREME
+   845	
+   846	    async def _get_recent_activity(self, user_id: str) -> Dict[str, Any]:
+   847	        """Get recent activity indicators for user."""
+   848	        try:
+   849	            # This would integrate with various systems to get activity data
+   850	            # For now, return placeholder data
+   851	            return {
+   852	                "completion_rate": 0.7,
+   853	                "context_switches": 3,
+   854	                "break_compliance": 0.8,
+   855	                "minutes_since_break": 20
+   856	            }
+   857	        except Exception as e:
+   858	            logger.debug("Failed to fetch recent activity for %s: %s", user_id, e)
+   859	            return {}
+   860	
+   861	    async def _get_attention_indicators(self, user_id: str) -> Dict[str, Any]:
+   862	        """Get attention state indicators for user."""
+   863	        try:
+   864	            # This would analyze various attention signals
+   865	            # For now, return placeholder data
+   866	            return {
+   867	                "context_switches_per_hour": 5,
+   868	                "abandoned_tasks": 1,
+   869	                "average_focus_duration": 22,
+   870	                "distraction_events": 3
+   871	            }
+   872	        except Exception as e:
+   873	            logger.debug("Failed to fetch attention indicators for %s: %s", user_id, e)
+   874	            return {}
+   875	
+   876	    # Health and Performance
+   877	
+   878	    async def get_accommodation_health(self) -> Dict[str, Any]:
+   879	        """Get ADHD accommodation engine health status."""
+   880	        try:
+   881	            # Monitor health
+   882	            active_monitors = len([t for t in self.monitoring_tasks if not t.done()])
+   883	            redis_healthy = await self.redis_client.ping() if self.redis_client else False
+   884	
+   885	            # Accommodation effectiveness
+   886	            total_recommendations = self.accommodation_stats["recommendations_made"]
+   887	            if total_recommendations > 0:
+   888	                accommodation_rate = total_recommendations / max(1, len(self.user_profiles))
+   889	            else:
+   890	                accommodation_rate = 0.0
+   891	
+   892	            # Overall status
+   893	            if redis_healthy and active_monitors == len(self.monitoring_tasks):
+   894	                if accommodation_rate > 5:  # Active accommodation
+   895	                    status = "🧠 Highly Active"
+   896	                else:
+   897	                    status = "✅ Ready"
+   898	            else:
+   899	                status = "⚠️ Degraded"
+   900	
+   901	            return {
+   902	                "overall_status": status,
+   903	                "components": {
+   904	                    "redis_persistence": "🟢 Connected" if redis_healthy else "🔴 Disconnected",
+   905	                    "monitors_active": f"{active_monitors}/{len(self.monitoring_tasks)}",
+   906	                    "user_profiles": len(self.user_profiles)
+   907	                },
+   908	                "accommodation_stats": self.accommodation_stats,
+   909	                "current_state": {
+   910	                    "energy_levels": {uid: level.value for uid, level in self.current_energy_levels.items()},
+   911	                    "attention_states": {uid: state.value for uid, state in self.current_attention_states.items()},
+   912	                    "active_accommodations": {uid: len(accs) for uid, accs in self.active_accommodations.items()}
+   913	                },
+   914	                "effectiveness_metrics": {
+   915	                    "accommodation_rate": f"{accommodation_rate:.1f} per user",
+   916	                    "cognitive_load_reductions": self.accommodation_stats["cognitive_load_reductions"],
+   917	                    "break_compliance": "monitoring_active"
+   918	                }
+   919	            }
+   920	
+   921	        except Exception as e:
+   922	            logger.error(f"ADHD accommodation health check failed: {e}")
+   923	            return {"overall_status": "🔴 Error", "error": str(e)}
+   924	
+   925	    # Placeholder methods for integration points
+   926	    async def _log_energy_change(self, user_id: str, previous: EnergyLevel, current: EnergyLevel) -> None:
+   927	        """Log energy level change."""
+   928	        event = {
+   929	            "user_id": user_id,
+   930	            "event_type": "energy_change",
+   931	            "previous": previous.value,
+   932	            "current": current.value,
+   933	            "timestamp": datetime.now(timezone.utc).isoformat(),
+   934	        }
+   935	        self.accommodation_stats["energy_optimizations"] += 1
+   936	
+   937	        if self.redis_client:
+   938	            try:
+   939	                await self.redis_client.lpush(
+   940	                    f"adhd:energy_changes:{self.workspace_id}",
+   941	                    json.dumps(event)
+   942	                )
+   943	                await self.redis_client.ltrim(
+   944	                    f"adhd:energy_changes:{self.workspace_id}",
+   945	                    0,
+   946	                    99,
+   947	                )
+   948	            except Exception as exc:
+   949	                logger.debug("Failed to persist energy change: %s", exc)
+   950	
+   951	    async def _log_attention_change(self, user_id: str, previous: AttentionState, current: AttentionState) -> None:
+   952	        """Log attention state change."""
+   953	        timestamp = datetime.now(timezone.utc)
+   954	        self.context_switch_history.append((timestamp, previous.value, current.value))
+   955	
+   956	        if previous != current:
+   957	            self.accommodation_stats["context_switch_preventions"] += 1
+   958	
+   959	        event = {
+   960	            "user_id": user_id,
+   961	            "event_type": "attention_change",
+   962	            "previous": previous.value,
+   963	            "current": current.value,
+   964	            "timestamp": timestamp.isoformat(),
+   965	        }
+   966	        if self.redis_client:
+   967	            try:
+   968	                await self.redis_client.lpush(
+   969	                    f"adhd:attention_changes:{self.workspace_id}",
+   970	                    json.dumps(event)
+   971	                )
+   972	                await self.redis_client.ltrim(
+   973	                    f"adhd:attention_changes:{self.workspace_id}",
+   974	                    0,
+   975	                    199,
+   976	                )
+   977	            except Exception as exc:
+   978	                logger.debug("Failed to persist attention change: %s", exc)
+   979	
+   980	    async def _calculate_system_cognitive_load(self) -> float:
+   981	        """Calculate system-wide cognitive load."""
+   982	        if not self.user_profiles:
+   983	            return 0.0
+   984	
+   985	        energy_load = {
+   986	            EnergyLevel.VERY_LOW: 0.9,
+   987	            EnergyLevel.LOW: 0.7,
+   988	            EnergyLevel.MEDIUM: 0.5,
+   989	            EnergyLevel.HIGH: 0.35,
+   990	            EnergyLevel.HYPERFOCUS: 0.75,
+   991	        }
+   992	        attention_load = {
+   993	            AttentionState.OVERWHELMED: 1.0,
+   994	            AttentionState.SCATTERED: 0.8,
+   995	            AttentionState.TRANSITIONING: 0.6,
+   996	            AttentionState.FOCUSED: 0.35,
+   997	            AttentionState.HYPERFOCUSED: 0.75,
+   998	        }
+   999	
+  1000	        total = 0.0
+  1001	        for user_id in self.user_profiles:
+  1002	            energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+  1003	            attention = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+  1004	            active_count = len(self.active_accommodations.get(user_id, []))
+  1005	            user_load = (
+  1006	                energy_load.get(energy, 0.5) * 0.45
+  1007	                + attention_load.get(attention, 0.5) * 0.45
+  1008	                + min(0.1, active_count * 0.01)
+  1009	            )
+  1010	            total += user_load
+  1011	
+  1012	        return round(total, 3)
+  1013	
+  1014	    async def _handle_cognitive_overload(self) -> None:
+  1015	        """Handle system-wide cognitive overload."""
+  1016	        overload_users: List[str] = []
+  1017	        for user_id in self.user_profiles:
+  1018	            energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+  1019	            attention = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+  1020	            if energy in {EnergyLevel.VERY_LOW, EnergyLevel.LOW} or attention in {
+  1021	                AttentionState.OVERWHELMED,
+  1022	                AttentionState.SCATTERED,
+  1023	                AttentionState.HYPERFOCUSED,
+  1024	            }:
+  1025	                overload_users.append(user_id)
+  1026	
+  1027	        for user_id in overload_users:
+  1028	            await self._recommend_break(user_id, "low_energy_recovery", work_duration=30.0)
+  1029	
+  1030	        if self.redis_client:
+  1031	            try:
+  1032	                payload = {
+  1033	                    "workspace_id": self.workspace_id,
+  1034	                    "overload_users": overload_users,
+  1035	                    "timestamp": datetime.now(timezone.utc).isoformat(),
+  1036	                }
+  1037	                await self.redis_client.lpush(
+  1038	                    f"adhd:cognitive_overload:{self.workspace_id}",
+  1039	                    json.dumps(payload),
+  1040	                )
+  1041	                await self.redis_client.ltrim(
+  1042	                    f"adhd:cognitive_overload:{self.workspace_id}",
+  1043	                    0,
+  1044	                    49,
+  1045	                )
+  1046	            except Exception as exc:
+  1047	                logger.debug("Failed recording cognitive overload event: %s", exc)
+  1048	
+  1049	        self.accommodation_stats["cognitive_load_reductions"] += len(overload_users)
+  1050	
+  1051	    async def _adjust_task_recommendations_for_protection(self, user_id: str) -> None:
+  1052	        """Adjust task recommendations for hyperfocus protection."""
+  1053	        recommendation = AccommodationRecommendation(
+  1054	            accommodation_type="task_complexity_downshift",
+  1055	            urgency="soon",
+  1056	            message="Shift to medium/low complexity tasks to avoid hyperfocus burnout.",
+  1057	            action_required=False,
+  1058	            suggested_actions=[
+  1059	                "Prefer tasks estimated under 25 minutes",
+  1060	                "Defer deep-dive tasks until after a short break",
+  1061	                "Use checklist-style next actions",
+  1062	            ],
+  1063	            cognitive_benefit="Reduces prolonged cognitive strain during hyperfocus periods",
+  1064	            implementation_effort="low",
+  1065	        )
+  1066	
+  1067	        self.active_accommodations.setdefault(user_id, []).append(recommendation)
+  1068	
+  1069	        if self.redis_client:
+  1070	            try:
+  1071	                await self.redis_client.setex(
+  1072	                    f"adhd:task_protection:{user_id}",
+  1073	                    1800,
+  1074	                    json.dumps(
+  1075	                        {
+  1076	                            "max_recommended_complexity": "moderate",
+  1077	                            "reason": "hyperfocus_protection",
+  1078	                            "timestamp": datetime.now(timezone.utc).isoformat(),
+  1079	                        }
+  1080	                    ),
+  1081	                )
+  1082	            except Exception as exc:
+  1083	                logger.debug("Failed to persist task-protection hint for %s: %s", user_id, exc)
+  1084	
+  1085	    async def close(self) -> None:
+  1086	        """Shutdown ADHD accommodation engine."""
+  1087	        logger.info("🛑 Shutting down ADHD Accommodation Engine...")
+  1088	
+  1089	        self.running = False
+  1090	
+  1091	        # Cancel monitoring tasks
+  1092	        if self.monitoring_tasks:
+  1093	            for task in self.monitoring_tasks:
+  1094	                task.cancel()
+  1095	            await asyncio.gather(*self.monitoring_tasks, return_exceptions=True)
+  1096	
+  1097	        # Close Redis connection
+  1098	        if self.redis_client:
+  1099	            await self.redis_client.close()
+  1100	
+  1101	        logger.info("✅ ADHD Accommodation Engine shutdown complete")

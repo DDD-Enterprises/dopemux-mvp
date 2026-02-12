@@ -1,0 +1,7 @@
+     1	ripgrep 15.1.0
+     2	
+     3	features:+pcre2
+     4	simd(compile):+NEON
+     5	simd(runtime):+NEON
+     6	
+     7	PCRE2 10.45 is available (JIT is available)
