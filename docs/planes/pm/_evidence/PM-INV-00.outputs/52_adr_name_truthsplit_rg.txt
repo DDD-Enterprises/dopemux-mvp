@@ -1,0 +1,42 @@
+docs/90-adr/ADR-208-mcp-config-drift-prevention.md:16:- ADR-207
+docs/90-adr/ADR-208-mcp-config-drift-prevention.md:306:- **ADR-207**: Three-Plane Integration Pattern
+docs/90-adr/ADR-203-task-orchestrator-un-deprecation.md:2:id: ADR-203-task-orchestrator-un-deprecation
+docs/90-adr/ADR-203-task-orchestrator-un-deprecation.md:18:# ADR-203: Task-Orchestrator Un-Deprecation (Reversal of Decision #140)
+docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md:2:id: ADR-207-architecture-3.0-three-layer-integration
+docs/90-adr/ADR-204-ml-risk-assessment-extraction.md:24:**Related**: ADR-203 (Task-Orchestrator Un-Deprecation)
+docs/90-adr/ADR-204-ml-risk-assessment-extraction.md:30:Task-Orchestrator un-deprecation (ADR-203) restored 5,577 lines of code. To maximize accessibility and reusability, extract the ML risk assessment components as a **standalone service**.
+docs/90-adr/ADR-204-ml-risk-assessment-extraction.md:227:- **Parent Decision**: ADR-203 (Task-Orchestrator Un-Deprecation)
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:2:id: ADR-207-SESSION-SUMMARY
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:66:#### ADR-207: Architecture 3.0 Main Document
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:67:**File**: `docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md`
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:83:#### ADR-207 Appendix: Leantime API Research
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:84:**File**: `docs/90-adr/ADR-207-LEANTIME-API-RESEARCH.md`
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:96:#### ADR-207 Appendix: 37 Tools Capabilities Inventory
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:97:**File**: `docs/90-adr/ADR-207-TASK-ORCHESTRATOR-CAPABILITIES.md`
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:113:#### ADR-207 Appendix: Phase 1 Implementation Plan
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:114:**File**: `docs/90-adr/ADR-207-PHASE-1-IMPLEMENTATION-PLAN.md`
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:149:0d3f46ba docs: Add ADR-207 Phase 1 Detailed Implementation Plan
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:150:02c6894b docs: Add ADR-207 Task-Orchestrator 37 Tools Comprehensive Inventory
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:151:df44f12a docs: Add ADR-207 Leantime API Research - Integration Already Built
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:152:a02ba0c6 docs: Add ADR-207 Architecture 3.0 - Three-Layer Integration Model
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:172:- ✅ Already un-deprecated (ADR-203, 2025-10-16)
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:235:**Status**: ⏳ Planned in ADR-207
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:240:**Status**: ⏳ Planned in ADR-207
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:333:1. ADR-207: Architecture 3.0 (main document)
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:334:2. ADR-207: Leantime API Research
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:335:3. ADR-207: 37 Tools Capabilities Inventory
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:336:4. ADR-207: Phase 1 Implementation Plan
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:440:- [ ] Review ADR-207 and appendices
+docs/90-adr/ADR-207-SESSION-SUMMARY.md:463:1. **ADR-207 Main** - Understand three-layer architecture
+docs/90-adr/ADR-207-PHASE-1-IMPLEMENTATION-PLAN.md:2:id: ADR-207-PHASE-1-IMPLEMENTATION-PLAN
+docs/90-adr/ADR-207-PHASE-1-IMPLEMENTATION-PLAN.md:18:# ADR-207 Phase 1: Core Orchestration - Detailed Implementation Plan
+docs/90-adr/ADR-207-PHASE-1-IMPLEMENTATION-PLAN.md:21:**Related**: ADR-207 (Architecture 3.0)
+docs/90-adr/ADR-213-capture-adapters-single-ledger.md:17:  - ADR-207-architecture-3.0-three-layer-integration
+docs/90-adr/ADR-207-TASK-ORCHESTRATOR-CAPABILITIES.md:2:id: ADR-207-TASK-ORCHESTRATOR-CAPABILITIES
+docs/90-adr/ADR-207-TASK-ORCHESTRATOR-CAPABILITIES.md:18:# ADR-207 Appendix: Task-Orchestrator 37 Tools - Comprehensive Capabilities Inventory
+docs/90-adr/ADR-207-TASK-ORCHESTRATOR-CAPABILITIES.md:21:**Related**: ADR-207 (Architecture 3.0)
+docs/90-adr/ADR-207-TASK-ORCHESTRATOR-CAPABILITIES.md:880:2. **Update ADR-207** - Reference this capabilities inventory
+docs/90-adr/ADR-207-LEANTIME-API-RESEARCH.md:2:id: ADR-207-LEANTIME-API-RESEARCH
+docs/90-adr/ADR-207-LEANTIME-API-RESEARCH.md:18:# ADR-207 Appendix: Leantime API Integration Research
+docs/90-adr/ADR-207-LEANTIME-API-RESEARCH.md:21:**Related**: ADR-207 (Architecture 3.0)
+docs/90-adr/ADR-207-LEANTIME-API-RESEARCH.md:606:- **ADR-207**: Architecture 3.0 main document

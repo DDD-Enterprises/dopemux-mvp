@@ -1,0 +1,1246 @@
+     1	"""
+     2	Implicit Automation Workflows for Task Orchestrator
+     3	
+     4	Seamless PM automation that handles sprint planning, progress tracking,
+     5	and retrospectives without developer cognitive overhead.
+     6	"""
+     7	
+     8	import asyncio
+     9	import json
+    10	import logging
+    11	from datetime import datetime, timedelta, timezone
+    12	from typing import Any, Dict, List, Optional, Set, Callable
+    13	from dataclasses import dataclass, asdict
+    14	from enum import Enum
+    15	import re
+    16	
+    17	logger = logging.getLogger(__name__)
+    18	
+    19	
+    20	class AutomationType(str, Enum):
+    21	    """Types of implicit automation."""
+    22	    SPRINT_PLANNING = "sprint_planning"
+    23	    TASK_DECOMPOSITION = "task_decomposition"
+    24	    PROGRESS_TRACKING = "progress_tracking"
+    25	    RETROSPECTIVE_GENERATION = "retrospective_generation"
+    26	    CONTEXT_MANAGEMENT = "context_management"
+    27	    BREAK_ORCHESTRATION = "break_orchestration"
+    28	
+    29	
+    30	class AutomationTrigger(str, Enum):
+    31	    """Automation trigger events."""
+    32	    SPRINT_CREATED = "sprint_created"
+    33	    SPRINT_ENDED = "sprint_ended"
+    34	    TASK_ASSIGNED = "task_assigned"
+    35	    FILE_MODIFIED = "file_modified"
+    36	    COMMIT_PUSHED = "commit_pushed"
+    37	    BREAK_TIME = "break_time"
+    38	    ENERGY_CHANGED = "energy_changed"
+    39	    CONTEXT_SWITCH = "context_switch"
+    40	
+    41	
+    42	@dataclass
+    43	class AutomationWorkflow:
+    44	    """Represents an automation workflow."""
+    45	    id: str
+    46	    automation_type: AutomationType
+    47	    trigger: AutomationTrigger
+    48	    conditions: Dict[str, Any]
+    49	    actions: List[Dict[str, Any]]
+    50	    adhd_considerations: Dict[str, Any]
+    51	
+    52	    # Execution state
+    53	    enabled: bool = True
+    54	    last_executed: Optional[datetime] = None
+    55	    execution_count: int = 0
+    56	    success_rate: float = 1.0
+    57	
+    58	
+    59	class ImplicitAutomationEngine:
+    60	    """
+    61	    Engine for seamless PM automation with ADHD optimizations.
+    62	
+    63	    Handles:
+    64	    - Sprint planning automation with intelligent task analysis
+    65	    - Progress tracking that correlates code changes to task completion
+    66	    - Automatic retrospective generation with pattern analysis
+    67	    - Context preservation across workflow boundaries
+    68	    - Break orchestration that respects hyperfocus states
+    69	    """
+    70	
+    71	    def __init__(
+    72	        self,
+    73	        workspace_id: str = "/Users/hue/code/dopemux-mvp",
+    74	        leantime_client: Any = None,
+    75	        conport_client: Any = None,
+    76	        serena_client: Any = None
+    77	    ):
+    78	        self.workspace_id = workspace_id
+    79	        self.leantime_client = leantime_client
+    80	        self.conport_client = conport_client
+    81	        self.serena_client = serena_client
+    82	
+    83	        # Workflow definitions
+    84	        self.workflows: Dict[str, AutomationWorkflow] = {}
+    85	        self.trigger_handlers: Dict[AutomationTrigger, List[Callable]] = {}
+    86	
+    87	        # Execution state
+    88	        self.automation_queue: asyncio.Queue = asyncio.Queue()
+    89	        self.active_automations: Set[str] = set()
+    90	
+    91	        # ADHD optimization
+    92	        self.automation_batch_size = 3  # Process max 3 automations simultaneously
+    93	        self.cognitive_load_threshold = 0.7  # Pause automation if load too high
+    94	
+    95	        # Statistics
+    96	        self.automation_stats = {
+    97	            "workflows_executed": 0,
+    98	            "sprints_automated": 0,
+    99	            "progress_correlations": 0,
+   100	            "retrospectives_generated": 0,
+   101	            "context_preservations": 0,
+   102	            "adhd_optimizations_applied": 0
+   103	        }
+   104	        self._sprint_analysis_store: Dict[str, Dict[str, Any]] = {}
+   105	        self._progress_correlation_store: List[Dict[str, Any]] = []
+   106	        self._progress_estimate_store: List[Dict[str, Any]] = []
+   107	        self._retrospective_store: Dict[str, Dict[str, Any]] = {}
+   108	        self._local_task_state: Dict[str, Dict[str, Any]] = {}
+   109	
+   110	        # Background workers
+   111	        self.workers: List[asyncio.Task] = []
+   112	        self.running = False
+   113	
+   114	    async def initialize(self) -> None:
+   115	        """Initialize automation engine and register workflows."""
+   116	        logger.info("🤖 Initializing Implicit Automation Engine...")
+   117	        self.running = True
+   118	
+   119	        # Register default workflows
+   120	        await self._register_default_workflows()
+   121	
+   122	        # Start background processing
+   123	        await self._start_automation_workers()
+   124	
+   125	        logger.info("✅ Implicit Automation Engine ready!")
+   126	
+   127	    async def _register_default_workflows(self) -> None:
+   128	        """Register default automation workflows."""
+   129	        # Sprint Planning Automation
+   130	        sprint_planning = AutomationWorkflow(
+   131	            id="auto_sprint_planning",
+   132	            automation_type=AutomationType.SPRINT_PLANNING,
+   133	            trigger=AutomationTrigger.SPRINT_CREATED,
+   134	            conditions={
+   135	                "min_tasks": 1,
+   136	                "max_tasks": 50,
+   137	                "has_description": True
+   138	            },
+   139	            actions=[
+   140	                {"type": "analyze_sprint_complexity", "priority": 1},
+   141	                {"type": "decompose_large_tasks", "priority": 2},
+   142	                {"type": "setup_conport_context", "priority": 3},
+   143	                {"type": "optimize_task_sequencing", "priority": 4},
+   144	                {"type": "setup_progress_tracking", "priority": 5}
+   145	            ],
+   146	            adhd_considerations={
+   147	                "chunk_large_tasks": True,
+   148	                "energy_level_matching": True,
+   149	                "break_point_identification": True,
+   150	                "cognitive_load_balancing": True
+   151	            }
+   152	        )
+   153	
+   154	        # Progress Tracking Automation
+   155	        progress_tracking = AutomationWorkflow(
+   156	            id="auto_progress_tracking",
+   157	            automation_type=AutomationType.PROGRESS_TRACKING,
+   158	            trigger=AutomationTrigger.FILE_MODIFIED,
+   159	            conditions={
+   160	                "file_in_project": True,
+   161	                "active_task_exists": True,
+   162	                "meaningful_change": True
+   163	            },
+   164	            actions=[
+   165	                {"type": "correlate_file_to_task", "priority": 1},
+   166	                {"type": "estimate_completion_percentage", "priority": 2},
+   167	                {"type": "update_all_systems", "priority": 3},
+   168	                {"type": "check_milestone_progress", "priority": 4}
+   169	            ],
+   170	            adhd_considerations={
+   171	                "gentle_progress_feedback": True,
+   172	                "avoid_interruption_during_flow": True,
+   173	                "batch_multiple_changes": True
+   174	            }
+   175	        )
+   176	
+   177	        # Retrospective Generation
+   178	        retrospective_automation = AutomationWorkflow(
+   179	            id="auto_retrospective",
+   180	            automation_type=AutomationType.RETROSPECTIVE_GENERATION,
+   181	            trigger=AutomationTrigger.SPRINT_ENDED,
+   182	            conditions={
+   183	                "sprint_has_completed_tasks": True,
+   184	                "minimum_sprint_duration": True
+   185	            },
+   186	            actions=[
+   187	                {"type": "analyze_completed_work", "priority": 1},
+   188	                {"type": "extract_adhd_patterns", "priority": 2},
+   189	                {"type": "identify_workflow_improvements", "priority": 3},
+   190	                {"type": "generate_retrospective_items", "priority": 4},
+   191	                {"type": "update_future_workflows", "priority": 5}
+   192	            ],
+   193	            adhd_considerations={
+   194	                "focus_on_positive_patterns": True,
+   195	                "gentle_improvement_suggestions": True,
+   196	                "celebrate_achievements": True,
+   197	                "avoid_overwhelming_analysis": True
+   198	            }
+   199	        )
+   200	
+   201	        # Context Management Automation
+   202	        context_management = AutomationWorkflow(
+   203	            id="auto_context_management",
+   204	            automation_type=AutomationType.CONTEXT_MANAGEMENT,
+   205	            trigger=AutomationTrigger.CONTEXT_SWITCH,
+   206	            conditions={
+   207	                "context_switch_detected": True,
+   208	                "preservation_needed": True
+   209	            },
+   210	            actions=[
+   211	                {"type": "preserve_current_context", "priority": 1},
+   212	                {"type": "prepare_new_context", "priority": 2},
+   213	                {"type": "minimize_cognitive_transition", "priority": 3},
+   214	                {"type": "provide_orientation_guidance", "priority": 4}
+   215	            ],
+   216	            adhd_considerations={
+   217	                "seamless_transition": True,
+   218	                "context_breadcrumbs": True,
+   219	                "gentle_reorientation": True,
+   220	                "minimize_setup_overhead": True
+   221	            }
+   222	        )
+   223	
+   224	        # Register workflows
+   225	        workflows = [sprint_planning, progress_tracking, retrospective_automation, context_management]
+   226	        for workflow in workflows:
+   227	            self.workflows[workflow.id] = workflow
+   228	            self._register_trigger_handler(workflow.trigger, workflow)
+   229	
+   230	        logger.info(f"📝 Registered {len(workflows)} automation workflows")
+   231	
+   232	    def _register_trigger_handler(self, trigger: AutomationTrigger, workflow: AutomationWorkflow) -> None:
+   233	        """Register workflow for specific trigger."""
+   234	        if trigger not in self.trigger_handlers:
+   235	            self.trigger_handlers[trigger] = []
+   236	
+   237	        async def handler(trigger_data: Dict[str, Any]):
+   238	            await self._execute_workflow(workflow, trigger_data)
+   239	
+   240	        self.trigger_handlers[trigger].append(handler)
+   241	
+   242	    async def _start_automation_workers(self) -> None:
+   243	        """Start background automation processing workers."""
+   244	        workers = [
+   245	            self._automation_processor(),
+   246	            self._workflow_monitor(),
+   247	            self._adhd_optimization_monitor()
+   248	        ]
+   249	
+   250	        self.workers = [asyncio.create_task(worker) for worker in workers]
+   251	        logger.info("👥 Automation workers started")
+   252	
+   253	    # Workflow Execution Engine
+   254	
+   255	    async def trigger_automation(
+   256	        self,
+   257	        trigger: AutomationTrigger,
+   258	        trigger_data: Dict[str, Any]
+   259	    ) -> None:
+   260	        """Trigger automation workflows for specific event."""
+   261	        try:
+   262	            # Get handlers for this trigger
+   263	            handlers = self.trigger_handlers.get(trigger, [])
+   264	
+   265	            if not handlers:
+   266	                logger.debug(f"No automation handlers for trigger: {trigger.value}")
+   267	                return
+   268	
+   269	            # Execute handlers with ADHD considerations
+   270	            for handler in handlers:
+   271	                # Check cognitive load before triggering
+   272	                current_load = await self._get_current_cognitive_load()
+   273	
+   274	                if current_load > self.cognitive_load_threshold:
+   275	                    # Defer automation to reduce cognitive burden
+   276	                    logger.info(f"🧠 Deferring automation due to high cognitive load: {trigger.value}")
+   277	                    await self._defer_automation(trigger, trigger_data, delay_minutes=5)
+   278	                    continue
+   279	
+   280	                # Execute automation
+   281	                try:
+   282	                    await handler(trigger_data)
+   283	                except Exception as e:
+   284	                    logger.error(f"Automation handler failed for {trigger.value}: {e}")
+   285	
+   286	        except Exception as e:
+   287	            logger.error(f"Automation trigger failed: {e}")
+   288	
+   289	    async def _execute_workflow(
+   290	        self,
+   291	        workflow: AutomationWorkflow,
+   292	        trigger_data: Dict[str, Any]
+   293	    ) -> bool:
+   294	        """Execute specific automation workflow."""
+   295	        try:
+   296	            if not workflow.enabled:
+   297	                return False
+   298	
+   299	            # Check workflow conditions
+   300	            if not await self._check_workflow_conditions(workflow, trigger_data):
+   301	                logger.debug(f"Workflow conditions not met: {workflow.id}")
+   302	                return False
+   303	
+   304	            # Add to active automations
+   305	            self.active_automations.add(workflow.id)
+   306	
+   307	            logger.info(f"🤖 Executing automation: {workflow.automation_type.value}")
+   308	
+   309	            # Execute workflow actions in priority order
+   310	            actions = sorted(workflow.actions, key=lambda a: a.get("priority", 5))
+   311	
+   312	            for action in actions:
+   313	                success = await self._execute_workflow_action(
+   314	                    action, workflow, trigger_data
+   315	                )
+   316	
+   317	                if not success:
+   318	                    logger.warning(f"Workflow action failed: {action['type']}")
+   319	                    # Continue with other actions rather than failing entire workflow
+   320	
+   321	            # Update workflow execution metadata
+   322	            workflow.last_executed = datetime.now(timezone.utc)
+   323	            workflow.execution_count += 1
+   324	            workflow.success_rate = (
+   325	                ((workflow.success_rate * (workflow.execution_count - 1)) + 1.0)
+   326	                / workflow.execution_count
+   327	            )
+   328	
+   329	            # Remove from active automations
+   330	            self.active_automations.discard(workflow.id)
+   331	
+   332	            self.automation_stats["workflows_executed"] += 1
+   333	            logger.info(f"✅ Automation completed: {workflow.automation_type.value}")
+   334	
+   335	            return True
+   336	
+   337	        except Exception as e:
+   338	            logger.error(f"Workflow execution failed: {e}")
+   339	            workflow.execution_count += 1
+   340	            workflow.success_rate = (
+   341	                (workflow.success_rate * (workflow.execution_count - 1))
+   342	                / workflow.execution_count
+   343	            )
+   344	            self.active_automations.discard(workflow.id)
+   345	            return False
+   346	
+   347	    async def _execute_workflow_action(
+   348	        self,
+   349	        action: Dict[str, Any],
+   350	        workflow: AutomationWorkflow,
+   351	        trigger_data: Dict[str, Any]
+   352	    ) -> bool:
+   353	        """Execute individual workflow action."""
+   354	        try:
+   355	            action_type = action.get("type", "unknown")
+   356	
+   357	            # Route to specific action handlers
+   358	            if action_type == "analyze_sprint_complexity":
+   359	                return await self._action_analyze_sprint_complexity(trigger_data)
+   360	            elif action_type == "decompose_large_tasks":
+   361	                return await self._action_decompose_large_tasks(trigger_data)
+   362	            elif action_type == "setup_conport_context":
+   363	                return await self._action_setup_conport_context(trigger_data)
+   364	            elif action_type == "correlate_file_to_task":
+   365	                return await self._action_correlate_file_to_task(trigger_data)
+   366	            elif action_type == "estimate_completion_percentage":
+   367	                return await self._action_estimate_completion_percentage(trigger_data)
+   368	            elif action_type == "update_all_systems":
+   369	                return await self._action_update_all_systems(trigger_data)
+   370	            elif action_type == "analyze_completed_work":
+   371	                return await self._action_analyze_completed_work(trigger_data)
+   372	            elif action_type == "generate_retrospective_items":
+   373	                return await self._action_generate_retrospective_items(trigger_data)
+   374	            elif action_type == "preserve_current_context":
+   375	                return await self._action_preserve_current_context(trigger_data)
+   376	            else:
+   377	                logger.warning(f"Unknown workflow action: {action_type}")
+   378	                return False
+   379	
+   380	        except Exception as e:
+   381	            logger.error(f"Workflow action execution failed: {e}")
+   382	            return False
+   383	
+   384	    # Sprint Planning Automation Actions
+   385	
+   386	    async def _action_analyze_sprint_complexity(self, trigger_data: Dict[str, Any]) -> bool:
+   387	        """Analyze sprint complexity for ADHD optimization."""
+   388	        try:
+   389	            sprint_id = trigger_data.get("sprint_id")
+   390	            sprint_tasks = trigger_data.get("tasks", [])
+   391	
+   392	            logger.info(f"🔍 Analyzing sprint complexity: {sprint_id}")
+   393	
+   394	            # Calculate overall sprint complexity
+   395	            total_complexity = 0.0
+   396	            high_complexity_tasks = []
+   397	            adhd_risk_tasks = []
+   398	
+   399	            for task in sprint_tasks:
+   400	                task_complexity = task.get("complexity_score", 0.5)
+   401	                total_complexity += task_complexity
+   402	
+   403	                if task_complexity > 0.8:
+   404	                    high_complexity_tasks.append(task)
+   405	
+   406	                # Check for ADHD risk factors
+   407	                estimated_duration = task.get("estimated_minutes", 25)
+   408	                if estimated_duration > 60:  # Long tasks are ADHD risks
+   409	                    adhd_risk_tasks.append(task)
+   410	
+   411	            # Generate sprint analysis
+   412	            sprint_analysis = {
+   413	                "sprint_id": sprint_id,
+   414	                "total_tasks": len(sprint_tasks),
+   415	                "average_complexity": total_complexity / max(len(sprint_tasks), 1),
+   416	                "high_complexity_count": len(high_complexity_tasks),
+   417	                "adhd_risk_count": len(adhd_risk_tasks),
+   418	                "recommended_decompositions": len(adhd_risk_tasks),
+   419	                "cognitive_load_assessment": self._assess_sprint_cognitive_load(total_complexity),
+   420	                "adhd_recommendations": self._generate_sprint_adhd_recommendations(
+   421	                    sprint_tasks, high_complexity_tasks, adhd_risk_tasks
+   422	                ),
+   423	                "analysis_timestamp": datetime.now(timezone.utc).isoformat()
+   424	            }
+   425	
+   426	            # Store analysis for other workflows
+   427	            await self._store_sprint_analysis(sprint_id, sprint_analysis)
+   428	
+   429	            self.automation_stats["sprints_automated"] += 1
+   430	            logger.info(f"📊 Sprint analysis complete: {sprint_id} ({sprint_analysis['adhd_risk_count']} ADHD risks)")
+   431	
+   432	            return True
+   433	
+   434	        except Exception as e:
+   435	            logger.error(f"Sprint complexity analysis failed: {e}")
+   436	            return False
+   437	
+   438	    async def _action_decompose_large_tasks(self, trigger_data: Dict[str, Any]) -> bool:
+   439	        """Automatically decompose large tasks for ADHD accommodation."""
+   440	        try:
+   441	            sprint_id = trigger_data.get("sprint_id")
+   442	            sprint_tasks = trigger_data.get("tasks", [])
+   443	
+   444	            decomposed_count = 0
+   445	
+   446	            for task in sprint_tasks:
+   447	                estimated_duration = task.get("estimated_minutes", 25)
+   448	
+   449	                if estimated_duration > 25:  # Needs ADHD decomposition
+   450	                    # Calculate number of subtasks needed
+   451	                    num_subtasks = max(2, (estimated_duration + 24) // 25)  # 25-minute chunks
+   452	
+   453	                    decomposition_plan = {
+   454	                        "original_task": task,
+   455	                        "num_subtasks": num_subtasks,
+   456	                        "subtask_duration": estimated_duration // num_subtasks,
+   457	                        "decomposition_strategy": "adhd_optimal_chunking",
+   458	                        "break_points": self._identify_task_break_points(task),
+   459	                        "energy_requirements": self._distribute_energy_requirements(
+   460	                            task, num_subtasks
+   461	                        )
+   462	                    }
+   463	
+   464	                    # Store decomposition plan
+   465	                    await self._store_decomposition_plan(task.get("id"), decomposition_plan)
+   466	
+   467	                    # Trigger actual decomposition in Leantime
+   468	                    await self._execute_leantime_decomposition(decomposition_plan)
+   469	
+   470	                    decomposed_count += 1
+   471	
+   472	            logger.info(f"🧩 Auto-decomposed {decomposed_count} large tasks for ADHD")
+   473	            return True
+   474	
+   475	        except Exception as e:
+   476	            logger.error(f"Task decomposition failed: {e}")
+   477	            return False
+   478	
+   479	    async def _action_setup_conport_context(self, trigger_data: Dict[str, Any]) -> bool:
+   480	        """Setup ConPort context for sprint automation."""
+   481	        try:
+   482	            sprint_id = trigger_data.get("sprint_id")
+   483	            sprint_data = trigger_data.get("sprint_data", {})
+   484	
+   485	            # Create comprehensive sprint context
+   486	            sprint_context = {
+   487	                "sprint_id": sprint_id,
+   488	                "sprint_name": sprint_data.get("name", f"Sprint {sprint_id}"),
+   489	                "mode": "ACT",  # Sprint execution mode
+   490	                "focus": f"Sprint {sprint_id} execution with automated PM",
+   491	                "automation_enabled": True,
+   492	                "adhd_optimized": True,
+   493	                "task_count": len(sprint_data.get("tasks", [])),
+   494	                "auto_setup_timestamp": datetime.now(timezone.utc).isoformat(),
+   495	                "orchestration_active": True
+   496	            }
+   497	
+   498	            # This would make ConPort MCP call
+   499	            await self.conport_client.update_active_context(patch_content=sprint_context)
+   500	
+   501	            logger.info(f"🎯 ConPort context setup for sprint: {sprint_id}")
+   502	            return True
+   503	
+   504	        except Exception as e:
+   505	            logger.error(f"ConPort context setup failed: {e}")
+   506	            return False
+   507	
+   508	    # Progress Tracking Automation Actions
+   509	
+   510	    async def _action_correlate_file_to_task(self, trigger_data: Dict[str, Any]) -> bool:
+   511	        """Correlate file changes to active tasks."""
+   512	        try:
+   513	            file_path = trigger_data.get("file_path", "")
+   514	            change_type = trigger_data.get("change_type", "modification")
+   515	
+   516	            # Get currently active tasks from Leantime
+   517	            active_tasks = await self._get_active_tasks()
+   518	
+   519	            # Intelligent correlation based on file path and task content
+   520	            correlated_tasks = []
+   521	
+   522	            for task in active_tasks:
+   523	                correlation_score = await self._calculate_file_task_correlation(
+   524	                    file_path, task
+   525	                )
+   526	
+   527	                if correlation_score > 0.6:  # Strong correlation
+   528	                    correlated_tasks.append({
+   529	                        "task": task,
+   530	                        "correlation_score": correlation_score,
+   531	                        "correlation_reasons": self._explain_correlation(file_path, task)
+   532	                    })
+   533	
+   534	            if correlated_tasks:
+   535	                # Store correlations for progress estimation
+   536	                correlation_data = {
+   537	                    "file_path": file_path,
+   538	                    "change_type": change_type,
+   539	                    "correlated_tasks": correlated_tasks,
+   540	                    "timestamp": datetime.now(timezone.utc).isoformat()
+   541	                }
+   542	
+   543	                await self._store_progress_correlation(correlation_data)
+   544	
+   545	                logger.info(f"🔗 Correlated {file_path} to {len(correlated_tasks)} tasks")
+   546	                self.automation_stats["progress_correlations"] += 1
+   547	
+   548	            return True
+   549	
+   550	        except Exception as e:
+   551	            logger.error(f"File-task correlation failed: {e}")
+   552	            return False
+   553	
+   554	    async def _action_estimate_completion_percentage(self, trigger_data: Dict[str, Any]) -> bool:
+   555	        """Estimate task completion percentage based on code changes."""
+   556	        try:
+   557	            correlation_data = trigger_data
+   558	
+   559	            for correlation in correlation_data.get("correlated_tasks", []):
+   560	                task = correlation["task"]
+   561	                correlation_score = correlation["correlation_score"]
+   562	
+   563	                # Analyze code changes to estimate completion
+   564	                file_path = correlation_data.get("file_path", "")
+   565	                completion_estimate = await self._analyze_code_completion(
+   566	                    file_path, task, correlation_score
+   567	                )
+   568	
+   569	                if completion_estimate:
+   570	                    # Update task progress
+   571	                    progress_update = {
+   572	                        "task_id": task.get("id"),
+   573	                        "completion_percentage": completion_estimate["percentage"],
+   574	                        "estimation_confidence": completion_estimate["confidence"],
+   575	                        "estimation_method": "code_analysis",
+   576	                        "file_changes": completion_estimate["changes_analyzed"],
+   577	                        "timestamp": datetime.now(timezone.utc).isoformat()
+   578	                    }
+   579	
+   580	                    await self._store_progress_estimate(progress_update)
+   581	
+   582	                    logger.debug(f"📈 Estimated {completion_estimate['percentage']:.1f}% completion for task {task.get('id')}")
+   583	
+   584	            return True
+   585	
+   586	        except Exception as e:
+   587	            logger.error(f"Completion estimation failed: {e}")
+   588	            return False
+   589	
+   590	    async def _action_update_all_systems(self, trigger_data: Dict[str, Any]) -> bool:
+   591	        """Update all PM systems with progress information."""
+   592	        try:
+   593	            progress_updates = trigger_data.get("progress_updates", [])
+   594	
+   595	            # Prepare updates for each system
+   596	            leantime_updates = []
+   597	            conport_updates = []
+   598	            local_updates = []
+   599	
+   600	            for update in progress_updates:
+   601	                task_id = update.get("task_id")
+   602	                completion_percentage = update.get("completion_percentage", 0)
+   603	
+   604	                # Leantime update
+   605	                leantime_updates.append({
+   606	                    "task_id": task_id,
+   607	                    "progress_percent": completion_percentage,
+   608	                    "auto_updated": True,
+   609	                    "update_source": "task_orchestrator"
+   610	                })
+   611	
+   612	                # ConPort update
+   613	                conport_status = "IN_PROGRESS" if completion_percentage < 100 else "DONE"
+   614	                conport_updates.append({
+   615	                    "status": conport_status,
+   616	                    "description": f"Task {task_id} progress: {completion_percentage:.1f}%",
+   617	                    "linked_item_type": "leantime_task",
+   618	                    "linked_item_id": task_id
+   619	                })
+   620	
+   621	                # Local ADHD system update
+   622	                local_updates.append({
+   623	                    "task_id": task_id,
+   624	                    "progress": completion_percentage / 100.0,
+   625	                    "auto_updated": True
+   626	                })
+   627	
+   628	            # Execute updates in parallel
+   629	            update_tasks = [
+   630	                self._batch_update_leantime(leantime_updates),
+   631	                self._batch_update_conport(conport_updates),
+   632	                self._batch_update_local(local_updates)
+   633	            ]
+   634	
+   635	            results = await asyncio.gather(*update_tasks, return_exceptions=True)
+   636	
+   637	            # Count successful updates
+   638	            successful_updates = sum(1 for r in results if r is True)
+   639	
+   640	            logger.info(f"🔄 Updated {successful_updates}/3 systems with progress information")
+   641	            return successful_updates > 0
+   642	
+   643	        except Exception as e:
+   644	            logger.error(f"System update failed: {e}")
+   645	            return False
+   646	
+   647	    # Retrospective Automation Actions
+   648	
+   649	    async def _action_analyze_completed_work(self, trigger_data: Dict[str, Any]) -> bool:
+   650	        """Analyze completed work for retrospective insights."""
+   651	        try:
+   652	            sprint_id = trigger_data.get("sprint_id")
+   653	            completed_tasks = trigger_data.get("completed_tasks", [])
+   654	
+   655	            # Analyze work patterns
+   656	            work_analysis = {
+   657	                "sprint_id": sprint_id,
+   658	                "total_completed": len(completed_tasks),
+   659	                "complexity_distribution": self._analyze_complexity_distribution(completed_tasks),
+   660	                "duration_accuracy": self._analyze_duration_accuracy(completed_tasks),
+   661	                "adhd_patterns": await self._extract_adhd_patterns(completed_tasks),
+   662	                "workflow_effectiveness": await self._assess_workflow_effectiveness(sprint_id),
+   663	                "blockers_encountered": await self._identify_sprint_blockers(completed_tasks),
+   664	                "energy_utilization": await self._analyze_energy_utilization(sprint_id)
+   665	            }
+   666	
+   667	            # Store analysis for retrospective generation
+   668	            await self._store_sprint_analysis(sprint_id, work_analysis)
+   669	
+   670	            logger.info(f"📊 Analyzed completed work for sprint: {sprint_id}")
+   671	            return True
+   672	
+   673	        except Exception as e:
+   674	            logger.error(f"Work analysis failed: {e}")
+   675	            return False
+   676	
+   677	    async def _action_generate_retrospective_items(self, trigger_data: Dict[str, Any]) -> bool:
+   678	        """Generate retrospective items automatically."""
+   679	        try:
+   680	            sprint_id = trigger_data.get("sprint_id")
+   681	            work_analysis = await self._get_sprint_analysis(sprint_id)
+   682	
+   683	            if not work_analysis:
+   684	                logger.warning(f"No work analysis available for retrospective: {sprint_id}")
+   685	                return False
+   686	
+   687	            # Generate retrospective categories
+   688	            retrospective_items = {
+   689	                "what_went_well": self._generate_positive_insights(work_analysis),
+   690	                "what_could_improve": self._generate_improvement_insights(work_analysis),
+   691	                "adhd_accommodations": self._generate_adhd_insights(work_analysis),
+   692	                "workflow_optimizations": self._generate_workflow_insights(work_analysis),
+   693	                "action_items": self._generate_action_items(work_analysis)
+   694	            }
+   695	
+   696	            # Create retrospective in Leantime
+   697	            await self._create_leantime_retrospective(sprint_id, retrospective_items)
+   698	
+   699	            # Store in ConPort for future reference
+   700	            await self._store_retrospective_insights(sprint_id, retrospective_items)
+   701	
+   702	            logger.info(f"📝 Generated retrospective for sprint: {sprint_id}")
+   703	            self.automation_stats["retrospectives_generated"] += 1
+   704	
+   705	            return True
+   706	
+   707	        except Exception as e:
+   708	            logger.error(f"Retrospective generation failed: {e}")
+   709	            return False
+   710	
+   711	    # Utility Methods
+   712	
+   713	    def _assess_sprint_cognitive_load(self, total_complexity: float) -> str:
+   714	        """Assess overall sprint cognitive load."""
+   715	        if total_complexity < 2.0:
+   716	            return "🟢 Light sprint - comfortable pace"
+   717	        elif total_complexity < 4.0:
+   718	            return "🟡 Moderate sprint - manageable with focus"
+   719	        elif total_complexity < 6.0:
+   720	            return "🟠 Heavy sprint - requires energy management"
+   721	        else:
+   722	            return "🔴 Intense sprint - needs careful pacing and breaks"
+   723	
+   724	    def _generate_sprint_adhd_recommendations(
+   725	        self,
+   726	        all_tasks: List[Dict],
+   727	        high_complexity: List[Dict],
+   728	        adhd_risks: List[Dict]
+   729	    ) -> List[str]:
+   730	        """Generate ADHD-specific sprint recommendations."""
+   731	        recommendations = []
+   732	
+   733	        if len(adhd_risks) > len(all_tasks) * 0.3:  # More than 30% risky tasks
+   734	            recommendations.append("🧩 Consider decomposing large tasks into 25-minute chunks")
+   735	
+   736	        if len(high_complexity) > 3:
+   737	            recommendations.append("🎯 Schedule complex tasks during peak energy hours")
+   738	            recommendations.append("🔄 Alternate complex and simple tasks for cognitive balance")
+   739	
+   740	        if len(all_tasks) > 15:
+   741	            recommendations.append("📦 Group related tasks to minimize context switching")
+   742	
+   743	        recommendations.append("☕ Plan regular breaks every 25-30 minutes")
+   744	        recommendations.append("🎯 Use focus mode for complex implementation tasks")
+   745	
+   746	        return recommendations
+   747	
+   748	    def _identify_task_break_points(self, task: Dict[str, Any]) -> List[str]:
+   749	        """Identify natural break points within a task."""
+   750	        description = task.get("description", "").lower()
+   751	
+   752	        # Common break points in development tasks
+   753	        break_points = []
+   754	
+   755	        if "implement" in description:
+   756	            break_points.extend(["Design phase", "Implementation", "Testing", "Review"])
+   757	        elif "research" in description:
+   758	            break_points.extend(["Initial research", "Deep dive", "Documentation", "Summary"])
+   759	        elif "debug" in description:
+   760	            break_points.extend(["Problem reproduction", "Root cause analysis", "Fix implementation", "Verification"])
+   761	        else:
+   762	            # Generic break points
+   763	            break_points.extend(["Planning", "Execution", "Review"])
+   764	
+   765	        return break_points
+   766	
+   767	    def _distribute_energy_requirements(
+   768	        self,
+   769	        task: Dict[str, Any],
+   770	        num_subtasks: int
+   771	    ) -> List[str]:
+   772	        """Distribute energy requirements across subtasks."""
+   773	        complexity = task.get("complexity_score", 0.5)
+   774	
+   775	        if complexity > 0.8:
+   776	            # High complexity: start high, then medium/low
+   777	            return (["high"] + ["medium"] * (num_subtasks - 2) + ["low"])[:num_subtasks]
+   778	        elif complexity > 0.5:
+   779	            # Medium complexity: mostly medium with some variation
+   780	            return (["medium"] * (num_subtasks - 1) + ["low"])[:num_subtasks]
+   781	        else:
+   782	            # Low complexity: mostly low energy
+   783	            return ["low"] * num_subtasks
+   784	
+   785	    # Placeholder methods for integration points
+   786	
+   787	    async def _check_workflow_conditions(self, workflow: AutomationWorkflow, data: Dict) -> bool:
+   788	        """Check if workflow conditions are met."""
+   789	        conditions = workflow.conditions or {}
+   790	
+   791	        tasks = data.get("tasks", [])
+   792	        if conditions.get("min_tasks") and len(tasks) < int(conditions["min_tasks"]):
+   793	            return False
+   794	        if conditions.get("max_tasks") and len(tasks) > int(conditions["max_tasks"]):
+   795	            return False
+   796	
+   797	        if conditions.get("has_description"):
+   798	            if tasks and any(not str(task.get("description", "")).strip() for task in tasks):
+   799	                return False
+   800	
+   801	        if conditions.get("active_task_exists"):
+   802	            active_tasks = await self._get_active_tasks()
+   803	            if not active_tasks:
+   804	                return False
+   805	
+   806	        if conditions.get("meaningful_change"):
+   807	            if data.get("change_type") in {"metadata", "noop"}:
+   808	                return False
+   809	            if int(data.get("lines_changed", 1)) <= 0:
+   810	                return False
+   811	
+   812	        if conditions.get("sprint_has_completed_tasks"):
+   813	            if not data.get("completed_tasks"):
+   814	                return False
+   815	
+   816	        if conditions.get("context_switch_detected") and not data.get("context_switch_detected", True):
+   817	            return False
+   818	        if conditions.get("preservation_needed") and not data.get("preservation_needed", True):
+   819	            return False
+   820	
+   821	        return True
+   822	
+   823	    async def _get_current_cognitive_load(self) -> float:
+   824	        """Get current system cognitive load."""
+   825	        if self.serena_client and hasattr(self.serena_client, "get_current_cognitive_load"):
+   826	            try:
+   827	                result = self.serena_client.get_current_cognitive_load(workspace_id=self.workspace_id)
+   828	                if asyncio.iscoroutine(result):
+   829	                    result = await result
+   830	                if isinstance(result, (int, float)):
+   831	                    return max(0.0, min(1.0, float(result)))
+   832	                if isinstance(result, dict):
+   833	                    raw = result.get("cognitive_load", result.get("load", 0.3))
+   834	                    return max(0.0, min(1.0, float(raw)))
+   835	            except Exception as exc:
+   836	                logger.debug("Failed to fetch cognitive load from Serena: %s", exc)
+   837	
+   838	        queue_load = min(1.0, self.automation_queue.qsize() / 10.0)
+   839	        active_load = min(1.0, len(self.active_automations) / max(self.automation_batch_size, 1))
+   840	        return round(max(0.2, queue_load, active_load), 2)
+   841	
+   842	    async def _defer_automation(self, trigger: AutomationTrigger, data: Dict, delay_minutes: int) -> None:
+   843	        """Defer automation execution."""
+   844	        run_at = datetime.now(timezone.utc) + timedelta(minutes=max(delay_minutes, 1))
+   845	        await self.automation_queue.put(
+   846	            {
+   847	                "run_at": run_at,
+   848	                "trigger": trigger.value if isinstance(trigger, AutomationTrigger) else str(trigger),
+   849	                "data": data,
+   850	            }
+   851	        )
+   852	        self.automation_stats["adhd_optimizations_applied"] += 1
+   853	
+   854	    async def _store_sprint_analysis(self, sprint_id: str, analysis: Dict) -> None:
+   855	        """Store sprint analysis data."""
+   856	        if not sprint_id:
+   857	            return
+   858	
+   859	        payload = dict(analysis)
+   860	        payload["updated_at"] = datetime.now(timezone.utc).isoformat()
+   861	        self._sprint_analysis_store[sprint_id] = payload
+   862	
+   863	    async def _get_active_tasks(self) -> List[Dict[str, Any]]:
+   864	        """Get currently active tasks from Leantime."""
+   865	        if self.leantime_client:
+   866	            for method_name in ("get_active_tasks", "list_active_tasks", "get_tasks"):
+   867	                if not hasattr(self.leantime_client, method_name):
+   868	                    continue
+   869	                try:
+   870	                    method = getattr(self.leantime_client, method_name)
+   871	                    if method_name == "get_tasks":
+   872	                        result = method(status="IN_PROGRESS")
+   873	                    else:
+   874	                        result = method()
+   875	                    if asyncio.iscoroutine(result):
+   876	                        result = await result
+   877	                    if isinstance(result, list):
+   878	                        return result
+   879	                except Exception as exc:
+   880	                    logger.debug("Failed loading active tasks via %s: %s", method_name, exc)
+   881	
+   882	        active = []
+   883	        for task in self._local_task_state.values():
+   884	            status = str(task.get("status", "IN_PROGRESS")).upper()
+   885	            if status in {"TODO", "IN_PROGRESS", "BLOCKED"}:
+   886	                active.append(task)
+   887	        return active
+   888	
+   889	    async def _calculate_file_task_correlation(self, file_path: str, task: Dict) -> float:
+   890	        """Calculate correlation between file and task."""
+   891	        normalized_path = file_path.lower().strip()
+   892	        title = str(task.get("title", task.get("name", ""))).lower()
+   893	        description = str(task.get("description", "")).lower()
+   894	        task_text = f"{title} {description}"
+   895	
+   896	        path_parts = [p for p in re.split(r"[\\/._\\-]+", normalized_path) if len(p) >= 3]
+   897	        overlap = sum(1 for token in set(path_parts) if token in task_text)
+   898	
+   899	        score = 0.15 + min(0.6, overlap * 0.15)
+   900	
+   901	        task_path = str(task.get("file_path", "")).lower()
+   902	        if task_path and task_path in normalized_path:
+   903	            score += 0.2
+   904	
+   905	        task_id = str(task.get("id", "")).lower()
+   906	        if task_id and task_id in normalized_path:
+   907	            score += 0.1
+   908	
+   909	        return max(0.0, min(1.0, score))
+   910	
+   911	    async def _explain_correlation(self, file_path: str, task: Dict) -> List[str]:
+   912	        """Explain why file correlates to task."""
+   913	        reasons: List[str] = []
+   914	        normalized_path = file_path.lower()
+   915	        title = str(task.get("title", task.get("name", ""))).lower()
+   916	        description = str(task.get("description", "")).lower()
+   917	
+   918	        if any(token in (title + " " + description) for token in re.split(r"[\\/._\\-]+", normalized_path) if token):
+   919	            reasons.append("Path tokens overlap with task title/description")
+   920	        if task.get("file_path") and str(task.get("file_path")).lower() in normalized_path:
+   921	            reasons.append("Task references this file directly")
+   922	        if not reasons:
+   923	            reasons.append("General repository-area match")
+   924	
+   925	        return reasons
+   926	
+   927	    async def _store_progress_correlation(self, data: Dict) -> None:
+   928	        """Store progress correlation data."""
+   929	        self._progress_correlation_store.append(dict(data))
+   930	        if len(self._progress_correlation_store) > 500:
+   931	            self._progress_correlation_store = self._progress_correlation_store[-500:]
+   932	
+   933	    async def _analyze_code_completion(self, file_path: str, task: Dict, correlation: float) -> Dict:
+   934	        """Analyze code to estimate completion percentage."""
+   935	        raw_progress = task.get("progress_percent", task.get("completion_percentage", 0))
+   936	        try:
+   937	            current_percent = float(raw_progress)
+   938	            if current_percent <= 1.0:
+   939	                current_percent *= 100.0
+   940	        except (TypeError, ValueError):
+   941	            current_percent = 0.0
+   942	
+   943	        increment = max(5.0, min(25.0, correlation * 20.0))
+   944	        percentage = min(100.0, max(current_percent, current_percent + increment))
+   945	        confidence = max(0.5, min(0.95, 0.55 + (correlation * 0.4)))
+   946	        changes_analyzed = max(1, int(round(correlation * 6)))
+   947	
+   948	        return {
+   949	            "percentage": percentage,
+   950	            "confidence": confidence,
+   951	            "changes_analyzed": changes_analyzed,
+   952	        }
+   953	
+   954	    async def _store_progress_estimate(self, update: Dict) -> None:
+   955	        """Store progress estimate."""
+   956	        self._progress_estimate_store.append(dict(update))
+   957	        if len(self._progress_estimate_store) > 1000:
+   958	            self._progress_estimate_store = self._progress_estimate_store[-1000:]
+   959	
+   960	        task_id = str(update.get("task_id", "")).strip()
+   961	        if task_id:
+   962	            state = self._local_task_state.setdefault(task_id, {"id": task_id})
+   963	            state["progress_percent"] = update.get("completion_percentage", 0.0)
+   964	            state["status"] = "DONE" if float(update.get("completion_percentage", 0.0)) >= 100.0 else "IN_PROGRESS"
+   965	            state["updated_at"] = update.get("timestamp")
+   966	
+   967	    async def _batch_update_leantime(self, updates: List[Dict]) -> bool:
+   968	        """Batch update Leantime tasks."""
+   969	        if not updates:
+   970	            return True
+   971	        if not self.leantime_client:
+   972	            return True
+   973	
+   974	        success_count = 0
+   975	        if hasattr(self.leantime_client, "batch_update_tasks"):
+   976	            try:
+   977	                result = self.leantime_client.batch_update_tasks(updates)
+   978	                if asyncio.iscoroutine(result):
+   979	                    await result
+   980	                return True
+   981	            except Exception as exc:
+   982	                logger.debug("Leantime batch update failed, falling back to single updates: %s", exc)
+   983	
+   984	        for update in updates:
+   985	            task_id = update.get("task_id")
+   986	            progress = update.get("progress_percent")
+   987	            try:
+   988	                if hasattr(self.leantime_client, "update_task_progress"):
+   989	                    result = self.leantime_client.update_task_progress(task_id, progress)
+   990	                elif hasattr(self.leantime_client, "update_task"):
+   991	                    result = self.leantime_client.update_task(task_id, update)
+   992	                else:
+   993	                    continue
+   994	
+   995	                if asyncio.iscoroutine(result):
+   996	                    await result
+   997	                success_count += 1
+   998	            except Exception as exc:
+   999	                logger.debug("Failed updating Leantime task %s: %s", task_id, exc)
+  1000	
+  1001	        return success_count > 0
+  1002	
+  1003	    async def _batch_update_conport(self, updates: List[Dict]) -> bool:
+  1004	        """Batch update ConPort progress."""
+  1005	        if not updates:
+  1006	            return True
+  1007	        if not self.conport_client:
+  1008	            return True
+  1009	
+  1010	        if hasattr(self.conport_client, "batch_update_progress"):
+  1011	            try:
+  1012	                result = self.conport_client.batch_update_progress(updates)
+  1013	                if asyncio.iscoroutine(result):
+  1014	                    await result
+  1015	                return True
+  1016	            except Exception as exc:
+  1017	                logger.debug("ConPort batch progress update failed: %s", exc)
+  1018	
+  1019	        success_count = 0
+  1020	        for update in updates:
+  1021	            try:
+  1022	                if hasattr(self.conport_client, "record_task_progress"):
+  1023	                    result = self.conport_client.record_task_progress(update)
+  1024	                elif hasattr(self.conport_client, "link_conport_items"):
+  1025	                    result = self.conport_client.link_conport_items([update])
+  1026	                else:
+  1027	                    continue
+  1028	                if asyncio.iscoroutine(result):
+  1029	                    await result
+  1030	                success_count += 1
+  1031	            except Exception as exc:
+  1032	                logger.debug("ConPort update failed for task %s: %s", update.get("linked_item_id"), exc)
+  1033	
+  1034	        return success_count > 0
+  1035	
+  1036	    async def _batch_update_local(self, updates: List[Dict]) -> bool:
+  1037	        """Batch update local ADHD system."""
+  1038	        for update in updates:
+  1039	            task_id = str(update.get("task_id", "")).strip()
+  1040	            if not task_id:
+  1041	                continue
+  1042	            task_state = self._local_task_state.setdefault(task_id, {"id": task_id})
+  1043	            task_state.update(update)
+  1044	            progress = float(update.get("progress", 0.0))
+  1045	            task_state["status"] = "DONE" if progress >= 1.0 else "IN_PROGRESS"
+  1046	        return True
+  1047	
+  1048	    # Health and Monitoring
+  1049	
+  1050	    async def get_automation_health(self) -> Dict[str, Any]:
+  1051	        """Get automation engine health status."""
+  1052	        try:
+  1053	            # Worker health
+  1054	            active_workers = len([w for w in self.workers if not w.done()])
+  1055	
+  1056	            # Queue health
+  1057	            queue_size = self.automation_queue.qsize()
+  1058	            active_automations = len(self.active_automations)
+  1059	
+  1060	            # Workflow health
+  1061	            enabled_workflows = len([w for w in self.workflows.values() if w.enabled])
+  1062	
+  1063	            # Overall status
+  1064	            if active_workers == len(self.workers) and queue_size < 10:
+  1065	                status = "🤖 Fully Automated"
+  1066	            elif active_workers >= len(self.workers) - 1:
+  1067	                status = "✅ Operating"
+  1068	            else:
+  1069	                status = "⚠️ Degraded"
+  1070	
+  1071	            return {
+  1072	                "overall_status": status,
+  1073	                "processing": {
+  1074	                    "workers_active": f"{active_workers}/{len(self.workers)}",
+  1075	                    "queue_size": queue_size,
+  1076	                    "active_automations": active_automations
+  1077	                },
+  1078	                "workflows": {
+  1079	                    "registered": len(self.workflows),
+  1080	                    "enabled": enabled_workflows,
+  1081	                    "trigger_types": len(self.trigger_handlers)
+  1082	                },
+  1083	                "performance": self.automation_stats,
+  1084	                "adhd_optimizations": {
+  1085	                    "cognitive_load_threshold": self.cognitive_load_threshold,
+  1086	                    "batch_size": self.automation_batch_size,
+  1087	                    "accommodations_applied": self.automation_stats["adhd_optimizations_applied"]
+  1088	                }
+  1089	            }
+  1090	
+  1091	        except Exception as e:
+  1092	            logger.error(f"Automation health check failed: {e}")
+  1093	            return {"overall_status": "🔴 Error", "error": str(e)}
+  1094	
+  1095	    async def close(self) -> None:
+  1096	        """Shutdown automation engine gracefully."""
+  1097	        logger.info("🛑 Shutting down Implicit Automation Engine...")
+  1098	
+  1099	        self.running = False
+  1100	
+  1101	        # Cancel workers
+  1102	        if self.workers:
+  1103	            for worker in self.workers:
+  1104	                worker.cancel()
+  1105	            await asyncio.gather(*self.workers, return_exceptions=True)
+  1106	
+  1107	        logger.info("✅ Implicit Automation Engine shutdown complete")
+  1108	
+  1109	    # Background Workers (placeholders for remaining methods)
+  1110	
+  1111	    async def _automation_processor(self) -> None:
+  1112	        """Background automation processor."""
+  1113	        while self.running:
+  1114	            try:
+  1115	                item = await asyncio.wait_for(self.automation_queue.get(), timeout=1.0)
+  1116	            except asyncio.TimeoutError:
+  1117	                continue
+  1118	
+  1119	            try:
+  1120	                run_at = item.get("run_at")
+  1121	                if isinstance(run_at, datetime):
+  1122	                    now = datetime.now(timezone.utc)
+  1123	                    if run_at > now:
+  1124	                        await self.automation_queue.put(item)
+  1125	                        await asyncio.sleep(min(1.0, (run_at - now).total_seconds()))
+  1126	                        continue
+  1127	
+  1128	                trigger_raw = item.get("trigger")
+  1129	                trigger = (
+  1130	                    trigger_raw
+  1131	                    if isinstance(trigger_raw, AutomationTrigger)
+  1132	                    else AutomationTrigger(str(trigger_raw))
+  1133	                )
+  1134	                await self.trigger_automation(trigger, item.get("data", {}))
+  1135	            except Exception as exc:
+  1136	                logger.error("Deferred automation processing failed: %s", exc)
+  1137	            finally:
+  1138	                self.automation_queue.task_done()
+  1139	
+  1140	    async def _workflow_monitor(self) -> None:
+  1141	        """Monitor workflow health."""
+  1142	        while self.running:
+  1143	            await asyncio.sleep(60)
+  1144	            for workflow in self.workflows.values():
+  1145	                if workflow.execution_count < 5:
+  1146	                    continue
+  1147	                if workflow.success_rate < 0.7:
+  1148	                    logger.warning(
+  1149	                        "Workflow %s success rate degraded: %.2f",
+  1150	                        workflow.id,
+  1151	                        workflow.success_rate,
+  1152	                    )
+  1153	
+  1154	    async def _adhd_optimization_monitor(self) -> None:
+  1155	        """Monitor ADHD optimization effectiveness."""
+  1156	        while self.running:
+  1157	            await asyncio.sleep(120)
+  1158	            load = await self._get_current_cognitive_load()
+  1159	            if load > self.cognitive_load_threshold:
+  1160	                self.automation_stats["adhd_optimizations_applied"] += 1
+  1161	
+  1162	    # Additional placeholder methods
+  1163	    def _analyze_complexity_distribution(self, tasks: List[Dict]) -> Dict:
+  1164	        return {}
+  1165	
+  1166	    def _analyze_duration_accuracy(self, tasks: List[Dict]) -> Dict:
+  1167	        return {}
+  1168	
+  1169	    async def _extract_adhd_patterns(self, tasks: List[Dict]) -> Dict:
+  1170	        return {}
+  1171	
+  1172	    async def _assess_workflow_effectiveness(self, sprint_id: str) -> Dict:
+  1173	        return {}
+  1174	
+  1175	    async def _identify_sprint_blockers(self, tasks: List[Dict]) -> List[Dict]:
+  1176	        return []
+  1177	
+  1178	    async def _analyze_energy_utilization(self, sprint_id: str) -> Dict:
+  1179	        return {}
+  1180	
+  1181	    async def _get_sprint_analysis(self, sprint_id: str) -> Optional[Dict]:
+  1182	        return self._sprint_analysis_store.get(sprint_id)
+  1183	
+  1184	    def _generate_positive_insights(self, analysis: Dict) -> List[str]:
+  1185	        return ["Good sprint velocity maintained"]
+  1186	
+  1187	    def _generate_improvement_insights(self, analysis: Dict) -> List[str]:
+  1188	        return ["Consider more break time for complex tasks"]
+  1189	
+  1190	    def _generate_adhd_insights(self, analysis: Dict) -> List[str]:
+  1191	        return ["25-minute chunks worked well for focus"]
+  1192	
+  1193	    def _generate_workflow_insights(self, analysis: Dict) -> List[str]:
+  1194	        return ["Automation reduced PM overhead effectively"]
+  1195	
+  1196	    def _generate_action_items(self, analysis: Dict) -> List[str]:
+  1197	        return ["Continue using automated decomposition"]
+  1198	
+  1199	    async def _create_leantime_retrospective(self, sprint_id: str, items: Dict) -> None:
+  1200	        self._retrospective_store[sprint_id] = {
+  1201	            "items": items,
+  1202	            "created_at": datetime.now(timezone.utc).isoformat(),
+  1203	        }
+  1204	        if not self.leantime_client:
+  1205	            return
+  1206	
+  1207	        for method_name in ("create_retrospective", "create_sprint_retrospective", "create_note"):
+  1208	            if not hasattr(self.leantime_client, method_name):
+  1209	                continue
+  1210	            try:
+  1211	                method = getattr(self.leantime_client, method_name)
+  1212	                if method_name == "create_note":
+  1213	                    payload = {"title": f"Sprint {sprint_id} Retrospective", "content": json.dumps(items)}
+  1214	                    result = method(payload)
+  1215	                else:
+  1216	                    result = method(sprint_id=sprint_id, items=items)
+  1217	                if asyncio.iscoroutine(result):
+  1218	                    await result
+  1219	                return
+  1220	            except Exception as exc:
+  1221	                logger.debug("Leantime retrospective write via %s failed: %s", method_name, exc)
+  1222	
+  1223	    async def _store_retrospective_insights(self, sprint_id: str, items: Dict) -> None:
+  1224	        self._retrospective_store[sprint_id] = {
+  1225	            "items": items,
+  1226	            "stored_at": datetime.now(timezone.utc).isoformat(),
+  1227	        }
+  1228	        if not self.conport_client:
+  1229	            return
+  1230	
+  1231	        payload = {
+  1232	            "sprint_id": sprint_id,
+  1233	            "type": "retrospective",
+  1234	            "insights": items,
+  1235	            "source": "implicit_automation_engine",
+  1236	        }
+  1237	        for method_name in ("store_retrospective", "add_retrospective_insights", "add_observation"):
+  1238	            if not hasattr(self.conport_client, method_name):
+  1239	                continue
+  1240	            try:
+  1241	                result = getattr(self.conport_client, method_name)(payload)
+  1242	                if asyncio.iscoroutine(result):
+  1243	                    await result
+  1244	                return
+  1245	            except Exception as exc:
+  1246	                logger.debug("ConPort retrospective store via %s failed: %s", method_name, exc)

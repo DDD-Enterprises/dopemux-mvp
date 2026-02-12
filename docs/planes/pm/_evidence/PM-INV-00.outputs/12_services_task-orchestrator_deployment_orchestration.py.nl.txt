@@ -1,0 +1,710 @@
+     1	"""
+     2	Deployment Orchestration Coordinator for Task Orchestrator
+     3	CI/CD Integration with ADHD-Optimized Deployment Workflows
+     4	
+     5	Handles automated testing, deployment coordination, and release management
+     6	with neurodivergent-friendly monitoring and rollback capabilities.
+     7	"""
+     8	
+     9	import asyncio
+    10	import json
+    11	import logging
+    12	from datetime import datetime, timedelta
+    13	from typing import Any, Dict, List, Optional, Set, Tuple, Union
+    14	from dataclasses import dataclass, asdict
+    15	from enum import Enum
+    16	import uuid
+    17	import subprocess
+    18	import aiohttp
+    19	
+    20	logger = logging.getLogger(__name__)
+    21	
+    22	
+    23	class DeploymentStage(str, Enum):
+    24	    """Stages in deployment pipeline."""
+    25	    PREPARATION = "preparation"           # Pre-deployment checks
+    26	    TESTING = "testing"                  # Automated testing
+    27	    STAGING = "staging"                  # Staging deployment
+    28	    PRODUCTION = "production"            # Production deployment
+    29	    VERIFICATION = "verification"        # Post-deployment checks
+    30	    ROLLBACK = "rollback"               # Rollback if needed
+    31	
+    32	
+    33	class DeploymentStatus(str, Enum):
+    34	    """Status of deployment operations."""
+    35	    PENDING = "pending"                  # Waiting to start
+    36	    RUNNING = "running"                  # Currently executing
+    37	    SUCCESS = "success"                  # Completed successfully
+    38	    FAILED = "failed"                   # Failed with errors
+    39	    CANCELLED = "cancelled"             # Manually cancelled
+    40	    ROLLING_BACK = "rolling_back"       # Rollback in progress
+    41	
+    42	
+    43	class TestType(str, Enum):
+    44	    """Types of automated tests."""
+    45	    UNIT = "unit"                       # Unit tests
+    46	    INTEGRATION = "integration"         # Integration tests
+    47	    E2E = "e2e"                        # End-to-end tests
+    48	    PERFORMANCE = "performance"         # Performance tests
+    49	    SECURITY = "security"              # Security tests
+    50	    ACCESSIBILITY = "accessibility"     # ADHD/accessibility tests
+    51	
+    52	
+    53	@dataclass
+    54	class DeploymentTask:
+    55	    """Individual deployment task with ADHD considerations."""
+    56	    task_id: str
+    57	    name: str
+    58	    stage: DeploymentStage
+    59	    test_types: List[TestType]
+    60	    command: str
+    61	    timeout_minutes: float
+    62	    retry_attempts: int
+    63	
+    64	    # Dependencies
+    65	    depends_on: List[str]                # Other task IDs
+    66	    blocks: List[str]                    # Tasks blocked by this one
+    67	
+    68	    # Status tracking
+    69	    status: DeploymentStatus
+    70	    started_at: Optional[datetime]
+    71	    completed_at: Optional[datetime]
+    72	    error_message: Optional[str]
+    73	    output_log: List[str]
+    74	
+    75	    # ADHD considerations
+    76	    cognitive_impact: float              # 0.0-1.0 mental overhead
+    77	    interruption_safe: bool             # Can be paused/resumed
+    78	    attention_required: bool             # Needs active monitoring
+    79	    visual_progress: bool                # Show progress indicators
+    80	
+    81	
+    82	@dataclass
+    83	class DeploymentPipeline:
+    84	    """Complete deployment pipeline with orchestration metadata."""
+    85	    pipeline_id: str
+    86	    name: str
+    87	    description: str
+    88	    git_branch: str
+    89	    target_environment: str
+    90	
+    91	    # Pipeline configuration
+    92	    tasks: List[DeploymentTask]
+    93	    parallel_stages: List[List[str]]     # Tasks that can run in parallel
+    94	    critical_path: List[str]             # Critical path task IDs
+    95	
+    96	    # ADHD optimizations
+    97	    gentle_notifications: bool           # Use gentle notifications
+    98	    batch_alerts: bool                  # Batch non-critical alerts
+    99	    visual_dashboard_url: Optional[str]  # URL to visual dashboard
+   100	    break_points: List[str]             # Natural stopping points
+   101	
+   102	    # Metadata
+   103	    created_at: datetime
+   104	    estimated_duration: float           # Total estimated minutes
+   105	    success_rate: float                 # Historical success rate
+   106	
+   107	
+   108	class DeploymentOrchestrationCoordinator:
+   109	    """
+   110	    Intelligent deployment coordination with ADHD-optimized workflows.
+   111	
+   112	    Features:
+   113	    - Automated CI/CD pipeline orchestration
+   114	    - ADHD-friendly deployment monitoring
+   115	    - Smart rollback decision making
+   116	    - Visual progress tracking
+   117	    - Cognitive load-aware alert batching
+   118	    - Break-friendly deployment scheduling
+   119	    """
+   120	
+   121	    def __init__(self, conport_client=None, pal_client=None):
+   122	        self.conport = conport_client
+   123	        self.pal = pal_client
+   124	
+   125	        # Pipeline management
+   126	        self.pipelines: Dict[str, DeploymentPipeline] = {}
+   127	        self.active_deployments: Dict[str, DeploymentPipeline] = {}
+   128	        self.deployment_history: List[Dict[str, Any]] = []
+   129	
+   130	        # Testing coordination
+   131	        self.test_runners: Dict[TestType, Dict[str, Any]] = {}
+   132	        self.test_results: Dict[str, Dict[str, Any]] = {}
+   133	
+   134	        # ADHD optimizations
+   135	        self.notification_batching = True
+   136	        self.gentle_mode = True
+   137	        self.visual_feedback = True
+   138	        self.break_enforcement = True
+   139	
+   140	        # Monitoring
+   141	        self.monitoring_tasks: Dict[str, asyncio.Task] = {}
+   142	        self.alert_queue: List[Dict] = []
+   143	
+   144	        # Statistics
+   145	        self.deployment_stats = {
+   146	            "deployments_orchestrated": 0,
+   147	            "successful_deployments": 0,
+   148	            "rollbacks_performed": 0,
+   149	            "adhd_optimizations_applied": 0,
+   150	            "cognitive_interruptions_prevented": 0,
+   151	            "break_points_utilized": 0
+   152	        }
+   153	
+   154	    async def initialize(self) -> None:
+   155	        """Initialize the deployment orchestration coordinator."""
+   156	        try:
+   157	            await self._load_pipeline_definitions()
+   158	            await self._initialize_test_runners()
+   159	            await self._start_monitoring_services()
+   160	            logger.info("Deployment orchestration coordinator initialized")
+   161	        except Exception as e:
+   162	            logger.error(f"Failed to initialize deployment coordinator: {e}")
+   163	
+   164	    async def orchestrate_deployment(
+   165	        self,
+   166	        pipeline_id: str,
+   167	        git_branch: str = "main",
+   168	        adhd_mode: bool = True
+   169	    ) -> Optional[str]:
+   170	        """Orchestrate a complete deployment pipeline."""
+   171	        try:
+   172	            pipeline = self.pipelines.get(pipeline_id)
+   173	            if not pipeline:
+   174	                logger.error(f"Pipeline {pipeline_id} not found")
+   175	                return None
+   176	
+   177	            # Create deployment instance
+   178	            deployment_instance_id = f"deploy_{uuid.uuid4().hex[:8]}"
+   179	            deployment_instance = self._create_deployment_instance(pipeline, git_branch)
+   180	
+   181	            # Apply ADHD optimizations if requested
+   182	            if adhd_mode:
+   183	                deployment_instance = await self._apply_adhd_deployment_optimizations(deployment_instance)
+   184	
+   185	            # Start deployment
+   186	            self.active_deployments[deployment_instance_id] = deployment_instance
+   187	
+   188	            # Create monitoring task
+   189	            monitor_task = asyncio.create_task(
+   190	                self._monitor_deployment(deployment_instance_id, deployment_instance)
+   191	            )
+   192	            self.monitoring_tasks[deployment_instance_id] = monitor_task
+   193	
+   194	            # Execute deployment pipeline
+   195	            success = await self._execute_deployment_pipeline(deployment_instance)
+   196	
+   197	            self.deployment_stats["deployments_orchestrated"] += 1
+   198	            if success:
+   199	                self.deployment_stats["successful_deployments"] += 1
+   200	
+   201	            logger.info(f"Deployment {deployment_instance_id} {'succeeded' if success else 'failed'}")
+   202	            return deployment_instance_id
+   203	
+   204	        except Exception as e:
+   205	            logger.error(f"Deployment orchestration failed: {e}")
+   206	            return None
+   207	
+   208	    async def run_automated_tests(
+   209	        self,
+   210	        test_types: List[TestType],
+   211	        target_branch: str = "main",
+   212	        adhd_friendly: bool = True
+   213	    ) -> Dict[TestType, Dict[str, Any]]:
+   214	        """Run automated tests with ADHD-optimized reporting."""
+   215	        try:
+   216	            test_results = {}
+   217	
+   218	            for test_type in test_types:
+   219	                logger.info(f"🧪 Running {test_type.value} tests...")
+   220	
+   221	                # Get test configuration
+   222	                test_config = self.test_runners.get(test_type, {})
+   223	                if not test_config:
+   224	                    logger.warning(f"No test runner configured for {test_type.value}")
+   225	                    continue
+   226	
+   227	                # Execute tests
+   228	                result = await self._execute_test_suite(test_type, target_branch, test_config)
+   229	
+   230	                # Apply ADHD-friendly formatting
+   231	                if adhd_friendly:
+   232	                    result = await self._format_test_results_adhd_friendly(result)
+   233	
+   234	                test_results[test_type] = result
+   235	
+   236	            return test_results
+   237	
+   238	        except Exception as e:
+   239	            logger.error(f"Automated testing failed: {e}")
+   240	            return {}
+   241	
+   242	    async def monitor_deployment_health(self, deployment_id: str) -> Dict[str, Any]:
+   243	        """Monitor health of active deployment."""
+   244	        try:
+   245	            deployment = self.active_deployments.get(deployment_id)
+   246	            if not deployment:
+   247	                return {"error": "Deployment not found"}
+   248	
+   249	            health_status = {
+   250	                "deployment_id": deployment_id,
+   251	                "pipeline_name": deployment.name,
+   252	                "current_stage": self._get_current_stage(deployment),
+   253	                "progress_percentage": self._calculate_progress(deployment),
+   254	                "estimated_completion": self._estimate_completion_time(deployment),
+   255	                "health_indicators": await self._get_health_indicators(deployment),
+   256	                "adhd_status": {
+   257	                    "cognitive_load": self._assess_deployment_cognitive_load(deployment),
+   258	                    "attention_required": self._check_attention_requirements(deployment),
+   259	                    "break_opportunity": self._identify_break_opportunities(deployment)
+   260	                }
+   261	            }
+   262	
+   263	            return health_status
+   264	
+   265	        except Exception as e:
+   266	            logger.error(f"Deployment health monitoring failed: {e}")
+   267	            return {"error": str(e)}
+   268	
+   269	    async def suggest_deployment_improvements(self, deployment_id: str) -> List[str]:
+   270	        """Suggest improvements for deployment pipeline."""
+   271	        try:
+   272	            deployment = self.active_deployments.get(deployment_id)
+   273	            if not deployment:
+   274	                return []
+   275	
+   276	            suggestions = []
+   277	
+   278	            # Analyze deployment performance
+   279	            performance_data = await self._analyze_deployment_performance(deployment)
+   280	
+   281	            # Generate performance-based suggestions
+   282	            if performance_data.get("slow_stages"):
+   283	                suggestions.append("Parallelize slow deployment stages")
+   284	
+   285	            if performance_data.get("high_failure_rate"):
+   286	                suggestions.append("Add more comprehensive pre-deployment checks")
+   287	
+   288	            # Add ADHD-specific suggestions
+   289	            if deployment.gentle_notifications:
+   290	                suggestions.extend([
+   291	                    "Add visual progress indicators for better focus tracking",
+   292	                    "Create natural break points in long deployment stages",
+   293	                    "Implement gentle notification patterns for status updates"
+   294	                ])
+   295	
+   296	            return suggestions
+   297	
+   298	        except Exception as e:
+   299	            logger.error(f"Failed to suggest deployment improvements: {e}")
+   300	            return []
+   301	
+   302	    # Private implementation methods
+   303	
+   304	    async def _load_pipeline_definitions(self) -> None:
+   305	        """Load deployment pipeline definitions."""
+   306	        # Default dopemux pipeline
+   307	        dopemux_pipeline = DeploymentPipeline(
+   308	            pipeline_id="dopemux_mvp",
+   309	            name="Dopemux MVP Deployment",
+   310	            description="ADHD-optimized deployment pipeline for Dopemux",
+   311	            git_branch="main",
+   312	            target_environment="staging",
+   313	            tasks=[],  # Would be populated with actual tasks
+   314	            parallel_stages=[],
+   315	            critical_path=[],
+   316	            gentle_notifications=True,
+   317	            batch_alerts=True,
+   318	            visual_dashboard_url="http://localhost:3016/deployment-dashboard",
+   319	            break_points=["post_testing", "pre_production"],
+   320	            created_at=datetime.now(),
+   321	            estimated_duration=45.0,
+   322	            success_rate=0.85
+   323	        )
+   324	
+   325	        self.pipelines["dopemux_mvp"] = dopemux_pipeline
+   326	
+   327	    async def _initialize_test_runners(self) -> None:
+   328	        """Initialize test runners for different test types."""
+   329	        self.test_runners = {
+   330	            TestType.UNIT: {
+   331	                "command": "python -m pytest tests/unit/",
+   332	                "timeout": 10,
+   333	                "parallel": True
+   334	            },
+   335	            TestType.INTEGRATION: {
+   336	                "command": "python -m pytest tests/integration/",
+   337	                "timeout": 30,
+   338	                "parallel": False
+   339	            },
+   340	            TestType.E2E: {
+   341	                "command": "python -m pytest tests/e2e/",
+   342	                "timeout": 60,
+   343	                "parallel": False
+   344	            }
+   345	        }
+   346	
+   347	    async def _start_monitoring_services(self) -> None:
+   348	        """Start background monitoring services."""
+   349	        # Start alert batching service
+   350	        asyncio.create_task(self._deployment_alert_batching_loop())
+   351	
+   352	    def _create_deployment_instance(
+   353	        self, pipeline: DeploymentPipeline, git_branch: str
+   354	    ) -> DeploymentPipeline:
+   355	        """Create deployment instance from pipeline template."""
+   356	        # Deep copy pipeline with instance-specific data
+   357	        instance = DeploymentPipeline(
+   358	            pipeline_id=f"{pipeline.pipeline_id}_{uuid.uuid4().hex[:6]}",
+   359	            name=f"{pipeline.name} ({git_branch})",
+   360	            description=pipeline.description,
+   361	            git_branch=git_branch,
+   362	            target_environment=pipeline.target_environment,
+   363	            tasks=pipeline.tasks.copy(),
+   364	            parallel_stages=pipeline.parallel_stages.copy(),
+   365	            critical_path=pipeline.critical_path.copy(),
+   366	            gentle_notifications=pipeline.gentle_notifications,
+   367	            batch_alerts=pipeline.batch_alerts,
+   368	            visual_dashboard_url=pipeline.visual_dashboard_url,
+   369	            break_points=pipeline.break_points.copy(),
+   370	            created_at=datetime.now(),
+   371	            estimated_duration=pipeline.estimated_duration,
+   372	            success_rate=pipeline.success_rate
+   373	        )
+   374	
+   375	        return instance
+   376	
+   377	    async def _apply_adhd_deployment_optimizations(
+   378	        self, deployment: DeploymentPipeline
+   379	    ) -> DeploymentPipeline:
+   380	        """Apply ADHD-specific optimizations to deployment."""
+   381	        # Enable all ADHD features
+   382	        deployment.gentle_notifications = True
+   383	        deployment.batch_alerts = True
+   384	
+   385	        # Add break points if long deployment
+   386	        if deployment.estimated_duration > 30:
+   387	            if "mid_deployment_break" not in deployment.break_points:
+   388	                deployment.break_points.append("mid_deployment_break")
+   389	
+   390	        # Adjust task timeouts for ADHD considerations
+   391	        for task in deployment.tasks:
+   392	            if task.cognitive_impact > 0.7:
+   393	                task.timeout_minutes *= 1.5  # More time for high-cognitive tasks
+   394	
+   395	        self.deployment_stats["adhd_optimizations_applied"] += 1
+   396	        return deployment
+   397	
+   398	    async def _execute_deployment_pipeline(self, deployment: DeploymentPipeline) -> bool:
+   399	        """Execute the deployment pipeline with monitoring."""
+   400	        try:
+   401	            logger.info(f"🚀 Starting deployment: {deployment.name}")
+   402	
+   403	            # Execute stages in order
+   404	            for task in deployment.tasks:
+   405	                success = await self._execute_deployment_task(task)
+   406	                if not success:
+   407	                    logger.error(f"❌ Deployment failed at task: {task.name}")
+   408	                    return False
+   409	
+   410	                # Check for break points
+   411	                if task.task_id in deployment.break_points:
+   412	                    await self._handle_deployment_break_point(deployment, task)
+   413	
+   414	            logger.info(f"✅ Deployment completed successfully: {deployment.name}")
+   415	            return True
+   416	
+   417	        except Exception as e:
+   418	            logger.error(f"Deployment execution failed: {e}")
+   419	            return False
+   420	
+   421	    async def _execute_deployment_task(self, task: DeploymentTask) -> bool:
+   422	        """Execute individual deployment task."""
+   423	        try:
+   424	            task.status = DeploymentStatus.RUNNING
+   425	            task.started_at = datetime.now()
+   426	
+   427	            logger.info(f"⚡ Executing: {task.name}")
+   428	
+   429	            # Execute command with timeout
+   430	            process = await asyncio.create_subprocess_shell(
+   431	                task.command,
+   432	                stdout=asyncio.subprocess.PIPE,
+   433	                stderr=asyncio.subprocess.PIPE
+   434	            )
+   435	
+   436	            try:
+   437	                stdout, stderr = await asyncio.wait_for(
+   438	                    process.communicate(),
+   439	                    timeout=task.timeout_minutes * 60
+   440	                )
+   441	
+   442	                if process.returncode == 0:
+   443	                    task.status = DeploymentStatus.SUCCESS
+   444	                    task.output_log.append(stdout.decode() if stdout else "")
+   445	                    return True
+   446	                else:
+   447	                    task.status = DeploymentStatus.FAILED
+   448	                    task.error_message = stderr.decode() if stderr else "Unknown error"
+   449	                    return False
+   450	
+   451	            except asyncio.TimeoutError:
+   452	                process.kill()
+   453	                task.status = DeploymentStatus.FAILED
+   454	                task.error_message = f"Timeout after {task.timeout_minutes} minutes"
+   455	                return False
+   456	
+   457	        except Exception as e:
+   458	            task.status = DeploymentStatus.FAILED
+   459	            task.error_message = str(e)
+   460	            return False
+   461	        finally:
+   462	            task.completed_at = datetime.now()
+   463	
+   464	    async def _execute_test_suite(
+   465	        self, test_type: TestType, branch: str, config: Dict[str, Any]
+   466	    ) -> Dict[str, Any]:
+   467	        """Execute specific test suite."""
+   468	        try:
+   469	            command = config["command"]
+   470	            timeout = config.get("timeout", 30)
+   471	
+   472	            logger.info(f"🧪 Running {test_type.value} tests on {branch}")
+   473	
+   474	            # Execute test command
+   475	            process = await asyncio.create_subprocess_shell(
+   476	                command,
+   477	                stdout=asyncio.subprocess.PIPE,
+   478	                stderr=asyncio.subprocess.PIPE
+   479	            )
+   480	
+   481	            stdout, stderr = await asyncio.wait_for(
+   482	                process.communicate(),
+   483	                timeout=timeout * 60
+   484	            )
+   485	
+   486	            success = process.returncode == 0
+   487	            output = stdout.decode() if stdout else ""
+   488	            errors = stderr.decode() if stderr else ""
+   489	
+   490	            return {
+   491	                "test_type": test_type.value,
+   492	                "success": success,
+   493	                "output": output,
+   494	                "errors": errors,
+   495	                "duration": timeout,  # Would track actual duration
+   496	                "timestamp": datetime.now().isoformat()
+   497	            }
+   498	
+   499	        except asyncio.TimeoutError:
+   500	            return {
+   501	                "test_type": test_type.value,
+   502	                "success": False,
+   503	                "errors": f"Test suite timed out after {timeout} minutes",
+   504	                "timestamp": datetime.now().isoformat()
+   505	            }
+   506	        except Exception as e:
+   507	            return {
+   508	                "test_type": test_type.value,
+   509	                "success": False,
+   510	                "errors": str(e),
+   511	                "timestamp": datetime.now().isoformat()
+   512	            }
+   513	
+   514	            logger.error(f"Error: {e}")
+   515	    async def _format_test_results_adhd_friendly(self, result: Dict[str, Any]) -> Dict[str, Any]:
+   516	        """Format test results in ADHD-friendly manner."""
+   517	        # Add visual indicators
+   518	        if result["success"]:
+   519	            result["visual_status"] = "✅ PASSED"
+   520	            result["cognitive_impact"] = "low"
+   521	        else:
+   522	            result["visual_status"] = "❌ FAILED"
+   523	            result["cognitive_impact"] = "high"
+   524	
+   525	        # Simplify error messages
+   526	        if result.get("errors"):
+   527	            result["simple_error"] = await self._simplify_error_message(result["errors"])
+   528	
+   529	        return result
+   530	
+   531	    async def _simplify_error_message(self, error_text: str) -> str:
+   532	        """Simplify error messages for ADHD users."""
+   533	        # Extract key information from complex error messages
+   534	        lines = error_text.split('\n')
+   535	
+   536	        # Look for common patterns
+   537	        for line in lines:
+   538	            if "FAILED" in line and "::" in line:
+   539	                return f"Test failed: {line.split('::')[-1].strip()}"
+   540	            elif "Error:" in line:
+   541	                return line.strip()
+   542	            elif "AssertionError" in line:
+   543	                return f"Assertion failed: {line.split('AssertionError:')[-1].strip()}"
+   544	
+   545	        # Return first non-empty line if no patterns found
+   546	        for line in lines:
+   547	            if line.strip():
+   548	                return line.strip()[:100] + "..." if len(line) > 100 else line.strip()
+   549	
+   550	        return "Unknown error occurred"
+   551	
+   552	    def _get_current_stage(self, deployment: DeploymentPipeline) -> str:
+   553	        """Get current deployment stage."""
+   554	        # Find first non-completed task
+   555	        for task in deployment.tasks:
+   556	            if task.status in [DeploymentStatus.PENDING, DeploymentStatus.RUNNING]:
+   557	                return task.stage.value
+   558	
+   559	        return "completed"
+   560	
+   561	    def _calculate_progress(self, deployment: DeploymentPipeline) -> float:
+   562	        """Calculate deployment progress percentage."""
+   563	        if not deployment.tasks:
+   564	            return 0.0
+   565	
+   566	        completed_tasks = sum(1 for task in deployment.tasks
+   567	                            if task.status == DeploymentStatus.SUCCESS)
+   568	        return (completed_tasks / len(deployment.tasks)) * 100
+   569	
+   570	    def _estimate_completion_time(self, deployment: DeploymentPipeline) -> Optional[datetime]:
+   571	        """Estimate deployment completion time."""
+   572	        remaining_tasks = [task for task in deployment.tasks
+   573	                         if task.status not in [DeploymentStatus.SUCCESS, DeploymentStatus.FAILED]]
+   574	
+   575	        if not remaining_tasks:
+   576	            return datetime.now()  # Already complete
+   577	
+   578	        remaining_time = sum(task.timeout_minutes for task in remaining_tasks)
+   579	        return datetime.now() + timedelta(minutes=remaining_time)
+   580	
+   581	    async def _get_health_indicators(self, deployment: DeploymentPipeline) -> List[str]:
+   582	        """Get deployment health indicators."""
+   583	        indicators = []
+   584	
+   585	        # Check task success rate
+   586	        completed_tasks = [t for t in deployment.tasks if t.status != DeploymentStatus.PENDING]
+   587	        if completed_tasks:
+   588	            success_rate = sum(1 for t in completed_tasks if t.status == DeploymentStatus.SUCCESS) / len(completed_tasks)
+   589	            if success_rate > 0.8:
+   590	                indicators.append("✅ High success rate")
+   591	            elif success_rate < 0.5:
+   592	                indicators.append("⚠️ Low success rate")
+   593	
+   594	        # Check timing
+   595	        current_time = datetime.now()
+   596	        if deployment.created_at:
+   597	            elapsed = (current_time - deployment.created_at).total_seconds() / 60
+   598	            if elapsed > deployment.estimated_duration * 1.5:
+   599	                indicators.append("⏰ Running over estimated time")
+   600	
+   601	        return indicators
+   602	
+   603	    def _assess_deployment_cognitive_load(self, deployment: DeploymentPipeline) -> float:
+   604	        """Assess cognitive load of current deployment state."""
+   605	        if not deployment.tasks:
+   606	            return 0.0
+   607	
+   608	        running_tasks = [t for t in deployment.tasks if t.status == DeploymentStatus.RUNNING]
+   609	        high_cognitive_tasks = [t for t in running_tasks if t.cognitive_impact > 0.6]
+   610	
+   611	        return min(1.0, len(high_cognitive_tasks) * 0.3)
+   612	
+   613	    def _check_attention_requirements(self, deployment: DeploymentPipeline) -> bool:
+   614	        """Check if deployment currently requires active attention."""
+   615	        running_tasks = [t for t in deployment.tasks if t.status == DeploymentStatus.RUNNING]
+   616	        return any(t.attention_required for t in running_tasks)
+   617	
+   618	    def _identify_break_opportunities(self, deployment: DeploymentPipeline) -> List[str]:
+   619	        """Identify current break opportunities."""
+   620	        current_stage = self._get_current_stage(deployment)
+   621	
+   622	        opportunities = []
+   623	        if current_stage in deployment.break_points:
+   624	            opportunities.append(f"Natural break point available at {current_stage}")
+   625	
+   626	        return opportunities
+   627	
+   628	    async def _handle_deployment_break_point(
+   629	        self, deployment: DeploymentPipeline, completed_task: DeploymentTask
+   630	    ) -> None:
+   631	        """Handle reaching a deployment break point."""
+   632	        if self.break_enforcement and deployment.estimated_duration > 30:
+   633	            logger.info(f"🛑 Break point reached after {completed_task.name}")
+   634	            logger.info("💡 Consider taking a 5-10 minute break before continuing")
+   635	
+   636	            self.deployment_stats["break_points_utilized"] += 1
+   637	
+   638	            # Wait for user confirmation to continue (in real implementation)
+   639	            await asyncio.sleep(1)  # Placeholder
+   640	
+   641	    async def _monitor_deployment(self, deployment_id: str, deployment: DeploymentPipeline) -> None:
+   642	        """Monitor deployment progress and health."""
+   643	        while deployment_id in self.active_deployments:
+   644	            try:
+   645	                health = await self.monitor_deployment_health(deployment_id)
+   646	
+   647	                # Check for issues that need attention
+   648	                if health.get("adhd_status", {}).get("attention_required"):
+   649	                    await self._queue_attention_alert(deployment_id, health)
+   650	
+   651	                await asyncio.sleep(30)  # Check every 30 seconds
+   652	
+   653	            except Exception as e:
+   654	                logger.error(f"Deployment monitoring error: {e}")
+   655	                await asyncio.sleep(60)
+   656	
+   657	    async def _queue_attention_alert(self, deployment_id: str, health: Dict[str, Any]) -> None:
+   658	        """Queue attention alert for deployment."""
+   659	        alert = {
+   660	            "type": "deployment_attention",
+   661	            "deployment_id": deployment_id,
+   662	            "urgency": "medium",
+   663	            "message": "Deployment needs attention",
+   664	            "timestamp": datetime.now()
+   665	        }
+   666	
+   667	        self.alert_queue.append(alert)
+   668	
+   669	    async def _deployment_alert_batching_loop(self) -> None:
+   670	        """Batch deployment alerts to reduce interruptions."""
+   671	        while True:
+   672	            try:
+   673	                if self.alert_queue:
+   674	                    await self._process_deployment_alerts()
+   675	
+   676	                await asyncio.sleep(120)  # Check every 2 minutes
+   677	
+   678	            except Exception as e:
+   679	                logger.error(f"Alert batching error: {e}")
+   680	                await asyncio.sleep(300)
+   681	
+   682	    async def _process_deployment_alerts(self) -> None:
+   683	        """Process batched deployment alerts."""
+   684	        if not self.alert_queue:
+   685	            return
+   686	
+   687	        # Group by urgency
+   688	        urgent = [a for a in self.alert_queue if a.get("urgency") == "high"]
+   689	        normal = [a for a in self.alert_queue if a.get("urgency") != "high"]
+   690	
+   691	        if urgent:
+   692	            for alert in urgent:
+   693	                logger.warning(f"🚨 {alert['message']}")
+   694	
+   695	        if normal and len(normal) > 1:
+   696	            logger.info(f"📊 {len(normal)} deployment updates available")
+   697	        elif normal:
+   698	            logger.info(f"📊 {normal[0]['message']}")
+   699	
+   700	        self.alert_queue.clear()
+   701	        self.deployment_stats["cognitive_interruptions_prevented"] += len(normal)
+   702	
+   703	    async def _analyze_deployment_performance(self, deployment: DeploymentPipeline) -> Dict[str, Any]:
+   704	        """Analyze deployment performance for improvement suggestions."""
+   705	        # Implementation would analyze performance metrics
+   706	        return {
+   707	            "slow_stages": [],
+   708	            "high_failure_rate": False,
+   709	            "optimization_opportunities": []
+   710	        }

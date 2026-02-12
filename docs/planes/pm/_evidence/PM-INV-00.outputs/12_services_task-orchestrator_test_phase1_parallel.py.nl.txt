@@ -1,0 +1,148 @@
+     1	#!/usr/bin/env python3
+     2	"""
+     3	Test script for Phase 1 parallel MCP operations implementation.
+     4	
+     5	Tests the MCPParallelExecutor and BatchFileOps classes without requiring
+     6	full MCP server setup. Validates core functionality and error handling.
+     7	"""
+     8	
+     9	import asyncio
+    10	import tempfile
+    11	import json
+    12	from pathlib import Path
+    13	
+    14	# Import our new classes
+    15	import sys
+    16	import os
+    17	sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
+    18	
+    19	from dopemux.mcp.parallel_executor import MCPParallelExecutor
+    20	from dopemux.file_ops.batch_handler import BatchFileOps
+    21	
+    22	
+    23	class MockMCPClient:
+    24	    """Mock MCP client for testing parallel operations."""
+    25	
+    26	    async def mock_operation(self, operation_id: int, delay: float = 0.1):
+    27	        """Mock async operation with configurable delay."""
+    28	        await asyncio.sleep(delay)
+    29	        return f"Operation {operation_id} completed"
+    30	
+    31	    async def failing_operation(self, operation_id: int):
+    32	        """Mock operation that sometimes fails."""
+    33	        if operation_id % 3 == 0:  # Every 3rd operation fails
+    34	            raise ValueError(f"Operation {operation_id} failed")
+    35	        await asyncio.sleep(0.05)
+    36	        return f"Operation {operation_id} succeeded"
+    37	
+    38	
+    39	async def test_parallel_executor():
+    40	    """Test MCPParallelExecutor functionality."""
+    41	    print("🧪 Testing MCPParallelExecutor...")
+    42	
+    43	    executor = MCPParallelExecutor(max_concurrent=3)
+    44	    mock_client = MockMCPClient()
+    45	
+    46	    # Test successful batch execution
+    47	    calls = [
+    48	        {'method': 'mock_operation', 'args': [1], 'kwargs': {'delay': 0.1}},
+    49	        {'method': 'mock_operation', 'args': [2], 'kwargs': {'delay': 0.1}},
+    50	        {'method': 'mock_operation', 'args': [3], 'kwargs': {'delay': 0.1}},
+    51	    ]
+    52	
+    53	    results = await executor.execute_batch(mock_client, calls)
+    54	    assert len(results) == 3
+    55	    assert all("completed" in result for result in results)
+    56	    print("✅ Batch execution test passed")
+    57	
+    58	    # Test error handling
+    59	    error_calls = [
+    60	        {'method': 'failing_operation', 'args': [1]},
+    61	        {'method': 'failing_operation', 'args': [2]},
+    62	        {'method': 'failing_operation', 'args': [3]},  # This will fail
+    63	    ]
+    64	
+    65	    error_results = await executor.execute_batch(mock_client, error_calls, return_exceptions=True)
+    66	    assert len(error_results) == 3
+    67	    assert isinstance(error_results[2], ValueError)  # 3rd operation failed
+    68	    print("✅ Error handling test passed")
+    69	
+    70	    # Test rate limiting
+    71	    assert executor.is_available()
+    72	    assert executor.get_active_call_count() == 0
+    73	    print("✅ Rate limiting test passed")
+    74	
+    75	
+    76	async def test_batch_file_ops():
+    77	    """Test BatchFileOps functionality."""
+    78	    print("🧪 Testing BatchFileOps...")
+    79	
+    80	    batch_ops = BatchFileOps(max_concurrent=5)
+    81	
+    82	    # Create temporary test files
+    83	    with tempfile.TemporaryDirectory() as tmpdir:
+    84	        tmpdir = Path(tmpdir)
+    85	
+    86	        # Create test files
+    87	        test_files = {}
+    88	        for i in range(3):
+    89	            file_path = tmpdir / f"test_{i}.json"
+    90	            content = json.dumps({"id": i, "name": f"Test {i}"})
+    91	            file_path.write_text(content)
+    92	            test_files[str(file_path)] = content
+    93	
+    94	        # Test batch read
+    95	        file_paths = list(test_files.keys())
+    96	        read_results = await batch_ops.batch_read_files(file_paths)
+    97	
+    98	        assert len(read_results) == 3
+    99	        for path, content in read_results.items():
+   100	            assert isinstance(content, str)
+   101	            assert json.loads(content) == json.loads(test_files[path])
+   102	        print("✅ Batch read test passed")
+   103	
+   104	        # Test batch write
+   105	        write_data = {
+   106	            str(tmpdir / "output_1.txt"): "Hello World 1",
+   107	            str(tmpdir / "output_2.txt"): "Hello World 2",
+   108	        }
+   109	
+   110	        write_results = await batch_ops.batch_write_files(write_data)
+   111	        assert len(write_results) == 2
+   112	        assert all(isinstance(result, str) for result in write_results.values())
+   113	
+   114	        # Verify files were written
+   115	        for path, expected_content in write_data.items():
+   116	            assert Path(path).read_text() == expected_content
+   117	        print("✅ Batch write test passed")
+   118	
+   119	        # Test config batch reading
+   120	        config_files = [str(tmpdir / f"test_{i}.json") for i in range(3)]
+   121	        merged_config = await batch_ops.read_config_batch(config_files)
+   122	
+   123	        assert len(merged_config) > 0  # Should merge all configs
+   124	        print("✅ Config batch read test passed")
+   125	
+   126	
+   127	async def main():
+   128	    """Run all tests."""
+   129	    print("🚀 Starting Phase 1 implementation tests...\n")
+   130	
+   131	    try:
+   132	        await test_parallel_executor()
+   133	        print()
+   134	        await test_batch_file_ops()
+   135	        print()
+   136	        print("🎉 All tests passed! Phase 1 implementation is working correctly.")
+   137	        print("📊 Performance expectations:")
+   138	        print("   - MCP calls: 3-5x speedup for batches")
+   139	        print("   - File ops: 2-4x speedup for multiple files")
+   140	        print("   - Error handling: Graceful failure isolation")
+   141	
+   142	    except Exception as e:
+   143	        print(f"❌ Test failed: {e}")
+   144	        raise
+   145	
+   146	
+   147	if __name__ == "__main__":
+   148	    asyncio.run(main())
