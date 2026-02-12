@@ -113,19 +113,19 @@ prelude: Action items derived from PM-INV-00 evidence analysis
 
 ---
 
-### GAP-4: No PM-Specific Tests
-**Problem**: Zero test coverage for PM components
-**Impact**: Cannot refactor safely, regressions undetected
-**Evidence**: No `tests/` directories in task-orchestrator or taskmaster
+### GAP-4: PM Test Layout and CI Wiring Gap
+**Problem**: No standard `services/*/tests/` layout for PM components; task-orchestrator tests currently exist as root-level `test_*.py` files and may not be consistently discovered/executed in CI
+**Impact**: Test presence is real, but discovery/execution drift can still block safe refactoring
+**Evidence**: Root-level PM tests are present in task-orchestrator (`docs/planes/pm/_evidence/PM-INV-00.outputs/11_task_orchestrator_files.txt.nl.txt:L129-L134`; `docs/planes/pm/_evidence/PM-INV-00.outputs/12_services_task-orchestrator_test_conport_sync.py.nl.txt:L1-L10`)
 
 **Action Items**:
-- [ ] **GAP-4.1**: Create task-orchestrator test suite
+- [ ] **GAP-4.1**: Standardize task-orchestrator test layout and discovery
   - Directory: `services/task-orchestrator/tests/`
   - Coverage: OrchestrationTask lifecycle, ConPort sync, status transitions
   - Framework: pytest
   - Effort: 6-8 hours
 
-- [ ] **GAP-4.2**: Create taskmaster test suite
+- [ ] **GAP-4.2**: Create taskmaster test suite (currently no scoped root-level `test_*.py` files evidenced)
   - Directory: `services/taskmaster/tests/`
   - Coverage: EventBus integration, task CRUD
   - Effort: 4-6 hours
