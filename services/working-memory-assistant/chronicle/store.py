@@ -11,6 +11,7 @@ Handles:
 import hashlib
 import json
 import logging
+import os
 import sqlite3
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -38,6 +39,7 @@ MAX_CHAIN_DEPTH = 10
 LOGGER = logging.getLogger(__name__)
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 MIGRATIONS_DIR = Path(__file__).parent / "migrations"
+SUPPORTED_JOURNAL_MODES = {"DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF"}
 
 
 class ChronicleStore:
@@ -62,7 +64,17 @@ class ChronicleStore:
             )
             self._conn.row_factory = sqlite3.Row
             self._conn.execute("PRAGMA foreign_keys = ON")
-            self._conn.execute("PRAGMA journal_mode = WAL")
+            requested_mode = os.getenv("DOPEMUX_SQLITE_JOURNAL_MODE", "WAL").strip().upper()
+            if requested_mode not in SUPPORTED_JOURNAL_MODES:
+                LOGGER.warning(
+                    "Invalid DOPEMUX_SQLITE_JOURNAL_MODE=%s; falling back to WAL",
+                    requested_mode,
+                )
+                requested_mode = "WAL"
+            applied_mode = self._conn.execute(
+                f"PRAGMA journal_mode = {requested_mode}"
+            ).fetchone()[0]
+            LOGGER.info("SQLite journal_mode set to: %s", applied_mode)
         return self._conn
 
     def close(self) -> None:
