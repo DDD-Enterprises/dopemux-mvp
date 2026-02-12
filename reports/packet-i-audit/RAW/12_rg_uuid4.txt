@@ -1,0 +1,2 @@
+services/working-memory-assistant/chronicle/store.py:275:        final_event_id = event_id or str(uuid.uuid4())
+services/working-memory-assistant/chronicle/store.py:857:        link_id = str(uuid.uuid4())

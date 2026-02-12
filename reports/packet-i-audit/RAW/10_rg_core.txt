@@ -1,0 +1,289 @@
+docs/spec/dope-memory/v1/07_mcp_contracts.md:232:  "idempotency_key": "string|null"
+services/working-memory-assistant/mcp/server.py:296:        source_event_id = f"manual-{uuid.uuid4()}"
+services/working-memory-assistant/mcp/server.py:304:            source_event_id=source_event_id,
+services/working-memory-assistant/mcp/server.py:305:            source_event_type="manual.memory_store",
+services/working-memory-assistant/mcp/server.py:306:            source_adapter="mcp-server",
+services/working-memory-assistant/mcp/server.py:307:            source_event_ts_utc=now_utc,
+services/working-memory-assistant/mcp/server.py:308:            promotion_rule="manual",
+services/working-memory-assistant/mcp/server.py:566:        # Execute replay (source_event_ts_utc ASC)
+services/working-memory-assistant/mcp/server.py:582:            raw_token = f"{last['source_event_ts_utc']}|{last['id']}"
+services/working-memory-assistant/mcp/server.py:590:                "ts_utc": row["source_event_ts_utc"],  # Use event time
+services/working-memory-assistant/mcp/server.py:621:        idempotency_key: Optional[str] = None,
+services/working-memory-assistant/mcp/server.py:639:                supersedes_entry_id=entry_id,
+services/working-memory-assistant/mcp/server.py:646:                idempotency_key=idempotency_key,
+services/working-memory-assistant/promotion/promotion.py:74:    source_event_id: Optional[str] = None
+services/working-memory-assistant/promotion/promotion.py:75:    source_event_type: Optional[str] = None
+services/working-memory-assistant/promotion/promotion.py:76:    source_adapter: Optional[str] = None
+services/working-memory-assistant/promotion/promotion.py:77:    source_event_ts_utc: Optional[str] = None
+services/working-memory-assistant/promotion/promotion.py:78:    promotion_rule: Optional[str] = None
+services/working-memory-assistant/promotion/promotion.py:90:    supersedes_entry_id: Optional[str] = None
+services/working-memory-assistant/promotion/promotion.py:162:        promoted.source_event_id = str(event_id)
+services/working-memory-assistant/promotion/promotion.py:163:        promoted.source_event_type = str(event_type)
+services/working-memory-assistant/promotion/promotion.py:164:        promoted.source_adapter = str(source)
+services/working-memory-assistant/promotion/promotion.py:165:        promoted.source_event_ts_utc = str(ts_utc)
+services/working-memory-assistant/promotion/promotion.py:166:        promoted.promotion_rule = normalized  # Normalized handler name
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:20:    supersedes_entry_id: str | None,
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:29:            linked_commits_json, linked_chat_range_json, parent_entry_id, source_event_id,
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:30:            source_event_type, source_adapter, source_event_ts_utc, promotion_rule,
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:31:            promotion_ts_utc, supersedes_entry_id, created_at_utc, updated_at_utc
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:40:        (row_id, workspace_id, instance_id, f"evt-{row_id}", supersedes_entry_id),
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:57:        supersedes_entry_id=target_id,
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:64:        supersedes_entry_id=target_id,
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:74:            supersedes_entry_id=target_id,
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:89:          supersedes_entry_id TEXT
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:96:          ON work_log_entries(supersedes_entry_id)
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:97:          WHERE supersedes_entry_id IS NOT NULL;
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:121:    assert "idx_worklog_supersedes_unique_scoped" in index_sql_by_name
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:122:    scoped_sql = index_sql_by_name["idx_worklog_supersedes_unique_scoped"].lower()
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:123:    assert "(workspace_id, instance_id, supersedes_entry_id)" in scoped_sql
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:124:    assert "where supersedes_entry_id is not null" in scoped_sql
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:172:    """memory_correct with same idempotency_key yields same entry_id (idempotent)."""
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:195:        idempotency_key=idemp_key,
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:207:        idempotency_key=idemp_key,
+services/working-memory-assistant/tests/unit/test_packet_h_supersession_hardening.py:220:        "SELECT COUNT(*) FROM work_log_entries WHERE supersedes_entry_id = ?",
+services/working-memory-assistant/chronicle/schema.sql:69:  source_event_id TEXT NOT NULL,
+services/working-memory-assistant/chronicle/schema.sql:70:  source_event_type TEXT NOT NULL,
+services/working-memory-assistant/chronicle/schema.sql:71:  source_adapter TEXT NOT NULL,
+services/working-memory-assistant/chronicle/schema.sql:72:  source_event_ts_utc TEXT NOT NULL,
+services/working-memory-assistant/chronicle/schema.sql:73:  promotion_rule TEXT NOT NULL,
+services/working-memory-assistant/chronicle/schema.sql:74:  promotion_ts_utc TEXT NOT NULL,
+services/working-memory-assistant/chronicle/schema.sql:77:  supersedes_entry_id TEXT,
+services/working-memory-assistant/chronicle/schema.sql:96:CREATE UNIQUE INDEX IF NOT EXISTS idx_worklog_supersedes_unique_scoped
+services/working-memory-assistant/chronicle/schema.sql:97:  ON work_log_entries(workspace_id, instance_id, supersedes_entry_id)
+services/working-memory-assistant/chronicle/schema.sql:98:  WHERE supersedes_entry_id IS NOT NULL;
+services/working-memory-assistant/chronicle/schema.sql:143:  source_entry_ids_json TEXT NOT NULL DEFAULT '[]',
+services/working-memory-assistant/chronicle/migrations/v1_2_1_scope_supersession_unique_index.sql:12:DROP INDEX IF EXISTS idx_worklog_supersedes_unique_scoped;
+services/working-memory-assistant/chronicle/migrations/v1_2_1_scope_supersession_unique_index.sql:15:CREATE UNIQUE INDEX IF NOT EXISTS idx_worklog_supersedes_unique_scoped
+services/working-memory-assistant/chronicle/migrations/v1_2_1_scope_supersession_unique_index.sql:16:  ON work_log_entries(workspace_id, instance_id, supersedes_entry_id)
+services/working-memory-assistant/chronicle/migrations/v1_2_1_scope_supersession_unique_index.sql:17:  WHERE supersedes_entry_id IS NOT NULL;
+services/working-memory-assistant/chronicle/tests/test_search_excludes_superseded_by_default.py:29:        source_event_id="evt-1",
+services/working-memory-assistant/chronicle/tests/test_search_excludes_superseded_by_default.py:30:        source_event_type="test",
+services/working-memory-assistant/chronicle/tests/test_search_excludes_superseded_by_default.py:31:        source_adapter="test",
+services/working-memory-assistant/chronicle/tests/test_search_excludes_superseded_by_default.py:32:        source_event_ts_utc="2026-02-11T12:00:00Z",
+services/working-memory-assistant/chronicle/tests/test_search_excludes_superseded_by_default.py:33:        promotion_rule="test"
+services/working-memory-assistant/chronicle/tests/test_search_excludes_superseded_by_default.py:40:        supersedes_entry_id=orig_id,
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:10:    Packet D §7.7: entry_id = sha256(source_event_id | promotion_rule | source_event_ts_utc)
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:31:        source_event_id=sid,
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:32:        source_event_type="type",
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:33:        source_adapter="adapter",
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:34:        source_event_ts_utc=ts,
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:35:        promotion_rule=rule,
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:55:        "source_event_id": "evt-1",
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:56:        "source_event_type": "type",
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:57:        "source_adapter": "adapter",
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:58:        "source_event_ts_utc": "2026-02-09T12:00:00Z",
+services/working-memory-assistant/tests/unit/test_deterministic_entry_id.py:59:        "promotion_rule": "rule",
+services/working-memory-assistant/tests/unit/test_chronicle_sqlite_migrations.py:98:    assert "source_event_id" in columns
+services/working-memory-assistant/tests/unit/test_chronicle_sqlite_migrations.py:99:    assert "source_event_type" in columns
+services/working-memory-assistant/tests/unit/test_chronicle_sqlite_migrations.py:100:    assert "source_adapter" in columns
+services/working-memory-assistant/tests/unit/test_chronicle_sqlite_migrations.py:101:    assert "source_event_ts_utc" in columns
+services/working-memory-assistant/tests/unit/test_chronicle_sqlite_migrations.py:102:    assert "promotion_rule" in columns
+services/working-memory-assistant/tests/unit/test_chronicle_sqlite_migrations.py:103:    assert "promotion_ts_utc" in columns
+services/working-memory-assistant/tests/unit/test_chronicle_sqlite_migrations.py:104:    assert "supersedes_entry_id" in columns
+services/working-memory-assistant/tests/unit/test_chronicle_sqlite_migrations.py:115:        (sql or "").lower().find("workspace_id, instance_id, supersedes_entry_id") >= 0
+services/working-memory-assistant/dope_memory_main.py:279:            source_event_id = f"manual-{uuid.uuid4()}"
+services/working-memory-assistant/dope_memory_main.py:287:                source_event_id=source_event_id,
+services/working-memory-assistant/dope_memory_main.py:288:                source_event_type="manual.memory_store",
+services/working-memory-assistant/dope_memory_main.py:289:                source_adapter="mcp-server",
+services/working-memory-assistant/dope_memory_main.py:290:                source_event_ts_utc=now_utc,
+services/working-memory-assistant/dope_memory_main.py:291:                promotion_rule="manual",
+services/working-memory-assistant/dope_memory_main.py:479:                 raw_token = f"{last['source_event_ts_utc']}|{last['id']}"
+services/working-memory-assistant/dope_memory_main.py:486:                     "ts_utc": row["source_event_ts_utc"],
+services/working-memory-assistant/dope_memory_main.py:525:        idempotency_key: Optional[str] = None,
+services/working-memory-assistant/dope_memory_main.py:537:                supersedes_entry_id=entry_id,
+services/working-memory-assistant/dope_memory_main.py:541:                idempotency_key=idempotency_key,
+services/working-memory-assistant/dope_memory_main.py:821:    idempotency_key: Optional[str] = None
+services/working-memory-assistant/dope_memory_main.py:1200:        idempotency_key=request.idempotency_key,
+services/working-memory-assistant/chronicle/tests/test_supersession_linearity.py:31:        source_event_id="evt-1",
+services/working-memory-assistant/chronicle/tests/test_supersession_linearity.py:32:        source_event_type="test",
+services/working-memory-assistant/chronicle/tests/test_supersession_linearity.py:33:        source_adapter="test",
+services/working-memory-assistant/chronicle/tests/test_supersession_linearity.py:34:        source_event_ts_utc="2026-02-11T12:00:00Z",
+services/working-memory-assistant/chronicle/tests/test_supersession_linearity.py:35:        promotion_rule="test"
+services/working-memory-assistant/chronicle/tests/test_supersession_linearity.py:42:        supersedes_entry_id=orig_id,
+services/working-memory-assistant/chronicle/tests/test_supersession_linearity.py:53:            supersedes_entry_id=orig_id,
+services/working-memory-assistant/chronicle/tests/test_supersession_depth_limit.py:30:        source_event_id="evt-1",
+services/working-memory-assistant/chronicle/tests/test_supersession_depth_limit.py:31:        source_event_type="test",
+services/working-memory-assistant/chronicle/tests/test_supersession_depth_limit.py:32:        source_adapter="test",
+services/working-memory-assistant/chronicle/tests/test_supersession_depth_limit.py:33:        source_event_ts_utc="2026-02-11T12:00:00Z",
+services/working-memory-assistant/chronicle/tests/test_supersession_depth_limit.py:34:        promotion_rule="test"
+services/working-memory-assistant/chronicle/tests/test_supersession_depth_limit.py:41:            supersedes_entry_id=current_id,
+services/working-memory-assistant/chronicle/tests/test_supersession_depth_limit.py:51:            supersedes_entry_id=current_id,
+services/working-memory-assistant/chronicle/tests/test_retraction_tombstone.py:31:        source_event_id="evt-1",
+services/working-memory-assistant/chronicle/tests/test_retraction_tombstone.py:32:        source_event_type="test",
+services/working-memory-assistant/chronicle/tests/test_retraction_tombstone.py:33:        source_adapter="test",
+services/working-memory-assistant/chronicle/tests/test_retraction_tombstone.py:34:        source_event_ts_utc="2026-02-11T12:00:00Z",
+services/working-memory-assistant/chronicle/tests/test_retraction_tombstone.py:35:        promotion_rule="test"
+services/working-memory-assistant/chronicle/tests/test_retraction_tombstone.py:42:        supersedes_entry_id=orig_id,
+services/working-memory-assistant/chronicle/store.py:96:        An entry is superseded if its ID appears as supersedes_entry_id
+services/working-memory-assistant/chronicle/store.py:102:            SELECT supersedes_entry_id FROM work_log_entries 
+services/working-memory-assistant/chronicle/store.py:103:            WHERE workspace_id = ? AND instance_id = ? AND supersedes_entry_id IS NOT NULL
+services/working-memory-assistant/chronicle/store.py:112:        Traverses backward (from newest to oldest) via supersedes_entry_id.
+services/working-memory-assistant/chronicle/store.py:123:                "SELECT supersedes_entry_id FROM work_log_entries WHERE id = ? AND workspace_id = ? AND instance_id = ?",
+services/working-memory-assistant/chronicle/store.py:150:                "SELECT id FROM work_log_entries WHERE supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+services/working-memory-assistant/chronicle/store.py:167:            "SELECT COUNT(*) FROM work_log_entries WHERE supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+services/working-memory-assistant/chronicle/store.py:193:            SELECT id, supersedes_entry_id FROM work_log_entries 
+services/working-memory-assistant/chronicle/store.py:194:            WHERE workspace_id = ? AND instance_id = ? AND supersedes_entry_id IS NOT NULL
+services/working-memory-assistant/chronicle/store.py:204:            supersedes = entry.get("supersedes_entry_id")
+services/working-memory-assistant/chronicle/store.py:216:                        "SELECT supersedes_entry_id FROM work_log_entries WHERE id = ? AND workspace_id = ? AND instance_id = ?",
+services/working-memory-assistant/chronicle/store.py:333:        source_event_id: str,
+services/working-memory-assistant/chronicle/store.py:334:        source_event_type: str,
+services/working-memory-assistant/chronicle/store.py:335:        source_adapter: str,
+services/working-memory-assistant/chronicle/store.py:336:        source_event_ts_utc: str,
+services/working-memory-assistant/chronicle/store.py:337:        promotion_rule: str,
+services/working-memory-assistant/chronicle/store.py:351:        supersedes_entry_id: Optional[str] = None,
+services/working-memory-assistant/chronicle/store.py:366:        if not all([source_event_id, source_event_type, source_adapter, source_event_ts_utc, promotion_rule]):
+services/working-memory-assistant/chronicle/store.py:368:                f"All provenance fields are required: source_event_id={bool(source_event_id)}, "
+services/working-memory-assistant/chronicle/store.py:369:                f"source_event_type={bool(source_event_type)}, source_adapter={bool(source_adapter)}, "
+services/working-memory-assistant/chronicle/store.py:370:                f"source_event_ts_utc={bool(source_event_ts_utc)}, promotion_rule={bool(promotion_rule)}"
+services/working-memory-assistant/chronicle/store.py:375:        if (source_event_id in sentinel_values or source_adapter in sentinel_values or 
+services/working-memory-assistant/chronicle/store.py:376:            promotion_rule in sentinel_values):
+services/working-memory-assistant/chronicle/store.py:379:                f"source_event_id={source_event_id}, source_adapter={source_adapter}, "
+services/working-memory-assistant/chronicle/store.py:380:                f"promotion_rule={promotion_rule}"
+services/working-memory-assistant/chronicle/store.py:384:        if supersedes_entry_id:
+services/working-memory-assistant/chronicle/store.py:386:            target = self.get_entry_by_id(workspace_id, instance_id, supersedes_entry_id)
+services/working-memory-assistant/chronicle/store.py:389:                    f"Cannot supersede non-existent entry: {supersedes_entry_id}"
+services/working-memory-assistant/chronicle/store.py:392:            if self._is_entry_superseded(workspace_id, instance_id, supersedes_entry_id):
+services/working-memory-assistant/chronicle/store.py:393:                head = self._resolve_chain_head(workspace_id, instance_id, supersedes_entry_id)
+services/working-memory-assistant/chronicle/store.py:395:                    f"Cannot supersede entry {supersedes_entry_id} — it is already superseded. "
+services/working-memory-assistant/chronicle/store.py:399:            current_depth = self._get_chain_depth(workspace_id, instance_id, supersedes_entry_id)
+services/working-memory-assistant/chronicle/store.py:407:        fingerprint = f"{source_event_id}|{promotion_rule}|{source_event_ts_utc}"
+services/working-memory-assistant/chronicle/store.py:411:        ts_utc = source_event_ts_utc  # Event time (authoritative for chronology)
+services/working-memory-assistant/chronicle/store.py:412:        promotion_ts_utc = datetime.now(timezone.utc).isoformat()  # Promotion processing time
+services/working-memory-assistant/chronicle/store.py:427:                source_event_id, source_event_type, source_adapter,
+services/working-memory-assistant/chronicle/store.py:428:                source_event_ts_utc, promotion_rule, promotion_ts_utc,
+services/working-memory-assistant/chronicle/store.py:429:                supersedes_entry_id,
+services/working-memory-assistant/chronicle/store.py:454:                source_event_id,
+services/working-memory-assistant/chronicle/store.py:455:                source_event_type,
+services/working-memory-assistant/chronicle/store.py:456:                source_adapter,
+services/working-memory-assistant/chronicle/store.py:457:                source_event_ts_utc,
+services/working-memory-assistant/chronicle/store.py:458:                promotion_rule,
+services/working-memory-assistant/chronicle/store.py:459:                promotion_ts_utc,
+services/working-memory-assistant/chronicle/store.py:460:                supersedes_entry_id,
+services/working-memory-assistant/chronicle/store.py:468:        if cursor.rowcount == 0 and supersedes_entry_id:
+services/working-memory-assistant/chronicle/store.py:470:            # or because supersedes_entry_id matches a DIFFERENT entry (FAIL)
+services/working-memory-assistant/chronicle/store.py:474:                # then it MUST be the supersedes_entry_id UNIQUE constraint.
+services/working-memory-assistant/chronicle/store.py:476:                    "SELECT id FROM work_log_entries WHERE supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+services/working-memory-assistant/chronicle/store.py:477:                    (supersedes_entry_id, workspace_id, instance_id),
+services/working-memory-assistant/chronicle/store.py:481:                        f"Supersession fork attempt rejected. Entry {supersedes_entry_id} "
+services/working-memory-assistant/chronicle/store.py:501:            source_event_id=promoted.source_event_id,
+services/working-memory-assistant/chronicle/store.py:502:            source_event_type=promoted.source_event_type,
+services/working-memory-assistant/chronicle/store.py:503:            source_adapter=promoted.source_adapter,
+services/working-memory-assistant/chronicle/store.py:504:            source_event_ts_utc=promoted.source_event_ts_utc,
+services/working-memory-assistant/chronicle/store.py:505:            promotion_rule=promoted.promotion_rule,
+services/working-memory-assistant/chronicle/store.py:517:            supersedes_entry_id=promoted.supersedes_entry_id,
+services/working-memory-assistant/chronicle/store.py:525:        supersedes_entry_id: str,
+services/working-memory-assistant/chronicle/store.py:534:        idempotency_key: Optional[str] = None,
+services/working-memory-assistant/chronicle/store.py:543:        if idempotency_key:
+services/working-memory-assistant/chronicle/store.py:544:            source_event_id = f"manual:{idempotency_key}"
+services/working-memory-assistant/chronicle/store.py:547:                "SELECT id FROM work_log_entries WHERE source_event_id = ? AND supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+services/working-memory-assistant/chronicle/store.py:548:                (source_event_id, supersedes_entry_id, workspace_id, instance_id)
+services/working-memory-assistant/chronicle/store.py:555:        target = self.get_entry_by_id(workspace_id, instance_id, supersedes_entry_id)
+services/working-memory-assistant/chronicle/store.py:557:            raise ValueError(f"Target entry {supersedes_entry_id} not found.")
+services/working-memory-assistant/chronicle/store.py:560:        if self._is_entry_superseded(workspace_id, instance_id, supersedes_entry_id):
+services/working-memory-assistant/chronicle/store.py:561:            real_head = self._resolve_chain_head(workspace_id, instance_id, supersedes_entry_id)
+services/working-memory-assistant/chronicle/store.py:563:                f"Target {supersedes_entry_id} is already superseded. Target head {real_head} instead."
+services/working-memory-assistant/chronicle/store.py:578:        if idempotency_key:
+services/working-memory-assistant/chronicle/store.py:579:            source_event_id = f"manual:{idempotency_key}"
+services/working-memory-assistant/chronicle/store.py:583:            source_event_id = f"manual:{_generate_ulid()}"
+services/working-memory-assistant/chronicle/store.py:601:            source_event_id=source_event_id,
+services/working-memory-assistant/chronicle/store.py:602:            source_event_type=f"correction.{correction_type}",
+services/working-memory-assistant/chronicle/store.py:603:            source_adapter="mcp-server",
+services/working-memory-assistant/chronicle/store.py:604:            source_event_ts_utc=now_utc,
+services/working-memory-assistant/chronicle/store.py:605:            promotion_rule=f"correction.{correction_type}",
+services/working-memory-assistant/chronicle/store.py:612:            supersedes_entry_id=supersedes_entry_id,
+services/working-memory-assistant/chronicle/store.py:626:        Ordering: source_event_ts_utc ASC, id ASC
+services/working-memory-assistant/chronicle/store.py:644:                SELECT supersedes_entry_id FROM work_log_entries
+services/working-memory-assistant/chronicle/store.py:645:                WHERE supersedes_entry_id IS NOT NULL
+services/working-memory-assistant/chronicle/store.py:651:            query += " AND (source_event_ts_utc > ? OR (source_event_ts_utc = ? AND id > ?))"
+services/working-memory-assistant/chronicle/store.py:654:        query += " ORDER BY source_event_ts_utc ASC, id ASC LIMIT ?"
+services/working-memory-assistant/chronicle/store.py:711:                    SELECT supersedes_entry_id FROM work_log_entries
+services/working-memory-assistant/chronicle/store.py:712:                    WHERE supersedes_entry_id IS NOT NULL
+services/working-memory-assistant/chronicle/store.py:808:                SELECT supersedes_entry_id FROM work_log_entries
+services/working-memory-assistant/chronicle/store.py:809:                WHERE supersedes_entry_id IS NOT NULL
+services/working-memory-assistant/chronicle/store.py:905:                source_entry_ids_json
+services/working-memory-assistant/chronicle/store.py:956:                       source_entry_ids_json
+services/working-memory-assistant/chronicle/store.py:969:                       source_entry_ids_json
+services/working-memory-assistant/chronicle/store.py:1153:        - Sets supersedes_entry_id to the original
+services/working-memory-assistant/chronicle/store.py:1181:        promotion_rule = f"correction.{correction_type}"
+services/working-memory-assistant/chronicle/store.py:1223:            source_event_id=manual_event_id,
+services/working-memory-assistant/chronicle/store.py:1224:            source_event_type="manual.correction",
+services/working-memory-assistant/chronicle/store.py:1225:            source_adapter="manual_correction",
+services/working-memory-assistant/chronicle/store.py:1226:            source_event_ts_utc=now_utc,
+services/working-memory-assistant/chronicle/store.py:1227:            promotion_rule=promotion_rule,
+services/working-memory-assistant/chronicle/store.py:1240:            supersedes_entry_id=entry_id,
+services/working-memory-assistant/tests/unit/test_reflection_provenance.py:8:    """Verify that reflection cards persist source_entry_ids_json fully.
+services/working-memory-assistant/tests/unit/test_reflection_provenance.py:39:    row = conn.execute("SELECT source_entry_ids_json FROM reflection_cards WHERE id = 'ref-1'").fetchone()
+services/working-memory-assistant/tests/unit/test_reflection_provenance.py:41:    assert row["source_entry_ids_json"] is not None
+services/working-memory-assistant/tests/unit/test_reflection_provenance.py:42:    assert json.loads(row["source_entry_ids_json"]) == source_ids
+services/working-memory-assistant/tests/unit/test_replay_ordering.py:7:    """Verify replay_work_log returns entries ordered by source_event_ts_utc ASC.
+services/working-memory-assistant/tests/unit/test_replay_ordering.py:20:            source_event_id=f"evt-{summary}", source_event_type="type", source_adapter="adapter",
+services/working-memory-assistant/tests/unit/test_replay_ordering.py:21:            source_event_ts_utc=ts, promotion_rule="rule"
+services/working-memory-assistant/tests/unit/test_replay_ordering.py:50:            source_event_id=f"evt-{i}", source_event_type="type", source_adapter="adapter",
+services/working-memory-assistant/tests/unit/test_replay_ordering.py:51:            source_event_ts_utc=f"2026-02-09T12:00:0{i}Z", promotion_rule="rule"
+services/working-memory-assistant/tests/unit/test_replay_ordering.py:62:    cursor = (last["source_event_ts_utc"], last["id"])
+services/working-memory-assistant/chronicle/migrations/v1_1_1_add_supersession_unique_index.sql:8:-- Only one non-NULL entry may reference any given supersedes_entry_id.
+services/working-memory-assistant/chronicle/migrations/v1_1_1_add_supersession_unique_index.sql:10:  ON work_log_entries(supersedes_entry_id)
+services/working-memory-assistant/chronicle/migrations/v1_1_1_add_supersession_unique_index.sql:11:  WHERE supersedes_entry_id IS NOT NULL;
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:6:ALTER TABLE work_log_entries ADD COLUMN source_event_id TEXT;
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:7:ALTER TABLE work_log_entries ADD COLUMN source_event_type TEXT;
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:8:ALTER TABLE work_log_entries ADD COLUMN source_adapter TEXT;
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:9:ALTER TABLE work_log_entries ADD COLUMN source_event_ts_utc TEXT;
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:10:ALTER TABLE work_log_entries ADD COLUMN promotion_rule TEXT;
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:11:ALTER TABLE work_log_entries ADD COLUMN promotion_ts_utc TEXT;
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:12:ALTER TABLE work_log_entries ADD COLUMN supersedes_entry_id TEXT;
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:15:ALTER TABLE reflection_cards ADD COLUMN source_entry_ids_json TEXT DEFAULT '[]';
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:21:  source_event_id = 'pre_migration',
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:22:  source_event_type = 'unknown',
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:23:  source_adapter = 'unknown',
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:24:  promotion_rule = 'unknown',
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:25:  source_event_ts_utc = created_at_utc,
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:26:  promotion_ts_utc = created_at_utc
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:27:WHERE source_event_id IS NULL;
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:31:SET source_entry_ids_json = '[]'
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:32:WHERE source_entry_ids_json IS NULL;
+services/working-memory-assistant/tests/unit/test_time_semantics.py:8:    """Verify that ts_utc comes from source_event_ts_utc, NOT wall clock.
+services/working-memory-assistant/tests/unit/test_time_semantics.py:25:        source_event_id="evt-1",
+services/working-memory-assistant/tests/unit/test_time_semantics.py:26:        source_event_type="decision.logged",
+services/working-memory-assistant/tests/unit/test_time_semantics.py:27:        source_adapter="test",
+services/working-memory-assistant/tests/unit/test_time_semantics.py:28:        source_event_ts_utc=past_ts,
+services/working-memory-assistant/tests/unit/test_time_semantics.py:29:        promotion_rule="decision_logged",
+services/working-memory-assistant/tests/unit/test_time_semantics.py:45:    """Verify promotion_ts_utc is recorded."""
+services/working-memory-assistant/tests/unit/test_time_semantics.py:56:        source_event_id="evt-1",
+services/working-memory-assistant/tests/unit/test_time_semantics.py:57:        source_event_type="type",
+services/working-memory-assistant/tests/unit/test_time_semantics.py:58:        source_adapter="adapter",
+services/working-memory-assistant/tests/unit/test_time_semantics.py:59:        source_event_ts_utc="2022-01-01T00:00:00Z",
+services/working-memory-assistant/tests/unit/test_time_semantics.py:60:        promotion_rule="rule",
+services/working-memory-assistant/tests/unit/test_time_semantics.py:65:    row = conn.execute("SELECT promotion_ts_utc FROM work_log_entries WHERE id = ?", (entry_id,)).fetchone()
+services/working-memory-assistant/tests/unit/test_time_semantics.py:67:    assert row["promotion_ts_utc"] is not None
+services/working-memory-assistant/tests/unit/test_promotion_provenance.py:8:    Packet D §4.3: source_event_id, source_event_type, source_adapter, source_event_ts_utc
+services/working-memory-assistant/tests/unit/test_promotion_provenance.py:33:    assert entry.source_event_id == "evt-123"
+services/working-memory-assistant/tests/unit/test_promotion_provenance.py:34:    assert entry.source_event_type == "decision.logged"
+services/working-memory-assistant/tests/unit/test_promotion_provenance.py:35:    assert entry.source_adapter == "vscode"
+services/working-memory-assistant/tests/unit/test_promotion_provenance.py:36:    assert entry.source_event_ts_utc == "2026-02-09T12:00:00Z"
+services/working-memory-assistant/tests/unit/test_promotion_provenance.py:37:    assert entry.promotion_rule == "decision.logged"
+services/working-memory-assistant/chronicle/migrations/v1_2_0_enforce_linear_supersession.sql:8:-- Only one non-NULL entry may reference any given supersedes_entry_id.
+services/working-memory-assistant/chronicle/migrations/v1_2_0_enforce_linear_supersession.sql:10:  ON work_log_entries(supersedes_entry_id)
+services/working-memory-assistant/chronicle/migrations/v1_2_0_enforce_linear_supersession.sql:11:  WHERE supersedes_entry_id IS NOT NULL;
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:40:        source_event_id=f"evt-{n}-{summary[:8]}",
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:41:        source_event_type="test",
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:42:        source_adapter="test_harness",
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:43:        source_event_ts_utc=f"2026-02-09T12:{n % 60:02d}:00Z",
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:44:        promotion_rule="auto.test",
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:46:        supersedes_entry_id=supersedes,
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:68:    assert row2["supersedes_entry_id"] == id1
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:238:    assert new["supersedes_entry_id"] == id1
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:239:    assert new["promotion_rule"] == "correction.summary"
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:240:    assert new["source_adapter"] == "manual_correction"
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:241:    assert new["source_event_id"].startswith("manual:")
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:260:    assert retracted["promotion_rule"] == "correction.retraction"
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:282:    """Manual corrections use 'manual:<ULID>' source_event_id convention.
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:291:    assert corrected["source_event_id"].startswith("manual:")
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:292:    assert corrected["source_adapter"] == "manual_correction"
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:293:    assert corrected["source_event_type"] == "manual.correction"
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:294:    assert corrected["promotion_rule"] == "correction.tags"
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:316:            progress_json, next_suggested_json, source_entry_ids_json,
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:356:    The same supersedes_entry_id can exist in different workspaces without conflict.
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:362:        source_event_id="evt-1", source_event_type="test", source_adapter="test",
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:363:        source_event_ts_utc="2026-02-11T12:00:00Z", promotion_rule="test"
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:369:        supersedes_entry_id=id1, correction_type="update", summary="Correction 1"
+services/working-memory-assistant/tests/unit/test_supersession_semantics.py:380:            supersedes_entry_id=id1, correction_type="update", summary="Should fail"
