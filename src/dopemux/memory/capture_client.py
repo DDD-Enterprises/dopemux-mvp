@@ -322,21 +322,21 @@ def emit_capture_event(
         raise CaptureError("event_type is required")
 
     # Lane policy enforcement (CLI-INT-005)
-    from .lane_policy import LanePolicy, get_current_lane
+    from .lane_policy import LanePolicy
 
-    # Detect lane from parameter, event, or environment
-    lane_id = lane or event.get("lane") or get_current_lane()
+    # Detect lane only from explicit inputs for deterministic CLI/plugin behavior.
+    lane_id = lane or event.get("lane")
 
-    # Enforce lane policy if lane is specified
-    if lane_id or selected_mode == "plugin":  # Plugin mode always requires lane
+    # Enforce lane policy only when a lane is explicitly provided.
+    if lane_id:
         policy = LanePolicy(root)
         if not policy.should_capture(lane_id, event_type):
             # Policy denied - return non-inserted result
-            dummy_path = root / ".dopemux" / "chronicle.sqlite"
+            resolved_ledger_path = _resolve_ledger_path(root)
             return CaptureResult(
                 event_id="",
                 inserted=False,
-                ledger_path=dummy_path,
+                ledger_path=resolved_ledger_path,
                 repo_root=root,
                 mode=selected_mode,
                 source=source,
