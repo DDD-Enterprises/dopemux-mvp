@@ -93,8 +93,17 @@ prelude: 07_Mcp_Contracts (explanation) for dopemux documentation and developer 
 ### Response
 ```json
 {
+  "success": true,
   "entry_id": "string",
   "created": true
+}
+```
+
+### Error Response
+```json
+{
+  "success": false,
+  "error": "string"
 }
 ```
 
