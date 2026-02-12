@@ -92,6 +92,11 @@ CREATE INDEX IF NOT EXISTS idx_worklog_phase
 CREATE INDEX IF NOT EXISTS idx_worklog_importance
   ON work_log_entries(importance_score DESC, ts_utc DESC);
 
+-- Enforce linear supersession chains (Packet F §6.2)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_worklog_supersedes_unique
+  ON work_log_entries(supersedes_entry_id)
+  WHERE supersedes_entry_id IS NOT NULL;
+
 -- 3) Issue links
 CREATE TABLE IF NOT EXISTS issue_links (
   id TEXT PRIMARY KEY,
