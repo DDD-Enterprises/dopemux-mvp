@@ -154,7 +154,7 @@ jobs:
 
       - name: ▶️ Run Pytest (unit suite)
         run: |
-          pytest tests/unit --maxfail=1 --disable-warnings --cov-fail-under=0
+          pytest tests/unit --maxfail=1 --disable-warnings --no-cov
 
       - name: 🧪 Installer Smoke Tests (core + full stacks)
         run: |
