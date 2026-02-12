@@ -1,0 +1,5 @@
+Goal: Determine whether task-orchestrator root-level test_*.py files are executed by current test runners / CI.
+Constraint: Do not move tests yet. Only document how discovery is configured and how to run it locally.
+Evidence needed:
+- repo-level test command(s) (Makefile, pyproject, CI workflow)
+- observed behavior when running them
