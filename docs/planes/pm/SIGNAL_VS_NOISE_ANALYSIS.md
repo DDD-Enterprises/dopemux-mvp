@@ -12,7 +12,7 @@ prelude: ADHD-first event classification for PM plane distinguishing actionable 
 # Signal vs Noise Analysis (Phase 1, Critiqued)
 
 Status: Tightened for citation integrity, evidence quality tagging, and Trinity boundaries.
-Evidence root: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
+Evidence roots: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`; `docs/planes/pm/_evidence/PM-TELEM-01.outputs/`
 
 ## Signal Events (Show by Default)
 
@@ -75,6 +75,33 @@ Evidence: `[Scan hit] 30_memory_burden_search.txt L2,L9-L11`; `20_friction_searc
 
 Any event classification without a verifiable evidence citation is invalid and must be moved to the Open Questions section as UNKNOWN.
 
+## Telemetry Reality Check (As Implemented)
+
+### What PM can now measure
+
+- Event-rate reduction is now directly measurable as `suppression_rate_pct`, with `signal_noise_ratio` computed from pass/receive counts.
+Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L889-L912`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L293-L310`.
+
+- PM can attribute suppression volume to six concrete rules (`custom_filter`, `deep_focus_priority`, `deep_focus_interrupt`, `energy_level`, `flood`, `expiry`).
+Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L104-L110`; `L914-L921`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L282-L289`.
+
+- PM can segment suppression by event type and priority (received vs suppressed) for current runtime.
+Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L393-L401`; `L463-L471`; `L922-L923`.
+
+- PM can read telemetry through both periodic logs and health endpoint payloads.
+Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L254-L271`; `L957-L972`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L349-L362`.
+
+### What PM still cannot measure (yet)
+
+- Long-horizon suppression trends (hourly/daily), historical baselines, and persisted telemetry history are not yet implemented and remain listed as future work.
+Evidence: `[Direct code] nl_services_task-orchestrator_SUPPRESSION_TELEMETRY.md.txt L157-L162`.
+
+- Per-worker suppression attribution is not yet implemented.
+Evidence: `[Direct code] nl_services_task-orchestrator_SUPPRESSION_TELEMETRY.md.txt L164`.
+
+- Multi-cause suppression overlap is not measurable because suppression is short-circuited at first matching rule.
+Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L403-L433`; `[Direct code] nl_services_task-orchestrator_tests_test_suppression_telemetry.py.txt L327-L345`.
+
 ## Trinity Boundaries (PM vs Memory vs Search)
 
 ### PM-owned signal rules
@@ -96,7 +123,8 @@ Evidence: `[Scan hit] 30_memory_burden_search.txt L2,L9-L11`; `20_friction_searc
 
 ### What is the measured event-rate reduction after these suppression rules?
 
-UNKNOWN. Evidence needed: before/after event-rate telemetry on identical workloads. Current rules are defined in code but no runtime metrics exist.
+Partially resolved (runtime-only). The report now exposes `suppression_rate_pct` and `signal_noise_ratio`, but historical trend telemetry is still future work.
+Evidence: `[Direct code] nl_services_task-orchestrator_event_coordinator.py.txt L889-L912`; `[Direct code] nl_services_task-orchestrator_SUPPRESSION_TELEMETRY.md.txt L157-L162`.
 
 ### Which suppressed event classes are still needed for incident recovery?
 
