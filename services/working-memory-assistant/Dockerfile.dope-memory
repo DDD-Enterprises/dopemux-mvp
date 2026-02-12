@@ -22,6 +22,7 @@ ENV ENVIRONMENT=production
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
@@ -37,6 +38,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY chronicle/ ./chronicle/
 COPY promotion/ ./promotion/
 COPY mcp/ ./mcp/
+COPY reflection/ ./reflection/
+COPY trajectory/ ./trajectory/
+COPY canonical_ledger.py .
 COPY dope_memory_main.py .
 COPY eventbus_consumer.py .
 COPY postgres_mirror_sync.py .
