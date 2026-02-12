@@ -28,7 +28,7 @@ MCP_NAME_MAPPING = {
     # Profile name -> Claude config name
     "serena-v2": "serena",
     "tavily": "exa",  # Exa is what's actually in the config
-    "dope-context": None,  # Not yet in config, needs to be added
+    "dope-context": "claude-context",  # Canonicalize to claude-context
     "mas-sequential-thinking": "sequential_thinking",
     # Direct mappings (same name in both)
     "conport": "conport",
