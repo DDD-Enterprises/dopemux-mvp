@@ -223,7 +223,7 @@ Mechanically supersedes or retracts an existing entry.
   "workspace_id": "string",
   "instance_id": "string",
   "entry_id": "string",
-  "correction_type": "update|retraction",
+  "correction_type": "summary|tags|category|outcome|retraction",
   "summary": "string",
   "reason": "string|null",
   "details": "object|null",
@@ -232,6 +232,8 @@ Mechanically supersedes or retracts an existing entry.
   "idempotency_key": "string|null"
 }
 ```
+
+**Note**: `correction_type` is NOT stored in the database. It's used to derive `promotion_rule` (e.g., `correction.retraction`) and controls which fields get updated in the correction.
 
 ### Response
 ```json
