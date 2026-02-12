@@ -258,15 +258,18 @@ class TestConfigManager:
     @patch.dict("os.environ", {"OPENAI_API_KEY": "test-key", "EXA_API_KEY": "exa-key"})
     def test_default_mcp_servers(self, config_manager):
         """Test default MCP server configurations."""
-        defaults = config_manager._get_default_mcp_servers()
+        defaults = config_manager._get_default_mcp_servers(
+            mcp_mode="docker",
+            docker_compose_bin="docker compose",
+        )
 
-        assert "mas-sequential-thinking" in defaults
-        assert "pal" in defaults
+        assert "conport" in defaults
+        assert "serena" in defaults
         assert "claude-context" in defaults
 
-        # Check environment variable substitution works
+        # Check expected env placeholders are present
         claude_context = defaults["claude-context"]
-        assert "${OPENROUTER_API_KEY}" in str(claude_context["env"])
+        assert claude_context["env"]["OPENAI_API_KEY"] == "${OPENAI_API_KEY}"
 
     def test_project_templates(self, config_manager):
         """Test project template configurations."""

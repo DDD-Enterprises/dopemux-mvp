@@ -28,8 +28,8 @@ MCP_NAME_MAPPING = {
     # Profile name -> Claude config name
     "serena-v2": "serena",
     "tavily": "exa",  # Exa is what's actually in the config
-    "dope-context": "claude-context",  # Canonicalize to claude-context
-    "mas-sequential-thinking": "sequential_thinking",
+    "dope-context": "claude-context",  # Canonicalize legacy key to claude-context
+    "mas-sequential-thinking": "mas-sequential-thinking",
     # Direct mappings (same name in both)
     "conport": "conport",
     "zen": "zen",
@@ -37,6 +37,7 @@ MCP_NAME_MAPPING = {
     "gpt-researcher": "gpt-researcher",
     "claude-context": "claude-context",
     "desktop-commander": "desktop-commander",
+    "morphllm-fast-apply": "morphllm-fast-apply",
     "morph-llm": "morph-llm",
     "magic-mcp": "magic-mcp",
     "playwright": "playwright",

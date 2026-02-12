@@ -12,6 +12,9 @@ tags:
 - g3-framework
 last_review: '2026-01-31'
 next_review: '2026-05-01'
+author: '@hu3mann'
+prelude: G3 Framework Migration Guide (reference) for dopemux documentation and developer
+  workflows.
 ---
 # G3 Framework Migration Guide
 
