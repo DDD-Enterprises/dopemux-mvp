@@ -239,3 +239,13 @@ MCP servers are configured in `.claude.json`. Active servers:
 
 **Last Updated**: 2026-02-01  
 **Maintainer**: Repository restructure completed
+
+---
+
+## TaskX Rails (Repo Identity)
+This repo includes TaskX-style identity rails:
+
+- `.taskxroot` (repo marker)
+- `.taskx/project.json` (repo identity, packet header requirement)
+
+Any task-packet-driven automation should validate identity before executing.
