@@ -1,0 +1,1615 @@
+services/claude_brain/phase3_team_coordination.py:107:    Manages real-time event streaming and processing with guaranteed delivery
+services/claude_brain/phase3_team_coordination.py:128:    async def publish_event(self, event: CoordinationEvent) -> bool:
+services/claude_brain/phase3_team_coordination.py:141:            logger.error(f"Failed to publish event {event.event_id}: {e}")
+services/claude_brain/phase3_team_coordination.py:542:            await self.event_sync.publish_event(notification_event)
+services/claude_brain/phase3_team_coordination.py:561:                await self.event_sync.publish_event(break_event)
+services/claude_brain/phase3_team_coordination.py:584:                await self.event_sync.publish_event(alert_event)
+services/claude_brain/phase3_team_coordination.py:638:        await self.event_sync.publish_event(state_event)
+services/claude_brain/phase3_team_coordination.py:656:            await self.event_sync.publish_event(meeting_event)
+services/claude_brain/meta_prompt_generator.py:344:            return "streamline_process"
+src/dopemux/orchestrator/adhd_orchestrator.py:95:                 self._publish_attention_state(current_session, metrics.attention_state)
+src/dopemux/orchestrator/adhd_orchestrator.py:99:    def _publish_attention_state(self, session: str, state: AttentionState) -> None:
+src/dopemux/orchestrator/adhd_orchestrator.py:116:            logger.debug("Failed to publish attention state for session %s: %s", session, e)
+src/dopemux/project_init.py:261:            stream = click.get_text_stream("stdin")
+src/dopemux/project_init.py:262:            return bool(stream and stream.isatty())
+src/dopemux/cli.py:805:        # Export CCR upstream env vars so Claude Code Router uses the new proxy
+src/dopemux/cli.py:1582:                "[red]❌ Claude Code Router upstream URL is not configured.[/red]"
+src/dopemux/cli.py:1591:                "[red]❌ No models configured for Claude Code Router upstream.[/red]"
+src/dopemux/cli.py:4074:    Start MCP servers with real-time output streaming and health check waiting.
+src/dopemux/cli.py:6429:            emit_event_bus=False,  # Don't emit to event bus for manual captures
+src/dopemux/roles/catalog.py:298:    # Environment variables for downstream components
+src/dopemux/event_bus.py:68:class EventBus(ABC):
+src/dopemux/event_bus.py:70:    async def publish(self, event: DopemuxEvent) -> bool:
+src/dopemux/event_bus.py:74:    async def subscribe(self, pattern: str, callback: Callable[[DopemuxEvent], Any]) -> str:
+src/dopemux/event_bus.py:79:    async def unsubscribe(self, subscription_id: str) -> None:
+src/dopemux/event_bus.py:82:class InMemoryAdapter(EventBus):
+src/dopemux/event_bus.py:84:        self._subscribers: Dict[str, Dict[str, Callable]] = {}
+src/dopemux/event_bus.py:87:    async def publish(self, event: DopemuxEvent) -> bool:
+src/dopemux/event_bus.py:88:        # Dispatch to all subscribers
+src/dopemux/event_bus.py:91:                callback = self._subscribers[pattern][sub_id]
+src/dopemux/event_bus.py:98:                    logger.error(f"Error in subscriber {sub_id}: {e}")
+src/dopemux/event_bus.py:111:    async def subscribe(self, pattern: str, callback: Callable[[DopemuxEvent], Any]) -> str:
+src/dopemux/event_bus.py:113:        if pattern not in self._subscribers:
+src/dopemux/event_bus.py:114:            self._subscribers[pattern] = {}
+src/dopemux/event_bus.py:115:        self._subscribers[pattern][sub_id] = callback
+src/dopemux/event_bus.py:119:    async def unsubscribe(self, subscription_id: str) -> None:
+src/dopemux/event_bus.py:122:            if pattern in self._subscribers:
+src/dopemux/event_bus.py:123:                if subscription_id in self._subscribers[pattern]:
+src/dopemux/event_bus.py:124:                    del self._subscribers[pattern][subscription_id]
+src/dopemux/event_bus.py:127:class RedisStreamsAdapter(EventBus):
+src/dopemux/event_bus.py:140:    async def publish(self, event: DopemuxEvent) -> bool:
+src/dopemux/event_bus.py:142:            logger.warning("RedisStreamsAdapter.publish called while disconnected; using local fan-out fallback")
+src/dopemux/event_bus.py:155:                logger.error("Error in RedisStreamsAdapter subscriber %s: %s", sub_id, exc)
+src/dopemux/event_bus.py:158:    async def subscribe(self, pattern: str, callback: Callable[[DopemuxEvent], Any]) -> str:
+src/dopemux/event_bus.py:166:    async def unsubscribe(self, subscription_id: str) -> None:
+services/dddpg/bridge_adapter.py:164:                await self.client.publish_event(
+services/dddpg/bridge_adapter.py:191:    async def publish_graph_event(
+services/dddpg/bridge_adapter.py:198:            await self.client.publish_event(
+services/dddpg/bridge_adapter.py:205:            logger.error(f"Failed to publish graph event: {e}")
+services/working-memory-assistant/verify_phase2.py:30:        from eventbus_consumer import EventBusConsumer
+services/working-memory-assistant/verify_phase2.py:31:        print("✓ eventbus_consumer.EventBusConsumer")
+services/working-memory-assistant/verify_phase2.py:33:        print(f"✗ eventbus_consumer.EventBusConsumer: {e}")
+services/registry.yaml:53:    description: "Redis for caching and event streaming"
+services/taskmaster/bridge_adapter.py:81:            await self.client.publish_event(
+services/taskmaster/bridge_adapter.py:131:            await self.client.publish_event(
+services/taskmaster/bridge_adapter.py:202:            await self.client.publish_event(
+services/taskmaster/bridge_adapter.py:239:            await self.client.publish_event(
+services/taskmaster/bridge_adapter.py:303:            await self.client.publish_event(
+services/working-memory-assistant/dope_memory_main.py:695:                        "current_stream": "idle",
+services/working-memory-assistant/dope_memory_main.py:711:                    "current_stream": trajectory.get("current_stream", "idle"),
+services/working-memory-assistant/dope_memory_main.py:849:# EventBus consumer (optional, started if REDIS_URL is set)
+services/working-memory-assistant/dope_memory_main.py:861:# Global EventBus consumer and tasks
+services/working-memory-assistant/dope_memory_main.py:909:    # Start EventBus consumer if enabled
+services/working-memory-assistant/dope_memory_main.py:912:            from eventbus_consumer import EventBusConsumer
+services/working-memory-assistant/dope_memory_main.py:914:            logger.info("Starting EventBus consumer for real-time ingestion")
+services/working-memory-assistant/dope_memory_main.py:915:            eventbus_consumer = EventBusConsumer(
+services/working-memory-assistant/dope_memory_main.py:920:            logger.info("✅ EventBus consumer started")
+services/working-memory-assistant/dope_memory_main.py:922:            logger.warning(f"⚠️  Failed to start EventBus consumer: {e}")
+services/working-memory-assistant/dope_memory_main.py:974:        logger.info("Stopping EventBus consumer...")
+services/working-memory-assistant/dope_memory_main.py:982:        logger.info("EventBus consumer stopped")
+services/taskmaster/server.py:28:    from dopemux.event_bus import RedisStreamsAdapter, DopemuxEvent, Priority, CognitiveLoad, ADHDMetadata
+services/taskmaster/server.py:39:    stream=sys.stderr
+services/taskmaster/server.py:57:        self.event_bus: Optional[RedisStreamsAdapter] = None
+services/taskmaster/server.py:74:    async def initialize_event_bus(self):
+services/taskmaster/server.py:81:            self.event_bus = RedisStreamsAdapter(redis_url)
+services/taskmaster/server.py:82:            await self.event_bus.connect()
+services/taskmaster/server.py:85:                self.event_bus,
+services/taskmaster/server.py:154:            await self.event_bus.publish(event)
+services/taskmaster/server.py:280:        await self.initialize_event_bus()
+services/taskmaster/server.py:355:        if self.event_bus:
+services/taskmaster/server.py:356:            await self.event_bus.disconnect()
+services/dddpg/DEEP_ANALYSIS_CURRENT_STATE.md:177:EventBus: Keep caches synchronized
+services/dddpg/DEEP_ANALYSIS_CURRENT_STATE.md:186:### 3. EventBus Integration Missing
+services/dddpg/DEEP_ANALYSIS_CURRENT_STATE.md:193:**Current**: No event publishing
+services/dddpg/DEEP_ANALYSIS_CURRENT_STATE.md:351:- **Events**: Redis Streams (EventBus)
+services/dddpg/DEEP_ANALYSIS_CURRENT_STATE.md:385:### EventBus Events (Future)
+services/dddpg/DEEP_ANALYSIS_CURRENT_STATE.md:407:- **EventBus**: Keep caches in sync
+services/dddpg/DEEP_ANALYSIS_CURRENT_STATE.md:476:2. **EventBus Integration** (~1 hour)
+services/dddpg/DEEP_ANALYSIS_CURRENT_STATE.md:572:- ✅ EventBus integration
+services/working-memory-assistant/eventbus_consumer.py:2:Dope-Memory EventBus Consumer — Real-time Event Ingestion.
+services/working-memory-assistant/eventbus_consumer.py:4:Subscribes to activity.events.v1 stream and processes events through
+services/working-memory-assistant/eventbus_consumer.py:8:- Input stream: activity.events.v1
+services/working-memory-assistant/eventbus_consumer.py:9:- Output stream: memory.derived.v1
+services/working-memory-assistant/eventbus_consumer.py:36:INPUT_STREAM = os.getenv("DOPE_MEMORY_INPUT_STREAM", "activity.events.v1")
+services/working-memory-assistant/eventbus_consumer.py:37:OUTPUT_STREAM = os.getenv("DOPE_MEMORY_OUTPUT_STREAM", "memory.derived.v1")
+services/working-memory-assistant/eventbus_consumer.py:210:class EventBusConsumer:
+services/working-memory-assistant/eventbus_consumer.py:212:    EventBus consumer for Dope-Memory.
+services/working-memory-assistant/eventbus_consumer.py:214:    Subscribes to activity.events.v1 and:
+services/working-memory-assistant/eventbus_consumer.py:217:    3. Publishes derived events to memory.derived.v1
+services/working-memory-assistant/eventbus_consumer.py:224:        input_stream: str = INPUT_STREAM,
+services/working-memory-assistant/eventbus_consumer.py:225:        output_stream: str = OUTPUT_STREAM,
+services/working-memory-assistant/eventbus_consumer.py:230:        self.input_stream = input_stream
+services/working-memory-assistant/eventbus_consumer.py:231:        self.output_stream = output_stream
+services/working-memory-assistant/eventbus_consumer.py:262:            logger.info(f"✅ Dope-Memory EventBus consumer connected to Redis")
+services/working-memory-assistant/eventbus_consumer.py:267:                    self.input_stream, self.consumer_group, id="0", mkstream=True
+services/working-memory-assistant/eventbus_consumer.py:278:            logger.error(f"❌ Failed to initialize EventBus consumer: {e}")
+services/working-memory-assistant/eventbus_consumer.py:301:            f"📥 Starting Dope-Memory EventBus consumer: "
+services/working-memory-assistant/eventbus_consumer.py:302:            f"{self.input_stream} -> {self.consumer_group}/{self.consumer_name}"
+services/working-memory-assistant/eventbus_consumer.py:313:                # Read from stream (blocking with 1s timeout)
+services/working-memory-assistant/eventbus_consumer.py:314:                events = await self.redis_client.xreadgroup(
+services/working-memory-assistant/eventbus_consumer.py:317:                    streams={self.input_stream: ">"},
+services/working-memory-assistant/eventbus_consumer.py:323:                    for stream_name, messages in events:
+services/working-memory-assistant/eventbus_consumer.py:328:                                    self.input_stream, self.consumer_group, msg_id
+services/working-memory-assistant/eventbus_consumer.py:356:        logger.info("📭 Dope-Memory EventBus consumer stopped")
+services/working-memory-assistant/eventbus_consumer.py:447:            await self._publish_derived_event(
+services/working-memory-assistant/eventbus_consumer.py:495:    async def _publish_derived_event(
+services/working-memory-assistant/eventbus_consumer.py:502:        """Publish derived event to output stream."""
+services/working-memory-assistant/eventbus_consumer.py:516:            msg_id = await self.redis_client.xadd(self.output_stream, event_envelope)
+services/working-memory-assistant/eventbus_consumer.py:517:            logger.debug(f"📤 Published {event_type} to {self.output_stream} ({msg_id.decode()})")
+services/working-memory-assistant/eventbus_consumer.py:519:            logger.warning(f"⚠️  Failed to publish derived event: {e}")
+services/working-memory-assistant/eventbus_consumer.py:598:            trajectory = trajectory_state.get("current_stream", "idle")
+services/working-memory-assistant/eventbus_consumer.py:601:            await self._publish_derived_event(
+services/working-memory-assistant/eventbus_consumer.py:671:                await self._publish_derived_event(
+services/working-memory-assistant/eventbus_consumer.py:759:    """Run the EventBus consumer (entry point)."""
+services/working-memory-assistant/eventbus_consumer.py:761:    consumer = EventBusConsumer()
+services/working-memory-assistant/phase2_demo.py:138:        print(f"  ✓ Current stream: {trajectory_result.data['current_stream']}")
+services/working-memory-assistant/trajectory/manager.py:6:- Track current_stream, current_goal, last_steps
+services/working-memory-assistant/trajectory/manager.py:47:                "current_stream": "",
+services/working-memory-assistant/trajectory/manager.py:53:        # Update stream (based on category or tags)
+services/working-memory-assistant/trajectory/manager.py:54:        stream = self._extract_stream(entry)
+services/working-memory-assistant/trajectory/manager.py:55:        if stream:
+services/working-memory-assistant/trajectory/manager.py:56:            current["current_stream"] = stream
+services/working-memory-assistant/trajectory/manager.py:102:        - 0.5 if entry.category matches trajectory stream category
+services/working-memory-assistant/trajectory/manager.py:121:        stream = trajectory.get("current_stream", "")
+services/working-memory-assistant/trajectory/manager.py:125:        if stream and entry_category:
+services/working-memory-assistant/trajectory/manager.py:126:            if f"Active in {entry_category}" == stream or entry_category in stream:
+services/working-memory-assistant/trajectory/manager.py:186:    def _extract_stream(self, entry: dict[str, Any]) -> str:
+services/working-memory-assistant/trajectory/manager.py:187:        """Extract stream keyword from entry.
+services/working-memory-assistant/trajectory/manager.py:189:        Returns formatted stream in "Active in {category}" format.
+services/working-memory-assistant/tests/test_eventbus_consumer.py:1:"""Tests for EventBus consumer."""
+services/working-memory-assistant/tests/test_eventbus_consumer.py:13:from eventbus_consumer import EventBusConsumer
+services/working-memory-assistant/tests/test_eventbus_consumer.py:17:    """Create an EventBusConsumer with canonical ledger pointed at tmp_path."""
+services/working-memory-assistant/tests/test_eventbus_consumer.py:23:    return EventBusConsumer(
+services/working-memory-assistant/tests/test_eventbus_consumer.py:29:class TestEventBusConsumer:
+services/working-memory-assistant/tests/test_eventbus_consumer.py:30:    """Tests for EventBusConsumer class."""
+services/working-memory-assistant/tests/test_eventbus_consumer.py:36:        assert consumer.input_stream == "activity.events.v1"
+services/working-memory-assistant/tests/test_eventbus_consumer.py:37:        assert consumer.output_stream == "memory.derived.v1"
+services/working-memory-assistant/tests/test_eventbus_consumer.py:41:    def test_consumer_custom_streams(self, tmp_path, monkeypatch):
+services/working-memory-assistant/tests/test_eventbus_consumer.py:42:        """Test consumer with custom stream names."""
+services/working-memory-assistant/tests/test_eventbus_consumer.py:46:            input_stream="custom.input.v1",
+services/working-memory-assistant/tests/test_eventbus_consumer.py:47:            output_stream="custom.output.v1",
+services/working-memory-assistant/tests/test_eventbus_consumer.py:50:        assert consumer.input_stream == "custom.input.v1"
+services/working-memory-assistant/tests/test_eventbus_consumer.py:51:        assert consumer.output_stream == "custom.output.v1"
+services/working-memory-assistant/tests/test_eventbus_consumer.py:115:class TestEventBusConsumerIntegration:
+services/working-memory-assistant/tests/test_eventbus_consumer.py:123:        # Mock the derived event publishing (no Redis connection)
+services/working-memory-assistant/tests/test_eventbus_consumer.py:189:    async def test_publish_derived_event(self, tmp_path, monkeypatch):
+services/working-memory-assistant/tests/test_eventbus_consumer.py:190:        """Test publishing derived events to output stream."""
+services/working-memory-assistant/tests/test_eventbus_consumer.py:194:        mock_redis.xadd.return_value = b"1234567890-0"
+services/working-memory-assistant/tests/test_eventbus_consumer.py:197:        await consumer._publish_derived_event(
+services/working-memory-assistant/tests/test_eventbus_consumer.py:204:        # Verify xadd was called
+services/working-memory-assistant/tests/test_eventbus_consumer.py:205:        mock_redis.xadd.assert_called_once()
+services/working-memory-assistant/tests/test_eventbus_consumer.py:206:        call_args = mock_redis.xadd.call_args
+services/working-memory-assistant/tests/test_eventbus_consumer.py:207:        assert call_args[0][0] == "memory.derived.v1"
+src/dopemux/memory/adapters/copilot.py:162:                    emit_event_bus=False,  # Don't emit to event bus for batch ingestion
+services/dopecon-bridge/test_conport_integration.sh:2:# Test ConPort → DopeconBridge EventBus integration
+services/dopecon-bridge/test_conport_integration.sh:4:echo "🧪 Testing ConPort → EventBus Integration"
+services/dopecon-bridge/test_conport_integration.sh:9:echo "🧹 Clearing dopemux:events stream..."
+services/dopecon-bridge/test_conport_integration.sh:17:  -d '{"workspace_id":"/Users/hue/code/dopemux-mvp","summary":"Test decision via HTTP","rationale":"Testing EventBus integration","tags":["test"]}' | jq .
+services/dopecon-bridge/test_conport_integration.sh:22:# Check if event was published
+services/dopecon-bridge/test_conport_integration.sh:25:echo "Events in stream: $EVENTS"
+services/dopecon-bridge/test_conport_integration.sh:28:    echo "✅ Event published!"
+services/dopecon-bridge/test_conport_integration.sh:31:    echo "❌ No event published"
+services/dopecon-bridge/test_conport_integration.sh:44:# Check stream length again
+services/dopecon-bridge/test_conport_integration.sh:45:echo "📊 Checking stream after log_progress..."
+services/dopecon-bridge/test_conport_integration.sh:47:echo "Events in stream: $EVENTS2"
+services/dopecon-bridge/test_conport_integration.sh:50:    echo "✅ Progress event published!"
+services/dopecon-bridge/test_conport_integration.sh:58:echo "✅ ConPort → EventBus integration test complete"
+services/working-memory-assistant/chronicle/schema.sql:160:  current_stream TEXT NOT NULL DEFAULT '',
+services/working-memory-assistant/tests/test_trajectory.py:54:        assert "current_stream" in result
+services/working-memory-assistant/tests/test_trajectory.py:87:        """Boost factor is 0.5 if entry category matches trajectory stream."""
+services/working-memory-assistant/tests/test_trajectory.py:88:        # Create trajectory state with stream "Active in implementation"
+services/working-memory-assistant/tests/test_trajectory.py:257:    def test_current_stream_format(self):
+services/working-memory-assistant/tests/test_trajectory.py:258:        """Current stream is formatted as 'Active in {category}'."""
+services/working-memory-assistant/tests/test_trajectory.py:274:        assert trajectory["current_stream"] == "Active in debugging"
+services/dopecon-bridge/manual_smoke_test.py:6:  Agents → EventBus → Redis → PatternDetector → ConPort
+services/dopecon-bridge/manual_smoke_test.py:17:from event_bus import Event, EventBus
+services/dopecon-bridge/manual_smoke_test.py:35:    # Initialize EventBus
+services/dopecon-bridge/manual_smoke_test.py:36:    logger.info("📊 Initializing EventBus with Phase 3 features...")
+services/dopecon-bridge/manual_smoke_test.py:37:    bus = EventBus(
+services/dopecon-bridge/manual_smoke_test.py:106:    # Test 2: Check Redis stream
+services/dopecon-bridge/manual_smoke_test.py:110:    stream_length = await redis_client.execute_command("XLEN", "dopemux:events")
+services/dopecon-bridge/manual_smoke_test.py:111:    logger.info(f"   Stream length: {stream_length}")
+services/dopecon-bridge/manual_smoke_test.py:112:    logger.info(f"   Status: {'✅ Events published' if stream_length > 0 else '❌ No events'}\n")
+services/dopecon-bridge/manual_smoke_test.py:114:    # Test 3: Read events from stream
+services/dopecon-bridge/manual_smoke_test.py:115:    if stream_length > 0:
+services/dopecon-bridge/manual_smoke_test.py:124:            for stream_name, messages in events:
+services/dopecon-bridge/manual_smoke_test.py:160:    logger.info(f"\n📊 Event Pipeline: {'✅ OPERATIONAL' if stream_length > 0 else '❌ NO EVENTS'}")
+services/dopecon-bridge/manual_smoke_test.py:164:    if success_count == total_count and stream_length > 0:
+src/dopemux/memory/capture_client.py:274:def _emit_to_event_stream(event: dict[str, Any]) -> None:
+src/dopemux/memory/capture_client.py:275:    """Best-effort Redis stream fan-out for downstream consumers."""
+src/dopemux/memory/capture_client.py:279:        LOGGER.debug("redis package unavailable; skipping event stream emit")
+src/dopemux/memory/capture_client.py:283:    stream_name = os.getenv("DOPE_MEMORY_INPUT_STREAM", "activity.events.v1")
+src/dopemux/memory/capture_client.py:298:        client.xadd(stream_name, envelope)
+src/dopemux/memory/capture_client.py:300:        LOGGER.debug("event stream emit failed: %s", exc)
+src/dopemux/memory/capture_client.py:308:    emit_event_bus: Optional[bool] = None,
+src/dopemux/memory/capture_client.py:412:    should_emit_event_bus = emit_event_bus
+src/dopemux/memory/capture_client.py:413:    if should_emit_event_bus is None:
+src/dopemux/memory/capture_client.py:414:        should_emit_event_bus = (
+src/dopemux/memory/capture_client.py:419:    if should_emit_event_bus:
+src/dopemux/memory/capture_client.py:420:        _emit_to_event_stream(
+services/adhd-dashboard/backend.py:66:    await pubsub.psubscribe("adhd:state_changes:*")
+services/adhd-dashboard/backend.py:76:        await pubsub.unpsubscribe("adhd:state_changes:*")
+services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:6:- TrajectoryManager (current stream, last steps, boost factor; persisted in trajectory_state)
+services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:240:        assert result.data["current_stream"] == "idle"
+services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:271:        assert result.data["current_stream"] == "Active in implementation"
+services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:285:                current_stream, current_goal_json, last_steps_json
+services/dopecon-bridge/pattern_detector.py:15:from event_bus import EventBus
+services/dopecon-bridge/pattern_detector.py:52:        event_bus: EventBus,
+services/dopecon-bridge/pattern_detector.py:63:            event_bus: EventBus instance for fetching events
+services/dopecon-bridge/pattern_detector.py:68:        self.event_bus = event_bus
+services/dopecon-bridge/pattern_detector.py:91:        if self.enable_complexity_budgets and event_bus.redis_client:
+services/dopecon-bridge/pattern_detector.py:92:            self.complexity_scorer = ComplexityScorer(event_bus.redis_client)
+services/dopecon-bridge/pattern_detector.py:95:        if self.enable_caching and event_bus.cache:
+services/dopecon-bridge/pattern_detector.py:96:            self.cache = event_bus.cache
+services/dopecon-bridge/pattern_detector.py:190:        stream: str = "dopemux:events"
+services/dopecon-bridge/pattern_detector.py:196:            stream: Stream name to fetch from
+services/dopecon-bridge/pattern_detector.py:201:        if not self.event_bus.redis_client:
+services/dopecon-bridge/pattern_detector.py:210:            # Read from stream (last N events)
+services/dopecon-bridge/pattern_detector.py:212:            events_raw = await self.event_bus.redis_client.xrevrange(
+services/dopecon-bridge/pattern_detector.py:213:                stream,
+services/working-memory-assistant/tests/test_promotion_allowlist.py:45:            "task.completed", {"task_id": "task-1", "title": "Implement EventBus"}
+services/adhd_engine/integration_bridge_connector.py:20:def initialize_integration(workspace_id: str, event_bus_url: str = "redis://localhost:6379"):
+services/adhd_engine/integration_bridge_connector.py:29:        from event_bus import EventBus
+services/adhd_engine/integration_bridge_connector.py:32:        event_bus = EventBus(redis_url=event_bus_url)
+services/adhd_engine/integration_bridge_connector.py:34:            event_bus=event_bus,
+services/adhd_engine/integration_bridge_connector.py:39:        # Initialize EventBus and start background worker
+services/adhd_engine/integration_bridge_connector.py:40:        asyncio.create_task(_initialize_async(event_bus, _integration_manager))
+services/adhd_engine/integration_bridge_connector.py:49:async def _initialize_async(event_bus, manager):
+services/adhd_engine/integration_bridge_connector.py:50:    """Initialize EventBus and start background worker"""
+services/adhd_engine/integration_bridge_connector.py:52:        await event_bus.initialize()
+src/dopemux/analysis/extractor.py:133:                examples=["/api/v1/users", "UserRepository", "EventBus"],
+services/adhd_engine/workspace_watcher.py:6:Emits events to EventBus when file activity is detected:
+services/adhd_engine/workspace_watcher.py:46:    Emit file activity events to EventBus.
+services/adhd_engine/workspace_watcher.py:67:    def __init__(self, event_bus, workspace_path: str):
+services/adhd_engine/workspace_watcher.py:72:            event_bus: EventBus instance for publishing events
+services/adhd_engine/workspace_watcher.py:75:        self.event_bus = event_bus
+services/adhd_engine/workspace_watcher.py:108:        Emit file activity event to EventBus.
+services/adhd_engine/workspace_watcher.py:119:            from event_bus import Event, EventType
+services/adhd_engine/workspace_watcher.py:146:            await self.event_bus.publish("dopemux:events", event)
+services/adhd_engine/workspace_watcher.py:163:            logger.warning("EventBus not available - file event not emitted")
+services/adhd_engine/workspace_watcher.py:176:                    from event_bus import Event, EventType
+services/adhd_engine/workspace_watcher.py:188:                    await self.event_bus.publish("dopemux:events", event)
+services/adhd_engine/workspace_watcher.py:239:    def __init__(self, event_bus, workspace_path: str):
+services/adhd_engine/workspace_watcher.py:244:            event_bus: EventBus instance for publishing events
+services/adhd_engine/workspace_watcher.py:247:        self.event_bus = event_bus
+services/adhd_engine/workspace_watcher.py:249:        self.emitter = WorkspaceEventEmitter(event_bus, workspace_path)
+services/adhd_engine/workspace_watcher.py:370:def create_workspace_watcher(event_bus, workspace_path: str) -> WorkspaceWatcher:
+services/adhd_engine/workspace_watcher.py:375:        event_bus: EventBus instance
+services/adhd_engine/workspace_watcher.py:381:    return WorkspaceWatcher(event_bus, workspace_path)
+services/voice-commands/bridge_adapter.py:101:            await self.client.publish_event(
+services/voice-commands/bridge_adapter.py:185:            await self.client.publish_event(
+services/voice-commands/bridge_adapter.py:208:                await self.client.publish_event(
+services/voice-commands/bridge_adapter.py:217:            except Exception as publish_exc:
+services/voice-commands/bridge_adapter.py:218:                logger.error(f"Failed to publish voice decomposition failure event: {publish_exc}")
+services/dopecon-bridge/integrations/serena.py:18:from event_bus import Event, EventBus
+services/dopecon-bridge/integrations/serena.py:40:        event_bus: EventBus,
+services/dopecon-bridge/integrations/serena.py:49:            event_bus: EventBus instance for publishing
+services/dopecon-bridge/integrations/serena.py:54:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/serena.py:100:                # Publish to dopemux:events stream (non-blocking)
+services/dopecon-bridge/integrations/serena.py:101:                msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/serena.py:156:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/serena.py:208:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/serena.py:259:        event_bus: EventBus,
+services/dopecon-bridge/integrations/serena.py:269:            event_bus: EventBus instance
+services/dopecon-bridge/integrations/serena.py:275:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/serena.py:282:            event_bus=event_bus,
+services/working-memory-assistant/chronicle/store.py:1011:                updated_at_utc, current_stream, current_goal_json, last_steps_json
+services/working-memory-assistant/chronicle/store.py:1016:                current_stream = excluded.current_stream,
+services/working-memory-assistant/chronicle/store.py:1025:                state.get("current_stream", ""),
+services/working-memory-assistant/chronicle/store.py:1047:            SELECT session_id, updated_at_utc, current_stream,
+services/working-memory-assistant/chronicle/store.py:1063:            "current_stream": row["current_stream"],
+services/mcp-capture/server.py:41:    stream=sys.stderr,
+services/mcp-capture/server.py:156:        async with stdio_server() as (read_stream, write_stream):
+services/mcp-capture/server.py:158:                read_stream,
+services/mcp-capture/server.py:159:                write_stream,
+services/working-memory-assistant/tests/test_trajectory_boost_in_ranking.py:131:        "current_stream": "Active in implementation",
+services/working-memory-assistant/tests/test_trajectory_boost_in_ranking.py:207:        "current_stream": "Active in implementation",
+services/working-memory-assistant/tests/test_trajectory_boost_in_ranking.py:289:        "current_stream": "Active in research",
+services/dopecon-bridge/integrations/task_orchestrator.py:4:Enhances existing Task-Orchestrator event subscription with event publishing:
+services/dopecon-bridge/integrations/task_orchestrator.py:20:from event_bus import Event, EventBus
+services/dopecon-bridge/integrations/task_orchestrator.py:29:    Enhances existing event subscription (70% done) with publishing capabilities.
+services/dopecon-bridge/integrations/task_orchestrator.py:40:        event_bus: EventBus,
+services/dopecon-bridge/integrations/task_orchestrator.py:48:            event_bus: EventBus instance for publishing
+services/dopecon-bridge/integrations/task_orchestrator.py:52:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/task_orchestrator.py:108:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/task_orchestrator.py:168:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/task_orchestrator.py:223:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/task_orchestrator.py:268:    Adds publishing capabilities for task progress tracking.
+services/dopecon-bridge/integrations/task_orchestrator.py:272:    - Bidirectional communication (subscribe + publish)
+services/dopecon-bridge/integrations/task_orchestrator.py:279:        event_bus: EventBus,
+services/dopecon-bridge/integrations/task_orchestrator.py:287:            event_bus: EventBus instance
+services/dopecon-bridge/integrations/task_orchestrator.py:291:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/task_orchestrator.py:297:            event_bus=event_bus,
+services/dopecon-bridge/integrations/task_orchestrator.py:305:            f"[Bidirectional: subscribe ✅ + publish ✅]"
+services/dopemux-gpt-researcher/research_api/services/orchestrator.py:107:                 websocket_streamer=None,
+services/dopemux-gpt-researcher/research_api/services/orchestrator.py:115:            websocket_streamer: WebSocket handler for progress updates
+services/dopemux-gpt-researcher/research_api/services/orchestrator.py:120:        self.websocket = websocket_streamer
+services/dopecon-bridge/integrations/desktop_commander.py:18:from event_bus import Event, EventBus
+services/dopecon-bridge/integrations/desktop_commander.py:39:        event_bus: EventBus,
+services/dopecon-bridge/integrations/desktop_commander.py:48:            event_bus: EventBus instance for publishing
+services/dopecon-bridge/integrations/desktop_commander.py:53:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/desktop_commander.py:106:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/desktop_commander.py:178:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/desktop_commander.py:270:        event_bus: EventBus,
+services/dopecon-bridge/integrations/desktop_commander.py:280:            event_bus: EventBus instance
+services/dopecon-bridge/integrations/desktop_commander.py:286:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/desktop_commander.py:294:            event_bus=event_bus,
+services/session-intelligence/bridge_adapter.py:79:            await self.client.publish_event(
+services/session-intelligence/bridge_adapter.py:102:            await self.client.publish_event(
+services/dopecon-bridge/integrations/pal.py:20:from event_bus import Event, EventBus
+services/dopecon-bridge/integrations/pal.py:41:        event_bus: EventBus,
+services/dopecon-bridge/integrations/pal.py:50:            event_bus: EventBus instance for publishing
+services/dopecon-bridge/integrations/pal.py:55:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/pal.py:110:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/pal.py:171:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/pal.py:226:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/pal.py:280:        event_bus: EventBus,
+services/dopecon-bridge/integrations/pal.py:290:            event_bus: EventBus instance
+services/dopecon-bridge/integrations/pal.py:296:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/pal.py:303:            event_bus=event_bus,
+services/dopecon-bridge/tests/test_pal_integration.py:10:from event_bus import Event, EventBus
+services/dopecon-bridge/tests/test_pal_integration.py:18:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_pal_integration.py:19:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_pal_integration.py:20:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_pal_integration.py:21:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_pal_integration.py:25:    def emitter(self, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:28:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_pal_integration.py:33:    async def test_emits_consensus_reached_event(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:44:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_pal_integration.py:46:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_pal_integration.py:56:    async def test_emits_architecture_choice(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:67:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_pal_integration.py:69:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_pal_integration.py:77:    async def test_emits_analysis_completed(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:91:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_pal_integration.py:93:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_pal_integration.py:101:    async def test_analysis_events_disabled_by_default(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:110:        assert not event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_pal_integration.py:113:    async def test_events_can_be_disabled(self, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:116:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_pal_integration.py:129:        assert not event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_pal_integration.py:154:    async def test_handles_publish_errors_gracefully(self, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:156:        event_bus_mock.publish = AsyncMock(side_effect=Exception("EventBus down"))
+services/dopecon-bridge/tests/test_pal_integration.py:159:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_pal_integration.py:175:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_pal_integration.py:176:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_pal_integration.py:177:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_pal_integration.py:178:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_pal_integration.py:182:    def manager(self, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:185:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_pal_integration.py:190:    async def test_handles_consensus_result(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:200:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_pal_integration.py:202:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_pal_integration.py:209:    async def test_handles_architecture_decision(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_pal_integration.py:219:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_pal_integration.py:221:        call_args = event_bus_mock.publish.call_args
+services/dopemux-gpt-researcher/research_api/main.py:5:- Real-time progress streaming via WebSocket
+services/dopemux-gpt-researcher/research_api/main.py:26:from .adapters.websocket_streamer import WebSocketProgressStreamer
+services/dopemux-gpt-researcher/research_api/main.py:65:websocket_streamer: Optional[WebSocketProgressStreamer] = None
+services/dopemux-gpt-researcher/research_api/main.py:72:    global websocket_streamer, conport_adapter, orchestrator
+services/dopemux-gpt-researcher/research_api/main.py:75:        # Initialize WebSocket streamer
+services/dopemux-gpt-researcher/research_api/main.py:76:        websocket_streamer = WebSocketProgressStreamer()
+services/dopemux-gpt-researcher/research_api/main.py:77:        await websocket_streamer.start_server()
+services/dopemux-gpt-researcher/research_api/main.py:78:        logger.info("WebSocket progress streamer started")
+services/dopemux-gpt-researcher/research_api/main.py:88:            websocket_streamer=websocket_streamer
+services/dopemux-gpt-researcher/research_api/main.py:99:        if websocket_streamer:
+services/dopemux-gpt-researcher/research_api/main.py:100:            await websocket_streamer.stop_server()
+services/dopemux-gpt-researcher/research_api/main.py:128:    global websocket_streamer, conport_adapter, orchestrator
+services/dopemux-gpt-researcher/research_api/main.py:131:        "websocket_streamer": "healthy" if websocket_streamer else "not_initialized",
+services/dopemux-gpt-researcher/research_api/main.py:353:        # Send authentication message to streamer
+services/dopemux-gpt-researcher/research_api/main.py:403:            "Real-time progress streaming",
+services/adhd_engine/main.py:110:    event_bus = None
+services/adhd_engine/main.py:170:            # Get EventBus from engine if available, or create connection
+services/adhd_engine/main.py:171:            event_bus = getattr(engine, 'event_bus', None)
+services/adhd_engine/main.py:173:            if event_bus:
+services/adhd_engine/main.py:174:                event_listener = create_adhd_event_listener(event_bus, engine)
+services/adhd_engine/main.py:184:                logger.warning("⚠️ EventBus not available - ADHD Event Listener not started")
+services/adhd_engine/main.py:207:        if event_bus:
+services/adhd_engine/main.py:210:                workspace_watcher = create_workspace_watcher(event_bus, workspace_path)
+services/adhd_engine/main.py:223:            event_bus = getattr(engine, 'event_bus', None)
+services/adhd_engine/main.py:225:            if event_bus:
+services/adhd_engine/main.py:226:                external_activity_manager = create_external_activity_manager(event_bus)
+services/adhd_engine/main.py:234:                logger.warning("⚠️ EventBus not available - External Activity Manager not started")
+services/dopecon-bridge/integrations/dope_context.py:20:from event_bus import Event, EventBus
+services/dopecon-bridge/integrations/dope_context.py:41:        event_bus: EventBus,
+services/dopecon-bridge/integrations/dope_context.py:51:            event_bus: EventBus instance for publishing
+services/dopecon-bridge/integrations/dope_context.py:57:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/dope_context.py:105:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/dope_context.py:169:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/dope_context.py:220:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/dope_context.py:277:        event_bus: EventBus,
+services/dopecon-bridge/integrations/dope_context.py:289:            event_bus: EventBus instance
+services/dopecon-bridge/integrations/dope_context.py:297:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/dope_context.py:308:            event_bus=event_bus,
+services/dope-context/src/integration_bridge_connector.py:19:def initialize_integration(workspace_id: str, event_bus_url: str = "redis://localhost:6379"):
+services/dope-context/src/integration_bridge_connector.py:28:        from event_bus import EventBus
+services/dope-context/src/integration_bridge_connector.py:31:        event_bus = EventBus(redis_url=event_bus_url)
+services/dope-context/src/integration_bridge_connector.py:33:            event_bus=event_bus,
+services/dope-context/src/integration_bridge_connector.py:37:        asyncio.create_task(_initialize_async(event_bus))
+services/dope-context/src/integration_bridge_connector.py:46:async def _initialize_async(event_bus):
+services/dope-context/src/integration_bridge_connector.py:47:    """Initialize EventBus connection"""
+services/dope-context/src/integration_bridge_connector.py:49:        await event_bus.initialize()
+services/dope-context/src/integration_bridge_connector.py:51:        logger.error(f"EventBus initialization failed: {e}")
+services/adhd_engine/event_emitter.py:2:ADHD Engine Event Emitter - Publish events to EventBus from API routes.
+services/adhd_engine/event_emitter.py:7:EventBus (Redis Streams) without needing direct access to the EventBus instance.
+services/adhd_engine/event_emitter.py:33:    """Structured event for EventBus publishing."""
+services/adhd_engine/event_emitter.py:58:    and other subscribers.
+services/adhd_engine/event_emitter.py:75:        self.stream_name = "dopemux:events"
+services/adhd_engine/event_emitter.py:110:        Emit an event to the EventBus.
+services/adhd_engine/event_emitter.py:118:            True if event was published successfully
+services/adhd_engine/event_emitter.py:135:            await self._redis.xadd(
+services/adhd_engine/event_emitter.py:136:                self.stream_name,
+services/adhd_engine/event_emitter.py:138:                maxlen=10000  # Keep reasonable stream length
+services/adhd_engine/event_emitter.py:140:            logger.debug(f"✅ Event published: {event_type}")
+services/adhd_engine/event_emitter.py:154:    async def subscribe(
+services/adhd_engine/event_emitter.py:156:        stream: str,
+services/adhd_engine/event_emitter.py:166:            stream: Stream name
+services/adhd_engine/event_emitter.py:184:            await self._redis.xgroup_create(stream, consumer_group, id="0", mkstream=True)
+services/adhd_engine/event_emitter.py:193:                streams = {stream: ">"}
+services/adhd_engine/event_emitter.py:194:                messages = await self._redis.xreadgroup(
+services/adhd_engine/event_emitter.py:197:                    streams, 
+services/adhd_engine/event_emitter.py:209:                for stream_name, msg_list in messages:
+services/adhd_engine/event_emitter.py:225:                            await self._redis.xack(stream, consumer_group, msg_id)
+services/dopecon-bridge/integrations/adhd_engine.py:22:from event_bus import Event, EventBus
+services/dopecon-bridge/integrations/adhd_engine.py:115:        event_bus: EventBus,
+services/dopecon-bridge/integrations/adhd_engine.py:125:            event_bus: EventBus instance for publishing
+services/dopecon-bridge/integrations/adhd_engine.py:131:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/adhd_engine.py:202:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/adhd_engine.py:265:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/adhd_engine.py:318:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/dopecon-bridge/integrations/adhd_engine.py:400:        event_bus: EventBus,
+services/dopecon-bridge/integrations/adhd_engine.py:412:            event_bus: EventBus instance
+services/dopecon-bridge/integrations/adhd_engine.py:420:        self.event_bus = event_bus
+services/dopecon-bridge/integrations/adhd_engine.py:428:            event_bus=event_bus,
+services/session-manager/src/message_bus_v2.py:63:    total_events_published: int
+services/session-manager/src/message_bus_v2.py:67:    subscriber_count: int
+services/session-manager/src/message_bus_v2.py:69:    slow_subscribers: list[str]
+services/session-manager/src/message_bus_v2.py:79:    def publish(self, event: Event, block: bool = False, timeout: float = 1.0) -> bool:
+services/session-manager/src/message_bus_v2.py:84:    def subscribe(
+services/session-manager/src/message_bus_v2.py:94:    def unsubscribe(self, subscription_id: str) -> bool:
+services/session-manager/src/message_bus_v2.py:162:        self.metrics_events_published = 0
+services/session-manager/src/message_bus_v2.py:166:        # Circuit breaker for failed subscribers
+services/session-manager/src/message_bus_v2.py:175:    def publish(self, event: Event, block: bool = False, timeout: float = 1.0) -> bool:
+services/session-manager/src/message_bus_v2.py:180:            event: Event to publish
+services/session-manager/src/message_bus_v2.py:185:            True if published, False if buffer full and not blocking
+services/session-manager/src/message_bus_v2.py:206:            self.metrics_events_published += 1
+services/session-manager/src/message_bus_v2.py:221:        # Notify subscribers (outside lock to avoid holding it during callbacks)
+services/session-manager/src/message_bus_v2.py:237:        """Record subscriber failure for circuit breaker."""
+services/session-manager/src/message_bus_v2.py:244:            logger.warning(f"🔌 Circuit breaker activated for subscriber {sub_id}: {self.circuit_breaker_failures[sub_id]} failures in {self.circuit_breaker_timeout}s")
+services/session-manager/src/message_bus_v2.py:283:    def subscribe(
+services/session-manager/src/message_bus_v2.py:298:            Subscription ID for later unsubscribe
+services/session-manager/src/message_bus_v2.py:307:    def unsubscribe(self, subscription_id: str) -> bool:
+services/session-manager/src/message_bus_v2.py:343:            # Identify slow subscribers (> 100ms average)
+services/session-manager/src/message_bus_v2.py:351:                total_events_published=self.metrics_events_published,
+services/session-manager/src/message_bus_v2.py:355:                subscriber_count=len(self.subscriptions),
+services/session-manager/src/message_bus_v2.py:357:                slow_subscribers=slow_subs,
+services/session-manager/src/message_bus_v2.py:373:        logger.info(f"   Published: {self.metrics_events_published}")
+services/session-manager/src/message_bus_v2.py:409:    logger.info(f"  Published: {metrics.total_events_published}")
+services/session-manager/src/message_bus_v2.py:410:    logger.info(f"  Subscribers: {metrics.subscriber_count}")
+services/session-manager/src/message_bus_v2.py:421:    sub1 = bus.subscribe(
+services/session-manager/src/message_bus_v2.py:427:    sub2 = bus.subscribe(EventType.AGENT_OUTPUT, fast_callback)
+services/session-manager/src/message_bus_v2.py:434:        success = bus.publish(
+services/session-manager/src/message_bus_v2.py:450:    logger.info(f"  Published: {metrics.total_events_published}")
+services/session-manager/src/message_bus_v2.py:454:    logger.info(f"  Slow subscribers: {metrics.slow_subscribers}")
+services/session-manager/src/message_bus_v2.py:456:    # Test unsubscribe
+services/session-manager/src/message_bus_v2.py:458:    bus.unsubscribe(sub1)
+services/dopemux-gpt-researcher/research_api/api/main.py:580:        logger.exception("WebSocket progress stream failed")
+services/dopecon-bridge/event_bus.py:165:class EventBus:
+services/dopecon-bridge/event_bus.py:170:    - Publish events to named streams
+services/dopecon-bridge/event_bus.py:187:        Initialize EventBus with Redis connection
+services/dopecon-bridge/event_bus.py:200:        self._subscribers: Dict[str, bool] = {}  # Track active subscribers
+services/dopecon-bridge/event_bus.py:228:            logger.info("✅ EventBus Redis connection established")
+services/dopecon-bridge/event_bus.py:236:                logger.info("✅ EventBus deduplication enabled (5min window)")
+services/dopecon-bridge/event_bus.py:245:                logger.info("✅ EventBus multi-tier cache enabled")
+services/dopecon-bridge/event_bus.py:253:                logger.info("✅ EventBus rate limiting enabled (100/1000 req/min)")
+services/dopecon-bridge/event_bus.py:257:                logger.info("✅ EventBus Prometheus monitoring enabled")
+services/dopecon-bridge/event_bus.py:260:            logger.error(f"❌ EventBus Redis initialization failed: {e}")
+services/dopecon-bridge/event_bus.py:263:    async def publish(self, stream: str, event: Event, user_id: Optional[str] = None, workspace_id: Optional[str] = None) -> Optional[str]:
+services/dopecon-bridge/event_bus.py:268:            stream: Stream name (e.g., "dopemux:events")
+services/dopecon-bridge/event_bus.py:269:            event: Event to publish
+services/dopecon-bridge/event_bus.py:277:            raise RuntimeError("EventBus not initialized")
+services/dopecon-bridge/event_bus.py:289:                        self.metrics.record_event_published(event.source or "unknown", event.type, 0)
+services/dopecon-bridge/event_bus.py:314:            msg_id = await self.redis_client.xadd(
+services/dopecon-bridge/event_bus.py:315:                stream,
+services/dopecon-bridge/event_bus.py:322:                self.metrics.record_event_published(event.source or "unknown", event.type, latency)
+services/dopecon-bridge/event_bus.py:325:            logger.info(f"📤 Published {event.type} to {stream} (ID: {msg_id.decode()})")
+services/dopecon-bridge/event_bus.py:329:            logger.error(f"❌ Failed to publish event: {e}")
+services/dopecon-bridge/event_bus.py:334:    async def subscribe(
+services/dopecon-bridge/event_bus.py:336:        stream: str,
+services/dopecon-bridge/event_bus.py:344:            stream: Stream name to subscribe to
+services/dopecon-bridge/event_bus.py:352:            raise RuntimeError("EventBus not initialized")
+services/dopecon-bridge/event_bus.py:361:                stream,
+services/dopecon-bridge/event_bus.py:364:                mkstream=True  # Create stream if it doesn't exist
+services/dopecon-bridge/event_bus.py:366:            logger.info(f"✅ Created consumer group: {consumer_group} on {stream}")
+services/dopecon-bridge/event_bus.py:373:        # Mark as active subscriber
+services/dopecon-bridge/event_bus.py:374:        subscriber_key = f"{stream}:{consumer_group}:{consumer_name}"
+services/dopecon-bridge/event_bus.py:375:        self._subscribers[subscriber_key] = True
+services/dopecon-bridge/event_bus.py:377:        logger.info(f"📥 Subscribing to {stream} as {consumer_group}/{consumer_name}")
+services/dopecon-bridge/event_bus.py:380:            # Read events from stream
+services/dopecon-bridge/event_bus.py:381:            while self._subscribers.get(subscriber_key, False):
+services/dopecon-bridge/event_bus.py:383:                    # Read from stream (blocking with 1 second timeout)
+services/dopecon-bridge/event_bus.py:384:                    events = await self.redis_client.xreadgroup(
+services/dopecon-bridge/event_bus.py:387:                        streams={stream: '>'},
+services/dopecon-bridge/event_bus.py:394:                        for stream_name, messages in events:
+services/dopecon-bridge/event_bus.py:405:                                        stream,
+services/dopecon-bridge/event_bus.py:415:                    logger.error(f"❌ Redis error in subscriber: {e}")
+services/dopecon-bridge/event_bus.py:421:            self._subscribers.pop(subscriber_key, None)
+services/dopecon-bridge/event_bus.py:422:            logger.info(f"📭 Unsubscribed: {consumer_group}/{consumer_name}")
+services/dopecon-bridge/event_bus.py:424:    async def unsubscribe(self, stream: str, consumer_group: str, consumer_name: str):
+services/dopecon-bridge/event_bus.py:425:        """Stop a specific subscriber"""
+services/dopecon-bridge/event_bus.py:426:        subscriber_key = f"{stream}:{consumer_group}:{consumer_name}"
+services/dopecon-bridge/event_bus.py:427:        self._subscribers[subscriber_key] = False
+services/dopecon-bridge/event_bus.py:430:        """Close Redis connection and stop all subscribers"""
+services/dopecon-bridge/event_bus.py:431:        # Stop all subscribers
+services/dopecon-bridge/event_bus.py:432:        for key in list(self._subscribers.keys()):
+services/dopecon-bridge/event_bus.py:433:            self._subscribers[key] = False
+services/dopecon-bridge/event_bus.py:438:            logger.info("📪 EventBus closed")
+services/dopecon-bridge/event_bus.py:440:    async def get_stream_info(self, stream: str) -> Dict[str, Any]:
+services/dopecon-bridge/event_bus.py:441:        """Get information about a stream (for debugging/monitoring)"""
+services/dopecon-bridge/event_bus.py:443:            raise RuntimeError("EventBus not initialized")
+services/dopecon-bridge/event_bus.py:446:            info = await self.redis_client.xinfo_stream(stream)
+services/dopecon-bridge/event_bus.py:460:async def publish_tasks_imported(bus: EventBus, task_count: int, sprint_id: str):
+services/dopecon-bridge/event_bus.py:466:    await bus.publish("dopemux:events", event)
+services/dopecon-bridge/event_bus.py:469:async def publish_session_started(bus: EventBus, task_id: str, duration_minutes: int = 25):
+services/dopecon-bridge/event_bus.py:475:    await bus.publish("dopemux:events", event)
+services/dopecon-bridge/event_bus.py:478:async def publish_progress_updated(bus: EventBus, task_id: str, status: str, progress: float):
+services/dopecon-bridge/event_bus.py:484:    await bus.publish("dopemux:events", event)
+services/dopecon-bridge/tests/test_leantime_route_contract.py:134:async def test_mcp_client_includes_leantime_setup_hint_on_upstream_error(monkeypatch):
+services/dopecon-bridge/tests/test_leantime_route_contract.py:150:    manager.session = _FakeSession(status=500, text_body="upstream failure")
+services/dopecon-bridge/tests/test_leantime_route_contract.py:158:    assert "upstream status 500" in exc.value.detail
+services/dopecon-bridge/README.md:1:# DopeconBridge - EventBus Coordination Layer
+services/dopecon-bridge/README.md:13:### EventBus (Redis Streams)
+services/dopecon-bridge/README.md:15:**Implementation**: `event_bus.py`
+services/dopecon-bridge/README.md:17:**Backend**: Redis Streams (xadd/xreadgroup)
+services/dopecon-bridge/README.md:23:- Non-blocking async publishing
+services/dopecon-bridge/README.md:57:  "event_bus": "ready"
+services/dopecon-bridge/README.md:67:  "stream": "dopemux:events",
+services/dopecon-bridge/README.md:74:  "status": "published",
+services/dopecon-bridge/README.md:76:  "stream": "dopemux:events",
+services/dopecon-bridge/README.md:84:GET /events/{stream}
+services/dopecon-bridge/README.md:90:  "stream": "dopemux:events",
+services/dopecon-bridge/README.md:113:### ConPort → EventBus (Decision Logging)
+services/dopecon-bridge/README.md:124:await self.dopecon_bridge.publish_decision_logged(
+services/dopecon-bridge/README.md:132:### Dashboard → EventBus (Event Subscription)
+services/dopecon-bridge/README.md:136:async for msg_id, event in event_bus.subscribe("dopemux:events", "dashboard-group"):
+services/dopecon-bridge/README.md:174:### Run EventBus Tests
+services/dopecon-bridge/README.md:190:# Check stream length
+services/dopecon-bridge/README.md:199:- `event_bus.py` - Redis Streams EventBus implementation (320 lines)
+services/dopecon-bridge/README.md:204:- `test_api.sh` - EventBus REST API tests
+services/dopecon-bridge/README.md:214:│decision │──HTTP POST───▶ │ POST /events    │──xadd────▶  │ dopemux:     │
+services/dopecon-bridge/README.md:219:                           │ Dashboard       │◀──xreadgroup───────┘
+services/dopecon-bridge/README.md:220:                           │ (subscriber)    │
+services/dopecon-bridge/README.md:229:- **Non-blocking**: Events published asynchronously
+services/dopecon-bridge/README.md:234:- **Graceful degradation**: Services work without EventBus
+services/dopecon-bridge/README.md:240:- ✅ EventBus tested with 7+ events
+services/dopecon-bridge/README.md:247:- ⬜ Dashboard subscriber implementation (next step)
+services/dopecon-bridge/README.md:252:1. **Dashboard Integration**: Build event subscriber in React/Ink
+services/dopecon-bridge/README.md:259:### EventBus not connecting
+services/dopecon-bridge/README.md:269:### Events not publishing
+services/dopecon-bridge/README.md:286:**Status**: ✅ DopeconBridge EventBus is production-ready and enables real-time cross-service coordination for Dopemux ADHD-optimized workflows.
+services/dopecon-bridge/tests/test_dope_context_integration.py:10:from event_bus import Event, EventBus
+services/dopecon-bridge/tests/test_dope_context_integration.py:18:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_dope_context_integration.py:19:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_dope_context_integration.py:20:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_dope_context_integration.py:21:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_dope_context_integration.py:25:    def emitter(self, event_bus_mock):
+services/dopecon-bridge/tests/test_dope_context_integration.py:28:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_dope_context_integration.py:34:    async def test_emits_knowledge_gap_event(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_dope_context_integration.py:43:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_dope_context_integration.py:45:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_dope_context_integration.py:54:    async def test_no_gap_event_above_threshold(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_dope_context_integration.py:63:        assert not event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_dope_context_integration.py:66:    async def test_emits_pattern_discovered(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_dope_context_integration.py:75:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_dope_context_integration.py:77:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_dope_context_integration.py:85:    async def test_search_completed_requires_analytics_enabled(self, event_bus_mock):
+services/dopecon-bridge/tests/test_dope_context_integration.py:88:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_dope_context_integration.py:100:        assert not event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_dope_context_integration.py:103:    async def test_search_completed_emits_when_enabled(self, event_bus_mock):
+services/dopecon-bridge/tests/test_dope_context_integration.py:106:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_dope_context_integration.py:118:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_dope_context_integration.py:141:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_dope_context_integration.py:142:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_dope_context_integration.py:143:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_dope_context_integration.py:144:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_dope_context_integration.py:148:    def manager(self, event_bus_mock):
+services/dopecon-bridge/tests/test_dope_context_integration.py:151:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_dope_context_integration.py:158:    async def test_handles_search_result_with_low_confidence(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_dope_context_integration.py:169:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_dope_context_integration.py:171:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_dope_context_integration.py:188:    async def test_detects_search_pattern(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_dope_context_integration.py:199:        calls = event_bus_mock.publish.call_args_list
+src/dopemux/embeddings/storage/hybrid_store.py:402:            # Prefer precomputed embeddings from upstream pipeline stages when available.
+services/shared/dopecon_bridge_client/README.md:10:- Event bus publishing
+services/shared/dopecon_bridge_client/README.md:41:response = client.publish_event(
+services/shared/dopecon_bridge_client/README.md:47:print(f"Event published: {response.message_id}")
+services/shared/dopecon_bridge_client/README.md:65:        response = await client.publish_event(
+services/shared/dopecon_bridge_client/README.md:115:response = client.publish_event(
+services/shared/dopecon_bridge_client/README.md:118:    stream="dopemux:events",  # optional
+services/shared/dopecon_bridge_client/README.md:122:# Get stream info
+services/shared/dopecon_bridge_client/README.md:123:info = client.get_stream_info(stream="dopemux:events")
+services/shared/dopecon_bridge_client/README.md:126:history = client.get_event_history(stream="dopemux:events", count=100)
+services/shared/dopecon_bridge_client/README.md:291:def test_publish_event():
+services/shared/dopecon_bridge_client/README.md:295:            "status": "published",
+services/shared/dopecon_bridge_client/README.md:297:            "stream": "dopemux:events",
+services/shared/dopecon_bridge_client/README.md:305:    response = client.publish_event(
+services/shared/dopecon_bridge_client/README.md:371:    client.publish_event(event_type="test", data={})
+services/dopecon-bridge/test_eventbus.py:3:EventBus Integration Test
+services/dopecon-bridge/test_eventbus.py:11:from event_bus import EventBus, Event, EventType
+services/dopecon-bridge/test_eventbus.py:14:async def test_publish_all_event_types(bus: EventBus):
+services/dopecon-bridge/test_eventbus.py:15:    """Test publishing all event types"""
+services/dopecon-bridge/test_eventbus.py:50:    published_ids = []
+services/dopecon-bridge/test_eventbus.py:53:        msg_id = await bus.publish("dopemux:test", event)
+services/dopecon-bridge/test_eventbus.py:54:        published_ids.append(msg_id)
+services/dopecon-bridge/test_eventbus.py:57:    print(f"\n📊 Published {len(published_ids)} events to dopemux:test")
+services/dopecon-bridge/test_eventbus.py:58:    return published_ids
+services/dopecon-bridge/test_eventbus.py:61:async def test_stream_info(bus: EventBus):
+services/dopecon-bridge/test_eventbus.py:62:    """Test stream information retrieval"""
+services/dopecon-bridge/test_eventbus.py:66:    info = await bus.get_stream_info("dopemux:test")
+services/dopecon-bridge/test_eventbus.py:80:async def test_consumer_subscription(bus: EventBus):
+services/dopecon-bridge/test_eventbus.py:96:        async for msg_id, event in bus.subscribe(
+services/dopecon-bridge/test_eventbus.py:97:            stream="dopemux:test",
+services/dopecon-bridge/test_eventbus.py:110:                # Unsubscribe to exit cleanly
+services/dopecon-bridge/test_eventbus.py:111:                await bus.unsubscribe("dopemux:test", consumer_group, consumer_name)
+services/dopecon-bridge/test_eventbus.py:123:async def test_parallel_consumers(bus: EventBus):
+services/dopecon-bridge/test_eventbus.py:134:        await bus.publish("dopemux:parallel-test", event)
+services/dopecon-bridge/test_eventbus.py:145:        async for msg_id, event in bus.subscribe(
+services/dopecon-bridge/test_eventbus.py:146:            stream="dopemux:parallel-test",
+services/dopecon-bridge/test_eventbus.py:154:                await bus.unsubscribe("dopemux:parallel-test", consumer_group, consumer_name)
+services/dopecon-bridge/test_eventbus.py:177:async def cleanup_test_streams(bus: EventBus):
+services/dopecon-bridge/test_eventbus.py:178:    """Clean up test streams (optional)"""
+services/dopecon-bridge/test_eventbus.py:179:    print("\n🧹 Cleaning up test streams")
+services/dopecon-bridge/test_eventbus.py:182:    # Note: Redis doesn't provide a direct "delete stream" command via Python client
+services/dopecon-bridge/test_eventbus.py:185:    print("  ℹ️  To manually cleanup test streams:")
+services/dopecon-bridge/test_eventbus.py:191:    """Run all EventBus tests"""
+services/dopecon-bridge/test_eventbus.py:193:    print("🧪 EventBus Integration Test Suite")
+services/dopecon-bridge/test_eventbus.py:197:    # Initialize EventBus
+services/dopecon-bridge/test_eventbus.py:199:    bus = EventBus(redis_url)
+services/dopecon-bridge/test_eventbus.py:202:        print("\n🔌 Initializing EventBus connection...")
+services/dopecon-bridge/test_eventbus.py:210:        published_ids = await test_publish_all_event_types(bus)
+services/dopecon-bridge/test_eventbus.py:211:        test_results['publish'] = len(published_ids) == 7
+services/dopecon-bridge/test_eventbus.py:214:        info = await test_stream_info(bus)
+services/dopecon-bridge/test_eventbus.py:215:        test_results['stream_info'] = info.get('length', 0) >= 7
+services/dopecon-bridge/test_eventbus.py:226:        await cleanup_test_streams(bus)
+services/dopecon-bridge/test_eventbus.py:241:            print("🎉 All EventBus tests PASSED!")
+services/dopecon-bridge/test_eventbus.py:243:            print("\nDopeconBridge EventBus is ready for production:")
+services/dopecon-bridge/test_eventbus.py:251:            print("⚠️  Some EventBus tests FAILED")
+services/dopecon-bridge/test_eventbus.py:263:        print(f"\n🔌 EventBus connection closed")
+services/dopecon-bridge/tests/test_serena_integration.py:10:from event_bus import Event, EventBus
+services/dopecon-bridge/tests/test_serena_integration.py:18:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_serena_integration.py:19:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_serena_integration.py:20:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_serena_integration.py:21:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_serena_integration.py:25:    def emitter(self, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:28:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_serena_integration.py:34:    async def test_emits_high_complexity_event(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:42:        assert event_bus_mock.publish.called, "Should call event_bus.publish"
+services/dopecon-bridge/tests/test_serena_integration.py:45:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_serena_integration.py:46:        stream = call_args[0][0]
+services/dopecon-bridge/tests/test_serena_integration.py:49:        assert stream == "dopemux:events"
+services/dopecon-bridge/tests/test_serena_integration.py:56:    async def test_no_event_below_threshold(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:64:        assert not event_bus_mock.publish.called, "Should not publish event"
+services/dopecon-bridge/tests/test_serena_integration.py:67:    async def test_emits_refactoring_recommendation(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:78:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_serena_integration.py:80:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_serena_integration.py:89:    async def test_navigation_event_emission(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:99:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_serena_integration.py:101:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_serena_integration.py:109:    async def test_events_can_be_disabled(self, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:112:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_serena_integration.py:123:        assert not event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_serena_integration.py:146:    async def test_handles_publish_errors_gracefully(self, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:147:        """Test that publish errors are handled gracefully"""
+services/dopecon-bridge/tests/test_serena_integration.py:148:        # Make publish fail
+services/dopecon-bridge/tests/test_serena_integration.py:149:        event_bus_mock.publish = AsyncMock(side_effect=Exception("Redis down"))
+services/dopecon-bridge/tests/test_serena_integration.py:152:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_serena_integration.py:166:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_serena_integration.py:167:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_serena_integration.py:168:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_serena_integration.py:169:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_serena_integration.py:173:    def manager(self, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:176:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_serena_integration.py:182:    async def test_handles_complexity_result(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:191:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_serena_integration.py:194:    async def test_emits_refactoring_for_very_high_complexity(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:202:        assert event_bus_mock.publish.call_count == 2
+services/dopecon-bridge/tests/test_serena_integration.py:205:        calls = event_bus_mock.publish.call_args_list
+services/dopecon-bridge/tests/test_serena_integration.py:212:    async def test_critical_priority_for_extreme_complexity(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_serena_integration.py:220:        calls = event_bus_mock.publish.call_args_list
+services/working-memory-assistant/bridge_adapter.py:81:            await self.client.publish_event(
+services/working-memory-assistant/bridge_adapter.py:132:            await self.client.publish_event(
+services/session-manager/src/main.py:194:        self.console.print(f"  Events: {metrics.total_events_published} published")
+services/adhd_engine/api/routes.py:57:    logger.debug("Event emission not available - hooks won't trigger EventBus")
+services/adhd_engine/api/routes.py:65:    logger.debug("Event emission not available - hooks won't trigger EventBus")
+services/adhd_engine/api/routes.py:986:@router.websocket("/ws/stream")
+services/adhd_engine/api/routes.py:987:async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
+services/adhd_engine/api/routes.py:989:    Real-time event streaming to dashboard via WebSocket.
+services/adhd_engine/api/routes.py:1004:        wscat -c "ws://localhost:8001/api/v1/ws/stream?user_id=test"
+services/adhd_engine/api/routes.py:1024:        logger.info(f"📡 WebSocket stream started for user: {user_id}")
+services/adhd_engine/api/routes.py:1099:    """Handle client commands (refresh, subscribe, etc.)"""
+services/adhd_engine/api/routes.py:1121:        elif cmd_type == "subscribe":
+services/adhd_engine/api/routes.py:1126:                "type": "subscribed",
+services/adhd_engine/api/routes.py:1524:        # Emit event to EventBus for implicit triggering (Phase 7)
+services/adhd_engine/api/routes.py:1605:        # Emit event to EventBus for implicit triggering (Phase 7)
+services/adhd_engine/api/routes.py:1751:        # Emit event to EventBus for implicit triggering (Phase 7)
+services/adhd_engine/api/routes.py:1815:    Emits GIT_COMMIT event to EventBus for progress tracking.
+services/adhd_engine/api/routes.py:1835:        # Emit to EventBus (Phase 7)
+services/shared/dopecon_bridge_client/client.py:51:    stream: str
+services/shared/dopecon_bridge_client/client.py:60:            stream=str(payload.get("stream", "")),
+services/shared/dopecon_bridge_client/client.py:68:    stream: str
+services/shared/dopecon_bridge_client/client.py:75:            stream=str(payload.get("stream", "")),
+services/shared/dopecon_bridge_client/client.py:83:    stream: str
+services/shared/dopecon_bridge_client/client.py:91:            stream=str(payload.get("stream", "")),
+services/shared/dopecon_bridge_client/client.py:207:    def publish_event(
+services/shared/dopecon_bridge_client/client.py:212:        stream: str = "dopemux:events",
+services/shared/dopecon_bridge_client/client.py:216:            "stream": stream,
+services/shared/dopecon_bridge_client/client.py:224:    def get_stream_info(self, stream: str = "dopemux:events") -> StreamInfo:
+services/shared/dopecon_bridge_client/client.py:225:        resp = self._client.get(f"/events/{stream}")
+services/shared/dopecon_bridge_client/client.py:228:    def get_event_history(self, *, stream: str = "dopemux:events", count: int = 100) -> EventHistory:
+services/shared/dopecon_bridge_client/client.py:229:        resp = self._client.get("/events/history", params={"stream": stream, "count": count})
+services/shared/dopecon_bridge_client/client.py:472:    async def publish_event(
+services/shared/dopecon_bridge_client/client.py:477:        stream: str = "dopemux:events",
+services/shared/dopecon_bridge_client/client.py:481:            "stream": stream,
+services/shared/dopecon_bridge_client/client.py:489:    async def get_stream_info(self, stream: str = "dopemux:events") -> StreamInfo:
+services/shared/dopecon_bridge_client/client.py:490:        resp = await self._client.get(f"/events/{stream}")
+services/shared/dopecon_bridge_client/client.py:493:    async def get_event_history(self, *, stream: str = "dopemux:events", count: int = 100) -> EventHistory:
+services/shared/dopecon_bridge_client/client.py:494:        resp = await self._client.get("/events/history", params={"stream": stream, "count": count})
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:10:from event_bus import Event, EventBus
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:21:    def event_bus_mock(self):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:22:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:23:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:24:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:28:    def emitter(self, event_bus_mock):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:31:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:36:    async def test_emits_task_progress_updated(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:49:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:51:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:61:    async def test_emits_task_completed(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:71:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:73:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:81:    async def test_emits_task_blocked(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:90:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:92:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:131:    async def test_events_can_be_disabled(self, event_bus_mock):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:134:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:144:        assert not event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:168:    def event_bus_mock(self):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:169:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:170:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:171:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:175:    def manager(self, event_bus_mock):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:178:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:183:    async def test_handles_task_status_change(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:194:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:196:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:202:    async def test_emits_completion_event_when_done(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:212:        assert event_bus_mock.publish.call_count == 2
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:216:            for call in event_bus_mock.publish.call_args_list
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:223:    async def test_emits_blocked_event_when_blocked(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:233:        assert event_bus_mock.publish.call_count == 2
+services/dopecon-bridge/tests/test_task_orchestrator_integration.py:237:            for call in event_bus_mock.publish.call_args_list
+services/session-manager/src/router.py:116:                # Store workspace context for downstream use
+services/session-manager/src/router.py:127:        self.bus.publish(
+services/session-manager/src/router.py:152:        self.bus.publish(
+services/session-manager/src/router.py:324:                self.context.publish_artifact(
+services/dopemux-gpt-researcher/research_api/engines/search/pal_apilookup_adapter.py:406:                published_date=datetime.now(),  # Official docs are always current
+services/shared/dopecon_bridge_client/brainz_adapter.py:98:                await self.client.publish_event(
+services/shared/dopecon_bridge_client/brainz_adapter.py:138:            await self.client.publish_event(
+services/shared/dopecon_bridge_client/brainz_adapter.py:177:                await self.client.publish_event(
+services/shared/dopecon_bridge_client/brainz_adapter.py:229:            await self.client.publish_event(
+services/shared/dopecon_bridge_client/brainz_adapter.py:287:    async def publish_intelligence_event(
+services/shared/dopecon_bridge_client/brainz_adapter.py:294:            await self.client.publish_event(
+services/shared/dopecon_bridge_client/brainz_adapter.py:301:            logger.error(f"Failed to publish intelligence event: {e}")
+services/dopecon-bridge/tests/test_monitoring.py:28:    def test_records_event_published(self, metrics):
+services/dopecon-bridge/tests/test_monitoring.py:29:        """Test event publishing metrics"""
+services/dopecon-bridge/tests/test_monitoring.py:30:        metrics.record_event_published("serena", "code.complexity.high", 0.003)
+services/dopecon-bridge/tests/test_monitoring.py:35:        assert "dopecon_bridge_event_publish_latency_seconds" in output
+services/dopecon-bridge/tests/test_monitoring.py:36:        assert "dopecon_bridge_events_published_total" in output
+services/dopecon-bridge/tests/test_monitoring.py:132:        metrics.update_event_stream_length(1234)
+services/dopecon-bridge/tests/test_monitoring.py:137:        assert "dopecon_bridge_event_stream_length" in output
+services/dopecon-bridge/tests/test_monitoring.py:141:        metrics.record_event_published("test-agent", "test.event", 0.001)
+services/dopecon-bridge/tests/test_monitoring.py:178:        metrics.record_event_published("agent", "event", 0.001)
+services/dopecon-bridge/dopecon_bridge/routes.py:43:    """Request to publish an event."""
+services/dopecon-bridge/dopecon_bridge/routes.py:44:    stream: str = Field(default="dopemux:events", description="Redis Stream name")
+services/dopecon-bridge/dopecon_bridge/routes.py:64:events_router = APIRouter(prefix="/events", tags=["EventBus"])
+services/dopecon-bridge/dopecon_bridge/routes.py:150:async def publish_event(request: PublishEventRequest):
+services/dopecon-bridge/dopecon_bridge/routes.py:153:        from .event_bus import EventBus, Event
+services/dopecon-bridge/dopecon_bridge/routes.py:155:        event_bus = EventBus()
+services/dopecon-bridge/dopecon_bridge/routes.py:156:        await event_bus.initialize()
+services/dopecon-bridge/dopecon_bridge/routes.py:164:        msg_id = await event_bus.publish(request.stream, event)
+services/dopecon-bridge/dopecon_bridge/routes.py:169:            "stream": request.stream,
+services/dopecon-bridge/dopecon_bridge/routes.py:173:        logger.error(f"Event publish failed: {e}")
+services/dopecon-bridge/dopecon_bridge/routes.py:177:@events_router.get("/stream")
+services/dopecon-bridge/dopecon_bridge/routes.py:178:async def subscribe_to_events(
+services/dopecon-bridge/dopecon_bridge/routes.py:179:    stream: str = "dopemux:events",
+services/dopecon-bridge/dopecon_bridge/routes.py:182:    """Subscribe to event stream via Server-Sent Events (SSE)."""
+services/dopecon-bridge/dopecon_bridge/routes.py:183:    from .event_bus import EventBus
+services/dopecon-bridge/dopecon_bridge/routes.py:185:    event_bus = EventBus()
+services/dopecon-bridge/dopecon_bridge/routes.py:186:    await event_bus.initialize()
+services/dopecon-bridge/dopecon_bridge/routes.py:190:        async for msg_id, event in event_bus.subscribe(stream, consumer_group, consumer):
+services/dopecon-bridge/dopecon_bridge/routes.py:195:        media_type="text/event-stream"
+services/dopecon-bridge/dopecon_bridge/routes.py:201:    stream: str = "dopemux:events",
+services/dopecon-bridge/dopecon_bridge/routes.py:208:        entries = await cache_client.xrevrange(stream, count=count)
+services/dopecon-bridge/dopecon_bridge/routes.py:221:            "stream": stream,
+services/dopecon-bridge/dopecon_bridge/routes.py:232:async def publish_tasks_imported(task_count: int, sprint_id: str):
+services/dopecon-bridge/dopecon_bridge/routes.py:238:    return await publish_event(request)
+services/dopecon-bridge/dopecon_bridge/routes.py:242:async def publish_session_started(task_id: str, duration_minutes: int = 25):
+services/dopecon-bridge/dopecon_bridge/routes.py:248:    return await publish_event(request)
+services/dopecon-bridge/dopecon_bridge/routes.py:252:async def publish_progress_updated(task_id: str, status: str, progress: float):
+services/dopecon-bridge/dopecon_bridge/routes.py:258:    return await publish_event(request)
+services/dopemux-gpt-researcher/research_api/engines/search/base_adapter.py:71:    published_date: Optional[datetime] = None
+services/dopemux-gpt-researcher/research_api/engines/search/base_adapter.py:121:            "published_date": self.published_date.isoformat() if self.published_date else None,
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:12:from event_bus import Event, EventBus
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:23:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:24:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:25:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:26:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:30:    def emitter(self, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:33:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:38:    async def test_emits_workspace_switched_event(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:47:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:49:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:59:    async def test_emits_context_lost_event(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:68:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:70:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:79:    async def test_tracks_recent_switches(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:88:    async def test_limits_recent_switches_to_10(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:118:    async def test_events_can_be_disabled(self, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:121:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:129:        assert not event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:149:    async def test_handles_publish_errors_gracefully(self, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:151:        event_bus_mock.publish = AsyncMock(side_effect=Exception("EventBus down"))
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:154:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:168:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:169:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:170:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:171:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:175:    def manager(self, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:178:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:184:    async def test_handles_workspace_switch(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:193:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:195:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:201:    async def test_handles_context_loss(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:209:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:211:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_desktop_commander_integration.py:218:    async def test_warns_on_excessive_switching(self, manager, event_bus_mock, caplog):
+services/session-manager/src/response_parser.py:63:    Multi-provider response parser with streaming support.
+services/adhd_engine/bridge_integration.py:145:        # Emit event for downstream consumers (best-effort)
+services/adhd_engine/bridge_integration.py:148:                self._client.publish_event(
+services/adhd_engine/bridge_integration.py:151:                    stream="dopemux:events",
+services/shared/adhd_service_base.py:4:Provides common functionality: Redis, ConPort, EventBus, Health checks.
+services/shared/adhd_service_base.py:79:        stream: str = "dopemux:events"
+services/shared/adhd_service_base.py:82:        Emit event to DopeconBridge EventBus via Redis stream.
+services/shared/adhd_service_base.py:87:            stream: Redis stream name
+services/shared/adhd_service_base.py:90:            True if event was published successfully
+services/shared/adhd_service_base.py:100:                await self.redis.xadd(stream, event_payload)
+services/shared/adhd_service_base.py:101:                self.logger.debug(f"Event published: {event_type}")
+services/shared/adhd_service_base.py:104:                self.logger.warning("Redis not initialized, event not published")
+services/dopecon-bridge/tests/test_patterns.py:279:    async def event_bus(self):
+services/dopecon-bridge/tests/test_patterns.py:280:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_patterns.py:286:    def pattern_detector(self, event_bus):
+services/dopecon-bridge/tests/test_patterns.py:289:            event_bus=event_bus,
+services/session-manager/src/streaming_display.py:6:- Line-by-line streaming with Rich Live
+services/session-manager/src/streaming_display.py:38:        Initialize streaming display.
+services/session-manager/src/streaming_display.py:46:    def stream_response(
+services/session-manager/src/streaming_display.py:63:            >>> response = display.stream_response(line_generator)
+services/session-manager/src/streaming_display.py:187:def stream_with_progress(
+services/session-manager/src/streaming_display.py:192:    Convenience function for streaming display.
+services/session-manager/src/streaming_display.py:202:        >>> response = stream_with_progress('claude', line_generator)
+services/session-manager/src/streaming_display.py:205:    return display.stream_response(line_generator)
+services/session-manager/src/streaming_display.py:209:    """Test streaming display."""
+services/session-manager/src/streaming_display.py:216:    logger.info("\n1. Testing line-by-line streaming...")
+services/session-manager/src/streaming_display.py:235:    response = display.stream_response(sample_line_generator())
+services/adhd_engine/hooks/git-post-commit:3:# Emits GIT_COMMIT event to EventBus via ADHD Engine API
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:5:- 6 agents → EventBus → Deduplication → Aggregation → Pattern Detection → ConPort
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:25:from event_bus import Event, EventBus
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:62:    async def event_bus(self, redis_client):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:63:        """Create EventBus with real Redis"""
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:64:        bus = EventBus(
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:78:    async def test_e2e_serena_complexity_event_flow(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:81:            event_bus=event_bus,
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:91:        # Verify event published to stream
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:92:        if event_bus.redis_client:
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:93:            # Read from stream
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:94:            events = await event_bus.redis_client.xread(
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:100:            assert len(events) > 0, "Event should be in stream"
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:104:            stream_name, messages = events[0]
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:111:    async def test_e2e_deduplication_prevents_duplicates(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:114:            event_bus=event_bus,
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:126:        assert result_1 is True, "First event should publish"
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:129:        # Verify only 1 event in stream (deduplication worked)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:130:        if event_bus.redis_client:
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:131:            stream_length = await event_bus.redis_client.xlen("dopemux:events")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:132:            # First event published, second was deduplicated before reaching stream
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:133:            assert stream_length >= 1, "At least 1 event should be in stream"
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:136:            if event_bus.deduplicator:
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:137:                metrics = event_bus.deduplicator.get_metrics()
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:141:    async def test_e2e_aggregation_merges_cross_agent_events(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:144:        serena = SerenaIntegrationManager(event_bus, "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:145:        dope = DopeContextIntegrationManager(event_bus, "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:154:        # For now, verify events are in stream
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:156:        if event_bus.redis_client:
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:157:            stream_length = await event_bus.redis_client.xlen("dopemux:events")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:158:            assert stream_length >= 1
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:161:    async def test_e2e_pattern_detection_on_real_events(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:164:            event_bus=event_bus,
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:169:        serena = SerenaIntegrationManager(event_bus, "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:192:    async def test_e2e_all_agents_emit_events(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:197:        serena = SerenaIntegrationManager(event_bus, workspace_id)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:198:        dope_context = DopeContextIntegrationManager(event_bus, workspace_id)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:199:        zen = ZenIntegrationManager(event_bus, workspace_id)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:200:        adhd = ADHDEngineIntegrationManager(event_bus, workspace_id, buffer_interval_seconds=1)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:201:        desktop = DesktopCommanderIntegrationManager(event_bus, workspace_id)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:202:        tasks = TaskOrchestratorIntegrationManager(event_bus, workspace_id)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:216:        # Verify events in stream (some may be deduplicated)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:217:        if event_bus.redis_client:
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:218:            stream_length = await event_bus.redis_client.xlen("dopemux:events")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:219:            assert stream_length >= 1, f"Should have events in stream, got {stream_length}"
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:258:    async def test_e2e_performance_event_publishing_latency(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:259:        """Test event publishing latency (<10ms target)"""
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:260:        serena = SerenaIntegrationManager(event_bus, "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:288:    async def test_e2e_adhd_buffering_reduces_event_volume(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:291:            event_bus, "/test/workspace", buffer_interval_seconds=1
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:309:        # Verify events in stream
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:310:        if event_bus.redis_client:
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:311:            stream_length = await event_bus.redis_client.xlen("dopemux:events")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:313:            assert stream_length >= 1, f"Should have events in stream, got {stream_length}"
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:316:    async def test_e2e_knowledge_gap_pattern_detection(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:318:        dope = DopeContextIntegrationManager(event_bus, "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:319:        pattern_detector = PatternDetector(event_bus)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:328:        # Wait for events to be published
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:344:    async def test_e2e_context_switch_frequency_detection(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:347:            event_bus, "/test/workspace", excessive_switch_threshold=3
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:349:        pattern_detector = PatternDetector(event_bus)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:374:    async def test_e2e_complete_pipeline_metrics(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:379:        serena = SerenaIntegrationManager(event_bus, workspace_id)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:381:        pattern_detector = PatternDetector(event_bus)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:395:        if event_bus.deduplicator:
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:396:            dedup_metrics = event_bus.deduplicator.get_metrics()
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:411:    async def event_bus(self):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:412:        """Create EventBus for performance testing"""
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:413:        bus = EventBus(
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:420:        # Clear stream
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:432:    async def test_throughput_100_events_per_second(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:434:        serena = SerenaIntegrationManager(event_bus, "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:481:    async def test_pattern_detection_latency(self, event_bus):
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:483:        pattern_detector = PatternDetector(event_bus)
+services/dopecon-bridge/tests/integration/test_phase2_e2e.py:486:        serena = SerenaIntegrationManager(event_bus, "/test/workspace")
+services/dopemux-gpt-researcher/research_api/engines/search/tavily_adapter.py:316:            published_date = self._parse_published_date(item.get('published_date'))
+services/dopemux-gpt-researcher/research_api/engines/search/tavily_adapter.py:327:                published_date=published_date,
+services/dopemux-gpt-researcher/research_api/engines/search/tavily_adapter.py:455:        # Check if published date is recent
+services/dopemux-gpt-researcher/research_api/engines/search/tavily_adapter.py:456:        published_date = self._parse_published_date(item.get('published_date'))
+services/dopemux-gpt-researcher/research_api/engines/search/tavily_adapter.py:457:        if published_date:
+services/dopemux-gpt-researcher/research_api/engines/search/tavily_adapter.py:458:            days_old = (datetime.now() - published_date).days
+services/dopemux-gpt-researcher/research_api/engines/search/tavily_adapter.py:481:    def _parse_published_date(self, date_str: Optional[str]) -> Optional[datetime]:
+services/dopemux-gpt-researcher/research_api/engines/search/tavily_adapter.py:482:        """Parse published date from various formats"""
+services/dopecon-bridge/dopecon_bridge/clients.py:27:    upstream_text: str = "",
+services/dopecon-bridge/dopecon_bridge/clients.py:30:    """Generate actionable error details for MCP upstream failures."""
+services/dopecon-bridge/dopecon_bridge/clients.py:35:        base = f"MCP call failed for {context} with upstream status {status}"
+services/dopecon-bridge/dopecon_bridge/clients.py:36:        if upstream_text:
+services/dopecon-bridge/dopecon_bridge/clients.py:37:            base += f" ({upstream_text[:300]})"
+services/dopecon-bridge/dopecon_bridge/clients.py:40:        lowered = upstream_text.lower()
+services/dopecon-bridge/dopecon_bridge/clients.py:94:                        upstream_text=raw_text,
+services/adhd_engine/event_listener.py:4:Subscribes to EventBus and triggers ADHD detectors implicitly based on events.
+services/adhd_engine/event_listener.py:42:    - Subscribes to EventBus for all ADHD-relevant events
+services/adhd_engine/event_listener.py:50:        event_bus,
+services/adhd_engine/event_listener.py:63:            event_bus: EventBus instance for subscribing to events
+services/adhd_engine/event_listener.py:72:        self.event_bus = event_bus
+services/adhd_engine/event_listener.py:142:            async for msg_id, event in self.event_bus.subscribe(
+services/adhd_engine/event_listener.py:143:                stream="dopemux:events",
+services/adhd_engine/event_listener.py:478:        # Publish to EventBus for downstream consumers
+services/adhd_engine/event_listener.py:479:        from event_bus import Event
+services/adhd_engine/event_listener.py:480:        await self.event_bus.publish(
+services/adhd_engine/event_listener.py:504:    event_bus,
+services/adhd_engine/event_listener.py:511:        event_bus: EventBus instance
+services/adhd_engine/event_listener.py:518:        event_bus=event_bus,
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:12:  4 Agents → EventBus (Phase 3) → Redis → PatternDetector (Phase 3) → ConPort
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:31:from event_bus import Event, EventBus
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:67:    async def event_bus_with_phase3(self, redis_client):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:68:        """Create EventBus with ALL Phase 3 features enabled"""
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:69:        bus = EventBus(
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:91:    async def pattern_detector_with_budgets(self, event_bus_with_phase3):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:94:            event_bus=event_bus_with_phase3,
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:102:    async def test_e2e_multi_tier_caching(self, event_bus_with_phase3):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:104:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:118:        # First publish (cache miss)
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:119:        result1 = await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:120:        assert result1 is not None, "First publish should succeed"
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:125:        # Subsequent publishes (should hit cache or dedup)
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:130:            result = await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:142:    async def test_e2e_rate_limiting_enforced(self, event_bus_with_phase3):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:144:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:150:        published = 0
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:153:        for i in range(150):  # Try to publish 150 (should block after 100)
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:164:            result = await bus.publish("dopemux:events", event, user_id, workspace_id)
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:167:                published += 1
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:171:        print(f"\n📊 Rate limiting: {published} published, {blocked} blocked")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:176:        assert published <= 110, f"Should publish ~100 requests, published {published}"
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:223:    async def test_e2e_monitoring_metrics_collected(self, event_bus_with_phase3):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:225:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:245:            await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:260:    async def test_e2e_complete_pipeline_latency(self, event_bus_with_phase3, pattern_detector_with_budgets):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:262:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:284:            # 2. EventBus publishes (with Phase 3 features)
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:285:            msg_id = await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:308:    async def test_e2e_all_4_agents_to_conport(self, event_bus_with_phase3):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:310:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:346:    async def test_e2e_cache_reduces_conport_queries(self, event_bus_with_phase3, pattern_detector_with_budgets):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:348:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:383:    async def test_e2e_performance_under_load(self, event_bus_with_phase3, pattern_detector_with_budgets):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:385:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:393:        published = 0
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:408:                result = await bus.publish(
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:415:                    published += 1
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:422:        throughput = published / total_time
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:425:        print(f"   Published: {published}")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:433:        assert published >= 50, f"Should publish at least 50 events (rate limiting OK), published {published}"
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:436:    async def test_e2e_monitoring_all_metrics(self, event_bus_with_phase3):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:438:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:455:                await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:462:            "event_publish_latency_seconds",
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:463:            "events_published_total",
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:482:        bus = EventBus(
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:502:        result = await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:513:        event_bus_with_phase3,
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:520:          Agent → EventBus (rate limit, dedup, cache, metrics)
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:521:                → Redis stream
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:525:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:546:        # 2. EventBus processes (with Phase 3)
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:547:        msg_id = await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:548:        assert msg_id is not None, "Event should publish successfully"
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:550:        # 3. Read from stream
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:552:            events_from_stream = await bus.redis_client.xread(
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:558:            assert len(events_from_stream) > 0, "Event should be in stream"
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:567:        print(f"   Event published: ✅")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:568:        print(f"   In Redis stream: ✅")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:579:    async def test_e2e_error_handling_and_retry(self, event_bus_with_phase3):
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:581:        bus = event_bus_with_phase3
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:591:            result = await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
+services/dopecon-bridge/tests/integration/test_phase3_e2e.py:608:    - ✅ EventBus with Phase 3 features
+services/monitoring/alerting_rules.yml:28:          description: "No break suggestions in 30min despite active task work. Check EventBus consumer."
+services/monitoring/alerting_rules.yml:66:      # Alert if Redis stream lag is high
+services/monitoring/alerting_rules.yml:67:      - alert: EventBusConsumerLag
+services/monitoring/alerting_rules.yml:74:          summary: "EventBus consumer {{ $labels.consumer_group }} is lagging"
+services/dopecon-bridge/dopecon_bridge/event_bus.py:20:    """Structured event payload for stream publishing/subscription."""
+services/dopecon-bridge/dopecon_bridge/event_bus.py:69:class EventBus:
+services/dopecon-bridge/dopecon_bridge/event_bus.py:81:    async def publish(self, stream: str, event: Event) -> str:
+services/dopecon-bridge/dopecon_bridge/event_bus.py:84:        msg_id = await self.redis_client.xadd(stream, event.to_redis_fields())
+services/dopecon-bridge/dopecon_bridge/event_bus.py:89:    async def subscribe(
+services/dopecon-bridge/dopecon_bridge/event_bus.py:91:        stream: str,
+services/dopecon-bridge/dopecon_bridge/event_bus.py:101:                name=stream,
+services/dopecon-bridge/dopecon_bridge/event_bus.py:104:                mkstream=True,
+services/dopecon-bridge/dopecon_bridge/event_bus.py:111:            events = await self.redis_client.xreadgroup(
+services/dopecon-bridge/dopecon_bridge/event_bus.py:114:                streams={stream: ">"},
+services/dopecon-bridge/dopecon_bridge/event_bus.py:121:            for _stream_name, messages in events:
+services/dopecon-bridge/dopecon_bridge/event_bus.py:126:                    await self.redis_client.xack(stream, consumer_group, msg_id)
+services/session-manager/src/event_bus.py:4:Bridges the Genetic Agent's EventBus with the Orchestrator's MessageBus.
+services/session-manager/src/event_bus.py:19:from services.genetic_agent.shared.eventbus import SimpleEventBus as GeneticEventBus, Event as GeneticEvent
+services/session-manager/src/event_bus.py:24:class EventBusError(Exception):
+services/session-manager/src/event_bus.py:29:class NetworkError(EventBusError):
+services/session-manager/src/event_bus.py:34:class SerializationError(EventBusError):
+services/session-manager/src/event_bus.py:39:class MCPServiceError(EventBusError):
+services/session-manager/src/event_bus.py:44:class EventBusBridge:
+services/session-manager/src/event_bus.py:47:    def __init__(self, orchestrator_bus: MessageBus, genetic_bus: Optional[GeneticEventBus] = None):
+services/session-manager/src/event_bus.py:107:        from services.genetic_agent.shared.eventbus import SimpleEventBus
+services/session-manager/src/event_bus.py:109:        self.genetic_bus = SimpleEventBus(redis_url="redis://localhost:6379", db=0)
+services/session-manager/src/event_bus.py:138:                await self.genetic_bus.subscribe(
+services/session-manager/src/event_bus.py:144:                logger.error(f"Failed to subscribe to genetic event {event_type}: {e}")
+services/session-manager/src/event_bus.py:171:            await self.orchestrator_bus.publish(orchestrator_event)
+services/session-manager/src/event_bus.py:197:            await self.orchestrator_bus.publish(orchestrator_event)
+services/session-manager/src/event_bus.py:222:            await self.orchestrator_bus.publish(orchestrator_event)
+services/session-manager/src/event_bus.py:246:            await self.orchestrator_bus.publish(orchestrator_event)
+services/session-manager/src/event_bus.py:269:            await self.orchestrator_bus.publish(orchestrator_event)
+services/session-manager/src/event_bus.py:294:            await self.genetic_bus.publish(genetic_event)
+services/session-manager/src/event_bus.py:302:_bridge_instance: Optional[EventBusBridge] = None
+services/session-manager/src/event_bus.py:305:def get_event_bridge(orchestrator_bus: Optional[MessageBus] = None) -> EventBusBridge:
+services/session-manager/src/event_bus.py:311:        _bridge_instance = EventBusBridge(orchestrator_bus)
+services/adhd_engine/core/engine.py:179:        # WebSocket streaming (Dashboard Day 7)
+services/adhd_engine/core/engine.py:314:        # We need an EventBus - usually this would be injected or imported
+services/adhd_engine/core/engine.py:316:        # But wait, event_listener expects 'event_bus'.
+services/adhd_engine/core/engine.py:322:            self.event_bus = ADHDEventEmitter(settings.redis_url)
+services/adhd_engine/core/engine.py:324:            self.event_bus = None
+services/adhd_engine/core/engine.py:327:            event_bus=self.event_bus, # Pass the emitter as bus? Revisit if mismatched
+services/adhd_engine/core/engine.py:1636:                    await self.redis_client.publish(channel, json.dumps(message))
+services/adhd_engine/core/engine.py:1639:                    logger.warning(f"Failed to publish to Redis Pub/Sub: {e}")
+services/dopemux-gpt-researcher/research_api/engines/search/perplexity_adapter.py:88:            "stream": False,
+services/monitoring/health_checks.py:215:            # Check stream status
+services/monitoring/health_checks.py:217:                stream_len = await client.xlen("dopemux:events")
+services/monitoring/health_checks.py:218:                details = {'stream_length': stream_len}
+services/dope-context/bridge_adapter.py:77:                await self.client.publish_event(
+services/dope-context/bridge_adapter.py:133:            await self.client.publish_event(
+services/dope-context/bridge_adapter.py:185:                await self.client.publish_event(
+services/dope-context/bridge_adapter.py:215:                await self.client.publish_event(
+services/dope-context/bridge_adapter.py:240:            await self.client.publish_event(
+services/dopecon-bridge/tests/test_deduplication.py:16:from event_bus import Event, EventBus
+services/dopecon-bridge/tests/test_deduplication.py:227:class TestEventBusDeduplication:
+services/dopecon-bridge/tests/test_deduplication.py:228:    """Test EventBus integration with deduplication"""
+services/dopecon-bridge/tests/test_deduplication.py:231:    async def event_bus(self):
+services/dopecon-bridge/tests/test_deduplication.py:232:        """Create EventBus instance for testing"""
+services/dopecon-bridge/tests/test_deduplication.py:233:        bus = EventBus(
+services/dopecon-bridge/tests/test_deduplication.py:240:        # Clear test stream
+services/dopecon-bridge/tests/test_deduplication.py:243:                await bus.redis_client.delete("test:stream")
+services/dopecon-bridge/tests/test_deduplication.py:252:                await bus.redis_client.delete("test:stream")
+services/dopecon-bridge/tests/test_deduplication.py:258:    async def test_duplicate_events_not_published(self, event_bus):
+services/dopecon-bridge/tests/test_deduplication.py:259:        """Test that duplicate events are not published to stream"""
+services/dopecon-bridge/tests/test_deduplication.py:267:        msg_id_1 = await event_bus.publish("test:stream", event)
+services/dopecon-bridge/tests/test_deduplication.py:268:        assert msg_id_1 is not None, "First event should be published"
+services/dopecon-bridge/tests/test_deduplication.py:271:        msg_id_2 = await event_bus.publish("test:stream", event)
+services/dopecon-bridge/tests/test_deduplication.py:272:        assert msg_id_2 is None, "Duplicate event should not be published"
+services/dopecon-bridge/tests/test_deduplication.py:274:        # Verify only one event in stream
+services/dopecon-bridge/tests/test_deduplication.py:275:        if event_bus.redis_client:
+services/dopecon-bridge/tests/test_deduplication.py:276:            stream_length = await event_bus.redis_client.xlen("test:stream")
+services/dopecon-bridge/tests/test_deduplication.py:277:            assert stream_length == 1, "Stream should contain only one event"
+services/dopecon-bridge/tests/test_deduplication.py:282:        bus = EventBus(
+services/dopecon-bridge/tests/test_deduplication.py:296:        msg_id_1 = await bus.publish("test:stream", event)
+services/dopecon-bridge/tests/test_deduplication.py:297:        msg_id_2 = await bus.publish("test:stream", event)
+services/dopecon-bridge/tests/test_deduplication.py:299:        assert msg_id_1 is not None, "First event should be published"
+services/dopecon-bridge/tests/test_deduplication.py:300:        assert msg_id_2 is not None, "Second event should be published (dedup disabled)"
+services/dopecon-bridge/tests/test_deduplication.py:304:            await bus.redis_client.delete("test:stream")
+services/dopecon-bridge/tests/test_deduplication.py:308:    async def test_deduplication_metrics_accessible(self, event_bus):
+services/dopecon-bridge/tests/test_deduplication.py:317:        await event_bus.publish("test:stream", event)
+services/dopecon-bridge/tests/test_deduplication.py:318:        await event_bus.publish("test:stream", event)
+services/dopecon-bridge/tests/test_deduplication.py:321:        if event_bus.deduplicator:
+services/dopecon-bridge/tests/test_deduplication.py:322:            metrics = event_bus.deduplicator.get_metrics()
+services/monitoring/prometheus_metrics.py:132:eventbus_events_published = Counter(
+services/monitoring/prometheus_metrics.py:133:    'dopemux_eventbus_events_published_total',
+services/monitoring/prometheus_metrics.py:134:    'Events published to stream',
+services/monitoring/prometheus_metrics.py:141:    'Events consumed from stream',
+services/session-manager/src/context_protocol.py:63:    def publish_artifact(
+services/session-manager/src/context_protocol.py:72:        AI agent publishes artifact to ConPort.
+services/session-manager/src/context_protocol.py:85:            >>> protocol.publish_artifact(
+services/session-manager/src/context_protocol.py:330:    # Test publishing
+services/session-manager/src/context_protocol.py:331:    logger.info("Testing artifact publishing:")
+services/session-manager/src/context_protocol.py:332:    artifact_id = protocol.publish_artifact(
+services/session-manager/src/message_bus.py:62:    def publish(self, event: Event) -> None:
+services/session-manager/src/message_bus.py:67:            event: Event to publish
+services/session-manager/src/message_bus.py:72:    def subscribe(
+services/session-manager/src/message_bus.py:119:        self.subscribers: dict[EventType, list[Callable]] = {}
+services/session-manager/src/message_bus.py:121:    def publish(self, event: Event) -> None:
+services/session-manager/src/message_bus.py:130:        # Notify subscribers
+services/session-manager/src/message_bus.py:131:        if event.type in self.subscribers:
+services/session-manager/src/message_bus.py:132:            for callback in self.subscribers[event.type]:
+services/session-manager/src/message_bus.py:138:    def subscribe(
+services/session-manager/src/message_bus.py:142:        if event_type not in self.subscribers:
+services/session-manager/src/message_bus.py:143:            self.subscribers[event_type] = []
+services/session-manager/src/message_bus.py:145:        self.subscribers[event_type].append(callback)
+services/session-manager/src/message_bus.py:178:        self.subscribers: dict[EventType, list[Callable]] = {}
+services/session-manager/src/message_bus.py:181:    def publish(self, event: Event) -> None:
+services/session-manager/src/message_bus.py:185:        # Notify subscribers
+services/session-manager/src/message_bus.py:186:        if event.type in self.subscribers:
+services/session-manager/src/message_bus.py:187:            for callback in self.subscribers[event.type]:
+services/session-manager/src/message_bus.py:193:    def subscribe(
+services/session-manager/src/message_bus.py:197:        if event_type not in self.subscribers:
+services/session-manager/src/message_bus.py:198:            self.subscribers[event_type] = []
+services/session-manager/src/message_bus.py:200:        self.subscribers[event_type].append(callback)
+services/session-manager/src/message_bus.py:267:                        self.publish(event)
+services/session-manager/src/message_bus.py:320:    bus.subscribe(EventType.AGENT_OUTPUT, on_output)
+services/session-manager/src/message_bus.py:323:    bus.publish(
+services/session-manager/src/message_bus.py:332:    bus.publish(
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:11:from event_bus import Event, EventBus
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:64:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:65:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:66:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:67:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:71:    def emitter(self, event_bus_mock):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:74:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:88:    async def test_flush_emits_buffered_state(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:99:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:101:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:109:    async def test_emits_overload_immediately(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:117:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:119:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:127:    async def test_no_overload_below_threshold(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:135:        assert not event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:138:    async def test_emits_break_recommended(self, emitter, event_bus_mock):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:147:        assert event_bus_mock.publish.called
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:149:        call_args = event_bus_mock.publish.call_args
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:196:    async def event_bus_mock(self):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:197:        """Create mock EventBus"""
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:198:        bus = Mock(spec=EventBus)
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:199:        bus.publish = AsyncMock(return_value="msg-123")
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:203:    def manager(self, event_bus_mock):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:206:            event_bus=event_bus_mock,
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:224:    async def test_handles_overload_immediately(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:233:        calls = event_bus_mock.publish.call_args_list
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:242:    async def test_background_worker_flushes_automatically(self, manager, event_bus_mock):
+services/dopecon-bridge/tests/test_adhd_engine_integration.py:257:        calls = event_bus_mock.publish.call_args_list
+services/session-manager/src/workspace_support.py:7:it just needs to pass workspace context to downstream services.
+services/session-manager/src/workspace_support.py:29:    This allows workspace-aware routing to downstream services.
+services/shared/dopecon_bridge_client/leantime_adapter.py:135:                await self.client.publish_event(
+services/shared/dopecon_bridge_client/leantime_adapter.py:214:                await self.client.publish_event(
+services/dopecon-bridge/test_api.sh:2:# EventBus REST API Test Script
+services/dopecon-bridge/test_api.sh:4:echo "🧪 EventBus REST API Test Suite"
+services/dopecon-bridge/test_api.sh:42:echo "6️⃣ Getting stream info..."
+services/dopecon-bridge/test_api.sh:57:echo "✅ EventBus REST API tests complete!"
+services/dope-context/src/mcp/server.py:2652:    valid_transports = {"stdio", "http", "sse", "streamable-http"}
+services/dopecon-bridge/monitoring.py:5:- Event publishing latency
+services/dopecon-bridge/monitoring.py:53:    - EventBus (publishing, deduplication)
+services/dopecon-bridge/monitoring.py:76:        self.event_publish_latency = Histogram(
+services/dopecon-bridge/monitoring.py:77:            'dopecon_bridge_event_publish_latency_seconds',
+services/dopecon-bridge/monitoring.py:78:            'Latency for event publishing to EventBus',
+services/dopecon-bridge/monitoring.py:83:        self.events_published_total = Counter(
+services/dopecon-bridge/monitoring.py:84:            'dopecon_bridge_events_published_total',
+services/dopecon-bridge/monitoring.py:85:            'Total events published to EventBus',
+services/dopecon-bridge/monitoring.py:215:        self.event_stream_length = Gauge(
+services/dopecon-bridge/monitoring.py:216:            'dopecon_bridge_event_stream_length',
+services/dopecon-bridge/monitoring.py:217:            'Current length of event stream',
+services/dopecon-bridge/monitoring.py:223:    def record_event_published(self, agent: str, event_type: str, latency_seconds: float):
+services/dopecon-bridge/monitoring.py:228:        self.event_publish_latency.observe(latency_seconds)
+services/dopecon-bridge/monitoring.py:229:        self.events_published_total.labels(source_agent=agent, event_type=event_type).inc()
+services/dopecon-bridge/monitoring.py:350:    def update_event_stream_length(self, length: int):
+services/dopecon-bridge/monitoring.py:351:        """Update event stream length"""
+services/dopecon-bridge/monitoring.py:355:        self.event_stream_length.set(length)
+services/session-manager/demo_orchestrator.py:165:    bus.subscribe(EventType.AGENT_OUTPUT, on_event)
+services/session-manager/demo_orchestrator.py:166:    bus.subscribe(EventType.COMMAND_SENT, on_event)
+services/session-manager/demo_orchestrator.py:169:    bus.publish(
+services/session-manager/demo_orchestrator.py:178:    bus.publish(
+services/session-manager/demo_orchestrator.py:191:    console.logger.info(f"\n  📊 Events published: [green]{metrics.total_events_published}[/green]")
+services/task-orchestrator/integration_bridge_connector.py:5:Enhances existing event subscription with publishing capabilities.
+services/task-orchestrator/integration_bridge_connector.py:20:def initialize_integration(workspace_id: str, event_bus_url: str = "redis://localhost:6379"):
+services/task-orchestrator/integration_bridge_connector.py:29:        from event_bus import EventBus
+services/task-orchestrator/integration_bridge_connector.py:32:        event_bus = EventBus(redis_url=event_bus_url)
+services/task-orchestrator/integration_bridge_connector.py:34:            event_bus=event_bus,
+services/task-orchestrator/integration_bridge_connector.py:38:        asyncio.create_task(_initialize_async(event_bus))
+services/task-orchestrator/integration_bridge_connector.py:47:async def _initialize_async(event_bus):
+services/task-orchestrator/integration_bridge_connector.py:48:    """Initialize EventBus connection"""
+services/task-orchestrator/integration_bridge_connector.py:50:        await event_bus.initialize()
+services/task-orchestrator/integration_bridge_connector.py:52:        logger.error(f"EventBus initialization failed: {e}")
+services/adhd_engine/engine.py:133:        # WebSocket streaming (Dashboard Day 7)
+services/dopemux-gpt-researcher/research_api/engines/search/exa_adapter.py:199:            params["start_published_date"] = self._parse_date_filter(date_filter)
+services/dopemux-gpt-researcher/research_api/engines/search/exa_adapter.py:317:            published_date = self._parse_published_date(item.get('publishedDate'))
+services/dopemux-gpt-researcher/research_api/engines/search/exa_adapter.py:329:                published_date=published_date,
+services/dopemux-gpt-researcher/research_api/engines/search/exa_adapter.py:421:    def _parse_published_date(self, date_str: Optional[str]) -> Optional[datetime]:
+services/dopemux-gpt-researcher/research_api/engines/search/exa_adapter.py:422:        """Parse published date from various formats"""
+services/task-orchestrator/conport_mcp_client.py:565:        Keep until all downstream callers migrate off the legacy method name.
+services/task-orchestrator/event_coordinator.py:697:            await self.redis_client.publish(channel, json.dumps(payload))
+services/task-orchestrator/event_coordinator.py:734:                await self.redis_client.publish(channel, json.dumps(notification))
+services/task-orchestrator/event_coordinator.py:746:                await self.redis_client.publish(channel, json.dumps(suggestion))
+services/task-orchestrator/event_coordinator.py:762:                await self.redis_client.publish(channel, json.dumps(payload))
+services/adhd_engine/domains/break-suggester/start_service.py:6:Monitors EventBus for cognitive load patterns and suggests breaks.
+services/task-orchestrator/test_integration_bridge_events.py:6:2. Verify Task-Orchestrator receives event via EventBus
+services/task-orchestrator/test_integration_bridge_events.py:22:    """Test publishing events to DopeconBridge."""
+services/task-orchestrator/test_integration_bridge_events.py:28:            "stream": "dopemux:events",
+services/task-orchestrator/test_integration_bridge_events.py:43:                logger.info(f"✅ TASKS_IMPORTED published: {result}")
+services/task-orchestrator/test_integration_bridge_events.py:45:                logger.error(f"❌ Failed to publish TASKS_IMPORTED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:52:            "stream": "dopemux:events",
+services/task-orchestrator/test_integration_bridge_events.py:67:                logger.info(f"✅ SESSION_STARTED published: {result}")
+services/task-orchestrator/test_integration_bridge_events.py:69:                logger.error(f"❌ Failed to publish SESSION_STARTED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:76:            "stream": "dopemux:events",
+services/task-orchestrator/test_integration_bridge_events.py:92:                logger.info(f"✅ PROGRESS_UPDATED published: {result}")
+services/task-orchestrator/test_integration_bridge_events.py:94:                logger.error(f"❌ Failed to publish PROGRESS_UPDATED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:101:            "stream": "dopemux:events",
+services/task-orchestrator/test_integration_bridge_events.py:116:                logger.info(f"✅ DECISION_LOGGED published: {result}")
+services/task-orchestrator/test_integration_bridge_events.py:118:                logger.error(f"❌ Failed to publish DECISION_LOGGED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:125:            "stream": "dopemux:events",
+services/task-orchestrator/test_integration_bridge_events.py:141:                logger.info(f"✅ ADHD_STATE_CHANGED published: {result}")
+services/task-orchestrator/test_integration_bridge_events.py:143:                logger.error(f"❌ Failed to publish ADHD_STATE_CHANGED: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:150:            "stream": "dopemux:events",
+services/task-orchestrator/test_integration_bridge_events.py:165:                logger.info(f"✅ BREAK_REMINDER published: {result}")
+services/task-orchestrator/test_integration_bridge_events.py:167:                logger.error(f"❌ Failed to publish BREAK_REMINDER: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:170:async def check_stream_info():
+services/task-orchestrator/test_integration_bridge_events.py:171:    """Check DopeconBridge stream information."""
+services/task-orchestrator/test_integration_bridge_events.py:172:    logger.info("\n📊 Checking DopeconBridge stream info...")
+services/task-orchestrator/test_integration_bridge_events.py:182:                logger.error(f"Failed to get stream info: {response.status}")
+services/task-orchestrator/test_integration_bridge_events.py:198:    # Check stream info
+services/task-orchestrator/test_integration_bridge_events.py:199:    await check_stream_info()
+services/adhd_engine/domains/break-suggester/event_consumer.py:2:F-NEW-8: EventBus Consumer for Break Suggestions
+services/adhd_engine/domains/break-suggester/event_consumer.py:4:Subscribes to ConPort-KG event stream and feeds BreakSuggestionEngine.
+services/adhd_engine/domains/break-suggester/event_consumer.py:27:    EventBus consumer for break suggestion engine.
+services/adhd_engine/domains/break-suggester/event_consumer.py:47:        # Event stream config
+services/adhd_engine/domains/break-suggester/event_consumer.py:48:        self.stream_name = "dopemux:events"
+services/adhd_engine/domains/break-suggester/event_consumer.py:74:                    self.stream_name,
+services/adhd_engine/domains/break-suggester/event_consumer.py:76:                    mkstream=True
+services/adhd_engine/domains/break-suggester/event_consumer.py:89:        Start consuming events from stream.
+services/adhd_engine/domains/break-suggester/event_consumer.py:98:                # Read events from stream
+services/adhd_engine/domains/break-suggester/event_consumer.py:99:                # XREADGROUP GROUP group consumer BLOCK 1000 STREAMS stream >
+services/adhd_engine/domains/break-suggester/event_consumer.py:100:                events = await self.redis_client.xreadgroup(
+services/adhd_engine/domains/break-suggester/event_consumer.py:103:                    streams={self.stream_name: '>'},
+services/adhd_engine/domains/break-suggester/event_consumer.py:112:                # Process each event (events is a list of [stream_name, [[msg_id, data], ...]])
+services/adhd_engine/domains/break-suggester/event_consumer.py:113:                for stream_name, messages in events:
+services/adhd_engine/domains/break-suggester/event_consumer.py:119:                            self.stream_name,
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:1:"""WebSocket progress streamer for research task updates."""
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:11:    Lightweight in-process progress streamer.
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:19:        self._subscribers: Dict[str, Set[Any]] = defaultdict(set)
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:29:            self._subscribers.clear()
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:31:    async def subscribe(self, task_id: UUID | str, websocket: Any) -> None:
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:33:            self._subscribers[str(task_id)].add(websocket)
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:35:    async def unsubscribe(self, task_id: UUID | str, websocket: Any) -> None:
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:37:            subscribers = self._subscribers.get(str(task_id))
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:38:            if subscribers and websocket in subscribers:
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:39:                subscribers.remove(websocket)
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:45:        subscribers = list(self._subscribers.get(task_key, set()))
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:46:        for websocket in subscribers:
+services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py:50:                await self.unsubscribe(task_key, websocket)
+services/adhd_engine/domains/break-suggester/engine.py:8:- EventBus consumer (complexity, cognitive state, duration events)
+services/adhd_engine/domains/break-suggester/engine.py:97:    def __init__(self, user_id: str = "default", event_bus = None):
+services/adhd_engine/domains/break-suggester/engine.py:103:            event_bus: Optional EventBus for emitting break suggestions
+services/adhd_engine/domains/break-suggester/engine.py:106:        self.event_bus = event_bus
+services/task-orchestrator/app/services/task_coordinator.py:19:- Coordinates with EventBus for cross-system events
+services/adhd_engine/domains/break-suggester/README.md:14:EventBus (Redis: dopemux:events)
+services/adhd_engine/domains/break-suggester/README.md:93:- `event_consumer.py` (210 lines) - EventBus integration
+services/adhd_engine/domains/break-suggester/README.md:99:1. Wire to ConPort-KG EventBus (services/mcp-dopecon-bridge)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2017:        # Add Integration Bridge event subscriber (Component 3)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2019:            workers.append(self._integration_bridge_subscriber())
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2020:            logger.info("📡 Integration Bridge event subscriber enabled")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2991:    async def _integration_bridge_subscriber(self) -> None:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:2993:        logger.info("📡 Started Integration Bridge event subscriber")
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3005:                await self.integration_bridge.subscribe_events(
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3279:        # Close Integration Bridge EventBus (Component 3)
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3280:        if self.event_bus:
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3281:            await self.event_bus.close()
+services/task-orchestrator/services/task-orchestrator/enhanced_orchestrator.py:3282:            logger.info("📪 Integration Bridge EventBus closed")
+services/session-manager/tui/main.py:529:        # Define callbacks for streaming output
+services/session-manager/tui/main.py:539:            # Execute command via router with streaming callbacks
+src/dopemux/dope_brainz_router.py:81:            raise DopeBrainzRouterError("At least one upstream model must be provided")
+src/dopemux/dope_brainz_router.py:347:                f"Upstream credential {self._provider_key_env_var} missing from environment"
+services/dopemux-gpt-researcher/mcp-server/server.py:201:                        'subscribe': False,
+services/dopemux-gpt-researcher/research_api/adapters/bridge_adapter.py:87:                await self.client.publish_event(
+services/dopemux-gpt-researcher/research_api/adapters/bridge_adapter.py:161:            await self.client.publish_event(
+services/dopemux-gpt-researcher/research_api/adapters/bridge_adapter.py:213:                await self.client.publish_event(
+services/dopemux-gpt-researcher/research_api/adapters/bridge_adapter.py:260:    async def publish_research_event(
+services/dopemux-gpt-researcher/research_api/adapters/bridge_adapter.py:276:            await self.client.publish_event(
+services/dopemux-gpt-researcher/research_api/adapters/bridge_adapter.py:283:            logger.error(f"Failed to publish research event: {e}")
+services/copilot_transcript_ingester/README.md:194:3. **Automatic timestamp extraction**: ISO 8601 timestamps from event stream
+services/session-manager/tui/command_router.py:7:- Real-time output streaming
+services/session-manager/tui/command_router.py:48:    Routes commands to AI CLIs with async execution and streaming output.
+services/session-manager/tui/command_router.py:163:        Run subprocess and stream output.
+services/session-manager/tui/command_router.py:185:            async def stream_stdout():
+services/session-manager/tui/command_router.py:187:                async for line in self._read_stream(process.stdout):
+services/session-manager/tui/command_router.py:192:            async def stream_stderr():
+services/session-manager/tui/command_router.py:194:                async for line in self._read_stream(process.stderr):
+services/session-manager/tui/command_router.py:198:            # Wait for both streams and process
+services/session-manager/tui/command_router.py:200:                stream_stdout(),
+services/session-manager/tui/command_router.py:201:                stream_stderr(),
+services/session-manager/tui/command_router.py:220:    async def _read_stream(self, stream: asyncio.StreamReader) -> AsyncIterator[str]:
+services/session-manager/tui/command_router.py:222:        Read lines from a stream asynchronously.
+services/session-manager/tui/command_router.py:225:            stream: asyncio StreamReader
+services/session-manager/tui/command_router.py:231:            line = await stream.readline()
+services/adhd_engine/external_activity.py:9:Emits events to EventBus for implicit ADHD detection.
+services/adhd_engine/external_activity.py:49:    - EventBus for ADHD event emission
+services/adhd_engine/external_activity.py:60:        event_bus,
+services/adhd_engine/external_activity.py:65:        self.event_bus = event_bus
+services/adhd_engine/external_activity.py:192:        if not self.emit_events or not self.event_bus:
+services/adhd_engine/external_activity.py:221:            from event_bus import Event, EventType
+services/adhd_engine/external_activity.py:239:            await self.event_bus.publish("dopemux:events", event)
+services/adhd_engine/external_activity.py:254:                await self.event_bus.publish("dopemux:events", overwhelm_event)
+services/adhd_engine/external_activity.py:261:        if not self.emit_events or not self.event_bus:
+services/adhd_engine/external_activity.py:265:            from event_bus import Event, EventType
+services/adhd_engine/external_activity.py:278:            await self.event_bus.publish("dopemux:events", event)
+services/adhd_engine/external_activity.py:326:        event_bus,
+services/adhd_engine/external_activity.py:331:        self.event_bus = event_bus
+services/adhd_engine/external_activity.py:485:        if not self.emit_events or not self.event_bus:
+services/adhd_engine/external_activity.py:491:            from event_bus import Event, EventType
+services/adhd_engine/external_activity.py:506:            await self.event_bus.publish("dopemux:events", event)
+services/adhd_engine/external_activity.py:514:        if not self.emit_events or not self.event_bus:
+services/adhd_engine/external_activity.py:522:            from event_bus import Event, EventType
+services/adhd_engine/external_activity.py:544:            await self.event_bus.publish("dopemux:events", event)
+services/adhd_engine/external_activity.py:558:                await self.event_bus.publish("dopemux:events", battery_event)
+services/adhd_engine/external_activity.py:565:        if not self.emit_events or not self.event_bus:
+services/adhd_engine/external_activity.py:569:            from event_bus import Event
+services/adhd_engine/external_activity.py:590:            await self.event_bus.publish("dopemux:events", event)
+services/adhd_engine/external_activity.py:617:    def __init__(self, event_bus):
+services/adhd_engine/external_activity.py:618:        self.event_bus = event_bus
+services/adhd_engine/external_activity.py:622:            event_bus=event_bus,
+services/adhd_engine/external_activity.py:627:            event_bus=event_bus,
+services/adhd_engine/external_activity.py:663:def create_external_activity_manager(event_bus) -> ExternalActivityManager:
+services/adhd_engine/external_activity.py:665:    return ExternalActivityManager(event_bus)
+services/session-manager/tui/command_router_enhanced.py:319:            async def stream_stdout():
+services/session-manager/tui/command_router_enhanced.py:320:                async for line in self._read_stream(process.stdout):
+services/session-manager/tui/command_router_enhanced.py:325:            async def stream_stderr():
+services/session-manager/tui/command_router_enhanced.py:326:                async for line in self._read_stream(process.stderr):
+services/session-manager/tui/command_router_enhanced.py:333:                asyncio.gather(stream_stdout(), stream_stderr(), process.wait()),
+services/session-manager/tui/command_router_enhanced.py:385:    async def _read_stream(self, stream: asyncio.StreamReader) -> AsyncIterator[str]:
+services/session-manager/tui/command_router_enhanced.py:386:        """Read lines from stream asynchronously."""
+services/session-manager/tui/command_router_enhanced.py:388:            line = await stream.readline()
+services/adhd_engine/domains/break-suggester/bridge_adapter.py:96:                await self.client.publish_event(
+services/adhd_engine/domains/break-suggester/bridge_adapter.py:148:            await self.client.publish_event(
+services/adhd_engine/domains/break-suggester/bridge_adapter.py:171:            await self.client.publish_event(
+services/adhd_engine/domains/break-suggester/bridge_adapter.py:216:            await self.client.publish_event(
+services/task-orchestrator/app/services/workflow_service.py:63:    """Raised when upstream persistence or bridge services are unavailable."""
+services/adhd_engine/docker/mcp-servers/docker-compose.yml:108:    # No exposed ports (EventBus consumer only)
+services/adhd_engine/docker/mcp-servers/docker-compose.yml:122:      - "service.consumer=redis-streams"
+services/adhd-notifier/monitor.py:80:    async def subscribe_to_break_suggestions(self):
+services/adhd-notifier/monitor.py:93:            from event_bus import EventBus
+services/adhd-notifier/monitor.py:95:            event_bus = EventBus(redis_url="redis://localhost:6379")
+services/adhd-notifier/monitor.py:96:            await event_bus.initialize()
+services/adhd-notifier/monitor.py:101:            async for message_id, event in event_bus.subscribe(
+services/adhd-notifier/monitor.py:102:                stream="dopemux:events",
+services/adhd-notifier/monitor.py:142:        asyncio.create_task(self.subscribe_to_break_suggestions())
+services/adhd_engine/domains/break-suggester/Dockerfile:11:# No exposed port (EventBus consumer only)
+services/adhd_engine/domains/task_enablement/task_decomposition_event_listener.py:4:Listens to task.created and task.updated events from DopeconBridge EventBus.
+services/adhd_engine/domains/task_enablement/task_decomposition_event_listener.py:26:    2. Task Orchestrator publishes task.created event
+services/adhd_engine/domains/task_enablement/task_decomposition_event_listener.py:112:            async for event in self.bridge_client.subscribe_to_events(
+services/adhd_engine/domains/task_enablement/task_decomposition_event_listener.py:114:                stream="dopemux:events"
+services/activity-capture/main.py:4:Subscribes to ConPort-KG event streams and automatically logs development
+services/activity-capture/main.py:26:from event_subscriber import EventSubscriber
+services/activity-capture/main.py:38:event_subscriber: EventSubscriber = None
+services/activity-capture/main.py:51:    - Start event subscriber (Redis Streams)
+services/activity-capture/main.py:54:    - Stop event subscriber
+services/activity-capture/main.py:58:    global event_subscriber, activity_tracker, adhd_client
+services/activity-capture/main.py:70:        stream_name = os.getenv("STREAM_NAME", "dopemux:events")
+services/activity-capture/main.py:79:        logger.info(f"   Stream: {stream_name}")
+services/activity-capture/main.py:95:        # Initialize event subscriber
+services/activity-capture/main.py:96:        event_subscriber = EventSubscriber(
+services/activity-capture/main.py:98:            stream_name=stream_name,
+services/activity-capture/main.py:105:        await event_subscriber.start()
+services/activity-capture/main.py:106:        logger.info("✅ Event subscriber started (dopemux:events)")
+services/activity-capture/main.py:125:        if event_subscriber:
+services/activity-capture/main.py:126:            await event_subscriber.stop()
+services/activity-capture/main.py:127:            logger.info("✅ Event subscriber stopped")
+services/activity-capture/main.py:184:    - Event subscriber status
+services/activity-capture/main.py:193:    # Check event subscriber
+services/activity-capture/main.py:194:    if event_subscriber:
+services/activity-capture/main.py:195:        health_status["components"]["event_subscriber"] = {
+services/activity-capture/main.py:196:            "status": "running" if event_subscriber.running else "stopped",
+services/activity-capture/main.py:197:            "events_processed": getattr(event_subscriber, 'events_processed', 0),
+services/activity-capture/main.py:198:            "errors": getattr(event_subscriber, 'errors', 0)
+services/activity-capture/main.py:201:        health_status["components"]["event_subscriber"] = {"status": "not_initialized"}
+services/adhd_engine/domains/task_enablement/decomposition_coordinator.py:363:                await self.bridge_client.publish_event(
+services/adhd_engine/domains/task_enablement/decomposition_coordinator.py:377:                logger.error(f"Failed to publish decomposition event: {e}")
+services/adhd_engine/domains/task_enablement/decomposition_coordinator.py:388:        Handle task.created or task.updated events from EventBus.
+services/activity-capture/bridge_adapter.py:84:            await self.client.publish_event(
+services/activity-capture/bridge_adapter.py:214:            await self.client.publish_event(
+services/activity-capture/bridge_adapter.py:237:            await self.client.publish_event(
+services/activity-capture/bridge_adapter.py:260:            await self.client.publish_event(
+services/adhd_engine/domains/energy-trends/bridge_adapter.py:153:                stream="dopemux:events",
+services/workspace-watcher/event_emitter.py:20:# Add DopeconBridge to path for EventBus
+services/workspace-watcher/event_emitter.py:25:from event_bus import Event, EventBus
+services/workspace-watcher/event_emitter.py:45:        self.event_bus: Optional[EventBus] = None
+services/workspace-watcher/event_emitter.py:52:            self.event_bus = EventBus(redis_url=self.redis_url)
+services/workspace-watcher/event_emitter.py:53:            await self.event_bus.initialize()
+services/workspace-watcher/event_emitter.py:79:        if not self.event_bus:
+services/workspace-watcher/event_emitter.py:116:            msg_id = await self.event_bus.publish("dopemux:events", event)
+services/workspace-watcher/event_emitter.py:127:                logger.warning("Event publish returned None (deduplicated or rate-limited)")
+services/workspace-watcher/event_emitter.py:137:        if self.event_bus:
+services/workspace-watcher/event_emitter.py:138:            await self.event_bus.close()
+services/task-orchestrator/app/main.py:456:    WebSocket endpoint for real-time coordination event streaming.
+services/task-orchestrator/app/main.py:458:    Clients can subscribe to coordination events in real-time.
+services/workspace-watcher/README.md:55:Publishes events to DopeconBridge Redis streams:
+services/task-orchestrator/dopemux-vscode/package.json:58:    "vscode:prepublish": "npm run compile",
+services/adhd_engine/domains/interruption-shield/bridge_adapter.py:82:            await self.client.publish_event(
+services/adhd_engine/domains/interruption-shield/bridge_adapter.py:120:            await self.client.publish_event(
+services/adhd_engine/domains/interruption-shield/bridge_adapter.py:144:            await self.client.publish_event(
+services/task-orchestrator/test_eventbus_subscription.py:2:Minimal test for Component 3: EventBus Subscription
+services/task-orchestrator/test_eventbus_subscription.py:4:Tests EventBus functionality without requiring full Task-Orchestrator infrastructure.
+services/task-orchestrator/test_eventbus_subscription.py:6:1. EventBus initialization
+services/task-orchestrator/test_eventbus_subscription.py:22:from event_bus import EventBus, Event, EventType
+services/task-orchestrator/test_eventbus_subscription.py:29:    """Test subscriber that listens for events."""
+services/task-orchestrator/test_eventbus_subscription.py:33:        self.event_bus: EventBus = None
+services/task-orchestrator/test_eventbus_subscription.py:38:        """Initialize EventBus."""
+services/task-orchestrator/test_eventbus_subscription.py:39:        logger.info("🚀 Initializing EventBus...")
+services/task-orchestrator/test_eventbus_subscription.py:40:        self.event_bus = EventBus(self.redis_url, password=None)
+services/task-orchestrator/test_eventbus_subscription.py:41:        await self.event_bus.initialize()
+services/task-orchestrator/test_eventbus_subscription.py:42:        logger.info("✅ EventBus initialized")
+services/task-orchestrator/test_eventbus_subscription.py:44:    async def subscribe_and_listen(self, duration_seconds: int = 10):
+services/task-orchestrator/test_eventbus_subscription.py:46:        logger.info(f"📡 Subscribing to dopemux:events stream for {duration_seconds} seconds...")
+services/task-orchestrator/test_eventbus_subscription.py:72:            async for msg_id, event in self.event_bus.subscribe(
+services/task-orchestrator/test_eventbus_subscription.py:73:                stream="dopemux:events",
+services/task-orchestrator/test_eventbus_subscription.py:74:                consumer_group="test-subscriber",
+services/task-orchestrator/test_eventbus_subscription.py:89:        """Close EventBus connection."""
+services/task-orchestrator/test_eventbus_subscription.py:90:        if self.event_bus:
+services/task-orchestrator/test_eventbus_subscription.py:91:            await self.event_bus.close()
+services/task-orchestrator/test_eventbus_subscription.py:92:            logger.info("📪 EventBus closed")
+services/task-orchestrator/test_eventbus_subscription.py:95:async def publish_test_events(event_bus: EventBus):
+services/task-orchestrator/test_eventbus_subscription.py:103:        source="test-publisher"
+services/task-orchestrator/test_eventbus_subscription.py:105:    msg_id1 = await event_bus.publish("dopemux:events", event1)
+services/task-orchestrator/test_eventbus_subscription.py:114:        source="test-publisher"
+services/task-orchestrator/test_eventbus_subscription.py:116:    msg_id2 = await event_bus.publish("dopemux:events", event2)
+services/task-orchestrator/test_eventbus_subscription.py:125:        source="test-publisher"
+services/task-orchestrator/test_eventbus_subscription.py:127:    msg_id3 = await event_bus.publish("dopemux:events", event3)
+services/task-orchestrator/test_eventbus_subscription.py:136:        source="test-publisher"
+services/task-orchestrator/test_eventbus_subscription.py:138:    msg_id4 = await event_bus.publish("dopemux:events", event4)
+services/task-orchestrator/test_eventbus_subscription.py:141:    logger.info("✅ All test events published")
+services/task-orchestrator/test_eventbus_subscription.py:147:    logger.info("Component 3: EventBus Subscription Test")
+services/task-orchestrator/test_eventbus_subscription.py:150:    # Create subscriber
+services/task-orchestrator/test_eventbus_subscription.py:151:    subscriber = TestSubscriber()
+services/task-orchestrator/test_eventbus_subscription.py:153:    # Create publisher EventBus
+services/task-orchestrator/test_eventbus_subscription.py:154:    publisher_bus = EventBus("redis://localhost:6379", password=None)
+services/task-orchestrator/test_eventbus_subscription.py:158:        await subscriber.initialize()
+services/task-orchestrator/test_eventbus_subscription.py:159:        await publisher_bus.initialize()
+services/task-orchestrator/test_eventbus_subscription.py:163:            subscriber.subscribe_and_listen(duration_seconds=15)
+services/task-orchestrator/test_eventbus_subscription.py:170:        await publish_test_events(publisher_bus)
+services/task-orchestrator/test_eventbus_subscription.py:202:        await subscriber.close()
+services/task-orchestrator/test_eventbus_subscription.py:203:        await publisher_bus.close()
+services/adhd_engine/domains/context-switch-tracker/bridge_adapter.py:18:            "stream": "dopemux:events",
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:100:        publisher = ConPortInsightPublisher(workspace_id, conport_client)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:101:        decision_id = await publisher.log_ai_decision(ai_decision_event)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:102:        await publisher.link_decision_to_task(decision_id, task_conport_id)
+services/task-orchestrator/app/adapters/conport_insight_publisher.py:107:        Initialize insight publisher.
+services/activity-capture/event_subscriber.py:19:    Redis Streams subscriber for activity events.
+services/activity-capture/event_subscriber.py:21:    Subscribes to dopemux:events stream and forwards relevant events
+services/activity-capture/event_subscriber.py:28:        stream_name: str,
+services/activity-capture/event_subscriber.py:34:        Initialize event subscriber.
+services/activity-capture/event_subscriber.py:38:            stream_name: Stream to subscribe to
+services/activity-capture/event_subscriber.py:44:        self.stream_name = stream_name
+services/activity-capture/event_subscriber.py:63:                self.stream_name,
+services/activity-capture/event_subscriber.py:66:                mkstream=True
+services/activity-capture/event_subscriber.py:79:        logger.info(f"Starting event subscription to {self.stream_name}")
+services/activity-capture/event_subscriber.py:84:                messages = await self.redis_client.xreadgroup(
+services/activity-capture/event_subscriber.py:87:                    {self.stream_name: ">"},
+services/activity-capture/event_subscriber.py:92:                for stream, message_list in messages:
+services/activity-capture/event_subscriber.py:100:                                self.stream_name,
+services/activity-capture/event_subscriber.py:143:        logger.info("Event subscriber stopped")
+services/workspace-watcher/bridge_adapter.py:65:            await self.client.publish_event(
+services/workspace-watcher/bridge_adapter.py:117:                stream="dopemux:events",
+services/task-orchestrator/app/adapters/bridge_adapter.py:156:            await self.client.publish_event(
+services/task-orchestrator/app/adapters/bridge_adapter.py:233:    async def publish_orchestration_event(
+services/task-orchestrator/app/adapters/bridge_adapter.py:249:            await self.client.publish_event(
+services/task-orchestrator/app/adapters/bridge_adapter.py:256:            logger.error(f"Failed to publish orchestration event: {e}")
+services/serena/integration_bridge_connector.py:21:def initialize_integration(workspace_id: str, event_bus_url: str = "redis://localhost:6379"):
+services/serena/integration_bridge_connector.py:27:        event_bus_url: EventBus Redis URL
+services/serena/integration_bridge_connector.py:40:        from event_bus import EventBus
+services/serena/integration_bridge_connector.py:43:        # Initialize EventBus
+services/serena/integration_bridge_connector.py:44:        event_bus = EventBus(redis_url=event_bus_url)
+services/serena/integration_bridge_connector.py:48:            event_bus=event_bus,
+services/serena/integration_bridge_connector.py:52:        # Initialize EventBus connection (async, but we'll handle it)
+services/serena/integration_bridge_connector.py:53:        asyncio.create_task(_initialize_async(event_bus))
+services/serena/integration_bridge_connector.py:62:async def _initialize_async(event_bus):
+services/serena/integration_bridge_connector.py:63:    """Initialize EventBus connection asynchronously"""
+services/serena/integration_bridge_connector.py:65:        await event_bus.initialize()
+services/serena/integration_bridge_connector.py:67:        logger.error(f"EventBus initialization failed: {e}")
+services/adhd_engine/domains/interruption-shield/interruption_shield/core/coordinator.py:65:        adhd_ws_url = f"{self.config.adhd_engine_url.rstrip('/')}/api/v1/ws/stream"
+services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/adhd_engine_client.py:90:    async def subscribe_attention_state(self, callback: Callable):
+services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/adhd_engine_client.py:122:                    # Notify all subscribers
+services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/adhd_engine_client.py:178:        await client.subscribe_attention_state(on_state_changed)
+services/serena/mcp_server.py:5363:    async with stdio_server() as (read_stream, write_stream):
+services/serena/mcp_server.py:5365:            read_stream,
+services/serena/mcp_server.py:5366:            write_stream,
+services/serena/eventbus_consumer.py:2:EventBus Consumer for Serena
+services/serena/eventbus_consumer.py:90:class EventBusConsumer:
+services/serena/eventbus_consumer.py:92:    EventBus consumer for Serena
+services/serena/eventbus_consumer.py:99:        stream_name: str = "conport:events",
+services/serena/eventbus_consumer.py:104:        self.stream_name = stream_name
+services/serena/eventbus_consumer.py:120:                self.stream_name,
+services/serena/eventbus_consumer.py:123:                mkstream=True
+services/serena/eventbus_consumer.py:136:        logger.info(f"Consuming from {self.stream_name} as {self.consumer_name}")
+services/serena/eventbus_consumer.py:144:                messages = await self.redis.xreadgroup(
+services/serena/eventbus_consumer.py:147:                    {self.stream_name: '>'},
+services/serena/eventbus_consumer.py:152:                for stream, events in messages:
+services/serena/eventbus_consumer.py:174:        """Load existing events from stream on startup"""
+services/serena/eventbus_consumer.py:176:            # Read last 100 events from the stream
+services/serena/eventbus_consumer.py:177:            events = await self.redis.xrange(self.stream_name, count=100)
+services/serena/eventbus_consumer.py:191:                logger.info(f"✅ Loaded {loaded_count} decision(s) from stream")
+services/serena/eventbus_consumer.py:207:                self.stream_name,
+services/serena/eventbus_consumer.py:241:consumer: Optional[EventBusConsumer] = None
+services/serena/eventbus_consumer.py:247:    consumer = EventBusConsumer(redis_url=redis_url)
+services/serena/eventbus_consumer.py:249:    logger.info("✅ EventBus consumer initialized")
+services/serena/eventbus_consumer.py:253:def get_consumer() -> Optional[EventBusConsumer]:
+services/monitoring-dashboard/bridge_adapter.py:79:            await self.client.publish_event(
+services/monitoring-dashboard/bridge_adapter.py:104:            await self.client.publish_event(
+services/monitoring-dashboard/bridge_adapter.py:150:            await self.client.publish_event(
+services/monitoring-dashboard/bridge_adapter.py:202:            await self.client.publish_event(
+services/serena/kg_integration.py:3:Shows decision context for code symbols using EventBus consumer cache
+services/serena/kg_integration.py:18:    Uses EventBus consumer cache (fast, local)
+services/serena/kg_integration.py:30:        logger.warning("EventBus consumer not initialized")
+services/serena/kg_integration.py:236:        logger.info("🔌 Initializing EventBus consumer...")
+services/genetic_agent/core/config.py:60:    # EventBus and user context
+services/genetic_agent/core/config.py:61:    redis_url: str = Field(default="redis://localhost:6379", description="Redis URL for EventBus")
+services/adhd_engine/domains/roast-engine/roast_engine/models.py:73:        description="Reminder flag for downstream UX to deliver aftercare.",
+services/genetic_agent/dopecon_integration.py:3:Provides event publishing and decision tracking for genetic algorithm iterations.
+services/genetic_agent/dopecon_integration.py:54:    async def publish_iteration_start(
+services/genetic_agent/dopecon_integration.py:62:            await self._client.publish_event(
+services/genetic_agent/dopecon_integration.py:74:            logger.error(f"Failed to publish iteration start: {e}")
+services/genetic_agent/dopecon_integration.py:77:    async def publish_iteration_complete(
+services/genetic_agent/dopecon_integration.py:86:            await self._client.publish_event(
+services/genetic_agent/dopecon_integration.py:100:            logger.error(f"Failed to publish iteration complete: {e}")
+services/genetic_agent/dopecon_integration.py:103:    async def publish_repair_decision(
+services/genetic_agent/dopecon_integration.py:113:            await self._client.publish_event(
+services/genetic_agent/dopecon_integration.py:127:            logger.error(f"Failed to publish repair decision: {e}")
+services/genetic_agent/genetic/genetic_agent.py:15:from ..shared.eventbus import SimpleEventBus as EventBus, Event
+services/genetic_agent/genetic/genetic_agent.py:45:        # EventBus integration for real-time events
+services/genetic_agent/genetic/genetic_agent.py:46:        self.event_bus = EventBus(redis_url=getattr(self.config, 'redis_url', 'redis://localhost:6379'), db=2)
+services/genetic_agent/genetic/genetic_agent.py:47:        asyncio.create_task(self._start_event_subscriber())
+services/genetic_agent/genetic/genetic_agent.py:61:    async def _start_event_subscriber(self):
+services/genetic_agent/genetic/genetic_agent.py:62:        """Start background subscriber for feedback events."""
+services/genetic_agent/genetic/genetic_agent.py:66:        await self.event_bus.subscribe(
+services/genetic_agent/genetic/genetic_agent.py:71:        await self.event_bus.subscribe(
+services/genetic_agent/genetic/genetic_agent.py:100:        await self.event_bus.publish(
+services/genetic_agent/genetic/genetic_agent.py:126:        await self.event_bus.publish(
+services/genetic_agent/genetic/genetic_agent.py:154:            await self.event_bus.publish(
+services/genetic_agent/genetic/genetic_agent.py:183:                await self.event_bus.publish(
+services/genetic_agent/genetic/genetic_agent.py:213:            await self.event_bus.publish(
+services/serena/enhanced_lsp.py:357:        if method == "textDocument/publishDiagnostics":
+services/genetic_agent/shared/eventbus.py:1:"""Simple EventBus for inter-module communication."""
+services/genetic_agent/shared/eventbus.py:45:class SimpleEventBus:
+services/genetic_agent/shared/eventbus.py:50:        self.subscribers: Dict[str, List[tuple[Callable, Callable | None]]] = {}
+services/genetic_agent/shared/eventbus.py:53:    async def subscribe(
+services/genetic_agent/shared/eventbus.py:61:            if event_type not in self.subscribers:
+services/genetic_agent/shared/eventbus.py:62:                self.subscribers[event_type] = []
+services/genetic_agent/shared/eventbus.py:63:            self.subscribers[event_type].append((callback, filter_fn))
+services/genetic_agent/shared/eventbus.py:65:    async def unsubscribe(self, event_type: str, callback: Callable):
+services/genetic_agent/shared/eventbus.py:66:        """Unsubscribe from event type."""
+services/genetic_agent/shared/eventbus.py:68:            if event_type in self.subscribers:
+services/genetic_agent/shared/eventbus.py:69:                self.subscribers[event_type] = [
+services/genetic_agent/shared/eventbus.py:70:                    (cb, f) for cb, f in self.subscribers[event_type] if cb != callback
+services/genetic_agent/shared/eventbus.py:73:    async def publish(self, event: Event):
+services/genetic_agent/shared/eventbus.py:74:        """Publish event to subscribers."""
+services/genetic_agent/shared/eventbus.py:77:            subscribers = list(self.subscribers.get(event_type, []))
+services/genetic_agent/shared/eventbus.py:79:        for callback, filter_fn in subscribers:
+services/genetic_agent/shared/eventbus.py:89:    def get_subscribers_count(self) -> Dict[str, int]:
+services/genetic_agent/shared/eventbus.py:90:        """Get subscriber counts per event type."""
+services/genetic_agent/shared/eventbus.py:92:            return {k: len(v) for k, v in self.subscribers.items()}
+services/genetic_agent/shared/eventbus.py:95:event_bus = SimpleEventBus()
+services/serena/demo_hover_integration.py:25:    # Initialize EventBus consumer
+services/serena/demo_hover_integration.py:26:    logger.info("🔌 Initializing EventBus consumer...")
+services/serena/demo_hover_integration.py:73:Provides async Redis operations for event streaming."""
