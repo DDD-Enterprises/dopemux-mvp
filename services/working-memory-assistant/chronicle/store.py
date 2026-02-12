@@ -518,6 +518,7 @@ class ChronicleStore:
         details: Optional[dict[str, Any]] = None,
         outcome: Optional[str] = None,
         importance_score: Optional[int] = None,
+        idempotency_key: Optional[str] = None,
     ) -> str:
         """Insert a corrected entry that supersedes an existing one (Packet F §3.3).
         
@@ -525,7 +526,18 @@ class ChronicleStore:
         - update: Corrects or adds information.
         - retraction: Retracts the original. Creates a tombstone.
         """
-        # 1. Resolve target head (Packet F §6.5)
+        # 1. Idempotency Check (Packet H)
+        if idempotency_key:
+            source_event_id = f"manual:{idempotency_key}"
+            conn = self.connect()
+            existing = conn.execute(
+                "SELECT id FROM work_log_entries WHERE source_event_id = ? AND supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+                (source_event_id, supersedes_entry_id, workspace_id, instance_id)
+            ).fetchone()
+            if existing:
+                return existing[0]
+
+        # 2. Resolve target head (Packet F §6.5)
         # First check if the entry exists
         target = self.get_entry_by_id(workspace_id, instance_id, supersedes_entry_id)
         if not target:
@@ -549,8 +561,14 @@ class ChronicleStore:
         final_importance_score = importance_score if importance_score is not None else target["importance_score"]
         
         # Provenance: manual correction convention
-        source_event_id = f"manual:{_generate_ulid()}"
-        now_utc = datetime.now(timezone.utc).isoformat()
+        # Use idempotency key if provided to ensure stable ID
+        if idempotency_key:
+            source_event_id = f"manual:{idempotency_key}"
+            # Use deterministic timestamp for idempotent retries
+            now_utc = "1970-01-01T00:00:00Z" 
+        else:
+            source_event_id = f"manual:{_generate_ulid()}"
+            now_utc = datetime.now(timezone.utc).isoformat()
 
         if correction_type == "retraction":
             # Retraction tombstone semantics (Packet F §4.1)
