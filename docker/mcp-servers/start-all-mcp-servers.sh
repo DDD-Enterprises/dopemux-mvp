@@ -86,7 +86,11 @@ ensure_optional_env_file() {
 
 ensure_optional_env_file "./task-master-ai/.env"
 ensure_optional_env_file "./task-orchestrator/.env"
-ensure_optional_env_file "./leantime-bridge/.env"
+
+# Only create leantime-bridge env if using linked mode
+if [ "${ENABLE_LEANTIME:-0}" = "1" ]; then
+  ensure_optional_env_file "./leantime-bridge/.env"
+fi
 
 # P0: Validate docker-compose.yml before proceeding
 echo "🔍 Validating docker-compose.yml..."
@@ -137,7 +141,13 @@ ensure_network() {
 
 ensure_network mcp-network
 ensure_network dopemux-unified-network
-ensure_network leantime-net
+
+# Only create leantime-net if Leantime integration is enabled
+if [ "${ENABLE_LEANTIME:-0}" = "1" ]; then
+  ensure_network leantime-net
+else
+  echo "ℹ️  Skipping leantime-net creation (set ENABLE_LEANTIME=1 to enable)"
+fi
 
 # Ensure external volumes exist
 ensure_volume() {
