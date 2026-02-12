@@ -10,11 +10,14 @@ Handles:
 
 import hashlib
 import json
+import logging
 import sqlite3
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional, Union
+
+from .sqlite_migrations import apply_chronicle_migrations
 
 try:
     from ulid import ULID
@@ -32,7 +35,9 @@ except ImportError:
 
 MAX_CHAIN_DEPTH = 10
 
+LOGGER = logging.getLogger(__name__)
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
+MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 
 
 class ChronicleStore:
@@ -72,6 +77,14 @@ class ChronicleStore:
         schema_sql = SCHEMA_PATH.read_text()
         conn.executescript(schema_sql)
         conn.commit()
+        applied = apply_chronicle_migrations(
+            conn,
+            schema_path=SCHEMA_PATH,
+            migrations_dir=MIGRATIONS_DIR,
+            logger=LOGGER,
+        )
+        if applied:
+            LOGGER.info("Applied chronicle SQLite migrations: %s", ", ".join(applied))
 
     # ─────────────────────────────────────────────────────────────────
     # Supersession Helpers (Packet F)

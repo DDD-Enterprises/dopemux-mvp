@@ -12,7 +12,7 @@ import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 try:
     import yaml  # type: ignore
@@ -23,6 +23,7 @@ except Exception:  # pragma: no cover - optional dependency
 LOGGER = logging.getLogger(__name__)
 _SCHEMA_INIT_LOCK = threading.Lock()
 _SCHEMA_READY_LEDGER_PATHS: set[str] = set()
+_WMA_MIGRATION_APPLIERS: dict[str, Callable[..., list[str]]] = {}
 
 CAPTURE_MODE_PLUGIN = "plugin"
 CAPTURE_MODE_CLI = "cli"
@@ -155,6 +156,63 @@ def _resolve_wma_schema_path(repo_root: Path) -> Path:
     return schema_path
 
 
+def _resolve_wma_migrations_dir(repo_root: Path) -> Path:
+    migrations_dir = (
+        repo_root
+        / "services"
+        / "working-memory-assistant"
+        / "chronicle"
+        / "migrations"
+    )
+    if not migrations_dir.exists():
+        raise CaptureError(f"WMA migrations directory not found: {migrations_dir}")
+    return migrations_dir
+
+
+def _resolve_wma_sqlite_migrations_module_path(repo_root: Path) -> Path:
+    module_path = (
+        repo_root
+        / "services"
+        / "working-memory-assistant"
+        / "chronicle"
+        / "sqlite_migrations.py"
+    )
+    if not module_path.exists():
+        raise CaptureError(f"WMA sqlite migration module not found: {module_path}")
+    return module_path
+
+
+def _load_wma_sqlite_migration_applier(
+    repo_root: Path,
+) -> Callable[..., list[str]]:
+    module_path = _resolve_wma_sqlite_migrations_module_path(repo_root)
+    module_key = str(module_path.resolve())
+    cached = _WMA_MIGRATION_APPLIERS.get(module_key)
+    if cached is not None:
+        return cached
+
+    spec = importlib.util.spec_from_file_location(
+        "dopemux_wma_sqlite_migrations",
+        str(module_path),
+    )
+    if spec is None or spec.loader is None:
+        raise CaptureError(
+            f"Failed to load sqlite migration module from {module_path}"
+        )
+
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    if not hasattr(module, "apply_chronicle_migrations"):
+        raise CaptureError(
+            "apply_chronicle_migrations missing in WMA sqlite migration module"
+        )
+
+    applier = module.apply_chronicle_migrations
+    _WMA_MIGRATION_APPLIERS[module_key] = applier
+    return applier
+
+
 def _load_wma_redactor(repo_root: Path) -> Any:
     redactor_path = (
         repo_root
@@ -189,28 +247,11 @@ def _resolve_ledger_path(repo_root: Path) -> Path:
     return (repo_root / ".dopemux" / "chronicle.sqlite").resolve()
 
 
-def _initialize_schema(conn: sqlite3.Connection, schema_path: Path) -> None:
-    schema_sql = schema_path.read_text(encoding="utf-8")
-    conn.executescript(schema_sql)
-    conn.commit()
-
-
-def _schema_table_exists(conn: sqlite3.Connection, table_name: str) -> bool:
-    row = conn.execute(
-        """
-        SELECT 1
-        FROM sqlite_master
-        WHERE type = 'table' AND name = ?
-        LIMIT 1
-        """,
-        (table_name,),
-    ).fetchone()
-    return bool(row)
-
-
 def _ensure_schema_initialized(
     conn: sqlite3.Connection,
+    repo_root: Path,
     schema_path: Path,
+    migrations_dir: Path,
     ledger_path: Path,
 ) -> None:
     ledger_key = str(ledger_path.resolve())
@@ -220,10 +261,18 @@ def _ensure_schema_initialized(
     with _SCHEMA_INIT_LOCK:
         if ledger_key in _SCHEMA_READY_LEDGER_PATHS:
             return
-        if _schema_table_exists(conn, "raw_activity_events"):
-            _SCHEMA_READY_LEDGER_PATHS.add(ledger_key)
-            return
-        _initialize_schema(conn, schema_path)
+        migration_applier = _load_wma_sqlite_migration_applier(repo_root)
+        try:
+            migration_applier(
+                conn,
+                schema_path=schema_path,
+                migrations_dir=migrations_dir,
+                logger=LOGGER,
+            )
+        except Exception as exc:
+            raise CaptureError(
+                f"Failed to initialize/migrate chronicle schema for {ledger_path}: {exc}"
+            ) from exc
         _SCHEMA_READY_LEDGER_PATHS.add(ledger_key)
 
 
@@ -372,6 +421,8 @@ def emit_capture_event(
 
     ledger_path = _resolve_ledger_path(root)
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    schema_path = _resolve_wma_schema_path(root)
+    migrations_dir = _resolve_wma_migrations_dir(root)
 
     conn = sqlite3.connect(str(ledger_path))
     try:
@@ -379,7 +430,9 @@ def emit_capture_event(
         conn.execute("PRAGMA journal_mode = WAL")
         _ensure_schema_initialized(
             conn,
-            _resolve_wma_schema_path(root),
+            root,
+            schema_path,
+            migrations_dir,
             ledger_path,
         )
         cur = conn.execute(
