@@ -460,46 +460,6 @@ services:
       interval: 30s
       start_period: 30s
 
-  # Dope-Memory - Temporal Chronicle and Working Context
-  dope-memory:
-    build:
-      context: ./services/working-memory-assistant
-      dockerfile: Dockerfile.dope-memory
-    restart: unless-stopped
-    networks:
-      - dopemux-network
-    ports:
-      - "8096:3020"
-    environment:
-      - WMA_SECRET_KEY=${WMA_SECRET_KEY:-dev-only-change-me}
-      - WMA_ENCRYPTION_KEY=${WMA_ENCRYPTION_KEY:-dev-only-change-me}
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=dopemux_knowledge_graph
-      - POSTGRES_USER=dopemux_age
-      - POSTGRES_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
-      - REDIS_URL=redis://redis-events:6379
-      - ENABLE_EVENTBUS=true
-      - ENABLE_MIRROR_SYNC=${ENABLE_MIRROR_SYNC:-false}
-      - MIRROR_SCHEMA_RESET=${MIRROR_SCHEMA_RESET:-false}
-      - DOPE_MEMORY_WORKSPACE_ID=${DOPE_MEMORY_WORKSPACE_ID:-default}
-      - POSTGRES_URL=postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@postgres:5432/dopemux_knowledge_graph
-      - DOPEMUX_CAPTURE_LEDGER_PATH=/data/chronicle.sqlite
-      - DOPEMUX_SQLITE_JOURNAL_MODE=DELETE
-    volumes:
-      - ./.dopemux:/data
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis-events:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:3020/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
   # Genetic Agent - AI Code Repair with Genetic Programming
   genetic-agent:
     build:
