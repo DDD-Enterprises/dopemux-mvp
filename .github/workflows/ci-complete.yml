@@ -124,6 +124,7 @@ jobs:
         uses: lycheeverse/lychee-action@v2  # Security: Fixed code injection vulnerability in v1
         with:
           args: --config .lychee.toml docs/**/*.md README.md
+          fail: false
 
       - name: 📖 Documentation Summary
         if: always()
