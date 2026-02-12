@@ -1,0 +1,168 @@
+"""Packet H hardening tests for supersession migration and MCP envelope."""
+
+from __future__ import annotations
+
+import sqlite3
+from pathlib import Path
+
+import pytest
+
+from chronicle.store import ChronicleStore
+from mcp import DopeMemoryMCPServer
+
+
+def _insert_raw_worklog_row(
+    conn: sqlite3.Connection,
+    *,
+    row_id: str,
+    workspace_id: str,
+    instance_id: str,
+    supersedes_entry_id: str | None,
+) -> None:
+    """Insert a minimal valid row for index-level tests."""
+    conn.execute(
+        """
+        INSERT INTO work_log_entries (
+            id, workspace_id, instance_id, session_id, ts_utc, duration_sec,
+            category, entry_type, workflow_phase, summary, details_json, reasoning,
+            outcome, importance_score, tags_json, linked_decisions_json, linked_files_json,
+            linked_commits_json, linked_chat_range_json, parent_entry_id, source_event_id,
+            source_event_type, source_adapter, source_event_ts_utc, promotion_rule,
+            promotion_ts_utc, supersedes_entry_id, created_at_utc, updated_at_utc
+        ) VALUES (
+            ?, ?, ?, NULL, '2026-02-11T12:00:00Z', NULL,
+            'planning', 'decision', NULL, 'test', NULL, NULL,
+            'in_progress', 5, '[]', NULL, NULL,
+            NULL, NULL, NULL, ?, 'test.event', 'test_adapter', '2026-02-11T12:00:00Z',
+            'test.rule', '2026-02-11T12:00:00Z', ?, '2026-02-11T12:00:00Z', '2026-02-11T12:00:00Z'
+        )
+        """,
+        (row_id, workspace_id, instance_id, f"evt-{row_id}", supersedes_entry_id),
+    )
+
+
+def test_scoped_supersession_unique_index_allows_cross_scope_reuse(tmp_path: Path) -> None:
+    """Same supersedes target is allowed across different workspace/instance scopes."""
+    db_path = tmp_path / "scoped_index.db"
+    store = ChronicleStore(db_path)
+    store.initialize_schema()
+    conn = store.connect()
+
+    target_id = "same-target-id"
+    _insert_raw_worklog_row(
+        conn,
+        row_id="corr-ws1",
+        workspace_id="ws-1",
+        instance_id="A",
+        supersedes_entry_id=target_id,
+    )
+    _insert_raw_worklog_row(
+        conn,
+        row_id="corr-ws2",
+        workspace_id="ws-2",
+        instance_id="B",
+        supersedes_entry_id=target_id,
+    )
+    conn.commit()
+
+    with pytest.raises(sqlite3.IntegrityError):
+        _insert_raw_worklog_row(
+            conn,
+            row_id="corr-ws1-dup",
+            workspace_id="ws-1",
+            instance_id="A",
+            supersedes_entry_id=target_id,
+        )
+
+
+def test_v1_2_1_migration_converts_unscoped_index_to_scoped(tmp_path: Path) -> None:
+    """Migration upgrades legacy unscoped unique index to scoped partial index."""
+    db_path = tmp_path / "migrate_index.db"
+    conn = sqlite3.connect(str(db_path))
+
+    conn.executescript(
+        """
+        CREATE TABLE work_log_entries (
+          id TEXT PRIMARY KEY,
+          workspace_id TEXT NOT NULL,
+          instance_id TEXT NOT NULL,
+          supersedes_entry_id TEXT
+        );
+        CREATE TABLE schema_migrations (
+          version TEXT PRIMARY KEY,
+          applied_at_utc TEXT NOT NULL
+        );
+        CREATE UNIQUE INDEX idx_worklog_supersedes_unique
+          ON work_log_entries(supersedes_entry_id)
+          WHERE supersedes_entry_id IS NOT NULL;
+        """
+    )
+
+    migration_sql = (
+        Path(__file__).resolve().parents[2]
+        / "chronicle"
+        / "migrations"
+        / "v1_2_1_scope_supersession_unique_index.sql"
+    ).read_text(encoding="utf-8")
+
+    conn.executescript(migration_sql)
+    conn.executescript(migration_sql)  # idempotency check
+
+    index_rows = conn.execute(
+        """
+        SELECT name, sql
+        FROM sqlite_master
+        WHERE type = 'index' AND tbl_name = 'work_log_entries'
+        """
+    ).fetchall()
+    index_sql_by_name = {name: (sql or "") for name, sql in index_rows}
+
+    assert "idx_worklog_supersedes_unique" not in index_sql_by_name
+    assert "idx_worklog_supersedes_unique_scoped" in index_sql_by_name
+    scoped_sql = index_sql_by_name["idx_worklog_supersedes_unique_scoped"].lower()
+    assert "(workspace_id, instance_id, supersedes_entry_id)" in scoped_sql
+    assert "where supersedes_entry_id is not null" in scoped_sql
+
+    version = conn.execute(
+        "SELECT version FROM schema_migrations WHERE version = 'v1.2.1'"
+    ).fetchone()
+    assert version is not None
+
+
+def test_memory_correct_response_envelope_is_stable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """memory_correct returns explicit success on both success and failure paths."""
+    ledger_path = tmp_path / "mcp_contract.sqlite"
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+    server = DopeMemoryMCPServer()
+
+    stored = server.memory_store(
+        workspace_id="ws-1",
+        instance_id="A",
+        category="planning",
+        entry_type="decision",
+        summary="original",
+    )
+    original_id = stored["entry_id"]
+
+    success = server.memory_correct(
+        workspace_id="ws-1",
+        instance_id="A",
+        entry_id=original_id,
+        correction_type="update",
+        summary="corrected",
+    )
+    assert success["success"] is True
+    assert success["created"] is True
+    assert isinstance(success["entry_id"], str) and success["entry_id"]
+
+    failure = server.memory_correct(
+        workspace_id="ws-1",
+        instance_id="A",
+        entry_id="does-not-exist",
+        correction_type="update",
+        summary="should fail",
+    )
+    assert failure["success"] is False
+    assert isinstance(failure.get("error"), str) and failure["error"]

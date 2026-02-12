@@ -18,9 +18,15 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from ..canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
-from ..chronicle.store import ChronicleStore
-from ..promotion import PromotionEngine, Redactor
+try:
+    from ..canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
+    from ..chronicle.store import ChronicleStore
+    from ..promotion import PromotionEngine, Redactor
+except ImportError:
+    # Support direct service-local imports in unit tests.
+    from canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
+    from chronicle.store import ChronicleStore
+    from promotion import PromotionEngine, Redactor
 
 
 @dataclass
@@ -613,7 +619,7 @@ class DopeMemoryMCPServer:
         """Supersede or retract an existing entry.
 
         Returns:
-            {entry_id: str, created: bool}
+            {success: bool, entry_id: str, created: bool}
         """
         store = self._get_store(workspace_id)
 
@@ -634,6 +640,6 @@ class DopeMemoryMCPServer:
                 outcome=outcome,
                 importance_score=importance_score,
             )
-            return {"entry_id": new_entry_id, "created": True}
+            return {"success": True, "entry_id": new_entry_id, "created": True}
         except ValueError as e:
             return {"success": False, "error": str(e)}
