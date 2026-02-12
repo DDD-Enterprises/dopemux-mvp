@@ -1,11 +1,14 @@
--- Packet G: Scope Supersession Unique Index
+-- Packet H: Scope Supersession Unique Index (hardening)
 -- Version: v1.2.1
 -- Purpose: Scope supersession uniqueness to workspace and instance to prevent cross-workspace contamination.
 
--- Drop old global index
+-- Ensure final state is deterministic:
+-- 1) remove legacy global unique index
+-- 2) rebuild scoped index in case prior environments created a divergent definition
 DROP INDEX IF EXISTS idx_worklog_supersedes_unique;
+DROP INDEX IF EXISTS idx_worklog_supersedes_unique_scoped;
 
--- Create new scoped index
+-- Create scoped partial unique index
 CREATE UNIQUE INDEX IF NOT EXISTS idx_worklog_supersedes_unique_scoped
   ON work_log_entries(workspace_id, instance_id, supersedes_entry_id)
   WHERE supersedes_entry_id IS NOT NULL;
