@@ -289,3 +289,16 @@ reports/stale_audit_*.md
 reports/g34/*.txt
 reports/g33/baseline_*.txt
 reports/g33/post_*.txt
+
+# TaskX generated outputs
+out/taskx_doctor/
+out/taskx_project_shell/
+out/taskx_project_upgrade/
+
+# TaskX instruction generation artifacts
+.taskx/instructions/PROJECT_INIT_REPORT.md
+.taskx/instructions/taskx_bundle.yaml
+.taskx/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt
+
+# Local backups
+.claude/*.bak_*
