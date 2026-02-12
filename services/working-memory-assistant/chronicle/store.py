@@ -77,19 +77,23 @@ class ChronicleStore:
     # Supersession Helpers (Packet F)
     # ─────────────────────────────────────────────────────────────────
 
-    def _get_superseded_entry_ids(self) -> set[str]:
+    def _get_superseded_entry_ids(self, workspace_id: str, instance_id: str) -> set[str]:
         """Return set of entry IDs that have been superseded.
         
         An entry is superseded if its ID appears as supersedes_entry_id
-        in another entry.
+        in another entry, scoped to the same workspace/instance.
         """
         conn = self.connect()
         rows = conn.execute(
-            "SELECT supersedes_entry_id FROM work_log_entries WHERE supersedes_entry_id IS NOT NULL"
+            """
+            SELECT supersedes_entry_id FROM work_log_entries 
+            WHERE workspace_id = ? AND instance_id = ? AND supersedes_entry_id IS NOT NULL
+            """,
+            (workspace_id, instance_id),
         ).fetchall()
         return {row[0] for row in rows}
 
-    def _get_chain_depth(self, entry_id: str) -> int:
+    def _get_chain_depth(self, workspace_id: str, instance_id: str, entry_id: str) -> int:
         """Count the number of entries in the supersession chain ending at entry_id.
         
         Traverses backward (from newest to oldest) via supersedes_entry_id.
@@ -103,8 +107,8 @@ class ChronicleStore:
         
         while True:
             row = conn.execute(
-                "SELECT supersedes_entry_id FROM work_log_entries WHERE id = ?",
-                (current_id,),
+                "SELECT supersedes_entry_id FROM work_log_entries WHERE id = ? AND workspace_id = ? AND instance_id = ?",
+                (current_id, workspace_id, instance_id),
             ).fetchone()
             if not row or row[0] is None:
                 break
@@ -119,7 +123,7 @@ class ChronicleStore:
         
         return depth
 
-    def _resolve_chain_head(self, entry_id: str) -> str:
+    def _resolve_chain_head(self, workspace_id: str, instance_id: str, entry_id: str) -> str:
         """Given any entry ID, walk forward to find the current chain head.
         
         The head is the entry that is not itself superseded by any other entry.
@@ -130,8 +134,8 @@ class ChronicleStore:
         
         while True:
             row = conn.execute(
-                "SELECT id FROM work_log_entries WHERE supersedes_entry_id = ?",
-                (current_id,),
+                "SELECT id FROM work_log_entries WHERE supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+                (current_id, workspace_id, instance_id),
             ).fetchone()
             if not row:
                 return current_id
@@ -143,17 +147,17 @@ class ChronicleStore:
             visited.add(successor_id)
             current_id = successor_id
 
-    def _is_entry_superseded(self, entry_id: str) -> bool:
+    def _is_entry_superseded(self, workspace_id: str, instance_id: str, entry_id: str) -> bool:
         """Check if an entry has been superseded by another entry."""
         conn = self.connect()
         row = conn.execute(
-            "SELECT COUNT(*) FROM work_log_entries WHERE supersedes_entry_id = ?",
-            (entry_id,),
+            "SELECT COUNT(*) FROM work_log_entries WHERE supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+            (entry_id, workspace_id, instance_id),
         ).fetchone()
         return row[0] > 0
 
     def _compute_chain_annotations(
-        self, entries: list[dict[str, Any]]
+        self, entries: list[dict[str, Any]], workspace_id: str, instance_id: str
     ) -> list[dict[str, Any]]:
         """Add supersession chain annotations to a list of entries.
         
@@ -167,12 +171,16 @@ class ChronicleStore:
             return entries
         
         conn = self.connect()
-        superseded_ids = self._get_superseded_entry_ids()
+        superseded_ids = self._get_superseded_entry_ids(workspace_id, instance_id)
         
         # Build lookup: superseded_id -> superseding_id
         superseding_map: dict[str, str] = {}
         rows = conn.execute(
-            "SELECT id, supersedes_entry_id FROM work_log_entries WHERE supersedes_entry_id IS NOT NULL"
+            """
+            SELECT id, supersedes_entry_id FROM work_log_entries 
+            WHERE workspace_id = ? AND instance_id = ? AND supersedes_entry_id IS NOT NULL
+            """,
+            (workspace_id, instance_id),
         ).fetchall()
         for row in rows:
             superseding_map[row[1]] = row[0]
@@ -192,8 +200,8 @@ class ChronicleStore:
                 current = eid
                 while True:
                     row_data = conn.execute(
-                        "SELECT supersedes_entry_id FROM work_log_entries WHERE id = ?",
-                        (current,),
+                        "SELECT supersedes_entry_id FROM work_log_entries WHERE id = ? AND workspace_id = ? AND instance_id = ?",
+                        (current, workspace_id, instance_id),
                     ).fetchone()
                     if not row_data or row_data[0] is None:
                         break
@@ -201,8 +209,8 @@ class ChronicleStore:
                     current = row_data[0]
                 
                 # Walk forward from origin to find total depth
-                head = self._resolve_chain_head(eid)
-                depth = self._get_chain_depth(head)
+                head = self._resolve_chain_head(workspace_id, instance_id, eid)
+                depth = self._get_chain_depth(workspace_id, instance_id, head)
                 chain_position = {"position": depth - position + 1, "depth": depth}
             
             annotated_entry = {
@@ -368,14 +376,14 @@ class ChronicleStore:
                     f"Cannot supersede non-existent entry: {supersedes_entry_id}"
                 )
             # Verify target is the chain head (Packet F §6.5 rule)
-            if self._is_entry_superseded(supersedes_entry_id):
-                head = self._resolve_chain_head(supersedes_entry_id)
+            if self._is_entry_superseded(workspace_id, instance_id, supersedes_entry_id):
+                head = self._resolve_chain_head(workspace_id, instance_id, supersedes_entry_id)
                 raise ValueError(
                     f"Cannot supersede entry {supersedes_entry_id} — it is already superseded. "
                     f"Target the chain head instead: {head}"
                 )
             # Verify chain depth limit (Packet F §3.4)
-            current_depth = self._get_chain_depth(supersedes_entry_id)
+            current_depth = self._get_chain_depth(workspace_id, instance_id, supersedes_entry_id)
             if current_depth >= MAX_CHAIN_DEPTH:
                 raise ValueError(
                     f"Supersession chain depth limit exceeded (max {MAX_CHAIN_DEPTH}). "
@@ -452,8 +460,8 @@ class ChronicleStore:
                 # If entry_id doesn't exist but rowcount was 0, 
                 # then it MUST be the supersedes_entry_id UNIQUE constraint.
                 row = conn.execute(
-                    "SELECT id FROM work_log_entries WHERE supersedes_entry_id = ?",
-                    (supersedes_entry_id,),
+                    "SELECT id FROM work_log_entries WHERE supersedes_entry_id = ? AND workspace_id = ? AND instance_id = ?",
+                    (supersedes_entry_id, workspace_id, instance_id),
                 ).fetchone()
                 if row:
                     raise ValueError(
@@ -524,8 +532,8 @@ class ChronicleStore:
             raise ValueError(f"Target entry {supersedes_entry_id} not found.")
 
         # Ensure we are targeting the head of the chain
-        if self._is_entry_superseded(supersedes_entry_id):
-            real_head = self._resolve_chain_head(supersedes_entry_id)
+        if self._is_entry_superseded(workspace_id, instance_id, supersedes_entry_id):
+            real_head = self._resolve_chain_head(workspace_id, instance_id, supersedes_entry_id)
             raise ValueError(
                 f"Target {supersedes_entry_id} is already superseded. Target head {real_head} instead."
             )
@@ -620,7 +628,7 @@ class ChronicleStore:
         
         # Add chain annotations in replay_full mode (Packet F §5.3)
         if mode == "replay_full":
-            results = self._compute_chain_annotations(results)
+            results = self._compute_chain_annotations(results, workspace_id, instance_id)
         
         return results
 
@@ -744,7 +752,7 @@ class ChronicleStore:
 
         # Add chain annotations when including superseded entries (Packet F §5.2)
         if include_superseded:
-            results = self._compute_chain_annotations(results)
+            results = self._compute_chain_annotations(results, workspace_id, instance_id)
 
         return results
 
@@ -937,7 +945,7 @@ class ChronicleStore:
             ).fetchall()
 
         # Get superseded entry IDs for staleness detection (Packet F §7.1)
-        superseded_ids = self._get_superseded_entry_ids()
+        superseded_ids = self._get_superseded_entry_ids(workspace_id, instance_id)
 
         results = []
         for row in rows:
