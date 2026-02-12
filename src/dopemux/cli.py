@@ -6349,6 +6349,134 @@ def search(query: str, limit: int, index_path: Optional[Path]):
     console.logger.info(f"\n[dim]Showing {len(results)} of up to {limit} results[/dim]")
 
 
+@memory.group()
+def capture():
+    """📥 Capture CLI tool events (Copilot, Codex, etc.)"""
+    pass
+
+
+@capture.command()
+@click.argument("session_id")
+@click.option(
+    "--since",
+    type=str,
+    default=None,
+    help="Only ingest events after this ISO timestamp",
+)
+@click.option(
+    "--repo-root",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help="Project repository root (default: auto-detect)",
+)
+def copilot(session_id: str, since: Optional[str], repo_root: Optional[Path]):
+    """
+    Ingest Copilot CLI session transcript into Chronicle.
+
+    Parses JSONL events from ~/.copilot/session-state/{SESSION_ID}/events.jsonl
+    and emits to Chronicle via content-addressed deduplication.
+
+    Examples:
+
+        dopemux memory capture copilot 550e8400-e29b-41d4-a716-446655440000
+
+        dopemux memory capture copilot SESSION_ID --since 2025-02-12T10:30:00Z
+
+        dopemux memory capture copilot SESSION_ID --repo-root /path/to/project
+    """
+    from dopemux.memory.adapters import CopilotCaptureAdapter
+    from datetime import datetime
+
+    try:
+        # Parse since timestamp if provided
+        since_dt = None
+        if since:
+            try:
+                since_dt = datetime.fromisoformat(since.rstrip("Z"))
+            except ValueError as e:
+                console.logger.error(f"[red]✗ Invalid timestamp format:[/red] {e}")
+                console.logger.info("[dim]Expected ISO 8601 format: 2025-02-12T10:30:00Z[/dim]")
+                raise click.Abort()
+
+        # Initialize adapter
+        adapter = CopilotCaptureAdapter(repo_root=repo_root)
+
+        # Ingest session
+        console.logger.info(f"[cyan]📥 Ingesting Copilot session: {session_id}[/cyan]")
+        if since:
+            console.logger.info(f"[dim]Filtering events after: {since}[/dim]")
+
+        stats = adapter.ingest_session(session_id, since=since_dt)
+
+        # Display results
+        console.logger.info(f"\n[green]✓[/green] Ingestion complete:")
+        console.logger.info(f"  Total events parsed: {stats['total']}")
+        console.logger.info(f"  Successfully inserted: {stats['inserted']}")
+        console.logger.info(f"  Deduplicated (already exist): {stats['deduplicated']}")
+        console.logger.info(f"  Skipped (unmapped types): {stats['skipped']}")
+
+        if stats["inserted"] == 0 and stats["total"] > 0:
+            console.logger.info("\n[yellow]💡 All events already ingested (idempotent)[/yellow]")
+
+    except FileNotFoundError as e:
+        console.logger.error(f"[red]✗ Session not found:[/red] {e}")
+        console.logger.info("[dim]Use 'dopemux memory capture copilot-list' to see available sessions[/dim]")
+        raise click.Abort()
+    except Exception as e:
+        console.logger.error(f"[red]✗ Ingestion failed:[/red] {e}")
+        raise click.Abort()
+
+
+@capture.command("copilot-list")
+@click.option(
+    "--limit",
+    type=int,
+    default=20,
+    help="Max sessions to display (default: 20)",
+)
+def copilot_list(limit: int):
+    """
+    List available Copilot CLI sessions.
+
+    Shows sessions from ~/.copilot/session-state/ with event counts and timestamps.
+
+    Examples:
+
+        dopemux memory capture copilot-list
+
+        dopemux memory capture copilot-list --limit 50
+    """
+    from dopemux.memory.adapters import CopilotCaptureAdapter
+    from rich.table import Table
+
+    adapter = CopilotCaptureAdapter()
+    sessions = adapter.list_sessions()
+
+    if not sessions:
+        console.logger.info("[yellow]No Copilot sessions found in ~/.copilot/session-state/[/yellow]")
+        return
+
+    # Limit results
+    display_sessions = sessions[:limit]
+
+    table = Table(title=f"Available Copilot Sessions (showing {len(display_sessions)} of {len(sessions)})")
+    table.add_column("Session ID", style="cyan", width=36)
+    table.add_column("Events", style="green", justify="right")
+    table.add_column("Started", style="yellow")
+
+    for session in display_sessions:
+        table.add_row(
+            session["session_id"],
+            str(session["event_count"]),
+            session.get("start_timestamp") or "unknown",
+        )
+
+    console.logger.info(table)
+
+    if len(sessions) > limit:
+        console.logger.info(f"\n[dim]💡 Showing {limit} of {len(sessions)} sessions. Use --limit to see more.[/dim]")
+
+
 # ============================================================================
 # 🚀 EASY LAUNCH SHORTCUTS - Quick commands for common workflows
 # ============================================================================
