@@ -1,0 +1,8 @@
+# Ignore raw audit output (regenerated on each run)
+RAW/
+
+# Keep only committed reports
+!STATUS.md
+!EVIDENCE.md
+!DRIFT.md
+!FIX_PACKET.md

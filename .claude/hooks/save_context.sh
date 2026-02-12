@@ -3,6 +3,10 @@
 #
 # Triggered when Claude stops working.
 # Auto-saves context to enable seamless session continuation.
+#
+# NOTE: Requires services/adhd-engine running on port 8080.
+# If not running, hook fails gracefully (backgrounded curl with timeout).
+# This is expected and OK—hook errors are harmless.
 
 ADHD_ENGINE_URL="${ADHD_ENGINE_URL:-http://localhost:8080/api/v1}"
 
