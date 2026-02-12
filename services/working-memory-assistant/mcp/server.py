@@ -19,12 +19,12 @@ from datetime import datetime, timezone
 from typing import Any, Optional
 
 try:
-    from ..canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
+    from ..canonical_ledger import resolve_canonical_ledger
     from ..chronicle.store import ChronicleStore
     from ..promotion import PromotionEngine, Redactor
 except ImportError:
     # Support direct service-local imports in unit tests.
-    from canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
+    from canonical_ledger import resolve_canonical_ledger
     from chronicle.store import ChronicleStore
     from promotion import PromotionEngine, Redactor
 
@@ -246,6 +246,7 @@ class DopeMemoryMCPServer:
             )
 
         return {
+            "success": True,
             "items": response_items,
             "more_count": more_count,
             "next_token": next_token,
@@ -318,7 +319,7 @@ class DopeMemoryMCPServer:
             linked_chat_range=links.get("chat_range") if links else None,
         )
 
-        return {"entry_id": entry_id, "created": True}
+        return {"success": True, "entry_id": entry_id, "created": True}
 
     # ─────────────────────────────────────────────────────────────────
     # Tool: memory_recap
@@ -452,6 +453,7 @@ class DopeMemoryMCPServer:
             trajectory = "No recent activity"
 
         return {
+            "success": True,
             "trajectory": trajectory,
             "cards": cards[:top_k],
             "more_count": max(0, len(entries) - top_k),
@@ -483,11 +485,11 @@ class DopeMemoryMCPServer:
         # Verify entry exists
         entry = store.get_entry_by_id(workspace_id, instance_id, issue_entry_id)
         if not entry:
-            return {"issue_marked": False, "error": "Entry not found"}
+            return {"success": False, "issue_marked": False, "error": "Entry not found"}
 
         # For now, we just verify it exists and return success
         # Full implementation would update tags
-        return {"issue_marked": True}
+        return {"success": True, "issue_marked": True}
 
     # ─────────────────────────────────────────────────────────────────
     # Tool: memory_link_resolution
@@ -514,7 +516,7 @@ class DopeMemoryMCPServer:
         resolution = store.get_entry_by_id(workspace_id, instance_id, resolution_entry_id)
 
         if not issue or not resolution:
-            return {"linked": False, "error": "Entry not found"}
+            return {"success": False, "linked": False, "error": "Entry not found"}
 
         # Create link
         store.insert_issue_link(
@@ -526,7 +528,7 @@ class DopeMemoryMCPServer:
             evidence_window_min=evidence_window_min,
         )
 
-        return {"linked": True}
+        return {"success": True, "linked": True}
 
     # ─────────────────────────────────────────────────────────────────
     # Tool: memory_replay_session
@@ -595,6 +597,7 @@ class DopeMemoryMCPServer:
             })
 
         return {
+            "success": True,
             "items": response_items,
             "more_count": 1 if has_more else 0,  # Approximate
             "next_token": next_token,
@@ -615,6 +618,7 @@ class DopeMemoryMCPServer:
         details: Optional[dict[str, Any]] = None,
         outcome: Optional[str] = None,
         importance_score: Optional[int] = None,
+        idempotency_key: Optional[str] = None,
     ) -> dict[str, Any]:
         """Supersede or retract an existing entry.
 
@@ -639,6 +643,7 @@ class DopeMemoryMCPServer:
                 details=redacted_details,
                 outcome=outcome,
                 importance_score=importance_score,
+                idempotency_key=idempotency_key,
             )
             return {"success": True, "entry_id": new_entry_id, "created": True}
         except ValueError as e:

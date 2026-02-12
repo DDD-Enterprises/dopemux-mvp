@@ -13,6 +13,7 @@ prelude: 07_Mcp_Contracts (explanation) for dopemux documentation and developer 
 
 ## Global Constraints
 - All responses default Top-3.
+- All responses include a `success: boolean` field (True for success, False for error).
 - All inputs and outputs are ASCII normalized.
 - All IDs are strings at MCP boundary (even if UUID inside).
 - All timestamps returned are ISO8601 UTC strings.
@@ -41,6 +42,7 @@ prelude: 07_Mcp_Contracts (explanation) for dopemux documentation and developer 
 ### Response
 ```json
 {
+  "success": true,
   "items": [
     {
       "id": "string",
@@ -123,6 +125,7 @@ prelude: 07_Mcp_Contracts (explanation) for dopemux documentation and developer 
 ### Response (Top-3 recap cards)
 ```json
 {
+  "success": true,
   "trajectory": "string",
   "cards": [
     {"title":"string","summary":"string","entry_ids":["string"]}
@@ -150,6 +153,7 @@ Marks a curated entry as an issue (or caused_issue).
 ### Response
 ```json
 {
+  "success": true,
   "issue_marked": true
 }
 ```
@@ -172,6 +176,7 @@ Links an issue to a resolution entry.
 ### Response
 ```json
 {
+  "success": true,
   "linked": true
 }
 ```
@@ -193,6 +198,7 @@ Returns a chronological replay of curated entries for a session with Top-3 defau
 ### Response
 ```json
 {
+  "success": true,
   "items": [
     {
       "id": "string",
@@ -222,13 +228,15 @@ Mechanically supersedes or retracts an existing entry.
   "reason": "string|null",
   "details": "object|null",
   "outcome": "string|null",
-  "importance_score": "number|null"
+  "importance_score": "number|null",
+  "idempotency_key": "string|null"
 }
 ```
 
 ### Response
 ```json
 {
+  "success": true,
   "entry_id": "string",
   "created": true
 }
