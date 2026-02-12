@@ -1,0 +1,245 @@
+     1	"""
+     2	Task-Orchestrator Core - Connection management.
+     3	
+     4	Extracted from enhanced_orchestrator.py lines 278-397.
+     5	"""
+     6	
+     7	import asyncio
+     8	import logging
+     9	from datetime import datetime, timedelta, timezone
+    10	from typing import Any, Dict, List, Optional
+    11	
+    12	import aiohttp
+    13	import redis.asyncio as redis
+    14	
+    15	from .config import settings
+    16	
+    17	
+    18	logger = logging.getLogger(__name__)
+    19	
+    20	# Request ID counter
+    21	_request_id = 0
+    22	
+    23	
+    24	def _next_request_id() -> int:
+    25	    """Generate next JSON-RPC request ID."""
+    26	    global _request_id
+    27	    _request_id += 1
+    28	    return _request_id
+    29	
+    30	
+    31	class LeantimeClient:
+    32	    """Manages connection to Leantime JSON-RPC API."""
+    33	
+    34	    def __init__(self):
+    35	        self.session: Optional[aiohttp.ClientSession] = None
+    36	        self.base_url = settings.leantime_url.rstrip('/')
+    37	        self._initialized = False
+    38	
+    39	    async def initialize(self):
+    40	        """Initialize connection to Leantime."""
+    41	        if self._initialized:
+    42	            return
+    43	
+    44	        self.session = aiohttp.ClientSession(
+    45	            timeout=aiohttp.ClientTimeout(total=30),
+    46	            headers={
+    47	                "Authorization": f"Bearer {settings.leantime_token}",
+    48	                "Content-Type": "application/json"
+    49	            }
+    50	        )
+    51	
+    52	        # Test connection
+    53	        if await self.test_connection():
+    54	            self._initialized = True
+    55	            logger.info("🔗 Connected to Leantime API")
+    56	        else:
+    57	            logger.warning("⚠️ Leantime connection test failed")
+    58	
+    59	    async def test_connection(self) -> bool:
+    60	        """Test Leantime API connectivity."""
+    61	        try:
+    62	            async with self.session.post(
+    63	                f"{self.base_url}/api/jsonrpc",
+    64	                json={
+    65	                    "jsonrpc": "2.0",
+    66	                    "method": "leantime.rpc.projects.getAllProjects",
+    67	                    "params": {"limit": 1},
+    68	                    "id": _next_request_id()
+    69	                }
+    70	            ) as response:
+    71	                if response.status == 200:
+    72	                    data = await response.json()
+    73	                    return "result" in data
+    74	                return False
+    75	        except Exception as e:
+    76	            logger.error(f"Leantime connection test failed: {e}")
+    77	            return False
+    78	
+    79	    async def fetch_updated_tasks(self, since: Optional[datetime] = None) -> List[Dict[str, Any]]:
+    80	        """Fetch tasks updated since given timestamp."""
+    81	        if not self.session:
+    82	            return []
+    83	
+    84	        if since is None:
+    85	            since = datetime.now(timezone.utc) - timedelta(hours=24)
+    86	
+    87	        try:
+    88	            async with self.session.post(
+    89	                f"{self.base_url}/api/jsonrpc",
+    90	                json={
+    91	                    "jsonrpc": "2.0",
+    92	                    "method": "leantime.rpc.tickets.getAllTickets",
+    93	                    "params": {
+    94	                        "limit": 100,
+    95	                        "since": since.isoformat()
+    96	                    },
+    97	                    "id": _next_request_id()
+    98	                }
+    99	            ) as response:
+   100	                if response.status == 200:
+   101	                    data = await response.json()
+   102	                    tasks = data.get("result", [])
+   103	                    return tasks if isinstance(tasks, list) else []
+   104	        except Exception as e:
+   105	            logger.error(f"Failed to fetch Leantime tasks: {e}")
+   106	        
+   107	        return []
+   108	
+   109	    async def update_ticket_status(self, ticket_id: int, status: str) -> bool:
+   110	        """Update ticket status in Leantime."""
+   111	        if not self.session:
+   112	            return False
+   113	
+   114	        try:
+   115	            async with self.session.post(
+   116	                f"{self.base_url}/api/jsonrpc",
+   117	                json={
+   118	                    "jsonrpc": "2.0",
+   119	                    "method": "leantime.rpc.tickets.updateTicket",
+   120	                    "params": {
+   121	                        "id": ticket_id,
+   122	                        "status": status
+   123	                    },
+   124	                    "id": _next_request_id()
+   125	                }
+   126	            ) as response:
+   127	                return response.status == 200
+   128	        except Exception as e:
+   129	            logger.error(f"Failed to update Leantime ticket: {e}")
+   130	            return False
+   131	
+   132	    async def close(self):
+   133	        """Close HTTP session."""
+   134	        if self.session:
+   135	            await self.session.close()
+   136	            self._initialized = False
+   137	
+   138	
+   139	class RedisManager:
+   140	    """Manages Redis for caching and coordination."""
+   141	
+   142	    def __init__(self):
+   143	        self.client: Optional[redis.Redis] = None
+   144	        self._initialized = False
+   145	
+   146	    async def initialize(self):
+   147	        """Initialize Redis connection."""
+   148	        if self._initialized:
+   149	            return
+   150	
+   151	        try:
+   152	            self.client = redis.from_url(
+   153	                settings.redis_url,
+   154	                db=settings.redis_db,
+   155	                decode_responses=True,
+   156	                password=settings.redis_password if settings.redis_password else None
+   157	            )
+   158	            await self.client.ping()
+   159	            self._initialized = True
+   160	            logger.info("🔗 Connected to Redis for coordination")
+   161	        except Exception as e:
+   162	            logger.error(f"Failed to connect to Redis: {e}")
+   163	            raise
+   164	
+   165	    async def get_last_poll(self) -> Optional[datetime]:
+   166	        """Get last poll timestamp."""
+   167	        if not self.client:
+   168	            return None
+   169	        
+   170	        last_poll = await self.client.get("orchestrator:last_poll")
+   171	        if last_poll:
+   172	            return datetime.fromisoformat(last_poll)
+   173	        return None
+   174	
+   175	    async def set_last_poll(self, timestamp: datetime):
+   176	        """Set last poll timestamp."""
+   177	        if self.client:
+   178	            await self.client.set("orchestrator:last_poll", timestamp.isoformat())
+   179	
+   180	    async def cache_set(self, key: str, value: str, ttl: int = 3600):
+   181	        """Set cache value with TTL."""
+   182	        if self.client:
+   183	            await self.client.setex(key, ttl, value)
+   184	
+   185	    async def cache_get(self, key: str) -> Optional[str]:
+   186	        """Get cached value."""
+   187	        if self.client:
+   188	            return await self.client.get(key)
+   189	        return None
+   190	
+   191	    async def close(self):
+   192	        """Close Redis connection."""
+   193	        if self.client:
+   194	            await self.client.close()
+   195	            self._initialized = False
+   196	
+   197	
+   198	# Global singleton instances
+   199	leantime_client = LeantimeClient()
+   200	redis_manager = RedisManager()
+   201	
+   202	# Task decomposition instances (initialized lazily on first request)
+   203	_task_coordinator = None
+   204	_pal_client = None
+   205	_conport_adapter = None
+   206	
+   207	
+   208	def get_task_coordinator():
+   209	    """Get or create TaskCoordinator singleton."""
+   210	    global _task_coordinator
+   211	    if _task_coordinator is None:
+   212	        import sys
+   213	        from pathlib import Path
+   214	        sys.path.insert(0, str(Path(__file__).parent.parent))
+   215	        from task_coordinator import TaskCoordinator
+   216	        _task_coordinator = TaskCoordinator(workspace_id=settings.workspace_id)
+   217	        logger.info(f"✅ TaskCoordinator initialized for workspace: {settings.workspace_id}")
+   218	    return _task_coordinator
+   219	
+   220	
+   221	def get_pal_client():
+   222	    """Get or create PALClient singleton."""
+   223	    global _pal_client
+   224	    if _pal_client is None:
+   225	        import sys
+   226	        from pathlib import Path
+   227	        sys.path.insert(0, str(Path(__file__).parent.parent))
+   228	        from pal_client import TaskOrchestratorPALClient
+   229	        # Pal MCP server runs on port 3003
+   230	        _pal_client = TaskOrchestratorPALClient("http://localhost:3003", {})
+   231	        logger.info("✅ PALClient initialized (http://localhost:3003)")
+   232	    return _pal_client
+   233	
+   234	
+   235	def get_conport_adapter():
+   236	    """Get or create ConPortEventAdapter singleton."""
+   237	    global _conport_adapter
+   238	    if _conport_adapter is None:
+   239	        import sys
+   240	        from pathlib import Path
+   241	        sys.path.insert(0, str(Path(__file__).parent.parent))
+   242	        from adapters.conport_adapter import ConPortEventAdapter
+   243	        _conport_adapter = ConPortEventAdapter(workspace_id=settings.workspace_id)
+   244	        logger.info(f"✅ ConPortEventAdapter initialized for workspace: {settings.workspace_id}")
+   245	    return _conport_adapter

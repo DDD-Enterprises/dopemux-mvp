@@ -1,0 +1,199 @@
+     1	#!/usr/bin/env python3
+     2	"""
+     3	Test script for ConPort bidirectional sync with Task Orchestrator.
+     4	
+     5	Tests:
+     6	- ConPort adapter bidirectional transformations
+     7	- Task creation and updates in ConPort
+     8	- Task retrieval from ConPort
+     9	- Dependency synchronization
+    10	"""
+    11	
+    12	import asyncio
+    13	import logging
+    14	from pathlib import Path
+    15	from typing import List
+    16	
+    17	# Add the task-orchestrator to path
+    18	import sys
+    19	sys.path.insert(0, str(Path(__file__).parent))
+    20	
+    21	from enhanced_orchestrator import OrchestrationTask, TaskStatus, AgentType
+    22	from adapters.conport_adapter import ConPortEventAdapter, safe_orchestration_task_to_conport_progress, safe_conport_progress_to_orchestration_task
+    23	
+    24	logging.basicConfig(level=logging.INFO)
+    25	logger = logging.getLogger(__name__)
+    26	
+    27	WORKSPACE_ID = "/Users/hue/code/dopemux-mvp"
+    28	
+    29	async def test_bidirectional_transformations():
+    30	    """Test bidirectional transformations between OrchestrationTask and ConPort progress."""
+    31	    logger.info("🧪 Testing bidirectional transformations...")
+    32	
+    33	    # Create a sample OrchestrationTask
+    34	    task = OrchestrationTask(
+    35	        id="test-task-1",
+    36	        leantime_id=123,
+    37	        title="Test ConPort Integration",
+    38	        description="Testing bidirectional sync functionality",
+    39	        status=TaskStatus.IN_PROGRESS,
+    40	        priority=3,
+    41	        complexity_score=0.7,
+    42	        estimated_minutes=90,
+    43	        assigned_agent=AgentType.SERENA,
+    44	        energy_required="high",
+    45	        dependencies=["test-task-2"],
+    46	        context_switches_allowed=2,
+    47	        break_frequency_minutes=25
+    48	    )
+    49	
+    50	    # Test OrchestrationTask → ConPort progress
+    51	    progress_data = safe_orchestration_task_to_conport_progress(task, WORKSPACE_ID)
+    52	    if progress_data:
+    53	        logger.info(f"✅ Task → Progress transformation successful")
+    54	        logger.info(f"   Status: {progress_data['status']}")
+    55	        logger.info(f"   Description length: {len(progress_data['description'])}")
+    56	        logger.info(f"   Tags: {progress_data['tags']}")
+    57	
+    58	        # Test ConPort progress → OrchestrationTask (reverse)
+    59	        restored_task = safe_conport_progress_to_orchestration_task(progress_data)
+    60	        if restored_task:
+    61	            logger.info(f"✅ Progress → Task transformation successful")
+    62	            logger.info(f"   Title: {restored_task.title}")
+    63	            logger.info(f"   Complexity: {restored_task.complexity_score}")
+    64	            logger.info(f"   Energy: {restored_task.energy_required}")
+    65	            logger.info(f"   Agent: {restored_task.assigned_agent}")
+    66	
+    67	            # Verify data integrity
+    68	            assert restored_task.title == task.title
+    69	            assert restored_task.complexity_score == task.complexity_score
+    70	            assert restored_task.energy_required == task.energy_required
+    71	            logger.info("✅ Data integrity verified")
+    72	        else:
+    73	            logger.error("❌ Progress → Task transformation failed")
+    74	            return False
+    75	    else:
+    76	        logger.error("❌ Task → Progress transformation failed")
+    77	        return False
+    78	
+    79	    return True
+    80	
+    81	async def test_conport_adapter_operations():
+    82	    """Test ConPort adapter operations (without actual ConPort server)."""
+    83	    logger.info("🔧 Testing ConPort adapter operations...")
+    84	
+    85	    # Initialize adapter (will use mock ConPort client)
+    86	    adapter = ConPortEventAdapter(WORKSPACE_ID)
+    87	
+    88	    # Test task creation
+    89	    test_task = OrchestrationTask(
+    90	        id="adapter-test-1",
+    91	        title="Adapter Test Task",
+    92	        description="Testing adapter create functionality",
+    93	        status=TaskStatus.PENDING,
+    94	        priority=2,
+    95	        complexity_score=0.5,
+    96	        estimated_minutes=30,
+    97	        energy_required="medium"
+    98	    )
+    99	
+   100	    # This will use the mock implementation since no real ConPort client
+   101	    conport_id = await adapter.create_task_in_conport(test_task)
+   102	    if conport_id is None:  # Mock returns None
+   103	        logger.info("✅ Adapter create_task_in_conport handled gracefully (mock)")
+   104	    else:
+   105	        logger.info(f"✅ Task created with ConPort ID: {conport_id}")
+   106	
+   107	    # Test task retrieval
+   108	    tasks = await adapter.get_all_tasks_from_conport()
+   109	    logger.info(f"✅ Retrieved {len(tasks)} tasks from ConPort (mock)")
+   110	
+   111	    # Test dependency sync (should handle gracefully)
+   112	    await adapter.sync_dependencies_to_conport(test_task)
+   113	    logger.info("✅ Dependency sync handled gracefully")
+   114	
+   115	    return True
+   116	
+   117	async def test_task_coordinator():
+   118	    """Test the TaskCoordinator class."""
+   119	    logger.info("🎯 Testing TaskCoordinator...")
+   120	
+   121	    try:
+   122	        from task_coordinator import TaskCoordinator
+   123	
+   124	        coordinator = TaskCoordinator(WORKSPACE_ID)
+   125	
+   126	        # Test with sample tasks
+   127	        sample_tasks = [
+   128	            OrchestrationTask(
+   129	                id="coord-test-1",
+   130	                title="Coordinate Test Task 1",
+   131	                complexity_score=0.6,
+   132	                energy_required="medium",
+   133	                status=TaskStatus.PENDING
+   134	            ),
+   135	            OrchestrationTask(
+   136	                id="coord-test-2",
+   137	                title="Coordinate Test Task 2",
+   138	                complexity_score=0.4,
+   139	                energy_required="low",
+   140	                status=TaskStatus.PENDING
+   141	            )
+   142	        ]
+   143	
+   144	        adhd_state = {"energy": "medium", "attention": "focused", "load": 0.3}
+   145	
+   146	        result = await coordinator.coordinate_tasks(sample_tasks, adhd_state)
+   147	
+   148	        logger.info("✅ TaskCoordinator executed successfully")
+   149	        logger.info(f"   Coordination ID: {result['coordination_id']}")
+   150	        logger.info(f"   Recommendations: {len(result['recommendations'])}")
+   151	
+   152	        return True
+   153	
+   154	    except Exception as e:
+   155	        logger.error(f"❌ TaskCoordinator test failed: {e}")
+   156	        return False
+   157	
+   158	async def main():
+   159	    """Run all ConPort sync tests."""
+   160	    logger.info("🚀 Starting ConPort bidirectional sync tests...")
+   161	
+   162	    tests = [
+   163	        ("Bidirectional Transformations", test_bidirectional_transformations),
+   164	        ("ConPort Adapter Operations", test_conport_adapter_operations),
+   165	        ("Task Coordinator", test_task_coordinator),
+   166	    ]
+   167	
+   168	    passed = 0
+   169	    total = len(tests)
+   170	
+   171	    for test_name, test_func in tests:
+   172	        logger.info(f"\n{'='*50}")
+   173	        logger.info(f"Running: {test_name}")
+   174	        logger.info('='*50)
+   175	
+   176	        try:
+   177	            success = await test_func()
+   178	            if success:
+   179	                logger.info(f"✅ {test_name}: PASSED")
+   180	                passed += 1
+   181	            else:
+   182	                logger.error(f"❌ {test_name}: FAILED")
+   183	        except Exception as e:
+   184	            logger.error(f"❌ {test_name}: ERROR - {e}")
+   185	
+   186	    logger.info(f"\n{'='*60}")
+   187	    logger.info(f"Test Results: {passed}/{total} tests passed")
+   188	    logger.info('='*60)
+   189	
+   190	    if passed == total:
+   191	        logger.info("🎉 All ConPort sync tests PASSED!")
+   192	        return 0
+   193	    else:
+   194	        logger.warning("⚠️ Some tests failed - check implementation")
+   195	        return 1
+   196	
+   197	if __name__ == "__main__":
+   198	    exit_code = asyncio.run(main())
+   199	    sys.exit(exit_code)

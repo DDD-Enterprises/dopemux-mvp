@@ -1,0 +1,23 @@
+     1	"""
+     2	Dopemux Event Bus - ADHD-optimized reactive event system.
+     3	
+     4	Provides type-safe event dispatching with async handlers for real-time
+     5	UI updates and cross-component coordination.
+     6	"""
+     7	
+     8	from .types import (
+     9	    Event,
+    10	    WorktreeEvent,
+    11	    ContextEvent,
+    12	    ADHDEvent,
+    13	    ThemeEvent,
+    14	    SessionEvent,
+    15	)
+    16	__all__ = [
+    17	    "Event",
+    18	    "WorktreeEvent",
+    19	    "ContextEvent",
+    20	    "ADHDEvent",
+    21	    "ThemeEvent",
+    22	    "SessionEvent",
+    23	]

@@ -1,0 +1,208 @@
+     1	"""
+     2	Test script for Component 3: DopeconBridge Event Subscription
+     3	
+     4	Validates bidirectional event flow:
+     5	1. Publish event to DopeconBridge
+     6	2. Verify Task-Orchestrator receives event via EventBus
+     7	3. Test all 8 event types
+     8	"""
+     9	
+    10	import asyncio
+    11	import aiohttp
+    12	import logging
+    13	from datetime import datetime
+    14	
+    15	logging.basicConfig(level=logging.INFO)
+    16	logger = logging.getLogger(__name__)
+    17	
+    18	DOPECON_BRIDGE_URL = "http://localhost:3016"
+    19	
+    20	
+    21	async def test_event_publication():
+    22	    """Test publishing events to DopeconBridge."""
+    23	
+    24	    async with aiohttp.ClientSession() as session:
+    25	        # Test 1: Publish TASKS_IMPORTED event
+    26	        logger.info("📤 Test 1: Publishing TASKS_IMPORTED event...")
+    27	        tasks_imported_event = {
+    28	            "stream": "dopemux:events",
+    29	            "event_type": "tasks_imported",
+    30	            "data": {
+    31	                "task_count": 5,
+    32	                "sprint_id": "test-sprint-001"
+    33	            },
+    34	            "source": "test-script"
+    35	        }
+    36	
+    37	        async with session.post(
+    38	            f"{DOPECON_BRIDGE_URL}/events",
+    39	            json=tasks_imported_event
+    40	        ) as response:
+    41	            if response.status == 200:
+    42	                result = await response.json()
+    43	                logger.info(f"✅ TASKS_IMPORTED published: {result}")
+    44	            else:
+    45	                logger.error(f"❌ Failed to publish TASKS_IMPORTED: {response.status}")
+    46	
+    47	        await asyncio.sleep(1)  # Give Task-Orchestrator time to process
+    48	
+    49	        # Test 2: Publish SESSION_STARTED event
+    50	        logger.info("📤 Test 2: Publishing SESSION_STARTED event...")
+    51	        session_started_event = {
+    52	            "stream": "dopemux:events",
+    53	            "event_type": "session_started",
+    54	            "data": {
+    55	                "task_id": "test-task-001",
+    56	                "duration_minutes": 25
+    57	            },
+    58	            "source": "test-script"
+    59	        }
+    60	
+    61	        async with session.post(
+    62	            f"{DOPECON_BRIDGE_URL}/events",
+    63	            json=session_started_event
+    64	        ) as response:
+    65	            if response.status == 200:
+    66	                result = await response.json()
+    67	                logger.info(f"✅ SESSION_STARTED published: {result}")
+    68	            else:
+    69	                logger.error(f"❌ Failed to publish SESSION_STARTED: {response.status}")
+    70	
+    71	        await asyncio.sleep(1)
+    72	
+    73	        # Test 3: Publish PROGRESS_UPDATED event
+    74	        logger.info("📤 Test 3: Publishing PROGRESS_UPDATED event...")
+    75	        progress_updated_event = {
+    76	            "stream": "dopemux:events",
+    77	            "event_type": "progress_updated",
+    78	            "data": {
+    79	                "task_id": "test-task-001",
+    80	                "status": "in_progress",
+    81	                "progress": 0.5
+    82	            },
+    83	            "source": "test-script"
+    84	        }
+    85	
+    86	        async with session.post(
+    87	            f"{DOPECON_BRIDGE_URL}/events",
+    88	            json=progress_updated_event
+    89	        ) as response:
+    90	            if response.status == 200:
+    91	                result = await response.json()
+    92	                logger.info(f"✅ PROGRESS_UPDATED published: {result}")
+    93	            else:
+    94	                logger.error(f"❌ Failed to publish PROGRESS_UPDATED: {response.status}")
+    95	
+    96	        await asyncio.sleep(1)
+    97	
+    98	        # Test 4: Publish DECISION_LOGGED event
+    99	        logger.info("📤 Test 4: Publishing DECISION_LOGGED event...")
+   100	        decision_logged_event = {
+   101	            "stream": "dopemux:events",
+   102	            "event_type": "decision_logged",
+   103	            "data": {
+   104	                "summary": "Use DopeconBridge for event coordination",
+   105	                "decision_id": "test-decision-001"
+   106	            },
+   107	            "source": "test-script"
+   108	        }
+   109	
+   110	        async with session.post(
+   111	            f"{DOPECON_BRIDGE_URL}/events",
+   112	            json=decision_logged_event
+   113	        ) as response:
+   114	            if response.status == 200:
+   115	                result = await response.json()
+   116	                logger.info(f"✅ DECISION_LOGGED published: {result}")
+   117	            else:
+   118	                logger.error(f"❌ Failed to publish DECISION_LOGGED: {response.status}")
+   119	
+   120	        await asyncio.sleep(1)
+   121	
+   122	        # Test 5: Publish ADHD_STATE_CHANGED event
+   123	        logger.info("📤 Test 5: Publishing ADHD_STATE_CHANGED event...")
+   124	        adhd_state_event = {
+   125	            "stream": "dopemux:events",
+   126	            "event_type": "adhd_state_changed",
+   127	            "data": {
+   128	                "state": "focused",
+   129	                "energy_level": "high",
+   130	                "attention_level": "focused"
+   131	            },
+   132	            "source": "test-script"
+   133	        }
+   134	
+   135	        async with session.post(
+   136	            f"{DOPECON_BRIDGE_URL}/events",
+   137	            json=adhd_state_event
+   138	        ) as response:
+   139	            if response.status == 200:
+   140	                result = await response.json()
+   141	                logger.info(f"✅ ADHD_STATE_CHANGED published: {result}")
+   142	            else:
+   143	                logger.error(f"❌ Failed to publish ADHD_STATE_CHANGED: {response.status}")
+   144	
+   145	        await asyncio.sleep(1)
+   146	
+   147	        # Test 6: Publish BREAK_REMINDER event
+   148	        logger.info("📤 Test 6: Publishing BREAK_REMINDER event...")
+   149	        break_reminder_event = {
+   150	            "stream": "dopemux:events",
+   151	            "event_type": "break_reminder",
+   152	            "data": {
+   153	                "task_id": "test-task-001",
+   154	                "duration_minutes": 5
+   155	            },
+   156	            "source": "test-script"
+   157	        }
+   158	
+   159	        async with session.post(
+   160	            f"{DOPECON_BRIDGE_URL}/events",
+   161	            json=break_reminder_event
+   162	        ) as response:
+   163	            if response.status == 200:
+   164	                result = await response.json()
+   165	                logger.info(f"✅ BREAK_REMINDER published: {result}")
+   166	            else:
+   167	                logger.error(f"❌ Failed to publish BREAK_REMINDER: {response.status}")
+   168	
+   169	
+   170	async def check_stream_info():
+   171	    """Check DopeconBridge stream information."""
+   172	    logger.info("\n📊 Checking DopeconBridge stream info...")
+   173	
+   174	    async with aiohttp.ClientSession() as session:
+   175	        async with session.get(
+   176	            f"{DOPECON_BRIDGE_URL}/events/dopemux:events"
+   177	        ) as response:
+   178	            if response.status == 200:
+   179	                result = await response.json()
+   180	                logger.info(f"Stream info: {result}")
+   181	            else:
+   182	                logger.error(f"Failed to get stream info: {response.status}")
+   183	
+   184	
+   185	async def main():
+   186	    """Main test execution."""
+   187	    logger.info("=" * 60)
+   188	    logger.info("Component 3: DopeconBridge Event Subscription Test")
+   189	    logger.info("=" * 60)
+   190	
+   191	    # Test event publication
+   192	    await test_event_publication()
+   193	
+   194	    # Wait for events to be processed
+   195	    logger.info("\n⏳ Waiting 5 seconds for Task-Orchestrator to process events...")
+   196	    await asyncio.sleep(5)
+   197	
+   198	    # Check stream info
+   199	    await check_stream_info()
+   200	
+   201	    logger.info("\n=" * 60)
+   202	    logger.info("✅ Test complete!")
+   203	    logger.info("Check Task-Orchestrator logs to verify event reception")
+   204	    logger.info("=" * 60)
+   205	
+   206	
+   207	if __name__ == "__main__":
+   208	    asyncio.run(main())
