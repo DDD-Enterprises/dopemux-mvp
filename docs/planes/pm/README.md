@@ -62,5 +62,3 @@ Do not proceed to Phase 1.
 - Phase 5:
   - PM_WORKFLOWS_DERIVED.md
   - PM_PRESETS.md (optional)
-
-If rg is missing, use grep fallback exactly as listed in PM-INV-00.commands.txt.
