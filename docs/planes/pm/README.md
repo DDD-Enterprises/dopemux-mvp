@@ -44,6 +44,7 @@ Purpose: evidence-first audit, redesign constraints, and deterministic rails for
 ## Evidence Locations
 - Phase 0 evidence: `docs/planes/pm/_evidence/PM-INV-00.outputs/`
 - Phase 1 friction evidence: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
+- Phase 1 telemetry evidence: `docs/planes/pm/_evidence/PM-TELEM-01.outputs/`
 - Rails notes: `docs/planes/pm/_evidence/PM-RAILS-01.outputs/`
 - Handoffs: `docs/planes/pm/_handoff/`
 
@@ -56,6 +57,7 @@ bash scripts/pm_phase0_verify.sh
 ```bash
 bash scripts/pm_phase1_verify.sh
 ```
+Verifies: friction evidence bundle, telemetry evidence bundle, and citation presence in Phase 1 docs.
 
 Expected success output:
 - `OK: PM Phase 0 verification passed`
