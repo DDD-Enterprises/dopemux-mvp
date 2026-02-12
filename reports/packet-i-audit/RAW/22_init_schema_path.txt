@@ -1,0 +1,38 @@
+services/working-memory-assistant/chronicle/postgres_mirror.sql:140:CREATE TABLE IF NOT EXISTS dm_schema_migrations (
+services/working-memory-assistant/chronicle/postgres_mirror.sql:145:INSERT INTO dm_schema_migrations (version)
+services/working-memory-assistant/chronicle/tests/test_search_excludes_superseded_by_default.py:17:    store.initialize_schema()
+services/working-memory-assistant/chronicle/migrations/v1_2_1_scope_supersession_unique_index.sql:20:INSERT OR IGNORE INTO schema_migrations (version, applied_at_utc)
+services/working-memory-assistant/chronicle/store.py:8:- Schema initialization and migrations
+services/working-memory-assistant/chronicle/store.py:20:from .sqlite_migrations import apply_chronicle_migrations
+services/working-memory-assistant/chronicle/store.py:40:MIGRATIONS_DIR = Path(__file__).parent / "migrations"
+services/working-memory-assistant/chronicle/store.py:74:    def initialize_schema(self) -> None:
+services/working-memory-assistant/chronicle/store.py:78:        conn.executescript(schema_sql)
+services/working-memory-assistant/chronicle/store.py:80:        applied = apply_chronicle_migrations(
+services/working-memory-assistant/chronicle/store.py:83:            migrations_dir=MIGRATIONS_DIR,
+services/working-memory-assistant/chronicle/store.py:87:            LOGGER.info("Applied chronicle SQLite migrations: %s", ", ".join(applied))
+services/working-memory-assistant/chronicle/tests/test_retraction_tombstone.py:17:    store.initialize_schema()
+services/working-memory-assistant/chronicle/migrations/v1_1_1_add_supersession_unique_index.sql:14:INSERT OR IGNORE INTO schema_migrations (version, applied_at_utc)
+services/working-memory-assistant/chronicle/migrations/v1_2_0_enforce_linear_supersession.sql:14:INSERT OR IGNORE INTO schema_migrations (version, applied_at_utc)
+services/working-memory-assistant/chronicle/tests/test_supersession_linearity.py:19:    store.initialize_schema()
+services/working-memory-assistant/chronicle/tests/test_supersession_depth_limit.py:18:    store.initialize_schema()
+services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql:35:INSERT OR REPLACE INTO schema_migrations (version, applied_at_utc)
+services/working-memory-assistant/chronicle/schema.sql:168:CREATE TABLE IF NOT EXISTS schema_migrations (
+services/working-memory-assistant/chronicle/schema.sql:173:INSERT OR IGNORE INTO schema_migrations (version, applied_at_utc)
+services/working-memory-assistant/chronicle/sqlite_migrations.py:3:Applies versioned SQL files from ``chronicle/migrations`` against an existing
+services/working-memory-assistant/chronicle/sqlite_migrations.py:4:SQLite connection. Migrations are idempotent and ordered by semantic version
+services/working-memory-assistant/chronicle/sqlite_migrations.py:17:MIGRATIONS_DIR = Path(__file__).parent / "migrations"
+services/working-memory-assistant/chronicle/sqlite_migrations.py:46:def _migration_entries(migrations_dir: Path) -> list[tuple[tuple[int, int, int], str, Path]]:
+services/working-memory-assistant/chronicle/sqlite_migrations.py:48:    for path in sorted(migrations_dir.glob("*.sql")):
+services/working-memory-assistant/chronicle/sqlite_migrations.py:65:    # Some migrations already manage their own transaction boundaries.
+services/working-memory-assistant/chronicle/sqlite_migrations.py:67:        conn.executescript(script)
+services/working-memory-assistant/chronicle/sqlite_migrations.py:71:    conn.executescript(wrapped_script)
+services/working-memory-assistant/chronicle/sqlite_migrations.py:74:def apply_chronicle_migrations(
+services/working-memory-assistant/chronicle/sqlite_migrations.py:78:    migrations_dir: Path = MIGRATIONS_DIR,
+services/working-memory-assistant/chronicle/sqlite_migrations.py:81:    """Apply pending chronicle SQLite migrations.
+services/working-memory-assistant/chronicle/sqlite_migrations.py:90:    if not migrations_dir.exists():
+services/working-memory-assistant/chronicle/sqlite_migrations.py:91:        raise FileNotFoundError(f"Migrations directory not found: {migrations_dir}")
+services/working-memory-assistant/chronicle/sqlite_migrations.py:94:    if not _table_exists(conn, "schema_migrations"):
+services/working-memory-assistant/chronicle/sqlite_migrations.py:95:        conn.executescript(schema_path.read_text(encoding="utf-8"))
+services/working-memory-assistant/chronicle/sqlite_migrations.py:99:        "SELECT version FROM schema_migrations"
+services/working-memory-assistant/chronicle/sqlite_migrations.py:110:    for version_tuple, version_str, migration_path in _migration_entries(migrations_dir):
+services/working-memory-assistant/chronicle/sqlite_migrations.py:128:            "SELECT 1 FROM schema_migrations WHERE version = ? LIMIT 1",
