@@ -1,0 +1,728 @@
+     1	"""
+     2	Performance Optimizer Engine for Task Orchestrator
+     3	Personalized Productivity Pattern Learning with ADHD Considerations
+     4	
+     5	Uses machine learning to learn individual productivity patterns and optimize
+     6	workflows for maximum effectiveness while minimizing cognitive overhead.
+     7	"""
+     8	
+     9	import asyncio
+    10	import json
+    11	import logging
+    12	import statistics
+    13	from datetime import datetime, timedelta, time
+    14	from typing import Any, Dict, List, Optional, Set, Tuple
+    15	from dataclasses import dataclass, asdict
+    16	from enum import Enum
+    17	import uuid
+    18	import math
+    19	
+    20	logger = logging.getLogger(__name__)
+    21	
+    22	
+    23	class ProductivityMetric(str, Enum):
+    24	    """Key productivity metrics for optimization."""
+    25	    TASK_COMPLETION_RATE = "task_completion_rate"
+    26	    CONTEXT_SWITCH_FREQUENCY = "context_switch_frequency"
+    27	    ENERGY_LEVEL_STABILITY = "energy_level_stability"
+    28	    COGNITIVE_LOAD_EFFICIENCY = "cognitive_load_efficiency"
+    29	    BREAK_TIMING_EFFECTIVENESS = "break_timing_effectiveness"
+    30	    HYPERFOCUS_UTILIZATION = "hyperfocus_utilization"
+    31	    WORKFLOW_AUTOMATION_USAGE = "workflow_automation_usage"
+    32	
+    33	
+    34	class OptimizationStrategy(str, Enum):
+    35	    """Types of optimization strategies."""
+    36	    TASK_REORDERING = "task_reordering"
+    37	    BATCH_GROUPING = "batch_grouping"
+    38	    BREAK_SCHEDULING = "break_scheduling"
+    39	    ENERGY_MATCHING = "energy_matching"
+    40	    CONTEXT_PRESERVATION = "context_preservation"
+    41	    AUTOMATION_ENHANCEMENT = "automation_enhancement"
+    42	    WORKFLOW_SIMPLIFICATION = "workflow_simplification"
+    43	
+    44	
+    45	@dataclass
+    46	class ProductivityPattern:
+    47	    """Individual productivity pattern learned from data."""
+    48	    pattern_id: str
+    49	    user_id: str
+    50	    pattern_type: str                     # "energy_cycle", "focus_pattern", etc.
+    51	    confidence: float                     # 0.0-1.0 confidence in pattern
+    52	    effectiveness_score: float           # 0.0-1.0 how effective this pattern is
+    53	
+    54	    # Pattern data
+    55	    optimal_times: List[time]             # Best times for this pattern
+    56	    duration_range: Tuple[float, float]   # (min, max) minutes for activities
+    57	    prerequisites: List[str]              # Conditions needed for pattern
+    58	    success_indicators: List[str]         # Signs pattern is working
+    59	
+    60	    # ADHD-specific data
+    61	    adhd_accommodations: List[str]        # Required accommodations
+    62	    energy_requirements: List[str]        # Energy levels needed
+    63	    attention_requirements: List[str]     # Attention states needed
+    64	
+    65	    # Learning metadata
+    66	    data_points: int                      # Number of observations
+    67	    last_updated: datetime
+    68	    trend_direction: str                  # "improving", "stable", "declining"
+    69	
+    70	
+    71	@dataclass
+    72	class OptimizationRecommendation:
+    73	    """Specific optimization recommendation with impact estimates."""
+    74	    recommendation_id: str
+    75	    strategy: OptimizationStrategy
+    76	    description: str
+    77	    rationale: str
+    78	    expected_improvement: float           # 0.0-1.0 expected productivity gain
+    79	    implementation_effort: float         # 0.0-1.0 effort to implement
+    80	    confidence: float                     # 0.0-1.0 confidence in recommendation
+    81	
+    82	    # Implementation details
+    83	    specific_actions: List[str]
+    84	    measurement_criteria: List[str]
+    85	    success_metrics: List[str]
+    86	    rollback_plan: List[str]
+    87	
+    88	    # ADHD considerations
+    89	    adhd_friendly: bool
+    90	    cognitive_load_impact: float          # -1.0 to 1.0 (negative is better)
+    91	    disruption_level: float               # 0.0-1.0 (how disruptive to implement)
+    92	
+    93	
+    94	class PerformanceOptimizerEngine:
+    95	    """
+    96	    ML-powered productivity optimization with personalized ADHD accommodations.
+    97	
+    98	    Features:
+    99	    - Individual productivity pattern recognition
+   100	    - Personalized workflow optimization recommendations
+   101	    - Real-time performance monitoring and adjustment
+   102	    - ADHD-specific accommodation learning
+   103	    - Continuous improvement through feedback loops
+   104	    """
+   105	
+   106	    def __init__(self, conport_client=None, pal_client=None):
+   107	        self.conport = conport_client
+   108	        self.pal = pal_client
+   109	
+   110	        # Learning system
+   111	        self.productivity_patterns: Dict[str, List[ProductivityPattern]] = {}  # user_id -> patterns
+   112	        self.optimization_history: Dict[str, List[OptimizationRecommendation]] = {}
+   113	        self.performance_data: Dict[str, List[Dict]] = {}  # Historical performance data
+   114	
+   115	        # ADHD-specific pattern templates
+   116	        self.adhd_pattern_templates = {
+   117	            "hyperfocus_sessions": {
+   118	                "ideal_duration": (90, 180),  # 1.5-3 hours
+   119	                "break_requirements": (15, 30),  # 15-30 min breaks
+   120	                "optimal_energy": ["high", "hyperfocus"],
+   121	                "protection_needed": True
+   122	            },
+   123	            "context_switching": {
+   124	                "switch_cost": (5, 15),  # 5-15 minutes penalty
+   125	                "buffer_time": (10, 20),  # Buffer between tasks
+   126	                "grouping_benefit": 0.3,  # 30% efficiency gain from grouping
+   127	                "adhd_penalty": 0.5  # Extra penalty for ADHD users
+   128	            },
+   129	            "energy_cycles": {
+   130	                "peak_duration": (120, 240),  # 2-4 hour peaks
+   131	                "recovery_time": (30, 60),   # 30-60 min recovery
+   132	                "predictable_times": True,
+   133	                "varies_by_day": True
+   134	            }
+   135	        }
+   136	
+   137	        # Optimization models
+   138	        self.optimization_models: Dict[OptimizationStrategy, Dict] = {}
+   139	        self.learning_rate = 0.1
+   140	        self.min_data_points = 10  # Minimum data before making recommendations
+   141	
+   142	        # Statistics
+   143	        self.optimizer_stats = {
+   144	            "patterns_learned": 0,
+   145	            "recommendations_made": 0,
+   146	            "successful_optimizations": 0,
+   147	            "productivity_improvements": 0.0,
+   148	            "adhd_accommodations_applied": 0
+   149	        }
+   150	        self._monitor_task: Optional[asyncio.Task] = None
+   151	
+   152	    async def initialize(self) -> None:
+   153	        """Initialize the performance optimizer engine."""
+   154	        try:
+   155	            await self._load_user_patterns()
+   156	            await self._initialize_optimization_models()
+   157	            await self._start_performance_monitoring()
+   158	            logger.info("Performance optimizer engine initialized")
+   159	        except Exception as e:
+   160	            logger.error(f"Failed to initialize performance optimizer: {e}")
+   161	
+   162	    async def learn_productivity_patterns(
+   163	        self,
+   164	        user_id: str,
+   165	        session_data: Dict[str, Any]
+   166	    ) -> List[ProductivityPattern]:
+   167	        """Learn productivity patterns from user session data."""
+   168	        try:
+   169	            # Extract pattern candidates from session data
+   170	            pattern_candidates = await self._extract_pattern_candidates(user_id, session_data)
+   171	
+   172	            # Validate patterns with sufficient data
+   173	            valid_patterns = []
+   174	            for candidate in pattern_candidates:
+   175	                if await self._validate_pattern(candidate):
+   176	                    valid_patterns.append(candidate)
+   177	
+   178	            # Update user's pattern library
+   179	            if user_id not in self.productivity_patterns:
+   180	                self.productivity_patterns[user_id] = []
+   181	
+   182	            for pattern in valid_patterns:
+   183	                await self._update_or_add_pattern(user_id, pattern)
+   184	
+   185	            self.optimizer_stats["patterns_learned"] += len(valid_patterns)
+   186	            logger.info(f"Learned {len(valid_patterns)} patterns for user {user_id}")
+   187	
+   188	            return valid_patterns
+   189	
+   190	        except Exception as e:
+   191	            logger.error(f"Pattern learning failed for user {user_id}: {e}")
+   192	            return []
+   193	
+   194	    async def generate_optimization_recommendations(
+   195	        self,
+   196	        user_id: str,
+   197	        current_workflow: Dict[str, Any],
+   198	        context: Dict[str, Any]
+   199	    ) -> List[OptimizationRecommendation]:
+   200	        """Generate personalized optimization recommendations."""
+   201	        try:
+   202	            recommendations = []
+   203	
+   204	            # Get user's patterns
+   205	            user_patterns = self.productivity_patterns.get(user_id, [])
+   206	
+   207	            if len(user_patterns) < 3:
+   208	                # Not enough data - provide general ADHD optimizations
+   209	                recommendations.extend(await self._generate_general_adhd_recommendations(context))
+   210	            else:
+   211	                # Generate pattern-based recommendations
+   212	                recommendations.extend(await self._generate_pattern_based_recommendations(
+   213	                    user_id, user_patterns, current_workflow, context
+   214	                ))
+   215	
+   216	            # Sort by expected impact and confidence
+   217	            recommendations.sort(
+   218	                key=lambda r: r.expected_improvement * r.confidence,
+   219	                reverse=True
+   220	            )
+   221	
+   222	            # Limit to top 3 to avoid overwhelm
+   223	            recommendations = recommendations[:3]
+   224	
+   225	            self.optimizer_stats["recommendations_made"] += len(recommendations)
+   226	            return recommendations
+   227	
+   228	        except Exception as e:
+   229	            logger.error(f"Failed to generate recommendations for user {user_id}: {e}")
+   230	            return []
+   231	
+   232	    async def optimize_current_workflow(
+   233	        self,
+   234	        user_id: str,
+   235	        current_tasks: List[Dict[str, Any]],
+   236	        context: Dict[str, Any]
+   237	    ) -> Dict[str, Any]:
+   238	        """Optimize current workflow in real-time."""
+   239	        try:
+   240	            optimization_result = {
+   241	                "original_workflow": current_tasks,
+   242	                "optimized_workflow": [],
+   243	                "optimization_strategies": [],
+   244	                "expected_improvement": 0.0,
+   245	                "adhd_accommodations": []
+   246	            }
+   247	
+   248	            # Apply learned patterns
+   249	            user_patterns = self.productivity_patterns.get(user_id, [])
+   250	            optimized_tasks = await self._apply_patterns_to_tasks(current_tasks, user_patterns, context)
+   251	
+   252	            # Apply ADHD-specific optimizations
+   253	            final_tasks = await self._apply_adhd_optimizations(optimized_tasks, context)
+   254	
+   255	            # Calculate improvement estimate
+   256	            improvement = await self._estimate_workflow_improvement(
+   257	                current_tasks, final_tasks, user_patterns
+   258	            )
+   259	
+   260	            optimization_result.update({
+   261	                "optimized_workflow": final_tasks,
+   262	                "expected_improvement": improvement["productivity_gain"],
+   263	                "adhd_accommodations": improvement["adhd_accommodations"]
+   264	            })
+   265	
+   266	            return optimization_result
+   267	
+   268	        except Exception as e:
+   269	            logger.error(f"Workflow optimization failed for user {user_id}: {e}")
+   270	            return {"error": str(e)}
+   271	
+   272	    async def track_optimization_effectiveness(
+   273	        self,
+   274	        recommendation_id: str,
+   275	        actual_results: Dict[str, Any]
+   276	    ) -> None:
+   277	        """Track effectiveness of applied optimizations."""
+   278	        try:
+   279	            # Update optimization model accuracy
+   280	            effectiveness = actual_results.get("productivity_improvement", 0.0)
+   281	
+   282	            if effectiveness > 0.1:  # 10% improvement threshold
+   283	                self.optimizer_stats["successful_optimizations"] += 1
+   284	                self.optimizer_stats["productivity_improvements"] += effectiveness
+   285	
+   286	            # Update ML models based on results
+   287	            await self._update_optimization_models(recommendation_id, actual_results)
+   288	
+   289	            logger.info(f"Tracked optimization effectiveness: {effectiveness:.2%}")
+   290	
+   291	        except Exception as e:
+   292	            logger.error(f"Failed to track optimization effectiveness: {e}")
+   293	
+   294	    # Private implementation methods
+   295	
+   296	    async def _load_user_patterns(self) -> None:
+   297	        """Load existing productivity patterns from storage."""
+   298	        loaded_patterns = 0
+   299	        raw_payload: Any = None
+   300	
+   301	        if self.conport:
+   302	            for method_name in ("get_productivity_patterns", "get_optimization_patterns", "query_productivity_patterns"):
+   303	                if not hasattr(self.conport, method_name):
+   304	                    continue
+   305	                try:
+   306	                    result = getattr(self.conport, method_name)()
+   307	                    if asyncio.iscoroutine(result):
+   308	                        result = await result
+   309	                    raw_payload = result
+   310	                    break
+   311	                except Exception as exc:
+   312	                    logger.debug("Pattern load via %s failed: %s", method_name, exc)
+   313	
+   314	        if raw_payload is None:
+   315	            self.productivity_patterns.setdefault("default", [])
+   316	            return
+   317	
+   318	        if isinstance(raw_payload, dict):
+   319	            # Expected shape: {user_id: [pattern_dicts]}
+   320	            iterable = raw_payload.items()
+   321	        elif isinstance(raw_payload, list):
+   322	            # Flat shape: [{user_id: ..., ...}]
+   323	            grouped: Dict[str, List[Dict[str, Any]]] = {}
+   324	            for item in raw_payload:
+   325	                if not isinstance(item, dict):
+   326	                    continue
+   327	                user_id = str(item.get("user_id", "default"))
+   328	                grouped.setdefault(user_id, []).append(item)
+   329	            iterable = grouped.items()
+   330	        else:
+   331	            iterable = []
+   332	
+   333	        for user_id, patterns in iterable:
+   334	            parsed: List[ProductivityPattern] = []
+   335	            for item in patterns or []:
+   336	                if not isinstance(item, dict):
+   337	                    continue
+   338	                try:
+   339	                    pattern = ProductivityPattern(
+   340	                        pattern_id=str(item.get("pattern_id", f"pattern_{uuid.uuid4().hex[:8]}")),
+   341	                        user_id=str(item.get("user_id", user_id)),
+   342	                        pattern_type=str(item.get("pattern_type", "unknown")),
+   343	                        confidence=float(item.get("confidence", 0.6)),
+   344	                        effectiveness_score=float(item.get("effectiveness_score", 0.6)),
+   345	                        optimal_times=[time.fromisoformat(t) if isinstance(t, str) else t for t in item.get("optimal_times", [])],
+   346	                        duration_range=tuple(item.get("duration_range", (25.0, 90.0))),  # type: ignore[arg-type]
+   347	                        prerequisites=list(item.get("prerequisites", [])),
+   348	                        success_indicators=list(item.get("success_indicators", [])),
+   349	                        adhd_accommodations=list(item.get("adhd_accommodations", [])),
+   350	                        energy_requirements=list(item.get("energy_requirements", [])),
+   351	                        attention_requirements=list(item.get("attention_requirements", [])),
+   352	                        data_points=int(item.get("data_points", 0)),
+   353	                        last_updated=datetime.fromisoformat(item.get("last_updated")) if isinstance(item.get("last_updated"), str) else datetime.now(),
+   354	                        trend_direction=str(item.get("trend_direction", "stable")),
+   355	                    )
+   356	                    parsed.append(pattern)
+   357	                    loaded_patterns += 1
+   358	                except Exception as exc:
+   359	                    logger.debug("Failed parsing productivity pattern for %s: %s", user_id, exc)
+   360	            self.productivity_patterns[str(user_id)] = parsed
+   361	
+   362	        logger.info("Loaded %d productivity patterns", loaded_patterns)
+   363	
+   364	    async def _initialize_optimization_models(self) -> None:
+   365	        """Initialize ML models for each optimization strategy."""
+   366	        for strategy in OptimizationStrategy:
+   367	            self.optimization_models[strategy] = {
+   368	                "effectiveness_score": 0.7,  # Baseline effectiveness
+   369	                "confidence": 0.6,
+   370	                "usage_count": 0,
+   371	                "success_rate": 0.5
+   372	            }
+   373	
+   374	    async def _start_performance_monitoring(self) -> None:
+   375	        """Start background performance monitoring."""
+   376	        if self._monitor_task and not self._monitor_task.done():
+   377	            return
+   378	        self._monitor_task = asyncio.create_task(self._performance_monitor_loop())
+   379	
+   380	    async def _performance_monitor_loop(self) -> None:
+   381	        """Background loop to track drift and model health."""
+   382	        try:
+   383	            while True:
+   384	                await asyncio.sleep(300)
+   385	                total_patterns = sum(len(v) for v in self.productivity_patterns.values())
+   386	                if total_patterns == 0:
+   387	                    continue
+   388	
+   389	                confidences = [
+   390	                    p.confidence
+   391	                    for patterns in self.productivity_patterns.values()
+   392	                    for p in patterns
+   393	                ]
+   394	                avg_confidence = statistics.mean(confidences) if confidences else 0.0
+   395	
+   396	                if avg_confidence < 0.5:
+   397	                    logger.info("Pattern confidence low (%.2f), increasing exploration", avg_confidence)
+   398	                    self.learning_rate = min(0.3, self.learning_rate + 0.02)
+   399	                else:
+   400	                    self.learning_rate = max(0.05, self.learning_rate - 0.01)
+   401	        except asyncio.CancelledError:
+   402	            logger.debug("Performance monitor loop cancelled")
+   403	            raise
+   404	        except Exception as exc:
+   405	            logger.error("Performance monitor loop failed: %s", exc)
+   406	
+   407	    async def _extract_pattern_candidates(
+   408	        self, user_id: str, session_data: Dict[str, Any]
+   409	    ) -> List[ProductivityPattern]:
+   410	        """Extract potential patterns from session data."""
+   411	        # Simplified pattern extraction
+   412	        patterns = []
+   413	
+   414	        # Detect energy cycle patterns
+   415	        if "energy_levels" in session_data:
+   416	            energy_pattern = await self._detect_energy_cycle_pattern(user_id, session_data)
+   417	            if energy_pattern:
+   418	                patterns.append(energy_pattern)
+   419	
+   420	        # Detect focus patterns
+   421	        if "focus_sessions" in session_data:
+   422	            focus_pattern = await self._detect_focus_pattern(user_id, session_data)
+   423	            if focus_pattern:
+   424	                patterns.append(focus_pattern)
+   425	
+   426	        return patterns
+   427	
+   428	    async def _detect_energy_cycle_pattern(
+   429	        self, user_id: str, session_data: Dict[str, Any]
+   430	    ) -> Optional[ProductivityPattern]:
+   431	        """Detect energy cycle patterns."""
+   432	        # Implementation would analyze energy level data
+   433	        return ProductivityPattern(
+   434	            pattern_id=f"energy_{uuid.uuid4().hex[:8]}",
+   435	            user_id=user_id,
+   436	            pattern_type="energy_cycle",
+   437	            confidence=0.8,
+   438	            effectiveness_score=0.7,
+   439	            optimal_times=[time(9, 0), time(14, 0)],
+   440	            duration_range=(90, 180),
+   441	            prerequisites=["adequate_sleep", "minimal_distractions"],
+   442	            success_indicators=["sustained_focus", "high_completion_rate"],
+   443	            adhd_accommodations=["hyperfocus_protection", "gentle_transitions"],
+   444	            energy_requirements=["high", "medium"],
+   445	            attention_requirements=["focused", "hyperfocused"],
+   446	            data_points=15,
+   447	            last_updated=datetime.now(),
+   448	            trend_direction="improving"
+   449	        )
+   450	
+   451	    async def _detect_focus_pattern(
+   452	        self, user_id: str, session_data: Dict[str, Any]
+   453	    ) -> Optional[ProductivityPattern]:
+   454	        """Detect focus session patterns."""
+   455	        # Implementation would analyze focus session data
+   456	        return None
+   457	
+   458	    async def _validate_pattern(self, pattern: ProductivityPattern) -> bool:
+   459	        """Validate that pattern has sufficient data and confidence."""
+   460	        return (pattern.data_points >= self.min_data_points and
+   461	                pattern.confidence >= 0.6)
+   462	
+   463	    async def _update_or_add_pattern(self, user_id: str, new_pattern: ProductivityPattern) -> None:
+   464	        """Update existing pattern or add new one."""
+   465	        user_patterns = self.productivity_patterns[user_id]
+   466	
+   467	        # Look for existing pattern of same type
+   468	        for i, existing in enumerate(user_patterns):
+   469	            if (existing.pattern_type == new_pattern.pattern_type and
+   470	                existing.user_id == new_pattern.user_id):
+   471	                # Update existing pattern
+   472	                user_patterns[i] = new_pattern
+   473	                return
+   474	
+   475	        # Add new pattern
+   476	        user_patterns.append(new_pattern)
+   477	
+   478	    async def _generate_general_adhd_recommendations(
+   479	        self, context: Dict[str, Any]
+   480	    ) -> List[OptimizationRecommendation]:
+   481	        """Generate general ADHD optimization recommendations."""
+   482	        return [
+   483	            OptimizationRecommendation(
+   484	                recommendation_id=f"adhd_general_{uuid.uuid4().hex[:6]}",
+   485	                strategy=OptimizationStrategy.TASK_REORDERING,
+   486	                description="Reorder tasks by energy level requirements",
+   487	                rationale="Match high-energy tasks to peak hours for better focus",
+   488	                expected_improvement=0.25,
+   489	                implementation_effort=0.2,
+   490	                confidence=0.8,
+   491	                specific_actions=[
+   492	                    "Schedule complex tasks during morning peak hours",
+   493	                    "Place routine tasks during low-energy periods",
+   494	                    "Group similar tasks to reduce context switching"
+   495	                ],
+   496	                measurement_criteria=["task_completion_time", "energy_after_task"],
+   497	                success_metrics=["15% faster completion", "maintained energy levels"],
+   498	                rollback_plan=["Return to original task order if energy drops"],
+   499	                adhd_friendly=True,
+   500	                cognitive_load_impact=-0.3,
+   501	                disruption_level=0.1
+   502	            )
+   503	        ]
+   504	
+   505	    async def _generate_pattern_based_recommendations(
+   506	        self,
+   507	        user_id: str,
+   508	        patterns: List[ProductivityPattern],
+   509	        workflow: Dict[str, Any],
+   510	        context: Dict[str, Any]
+   511	    ) -> List[OptimizationRecommendation]:
+   512	        """Generate recommendations based on learned patterns."""
+   513	        recommendations = []
+   514	
+   515	        for pattern in patterns:
+   516	            if pattern.effectiveness_score > 0.7:
+   517	                # Generate recommendations based on this successful pattern
+   518	                pattern_recommendations = await self._recommendations_from_pattern(pattern, workflow, context)
+   519	                recommendations.extend(pattern_recommendations)
+   520	
+   521	        return recommendations
+   522	
+   523	    async def _recommendations_from_pattern(
+   524	        self,
+   525	        pattern: ProductivityPattern,
+   526	        workflow: Dict[str, Any],
+   527	        context: Dict[str, Any]
+   528	    ) -> List[OptimizationRecommendation]:
+   529	        """Generate recommendations based on a specific pattern."""
+   530	        # Implementation would generate pattern-specific recommendations
+   531	        return []
+   532	
+   533	    async def _apply_patterns_to_tasks(
+   534	        self,
+   535	        tasks: List[Dict[str, Any]],
+   536	        patterns: List[ProductivityPattern],
+   537	        context: Dict[str, Any]
+   538	    ) -> List[Dict[str, Any]]:
+   539	        """Apply learned patterns to optimize task workflow."""
+   540	        optimized_tasks = tasks.copy()
+   541	
+   542	        # Apply energy cycle patterns
+   543	        energy_patterns = [p for p in patterns if p.pattern_type == "energy_cycle"]
+   544	        if energy_patterns:
+   545	            optimized_tasks = await self._apply_energy_patterns(optimized_tasks, energy_patterns[0])
+   546	
+   547	        # Apply focus patterns
+   548	        focus_patterns = [p for p in patterns if p.pattern_type == "focus_pattern"]
+   549	        if focus_patterns:
+   550	            optimized_tasks = await self._apply_focus_patterns(optimized_tasks, focus_patterns[0])
+   551	
+   552	        return optimized_tasks
+   553	
+   554	    async def _apply_energy_patterns(
+   555	        self,
+   556	        tasks: List[Dict[str, Any]],
+   557	        energy_pattern: ProductivityPattern
+   558	    ) -> List[Dict[str, Any]]:
+   559	        """Apply energy pattern optimization to tasks."""
+   560	        # Sort tasks by energy requirements and match to optimal times
+   561	        high_energy_tasks = [t for t in tasks if t.get("energy_required", "medium") in ["high", "hyperfocus"]]
+   562	        low_energy_tasks = [t for t in tasks if t.get("energy_required", "medium") in ["low", "very_low"]]
+   563	
+   564	        # Schedule high-energy tasks during optimal times
+   565	        for task in high_energy_tasks:
+   566	            if energy_pattern.optimal_times:
+   567	                task["recommended_start_time"] = energy_pattern.optimal_times[0]
+   568	
+   569	        return tasks
+   570	
+   571	    async def _apply_focus_patterns(
+   572	        self,
+   573	        tasks: List[Dict[str, Any]],
+   574	        focus_pattern: ProductivityPattern
+   575	    ) -> List[Dict[str, Any]]:
+   576	        """Apply focus pattern optimization to tasks."""
+   577	        # Implementation would apply focus-based optimizations
+   578	        return tasks
+   579	
+   580	    async def _apply_adhd_optimizations(
+   581	        self,
+   582	        tasks: List[Dict[str, Any]],
+   583	        context: Dict[str, Any]
+   584	    ) -> List[Dict[str, Any]]:
+   585	        """Apply ADHD-specific optimizations to workflow."""
+   586	        adhd_optimized = []
+   587	
+   588	        # Group similar tasks to reduce context switching
+   589	        task_groups = self._group_similar_tasks(tasks)
+   590	
+   591	        for group in task_groups:
+   592	            # Add transition buffers between different task types
+   593	            for i, task in enumerate(group):
+   594	                if i > 0 and self._requires_context_switch(group[i-1], task):
+   595	                    task["transition_buffer"] = 10  # 10 minute buffer
+   596	
+   597	                # Add ADHD accommodations
+   598	                task["adhd_accommodations"] = self._get_task_accommodations(task, context)
+   599	
+   600	                adhd_optimized.append(task)
+   601	
+   602	        return adhd_optimized
+   603	
+   604	    def _group_similar_tasks(self, tasks: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+   605	        """Group similar tasks to minimize context switching."""
+   606	        # Simple grouping by task type
+   607	        groups: Dict[str, List[Dict[str, Any]]] = {}
+   608	
+   609	        for task in tasks:
+   610	            task_type = task.get("type", "general")
+   611	            if task_type not in groups:
+   612	                groups[task_type] = []
+   613	            groups[task_type].append(task)
+   614	
+   615	        return list(groups.values())
+   616	
+   617	    def _requires_context_switch(self, task1: Dict[str, Any], task2: Dict[str, Any]) -> bool:
+   618	        """Determine if switching between tasks requires significant context change."""
+   619	        type1 = task1.get("type", "general")
+   620	        type2 = task2.get("type", "general")
+   621	        return type1 != type2
+   622	
+   623	    def _get_task_accommodations(self, task: Dict[str, Any], context: Dict[str, Any]) -> List[str]:
+   624	        """Get ADHD accommodations for specific task."""
+   625	        accommodations = []
+   626	
+   627	        complexity = task.get("complexity", 0.5)
+   628	        if complexity > 0.7:
+   629	            accommodations.extend([
+   630	                "Break into smaller subtasks",
+   631	                "Use pomodoro technique",
+   632	                "Set up distraction-free environment"
+   633	            ])
+   634	
+   635	        if task.get("requires_focus", False):
+   636	            accommodations.extend([
+   637	                "Schedule during peak energy hours",
+   638	                "Use focus music/noise",
+   639	                "Enable hyperfocus protection"
+   640	            ])
+   641	
+   642	        return accommodations
+   643	
+   644	    async def _estimate_workflow_improvement(
+   645	        self,
+   646	        original: List[Dict[str, Any]],
+   647	        optimized: List[Dict[str, Any]],
+   648	        patterns: List[ProductivityPattern]
+   649	    ) -> Dict[str, Any]:
+   650	        """Estimate improvement from workflow optimization."""
+   651	        # Simplified improvement calculation
+   652	        context_switches_original = self._count_context_switches(original)
+   653	        context_switches_optimized = self._count_context_switches(optimized)
+   654	
+   655	        context_switch_improvement = (
+   656	            context_switches_original - context_switches_optimized
+   657	        ) / max(context_switches_original, 1)
+   658	
+   659	        return {
+   660	            "productivity_gain": min(0.5, context_switch_improvement * 0.3),  # Cap at 50%
+   661	            "context_switches_reduced": context_switches_original - context_switches_optimized,
+   662	            "adhd_accommodations": [f"Accommodation for task {i}" for i in range(len(optimized))]
+   663	        }
+   664	
+   665	    def _count_context_switches(self, tasks: List[Dict[str, Any]]) -> int:
+   666	        """Count context switches in task workflow."""
+   667	        if len(tasks) <= 1:
+   668	            return 0
+   669	
+   670	        switches = 0
+   671	        for i in range(1, len(tasks)):
+   672	            if self._requires_context_switch(tasks[i-1], tasks[i]):
+   673	                switches += 1
+   674	
+   675	        return switches
+   676	
+   677	    async def _update_optimization_models(
+   678	        self, recommendation_id: str, results: Dict[str, Any]
+   679	    ) -> None:
+   680	        """Update optimization models based on results."""
+   681	        strategy_hint = str(results.get("strategy", "")).lower()
+   682	        if not strategy_hint:
+   683	            for strategy in OptimizationStrategy:
+   684	                if strategy.value in recommendation_id:
+   685	                    strategy_hint = strategy.value
+   686	                    break
+   687	
+   688	        target_strategy = None
+   689	        for strategy in OptimizationStrategy:
+   690	            if strategy.value == strategy_hint:
+   691	                target_strategy = strategy
+   692	                break
+   693	
+   694	        if target_strategy is None:
+   695	            target_strategy = OptimizationStrategy.TASK_REORDERING
+   696	
+   697	        model = self.optimization_models.setdefault(
+   698	            target_strategy,
+   699	            {
+   700	                "effectiveness_score": 0.6,
+   701	                "confidence": 0.5,
+   702	                "usage_count": 0,
+   703	                "success_rate": 0.5,
+   704	            },
+   705	        )
+   706	
+   707	        improvement = float(results.get("productivity_improvement", 0.0))
+   708	        success = improvement > 0.05
+   709	        confidence = float(results.get("confidence", 0.7))
+   710	
+   711	        model["usage_count"] += 1
+   712	        old_success = float(model.get("success_rate", 0.5))
+   713	        old_effectiveness = float(model.get("effectiveness_score", 0.6))
+   714	        old_confidence = float(model.get("confidence", 0.5))
+   715	
+   716	        outcome_value = 1.0 if success else 0.0
+   717	        model["success_rate"] = round((1 - self.learning_rate) * old_success + self.learning_rate * outcome_value, 4)
+   718	        model["effectiveness_score"] = round(
+   719	            (1 - self.learning_rate) * old_effectiveness + self.learning_rate * max(0.0, min(1.0, 0.5 + improvement)),
+   720	            4,
+   721	        )
+   722	        model["confidence"] = round((1 - self.learning_rate) * old_confidence + self.learning_rate * confidence, 4)
+   723	
+   724	    async def close(self) -> None:
+   725	        """Shutdown background optimizer tasks."""
+   726	        if self._monitor_task and not self._monitor_task.done():
+   727	            self._monitor_task.cancel()
+   728	            await asyncio.gather(self._monitor_task, return_exceptions=True)

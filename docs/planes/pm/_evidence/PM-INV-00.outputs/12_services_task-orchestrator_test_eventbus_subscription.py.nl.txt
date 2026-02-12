@@ -1,0 +1,207 @@
+     1	"""
+     2	Minimal test for Component 3: EventBus Subscription
+     3	
+     4	Tests EventBus functionality without requiring full Task-Orchestrator infrastructure.
+     5	Validates:
+     6	1. EventBus initialization
+     7	2. Event subscription
+     8	3. Event publication
+     9	4. Event reception
+    10	"""
+    11	
+    12	import asyncio
+    13	import sys
+    14	import os
+    15	import logging
+    16	from datetime import datetime
+    17	
+    18	# Add DopeconBridge path
+    19	dopecon_bridge_path = os.path.join(os.path.dirname(__file__), '..', 'mcp-dopecon-bridge')
+    20	sys.path.insert(0, dopecon_bridge_path)
+    21	
+    22	from event_bus import EventBus, Event, EventType
+    23	
+    24	logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    25	logger = logging.getLogger(__name__)
+    26	
+    27	
+    28	class TestSubscriber:
+    29	    """Test subscriber that listens for events."""
+    30	
+    31	    def __init__(self, redis_url: str = "redis://localhost:6379"):
+    32	        self.redis_url = redis_url
+    33	        self.event_bus: EventBus = None
+    34	        self.received_events = []
+    35	        self.running = False
+    36	
+    37	    async def initialize(self):
+    38	        """Initialize EventBus."""
+    39	        logger.info("🚀 Initializing EventBus...")
+    40	        self.event_bus = EventBus(self.redis_url, password=None)
+    41	        await self.event_bus.initialize()
+    42	        logger.info("✅ EventBus initialized")
+    43	
+    44	    async def subscribe_and_listen(self, duration_seconds: int = 10):
+    45	        """Subscribe to events for specified duration."""
+    46	        logger.info(f"📡 Subscribing to dopemux:events stream for {duration_seconds} seconds...")
+    47	
+    48	        self.running = True
+    49	
+    50	        # Create subscription task
+    51	        subscription_task = asyncio.create_task(self._subscription_worker())
+    52	
+    53	        # Wait for specified duration
+    54	        await asyncio.sleep(duration_seconds)
+    55	
+    56	        # Stop subscription
+    57	        self.running = False
+    58	        subscription_task.cancel()
+    59	
+    60	        try:
+    61	            await subscription_task
+    62	        except asyncio.CancelledError:
+    63	            logger.info("📭 Subscription stopped")
+    64	
+    65	        logger.info(f"📥 Received {len(self.received_events)} events total")
+    66	
+    67	        return self.received_events
+    68	
+    69	    async def _subscription_worker(self):
+    70	        """Background worker for event subscription."""
+    71	        try:
+    72	            async for msg_id, event in self.event_bus.subscribe(
+    73	                stream="dopemux:events",
+    74	                consumer_group="test-subscriber",
+    75	                consumer_name="test-instance-1"
+    76	            ):
+    77	                if not self.running:
+    78	                    break
+    79	
+    80	                logger.info(f"📥 Received event: {event.type} from {event.source}")
+    81	                logger.info(f"   Data: {event.data}")
+    82	                self.received_events.append(event)
+    83	
+    84	        except Exception as e:
+    85	            if self.running:  # Only log if not intentionally stopped
+    86	                logger.error(f"Subscription error: {e}")
+    87	
+    88	    async def close(self):
+    89	        """Close EventBus connection."""
+    90	        if self.event_bus:
+    91	            await self.event_bus.close()
+    92	            logger.info("📪 EventBus closed")
+    93	
+    94	
+    95	async def publish_test_events(event_bus: EventBus):
+    96	    """Publish test events to verify subscription."""
+    97	    logger.info("\n📤 Publishing test events...")
+    98	
+    99	    # Event 1: TASKS_IMPORTED
+   100	    event1 = Event(
+   101	        type=EventType.TASKS_IMPORTED,
+   102	        data={"task_count": 3, "sprint_id": "test-sprint-001"},
+   103	        source="test-publisher"
+   104	    )
+   105	    msg_id1 = await event_bus.publish("dopemux:events", event1)
+   106	    logger.info(f"✅ Published TASKS_IMPORTED (ID: {msg_id1})")
+   107	
+   108	    await asyncio.sleep(0.5)
+   109	
+   110	    # Event 2: SESSION_STARTED
+   111	    event2 = Event(
+   112	        type=EventType.SESSION_STARTED,
+   113	        data={"task_id": "test-task-001", "duration_minutes": 25},
+   114	        source="test-publisher"
+   115	    )
+   116	    msg_id2 = await event_bus.publish("dopemux:events", event2)
+   117	    logger.info(f"✅ Published SESSION_STARTED (ID: {msg_id2})")
+   118	
+   119	    await asyncio.sleep(0.5)
+   120	
+   121	    # Event 3: PROGRESS_UPDATED
+   122	    event3 = Event(
+   123	        type=EventType.PROGRESS_UPDATED,
+   124	        data={"task_id": "test-task-001", "status": "in_progress", "progress": 0.5},
+   125	        source="test-publisher"
+   126	    )
+   127	    msg_id3 = await event_bus.publish("dopemux:events", event3)
+   128	    logger.info(f"✅ Published PROGRESS_UPDATED (ID: {msg_id3})")
+   129	
+   130	    await asyncio.sleep(0.5)
+   131	
+   132	    # Event 4: ADHD_STATE_CHANGED
+   133	    event4 = Event(
+   134	        type=EventType.ADHD_STATE_CHANGED,
+   135	        data={"state": "focused", "energy_level": "high", "attention_level": "focused"},
+   136	        source="test-publisher"
+   137	    )
+   138	    msg_id4 = await event_bus.publish("dopemux:events", event4)
+   139	    logger.info(f"✅ Published ADHD_STATE_CHANGED (ID: {msg_id4})")
+   140	
+   141	    logger.info("✅ All test events published")
+   142	
+   143	
+   144	async def main():
+   145	    """Main test execution."""
+   146	    logger.info("=" * 70)
+   147	    logger.info("Component 3: EventBus Subscription Test")
+   148	    logger.info("=" * 70)
+   149	
+   150	    # Create subscriber
+   151	    subscriber = TestSubscriber()
+   152	
+   153	    # Create publisher EventBus
+   154	    publisher_bus = EventBus("redis://localhost:6379", password=None)
+   155	
+   156	    try:
+   157	        # Initialize both
+   158	        await subscriber.initialize()
+   159	        await publisher_bus.initialize()
+   160	
+   161	        # Start subscription in background
+   162	        subscription_task = asyncio.create_task(
+   163	            subscriber.subscribe_and_listen(duration_seconds=15)
+   164	        )
+   165	
+   166	        # Wait for subscription to start
+   167	        await asyncio.sleep(2)
+   168	
+   169	        # Publish test events
+   170	        await publish_test_events(publisher_bus)
+   171	
+   172	        # Wait for subscription to complete
+   173	        received_events = await subscription_task
+   174	
+   175	        # Verify results
+   176	        logger.info("\n" + "=" * 70)
+   177	        logger.info("📊 Test Results")
+   178	        logger.info("=" * 70)
+   179	
+   180	        if len(received_events) >= 4:
+   181	            logger.info(f"✅ SUCCESS: Received {len(received_events)} events")
+   182	            logger.info("\nEvent details:")
+   183	            for i, event in enumerate(received_events, 1):
+   184	                logger.info(f"  {i}. {event.type} from {event.source}")
+   185	                logger.info(f"     Data: {event.data}")
+   186	        else:
+   187	            logger.warning(f"⚠️  PARTIAL: Only received {len(received_events)}/4 events")
+   188	            if received_events:
+   189	                logger.info("\nReceived events:")
+   190	                for event in received_events:
+   191	                    logger.info(f"  - {event.type}")
+   192	
+   193	        logger.info("\n" + "=" * 70)
+   194	        logger.info("✅ Test complete!")
+   195	        logger.info("=" * 70)
+   196	
+   197	    except Exception as e:
+   198	        logger.error(f"❌ Test failed: {e}", exc_info=True)
+   199	
+   200	    finally:
+   201	        # Cleanup
+   202	        await subscriber.close()
+   203	        await publisher_bus.close()
+   204	
+   205	
+   206	if __name__ == "__main__":
+   207	    asyncio.run(main())

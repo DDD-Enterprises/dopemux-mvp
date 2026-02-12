@@ -1,0 +1,769 @@
+     1	"""
+     2	Dynamic Claude.md Context Management System
+     3	
+     4	Automatically updates Claude.md instructions based on current sprint context,
+     5	active tasks, and ADHD optimization patterns for seamless workflow automation.
+     6	"""
+     7	
+     8	import asyncio
+     9	import json
+    10	import logging
+    11	import re
+    12	from datetime import datetime, timezone
+    13	from pathlib import Path
+    14	from typing import Any, Dict, List, Optional, Set
+    15	from dataclasses import dataclass
+    16	from enum import Enum
+    17	
+    18	logger = logging.getLogger(__name__)
+    19	
+    20	
+    21	class ContextMode(str, Enum):
+    22	    """Claude.md context modes."""
+    23	    SPRINT_PLANNING = "sprint_planning"
+    24	    ACTIVE_DEVELOPMENT = "active_development"
+    25	    CODE_REVIEW = "code_review"
+    26	    RETROSPECTIVE = "retrospective"
+    27	    MAINTENANCE = "maintenance"
+    28	    RESEARCH = "research"
+    29	
+    30	
+    31	class ADHDState(str, Enum):
+    32	    """ADHD state for context adaptation."""
+    33	    SCATTERED = "scattered"
+    34	    FOCUSED = "focused"
+    35	    HYPERFOCUS = "hyperfocus"
+    36	    LOW_ENERGY = "low_energy"
+    37	    BREAK_MODE = "break_mode"
+    38	
+    39	
+    40	@dataclass
+    41	class ClaudeContext:
+    42	    """Dynamic context for Claude.md."""
+    43	    # Sprint context
+    44	    active_sprint_id: Optional[str] = None
+    45	    sprint_name: Optional[str] = None
+    46	    sprint_mode: ContextMode = ContextMode.ACTIVE_DEVELOPMENT
+    47	
+    48	    # Current work
+    49	    active_task_id: Optional[str] = None
+    50	    active_task_title: Optional[str] = None
+    51	    current_focus_area: Optional[str] = None
+    52	    priority_tasks: List[Dict[str, Any]] = None
+    53	
+    54	    # ADHD state
+    55	    adhd_state: ADHDState = ADHDState.FOCUSED
+    56	    energy_level: str = "medium"
+    57	    recommended_task_duration: int = 25
+    58	    break_frequency: int = 25
+    59	
+    60	    # System state
+    61	    available_agents: List[str] = None
+    62	    system_health: Dict[str, Any] = None
+    63	    recent_decisions: List[Dict[str, Any]] = None
+    64	
+    65	    # Workflow automation
+    66	    automation_active: bool = True
+    67	    implicit_features: List[str] = None
+    68	    next_automated_actions: List[str] = None
+    69	
+    70	    def __post_init__(self):
+    71	        if self.priority_tasks is None:
+    72	            self.priority_tasks = []
+    73	        if self.available_agents is None:
+    74	            self.available_agents = []
+    75	        if self.system_health is None:
+    76	            self.system_health = {}
+    77	        if self.recent_decisions is None:
+    78	            self.recent_decisions = []
+    79	        if self.implicit_features is None:
+    80	            self.implicit_features = []
+    81	        if self.next_automated_actions is None:
+    82	            self.next_automated_actions = []
+    83	
+    84	
+    85	class ClaudeContextManager:
+    86	    """
+    87	    Manages dynamic Claude.md context updates for seamless workflow automation.
+    88	
+    89	    Features:
+    90	    - Real-time context updates based on sprint and task state
+    91	    - ADHD-adaptive instruction modification
+    92	    - Workflow automation guidance integration
+    93	    - Context preservation across sessions
+    94	    - Intelligent instruction prioritization
+    95	    """
+    96	
+    97	    def __init__(
+    98	        self,
+    99	        workspace_path: Path,
+   100	        claude_md_path: Optional[Path] = None
+   101	    ):
+   102	        self.workspace_path = Path(workspace_path)
+   103	        self.claude_md_path = claude_md_path or (self.workspace_path / ".claude" / "CLAUDE.md")
+   104	
+   105	        # Context state
+   106	        self.current_context = ClaudeContext()
+   107	        self.context_history: List[ClaudeContext] = []
+   108	        self.base_claude_md: Optional[str] = None
+   109	
+   110	        # Template system
+   111	        self.context_templates: Dict[ContextMode, str] = {}
+   112	        self.adhd_adaptations: Dict[ADHDState, Dict[str, Any]] = {}
+   113	
+   114	        # Update tracking
+   115	        self.last_update: Optional[datetime] = None
+   116	        self.update_frequency = 300  # 5 minutes
+   117	        self.pending_updates: Set[str] = set()
+   118	
+   119	        # Background monitoring
+   120	        self.monitor_task: Optional[asyncio.Task] = None
+   121	        self.running = False
+   122	
+   123	    async def initialize(self) -> None:
+   124	        """Initialize Claude.md context manager."""
+   125	        logger.info("📝 Initializing Claude.md Context Manager...")
+   126	
+   127	        # Load base Claude.md content
+   128	        await self._load_base_claude_md()
+   129	
+   130	        # Initialize context templates
+   131	        self._initialize_context_templates()
+   132	
+   133	        # Initialize ADHD adaptations
+   134	        self._initialize_adhd_adaptations()
+   135	
+   136	        # Start background monitoring
+   137	        await self._start_context_monitoring()
+   138	
+   139	        self.running = True
+   140	        logger.info("✅ Claude.md Context Manager ready for dynamic updates!")
+   141	
+   142	    async def _load_base_claude_md(self) -> None:
+   143	        """Load base Claude.md content as template."""
+   144	        try:
+   145	            if self.claude_md_path.exists():
+   146	                with open(self.claude_md_path, 'r', encoding='utf-8') as f:
+   147	                    self.base_claude_md = f.read()
+   148	
+   149	                logger.info(f"📄 Loaded base Claude.md from {self.claude_md_path}")
+   150	            else:
+   151	                logger.warning(f"Claude.md not found at {self.claude_md_path}")
+   152	                self.base_claude_md = self._get_default_claude_md()
+   153	
+   154	        except Exception as e:
+   155	            logger.error(f"Failed to load Claude.md: {e}")
+   156	            self.base_claude_md = self._get_default_claude_md()
+   157	
+   158	    def _initialize_context_templates(self) -> None:
+   159	        """Initialize context-specific templates."""
+   160	        self.context_templates = {
+   161	            ContextMode.SPRINT_PLANNING: """
+   162	# Sprint Planning Mode - Automated PM Workflow
+   163	
+   164	## 🎯 Current Sprint Context
+   165	- **Sprint**: {{sprint_name}} ({{sprint_id}})
+   166	- **Mode**: PLANNING
+   167	- **Tasks**: {{task_count}} total, {{complex_tasks}} complex
+   168	- **Focus**: Sprint setup and task decomposition
+   169	
+   170	## 🤖 Automatic Workflows Active
+   171	- ✅ **Task Analysis**: Complexity scoring and ADHD decomposition
+   172	- ✅ **Agent Assignment**: Optimal AI agent routing for each task type
+   173	- ✅ **Progress Setup**: Automatic tracking across Leantime, ConPort, local systems
+   174	- ✅ **Break Planning**: 25-minute chunks with hyperfocus protection
+   175	
+   176	## 📋 Priority Actions
+   177	{{#each priority_tasks}}
+   178	- **{{title}}** ({{complexity_label}}) - Estimated: {{estimated_minutes}}min
+   179	{{/each}}
+   180	
+   181	## 🧠 ADHD Accommodations
+   182	- **Energy Matching**: Tasks automatically matched to current energy level
+   183	- **Cognitive Load**: {{cognitive_load_status}}
+   184	- **Break Frequency**: Every {{break_frequency}} minutes
+   185	- **Context Switching**: Minimized through intelligent batching
+   186	""",
+   187	
+   188	            ContextMode.ACTIVE_DEVELOPMENT: """
+   189	# Active Development Mode - Seamless PM Automation
+   190	
+   191	## 🎯 Current Work Context
+   192	- **Sprint**: {{sprint_name}} ({{sprint_id}})
+   193	- **Active Task**: {{active_task_title}}
+   194	- **Focus Area**: {{current_focus_area}}
+   195	- **Progress**: Auto-tracked via file changes and git commits
+   196	
+   197	## 🤖 Implicit Automation Active
+   198	- ✅ **Progress Tracking**: File changes automatically update task progress in Leantime
+   199	- ✅ **Context Preservation**: Work context saved across interruptions
+   200	- ✅ **Break Management**: Gentle reminders every {{break_frequency}} minutes
+   201	- ✅ **Decision Linking**: Code changes linked to architectural decisions in ConPort
+   202	
+   203	## 🧠 ADHD Status: {{adhd_state}}
+   204	- **Energy Level**: {{energy_level}}
+   205	- **Recommended Duration**: {{recommended_task_duration}} minutes
+   206	- **Focus Mode**: {{focus_mode_status}}
+   207	
+   208	## ⚡ Next Actions (Auto-Prioritized)
+   209	{{#each next_automated_actions}}
+   210	- {{action}} ({{timing}})
+   211	{{/each}}
+   212	""",
+   213	
+   214	            ContextMode.CODE_REVIEW: """
+   215	# Code Review Mode - Quality Automation
+   216	
+   217	## 🎯 Review Context
+   218	- **Sprint**: {{sprint_name}}
+   219	- **Review Type**: {{review_type}}
+   220	- **Files Changed**: {{files_changed}}
+   221	
+   222	## 🤖 Automated Quality Checks
+   223	- ✅ **Zen Code Review**: Multi-model analysis active
+   224	- ✅ **Pattern Validation**: ConPort pattern compliance checking
+   225	- ✅ **Progress Correlation**: Changes automatically linked to tasks
+   226	- ✅ **ADHD Feedback**: Gentle, constructive review comments
+   227	
+   228	## 🧠 Review Accommodations
+   229	- **Complexity Chunking**: Large reviews broken into manageable pieces
+   230	- **Progress Indicators**: Clear completion status throughout review
+   231	- **Context Breadcrumbs**: Easy navigation back to implementation context
+   232	""",
+   233	
+   234	            ContextMode.RETROSPECTIVE: """
+   235	# Retrospective Mode - Learning Automation
+   236	
+   237	## 🎯 Sprint Retrospective: {{sprint_name}}
+   238	- **Completed Tasks**: {{completed_count}}
+   239	- **Duration**: {{sprint_duration}}
+   240	- **Automation Effectiveness**: {{automation_success_rate}}
+   241	
+   242	## 🤖 Auto-Generated Insights
+   243	### What Went Well
+   244	{{#each positive_insights}}
+   245	- {{insight}} ({{confidence}})
+   246	{{/each}}
+   247	
+   248	### ADHD Accommodations That Worked
+   249	{{#each adhd_insights}}
+   250	- {{accommodation}} - {{effectiveness}}
+   251	{{/each}}
+   252	
+   253	### Workflow Optimizations for Next Sprint
+   254	{{#each workflow_improvements}}
+   255	- {{improvement}} ({{implementation_effort}})
+   256	{{/each}}
+   257	
+   258	## 🧠 ADHD Pattern Analysis
+   259	- **Focus Duration**: {{average_focus_duration}} minutes
+   260	- **Context Switches**: {{context_switches}} ({{trend}})
+   261	- **Energy Utilization**: {{energy_efficiency}}
+   262	- **Break Compliance**: {{break_compliance_rate}}
+   263	"""
+   264	        }
+   265	
+   266	    def _initialize_adhd_adaptations(self) -> None:
+   267	        """Initialize ADHD-specific adaptations."""
+   268	        self.adhd_adaptations = {
+   269	            ADHDState.SCATTERED: {
+   270	                "max_instructions": 5,
+   271	                "instruction_length": "short",
+   272	                "visual_indicators": "high",
+   273	                "chunk_size": "small",
+   274	                "encouragement_level": "high"
+   275	            },
+   276	            ADHDState.FOCUSED: {
+   277	                "max_instructions": 10,
+   278	                "instruction_length": "medium",
+   279	                "visual_indicators": "medium",
+   280	                "chunk_size": "medium",
+   281	                "encouragement_level": "medium"
+   282	            },
+   283	            ADHDState.HYPERFOCUS: {
+   284	                "max_instructions": 15,
+   285	                "instruction_length": "detailed",
+   286	                "visual_indicators": "minimal",
+   287	                "chunk_size": "large",
+   288	                "encouragement_level": "low",
+   289	                "protection_reminders": True
+   290	            },
+   291	            ADHDState.LOW_ENERGY: {
+   292	                "max_instructions": 3,
+   293	                "instruction_length": "minimal",
+   294	                "visual_indicators": "high",
+   295	                "chunk_size": "tiny",
+   296	                "encouragement_level": "very_high",
+   297	                "energy_boosting": True
+   298	            },
+   299	            ADHDState.BREAK_MODE: {
+   300	                "max_instructions": 1,
+   301	                "instruction_length": "minimal",
+   302	                "primary_message": "Take a break - you've earned it! 💙",
+   303	                "hide_complex_tasks": True
+   304	            }
+   305	        }
+   306	
+   307	    async def _start_context_monitoring(self) -> None:
+   308	        """Start background context monitoring."""
+   309	        self.monitor_task = asyncio.create_task(self._context_monitor())
+   310	
+   311	    async def _context_monitor(self) -> None:
+   312	        """Background monitor for context changes."""
+   313	        logger.info("👁️ Started Claude.md context monitoring")
+   314	
+   315	        while self.running:
+   316	            try:
+   317	                # Check for context updates needed
+   318	                context_changed = await self._check_context_changes()
+   319	
+   320	                if context_changed or self.pending_updates:
+   321	                    await self._update_claude_context()
+   322	
+   323	                # Monitor every 2 minutes
+   324	                await asyncio.sleep(120)
+   325	
+   326	            except Exception as e:
+   327	                logger.error(f"Context monitoring error: {e}")
+   328	                await asyncio.sleep(300)
+   329	
+   330	    # Core Context Management
+   331	
+   332	    async def update_sprint_context(
+   333	        self,
+   334	        sprint_id: str,
+   335	        sprint_name: str,
+   336	        mode: ContextMode,
+   337	        task_data: List[Dict[str, Any]] = None
+   338	    ) -> None:
+   339	        """Update context for new sprint."""
+   340	        try:
+   341	            # Update context
+   342	            self.current_context.active_sprint_id = sprint_id
+   343	            self.current_context.sprint_name = sprint_name
+   344	            self.current_context.sprint_mode = mode
+   345	
+   346	            if task_data:
+   347	                # Extract priority tasks (high priority, not blocked)
+   348	                priority_tasks = [
+   349	                    task for task in task_data
+   350	                    if task.get("priority", 5) <= 3 and task.get("status") != "blocked"
+   351	                ]
+   352	                self.current_context.priority_tasks = priority_tasks[:5]  # Top 5 for ADHD
+   353	
+   354	            # Mark for update
+   355	            self.pending_updates.add("sprint_context")
+   356	
+   357	            logger.info(f"🎯 Sprint context updated: {sprint_name} ({mode.value})")
+   358	
+   359	        except Exception as e:
+   360	            logger.error(f"Sprint context update failed: {e}")
+   361	
+   362	    async def update_active_task_context(
+   363	        self,
+   364	        task_id: str,
+   365	        task_title: str,
+   366	        focus_area: str = None
+   367	    ) -> None:
+   368	        """Update context for active task."""
+   369	        try:
+   370	            self.current_context.active_task_id = task_id
+   371	            self.current_context.active_task_title = task_title
+   372	            self.current_context.current_focus_area = focus_area or task_title
+   373	
+   374	            # Mark for update
+   375	            self.pending_updates.add("active_task")
+   376	
+   377	            logger.debug(f"📍 Active task context updated: {task_title}")
+   378	
+   379	        except Exception as e:
+   380	            logger.error(f"Active task context update failed: {e}")
+   381	
+   382	    async def update_adhd_state(
+   383	        self,
+   384	        adhd_state: ADHDState,
+   385	        energy_level: str,
+   386	        recommended_duration: int = 25
+   387	    ) -> None:
+   388	        """Update ADHD state for context adaptation."""
+   389	        try:
+   390	            previous_state = self.current_context.adhd_state
+   391	
+   392	            self.current_context.adhd_state = adhd_state
+   393	            self.current_context.energy_level = energy_level
+   394	            self.current_context.recommended_task_duration = recommended_duration
+   395	
+   396	            # Adjust break frequency based on state
+   397	            if adhd_state == ADHDState.HYPERFOCUS:
+   398	                self.current_context.break_frequency = 30  # Longer for hyperfocus
+   399	            elif adhd_state == ADHDState.LOW_ENERGY:
+   400	                self.current_context.break_frequency = 15  # More frequent breaks
+   401	            else:
+   402	                self.current_context.break_frequency = 25  # Standard Pomodoro
+   403	
+   404	            # Mark for update if state changed significantly
+   405	            if previous_state != adhd_state:
+   406	                self.pending_updates.add("adhd_state")
+   407	                logger.info(f"🧠 ADHD state updated: {previous_state.value} → {adhd_state.value}")
+   408	
+   409	        except Exception as e:
+   410	            logger.error(f"ADHD state update failed: {e}")
+   411	
+   412	    async def update_automation_status(
+   413	        self,
+   414	        implicit_features: List[str],
+   415	        next_actions: List[str],
+   416	        system_health: Dict[str, Any]
+   417	    ) -> None:
+   418	        """Update automation and system status."""
+   419	        try:
+   420	            self.current_context.implicit_features = implicit_features
+   421	            self.current_context.next_automated_actions = next_actions
+   422	            self.current_context.system_health = system_health
+   423	
+   424	            self.pending_updates.add("automation_status")
+   425	
+   426	        except Exception as e:
+   427	            logger.error(f"Automation status update failed: {e}")
+   428	
+   429	    # Claude.md Generation and Updates
+   430	
+   431	    async def _update_claude_context(self) -> None:
+   432	        """Update Claude.md with current context."""
+   433	        try:
+   434	            if not self.pending_updates:
+   435	                return
+   436	
+   437	            # Generate updated Claude.md content
+   438	            updated_content = await self._generate_dynamic_claude_md()
+   439	
+   440	            # Write to file
+   441	            await self._write_claude_md(updated_content)
+   442	
+   443	            # Clear pending updates
+   444	            self.pending_updates.clear()
+   445	            self.last_update = datetime.now(timezone.utc)
+   446	
+   447	            logger.info("📝 Claude.md updated with current context")
+   448	
+   449	        except Exception as e:
+   450	            logger.error(f"Claude.md update failed: {e}")
+   451	
+   452	    async def _generate_dynamic_claude_md(self) -> str:
+   453	        """Generate dynamic Claude.md content based on current context."""
+   454	        try:
+   455	            # Start with base content
+   456	            if not self.base_claude_md:
+   457	                content = self._get_default_claude_md()
+   458	            else:
+   459	                content = self.base_claude_md
+   460	
+   461	            # Find dynamic context insertion point
+   462	            context_marker = "# Dynamic Context - Auto-Generated"
+   463	            context_end_marker = "# End Dynamic Context"
+   464	
+   465	            # Remove existing dynamic context
+   466	            if context_marker in content:
+   467	                start_pos = content.find(context_marker)
+   468	                end_pos = content.find(context_end_marker)
+   469	
+   470	                if end_pos > start_pos:
+   471	                    end_pos += len(context_end_marker)
+   472	                    content = content[:start_pos] + content[end_pos:]
+   473	
+   474	            # Generate new dynamic context
+   475	            dynamic_context = await self._generate_context_section()
+   476	
+   477	            # Insert at the beginning for visibility
+   478	            insertion_point = content.find("\n## ")  # After main title
+   479	            if insertion_point > 0:
+   480	                content = (
+   481	                    content[:insertion_point] + "\n\n" +
+   482	                    dynamic_context + "\n" +
+   483	                    content[insertion_point:]
+   484	                )
+   485	            else:
+   486	                content = dynamic_context + "\n\n" + content
+   487	
+   488	            return content
+   489	
+   490	        except Exception as e:
+   491	            logger.error(f"Dynamic Claude.md generation failed: {e}")
+   492	            return self.base_claude_md or self._get_default_claude_md()
+   493	
+   494	    async def _generate_context_section(self) -> str:
+   495	        """Generate dynamic context section based on current state."""
+   496	        try:
+   497	            context = self.current_context
+   498	
+   499	            # Select appropriate template
+   500	            template = self.context_templates.get(
+   501	                context.sprint_mode,
+   502	                self.context_templates[ContextMode.ACTIVE_DEVELOPMENT]
+   503	            )
+   504	
+   505	            # Apply ADHD adaptations
+   506	            adhd_config = self.adhd_adaptations.get(
+   507	                context.adhd_state,
+   508	                self.adhd_adaptations[ADHDState.FOCUSED]
+   509	            )
+   510	
+   511	            # Template variables
+   512	            template_vars = {
+   513	                "sprint_name": context.sprint_name or "No active sprint",
+   514	                "sprint_id": context.active_sprint_id or "none",
+   515	                "active_task_title": context.active_task_title or "No active task",
+   516	                "current_focus_area": context.current_focus_area or "General development",
+   517	                "task_count": len(context.priority_tasks),
+   518	                "complex_tasks": len([t for t in context.priority_tasks if t.get("complexity_score", 0) > 0.7]),
+   519	                "adhd_state": context.adhd_state.value,
+   520	                "energy_level": context.energy_level,
+   521	                "break_frequency": context.break_frequency,
+   522	                "recommended_task_duration": context.recommended_task_duration,
+   523	                "cognitive_load_status": self._get_cognitive_load_status(),
+   524	                "focus_mode_status": self._get_focus_mode_status(),
+   525	                "automation_success_rate": self._get_automation_success_rate(),
+   526	                "priority_tasks": self._format_priority_tasks(context.priority_tasks),
+   527	                "next_automated_actions": self._format_next_actions(context.next_automated_actions),
+   528	                "implicit_features": ", ".join(context.implicit_features),
+   529	                "system_status": self._format_system_status(context.system_health)
+   530	            }
+   531	
+   532	            # Apply template with variables
+   533	            rendered_content = self._render_template(template, template_vars)
+   534	
+   535	            # Apply ADHD adaptations
+   536	            adapted_content = self._apply_adhd_adaptations(rendered_content, adhd_config)
+   537	
+   538	            # Add timestamp and automation marker
+   539	            final_content = f"""# Dynamic Context - Auto-Generated
+   540	*Last updated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}*
+   541	*Automation: Task Orchestrator v2*
+   542	
+   543	{adapted_content}
+   544	
+   545	# End Dynamic Context"""
+   546	
+   547	            return final_content
+   548	
+   549	        except Exception as e:
+   550	            logger.error(f"Context section generation failed: {e}")
+   551	            return "# Dynamic Context - Error generating context"
+   552	
+   553	    def _render_template(self, template: str, variables: Dict[str, Any]) -> str:
+   554	        """Render template with variables."""
+   555	        try:
+   556	            rendered = template
+   557	
+   558	            # Simple variable substitution
+   559	            for key, value in variables.items():
+   560	                placeholder = f"{{{{{key}}}}}"
+   561	                rendered = rendered.replace(placeholder, str(value))
+   562	
+   563	            # Handle conditional blocks
+   564	            rendered = self._process_conditional_blocks(rendered, variables)
+   565	
+   566	            return rendered
+   567	
+   568	        except Exception as e:
+   569	            logger.error(f"Template rendering failed: {e}")
+   570	            return template
+   571	
+   572	    def _process_conditional_blocks(self, content: str, variables: Dict[str, Any]) -> str:
+   573	        """Process conditional template blocks."""
+   574	        try:
+   575	            # Handle {{#each array}} blocks
+   576	            each_pattern = r'\{\{#each (\w+)\}\}(.*?)\{\{/each\}\}'
+   577	
+   578	            def replace_each(match):
+   579	                array_name = match.group(1)
+   580	                block_content = match.group(2)
+   581	                array_data = variables.get(array_name, [])
+   582	
+   583	                if not array_data:
+   584	                    return ""
+   585	
+   586	                result = []
+   587	                for item in array_data:
+   588	                    item_content = block_content
+   589	                    # Replace item properties
+   590	                    if isinstance(item, dict):
+   591	                        for key, value in item.items():
+   592	                            item_content = item_content.replace(f"{{{{{key}}}}}", str(value))
+   593	                    result.append(item_content)
+   594	
+   595	                return "".join(result)
+   596	
+   597	            content = re.sub(each_pattern, replace_each, content, flags=re.DOTALL)
+   598	            return content
+   599	
+   600	        except Exception as e:
+   601	            logger.error(f"Conditional block processing failed: {e}")
+   602	            return content
+   603	
+   604	    def _apply_adhd_adaptations(self, content: str, adhd_config: Dict[str, Any]) -> str:
+   605	        """Apply ADHD-specific adaptations to content."""
+   606	        try:
+   607	            adapted = content
+   608	
+   609	            # Limit instruction count
+   610	            max_instructions = adhd_config.get("max_instructions", 10)
+   611	            lines = adapted.split('\n')
+   612	            instruction_lines = [line for line in lines if line.strip().startswith('-')]
+   613	
+   614	            if len(instruction_lines) > max_instructions:
+   615	                # Keep most important instructions
+   616	                important_lines = instruction_lines[:max_instructions]
+   617	                adapted = '\n'.join([
+   618	                    line for line in lines
+   619	                    if not line.strip().startswith('-') or line in important_lines
+   620	                ])
+   621	
+   622	            # Adjust instruction length
+   623	            instruction_length = adhd_config.get("instruction_length", "medium")
+   624	            if instruction_length == "short":
+   625	                # Truncate long instructions
+   626	                adapted = re.sub(r'- (.{50}).*', r'- \1...', adapted)
+   627	            elif instruction_length == "minimal":
+   628	                # Keep only essential words
+   629	                adapted = re.sub(r'- (.{20}).*', r'- \1...', adapted)
+   630	
+   631	            # Add visual indicators
+   632	            visual_level = adhd_config.get("visual_indicators", "medium")
+   633	            if visual_level == "high":
+   634	                adapted = self._enhance_visual_indicators(adapted)
+   635	
+   636	            # Add encouragement
+   637	            encouragement_level = adhd_config.get("encouragement_level", "medium")
+   638	            if encouragement_level in ["high", "very_high"]:
+   639	                adapted = self._add_encouragement(adapted, encouragement_level)
+   640	
+   641	            # Add protection reminders for hyperfocus
+   642	            if adhd_config.get("protection_reminders"):
+   643	                adapted += "\n\n⚠️ **Hyperfocus Protection**: Remember to take breaks and stay hydrated!"
+   644	
+   645	            return adapted
+   646	
+   647	        except Exception as e:
+   648	            logger.error(f"ADHD adaptation failed: {e}")
+   649	            return content
+   650	
+   651	    def _enhance_visual_indicators(self, content: str) -> str:
+   652	        """Enhance visual indicators for ADHD users."""
+   653	        # Add more emojis and visual breaks
+   654	        enhanced = content.replace("##", "## 🎯")
+   655	        enhanced = enhanced.replace("- ✅", "- ✅ 🟢")
+   656	        enhanced = enhanced.replace("**Active**", "**🔥 Active**")
+   657	        enhanced = enhanced.replace("**Complete**", "**✅ Complete**")
+   658	
+   659	        return enhanced
+   660	
+   661	    def _add_encouragement(self, content: str, level: str) -> str:
+   662	        """Add encouragement for ADHD users."""
+   663	        encouragements = {
+   664	            "high": [
+   665	                "🌟 You're doing great work!",
+   666	                "💪 Keep up the excellent progress!",
+   667	                "🎯 Focused and productive - nice job!"
+   668	            ],
+   669	            "very_high": [
+   670	                "🚀 Amazing progress - you should be proud!",
+   671	                "💙 Your ADHD brain is working beautifully!",
+   672	                "✨ Each small step is a victory - celebrate it!"
+   673	            ]
+   674	        }
+   675	
+   676	        messages = encouragements.get(level, [])
+   677	        if messages:
+   678	            # Add random encouragement
+   679	            import random
+   680	            encouragement = random.choice(messages)
+   681	            content = f"*{encouragement}*\n\n" + content
+   682	
+   683	        return content
+   684	
+   685	    # Utility Methods
+   686	
+   687	    async def _check_context_changes(self) -> bool:
+   688	        """Check if context has changed significantly."""
+   689	        try:
+   690	            # This would check various sources for context changes
+   691	            # For now, simulate periodic need for updates
+   692	            if not self.last_update:
+   693	                return True
+   694	
+   695	            time_since_update = (datetime.now(timezone.utc) - self.last_update).total_seconds()
+   696	            return time_since_update > self.update_frequency
+   697	
+   698	        except Exception as e:
+   699	            return False
+   700	    async def _write_claude_md(self, content: str) -> None:
+   701	        """Write updated content to Claude.md."""
+   702	        try:
+   703	            # Ensure directory exists
+   704	            self.claude_md_path.parent.mkdir(parents=True, exist_ok=True)
+   705	
+   706	            # Write content
+   707	            with open(self.claude_md_path, 'w', encoding='utf-8') as f:
+   708	                f.write(content)
+   709	
+   710	            logger.debug(f"📝 Updated {self.claude_md_path}")
+   711	
+   712	        except Exception as e:
+   713	            logger.error(f"Failed to write Claude.md: {e}")
+   714	
+   715	    def _get_default_claude_md(self) -> str:
+   716	        """Get default Claude.md content."""
+   717	        return """# Dynamic Dopemux Project Configuration
+   718	
+   719	## 🚀 Task Orchestrator Integration
+   720	
+   721	This project uses automated PM workflow orchestration with Leantime integration.
+   722	
+   723	### Current Status
+   724	- **Automation**: Active
+   725	- **ADHD Optimization**: Enabled
+   726	- **Multi-System Sync**: Active
+   727	
+   728	## 🤖 Available Systems
+   729	- **ConPort**: Decision and progress tracking
+   730	- **Serena**: Code intelligence and navigation
+   731	- **Leantime**: Team project management
+   732	- **Task Orchestrator**: Automated coordination
+   733	
+   734	*This file is automatically updated based on current sprint and task context.*
+   735	"""
+   736	
+   737	    # Placeholder utility methods
+   738	    def _get_cognitive_load_status(self) -> str:
+   739	        return "🟡 Moderate"
+   740	
+   741	    def _get_focus_mode_status(self) -> str:
+   742	        return "Normal focus mode"
+   743	
+   744	    def _get_automation_success_rate(self) -> str:
+   745	        return "95%"
+   746	
+   747	    def _format_priority_tasks(self, tasks: List[Dict]) -> str:
+   748	        return "\n".join([f"- {task.get('title', 'Unknown')}" for task in tasks])
+   749	
+   750	    def _format_next_actions(self, actions: List[str]) -> str:
+   751	        return "\n".join([f"- {action}" for action in actions])
+   752	
+   753	    def _format_system_status(self, health: Dict[str, Any]) -> str:
+   754	        return health.get("overall_status", "Unknown")
+   755	
+   756	    async def close(self) -> None:
+   757	        """Shutdown Claude.md context manager."""
+   758	        logger.info("🛑 Shutting down Claude.md Context Manager...")
+   759	
+   760	        self.running = False
+   761	
+   762	        if self.monitor_task:
+   763	            self.monitor_task.cancel()
+   764	            try:
+   765	                await self.monitor_task
+   766	            except asyncio.CancelledError:
+   767	                logger.debug("Claude.md context monitor cancelled")
+   768	
+   769	        logger.info("✅ Claude.md Context Manager shutdown complete")

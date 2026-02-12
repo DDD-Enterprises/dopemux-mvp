@@ -1,0 +1,3 @@
+installers/leantime/.DS_Store
+installers/leantime/__pycache__/install.cpython-313.pyc
+installers/leantime/install.py

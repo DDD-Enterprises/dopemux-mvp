@@ -1,0 +1,328 @@
+     1	"""
+     2	Task Decomposition API Endpoint for Task Orchestrator
+     3	
+     4	Handles decomposition requests from ADHD Engine.
+     5	Calls Pal planner, persists to ConPort, syncs to Leantime.
+     6	"""
+     7	from typing import Dict, Any, List, Optional
+     8	from pydantic import BaseModel, Field
+     9	from datetime import datetime
+    10	import logging
+    11	
+    12	logger = logging.getLogger(__name__)
+    13	
+    14	
+    15	class DecompositionRequest(BaseModel):
+    16	    """Request to decompose a task."""
+    17	    task_id: str = Field(..., description="Task ID to decompose")
+    18	    adhd_context: Dict[str, Any] = Field(
+    19	        ...,
+    20	        description="Current ADHD state (energy, attention, cognitive_load)"
+    21	    )
+    22	    method: str = Field(
+    23	        default="pal",
+    24	        description="Decomposition method: 'pal' (AI) or 'pattern' (rule-based)"
+    25	    )
+    26	    max_subtasks: int = Field(
+    27	        default=7,
+    28	        ge=3,
+    29	        le=10,
+    30	        description="Maximum number of subtasks to generate"
+    31	    )
+    32	    target_duration_minutes: int = Field(
+    33	        default=15,
+    34	        ge=5,
+    35	        le=30,
+    36	        description="Target duration per subtask in minutes"
+    37	    )
+    38	    timestamp: Optional[str] = Field(
+    39	        default=None,
+    40	        description="Request timestamp"
+    41	    )
+    42	
+    43	
+    44	class DecompositionResponse(BaseModel):
+    45	    """Response from task decomposition."""
+    46	    parent_task_id: str
+    47	    subtask_ids: List[str]
+    48	    subtasks: List[Dict[str, Any]]
+    49	    total_estimated_minutes: int
+    50	    break_points: List[str] = Field(default_factory=list)
+    51	    schedule: Optional[Dict[str, Any]] = None
+    52	    method: str
+    53	    leantime_synced: bool = False
+    54	    conport_persisted: bool = False
+    55	    timestamp: str
+    56	
+    57	
+    58	async def handle_decomposition_request(
+    59	    request: DecompositionRequest,
+    60	    task_coordinator,  # TaskCoordinator instance
+    61	    pal_client,  # TaskOrchestratorPALClient instance
+    62	    leantime_client,  # LeantimeClient instance
+    63	    conport_adapter,  # ConPortEventAdapter instance (via DopeconBridge)
+    64	    workspace_id: str
+    65	) -> DecompositionResponse:
+    66	    """
+    67	    Handle task decomposition request from ADHD Engine.
+    68	    
+    69	    Flow:
+    70	    1. Get task from internal storage
+    71	    2. Call Pal planner for AI decomposition (or use pattern fallback)
+    72	    3. Convert to OrchestrationTask objects
+    73	    4. Persist to ConPort (parent BLOCKED, subtasks TODO, DECOMPOSED_INTO links)
+    74	    5. Sync to Leantime (create child tickets)
+    75	    6. Schedule based on ADHD state
+    76	    7. Return structured breakdown
+    77	    
+    78	    Args:
+    79	        request: Decomposition request from ADHD Engine
+    80	        task_coordinator: TaskCoordinator instance
+    81	        pal_client: Pal planner client
+    82	        leantime_client: Leantime API client
+    83	        conport_adapter: ConPort adapter for persistence
+    84	        workspace_id: Current workspace ID
+    85	    
+    86	    Returns:
+    87	        Decomposition response with subtasks and metadata
+    88	    
+    89	    Raises:
+    90	        ValueError: If task not found or decomposition fails
+    91	        RuntimeError: If Pal planner or ConPort unavailable
+    92	    """
+    93	    logger.info(
+    94	        f"Decomposition request for task {request.task_id} "
+    95	        f"via {request.method} method"
+    96	    )
+    97	    
+    98	    # 1. Get original task
+    99	    task = await task_coordinator.get_task(request.task_id)
+   100	    if not task:
+   101	        raise ValueError(f"Task {request.task_id} not found in Task Orchestrator")
+   102	    
+   103	    # 2. Call Pal planner for AI decomposition
+   104	    if request.method == "pal":
+   105	        logger.info(f"Calling Pal planner for task {request.task_id}")
+   106	        try:
+   107	            pal_breakdown = await pal_client.plan_task_breakdown(
+   108	                complex_task={
+   109	                    'id': task.id,
+   110	                    'description': task.description,
+   111	                    'complexity': getattr(task, 'complexity_score', 0.5),
+   112	                    'estimated_minutes': task.estimated_minutes
+   113	                },
+   114	                context=request.adhd_context
+   115	            )
+   116	        except Exception as e:
+   117	            logger.error(f"Pal planner failed: {e}, falling back to pattern method")
+   118	            # Fallback to pattern-based (ADHD Engine would provide this)
+   119	            # For now, generate simple breakdown
+   120	            pal_breakdown = {
+   121	                'subtasks': [
+   122	                    {
+   123	                        'name': f"Subtask {i+1}",
+   124	                        'description': f"Part {i+1} of {task.description}",
+   125	                        'duration_minutes': request.target_duration_minutes,
+   126	                        'dependencies': [],
+   127	                        'adhd_accommodations': []
+   128	                    }
+   129	                    for i in range(min(request.max_subtasks, 5))
+   130	                ],
+   131	                'execution_order': [f"subtask{i+1}" for i in range(5)],
+   132	                'total_duration': request.target_duration_minutes * 5,
+   133	                'break_points': ["after subtask2", "after subtask4"],
+   134	                'progress_checkpoints': [],
+   135	                'confidence': 0.5
+   136	            }
+   137	    else:
+   138	        # Pattern-based fallback (simple split)
+   139	        logger.info(f"Using pattern-based decomposition for task {request.task_id}")
+   140	        estimated_total = task.estimated_minutes
+   141	        num_subtasks = min(
+   142	            request.max_subtasks,
+   143	            max(3, estimated_total // request.target_duration_minutes)
+   144	        )
+   145	        
+   146	        pal_breakdown = {
+   147	            'subtasks': [
+   148	                {
+   149	                    'name': f"Part {i+1}",
+   150	                    'description': f"Part {i+1} of {task.description}",
+   151	                    'duration_minutes': estimated_total // num_subtasks,
+   152	                    'dependencies': [f"subtask{i}"] if i > 0 else [],
+   153	                    'adhd_accommodations': ["15min chunks", "clear goal"]
+   154	                }
+   155	                for i in range(num_subtasks)
+   156	            ],
+   157	            'execution_order': [f"subtask{i+1}" for i in range(num_subtasks)],
+   158	            'total_duration': estimated_total,
+   159	            'break_points': [
+   160	                f"after subtask{i+1}"
+   161	                for i in range(0, num_subtasks, 2)
+   162	            ],
+   163	            'progress_checkpoints': [],
+   164	            'confidence': 0.7
+   165	        }
+   166	    
+   167	    # 3. Convert to OrchestrationTask objects
+   168	    from task_orchestrator.models import OrchestrationTask, TaskStatus
+   169	    
+   170	    subtasks = []
+   171	    for idx, subtask_data in enumerate(pal_breakdown.get('subtasks', [])):
+   172	        subtask = OrchestrationTask(
+   173	            id=f"{task.id}_sub_{idx+1}",
+   174	            description=subtask_data['description'],
+   175	            complexity_score=subtask_data.get('complexity_score', 0.3),
+   176	            estimated_minutes=subtask_data['duration_minutes'],
+   177	            dependencies=subtask_data.get('dependencies', []),
+   178	            status=TaskStatus.PENDING,
+   179	            parent_task_id=task.id,
+   180	            order=idx,
+   181	            energy_required=_map_duration_to_energy(subtask_data['duration_minutes'])
+   182	        )
+   183	        subtasks.append(subtask)
+   184	    
+   185	    subtask_ids = [st.id for st in subtasks]
+   186	    
+   187	    logger.info(f"Created {len(subtasks)} subtasks for task {request.task_id}")
+   188	    
+   189	    # 4. Persist to ConPort
+   190	    conport_persisted = False
+   191	    try:
+   192	        logger.info(f"Persisting decomposition to ConPort for task {request.task_id}")
+   193	        
+   194	        # Update parent task status to BLOCKED
+   195	        await conport_adapter.update_progress_entry(
+   196	            entry_id=task.id,
+   197	            status="BLOCKED",
+   198	            metadata={
+   199	                'decomposed': True,
+   200	                'decomposition_method': request.method,
+   201	                'original_estimate': task.estimated_minutes,
+   202	                'num_subtasks': len(subtasks),
+   203	                'timestamp': datetime.now().isoformat()
+   204	            }
+   205	        )
+   206	        
+   207	        # Create subtask progress entries
+   208	        for subtask in subtasks:
+   209	            subtask_entry = await conport_adapter.create_progress_entry(
+   210	                workspace_id=workspace_id,
+   211	                description=subtask.description,
+   212	                status="TODO",
+   213	                metadata={
+   214	                    'parent_task_id': task.id,
+   215	                    'order': subtask.order,
+   216	                    'estimated_minutes': subtask.estimated_minutes,
+   217	                    'energy_required': subtask.energy_required,
+   218	                    'dependencies': subtask.dependencies
+   219	                }
+   220	            )
+   221	            
+   222	            # Link to parent (DECOMPOSED_INTO relationship)
+   223	            await conport_adapter.link_items(
+   224	                source_item_type="progress_entry",
+   225	                source_item_id=task.id,
+   226	                target_item_type="progress_entry",
+   227	                target_item_id=subtask_entry['id'],
+   228	                relationship_type="DECOMPOSED_INTO"
+   229	            )
+   230	        
+   231	        conport_persisted = True
+   232	        logger.info(f"Decomposition persisted to ConPort successfully")
+   233	    
+   234	    except Exception as e:
+   235	        logger.error(f"Failed to persist decomposition to ConPort: {e}")
+   236	        # Continue anyway - persistence is important but not critical for initial UX
+   237	    
+   238	    # 5. Sync to Leantime (create child tickets)
+   239	    leantime_synced = False
+   240	    if hasattr(task, 'leantime_id') and task.leantime_id and leantime_client:
+   241	        try:
+   242	            logger.info(f"Syncing decomposition to Leantime for task {request.task_id}")
+   243	            
+   244	            for subtask in subtasks:
+   245	                leantime_ticket = await leantime_client.create_ticket(
+   246	                    project_id=getattr(task, 'project_id', None),
+   247	                    headline=subtask.description,
+   248	                    planHours=subtask.estimated_minutes / 60.0,
+   249	                    parent_id=task.leantime_id,
+   250	                    tags=["decomposed", f"order:{subtask.order}"]
+   251	                )
+   252	                
+   253	                # Store Leantime ID for future sync
+   254	                subtask.leantime_id = leantime_ticket.get('id')
+   255	                logger.debug(f"Created Leantime ticket {subtask.leantime_id} for subtask {subtask.id}")
+   256	            
+   257	            # Update parent ticket metadata
+   258	            await leantime_client.update_ticket(
+   259	                ticket_id=task.leantime_id,
+   260	                tags=["decomposed", f"subtasks:{len(subtasks)}"],
+   261	                metadata={"decomposition_method": request.method}
+   262	            )
+   263	            
+   264	            leantime_synced = True
+   265	            logger.info(f"Decomposition synced to Leantime successfully")
+   266	        
+   267	        except Exception as e:
+   268	            logger.error(f"Failed to sync decomposition to Leantime: {e}")
+   269	            # Continue anyway - Leantime sync is optional
+   270	    else:
+   271	        logger.debug(f"Task {request.task_id} has no Leantime ID, skipping sync")
+   272	    
+   273	    # 6. Schedule based on ADHD state
+   274	    schedule = None
+   275	    try:
+   276	        schedule = await task_coordinator.schedule_subtasks(
+   277	            subtasks,
+   278	            request.adhd_context
+   279	        )
+   280	        logger.info(f"Generated ADHD-aware schedule for subtasks")
+   281	    except Exception as e:
+   282	        logger.warning(f"Failed to generate schedule: {e}")
+   283	    
+   284	    # 7. Return structured breakdown
+   285	    response = DecompositionResponse(
+   286	        parent_task_id=task.id,
+   287	        subtask_ids=subtask_ids,
+   288	        subtasks=[_subtask_to_dict(st) for st in subtasks],
+   289	        total_estimated_minutes=sum(st.estimated_minutes for st in subtasks),
+   290	        break_points=pal_breakdown.get('break_points', []),
+   291	        schedule=schedule,
+   292	        method=request.method,
+   293	        leantime_synced=leantime_synced,
+   294	        conport_persisted=conport_persisted,
+   295	        timestamp=datetime.now().isoformat()
+   296	    )
+   297	    
+   298	    logger.info(
+   299	        f"Decomposition complete for task {request.task_id}: "
+   300	        f"{len(subtasks)} subtasks, {response.total_estimated_minutes}min total"
+   301	    )
+   302	    
+   303	    return response
+   304	
+   305	
+   306	def _map_duration_to_energy(duration_minutes: int) -> str:
+   307	    """Map subtask duration to energy requirement."""
+   308	    if duration_minutes <= 10:
+   309	        return "low"
+   310	    elif duration_minutes <= 20:
+   311	        return "medium"
+   312	    else:
+   313	        return "high"
+   314	
+   315	
+   316	def _subtask_to_dict(subtask) -> Dict[str, Any]:
+   317	    """Convert OrchestrationTask to dict for API response."""
+   318	    return {
+   319	        "id": subtask.id,
+   320	        "description": subtask.description,
+   321	        "estimated_minutes": subtask.estimated_minutes,
+   322	        "energy_required": getattr(subtask, 'energy_required', 'medium'),
+   323	        "order": getattr(subtask, 'order', 0),
+   324	        "dependencies": subtask.dependencies if hasattr(subtask, 'dependencies') else [],
+   325	        "status": subtask.status.value if hasattr(subtask.status, 'value') else str(subtask.status),
+   326	        "parent_task_id": getattr(subtask, 'parent_task_id', None),
+   327	        "leantime_id": getattr(subtask, 'leantime_id', None)
+   328	    }

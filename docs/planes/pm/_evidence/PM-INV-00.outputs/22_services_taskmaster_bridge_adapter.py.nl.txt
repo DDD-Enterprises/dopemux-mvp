@@ -1,0 +1,316 @@
+     1	"""
+     2	TaskMaster DopeconBridge Adapter
+     3	
+     4	Task management via DopeconBridge for:
+     5	- Task creation and tracking
+     6	- Task orchestration
+     7	- Cross-plane task sync
+     8	"""
+     9	
+    10	from typing import Dict, Any, List, Optional
+    11	from pathlib import Path
+    12	from datetime import datetime
+    13	import sys
+    14	import logging
+    15	
+    16	# Add shared modules
+    17	SHARED_DIR = Path(__file__).parent.parent / "shared"
+    18	sys.path.insert(0, str(SHARED_DIR))
+    19	
+    20	from dopecon_bridge_client import (
+    21	    AsyncDopeconBridgeClient,
+    22	    DopeconBridgeConfig,
+    23	)
+    24	
+    25	logger = logging.getLogger(__name__)
+    26	
+    27	
+    28	class TaskMasterBridgeAdapter:
+    29	    """DopeconBridge adapter for TaskMaster service"""
+    30	    
+    31	    def __init__(
+    32	        self,
+    33	        workspace_id: str,
+    34	        base_url: str = None,
+    35	        token: str = None,
+    36	    ):
+    37	        self.workspace_id = workspace_id
+    38	        
+    39	        config = DopeconBridgeConfig.from_env()
+    40	        if base_url:
+    41	            config = DopeconBridgeConfig(
+    42	                base_url=base_url,
+    43	                token=token or config.token,
+    44	                source_plane="cognitive_plane",
+    45	                timeout=config.timeout,
+    46	            )
+    47	        
+    48	        self.client = AsyncDopeconBridgeClient(config=config)
+    49	        logger.info(f"✅ TaskMaster DopeconBridge adapter initialized (workspace: {workspace_id})")
+    50	    
+    51	    async def __aenter__(self):
+    52	        return self
+    53	    
+    54	    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    55	        await self.client.aclose()
+    56	    
+    57	    async def create_task(
+    58	        self,
+    59	        title: str,
+    60	        description: str,
+    61	        priority: int = 3,
+    62	        tags: Optional[List[str]] = None,
+    63	        metadata: Optional[Dict[str, Any]] = None,
+    64	    ) -> Dict[str, Any]:
+    65	        """Create task via DopeconBridge"""
+    66	        try:
+    67	            result = await self.client.create_progress_entry(
+    68	                description=f"{title}: {description}",
+    69	                status="TODO",
+    70	                metadata={
+    71	                    "taskmaster_task": True,
+    72	                    "priority": priority,
+    73	                    "tags": tags or [],
+    74	                    "title": title,
+    75	                    **(metadata or {}),
+    76	                },
+    77	                workspace_id=self.workspace_id,
+    78	            )
+    79	            
+    80	            # Publish event
+    81	            await self.client.publish_event(
+    82	                event_type="taskmaster.task.created",
+    83	                data={
+    84	                    "task_id": result.get("id"),
+    85	                    "title": title,
+    86	                    "priority": priority,
+    87	                    "workspace_id": self.workspace_id,
+    88	                },
+    89	                source="taskmaster",
+    90	            )
+    91	            
+    92	            logger.info(f"Created task: {title} (priority: {priority})")
+    93	            return result
+    94	        except Exception as e:
+    95	            logger.error(f"Failed to create task: {e}")
+    96	            return {}
+    97	    
+    98	    async def get_tasks(
+    99	        self,
+   100	        status: Optional[str] = None,
+   101	        limit: int = 50,
+   102	    ) -> List[Dict[str, Any]]:
+   103	        """Get tasks via DopeconBridge"""
+   104	        try:
+   105	            entries = await self.client.get_progress_entries(
+   106	                workspace_id=self.workspace_id,
+   107	                limit=limit,
+   108	                status=status,
+   109	            )
+   110	            
+   111	            # Filter for TaskMaster tasks
+   112	            taskmaster_tasks = [
+   113	                entry for entry in entries
+   114	                if entry.get("metadata", {}).get("taskmaster_task", False)
+   115	            ]
+   116	            
+   117	            return taskmaster_tasks
+   118	        except Exception as e:
+   119	            logger.error(f"Failed to get tasks: {e}")
+   120	            return []
+   121	    
+   122	    async def update_task_status(
+   123	        self,
+   124	        task_id: str,
+   125	        new_status: str,
+   126	    ) -> bool:
+   127	        """Update task status"""
+   128	        try:
+   129	            # Create a new progress entry with updated status
+   130	            # (In real implementation, would update existing entry)
+   131	            await self.client.publish_event(
+   132	                event_type="taskmaster.task.status_updated",
+   133	                data={
+   134	                    "task_id": task_id,
+   135	                    "new_status": new_status,
+   136	                    "updated_at": datetime.utcnow().isoformat(),
+   137	                    "workspace_id": self.workspace_id,
+   138	                },
+   139	                source="taskmaster",
+   140	            )
+   141	            
+   142	            logger.info(f"Updated task {task_id} status: {new_status}")
+   143	            return True
+   144	        except Exception as e:
+   145	            logger.error(f"Failed to update task status: {e}")
+   146	            return False
+   147	    
+   148	    async def sync_to_pm_plane(
+   149	        self,
+   150	        task_id: str,
+   151	    ) -> bool:
+   152	        """Sync task to PM plane (Leantime/etc)"""
+   153	        try:
+   154	            # Get task details
+   155	            tasks = await self.get_tasks()
+   156	            task = next((t for t in tasks if t.get("id") == task_id), None)
+   157	            
+   158	            if not task:
+   159	                logger.error(f"Task {task_id} not found")
+   160	                return False
+   161	            
+   162	            # Route to PM plane
+   163	            response = await self.client.route_pm(
+   164	                operation="taskmaster.sync_task",
+   165	                data={
+   166	                    "task_id": task_id,
+   167	                    "title": task.get("metadata", {}).get("title", "Untitled"),
+   168	                    "description": task.get("description", ""),
+   169	                    "priority": task.get("metadata", {}).get("priority", 3),
+   170	                    "status": task.get("status", "TODO"),
+   171	                },
+   172	                requester="taskmaster",
+   173	            )
+   174	            
+   175	            if response.success:
+   176	                # Save sync record
+   177	                await self.client.save_custom_data(
+   178	                    workspace_id=self.workspace_id,
+   179	                    category="taskmaster_pm_sync",
+   180	                    key=task_id,
+   181	                    value={
+   182	                        "task_id": task_id,
+   183	                        "pm_task_id": response.data.get("pm_task_id"),
+   184	                        "synced_at": datetime.utcnow().isoformat(),
+   185	                    },
+   186	                )
+   187	                
+   188	                logger.info(f"Synced task {task_id} to PM plane")
+   189	            
+   190	            return response.success
+   191	        except Exception as e:
+   192	            logger.error(f"Failed to sync task to PM plane: {e}")
+   193	            return False
+   194	    
+   195	    async def assign_task(
+   196	        self,
+   197	        task_id: str,
+   198	        assignee: str,
+   199	    ) -> bool:
+   200	        """Assign task to a user"""
+   201	        try:
+   202	            await self.client.publish_event(
+   203	                event_type="taskmaster.task.assigned",
+   204	                data={
+   205	                    "task_id": task_id,
+   206	                    "assignee": assignee,
+   207	                    "assigned_at": datetime.utcnow().isoformat(),
+   208	                    "workspace_id": self.workspace_id,
+   209	                },
+   210	                source="taskmaster",
+   211	            )
+   212	            
+   213	            logger.info(f"Assigned task {task_id} to {assignee}")
+   214	            return True
+   215	        except Exception as e:
+   216	            logger.error(f"Failed to assign task: {e}")
+   217	            return False
+   218	    
+   219	    async def add_task_comment(
+   220	        self,
+   221	        task_id: str,
+   222	        comment: str,
+   223	        author: str,
+   224	    ) -> bool:
+   225	        """Add comment to task"""
+   226	        try:
+   227	            await self.client.save_custom_data(
+   228	                workspace_id=self.workspace_id,
+   229	                category="task_comments",
+   230	                key=f"{task_id}_{datetime.utcnow().isoformat()}",
+   231	                value={
+   232	                    "task_id": task_id,
+   233	                    "comment": comment,
+   234	                    "author": author,
+   235	                    "created_at": datetime.utcnow().isoformat(),
+   236	                },
+   237	            )
+   238	            
+   239	            await self.client.publish_event(
+   240	                event_type="taskmaster.task.commented",
+   241	                data={
+   242	                    "task_id": task_id,
+   243	                    "author": author,
+   244	                    "workspace_id": self.workspace_id,
+   245	                },
+   246	                source="taskmaster",
+   247	            )
+   248	            
+   249	            logger.info(f"Added comment to task {task_id}")
+   250	            return True
+   251	        except Exception as e:
+   252	            logger.error(f"Failed to add task comment: {e}")
+   253	            return False
+   254	    
+   255	    async def get_task_comments(
+   256	        self,
+   257	        task_id: str,
+   258	        limit: int = 50,
+   259	    ) -> List[Dict[str, Any]]:
+   260	        """Get comments for a task"""
+   261	        try:
+   262	            results = await self.client.get_custom_data(
+   263	                workspace_id=self.workspace_id,
+   264	                category="task_comments",
+   265	                limit=limit,
+   266	            )
+   267	            
+   268	            # Filter for this task
+   269	            task_comments = [
+   270	                r.get("value", {})
+   271	                for r in results
+   272	                if r.get("value", {}).get("task_id") == task_id
+   273	            ]
+   274	            
+   275	            return task_comments
+   276	        except Exception as e:
+   277	            logger.error(f"Failed to get task comments: {e}")
+   278	            return []
+   279	    
+   280	    async def complete_task(
+   281	        self,
+   282	        task_id: str,
+   283	        completion_notes: Optional[str] = None,
+   284	    ) -> bool:
+   285	        """Mark task as completed"""
+   286	        try:
+   287	            # Update status
+   288	            await self.update_task_status(task_id, "DONE")
+   289	            
+   290	            # Save completion data
+   291	            await self.client.save_custom_data(
+   292	                workspace_id=self.workspace_id,
+   293	                category="task_completions",
+   294	                key=task_id,
+   295	                value={
+   296	                    "task_id": task_id,
+   297	                    "completed_at": datetime.utcnow().isoformat(),
+   298	                    "notes": completion_notes,
+   299	                },
+   300	            )
+   301	            
+   302	            # Publish event
+   303	            await self.client.publish_event(
+   304	                event_type="taskmaster.task.completed",
+   305	                data={
+   306	                    "task_id": task_id,
+   307	                    "workspace_id": self.workspace_id,
+   308	                },
+   309	                source="taskmaster",
+   310	            )
+   311	            
+   312	            logger.info(f"Completed task: {task_id}")
+   313	            return True
+   314	        except Exception as e:
+   315	            logger.error(f"Failed to complete task: {e}")
+   316	            return False
