@@ -52,6 +52,7 @@ PORT = int(os.getenv("PORT", os.getenv("DOPE_MEMORY_PORT", "3020")))
 MCP_SERVER_PORT = int(os.getenv("MCP_SERVER_PORT", str(PORT)))
 SERVICE_NAME = os.getenv("SERVICE_NAME", "dope-memory")
 HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
+DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memory")))
 DEFAULT_WORKSPACE_ID = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "default")
 DEFAULT_INSTANCE_ID = os.getenv("DOPE_MEMORY_INSTANCE_ID", "A")
 
@@ -866,6 +867,23 @@ mirror_sync = None
 mirror_sync_task = None
 
 
+def _log_background_task_exception(task_name: str, task: asyncio.Task[Any]) -> None:
+    """Log uncaught exceptions from background tasks."""
+    if task.cancelled():
+        return
+    try:
+        exc = task.exception()
+    except asyncio.CancelledError:
+        return
+    if exc:
+        logger.error(
+            "❌ Background task '%s' crashed: %s",
+            task_name,
+            exc,
+            exc_info=(type(exc), exc, exc.__traceback__),
+        )
+
+
 async def run_retention_job(mcp_server: DopeMemoryMCPServer, interval_sec: int = 3600):
     """Background task that periodically cleans up expired raw events."""
     logger.info(f"🧹 Retention job started (interval: {interval_sec}s)")
@@ -930,6 +948,18 @@ async def lifespan(app: FastAPI):
         )
         logger.info("✅ Retention job started")
 
+    mirror_ledger_path = "unresolved"
+    try:
+        mirror_ledger_path = str(resolve_canonical_ledger(DEFAULT_WORKSPACE_ID))
+    except CanonicalLedgerError as e:
+        mirror_ledger_path = f"error:{e}"
+    logger.info(
+        "Postgres mirror config: enabled=%s interval_sec=%s ledger=%s",
+        ENABLE_MIRROR_SYNC,
+        os.getenv("MIRROR_SYNC_INTERVAL_SEC", "60"),
+        mirror_ledger_path,
+    )
+
     # Start Postgres mirror sync if enabled
     if ENABLE_MIRROR_SYNC and POSTGRES_URL:
         try:
@@ -941,6 +971,9 @@ async def lifespan(app: FastAPI):
             )
             await mirror_sync.initialize()
             mirror_sync_task = asyncio.create_task(mirror_sync.start())
+            mirror_sync_task.add_done_callback(
+                lambda task: _log_background_task_exception("postgres-mirror-sync", task)
+            )
             logger.info("✅ Postgres mirror sync started")
         except Exception as e:
             logger.warning(f"⚠️  Failed to start Postgres mirror sync: {e}")

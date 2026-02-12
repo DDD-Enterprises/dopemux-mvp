@@ -40,6 +40,8 @@ except ImportError:  # pragma: no cover - direct module loading in tests
 # Configure structured logging
 configure_logging("task-orchestrator")
 logger = logging.getLogger(__name__)
+SERVICE_NAME = os.getenv("SERVICE_NAME", "task-orchestrator")
+HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
 
 # Import shared models from local models
 try:
@@ -240,7 +242,7 @@ async def handle_coordination_events(event):
 # ============================================================================
 
 
-@app.get("/health")
+@app.get(HEALTH_CHECK_PATH)
 async def health_check():
     """Standard health check endpoint with dependency tracking"""
     try:
@@ -281,6 +283,36 @@ async def health_check():
             ts=datetime.utcnow().isoformat() + "Z",
             dependencies={}
         )
+
+
+@app.get("/info")
+async def service_info():
+    """Service discovery endpoint - auto-config support (ADR-208)"""
+    port = int(os.getenv("MCP_SERVER_PORT", 8000))
+    return {
+        "name": SERVICE_NAME,
+        "version": "1.0.0",
+        "mcp": {
+            "protocol": "sse",
+            "connection": {
+                "type": "sse",
+                "url": f"http://localhost:{port}/sse"
+            },
+            "env": {
+                "WORKSPACE_ID": "${WORKSPACE_ID:-}"
+            }
+        },
+        "health": HEALTH_CHECK_PATH,
+        "description": "Advanced task orchestration and dependency management with 37 tools",
+        "metadata": {
+            "role": "workflow",
+            "priority": "high",
+            "tools_count": 37,
+            "kotlin_backend": True,
+            "two_plane_coordination": True,
+            "adhd_aware": True
+        }
+    }
 
 
 @app.get("/metrics")

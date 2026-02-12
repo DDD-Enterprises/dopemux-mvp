@@ -80,7 +80,7 @@ python -m copilot_transcript_ingester ingest \
 
 Output:
 ```
-Using database: /Users/hue/code/dopemux-mvp/services/working-memory-assistant/chronicle/chronicle.db
+Using database: /Users/hue/code/dopemux-mvp/.dopemux/chronicle.sqlite
 Ingesting events from: /Users/hue/.copilot/session-state/550e8400-e29b-41d4-a716-446655440000/events.jsonl
 Session metadata: {
   "session_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -131,7 +131,7 @@ events = list(parser.parse_events())
 
 # Ingest into Chronicle
 ingester = ChronicleIngester(
-    db_path="/path/to/chronicle.db",
+    db_path="/path/to/.dopemux/chronicle.sqlite",
     workspace_id="/Users/hue/code/dopemux-mvp",
     instance_id="copilot-cli-macos"
 )
@@ -146,7 +146,7 @@ print(f"Inserted {inserted} events")
 
 - **Copilot sessions**: `~/.copilot/session-state/`
 - **JSONL transcripts**: `~/.copilot/session-state/{SESSION_ID}/events.jsonl`
-- **Chronicle database**: `services/working-memory-assistant/chronicle/chronicle.db`
+- **Chronicle database**: `.dopemux/chronicle.sqlite` (or `DOPEMUX_CAPTURE_LEDGER_PATH`)
 
 ## Chronicle Schema
 
@@ -210,7 +210,7 @@ ls -lt ~/.copilot/session-state/ | head -1
 python -m copilot_transcript_ingester ingest --session-id <SESSION_UUID>
 
 # Verify in Chronicle database
-sqlite3 services/working-memory-assistant/chronicle/chronicle.db \
+sqlite3 .dopemux/chronicle.sqlite \
   "SELECT event_type, COUNT(*) FROM raw_activity_events WHERE source='copilot-cli' GROUP BY event_type;"
 ```
 

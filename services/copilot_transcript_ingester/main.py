@@ -8,6 +8,7 @@ Usage:
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -27,11 +28,22 @@ def get_session_dir(session_id: str) -> Path:
 
 
 def find_chronicle_db() -> Path:
-    """Find Chronicle SQLite database."""
-    # Search in working-memory-assistant/chronicle/
+    """Find canonical Chronicle SQLite database.
+
+    Resolution order:
+    1. DOPEMUX_CAPTURE_LEDGER_PATH (explicit override)
+    2. repo_root/.dopemux/chronicle.sqlite (current workspace)
+    3. ~/code/dopemux-mvp/.dopemux/chronicle.sqlite (legacy convenience)
+    """
+    override = os.getenv("DOPEMUX_CAPTURE_LEDGER_PATH", "").strip()
+    if override:
+        path = Path(override).expanduser()
+        if path.exists():
+            return path
+
     possible_paths = [
-        Path.home() / "code" / "dopemux-mvp" / "services" / "working-memory-assistant" / "chronicle" / "chronicle.db",
-        Path.cwd() / "chronicle.db",
+        Path.cwd() / ".dopemux" / "chronicle.sqlite",
+        Path.home() / "code" / "dopemux-mvp" / ".dopemux" / "chronicle.sqlite",
     ]
 
     for path in possible_paths:
@@ -40,7 +52,7 @@ def find_chronicle_db() -> Path:
 
     raise FileNotFoundError(
         "Chronicle database not found. "
-        "Searched: services/working-memory-assistant/chronicle/chronicle.db"
+        "Searched DOPEMUX_CAPTURE_LEDGER_PATH and .dopemux/chronicle.sqlite"
     )
 
 
