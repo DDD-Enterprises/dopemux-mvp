@@ -9,139 +9,74 @@ last_review: '2026-02-12'
 next_review: '2026-05-13'
 prelude: PM plane friction analysis documenting cognitive load, state drift, and integration friction points.
 ---
-# PM Friction Map (Phase 1)
+# PM Friction Map (Phase 1, Critiqued)
 
-**Status**: Phase 1 Complete (Evidence-Based)
-**Analysis Date**: 2026-02-12
-**Evidence Location**: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
+Status: Tightened for citation integrity, ADHD severity calibration, and Trinity boundaries.
+Evidence root: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
 
-## Overview
+## Friction Table
 
-This document maps friction points where the PM plane breaks developer cognition and flow. Focus areas: creation friction, state drift, duplicate representations, missing decision linkage.
+| Friction | Symptom | ADHD Cost | Severity | Evidence Quality | Evidence |
+|---|---|---|---|---|---|
+| Status vocabulary drift across services | Task-orchestrator model uses `pending/in_progress/completed/blocked` (7-value enum); ConPort/taskmaster paths use `TODO/IN_PROGRESS/DONE/BLOCKED` (uppercase strings); coordinator handlers key on bare lowercase string comparison. Three dialects for one lifecycle. | Context-switch tax: must mentally translate between dialects when crossing service boundaries. Silent mismatch risk (e.g. `pending` vs `TODO`). | High | Direct code | `nl_...models.py.txt L13-L21`; `nl_...conport_mcp_client.py.txt L85-L86`; `nl_...bridge_adapter.py.txt L69`; `nl_...event_coordinator.py.txt L400-L407` |
+| Multiple task-creation entrypoints | Creation exists in: (a) taskmaster bridge adapter `create_task`, (b) taskmaster wrapper tool path emitting events for `create_task/parse_prd/decompose_task`, (c) CLI `decomposer.add_task`. No routing policy declares which is canonical. | Decision overhead at moment of creation. Uncertain provenance: which entrypoint was used for a given task? Duplicate-task risk. | High | Direct code | `nl_...bridge_adapter.py.txt L57-L70`; `nl_...server.py.txt L185-L191`; `nl_...cli.py.txt L2496-L2501` |
+| ID-centric task operations with no discovery fallback | `update_task_status` and `sync_to_pm_plane` require explicit `task_id` string. Missing-record path is a silent `return False` after logging "Task {task_id} not found". CLI prints generated ID once at creation. | **Highest ADHD interrupt cost.** Losing or forgetting a task ID after an interruption = total loss of reference. No fuzzy lookup, no recent-task shortcut, no context-based retrieval. Recovery requires scanning logs or ConPort. | Critical | Direct code | `nl_...bridge_adapter.py.txt L122-L126`; `nl_...bridge_adapter.py.txt L148-L160`; `nl_...cli.py.txt L2500-L2501` |
+| Runtime validation errors and manual conflict queuing | ConPort adapter raises `ValueError` for missing id/title at runtime (not at creation). Sync conflicts are queued for "manual resolution (in-memory fallback)" with no resolution UI. | Retry loops break flow. Deferred conflict queue is invisible and grows silently. User discovers failures reactively, not proactively. | High | Scan hit | `30_memory_burden_search.txt L8` (manual resolution); `30_memory_burden_search.txt L12-L21` (missing-field ValueError paths) |
+| Evidence search noise inflates PM triage | Friction evidence scans contain binary `__pycache__` matches and non-PM `HealthStatus` hits that match status regex but describe monitoring, not task lifecycle. | Attention fragmentation during audit. Analyst must mentally filter noise before extracting PM signal. Weakens confidence in evidence quality. | Low | Scan hit | `30_memory_burden_search.txt L2,L9-L11` (binary cache); `20_friction_search.txt L81-L96` (health.py HealthStatus) |
+| Taskmaster has zero tests at any depth | Full recursive search finds no `test_*.py` or `*_test.py` files in `services/taskmaster/`. The service has exactly 2 Python files (`server.py`, `bridge_adapter.py`) and zero tests. | Lower confidence for safe PM changes touching taskmaster. Fear of breakage suppresses refactoring motivation. | Medium | Scan hit | `41_taskmaster_root_tests.txt` (empty); `42_taskmaster_full_test_discovery.txt` (confirms zero at all depths, 2 .py files total) |
 
-**Evidence Summary**:
-- 1,710 lines of task state management patterns analyzed
-- 281 lines of memory burden indicators found
-- 11 core source files examined
-- Test coverage gap identified (taskmaster: 0 root tests)
+### Severity Calibration Notes
 
-## Friction Points Table
+- **Critical** = Interruption recovery failure. ADHD developer loses work reference or state.
+- **High** = Persistent cognitive tax. Every interaction pays the cost.
+- **Medium** = Friction during specific activities (audits, refactoring).
+- **Low** = Meta-friction (affects tooling/process, not direct user flow).
 
-| Friction | Symptom | User Cost | Evidence |
-|----------|---------|-----------|----------|
-| **Multiple Task Creation APIs** | User must choose: task-orchestrator, taskmaster, dopemux-gpt-researcher, or task-router | Decision fatigue, API confusion, inconsistent task creation | `20_friction_search.txt:7-100` (6+ task creation patterns), `nl_services_taskmaster_bridge_adapter.py.txt:57-69`, `nl_services_task-orchestrator_conport_mcp_client.py:85-108` |
-| **Status String Proliferation** | Hardcoded status strings ("TODO", "IN_PROGRESS", "DONE", "BLOCKED") scattered across services | Memory burden, typo risk, no validation, state drift | `20_friction_search.txt:4-27` (36 status= assignments), `30_memory_burden_search.txt:4-54` (status mapping sprawl) |
-| **Manual Task ID Tracking** | Operations require explicit task_id parameter with no discovery mechanism | Must remember IDs, context switching overhead, lost work risk | `30_memory_burden_search.txt:72-81` (user_id required, provide task_id), `20_friction_search.txt:96-108` |
-| **Missing Validation Guidance** | "missing required fields" errors without upfront field specification | Trial-and-error creation, wasted time, frustration | `30_memory_burden_search.txt:12-24` (missing id/title/status checks), `nl_services_task-orchestrator_app_adapters_conport_adapter.py.txt:103-187` |
-| **Duplicate Task Management Logic** | Same functionality in multiple services: create_task, add_task, new_task, upsert | Code duplication, maintenance burden, behavior drift | `20_friction_search.txt:86-100` (create_task in 3+ services), `20_friction_search.txt:61-69` (status transitions duplicated) |
-| **Manual Conflict Resolution** | Conflicts flagged for manual review with no automated resolution | Interruption, context loss, decision burden | `30_memory_burden_search.txt:8` ("manual resolution" comment), `30_memory_burden_search.txt:89-100` (manual merge/resolution flags) |
-| **Cognitive State Not Integrated** | Task routing and orchestration ignore ADHD attention state | Poor task matching, cognitive overload, flow breaks | `20_friction_search.txt:30,63,74,79` (cognitive_state params unused in orchestrator), task-router isolated from orchestrator |
-| **Test Coverage Gap** | Taskmaster has zero root-level tests, orchestrator tests only integration | Behavior uncertainty, regression risk, fear of changes | `40_task_orchestrator_root_tests.txt:1-6` (6 integration tests), `41_taskmaster_root_tests.txt` (empty file) |
+The ID-centric operations row was elevated from High to **Critical** because losing a task ID after interruption has the highest recovery cost in the table: there is no discovery fallback, no fuzzy search, no "show recent" — only exact-match lookup or manual log scanning.
 
-## "Forces User to Remember" Map
+Evidence search noise was lowered from Medium to **Low** because it affects PM auditors during evidence triage, not developers during normal task operations.
 
-### Critical Memory Burdens
+## Trinity Boundaries (PM vs Memory vs Search)
 
-1. **Task IDs Must Be Tracked Manually**
-   - Symptom: No automatic task discovery or context-based task retrieval
-   - Evidence: `30_memory_burden_search.txt:72-81` ("user_id required", "provide task_id")
-   - Cost: Context switching overhead, lost task references during interruptions
+### Boundary 1: Status Vocabulary (PM ↔ Memory)
 
-2. **Status Values Are Strings**
-   - Symptom: Must remember exact string spelling ("TODO" vs "todo" vs "pending")
-   - Evidence: `20_friction_search.txt:4-54` (status string literals in 36+ locations)
-   - Cost: Typo risk, no IDE autocomplete, validation failures at runtime
+**Violation**: Status mapping spans PM-owned orchestration model (`TaskStatus` enum) and Memory-owned ConPort progress representation (`TODO/IN_PROGRESS/DONE/BLOCKED` strings), with no declared ownership contract.
 
-3. **Which Service Creates What Tasks?**
-   - Symptom: No clear ownership model for task creation
-   - Evidence: `20_friction_search.txt:86-100` (create_task in taskmaster, task-orchestrator, gpt-researcher)
-   - Cost: Decision paralysis, duplicate tasks, lost coordination
+**Ownership recommendation**: PM plane should own the canonical `TaskStatus` enum. Memory plane (ConPort) should accept and return PM enum values. Mapping logic belongs in a single adapter at the boundary, not duplicated in each consumer.
 
-4. **Conflict Resolution Rules Unknown**
-   - Symptom: "Manual resolution" flags without resolution guidance
-   - Evidence: `30_memory_burden_search.txt:8,89-100`
-   - Cost: Interruption uncertainty, deferred decisions pile up
+Evidence: `[Direct code] nl_...models.py.txt L13-L21`; `nl_...conport_mcp_client.py.txt L85-L86`.
 
-5. **Required Fields Not Discoverable**
-   - Symptom: Trial-and-error task creation until all required fields provided
-   - Evidence: `30_memory_burden_search.txt:12-24` ("missing id or title")
-   - Cost: Frustration, wasted time, abandoned task creation attempts
+### Boundary 2: Conflict Resolution (PM surface, Memory origin)
 
-### ADHD-Specific Burdens
+**Violation**: Manual conflict evidence originates from Memory adapter/sync artifacts (`sync.py` manual resolution queue), but the friction surface is PM — the user encounters conflict prompts during PM task operations.
 
-**Interruption Recovery Cost**: Task IDs + status tracking + conflict queue = 3 things to remember across context switches
+**Ownership recommendation**: Memory plane owns conflict detection and resolution strategy. PM plane owns the user-facing notification and resolution UI. The current "in-memory fallback" straddles both without clear ownership.
 
-**Decision Fatigue**: 6+ task creation patterns + 4 status values + manual conflict resolution = paralyzing choice overload
+Evidence: `[Scan hit] 30_memory_burden_search.txt L8` (manual resolution log).
 
-**Lost Context**: No automatic task resumption after interruption (must manually search by ID)
+### Boundary 3: Evidence Noise (Search concern)
 
-## State Drift Patterns
+**Violation**: Binary-cache matches and broad regex false positives in evidence generation are Search-pipeline concerns (evidence tooling quality), not PM-domain friction.
 
-### ConPort ↔ Orchestrator Sync Issues
+**Ownership recommendation**: This row exists in the friction table for audit completeness but should not drive PM plane design changes. Search/tooling pipeline should add `--no-binary` and domain-scoped patterns.
 
-- **Symptom**: Task status in ConPort may differ from task-orchestrator cache
-- **Evidence**: `nl_services_task-orchestrator_app_core_sync.py.txt:402-848` (status mapping between systems)
-- **Root Cause**: No single source of truth, eventual consistency without conflict resolution
-
-### Status Transition Inconsistency
-
-- **Symptom**: Different services transition states differently
-- **Evidence**: `20_friction_search.txt:51-60` (dopemux-gpt-researcher transitions), vs `20_friction_search.txt:96-108` (task-orchestrator manual status updates)
-- **Impact**: State machines diverge, validation rules conflict
-
-### Event Bus Noise
-
-- **Observation**: Many task state change events may be noise vs. signal
-- **Evidence**: Needs classification (see SIGNAL_VS_NOISE_ANALYSIS.md)
-- **Impact**: Cognitive load from irrelevant notifications
-
-## Missing Decision Linkage
-
-### Tasks ↔ ADRs Disconnected
-
-- **Gap**: No automatic linking of tasks to architectural decision records
-- **Evidence**: No linkage found in `20_friction_search.txt`, `30_memory_burden_search.txt`
-- **Impact**: Lost rationale context, decisions forgotten, design drift
-
-### Tasks ↔ Cognitive State Isolation
-
-- **Gap**: Task creation doesn't capture ADHD attention state at creation time
-- **Evidence**: `20_friction_search.txt:30,63,74` (cognitive_state params in task-router but not task-orchestrator)
-- **Impact**: Tasks created during scatter state may be unrealistic during focus state
-
-### Decomposition ↔ Parent Task State Drift
-
-- **Gap**: Parent task status ("BLOCKED") not automatically updated when subtasks complete
-- **Evidence**: `nl_services_task-orchestrator_task_orchestrator_app.py.txt:148` (manual DECOMPOSED_INTO links)
-- **Impact**: Parent tasks stay "BLOCKED" forever, stale state accumulates
+Evidence: `[Scan hit] 30_memory_burden_search.txt L2,L9-L11`.
 
 ## Open Questions
 
-- **Q1**: What percentage of task state transitions are user-initiated vs. automatic?
-  - **Why Unknown**: No telemetry in evidence, would require event bus analysis
+### Which status vocabulary is canonical across PM boundaries?
 
-- **Q2**: How often do users abandon task creation due to "missing fields" errors?
-  - **Why Unknown**: No error telemetry or user flow tracking in evidence
+UNKNOWN. Evidence needed: signed mapping contract between PM `TaskStatus` and Memory/ConPort status representation. Current evidence shows three dialects but no declared owner.
 
-- **Q3**: What is the actual conflict rate between ConPort and orchestrator?
-  - **Why Unknown**: Manual resolution queue not instrumented, no conflict metrics
+### Which creation entrypoint owns PM provenance for new tasks?
 
-- **Q4**: Which status transitions are signal vs. noise for ADHD developers?
-  - **Why Unknown**: Needs user behavior analysis, see SIGNAL_VS_NOISE_ANALYSIS.md
+UNKNOWN. Evidence needed: routing policy that names one source of truth for creation across bridge adapter, wrapper, and CLI paths.
 
-## Next Steps (Phase 2)
+### What ratio of scan output is actionable PM signal after suppression?
 
-1. **Telemetry**: Instrument task operations to answer open questions
-2. **Unification**: Design single task creation API with guided fields
-3. **Enum Migration**: Replace status strings with type-safe enums
-4. **Auto-Linking**: Implement decision-to-task relationship tracking
-5. **Test Coverage**: Add unit tests for taskmaster core logic
+UNKNOWN. Evidence needed: filtered/unfiltered counts on the same evidence set with explicit suppression rules applied.
 
----
+### Resolved: Is taskmaster root-test emptiness an actual gap or a discovery-path artifact?
 
-**Evidence Manifest**:
-- `20_friction_search.txt`: 1,710 lines of task state patterns
-- `30_memory_burden_search.txt`: 281 lines of memory burden markers
-- `40_task_orchestrator_root_tests.txt`: 6 integration tests found
-- `41_taskmaster_root_tests.txt`: 0 tests found
-- 11 numbered line source files (nl_*.txt)
+**RESOLVED**: Confirmed gap, not artifact. Full recursive search finds zero test files at any depth. Taskmaster contains exactly 2 Python files (`server.py`, `bridge_adapter.py`).
+Evidence: `42_taskmaster_full_test_discovery.txt`.
