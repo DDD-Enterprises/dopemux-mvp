@@ -20,7 +20,7 @@ from chronicle.store import ChronicleStore, MAX_CHAIN_DEPTH
 
 @pytest.fixture
 def store(tmp_path):
-    """Fresh ChronicleStore with schema + v1.2.0 migration applied."""
+    """Fresh ChronicleStore with schema + v1.2.1 scoped supersession index."""
     db_path = tmp_path / "test.db"
     s = ChronicleStore(db_path)
     s.initialize_schema()
@@ -74,7 +74,7 @@ def test_supersession_creates_new_entry(store):
 def test_fork_prevention_unique_constraint(store):
     """Two entries cannot supersede the same entry (linear chains only).
 
-    Packet F §3.2: UNIQUE index on supersedes_entry_id enforces this.
+    Packet F §3.2 + Packet G: scoped UNIQUE index enforces this within scope.
     """
     id1 = _make_entry(store, "Origin", evt_n=10)
     _make_entry(store, "Correction-A", supersedes=id1, evt_n=11)
