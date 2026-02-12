@@ -13,9 +13,9 @@ Implements:
 import base64
 import hashlib
 import json
-from dataclasses import asdict, dataclass
+import uuid
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Optional
 
 from ..canonical_ledger import CanonicalLedgerError, resolve_canonical_ledger
@@ -590,6 +590,50 @@ class DopeMemoryMCPServer:
 
         return {
             "items": response_items,
-            "more_count": 1 if has_more else 0, # Approximate
+            "more_count": 1 if has_more else 0,  # Approximate
             "next_token": next_token,
         }
+
+    # ─────────────────────────────────────────────────────────────────
+    # Tool: memory_correct
+    # ─────────────────────────────────────────────────────────────────
+
+    def memory_correct(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        entry_id: str,
+        correction_type: str,
+        summary: str,
+        reason: Optional[str] = None,
+        details: Optional[dict[str, Any]] = None,
+        outcome: Optional[str] = None,
+        importance_score: Optional[int] = None,
+    ) -> dict[str, Any]:
+        """Supersede or retract an existing entry.
+
+        Returns:
+            {entry_id: str, created: bool}
+        """
+        store = self._get_store(workspace_id)
+
+        # Redact details if provided
+        redacted_details = None
+        if details:
+            redacted_details = self.redactor.redact_payload(details)
+
+        try:
+            new_entry_id = store.insert_corrected_work_log_entry(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                supersedes_entry_id=entry_id,
+                correction_type=correction_type,
+                summary=summary[:500],
+                reason=reason[:2000] if reason else None,
+                details=redacted_details,
+                outcome=outcome,
+                importance_score=importance_score,
+            )
+            return {"entry_id": new_entry_id, "created": True}
+        except ValueError as e:
+            return {"success": False, "error": str(e)}
