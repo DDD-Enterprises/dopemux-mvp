@@ -9,43 +9,49 @@ last_review: '2026-02-12'
 next_review: '2026-05-13'
 prelude: ADHD-first event classification for PM plane distinguishing actionable signals from cognitive noise.
 ---
-# Signal vs Noise Analysis (Phase 1)
+# Signal vs Noise Analysis (Phase 1, Critiqued)
 
-Status: Drafted from PM-FRIC-01 evidence only.
+Status: Tightened for citation integrity and Trinity boundaries.
 Evidence root: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
 
 ## Signal
 
 | Signal | Why it is signal | Evidence |
 |---|---|---|
-| Task status transitions to `in_progress`, `completed`, `blocked` | These transitions trigger explicit orchestration handlers, including blocked-task intervention. | `docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L400-L407`; `docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L674-L683` |
-| High/critical coordination priorities | Coordinator reserves dedicated workers by priority class and treats high/critical separately in deep-focus filtering. | `docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L48-L55`; `docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L182-L187`; `docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L331-L338` |
-| ADHD break/context-switch state changes | Event schema explicitly models break reminders and context switches as first-class ADHD state events. | `docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_src_dopemux_events_types.py.txt L73-L77` |
-| Task creation calls from taskmaster wrapper | Wrapper emits creation events when `create_task`, `parse_prd`, or `decompose_task` are called. | `docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_taskmaster_server.py.txt L185-L191` |
+| Task status transitions (`in_progress`, `completed`, `blocked`) | Coordinator routes these values to dedicated handlers, including blocked-task intervention. | `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L400-L407; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L674-L683` |
+| High and critical priorities under deep-focus gating | Deep-focus mode explicitly allows only critical/high classes and applies interruption gating. | `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L48-L55; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L331-L338` |
+| ADHD break/context-switch states | Event schema explicitly models break reminders and context switches. | `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_src_dopemux_events_types.py.txt L73-L77` |
+| Task creation tool calls from wrapper | Wrapper emits creation event flow for `create_task`, `parse_prd`, `decompose_task`. | `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_taskmaster_server.py.txt L185-L191` |
 
 ## Noise
 
 | Noise | Why it is noise for PM friction triage | Evidence |
 |---|---|---|
-| Binary `__pycache__` grep hits | Not human-actionable for PM friction mapping and inflate scan volume. | `docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L2-L11` |
-| Non-PM status matches (health/monitoring/etc.) | Matches regex terms but are not task-lifecycle semantics for PM plane redesign. | `docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L81-L96` |
-| Generic CLI progress `add_task(...)` output work | Many hits are UI progress meters, not PM task model operations. | `docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L1098-L1114` |
+| Binary cache matches in grep outputs | Not actionable PM semantics and materially inflate triage stream. | `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L2-L11` |
+| Non-PM status hits (health/monitoring and unrelated services) | Regex matches contain status tokens but do not describe PM-task lifecycle behavior. | `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L81-L96` |
+| CLI progress meter `add_task(...)` lines | Mostly UI progress plumbing, not PM ownership boundaries or task-state contracts. | `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L1098-L1114` |
 
 ## Suppressed-by-default Rules
 
-1. Drop lines matching `^Binary file .*__pycache__/.* matches$` during PM evidence triage. Evidence: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L2-L11`.
-2. For PM friction analysis, suppress status hits outside PM ownership boundaries unless explicitly requested for cross-plane audit. Evidence: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L81-L96`.
-3. In deep focus mode, suppress non-high/non-critical coordination events and non-critical interrupting events. Evidence: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L331-L338`.
-4. Batch events when `can_batch=True` and `time_sensitive=False`; avoid immediate interruptions for those events. Evidence: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_src_dopemux_event_bus.py.txt L34-L38`.
-5. Any classification without direct evidence is `UNKNOWN` and moved to open questions. Evidence: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L1-L1447`; `docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L1-L281`.
+1. Suppress binary-cache grep rows during PM audits. Evidence: `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L2-L11`.
+2. Suppress non-PM status hits unless running explicit cross-plane audits. Evidence: `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L81-L96`.
+3. Under deep focus, suppress non-high/non-critical events and non-critical interrupts. Evidence: `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L331-L338`.
+4. Batch events marked `can_batch=True` and keep immediate delivery for time-sensitive items. Evidence: `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_src_dopemux_event_bus.py.txt L34-L38`.
+5. Any non-cited classification is invalid and must be moved to `UNKNOWN`. Evidence: `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L1-L1447; docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L1-L281`.
+
+## Trinity Boundaries (PM vs Memory vs Search)
+
+- PM-owned: task lifecycle orchestration and deep-focus event gating logic. Evidence: `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L400-L407; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L331-L338`.
+- Memory-derived: conflict and missing-field behavior surfaced via ConPort/adapter evidence. Evidence: `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L8-L21`.
+- Search-owned: binary and broad regex artifact noise in evidence generation. Evidence: `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L2-L11; docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L81-L96`.
 
 ## Open Questions
 
-### What is the observed event-rate reduction after suppression rules?
-UNKNOWN. Evidence needed: before/after event counts from live event bus traffic under identical workload.
+### What is the measured event-rate reduction after these suppression rules?
+UNKNOWN. Evidence needed: before/after event-rate telemetry on identical workloads.
 
-### Which suppressed classes should remain visible for recovery workflows?
-UNKNOWN. Evidence needed: user validation on missed-critical incidents after applying rules 1-4.
+### Which suppressed classes are still needed for incident recovery?
+UNKNOWN. Evidence needed: user validation and incident replay after suppression.
 
-### Does current test discovery execute taskmaster PM-path tests elsewhere?
-UNKNOWN. Evidence needed: CI/local test command outputs mapped to file-discovery behavior.
+### Which PM notifications must stay visible in deep-focus mode by policy?
+UNKNOWN. Evidence needed: explicit PM policy document mapping event classes to focus-mode behavior.
