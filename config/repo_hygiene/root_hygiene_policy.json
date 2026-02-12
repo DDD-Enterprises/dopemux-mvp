@@ -1,6 +1,7 @@
 {
   "version": 1,
   "allowed_root_dirs": [
+    ".taskx",
     ".claude",
     ".github",
     "SYSTEM_ARCHIVE",
@@ -30,6 +31,7 @@
     "ui-dashboard-backend"
   ],
   "allowed_root_files": [
+    ".taskxroot",
     ".backup_location",
     ".claude.json",
     ".claude.json.template",
