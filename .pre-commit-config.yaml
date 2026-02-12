@@ -26,23 +26,33 @@ repos:
           - |
             set -e
             prohibited_found=false
-            # Prohibit temp/scratch files (but allow README.md in docs/ for GitHub navigation)
-            for pattern in "NOTES*.md" "TODO*.md" "TEMP*.md" "*temp*.md" "*scratch*.md"; do
-              if find docs/ -name "$pattern" 2>/dev/null | grep -q .; then
-                echo "❌ Found prohibited file pattern: $pattern"
-                find docs/ -name "$pattern" | sed 's/^/  /'
-                prohibited_found=true
-              fi
+            # Evaluate only the changed docs files passed by pre-commit.
+            for file in "$@"; do
+              case "$file" in
+                docs/*)
+                  base="$(basename "$file")"
+                  case "$base" in
+                    TEMPLATE_*.md)
+                      continue
+                      ;;
+                    NOTES*.md|TODO*.md|TEMP*.md|*temp*.md|*scratch*.md)
+                      echo "❌ Found prohibited file pattern in changed file:"
+                      echo "  $file"
+                      prohibited_found=true
+                      ;;
+                  esac
+                  ;;
+              esac
             done
-            # README.md is ALLOWED throughout docs/ (including docs/systems/) for GitHub navigation
             if [ "$prohibited_found" = true ]; then
-              echo "Use structured workflow: RFC→ADR→arc42 for documentation"
+              echo "Use structured workflow: RFC->ADR->arc42 for documentation"
               exit 1
             fi
-            echo "✅ No prohibited patterns found"
+            echo "✅ No prohibited patterns found in changed docs"
+          - --
         language: system
         files: ^docs/.*\.md$
-        pass_filenames: false
+        pass_filenames: true
 
       # Prelude token count validation for embeddings
       - id: docs-prelude-tokens

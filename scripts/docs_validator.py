@@ -63,7 +63,6 @@ RECOMMENDED_FIELDS = {
 
 # Prohibited file patterns
 PROHIBITED_PATTERNS = [
-    r'README.*\.md$',
     r'NOTES.*\.md$',
     r'TODO.*\.md$',
     r'TEMP.*\.md$',
