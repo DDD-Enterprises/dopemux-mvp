@@ -1,0 +1,100 @@
+# Dopemux MCP Server Registry
+# Canonical source of truth for MCP connectivity
+#
+# Schema:
+#   name: <canonical-key>
+#   transport: http | http-sse | stdio
+#   docker:
+#     service: <compose-service-name>
+#     port: <int> (if http)
+#     health_url: <string> (optional)
+#   local:
+#     command: <string> (optional)
+#     args: <list[string]> (optional)
+
+servers:
+  conport:
+    transport: http
+    docker:
+      service: conport
+      port: 3004
+      health_url: http://localhost:3004/health
+    
+  serena:
+    transport: http
+    docker:
+      service: serena
+      port: 3006
+      health_url: http://localhost:3006/health
+      
+  desktop-commander:
+    transport: http
+    docker:
+      service: desktop-commander
+      port: 3012
+      health_url: http://localhost:3012/health
+      
+  gpt-researcher:
+    transport: http
+    docker:
+      service: gptr-mcp
+      port: 3009
+      health_url: http://localhost:3009/health
+      
+  leantime-bridge:
+    transport: http
+    docker:
+      service: leantime-bridge
+      port: 3015
+      health_url: http://localhost:3015/health
+      
+  claude-context:
+    transport: http
+    docker:
+      service: claude-context
+      port: 3007
+      health_url: http://localhost:3007/health
+    local:
+      command: npx
+      args: ["-y", "@zilliz/claude-context-mcp@latest"]
+      
+  pal:
+    transport: http
+    docker:
+      service: pal
+      port: 3003
+      health_url: http://localhost:3003/health
+    local:
+      command: uvx
+      args: ["pal-mcp-server", "start"]
+      
+  mas-sequential-thinking:
+    transport: http
+    docker:
+      service: mas-sequential-thinking
+      port: 3001
+      # Note: MAS uses port liveness, not /health, but we'll define the base URL for the bridge
+      health_url: http://localhost:3001
+    local:
+      command: python
+      args: ["-m", "mcp_server_mas_sequential_thinking"]
+      
+  zen:
+    transport: http
+    docker:
+      service: zen
+      port: 3003
+      health_url: http://localhost:3003/health
+    local:
+      command: npx
+      args: ["-y", "zen-mcp"]
+    
+  morphllm-fast-apply:
+    transport: http
+    docker:
+      service: morphllm-fast-apply
+      port: 3011
+      health_url: http://localhost:3011/health
+    local:
+      command: npx
+      args: ["-y", "morphllm-fast-apply-mcp"]

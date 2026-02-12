@@ -5,13 +5,10 @@ Handles loading, saving, and merging of YAML/TOML configuration files
 with support for environment variable substitution and ADHD-specific defaults.
 """
 
-import os
-
+from __future__ import annotations
 import logging
-
-logger = logging.getLogger(__name__)
-
-import sys
+import os
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, Literal
@@ -19,6 +16,12 @@ from typing import Any, Dict, List, Optional, Union, Literal
 import toml
 import yaml
 from pydantic import BaseModel, Field, field_validator
+
+
+from ..mcp.registry import MCPRegistry
+
+
+logger = logging.getLogger(__name__)
 
 
 class ADHDProfile(BaseModel):
@@ -244,6 +247,7 @@ class DopemuxConfig(BaseModel):
     """Main Dopemux configuration."""
 
     version: str = "1.0"
+    mcp_mode: Literal["auto", "docker", "local"] = "auto"
     adhd_profile: ADHDProfile = Field(default_factory=ADHDProfile)
     mcp_servers: Dict[str, MCPServerConfig] = Field(default_factory=dict)
     attention: AttentionConfig = Field(default_factory=AttentionConfig)
@@ -572,13 +576,140 @@ class ConfigManager:
             "project_templates": self._get_project_templates(),
         }
 
+    def _detect_docker_mode(self) -> bool:
+        """Check if Docker services are running."""
+        try:
+            # Check if canonical docker compose services are up
+            # We look for a few key services from the registry
+            cmd = ["docker", "compose", "-f", "docker/mcp-servers/docker-compose.yml", "ps", "--services", "--filter", "status=running"]
+            result = subprocess.run(
+                cmd, 
+                capture_output=True, 
+                text=True, 
+                check=False
+            )
+            if result.returncode != 0:
+                return False
+                
+            running_services = set(result.stdout.strip().splitlines())
+            # If at least one critical service is running, assume Docker mode
+            # (conport, serena, or pal are good indicators)
+            return bool(running_services.intersection({"conport", "serena", "pal"}))
+        except FileNotFoundError:
+            return False
+        except Exception as e:
+            logger.debug(f"Docker detection failed: {e}")
+            return False
+
+    def _generate_server_config(self, registry: MCPRegistry, name: str, mcp_mode: str) -> Optional[Dict[str, Any]]:
+        """Generate MCPServerConfig for a given server name based on mode."""
+        server_def = registry.get_server(name)
+        if not server_def:
+            return None
+
+        # Determine effective mode
+        if mcp_mode == "auto":
+            is_docker = self._detect_docker_mode()
+            mode = "docker" if is_docker else "local"
+        else:
+            mode = mcp_mode
+
+        if mode == "docker":
+            if server_def.transport in ("http", "http-sse"):
+                # Use bridge
+                return {
+                    "enabled": True,
+                    "command": "python",
+                    "args": [
+                        "-m", 
+                        "dopemux.mcp.http_stdio_bridge", 
+                        "--base-url", 
+                        f"http://localhost:{server_def.docker.port}"
+                    ],
+                    "env": {},
+                    "timeout": 30,
+                    "auto_restart": True,
+                }
+            elif server_def.transport == "stdio":
+                # Use docker exec
+                return {
+                    "enabled": True,
+                    "command": "docker",
+                    "args": [
+                        "compose", 
+                        "-f", 
+                        server_def.docker.compose_file, 
+                        "exec", 
+                        "-T", 
+                        server_def.docker.service
+                    ] + (server_def.local.args if server_def.local else []),
+                    "env": {},
+                    "timeout": 30,
+                    "auto_restart": True,
+                }
+        
+        # Local mode (fallback or explicit)
+        if server_def.local and server_def.local.command:
+            return {
+                "enabled": True,
+                "command": server_def.local.command,
+                "args": server_def.local.args,
+                "env": {},
+                "timeout": 30,
+                "auto_restart": True,
+            }
+            
+        return None
+
     def _get_default_mcp_servers(self) -> Dict[str, Dict[str, Any]]:
         """Get default MCP server configurations."""
-        return {
-            "mas-sequential-thinking": {
-                "enabled": True,
+        registry = MCPRegistry()
+        defaults = {}
+        
+        # Helper to merge with manual overrides if needed (though we aim to replace them)
+        # For now, we regenerate defaults from registry for known keys
+        
+        # 1. Define the list of defaults we want to ship
+        default_keys = [
+            "mas-sequential-thinking",
+            "pal",
+            "claude-context",
+            "morphllm-fast-apply",
+            "exa", # Manual override below as it might not be in registry or needs API key
+            "zen",
+            # "leantime", # Disabled by default
+        ]
+
+        # 2. Try to generate from registry first
+        # We don't have access to the configured mode here easily without loading config,
+        # but defaults are usually static. 
+        # However, we want defaults to be smart.
+        # But _get_default_config is called BEFORE loading user config.
+        # So we default to "auto" behavior which checks Docker presence NOW.
+        is_docker = self._detect_docker_mode()
+        effective_mode = "docker" if is_docker else "local"
+        
+        for key in default_keys:
+            generated = self._generate_server_config(registry, key, effective_mode)
+            if generated:
+                defaults[key] = generated
+
+        # 3. Apply overrides/fallbacks for things not fully in registry or needing env vars
+        # (This preserves existing behavior for API keys even if command changes)
+        
+        # MAS Sequential Thinking
+        if "mas-sequential-thinking" in defaults:
+            defaults["mas-sequential-thinking"]["env"] = {
+                "LLM_PROVIDER": "openai",
+                "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+                "EXA_API_KEY": "${EXA_API_KEY}",
+            }
+        else:
+             # Fallback if not in registry (should be)
+             defaults["mas-sequential-thinking"] = {
+                "enabled": False, 
                 "command": "python",
-                "args": ["/Users/hue/code/mcp-server-mas-sequential-thinking/main.py"],
+                "args": ["-m", "mcp_server_mas_sequential_thinking"],
                 "env": {
                     "LLM_PROVIDER": "openai",
                     "OPENAI_API_KEY": "${OPENAI_API_KEY}",
@@ -586,89 +717,54 @@ class ConfigManager:
                 },
                 "timeout": 60,
                 "auto_restart": True,
-            },
-            "pal": {
-                "enabled": True,
-                "command": "uv",
-                "args": [
-                    "run",
-                    "--directory",
-                    "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server",
-                    "python",
-                    "server.py"
-                ],
-                "env": {
-                    "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
-                    "DEFAULT_MODEL": "auto",
-                    "PAL_DEFAULT_PROVIDER": "openrouter"
-                },
-                "timeout": 30,
-                "auto_restart": True,
-            },
-            "dope-context": {
-                "enabled": True,
-                "command": "bash",
-                "args": ["services/dope-context/run_mcp.sh"],
-                "env": {
-                    "VOYAGE_API_KEY": "${VOYAGE_API_KEY}",
-                    "OPENAI_API_KEY": "${OPENAI_API_KEY}",  # Use OpenAI for LLM calls
-                    # Pro Max: No ANTHROPIC_API_KEY needed - uses OpenAI instead
-                    "QDRANT_URL": "localhost",
-                    "QDRANT_PORT": "6333",
-                },
-                "timeout": 45,
-                "auto_restart": True,
-            },
-            "morphllm-fast-apply": {
-                "enabled": True,
-                "command": "npx",
-                "args": ["-y", "morphllm-fast-apply-mcp"],
-                "env": {},
-                "timeout": 30,
-                "auto_restart": True,
-            },
-            "exa": {
+            }
+            
+        # PAL
+        if "pal" in defaults:
+             defaults["pal"]["env"] = {
+                "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
+                "DEFAULT_MODEL": "auto",
+                "PAL_DEFAULT_PROVIDER": "openrouter"
+            }
+        
+        # Claude Context
+        if "claude-context" in defaults:
+            defaults["claude-context"]["env"] = {
+                "VOYAGE_API_KEY": "${VOYAGE_API_KEY}",
+                "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+                "QDRANT_URL": "localhost",
+                "QDRANT_PORT": "6333",
+            }
+
+        # Exa (registry might map it, but we need API key)
+        if "exa" not in defaults: # If registry didn't handle it
+             defaults["exa"] = {
                 "enabled": True,
                 "command": "npx",
                 "args": ["-y", "exa-mcp"],
                 "env": {"EXA_API_KEY": "${EXA_API_KEY}"},
                 "timeout": 30,
                 "auto_restart": True,
-            },
-            "zen": {
-                "enabled": True,
-                "command": "npx",
-                "args": ["-y", "zen-mcp"],
-                "env": {
+            }
+        else:
+             defaults["exa"]["env"] = {"EXA_API_KEY": "${EXA_API_KEY}"}
+
+        # Zen
+        if "zen" in defaults:
+            defaults["zen"]["env"] = {
                     "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-                    "XAI_API_KEY": "${XAI_API_KEY}",  # Added XAI for fallback
-                    # Pro Max users: No ANTHROPIC_API_KEY - uses OpenAI/XAI/Groq fallback
+                    "XAI_API_KEY": "${XAI_API_KEY}",
                     "GEMINI_API_KEY": "${GEMINI_API_KEY}",
                     "GROQ_API_KEY": "${GROQ_API_KEY}",
                     "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
                     "ZEN_DISABLED_TOOLS": "chat,explain,translate,summarize",
-                    # Use LiteLLM routing when available
                     "ZEN_DEFAULT_MODEL": os.getenv("ZEN_DEFAULT_MODEL", "openai/gpt-4o"),
                     "ZEN_FALLBACK_MODELS": os.getenv("ZEN_FALLBACK_MODELS", "xai/grok-beta,groq/llama-3.1-70b"),
-                    # LiteLLM configuration
                     "LITELLM_PROXY": os.getenv("LITELLM_PROXY", "http://localhost:4000"),
                     "LITELLM_MASTER_KEY": os.getenv("DOPEMUX_LITELLM_MASTER_KEY", ""),
-                },
-                "timeout": 60,
-                "auto_restart": True,
-            },
-            "leantime": {
-                "enabled": False,  # Disabled by default until package is fixed
-                "command": "npx",
-                "args": ["-y", "leantime-mcp"],
-                "env": {
-                    "LEANTIME_URL": "${LEANTIME_URL}",
-                    "LEANTIME_API_KEY": "${LEANTIME_API_KEY}",
-                },
-                "timeout": 30,
-                "auto_restart": True,
-            },
-        }
+            }
+
+        return defaults
 
     def _get_project_templates(self) -> Dict[str, Dict[str, Any]]:
         """Get project template configurations."""
