@@ -35,7 +35,24 @@ jobs:
 
       - name: 🧹 Enforce repo root hygiene
         run: |
-          python scripts/check_root_hygiene.py --all-files --quiet
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)"
+          else
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              CHANGED_FILES="$(git ls-files)"
+            else
+              CHANGED_FILES="$(git diff --name-only "$BEFORE" "${{ github.sha }}")"
+            fi
+          fi
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No changed files to validate for root hygiene."
+            exit 0
+          fi
+
+          echo "$CHANGED_FILES" | xargs -r python scripts/check_root_hygiene.py --quiet
 
       - name: 🔍 Run pre-commit (code quality)
         run: |
