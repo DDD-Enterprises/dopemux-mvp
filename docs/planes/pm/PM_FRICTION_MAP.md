@@ -11,36 +11,72 @@ prelude: PM plane friction analysis documenting cognitive load, state drift, and
 ---
 # PM Friction Map (Phase 1, Critiqued)
 
-Status: Tightened for citation integrity and Trinity boundaries.
+Status: Tightened for citation integrity, ADHD severity calibration, and Trinity boundaries.
 Evidence root: `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`
 
 ## Friction Table
 
-| Friction | Symptom | ADHD cost | Severity | Evidence |
-|---|---|---|---|---|
-| Status vocabulary drift across services | Task-orchestrator model uses `pending/completed/blocked`, while ConPort/taskmaster paths use `TODO/DONE`, and coordinator handlers key on lowercase runtime values. | Context-switch tax: must remember multiple status dialects for the same lifecycle. | High | `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt L13-L18; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt L85-L86; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_taskmaster_bridge_adapter.py.txt L69-L70; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_event_coordinator.py.txt L400-L407` |
-| Multiple task-creation entrypoints | Creation exists in taskmaster bridge adapter, taskmaster wrapper tool path, and CLI task decomposer path. | Decision overhead and uncertain provenance for newly created work items. | High | `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_taskmaster_bridge_adapter.py.txt L57-L70; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_taskmaster_server.py.txt L185-L191; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_src_dopemux_cli.py.txt L2496-L2501` |
-| ID-centric task operations | Update/sync interfaces require explicit `task_id`; missing record path is `Task ... not found`; CLI exposes generated ID. | Higher interruption recovery cost because IDs must be retained across tools and time gaps. | High | `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_taskmaster_bridge_adapter.py.txt L122-L126; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_taskmaster_bridge_adapter.py.txt L148-L160; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_src_dopemux_cli.py.txt L2500-L2501` |
-| Runtime validation and manual conflict handling | Missing-field failures are raised at runtime and sync conflicts are queued for manual resolution. | Retry loops and context breaks when the user/agent has to reconcile failures manually. | High | `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L8-L8; docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L12-L21` |
-| Evidence search noise in PM triage | Evidence scans include binary cache hits and non-PM status matches. | Attention fragmentation during audit; weakens PM signal extraction. | Medium | `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L2-L11; docs/planes/pm/_evidence/PM-FRIC-01.outputs/20_friction_search.txt L81-L96` |
-| Root test discovery asymmetry | Root test list for task-orchestrator contains entries; taskmaster root list is empty. | Lower confidence for safe PM changes touching taskmaster flows. | Medium | `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/40_task_orchestrator_root_tests.txt L1-L6; docs/planes/pm/_evidence/PM-FRIC-01.outputs/41_taskmaster_root_tests.txt (empty file)` |
+| Friction | Symptom | ADHD Cost | Severity | Evidence Quality | Evidence |
+|---|---|---|---|---|---|
+| Status vocabulary drift across services | Task-orchestrator model uses `pending/in_progress/completed/blocked` (7-value enum); ConPort/taskmaster paths use `TODO/IN_PROGRESS/DONE/BLOCKED` (uppercase strings); coordinator handlers key on bare lowercase string comparison. Three dialects for one lifecycle. | Context-switch tax: must mentally translate between dialects when crossing service boundaries. Silent mismatch risk (e.g. `pending` vs `TODO`). | High | Direct code | `nl_...models.py.txt L13-L21`; `nl_...conport_mcp_client.py.txt L85-L86`; `nl_...bridge_adapter.py.txt L69`; `nl_...event_coordinator.py.txt L400-L407` |
+| Multiple task-creation entrypoints | Creation exists in: (a) taskmaster bridge adapter `create_task`, (b) taskmaster wrapper tool path emitting events for `create_task/parse_prd/decompose_task`, (c) CLI `decomposer.add_task`. No routing policy declares which is canonical. | Decision overhead at moment of creation. Uncertain provenance: which entrypoint was used for a given task? Duplicate-task risk. | High | Direct code | `nl_...bridge_adapter.py.txt L57-L70`; `nl_...server.py.txt L185-L191`; `nl_...cli.py.txt L2496-L2501` |
+| ID-centric task operations with no discovery fallback | `update_task_status` and `sync_to_pm_plane` require explicit `task_id` string. Missing-record path is a silent `return False` after logging "Task {task_id} not found". CLI prints generated ID once at creation. | **Highest ADHD interrupt cost.** Losing or forgetting a task ID after an interruption = total loss of reference. No fuzzy lookup, no recent-task shortcut, no context-based retrieval. Recovery requires scanning logs or ConPort. | Critical | Direct code | `nl_...bridge_adapter.py.txt L122-L126`; `nl_...bridge_adapter.py.txt L148-L160`; `nl_...cli.py.txt L2500-L2501` |
+| Runtime validation errors and manual conflict queuing | ConPort adapter raises `ValueError` for missing id/title at runtime (not at creation). Sync conflicts are queued for "manual resolution (in-memory fallback)" with no resolution UI. | Retry loops break flow. Deferred conflict queue is invisible and grows silently. User discovers failures reactively, not proactively. | High | Scan hit | `30_memory_burden_search.txt L8` (manual resolution); `30_memory_burden_search.txt L12-L21` (missing-field ValueError paths) |
+| Evidence search noise inflates PM triage | Friction evidence scans contain binary `__pycache__` matches and non-PM `HealthStatus` hits that match status regex but describe monitoring, not task lifecycle. | Attention fragmentation during audit. Analyst must mentally filter noise before extracting PM signal. Weakens confidence in evidence quality. | Low | Scan hit | `30_memory_burden_search.txt L2,L9-L11` (binary cache); `20_friction_search.txt L81-L96` (health.py HealthStatus) |
+| Taskmaster has zero tests at any depth | Full recursive search finds no `test_*.py` or `*_test.py` files in `services/taskmaster/`. The service has exactly 2 Python files (`server.py`, `bridge_adapter.py`) and zero tests. | Lower confidence for safe PM changes touching taskmaster. Fear of breakage suppresses refactoring motivation. | Medium | Scan hit | `41_taskmaster_root_tests.txt` (empty); `42_taskmaster_full_test_discovery.txt` (confirms zero at all depths, 2 .py files total) |
+
+### Severity Calibration Notes
+
+- **Critical** = Interruption recovery failure. ADHD developer loses work reference or state.
+- **High** = Persistent cognitive tax. Every interaction pays the cost.
+- **Medium** = Friction during specific activities (audits, refactoring).
+- **Low** = Meta-friction (affects tooling/process, not direct user flow).
+
+The ID-centric operations row was elevated from High to **Critical** because losing a task ID after interruption has the highest recovery cost in the table: there is no discovery fallback, no fuzzy search, no "show recent" — only exact-match lookup or manual log scanning.
+
+Evidence search noise was lowered from Medium to **Low** because it affects PM auditors during evidence triage, not developers during normal task operations.
 
 ## Trinity Boundaries (PM vs Memory vs Search)
 
-- Boundary violation: status mapping behavior spans PM-owned orchestration model and Memory-owned ConPort progress representation, but ownership is not declared. Evidence: `[Direct code] docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_task_orchestrator_models.py.txt L13-L18; docs/planes/pm/_evidence/PM-FRIC-01.outputs/nl_services_task-orchestrator_conport_mcp_client.py.txt L85-L86`.
-- Boundary violation: manual conflict evidence originates from Memory adapter/search artifacts and should not be framed as PM-only behavior. Evidence: `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L8-L8; docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L12-L21`.
-- Boundary violation: binary-cache and broad regex noise are Search-pipeline concerns, not PM-domain friction by themselves. Evidence: `[Search hit] docs/planes/pm/_evidence/PM-FRIC-01.outputs/30_memory_burden_search.txt L2-L11`.
+### Boundary 1: Status Vocabulary (PM ↔ Memory)
+
+**Violation**: Status mapping spans PM-owned orchestration model (`TaskStatus` enum) and Memory-owned ConPort progress representation (`TODO/IN_PROGRESS/DONE/BLOCKED` strings), with no declared ownership contract.
+
+**Ownership recommendation**: PM plane should own the canonical `TaskStatus` enum. Memory plane (ConPort) should accept and return PM enum values. Mapping logic belongs in a single adapter at the boundary, not duplicated in each consumer.
+
+Evidence: `[Direct code] nl_...models.py.txt L13-L21`; `nl_...conport_mcp_client.py.txt L85-L86`.
+
+### Boundary 2: Conflict Resolution (PM surface, Memory origin)
+
+**Violation**: Manual conflict evidence originates from Memory adapter/sync artifacts (`sync.py` manual resolution queue), but the friction surface is PM — the user encounters conflict prompts during PM task operations.
+
+**Ownership recommendation**: Memory plane owns conflict detection and resolution strategy. PM plane owns the user-facing notification and resolution UI. The current "in-memory fallback" straddles both without clear ownership.
+
+Evidence: `[Scan hit] 30_memory_burden_search.txt L8` (manual resolution log).
+
+### Boundary 3: Evidence Noise (Search concern)
+
+**Violation**: Binary-cache matches and broad regex false positives in evidence generation are Search-pipeline concerns (evidence tooling quality), not PM-domain friction.
+
+**Ownership recommendation**: This row exists in the friction table for audit completeness but should not drive PM plane design changes. Search/tooling pipeline should add `--no-binary` and domain-scoped patterns.
+
+Evidence: `[Scan hit] 30_memory_burden_search.txt L2,L9-L11`.
 
 ## Open Questions
 
 ### Which status vocabulary is canonical across PM boundaries?
-UNKNOWN. Evidence needed: signed mapping contract between PM `TaskStatus` and Memory/ConPort status representation.
+
+UNKNOWN. Evidence needed: signed mapping contract between PM `TaskStatus` and Memory/ConPort status representation. Current evidence shows three dialects but no declared owner.
 
 ### Which creation entrypoint owns PM provenance for new tasks?
+
 UNKNOWN. Evidence needed: routing policy that names one source of truth for creation across bridge adapter, wrapper, and CLI paths.
 
-### Is taskmaster root-test emptiness an actual gap or a discovery-path artifact?
-UNKNOWN. Evidence needed: CI and local discovery outputs showing exactly which test globs execute.
-
 ### What ratio of scan output is actionable PM signal after suppression?
-UNKNOWN. Evidence needed: filtered/unfiltered counts on the same evidence set with explicit suppression rules.
+
+UNKNOWN. Evidence needed: filtered/unfiltered counts on the same evidence set with explicit suppression rules applied.
+
+### Resolved: Is taskmaster root-test emptiness an actual gap or a discovery-path artifact?
+
+**RESOLVED**: Confirmed gap, not artifact. Full recursive search finds zero test files at any depth. Taskmaster contains exactly 2 Python files (`server.py`, `bridge_adapter.py`).
+Evidence: `42_taskmaster_full_test_discovery.txt`.
