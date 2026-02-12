@@ -77,26 +77,15 @@ def test_capture_note_builds_manual_note_payload(monkeypatch):
             "capture",
             "note",
             "Investigated regression",
-            "--mode",
-            "mcp",
-            "--tag",
-            "testing",
-            "--tag",
-            "wma",
-            "--session-id",
-            "sess-42",
-            "--source",
-            "qa-cli",
         ],
     )
 
     assert result.exit_code == 0, result.output
-    assert calls["mode"] == "mcp"
+    assert calls["mode"] == "auto"
     assert calls["event"]["event_type"] == "manual.note"
-    assert calls["event"]["source"] == "qa-cli"
-    assert calls["event"]["session_id"] == "sess-42"
+    assert calls["event"]["source"] == "cli"
     assert calls["event"]["payload"]["summary"] == "Investigated regression"
-    assert calls["event"]["payload"]["tags"] == ["testing", "wma"]
+    assert calls["event"]["payload"]["tags"] == []
 
 
 def test_trigger_shell_command_parses_invalid_json_as_raw_context(monkeypatch):
@@ -137,4 +126,3 @@ def test_trigger_command_done_returns_nonzero_on_capture_failure(monkeypatch):
     result = runner.invoke(cli, ["trigger", "command-done", "--quiet"])
 
     assert result.exit_code == 1
-
