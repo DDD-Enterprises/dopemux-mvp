@@ -1,0 +1,7 @@
+# Full taskmaster test discovery (all depths, not just -maxdepth 2)
+# Command: find services/taskmaster -type f -name 'test_*.py' -o -name '*_test.py'
+# Result: (empty — zero test files at any depth)
+
+# Full Python file inventory:
+services/taskmaster/bridge_adapter.py
+services/taskmaster/server.py
