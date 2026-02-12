@@ -253,6 +253,7 @@ class ClaudeCodeHooks:
             }
             command = [
                 "dopemux",
+                "memory",
                 "capture",
                 "emit",
                 "--mode",
