@@ -1,12 +1,17 @@
-import logging
 import importlib
+import logging
 import sys
 import types
 
 import pytest
 
 # ConPort MCP tools expect legacy symbols that may not exist in newer mcp packages.
-mcp_mod = importlib.import_module("mcp")
+try:
+    mcp_mod = importlib.import_module("mcp")
+except ModuleNotFoundError:
+    mcp_mod = types.ModuleType("mcp")
+    sys.modules["mcp"] = mcp_mod
+
 if not hasattr(mcp_mod, "Tool"):
     mcp_mod.Tool = type("Tool", (), {})
 if not hasattr(mcp_mod, "ToolResult"):
