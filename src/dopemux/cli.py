@@ -6356,6 +6356,96 @@ def capture():
 
 
 @capture.command()
+@click.option(
+    "--event",
+    type=str,
+    required=True,
+    help="Event JSON string (required)",
+)
+@click.option(
+    "--mode",
+    type=click.Choice(["plugin", "cli", "mcp", "auto"]),
+    default="auto",
+    help="Capture mode (default: auto)",
+)
+@click.option(
+    "--quiet",
+    is_flag=True,
+    help="Suppress output (for hook usage)",
+)
+@click.option(
+    "--repo-root",
+    type=click.Path(exists=True, path_type=Path),
+    default=None,
+    help="Project repository root (default: auto-detect)",
+)
+def emit(event: str, mode: str, quiet: bool, repo_root: Optional[Path]):
+    """
+    Emit a capture event to Chronicle.
+
+    Writes event to per-project Chronicle ledger with content-addressed
+    deduplication. Designed for hook and adapter usage.
+
+    Examples:
+
+        dopemux memory capture emit --event '{"event_type":"file.written","payload":{"path":"src/app.py"}}'
+
+        dopemux memory capture emit --mode plugin --quiet --event '{"event_type":"task.completed","payload":{"task":"T-001"}}'
+    """
+    from dopemux.memory.capture_client import emit_capture_event, CaptureError
+    import json
+
+    try:
+        # Parse event JSON
+        try:
+            event_data = json.loads(event)
+        except json.JSONDecodeError as e:
+            if not quiet:
+                console.logger.error(f"[red]✗ Invalid JSON:[/red] {e}")
+            raise click.Abort()
+
+        # Validate event structure
+        if not isinstance(event_data, dict):
+            if not quiet:
+                console.logger.error("[red]✗ Event must be a JSON object[/red]")
+            raise click.Abort()
+
+        if "event_type" not in event_data:
+            if not quiet:
+                console.logger.error("[red]✗ Event must have 'event_type' field[/red]")
+            raise click.Abort()
+
+        # Emit to Chronicle
+        result = emit_capture_event(
+            event_data,
+            mode=mode,
+            repo_root=repo_root,
+            emit_event_bus=False,  # Don't emit to event bus for manual captures
+        )
+
+        # Output result
+        if not quiet:
+            if result.inserted:
+                console.logger.info(f"[green]✓[/green] Event captured: {result.event_id[:16]}...")
+                console.logger.info(f"  Event type: {event_data.get('event_type')}")
+                console.logger.info(f"  Mode: {mode}")
+            else:
+                console.logger.info(f"[yellow]✓[/yellow] Event already exists (deduplicated): {result.event_id[:16]}...")
+
+        # Exit code 0 on success
+        sys.exit(0)
+
+    except CaptureError as e:
+        if not quiet:
+            console.logger.error(f"[red]✗ Capture error:[/red] {e}")
+        sys.exit(1)
+    except Exception as e:
+        if not quiet:
+            console.logger.error(f"[red]✗ Unexpected error:[/red] {e}")
+        sys.exit(1)
+
+
+@capture.command()
 @click.argument("session_id")
 @click.option(
     "--since",
