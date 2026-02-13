@@ -22,33 +22,38 @@ TODO: Define the boundaries and responsibilities of the system architecture.
 TODO: List the architectural invariants that must never be violated.
 
 ## FACT ANCHORS (Repo-derived)
-
-TODO: Link to actual code artifacts that define the system structure.
+- **OBSERVED: Service Root**: `services/` contains 20+ services including `task-orchestrator`, `adhd_engine`, `dopecon-bridge`, and `session-manager`.
+- **OBSERVED: Infrastructure**: `compose.yml` defines the canonical stack (Postgres/AGE, Redis, Qdrant).
+- **OBSERVED: Control Plane Services**:
+  - `task-orchestrator` (Port 8000): Customized orchestration with `jpickly` integration (`services/task-orchestrator/`).
+  - `adhd-engine` (Port 8095): Real-time cognitive load management (`services/adhd_engine/`).
+  - `dopecon-bridge` (Port 3016): Event bus and pattern detection (`services/dopecon-bridge/`).
+- **OBSERVED: Intelligence Plane**:
+  - `genetic-agent` (Port 8000): AI code repair (`services/genetic_agent/`).
+  - `dope-memory` (Port 3020): Working memory assistant (`services/working-memory-assistant/`).
+- **OBSERVED: Leantime Integration**: `services/leantime-bridge` (Port 3015) and `docker/leantime` (Port 8080).
 
 ## Open questions
+- **Global Rollups**: How do we aggregate multi-repo stats without breaking isolation?
+  - *Resolution*: Define a separate "Observer" plane that reads-only from multiple approved roots.
 
-TODO: List architectural unknowns and how to resolve them.
+## Components (contract status)
 
-## Components (names as contracts)
+**Supervisor Plane (OBSERVED)**:
+- `task-orchestrator`: Real service, handles dispatch and tool execution.
+- `adhd-engine`: Real service, manages focus windows.
+- `dopecon-bridge`: Real service, event bus.
 
-Supervisor runtime:
-- Policy Engine (limits/cost/quality)
-- Packet Generator (chunked)
-- Dispatch (runner adapter)
-- ADHD engine (focus windows, output caps)
-- MCPServerManager (lifecycle and health)
+**Execution Plane (OBSERVED)**:
+- `TaskX`: Integration via `task-orchestrator` (see `services/task-orchestrator/tests/week2_integration.py`).
+- Runners: Configured via `config/models.yaml` (FUTURE/INFERRED).
 
-Execution runtime:
-- TaskX (deterministic orchestration)
-- Runners (claude-code | codex | copilot)
-
-MCP fabric:
-- Serena
-- ConPort
-- Dope-Context
-- Context7
-- Zen
-- TODO: Others
+**MCP Fabric (OBSERVED)**:
+- `conport` (3004): Knowledge Graph.
+- `pal` (3003): Reasoning.
+- `serena` (3006): ADHD Interface.
+- `dope-context` (3010): Semantic Search.
+- `gptr-mcp` (3009): Deep Research.
 
 State stores:
 - workspace state store
