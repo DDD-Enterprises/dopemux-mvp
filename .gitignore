@@ -99,6 +99,7 @@ celerybeat.pid
 .env
 .env.conport
 .venv
+.taskx_venv
 .venv-litellm
 env/
 venv/
