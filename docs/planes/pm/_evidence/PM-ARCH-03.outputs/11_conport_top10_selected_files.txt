@@ -1,0 +1,10 @@
+services/task-orchestrator/conport_mcp_client.py
+services/task-orchestrator/event_coordinator.py
+services/taskmaster/bridge_adapter.py
+services/taskmaster/server.py
+services/dopecon-bridge/dopecon_bridge/services/task_integration.py
+services/dopecon-bridge/dopecon_bridge/models.py
+services/dopecon-bridge/dopecon_bridge/conport_semantic_proxy.py
+services/dope-context/src/mcp/server.py
+services/dope-context/src/mcp/simple_server.py
+services/shared/conport_client/client.py
