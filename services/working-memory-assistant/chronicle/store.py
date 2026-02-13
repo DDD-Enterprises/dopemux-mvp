@@ -575,7 +575,7 @@ class ChronicleStore:
                 f"Target {supersedes_entry_id} is already superseded. Target head {real_head} instead."
             )
 
-        # 2. Prepare correction semantics (Packet F §4.1)
+        # 3. Prepare correction semantics (Packet F §4.1)
         # Use target's metadata to preserve context
         final_category = target["category"]
         final_entry_type = target["entry_type"]
@@ -603,7 +603,7 @@ class ChronicleStore:
         else:
             final_summary = summary
 
-        # 3. Perform insertion
+        # 4. Perform insertion
         return self.insert_work_log_entry(
             workspace_id=workspace_id,
             instance_id=instance_id,
