@@ -2,9 +2,46 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+EXPECTED_PROJECT_ID="dopemux-mvp"
 
 if [[ ! -f "$REPO_ROOT/.taskxroot" ]]; then
   echo "Refusing: .taskxroot missing in repo root: $REPO_ROOT" >&2
+  exit 2
+fi
+
+if [[ ! -f "$REPO_ROOT/.repo_id" ]]; then
+  echo "Refusing: .repo_id missing in repo root: $REPO_ROOT" >&2
+  exit 2
+fi
+
+REPO_PROJECT_ID="$(sed -n 's/^project=//p' "$REPO_ROOT/.repo_id" | head -n 1)"
+if [[ "$REPO_PROJECT_ID" != "$EXPECTED_PROJECT_ID" ]]; then
+  echo "Refusing: wrong repo_id project. expected=$EXPECTED_PROJECT_ID got=${REPO_PROJECT_ID:-<missing>}" >&2
+  exit 2
+fi
+
+if [[ ! -f "$REPO_ROOT/.taskx/project.json" ]]; then
+  echo "Refusing: .taskx/project.json missing in repo root." >&2
+  exit 2
+fi
+
+TASKX_PROJECT_ID="$(python3 - "$REPO_ROOT/.taskx/project.json" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+try:
+    with open(path, "r", encoding="utf-8") as fh:
+        payload = json.load(fh)
+except Exception:
+    print("")
+    raise SystemExit(0)
+
+print(str(payload.get("project_id", "")).strip())
+PY
+)"
+if [[ "$TASKX_PROJECT_ID" != "$EXPECTED_PROJECT_ID" ]]; then
+  echo "Refusing: .taskx/project.json project_id mismatch. expected=$EXPECTED_PROJECT_ID got=${TASKX_PROJECT_ID:-<missing>}" >&2
   exit 2
 fi
 
@@ -13,9 +50,65 @@ if [[ ! -f "$REPO_ROOT/.taskx-pin" ]]; then
   exit 2
 fi
 
+PIN_INSTALL="$(sed -n 's/^install=//p' "$REPO_ROOT/.taskx-pin" | head -n 1)"
+PIN_REPO="$(sed -n 's/^repo=//p' "$REPO_ROOT/.taskx-pin" | head -n 1)"
+PIN_REF="$(sed -n 's/^ref=//p' "$REPO_ROOT/.taskx-pin" | head -n 1)"
+PIN_COMMIT="$(sed -n 's/^commit=//p' "$REPO_ROOT/.taskx-pin" | head -n 1)"
+
+if [[ "$PIN_INSTALL" != "git" || -z "$PIN_REPO" || -z "$PIN_REF" || -z "$PIN_COMMIT" ]]; then
+  echo "Refusing: .taskx-pin must include install=git, repo, ref, and commit fields." >&2
+  exit 2
+fi
+
 VENV="$REPO_ROOT/.taskx_venv"
 if [[ ! -d "$VENV" ]]; then
   echo "Refusing: TaskX venv missing ($VENV)." >&2
+  exit 2
+fi
+
+DIRECT_URL_FILE="$(ls "$VENV"/lib/python*/site-packages/taskx-*.dist-info/direct_url.json 2>/dev/null | head -n 1 || true)"
+if [[ -z "$DIRECT_URL_FILE" || ! -f "$DIRECT_URL_FILE" ]]; then
+  echo "Refusing: cannot verify installed TaskX source (direct_url.json missing)." >&2
+  exit 2
+fi
+
+readarray -t INSTALLED_META < <(python3 - "$DIRECT_URL_FILE" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as fh:
+    payload = json.load(fh)
+
+vcs = payload.get("vcs_info", {})
+print(str(payload.get("url", "")).strip())
+print(str(vcs.get("requested_revision", "")).strip())
+print(str(vcs.get("commit_id", "")).strip())
+PY
+)
+
+INSTALLED_URL="${INSTALLED_META[0]:-}"
+INSTALLED_REF="${INSTALLED_META[1]:-}"
+INSTALLED_COMMIT="${INSTALLED_META[2]:-}"
+
+normalize_git_url() {
+  local raw="${1:-}"
+  raw="${raw%.git}"
+  raw="${raw%/}"
+  printf '%s\n' "$raw"
+}
+
+if [[ "$(normalize_git_url "$INSTALLED_URL")" != "$(normalize_git_url "$PIN_REPO")" ]]; then
+  echo "Refusing: installed TaskX repo mismatch. expected=$PIN_REPO got=${INSTALLED_URL:-<missing>}" >&2
+  exit 2
+fi
+
+if [[ "$INSTALLED_REF" != "$PIN_REF" ]]; then
+  echo "Refusing: installed TaskX ref mismatch. expected=$PIN_REF got=${INSTALLED_REF:-<missing>}" >&2
+  exit 2
+fi
+
+if [[ "$INSTALLED_COMMIT" != "$PIN_COMMIT" ]]; then
+  echo "Refusing: installed TaskX commit mismatch. expected=$PIN_COMMIT got=${INSTALLED_COMMIT:-<missing>}" >&2
   exit 2
 fi
 
