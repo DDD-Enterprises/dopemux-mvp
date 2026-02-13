@@ -1,2 +1,0 @@
-     1	[console_scripts]
-     2	taskmaster = taskmaster.server:main
