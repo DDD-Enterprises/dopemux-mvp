@@ -33,6 +33,8 @@
   ],
   "allowed_root_files": [
     ".taskxroot",
+    ".taskx-pin",
+    ".repo_id",
     ".backup_location",
     ".claude.json",
     ".claude.json.template",
@@ -95,6 +97,7 @@
     ".mypy_cache",
     ".ruff_cache",
     ".venv",
+    ".taskx_venv",
     ".sessions",
     "node_modules"
   ],
