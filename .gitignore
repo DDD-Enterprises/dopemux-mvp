@@ -302,3 +302,6 @@ out/taskx_project_upgrade/
 
 # Local backups
 .claude/*.bak_*
+
+# PM generated evidence outputs
+docs/planes/pm/_evidence/**.outputs/
