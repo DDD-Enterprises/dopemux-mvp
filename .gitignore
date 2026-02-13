@@ -266,6 +266,7 @@ services/conport_kg/auth/keys/*.pem
 # LLM Archive files
 dopemux-mvp-llm-*.zip
 *.zip
+!docs/planes/pm/dopemux/_opus_inputs/bundle_20260213.zip
 reports/*.zip
 test_*.txt
 test_output.txt
