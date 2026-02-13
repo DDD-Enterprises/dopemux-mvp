@@ -2,60 +2,77 @@
 title: "Usage Limits and Resets"
 plane: "pm"
 component: "dopemux"
-status: "skeleton"
+status: "proposed"
 ---
 
 # Usage Limits Tracking and Reset Strategy
 
 ## Purpose
-
-Operational truth: quotas reset and we want auto-switch-back behaviors.
+Operational truth: quotas reset and we want auto-switch-back behaviors. Manage costs and avoid surprise bills.
 
 ## Scope
-
-TODO: Define the scope of usage tracking and limit management.
+- Tracking token usage per provider.
+- Defining budget limits (soft and hard).
+- Handling quota resets.
 
 ## Non-negotiable invariants
-
-TODO: List limit invariants (e.g., "never exceed the quota provided by the manual store").
+1. **Fail-Safe**: If limits cannot be verified (network down), assume "Safe Mode" (Lowest Cost) or Block, depending on config.
+2. **User Notification**: Never block a task silently. Always notify "Limit Reached" and offer Override.
 
 ## FACT ANCHORS (Repo-derived)
-
-TODO: Link to limits.json and the logic that handles model switching on exhaustion.
+- **Limits Config**: `config/limits.yaml`.
+- **Usage Ledger**: `.dopemux/usage.json`.
 
 ## Open questions
-
-TODO: List limits/reset unknowns and how to resolve them.
+- **Multi-Instance Aggregation**: How do we aggregate usage across concurrent instances?
+  - *Resolution*: Use file locking on `usage.json` or a dedicated Usage MCP.
 
 ## Tracking model
+**Fields per Record**:
+- `timestamp`: UTC
+- `runner_id`: e.g., "anthropic"
+- `model_id`: "claude-3-opus"
+- `input_tokens`: Int
+- `output_tokens`: Int
+- `estimated_cost`: Float (USD)
 
-Fields:
-- runner_id
-- model_id
-- limit scopes (5hr / weekly / monthly)
-- reset_at
-- remaining_percent
-
-TODO: Define the v1 JSON schema for limits.json.
+**Aggregate View** (`limits.json`):
+```json
+{
+  "month": "2024-02",
+  "total_cost": 12.50,
+  "by_provider": {
+    "anthropic": 10.00,
+    "openai": 2.50
+  },
+  "budget": 50.00,
+  "reset_date": "2024-03-01"
+}
+```
 
 ## Policy behavior
-- prefer included until exhausted
-- fall back to codex credits
-- then API cheapest
-- when reset happens: suggest switch back automatically
+- **Green (<50% budget)**: Prefer Best Performance (Opus/GPT-4o).
+- **Yellow (50-80%)**: Warn user. Suggest switching "Meta" tasks to cheaper models.
+- **Red (80-99%)**: Force "Economy Mode" (Haiku/DeepSeek/Local) for all but Critical tasks.
+- **Black (100%+)**: **STOP**. Require explicit override `dmux run --auth-override`.
 
-TODO: Define the exact trigger thresholds (example: remaining_percent <= 10).
+## Reset behavior
+- **Trigger**: Date crosses `reset_date`.
+- **Action**:
+  - Archive `usage.json` to `usage_2024-02.json`.
+  - Reset counters in memory.
+  - **Auto-Switch-Back**: If currently forced to "Economy Mode" due to limits, switch back to "Performance Mode" defaults.
 
 ## Minimum implementation
-- local limits.json store updated manually
-- optional automation hook later
-
-TODO: Define where stored per worktree and how it is loaded safely.
+- **Local Store**: Single JSON file `.dopemux/usage.json`.
+- **Updates**: Updated synchronously at end of each Packet run.
 
 ## Failure modes
-
-TODO: wrong reset times, stale limits, incorrect fallback.
+- **Stale Pricing**: Cost estimated using old rates.
+  - *Mitigation*: Version the pricing config. Warn if > 30 days old.
+- **Missing Data**: Runner doesn't report tokens.
+  - *Fallback*: Estimate based on character count (approx 4 chars/token).
 
 ## Acceptance criteria
-
-TODO: Simulate 5 scenarios and expected routing outcomes.
+1. **Cap Test**: Set budget to $0.05. Run tasks. Ensure system warns/blocks once $0.05 is hit.
+2. **Reset Test**: Manually set date to transition day. Ensure stats reset and archive is created.

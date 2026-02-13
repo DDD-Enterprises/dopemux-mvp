@@ -2,75 +2,75 @@
 title: "Operational Playbooks"
 plane: "pm"
 component: "dopemux"
-status: "skeleton"
+status: "proposed"
 ---
 
 # Operational Playbooks
 
 ## Purpose
-
-How to run this when tired.
+How to run this when tired. Standard Operating Procedures (SOPs) for the operator.
 
 ## Scope
-
-TODO: Define the scope of operational playbooks for Dopemux.
+- Routine startup/shutdown.
+- Troubleshooting common failures.
+- manual intervention workflows.
 
 ## Non-negotiable invariants
-
-TODO: List operational invariants (e.g., "always follow the startup checklist").
+1. **Safety First**: When in doubt, **STOP** and backup `.dopemux/state.db`.
+2. **Read the Logs**: Always check `logs/supervisor.log` before assuming root cause.
 
 ## FACT ANCHORS (Repo-derived)
-
-TODO: Link to existing checklists and verification scripts.
+- **CLI Help**: `dmux --help`.
 
 ## Open questions
-
-TODO: List operational unknowns and how to resolve them.
+- **Interactive Checklists**: Can we have interactive CLI ticking?
+  - *Resolution*: Yes, `dmux checklist start <name>` uses `rich` library to render checkboxes.
 
 ## Start session checklist
-- load workspace
-- verify worktree identity
-- verify MCP health
-- verify limits mode
-- set focus window
+**Short Version**:
+1. `cd /path/to/repo`
+2. `dmux status` (Check identity, ports, health)
+3. `dmux start`
 
-TODO: Provide a short and a long checklist.
+**Long Version**:
+1. Verify worktree: `cat .repo_id` matches expectation.
+2. Verify git status: `git status` clean?
+3. Check Limits: `dmux limits` (Are we in budget?).
+4. Set Focus: `dmux focus 25m "Refactor Auth"`.
+5. Start.
 
 ## Build packet fast checklist
-- define objective
-- define scope
-- define invariants
-- define plan steps
-- define commands
-- define acceptance criteria and stop conditions
-
-TODO: Provide template snippet.
+1. **Objective**: Write one sentence goal.
+2. **Context**: List 2-3 key files involved.
+3. **Invariants**: What must NOT change? (e.g., "Don't break public API").
+4. **Command**:
+   ```bash
+   dmux packet new --title "Fix Auth" --goal "JWT support" --files src/api/auth.py
+   ```
 
 ## When MCP is down
-- detect
-- degrade path
-- refuse if mandate cannot be met
-- log to ConPort
-
-TODO: Provide a decision tree.
+**Symptom**: "Connection Refused" or "Timeout" on tool use.
+**Procedure**:
+1. **Detect**: `dmux health`.
+2. **Restart**: `dmux restart-mcp <server_name>`.
+3. **Logs**: `tail -f logs/mcp_server.log`.
+4. **Degrade**: If persistent, use `dmux packet run --no-mcp` (if applicable) or switch to Manual Mode.
 
 ## When tests fail (RCA loop)
-- capture outputs
-- isolate failure
-- minimal diff fix
-- rerun exact commands
-- record results
-
-TODO: Provide a hard “no skipping” rule list.
+**Procedure**:
+1. **Capture**: Save the failure output.
+2. **Isolate**: Create a reproduction script/test case.
+3. **Plan**: Generate a "Fix Packet" targeting ONLY the failure.
+4. **Verify**: Run the reproduction script.
+5. **No Skipping**: Do NOT ignore the test and force merge. Fix it or delete the test (if invalid).
 
 ## When limits are low (cheap-mode)
-- switch model ladder
-- reduce verbosity
-- increase chunking
-- defer heavy work
-
-TODO: Provide cheap-mode defaults.
+**Procedure**:
+1. Switch Profile: `dmux profile set economy`.
+2. Reduce Verbosity: `dmux config set output.verbose false`.
+3. Increase Chunking: Break packets into smaller, atomic units to avoid long, expensive context windows.
+4. Defer: Push "Nice to have" refactors to next month.
 
 ## Acceptance criteria
-
-TODO: Define how we know playbooks are usable (time-to-next-action, error rate).
+1. **Usability**: A new operator can follow "Start Session" and get running in < 2 minutes.
+2. **Recovery**: Following "MCP Down" procedure restores service or correctly identifies a fatal error.
