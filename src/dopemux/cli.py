@@ -5904,6 +5904,32 @@ def doctor_cmd(ctx, worktree: bool, verbose: bool):
                     logger.error(f"Error: {e}")
             checks.append((f"Happy relay reachable ({mobile_cfg.happy_server_url})", reachable))
 
+        # 5. TaskX rails check
+        taskx_script = workspace / "scripts" / "taskx"
+        taskx_doctor_ok = False
+        taskx_label = "TaskX doctor deterministic"
+        if taskx_script.exists():
+            try:
+                taskx_proc = subprocess.run(
+                    [str(taskx_script), "doctor", "--timestamp-mode", "deterministic"],
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                )
+                taskx_doctor_ok = taskx_proc.returncode == 0
+                if verbose and taskx_proc.stdout:
+                    console.logger.info(taskx_proc.stdout.strip())
+                if not taskx_doctor_ok and verbose:
+                    taskx_error = taskx_proc.stderr.strip() or "TaskX doctor failed"
+                    console.logger.error(taskx_error)
+            except Exception as e:
+                if verbose:
+                    console.logger.error(f"TaskX doctor error: {e}")
+                taskx_doctor_ok = False
+        else:
+            taskx_label = "TaskX doctor deterministic (scripts/taskx missing)"
+        checks.append((taskx_label, taskx_doctor_ok))
+
         # Print results
         from rich.table import Table
         table = Table(show_header=False)
