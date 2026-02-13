@@ -31,9 +31,18 @@ POSTGRES_URL = os.getenv(
 )
 SYNC_INTERVAL_SEC = int(os.getenv("MIRROR_SYNC_INTERVAL_SEC", "60"))  # Default: 1 minute
 BATCH_SIZE = int(os.getenv("MIRROR_SYNC_BATCH_SIZE", "100"))
-TARGET_SCHEMA_VERSION = "v1.0.3"
+TARGET_SCHEMA_VERSION = "v1.0.5"
 MIRROR_SCHEMA_RESET = os.getenv("MIRROR_SCHEMA_RESET", "false").strip().lower() == "true"
 MIRROR_RAW_TTL_CAP_DAYS = int(os.getenv("MIRROR_RAW_TTL_CAP_DAYS", "7"))
+MIRROR_RAW_RETENTION_ENABLED = (
+    os.getenv("MIRROR_RAW_RETENTION_ENABLED", "true").strip().lower() == "true"
+)
+MIRROR_RAW_RETENTION_MAX_DELETE = int(
+    os.getenv("MIRROR_RAW_RETENTION_MAX_DELETE", "5000")
+)
+MIRROR_RAW_RETENTION_GRACE_SEC = int(
+    os.getenv("MIRROR_RAW_RETENTION_GRACE_SEC", "0")
+)
 
 
 class PostgresMirrorSync:
@@ -62,7 +71,7 @@ class PostgresMirrorSync:
 
         # Bookmarks: (workspace_id, ledger_path) -> last_synced_ts
         self._work_log_bookmarks: dict[tuple[str, str], str] = {}
-        self._raw_event_bookmarks: dict[str, str] = {}
+        self._raw_event_bookmarks: dict[tuple[str, str], str] = {}
         self._issue_link_bookmarks: dict[tuple[str, str], str] = {}
 
     async def initialize(self) -> None:
@@ -119,11 +128,67 @@ class PostgresMirrorSync:
                         TARGET_SCHEMA_VERSION,
                     )
                     if version == TARGET_SCHEMA_VERSION:
-                        logger.info(
-                            "✅ Postgres mirror schema already at %s",
+                        raw_has_payload_json = await conn.fetchval(
+                            """
+                            SELECT 1
+                            FROM information_schema.columns
+                            WHERE table_schema = 'public'
+                              AND table_name = 'dm_raw_activity_events'
+                              AND column_name = 'payload_json'
+                            """
+                        )
+                        raw_has_updated_at = await conn.fetchval(
+                            """
+                            SELECT 1
+                            FROM information_schema.columns
+                            WHERE table_schema = 'public'
+                              AND table_name = 'dm_raw_activity_events'
+                              AND column_name = 'updated_at'
+                            """
+                        )
+                        raw_has_ttl_days = await conn.fetchval(
+                            """
+                            SELECT 1
+                            FROM information_schema.columns
+                            WHERE table_schema = 'public'
+                              AND table_name = 'dm_raw_activity_events'
+                              AND column_name = 'ttl_days'
+                            """
+                        )
+                        raw_has_expires_at = await conn.fetchval(
+                            """
+                            SELECT 1
+                            FROM information_schema.columns
+                            WHERE table_schema = 'public'
+                              AND table_name = 'dm_raw_activity_events'
+                              AND column_name = 'expires_at'
+                            """
+                        )
+                        bookmarks_have_raw_ts = await conn.fetchval(
+                            """
+                            SELECT 1
+                            FROM information_schema.columns
+                            WHERE table_schema = 'public'
+                              AND table_name = 'dm_mirror_bookmarks'
+                              AND column_name = 'last_raw_event_created_at'
+                            """
+                        )
+                        if (
+                            raw_has_payload_json
+                            and raw_has_updated_at
+                            and raw_has_ttl_days
+                            and raw_has_expires_at
+                            and bookmarks_have_raw_ts
+                        ):
+                            logger.info(
+                                "✅ Postgres mirror schema already at %s",
+                                TARGET_SCHEMA_VERSION,
+                            )
+                            return
+                        logger.warning(
+                            "⚠️  Schema version %s present but required columns missing; re-applying schema",
                             TARGET_SCHEMA_VERSION,
                         )
-                        return
 
                 # Apply schema
                 schema_sql = schema_path.read_text()
@@ -141,7 +206,8 @@ class PostgresMirrorSync:
         async with self.pool.acquire() as conn:
             rows = await conn.fetch(
                 """
-                SELECT workspace_id, ledger_path, last_work_log_created_at, last_issue_link_created_at
+                SELECT workspace_id, ledger_path, last_work_log_created_at,
+                       last_raw_event_created_at, last_issue_link_created_at
                 FROM dm_mirror_bookmarks
                 """
             )
@@ -151,10 +217,13 @@ class PostgresMirrorSync:
             workspace_id = row["workspace_id"]
             ledger_path = row["ledger_path"]
             work_log_ts = row["last_work_log_created_at"]
+            raw_event_ts = row["last_raw_event_created_at"]
             issue_link_ts = row["last_issue_link_created_at"]
             key = (workspace_id, ledger_path)
             if work_log_ts:
                 self._work_log_bookmarks[key] = work_log_ts.isoformat()
+            if raw_event_ts:
+                self._raw_event_bookmarks[key] = raw_event_ts.isoformat()
             if issue_link_ts:
                 self._issue_link_bookmarks[key] = issue_link_ts.isoformat()
             loaded += 1
@@ -253,22 +322,24 @@ class PostgresMirrorSync:
 
         # Sync raw events (optional, may skip if too many)
         raw_event_count = await self._sync_raw_events(workspace_id, ledger_path, store)
+        raw_deleted_count = await self._cleanup_expired_raw_events(workspace_id, ledger_path)
 
         # Sync issue links
         issue_link_count = await self._sync_issue_links(workspace_id, ledger_path, store)
 
-        if work_log_count > 0 or issue_link_count > 0:
+        if work_log_count > 0 or raw_event_count > 0 or issue_link_count > 0:
             await self._persist_bookmarks(workspace_id, ledger_path)
 
-        total = work_log_count + raw_event_count + issue_link_count
+        total = work_log_count + raw_event_count + issue_link_count + raw_deleted_count
         if total > 0:
             logger.info(
-                "📤 Synced workspace=%s ledger=%s: %d work log, %d raw, %d links",
+                "📤 Synced workspace=%s ledger=%s: %d work log, %d raw, %d links, %d raw_deleted",
                 workspace_id,
                 ledger_path,
                 work_log_count,
                 raw_event_count,
                 issue_link_count,
+                raw_deleted_count,
             )
 
     async def _sync_work_log_entries(
@@ -384,10 +455,184 @@ class PostgresMirrorSync:
     async def _sync_raw_events(
         self, workspace_id: str, ledger_path: str, store: ChronicleStore
     ) -> int:
-        """Sync raw events to Postgres (limited batch)."""
-        # For raw events, we only sync recent ones to avoid overwhelming Postgres
-        # The canonical SQLite is the source of truth with TTL cleanup
-        return 0  # Skip for Phase 1, implement in Phase 2 if needed
+        """Sync raw events to Postgres mirror."""
+        if not self.pool:
+            return 0
+
+        bookmark_key = (workspace_id, ledger_path)
+        last_ts = self._raw_event_bookmarks.get(bookmark_key, "1970-01-01T00:00:00Z")
+        current_ts = last_ts
+
+        conn = store.connect()
+        columns = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(raw_activity_events)").fetchall()
+        }
+        if "created_at_utc" not in columns:
+            raise RuntimeError("raw_activity_events missing created_at_utc")
+
+        ts_column = "ts_utc" if "ts_utc" in columns else ("ts" if "ts" in columns else "created_at_utc")
+        payload_column = "payload_json" if "payload_json" in columns else "payload"
+        updated_column = "updated_at_utc" if "updated_at_utc" in columns else "created_at_utc"
+        ttl_column = "ttl_days" if "ttl_days" in columns else "7"
+
+        selected_total = 0
+        inserted_total = 0
+        skipped_total = 0
+        skipped_samples: list[str] = []
+
+        while True:
+            cursor = conn.execute(
+                f"""
+                SELECT id, instance_id, session_id,
+                       {ts_column} AS ts_value,
+                       event_type, source,
+                       {payload_column} AS payload_value,
+                       created_at_utc,
+                       {updated_column} AS updated_value,
+                       {ttl_column} AS ttl_value
+                FROM raw_activity_events
+                WHERE created_at_utc > ?
+                ORDER BY created_at_utc ASC
+                LIMIT ?
+                """,
+                (current_ts, self.batch_size),
+            )
+            rows = cursor.fetchall()
+            if not rows:
+                break
+
+            selected_total += len(rows)
+            batch_last_created = rows[-1][7]
+            async with self.pool.acquire() as pg_conn:
+                for row in rows:
+                    try:
+                        await pg_conn.execute(
+                            """
+                            INSERT INTO dm_raw_activity_events (
+                                id, workspace_id, ledger_path, instance_id, session_id,
+                                ts, event_type, source, payload, payload_json,
+                                ttl_days, expires_at, created_at, updated_at
+                            ) VALUES (
+                                $1, $2, $3, $4, $5,
+                                $6::timestamptz, $7, $8, $9::jsonb, $10::jsonb,
+                                $11, ($12::timestamptz + ($11::text || ' days')::interval),
+                                $12::timestamptz, $13::timestamptz
+                            )
+                            ON CONFLICT (id) DO UPDATE SET
+                                workspace_id = EXCLUDED.workspace_id,
+                                ledger_path = EXCLUDED.ledger_path,
+                                instance_id = EXCLUDED.instance_id,
+                                session_id = EXCLUDED.session_id,
+                                ts = EXCLUDED.ts,
+                                event_type = EXCLUDED.event_type,
+                                source = EXCLUDED.source,
+                                payload = EXCLUDED.payload,
+                                payload_json = EXCLUDED.payload_json,
+                                ttl_days = EXCLUDED.ttl_days,
+                                expires_at = EXCLUDED.expires_at,
+                                created_at = EXCLUDED.created_at,
+                                updated_at = EXCLUDED.updated_at
+                            """,
+                            row[0],  # id
+                            workspace_id,
+                            ledger_path,
+                            row[1],  # instance_id
+                            row[2],  # session_id
+                            self._to_datetime(row[3] or row[7]),  # ts_value fallback created_at_utc
+                            row[4],  # event_type
+                            row[5],  # source
+                            self._to_json_payload(row[6]),  # payload (legacy)
+                            self._to_json_payload(row[6]),  # payload_json
+                            self._normalize_ttl_days(row[9]),
+                            self._to_datetime(row[7]),  # created_at_utc
+                            self._to_datetime(row[8]),  # updated_at_utc|created_at_utc
+                        )
+                        inserted_total += 1
+                    except Exception as e:
+                        skipped_total += 1
+                        if len(skipped_samples) < 3:
+                            skipped_samples.append(f"{row[0]}: {e}")
+                        logger.debug("Skip raw event %s: %s", row[0], e)
+
+            current_ts = batch_last_created
+            self._raw_event_bookmarks[bookmark_key] = current_ts
+            if len(rows) < self.batch_size:
+                break
+
+        if selected_total == 0:
+            logger.info(
+                "🪞 raw_activity_events sync workspace=%s ledger=%s selected=0 inserted=0 skipped=0 last_ts=%s",
+                workspace_id,
+                ledger_path,
+                last_ts,
+            )
+            return 0
+
+        logger.info(
+            "🪞 raw_activity_events sync workspace=%s ledger=%s selected=%d inserted=%d skipped=%d last_ts=%s",
+            workspace_id,
+            ledger_path,
+            selected_total,
+            inserted_total,
+            skipped_total,
+            last_ts,
+        )
+        if skipped_samples:
+            logger.info("🪞 raw_activity_events skip_samples=%s", skipped_samples)
+
+        return inserted_total
+
+    async def _cleanup_expired_raw_events(self, workspace_id: str, ledger_path: str) -> int:
+        """Delete expired raw mirror events for a workspace+ledger."""
+        if not self.pool or not MIRROR_RAW_RETENTION_ENABLED:
+            return 0
+
+        cap = max(1, MIRROR_RAW_RETENTION_MAX_DELETE)
+        grace_sec = max(0, MIRROR_RAW_RETENTION_GRACE_SEC)
+        async with self.pool.acquire() as pg_conn:
+            deleted_rows = await pg_conn.fetch(
+                """
+                WITH doomed AS (
+                    SELECT id
+                    FROM dm_raw_activity_events
+                    WHERE workspace_id = $1
+                      AND ledger_path = $2
+                      AND expires_at <= (now() - make_interval(secs => $3::int))
+                    ORDER BY expires_at ASC
+                    LIMIT $4
+                )
+                DELETE FROM dm_raw_activity_events d
+                USING doomed
+                WHERE d.id = doomed.id
+                RETURNING 1
+                """,
+                workspace_id,
+                ledger_path,
+                grace_sec,
+                cap,
+            )
+            deleted_count = len(deleted_rows or [])
+            oldest_remaining_expires = await pg_conn.fetchval(
+                """
+                SELECT min(expires_at)
+                FROM dm_raw_activity_events
+                WHERE workspace_id = $1
+                  AND ledger_path = $2
+                """,
+                workspace_id,
+                ledger_path,
+            )
+
+        logger.info(
+            "🪞 raw_activity_events retention workspace=%s ledger=%s deleted=%d cap=%d oldest_remaining_expires=%s",
+            workspace_id,
+            ledger_path,
+            deleted_count,
+            cap,
+            oldest_remaining_expires,
+        )
+        return deleted_count
 
     async def _sync_issue_links(
         self, workspace_id: str, ledger_path: str, store: ChronicleStore
@@ -489,6 +734,21 @@ class PostgresMirrorSync:
             return datetime.fromisoformat(normalized)
         raise TypeError(f"Unsupported datetime value type: {type(value)}")
 
+    def _to_json_payload(self, value: Any) -> str:
+        """Normalize payload value for JSONB inserts as JSON string."""
+        if value is None:
+            return "{}"
+        if isinstance(value, (dict, list)):
+            return json.dumps(value)
+        if isinstance(value, str):
+            # Validate JSON before insert.
+            try:
+                json.loads(value)
+                return value
+            except json.JSONDecodeError:
+                return json.dumps({"raw": value})
+        raise TypeError(f"Unsupported payload value type: {type(value)}")
+
     def _normalize_ttl_days(self, value: Any) -> int:
         """Normalize source ttl_days with safe fallback + hard cap."""
         cap = max(1, int(MIRROR_RAW_TTL_CAP_DAYS))
@@ -509,22 +769,26 @@ class PostgresMirrorSync:
 
         key = (workspace_id, ledger_path)
         work_log_ts = self._to_datetime(self._work_log_bookmarks.get(key))
+        raw_event_ts = self._to_datetime(self._raw_event_bookmarks.get(key))
         issue_link_ts = self._to_datetime(self._issue_link_bookmarks.get(key))
 
         async with self.pool.acquire() as conn:
             await conn.execute(
                 """
                 INSERT INTO dm_mirror_bookmarks (
-                    workspace_id, ledger_path, last_work_log_created_at, last_issue_link_created_at, updated_at
-                ) VALUES ($1, $2, $3::timestamptz, $4::timestamptz, now())
+                    workspace_id, ledger_path, last_work_log_created_at,
+                    last_raw_event_created_at, last_issue_link_created_at, updated_at
+                ) VALUES ($1, $2, $3::timestamptz, $4::timestamptz, $5::timestamptz, now())
                 ON CONFLICT (workspace_id, ledger_path) DO UPDATE SET
                     last_work_log_created_at = EXCLUDED.last_work_log_created_at,
+                    last_raw_event_created_at = EXCLUDED.last_raw_event_created_at,
                     last_issue_link_created_at = EXCLUDED.last_issue_link_created_at,
                     updated_at = now()
                 """,
                 workspace_id,
                 ledger_path,
                 work_log_ts,
+                raw_event_ts,
                 issue_link_ts,
             )
 
