@@ -32,8 +32,11 @@ Resolve Open Questions into a structured, evidence-anchored bundle. Research hap
 ## FACT ANCHORS (Repo-derived)
 - **Doc Gate**: `scripts/doc_gate.py` (verifies structure).
 - **Research Root**: `docs/planes/pm/dopemux/research/`.
+- **Grok Integration**: `services/session-manager/tui/test_day5_integration.py` (References `grok`).
 
 ## Open questions
+- **Bundle Format**: JSON vs SQLite for the index?
+  - *Resolution*: JSON for git-diffability.
 - **Bundle Format**: JSON vs SQLite for the index?
   - *Resolution*: JSON for git-diffability.
 

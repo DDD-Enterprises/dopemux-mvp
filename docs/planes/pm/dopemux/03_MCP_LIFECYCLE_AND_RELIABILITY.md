@@ -22,8 +22,17 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 3. **Circuit Breaking**: A failing server MUST be isolated after N failures to prevent system-wide latency.
 
 ## FACT ANCHORS (Repo-derived)
-- **Server Manager**: `src/dopemux/mcp/manager.py` (to be verified).
-- **Config**: `config/mcp_servers.yaml`.
+- **OBSERVED: Server Manager**: `src/dopemux/mcp/manager.py` (referenced in ADRs, to be verified).
+- **OBSERVED: Config**: `config/mcp_servers.yaml`.
+- **OBSERVED: Active MCP Servers** (from `compose.yml`):
+  - `conport` (3004): Knowledge Graph / Context Management.
+  - `pal` (3003): Multi-model reasoning (Zen).
+  - `serena` (3006): ADHD Engine interface / Intelligence.
+  - `gptr-mcp` (3009): Deep Research / Tavily.
+  - `dope-context` (3010): Semantic Search (Voyage/Qdrant).
+  - `desktop-commander` (3012): Desktop Automation (X11/Display).
+  - `leantime-bridge` (3015): Project Management Integration.
+  - `litellm` (4000): Model Proxy/Router.
 
 ## Open questions
 - **Dynamic Discovery**: Can we auto-discover new MCP servers?
