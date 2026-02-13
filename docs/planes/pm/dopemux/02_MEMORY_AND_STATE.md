@@ -189,8 +189,9 @@ What state exists, where it lives, and how it is written/read without cross-work
 - **OBSERVED: TaskX Guard**: `scripts/taskx` refuses without `.taskxroot` and `.taskx-pin` in repo root.
 - **OBSERVED: TaskX Pin**: `.taskx-pin` pins to `repo=https://github.com/hu3mann/taskX.git ref=v0.1.2`.
 - **OBSERVED: Persistence Layer**: `services/adhd_engine/core/activity_tracker.py` uses direct SQLite access to `conport.db`.
-- **OBSERVED: Sync Engine**: `services/task-orchestrator/app/core/sync.py` implements `MultiDirectionalSyncEngine` with 7 sync directions and conflict resolution.
-- **OBSERVED: ConPort Compose**: `compose.yml` defines ConPort on port 3004 with PostgreSQL AGE backend, Redis, Qdrant dependencies.
+- **OBSERVED: ConPort Authority**: Confirmed as an HTTP-first write interface in [enhanced_server.py](file:///Users/hue/code/dopemux-mvp/docker/mcp-servers/conport/enhanced_server.py).
+- **OBSERVED: EventBus Model**: `Event` dataclass with `type`, `data`, `source`, `timestamp` in `event_bus.py`.
+- **OBSERVED: Stream Naming**: Redis stream `dopemux:events` used for cross-service signaling.
 - **OBSERVED: Dope-Memory**: `compose.yml` defines `dope-memory` service with `DOPEMUX_CAPTURE_LEDGER_PATH=/data/chronicle.sqlite`.
 - **OBSERVED: State Persistence**: `task_coordinator.py` syncs session state to ConPort via `ConPortEventAdapter`.
 - **OBSERVED: Authority**: ConPort (port 3004) is the designated Single Source of Truth for Project State.
@@ -244,31 +245,31 @@ What state exists, where it lives, and how it is written/read without cross-work
 
 ## Enforcement surface summary
 
-| Invariant | Enforcement Point | Mechanism | Automated? |
-|-----------|-------------------|-----------|------------|
-| INV-MEM-001 | `repo_preflight.sh` | `.repo_id` match, exit 2 | Yes |
-| INV-MEM-001 | `scripts/taskx` | `.taskxroot` check, exit 2 | Yes |
-| INV-MEM-002 | `compose.yml` | `depends_on: service_healthy` | Yes |
-| INV-MEM-002 | Runtime | Fail on ConPort write failure | Yes |
-| INV-MEM-003 | Schema | No UPDATE/DELETE on `events` | Partially (needs triggers) |
-| INV-MEM-004 | Runtime | `source_event_id` required on promotion | FUTURE |
-| INV-MEM-005 | Runtime | Regex scrubber on writes | FUTURE |
-| INV-MEM-006 | Schema/Runtime | State machine enforcement | Partially |
-| INV-MEM-007 | Runtime | mtime comparison | FUTURE |
-| INV-MEM-008 | Startup | `PRAGMA integrity_check` | FUTURE |
+| Invariant   | Enforcement Point   | Mechanism                               | Automated?                 |
+| ----------- | ------------------- | --------------------------------------- | -------------------------- |
+| INV-MEM-001 | `repo_preflight.sh` | `.repo_id` match, exit 2                | Yes                        |
+| INV-MEM-001 | `scripts/taskx`     | `.taskxroot` check, exit 2              | Yes                        |
+| INV-MEM-002 | `compose.yml`       | `depends_on: service_healthy`           | Yes                        |
+| INV-MEM-002 | Runtime             | Fail on ConPort write failure           | Yes                        |
+| INV-MEM-003 | Schema              | No UPDATE/DELETE on `events`            | Partially (needs triggers) |
+| INV-MEM-004 | Runtime             | `source_event_id` required on promotion | FUTURE                     |
+| INV-MEM-005 | Runtime             | Regex scrubber on writes                | FUTURE                     |
+| INV-MEM-006 | Schema/Runtime      | State machine enforcement               | Partially                  |
+| INV-MEM-007 | Runtime             | mtime comparison                        | FUTURE                     |
+| INV-MEM-008 | Startup             | `PRAGMA integrity_check`                | FUTURE                     |
 
 ---
 
 ## Degradation ladder
 
-| Level | Condition | Behavior |
-|-------|-----------|----------|
-| L0: Nominal | All stores healthy | Full operation |
-| L1: Cache Miss | Redis down | Continue without cache, slower but correct |
-| L2: ConPort Degraded | ConPort slow (>5s) | Queue writes, warn operator |
-| L3: ConPort Down | ConPort unreachable | Refuse authority-requiring operations; read-only mode for non-authority ops |
-| L4: State DB Corrupt | Integrity check fails | Full stop. Require `dmux repair-state` |
-| L5: Identity Crisis | `.repo_id` missing/mismatch | Refuse all operations (exit 2) |
+| Level                | Condition                   | Behavior                                                                    |
+| -------------------- | --------------------------- | --------------------------------------------------------------------------- |
+| L0: Nominal          | All stores healthy          | Full operation                                                              |
+| L1: Cache Miss       | Redis down                  | Continue without cache, slower but correct                                  |
+| L2: ConPort Degraded | ConPort slow (>5s)          | Queue writes, warn operator                                                 |
+| L3: ConPort Down     | ConPort unreachable         | Refuse authority-requiring operations; read-only mode for non-authority ops |
+| L4: State DB Corrupt | Integrity check fails       | Full stop. Require `dmux repair-state`                                      |
+| L5: Identity Crisis  | `.repo_id` missing/mismatch | Refuse all operations (exit 2)                                              |
 
 ---
 
@@ -283,13 +284,13 @@ What state exists, where it lives, and how it is written/read without cross-work
 
 ## Contradiction analysis
 
-| Claim | Source | Status |
-|-------|--------|--------|
-| `.repo_id` enforces isolation | `repo_preflight.sh` | CONFIRMED — script exits 2 on mismatch |
-| ConPort is authority | Architecture docs, compose.yml | CONFIRMED — task-orchestrator depends_on conport |
-| `packets/` directory is active | ADR references | UNCONFIRMED — no active service references `packets/` directory |
-| `state.db` uses append-only triggers | Design doc | UNCONFIRMED — schema defined but triggers not observed in code |
-| Redaction rules exist | Design doc | FUTURE — `config/security/redaction_rules.json` does not exist yet |
+| Claim                                | Source                         | Status                                                             |
+| ------------------------------------ | ------------------------------ | ------------------------------------------------------------------ |
+| `.repo_id` enforces isolation        | `repo_preflight.sh`            | CONFIRMED — script exits 2 on mismatch                             |
+| ConPort is authority                 | Architecture docs, compose.yml | CONFIRMED — task-orchestrator depends_on conport                   |
+| `packets/` directory is active       | ADR references                 | UNCONFIRMED — no active service references `packets/` directory    |
+| `state.db` uses append-only triggers | Design doc                     | UNCONFIRMED — schema defined but triggers not observed in code     |
+| Redaction rules exist                | Design doc                     | FUTURE — `config/security/redaction_rules.json` does not exist yet |
 
 ---
 
