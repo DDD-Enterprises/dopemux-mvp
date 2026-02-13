@@ -531,7 +531,7 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
     """
     config_manager = ctx.obj["config_manager"]
 
-    workspace = (directory or Path.cwd()).expanduser().resolve()
+    workspace = Path(directory or Path.cwd()).expanduser().resolve()
     dopemux_dir = workspace / ".dopemux"
 
     workspace_exists = False
@@ -1737,10 +1737,10 @@ def start(
             ).stdout.strip()
         except (subprocess.SubprocessError, OSError) as e:
             git_branch = "unknown"
-            logger.error(f"Git branch detection failed: {e}")
+            logger.debug(f"Git branch detection failed (expected in non-git dirs): {e}")
         except Exception:
             git_branch = "unknown"
-            logger.error("Unexpected git branch detection error", exc_info=True)
+            logger.debug("Unexpected git branch detection error")
         state = InstanceState(
             instance_id=instance_id,
             port_base=port_base,
@@ -4122,12 +4122,20 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
         with Live(status_text, console=console, refresh_per_second=4) as live:
             # Start the containers with instance environment
             # CRITICAL FIX: Pass env_for_subprocess so docker-compose gets DOPEMUX_WORKSPACE_ID
+            # Use absolute path with cwd to avoid 'cd' failures from symlinked directories
+            script_path = mcp_dir / "start-all-mcp-servers.sh"
+            if not script_path.exists():
+                console.logger.error(f"[red]❌ MCP startup script not found at {script_path}[/red]")
+                console.logger.info(f"[dim]Expected: {script_path}[/dim]")
+                raise FileNotFoundError(f"start-all-mcp-servers.sh not found at {script_path}")
+
             process = subprocess.Popen(
-                ["bash", "-c", f"cd {mcp_dir} && ./start-all-mcp-servers.sh"],
+                ["bash", str(script_path)],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
+                cwd=str(mcp_dir),  # Set working directory explicitly instead of 'cd'
                 env=env_for_subprocess  # ← THE FIX! Passes instance vars to MCP servers
             )
 
