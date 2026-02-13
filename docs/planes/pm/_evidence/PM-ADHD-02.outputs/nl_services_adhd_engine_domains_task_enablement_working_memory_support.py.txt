@@ -1,0 +1,719 @@
+     1	"""
+     2	Working Memory Support
+     3	
+     4	Capture fleeting thoughts/ideas and provide context reminders for ADHD users.
+     5	
+     6	ADHD Challenge Addressed:
+     7	- Poor working memory (forgetting what you were doing mid-task)
+     8	- Fleeting thoughts disappear before they can be captured
+     9	- Difficulty holding multiple pieces of context in mind
+    10	- Losing track of original goal when interrupted
+    11	- Forgetting brilliant ideas within seconds
+    12	
+    13	Features:
+    14	- Quick thought capture (minimal friction)
+    15	- Context breadcrumbs (remember where you were)
+    16	- Idea preservation (save fleeting insights)
+    17	- Automatic context restoration after interruptions
+    18	- Smart reminders of forgotten context
+    19	- Integration with ConPort for persistence
+    20	"""
+    21	from typing import Dict, Any, List, Optional, Tuple
+    22	from dataclasses import dataclass, field
+    23	from datetime import datetime, timedelta
+    24	from enum import Enum
+    25	import logging
+    26	import asyncio
+    27	
+    28	logger = logging.getLogger(__name__)
+    29	
+    30	
+    31	class ThoughtType(Enum):
+    32	    """Types of captured thoughts."""
+    33	    IDEA = "idea"  # Sudden insight or idea
+    34	    TODO = "todo"  # Task to do later
+    35	    QUESTION = "question"  # Question to research
+    36	    REMINDER = "reminder"  # Thing to remember
+    37	    CONTEXT = "context"  # Current work context
+    38	    INTERRUPTION = "interruption"  # Interruption note
+    39	
+    40	
+    41	class ContextType(Enum):
+    42	    """Types of context to track."""
+    43	    FILE = "file"  # Current file being edited
+    44	    TASK = "task"  # Current task
+    45	    GOAL = "goal"  # Current goal/objective
+    46	    CODE_LOCATION = "code_location"  # Specific code location
+    47	    DECISION = "decision"  # Decision being made
+    48	    PROBLEM = "problem"  # Problem being solved
+    49	
+    50	
+    51	@dataclass
+    52	class CapturedThought:
+    53	    """A captured fleeting thought or idea."""
+    54	    thought_id: str
+    55	    content: str
+    56	    thought_type: ThoughtType
+    57	    timestamp: datetime
+    58	    
+    59	    # Context
+    60	    current_file: Optional[str] = None
+    61	    current_task: Optional[str] = None
+    62	    current_line: Optional[int] = None
+    63	    
+    64	    # Metadata
+    65	    tags: List[str] = field(default_factory=list)
+    66	    priority: str = "normal"  # "low", "normal", "high", "urgent"
+    67	    completed: bool = False
+    68	    archived: bool = False
+    69	    
+    70	    # Integration
+    71	    conport_id: Optional[str] = None  # If synced to ConPort
+    72	    
+    73	    def is_actionable(self) -> bool:
+    74	        """Check if thought requires action."""
+    75	        return self.thought_type in [
+    76	            ThoughtType.TODO,
+    77	            ThoughtType.QUESTION,
+    78	            ThoughtType.REMINDER
+    79	        ]
+    80	    
+    81	    def is_urgent(self) -> bool:
+    82	        """Check if thought is urgent."""
+    83	        return self.priority in ["high", "urgent"]
+    84	
+    85	
+    86	@dataclass
+    87	class ContextBreadcrumb:
+    88	    """Breadcrumb to remember context."""
+    89	    breadcrumb_id: str
+    90	    context_type: ContextType
+    91	    description: str
+    92	    timestamp: datetime
+    93	    
+    94	    # Context details
+    95	    file_path: Optional[str] = None
+    96	    line_number: Optional[int] = None
+    97	    function_name: Optional[str] = None
+    98	    task_id: Optional[str] = None
+    99	    goal: Optional[str] = None
+   100	    
+   101	    # What was being done
+   102	    action: Optional[str] = None  # "editing", "debugging", "implementing"
+   103	    reason: Optional[str] = None  # Why this context was important
+   104	    
+   105	    # Auto-generated hints
+   106	    hints: List[str] = field(default_factory=list)
+   107	    
+   108	    def generate_reminder_text(self) -> str:
+   109	        """Generate human-readable reminder."""
+   110	        parts = [f"You were {self.action}" if self.action else "You were working on"]
+   111	        
+   112	        if self.file_path:
+   113	            parts.append(f"in {self.file_path}")
+   114	        
+   115	        if self.function_name:
+   116	            parts.append(f"(function: {self.function_name})")
+   117	        
+   118	        if self.line_number:
+   119	            parts.append(f"at line {self.line_number}")
+   120	        
+   121	        if self.goal:
+   122	            parts.append(f"\nGoal: {self.goal}")
+   123	        
+   124	        if self.reason:
+   125	            parts.append(f"\nReason: {self.reason}")
+   126	        
+   127	        return " ".join(parts)
+   128	
+   129	
+   130	@dataclass
+   131	class InterruptionRecord:
+   132	    """Record of an interruption and context before/after."""
+   133	    interruption_id: str
+   134	    interrupted_at: datetime
+   135	    resumed_at: Optional[datetime] = None
+   136	    
+   137	    # Context before interruption
+   138	    context_before: Optional[ContextBreadcrumb] = None
+   139	    active_thoughts: List[CapturedThought] = field(default_factory=list)
+   140	    
+   141	    # What caused interruption
+   142	    interruption_type: str = "unknown"  # "meeting", "notification", "context_switch"
+   143	    interruption_source: Optional[str] = None
+   144	    
+   145	    # Recovery
+   146	    context_restored: bool = False
+   147	    recovery_hint_shown: bool = False
+   148	
+   149	
+   150	class WorkingMemorySupport:
+   151	    """
+   152	    ADHD-aware working memory support system.
+   153	    
+   154	    Features:
+   155	    - Quick thought capture (<2 seconds from idea to saved)
+   156	    - Context breadcrumbs (remember where you were)
+   157	    - Automatic interruption detection
+   158	    - Context restoration after interruptions
+   159	    - Smart reminders of forgotten context
+   160	    - Integration with ConPort for persistence
+   161	    """
+   162	    
+   163	    # Maximum time between breadcrumbs (auto-create if exceeded)
+   164	    BREADCRUMB_INTERVAL = timedelta(minutes=15)
+   165	    
+   166	    # Time threshold for detecting interruption
+   167	    INTERRUPTION_THRESHOLD = timedelta(minutes=5)
+   168	    
+   169	    def __init__(
+   170	        self,
+   171	        user_id: str,
+   172	        bridge_client=None,  # AsyncDopeconBridgeClient
+   173	        workspace_id: Optional[str] = None
+   174	    ):
+   175	        """
+   176	        Initialize working memory support.
+   177	        
+   178	        Args:
+   179	            user_id: User identifier
+   180	            bridge_client: DopeconBridge client for persistence
+   181	            workspace_id: Current workspace ID
+   182	        """
+   183	        self.user_id = user_id
+   184	        self.bridge_client = bridge_client
+   185	        self.workspace_id = workspace_id or user_id
+   186	        
+   187	        # Storage
+   188	        self.thoughts: List[CapturedThought] = []
+   189	        self.breadcrumbs: List[ContextBreadcrumb] = []
+   190	        self.interruptions: List[InterruptionRecord] = []
+   191	        
+   192	        # Current state
+   193	        self.current_context: Optional[ContextBreadcrumb] = None
+   194	        self.last_breadcrumb_time: Optional[datetime] = None
+   195	        self.active_interruption: Optional[InterruptionRecord] = None
+   196	        
+   197	        logger.info(f"WorkingMemorySupport initialized for user {user_id}")
+   198	    
+   199	    async def quick_capture(
+   200	        self,
+   201	        content: str,
+   202	        thought_type: ThoughtType = ThoughtType.IDEA,
+   203	        priority: str = "normal",
+   204	        tags: Optional[List[str]] = None
+   205	    ) -> CapturedThought:
+   206	        """
+   207	        Ultra-fast thought capture (ADHD-optimized for minimal friction).
+   208	        
+   209	        Design: <2 seconds from idea to saved
+   210	        - No forms, no fields
+   211	        - Just content + optional quick tags
+   212	        - Auto-detect thought type from content
+   213	        - Auto-capture current context
+   214	        
+   215	        Args:
+   216	            content: The thought/idea (free text)
+   217	            thought_type: Type of thought (auto-detected if not specified)
+   218	            priority: Priority level
+   219	            tags: Optional tags for organization
+   220	        
+   221	        Returns:
+   222	            CapturedThought with auto-populated context
+   223	        
+   224	        Examples:
+   225	            >>> await memory.quick_capture("TODO: Fix that bug in auth.py")
+   226	            >>> await memory.quick_capture("What if we used Redis for caching?")
+   227	            >>> await memory.quick_capture("Remember: Meeting at 3pm")
+   228	        """
+   229	        # Auto-detect thought type from content if not specified
+   230	        if thought_type == ThoughtType.IDEA:
+   231	            content_lower = content.lower()
+   232	            if content_lower.startswith(("todo:", "to do:", "task:")):
+   233	                thought_type = ThoughtType.TODO
+   234	            elif content_lower.startswith(("question:", "?", "how ", "why ", "what ")):
+   235	                thought_type = ThoughtType.QUESTION
+   236	            elif content_lower.startswith(("remind:", "remember:", "don't forget")):
+   237	                thought_type = ThoughtType.REMINDER
+   238	        
+   239	        thought = CapturedThought(
+   240	            thought_id=f"TH-{len(self.thoughts)+1}",
+   241	            content=content,
+   242	            thought_type=thought_type,
+   243	            timestamp=datetime.now(),
+   244	            tags=tags or [],
+   245	            priority=priority
+   246	        )
+   247	        
+   248	        # Auto-capture current context
+   249	        if self.current_context:
+   250	            thought.current_file = self.current_context.file_path
+   251	            thought.current_task = self.current_context.task_id
+   252	            thought.current_line = self.current_context.line_number
+   253	        
+   254	        # Store
+   255	        self.thoughts.append(thought)
+   256	        
+   257	        logger.info(
+   258	            f"Captured {thought_type.value}: '{content[:50]}...' "
+   259	            f"(priority: {priority})"
+   260	        )
+   261	        
+   262	        # Persist to ConPort
+   263	        if self.bridge_client:
+   264	            try:
+   265	                entry = await self.bridge_client.log_custom_data(
+   266	                    workspace_id=self.workspace_id,
+   267	                    category="working_memory",
+   268	                    key=f"thought_{thought.thought_id}",
+   269	                    value={
+   270	                        "content": content,
+   271	                        "type": thought_type.value,
+   272	                        "priority": priority,
+   273	                        "tags": tags or [],
+   274	                        "context": {
+   275	                            "file": thought.current_file,
+   276	                            "task": thought.current_task,
+   277	                            "line": thought.current_line
+   278	                        },
+   279	                        "timestamp": datetime.now().isoformat()
+   280	                    }
+   281	                )
+   282	                thought.conport_id = entry.get("id")
+   283	                logger.debug(f"Thought persisted to ConPort: {thought.conport_id}")
+   284	            except Exception as e:
+   285	                logger.error(f"Failed to persist thought to ConPort: {e}")
+   286	        
+   287	        return thought
+   288	    
+   289	    async def drop_breadcrumb(
+   290	        self,
+   291	        description: str,
+   292	        context_type: ContextType = ContextType.TASK,
+   293	        file_path: Optional[str] = None,
+   294	        line_number: Optional[int] = None,
+   295	        function_name: Optional[str] = None,
+   296	        task_id: Optional[str] = None,
+   297	        goal: Optional[str] = None,
+   298	        action: Optional[str] = None,
+   299	        reason: Optional[str] = None
+   300	    ) -> ContextBreadcrumb:
+   301	        """
+   302	        Drop a context breadcrumb to remember where you are.
+   303	        
+   304	        Use when:
+   305	        - Starting a new task
+   306	        - Diving into a specific code location
+   307	        - Making an important decision
+   308	        - Before a known interruption (meeting)
+   309	        
+   310	        Args:
+   311	            description: Brief description of context
+   312	            context_type: Type of context
+   313	            file_path: Current file (if applicable)
+   314	            line_number: Current line (if applicable)
+   315	            function_name: Current function (if applicable)
+   316	            task_id: Related task ID
+   317	            goal: Current goal/objective
+   318	            action: What you're doing ("editing", "debugging", etc.)
+   319	            reason: Why this is important
+   320	        
+   321	        Returns:
+   322	            ContextBreadcrumb
+   323	        
+   324	        Examples:
+   325	            >>> await memory.drop_breadcrumb(
+   326	            ...     "Implementing OAuth2 client",
+   327	            ...     context_type=ContextType.TASK,
+   328	            ...     file_path="auth.py",
+   329	            ...     line_number=156,
+   330	            ...     goal="Get OAuth working for production",
+   331	            ...     action="implementing"
+   332	            ... )
+   333	        """
+   334	        breadcrumb = ContextBreadcrumb(
+   335	            breadcrumb_id=f"BC-{len(self.breadcrumbs)+1}",
+   336	            context_type=context_type,
+   337	            description=description,
+   338	            timestamp=datetime.now(),
+   339	            file_path=file_path,
+   340	            line_number=line_number,
+   341	            function_name=function_name,
+   342	            task_id=task_id,
+   343	            goal=goal,
+   344	            action=action,
+   345	            reason=reason
+   346	        )
+   347	        
+   348	        # Generate hints for context restoration
+   349	        breadcrumb.hints = self._generate_context_hints(breadcrumb)
+   350	        
+   351	        # Store
+   352	        self.breadcrumbs.append(breadcrumb)
+   353	        self.current_context = breadcrumb
+   354	        self.last_breadcrumb_time = datetime.now()
+   355	        
+   356	        logger.info(f"Dropped breadcrumb: {description}")
+   357	        
+   358	        # Persist to ConPort
+   359	        if self.bridge_client:
+   360	            try:
+   361	                await self.bridge_client.log_custom_data(
+   362	                    workspace_id=self.workspace_id,
+   363	                    category="working_memory",
+   364	                    key=f"breadcrumb_{breadcrumb.breadcrumb_id}",
+   365	                    value={
+   366	                        "description": description,
+   367	                        "type": context_type.value,
+   368	                        "file": file_path,
+   369	                        "line": line_number,
+   370	                        "function": function_name,
+   371	                        "task": task_id,
+   372	                        "goal": goal,
+   373	                        "action": action,
+   374	                        "reason": reason,
+   375	                        "hints": breadcrumb.hints,
+   376	                        "timestamp": datetime.now().isoformat()
+   377	                    }
+   378	                )
+   379	            except Exception as e:
+   380	                logger.error(f"Failed to persist breadcrumb to ConPort: {e}")
+   381	        
+   382	        return breadcrumb
+   383	    
+   384	    def _generate_context_hints(self, breadcrumb: ContextBreadcrumb) -> List[str]:
+   385	        """Generate helpful hints for context restoration."""
+   386	        hints = []
+   387	        
+   388	        if breadcrumb.file_path:
+   389	            hints.append(f"Open {breadcrumb.file_path}")
+   390	        
+   391	        if breadcrumb.line_number:
+   392	            hints.append(f"Go to line {breadcrumb.line_number}")
+   393	        
+   394	        if breadcrumb.function_name:
+   395	            hints.append(f"Find function {breadcrumb.function_name}")
+   396	        
+   397	        if breadcrumb.task_id:
+   398	            hints.append(f"Related task: {breadcrumb.task_id}")
+   399	        
+   400	        if breadcrumb.action:
+   401	            hints.append(f"You were {breadcrumb.action}")
+   402	        
+   403	        return hints
+   404	    
+   405	    async def detect_interruption(
+   406	        self,
+   407	        interruption_type: str,
+   408	        source: Optional[str] = None
+   409	    ) -> InterruptionRecord:
+   410	        """
+   411	        Detect and record an interruption.
+   412	        
+   413	        Called when:
+   414	        - User switches to another task
+   415	        - Meeting notification appears
+   416	        - Long idle period detected
+   417	        - Context switch happens
+   418	        
+   419	        Args:
+   420	            interruption_type: Type of interruption
+   421	            source: What caused the interruption
+   422	        
+   423	        Returns:
+   424	            InterruptionRecord with current context saved
+   425	        """
+   426	        interruption = InterruptionRecord(
+   427	            interruption_id=f"INT-{len(self.interruptions)+1}",
+   428	            interrupted_at=datetime.now(),
+   429	            context_before=self.current_context,
+   430	            interruption_type=interruption_type,
+   431	            interruption_source=source
+   432	        )
+   433	        
+   434	        # Capture active (uncompleted) thoughts
+   435	        interruption.active_thoughts = [
+   436	            t for t in self.thoughts
+   437	            if t.is_actionable() and not t.completed and not t.archived
+   438	        ]
+   439	        
+   440	        # Store
+   441	        self.interruptions.append(interruption)
+   442	        self.active_interruption = interruption
+   443	        
+   444	        logger.warning(
+   445	            f"Interruption detected: {interruption_type} "
+   446	            f"(context saved: {self.current_context.description if self.current_context else 'none'})"
+   447	        )
+   448	        
+   449	        # Persist to ConPort
+   450	        if self.bridge_client:
+   451	            try:
+   452	                await self.bridge_client.log_decision(
+   453	                    workspace_id=self.workspace_id,
+   454	                    summary=f"Interruption: {interruption_type}",
+   455	                    rationale=(
+   456	                        f"Context before: {self.current_context.description if self.current_context else 'none'}"
+   457	                    ),
+   458	                    implementation_details={
+   459	                        "type": interruption_type,
+   460	                        "source": source,
+   461	                        "active_thoughts_count": len(interruption.active_thoughts),
+   462	                        "timestamp": datetime.now().isoformat()
+   463	                    },
+   464	                    tags=["interruption", interruption_type]
+   465	                )
+   466	            except Exception as e:
+   467	                logger.error(f"Failed to log interruption to ConPort: {e}")
+   468	        
+   469	        return interruption
+   470	    
+   471	    async def restore_context(
+   472	        self,
+   473	        show_hints: bool = True
+   474	    ) -> Optional[ContextBreadcrumb]:
+   475	        """
+   476	        Restore context after interruption.
+   477	        
+   478	        Called when:
+   479	        - User returns to work after meeting
+   480	        - Resuming after context switch
+   481	        - Explicitly requested by user
+   482	        
+   483	        Args:
+   484	            show_hints: Whether to show restoration hints
+   485	        
+   486	        Returns:
+   487	            ContextBreadcrumb if context available, None otherwise
+   488	        
+   489	        Example output:
+   490	            "You were implementing OAuth2 client in auth.py at line 156
+   491	             Goal: Get OAuth working for production
+   492	             Hints:
+   493	             - Open auth.py
+   494	             - Go to line 156
+   495	             - Find function setup_oauth_client
+   496	             - You were implementing"
+   497	        """
+   498	        if not self.current_context:
+   499	            logger.info("No context to restore")
+   500	            return None
+   501	        
+   502	        # Mark interruption as resumed
+   503	        if self.active_interruption:
+   504	            self.active_interruption.resumed_at = datetime.now()
+   505	            self.active_interruption.context_restored = True
+   506	            self.active_interruption.recovery_hint_shown = show_hints
+   507	            self.active_interruption = None
+   508	        
+   509	        logger.info(f"Restoring context: {self.current_context.description}")
+   510	        
+   511	        if show_hints:
+   512	            # Generate restoration message
+   513	            reminder = self.current_context.generate_reminder_text()
+   514	            
+   515	            if self.current_context.hints:
+   516	                reminder += "\n\nHints:\n" + "\n".join(
+   517	                    f"  - {hint}" for hint in self.current_context.hints
+   518	                )
+   519	            
+   520	            logger.info(f"Context restoration:\n{reminder}")
+   521	        
+   522	        return self.current_context
+   523	    
+   524	    async def get_active_thoughts(
+   525	        self,
+   526	        include_completed: bool = False,
+   527	        priority_filter: Optional[str] = None
+   528	    ) -> List[CapturedThought]:
+   529	        """
+   530	        Get active (uncompleted) thoughts.
+   531	        
+   532	        Args:
+   533	            include_completed: Include completed thoughts
+   534	            priority_filter: Filter by priority ("high", "urgent", etc.)
+   535	        
+   536	        Returns:
+   537	            List of active thoughts
+   538	        """
+   539	        thoughts = self.thoughts
+   540	        
+   541	        if not include_completed:
+   542	            thoughts = [t for t in thoughts if not t.completed and not t.archived]
+   543	        
+   544	        if priority_filter:
+   545	            thoughts = [t for t in thoughts if t.priority == priority_filter]
+   546	        
+   547	        # Sort by priority and timestamp
+   548	        priority_order = {"urgent": 0, "high": 1, "normal": 2, "low": 3}
+   549	        thoughts.sort(
+   550	            key=lambda t: (priority_order.get(t.priority, 2), t.timestamp),
+   551	            reverse=False
+   552	        )
+   553	        
+   554	        return thoughts
+   555	    
+   556	    async def remind_forgotten_context(self) -> Optional[str]:
+   557	        """
+   558	        Check if user might have forgotten context and generate reminder.
+   559	        
+   560	        Triggers:
+   561	        - No breadcrumb for >15 minutes
+   562	        - Active thoughts but no recent breadcrumb
+   563	        - Context switch detected but no restoration
+   564	        
+   565	        Returns:
+   566	            Reminder message if context might be forgotten, None otherwise
+   567	        """
+   568	        # Check time since last breadcrumb
+   569	        if (
+   570	            self.last_breadcrumb_time and
+   571	            datetime.now() - self.last_breadcrumb_time > self.BREADCRUMB_INTERVAL
+   572	        ):
+   573	            active_thoughts = await self.get_active_thoughts()
+   574	            
+   575	            if active_thoughts:
+   576	                reminder = (
+   577	                    f"💭 Reminder: You have {len(active_thoughts)} active thoughts:\n"
+   578	                )
+   579	                for i, thought in enumerate(active_thoughts[:3], 1):
+   580	                    reminder += f"  {i}. [{thought.thought_type.value}] {thought.content[:60]}...\n"
+   581	                
+   582	                if len(active_thoughts) > 3:
+   583	                    reminder += f"  ... and {len(active_thoughts) - 3} more\n"
+   584	                
+   585	                if self.current_context:
+   586	                    reminder += f"\nLast context: {self.current_context.description}"
+   587	                
+   588	                return reminder
+   589	        
+   590	        # Check for unrestored interruption
+   591	        if self.active_interruption and not self.active_interruption.context_restored:
+   592	            time_since = datetime.now() - self.active_interruption.interrupted_at
+   593	            
+   594	            if time_since > self.INTERRUPTION_THRESHOLD:
+   595	                reminder = (
+   596	                    f"💭 You were interrupted {time_since.seconds // 60} minutes ago\n"
+   597	                )
+   598	                
+   599	                if self.active_interruption.context_before:
+   600	                    reminder += (
+   601	                        f"Context: {self.active_interruption.context_before.description}\n"
+   602	                        "Would you like to restore context?"
+   603	                    )
+   604	                
+   605	                return reminder
+   606	        
+   607	        return None
+   608	    
+   609	    async def mark_thought_completed(self, thought_id: str) -> bool:
+   610	        """
+   611	        Mark a thought as completed.
+   612	        
+   613	        Args:
+   614	            thought_id: Thought ID to mark complete
+   615	        
+   616	        Returns:
+   617	            True if marked, False if not found
+   618	        """
+   619	        for thought in self.thoughts:
+   620	            if thought.thought_id == thought_id:
+   621	                thought.completed = True
+   622	                logger.info(f"Marked thought {thought_id} as completed")
+   623	                
+   624	                # Update in ConPort
+   625	                if self.bridge_client and thought.conport_id:
+   626	                    try:
+   627	                        await self.bridge_client.update_custom_data(
+   628	                            workspace_id=self.workspace_id,
+   629	                            category="working_memory",
+   630	                            key=f"thought_{thought.thought_id}",
+   631	                            value={"completed": True}
+   632	                        )
+   633	                    except Exception as e:
+   634	                        logger.error(f"Failed to update thought in ConPort: {e}")
+   635	                
+   636	                return True
+   637	        
+   638	        return False
+   639	    
+   640	    async def archive_thought(self, thought_id: str) -> bool:
+   641	        """
+   642	        Archive a thought (remove from active list but keep in history).
+   643	        
+   644	        Args:
+   645	            thought_id: Thought ID to archive
+   646	        
+   647	        Returns:
+   648	            True if archived, False if not found
+   649	        """
+   650	        for thought in self.thoughts:
+   651	            if thought.thought_id == thought_id:
+   652	                thought.archived = True
+   653	                logger.info(f"Archived thought {thought_id}")
+   654	                return True
+   655	        
+   656	        return False
+   657	    
+   658	    async def get_statistics(self) -> Dict[str, Any]:
+   659	        """
+   660	        Get working memory statistics.
+   661	        
+   662	        Returns:
+   663	            {
+   664	                "total_thoughts": 45,
+   665	                "active_thoughts": 8,
+   666	                "completed_thoughts": 37,
+   667	                "total_breadcrumbs": 12,
+   668	                "total_interruptions": 3,
+   669	                "average_interruption_duration": "8 minutes",
+   670	                "thoughts_by_type": {...},
+   671	                "most_used_tags": [...]
+   672	            }
+   673	        """
+   674	        active = await self.get_active_thoughts()
+   675	        completed = [t for t in self.thoughts if t.completed]
+   676	        
+   677	        # Thoughts by type
+   678	        thoughts_by_type = {}
+   679	        for t in self.thoughts:
+   680	            thoughts_by_type[t.thought_type.value] = (
+   681	                thoughts_by_type.get(t.thought_type.value, 0) + 1
+   682	            )
+   683	        
+   684	        # Tag frequency
+   685	        tag_freq = {}
+   686	        for t in self.thoughts:
+   687	            for tag in t.tags:
+   688	                tag_freq[tag] = tag_freq.get(tag, 0) + 1
+   689	        
+   690	        most_used_tags = sorted(
+   691	            tag_freq.items(),
+   692	            key=lambda x: x[1],
+   693	            reverse=True
+   694	        )[:5]
+   695	        
+   696	        # Interruption stats
+   697	        completed_interruptions = [
+   698	            i for i in self.interruptions if i.resumed_at
+   699	        ]
+   700	        
+   701	        avg_interruption_duration = None
+   702	        if completed_interruptions:
+   703	            total_duration = sum(
+   704	                (i.resumed_at - i.interrupted_at).total_seconds()
+   705	                for i in completed_interruptions
+   706	            )
+   707	            avg_minutes = int((total_duration / len(completed_interruptions)) / 60)
+   708	            avg_interruption_duration = f"{avg_minutes} minutes"
+   709	        
+   710	        return {
+   711	            "total_thoughts": len(self.thoughts),
+   712	            "active_thoughts": len(active),
+   713	            "completed_thoughts": len(completed),
+   714	            "total_breadcrumbs": len(self.breadcrumbs),
+   715	            "total_interruptions": len(self.interruptions),
+   716	            "average_interruption_duration": avg_interruption_duration,
+   717	            "thoughts_by_type": thoughts_by_type,
+   718	            "most_used_tags": most_used_tags
+   719	        }
