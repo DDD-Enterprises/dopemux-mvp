@@ -1,0 +1,1007 @@
+     1	"""
+     2	Event-Driven Coordination System for Task Orchestrator
+     3	
+     4	Real-time event processing for seamless PM automation with ADHD optimizations.
+     5	Handles coordination between Leantime, AI agents, and local systems.
+     6	"""
+     7	
+     8	import asyncio
+     9	import json
+    10	import logging
+    11	from datetime import datetime, timedelta, timezone
+    12	from typing import Any, Dict, List, Optional, Set, Callable
+    13	from dataclasses import dataclass, asdict, field
+    14	from enum import Enum
+    15	from collections import deque
+    16	
+    17	import redis.asyncio as redis
+    18	
+    19	logger = logging.getLogger(__name__)
+    20	
+    21	
+    22	class EventType(str, Enum):
+    23	    """Event types for coordination."""
+    24	    # Leantime events
+    25	    TASK_CREATED = "task_created"
+    26	    TASK_UPDATED = "task_updated"
+    27	    TASK_COMPLETED = "task_completed"
+    28	    SPRINT_STARTED = "sprint_started"
+    29	    SPRINT_ENDED = "sprint_ended"
+    30	
+    31	    # AI agent events
+    32	    AGENT_ASSIGNED = "agent_assigned"
+    33	    AGENT_PROGRESS = "agent_progress"
+    34	    AGENT_COMPLETED = "agent_completed"
+    35	    AGENT_BLOCKED = "agent_blocked"
+    36	
+    37	    # ADHD events
+    38	    BREAK_NEEDED = "break_needed"
+    39	    CONTEXT_SWITCH = "context_switch"
+    40	    FOCUS_MODE_CHANGED = "focus_mode_changed"
+    41	    ENERGY_LEVEL_CHANGED = "energy_level_changed"
+    42	
+    43	    # System events
+    44	    SYNC_REQUIRED = "sync_required"
+    45	    CONFLICT_DETECTED = "conflict_detected"
+    46	    AUTOMATION_TRIGGERED = "automation_triggered"
+    47	
+    48	
+    49	class EventPriority(int, Enum):
+    50	    """Event priority levels for ADHD-aware processing."""
+    51	    CRITICAL = 1      # Immediate attention required
+    52	    HIGH = 2          # Process within 1 minute
+    53	    MEDIUM = 3        # Process within 5 minutes
+    54	    LOW = 4           # Process within 15 minutes
+    55	    BACKGROUND = 5    # Process when resources available
+    56	
+    57	
+    58	@dataclass
+    59	class CoordinationEvent:
+    60	    """Event for system coordination."""
+    61	    id: str
+    62	    event_type: EventType
+    63	    priority: EventPriority
+    64	    source_system: str
+    65	    target_systems: List[str]
+    66	
+    67	    # Event data
+    68	    task_id: Optional[str] = None
+    69	    data: Dict[str, Any] = None
+    70	    context: Dict[str, Any] = None
+    71	
+    72	    # ADHD metadata
+    73	    cognitive_load: float = 0.5
+    74	    interruption_allowed: bool = True
+    75	    focus_required: bool = False
+    76	
+    77	    # Timing
+    78	    created_at: datetime = None
+    79	    expires_at: Optional[datetime] = None
+    80	    processed_at: Optional[datetime] = None
+    81	
+    82	    # Processing state
+    83	    attempts: int = 0
+    84	    max_attempts: int = 3
+    85	    error_message: Optional[str] = None
+    86	
+    87	    def __post_init__(self):
+    88	        if self.data is None:
+    89	            self.data = {}
+    90	        if self.context is None:
+    91	            self.context = {}
+    92	        if self.created_at is None:
+    93	            self.created_at = datetime.now(timezone.utc)
+    94	
+    95	
+    96	@dataclass
+    97	class SuppressionTelemetry:
+    98	    """Telemetry for event suppression analysis."""
+    99	    # Lifetime counters
+   100	    events_received: int = 0
+   101	    events_passed: int = 0
+   102	    events_suppressed: int = 0
+   103	
+   104	    # Per-rule suppression counters (6 suppression rules)
+   105	    suppressed_by_custom_filter: int = 0
+   106	    suppressed_by_deep_focus_priority: int = 0
+   107	    suppressed_by_deep_focus_interrupt: int = 0
+   108	    suppressed_by_energy_level: int = 0
+   109	    suppressed_by_flood: int = 0
+   110	    suppressed_by_expiry: int = 0
+   111	
+   112	    # Per-event-type breakdown
+   113	    per_event_type: Dict[str, Dict[str, int]] = field(default_factory=dict)
+   114	
+   115	    # Per-priority breakdown
+   116	    per_priority: Dict[str, Dict[str, int]] = field(default_factory=dict)
+   117	
+   118	    # Start time for rate calculations
+   119	    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+   120	
+   121	
+   122	class EventCoordinator:
+   123	    """
+   124	    Event-driven coordination system for seamless PM automation.
+   125	
+   126	    Features:
+   127	    - Real-time event processing with priority queues
+   128	    - ADHD-aware event scheduling and batching
+   129	    - Multi-system coordination with conflict resolution
+   130	    - Implicit automation trigger detection
+   131	    - Context preservation across system boundaries
+   132	    """
+   133	
+   134	    def __init__(self, redis_url: str = "redis://localhost:6379"):
+   135	        self.redis_url = redis_url
+   136	        self.redis_client: Optional[redis.Redis] = None
+   137	
+   138	        # Event processing infrastructure
+   139	        self.event_queues: Dict[EventPriority, asyncio.PriorityQueue] = {}
+   140	        self.event_processors: Dict[EventType, List[Callable]] = {}
+   141	        self.event_filters: List[Callable] = []
+   142	
+   143	        # ADHD optimization
+   144	        self.current_focus_mode = "normal"
+   145	        self.current_energy_level = "medium"
+   146	        self.active_context_switches = 0
+   147	        self.last_break_time = datetime.now(timezone.utc)
+   148	
+   149	        # Processing state
+   150	        self.workers: List[asyncio.Task] = []
+   151	        self.running = False
+   152	        self.metrics = {
+   153	            "events_processed": 0,
+   154	            "events_filtered": 0,
+   155	            "automation_triggers": 0,
+   156	            "adhd_accommodations": 0,
+   157	            "sync_conflicts": 0
+   158	        }
+   159	
+   160	        # Suppression telemetry
+   161	        self.suppression_telemetry = SuppressionTelemetry()
+   162	
+   163	    async def initialize(self) -> None:
+   164	        """Initialize event coordination system."""
+   165	        logger.info("🔄 Initializing Event Coordinator...")
+   166	
+   167	        # Initialize Redis connection
+   168	        self.redis_client = redis.from_url(
+   169	            self.redis_url,
+   170	            db=3,  # Separate DB for events
+   171	            decode_responses=True
+   172	        )
+   173	        await self.redis_client.ping()
+   174	
+   175	        # Initialize priority queues
+   176	        for priority in EventPriority:
+   177	            self.event_queues[priority] = asyncio.PriorityQueue()
+   178	
+   179	        # Register default event processors
+   180	        self._register_default_processors()
+   181	
+   182	        # Start worker pool
+   183	        await self._start_event_workers()
+   184	
+   185	        self.running = True
+   186	        logger.info("✅ Event Coordinator ready for real-time coordination!")
+   187	
+   188	    def _register_default_processors(self) -> None:
+   189	        """Register default event processors."""
+   190	        # Task lifecycle processors
+   191	        self.register_processor(EventType.TASK_CREATED, self._process_task_created)
+   192	        self.register_processor(EventType.TASK_UPDATED, self._process_task_updated)
+   193	        self.register_processor(EventType.TASK_COMPLETED, self._process_task_completed)
+   194	
+   195	        # Sprint lifecycle processors
+   196	        self.register_processor(EventType.SPRINT_STARTED, self._process_sprint_started)
+   197	        self.register_processor(EventType.SPRINT_ENDED, self._process_sprint_ended)
+   198	
+   199	        # ADHD accommodation processors
+   200	        self.register_processor(EventType.BREAK_NEEDED, self._process_break_needed)
+   201	        self.register_processor(EventType.CONTEXT_SWITCH, self._process_context_switch)
+   202	        self.register_processor(EventType.FOCUS_MODE_CHANGED, self._process_focus_mode_changed)
+   203	
+   204	        # System coordination processors
+   205	        self.register_processor(EventType.SYNC_REQUIRED, self._process_sync_required)
+   206	        self.register_processor(EventType.CONFLICT_DETECTED, self._process_conflict_detected)
+   207	
+   208	    async def _start_event_workers(self) -> None:
+   209	        """Start event processing workers with priority handling."""
+   210	        # Start workers for each priority level
+   211	        priority_workers = {
+   212	            EventPriority.CRITICAL: 3,   # 3 workers for critical events
+   213	            EventPriority.HIGH: 2,       # 2 workers for high priority
+   214	            EventPriority.MEDIUM: 2,     # 2 workers for medium priority
+   215	            EventPriority.LOW: 1,        # 1 worker for low priority
+   216	            EventPriority.BACKGROUND: 1  # 1 worker for background
+   217	        }
+   218	
+   219	        for priority, worker_count in priority_workers.items():
+   220	            for i in range(worker_count):
+   221	                worker = asyncio.create_task(
+   222	                    self._event_worker(priority, f"{priority.name.lower()}-{i}")
+   223	                )
+   224	                self.workers.append(worker)
+   225	
+   226	        # Start telemetry logger
+   227	        telemetry_worker = asyncio.create_task(self._telemetry_logger())
+   228	        self.workers.append(telemetry_worker)
+   229	
+   230	        logger.info(f"👥 Started {len(self.workers)} event processing workers (including telemetry logger)")
+   231	
+   232	    async def _event_worker(self, priority: EventPriority, worker_id: str) -> None:
+   233	        """Event processing worker for specific priority level."""
+   234	        logger.debug(f"🚀 Event worker {worker_id} started")
+   235	
+   236	        while self.running:
+   237	            try:
+   238	                # Get event from priority queue
+   239	                queue = self.event_queues[priority]
+   240	                _, event = await asyncio.wait_for(queue.get(), timeout=5.0)
+   241	
+   242	                # Process event with ADHD considerations
+   243	                await self._process_event(event, worker_id)
+   244	
+   245	            except asyncio.TimeoutError:
+   246	                # No events at this priority, continue
+   247	                continue
+   248	            except Exception as e:
+   249	                logger.error(f"Event worker {worker_id} error: {e}")
+   250	                await asyncio.sleep(1.0)
+   251	
+   252	        logger.debug(f"🛑 Event worker {worker_id} stopped")
+   253	
+   254	    async def _telemetry_logger(self) -> None:
+   255	        """Background task to log suppression telemetry every 60 seconds."""
+   256	        logger.debug("📊 Telemetry logger started")
+   257	
+   258	        while self.running:
+   259	            try:
+   260	                await asyncio.sleep(60.0)  # Log every 60 seconds
+   261	
+   262	                report = self.get_suppression_report()
+   263	                summary = report["summary"]
+   264	
+   265	                logger.info(
+   266	                    f"📊 Suppression Telemetry: "
+   267	                    f"received={summary['events_received']}, "
+   268	                    f"passed={summary['events_passed']}, "
+   269	                    f"suppressed={summary['events_suppressed']}, "
+   270	                    f"signal/noise={summary['signal_noise_ratio']:.2f}, "
+   271	                    f"suppression_rate={summary['suppression_rate_pct']:.1f}%"
+   272	                )
+   273	
+   274	            except asyncio.CancelledError:
+   275	                break
+   276	            except Exception as e:
+   277	                logger.error(f"Telemetry logger error: {e}")
+   278	                await asyncio.sleep(1.0)
+   279	
+   280	        logger.debug("📊 Telemetry logger stopped")
+   281	
+   282	    async def _process_event(self, event: CoordinationEvent, worker_id: str) -> None:
+   283	        """Process individual coordination event."""
+   284	        try:
+   285	            start_time = datetime.now(timezone.utc)
+   286	
+   287	            # Apply ADHD filtering
+   288	            if not await self._should_process_event(event):
+   289	                self.metrics["events_filtered"] += 1
+   290	                logger.debug(f"🎯 Event filtered (ADHD): {event.event_type}")
+   291	                return
+   292	
+   293	            # Check if event has expired
+   294	            if event.expires_at and datetime.now(timezone.utc) > event.expires_at:
+   295	                logger.warning(f"⏰ Event expired: {event.id}")
+   296	                self._record_suppression(event, "expiry")
+   297	                return
+   298	
+   299	            # Get processors for this event type
+   300	            processors = self.event_processors.get(event.event_type, [])
+   301	
+   302	            if not processors:
+   303	                logger.warning(f"No processors registered for {event.event_type}")
+   304	                return
+   305	
+   306	            # Execute processors in parallel
+   307	            results = await asyncio.gather(
+   308	                *[processor(event) for processor in processors],
+   309	                return_exceptions=True
+   310	            )
+   311	
+   312	            # Check for errors
+   313	            errors = [r for r in results if isinstance(r, Exception)]
+   314	            if errors:
+   315	                logger.error(f"Event processing errors: {errors}")
+   316	                event.error_message = str(errors[0])
+   317	
+   318	            # Update processing metadata
+   319	            event.processed_at = datetime.now(timezone.utc)
+   320	            processing_time = (event.processed_at - start_time).total_seconds()
+   321	
+   322	            # Store processing history in Redis
+   323	            await self._store_event_history(event, processing_time)
+   324	
+   325	            self.metrics["events_processed"] += 1
+   326	            logger.debug(f"✅ Event processed by {worker_id}: {event.event_type} in {processing_time:.3f}s")
+   327	
+   328	        except Exception as e:
+   329	            logger.error(f"Event processing failed: {e}")
+   330	            event.attempts += 1
+   331	            event.error_message = str(e)
+   332	
+   333	            # Retry logic with exponential backoff
+   334	            if event.attempts < event.max_attempts:
+   335	                delay = 2 ** event.attempts  # Exponential backoff
+   336	                logger.info(f"🔄 Retrying event {event.id} in {delay}s (attempt {event.attempts + 1})")
+   337	
+   338	                # Re-queue with delay
+   339	                asyncio.create_task(self._delayed_requeue(event, delay))
+   340	
+   341	    async def _delayed_requeue(self, event: CoordinationEvent, delay: float) -> None:
+   342	        """Re-queue event after delay."""
+   343	        await asyncio.sleep(delay)
+   344	        await self.emit_event(event)
+   345	
+   346	    # Event Emission and Registration
+   347	
+   348	    async def emit_event(self, event: CoordinationEvent) -> bool:
+   349	        """Emit coordination event for processing."""
+   350	        try:
+   351	            # Assign unique ID if not present
+   352	            if not hasattr(event, 'id') or not event.id:
+   353	                event.id = f"{event.event_type}_{datetime.now().timestamp()}"
+   354	
+   355	            # Apply ADHD filtering before queuing
+   356	            if not await self._should_process_event(event):
+   357	                return False
+   358	
+   359	            # Queue event by priority
+   360	            priority_queue = self.event_queues[event.priority]
+   361	            await priority_queue.put((event.priority.value, event))
+   362	
+   363	            logger.debug(f"📤 Event emitted: {event.event_type} (priority: {event.priority.name})")
+   364	            return True
+   365	
+   366	        except Exception as e:
+   367	            logger.error(f"Failed to emit event: {e}")
+   368	            return False
+   369	
+   370	    def register_processor(self, event_type: EventType, processor: Callable) -> None:
+   371	        """Register event processor for specific event type."""
+   372	        if event_type not in self.event_processors:
+   373	            self.event_processors[event_type] = []
+   374	
+   375	        self.event_processors[event_type].append(processor)
+   376	        logger.debug(f"📝 Registered processor for {event_type}")
+   377	
+   378	    def register_filter(self, filter_func: Callable) -> None:
+   379	        """Register event filter for ADHD optimization."""
+   380	        self.event_filters.append(filter_func)
+   381	        logger.debug("🎯 Registered event filter")
+   382	
+   383	    # ADHD-Aware Event Processing
+   384	
+   385	    async def _should_process_event(self, event: CoordinationEvent) -> bool:
+   386	        """Determine if event should be processed based on ADHD state."""
+   387	        try:
+   388	            # Track that we received an event
+   389	            self.suppression_telemetry.events_received += 1
+   390	            event_type_str = event.event_type.value
+   391	            priority_str = event.priority.name
+   392	
+   393	            # Initialize per-event-type tracking
+   394	            if event_type_str not in self.suppression_telemetry.per_event_type:
+   395	                self.suppression_telemetry.per_event_type[event_type_str] = {"received": 0, "suppressed": 0}
+   396	            self.suppression_telemetry.per_event_type[event_type_str]["received"] += 1
+   397	
+   398	            # Initialize per-priority tracking
+   399	            if priority_str not in self.suppression_telemetry.per_priority:
+   400	                self.suppression_telemetry.per_priority[priority_str] = {"received": 0, "suppressed": 0}
+   401	            self.suppression_telemetry.per_priority[priority_str]["received"] += 1
+   402	
+   403	            # Apply custom filters
+   404	            for filter_func in self.event_filters:
+   405	                if not await filter_func(event):
+   406	                    self._record_suppression(event, "custom_filter")
+   407	                    return False
+   408	
+   409	            # Check focus mode restrictions
+   410	            if self.current_focus_mode == "deep":
+   411	                # In deep focus, only allow critical events
+   412	                if event.priority not in [EventPriority.CRITICAL, EventPriority.HIGH]:
+   413	                    self._record_suppression(event, "deep_focus_priority")
+   414	                    return False
+   415	
+   416	                # Block interrupting events unless critical
+   417	                if not event.interruption_allowed and event.priority != EventPriority.CRITICAL:
+   418	                    self._record_suppression(event, "deep_focus_interrupt")
+   419	                    return False
+   420	
+   421	            # Check energy level matching
+   422	            if self.current_energy_level == "low":
+   423	                # Low energy: avoid high cognitive load events
+   424	                if event.cognitive_load > 0.7:
+   425	                    self._record_suppression(event, "energy_level")
+   426	                    return False
+   427	
+   428	            # Check for event flooding (ADHD protection)
+   429	            recent_events = await self._get_recent_event_count(event.event_type)
+   430	            if recent_events > 10:  # More than 10 similar events in last minute
+   431	                logger.warning(f"🌊 Event flooding detected: {event.event_type}")
+   432	                self._record_suppression(event, "flood")
+   433	                return False
+   434	
+   435	            # Event passed all filters
+   436	            self.suppression_telemetry.events_passed += 1
+   437	            return True
+   438	
+   439	        except Exception as e:
+   440	            logger.error(f"Event filtering failed: {e}")
+   441	            return True  # Default to processing on error
+   442	
+   443	    async def _get_recent_event_count(self, event_type: EventType) -> int:
+   444	        """Get count of recent events of same type."""
+   445	        try:
+   446	            key = f"events:recent:{event_type.value}"
+   447	            count = await self.redis_client.get(key)
+   448	            return int(count) if count else 0
+   449	
+   450	        except Exception as e:
+   451	            return 0
+   452	
+   453	    def _record_suppression(self, event: CoordinationEvent, rule: str) -> None:
+   454	        """Record event suppression with rule and metadata."""
+   455	        # Increment overall suppression counter
+   456	        self.suppression_telemetry.events_suppressed += 1
+   457	
+   458	        # Increment per-rule counter
+   459	        rule_attr = f"suppressed_by_{rule}"
+   460	        current_count = getattr(self.suppression_telemetry, rule_attr, 0)
+   461	        setattr(self.suppression_telemetry, rule_attr, current_count + 1)
+   462	
+   463	        # Update per-event-type suppression
+   464	        event_type_str = event.event_type.value
+   465	        if event_type_str in self.suppression_telemetry.per_event_type:
+   466	            self.suppression_telemetry.per_event_type[event_type_str]["suppressed"] += 1
+   467	
+   468	        # Update per-priority suppression
+   469	        priority_str = event.priority.name
+   470	        if priority_str in self.suppression_telemetry.per_priority:
+   471	            self.suppression_telemetry.per_priority[priority_str]["suppressed"] += 1
+   472	    # Default Event Processors
+   473	
+   474	    async def _process_task_created(self, event: CoordinationEvent) -> None:
+   475	        """Process task creation event."""
+   476	        try:
+   477	            task_data = event.data
+   478	            logger.info(f"📋 Processing task creation: {task_data.get('title', 'Unknown')}")
+   479	
+   480	            # 1. Auto-decompose if task is too large for ADHD
+   481	            estimated_minutes = task_data.get("estimated_minutes", 25)
+   482	            if estimated_minutes > 25:
+   483	                await self._trigger_adhd_decomposition(event)
+   484	
+   485	            # 2. Assign optimal AI agent
+   486	            optimal_agent = await self._determine_optimal_agent(task_data)
+   487	            if optimal_agent:
+   488	                await self._assign_agent_to_task(event.task_id, optimal_agent)
+   489	
+   490	            # 3. Setup ConPort tracking
+   491	            await self._setup_conport_tracking(event)
+   492	
+   493	            # 4. Cache task context for quick access
+   494	            await self._cache_task_context(event)
+   495	
+   496	        except Exception as e:
+   497	            logger.error(f"Task creation processing failed: {e}")
+   498	
+   499	    async def _process_task_updated(self, event: CoordinationEvent) -> None:
+   500	        """Process task update event."""
+   501	        try:
+   502	            task_data = event.data
+   503	            logger.debug(f"📝 Processing task update: {event.task_id}")
+   504	
+   505	            # Check for status changes requiring action
+   506	            new_status = task_data.get("status")
+   507	            if new_status == "in_progress":
+   508	                await self._handle_task_start(event)
+   509	            elif new_status == "completed":
+   510	                await self._handle_task_completion(event)
+   511	            elif new_status == "blocked":
+   512	                await self._handle_task_blocked(event)
+   513	
+   514	            # Sync changes to all systems
+   515	            await self._propagate_task_update(event)
+   516	
+   517	        except Exception as e:
+   518	            logger.error(f"Task update processing failed: {e}")
+   519	
+   520	    async def _process_sprint_started(self, event: CoordinationEvent) -> None:
+   521	        """Process sprint start with implicit automation."""
+   522	        try:
+   523	            sprint_data = event.data
+   524	            sprint_id = sprint_data.get("sprint_id", "unknown")
+   525	
+   526	            logger.info(f"🚀 Processing sprint start: {sprint_id}")
+   527	
+   528	            # 1. Auto-setup ConPort sprint context
+   529	            sprint_context = {
+   530	                "sprint_id": sprint_id,
+   531	                "mode": "PLAN",
+   532	                "focus": "Sprint execution",
+   533	                "auto_managed": True,
+   534	                "adhd_optimized": True
+   535	            }
+   536	
+   537	            # 2. Analyze sprint tasks for ADHD optimization
+   538	            sprint_tasks = sprint_data.get("tasks", [])
+   539	            for task in sprint_tasks:
+   540	                # Auto-decompose large tasks
+   541	                if task.get("estimated_minutes", 0) > 25:
+   542	                    await self._emit_auto_decomposition_event(task)
+   543	
+   544	            # 3. Setup progress tracking automation
+   545	            await self._setup_sprint_progress_automation(sprint_id)
+   546	
+   547	            # 4. Update Claude.md context automatically
+   548	            await self._update_claude_context_for_slogger.info(sprint_id, sprint_context)
+   549	
+   550	            self.metrics["automation_triggers"] += 1
+   551	
+   552	        except Exception as e:
+   553	            logger.error(f"Sprint start processing failed: {e}")
+   554	
+   555	    async def _process_break_needed(self, event: CoordinationEvent) -> None:
+   556	        """Process break requirement with gentle ADHD accommodation."""
+   557	        try:
+   558	            task_data = event.data
+   559	            task_title = task_data.get("title", "current task")
+   560	
+   561	            # 1. Pause current task gently
+   562	            await self._pause_task_gracefully(event.task_id)
+   563	
+   564	            # 2. Preserve context for resumption
+   565	            context_preservation = {
+   566	                "task_id": event.task_id,
+   567	                "pause_reason": "break_needed",
+   568	                "context_snapshot": task_data,
+   569	                "resume_guidance": f"You were working on: {task_title}",
+   570	                "break_duration": "5-10 minutes recommended"
+   571	            }
+   572	
+   573	            await self._store_context_preservation(context_preservation)
+   574	
+   575	            # 3. Send gentle break notification
+   576	            break_notification = {
+   577	                "message": f"☕ Great progress on '{task_title}'! Time for a healthy break.",
+   578	                "duration_worked": task_data.get("duration_worked", "unknown"),
+   579	                "resume_context": "Context preserved for smooth resumption",
+   580	                "break_suggestions": ["5-minute walk", "Hydrate", "Stretch"]
+   581	            }
+   582	
+   583	            await self._emit_break_notification(break_notification)
+   584	
+   585	            self.metrics["adhd_accommodations"] += 1
+   586	
+   587	        except Exception as e:
+   588	            logger.error(f"Break processing failed: {e}")
+   589	
+   590	    async def _process_context_switch(self, event: CoordinationEvent) -> None:
+   591	        """Handle context switch with ADHD support."""
+   592	        try:
+   593	            self.active_context_switches += 1
+   594	
+   595	            # Track context switching patterns
+   596	            if self.active_context_switches > 5:  # Excessive switching
+   597	                # Suggest focus mode
+   598	                focus_suggestion = {
+   599	                    "reason": "excessive_context_switching",
+   600	                    "switches_count": self.active_context_switches,
+   601	                    "suggestion": "Consider enabling focus mode to reduce distractions",
+   602	                    "recommended_action": "focus_mode_deep"
+   603	                }
+   604	
+   605	                await self._emit_focus_suggestion(focus_suggestion)
+   606	
+   607	            # Reset counter periodically
+   608	            if self.active_context_switches > 10:
+   609	                self.active_context_switches = 0
+   610	
+   611	        except Exception as e:
+   612	            logger.error(f"Context switch processing failed: {e}")
+   613	
+   614	    # System Integration Methods
+   615	
+   616	    async def _trigger_adhd_decomposition(self, event: CoordinationEvent) -> None:
+   617	        """Trigger automatic ADHD task decomposition."""
+   618	        try:
+   619	            decomposition_event = CoordinationEvent(
+   620	                id=f"decomp_{event.task_id}",
+   621	                event_type=EventType.AUTOMATION_TRIGGERED,
+   622	                priority=EventPriority.HIGH,
+   623	                source_system="orchestrator",
+   624	                target_systems=["adhd_decomposer"],
+   625	                task_id=event.task_id,
+   626	                data={
+   627	                    "automation_type": "adhd_decomposition",
+   628	                    "original_task": event.data,
+   629	                    "target_duration": 25,
+   630	                    "preserve_context": True
+   631	                },
+   632	                cognitive_load=0.3,  # Low cognitive load for automation
+   633	                interruption_allowed=False
+   634	            )
+   635	
+   636	            await self.emit_event(decomposition_event)
+   637	
+   638	        except Exception as e:
+   639	            logger.error(f"ADHD decomposition trigger failed: {e}")
+   640	
+   641	    async def _setup_conport_tracking(self, event: CoordinationEvent) -> None:
+   642	        """Setup ConPort progress tracking for task."""
+   643	        try:
+   644	            tracking_event = CoordinationEvent(
+   645	                id=f"track_{event.task_id}",
+   646	                event_type=EventType.AUTOMATION_TRIGGERED,
+   647	                priority=EventPriority.MEDIUM,
+   648	                source_system="orchestrator",
+   649	                target_systems=["conport"],
+   650	                task_id=event.task_id,
+   651	                data={
+   652	                    "automation_type": "progress_tracking_setup",
+   653	                    "task_context": event.data,
+   654	                    "tracking_type": "automatic"
+   655	                }
+   656	            )
+   657	
+   658	            await self.emit_event(tracking_event)
+   659	
+   660	        except Exception as e:
+   661	            logger.error(f"ConPort tracking setup failed: {e}")
+   662	
+   663	    async def _update_claude_context_for_sprint(
+   664	        self,
+   665	        sprint_id: str,
+   666	        sprint_context: Dict[str, Any]
+   667	    ) -> None:
+   668	        """Automatically update Claude.md context for sprint."""
+   669	        try:
+   670	            # Store dynamic context that Claude.md can read
+   671	            context_key = f"claude_context:{self.workspace_id}:sprint:{sprint_id}"
+   672	
+   673	            dynamic_context = {
+   674	                "active_sprint": sprint_id,
+   675	                "mode": sprint_context.get("mode", "PLAN"),
+   676	                "focus_area": sprint_context.get("focus", "Sprint execution"),
+   677	                "auto_managed": True,
+   678	                "last_updated": datetime.now(timezone.utc).isoformat(),
+   679	                "adhd_optimizations": {
+   680	                    "task_chunking": "automatic",
+   681	                    "break_management": "enabled",
+   682	                    "progress_tracking": "implicit",
+   683	                    "context_preservation": "active"
+   684	                }
+   685	            }
+   686	
+   687	            await self.redis_client.setex(
+   688	                context_key,
+   689	                86400,  # 24 hours
+   690	                json.dumps(dynamic_context)
+   691	            )
+   692	
+   693	            logger.info(f"📝 Updated Claude.md context for sprint {sprint_id}")
+   694	
+   695	        except Exception as e:
+   696	            logger.error(f"Claude.md context update failed: {e}")
+   697	
+   698	    # Utility Methods
+   699	
+   700	    async def _store_event_history(self, event: CoordinationEvent, processing_time: float) -> None:
+   701	        """Store event processing history for analysis."""
+   702	        try:
+   703	            history_entry = {
+   704	                "event_id": event.id,
+   705	                "event_type": event.event_type.value,
+   706	                "priority": event.priority.name,
+   707	                "processing_time": processing_time,
+   708	                "cognitive_load": event.cognitive_load,
+   709	                "target_systems": event.target_systems,
+   710	                "success": event.error_message is None,
+   711	                "timestamp": datetime.now(timezone.utc).isoformat()
+   712	            }
+   713	
+   714	            # Store in Redis with 7-day TTL
+   715	            history_key = f"events:history:{event.event_type.value}"
+   716	            await self.redis_client.lpush(
+   717	                history_key,
+   718	                json.dumps(history_entry)
+   719	            )
+   720	
+   721	            # Keep only recent history
+   722	            await self.redis_client.ltrim(history_key, 0, 999)
+   723	            await self.redis_client.expire(history_key, 604800)  # 7 days
+   724	
+   725	        except Exception as e:
+   726	            logger.error(f"Failed to store event history: {e}")
+   727	
+   728	    # Placeholder methods for integration points
+   729	    async def _determine_optimal_agent(self, task_data: Dict[str, Any]) -> Optional[str]:
+   730	        """Determine optimal AI agent for task."""
+   731	        # Placeholder - would analyze task content and complexity
+   732	        return "conport"
+   733	
+   734	    async def _assign_agent_to_task(self, task_id: str, agent: str) -> None:
+   735	        """Assign AI agent to task."""
+   736	        try:
+   737	            if self.redis_client:
+   738	                key = f"task:agent:{self.workspace_id}:{task_id}"
+   739	                payload = {
+   740	                    "task_id": task_id,
+   741	                    "agent": agent,
+   742	                    "assigned_at": datetime.now(timezone.utc).isoformat(),
+   743	                }
+   744	                await self.redis_client.setex(key, 86400, json.dumps(payload))
+   745	            logger.info("Assigned agent %s to task %s", agent, task_id)
+   746	        except Exception as exc:
+   747	            logger.error("Failed to assign agent to task %s: %s", task_id, exc)
+   748	
+   749	    async def _cache_task_context(self, event: CoordinationEvent) -> None:
+   750	        """Cache task context for quick access."""
+   751	        try:
+   752	            if not self.redis_client:
+   753	                return
+   754	            task_id = str(event.data.get("task_id") or event.data.get("id") or event.id)
+   755	            key = f"task:context:{self.workspace_id}:{task_id}"
+   756	            payload = {
+   757	                "event_id": event.id,
+   758	                "event_type": event.event_type.value,
+   759	                "data": event.data,
+   760	                "cached_at": datetime.now(timezone.utc).isoformat(),
+   761	            }
+   762	            await self.redis_client.setex(key, 3600, json.dumps(payload))
+   763	        except Exception as exc:
+   764	            logger.error("Failed to cache task context for event %s: %s", event.id, exc)
+   765	
+   766	    async def _handle_task_start(self, event: CoordinationEvent) -> None:
+   767	        """Handle task start event."""
+   768	        task_id = str(event.data.get("task_id") or event.data.get("id") or event.id)
+   769	        await self._cache_task_context(event)
+   770	        if agent := event.data.get("agent"):
+   771	            await self._assign_agent_to_task(task_id, str(agent))
+   772	        self.metrics["task_started_count"] = self.metrics.get("task_started_count", 0) + 1
+   773	
+   774	    async def _handle_task_completion(self, event: CoordinationEvent) -> None:
+   775	        """Handle task completion event."""
+   776	        self.metrics["task_completed_count"] = self.metrics.get("task_completed_count", 0) + 1
+   777	        await self._propagate_task_update(event)
+   778	
+   779	    async def _handle_task_blocked(self, event: CoordinationEvent) -> None:
+   780	        """Handle task blocked event."""
+   781	        self.metrics["task_blocked_count"] = self.metrics.get("task_blocked_count", 0) + 1
+   782	        await self._propagate_task_update(event)
+   783	        await self._emit_focus_suggestion(
+   784	            {
+   785	                "task_id": event.data.get("task_id"),
+   786	                "reason": event.data.get("block_reason", "blocked"),
+   787	            }
+   788	        )
+   789	
+   790	    async def _propagate_task_update(self, event: CoordinationEvent) -> None:
+   791	        """Propagate task update to all systems."""
+   792	        try:
+   793	            if not self.redis_client:
+   794	                return
+   795	            channel = f"events:task-updates:{self.workspace_id}"
+   796	            payload = {
+   797	                "event_id": event.id,
+   798	                "event_type": event.event_type.value,
+   799	                "data": event.data,
+   800	                "timestamp": datetime.now(timezone.utc).isoformat(),
+   801	            }
+   802	            await self.redis_client.publish(channel, json.dumps(payload))
+   803	        except Exception as exc:
+   804	            logger.error("Failed to propagate task update for event %s: %s", event.id, exc)
+   805	
+   806	    async def _pause_task_gracefully(self, task_id: str) -> None:
+   807	        """Pause task with context preservation."""
+   808	        try:
+   809	            if self.redis_client:
+   810	                key = f"task:paused:{self.workspace_id}:{task_id}"
+   811	                payload = {
+   812	                    "task_id": task_id,
+   813	                    "paused_at": datetime.now(timezone.utc).isoformat(),
+   814	                }
+   815	                await self.redis_client.setex(key, 86400, json.dumps(payload))
+   816	        except Exception as exc:
+   817	            logger.error("Failed to pause task %s gracefully: %s", task_id, exc)
+   818	
+   819	    async def _store_context_preservation(self, context: Dict[str, Any]) -> None:
+   820	        """Store context for later resumption."""
+   821	        try:
+   822	            if not self.redis_client:
+   823	                return
+   824	            context_id = context.get("task_id") or context.get("context_id") or "unknown"
+   825	            key = f"context:preservation:{self.workspace_id}:{context_id}"
+   826	            payload = {
+   827	                "context": context,
+   828	                "stored_at": datetime.now(timezone.utc).isoformat(),
+   829	            }
+   830	            await self.redis_client.setex(key, 86400, json.dumps(payload))
+   831	        except Exception as exc:
+   832	            logger.error("Failed to store preserved context: %s", exc)
+   833	
+   834	    async def _emit_break_notification(self, notification: Dict[str, Any]) -> None:
+   835	        """Emit break notification."""
+   836	        try:
+   837	            if self.redis_client:
+   838	                channel = f"events:break-notifications:{self.workspace_id}"
+   839	                await self.redis_client.publish(channel, json.dumps(notification))
+   840	            self.metrics["break_notifications_emitted"] = (
+   841	                self.metrics.get("break_notifications_emitted", 0) + 1
+   842	            )
+   843	        except Exception as exc:
+   844	            logger.error("Failed to emit break notification: %s", exc)
+   845	
+   846	    async def _emit_focus_suggestion(self, suggestion: Dict[str, Any]) -> None:
+   847	        """Emit focus mode suggestion."""
+   848	        try:
+   849	            if self.redis_client:
+   850	                channel = f"events:focus-suggestions:{self.workspace_id}"
+   851	                await self.redis_client.publish(channel, json.dumps(suggestion))
+   852	            self.metrics["focus_suggestions_emitted"] = (
+   853	                self.metrics.get("focus_suggestions_emitted", 0) + 1
+   854	            )
+   855	        except Exception as exc:
+   856	            logger.error("Failed to emit focus suggestion: %s", exc)
+   857	
+   858	    async def _emit_auto_decomposition_event(self, task: Dict[str, Any]) -> None:
+   859	        """Emit automatic decomposition event."""
+   860	        try:
+   861	            if self.redis_client:
+   862	                channel = f"events:auto-decompose:{self.workspace_id}"
+   863	                payload = {
+   864	                    "task": task,
+   865	                    "triggered_at": datetime.now(timezone.utc).isoformat(),
+   866	                }
+   867	                await self.redis_client.publish(channel, json.dumps(payload))
+   868	            self.metrics["auto_decomposition_events"] = (
+   869	                self.metrics.get("auto_decomposition_events", 0) + 1
+   870	            )
+   871	        except Exception as exc:
+   872	            logger.error("Failed to emit auto decomposition event: %s", exc)
+   873	
+   874	    async def _setup_sprint_progress_automation(self, sprint_id: str) -> None:
+   875	        """Setup automated progress tracking for sprint."""
+   876	        try:
+   877	            if not self.redis_client:
+   878	                return
+   879	            key = f"sprint:automation:{self.workspace_id}:{sprint_id}"
+   880	            payload = {
+   881	                "sprint_id": sprint_id,
+   882	                "automation_enabled": True,
+   883	                "configured_at": datetime.now(timezone.utc).isoformat(),
+   884	            }
+   885	            await self.redis_client.setex(key, 86400, json.dumps(payload))
+   886	        except Exception as exc:
+   887	            logger.error("Failed to setup sprint progress automation for %s: %s", sprint_id, exc)
+   888	
+   889	    def get_suppression_report(self) -> Dict[str, Any]:
+   890	        """Get comprehensive suppression telemetry report."""
+   891	        t = self.suppression_telemetry
+   892	
+   893	        # Calculate signal/noise ratio
+   894	        signal_noise_ratio = (
+   895	            t.events_passed / t.events_received if t.events_received > 0 else 0.0
+   896	        )
+   897	        suppression_rate_pct = (
+   898	            (t.events_suppressed / t.events_received * 100) if t.events_received > 0 else 0.0
+   899	        )
+   900	
+   901	        # Calculate runtime
+   902	        runtime_seconds = (datetime.now(timezone.utc) - t.started_at).total_seconds()
+   903	        runtime_minutes = runtime_seconds / 60.0
+   904	
+   905	        return {
+   906	            "summary": {
+   907	                "events_received": t.events_received,
+   908	                "events_passed": t.events_passed,
+   909	                "events_suppressed": t.events_suppressed,
+   910	                "signal_noise_ratio": round(signal_noise_ratio, 3),
+   911	                "suppression_rate_pct": round(suppression_rate_pct, 1),
+   912	                "runtime_minutes": round(runtime_minutes, 1)
+   913	            },
+   914	            "per_rule_breakdown": {
+   915	                "custom_filter": t.suppressed_by_custom_filter,
+   916	                "deep_focus_priority": t.suppressed_by_deep_focus_priority,
+   917	                "deep_focus_interrupt": t.suppressed_by_deep_focus_interrupt,
+   918	                "energy_level": t.suppressed_by_energy_level,
+   919	                "flood": t.suppressed_by_flood,
+   920	                "expiry": t.suppressed_by_expiry
+   921	            },
+   922	            "per_event_type": t.per_event_type,
+   923	            "per_priority": t.per_priority,
+   924	            "adhd_state": {
+   925	                "focus_mode": self.current_focus_mode,
+   926	                "energy_level": self.current_energy_level,
+   927	                "context_switches": self.active_context_switches
+   928	            }
+   929	        }
+   930	
+   931	    # Health and Monitoring
+   932	
+   933	    async def get_coordination_health(self) -> Dict[str, Any]:
+   934	        """Get comprehensive coordination system health."""
+   935	        try:
+   936	            # Check component health
+   937	            redis_healthy = await self.redis_client.ping() if self.redis_client else False
+   938	
+   939	            # Check worker health
+   940	            active_workers = len([w for w in self.workers if not w.done()])
+   941	
+   942	            # Check queue health
+   943	            queue_sizes = {
+   944	                priority.name: queue.qsize()
+   945	                for priority, queue in self.event_queues.items()
+   946	            }
+   947	
+   948	            # Overall status assessment
+   949	            if redis_healthy and active_workers == len(self.workers):
+   950	                if max(queue_sizes.values()) < 50:
+   951	                    status = "🚀 Excellent"
+   952	                else:
+   953	                    status = "⚠️ Busy"
+   954	            else:
+   955	                status = "🔴 Degraded"
+   956	
+   957	            return {
+   958	                "overall_status": status,
+   959	                "components": {
+   960	                    "redis_coordination": "🟢 Connected" if redis_healthy else "🔴 Disconnected",
+   961	                    "workers_active": f"{active_workers}/{len(self.workers)}",
+   962	                    "queue_sizes": queue_sizes
+   963	                },
+   964	                "metrics": self.metrics,
+   965	                "adhd_state": {
+   966	                    "focus_mode": self.current_focus_mode,
+   967	                    "energy_level": self.current_energy_level,
+   968	                    "context_switches": self.active_context_switches,
+   969	                    "last_break": self.last_break_time.isoformat()
+   970	                },
+   971	                "suppression_telemetry": self.get_suppression_report(),
+   972	                "timestamp": datetime.now(timezone.utc).isoformat()
+   973	            }
+   974	
+   975	        except Exception as e:
+   976	            logger.error(f"Coordination health check failed: {e}")
+   977	            return {"overall_status": "🔴 Error", "error": str(e)}
+   978	
+   979	    async def close(self) -> None:
+   980	        """Shutdown event coordinator gracefully."""
+   981	        logger.info("🛑 Shutting down Event Coordinator...")
+   982	
+   983	        # Stop processing
+   984	        self.running = False
+   985	
+   986	        # Cancel workers
+   987	        if self.workers:
+   988	            for worker in self.workers:
+   989	                worker.cancel()
+   990	            await asyncio.gather(*self.workers, return_exceptions=True)
+   991	
+   992	        # Close Redis connection
+   993	        if self.redis_client:
+   994	            await self.redis_client.close()
+   995	
+   996	        logger.info("✅ Event Coordinator shutdown complete")
+   997	
+   998	
+   999	# Factory function for easy initialization
+  1000	async def create_event_coordinator(
+  1001	    redis_url: str = "redis://localhost:6379",
+  1002	    workspace_id: str = "/Users/hue/code/dopemux-mvp"
+  1003	) -> EventCoordinator:
+  1004	    """Create and initialize event coordinator."""
+  1005	    coordinator = EventCoordinator(redis_url)
+  1006	    await coordinator.initialize()
+  1007	    return coordinator

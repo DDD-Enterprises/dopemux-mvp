@@ -1,0 +1,296 @@
+     1	"""
+     2	Proactive Context Preservation
+     3	
+     4	Auto-saves mental model state before breaks to enable quick context restoration.
+     5	Integrates with Serena (code navigation) and ConPort (knowledge graph).
+     6	
+     7	ADHD Benefit: Eliminates "what was I doing?" frustration after breaks
+     8	"""
+     9	from typing import Dict, Any, List, Optional
+    10	from dataclasses import dataclass, field, asdict
+    11	from datetime import datetime
+    12	import logging
+    13	import json
+    14	
+    15	logger = logging.getLogger(__name__)
+    16	
+    17	
+    18	@dataclass
+    19	class PreservedContext:
+    20	    """Snapshot of development context at a moment in time."""
+    21	    # Code context
+    22	    active_files: List[str] = field(default_factory=list)
+    23	    cursor_positions: Dict[str, int] = field(default_factory=dict)  # file -> line number
+    24	    recent_symbols: List[str] = field(default_factory=list)  # Recently accessed functions/classes
+    25	    
+    26	    # Mental model
+    27	    mental_model_summary: str = ""  # AI-generated summary of what user was working on
+    28	    task_description: Optional[str] = None  # Current task from Leantime/ConPort
+    29	    
+    30	    # Temporal context
+    31	    timestamp: datetime = field(default_factory=datetime.now)
+    32	    session_duration: int = 0  # Minutes in current session
+    33	    
+    34	    # Decision trail
+    35	    recent_decisions: List[Dict[str, Any]] = field(default_factory=list)  # Last 3 decisions from ConPort
+    36	    
+    37	    # Workspace
+    38	    workspace_path: Optional[str] = None
+    39	    git_branch: Optional[str] = None
+    40	    
+    41	    def to_dict(self) -> Dict[str, Any]:
+    42	        """Convert to JSON-serializable dict."""
+    43	        data = asdict(self)
+    44	        data['timestamp'] = self.timestamp.isoformat()
+    45	        return data
+    46	    
+    47	    @classmethod
+    48	    def from_dict(cls, data: Dict[str, Any]) -> 'PreservedContext':
+    49	        """Restore from dict."""
+    50	        data['timestamp'] = datetime.fromisoformat(data['timestamp'])
+    51	        return cls(**data)
+    52	
+    53	
+    54	class ContextPreserver:
+    55	    """
+    56	    Preserve and restore development context around breaks.
+    57	    
+    58	    Integration points:
+    59	    - Serena: Active files, cursor positions, symbol navigation
+    60	    - ConPort: Recent decisions, task context
+    61	    - Desktop Commander: Window state (optional)
+    62	    """
+    63	    
+    64	    def __init__(
+    65	        self,
+    66	        conport_client,
+    67	        serena_client=None,
+    68	        storage_path: str = ".context_snapshots"
+    69	    ):
+    70	        """
+    71	        Initialize context preserver.
+    72	        
+    73	        Args:
+    74	            conport_client: ConPort/DopeconBridge client
+    75	            serena_client: Optional Serena MCP client for code context
+    76	            storage_path: Directory for saved contexts
+    77	        """
+    78	        self.conport = conport_client
+    79	        self.serena = serena_client
+    80	        self.storage_path = storage_path
+    81	        
+    82	        # Create storage directory
+    83	        import os
+    84	        os.makedirs(storage_path, exist_ok=True)
+    85	    
+    86	    async def capture_current_context(
+    87	        self,
+    88	        user_id: str,
+    89	        workspace_path: Optional[str] = None
+    90	    ) -> PreservedContext:
+    91	        """
+    92	        Capture current development context.
+    93	        
+    94	        Args:
+    95	            user_id: User identifier
+    96	            workspace_path: Optional workspace path
+    97	        
+    98	        Returns:
+    99	            PreservedContext snapshot
+   100	        """
+   101	        logger.info(f"📸 Capturing context for {user_id}")
+   102	        
+   103	        context = PreservedContext(workspace_path=workspace_path)
+   104	        
+   105	        try:
+   106	            # Get recent decisions from ConPort
+   107	            if self.conport:
+   108	                decisions = await self._get_recent_decisions(user_id, limit=3)
+   109	                context.recent_decisions = decisions
+   110	                
+   111	                # Extract task description from most recent decision
+   112	                if decisions:
+   113	                    context.task_description = decisions[0].get('summary', '')
+   114	            
+   115	            # Get active files from Serena (if available)
+   116	            if self.serena:
+   117	                active_files = await self._get_active_files()
+   118	                context.active_files = active_files
+   119	                
+   120	                # Get cursor positions
+   121	                cursor_positions = await self._get_cursor_positions()
+   122	                context.cursor_positions = cursor_positions
+   123	                
+   124	                # Get recent symbols
+   125	                recent_symbols = await self._get_recent_symbols()
+   126	                context.recent_symbols = recent_symbols
+   127	            
+   128	            # Get git context
+   129	            if workspace_path:
+   130	                git_branch = await self._get_git_branch(workspace_path)
+   131	                context.git_branch = git_branch
+   132	            
+   133	            # Generate mental model summary using AI
+   134	            context.mental_model_summary = await self._generate_mental_model(context)
+   135	            
+   136	            # Save snapshot
+   137	            await self._save_snapshot(user_id, context)
+   138	            
+   139	            logger.info(f"✅ Context captured: {len(context.active_files)} files, {len(context.recent_decisions)} decisions")
+   140	            return context
+   141	            
+   142	        except Exception as e:
+   143	            logger.error(f"Failed to capture context: {e}")
+   144	            return context
+   145	    
+   146	    async def restore_context(
+   147	        self,
+   148	        user_id: str,
+   149	        context: Optional[PreservedContext] = None
+   150	    ) -> Dict[str, Any]:
+   151	        """
+   152	        Restore context after break.
+   153	        
+   154	        Args:
+   155	            user_id: User identifier
+   156	            context: Optional specific context to restore (default: most recent)
+   157	        
+   158	        Returns:
+   159	            Summary for user display
+   160	        """
+   161	        logger.info(f"🔄 Restoring context for {user_id}")
+   162	        
+   163	        try:
+   164	            # Load context if not provided
+   165	            if context is None:
+   166	                context = await self._load_latest_snapshot(user_id)
+   167	            
+   168	            if context is None:
+   169	                return {"error": "No saved context found"}
+   170	            
+   171	            # Build restoration summary
+   172	            time_since = (datetime.now() - context.timestamp).total_seconds() / 60
+   173	            
+   174	            summary = {
+   175	                "time_since_save": f"{int(time_since)} minutes ago",
+   176	                "task": context.task_description or "Unknown task",
+   177	                "mental_model": context.mental_model_summary,
+   178	                "active_files": context.active_files,
+   179	                "git_branch": context.git_branch,
+   180	                "recent_decisions": [d.get('summary', '') for d in context.recent_decisions],
+   181	                "restoration_tips": self._generate_restoration_tips(context)
+   182	            }
+   183	            
+   184	            logger.info(f"✅ Context restored from {int(time_since)} minutes ago")
+   185	            return summary
+   186	            
+   187	        except Exception as e:
+   188	            logger.error(f"Failed to restore context: {e}")
+   189	            return {"error": str(e)}
+   190	    
+   191	    async def _get_recent_decisions(self, user_id: str, limit: int = 3) -> List[Dict[str, Any]]:
+   192	        """Fetch recent decisions from ConPort."""
+   193	        try:
+   194	            # Mock implementation - replace with actual ConPort API call
+   195	            decisions = await self.conport.recent_decisions(limit=limit)
+   196	            return decisions if decisions else []
+   197	        except Exception as e:
+   198	            logger.warning(f"Failed to fetch decisions: {e}")
+   199	            return []
+   200	    
+   201	    async def _get_active_files(self) -> List[str]:
+   202	        """Get currently active files from Serena."""
+   203	        # Mock implementation - replace with actual Serena MCP call
+   204	        return []
+   205	    
+   206	    async def _get_cursor_positions(self) -> Dict[str, int]:
+   207	        """Get cursor positions for active files."""
+   208	        # Mock implementation
+   209	        return {}
+   210	    
+   211	    async def _get_recent_symbols(self) -> List[str]:
+   212	        """Get recently accessed symbols (functions, classes)."""
+   213	        # Mock implementation
+   214	        return []
+   215	    
+   216	    async def _get_git_branch(self, workspace_path: str) -> Optional[str]:
+   217	        """Get current git branch."""
+   218	        try:
+   219	            import subprocess
+   220	            result = subprocess.run(
+   221	                ['git', 'branch', '--show-current'],
+   222	                cwd=workspace_path,
+   223	                capture_output=True,
+   224	                text=True,
+   225	                timeout=2
+   226	            )
+   227	            if result.returncode == 0:
+   228	                return result.stdout.strip()
+   229	        except Exception as e:
+   230	            logger.warning(f"Failed to get git branch: {e}")
+   231	        return None
+   232	    
+   233	    async def _generate_mental_model(self, context: PreservedContext) -> str:
+   234	        """
+   235	        Generate AI summary of what user was working on.
+   236	        
+   237	        Uses recent decisions + active files to create human-readable summary.
+   238	        """
+   239	        # Simple heuristic implementation
+   240	        parts = []
+   241	        
+   242	        if context.task_description:
+   243	            parts.append(f"Working on: {context.task_description}")
+   244	        
+   245	        if context.active_files:
+   246	            parts.append(f"Editing {len(context.active_files)} files: {', '.join(context.active_files[:3])}")
+   247	        
+   248	        if context.git_branch:
+   249	            parts.append(f"On branch: {context.git_branch}")
+   250	        
+   251	        if not parts:
+   252	            return "No clear task context captured"
+   253	        
+   254	        return " | ".join(parts)
+   255	    
+   256	    async def _save_snapshot(self, user_id: str, context: PreservedContext) -> bool:
+   257	        """Save context snapshot to disk."""
+   258	        try:
+   259	            filename = f"{self.storage_path}/{user_id}_latest.json"
+   260	            with open(filename, 'w') as f:
+   261	                json.dump(context.to_dict(), f, indent=2)
+   262	            return True
+   263	        except Exception as e:
+   264	            logger.error(f"Failed to save snapshot: {e}")
+   265	            return False
+   266	    
+   267	    async def _load_latest_snapshot(self, user_id: str) -> Optional[PreservedContext]:
+   268	        """Load most recent context snapshot."""
+   269	        try:
+   270	            filename = f"{self.storage_path}/{user_id}_latest.json"
+   271	            with open(filename, 'r') as f:
+   272	                data = json.load(f)
+   273	            return PreservedContext.from_dict(data)
+   274	        except FileNotFoundError:
+   275	            logger.warning(f"No saved context for {user_id}")
+   276	            return None
+   277	        except Exception as e:
+   278	            logger.error(f"Failed to load snapshot: {e}")
+   279	            return None
+   280	    
+   281	    def _generate_restoration_tips(self, context: PreservedContext) -> List[str]:
+   282	        """Generate helpful tips for getting back into flow."""
+   283	        tips = []
+   284	        
+   285	        if context.active_files:
+   286	            tips.append(f"💡 Resume editing {context.active_files[0]}")
+   287	        
+   288	        if context.recent_decisions:
+   289	            tips.append(f"📋 Review your last decision: {context.recent_decisions[0].get('summary', '')[:50]}...")
+   290	        
+   291	        if context.git_branch:
+   292	            tips.append(f"🌿 You're on branch: {context.git_branch}")
+   293	        
+   294	        tips.append("🧘 Take 2 minutes to review your mental model before diving back in")
+   295	        
+   296	        return tips
