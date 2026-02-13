@@ -1,0 +1,169 @@
+     1	"""
+     2	Unified ConPort Client with backend abstraction.
+     3	"""
+     4	
+     5	import logging
+     6	from dataclasses import dataclass
+     7	from pathlib import Path
+     8	from typing import List, Optional, Dict, Any
+     9	
+    10	from .models import Decision, ProgressEntry, ActiveContext
+    11	from .backends import BackendType, get_backend_adapter
+    12	
+    13	
+    14	logger = logging.getLogger(__name__)
+    15	
+    16	
+    17	@dataclass
+    18	class ConPortConfig:
+    19	    """Configuration for ConPort client."""
+    20	
+    21	    workspace_id: str
+    22	    backend: Optional[BackendType] = None  # Auto-detect if None
+    23	    db_path: Optional[str] = None  # For SQLite backend
+    24	    mcp_url: Optional[str] = None  # For MCP RPC backend
+    25	    pg_host: str = "localhost"
+    26	    pg_port: int = 5455
+    27	    pg_user: str = "dopemux_age"
+    28	    pg_password: str = "dopemux_age_dev_password"
+    29	    pg_database: str = "dopemux_knowledge_graph"
+    30	
+    31	
+    32	class ConPortClient:
+    33	    """
+    34	    Unified ConPort client with backend abstraction.
+    35	
+    36	    Automatically selects best available backend or uses specified backend.
+    37	    """
+    38	
+    39	    def __init__(self, workspace_id: str = None, config: ConPortConfig = None, **kwargs):
+    40	        """
+    41	        Initialize ConPort client.
+    42	
+    43	        Args:
+    44	            workspace_id: Workspace path
+    45	            config: ConPortConfig object
+    46	            **kwargs: Config overrides (workspace_id, backend, db_path, etc.)
+    47	        """
+    48	        # Build config
+    49	        if config:
+    50	            self.config = config
+    51	        else:
+    52	            # Auto-detect workspace
+    53	            if not workspace_id:
+    54	                workspace_id = str(Path.cwd())
+    55	
+    56	            self.config = ConPortConfig(workspace_id=workspace_id, **kwargs)
+    57	
+    58	        # Get backend adapter
+    59	        self.backend = get_backend_adapter(self.config)
+    60	
+    61	        logger.info(
+    62	            f"ConPortClient initialized: workspace={Path(self.config.workspace_id).name}, "
+    63	            f"backend={self.backend.backend_type.value}"
+    64	        )
+    65	
+    66	    async def log_decision(
+    67	        self,
+    68	        summary: str,
+    69	        rationale: Optional[str] = None,
+    70	        implementation_details: Optional[str] = None,
+    71	        tags: Optional[List[str]] = None,
+    72	    ) -> Decision:
+    73	        """Log a decision."""
+    74	        return await self.backend.log_decision(
+    75	            workspace_id=self.config.workspace_id,
+    76	            summary=summary,
+    77	            rationale=rationale,
+    78	            implementation_details=implementation_details,
+    79	            tags=tags or [],
+    80	        )
+    81	
+    82	    async def get_decisions(
+    83	        self, limit: Optional[int] = None, tags: Optional[List[str]] = None
+    84	    ) -> List[Decision]:
+    85	        """Get decisions."""
+    86	        return await self.backend.get_decisions(
+    87	            workspace_id=self.config.workspace_id,
+    88	            limit=limit,
+    89	            tags=tags,
+    90	        )
+    91	
+    92	    async def get_active_context(self, session_id: str = "default") -> ActiveContext:
+    93	        """Get active context."""
+    94	        return await self.backend.get_active_context(
+    95	            workspace_id=self.config.workspace_id,
+    96	            session_id=session_id,
+    97	        )
+    98	
+    99	    async def update_active_context(
+   100	        self, content: Dict[str, Any], session_id: str = "default"
+   101	    ) -> None:
+   102	        """Update active context."""
+   103	        await self.backend.update_active_context(
+   104	            workspace_id=self.config.workspace_id,
+   105	            session_id=session_id,
+   106	            content=content,
+   107	        )
+   108	
+   109	    async def log_progress(
+   110	        self,
+   111	        status: str,
+   112	        description: str,
+   113	        parent_id: Optional[int] = None,
+   114	        linked_item_type: Optional[str] = None,
+   115	        linked_item_id: Optional[str] = None,
+   116	    ) -> ProgressEntry:
+   117	        """Log progress entry."""
+   118	        return await self.backend.log_progress(
+   119	            workspace_id=self.config.workspace_id,
+   120	            status=status,
+   121	            description=description,
+   122	            parent_id=parent_id,
+   123	            linked_item_type=linked_item_type,
+   124	            linked_item_id=linked_item_id,
+   125	        )
+   126	
+   127	    async def get_progress(
+   128	        self,
+   129	        status_filter: Optional[str] = None,
+   130	        limit: Optional[int] = None,
+   131	    ) -> List[ProgressEntry]:
+   132	        """Get progress entries."""
+   133	        return await self.backend.get_progress(
+   134	            workspace_id=self.config.workspace_id,
+   135	            status_filter=status_filter,
+   136	            limit=limit,
+   137	        )
+   138	
+   139	    async def get_all_active_sessions(self) -> List[Dict]:
+   140	        """Get all active sessions for workspace (Serena F002)."""
+   141	        return await self.backend.get_all_active_sessions(self.config.workspace_id)
+   142	
+   143	    async def get_custom_data(
+   144	        self, category: str, key: Optional[str] = None
+   145	    ) -> Any:
+   146	        """Get custom data from ConPort."""
+   147	        return await self.backend.get_custom_data(
+   148	            self.config.workspace_id, category, key
+   149	        )
+   150	
+   151	    async def log_custom_data(self, category: str, key: str, value: Any) -> bool:
+   152	        """Log custom data to ConPort."""
+   153	        return await self.backend.log_custom_data(
+   154	            self.config.workspace_id, category, key, value
+   155	        )
+   156	
+   157	    async def get_recent_decisions(self, limit: int = 5) -> List:
+   158	        """Get recent decisions (for ADHD context awareness)."""
+   159	        return await self.backend.get_recent_decisions(
+   160	            self.config.workspace_id, limit
+   161	        )
+   162	
+   163	    async def health_check(self) -> Dict[str, Any]:
+   164	        """Check backend health."""
+   165	        return await self.backend.health_check()
+   166	
+   167	    def get_backend_type(self) -> BackendType:
+   168	        """Get current backend type."""
+   169	        return self.backend.backend_type
