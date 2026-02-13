@@ -1,0 +1,425 @@
+     1	"""
+     2	Overwhelm Detection & Circuit Breaker
+     3	
+     4	Detects overwhelm states and provides gentle intervention to prevent ADHD spirals.
+     5	
+     6	Overwhelm Signals:
+     7	- Rapid task switching (>10 switches in 15min)
+     8	- Multiple simultaneous activities
+     9	- Long periods without progress
+    10	- High complexity + low energy combination
+    11	- Declining break acceptance
+    12	
+    13	Circuit Breaker Actions:
+    14	- Gentle intervention suggestions
+    15	- Task breakdown assistance
+    16	- Break recommendations
+    17	- Context saving
+    18	- Encouraging support
+    19	
+    20	ADHD Benefit: Prevents spiral, provides escape route, builds resilience
+    21	"""
+    22	from typing import Dict, Any, List, Optional
+    23	from dataclasses import dataclass, field
+    24	from datetime import datetime, timedelta
+    25	from enum import Enum
+    26	import logging
+    27	
+    28	logger = logging.getLogger(__name__)
+    29	
+    30	
+    31	class OverwhelmLevel(Enum):
+    32	    """Overwhelm severity levels."""
+    33	    NONE = "none"
+    34	    MILD = "mild"
+    35	    MODERATE = "moderate"
+    36	    SEVERE = "severe"
+    37	    CRITICAL = "critical"
+    38	
+    39	
+    40	@dataclass
+    41	class OverwhelmSignal:
+    42	    """Single overwhelm indicator."""
+    43	    signal_type: str  # "rapid_switching", "no_progress", "complexity_mismatch", etc.
+    44	    severity: float  # 0.0-1.0
+    45	    description: str
+    46	    detected_at: datetime = field(default_factory=datetime.now)
+    47	
+    48	
+    49	@dataclass
+    50	class CircuitBreakerAction:
+    51	    """Recommended intervention action."""
+    52	    action_type: str  # "break", "simplify", "save_state", "end_session"
+    53	    urgency: str  # "immediate", "soon", "suggested"
+    54	    message: str
+    55	    steps: List[str]
+    56	    benefit: str
+    57	
+    58	
+    59	class OverwhelmDetector:
+    60	    """
+    61	    Detect overwhelm states and trigger circuit breaker.
+    62	    
+    63	    Monitors multiple signals:
+    64	    - Task switching patterns
+    65	    - Progress indicators
+    66	    - Energy/complexity mismatches
+    67	    - Break resistance
+    68	    - Time without wins
+    69	    """
+    70	    
+    71	    def __init__(
+    72	        self,
+    73	        rapid_switch_threshold: int = 10,  # Switches in 15min
+    74	        no_progress_threshold: int = 45,  # Minutes without commit/completion
+    75	        switch_window_minutes: int = 15
+    76	    ):
+    77	        """
+    78	        Initialize overwhelm detector.
+    79	        
+    80	        Args:
+    81	            rapid_switch_threshold: Max switches before flagging
+    82	            no_progress_threshold: Minutes without progress before flagging
+    83	            switch_window_minutes: Time window for switch counting
+    84	        """
+    85	        self.rapid_switch_threshold = rapid_switch_threshold
+    86	        self.no_progress_threshold = no_progress_threshold
+    87	        self.switch_window_minutes = switch_window_minutes
+    88	        
+    89	        # State tracking
+    90	        self.recent_switches: List[datetime] = []
+    91	        self.last_progress_timestamp: Optional[datetime] = None
+    92	        self.break_refusals: int = 0
+    93	        self.overwhelm_history: List[OverwhelmSignal] = []
+    94	    
+    95	    async def check_overwhelm(
+    96	        self,
+    97	        user_id: str,
+    98	        current_state: Dict[str, Any]
+    99	    ) -> tuple[OverwhelmLevel, List[OverwhelmSignal]]:
+   100	        """
+   101	        Check for overwhelm signals.
+   102	        
+   103	        Args:
+   104	            user_id: User identifier
+   105	            current_state: Current cognitive state dict with:
+   106	                - energy_level: str
+   107	                - attention_state: str
+   108	                - task_complexity: float
+   109	                - recent_switches: List[datetime]
+   110	                - last_commit: Optional[datetime]
+   111	                - break_refusals: int
+   112	        
+   113	        Returns:
+   114	            (OverwhelmLevel, List[OverwhelmSignal])
+   115	        """
+   116	        signals: List[OverwhelmSignal] = []
+   117	        
+   118	        # Signal 1: Rapid task switching
+   119	        switch_signal = self._check_rapid_switching(current_state)
+   120	        if switch_signal:
+   121	            signals.append(switch_signal)
+   122	        
+   123	        # Signal 2: No progress/output
+   124	        progress_signal = self._check_no_progress(current_state)
+   125	        if progress_signal:
+   126	            signals.append(progress_signal)
+   127	        
+   128	        # Signal 3: Energy-complexity mismatch
+   129	        mismatch_signal = self._check_energy_mismatch(current_state)
+   130	        if mismatch_signal:
+   131	            signals.append(mismatch_signal)
+   132	        
+   133	        # Signal 4: Break resistance
+   134	        break_signal = self._check_break_resistance(current_state)
+   135	        if break_signal:
+   136	            signals.append(break_signal)
+   137	        
+   138	        # Signal 5: Attention state
+   139	        attention_signal = self._check_attention_overwhelmed(current_state)
+   140	        if attention_signal:
+   141	            signals.append(attention_signal)
+   142	        
+   143	        # Calculate overall overwhelm level
+   144	        level = self._calculate_overwhelm_level(signals)
+   145	        
+   146	        # Store in history
+   147	        if signals:
+   148	            self.overwhelm_history.extend(signals)
+   149	            # Keep last 100 signals
+   150	            self.overwhelm_history = self.overwhelm_history[-100:]
+   151	        
+   152	        logger.info(f"Overwhelm check: {level.value}, {len(signals)} signals")
+   153	        return level, signals
+   154	    
+   155	    def _check_rapid_switching(self, state: Dict[str, Any]) -> Optional[OverwhelmSignal]:
+   156	        """Check for rapid task switching."""
+   157	        recent_switches = state.get('recent_switches', [])
+   158	        
+   159	        # Filter to switch window
+   160	        cutoff = datetime.now() - timedelta(minutes=self.switch_window_minutes)
+   161	        recent = [s for s in recent_switches if s > cutoff]
+   162	        
+   163	        if len(recent) >= self.rapid_switch_threshold:
+   164	            severity = min(1.0, len(recent) / (self.rapid_switch_threshold * 1.5))
+   165	            return OverwhelmSignal(
+   166	                signal_type="rapid_switching",
+   167	                severity=severity,
+   168	                description=f"{len(recent)} task switches in {self.switch_window_minutes} minutes"
+   169	            )
+   170	        return None
+   171	    
+   172	    def _check_no_progress(self, state: Dict[str, Any]) -> Optional[OverwhelmSignal]:
+   173	        """Check for extended period without progress."""
+   174	        last_commit = state.get('last_commit')
+   175	        if not last_commit:
+   176	            return None
+   177	        
+   178	        minutes_since = (datetime.now() - last_commit).total_seconds() / 60
+   179	        
+   180	        if minutes_since >= self.no_progress_threshold:
+   181	            severity = min(1.0, minutes_since / (self.no_progress_threshold * 2))
+   182	            return OverwhelmSignal(
+   183	                signal_type="no_progress",
+   184	                severity=severity,
+   185	                description=f"{int(minutes_since)} minutes without progress"
+   186	            )
+   187	        return None
+   188	    
+   189	    def _check_energy_mismatch(self, state: Dict[str, Any]) -> Optional[OverwhelmSignal]:
+   190	        """Check for energy-complexity mismatch."""
+   191	        energy = state.get('energy_level', 'medium')
+   192	        complexity = state.get('task_complexity', 0.5)
+   193	        
+   194	        # High complexity + low energy = bad combo
+   195	        if energy in ['low', 'very_low'] and complexity > 0.7:
+   196	            severity = complexity * (1.0 if energy == 'very_low' else 0.7)
+   197	            return OverwhelmSignal(
+   198	                signal_type="energy_complexity_mismatch",
+   199	                severity=severity,
+   200	                description=f"High complexity ({complexity:.1f}) with {energy} energy"
+   201	            )
+   202	        return None
+   203	    
+   204	    def _check_break_resistance(self, state: Dict[str, Any]) -> Optional[OverwhelmSignal]:
+   205	        """Check for declining break acceptance."""
+   206	        refusals = state.get('break_refusals', 0)
+   207	        
+   208	        if refusals >= 5:
+   209	            severity = min(1.0, refusals / 10)
+   210	            return OverwhelmSignal(
+   211	                signal_type="break_resistance",
+   212	                severity=severity,
+   213	                description=f"Declined {refusals} break suggestions"
+   214	            )
+   215	        return None
+   216	    
+   217	    def _check_attention_overwhelmed(self, state: Dict[str, Any]) -> Optional[OverwhelmSignal]:
+   218	        """Check if attention state is already overwhelmed."""
+   219	        attention = state.get('attention_state', 'focused')
+   220	        
+   221	        if attention == 'overwhelmed':
+   222	            return OverwhelmSignal(
+   223	                signal_type="attention_overwhelmed",
+   224	                severity=1.0,
+   225	                description="Attention state detected as overwhelmed"
+   226	            )
+   227	        return None
+   228	    
+   229	    def _calculate_overwhelm_level(self, signals: List[OverwhelmSignal]) -> OverwhelmLevel:
+   230	        """Calculate overall overwhelm level from signals."""
+   231	        if not signals:
+   232	            return OverwhelmLevel.NONE
+   233	        
+   234	        # Weighted average of signal severities
+   235	        avg_severity = sum(s.severity for s in signals) / len(signals)
+   236	        
+   237	        # Consider signal count
+   238	        signal_multiplier = min(1.5, 1.0 + (len(signals) - 1) * 0.1)
+   239	        adjusted_severity = avg_severity * signal_multiplier
+   240	        
+   241	        if adjusted_severity >= 0.8:
+   242	            return OverwhelmLevel.CRITICAL
+   243	        elif adjusted_severity >= 0.6:
+   244	            return OverwhelmLevel.SEVERE
+   245	        elif adjusted_severity >= 0.4:
+   246	            return OverwhelmLevel.MODERATE
+   247	        else:
+   248	            return OverwhelmLevel.MILD
+   249	    
+   250	    def generate_circuit_breaker_actions(
+   251	        self,
+   252	        level: OverwhelmLevel,
+   253	        signals: List[OverwhelmSignal]
+   254	    ) -> List[CircuitBreakerAction]:
+   255	        """
+   256	        Generate intervention actions based on overwhelm level.
+   257	        
+   258	        Args:
+   259	            level: Overwhelm severity
+   260	            signals: Active overwhelm signals
+   261	        
+   262	        Returns:
+   263	            List of recommended actions
+   264	        """
+   265	        actions: List[CircuitBreakerAction] = []
+   266	        
+   267	        if level == OverwhelmLevel.NONE:
+   268	            return actions
+   269	        
+   270	        # Critical: Immediate intervention
+   271	        if level == OverwhelmLevel.CRITICAL:
+   272	            actions.append(CircuitBreakerAction(
+   273	                action_type="immediate_break",
+   274	                urgency="immediate",
+   275	                message="🛑 Critical overwhelm detected. Let's pause right now.",
+   276	                steps=[
+   277	                    "Save your current work state",
+   278	                    "Step away from the computer for 10-15 minutes",
+   279	                    "Do something physical: walk, stretch, breathe",
+   280	                    "When you return, we'll simplify your task"
+   281	                ],
+   282	                benefit="Prevents complete shutdown, allows recovery"
+   283	            ))
+   284	            
+   285	            actions.append(CircuitBreakerAction(
+   286	                action_type="end_session",
+   287	                urgency="suggested",
+   288	                message="Consider ending your work session for today.",
+   289	                steps=[
+   290	                    "It's okay to call it a day",
+   291	                    "Capture your current thoughts to ConPort",
+   292	                    "Set up tomorrow's first task (something simple)",
+   293	                    "Rest and recover"
+   294	                ],
+   295	                benefit="Prevents burnout, enables fresh start tomorrow"
+   296	            ))
+   297	        
+   298	        # Severe: Strong intervention
+   299	        elif level == OverwhelmLevel.SEVERE:
+   300	            actions.append(CircuitBreakerAction(
+   301	                action_type="reset_break",
+   302	                urgency="soon",
+   303	                message="⚠️ You're showing signs of overwhelm. Time for a reset.",
+   304	                steps=[
+   305	                    "Take a 10-minute break right now",
+   306	                    "Close extra browser tabs/windows",
+   307	                    "Pick ONE thing to focus on when you return",
+   308	                    "Lower your expectations for today"
+   309	                ],
+   310	                benefit="Reduces cognitive load, provides reset"
+   311	            ))
+   312	            
+   313	            # Check for complexity mismatch
+   314	            if any(s.signal_type == "energy_complexity_mismatch" for s in signals):
+   315	                actions.append(CircuitBreakerAction(
+   316	                    action_type="switch_task",
+   317	                    urgency="suggested",
+   318	                    message="This task is too complex for your current energy.",
+   319	                    steps=[
+   320	                        "Switch to something simpler",
+   321	                        "Come back to this when energy is higher",
+   322	                        "Try: code review, documentation, or tests"
+   323	                    ],
+   324	                    benefit="Matches task to capacity, maintains momentum"
+   325	                ))
+   326	        
+   327	        # Moderate: Gentle intervention
+   328	        elif level == OverwhelmLevel.MODERATE:
+   329	            actions.append(CircuitBreakerAction(
+   330	                action_type="simplify",
+   331	                urgency="suggested",
+   332	                message="💡 I notice you might be struggling. Let's simplify.",
+   333	                steps=[
+   334	                    "Break your current task into smaller chunks",
+   335	                    "Pick the smallest piece to complete",
+   336	                    "Celebrate completing just that one piece",
+   337	                    "Then decide: continue or switch?"
+   338	                ],
+   339	                benefit="Reduces overwhelm, creates achievable wins"
+   340	            ))
+   341	            
+   342	            # Check for rapid switching
+   343	            if any(s.signal_type == "rapid_switching" for s in signals):
+   344	                actions.append(CircuitBreakerAction(
+   345	                    action_type="commit_to_one",
+   346	                    urgency="suggested",
+   347	                    message="You've been switching tasks frequently. Let's commit to one.",
+   348	                    steps=[
+   349	                        "Pick ONE task from your open items",
+   350	                        "Commit to 15 minutes on just that task",
+   351	                        "Set a timer, close other tabs",
+   352	                        "After 15min, you can switch if needed"
+   353	                    ],
+   354	                    benefit="Builds focus, reduces task-switching overhead"
+   355	                ))
+   356	        
+   357	        # Mild: Light suggestion
+   358	        else:  # MILD
+   359	            actions.append(CircuitBreakerAction(
+   360	                action_type="check_in",
+   361	                urgency="suggested",
+   362	                message="Quick check-in: How are you feeling?",
+   363	                steps=[
+   364	                    "Take a 2-minute micro-break",
+   365	                    "Stretch, breathe, reset",
+   366	                    "Make sure you're on track with your goal"
+   367	                ],
+   368	                benefit="Early intervention prevents escalation"
+   369	            ))
+   370	        
+   371	        return actions
+   372	    
+   373	    def reset_state(self) -> None:
+   374	        """Reset detector state (e.g., after break or session end)."""
+   375	        self.recent_switches = []
+   376	        self.break_refusals = 0
+   377	        logger.info("Overwhelm detector state reset")
+   378	
+   379	
+   380	# Convenience function
+   381	async def check_and_intervene(
+   382	    user_id: str,
+   383	    current_state: Dict[str, Any],
+   384	    detector: Optional[OverwhelmDetector] = None
+   385	) -> Dict[str, Any]:
+   386	    """
+   387	    Check for overwhelm and return intervention recommendations.
+   388	    
+   389	    Args:
+   390	        user_id: User identifier
+   391	        current_state: Current cognitive/activity state
+   392	        detector: Optional existing detector (creates new if None)
+   393	    
+   394	    Returns:
+   395	        Dict with level, signals, actions
+   396	    """
+   397	    if detector is None:
+   398	        detector = OverwhelmDetector()
+   399	    
+   400	    level, signals = await detector.check_overwhelm(user_id, current_state)
+   401	    actions = detector.generate_circuit_breaker_actions(level, signals)
+   402	    
+   403	    return {
+   404	        "user_id": user_id,
+   405	        "overwhelm_level": level.value,
+   406	        "signals": [
+   407	            {
+   408	                "type": s.signal_type,
+   409	                "severity": s.severity,
+   410	                "description": s.description
+   411	            }
+   412	            for s in signals
+   413	        ],
+   414	        "actions": [
+   415	            {
+   416	                "type": a.action_type,
+   417	                "urgency": a.urgency,
+   418	                "message": a.message,
+   419	                "steps": a.steps,
+   420	                "benefit": a.benefit
+   421	            }
+   422	            for a in actions
+   423	        ],
+   424	        "timestamp": datetime.now().isoformat()
+   425	    }

@@ -1,0 +1,362 @@
+     1	"""
+     2	Tests for Event Coordinator Suppression Telemetry.
+     3	
+     4	Validates that all 6 suppression rules are tracked correctly,
+     5	per-event-type and per-priority breakdowns work, and the
+     6	suppression report provides actionable signal/noise data.
+     7	"""
+     8	
+     9	import pytest
+    10	import sys
+    11	from pathlib import Path
+    12	from unittest.mock import AsyncMock, patch
+    13	from datetime import datetime, timedelta, timezone
+    14	
+    15	# Add parent directory to path for imports
+    16	sys.path.insert(0, str(Path(__file__).parent.parent))
+    17	
+    18	from event_coordinator import (
+    19	    EventCoordinator,
+    20	    CoordinationEvent,
+    21	    EventType,
+    22	    EventPriority,
+    23	    SuppressionTelemetry
+    24	)
+    25	
+    26	
+    27	@pytest.fixture
+    28	async def coordinator():
+    29	    """Create EventCoordinator with mocked Redis for testing."""
+    30	    coord = EventCoordinator(redis_url="redis://localhost:6379")
+    31	
+    32	    # Mock Redis to avoid actual connections
+    33	    coord.redis_client = AsyncMock()
+    34	    coord.redis_client.ping = AsyncMock(return_value=True)
+    35	
+    36	    # Initialize queues and state without starting workers
+    37	    for priority in EventPriority:
+    38	        import asyncio
+    39	        coord.event_queues[priority] = asyncio.PriorityQueue()
+    40	
+    41	    return coord
+    42	
+    43	
+    44	def create_test_event(
+    45	    event_type: EventType = EventType.TASK_CREATED,
+    46	    priority: EventPriority = EventPriority.MEDIUM,
+    47	    cognitive_load: float = 0.5,
+    48	    interruption_allowed: bool = True,
+    49	    expires_at = None
+    50	) -> CoordinationEvent:
+    51	    """Create a test event with specified parameters."""
+    52	    return CoordinationEvent(
+    53	        id=f"test_{datetime.now().timestamp()}",
+    54	        event_type=event_type,
+    55	        priority=priority,
+    56	        source_system="test",
+    57	        target_systems=["test"],
+    58	        cognitive_load=cognitive_load,
+    59	        interruption_allowed=interruption_allowed,
+    60	        expires_at=expires_at
+    61	    )
+    62	
+    63	
+    64	@pytest.mark.asyncio
+    65	async def test_baseline_pass_through(coordinator):
+    66	    """Test that events pass through when no suppression rules are triggered."""
+    67	    event = create_test_event()
+    68	
+    69	    # Mock flood detection to return 0 (no flooding)
+    70	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+    71	
+    72	    result = await coordinator._should_process_event(event)
+    73	
+    74	    assert result is True
+    75	    assert coordinator.suppression_telemetry.events_received == 1
+    76	    assert coordinator.suppression_telemetry.events_passed == 1
+    77	    assert coordinator.suppression_telemetry.events_suppressed == 0
+    78	
+    79	
+    80	@pytest.mark.asyncio
+    81	async def test_custom_filter_suppression(coordinator):
+    82	    """Test that custom filters are tracked correctly."""
+    83	    # Register a custom filter that rejects all events
+    84	    async def reject_all_filter(event):
+    85	        return False
+    86	
+    87	    coordinator.register_filter(reject_all_filter)
+    88	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+    89	
+    90	    event = create_test_event()
+    91	    result = await coordinator._should_process_event(event)
+    92	
+    93	    assert result is False
+    94	    assert coordinator.suppression_telemetry.events_received == 1
+    95	    assert coordinator.suppression_telemetry.events_passed == 0
+    96	    assert coordinator.suppression_telemetry.events_suppressed == 1
+    97	    assert coordinator.suppression_telemetry.suppressed_by_custom_filter == 1
+    98	
+    99	
+   100	@pytest.mark.asyncio
+   101	async def test_deep_focus_priority_suppression(coordinator):
+   102	    """Test that low-priority events are suppressed in deep focus mode."""
+   103	    coordinator.current_focus_mode = "deep"
+   104	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   105	
+   106	    # Low priority event should be suppressed in deep focus
+   107	    event = create_test_event(priority=EventPriority.LOW)
+   108	    result = await coordinator._should_process_event(event)
+   109	
+   110	    assert result is False
+   111	    assert coordinator.suppression_telemetry.suppressed_by_deep_focus_priority == 1
+   112	
+   113	    # High priority event should pass
+   114	    event2 = create_test_event(priority=EventPriority.HIGH)
+   115	    result2 = await coordinator._should_process_event(event2)
+   116	
+   117	    assert result2 is True
+   118	    assert coordinator.suppression_telemetry.events_passed == 1
+   119	
+   120	
+   121	@pytest.mark.asyncio
+   122	async def test_deep_focus_interrupt_suppression(coordinator):
+   123	    """Test that non-interrupting events are suppressed in deep focus unless critical."""
+   124	    coordinator.current_focus_mode = "deep"
+   125	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   126	
+   127	    # High priority but interruption_allowed=False should be suppressed
+   128	    event = create_test_event(
+   129	        priority=EventPriority.HIGH,
+   130	        interruption_allowed=False
+   131	    )
+   132	    result = await coordinator._should_process_event(event)
+   133	
+   134	    assert result is False
+   135	    assert coordinator.suppression_telemetry.suppressed_by_deep_focus_interrupt == 1
+   136	
+   137	    # Critical priority with interruption_allowed=False should pass
+   138	    event2 = create_test_event(
+   139	        priority=EventPriority.CRITICAL,
+   140	        interruption_allowed=False
+   141	    )
+   142	    result2 = await coordinator._should_process_event(event2)
+   143	
+   144	    assert result2 is True
+   145	
+   146	
+   147	@pytest.mark.asyncio
+   148	async def test_energy_level_suppression(coordinator):
+   149	    """Test that high cognitive load events are suppressed when energy is low."""
+   150	    coordinator.current_energy_level = "low"
+   151	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   152	
+   153	    # High cognitive load event should be suppressed
+   154	    event = create_test_event(cognitive_load=0.8)
+   155	    result = await coordinator._should_process_event(event)
+   156	
+   157	    assert result is False
+   158	    assert coordinator.suppression_telemetry.suppressed_by_energy_level == 1
+   159	
+   160	    # Low cognitive load event should pass
+   161	    event2 = create_test_event(cognitive_load=0.5)
+   162	    result2 = await coordinator._should_process_event(event2)
+   163	
+   164	    assert result2 is True
+   165	
+   166	
+   167	@pytest.mark.asyncio
+   168	async def test_flood_suppression(coordinator):
+   169	    """Test that event flooding is detected and suppressed."""
+   170	    # Mock flood detection to return >10 events
+   171	    coordinator._get_recent_event_count = AsyncMock(return_value=15)
+   172	
+   173	    event = create_test_event()
+   174	    result = await coordinator._should_process_event(event)
+   175	
+   176	    assert result is False
+   177	    assert coordinator.suppression_telemetry.suppressed_by_flood == 1
+   178	
+   179	
+   180	@pytest.mark.asyncio
+   181	async def test_expiry_suppression(coordinator):
+   182	    """Test that expired events are tracked in suppression telemetry."""
+   183	    # Create an expired event
+   184	    expired_time = datetime.now(timezone.utc) - timedelta(minutes=5)
+   185	    event = create_test_event(expires_at=expired_time)
+   186	
+   187	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   188	
+   189	    # Process the event (should hit expiry check in _process_event)
+   190	    await coordinator._process_event(event, "test-worker")
+   191	
+   192	    assert coordinator.suppression_telemetry.suppressed_by_expiry == 1
+   193	
+   194	
+   195	@pytest.mark.asyncio
+   196	async def test_per_event_type_tracking(coordinator):
+   197	    """Test that per-event-type breakdown is tracked correctly."""
+   198	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   199	
+   200	    # Process different event types
+   201	    event1 = create_test_event(event_type=EventType.TASK_CREATED)
+   202	    event2 = create_test_event(event_type=EventType.TASK_UPDATED)
+   203	    event3 = create_test_event(event_type=EventType.TASK_CREATED)
+   204	
+   205	    await coordinator._should_process_event(event1)
+   206	    await coordinator._should_process_event(event2)
+   207	    await coordinator._should_process_event(event3)
+   208	
+   209	    # Check per-event-type counts
+   210	    assert coordinator.suppression_telemetry.per_event_type["task_created"]["received"] == 2
+   211	    assert coordinator.suppression_telemetry.per_event_type["task_updated"]["received"] == 1
+   212	
+   213	    # Now suppress one TASK_CREATED event
+   214	    coordinator.current_energy_level = "low"
+   215	    event4 = create_test_event(
+   216	        event_type=EventType.TASK_CREATED,
+   217	        cognitive_load=0.8
+   218	    )
+   219	    await coordinator._should_process_event(event4)
+   220	
+   221	    assert coordinator.suppression_telemetry.per_event_type["task_created"]["received"] == 3
+   222	    assert coordinator.suppression_telemetry.per_event_type["task_created"]["suppressed"] == 1
+   223	
+   224	
+   225	@pytest.mark.asyncio
+   226	async def test_per_priority_tracking(coordinator):
+   227	    """Test that per-priority breakdown is tracked correctly."""
+   228	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   229	
+   230	    # Process different priorities
+   231	    event1 = create_test_event(priority=EventPriority.CRITICAL)
+   232	    event2 = create_test_event(priority=EventPriority.HIGH)
+   233	    event3 = create_test_event(priority=EventPriority.MEDIUM)
+   234	
+   235	    await coordinator._should_process_event(event1)
+   236	    await coordinator._should_process_event(event2)
+   237	    await coordinator._should_process_event(event3)
+   238	
+   239	    assert coordinator.suppression_telemetry.per_priority["CRITICAL"]["received"] == 1
+   240	    assert coordinator.suppression_telemetry.per_priority["HIGH"]["received"] == 1
+   241	    assert coordinator.suppression_telemetry.per_priority["MEDIUM"]["received"] == 1
+   242	
+   243	    # Suppress a LOW priority event in deep focus
+   244	    coordinator.current_focus_mode = "deep"
+   245	    event4 = create_test_event(priority=EventPriority.LOW)
+   246	    await coordinator._should_process_event(event4)
+   247	
+   248	    assert coordinator.suppression_telemetry.per_priority["LOW"]["received"] == 1
+   249	    assert coordinator.suppression_telemetry.per_priority["LOW"]["suppressed"] == 1
+   250	
+   251	
+   252	@pytest.mark.asyncio
+   253	async def test_suppression_report_structure(coordinator):
+   254	    """Test that get_suppression_report returns correct structure."""
+   255	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   256	
+   257	    # Process some events
+   258	    event1 = create_test_event()
+   259	    event2 = create_test_event(cognitive_load=0.8)
+   260	
+   261	    await coordinator._should_process_event(event1)
+   262	
+   263	    coordinator.current_energy_level = "low"
+   264	    await coordinator._should_process_event(event2)
+   265	
+   266	    report = coordinator.get_suppression_report()
+   267	
+   268	    # Check structure
+   269	    assert "summary" in report
+   270	    assert "per_rule_breakdown" in report
+   271	    assert "per_event_type" in report
+   272	    assert "per_priority" in report
+   273	    assert "adhd_state" in report
+   274	
+   275	    # Check summary fields
+   276	    assert report["summary"]["events_received"] == 2
+   277	    assert report["summary"]["events_passed"] == 1
+   278	    assert report["summary"]["events_suppressed"] == 1
+   279	    assert "signal_noise_ratio" in report["summary"]
+   280	    assert "suppression_rate_pct" in report["summary"]
+   281	
+   282	    # Check per_rule_breakdown has all 6 rules
+   283	    assert len(report["per_rule_breakdown"]) == 6
+   284	    assert "custom_filter" in report["per_rule_breakdown"]
+   285	    assert "deep_focus_priority" in report["per_rule_breakdown"]
+   286	    assert "deep_focus_interrupt" in report["per_rule_breakdown"]
+   287	    assert "energy_level" in report["per_rule_breakdown"]
+   288	    assert "flood" in report["per_rule_breakdown"]
+   289	    assert "expiry" in report["per_rule_breakdown"]
+   290	
+   291	
+   292	@pytest.mark.asyncio
+   293	async def test_signal_noise_ratio_calculation(coordinator):
+   294	    """Test that signal/noise ratio is calculated correctly."""
+   295	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   296	
+   297	    # Pass 3 events, suppress 1 event
+   298	    for _ in range(3):
+   299	        event = create_test_event()
+   300	        await coordinator._should_process_event(event)
+   301	
+   302	    coordinator.current_energy_level = "low"
+   303	    suppressed_event = create_test_event(cognitive_load=0.8)
+   304	    await coordinator._should_process_event(suppressed_event)
+   305	
+   306	    report = coordinator.get_suppression_report()
+   307	
+   308	    # Signal/noise ratio = passed / received = 3 / 4 = 0.75
+   309	    assert report["summary"]["signal_noise_ratio"] == 0.75
+   310	    assert report["summary"]["suppression_rate_pct"] == 25.0
+   311	
+   312	
+   313	@pytest.mark.asyncio
+   314	async def test_zero_events_no_division_error(coordinator):
+   315	    """Test that report doesn't crash with zero events."""
+   316	    report = coordinator.get_suppression_report()
+   317	
+   318	    assert report["summary"]["events_received"] == 0
+   319	    assert report["summary"]["events_passed"] == 0
+   320	    assert report["summary"]["events_suppressed"] == 0
+   321	    assert report["summary"]["signal_noise_ratio"] == 0.0
+   322	    assert report["summary"]["suppression_rate_pct"] == 0.0
+   323	
+   324	
+   325	@pytest.mark.asyncio
+   326	async def test_rule_short_circuit_ordering(coordinator):
+   327	    """Test that first matching rule gets the count (short-circuit)."""
+   328	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   329	
+   330	    # Set up deep focus mode + low energy (multiple rules could apply)
+   331	    coordinator.current_focus_mode = "deep"
+   332	    coordinator.current_energy_level = "low"
+   333	
+   334	    # Create event that would match BOTH deep_focus_priority AND energy_level
+   335	    event = create_test_event(
+   336	        priority=EventPriority.LOW,  # Would trigger deep_focus_priority
+   337	        cognitive_load=0.8           # Would trigger energy_level
+   338	    )
+   339	
+   340	    result = await coordinator._should_process_event(event)
+   341	
+   342	    assert result is False
+   343	    # Only the FIRST matching rule should be counted (deep_focus_priority)
+   344	    assert coordinator.suppression_telemetry.suppressed_by_deep_focus_priority == 1
+   345	    assert coordinator.suppression_telemetry.suppressed_by_energy_level == 0
+   346	
+   347	
+   348	@pytest.mark.asyncio
+   349	async def test_telemetry_in_health_endpoint(coordinator):
+   350	    """Test that suppression telemetry is included in health check."""
+   351	    coordinator._get_recent_event_count = AsyncMock(return_value=0)
+   352	
+   353	    # Process some events
+   354	    event = create_test_event()
+   355	    await coordinator._should_process_event(event)
+   356	
+   357	    # Get health status
+   358	    health = await coordinator.get_coordination_health()
+   359	
+   360	    assert "suppression_telemetry" in health
+   361	    assert "summary" in health["suppression_telemetry"]
+   362	    assert health["suppression_telemetry"]["summary"]["events_received"] == 1
