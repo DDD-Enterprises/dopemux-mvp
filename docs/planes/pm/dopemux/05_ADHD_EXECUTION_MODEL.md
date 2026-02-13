@@ -17,10 +17,181 @@ Dopemux UX constraints that preserve focus, reduce decision fatigue, and checkpo
 - Checkpointing and resumption behavior.
 
 ## Non-negotiable invariants
-1. **No Wall of Text**: Initial responses MUST NOT exceed 25 lines of text unless explicitly requested via `--verbose` or similar.
-2. **One clear next step**: Every Supervisor output MUST highlight exactly ONE recommended next action, even if alternatives are provided.
-3. **Mandatory Checkpoints**: Long-running planning or execution sequences MUST pause for user confirmation at least every 25 minutes or 5 major steps.
-4. **No Silent Loops**: The system must never enter a retry loop without informing the user after the second attempt.
+
+### INV-ADHD-001: Progressive Disclosure Caps Default Output
+**Statement**
+- MUST limit initial output to 25 lines (or top 3 items) unless verbose mode provides explicit override.
+
+**Owner**
+- Supervisor
+
+**Scope**
+- Applies to: per-turn
+- Surfaces: `src/dopemux/ux/renderer.py`
+
+**Evidence**
+- FACT ANCHORS:
+  - `src/dopemux/ux/renderer.py` (to be verified)
+
+**Enforcement**
+- Mechanism:
+  - Runtime: Output buffer truncation just before TTY flush.
+
+**Test**
+- Local command(s):
+  - `dmux plan --verbose=false`
+- Expected signals:
+  - Output is short. "...and 10 more items".
+- Failure signature:
+  - Scrollback wall of text.
+- Exit behavior:
+  - N/A.
+
+**Failure modes**
+- If violated:
+  - Impact: cognitive overload, detail blindness.
+  - Severity: S2 medium.
+  - Containment: Clear screen and summarize.
+
+### INV-ADHD-002: No Choice Paralysis (1 Rec + 2 Alts)
+**Statement**
+- MUST present exactly ONE recommended next action (Primary), even if valid alternatives exist. Max 2 alternatives shown.
+
+**Owner**
+- Supervisor
+
+**Scope**
+- Applies to: per-turn
+- Surfaces: `src/dopemux/supervisor/policy.py`
+
+**Evidence**
+- FACT ANCHORS:
+  - `src/dopemux/supervisor/policy.py` (TBD implied)
+
+**Enforcement**
+- Mechanism:
+  - Runtime: Policy engine filter forces ranking.
+
+**Test**
+- Local command(s):
+  - Trigger ambiguous state (e.g., git conflict).
+- Expected signals:
+  - "Recommended: [A]. Alternatives: [B], [C]."
+- Failure signature:
+  - "Please choose from A, B, C, D, E..."
+- Exit behavior:
+  - Wait for user.
+
+**Failure modes**
+- If violated:
+  - Impact: stall, decision fatigue.
+  - Severity: S2 medium.
+  - Containment: Supervisor auto-picks "Safe" option if idle > 5m.
+
+### INV-ADHD-003: Checkpointing and Session Cadence
+**Statement**
+- MUST halt for user confirmation at least every 25 minutes or 5 major steps.
+
+**Owner**
+- Supervisor
+
+**Scope**
+- Applies to: per-run
+- Surfaces: `src/dopemux/ux/focus_timer.py`
+
+**Evidence**
+- FACT ANCHORS:
+  - `src/dopemux/ux/focus_timer.py` (to be verified)
+
+**Enforcement**
+- Mechanism:
+  - Runtime: Sentinel check in main dispatch loop.
+
+**Test**
+- Local command(s):
+  - `dmux run --mock-time=26m`
+- Expected signals:
+  - "Focus Window ended. Break or Continue?"
+- Failure signature:
+  - Runs for 2 hours uninterrupted.
+- Exit behavior:
+  - Pause (SIGSTOP logic or internal loop wait).
+
+**Failure modes**
+- If violated:
+  - Impact: burnout, drift.
+  - Severity: S2 medium.
+  - Containment: Force break on next turn.
+
+### INV-ADHD-004: Complexity Gating Reduces Chunk Size
+**Statement**
+- If complexity score > 0.6, MUST reject plan or force decomposition into smaller chunks.
+
+**Owner**
+- Supervisor
+
+**Scope**
+- Applies to: per-packet
+- Surfaces: `src/dopemux/supervisor/complexity.py`
+
+**Evidence**
+- FACT ANCHORS:
+  - `src/dopemux/supervisor/complexity.py` (TBD check)
+
+**Enforcement**
+- Mechanism:
+  - Gate: Plan validator.
+
+**Test**
+- Local command(s):
+  - Submit 50-step plan.
+- Expected signals:
+  - "Plan too complex (0.8). Decomposing..."
+- Failure signature:
+  - Accepts massive batch job.
+- Exit behavior:
+  - Refusal.
+
+**Failure modes**
+- If violated:
+  - Impact: context window overflow, error cascade.
+  - Severity: S1 high.
+  - Containment: Kill run, revert state.
+
+### INV-ADHD-005: Fatigue Mode Prefers Safe Stops
+**Statement**
+- If fatigue signal detected (late hours, thrashing), MUST default to "Pause" or "Safe" actions, limiting high-risk writes.
+
+**Owner**
+- Supervisor
+
+**Scope**
+- Applies to: per-session
+- Surfaces: `src/dopemux/ux/fatigue.py`
+
+**Evidence**
+- FACT ANCHORS:
+  - `config/limits.yaml` (working hours config)
+
+**Enforcement**
+- Mechanism:
+  - Runtime: Action filter removes `DELETE/OVERWRITE` verbs from options.
+
+**Test**
+- Local command(s):
+  - `dmux run --time "03:00"`
+- Expected signals:
+  - "Late night mode active. Refactors disabled."
+- Failure signature:
+  - Allows `rm -rf` at 3 AM.
+- Exit behavior:
+  - Block action.
+
+**Failure modes**
+- If violated:
+  - Impact: regretful mistakes.
+  - Severity: S2 medium.
+  - Containment: Rollback via git.
 
 ## FACT ANCHORS (Repo-derived)
 - **Output Formatter**: `src/dopemux/ux/renderer.py` (to be verified).

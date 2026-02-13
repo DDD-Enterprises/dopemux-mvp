@@ -17,10 +17,181 @@ How Supervisor chooses the optimal runner + model combination for a given task s
 - Failure modes and fallback strategies.
 
 ## Non-negotiable invariants
-1. **Budget Cap**: A single task packet MUST NOT exceed its estimated cost by more than 50% without explicit operator confirmation.
-2. **Quality Floor**: Critical stages (Architecture/Review) MUST run on high-reasoning models (Opus/GPT-4o/Reasoning) regardless of cost tier.
-3. **No Silent Upgrades**: Escalating from a free/cheap tier to a paid API tier requires policy check (or prior approval).
-4. **Deterministic Fallback**: If a preferred model is unavailable, valid alternatives are tried in a fixed, predictable order.
+
+### INV-COST-001: Preference Ladder is Deterministic
+**Statement**
+- MUST select the same model for the same stage/budget context every time.
+
+**Owner**
+- Supervisor
+
+**Scope**
+- Applies to: per-packet
+- Surfaces: `src/dopemux/supervisor/router.py`
+
+**Evidence**
+- FACT ANCHORS:
+  - `config/models.yaml` (Static configuration)
+
+**Enforcement**
+- Mechanism:
+  - Runtime: Hardcoded `Stage-to-Model` lookup table.
+
+**Test**
+- Local command(s):
+  - `dmux route --stage "Design" --budget "High"`
+- Expected signals:
+  - Always returns "Claude 3.5 Sonnet" (or configured Tier 3).
+- Failure signature:
+  - Returns "GPT-4o-mini" randomly.
+- Exit behavior:
+  - Log decision and proceed (if valid).
+
+**Failure modes**
+- If violated:
+  - Impact: nondeterminism, cost variance.
+  - Severity: S2 medium.
+  - Containment: Lock random seed (if applicable).
+
+### INV-COST-002: Routing Decisions are Logged
+**Statement**
+- MUST record *why* a specific runner was chosen (e.g., "Tier 1 fallback due to cost limit").
+
+**Owner**
+- Supervisor
+
+**Scope**
+- Applies to: per-run
+- Surfaces: `logs/supervisor.log`, `RUN_REPORT.json`
+
+**Evidence**
+- FACT ANCHORS:
+  - `src/dopemux/supervisor/router.py` (logging calls)
+
+**Enforcement**
+- Mechanism:
+  - Runtime: Router component integrity check.
+
+**Test**
+- Local command(s):
+  - `grep "Routing decision:" logs/supervisor.log`
+- Expected signals:
+  - "Selected Runner: X Reason: Y"
+- Failure signature:
+  - Missing log lines.
+- Exit behavior:
+  - N/A.
+
+**Failure modes**
+- If violated:
+  - Impact: audit loss.
+  - Severity: S3 low.
+  - Containment: Fix logging.
+
+### INV-COST-003: Limits Model Never Guessed
+**Statement**
+- MUST NOT invent pricing or limits. If config is missing, assume $0.00 budget (Safe Mode).
+
+**Owner**
+- Supervisor
+
+**Scope**
+- Applies to: per-run
+- Surfaces: `config/limits.yaml`
+
+**Evidence**
+- FACT ANCHORS:
+  - `config/pricing.yaml` (source of truth)
+
+**Enforcement**
+- Mechanism:
+  - Runtime: Default to `SAFE_MODE` if config missing.
+
+**Test**
+- Local command(s):
+  - `mv config/limits.yaml config/limits.bak && dmux run`
+- Expected signals:
+  - "Limits config missing. Entering Safe Mode (Budget: $0.00)."
+- Failure signature:
+  - Runs with infinite budget.
+- Exit behavior:
+  - Fallback to Safe Mode.
+
+**Failure modes**
+- If violated:
+  - Impact: cost leak.
+  - Severity: S1 high.
+  - Containment: Hard API quotas on provider side.
+
+### INV-COST-004: Cheap-Mode Triggers Reduce Scope
+**Statement**
+- When in "Cheap Mode", Supervisor MUST reduce scope (chunk size, context window), NOT correctness (e.g., using a dumb model for complex math).
+
+**Owner**
+- Supervisor
+
+**Scope**
+- Applies to: per-packet
+- Surfaces: `src/dopemux/packets/generator.py`
+
+**Evidence**
+- FACT ANCHORS:
+  - `config/limits.yaml` (defines cheap mode threshold)
+
+**Enforcement**
+- Mechanism:
+  - Runtime: If `cheap_mode=True`, max_steps = 3 (vs 7).
+
+**Test**
+- Local command(s):
+  - `dmux run --profile economy --objective "Massive refactor"`
+- Expected signals:
+  - "Objective too large for Economy Profile. Breaking down..."
+- Failure signature:
+  - Attempts massive refactor on Haiku and fails.
+- Exit behavior:
+  - Refusal / Decomposition.
+
+**Failure modes**
+- If violated:
+  - Impact: failed runs, wasted tokens.
+  - Severity: S2 medium.
+  - Containment: User intervention.
+
+### INV-COST-005: External Pricing Stored as Config
+**Statement**
+- MUST store pricing rates in `config/pricing.yaml`, NOT hardcoded in python source.
+
+**Owner**
+- Store
+
+**Scope**
+- Applies to: repo
+- Surfaces: `config/pricing.yaml`
+
+**Evidence**
+- FACT ANCHORS:
+  - `config/pricing.yaml`
+
+**Enforcement**
+- Mechanism:
+  - Gate: `doc_gate.py` (could check for hardcoded rates in src).
+
+**Test**
+- Local command(s):
+  - `grep "0.0001" src/dopemux/supervisor/cost.py`
+- Expected signals:
+  - No results (should import from config).
+- Failure signature:
+  - Hardcoded magic numbers.
+- Exit behavior:
+  - Code Review Rejection.
+
+**Failure modes**
+- If violated:
+  - Impact: stale pricing, maintenance nightmare.
+  - Severity: S3 low.
+  - Containment: Update code.
 
 ## FACT ANCHORS (Repo-derived)
 - **Model Config**: `config/models.yaml` (to be created/verified).

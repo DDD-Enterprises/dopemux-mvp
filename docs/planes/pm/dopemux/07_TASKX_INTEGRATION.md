@@ -21,10 +21,16 @@ The seam between deterministic engine and stateful runtime. This defines the API
 3. **Artifact Only**: TaskX communicates back ONLY via Files (JSON artifacts). No stdout parsing for logic.
 
 ## FACT ANCHORS (Repo-derived)
-- **TaskX Wrapper**: `scripts/taskx`
-- **Output Schema**: `src/taskx/schema/artifacts.py` (external repo concept).
+- **OBSERVED: Task-Orchestrator Source**: `services/task-orchestrator/` (contains `enhanced_orchestrator.py`, `jpickly_orchestrator.py`).
+- **OBSERVED: TaskX Wrapper**: `scripts/taskx` (Shell wrapper).
+- **OBSERVED: Integration Tests**: `services/task-orchestrator/tests/week2_integration.py` (demonstrates wiring).
+- **OBSERVED: Output Schema**: `src/taskx/schema/artifacts.py` (external repo concept, referenced in Orchestrator).
+- **INFERRED: Environment**: `.taskx_venv/` (Virtualenv for TaskX).
+- **INFERRED: Pin File**: `.taskx-pin` (Version pinning).
 
 ## Open questions
+- **Live Output Streaming**: Can Supervisor stream TaskX stdout in real-time to UI?
+  - *Resolution*: Yes, via subprocess pipe reading in `Dispatch`.
 - **Live Output Streaming**: Can Supervisor stream TaskX stdout in real-time to UI?
   - *Resolution*: Yes, via subprocess pipe reading in `Dispatch`.
 
