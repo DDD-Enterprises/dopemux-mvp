@@ -1,0 +1,3 @@
+project=dopemux-mvp
+owner=hu3mann
+intent=Primary dopemux workspace. Task packets must refuse if repo_id mismatches.
