@@ -3,6 +3,7 @@
   "allowed_root_dirs": [
     ".taskx",
     ".claude",
+    ".githooks",
     ".github",
     "SYSTEM_ARCHIVE",
     "components",
