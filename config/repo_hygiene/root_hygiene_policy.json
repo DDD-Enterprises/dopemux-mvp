@@ -19,6 +19,7 @@
     "plugins",
     "profiles",
     "quarantine",
+    "out",
     "reports",
     "scripts",
     "services",
