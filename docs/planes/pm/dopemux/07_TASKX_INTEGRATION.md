@@ -21,7 +21,7 @@ The seam between deterministic engine and stateful runtime. This defines the API
 3. **Artifact Only**: TaskX communicates back ONLY via Files (JSON artifacts). No stdout parsing for logic.
 
 ## FACT ANCHORS (Repo-derived)
-- **OBSERVED: Task-Orchestrator Source**: `services/task-orchestrator/` (contains `enhanced_orchestrator.py`, `jpickly_orchestrator.py`).
+- **OBSERVED: Task-Orchestrator Source**: `services/task-orchestrator/` (Entrypoint: `app/main.py`, Core: `enhanced_orchestrator.py`).
 - **OBSERVED: TaskX Wrapper**: `scripts/taskx` (Shell wrapper).
 - **OBSERVED: Integration Tests**: `services/task-orchestrator/tests/week2_integration.py` (demonstrates wiring).
 - **OBSERVED: Output Schema**: `src/taskx/schema/artifacts.py` (external repo concept, referenced in Orchestrator).

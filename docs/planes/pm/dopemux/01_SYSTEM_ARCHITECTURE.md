@@ -25,7 +25,7 @@ TODO: List the architectural invariants that must never be violated.
 - **OBSERVED: Service Root**: `services/` contains 20+ services including `task-orchestrator`, `adhd_engine`, `dopecon-bridge`, and `session-manager`.
 - **OBSERVED: Infrastructure**: `compose.yml` defines the canonical stack (Postgres/AGE, Redis, Qdrant).
 - **OBSERVED: Control Plane Services**:
-  - `task-orchestrator` (Port 8000): Customized orchestration with `jpickly` integration (`services/task-orchestrator/`).
+  - `task-orchestrator` (Port 8000): FastAPI service with `jpickly` integration (`services/task-orchestrator/app/main.py`).
   - `adhd-engine` (Port 8095): Real-time cognitive load management (`services/adhd_engine/`).
   - `dopecon-bridge` (Port 3016): Event bus and pattern detection (`services/dopecon-bridge/`).
 - **OBSERVED: Intelligence Plane**:
