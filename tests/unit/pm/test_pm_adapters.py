@@ -8,11 +8,11 @@ from pathlib import Path
 import pytest
 
 from dopemux.pm.adapters import (
-    canonical_task_id,
     orchestrator_event_to_pm,
     pm_to_bus_event,
     taskmaster_event_to_pm,
 )
+from dopemux.pm.models import content_hash_task_id
 
 
 def test_taskmaster_mapping_created_status_updated_completed() -> None:
@@ -72,8 +72,40 @@ def test_dialect_breadcrumbs_present_for_taskmaster_mapping() -> None:
     assert event["payload"]["dialect_status"] == "BLOCKED"
 
 
-def test_task_id_policy_source_task_id_precedence_and_fallback_normalization() -> None:
-    # Source task ID path should ignore timestamp drift.
+def test_task_id_matches_packet_a_policy() -> None:
+    event = taskmaster_event_to_pm(
+        "taskmaster.task.created",
+        {"source_task_id": "tm-stable", "title": "A", "description": "B"},
+    )
+    assert event["task_id"] == content_hash_task_id("taskmaster", "tm-stable", "A", "B")
+
+
+def test_empty_string_source_task_id_is_treated_as_present_per_packet_a() -> None:
+    event = taskmaster_event_to_pm(
+        "taskmaster.task.created",
+        {"source_task_id": "", "title": "T", "description": "D"},
+    )
+    assert event["task_id"] == content_hash_task_id("taskmaster", "", "T", "D")
+
+
+def test_task_id_fallback_matches_packet_a_policy() -> None:
+    event = taskmaster_event_to_pm(
+        "taskmaster.task.created",
+        {
+            "source_task_id": None,
+            "title": "  Fix   Bug  ",
+            "description": "  In   Auth ",
+        },
+    )
+    assert event["task_id"] == content_hash_task_id(
+        "taskmaster",
+        None,
+        "  Fix   Bug  ",
+        "  In   Auth ",
+    )
+
+
+def test_source_task_id_path_ignores_created_at_drift() -> None:
     event_a = taskmaster_event_to_pm(
         "taskmaster.task.created",
         {
@@ -93,11 +125,6 @@ def test_task_id_policy_source_task_id_precedence_and_fallback_normalization() -
         },
     )
     assert event_a["task_id"] == event_b["task_id"]
-
-    # Fallback path uses normalized title + description.
-    id_1 = canonical_task_id("taskmaster", None, "  Fix   Bug  ", "  In   Auth ")
-    id_2 = canonical_task_id("taskmaster", None, "fix bug", "in auth")
-    assert id_1 == id_2
 
 
 def test_pm_to_bus_event_namespace_starts_with_pm() -> None:

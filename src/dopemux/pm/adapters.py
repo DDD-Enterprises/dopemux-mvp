@@ -2,20 +2,19 @@
 
 from __future__ import annotations
 
-import re
 from collections.abc import Mapping
 from typing import Any
 
 from .events import PMEventType, canonical_json, create_pm_event, sha256_hex
+from .models import content_hash_task_id, normalize_text as _normalize_text
 
 
 _DEFAULT_TS_UTC = "1970-01-01T00:00:00Z"
-_WHITESPACE_RE = re.compile(r"\s+")
 
 
 def normalize_text(s: str) -> str:
-    """Normalize text for deterministic fallback task IDs."""
-    return _WHITESPACE_RE.sub(" ", str(s).strip().lower())
+    """Compatibility wrapper for Packet A normalization policy."""
+    return _normalize_text(str(s))
 
 
 def canonical_task_id(
@@ -24,13 +23,13 @@ def canonical_task_id(
     title: str | None,
     description: str | None,
 ) -> str:
-    """Derive canonical task_id using source ID first, normalized content second."""
-    if source_task_id is not None and str(source_task_id) != "":
-        return sha256_hex(f"{source}:{source_task_id}")
-
-    norm_title = normalize_text(title or "")
-    norm_description = normalize_text(description or "")
-    return sha256_hex(f"{source}:{norm_title}:{norm_description}")
+    """Compatibility wrapper for Packet A task-id policy."""
+    return content_hash_task_id(
+        source=source,
+        source_task_id=source_task_id,
+        title=title or "",
+        description=description,
+    )
 
 
 def _mapping_get(obj: Any, key: str) -> Any:
@@ -114,7 +113,7 @@ def taskmaster_event_to_pm(
         data.get("task_id"),
         data.get("id"),
     )
-    task_id = canonical_task_id(
+    task_id = content_hash_task_id(
         source=source,
         source_task_id=str(source_task_id) if source_task_id is not None else None,
         title=str(data.get("title") or ""),
@@ -193,7 +192,7 @@ def orchestrator_event_to_pm(
     title = _first_non_none(merged.get("title"), merged.get("task_title"), "")
     description = _first_non_none(merged.get("description"), merged.get("task_description"), "")
 
-    task_id = canonical_task_id(
+    task_id = content_hash_task_id(
         source=source,
         source_task_id=str(source_task_id) if source_task_id is not None else None,
         title=str(title),
