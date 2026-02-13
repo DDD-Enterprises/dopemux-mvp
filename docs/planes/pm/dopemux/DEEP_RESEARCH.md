@@ -29,6 +29,14 @@ Resolve Open Questions into a structured, evidence-anchored bundle. Research hap
 - Research does not modify spec docs directly; only proposes deltas.
 - No invented pricing or inferred API limits unless labeled INFERRED.
 
+## FACT ANCHORS (Repo-derived)
+- **Doc Gate**: `scripts/doc_gate.py` (verifies structure).
+- **Research Root**: `docs/planes/pm/dopemux/research/`.
+
+## Open questions
+- **Bundle Format**: JSON vs SQLite for the index?
+  - *Resolution*: JSON for git-diffability.
+
 ## Required Structure
 
 ### 1) BUNDLE_INDEX.json
