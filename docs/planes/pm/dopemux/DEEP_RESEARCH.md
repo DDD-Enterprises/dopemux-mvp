@@ -1,7 +1,10 @@
 ---
 id: DEEP_RESEARCH
-title: Deep Research
+title: "Deep Research Spec (PACKET DR-1)"
 type: explanation
+plane: "pm"
+component: "dopemux"
+status: "skeleton"
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-02-13'
@@ -9,6 +12,7 @@ last_review: '2026-02-13'
 next_review: '2026-05-14'
 prelude: Deep Research (explanation) for dopemux documentation and developer workflows.
 ---
+
 # Deep Research Spec (PACKET DR-1)
 
 ## Purpose
