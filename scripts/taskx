@@ -1,3 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
-exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/taskx-local" "$@"
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [[ ! -f "$REPO_ROOT/.taskxroot" ]]; then
+  echo "Refusing: .taskxroot missing in repo root: $REPO_ROOT" >&2
+  exit 2
+fi
+
+if [[ ! -f "$REPO_ROOT/.taskx-pin" ]]; then
+  echo "Refusing: .taskx-pin missing in repo root." >&2
+  exit 2
+fi
+
+VENV="$REPO_ROOT/.taskx_venv"
+if [[ ! -d "$VENV" ]]; then
+  echo "Refusing: TaskX venv missing ($VENV)." >&2
+  exit 2
+fi
+
+source "$VENV/bin/activate"
+exec taskx "$@"
