@@ -1,0 +1,939 @@
+     1	"""
+     2	Context Manager for ADHD-optimized development.
+     3	
+     4	Handles automatic preservation and restoration of development context including
+     5	files, cursor positions, mental model, and decision history.
+     6	"""
+     7	
+     8	import os
+     9	
+    10	import hashlib
+    11	
+    12	import logging
+    13	
+    14	logger = logging.getLogger(__name__)
+    15	
+    16	import json
+    17	import shlex
+    18	import sqlite3
+    19	import subprocess
+    20	import time
+    21	import uuid
+    22	from datetime import datetime, timedelta
+    23	from pathlib import Path
+    24	from typing import Any, Dict, List, Optional
+    25	
+    26	from ..console_utils import console
+    27	
+    28	
+    29	class ContextSnapshot:
+    30	    """Represents a saved development context."""
+    31	
+    32	    def __init__(self, **kwargs):
+    33	        self.session_id = kwargs.get("session_id", str(uuid.uuid4()))
+    34	        self.timestamp = kwargs.get("timestamp", datetime.now().isoformat())
+    35	        self.working_directory = kwargs.get("working_directory", str(Path.cwd()))
+    36	        self.open_files = kwargs.get("open_files", [])
+    37	        self.current_goal = kwargs.get("current_goal", "")
+    38	        self.mental_model = kwargs.get("mental_model", {})
+    39	        self.git_state = kwargs.get("git_state", {})
+    40	        self.recent_commands = kwargs.get("recent_commands", [])
+    41	        self.decisions = kwargs.get("decisions", [])
+    42	        self.attention_state = kwargs.get("attention_state", "normal")
+    43	        self.focus_duration = kwargs.get("focus_duration", 0)
+    44	        self.context_switches = kwargs.get("context_switches", 0)
+    45	        self.unsaved_changes = kwargs.get("unsaved_changes", False)
+    46	        self.message = kwargs.get("message", "")
+    47	        self.tags = kwargs.get("tags", [])
+    48	        self.auto_description = kwargs.get("auto_description", "")
+    49	        self.session_type = kwargs.get("session_type", "general")
+    50	
+    51	    def to_dict(self) -> Dict[str, Any]:
+    52	        """Convert to dictionary for storage."""
+    53	        return {
+    54	            "session_id": self.session_id,
+    55	            "timestamp": self.timestamp,
+    56	            "working_directory": self.working_directory,
+    57	            "open_files": self.open_files,
+    58	            "current_goal": self.current_goal,
+    59	            "mental_model": self.mental_model,
+    60	            "git_state": self.git_state,
+    61	            "recent_commands": self.recent_commands,
+    62	            "decisions": self.decisions,
+    63	            "attention_state": self.attention_state,
+    64	            "focus_duration": self.focus_duration,
+    65	            "context_switches": self.context_switches,
+    66	            "unsaved_changes": self.unsaved_changes,
+    67	            "message": self.message,
+    68	            "tags": self.tags,
+    69	            "auto_description": self.auto_description,
+    70	            "session_type": self.session_type,
+    71	        }
+    72	
+    73	    @classmethod
+    74	    def from_dict(cls, data: Dict[str, Any]) -> "ContextSnapshot":
+    75	        """Create from dictionary."""
+    76	        return cls(**data)
+    77	
+    78	
+    79	class ContextManager:
+    80	    """
+    81	    Manages development context preservation and restoration.
+    82	
+    83	    Features:
+    84	    - Auto-save every 30 seconds
+    85	    - Capture file states, cursor positions, mental model
+    86	    - SQLite storage for fast access
+    87	    - Git integration for change tracking
+    88	    - Emergency context saves on interruption
+    89	    """
+    90	
+    91	    def __init__(self, project_path: Path):
+    92	        """Initialize context manager for project."""
+    93	        self.project_path = project_path
+    94	        self.dopemux_dir = project_path / ".dopemux"
+    95	        self.db_path = self.dopemux_dir / "context.db"
+    96	        self.sessions_dir = self.dopemux_dir / "sessions"
+    97	
+    98	        # Create directories if they don't exist (needed for database)
+    99	        self.dopemux_dir.mkdir(exist_ok=True)
+   100	        self.sessions_dir.mkdir(exist_ok=True)
+   101	
+   102	        self._init_storage()
+   103	        self._auto_save_enabled = False
+   104	        self._current_session_id = None
+   105	
+   106	    def initialize(self) -> None:
+   107	        """Initialize context manager for new project."""
+   108	        self.dopemux_dir.mkdir(exist_ok=True)
+   109	        self.sessions_dir.mkdir(exist_ok=True)
+   110	        self._init_storage()
+   111	
+   112	        # Create initial session
+   113	        self._current_session_id = str(uuid.uuid4())
+   114	        console.log("[green]✓ Context manager initialized[/green]")
+   115	
+   116	    def _validate_project_path(self, file_path: Path) -> bool:
+   117	        """
+   118	        Ensure file path is within project boundaries to prevent directory traversal.
+   119	
+   120	        Args:
+   121	            file_path: Path to validate
+   122	
+   123	        Returns:
+   124	            True if path is safe and within project, False otherwise
+   125	        """
+   126	        try:
+   127	            # Resolve both paths to handle symlinks and relative paths
+   128	            resolved_file = file_path.resolve()
+   129	            resolved_project = self.project_path.resolve()
+   130	
+   131	            # Check if file path is within project boundaries
+   132	            resolved_file.relative_to(resolved_project)
+   133	            return True
+   134	
+   135	        except (ValueError, OSError):
+   136	            # ValueError: path is outside project
+   137	            # OSError: path doesn't exist or permission issues
+   138	            console.log(f"[red]Security: Blocked access to path outside project: {file_path}[/red]")
+   139	            return False
+   140	
+   141	    def _run_git_command(self, args: List[str], timeout: int = 10) -> Optional[str]:
+   142	        """
+   143	        Securely run git command with input validation and timeout.
+   144	
+   145	        Args:
+   146	            args: Git command arguments (without 'git')
+   147	            timeout: Command timeout in seconds
+   148	
+   149	        Returns:
+   150	            Command output if successful, None if failed
+   151	        """
+   152	        # Validate git command arguments
+   153	        allowed_commands = {
+   154	            "branch", "status", "log", "show", "diff", "rev-parse", "config"
+   155	        }
+   156	
+   157	        if not args or args[0] not in allowed_commands:
+   158	            console.log(f"[red]Security: Git command not allowed: {args}[/red]")
+   159	            return None
+   160	
+   161	        # Build secure command
+   162	        cmd = ["git"] + args
+   163	
+   164	        try:
+   165	            # Run with security constraints
+   166	            result = subprocess.run(
+   167	                cmd,
+   168	                cwd=str(self.project_path),  # Ensure we're in project directory
+   169	                capture_output=True,
+   170	                text=True,
+   171	                timeout=timeout,
+   172	                check=False  # Don't raise on non-zero exit
+   173	            )
+   174	
+   175	            if result.returncode == 0:
+   176	                return result.stdout.strip()
+   177	            else:
+   178	                # Log error but don't expose it to prevent information leakage
+   179	                console.log(f"[yellow]Git command failed (code {result.returncode})[/yellow]")
+   180	                return None
+   181	
+   182	        except subprocess.TimeoutExpired:
+   183	            console.log(f"[red]Git command timed out after {timeout}s[/red]")
+   184	            return None
+   185	        except Exception as e:
+   186	            console.log(f"[red]Git command error: {type(e).__name__}[/red]")
+   187	            return None
+   188	
+   189	    def _init_storage(self) -> None:
+   190	        """Initialize SQLite database."""
+   191	        with sqlite3.connect(self.db_path) as conn:
+   192	            conn.execute(
+   193	                """
+   194	                CREATE TABLE IF NOT EXISTS context_snapshots (
+   195	                    session_id TEXT PRIMARY KEY,
+   196	                    timestamp TEXT NOT NULL,
+   197	                    working_directory TEXT NOT NULL,
+   198	                    data TEXT NOT NULL,
+   199	                    hash TEXT NOT NULL,
+   200	                    size INTEGER NOT NULL,
+   201	                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+   202	                )
+   203	            """
+   204	            )
+   205	
+   206	            conn.execute(
+   207	                """
+   208	                CREATE TABLE IF NOT EXISTS session_metadata (
+   209	                    session_id TEXT PRIMARY KEY,
+   210	                    project_path TEXT NOT NULL,
+   211	                    started_at TEXT NOT NULL,
+   212	                    last_active TEXT NOT NULL,
+   213	                    total_duration INTEGER DEFAULT 0,
+   214	                    context_switches INTEGER DEFAULT 0,
+   215	                    focus_score REAL DEFAULT 0.0,
+   216	                    tags TEXT DEFAULT '[]',
+   217	                    auto_description TEXT DEFAULT '',
+   218	                    session_type TEXT DEFAULT 'general'
+   219	                )
+   220	            """
+   221	            )
+   222	
+   223	            # Create session tags table for better tag management
+   224	            conn.execute(
+   225	                """
+   226	                CREATE TABLE IF NOT EXISTS session_tags (
+   227	                    session_id TEXT NOT NULL,
+   228	                    tag TEXT NOT NULL,
+   229	                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+   230	                    PRIMARY KEY (session_id, tag),
+   231	                    FOREIGN KEY (session_id) REFERENCES context_snapshots(session_id) ON DELETE CASCADE
+   232	                )
+   233	            """
+   234	            )
+   235	
+   236	            conn.execute(
+   237	                """
+   238	                CREATE INDEX IF NOT EXISTS idx_timestamp
+   239	                ON context_snapshots(timestamp DESC)
+   240	            """
+   241	            )
+   242	
+   243	    def save_context(self, message: Optional[str] = None, force: bool = False) -> str:
+   244	        """
+   245	        Save current development context.
+   246	
+   247	        Args:
+   248	            message: Optional message describing the save
+   249	            force: Force save even if no changes detected
+   250	
+   251	        Returns:
+   252	            Session ID of saved context
+   253	        """
+   254	        try:
+   255	            # Capture current state
+   256	            context = self._capture_current_state()
+   257	            if message:
+   258	                context.message = message
+   259	
+   260	            # Check if context has changed (unless forced)
+   261	            if not force and not self._has_context_changed(context):
+   262	                return context.session_id
+   263	
+   264	            # Store in database
+   265	            self._store_context(context)
+   266	
+   267	            # Update session metadata
+   268	            self._update_session_metadata(context.session_id)
+   269	
+   270	            # Save detailed session file
+   271	            self._save_session_file(context)
+   272	
+   273	            self._current_session_id = context.session_id
+   274	            return context.session_id
+   275	
+   276	        except Exception as e:
+   277	            console.log(f"[red]Error saving context: {e}[/red]")
+   278	            # Emergency fallback
+   279	            emergency_session_id = self._emergency_save()
+   280	            return emergency_session_id or str(uuid.uuid4())
+   281	
+   282	    def restore_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+   283	        """
+   284	        Restore specific session by ID.
+   285	
+   286	        Args:
+   287	            session_id: Session ID to restore
+   288	
+   289	        Returns:
+   290	            Context data or None if not found
+   291	        """
+   292	        try:
+   293	            with sqlite3.connect(self.db_path) as conn:
+   294	                cursor = conn.execute(
+   295	                    "SELECT data FROM context_snapshots WHERE session_id = ?",
+   296	                    (session_id,),
+   297	                )
+   298	                row = cursor.fetchone()
+   299	
+   300	                if row:
+   301	                    context_data = json.loads(row[0])
+   302	                    self._apply_context(context_data)
+   303	                    return context_data
+   304	
+   305	            return None
+   306	
+   307	        except Exception as e:
+   308	            console.log(f"[red]Error restoring session {session_id}: {e}[/red]")
+   309	            return None
+   310	
+   311	    def restore_latest(self) -> Optional[Dict[str, Any]]:
+   312	        """
+   313	        Restore most recent session.
+   314	
+   315	        Returns:
+   316	            Latest context data or None if none found
+   317	        """
+   318	        try:
+   319	            with sqlite3.connect(self.db_path) as conn:
+   320	                cursor = conn.execute(
+   321	                    """SELECT session_id, data FROM context_snapshots
+   322	                       WHERE working_directory = ?
+   323	                       ORDER BY timestamp DESC LIMIT 1""",
+   324	                    (str(self.project_path),),
+   325	                )
+   326	                row = cursor.fetchone()
+   327	
+   328	                if row:
+   329	                    context_data = json.loads(row[1])
+   330	                    self._apply_context(context_data)
+   331	                    return context_data
+   332	
+   333	            return None
+   334	
+   335	        except Exception as e:
+   336	            console.log(f"[red]Error restoring latest session: {e}[/red]")
+   337	            return None
+   338	
+   339	    def list_sessions(self, limit: int = 20) -> List[Dict[str, Any]]:
+   340	        """
+   341	        List recent sessions.
+   342	
+   343	        Args:
+   344	            limit: Maximum number of sessions to return
+   345	
+   346	        Returns:
+   347	            List of session information
+   348	        """
+   349	        sessions = []
+   350	
+   351	        try:
+   352	            with sqlite3.connect(self.db_path) as conn:
+   353	                cursor = conn.execute(
+   354	                    """SELECT session_id, timestamp, data
+   355	                       FROM context_snapshots
+   356	                       WHERE working_directory = ?
+   357	                       ORDER BY timestamp DESC LIMIT ?""",
+   358	                    (str(self.project_path), limit),
+   359	                )
+   360	
+   361	                for row in cursor.fetchall():
+   362	                    session_id, timestamp, data_json = row
+   363	                    data = json.loads(data_json)
+   364	
+   365	                    sessions.append(
+   366	                        {
+   367	                            "id": session_id,
+   368	                            "timestamp": timestamp,
+   369	                            "current_goal": data.get("current_goal", "No goal set"),
+   370	                            "open_files": data.get("open_files", []),
+   371	                            "git_branch": data.get("git_state", {}).get(
+   372	                                "branch", "unknown"
+   373	                            ),
+   374	                            "focus_duration": data.get("focus_duration", 0),
+   375	                            "message": data.get("message", ""),
+   376	                        }
+   377	                    )
+   378	
+   379	        except Exception as e:
+   380	            console.log(f"[red]Error listing sessions: {e}[/red]")
+   381	
+   382	        return sessions
+   383	
+   384	    def get_current_context(self) -> Dict[str, Any]:
+   385	        """Get current context information."""
+   386	        try:
+   387	            context = self._capture_current_state()
+   388	            return context.to_dict()
+   389	        except Exception as e:
+   390	            console.log(f"[red]Error getting current context: {e}[/red]")
+   391	            return {}
+   392	
+   393	    def start_auto_save(self, interval: int = 30) -> None:
+   394	        """Start automatic context saving."""
+   395	        self._auto_save_enabled = True
+   396	        # In a real implementation, this would start a background thread
+   397	        console.log(f"[blue]Auto-save enabled (every {interval}s)[/blue]")
+   398	
+   399	    def stop_auto_save(self) -> None:
+   400	        """Stop automatic context saving."""
+   401	        self._auto_save_enabled = False
+   402	        console.log("[blue]Auto-save disabled[/blue]")
+   403	
+   404	    def cleanup_old_sessions(self, days: int = 30) -> int:
+   405	        """
+   406	        Clean up sessions older than specified days.
+   407	
+   408	        Args:
+   409	            days: Number of days to keep
+   410	
+   411	        Returns:
+   412	            Number of sessions cleaned up
+   413	        """
+   414	        cutoff_date = datetime.now() - timedelta(days=days)
+   415	        cutoff_str = cutoff_date.isoformat()
+   416	
+   417	        try:
+   418	            with sqlite3.connect(self.db_path) as conn:
+   419	                cursor = conn.execute(
+   420	                    "DELETE FROM context_snapshots WHERE timestamp < ?", (cutoff_str,)
+   421	                )
+   422	                deleted_count = cursor.rowcount
+   423	
+   424	                # Also clean up session files
+   425	                for session_file in self.sessions_dir.glob("session-*.json"):
+   426	                    if session_file.stat().st_mtime < cutoff_date.timestamp():
+   427	                        session_file.unlink()
+   428	
+   429	                console.print(
+   430	                    f"[green]✓ Cleaned up {deleted_count} old sessions[/green]"
+   431	                )
+   432	                return deleted_count
+   433	
+   434	        except Exception as e:
+   435	            console.log(f"[red]Error cleaning up sessions: {e}[/red]")
+   436	            return 0
+   437	
+   438	    def generate_smart_description(self, context: ContextSnapshot) -> str:
+   439	        """Generate smart description based on git changes and context."""
+   440	        git_state = context.git_state
+   441	
+   442	        # Check git status for recent changes
+   443	        if git_state.get("status"):
+   444	            status_lines = git_state["status"].split("\n")
+   445	            modified_files = []
+   446	            added_files = []
+   447	            deleted_files = []
+   448	
+   449	            for line in status_lines:
+   450	                line = line.strip()
+   451	                if line.startswith("M "):
+   452	                    modified_files.append(line[2:])
+   453	                elif line.startswith("A "):
+   454	                    added_files.append(line[2:])
+   455	                elif line.startswith("D "):
+   456	                    deleted_files.append(line[2:])
+   457	
+   458	            # Generate description based on changes
+   459	            if added_files:
+   460	                if len(added_files) == 1:
+   461	                    return f"Added {Path(added_files[0]).name}"
+   462	                else:
+   463	                    return f"Added {len(added_files)} new files"
+   464	            elif modified_files:
+   465	                # Determine primary file type
+   466	                extensions = [Path(f).suffix for f in modified_files]
+   467	                common_ext = max(set(extensions), key=extensions.count) if extensions else ""
+   468	
+   469	                if len(modified_files) == 1:
+   470	                    return f"Modified {Path(modified_files[0]).name}"
+   471	                elif common_ext == ".py":
+   472	                    return f"Updated Python code ({len(modified_files)} files)"
+   473	                elif common_ext in [".js", ".ts", ".tsx"]:
+   474	                    return f"Updated JavaScript/TypeScript ({len(modified_files)} files)"
+   475	                elif common_ext == ".md":
+   476	                    return f"Updated documentation ({len(modified_files)} files)"
+   477	                else:
+   478	                    return f"Modified {len(modified_files)} files"
+   479	            elif deleted_files:
+   480	                return f"Removed {len(deleted_files)} files"
+   481	
+   482	        # Fallback to goal-based description
+   483	        goal = context.current_goal
+   484	        if goal and goal != "Continue development":
+   485	            return goal[:50] + ("..." if len(goal) > 50 else "")
+   486	
+   487	        # Check last commit for context
+   488	        last_commit = git_state.get("last_commit", "")
+   489	        if last_commit and len(last_commit.split()) > 1:
+   490	            # Extract meaningful part of commit message
+   491	            commit_msg = " ".join(last_commit.split()[1:])
+   492	            return f"Continue: {commit_msg[:40]}..."
+   493	
+   494	        return "Development session"
+   495	
+   496	    def auto_tag_session(self, context: ContextSnapshot) -> List[str]:
+   497	        """Automatically generate tags based on session context."""
+   498	        tags = []
+   499	
+   500	        # Analyze git changes for automatic tagging
+   501	        git_state = context.git_state
+   502	        if git_state.get("status"):
+   503	            status = git_state["status"].lower()
+   504	
+   505	            # File type tags
+   506	            if ".py" in status:
+   507	                tags.append("python")
+   508	            if any(ext in status for ext in [".js", ".ts", ".tsx", ".jsx"]):
+   509	                tags.append("javascript")
+   510	            if ".md" in status or "readme" in status:
+   511	                tags.append("docs")
+   512	            if "test" in status or ".test." in status:
+   513	                tags.append("testing")
+   514	            if any(ext in status for ext in [".yml", ".yaml", ".json", "config"]):
+   515	                tags.append("config")
+   516	
+   517	        # Analyze file paths for context
+   518	        open_files = context.open_files
+   519	        file_paths = []
+   520	        for file_info in open_files:
+   521	            if isinstance(file_info, dict):
+   522	                path = file_info.get("path", "")
+   523	            else:
+   524	                path = str(file_info)
+   525	            file_paths.append(path.lower())
+   526	
+   527	        combined_paths = " ".join(file_paths)
+   528	
+   529	        # Feature detection
+   530	        if any(keyword in combined_paths for keyword in ["feature", "feat", "new"]):
+   531	            tags.append("feature")
+   532	        if any(keyword in combined_paths for keyword in ["fix", "bug", "error"]):
+   533	            tags.append("bugfix")
+   534	        if any(keyword in combined_paths for keyword in ["test", "spec", "__test__"]):
+   535	            tags.append("testing")
+   536	        if any(keyword in combined_paths for keyword in ["doc", "readme", "guide"]):
+   537	            tags.append("documentation")
+   538	        if any(keyword in combined_paths for keyword in ["refactor", "clean"]):
+   539	            tags.append("refactor")
+   540	
+   541	        # Analyze message for manual tags
+   542	        message = context.message.lower() if context.message else ""
+   543	        if message:
+   544	            if any(keyword in message for keyword in ["wip", "progress", "working"]):
+   545	                tags.append("wip")
+   546	            if any(keyword in message for keyword in ["done", "complete", "finish"]):
+   547	                tags.append("complete")
+   548	            if any(keyword in message for keyword in ["break", "pause", "save"]):
+   549	                tags.append("checkpoint")
+   550	
+   551	        # Time-based tags
+   552	        hour = datetime.now().hour
+   553	        if 6 <= hour < 12:
+   554	            tags.append("morning")
+   555	        elif 12 <= hour < 17:
+   556	            tags.append("afternoon")
+   557	        elif 17 <= hour < 22:
+   558	            tags.append("evening")
+   559	        else:
+   560	            tags.append("late-night")
+   561	
+   562	        # Focus duration tags
+   563	        focus_duration = context.focus_duration
+   564	        if focus_duration > 45:
+   565	            tags.append("deep-work")
+   566	        elif focus_duration > 20:
+   567	            tags.append("focused")
+   568	        elif focus_duration > 0:
+   569	            tags.append("quick-session")
+   570	
+   571	        return list(set(tags))  # Remove duplicates
+   572	
+   573	    def detect_session_type(self, context: ContextSnapshot) -> str:
+   574	        """Detect session type based on context and changes."""
+   575	        message = context.message.lower() if context.message else ""
+   576	        git_state = context.git_state
+   577	
+   578	        # Check commit message patterns
+   579	        if git_state.get("last_commit"):
+   580	            last_commit = git_state["last_commit"].lower()
+   581	            if any(word in last_commit for word in ["feat:", "feature:", "add:"]):
+   582	                return "feature"
+   583	            elif any(word in last_commit for word in ["fix:", "bug:", "hotfix:"]):
+   584	                return "bugfix"
+   585	            elif any(word in last_commit for word in ["docs:", "doc:"]):
+   586	                return "documentation"
+   587	            elif any(word in last_commit for word in ["test:", "tests:"]):
+   588	                return "testing"
+   589	            elif any(word in last_commit for word in ["refactor:", "clean:"]):
+   590	                return "refactor"
+   591	            elif any(word in last_commit for word in ["config:", "setup:"]):
+   592	                return "configuration"
+   593	
+   594	        # Check message for type indicators
+   595	        if any(keyword in message for keyword in ["implement", "add", "create", "new"]):
+   596	            return "feature"
+   597	        elif any(keyword in message for keyword in ["fix", "bug", "error", "issue"]):
+   598	            return "bugfix"
+   599	        elif any(keyword in message for keyword in ["doc", "readme", "guide", "explain"]):
+   600	            return "documentation"
+   601	        elif any(keyword in message for keyword in ["test", "coverage", "spec"]):
+   602	            return "testing"
+   603	        elif any(keyword in message for keyword in ["refactor", "clean", "optimize"]):
+   604	            return "refactor"
+   605	        elif any(keyword in message for keyword in ["debug", "investigate", "explore"]):
+   606	            return "debugging"
+   607	        elif any(keyword in message for keyword in ["review", "check", "validate"]):
+   608	            return "review"
+   609	
+   610	        # Check files being worked on
+   611	        open_files = context.open_files
+   612	        test_files = 0
+   613	        doc_files = 0
+   614	        config_files = 0
+   615	
+   616	        for file_info in open_files:
+   617	            if isinstance(file_info, dict):
+   618	                path = file_info.get("path", "")
+   619	            else:
+   620	                path = str(file_info)
+   621	
+   622	            path_lower = path.lower()
+   623	            if "test" in path_lower or path_lower.endswith((".test.py", ".spec.js")):
+   624	                test_files += 1
+   625	            elif path_lower.endswith((".md", ".rst", ".txt")):
+   626	                doc_files += 1
+   627	            elif any(config_word in path_lower for config_word in ["config", "settings", ".env", ".yml", ".yaml"]):
+   628	                config_files += 1
+   629	
+   630	        # Determine type based on file patterns
+   631	        total_files = len(open_files)
+   632	        if total_files > 0:
+   633	            if test_files / total_files > 0.5:
+   634	                return "testing"
+   635	            elif doc_files / total_files > 0.5:
+   636	                return "documentation"
+   637	            elif config_files / total_files > 0.5:
+   638	                return "configuration"
+   639	
+   640	        return "general"  # Default type
+   641	
+   642	    def add_session_tags(self, session_id: str, tags: List[str]) -> None:
+   643	        """Add tags to a session."""
+   644	        with sqlite3.connect(self.db_path) as conn:
+   645	            for tag in tags:
+   646	                conn.execute(
+   647	                    """INSERT OR IGNORE INTO session_tags (session_id, tag)
+   648	                       VALUES (?, ?)""",
+   649	                    (session_id, tag)
+   650	                )
+   651	
+   652	    def get_session_tags(self, session_id: str) -> List[str]:
+   653	        """Get tags for a session."""
+   654	        with sqlite3.connect(self.db_path) as conn:
+   655	            cursor = conn.execute(
+   656	                "SELECT tag FROM session_tags WHERE session_id = ?",
+   657	                (session_id,)
+   658	            )
+   659	            return [row[0] for row in cursor.fetchall()]
+   660	
+   661	    def search_sessions_by_tag(self, tag: str, limit: int = 20) -> List[Dict[str, Any]]:
+   662	        """Search sessions by tag."""
+   663	        with sqlite3.connect(self.db_path) as conn:
+   664	            cursor = conn.execute(
+   665	                """SELECT DISTINCT cs.session_id, cs.timestamp, cs.data
+   666	                   FROM context_snapshots cs
+   667	                   JOIN session_tags st ON cs.session_id = st.session_id
+   668	                   WHERE st.tag = ? AND cs.working_directory = ?
+   669	                   ORDER BY cs.timestamp DESC LIMIT ?""",
+   670	                (tag, str(self.project_path), limit)
+   671	            )
+   672	
+   673	            sessions = []
+   674	            for row in cursor.fetchall():
+   675	                session_id, timestamp, data_json = row
+   676	                data = json.loads(data_json)
+   677	                sessions.append({
+   678	                    "id": session_id,
+   679	                    "timestamp": timestamp,
+   680	                    "current_goal": data.get("current_goal", "No goal set"),
+   681	                    "open_files": data.get("open_files", []),
+   682	                    "git_branch": data.get("git_state", {}).get("branch", "unknown"),
+   683	                    "focus_duration": data.get("focus_duration", 0),
+   684	                    "message": data.get("message", ""),
+   685	                    "tags": self.get_session_tags(session_id)
+   686	                })
+   687	
+   688	            return sessions
+   689	
+   690	    def _capture_current_state(self) -> ContextSnapshot:
+   691	        """Capture current development state."""
+   692	        # Get open files (this would integrate with editor)
+   693	        open_files = self._get_open_files()
+   694	
+   695	        # Get git state
+   696	        git_state = self._get_git_state()
+   697	
+   698	        # Get recent commands (from shell history)
+   699	        recent_commands = self._get_recent_commands()
+   700	
+   701	        # Create context snapshot
+   702	        context = ContextSnapshot(
+   703	            session_id=self._current_session_id or str(uuid.uuid4()),
+   704	            working_directory=str(self.project_path),
+   705	            open_files=open_files,
+   706	            git_state=git_state,
+   707	            recent_commands=recent_commands,
+   708	            # These would be populated by other components
+   709	            current_goal=self._get_current_goal(),
+   710	            mental_model=self._get_mental_model(),
+   711	            decisions=self._get_recent_decisions(),
+   712	            attention_state="normal",  # Would come from attention monitor
+   713	            focus_duration=0,  # Would come from attention monitor
+   714	            context_switches=0,  # Would come from attention monitor
+   715	            unsaved_changes=self._has_unsaved_changes(),
+   716	        )
+   717	
+   718	        # Add smart features
+   719	        context.auto_description = self.generate_smart_description(context)
+   720	        context.session_type = self.detect_session_type(context)
+   721	        context.tags = self.auto_tag_session(context)
+   722	
+   723	        return context
+   724	
+   725	    def _get_open_files(self) -> List[Dict[str, Any]]:
+   726	        """Get list of currently open files."""
+   727	        # This would integrate with the editor to get actual open files
+   728	        # For now, return recently modified files as approximation
+   729	        open_files = []
+   730	
+   731	        try:
+   732	            # Find recently modified files with security validation
+   733	            for file_path in self.project_path.rglob("*"):
+   734	                # Validate path is within project boundaries
+   735	                if not self._validate_project_path(file_path):
+   736	                    continue
+   737	
+   738	                if (
+   739	                    file_path.is_file()
+   740	                    and not any(part.startswith(".") for part in file_path.parts)
+   741	                    and file_path.suffix
+   742	                    in [".py", ".js", ".ts", ".rs", ".md", ".yaml", ".json"]
+   743	                ):
+   744	
+   745	                    # Check if modified in last hour
+   746	                    mtime = file_path.stat().st_mtime
+   747	                    if time.time() - mtime < 3600:  # 1 hour
+   748	                        open_files.append(
+   749	                            {
+   750	                                "path": str(file_path.relative_to(self.project_path)),
+   751	                                "absolute_path": str(file_path),
+   752	                                "last_modified": datetime.fromtimestamp(
+   753	                                    mtime
+   754	                                ).isoformat(),
+   755	                                "cursor_position": {"line": 1, "column": 1},  # Default
+   756	                                "scroll_position": 0,
+   757	                                "unsaved_changes": False,
+   758	                            }
+   759	                        )
+   760	
+   761	        except Exception as e:
+   762	            console.log(f"[yellow]Warning: Could not get open files: {e}[/yellow]")
+   763	
+   764	        return open_files[:10]  # Limit to 10 most recent
+   765	
+   766	    def _get_git_state(self) -> Dict[str, Any]:
+   767	        """Get current git repository state with secure git operations."""
+   768	        git_state = {}
+   769	
+   770	        try:
+   771	            # Get current branch
+   772	            branch = self._run_git_command(["branch", "--show-current"])
+   773	            if branch:
+   774	                git_state["branch"] = branch
+   775	
+   776	            # Get status
+   777	            status = self._run_git_command(["status", "--porcelain"])
+   778	            if status is not None:
+   779	                git_state["status"] = status
+   780	                git_state["has_changes"] = bool(status)
+   781	
+   782	            # Get last commit
+   783	            last_commit = self._run_git_command(["log", "-1", "--oneline"])
+   784	            if last_commit:
+   785	                git_state["last_commit"] = last_commit
+   786	
+   787	        except Exception as e:
+   788	            console.log(f"[yellow]Warning: Could not get git state: {e}[/yellow]")
+   789	
+   790	        return git_state
+   791	
+   792	    def _get_recent_commands(self) -> List[str]:
+   793	        """Get recent shell commands."""
+   794	        # This would integrate with shell history
+   795	        # For now, return empty list
+   796	        return []
+   797	
+   798	    def _get_current_goal(self) -> str:
+   799	        """Get current development goal."""
+   800	        # This would be maintained by the task decomposer
+   801	        return "Continue development"
+   802	
+   803	    def _get_mental_model(self) -> Dict[str, Any]:
+   804	        """Get current mental model."""
+   805	        # This would be maintained by the system
+   806	        return {
+   807	            "approach": "Implementing ADHD features",
+   808	            "next_steps": ["Complete context manager", "Add attention monitoring"],
+   809	            "blockers": [],
+   810	        }
+   811	
+   812	    def _get_recent_decisions(self) -> List[Dict[str, Any]]:
+   813	        """Get recent development decisions."""
+   814	        # This would be maintained by the system
+   815	        return []
+   816	
+   817	    def _has_unsaved_changes(self) -> bool:
+   818	        """Check if there are unsaved changes."""
+   819	        # This would integrate with the editor
+   820	        git_state = self._get_git_state()
+   821	        return git_state.get("has_changes", False)
+   822	
+   823	    def _has_context_changed(self, context: ContextSnapshot) -> bool:
+   824	        """Check if context has meaningfully changed."""
+   825	        # For now, always return True (save every time)
+   826	        # In a real implementation, this would compare with last saved context
+   827	        return True
+   828	
+   829	    def _store_context(self, context: ContextSnapshot) -> None:
+   830	        """Store context in database."""
+   831	        data_json = json.dumps(context.to_dict())
+   832	        data_hash = hashlib.sha256(data_json.encode()).hexdigest()
+   833	
+   834	        with sqlite3.connect(self.db_path) as conn:
+   835	            conn.execute(
+   836	                """INSERT OR REPLACE INTO context_snapshots
+   837	                   (session_id, timestamp, working_directory, data, hash, size)
+   838	                   VALUES (?, ?, ?, ?, ?, ?)""",
+   839	                (
+   840	                    context.session_id,
+   841	                    context.timestamp,
+   842	                    context.working_directory,
+   843	                    data_json,
+   844	                    data_hash,
+   845	                    len(data_json),
+   846	                ),
+   847	            )
+   848	
+   849	            # Store tags in separate table
+   850	            if context.tags:
+   851	                # Clear existing tags for this session
+   852	                conn.execute(
+   853	                    "DELETE FROM session_tags WHERE session_id = ?",
+   854	                    (context.session_id,)
+   855	                )
+   856	                # Insert new tags
+   857	                for tag in context.tags:
+   858	                    conn.execute(
+   859	                        """INSERT INTO session_tags (session_id, tag)
+   860	                           VALUES (?, ?)""",
+   861	                        (context.session_id, tag)
+   862	                    )
+   863	
+   864	    def _update_session_metadata(self, session_id: str) -> None:
+   865	        """Update session metadata."""
+   866	        with sqlite3.connect(self.db_path) as conn:
+   867	            conn.execute(
+   868	                """INSERT OR REPLACE INTO session_metadata
+   869	                   (session_id, project_path, started_at, last_active)
+   870	                   VALUES (?, ?, ?, ?)""",
+   871	                (
+   872	                    session_id,
+   873	                    str(self.project_path),
+   874	                    datetime.now().isoformat(),
+   875	                    datetime.now().isoformat(),
+   876	                ),
+   877	            )
+   878	
+   879	    def _save_session_file(self, context: ContextSnapshot) -> None:
+   880	        """Save detailed session file."""
+   881	        session_file = self.sessions_dir / f"session-{context.session_id}.json"
+   882	        with open(session_file, "w") as f:
+   883	            json.dump(context.to_dict(), f, indent=2)
+   884	
+   885	    def _apply_context(self, context_data: Dict[str, Any]) -> None:
+   886	        """Apply restored context by opening relevant files and restoring positions."""
+   887	        try:
+   888	            # Get files from context
+   889	            open_files = context_data.get('open_files', [])
+   890	            current_file = context_data.get('current_file')
+   891	            cursor_position = context_data.get('cursor_position')
+   892	
+   893	            # Open current file if specified
+   894	            if current_file and os.path.exists(current_file):
+   895	                # In Claude Code, we can suggest opening the file
+   896	                console.print(
+   897	                    f"[blue]💡 Context restored - consider opening: {current_file}[/blue]"
+   898	                )
+   899	                if cursor_position:
+   900	                    console.print(
+   901	                        f"[blue]   Cursor position: line {cursor_position.get('line', '?')}, col {cursor_position.get('column', '?')}[/blue]"
+   902	                    )
+   903	
+   904	            # Show other context info
+   905	            current_goal = context_data.get('current_goal', 'Unknown')
+   906	            console.log(f"[blue]🎯 Current goal: {current_goal}[/blue]")
+   907	
+   908	            # Show any recent changes or notes
+   909	            notes = context_data.get('notes', [])
+   910	            if notes:
+   911	                console.log(f"[blue]📝 Recent notes: {len(notes)} items[/blue]")
+   912	
+   913	        except Exception as e:
+   914	            console.log(f"[red]❌ Failed to apply context: {e}[/red]")
+   915	            # Fallback to basic display
+   916	            console.print(
+   917	                f"[blue]Context data available: {list(context_data.keys()) if context_data else 'None'}[/blue]"
+   918	            )
+   919	
+   920	    def _emergency_save(self) -> Optional[str]:
+   921	        """Emergency context save on system failure."""
+   922	        try:
+   923	            emergency_file = self.dopemux_dir / "emergency_context.json"
+   924	            # Create minimal context without calling potentially failing methods
+   925	            emergency_session_id = str(uuid.uuid4())
+   926	            emergency_context = {
+   927	                "session_id": emergency_session_id,
+   928	                "timestamp": datetime.now().isoformat(),
+   929	                "working_directory": str(self.project_path),
+   930	                "emergency_save": True,
+   931	                "message": "Emergency save due to system failure",
+   932	            }
+   933	            with open(emergency_file, "w") as f:
+   934	                json.dump(emergency_context, f, indent=2)
+   935	            console.log("[yellow]Emergency context saved[/yellow]")
+   936	            return emergency_session_id
+   937	        except Exception as e:
+   938	            console.log(f"[red]Emergency save failed: {e}[/red]")
+   939	            return None
