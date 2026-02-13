@@ -33,6 +33,8 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
   - `desktop-commander` (3012): Desktop Automation (X11/Display).
   - `leantime-bridge` (3015): Project Management Integration.
   - `litellm` (4000): Model Proxy/Router.
+- **OBSERVED: Task-Orchestrator Tools**: "37 specialized tools" mentioned in `ADR-203`, located in `services/task-orchestrator/tools/`.
+- **OBSERVED: ML Risk**: `services/ml-risk-assessment/` (Extracted from Orchestrator).
 
 ## Open questions
 - **Dynamic Discovery**: Can we auto-discover new MCP servers?
