@@ -1,4 +1,0 @@
-# one path per line, relative to repo root
-services/taskmaster/server.py
-services/taskmaster/bridge_adapter.py
-services/taskmaster/src/dopemux_taskmaster.egg-info/entry_points.txt
