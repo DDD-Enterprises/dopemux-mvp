@@ -1,3 +1,0 @@
-MISSING: services/taskmaster/models.py
-MISSING: services/taskmaster/main.py
-NOTE: Expected paths services/taskmaster/models.py and services/taskmaster/main.py are not present in repository. Future packets should use discovered taskmaster surfaces from 12_taskmaster_find_files.txt and 14_taskmaster_entrypoints.txt.
