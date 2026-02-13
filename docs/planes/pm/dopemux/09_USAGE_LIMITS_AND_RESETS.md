@@ -19,10 +19,13 @@ Operational truth: quotas reset and we want auto-switch-back behaviors. Manage c
 1. **Fail-Safe**: If limits cannot be verified (network down), assume "Safe Mode" (Lowest Cost) or Block, depending on config.
 2. **User Notification**: Never block a task silently. Always notify "Limit Reached" and offer Override.
 
-## FACT ANCHORS (Repo-derived)
-- **Limits Config**: `config/limits.yaml`.
-- **Usage Ledger**: `.dopemux/usage.json`.
-- **Budget Envs**: `BUDGET` (partial match in grep, likely TBD).
+## FACT ANCHORS
+
+- **OBSERVED: Metrics API**: `services/task-orchestrator/app/main.py` provides `/metrics` with `tasks_orchestrated_total` and `ai_agent_dispatches_total`.
+- **OBSERVED: Health Checks**: `PlaneCoordinator` monitors service health via `_check_plane_health`.
+- **OBSERVED: Cognitive Load**: `OrchestrationTask` (in `models.py`) includes `cognitive_load` and `energy_required` for limit enforcement.
+- **OBSERVED: Usage Tracking**: `services/task-orchestrator/app/core/sync.py` track sync events processed.
+- **FUTURE: Hard Spending Caps**: Configuration exists in `settings.py` but enforcement logic is not yet observed in active service code.
 
 ## Open questions
 - **Multi-Instance Aggregation**: How do we aggregate usage across concurrent instances?
