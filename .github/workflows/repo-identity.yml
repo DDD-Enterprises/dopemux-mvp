@@ -1,0 +1,13 @@
+name: Repo Identity Check
+
+on: [push, pull_request]
+
+jobs:
+  identity-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Repo Identity
+        run: |
+          test -f .repo_id
+          grep "^project=dopemux-mvp$" .repo_id
