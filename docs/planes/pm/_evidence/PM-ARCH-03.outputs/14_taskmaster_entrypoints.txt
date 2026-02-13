@@ -1,0 +1,2 @@
+services/taskmaster/server.py:361:async def main():
+services/taskmaster/server.py:373:if __name__ == "__main__":
