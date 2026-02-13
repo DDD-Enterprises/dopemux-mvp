@@ -33,6 +33,7 @@ SYNC_INTERVAL_SEC = int(os.getenv("MIRROR_SYNC_INTERVAL_SEC", "60"))  # Default:
 BATCH_SIZE = int(os.getenv("MIRROR_SYNC_BATCH_SIZE", "100"))
 TARGET_SCHEMA_VERSION = "v1.0.3"
 MIRROR_SCHEMA_RESET = os.getenv("MIRROR_SCHEMA_RESET", "false").strip().lower() == "true"
+MIRROR_RAW_TTL_CAP_DAYS = int(os.getenv("MIRROR_RAW_TTL_CAP_DAYS", "7"))
 
 
 class PostgresMirrorSync:
@@ -487,6 +488,19 @@ class PostgresMirrorSync:
             normalized = value.replace("Z", "+00:00")
             return datetime.fromisoformat(normalized)
         raise TypeError(f"Unsupported datetime value type: {type(value)}")
+
+    def _normalize_ttl_days(self, value: Any) -> int:
+        """Normalize source ttl_days with safe fallback + hard cap."""
+        cap = max(1, int(MIRROR_RAW_TTL_CAP_DAYS))
+        if value is None:
+            return cap
+        try:
+            ttl = int(value)
+        except (TypeError, ValueError):
+            return cap
+        if ttl < 0:
+            return cap
+        return min(ttl, cap)
 
     async def _persist_bookmarks(self, workspace_id: str, ledger_path: str) -> None:
         """Persist in-memory bookmarks for a workspace+ledger to Postgres."""
