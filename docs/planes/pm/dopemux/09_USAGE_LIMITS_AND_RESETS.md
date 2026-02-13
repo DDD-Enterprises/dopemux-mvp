@@ -22,8 +22,11 @@ Operational truth: quotas reset and we want auto-switch-back behaviors. Manage c
 ## FACT ANCHORS (Repo-derived)
 - **Limits Config**: `config/limits.yaml`.
 - **Usage Ledger**: `.dopemux/usage.json`.
+- **Budget Envs**: `BUDGET` (partial match in grep, likely TBD).
 
 ## Open questions
+- **Multi-Instance Aggregation**: How do we aggregate usage across concurrent instances?
+  - *Resolution*: Use file locking on `usage.json` or a dedicated Usage MCP.
 - **Multi-Instance Aggregation**: How do we aggregate usage across concurrent instances?
   - *Resolution*: Use file locking on `usage.json` or a dedicated Usage MCP.
 

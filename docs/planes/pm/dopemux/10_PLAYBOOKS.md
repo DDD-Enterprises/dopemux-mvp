@@ -20,7 +20,9 @@ How to run this when tired. Standard Operating Procedures (SOPs) for the operato
 2. **Read the Logs**: Always check `logs/supervisor.log` before assuming root cause.
 
 ## FACT ANCHORS (Repo-derived)
-- **CLI Help**: `dmux --help`.
+- **CLI Help**: `dmux --help` (Contract).
+- **Repo Preflight**: `scripts/repo_preflight.sh` (must pass effectively).
+- **DopeCon Bridge**: `http://localhost:3016` (Service health check target).
 
 ## Open questions
 - **Interactive Checklists**: Can we have interactive CLI ticking?
