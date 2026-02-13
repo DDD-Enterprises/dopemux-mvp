@@ -193,9 +193,13 @@ Dopemux UX constraints that preserve focus, reduce decision fatigue, and checkpo
   - Severity: S2 medium.
   - Containment: Rollback via git.
 
-## FACT ANCHORS (Repo-derived)
-- **Output Formatter**: `src/dopemux/ux/renderer.py` (to be verified).
-- **Focus Timer**: `src/dopemux/ux/focus_timer.py` (to be verified).
+## FACT ANCHORS
+
+- **OBSERVED: Focus Sessions**: `services/task-orchestrator/app/services/task_coordinator.py` implements 25-minute focus sessions (`focus_session_duration = 1500`).
+- **OBSERVED: Batch Limits**: `services/task-orchestrator/app/services/task_coordinator.py` enforces `max_batch_size = 3` for ADHD-friendly scheduling.
+- **OBSERVED: Attention Monitoring**: `services/adhd_engine/core/engine.py` tracks `AttentionState` and `EnergyLevel` with real-time monitors.
+- **OBSERVED: Accommodation Engine**: `services/adhd_engine/core/engine.py` generates specific recommendations for hyperfocus, energy mismatch, and complexity.
+- **DOC-CLAIM: Output Formatting**: `src/dopemux/ux/renderer.py` is referenced but its truncation logic is not yet verified in the current subset.
 
 ## Open questions
 - **Interruptibility**: How do we handle user interrupts during a long TaskX run?

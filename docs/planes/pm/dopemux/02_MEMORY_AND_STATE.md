@@ -195,16 +195,13 @@ What state exists, where it lives, and how it is written/read without cross-work
   - Severity: S0 critical.
   - Containment: Rotate keys immediately.
 
-## FACT ANCHORS (Repo-derived)
-- **ConPort Wiring**: `src/dopemux/conport/wire_project.py`
-- **Worktree Identity**: `scripts/repo_preflight.sh` (defines `.repo_id` and root check)
-- **Session Manager DB**: `services/session-manager/` (implies local state).
-- **Serena DB**: `services/serena/intelligence/database.py` (references `SERENA_DB_PASSWORD`).
-- **OBSERVED: ConPort Authority**: `services/conport/` (Port 3004). Designated "Single Source of Truth for Project State" in `.claude/claude.md`.
-- **OBSERVED: Interaction Model**: Services MUST use HTTP API (e.g., `services/task-orchestrator/app/adapters/conport_adapter.py`), NOT direct DB access (`ADR-203`).
-- **OBSERVED: SQLite Usage**: `.dopemux/chronicle.sqlite` (Dope-Memory local store).
-- **OBSERVED: Redaction**: `config/secrets.yaml` and `.env` handling (implied by `repo_preflight.sh` checks).
-- **OBSERVED: Worktree Isolation**: `.dopemux/` directory per root.
+## FACT ANCHORS
+
+- **OBSERVED: Persistence Layer**: `services/adhd_engine/core/activity_tracker.py` uses direct SQLite access to `conport.db`.
+- **OBSERVED: Sync Engine**: `services/task-orchestrator/app/core/sync.py` implements `MultiDirectionalSyncEngine` for cross-plane persistence.
+- **OBSERVED: State Persistence**: `task_coordinator.py` syncs session state to ConPort via `ConPortEventAdapter`.
+- **OBSERVED: Authority**: `services/conport/` (Port 3004) is the designated Single Source of Truth for Project State.
+- **DOC-CLAIM: Local Storage**: `packets/` directory mentioned in ADRs but not seen in active service usage in this subset.
 
 ## Open questions
 - **Global Rollups**: How do we aggregate multi-repo stats without breaking isolation?

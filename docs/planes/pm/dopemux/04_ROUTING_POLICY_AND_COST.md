@@ -193,9 +193,13 @@ How Supervisor chooses the optimal runner + model combination for a given task s
   - Severity: S3 low.
   - Containment: Update code.
 
-## FACT ANCHORS (Repo-derived)
-- **Model Config**: `config/models.yaml` (to be created/verified).
-- **Routing Logic**: `src/dopemux/supervisor/router.py` (to be created/verified).
+## FACT ANCHORS
+
+- **OBSERVED: Intelligent Routing**: `services/adhd_engine/core/engine.py` implements routing based on cognitive capacity and energy matching (`_assess_energy_match`).
+- **OBSERVED: Context Switch Tracker**: `services/adhd_engine/domains/context-switch-tracker/` calculates distraction scores and context switch costs.
+- **OBSERVED: Performance Optimization**: `services/task-orchestrator/performance_optimizer.py` handles resource-aware task execution.
+- **OBSERVED: Metrics**: `services/task_orchestrator/app/main.py` exports `task_orchestrator_tasks_orchestrated_total` and `ai_agent_dispatches_total`.
+- **DOC-CLAIM: Cost Preference Ladder**: Described in `.claude/claude.md` but implementation details for model pricing are not yet observed in `adhd_engine`.
 
 ## Open questions
 - **Real-time Pricing**: Do we fetch live pricing API or stick to config?

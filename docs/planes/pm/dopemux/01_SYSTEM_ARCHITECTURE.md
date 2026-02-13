@@ -21,19 +21,13 @@ TODO: Define the boundaries and responsibilities of the system architecture.
 
 TODO: List the architectural invariants that must never be violated.
 
-## FACT ANCHORS (Repo-derived)
-- **OBSERVED: Service Root**: `services/` contains 20+ services including `task-orchestrator`, `adhd_engine`, `dopecon-bridge`, and `session-manager`.
-- **OBSERVED: Infrastructure**: `compose.yml` defines the canonical stack (Postgres/AGE, Redis, Qdrant).
-- **OBSERVED: Control Plane Services**:
-- **OBSERVED: Control Plane Services**:
-  - `task-orchestrator` (Port 8000): FastAPI service with `jpickly` integration (`services/task-orchestrator/app/main.py`). Un-deprecated via `ADR-203`.
-  - `adhd-engine` (Port 8095): Real-time cognitive load management (`services/adhd_engine/`).
-  - `dopecon-bridge` (Port 3016): Event bus and pattern detection (`services/dopecon-bridge/`).
-- **OBSERVED: Intelligence Plane**:
-  - `genetic-agent` (Port 8000): AI code repair (`services/genetic_agent/`).
-  - `dope-memory` (Port 3020): Working memory assistant (`services/working-memory-assistant/`).
-  - `ml-risk-assessment`: Predictive risk engine extracted from orchestrator (referenced in `ADR-203`).
-- **OBSERVED: Leantime Integration**: `services/leantime-bridge` (Port 3015) and `docker/leantime` (Port 8080).
+## FACT ANCHORS
+
+- **OBSERVED: Two-Plane Coordinator**: `services/task-orchestrator/app/core/coordinator.py` implements the `PlaneCoordinator` linking PM and Cognitive planes.
+- **OBSERVED: Plane Types**: `PlaneType` enum defines `PROJECT_MANAGEMENT` (pm) and `COGNITIVE` (cognitive) planes.
+- **OBSERVED: Core Services**: codebase confirms `task-orchestrator`, `adhd-engine`, and `conport` as primary components.
+- **OBSERVED: Event Bus**: `redis` is used for real-time coordination and sync operations.
+- **OBSERVED: Service Registry**: `services/task-orchestrator/app/main.py` defines registry and discovery endpoints.
 
 ## Open questions
 - **Global Rollups**: How do we aggregate multi-repo stats without breaking isolation?
