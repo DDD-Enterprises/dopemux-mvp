@@ -697,6 +697,7 @@ class ConfigManager:
                 capture_output=True,
                 text=True,
                 check=False,
+                timeout=5,
             )
             if result.returncode != 0:
                 return False

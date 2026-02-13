@@ -155,6 +155,7 @@ jobs:
       - name: ✅ Verify TaskX wiring
         run: |
           test -f .taskx-pin
+          grep -q '^commit=' .taskx-pin
           test -f .taskxroot
           test -d .taskx_venv
           test -x .taskx_venv/bin/taskx

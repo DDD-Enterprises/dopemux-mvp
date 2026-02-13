@@ -2,6 +2,7 @@
 Tests for the configuration manager module.
 """
 
+import subprocess
 from unittest.mock import patch
 
 import pytest
@@ -270,6 +271,12 @@ class TestConfigManager:
         # Check expected env placeholders are present
         claude_context = defaults["claude-context"]
         assert claude_context["env"]["OPENAI_API_KEY"] == "${OPENAI_API_KEY}"
+
+    def test_detect_docker_mode_timeout_returns_false(self, config_manager):
+        """Docker mode detection should fail closed if docker compose hangs."""
+        with patch("dopemux.config.manager.subprocess.run") as mock_run:
+            mock_run.side_effect = subprocess.TimeoutExpired(cmd=["docker", "compose"], timeout=5)
+            assert config_manager._detect_docker_mode() is False
 
     def test_project_templates(self, config_manager):
         """Test project template configurations."""
