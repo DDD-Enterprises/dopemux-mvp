@@ -1,15 +1,76 @@
 ---
-id: 00_INDEX
-title: 00 Index
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-13'
-last_review: '2026-02-13'
-next_review: '2026-05-14'
-prelude: 00 Index (explanation) for dopemux documentation and developer workflows.
+title: "Dopemux PM Plane Docs"
+plane: "pm"
+component: "dopemux"
+status: "skeleton"
 ---
-# Dopemux Index
+
+# Dopemux PM Plane Docs (Canonical)
+
+## What Dopemux is
+
+Dopemux is a runtime fabric for:
+- context + memory
+- runner/model routing
+- MCP lifecycle reliability
+- ADHD-centered execution UX
+- deterministic execution via TaskX (by boundary contract)
+
+TODO: 1 paragraph “what problems it solves” in plain English.
+
+## The boundary (non-negotiable)
+
+### TaskX is the deterministic engine
+TaskX is responsible for deterministic orchestration and artifacts only.
+
+### Dopemux Supervisor is the adaptive control plane
+Dopemux is responsible for policies, routing, memory, and MCP management.
+
+TODO: Insert the short boundary bullets from the Brain Dump, verbatim where possible.
+
+## How to navigate these docs
+
+Read order:
+1. [01_SYSTEM_ARCHITECTURE.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/01_SYSTEM_ARCHITECTURE.md)
+2. [07_TASKX_INTEGRATION.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md)
+3. [02_MEMORY_AND_STATE.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/02_MEMORY_AND_STATE.md)
+4. [03_MCP_LIFECYCLE_AND_RELIABILITY.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md)
+5. [04_ROUTING_POLICY_AND_COST.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/04_ROUTING_POLICY_AND_COST.md)
+6. [05_ADHD_EXECUTION_MODEL.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/05_ADHD_EXECUTION_MODEL.md)
+7. [06_INSTANCE_AND_WORKTREE_ISOLATION.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/06_INSTANCE_AND_WORKTREE_ISOLATION.md)
+8. [08_SUPERVISOR_PACKET_FORMAT.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/08_SUPERVISOR_PACKET_FORMAT.md)
+9. [09_USAGE_LIMITS_AND_RESETS.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/09_USAGE_LIMITS_AND_RESETS.md)
+10. [10_PLAYBOOKS.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/10_PLAYBOOKS.md)
+
+## Glossary
+
+TODO: Create a small glossary section with pointers:
+- Task Packet
+- Runner
+- Model
+- MCP
+- Workspace / worktree / instance
+- Artifact
+- ConPort
+- Promotion
+
+## Doc set index
+- [01_SYSTEM_ARCHITECTURE.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/01_SYSTEM_ARCHITECTURE.md)
+- [02_MEMORY_AND_STATE.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/02_MEMORY_AND_STATE.md)
+- [03_MCP_LIFECYCLE_AND_RELIABILITY.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md)
+- [04_ROUTING_POLICY_AND_COST.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/04_ROUTING_POLICY_AND_COST.md)
+- [05_ADHD_EXECUTION_MODEL.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/05_ADHD_EXECUTION_MODEL.md)
+- [06_INSTANCE_AND_WORKTREE_ISOLATION.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/06_INSTANCE_AND_WORKTREE_ISOLATION.md)
+- [07_TASKX_INTEGRATION.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md)
+- [08_SUPERVISOR_PACKET_FORMAT.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/08_SUPERVISOR_PACKET_FORMAT.md)
+- [09_USAGE_LIMITS_AND_RESETS.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/09_USAGE_LIMITS_AND_RESETS.md)
+- [10_PLAYBOOKS.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/10_PLAYBOOKS.md)
+- [DEEP_RESEARCH.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/DEEP_RESEARCH.md)
+
+## Self-verification
+TODO: Link to docs gate script location once implemented.
+
+---
 
 ## Doc Gate Checklist
 
