@@ -531,7 +531,7 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
     """
     config_manager = ctx.obj["config_manager"]
 
-    workspace = (directory or Path.cwd()).expanduser().resolve()
+    workspace = Path(directory or Path.cwd()).expanduser().resolve()
     dopemux_dir = workspace / ".dopemux"
 
     workspace_exists = False
