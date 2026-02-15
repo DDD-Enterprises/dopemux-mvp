@@ -158,6 +158,7 @@ def test_default_ledger_path_is_repo_local(tmp_path):
     (repo_root / ".git").mkdir(parents=True)
     nested.mkdir(parents=True)
     schema_dir.mkdir(parents=True)
+    (schema_dir / "migrations").mkdir(parents=True)
     redactor_dir.mkdir(parents=True)
 
     schema_dir.joinpath("schema.sql").write_text(
