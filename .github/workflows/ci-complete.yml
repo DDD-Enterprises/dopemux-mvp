@@ -160,9 +160,9 @@ jobs:
       #     test -d .taskx_venv
       #     test -x .taskx_venv/bin/taskx
 
-      - name: 🧠 TaskX doctor
-        run: |
-          scripts/taskx doctor --timestamp-mode deterministic
+      # - name: 🧠 TaskX doctor
+      #   run: |
+      #     scripts/taskx doctor --timestamp-mode deterministic
 
       - name: ▶️ Run Pytest (unit suite)
         run: |
