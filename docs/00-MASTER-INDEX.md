@@ -115,6 +115,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 
 ### Features
 - [Features Index](03-reference/features/features-index.md)
+- [Layouts and Themes Guide](03-reference/layouts-and-themes.md)
 - [Untracked Work Detection](03-reference/F001-ENHANCED-untracked-work-system.md)
 - [Multi-Session Support](03-reference/F002-multi-session-support.md)
 
