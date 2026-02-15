@@ -6,6 +6,7 @@
     ".githooks",
     ".github",
     "SYSTEM_ARCHIVE",
+    "UPGRADES",
     "components",
     "compose",
     "config",
