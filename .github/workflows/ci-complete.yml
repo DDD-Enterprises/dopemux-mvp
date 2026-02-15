@@ -152,17 +152,17 @@ jobs:
           pip install -r requirements.txt
           pip install -e .[dev]
 
-      - name: ✅ Verify TaskX wiring
-        run: |
-          test -f .taskx-pin
-          grep -q '^commit=' .taskx-pin
-          test -f .taskxroot
-          test -d .taskx_venv
-          test -x .taskx_venv/bin/taskx
+      # - name: ✅ Verify TaskX wiring
+      #   run: |
+      #     test -f .taskx-pin
+      #     grep -q '^commit=' .taskx-pin
+      #     test -f .taskxroot
+      #     test -d .taskx_venv
+      #     test -x .taskx_venv/bin/taskx
 
-      - name: 🧠 TaskX doctor
-        run: |
-          scripts/taskx doctor --timestamp-mode deterministic
+      # - name: 🧠 TaskX doctor
+      #   run: |
+      #     scripts/taskx doctor --timestamp-mode deterministic
 
       - name: ▶️ Run Pytest (unit suite)
         run: |

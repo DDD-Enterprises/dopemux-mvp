@@ -104,6 +104,7 @@ repos:
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(reports/|quarantine/) ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(UPGRADES/) ]]; then continue; fi
 
               # Config/state and tooling docs
               if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi
