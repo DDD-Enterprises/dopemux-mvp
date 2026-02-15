@@ -57,7 +57,7 @@ The service is a LiteLLM Proxy server running in a Python container.
 *   **Orchestration**: Fully integrated into the master stack.
 
 ### Failure & Drift Findings (Phase 2)
-*   **Health Issue**: `docker inspect` confirmed healthcheck timeouts. 
+*   **Health Issue**: `docker inspect` confirmed healthcheck timeouts.
 *   **Log Confirmation**: Service logs show successful hits, confirming the service is actually alive but slow.
 
 ## SECTION 3: LIVING DOCUMENTATION METADATA
