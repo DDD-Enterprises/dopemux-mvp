@@ -71,8 +71,8 @@ The service is a LiteLLM Proxy server running in a Python container.
 
 ## SECTION 3: LIVING DOCUMENTATION METADATA
 
-- Last Validated: 2026-02-09
-- Confidence Level: 100%
-- Evidence Quality Score: High
-- Evolution Log:
-  - 2026-02-09: Initial Deep Dive. Found mature but "unhealthy" integration due to healthcheck timeouts.
+* Last Validated: 2026-02-09
+* Confidence Level: 100%
+* Evidence Quality Score: High
+* Evolution Log:
+  * 2026-02-09: Initial Deep Dive. Found mature but "unhealthy" integration due to healthcheck timeouts.
