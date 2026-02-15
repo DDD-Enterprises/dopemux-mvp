@@ -36,8 +36,7 @@ jobs:
       - name: 🧹 Enforce repo root hygiene
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
-            CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)"
+            CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}"..HEAD)"
           else
             BEFORE="${{ github.event.before }}"
             if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
@@ -57,7 +56,6 @@ jobs:
       - name: 🔍 Run pre-commit (code quality)
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
             pre-commit run --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD
           else
             BEFORE="${{ github.event.before }}"
@@ -95,10 +93,11 @@ jobs:
           fetch-depth: 2
 
       - name: 🛡️ AI-Powered Security Analysis
+        if: ${{ secrets.CLAUDE_API_KEY != '' || secrets.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         with:
           comment-pr: true
-          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY || secrets.ANTHROPIC_API_KEY }}
           custom-security-scan-instructions: .github/security-scan-instructions.txt
           false-positive-filtering-instructions: .github/security-filtering-instructions.txt
           claudecode-timeout: "20"
