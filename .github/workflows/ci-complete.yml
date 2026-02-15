@@ -98,7 +98,7 @@ jobs:
         uses: anthropics/claude-code-security-review@main
         with:
           comment-pr: true
-          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           custom-security-scan-instructions: .github/security-scan-instructions.txt
           false-positive-filtering-instructions: .github/security-filtering-instructions.txt
           claudecode-timeout: "20"
@@ -152,17 +152,25 @@ jobs:
           pip install -r requirements.txt
           pip install -e .[dev]
 
-      # - name: ✅ Verify TaskX wiring
-      #   run: |
-      #     test -f .taskx-pin
-      #     grep -q '^commit=' .taskx-pin
-      #     test -f .taskxroot
-      #     test -d .taskx_venv
-      #     test -x .taskx_venv/bin/taskx
+      - name: ✅ Verify TaskX wiring
+        run: |
+          if [ -d .taskx_venv ]; then
+            test -f .taskx-pin
+            grep -q '^commit=' .taskx-pin
+            test -f .taskxroot
+            test -d .taskx_venv
+            test -x .taskx_venv/bin/taskx
+          else
+            echo "::warning::Skipping TaskX verification as .taskx_venv is missing (expected for fresh CI runners)"
+          fi
 
-      # - name: 🧠 TaskX doctor
-      #   run: |
-      #     scripts/taskx doctor --timestamp-mode deterministic
+      - name: 🧠 TaskX doctor
+        run: |
+          if [ -d .taskx_venv ]; then
+            scripts/taskx doctor --timestamp-mode deterministic
+          else
+            echo "::warning::Skipping TaskX doctor as .taskx_venv is missing"
+          fi
 
       - name: ▶️ Run Pytest (unit suite)
         run: |
