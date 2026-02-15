@@ -1,0 +1,37 @@
+[
+    {
+        "sql_object_name": "code_elements",
+        "type": "table",
+        "path": "services/serena/intelligence/schema.sql",
+        "line_range": "14-54",
+        "full_statement": "CREATE TABLE code_elements (\n    id SERIAL PRIMARY KEY,\n\n    -- Basic identification (from Layer 1 StructuralElement)\n    file_path TEXT NOT NULL,\n    element_name TEXT NOT NULL,\n    element_type VARCHAR(50) NOT NULL, -- function, class, variable, method, etc.\n    language VARCHAR(20) NOT NULL,\n\n    -- Location and scope\n    start_line INTEGER NOT NULL,\n    end_line INTEGER NOT NULL,\n    start_column INTEGER DEFAULT 0,\n    end_column INTEGER DEFAULT 0,\n\n    -- ADHD complexity scoring (building on Layer 1)\n    complexity_score REAL DEFAULT 0.0 CHECK (complexity_score >= 0.0 AND complexity_score <= 1.0),\n    complexity_level VARCHAR(20) DEFAULT 'simple', -- simple, moderate, complex, very_complex\n    cognitive_load_factor REAL DEFAULT 0.0, -- ADHD-specific cognitive burden\n\n    -- Tree-sitter structural analysis data\n    tree_sitter_metadata JSONB DEFAULT '{}', -- AST node details, syntax patterns\n    structural_signature TEXT, -- Hash of structural patterns for matching\n\n    -- Usage and navigation patterns\n    access_frequency INTEGER DEFAULT 0, -- How often this element is navigated to\n    last_accessed TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    average_session_time REAL DEFAULT 0.0, -- Average time spent in this element\n\n    -- ADHD navigation insights\n    adhd_insights JSONB DEFAULT '[]', -- [\"complex nesting\", \"long function\", etc.]\n    focus_recommendations JSONB DEFAULT '[]', -- ADHD-specific suggestions\n\n    -- Versioning and cache invalidation\n    content_hash VARCHAR(64), -- Hash of element content for change detection\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n\n    -- Performance indexes\n    UNIQUE(file_path, element_name, start_line, end_line)\n);"
+    },
+    {
+        "sql_object_name": "code_relationships",
+        "type": "table",
+        "path": "services/serena/intelligence/schema.sql",
+        "line_range": "69-103",
+        "full_statement": "CREATE TABLE code_relationships (\n    id SERIAL PRIMARY KEY,\n\n    -- Relationship identification\n    source_element_id INTEGER REFERENCES code_elements(id) ON DELETE CASCADE,\n    target_element_id INTEGER REFERENCES code_elements(id) ON DELETE CASCADE,\n    relationship_type VARCHAR(50) NOT NULL, -- calls, imports, inherits, defines, uses, etc.\n\n    -- Relationship strength and context\n    strength REAL DEFAULT 0.0 CHECK (strength >= 0.0 AND strength <= 1.0),\n    confidence REAL DEFAULT 0.0 CHECK (confidence >= 0.0 AND confidence <= 1.0),\n    context_type VARCHAR(30) DEFAULT 'direct', -- direct, indirect, conditional, loop, etc.\n\n    -- ADHD-specific relationship metadata\n    cognitive_load REAL DEFAULT 0.0, -- Mental burden of understanding this relationship\n    complexity_increase REAL DEFAULT 0.0, -- How much this relationship adds to overall complexity\n    adhd_navigation_difficulty VARCHAR(20) DEFAULT 'easy', -- easy, moderate, hard, overwhelming\n\n    -- Navigation and usage patterns\n    traversal_frequency INTEGER DEFAULT 0, -- How often users navigate this relationship\n    average_traversal_time REAL DEFAULT 0.0, -- Time to understand the relationship\n    last_traversed TIMESTAMP WITH TIME ZONE,\n\n    -- Analysis metadata\n    detection_method VARCHAR(50), -- tree_sitter, lsp, static_analysis, user_behavior\n    detection_confidence REAL DEFAULT 0.0,\n    analysis_metadata JSONB DEFAULT '{}',\n\n    -- Timestamps\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n\n    -- Prevent duplicate relationships\n    UNIQUE(source_element_id, target_element_id, relationship_type)\n);"
+    },
+    {
+        "sql_object_name": "idx_code_elements_complexity",
+        "type": "index",
+        "path": "services/serena/intelligence/schema.sql",
+        "line_range": "57",
+        "full_statement": "CREATE INDEX idx_code_elements_complexity ON code_elements (complexity_level, complexity_score);"
+    },
+    {
+        "sql_object_name": "dm_raw_activity_events",
+        "type": "table",
+        "path": "services/working-memory-assistant/chronicle/postgres_mirror.sql",
+        "line_range": "10-28",
+        "full_statement": "CREATE TABLE IF NOT EXISTS dm_raw_activity_events (\n  id TEXT PRIMARY KEY,\n  workspace_id TEXT NOT NULL,\n  ledger_path TEXT NOT NULL DEFAULT '/data/chronicle.sqlite',\n  instance_id TEXT NOT NULL,\n  session_id TEXT,\n\n  ts TIMESTAMPTZ NOT NULL,\n  event_type TEXT NOT NULL,\n  source TEXT NOT NULL,\n  payload JSONB NOT NULL DEFAULT '{}'::jsonb,\n  payload_json JSONB NOT NULL DEFAULT '{}'::jsonb,\n  redaction_level TEXT NOT NULL DEFAULT 'strict',\n\n  ttl_days INT NOT NULL DEFAULT 7,\n  expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '7 days'),\n  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),\n  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()\n);"
+    },
+    {
+        "sql_object_name": "dm_work_log_entries",
+        "type": "table",
+        "path": "services/working-memory-assistant/chronicle/postgres_mirror.sql",
+        "line_range": "110-142",
+        "full_statement": "CREATE TABLE IF NOT EXISTS dm_work_log_entries (\n  id TEXT PRIMARY KEY,\n  workspace_id TEXT NOT NULL,\n  ledger_path TEXT NOT NULL DEFAULT '/data/chronicle.sqlite',\n  instance_id TEXT NOT NULL,\n  session_id TEXT,\n\n  ts TIMESTAMPTZ NOT NULL,\n  duration_seconds INT,\n\n  category TEXT NOT NULL,\n  entry_type TEXT NOT NULL,\n  workflow_phase TEXT,\n\n  summary TEXT NOT NULL,\n  details JSONB,\n  reasoning TEXT,\n\n  outcome TEXT NOT NULL DEFAULT 'in_progress',\n  importance_score SMALLINT NOT NULL DEFAULT 5 CHECK (importance_score BETWEEN 1 AND 10),\n\n  tags TEXT[] NOT NULL DEFAULT '{}',\n\n  linked_decisions TEXT[],\n  linked_files JSONB,\n  linked_commits TEXT[],\n  linked_chat_range JSONB,\n\n  parent_entry_id TEXT,\n\n  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),\n  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()\n);"
+    }
+]
