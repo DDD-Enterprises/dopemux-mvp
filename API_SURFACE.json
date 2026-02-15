@@ -1,0 +1,163 @@
+{
+    "services": [
+        {
+            "name": "DopeCon Bridge",
+            "port": 3001,
+            "base_url": "http://localhost:3001",
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/token",
+                    "description": "Authentication token retrieval"
+                },
+                {
+                    "method": "GET",
+                    "path": "/users/me",
+                    "description": "Current user profile"
+                },
+                {
+                    "method": "GET",
+                    "path": "/health",
+                    "description": "Service health check"
+                },
+                {
+                    "method": "GET",
+                    "path": "/sse",
+                    "description": "Primary event stream hub"
+                }
+            ],
+            "role": "Central event hub and authentication gateway"
+        },
+        {
+            "name": "Working Memory Assistant (WMA)",
+            "port": 9091,
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/auth",
+                    "description": "User authentication"
+                },
+                {
+                    "method": "GET",
+                    "path": "/contexts/{user_id}",
+                    "description": "Retrieve user context"
+                },
+                {
+                    "method": "GET",
+                    "path": "/preferences/{user_id}",
+                    "description": "Retrieve user preferences"
+                },
+                {
+                    "method": "GET",
+                    "path": "/health",
+                    "description": "Health check"
+                }
+            ],
+            "role": "Management of user context and working memory"
+        },
+        {
+            "name": "Task Orchestrator",
+            "port": 3006,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/health",
+                    "description": "Health check"
+                },
+                {
+                    "method": "POST",
+                    "path": "/api/tools/{tool_name}",
+                    "description": "Execute specific tools"
+                },
+                {
+                    "method": "POST",
+                    "path": "/api/decompose",
+                    "description": "Decompose tasks into subtasks"
+                }
+            ],
+            "role": "Task decomposition and tool routing"
+        },
+        {
+            "name": "Voice Commands",
+            "port": 3007,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/health",
+                    "description": "Health check"
+                },
+                {
+                    "method": "POST",
+                    "path": "/voice/command",
+                    "description": "Process voice commands"
+                }
+            ],
+            "role": "Voice interface for system commands"
+        },
+        {
+            "name": "Genetic Agent",
+            "endpoints": [
+                {
+                    "method": "POST",
+                    "path": "/repair/vanilla",
+                    "description": "Basic code repair"
+                },
+                {
+                    "method": "POST",
+                    "path": "/repair/genetic",
+                    "description": "Genetic algorithm code repair"
+                },
+                {
+                    "method": "POST",
+                    "path": "/repair/auto",
+                    "description": "Automatic repair selection"
+                },
+                {
+                    "method": "GET",
+                    "path": "/dashboard",
+                    "description": "Performance dashboard"
+                }
+            ],
+            "role": "AI-powered iterative code repair"
+        },
+        {
+            "name": "Roast Engine (ADHD Engine Domain)",
+            "port": 8077,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/health",
+                    "description": "Health check"
+                },
+                {
+                    "method": "GET",
+                    "path": "/presets",
+                    "description": "List roast spice levels"
+                },
+                {
+                    "method": "POST",
+                    "path": "/roast",
+                    "description": "Generate roast according to spice level"
+                }
+            ],
+            "role": "ADHD-optimized terminal interaction/roasting"
+        },
+        {
+            "name": "ADHD Metrics",
+            "port": 9095,
+            "endpoints": [
+                {
+                    "method": "GET",
+                    "path": "/metrics",
+                    "description": "Prometheus metrics dump"
+                },
+                {
+                    "method": "GET",
+                    "path": "/health",
+                    "description": "Health check"
+                }
+            ],
+            "role": "ADHD Engine metrics monitoring"
+        }
+    ]
+}

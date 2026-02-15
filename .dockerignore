@@ -1,36 +1,119 @@
+# Version control
 .git
-.github
 .gitignore
+.github
+.gitlab-ci.yml
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+INSTALL.md
+QUICK_START.md
+*.md
+docs/
+.markdownlint.jsonc
+
+# IDE and editor files
 .vscode
-.DS_Store
-.env
-.env.*
-!.env.example
-node_modules
-venv
-.venv
-__pycache__
-*.pyc
-*.log
-.pytest_cache
-.mypy_cache
-.coverage
-dist
-build
-*.egg-info
-docker-compose*.yml
-Makefile
-README*
-docs
-tests
 .idea
 *.swp
 *.swo
 *~
-.terraform
-.coverage.*
-htmlcov
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.vs
+.nvimrc
+.env.local
+.env.*.local
+
+# Python specific
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
 .tox
-.next
-.cache
-.parcel-cache
+.coverage
+htmlcov/
+.venv
+venv/
+ENV/
+env/
+*.egg-info
+dist/
+build/
+*.pyc
+*.pyo
+*.egg
+.eggs/
+.venv-taskx
+.venv-*
+
+# Node specific
+node_modules/
+npm-debug.log
+yarn-error.log
+.next/cache/
+.eslintcache
+.stylelintcache
+
+# Testing
+tests/
+.pytest_cache
+coverage/
+__pycache__
+
+# Environment files
+.env
+.env.*.local
+.env.example
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+*.bak
+.backup_location
+
+# CI/CD
+.pre-commit-config.yaml
+.taskx
+.taskx-pin
+.taskxroot
+
+# Project specific
+SYSTEM_ARCHIVE/
+_audit_out/
+.conport/
+.claude
+reports/
+out/
+
+# Docker files not needed in build context
+Dockerfile.dev
+docker-compose.*.yml
+docker-compose.override.yml
+
+# Workspace files
+tmux-dopemux-orchestrator.yaml
+.tmux.conf
+dopemux_dashboard.py
+dopemux.rb
+ADHD-DASHBOARD-SESSION-SUMMARY.md
+AG-master_plan.md
+AGENTS.md
+mcp-proxy-config.*
+
+# Keep pyproject.toml and MANIFEST.in for build
+!pyproject.toml
+!MANIFEST.in
+
+# Scripts and tools (not needed in container)
+scripts/test*.sh
+scripts/start*.sh
+start-mcp-servers.sh
+run_all_multi_workspace_tests.sh
+verify_dopecon_bridge.sh
+installers/

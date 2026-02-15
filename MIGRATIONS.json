@@ -1,0 +1,82 @@
+[
+    {
+        "id": "code_db_conport_migration_001",
+        "domain": "code_db",
+        "name": "001_enhanced_decision_model.sql",
+        "path": "docker/mcp-servers/conport/migrations/001_enhanced_decision_model.sql",
+        "line_range": [
+            1,
+            2
+        ],
+        "symbol": "",
+        "kind": "migration",
+        "strings": [],
+        "excerpt": [
+            "-- ConPort Migration 001",
+            "-- Enhanced Decision Model"
+        ],
+        "source_artifact": "WORKING_TREE",
+        "confidence": "high",
+        "missing_fields": []
+    },
+    {
+        "id": "code_db_wma_migration_v1_1_0",
+        "domain": "code_db",
+        "name": "v1_1_0_add_provenance_fields.sql",
+        "path": "services/working-memory-assistant/chronicle/migrations/v1_1_0_add_provenance_fields.sql",
+        "line_range": [
+            1,
+            2
+        ],
+        "symbol": "",
+        "kind": "migration",
+        "strings": [],
+        "excerpt": [
+            "-- Dope-Memory Migration v1.1.0",
+            "-- Add mandatory provenance fields"
+        ],
+        "source_artifact": "WORKING_TREE",
+        "confidence": "high",
+        "missing_fields": []
+    },
+    {
+        "id": "code_db_wma_migration_runner_py",
+        "domain": "code_db",
+        "name": "apply_chronicle_migrations",
+        "path": "services/working-memory-assistant/chronicle/sqlite_migrations.py",
+        "line_range": [
+            15,
+            60
+        ],
+        "symbol": "apply_chronicle_migrations",
+        "kind": "migration",
+        "strings": [],
+        "excerpt": [
+            "def apply_chronicle_migrations(conn, schema_path, migrations_dir, logger):",
+            "    \"\"\"Apply missing migrations to the chronicle SQLite database.\"\"\""
+        ],
+        "source_artifact": "WORKING_TREE",
+        "confidence": "high",
+        "missing_fields": []
+    },
+    {
+        "id": "code_db_serena_migration_002",
+        "domain": "code_db",
+        "name": "002_add_session_support_final.sql",
+        "path": "services/serena/migrations/002_add_session_support_final.sql",
+        "line_range": [
+            1,
+            2
+        ],
+        "symbol": "",
+        "kind": "migration",
+        "strings": [],
+        "excerpt": [
+            "-- Serena Migration 002 - Final",
+            "-- Add multi-session support"
+        ],
+        "source_artifact": "WORKING_TREE",
+        "confidence": "high",
+        "missing_fields": []
+    }
+]
