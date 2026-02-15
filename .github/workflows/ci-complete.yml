@@ -98,7 +98,7 @@ jobs:
         uses: anthropics/claude-code-security-review@main
         with:
           comment-pr: true
-          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
           custom-security-scan-instructions: .github/security-scan-instructions.txt
           false-positive-filtering-instructions: .github/security-filtering-instructions.txt
           claudecode-timeout: "20"
