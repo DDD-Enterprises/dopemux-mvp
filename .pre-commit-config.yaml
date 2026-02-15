@@ -102,7 +102,7 @@ repos:
 
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
-              if [[ "$normalized" =~ ^\./(reports/|quarantine/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/) ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
 
               # Config/state and tooling docs
@@ -156,7 +156,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^docs/.*\.md$
-        exclude: node_modules/
+        exclude: ^docs/archive/|node_modules/
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
