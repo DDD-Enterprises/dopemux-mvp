@@ -1,3 +1,15 @@
+---
+id: upgrades-found-report
+title: Upgrades Directory Found Report
+type: reference
+owner: '@hu3mann'
+status: active
+author: '@hu3mann'
+date: '2026-02-15'
+prelude: Audit report documenting the found UPGRADES/ directory and its contents.
+last_review: '2026-02-15'
+next_review: '2026-05-16'
+---
 # Upgrades Directory Found Report
 
 ## Executive Summary
