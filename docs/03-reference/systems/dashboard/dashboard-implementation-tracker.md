@@ -33,7 +33,7 @@ Last Updated: 2025-10-28
 **Files Created:**
 - `TMUX_METRICS_INVENTORY.md` - Complete metrics catalog
 - `TMUX_DASHBOARD_DESIGN.md` - Research & design rationale
-- `dopemux_dashboard.py` - Production-ready implementation
+- `scripts/dopemux_dashboard.py` - Production-ready implementation
 - `TMUX_DASHBOARD_README.md` - Quick start guide
 - `DASHBOARD_ENHANCEMENTS.md` - Future features roadmap
 
@@ -373,7 +373,7 @@ LAYOUTS = {
 2. **TMUX_DASHBOARD_DESIGN.md** - Research & rationale
 3. **TMUX_DASHBOARD_README.md** - User guide
 4. **DASHBOARD_ENHANCEMENTS.md** - Future features (150+ ideas)
-5. **dopemux_dashboard.py** - Current implementation
+5. **scripts/dopemux_dashboard.py** - Current implementation
 
 ---
 
@@ -416,7 +416,7 @@ git checkout -b feature/sparklines-enhanced
 cat TMUX_DASHBOARD_DESIGN.md | grep -A 20 "sparkline"
 
 # 4. Run dashboard for testing
-python dopemux_dashboard.py
+python scripts/dopemux_dashboard.py
 
 # 5. Commit when done
 git add .
@@ -426,13 +426,13 @@ git commit -m "feat: enhanced sparklines with historical data"
 ### Testing Checklist:
 ```bash
 # Performance test
-time python dopemux_dashboard.py --test-mode
+time python scripts/dopemux_dashboard.py --test-mode
 
 # Memory profiling
-/usr/bin/time -l python dopemux_dashboard.py
+/usr/bin/time -l python scripts/dopemux_dashboard.py
 
 # Load test (1 hour)
-timeout 3600 python dopemux_dashboard.py
+timeout 3600 python scripts/dopemux_dashboard.py
 ```
 
 ---
