@@ -1585,6 +1585,29 @@ Format: {{
         except Exception as e:
             logger.warning(f"Failed to store notification in Redis: {e}")
 
+    # Helper methods for state broadcasting
+    async def _get_tasks_completed(self, user_id: str) -> int:
+        """Get number of tasks completed today."""
+        if self.activity_tracker:
+            try:
+                # Use daily task stats if available (Phase 10.6)
+                if hasattr(self.activity_tracker, 'get_daily_task_stats'):
+                    stats = await self.activity_tracker.get_daily_task_stats(user_id)
+                    return stats.get("completed", 0)
+            except Exception as e:
+                logger.error(f"Failed to get completed tasks: {e}")
+        return 0
+
+    async def _get_session_duration(self, user_id: str) -> int:
+        """Get current session duration in minutes."""
+        # TODO: Implement accurate session tracking via ActivityTracker
+        return 0
+
+    async def _calculate_cognitive_load(self, user_id: str) -> float:
+        """Calculate cognitive load for specific user."""
+        # For now, return system load as approximation
+        return await self._calculate_system_cognitive_load()
+
     async def _broadcast_state_update(self, user_id: str, change_type: str = "state_update"):
         """
         Broadcast state update to WebSocket clients.

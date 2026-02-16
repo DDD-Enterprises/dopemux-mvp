@@ -15,9 +15,9 @@ prelude: Task Execution Master History (explanation) for dopemux documentation a
 **Services**: `agents`, `task-router`, `taskmaster`, `task-master-ai`
 **Role**: Execution Layer & Routing
 **Status**:
-*   MemoryAgent: Operational
-*   Task Router: Beta
-*   Infrastructure Agents: 1/7 Implemented
+* MemoryAgent: Operational
+* Task Router: Beta
+* Infrastructure Agents: 1/7 Implemented
 
 ---
 
@@ -33,21 +33,21 @@ The **Task Execution Layer** acts as the "Hands" of the system, whereas ConPort 
 
 ### 🕵️ 7 Infrastructure Agents (`services/agents`)
 A suite of 7 planned agents to support the "2-Plane Architecture":
-1.  **MemoryAgent** (✅ Implemented): Auto-saves context every 30s. Prevents "Where was I?" syndrome.
-2.  **CognitiveGuardian**: Enforces breaks and monitors attention drift.
-3.  **TwoPlaneOrchestrator**: Manages traffic between Leantime (PM) and ConPort (AI).
-4.  **TaskDecomposer**: Breaks PRDs into atomic, ADHD-sized tasks.
-5.  **DopemuxEnforcer**: Validates architecture rules (e.g., "No direct DB access").
-6.  **ToolOrchestrator**: Selects the right MCP tool for the job.
-7.  **WorkflowCoordinator**: Manages long-running multi-step processes.
+1. **MemoryAgent** (✅ Implemented): Auto-saves context every 30s. Prevents "Where was I?" syndrome.
+2. **CognitiveGuardian**: Enforces breaks and monitors attention drift.
+3. **TwoPlaneOrchestrator**: Manages traffic between Leantime (PM) and ConPort (AI).
+4. **TaskDecomposer**: Breaks PRDs into atomic, ADHD-sized tasks.
+5. **DopemuxEnforcer**: Validates architecture rules (e.g., "No direct DB access").
+6. **ToolOrchestrator**: Selects the right MCP tool for the job.
+7. **WorkflowCoordinator**: Manages long-running multi-step processes.
 
 ### 🔀 Task Router (`services/task-router`)
-*   **Energy Matching**: Matches tasks to user's current energy (e.g., "High Energy" -> "Deep Work", "Low Energy" -> "Docs").
-*   **Complexity Routing**: Routes complex tasks to `o3-mini` and simple ones to `gpt-4o`.
+* **Energy Matching**: Matches tasks to user's current energy (e.g., "High Energy" -> "Deep Work", "Low Energy" -> "Docs").
+* **Complexity Routing**: Routes complex tasks to `o3-mini` and simple ones to `gpt-4o`.
 
 ### 🧩 Task Master AI (`docker/mcp-servers/task-master-ai`)
-*   **PRD Parser**: Converts structured requirements into task lists.
-*   **Decomposition Engine**: Recursively breaks tasks down until they are < 4 hours estimate.
+* **PRD Parser**: Converts structured requirements into task lists.
+* **Decomposition Engine**: Recursively breaks tasks down until they are < 4 hours estimate.
 
 ---
 
@@ -68,20 +68,20 @@ A suite of 7 planned agents to support the "2-Plane Architecture":
 ```
 
 ### Integration Points
-*   **MemoryAgent** wraps ConPort to ensure zero data loss during crashes or interruptions.
-*   **Task Master AI** sits as an MCP server, accessible by any agent to decompose big problems.
+* **MemoryAgent** wraps ConPort to ensure zero data loss during crashes or interruptions.
+* **Task Master AI** sits as an MCP server, accessible by any agent to decompose big problems.
 
 ---
 
 ## 4. Validated Status (Audit Results)
 
 **✅ Operational:**
-*   **MemoryAgent**: Tested connection to ConPort; auto-save interval validated.
-*   **Task Router**: API endpoints `/suggest-tasks` functional.
+* **MemoryAgent**: Tested connection to ConPort; auto-save interval validated.
+* **Task Router**: API endpoints `/suggest-tasks` functional.
 
 **⏳ Planned/Pending:**
-*   **Agents 2-7**: Detailed designs exist (Week 3-10 timeline) but code is pending.
-*   **Task Master Wrappers**: `server.py` exists to wrap the Node.js MCP server for Python consumers.
+* **Agents 2-7**: Detailed designs exist (Week 3-10 timeline) but code is pending.
+* **Task Master Wrappers**: `server.py` exists to wrap the Node.js MCP server for Python consumers.
 
 ---
 

@@ -113,6 +113,8 @@ repos:
               if [[ "$normalized" =~ ^\./(tests/resources/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(src/dopemux/templates/) ]]; then continue; fi
               if [[ "$normalized" =~ /\.pytest_cache/ ]]; then continue; fi
+              # UPGRADES directory is allowed
+              if [[ "$normalized" =~ ^\./(UPGRADES/) ]]; then continue; fi
 
 
               # Root project docs and common standards docs anywhere

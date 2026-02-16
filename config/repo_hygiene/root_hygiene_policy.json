@@ -59,6 +59,7 @@
     "litellm.config.yaml",
     "mcp-proxy-config*.yaml",
     "mcp-proxy-config.json",
+    "package-lock.json",
     "package.json",
     "pyproject.toml",
     "MANIFEST.in",
