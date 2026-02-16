@@ -24,7 +24,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple, Union
 from dataclasses import dataclass
 from prometheus_client import PrometheusClient, PrometheusConfig
 from sparkline_generator import SparklineGenerator
@@ -1764,7 +1764,7 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
     class PatternDetailModal(ModalView):
         """Detailed view of a behavioral pattern"""
         
-        def __init__(self, pattern_id: int, pattern_data: Optional[Dict] = None):
+        def __init__(self, pattern_id: Union[int, str], pattern_data: Optional[Dict] = None):
             super().__init__()
             self.pattern_id = pattern_id
             self._pattern_data = pattern_data
@@ -1789,18 +1789,30 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
         
         async def fetch_pattern_details(self) -> Dict:
             """Fetch pattern details from Serena"""
-            if self._pattern_data:
+            # If we have pre-loaded data AND it looks detailed (has history/tags), use it
+            if self._pattern_data and "success_rate" in self._pattern_data:
                 return self._pattern_data
             
-            # TODO: Fetch from real API
-            return {
+            # Fetch from real API
+            try:
+                url = f"http://localhost:8003/api/patterns/{self.pattern_id}"
+                async with httpx.AsyncClient(timeout=2.0) as client:
+                    response = await client.get(url)
+                    if response.status_code == 200:
+                        return response.json()
+            except Exception:
+                pass  # Fallback to mock if API fails
+
+            # Fallback (Mock)
+            return self._pattern_data if self._pattern_data else {
                 "id": self.pattern_id,
                 "name": "Deep Work Morning Block",
                 "occurrences": 47,
                 "success_rate": 0.89,
                 "avg_duration": "2h 15m",
                 "confidence": 0.92,
-                "tags": ["morning", "deep-work", "productive"]
+                "tags": ["morning", "deep-work", "productive"],
+                "history": [1, 1, 1, 0, 1, 1, 0]
             }
         
         def render_pattern_content(self, pattern: Dict) -> str:

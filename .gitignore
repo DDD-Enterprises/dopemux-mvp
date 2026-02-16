@@ -282,6 +282,7 @@ ARCHIVE_MANIFEST.txt
 quarantine/
 tmp/*
 !tmp/.gitkeep
+extraction/runs/
 
 # Artifact and report hygiene
 .claude/*.backup
