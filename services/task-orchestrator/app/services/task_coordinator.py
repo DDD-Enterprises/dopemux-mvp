@@ -54,6 +54,7 @@ class CoordinationState:
     focus_session_timer: int  # seconds since session start
     current_batch: List[OrchestrationTask]  # tasks in current batch
     session_id: str
+    session_start_time: Optional[datetime] = None  # When focus session started
     coordination_mode: str = "ADHD_ADAPTIVE"
     workspace_path: Optional[str] = None  # Track workspace context
 
@@ -83,6 +84,7 @@ class TaskCoordinator:
             active_tasks=[],
             blocked_tasks=[],
             focus_session_timer=0,
+            session_start_time=datetime.now(),
             current_batch=[],
             session_id=f"coord_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         )
@@ -462,15 +464,17 @@ class TaskCoordinator:
 
         for task_id in sequenced_tasks:
             # Execute task (placeholder - actual execution via agents)
-            task = next((t for t in self.coordination_state.active_tasks if t == task_id), None)
+            # Find the task object from internal storage
+            task = self.tasks.get(task_id)
             if task:
                 try:
-                    # Simulate execution with monitoring
-                    await self._monitor_execution(task)
-
                     # Update status
                     task.status = TaskStatus.IN_PROGRESS
                     results["in_progress"].append(task_id)
+
+                    # Simulate execution with monitoring
+                    # We await this to maintain sequential execution order
+                    await self._monitor_execution(task)
 
                     # Sync to ConPort
                     await self.conport_adapter.update_task_in_conport(task)
@@ -481,7 +485,10 @@ class TaskCoordinator:
                     break
 
         # Check for context switching
-        switches = self.context_recovery.detect_switches()
+        await self.context_recovery.detect_context_switch()
+        stats = await self.context_recovery.get_recovery_statistics()
+        switches = stats.get("total_switches", 0)
+
         if switches > self.max_context_switches:
             logger.warning(f"⚠️ Detected {switches} context switches - recommending break")
             results["recommend_break"] = True
@@ -509,11 +516,21 @@ class TaskCoordinator:
         """
         Monitor task execution with ADHD-aware breaks.
         """
+        # Simulate task duration (demo mode)
+        # In a real system, this would monitor an actual agent's progress
+        simulated_duration = 60  # 1 minute simulation per task
         start_time = datetime.now()
 
         # Check energy decay over time
-        while self.coordination_state.focus_session_timer < self.focus_session_duration:
-            await asyncio.sleep(60)  # Check every minute
+        while (datetime.now() - start_time).total_seconds() < simulated_duration:
+            # Update global session timer based on elapsed time since session start
+            elapsed = (datetime.now() - self.coordination_state.session_start_time).total_seconds()
+            self.coordination_state.focus_session_timer = int(elapsed)
+
+            # Check if focus session duration exceeded
+            if self.coordination_state.focus_session_timer >= self.focus_session_duration:
+                logger.info(f"⏰ Focus session duration reached during task {task.id}")
+                break
 
             # Check for break recommendation
             if self.cognitive_guardian.should_break(task):
@@ -521,8 +538,9 @@ class TaskCoordinator:
                 await self._recommend_break()
                 break
 
-        duration = (datetime.now() - start_time).seconds
-        logger.info(f"⏱️ Task {task.id} monitored for {duration} seconds")
+            await asyncio.sleep(10)  # Check every 10 seconds for more responsive monitoring
+
+        logger.info(f"⏱️ Task {task.id} monitoring completed. Session timer: {self.coordination_state.focus_session_timer}s")
 
     async def _recommend_break(self):
         """
