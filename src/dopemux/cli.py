@@ -23,7 +23,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
 import warnings
-import logging
 
 import click
 try:
