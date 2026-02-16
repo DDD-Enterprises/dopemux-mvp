@@ -15,11 +15,11 @@ prelude: Integration Services Master History (explanation) for dopemux documenta
 **Services**: `slack-integration`, `leantime-bridge`, `litellm`, `pal`, `exa`
 **Role**: External World Connectors
 **Status**:
-*   LiteLLM: Critical Infrastructure (Production)
-*   Leantime Bridge: Production
-*   Slack Notifier: Production
-*   Exa: Production
-*   PAL: Maintenance Mode
+* LiteLLM: Critical Infrastructure (Production)
+* Leantime Bridge: Production
+* Slack Notifier: Production
+* Exa: Production
+* PAL: Maintenance Mode
 
 ---
 
@@ -34,27 +34,27 @@ The **Integration Services** connect Dopemux to the outside world—chat platfor
 ## 2. Feature Catalog
 
 ### 💬 Slack/Discord Notifier (`services/slack-integration`)
-*   **Daily Summaries**: Posts end-of-day reports on "Hyperfocus Protections" and "Break Compliance".
-*   **Team Visibility**: Lets teammates know when you are in "Deep Work" status.
-*   **Unified Logic**: Same code serves both Slack and Discord (via `notifier.py`).
+* **Daily Summaries**: Posts end-of-day reports on "Hyperfocus Protections" and "Break Compliance".
+* **Team Visibility**: Lets teammates know when you are in "Deep Work" status.
+* **Unified Logic**: Same code serves both Slack and Discord (via `notifier.py`).
 
 ### 📅 Leantime Bridge (`docker/mcp-servers/leantime-bridge`)
-*   **PM Integration**: Two-way sync with Leantime Project Management.
-*   **Service Discovery**: Implements `/info` endpoint (ADR-208) for auto-configuration.
-*   **Task Management**: Create/Update tasks directly from Claude/Zen.
+* **PM Integration**: Two-way sync with Leantime Project Management.
+* **Service Discovery**: Implements `/info` endpoint (ADR-208) for auto-configuration.
+* **Task Management**: Create/Update tasks directly from Claude/Zen.
 
 ### 🤖 LiteLLM Proxy (`docker/mcp-servers/litellm`)
-*   **Unified Interface**: OpenAI-compatible endpoint for *all* models (Grok, Gemini, Claude).
-*   **Cost & Fallback**: Routes simple queries to cheap models; auto-retries on API failures.
-*   **Chain**: `gpt-5` -> `gpt-5-mini` -> `grok-4`.
+* **Unified Interface**: OpenAI-compatible endpoint for *all* models (Grok, Gemini, Claude).
+* **Cost & Fallback**: Routes simple queries to cheap models; auto-retries on API failures.
+* **Chain**: `gpt-5` -> `gpt-5-mini` -> `grok-4`.
 
 ### 🧠 Exa Search (`docker/mcp-servers/exa`)
-*   **Neural Search**: "Find me Python code for OAuth" (Semantic) vs "OAuth Python" (Keyword).
-*   **Research Automation**: Used by `dopemux-gpt-researcher`.
+* **Neural Search**: "Find me Python code for OAuth" (Semantic) vs "OAuth Python" (Keyword).
+* **Research Automation**: Used by `dopemux-gpt-researcher`.
 
 ### 🛠️ PAL (Platform Abstraction Layer) (`docker/mcp-servers/pal`)
-*   **Zen Bridge**: Adapts the `zen` rust CLI to MCP.
-*   **Fix History**: Patched to support custom CLI configs (ADR-Fix-Zen-CLI).
+* **Zen Bridge**: Adapts the `zen` rust CLI to MCP.
+* **Fix History**: Patched to support custom CLI configs (ADR-Fix-Zen-CLI).
 
 ---
 
@@ -79,12 +79,12 @@ The **Integration Services** connect Dopemux to the outside world—chat platfor
 ## 4. Validated Status (Audit Results)
 
 **✅ Operational:**
-*   **LiteLLM**: Serving traffic on port 4000. Fallbacks configured.
-*   **Leantime Bridge**: `/info` endpoint active.
-*   **Exa**: Functional.
+* **LiteLLM**: Serving traffic on port 4000. Fallbacks configured.
+* **Leantime Bridge**: `/info` endpoint active.
+* **Exa**: Functional.
 
 **🔧 Maintenance:**
-*   **PAL**: Required manual patching (`PAL_FIX.md`) to work with recent `clink` updates.
+* **PAL**: Required manual patching (`PAL_FIX.md`) to work with recent `clink` updates.
 
 ---
 

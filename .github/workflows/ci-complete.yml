@@ -97,10 +97,10 @@ jobs:
       - name: 🛡️ AI-Powered Security Analysis
         uses: anthropics/claude-code-security-review@main
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         with:
           comment-pr: true
-          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           custom-security-scan-instructions: .github/security-scan-instructions.txt
           false-positive-filtering-instructions: .github/security-filtering-instructions.txt
           claudecode-timeout: "20"
@@ -159,6 +159,7 @@ jobs:
           PIN_REPO="$(sed -n 's/^repo=//p' .taskx-pin | head -n 1)"
           PIN_REF="$(sed -n 's/^ref=//p' .taskx-pin | head -n 1)"
           python3 -m venv .taskx_venv
+          .taskx_venv/bin/pip install PyYAML
           .taskx_venv/bin/pip install "git+${PIN_REPO}@${PIN_REF}"
 
       - name: ✅ Verify TaskX wiring
