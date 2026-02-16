@@ -43,7 +43,7 @@ help:
 	@echo ""
 	@echo "Extraction Pipeline (Upgrade Pipeline):"
 	@echo "  x-run-init RUN_ID=YYYYMMDD_HHMM_<slug>  Initialize new extraction run scaffolding"
-	@echo "  x-phase-dirs PHASE=<A|H|D|C|R|R2|X|T>       Print target directories for a phase"
+	@echo "  x-phase-dirs PHASE=<A|H|D|C|E|W|B|G|Q|R|X|T|Z>  Print target directories for a phase"
 	@echo "  x-status                                     Print file counts per phase"
 	@echo "  x-manifest                                   Update/generate MANIFEST.json for run"
 	@echo "  x-doctor                                     Run pipeline doctor on latest run"
@@ -195,30 +195,47 @@ x-run-init:
 		ID=$$(date '+%Y%m%d_%H%M%S_PST')_$$SHA; \
 	fi; \
 	echo "Initializing run $$ID..."; \
-	mkdir -p "extraction/runs/$$ID/A_repo_control_plane/raw" "extraction/runs/$$ID/A_repo_control_plane/norm" "extraction/runs/$$ID/A_repo_control_plane/qa"; \
-	mkdir -p "extraction/runs/$$ID/H_home_control_plane/raw" "extraction/runs/$$ID/H_home_control_plane/norm" "extraction/runs/$$ID/H_home_control_plane/qa"; \
-	mkdir -p "extraction/runs/$$ID/D_docs_pipeline/raw" "extraction/runs/$$ID/D_docs_pipeline/norm" "extraction/runs/$$ID/D_docs_pipeline/qa"; \
-	mkdir -p "extraction/runs/$$ID/C_code_surfaces/raw" "extraction/runs/$$ID/C_code_surfaces/norm" "extraction/runs/$$ID/C_code_surfaces/qa"; \
-	mkdir -p "extraction/runs/$$ID/R_arbitration/out"; \
-	mkdir -p "extraction/runs/$$ID/R2_synthesis/out"; \
-	mkdir -p "extraction/runs/$$ID/X_feature_index/out"; \
-	mkdir -p "extraction/runs/$$ID/T_task_packets/out"; \
+	mkdir -p "extraction/runs/$$ID/00_inputs"; \
+	for PHASE_DIR in \
+		A_repo_control_plane \
+		H_home_control_plane \
+		D_docs_pipeline \
+		C_code_surfaces \
+		E_execution_plane \
+		W_workflow_plane \
+		B_boundary_plane \
+		G_governance_plane \
+		Q_quality_assurance \
+		R_arbitration \
+		X_feature_index \
+		T_task_packets \
+		Z_handoff_freeze; do \
+		mkdir -p "extraction/runs/$$ID/$$PHASE_DIR/inputs"; \
+		mkdir -p "extraction/runs/$$ID/$$PHASE_DIR/raw"; \
+		mkdir -p "extraction/runs/$$ID/$$PHASE_DIR/norm"; \
+		mkdir -p "extraction/runs/$$ID/$$PHASE_DIR/qa"; \
+	done; \
 	echo "$$ID" > extraction/latest_run_id.txt; \
 	rm -f extraction/latest; \
 	ln -s "runs/$$ID" extraction/latest; \
 	echo "✓ Initialized run $$ID in extraction/latest"
 
 x-phase-dirs:
-	@if [ -z "$(PHASE)" ]; then echo "Usage: make x-phase-dirs PHASE=<A|H|D|C|R|R2|X|T>"; exit 1; fi
+	@if [ -z "$(PHASE)" ]; then echo "Usage: make x-phase-dirs PHASE=<A|H|D|C|E|W|B|G|Q|R|X|T|Z>"; exit 1; fi
 	@case $(PHASE) in \
 		A) echo "extraction/latest/A_repo_control_plane" ;; \
 		H) echo "extraction/latest/H_home_control_plane" ;; \
 		D) echo "extraction/latest/D_docs_pipeline" ;; \
 		C) echo "extraction/latest/C_code_surfaces" ;; \
+		E) echo "extraction/latest/E_execution_plane" ;; \
+		W) echo "extraction/latest/W_workflow_plane" ;; \
+		B) echo "extraction/latest/B_boundary_plane" ;; \
+		G) echo "extraction/latest/G_governance_plane" ;; \
+		Q) echo "extraction/latest/Q_quality_assurance" ;; \
 		R) echo "extraction/latest/R_arbitration" ;; \
-		R2) echo "extraction/latest/R2_synthesis" ;; \
 		X) echo "extraction/latest/X_feature_index" ;; \
 		T) echo "extraction/latest/T_task_packets" ;; \
+		Z) echo "extraction/latest/Z_handoff_freeze" ;; \
 		*) echo "Invalid phase $(PHASE)"; exit 1 ;; \
 	esac
 
@@ -231,4 +248,3 @@ x-manifest:
 
 x-doctor:
 	@python3 scripts/pipeline_doctor.py
-
