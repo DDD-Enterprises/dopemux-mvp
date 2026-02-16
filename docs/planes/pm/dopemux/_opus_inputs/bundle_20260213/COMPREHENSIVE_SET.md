@@ -1,3 +1,14 @@
+---
+id: COMPREHENSIVE_SET
+title: Comprehensive Set
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Comprehensive Set (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Opus Evidence Bundle: Comprehensive Set
 
 Bundle root:
