@@ -1,3 +1,15 @@
+---
+id: 03_STORE_WRITE_OWNERSHIP_MATRIX
+title: 03 Store Write Ownership Matrix
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 03 Store Write Ownership Matrix (explanation) for dopemux documentation and
+  developer workflows.
+---
 # 03 Store Write Ownership Matrix
 
 | store | owner writer service | other writers (if any) | interface (API vs direct DB) | evidence | determinism risk note |

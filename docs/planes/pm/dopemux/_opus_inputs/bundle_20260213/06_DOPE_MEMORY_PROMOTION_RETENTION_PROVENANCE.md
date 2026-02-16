@@ -1,3 +1,15 @@
+---
+id: 06_DOPE_MEMORY_PROMOTION_RETENTION_PROVENANCE
+title: 06 Dope Memory Promotion Retention Provenance
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 06 Dope Memory Promotion Retention Provenance (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 06 Dope-Memory Promotion Retention Provenance
 
 ## Promotion rules (implementation)
