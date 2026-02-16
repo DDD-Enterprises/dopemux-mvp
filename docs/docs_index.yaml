@@ -63,6 +63,7 @@ architecture:
   overview: "docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
   system_bible: "docs/04-explanation/architecture/system-bible.md"
   multi_instance: "docs/04-explanation/architecture/multi-instance-implementation.md"
+  pipeline_readme: "UPGRADES/PIPELINE_README.md"
   adr_index: "docs/90-adr/"
   rfc_index: "docs/91-rfc/"
 
