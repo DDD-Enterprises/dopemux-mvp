@@ -1,3 +1,15 @@
+---
+id: 12_OPUS_PROMPTS_READY
+title: 12 Opus Prompts Ready
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 12 Opus Prompts Ready (explanation) for dopemux documentation and developer
+  workflows.
+---
 # 12 Opus Prompts Ready
 
 Policy stance: **Policy B (authority-writer + authenticated emitters)**

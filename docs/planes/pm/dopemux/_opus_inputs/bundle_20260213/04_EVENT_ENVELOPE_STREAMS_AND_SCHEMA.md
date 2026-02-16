@@ -1,3 +1,15 @@
+---
+id: 04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA
+title: 04 Event Envelope Streams And Schema
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 04 Event Envelope Streams And Schema (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 04 Event Envelope Streams And Schema
 
 ## Canonical envelope summary (implementation-derived)
