@@ -73,10 +73,10 @@ Run `npm audit` for details.
 📋 Building React viewer...
 Building React viewer...
 ✓ React viewer built successfully
-  - plugin/ui/viewer-bundle.js
-  - plugin/ui/viewer.html (from viewer-template.html)
-  - plugin/ui/assets/fonts/* (font files)
-  - plugin/ui/icon-thick-*.svg (4 icon files)
+  * plugin/ui/viewer-bundle.js
+  * plugin/ui/viewer.html (from viewer-template.html)
+  * plugin/ui/assets/fonts/* (font files)
+  * plugin/ui/icon-thick-*.svg (4 icon files)
 
 🔧 Building worker service...
 ✓ worker-service built (1722.09 KB)
@@ -89,9 +89,9 @@ Building React viewer...
 
 ✅ Worker service, MCP server, and context generator built successfully!
    Output: plugin/scripts/
-   - Worker: worker-service.cjs
-   - MCP Server: mcp-server.cjs
-   - Context Generator: context-generator.cjs
+   * Worker: worker-service.cjs
+   * MCP Server: mcp-server.cjs
+   * Context Generator: context-generator.cjs
 
 > claude-mem@9.0.17 worker:start
 > bun plugin/scripts/worker-service.cjs start
@@ -107,7 +107,6 @@ Worker is running
   Port: 37777
   Started: 2026-02-06T18:01:31.437Z
 [1] 33141
-
 
  hue claude-mem  main [ 2 ] •  • 󰎙  󰁔  lsof -iTCP:37777 -sTCP:LISTEN || true
 curl -sS http://127.0.0.1:37777/ | head
