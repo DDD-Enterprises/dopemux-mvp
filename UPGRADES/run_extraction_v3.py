@@ -370,11 +370,14 @@ HOME_SAFE_DENY_GLOBS = [
     "*.pfx",
     "*.der",
     "*.crt",
+    "*.key",
+    "*.kdbx",
     "*key*",
     "*token*",
     "*secret*",
     "*pass*",
     "*credential*",
+    "*credentials*",
 ]
 
 REQUIRED_ITEM_KEYS = ["path", "line_range", "id"]
@@ -388,6 +391,7 @@ SECRET_ASSIGN_RE = re.compile(
 LONG_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9+/=_-])[A-Za-z0-9+/=_-]{33,}(?![A-Za-z0-9+/=_-])")
 ENV_SECRET_NAME_RE = re.compile(r"\b[A-Z0-9_]*(?:SECRET|TOKEN|KEY)\b")
 BEARER_TOKEN_RE = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}")
+PROVIDER_KEY_PREFIX_RE = re.compile(r"\b(?:sk-[A-Za-z0-9_-]{8,}|AIza[0-9A-Za-z_-]{12,}|xai-[A-Za-z0-9_-]{8,})\b")
 PRIVATE_KEY_BEGIN_RE = re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----")
 PRIVATE_KEY_END_RE = re.compile(r"-----END [A-Z0-9 ]*PRIVATE KEY-----")
 CONFIG_KEY_RE = re.compile(r'^\s*["\']?([A-Za-z0-9_.-]{2,})["\']?\s*[:=]')
@@ -1130,6 +1134,7 @@ def write_phase_manifest(
             "line_patterns": [
                 "api_key/token/secret/password/private_key/cookie",
                 "Bearer <token>",
+                "provider_key_prefixes(sk-/AIza/xai-)",
                 "long_token_33_plus_chars",
             ],
             "field_patterns": [
@@ -1472,7 +1477,7 @@ def home_safe_violation_reason(path: Path, home_root: Path) -> Optional[str]:
     return None
 
 
-def home_safe_filter(items: List[Dict[str, Any]], home_root: Path) -> List[Dict[str, Any]]:
+def home_safe_filter(items: List[Dict[str, Any]], home_root: Path) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     filtered: List[Dict[str, Any]] = []
     skipped_counts = Counter()
 
@@ -1492,18 +1497,28 @@ def home_safe_filter(items: List[Dict[str, Any]], home_root: Path) -> List[Dict[
         len(items),
         dict(skipped_counts),
     )
-    return filtered
+    report = {
+        "mode": "safe",
+        "allow_roots": [str(path) for path in home_safe_allow_roots(home_root)],
+        "files_scanned": len(items),
+        "files_kept": len(filtered),
+        "files_skipped": int(sum(skipped_counts.values())),
+        "files_skipped_by_rule": dict(sorted((str(k), int(v)) for k, v in skipped_counts.items())),
+    }
+    return filtered, report
 
 
-def redact_sensitive_lines(text: str) -> Tuple[str, int]:
+def redact_sensitive_lines(text: str) -> Tuple[str, int, Dict[str, int]]:
     output_lines: List[str] = []
     had_trailing_newline = text.endswith("\n")
     redaction_hits = 0
+    pattern_counts = Counter()
     in_private_key_block = False
 
     for line in text.splitlines():
         if in_private_key_block:
             redaction_hits += 1
+            pattern_counts["private_key_block_line"] += 1
             if PRIVATE_KEY_END_RE.search(line):
                 in_private_key_block = False
             continue
@@ -1511,6 +1526,7 @@ def redact_sensitive_lines(text: str) -> Tuple[str, int]:
         if PRIVATE_KEY_BEGIN_RE.search(line):
             output_lines.append("[REDACTED_PRIVATE_KEY_BLOCK]")
             redaction_hits += 1
+            pattern_counts["private_key_block_start"] += 1
             if not PRIVATE_KEY_END_RE.search(line):
                 in_private_key_block = True
             continue
@@ -1520,16 +1536,25 @@ def redact_sensitive_lines(text: str) -> Tuple[str, int]:
             replaced = SECRET_ASSIGN_RE.sub(r"\1[REDACTED]", redacted)
             redacted = replaced if replaced != redacted else "[REDACTED_LINE]"
             redaction_hits += 1
+            pattern_counts["secret_assignment_or_env"] += 1
         redacted, bearer_hits = BEARER_TOKEN_RE.subn("Bearer [REDACTED_TOKEN]", redacted)
         redaction_hits += bearer_hits
+        if bearer_hits:
+            pattern_counts["bearer_token"] += int(bearer_hits)
+        redacted, provider_key_hits = PROVIDER_KEY_PREFIX_RE.subn("[REDACTED_PROVIDER_KEY]", redacted)
+        redaction_hits += provider_key_hits
+        if provider_key_hits:
+            pattern_counts["provider_key_prefix"] += int(provider_key_hits)
         redacted, token_hits = LONG_TOKEN_RE.subn("[REDACTED_LONG_TOKEN]", redacted)
         redaction_hits += token_hits
+        if token_hits:
+            pattern_counts["long_token"] += int(token_hits)
         output_lines.append(redacted)
 
     out = "\n".join(output_lines)
     if had_trailing_newline:
         out += "\n"
-    return out, redaction_hits
+    return out, redaction_hits, dict(sorted((str(k), int(v)) for k, v in pattern_counts.items()))
 
 
 # --- Inventory / Partitioning ---
@@ -3315,14 +3340,16 @@ def execute_step_for_partitions(
                 filtered_paths.append(path_str)
 
             redaction_hits_total = 0
+            redaction_pattern_counts = Counter()
 
             def _read_for_chunk(path_str: str) -> str:
                 nonlocal redaction_hits_total
                 content_local = safe_read(Path(path_str))
                 safe_redaction_active = phase == "M" or (phase == "H" and cfg.home_scan_mode == "safe")
                 if safe_redaction_active:
-                    content_local, hits = redact_sensitive_lines(content_local)
+                    content_local, hits, pattern_counts = redact_sensitive_lines(content_local)
                     redaction_hits_total += hits
+                    redaction_pattern_counts.update(pattern_counts)
                 return content_local
 
             context, context_stats, file_entries = build_partition_context(
@@ -3334,6 +3361,9 @@ def execute_step_for_partitions(
                 tail_chars=tail_chars,
             )
             context_stats["redaction_hits"] = redaction_hits_total
+            context_stats["redaction_pattern_counts"] = dict(
+                sorted((str(k), int(v)) for k, v in redaction_pattern_counts.items())
+            )
             context_stats["safe_mode_blocked"] = safe_mode_blocked
             if context_stats.get("files_included", 0) > 0 and context_stats.get("truncated_files", 0) == context_stats.get(
                 "files_included", 0
@@ -4750,6 +4780,99 @@ def _run_phase_inner(
     )
 
 
+def write_home_redaction_report(
+    phase_dir: Path,
+    safe_filter_report: Dict[str, Any],
+) -> None:
+    chunk_files = sorted((phase_dir / "inputs").glob("CHUNK_MANIFEST_H*.json"))
+    lines_redacted = 0
+    pattern_counts: Counter = Counter()
+    safe_mode_blocked = 0
+
+    for chunk_file in chunk_files:
+        try:
+            payload = parse_json_from_response(safe_read(chunk_file))
+        except Exception:
+            payload = {}
+        chunks = payload.get("chunks", []) if isinstance(payload, dict) else []
+        for chunk in chunks:
+            context_stats = chunk.get("context_stats", {}) if isinstance(chunk, dict) else {}
+            if not isinstance(context_stats, dict):
+                continue
+            lines_redacted += int(context_stats.get("redaction_hits", 0) or 0)
+            safe_mode_blocked += int(context_stats.get("safe_mode_blocked", 0) or 0)
+            per_chunk_patterns = context_stats.get("redaction_pattern_counts", {})
+            if isinstance(per_chunk_patterns, dict):
+                for key, value in per_chunk_patterns.items():
+                    pattern_counts[str(key)] += int(value or 0)
+
+    report = {
+        "artifact": "HOME_REDACTION_REPORT",
+        "generated_at": now_iso(),
+        "mode": "safe",
+        "files_scanned": int(safe_filter_report.get("files_scanned", 0)),
+        "files_kept": int(safe_filter_report.get("files_kept", 0)),
+        "files_skipped": int(safe_filter_report.get("files_skipped", 0)),
+        "files_skipped_by_rule": dict(
+            sorted(
+                (str(k), int(v))
+                for k, v in (safe_filter_report.get("files_skipped_by_rule", {}) or {}).items()
+            )
+        ),
+        "safe_mode_blocked_during_chunking": int(safe_mode_blocked),
+        "lines_redacted": int(lines_redacted),
+        "patterns_triggered": dict(sorted((str(k), int(v)) for k, v in pattern_counts.items())),
+        "allow_roots": list(safe_filter_report.get("allow_roots", [])),
+    }
+    write_json(phase_dir / "qa" / "HOME_REDACTION_REPORT.json", report)
+
+
+def write_home_db_metadata_index(dirs: Dict[str, Path], home_root: Path) -> Path:
+    db_rows: List[Dict[str, Any]] = []
+    for allow_root in home_safe_allow_roots(home_root):
+        if not allow_root.exists():
+            continue
+        for walk_root, dirs_walk, files in os.walk(allow_root):
+            dirs_walk.sort()
+            files.sort()
+            for filename in files:
+                path = Path(walk_root) / filename
+                suffix = path.suffix.lower()
+                if suffix not in SQLITE_SUFFIXES:
+                    continue
+                try:
+                    st = path.stat()
+                    size = int(st.st_size)
+                    mtime = float(st.st_mtime)
+                except Exception:
+                    size = 0
+                    mtime = 0.0
+                db_rows.append(
+                    {
+                        "path": str(path.resolve()),
+                        "size": size,
+                        "mtime": mtime,
+                        "evidence": f"HOMECTRL: {path.resolve()}",
+                        "metadata_only": True,
+                    }
+                )
+    db_rows.sort(key=lambda row: str(row.get("path", "")))
+    payload = {
+        "artifact": "HOME_DB_METADATA_INDEX",
+        "generated_at": now_iso(),
+        "notes": [
+            "Metadata-only index of sqlite/db files discovered in allowlisted roots.",
+            "No sqlite binaries were opened or queried to build this artifact.",
+        ],
+        "db_files": db_rows,
+    }
+    phase_path = dirs["H"] / "inputs" / "HOME_DB_METADATA_INDEX.json"
+    shared_path = dirs["inputs"] / "H_HOME_DB_METADATA_INDEX.json"
+    write_json(phase_path, payload)
+    write_json(shared_path, payload)
+    return phase_path
+
+
 # --- Phase M Runtime Export Helpers ---
 
 SQLITE_SUFFIXES = {".db", ".sqlite", ".sqlite3"}
@@ -5403,10 +5526,22 @@ def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     ]
     collector = Collector(home, excludes)
     items = collector.collect(subdirs=HOME_SAFE_ROOTS)
+    db_seed_file = write_home_db_metadata_index(dirs, home)
     items = merge_items(items, collect_home_magic_items(home))
+    items = merge_items(items, to_items([db_seed_file]))
+    safe_filter_report: Dict[str, Any] = {
+        "mode": cfg.home_scan_mode,
+        "allow_roots": [str(path) for path in home_safe_allow_roots(home)],
+        "files_scanned": len(items),
+        "files_kept": len(items),
+        "files_skipped": 0,
+        "files_skipped_by_rule": {},
+    }
     if cfg.home_scan_mode == "safe":
-        items = home_safe_filter(items, home)
+        items, safe_filter_report = home_safe_filter(items, home)
     _run_phase_inner("H", dirs, cfg, None, None, precollected_items=items)
+    if cfg.home_scan_mode == "safe":
+        write_home_redaction_report(dirs["H"], safe_filter_report)
 
 
 def run_phase_M(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
