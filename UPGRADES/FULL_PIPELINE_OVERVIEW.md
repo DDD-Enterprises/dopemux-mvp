@@ -1,5 +1,15 @@
 # Full Pipeline Order
 
+## Canonical Prompt Filenames (Deterministic Rule)
+
+- Prompt files must follow `PROMPT_<STEP_ID>_<TITLE>.md`.
+- Exactly one prompt file is allowed per StepID. Duplicate variants are not allowed.
+- The v3 runner (`UPGRADES/run_extraction_v3.py`) fails closed when duplicate StepIDs are found.
+- Canonical filenames for previously duplicated steps:
+  - `PROMPT_D0_INVENTORY___PARTITION_PLAN.md`
+  - `PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md`
+- `S1`/`S2` prompts are not in the active v3 extraction prompt set. If reintroduced, keep one canonical file per StepID only.
+
 **Run Phase D (Docs P0–P5) after you’ve captured the control plane surfaces (repo + home), and before any deep arbitration/synthesis (5.2 / Opus).**
 
 That order prevents two classic failure modes:

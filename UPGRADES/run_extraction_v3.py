@@ -197,10 +197,10 @@ HOME_SAFE_DENY_GLOBS = [
 
 REQUIRED_ITEM_KEYS = ["path", "line_range", "id"]
 SECRET_LINE_RE = re.compile(
-    r"(?i)\b(api[_-]?key|authorization|bearer|token|secret|password|private[_-]?key)\b"
+    r"(?i)\b(api[_-]?key|authorization|bearer|token|secret|password|private[_-]?key|cookie|set-cookie)\b"
 )
 SECRET_ASSIGN_RE = re.compile(
-    r"(?i)^(\s*['\"]?[^:=\n]*?(?:api[_-]?key|authorization|bearer|token|secret|password|private[_-]?key)"
+    r"(?i)^(\s*['\"]?[^:=\n]*?(?:api[_-]?key|authorization|bearer|token|secret|password|private[_-]?key|cookie|set-cookie)"
     r"[^:=\n]*?['\"]?\s*[:=]\s*).*$"
 )
 LONG_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9+/=_-])[A-Za-z0-9+/=_-]{33,}(?![A-Za-z0-9+/=_-])")
