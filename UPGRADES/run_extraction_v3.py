@@ -283,6 +283,14 @@ DEFAULT_OUTPUT_BY_STEP = {
     "T1": ("TP_PACKETS_TOP10.partX.md", "TP_PACKET_IMPLEMENTATION_INDEX.json"),
 }
 
+PRIORITY_TIERS = {
+    1: "instruction_magic",
+    2: "workflow_launchers",
+    3: "docs_specs_adr",
+    4: "code",
+    5: "archives",
+}
+
 
 # --- Setup Logging ---
 logging.basicConfig(
@@ -412,6 +420,10 @@ def safe_read(path: Path) -> str:
         return path.read_text(encoding="utf-8", errors="ignore")
     except Exception:
         return ""
+
+
+def sha256_string(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8", errors="ignore")).hexdigest()
 
 
 def is_text_candidate(path: Path) -> bool:
@@ -683,6 +695,131 @@ def write_phase_manifest(
         "resume_mode": cfg.resume,
     }
     write_json(dirs[phase] / "qa" / f"PHASE_{phase}_MANIFEST.json", manifest)
+
+
+def write_partition_manifest(
+    phase: str,
+    phase_dir: Path,
+    run_id: str,
+    partitions: List[Dict[str, Any]],
+    inventory_by_path: Dict[str, Dict[str, Any]],
+    file_truncate_chars: int,
+    max_files: int,
+    max_chars: int,
+    step_chunk_manifests: Dict[str, List[Dict[str, Any]]],
+) -> None:
+    partition_rows: List[Dict[str, Any]] = []
+    for partition in sorted(partitions, key=lambda item: str(item.get("id", ""))):
+        ordered_paths = [str(path) for path in partition.get("ordered_paths", partition.get("paths", []))]
+        files = [
+            _partition_file_row(path, inventory_by_path, file_truncate_chars)
+            for path in ordered_paths
+        ]
+        tier_counts = Counter(int(row.get("priority_tier", 4)) for row in files)
+        payload_hash = build_partition_payload_hash(
+            ordered_paths=ordered_paths,
+            inventory_by_path=inventory_by_path,
+            file_truncate_chars=file_truncate_chars,
+        )
+        partition_rows.append(
+            {
+                "partition_id": str(partition.get("id", "")),
+                "reason": str(partition.get("reason", "")),
+                "ordered_paths": ordered_paths,
+                "file_count": len(ordered_paths),
+                "char_count_estimate": int(partition.get("char_count_estimate", 0) or 0),
+                "byte_count_estimate": int(partition.get("byte_count_estimate", 0) or 0),
+                "token_count_estimate": int(partition.get("token_count_estimate", 0) or 0),
+                "tier_counts": dict(sorted(tier_counts.items())),
+                "partition_payload_hash": payload_hash,
+                "files": files,
+            }
+        )
+
+    payload = {
+        "phase": phase,
+        "run_id": run_id,
+        "generated_at": now_iso(),
+        "limits": {
+            "max_files": max_files,
+            "max_chars": max_chars,
+            "max_tokens": max(int(max_chars / 4), 1024),
+            "file_truncate_chars": file_truncate_chars,
+        },
+        "partition_order": [row["partition_id"] for row in partition_rows],
+        "partitions": partition_rows,
+        "step_chunk_manifests": {
+            step_id: sorted(
+                rows,
+                key=lambda row: (
+                    str(row.get("chunk_id", "")),
+                    str(row.get("chunk_key", "")),
+                ),
+            )
+            for step_id, rows in sorted(step_chunk_manifests.items())
+        },
+    }
+    write_json(phase_dir / "inputs" / "PARTITION_MANIFEST.json", payload)
+
+
+def write_resume_proof(
+    phase: str,
+    phase_dir: Path,
+    run_id: str,
+    prompts: List[PromptSpec],
+    step_coverages: List[Dict[str, Any]],
+    step_qas: List[Dict[str, Any]],
+    request_controller: "RequestController",
+) -> None:
+    qa_by_step = {str(item.get("step_id", "")): item for item in step_qas}
+    coverage_by_step = {str(item.get("step_id", "")): item for item in step_coverages}
+
+    steps: List[Dict[str, Any]] = []
+    for prompt in sorted(prompts, key=lambda item: item.step_id):
+        step_id = prompt.step_id
+        coverage = coverage_by_step.get(step_id, {})
+        qa = qa_by_step.get(step_id, {})
+        chunk_ids = [str(value) for value in coverage.get("chunk_ids", [])]
+        failed_chunk_ids = sorted(set(str(value) for value in coverage.get("failed_chunk_ids", [])))
+        skipped = int(coverage.get("skipped_chunks", 0) or 0)
+        completed = int(coverage.get("completed_chunks", 0) or 0)
+        total_done = completed + skipped
+        hash_mismatch = sorted(set(str(value) for value in coverage.get("hash_mismatch_chunk_ids", [])))
+        parse_failures = qa.get("parse_failures", []) if isinstance(qa.get("parse_failures"), list) else []
+        missing_partitions = qa.get("missing_partitions", []) if isinstance(qa.get("missing_partitions"), list) else []
+        missing_expected = qa.get("missing_expected_artifacts", []) if isinstance(qa.get("missing_expected_artifacts"), list) else []
+        written_files = qa.get("written_files", []) if isinstance(qa.get("written_files"), list) else []
+        output_presence = {
+            str(filename): (phase_dir / "norm" / str(filename)).exists()
+            for filename in written_files
+        }
+        steps.append(
+            {
+                "step_id": step_id,
+                "chunk_ids": chunk_ids,
+                "planned_chunks": int(coverage.get("planned_chunks", len(chunk_ids)) or len(chunk_ids)),
+                "completed_chunks": completed,
+                "skipped_chunks": skipped,
+                "failed_chunks": int(coverage.get("failed_chunks", len(failed_chunk_ids)) or len(failed_chunk_ids)),
+                "completed_or_skipped_chunks": total_done,
+                "failed_chunk_ids": failed_chunk_ids,
+                "hash_mismatch_chunk_ids": hash_mismatch,
+                "missing_partitions": sorted(set(str(value) for value in missing_partitions)),
+                "missing_expected_artifacts": sorted(set(str(value) for value in missing_expected)),
+                "parse_failures": parse_failures,
+                "written_files": [str(filename) for filename in written_files],
+                "written_files_exist": output_presence,
+            }
+        )
+
+    payload = {
+        "phase": phase,
+        "run_id": run_id,
+        "generated_at": now_iso(),
+        "steps": steps,
+        "last_successful_provider_call": request_controller.last_successful_call,
+    }
+    write_json(phase_dir / "qa" / "RESUME_PROOF.json", payload)
 
 
 # --- Collector Logic ---
@@ -973,11 +1110,106 @@ def build_inventory(items: List[Dict[str, Any]], file_truncate_chars: int) -> Li
                 "kind": classify_kind(path),
                 "char_count": char_count,
                 "char_count_estimate": est_chars,
+                "token_count_estimate": max(int(est_chars / 4), 1),
+                "priority_tier": classify_priority_tier(str(path)),
             }
         )
 
-    inventory.sort(key=lambda item: item["path"])
+    inventory.sort(
+        key=lambda item: (
+            int(item.get("priority_tier", 4)),
+            str(item.get("path", "")),
+        )
+    )
     return inventory
+
+
+def classify_priority_tier(path_str: str) -> int:
+    path = path_str.replace("\\", "/")
+    lower = path.lower()
+    name = Path(path).name.lower()
+
+    if (
+        lower.endswith("agents.md")
+        or "/.claude/" in lower
+        or name.startswith("prompt_")
+        or "project_instructions" in lower
+        or "primer" in lower
+        or ".claude.json" in lower
+        or ".taskxroot" in lower
+        or ".taskx/project.json" in lower
+        or "mcp" in lower
+        or "litellm.config" in lower
+        or "root_hygiene_policy.json" in lower
+    ):
+        return 1
+
+    if (
+        "docker-compose" in name
+        or name in {"compose.yml", "makefile", ".tmux.conf", "tmux-dopemux-orchestrator.yaml"}
+        or "/scripts/" in lower
+        or "/tools/" in lower
+        or "start" in name
+        or "run_" in name
+        or "launcher" in name
+    ):
+        return 2
+
+    if (
+        "/archive/" in lower
+        or "/system_archive/" in lower
+        or name.endswith(".zip")
+        or "archive" in name
+    ):
+        return 5
+
+    if (
+        "/docs/" in lower
+        or "/90-adr/" in lower
+        or "/91-rfc/" in lower
+        or "/94-architecture/" in lower
+        or name.endswith(".md")
+    ):
+        return 3
+
+    return 4
+
+
+def _partition_file_row(
+    path: str,
+    inventory_by_path: Dict[str, Dict[str, Any]],
+    file_truncate_chars: int,
+) -> Dict[str, Any]:
+    info = inventory_by_path.get(path, {})
+    char_count = int(info.get("char_count", 0) or 0)
+    est_chars = int(info.get("char_count_estimate", 0) or 0)
+    est_tokens = int(info.get("token_count_estimate", max(int(est_chars / 4), 1)))
+    priority_tier = int(info.get("priority_tier", classify_priority_tier(path)) or 4)
+    return {
+        "path": path,
+        "size": int(info.get("size", 0) or 0),
+        "mtime": float(info.get("mtime", 0.0) or 0.0),
+        "sha256": str(info.get("sha256", "")),
+        "char_count": char_count,
+        "char_count_estimate": est_chars,
+        "token_count_estimate": max(est_tokens, 1),
+        "truncation_planned": char_count > max(int(file_truncate_chars), 0),
+        "priority_tier": priority_tier,
+        "priority_label": PRIORITY_TIERS.get(priority_tier, "unknown"),
+    }
+
+
+def build_partition_payload_hash(
+    ordered_paths: List[str],
+    inventory_by_path: Dict[str, Dict[str, Any]],
+    file_truncate_chars: int,
+) -> str:
+    rows = [
+        _partition_file_row(path, inventory_by_path, file_truncate_chars)
+        for path in ordered_paths
+    ]
+    digest_source = json.dumps(rows, sort_keys=True, ensure_ascii=True)
+    return sha256_string(digest_source)
 
 
 def max_files_for_phase(phase: str, cfg: RunnerConfig) -> int:
@@ -987,16 +1219,22 @@ def max_files_for_phase(phase: str, cfg: RunnerConfig) -> int:
 
 
 def build_partitions(
-    phase: str, inventory: List[Dict[str, Any]], max_files: int, max_chars: int
+    phase: str,
+    inventory: List[Dict[str, Any]],
+    max_files: int,
+    max_chars: int,
+    file_truncate_chars: int,
 ) -> List[Dict[str, Any]]:
     partitions: List[Dict[str, Any]] = []
     current_paths: List[str] = []
     current_chars = 0
     current_bytes = 0
+    current_tokens = 0
     inventory_by_path = {str(item.get("path", "")): item for item in inventory}
+    max_tokens = max(int(max_chars / 4), 1024)
 
     def flush_partition(reason: str) -> None:
-        nonlocal current_paths, current_chars, current_bytes
+        nonlocal current_paths, current_chars, current_bytes, current_tokens
         if not current_paths:
             return
         partition_id = f"{phase}_P{len(partitions) + 1:04d}"
@@ -1015,27 +1253,55 @@ def build_partitions(
                 "file_count": len(current_paths),
                 "char_count_estimate": current_chars,
                 "byte_count_estimate": current_bytes,
+                "token_count_estimate": current_tokens,
                 "category": kinds[0] if len(kinds) == 1 else "mixed",
                 "reason": reason,
+                "tier_counts": dict(
+                    sorted(
+                        Counter(
+                            int(inventory_by_path.get(path, {}).get("priority_tier", 4))
+                            for path in current_paths
+                        ).items()
+                    )
+                ),
+                "partition_payload_hash": build_partition_payload_hash(
+                    current_paths, inventory_by_path, file_truncate_chars
+                ),
             }
         )
         current_paths = []
         current_chars = 0
         current_bytes = 0
+        current_tokens = 0
 
-    for item in inventory:
+    for item in sorted(
+        inventory,
+        key=lambda candidate: (
+            int(candidate.get("priority_tier", 4)),
+            str(candidate.get("path", "")),
+        ),
+    ):
         path = item["path"]
         base_chars = int(item.get("char_count_estimate", 0))
         # Account for per-file headers in context payload construction.
         est_chars = base_chars + min(len(path) + 80, 2000)
         est_bytes = len(path.encode("utf-8")) + int(item.get("size", 0))
+        est_tokens = max(int(est_chars / 4), 1)
         would_exceed_files = len(current_paths) >= max_files
         would_exceed_chars = current_paths and (current_chars + est_chars > max_chars)
-        if would_exceed_files or would_exceed_chars:
-            flush_partition("max_files" if would_exceed_files else "max_chars")
+        would_exceed_tokens = current_paths and (current_tokens + est_tokens > max_tokens)
+        if would_exceed_files or would_exceed_chars or would_exceed_tokens:
+            if would_exceed_files:
+                reason = "max_files"
+            elif would_exceed_chars:
+                reason = "max_chars"
+            else:
+                reason = "max_tokens"
+            flush_partition(reason)
         current_paths.append(path)
         current_chars += est_chars
         current_bytes += est_bytes
+        current_tokens += est_tokens
 
     flush_partition("final")
     if not partitions:
@@ -1048,8 +1314,13 @@ def build_partitions(
                 "file_count": 0,
                 "char_count_estimate": 0,
                 "byte_count_estimate": 0,
+                "token_count_estimate": 0,
                 "category": "empty",
                 "reason": "empty",
+                "tier_counts": {},
+                "partition_payload_hash": build_partition_payload_hash(
+                    [], inventory_by_path, file_truncate_chars
+                ),
             }
         )
     return partitions
@@ -1362,6 +1633,8 @@ class RequestController:
     cfg: RunnerConfig
     provider_limits: Dict[str, ProviderLimiter] = field(default_factory=dict)
     missing_api_env_emitted: set = field(default_factory=set)
+    rate_limit_stats: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    last_successful_call: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self.provider_limits = {
@@ -1386,6 +1659,126 @@ class RequestController:
                     max_inflight=max(self.cfg.max_inflight, 1),
                 )
             ),
+        }
+        self.rate_limit_stats = {
+            provider: {
+                "provider": provider,
+                "total_calls": 0,
+                "successful_calls": 0,
+                "failed_calls": 0,
+                "retry_events": 0,
+                "status_429": 0,
+                "status_503": 0,
+                "retry_after_obeyed": 0,
+                "total_backoff_seconds": 0.0,
+                "max_backoff_seconds": 0.0,
+                "request_ids": [],
+            }
+            for provider in ("openai", "gemini", "xai")
+        }
+
+    def _stats_for(self, provider: str) -> Dict[str, Any]:
+        if provider not in self.rate_limit_stats:
+            self.rate_limit_stats[provider] = {
+                "provider": provider,
+                "total_calls": 0,
+                "successful_calls": 0,
+                "failed_calls": 0,
+                "retry_events": 0,
+                "status_429": 0,
+                "status_503": 0,
+                "retry_after_obeyed": 0,
+                "total_backoff_seconds": 0.0,
+                "max_backoff_seconds": 0.0,
+                "request_ids": [],
+            }
+        return self.rate_limit_stats[provider]
+
+    @staticmethod
+    def _request_id_from_headers(headers: Dict[str, str]) -> str:
+        for key in (
+            "x-request-id",
+            "request-id",
+            "openai-request-id",
+            "x-openai-request-id",
+        ):
+            value = str(headers.get(key, "")).strip()
+            if value:
+                return value
+        return ""
+
+    def _provider_retry_policy(self, provider: str) -> Dict[str, Any]:
+        if provider == "gemini":
+            return {
+                "max_attempts": 7,
+                "max_retry_seconds": 900.0,
+                "obey_retry_after": True,
+            }
+        if provider == "xai":
+            return {
+                "max_attempts": 7,
+                "max_retry_seconds": 900.0,
+                "obey_retry_after": True,
+            }
+        return {
+            "max_attempts": 6,
+            "max_retry_seconds": 600.0,
+            "obey_retry_after": True,
+        }
+
+    def _provider_retry_delay_seconds(
+        self,
+        provider: str,
+        attempt: int,
+        status_code: Optional[int],
+        retry_after: Optional[float],
+        retry_seed: str,
+    ) -> Tuple[float, bool]:
+        if provider == "gemini":
+            if retry_after is not None:
+                return max(float(retry_after), 0.0), True
+            delay = min(float(2 ** max(attempt - 1, 0)), 60.0)
+            return delay, False
+
+        if provider == "xai":
+            if retry_after is not None:
+                return max(float(retry_after), 0.0), True
+            if status_code == 429:
+                return min(float(6 * (2 ** max(attempt - 1, 0))), 120.0), False
+            if status_code == 503:
+                return min(float(3 * (2 ** max(attempt - 1, 0))), 90.0), False
+            return min(float(2 * (2 ** max(attempt - 1, 0))), 60.0), False
+
+        delay = retry_delay_seconds(
+            attempt=attempt,
+            retry_after=retry_after,
+            seed_material=f"{retry_seed}|provider={provider}",
+        )
+        return delay, retry_after is not None
+
+    def export_rate_limit_report(self) -> Dict[str, Any]:
+        per_provider = []
+        for provider in sorted(self.rate_limit_stats.keys()):
+            stats = self.rate_limit_stats[provider]
+            per_provider.append(
+                {
+                    "provider": provider,
+                    "total_calls": int(stats.get("total_calls", 0) or 0),
+                    "successful_calls": int(stats.get("successful_calls", 0) or 0),
+                    "failed_calls": int(stats.get("failed_calls", 0) or 0),
+                    "retry_events": int(stats.get("retry_events", 0) or 0),
+                    "status_429": int(stats.get("status_429", 0) or 0),
+                    "status_503": int(stats.get("status_503", 0) or 0),
+                    "retry_after_obeyed": int(stats.get("retry_after_obeyed", 0) or 0),
+                    "total_backoff_seconds": round(float(stats.get("total_backoff_seconds", 0.0) or 0.0), 6),
+                    "max_backoff_seconds": round(float(stats.get("max_backoff_seconds", 0.0) or 0.0), 6),
+                    "request_ids": list(stats.get("request_ids", []))[:100],
+                }
+            )
+        return {
+            "run_id": self.run_id,
+            "generated_at": now_iso(),
+            "providers": per_provider,
         }
 
     def _require_api_key(self, provider: str, api_key_env: str) -> str:
@@ -1416,6 +1809,9 @@ class RequestController:
             limiter = ProviderLimiter(ProviderRateConfig(rpm=0, tpm=0))
             self.provider_limits[provider] = limiter
 
+        provider_stats = self._stats_for(provider)
+        provider_stats["total_calls"] = int(provider_stats.get("total_calls", 0) or 0) + 1
+
         payload = {
             "model": model_id,
             "messages": [
@@ -1429,8 +1825,9 @@ class RequestController:
             "Content-Type": "application/json",
         }
         url = f"{llm_base_url(provider)}/chat/completions"
-        max_attempts = 6
-        max_retry_seconds = 600.0
+        policy = self._provider_retry_policy(provider)
+        max_attempts = int(policy.get("max_attempts", 6))
+        max_retry_seconds = float(policy.get("max_retry_seconds", 600.0))
         start_ts = time.time()
         retry_trace: List[Dict[str, Any]] = []
 
@@ -1446,6 +1843,11 @@ class RequestController:
                 response = requests.post(url, headers=headers, json=payload, timeout=180)
                 status_code = response.status_code
                 headers_snapshot = normalized_headers(response.headers)
+                request_id = self._request_id_from_headers(headers_snapshot)
+                if request_id:
+                    request_ids = provider_stats.setdefault("request_ids", [])
+                    if request_id not in request_ids:
+                        request_ids.append(request_id)
                 retry_after_seconds = parse_retry_after_seconds(
                     headers_snapshot.get("retry-after", "")
                 )
@@ -1461,6 +1863,16 @@ class RequestController:
                     "retry_trace": retry_trace,
                     "total_retry_seconds": max(time.time() - start_ts, 0.0),
                     "limiter_state": limiter.export_state(),
+                    "request_id": request_id,
+                }
+                provider_stats["successful_calls"] = int(provider_stats.get("successful_calls", 0) or 0) + 1
+                self.last_successful_call = {
+                    "provider": provider,
+                    "model_id": model_id,
+                    "attempts": attempt,
+                    "status_code": status_code,
+                    "request_id": request_id,
+                    "timestamp": now_iso(),
                 }
                 return content, meta
             except Exception as exc:
@@ -1492,27 +1904,47 @@ class RequestController:
                     "limiter_state": limiter.export_state(),
                 }
                 retry_trace.append(retry_event)
+                provider_stats["retry_events"] = int(provider_stats.get("retry_events", 0) or 0) + 1
+                if status_code == 429:
+                    provider_stats["status_429"] = int(provider_stats.get("status_429", 0) or 0) + 1
+                if status_code == 503:
+                    provider_stats["status_503"] = int(provider_stats.get("status_503", 0) or 0) + 1
 
                 if not should_retry_flag or attempt >= max_attempts:
+                    provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
                     extra = f" | body={body_excerpt}" if body_excerpt else ""
                     raise RuntimeError(
                         f"LLM call failed provider={provider} model={model_id} "
                         f"attempt={attempt}/{max_attempts} status={status_code} error={exc}{extra}"
                     ) from exc
 
-                sleep_seconds = retry_delay_seconds(
+                sleep_seconds, obeyed_retry_after = self._provider_retry_delay_seconds(
+                    provider=provider,
                     attempt=attempt,
+                    status_code=status_code,
                     retry_after=retry_after_seconds,
-                    seed_material=f"{retry_seed}|attempt={attempt}",
+                    retry_seed=f"{retry_seed}|attempt={attempt}",
                 )
+                if obeyed_retry_after:
+                    provider_stats["retry_after_obeyed"] = (
+                        int(provider_stats.get("retry_after_obeyed", 0) or 0) + 1
+                    )
                 elapsed = time.time() - start_ts
                 if elapsed + sleep_seconds > max_retry_seconds:
+                    provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
                     raise RuntimeError(
                         f"Retry time budget exceeded provider={provider} model={model_id} "
                         f"elapsed={elapsed:.2f}s budget={max_retry_seconds:.2f}s "
                         f"status={status_code} last_error={exc}"
                     ) from exc
                 retry_event["backoff_sleep_seconds"] = sleep_seconds
+                provider_stats["total_backoff_seconds"] = float(
+                    provider_stats.get("total_backoff_seconds", 0.0) or 0.0
+                ) + float(sleep_seconds)
+                provider_stats["max_backoff_seconds"] = max(
+                    float(provider_stats.get("max_backoff_seconds", 0.0) or 0.0),
+                    float(sleep_seconds),
+                )
                 logger.warning(
                     "LLM retry provider=%s model=%s attempt=%s/%s status=%s sleep=%.3fs",
                     provider,
@@ -1653,6 +2085,7 @@ def execute_step_for_partitions(
     completed_chunks = 0
     failed_chunks = 0
     failed_chunk_ids: List[str] = []
+    hash_mismatch_chunk_ids: List[str] = []
     chunk_ids: List[str] = []
 
     chunk_manifest_rows: List[Dict[str, Any]] = []
@@ -1756,8 +2189,26 @@ def execute_step_for_partitions(
             if is_valid_json_file(out_json):
                 meta_payload = parse_json_from_response(safe_read(out_meta))
                 if isinstance(meta_payload, dict) and str(meta_payload.get("chunk_key", "")) == chunk_key:
-                    resume_skipped += 1
-                    continue
+                    prior_hash = str(meta_payload.get("output_sha256", "")).strip()
+                    current_hash = sha256_text(out_json)
+                    if prior_hash and prior_hash == current_hash:
+                        resume_skipped += 1
+                        chunk_manifest_rows.append(
+                            {
+                                "chunk_id": partition_id,
+                                "base_partition_id": str(partition.get("base_partition_id", "")),
+                                "file_manifest_hash": file_manifest_hash,
+                                "chunk_key": chunk_key,
+                                "injected_text_sha256": injected_text_sha256,
+                                "request_payload_bytes": len(user_prompt.encode("utf-8")),
+                                "file_entries": file_entries,
+                                "context_stats": context_stats,
+                                "status": "resume_skipped",
+                                "resume_output_sha256": current_hash,
+                            }
+                        )
+                        continue
+                    hash_mismatch_chunk_ids.append(partition_id)
 
         payload_bytes = len(user_prompt.encode("utf-8"))
         chunk_manifest_rows.append(
@@ -1825,12 +2276,14 @@ def execute_step_for_partitions(
                     "request_payload_bytes": payload_bytes,
                     "context_stats": context_stats,
                     "injected_text_sha256": injected_text_sha256,
+                    "output_sha256": sha256_text(out_json),
                     "status": "dry_run",
                     "generated_at": now_iso(),
                 },
             )
             if out_failed.exists():
                 out_failed.unlink()
+            completed_chunks += 1
             continue
 
         logger.info(
@@ -1939,7 +2392,13 @@ def execute_step_for_partitions(
                 "artifacts": artifacts,
             },
         )
-        request_meta.update({"status": "ok", "finished_at": now_iso()})
+        request_meta.update(
+            {
+                "status": "ok",
+                "finished_at": now_iso(),
+                "output_sha256": sha256_text(out_json),
+            }
+        )
         write_json(out_meta, request_meta)
         if out_failed.exists():
             out_failed.unlink()
@@ -1954,6 +2413,7 @@ def execute_step_for_partitions(
         "skipped_chunks": resume_skipped,
         "failed_chunks": failed_chunks,
         "failed_chunk_ids": sorted(set(failed_chunk_ids)),
+        "hash_mismatch_chunk_ids": sorted(set(hash_mismatch_chunk_ids)),
         "chunk_ids": chunk_ids,
         "truncated_only_chunks": truncated_only_chunks,
         "chunks_with_tail_snippets": chunks_with_tail_snippets,
@@ -2032,7 +2492,13 @@ def _run_phase_inner(
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
     inventory_by_path = {str(item.get("path", "")): item for item in inventory}
     max_files = max_files_for_phase(phase, cfg)
-    partitions = build_partitions(phase, inventory, max_files=max_files, max_chars=cfg.max_chars)
+    partitions = build_partitions(
+        phase,
+        inventory,
+        max_files=max_files,
+        max_chars=cfg.max_chars,
+        file_truncate_chars=cfg.file_truncate_chars,
+    )
 
     write_json(
         phase_dir / "inputs" / "INVENTORY.json",
@@ -2050,6 +2516,7 @@ def _run_phase_inner(
             "limits": {
                 "max_files": max_files,
                 "max_chars": cfg.max_chars,
+                "max_tokens": max(int(cfg.max_chars / 4), 1024),
                 "file_truncate_chars": cfg.file_truncate_chars,
             },
             "partitions": partitions,
@@ -2063,6 +2530,7 @@ def _run_phase_inner(
             "limits": {
                 "max_files": max_files,
                 "max_chars": cfg.max_chars,
+                "max_tokens": max(int(cfg.max_chars / 4), 1024),
                 "file_truncate_chars": cfg.file_truncate_chars,
             },
             "partitions": partitions,
@@ -2080,6 +2548,8 @@ def _run_phase_inner(
 
     request_controller = RequestController(run_id=dirs["root"].name, cfg=cfg)
     step_qas: List[Dict[str, Any]] = []
+    step_coverages: List[Dict[str, Any]] = []
+    step_chunk_manifests: Dict[str, List[Dict[str, Any]]] = {}
     for prompt_spec in prompts:
         chunk_plan = plan_chunks_for_step(
             partitions=partitions,
@@ -2096,6 +2566,8 @@ def _run_phase_inner(
             cfg=cfg,
             request_controller=request_controller,
         )
+        step_chunk_rows = list(coverage.get("chunk_manifest_rows", []))
+        step_chunk_manifests[prompt_spec.step_id] = step_chunk_rows
         write_json(
             phase_dir / "inputs" / f"CHUNK_MANIFEST_{prompt_spec.step_id}.json",
             {
@@ -2105,11 +2577,12 @@ def _run_phase_inner(
                 "max_files": max_files,
                 "max_chars": cfg.max_chars,
                 "soft_target_chars": max(int(cfg.max_chars * 0.7), 2048),
-                "chunks": coverage.get("chunk_manifest_rows", []),
+                "chunks": step_chunk_rows,
             },
         )
         if "chunk_manifest_rows" in coverage:
             del coverage["chunk_manifest_rows"]
+        step_coverages.append(dict(coverage))
         write_json(phase_dir / "qa" / f"{prompt_spec.step_id}__chunk_coverage.json", coverage)
         write_json(phase_dir / "qa" / f"{prompt_spec.step_id}_COVERAGE.json", coverage)
         qa_payload = normalize_step(
@@ -2120,11 +2593,32 @@ def _run_phase_inner(
         )
         step_qas.append(qa_payload)
 
+    write_partition_manifest(
+        phase=phase,
+        phase_dir=phase_dir,
+        run_id=dirs["root"].name,
+        partitions=partitions,
+        inventory_by_path=inventory_by_path,
+        file_truncate_chars=cfg.file_truncate_chars,
+        max_files=max_files,
+        max_chars=cfg.max_chars,
+        step_chunk_manifests=step_chunk_manifests,
+    )
     write_phase_merge_report(
         phase=phase,
         phase_dir=phase_dir,
         partitions=partitions,
         step_qas=step_qas,
+    )
+    write_json(phase_dir / "qa" / "RATE_LIMIT_REPORT.json", request_controller.export_rate_limit_report())
+    write_resume_proof(
+        phase=phase,
+        phase_dir=phase_dir,
+        run_id=dirs["root"].name,
+        prompts=prompts,
+        step_coverages=step_coverages,
+        step_qas=step_qas,
+        request_controller=request_controller,
     )
     outputs_after = phase_output_files(phase_dir)
     write_phase_manifest(
