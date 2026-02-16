@@ -7203,17 +7203,18 @@ def main():
 
 
 @cli.command("hooks")
-@click.option("--setup", "-s", is_flag=True, help="Setup Claude Code hooks")
-@click.option("--teardown", "-t", is_flag=True, help="Stop Claude Code hooks")
-@click.option("--status", "-S", is_flag=True, help="Show hook status")
-@click.option("--enable", "-e", help="Enable specific hook type")
-@click.option("--disable", "-d", help="Disable specific hook type")
+@click.option("--setup", is_flag=True, help="Start monitoring Claude Code activity")
+@click.option("--teardown", is_flag=True, help="Stop monitoring")
+@click.option("--status", is_flag=True, help="Show current hook status")
+@click.option("--enable", help="Enable specific hook type (session-start, file-change, shell-command, git-commit)")
+@click.option("--disable", help="Disable specific hook type (session-start, file-change, shell-command, git-commit)")
 @click.option("--shell-scripts", is_flag=True, help="Generate shell hook scripts")
 @click.option("--install-shell-hooks", is_flag=True, help="Install shell hooks in shell config")
-@click.option("--uninstall-shell-hooks", is_flag=True, help="Remove shell hooks from shell config")
-@click.option("--workspace", "-w", help="Workspace path to monitor")
-@click.option("--force", "-f", is_flag=True, help="Force operations (e.g., reinstall)")
-def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_shell_hooks, uninstall_shell_hooks, workspace, force):
+@click.option("--uninstall-shell-hooks", is_flag=True, help="Uninstall shell hooks from shell config")
+@click.option("--workspace", type=click.Path(exists=True, file_okay=False, dir_okay=True), help="Set workspace to monitor")
+@click.option("--force", is_flag=True, help="Force operations (e.g., reinstall)")
+@click.pass_context
+def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, install_shell_hooks, uninstall_shell_hooks, workspace, force):
     """
     Manage Dopemux hook system for Claude Code integration.
 
@@ -7307,6 +7308,33 @@ def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_s
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
+
+@cli.group()
+def upgrades():
+    """Orchestrate the Full Pipeline (Phases A-S)."""
+    pass
+
+@upgrades.command()
+@click.option("--dry-run", is_flag=True, default=True, help="Preview phase execution without LLM calls.")
+@click.option("--execute", is_flag=True, help="Execute the pipeline with LLM calls.")
+@click.option("--phase", help="Run a specific phase (e.g., A, H, D, C, R, S).")
+@click.pass_context
+def run(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
+    """Run the pipeline."""
+    from dopemux.upgrades.runner import PipelineRunner
+    runner = PipelineRunner(project_root=Path.cwd())
+    if phase:
+        runner.run_phase(phase=phase, dry_run=not execute)
+    else:
+        runner.run_all(dry_run=not execute)
+
+@upgrades.command()
+@click.pass_context
+def list(ctx):
+    """List available pipeline phases."""
+    from dopemux.upgrades.runner import PipelineRunner
+    runner = PipelineRunner(project_root=Path.cwd())
+    runner.list_phases()
 
 if __name__ == "__main__":
     main()
