@@ -27,6 +27,7 @@ import requests
 PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
+R_FULL_STEP_IDS = tuple(f"R{i}" for i in range(9))
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
@@ -53,8 +54,13 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
         ("DOC_TOPIC_CLUSTERS.json",),
         ("DOC_SUPERSESSION.json",),
         ("DOC_CONTRACT_CLAIMS.json",),
-        ("DUPLICATE_DRIFT_REPORT.json", "DOC_RECENCY_DUPLICATE_REPORT.json"),
         ("DOC_INDEX.json",),
+        ("DOC_BOUNDARIES.json",),
+        ("DOC_INTERFACES.json",),
+        ("DOC_WORKFLOWS.json",),
+        ("DOC_DECISIONS.json",),
+        ("DOC_CITATION_GRAPH.json",),
+        ("DOC_COVERAGE_REPORT.json",),
     ],
     "C": [
         ("SERVICE_ENTRYPOINTS.json",),
@@ -198,6 +204,10 @@ SECRET_ASSIGN_RE = re.compile(
     r"[^:=\n]*?['\"]?\s*[:=]\s*).*$"
 )
 LONG_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9+/=_-])[A-Za-z0-9+/=_-]{33,}(?![A-Za-z0-9+/=_-])")
+ENV_SECRET_NAME_RE = re.compile(r"\b[A-Z0-9_]*(?:SECRET|TOKEN|KEY)\b")
+BEARER_TOKEN_RE = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}")
+PRIVATE_KEY_BEGIN_RE = re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----")
+PRIVATE_KEY_END_RE = re.compile(r"-----END [A-Z0-9 ]*PRIVATE KEY-----")
 OUTPUT_FILENAME_RE = re.compile(r"\b[A-Z][A-Z0-9_]+(?:\.partX)?\.(?:json|md)\b")
 OUTPUT_SECTION_START_RE = re.compile(
     r"(?i)^(goal(?:s)?|output(?:s)?(?:\s+files?)?|phase\s+[A-Z0-9]+\s+deliverables?)\b"
@@ -223,7 +233,8 @@ OUTPUT_SECTION_STOP_PREFIXES = (
     "arbitration procedure",
 )
 DEFAULT_OUTPUT_BY_STEP = {
-    "T1": ("TP_BACKLOG_TOPN.json",),
+    "T0": ("TP_BACKLOG_TOPN.json", "TP_INDEX.json"),
+    "T1": ("TP_PACKETS_TOP10.partX.md", "TP_PACKET_IMPLEMENTATION_INDEX.json"),
 }
 
 
@@ -571,29 +582,40 @@ def get_phase_prompts(phase: str) -> List[PromptSpec]:
 
 # --- Home Safe Mode ---
 
+def home_safe_allow_roots(home_root: Path) -> List[Path]:
+    return [(home_root / rel).resolve() for rel in HOME_SAFE_ROOTS]
+
+
+def home_safe_violation_reason(path: Path, home_root: Path) -> Optional[str]:
+    allow_roots = home_safe_allow_roots(home_root)
+    resolved = path.resolve()
+    if not any(is_within(resolved, allow_root) or resolved == allow_root for allow_root in allow_roots):
+        return "outside_allow_roots"
+
+    suffix = resolved.suffix.lower()
+    if suffix not in HOME_SAFE_ALLOW_SUFFIXES:
+        return "disallowed_extension"
+
+    lower_path = str(resolved).lower()
+    lower_name = resolved.name.lower()
+    if any(
+        fnmatch.fnmatch(lower_name, pat) or fnmatch.fnmatch(lower_path, pat)
+        for pat in HOME_SAFE_DENY_GLOBS
+    ):
+        return "denylist_match"
+
+    return None
+
+
 def home_safe_filter(items: List[Dict[str, Any]], home_root: Path) -> List[Dict[str, Any]]:
-    allow_roots = [(home_root / rel).resolve() for rel in HOME_SAFE_ROOTS]
     filtered: List[Dict[str, Any]] = []
     skipped_counts = Counter()
 
     for item in items:
         path = Path(item["path"]).resolve()
-        if not any(is_within(path, allow_root) or path == allow_root for allow_root in allow_roots):
-            skipped_counts["outside_allow_roots"] += 1
-            continue
-
-        suffix = path.suffix.lower()
-        if suffix not in HOME_SAFE_ALLOW_SUFFIXES:
-            skipped_counts["disallowed_extension"] += 1
-            continue
-
-        lower_path = str(path).lower()
-        lower_name = path.name.lower()
-        if any(
-            fnmatch.fnmatch(lower_name, pat) or fnmatch.fnmatch(lower_path, pat)
-            for pat in HOME_SAFE_DENY_GLOBS
-        ):
-            skipped_counts["denylist_match"] += 1
+        violation = home_safe_violation_reason(path, home_root)
+        if violation:
+            skipped_counts[violation] += 1
             continue
 
         filtered.append(item)
@@ -612,13 +634,29 @@ def redact_sensitive_lines(text: str) -> Tuple[str, int]:
     output_lines: List[str] = []
     had_trailing_newline = text.endswith("\n")
     redaction_hits = 0
+    in_private_key_block = False
 
     for line in text.splitlines():
+        if in_private_key_block:
+            redaction_hits += 1
+            if PRIVATE_KEY_END_RE.search(line):
+                in_private_key_block = False
+            continue
+
+        if PRIVATE_KEY_BEGIN_RE.search(line):
+            output_lines.append("[REDACTED_PRIVATE_KEY_BLOCK]")
+            redaction_hits += 1
+            if not PRIVATE_KEY_END_RE.search(line):
+                in_private_key_block = True
+            continue
+
         redacted = line
-        if SECRET_LINE_RE.search(redacted):
+        if SECRET_LINE_RE.search(redacted) or ENV_SECRET_NAME_RE.search(redacted):
             replaced = SECRET_ASSIGN_RE.sub(r"\1[REDACTED]", redacted)
             redacted = replaced if replaced != redacted else "[REDACTED_LINE]"
             redaction_hits += 1
+        redacted, bearer_hits = BEARER_TOKEN_RE.subn("Bearer [REDACTED_TOKEN]", redacted)
+        redaction_hits += bearer_hits
         redacted, token_hits = LONG_TOKEN_RE.subn("[REDACTED_LONG_TOKEN]", redacted)
         redaction_hits += token_hits
         output_lines.append(redacted)
@@ -679,43 +717,64 @@ def build_partitions(
     partitions: List[Dict[str, Any]] = []
     current_paths: List[str] = []
     current_chars = 0
+    current_bytes = 0
+    inventory_by_path = {str(item.get("path", "")): item for item in inventory}
 
-    def flush_partition() -> None:
-        nonlocal current_paths, current_chars
+    def flush_partition(reason: str) -> None:
+        nonlocal current_paths, current_chars, current_bytes
         if not current_paths:
             return
         partition_id = f"{phase}_P{len(partitions) + 1:04d}"
+        kinds = sorted(
+            {
+                str(inventory_by_path.get(path, {}).get("kind", "unknown"))
+                for path in current_paths
+            }
+        )
         partitions.append(
             {
                 "id": partition_id,
+                "partition_id": partition_id,
                 "paths": list(current_paths),
+                "ordered_paths": list(current_paths),
                 "file_count": len(current_paths),
                 "char_count_estimate": current_chars,
+                "byte_count_estimate": current_bytes,
+                "category": kinds[0] if len(kinds) == 1 else "mixed",
+                "reason": reason,
             }
         )
         current_paths = []
         current_chars = 0
+        current_bytes = 0
 
     for item in inventory:
         path = item["path"]
         base_chars = int(item.get("char_count_estimate", 0))
         # Account for per-file headers in context payload construction.
         est_chars = base_chars + min(len(path) + 80, 2000)
+        est_bytes = len(path.encode("utf-8")) + int(item.get("size", 0))
         would_exceed_files = len(current_paths) >= max_files
         would_exceed_chars = current_paths and (current_chars + est_chars > max_chars)
         if would_exceed_files or would_exceed_chars:
-            flush_partition()
+            flush_partition("max_files" if would_exceed_files else "max_chars")
         current_paths.append(path)
         current_chars += est_chars
+        current_bytes += est_bytes
 
-    flush_partition()
+    flush_partition("final")
     if not partitions:
         partitions.append(
             {
                 "id": f"{phase}_P0001",
+                "partition_id": f"{phase}_P0001",
                 "paths": [],
+                "ordered_paths": [],
                 "file_count": 0,
                 "char_count_estimate": 0,
+                "byte_count_estimate": 0,
+                "category": "empty",
+                "reason": "empty",
             }
         )
     return partitions
@@ -851,7 +910,7 @@ def normalize_step(
     prompt_spec: PromptSpec,
     phase_dir: Path,
     partitions: List[Dict[str, Any]],
-) -> None:
+) -> Dict[str, Any]:
     step_id = prompt_spec.step_id
     expected_artifacts = prompt_spec.output_artifacts
     raw_dir = phase_dir / "raw"
@@ -865,6 +924,7 @@ def normalize_step(
     raw_ok = 0
     raw_failed = 0
     unexpected_artifacts: Counter[str] = Counter()
+    successful_partition_ids = set()
 
     for partition_id in partition_ids:
         raw_file = raw_dir / f"{step_id}__{partition_id}.json"
@@ -896,13 +956,25 @@ def normalize_step(
                 )
                 continue
 
+            expected_artifact_seen = False
             for artifact in artifacts:
                 artifact_name = artifact["artifact_name"]
                 if artifact_name not in artifacts_by_name:
                     unexpected_artifacts[artifact_name] += 1
                     continue
+                expected_artifact_seen = True
                 artifacts_by_name[artifact_name].append(
                     {"partition_id": partition_id, "payload": artifact["payload"]}
+                )
+            if expected_artifact_seen:
+                successful_partition_ids.add(partition_id)
+            else:
+                parse_failures.append(
+                    {
+                        "partition_id": partition_id,
+                        "reason": "unexpected_artifacts_only",
+                        "file": str(raw_file),
+                    }
                 )
         else:
             raw_failed += 1
@@ -986,6 +1058,8 @@ def normalize_step(
         "expected_artifacts": list(expected_artifacts),
         "written_files": written_files,
         "missing_expected_artifacts": missing_expected_artifacts,
+        "successful_partitions": sorted(successful_partition_ids),
+        "missing_partitions": sorted(set(partition_ids) - successful_partition_ids),
         "unexpected_artifacts": dict(sorted(unexpected_artifacts.items())),
         "missing_required_keys_counts": dict(sorted(missing_counts.items())),
         "duplicate_ids": duplicate_ids[:200],
@@ -994,6 +1068,7 @@ def normalize_step(
     }
 
     write_json(qa_dir / f"{step_id}_QA.json", qa_payload)
+    return qa_payload
 
 
 # --- LLM Execution ---
@@ -1101,6 +1176,8 @@ def build_partition_context(
     redaction_hits = 0
     skipped_files = 0
     context_bytes = 0
+    safe_mode_blocked = 0
+    home_root = Path.home()
 
     for path_str in partition_paths:
         if len(chunks) >= max_files:
@@ -1108,6 +1185,14 @@ def build_partition_context(
             continue
 
         path = Path(path_str)
+        if phase == "H" and home_scan_mode == "safe":
+            violation = home_safe_violation_reason(path, home_root)
+            if violation:
+                skipped_files += 1
+                safe_mode_blocked += 1
+                logger.warning("Blocked unsafe home file in SAFE mode: %s (%s)", path, violation)
+                continue
+
         content = safe_read(path)
         if len(content) > file_truncate_chars:
             content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
@@ -1136,6 +1221,7 @@ def build_partition_context(
         "files_skipped": skipped_files,
         "context_bytes": len(context.encode("utf-8")),
         "redaction_hits": redaction_hits,
+        "safe_mode_blocked": safe_mode_blocked,
     }
     return context, stats
 
@@ -1257,12 +1343,13 @@ def execute_step_for_partitions(
 
         if cfg.dry_run:
             logger.info(
-                "Dry-run %s %s files=%s payload_bytes=%s redaction_hits=%s",
+                "Dry-run %s %s files=%s payload_bytes=%s redaction_hits=%s safe_mode_blocked=%s",
                 step_id,
                 partition_id,
                 context_stats["files_included"],
                 payload_bytes,
                 context_stats["redaction_hits"],
+                context_stats["safe_mode_blocked"],
             )
 
         if cfg.dry_run:
@@ -1337,6 +1424,48 @@ def execute_step_for_partitions(
         logger.info("Resume: skipped %s existing outputs for step %s", resume_skipped, step_id)
 
 
+def write_phase_merge_report(
+    phase: str,
+    phase_dir: Path,
+    partitions: List[Dict[str, Any]],
+    step_qas: List[Dict[str, Any]],
+) -> None:
+    partition_ids = [partition["id"] for partition in partitions]
+    step_reports: List[Dict[str, Any]] = []
+    total_parse_failures = 0
+    total_missing_expected_artifacts = 0
+
+    for qa_payload in sorted(step_qas, key=lambda item: str(item.get("step_id", ""))):
+        parse_failures = qa_payload.get("parse_failures", [])
+        missing_expected = qa_payload.get("missing_expected_artifacts", [])
+        successful = set(qa_payload.get("successful_partitions", []))
+        missing_partitions = sorted(set(partition_ids) - successful)
+        step_reports.append(
+            {
+                "step_id": qa_payload.get("step_id"),
+                "partitions_total": qa_payload.get("partitions_total", len(partition_ids)),
+                "successful_partitions": sorted(successful),
+                "missing_partitions": missing_partitions,
+                "missing_expected_artifacts": missing_expected,
+                "parse_failures": parse_failures,
+            }
+        )
+        total_parse_failures += len(parse_failures)
+        total_missing_expected_artifacts += len(missing_expected)
+
+    phase_report = {
+        "phase": phase,
+        "generated_at": now_iso(),
+        "partitions_total": len(partition_ids),
+        "partition_ids": partition_ids,
+        "steps_total": len(step_reports),
+        "total_parse_failures": total_parse_failures,
+        "total_missing_expected_artifacts": total_missing_expected_artifacts,
+        "steps": step_reports,
+    }
+    write_json(phase_dir / "qa" / f"{phase}_MERGE_REPORT.json", phase_report)
+
+
 def _run_phase_inner(
     phase: str,
     dirs: Dict[str, Path],
@@ -1371,7 +1500,24 @@ def _run_phase_inner(
         {"phase": phase, "generated_at": now_iso(), "items": inventory},
     )
     write_json(
+        dirs["inputs"] / f"{phase}_INVENTORY.json",
+        {"phase": phase, "generated_at": now_iso(), "items": inventory},
+    )
+    write_json(
         phase_dir / "inputs" / "PARTITIONS.json",
+        {
+            "phase": phase,
+            "generated_at": now_iso(),
+            "limits": {
+                "max_files": max_files,
+                "max_chars": cfg.max_chars,
+                "file_truncate_chars": cfg.file_truncate_chars,
+            },
+            "partitions": partitions,
+        },
+    )
+    write_json(
+        dirs["inputs"] / f"{phase}_PARTITIONS.json",
         {
             "phase": phase,
             "generated_at": now_iso(),
@@ -1393,6 +1539,7 @@ def _run_phase_inner(
         cfg.max_chars,
     )
 
+    step_qas: List[Dict[str, Any]] = []
     for prompt_spec in prompts:
         execute_step_for_partitions(
             phase=phase,
@@ -1401,12 +1548,20 @@ def _run_phase_inner(
             phase_dir=phase_dir,
             cfg=cfg,
         )
-        normalize_step(
+        qa_payload = normalize_step(
             phase=phase,
             prompt_spec=prompt_spec,
             phase_dir=phase_dir,
             partitions=partitions,
         )
+        step_qas.append(qa_payload)
+
+    write_phase_merge_report(
+        phase=phase,
+        phase_dir=phase_dir,
+        partitions=partitions,
+        step_qas=step_qas,
+    )
 
 
 # --- Phase Wrappers ---
@@ -1452,6 +1607,25 @@ def _ensure_required_norm_artifact_groups(dirs: Dict[str, Path]) -> List[str]:
                 pattern_desc = " or ".join(group)
                 missing.append(f"{phase}: no artifact matching {pattern_desc} under {norm_dir}")
     return missing
+
+
+def _ensure_r_full_prompt_set() -> None:
+    prompts = get_phase_prompts("R")
+    prompt_steps = sorted(spec.step_id for spec in prompts)
+    expected = sorted(R_FULL_STEP_IDS)
+    if prompt_steps != expected:
+        missing = sorted(set(expected) - set(prompt_steps))
+        extra = sorted(set(prompt_steps) - set(expected))
+        details: List[str] = []
+        if missing:
+            details.append(f"missing steps: {', '.join(missing)}")
+        if extra:
+            details.append(f"unexpected steps: {', '.join(extra)}")
+        detail_text = "; ".join(details) if details else f"found steps: {prompt_steps}"
+        raise RuntimeError(
+            "Phase R requires full prompt set R0-R8. "
+            + detail_text
+        )
 
 
 def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
@@ -1560,6 +1734,8 @@ def run_phase_Q(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
 
 
 def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+    _ensure_r_full_prompt_set()
+
     missing: List[str] = []
     input_files: List[Path] = []
     for phase in R_REQUIRED_INPUT_PHASES:
@@ -1567,9 +1743,8 @@ def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
         if phase_norm.exists():
             phase_files: List[Path] = []
             phase_files.extend(sorted(phase_norm.glob("*.json")))
-            phase_files.extend(sorted(phase_norm.glob("*.md")))
             if not phase_files:
-                missing.append(f"{phase}: no json/md artifacts under {phase_norm}")
+                missing.append(f"{phase}: no json artifacts under {phase_norm}")
             else:
                 input_files.extend(phase_files)
         else:
@@ -1578,9 +1753,21 @@ def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     missing.extend(_ensure_required_norm_artifact_groups(dirs))
 
     if missing:
+        python_cmd = Path(sys.executable).name or "python3"
+        missing_sorted = sorted(set(missing))
+        recovery_commands = [
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase A --resume",
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase H --resume --home-scan-mode safe",
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase D --resume",
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase C --resume",
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase R --resume",
+        ]
         raise RuntimeError(
-            "Phase R requires normalized inputs from A/H/D/C. Missing norm artifacts: "
-            + "; ".join(sorted(set(missing)))
+            "Phase R requires normalized inputs from A/H/D/C.\n"
+            + "Missing norm artifacts:\n- "
+            + "\n- ".join(missing_sorted)
+            + "\nRecovery order:\n- "
+            + "\n- ".join(recovery_commands)
         )
 
     deduped_inputs = sorted(set(input_files), key=lambda path: str(path))
