@@ -1,81 +1,54 @@
-# Upgrade Pipeline Run Order
+# Upgrade Pipeline Run Order (Canonical)
 
-This document defines the strict execution order for the Dopemux upgrade extraction pipeline.
+This run order is authoritative for the v3 extraction runner:
+`UPGRADES/run_extraction_v3.py`
 
-## 1. Environment Setup
-
-Ensure you are in the repository root.
-The extraction runner is located at `UPGRADES/run_extraction.py`.
-
-## 2. Priority Control Plane (Phase A + Phase H)
-
-Run this first to capture the "truth" of the repository and home configuration.
+## 1. Initialize run scaffold
 
 ```bash
-python UPGRADES/run_extraction.py priority --dry-run
+make x-run-init RUN_ID=<YYYYMMDD_HHMM_slug>
 ```
 
-- **Phase A (Repo Control Plane)**: Scans repository configuration files (`config/`, `.github/`, `.claude/`, etc.) to understand the intended architecture.
-- **Phase H (Home Control Plane)**: Scans local user configuration (`~/.dopemux`, `~/.config/dopemux`, `~/.config/taskx`, etc.) to understand local overrides and enablement.
-  - **Safety Note**: All home configuration files are subject to strict redaction rules. Secrets (API keys, tokens, passwords) are replaced with `REDACTED_SECRET` before processing.
-  - **Exclusions**: Caches, logs, and temporary files are automatically excluded.
-
-## 3. Docs Pipeline (Phase D)
-
-Run this after the Priority Control Plane to extract knowledge from documentation.
-
-The docs pipeline follows a strict sequence: **D0 → D1/D2 (Partitioned) → D3 → M1 → QA → CL**.
-
-### Step 3.1: Inventory & Partitioning (D0)
-
-First, generate the document inventory and partition plan.
+## 2. Execute full pipeline
 
 ```bash
-python UPGRADES/run_extraction.py docs --dry-run
+python UPGRADES/run_extraction_v3.py --phase ALL
 ```
 
-This produces `DOC_INVENTORY.json` and `PARTITION_PLAN.json`.
+Default phase order:
+1. `A` repo control plane
+2. `H` home control plane
+3. `D` docs pipeline
+4. `C` code surfaces
+5. `E` execution plane
+6. `W` workflow plane
+7. `B` boundary plane
+8. `G` governance plane
+9. `Q` pipeline doctor
+10. `R` arbitration
+11. `X` feature index
+12. `T` task packets
+13. `Z` handoff freeze
 
-### Step 3.2: Deep Extraction (D1/D2)
-
-Run deep extraction on specific partitions defined in `PARTITION_PLAN.json`.
+## 3. Run a single phase
 
 ```bash
-# Example: Run partition P1
-python UPGRADES/run_extraction.py docs --doc-partition P1 --dry-run
+python UPGRADES/run_extraction_v3.py --phase R
 ```
 
-- **D1**: Claims & Boundaries extraction.
-- **D2**: Deep interface & workflow extraction.
-
-### Step 3.3: Synthesis (M1, QA, CL)
-
-Once partitions are processed, run the synthesis phases.
+## 4. Dry-run mode
 
 ```bash
-python UPGRADES/run_extraction.py docs --dry-run
+python UPGRADES/run_extraction_v3.py --phase A --dry-run
 ```
 
-(The runner will automatically detect if D1/D2 outputs exist and proceed to M1).
+## Guardrails
 
-- **M1**: Merge partition outputs.
-- **QA**: Quality Assurance check.
-- **CL**: Cluster analysis.
-
-## 4. Arbitration (Phase R) & Synthesis (Phase S)
-
-These phases are run after extraction is complete.
-
-- **Phase R**: GPT-5.2 arbitration to resolve conflicts between Repo, Home, and Docs.
-- **Phase S**: Opus synthesis to generate the final upgrade plan.
-
-## Redaction & Safety
-
-The runner implements hard redaction for all file content before it leaves the machine (or is saved to trace files).
-- **Patterns**: API Keys, Bearer tokens, JWTs, PEM blocks, high-entropy strings.
-- **Report**: A `*_REDACTION_REPORT.json` file is generated for each phase, listing redaction hits (without revealing the secret).
-
-## Troubleshooting
-
-- **Missing D1/D2 Outputs**: If M1 fails or is skipped, ensure you have run `docs --doc-partition <ID>` for all required partitions.
-- **Exclusion Issues**: The runner uses relative path matching. Ensure your exclusions in the script match the relative structure.
+- Prompt files must match: `UPGRADES/PROMPT_{phase}{step}_*.md`
+- Duplicate step IDs fail closed.
+- Phase R fails closed unless required normalized artifacts exist in:
+  - `extraction/runs/<run_id>/A_repo_control_plane/norm`
+  - `extraction/runs/<run_id>/H_home_control_plane/norm`
+  - `extraction/runs/<run_id>/D_docs_pipeline/norm`
+  - `extraction/runs/<run_id>/C_code_surfaces/norm`
+- Phase R inputs are norm-only (no repo rescan).
