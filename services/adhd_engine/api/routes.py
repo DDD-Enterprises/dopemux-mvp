@@ -15,7 +15,7 @@ All endpoints secured with X-API-Key authentication (configurable via ADHD_ENGIN
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Security, WebSocket, WebSocketDisconnect
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from datetime import datetime, timezone
 from dataclasses import asdict
 import logging
