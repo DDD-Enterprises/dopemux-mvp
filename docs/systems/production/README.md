@@ -31,59 +31,59 @@ That's it! Run this tomorrow morning and you'll see everything you need.
 
 ### 🎯 Planning Documents
 1. **`PRODUCTION_READINESS_PLAN.md`** (200+ lines)
-   - Full 5-day roadmap
-   - Phase-by-phase breakdown
-   - Detailed task estimates
-   - Risk mitigation strategies
+- Full 5-day roadmap
+- Phase-by-phase breakdown
+- Detailed task estimates
+- Risk mitigation strategies
 
-2. **`PRODUCTION_READINESS_QUICK_REF.md`** (178 lines)
-   - Quick reference card
-   - Daily goals & metrics
-   - Success criteria
-   - Quick commands
+1. **`PRODUCTION_READINESS_QUICK_REF.md`** (178 lines)
+- Quick reference card
+- Daily goals & metrics
+- Success criteria
+- Quick commands
 
-3. **`PRODUCTION_READINESS_SUMMARY.md`**
-   - Executive summary
-   - High-level overview
-   - Key milestones
+1. **`PRODUCTION_READINESS_SUMMARY.md`**
+- Executive summary
+- High-level overview
+- Key milestones
 
-4. **`COMPLETION_CHECKLIST.md`** (399 lines)
-   - Service-by-service breakdown
-   - Detailed task lists
-   - Code examples
-   - Verification steps
+1. **`COMPLETION_CHECKLIST.md`** (399 lines)
+- Service-by-service breakdown
+- Detailed task lists
+- Code examples
+- Verification steps
 
 ### 🔧 Execution Tools
 1. **`scripts/quickstart.sh`** ⭐ START HERE
-   - One-command launch
-   - Shows current status
-   - Lists today's tasks
-   - Quick command reference
+- One-command launch
+- Shows current status
+- Lists today's tasks
+- Quick command reference
 
-2. **`scripts/production_tracker.sh`**
-   - Real-time progress monitoring
-   - Service completion status
-   - Test count tracking
-   - Day-specific checklists
+1. **`scripts/production_tracker.sh`**
+- Real-time progress monitoring
+- Service completion status
+- Test count tracking
+- Day-specific checklists
 
-3. **`scripts/day1_quick_start.sh`**
-   - Interactive Day 1 guide
-   - Step-by-step walkthrough
-   - Pause points for verification
-   - Task-by-task progression
+1. **`scripts/day1_quick_start.sh`**
+- Interactive Day 1 guide
+- Step-by-step walkthrough
+- Pause points for verification
+- Task-by-task progression
 
-4. **`DAY1_EXECUTION_GUIDE.md`**
-   - Detailed Day 1 playbook
-   - Code examples for each change
-   - Verification commands
-   - Fallback strategies
+1. **`DAY1_EXECUTION_GUIDE.md`**
+- Detailed Day 1 playbook
+- Code examples for each change
+- Verification commands
+- Fallback strategies
 
 ### 📊 Status Documents
 1. **`READY_TO_GO.md`** (this type of summary)
-   - Current status verification
-   - Setup confirmation
-   - Quick start options
-   - Timeline adjustments
+- Current status verification
+- Setup confirmation
+- Quick start options
+- Timeline adjustments
 
 ---
 
@@ -152,15 +152,15 @@ vim services/serena/v2/mcp_server.py +1499
 Update 10 functions in `services/serena/v2/mcp_server.py`:
 
 1. `find_symbol_tool` (line ~1499) ⭐ HIGH
-2. `get_context_tool` (line ~1814) ⭐ HIGH
-3. `find_references_tool` (line ~1913) ⭐ HIGH
-4. `analyze_complexity_tool` (line ~2126)
-5. `get_reading_order_tool` (line ~2411)
-6. `find_relationships_tool` (line ~2493)
-7. `get_navigation_patterns_tool` (line ~2586)
-8. `find_similar_code_tool` (line ~4493)
-9. `find_test_file_tool` (line ~4654)
-10. `get_unified_complexity_tool` (line ~4753)
+1. `get_context_tool` (line ~1814) ⭐ HIGH
+1. `find_references_tool` (line ~1913) ⭐ HIGH
+1. `analyze_complexity_tool` (line ~2126)
+1. `get_reading_order_tool` (line ~2411)
+1. `find_relationships_tool` (line ~2493)
+1. `get_navigation_patterns_tool` (line ~2586)
+1. `find_similar_code_tool` (line ~4493)
+1. `find_test_file_tool` (line ~4654)
+1. `get_unified_complexity_tool` (line ~4753)
 
 **Pattern**: Add workspace params → delegate to wrapper → fallback to single workspace
 
@@ -270,10 +270,10 @@ cd /Users/dopemux/code/dopemux-mvp
 
 That's it! The script will:
 1. Show current status
-2. List today's tasks
-3. Give you quick commands
-4. Show the code pattern to apply
-5. Offer 3 ways to proceed
+1. List today's tasks
+1. Give you quick commands
+1. Show the code pattern to apply
+1. Offer 3 ways to proceed
 
 **You're ready to launch! 🚀**
 

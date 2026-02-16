@@ -20,10 +20,10 @@ prelude: Restart_Instructions (explanation) for dopemux documentation and develo
 ## ✅ What We Accomplished
 
 1. **Freed 80GB disk space** (100% → 81% usage)
-2. **Optimized MCP wrappers** (95% reduction in git subprocess calls)
-3. **Fixed rogue containers** (rebuilt via docker-compose)
-4. **Added caching** (`dopemux worktrees current` with 30s TTL)
-5. **Committed changes** (d18887d)
+1. **Optimized MCP wrappers** (95% reduction in git subprocess calls)
+1. **Fixed rogue containers** (rebuilt via docker-compose)
+1. **Added caching** (`dopemux worktrees current` with 30s TTL)
+1. **Committed changes** (d18887d)
 
 ---
 
@@ -85,9 +85,9 @@ When you're back, just say:
 
 And I'll:
 1. Load session state from ConPort
-2. Verify all systems healthy
-3. Complete the instances schema application
-4. Test everything works!
+1. Verify all systems healthy
+1. Complete the instances schema application
+1. Test everything works!
 
 ---
 

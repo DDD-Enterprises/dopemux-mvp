@@ -40,9 +40,9 @@ Implemented **progressive truncation** - preserves most important information fi
 ### Why Progressive Truncation?
 
 1. **ADHD-Optimized**: Keeps essential info (task_id, status, summary) intact
-2. **Information Hierarchy**: Truncates verbose fields (results, sources) systematically
-3. **Transparent**: Adds metadata showing what was truncated
-4. **User-Friendly**: Users see most important findings even when truncated
+1. **Information Hierarchy**: Truncates verbose fields (results, sources) systematically
+1. **Transparent**: Adds metadata showing what was truncated
+1. **User-Friendly**: Users see most important findings even when truncated
 
 ### Implementation Strategy
 
@@ -101,18 +101,18 @@ return {'result': {'content': [{'text': json.dumps(result)}]}}
    SAFE_TOKEN_BUDGET = 9000  # 10% headroom
    ```
 
-2. **Token Utility** (lines 34-41):
+1. **Token Utility** (lines 34-41):
    ```python
    def estimate_tokens(text: str) -> int:
        """Conservative token estimation: 1 token ≈ 4 chars."""
        return len(str(text)) // 4
    ```
 
-3. **Budget Enforcement** (lines 43-117):
-   - `enforce_token_budget()` function
-   - Progressive truncation of result fields
-   - Metadata for transparency
-   - ADHD-optimized field prioritization
+1. **Budget Enforcement** (lines 43-117):
+- `enforce_token_budget()` function
+- Progressive truncation of result fields
+- Metadata for transparency
+- ADHD-optimized field prioritization
 
 **1 modification**:
 

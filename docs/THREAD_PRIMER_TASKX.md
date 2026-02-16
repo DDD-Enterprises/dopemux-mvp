@@ -17,13 +17,13 @@ This file allows deterministic restart of development in a fresh chat.
 Before proceeding in any new thread:
 
 1. Read:
-   - docs/STATELESS_OPERATOR_MODE_PROMPT.md
-   - docs/EXECUTIVE_INVARIANTS_1PAGER.md
-2. Confirm:
-   - Current branch
-   - Working tree clean
-   - Active packet ID
-3. Confirm refusal semantics (exit code 2)
+- docs/STATELESS_OPERATOR_MODE_PROMPT.md
+- docs/EXECUTIVE_INVARIANTS_1PAGER.md
+1. Confirm:
+- Current branch
+- Working tree clean
+- Active packet ID
+1. Confirm refusal semantics (exit code 2)
 
 System summary:
 

@@ -33,11 +33,11 @@ Build 5 drill-down screens, context menus, search, and production hardening on t
 
 ### What We're Adding (Day 10)
 1. **Drill-Down Screens** (~400 lines)
-2. **Context Menu System** (~200 lines)
-3. **Search System** (~150 lines)
-4. **Error Boundaries** (~100 lines)
-5. **Crash Recovery** (~100 lines)
-6. **Tests** (~300 lines)
+1. **Context Menu System** (~200 lines)
+1. **Search System** (~150 lines)
+1. **Error Boundaries** (~100 lines)
+1. **Crash Recovery** (~100 lines)
+1. **Tests** (~300 lines)
 
 **Total New Code:** ~1,250 lines
 **Time:** 10-12 hours
@@ -790,7 +790,6 @@ class ContextMenu(Screen):
         if index is not None:
             await self.items[index].callback()
         await self.app.pop_screen()
-
 
 class MenuItem:
     """Context menu item"""

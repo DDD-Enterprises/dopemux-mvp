@@ -65,7 +65,7 @@ prelude: Phase 2 Completion Summary (explanation) for dopemux documentation and 
 
 **Files Modified**:
 1. `src/checkpoint_manager.py` - Switched to `get_sync_http_client()`
-2. `src/context_protocol.py` - Updated all 3 methods to use sync HTTP client
+1. `src/context_protocol.py` - Updated all 3 methods to use sync HTTP client
 
 **Integration Points Completed**:
 - ✅ `checkpoint_manager._save_to_conport_mcp()` - Uses HTTP client
@@ -382,9 +382,9 @@ Phase 2 is production-ready. The orchestrator has:
 
 **Next Steps** (Optional):
 1. Fix 4 test assertion issues (30 min)
-2. Add HTTP client notes to main README (15 min)
-3. Zen codereview for validation (15 min)
-4. Git commit and close Phase 2 (10 min)
+1. Add HTTP client notes to main README (15 min)
+1. Zen codereview for validation (15 min)
+1. Git commit and close Phase 2 (10 min)
 
 **Total Optional Work**: ~1 hour to "perfect"
 

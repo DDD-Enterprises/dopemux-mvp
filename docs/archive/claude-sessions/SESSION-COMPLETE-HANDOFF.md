@@ -151,20 +151,20 @@ prelude: Session Complete Handoff (explanation) for dopemux documentation and de
    # Set: ALLOWED_ORIGINS, ADHD_ENGINE_API_KEY, SERENA_DB_PASSWORD
    ```
 
-2. **Test Locally** (10 min):
+1. **Test Locally** (10 min):
    ```bash
    cd services/adhd_engine && python main.py
    curl -H "X-API-Key: your-key" http://localhost:8000/health
    ```
 
-3. **Deploy** (varies by environment):
-   - Update docker-compose with environment variables
-   - Deploy services
-   - Verify security fixes active
+1. **Deploy** (varies by environment):
+- Update docker-compose with environment variables
+- Deploy services
+- Verify security fixes active
 
 **Week 7 Integration** (12h):
 1. Complete DopeconBridge MCP layer (4-6h)
-2. Migrate ADHD Engine + ConPort to bridge (6-8h)
+1. Migrate ADHD Engine + ConPort to bridge (6-8h)
 
 ---
 
@@ -252,24 +252,24 @@ prelude: Session Complete Handoff (explanation) for dopemux documentation and de
 **If Continuing Audit** (8h remaining):
 
 1. Read: `START-HERE-NEXT-SESSION.md`
-2. Read: `ROADMAP-REMAINING-WORK.md`
-3. Execute: Phase 4 (doc validation, 2h)
-4. Execute: Phase 6 (integration tests, 2h)
-5. Execute: Phase 8 (final synthesis, 2h)
-6. Optional: Deep dives (2h)
+1. Read: `ROADMAP-REMAINING-WORK.md`
+1. Execute: Phase 4 (doc validation, 2h)
+1. Execute: Phase 6 (integration tests, 2h)
+1. Execute: Phase 8 (final synthesis, 2h)
+1. Optional: Deep dives (2h)
 
 **If Deploying**:
 
 1. Read: `DEPLOYMENT-READY-SUMMARY.md`
-2. Configure: `.env` from `.env.example`
-3. Test: Locally with security fixes
-4. Deploy: Staging → Production
+1. Configure: `.env` from `.env.example`
+1. Test: Locally with security fixes
+1. Deploy: Staging → Production
 
 **If Week 7 Integration**:
 
 1. Read: `DEEP-DOCUMENTATION-ALL-FINDINGS.md` (DopeconBridge section)
-2. Complete: Bridge MCP integration (4-6h)
-3. Migrate: Services to bridge (6-8h)
+1. Complete: Bridge MCP integration (4-6h)
+1. Migrate: Services to bridge (6-8h)
 
 ---
 

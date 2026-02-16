@@ -25,11 +25,11 @@ prelude: Phase3_Deduplication_Recommendations (explanation) for dopemux document
 
 ### 📦 Archived (14 files)
 - **11 COMPONENT_* files** → `archive/component-implementations/`
-  - These were implementation progress docs, not canonical reference
+- These were implementation progress docs, not canonical reference
 - **3 session summaries** → `archive/session-notes/`
-  - SESSION_SUMMARY_20251024-25.md
-  - SESSION_COMPLETE.md
-  - SESSION_FINAL_SUMMARY.md
+- SESSION_SUMMARY_20251024-25.md
+- SESSION_COMPLETE.md
+- SESSION_FINAL_SUMMARY.md
 
 ### 🗑️ Empty Directories Removed
 - `04-explanation/session-summaries/`
@@ -228,9 +228,9 @@ Files:
 ## Next Steps
 
 1. **User review**: Go through recommendations above
-2. **Manual consolidation**: Merge files where appropriate
-3. **Final cleanup**: Remove any remaining empty directories
-4. **Update indices**: Update 00-MASTER-INDEX.md and docs_index.yaml
+1. **Manual consolidation**: Merge files where appropriate
+1. **Final cleanup**: Remove any remaining empty directories
+1. **Update indices**: Update 00-MASTER-INDEX.md and docs_index.yaml
 
 ---
 

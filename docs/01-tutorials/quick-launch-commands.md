@@ -335,8 +335,8 @@ dopemux dope
 Themes only work inside tmux. Make sure you:
 
 1. Created a tmux session first
-2. Are inside tmux when applying theme
-3. Have a valid theme name
+1. Are inside tmux when applying theme
+1. Have a valid theme name
 
 ```bash
 # Check if in tmux
@@ -384,16 +384,16 @@ dopemux launch --preset dope-muted
 
 1. **First time?** Start with `dopemux dope` - it's the complete experience
 
-2. **Long sessions?** Use muted theme to reduce eye strain:
+1. **Long sessions?** Use muted theme to reduce eye strain:
    ```bash
    dopemux dope --theme muted
    ```
 
-3. **Quick tests?** Use `dopemux quick` for minimal setup
+1. **Quick tests?** Use `dopemux quick` for minimal setup
 
-4. **Learning?** Run `dopemux layouts` to see all options
+1. **Learning?** Run `dopemux layouts` to see all options
 
-5. **Can't decide?** The recommended command is:
+1. **Can't decide?** The recommended command is:
    ```bash
    dopemux dope --theme muted
    ```

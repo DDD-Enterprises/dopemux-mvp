@@ -113,8 +113,8 @@ ConPort uses **status-based routing** to determine visibility:
 
 When you mark a task as COMPLETED, ConPort automatically:
 1. Clears the `instance_id` (sets to NULL)
-2. Makes it visible to all worktrees
-3. Updates the `updated_at` timestamp
+1. Makes it visible to all worktrees
+1. Updates the `updated_at` timestamp
 
 **Example Flow**:
 ```
@@ -540,22 +540,22 @@ Tasks remain in database (instance_id preserved for history).
 ## Limitations (Simple MVP)
 
 1. **Manual Environment Variables**: No automatic git detection (planned for future)
-2. **5 Core Tools Only**: Only these ConPort tools support multi-instance:
-   - `log_progress`
-   - `get_progress`
-   - `update_progress`
-   - `get_active_context`
-   - `update_active_context`
-3. **No UI Visualization**: Terminal-only for now
-4. **No Historical Migration**: Old decisions/patterns stay shared (instance_id=NULL)
+1. **5 Core Tools Only**: Only these ConPort tools support multi-instance:
+- `log_progress`
+- `get_progress`
+- `update_progress`
+- `get_active_context`
+- `update_active_context`
+1. **No UI Visualization**: Terminal-only for now
+1. **No Historical Migration**: Old decisions/patterns stay shared (instance_id=NULL)
 
 ## Next Steps
 
 1. ✅ Set up your first worktree
-2. ✅ Configure environment variables
-3. ✅ Create isolated IN_PROGRESS task
-4. ✅ Mark complete and watch it become shared
-5. 🎉 Enjoy context-preserving parallel workflows!
+1. ✅ Configure environment variables
+1. ✅ Create isolated IN_PROGRESS task
+1. ✅ Mark complete and watch it become shared
+1. 🎉 Enjoy context-preserving parallel workflows!
 
 ## Support
 

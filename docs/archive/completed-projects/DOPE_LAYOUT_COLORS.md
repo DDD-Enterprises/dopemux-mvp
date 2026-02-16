@@ -20,51 +20,51 @@ Each pane now has distinct background colors and border colors for easy visual d
 
 #### Monitor Panes (Top)
 - **monitor:adhd** (Left)
-  - Background: `#94fadb` (Cyan/Teal)
-  - Text: `#020617` (Dark Blue)
-  - Border: `#94fadb` (Cyan)
-  - Purpose: ADHD energy/session monitoring
+- Background: `#94fadb` (Cyan/Teal)
+- Text: `#020617` (Dark Blue)
+- Border: `#94fadb` (Cyan)
+- Purpose: ADHD energy/session monitoring
 
 - **monitor:system** (Right)
-  - Background: `#f5f26d` (Yellow)
-  - Text: `#020617` (Dark Blue)
-  - Border: `#f5f26d` (Yellow)
-  - Purpose: Docker/MCP/LiteLLM health
+- Background: `#f5f26d` (Yellow)
+- Text: `#020617` (Dark Blue)
+- Border: `#f5f26d` (Yellow)
+- Purpose: Docker/MCP/LiteLLM health
 
 #### Metrics Bar
 - **metrics:bar**
-  - Background: `#020617` (Very Dark)
-  - Text: `#7dfbf6` (Bright Cyan)
-  - Border: `#7dfbf6` (Bright Cyan)
-  - Purpose: Context-aware metrics display
+- Background: `#020617` (Very Dark)
+- Text: `#7dfbf6` (Bright Cyan)
+- Border: `#7dfbf6` (Bright Cyan)
+- Purpose: Context-aware metrics display
 
 #### Middle Band Panes
 - **orchestrator:control** (Left - 75% width)
-  - Background: `#0a1628` (Dark Navy Blue)
-  - Text: `#7dfbf6` (Bright Cyan)
-  - Border: `#7dfbf6` (Bright Cyan)
-  - Purpose: Claude Code/Copilot orchestration
-  - **Now taller (55% height) and wider (75% width)**
+- Background: `#0a1628` (Dark Navy Blue)
+- Text: `#7dfbf6` (Bright Cyan)
+- Border: `#7dfbf6` (Bright Cyan)
+- Purpose: Claude Code/Copilot orchestration
+- **Now taller (55% height) and wider (75% width)**
 
 - **sandbox:shell** (Right - 25% width)
-  - Background: `#1a0520` (Dark Purple)
-  - Text: `#ff8bd1` (Pink)
-  - Border: `#ff8bd1` (Pink)
-  - Purpose: Quick experiments
+- Background: `#1a0520` (Dark Purple)
+- Text: `#ff8bd1` (Pink)
+- Border: `#ff8bd1` (Pink)
+- Purpose: Quick experiments
 
 #### Agent Panes (Bottom - 25% height)
 - **agent:primary**
-  - Background: `#041628` (Very Dark Blue)
-  - Text: `#94fadb` (Cyan/Teal)
-  - Border: `#94fadb` (Cyan)
-  - Purpose: Main agent output
-  - **Now much taller (25% vs 18%)**
+- Background: `#041628` (Very Dark Blue)
+- Text: `#94fadb` (Cyan/Teal)
+- Border: `#94fadb` (Cyan)
+- Purpose: Main agent output
+- **Now much taller (25% vs 18%)**
 
 - **agent:secondary** (if dual_agent enabled)
-  - Background: `#020617` (Very Dark)
-  - Text: `#ffcf78` (Orange)
-  - Border: `#ffcf78` (Orange)
-  - Purpose: Secondary agent output
+- Background: `#020617` (Very Dark)
+- Text: `#ffcf78` (Orange)
+- Border: `#ffcf78` (Orange)
+- Purpose: Secondary agent output
 
 ---
 
@@ -137,13 +137,13 @@ Softer, pastel colors for extended sessions:
 ## Benefits of New Color Scheme
 
 1. **High Contrast**: Dark backgrounds with bright text for readability
-2. **Visual Differentiation**: Each pane type has unique color
-3. **Functional Grouping**:
-   - Monitors = Bright backgrounds (Cyan, Yellow)
-   - Work panes = Dark backgrounds with colored borders
-   - Agents = Very dark with distinct text colors
-4. **ADHD-Friendly**: Clear visual boundaries reduce cognitive load
-5. **Neon Aesthetic**: Matches the cyberpunk/neon branding
+1. **Visual Differentiation**: Each pane type has unique color
+1. **Functional Grouping**:
+- Monitors = Bright backgrounds (Cyan, Yellow)
+- Work panes = Dark backgrounds with colored borders
+- Agents = Very dark with distinct text colors
+1. **ADHD-Friendly**: Clear visual boundaries reduce cognitive load
+1. **Neon Aesthetic**: Matches the cyberpunk/neon branding
 
 ---
 

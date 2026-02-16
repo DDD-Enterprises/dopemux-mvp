@@ -97,16 +97,15 @@ from dopecon_bridge_client import (
     DopeconBridgeConfig,
 )
 
-
 class DDDPGBridgeAdapter:
     """
     DopeconBridge adapter for Dope Decision Graph.
 
     Provides decision graph operations via DopeconBridge:
-    - Decision creation and querying
-    - Graph traversal and navigation
-    - Context-aware decision retrieval
-    - Semantic search
+- Decision creation and querying
+- Graph traversal and navigation
+- Context-aware decision retrieval
+- Semantic search
     """
 
     def __init__(
@@ -338,11 +337,11 @@ class DopeBrainzBridgeAdapter:
     Unified bridge adapter for Dope Brainz intelligence services.
 
     Handles:
-    - ML predictions
-    - Risk assessments
-    - Session intelligence
-    - Working memory
-    - Pattern learning
+- ML predictions
+- Risk assessments
+- Session intelligence
+- Working memory
+- Pattern learning
     """
 
     async def log_prediction(
@@ -415,10 +414,10 @@ class LeantimeBridgeAdapter:
     DopeconBridge adapter for Leantime PM plane integration.
 
     Features:
-    - Task synchronization (PM ↔ Cognitive)
-    - Project updates
-    - Sprint planning
-    - Resource allocation
+- Task synchronization (PM ↔ Cognitive)
+- Project updates
+- Sprint planning
+- Resource allocation
     """
 
     def __init__(self, workspace_id: str):
@@ -578,7 +577,6 @@ from services.shared.dopecon_bridge_client import (
     AsyncDopeconBridgeClient,
     DopeconBridgeConfig,
 )
-
 
 class {ServiceName}BridgeAdapter:
     """DopeconBridge adapter for {Service Name}"""

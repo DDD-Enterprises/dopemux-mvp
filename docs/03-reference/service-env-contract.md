@@ -35,24 +35,24 @@ All smoke-enabled services MUST support these environment variables:
 
 | Variable | Type | Default | Description | Example |
 |----------|------|---------|-------------|---------|
-| `PORT` | integer | (none) | Container-internal HTTP port | `8080` |
-| `LOG_LEVEL` | string | `INFO` | Logging verbosity level | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
-| `ENVIRONMENT` | string | `dev` | Deployment environment | `dev`, `staging`, `prod` |
+| `PORT` \| integer \| (none) \| Container-internal HTTP port \| `8080` |
+| `LOG_LEVEL` \| string \| `INFO` \| Logging verbosity level \| `DEBUG`, `INFO`, `WARNING`, `ERROR` |
+| `ENVIRONMENT` \| string \| `dev` \| Deployment environment \| `dev`, `staging`, `prod` |
 
 ### Observability
 
 | Variable | Type | Default | Description | Example |
 |----------|------|---------|-------------|---------|
-| `HEALTH_CHECK_PATH` | string | `/health` | Health check endpoint path | `/health`, `/api/health` |
-| `METRICS_ENABLED` | boolean | `false` | Enable Prometheus metrics | `true`, `false` |
-| `METRICS_PORT` | integer | `9090` | Prometheus metrics port | `9090` |
+| `HEALTH_CHECK_PATH` \| string \| `/health` \| Health check endpoint path \| `/health`, `/api/health` |
+| `METRICS_ENABLED` \| boolean \| `false` \| Enable Prometheus metrics \| `true`, `false` |
+| `METRICS_PORT` \| integer \| `9090` \| Prometheus metrics port \| `9090` |
 
 ### Service Identity
 
 | Variable | Type | Default | Description | Example |
 |----------|------|---------|-------------|---------|
-| `SERVICE_NAME` | string | (auto-detect) | Canonical service name | `conport`, `dopecon-bridge` |
-| `SERVICE_VERSION` | string | (auto-detect) | Semantic version | `1.0.0`, `2.1.3` |
+| `SERVICE_NAME` \| string \| (auto-detect) \| Canonical service name \| `conport`, `dopecon-bridge` |
+| `SERVICE_VERSION` \| string \| (auto-detect) \| Semantic version \| `1.0.0`, `2.1.3` |
 
 ## Category-Specific Variables
 
@@ -60,22 +60,22 @@ All smoke-enabled services MUST support these environment variables:
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `MAX_CONNECTIONS` | integer | `100` | Maximum concurrent connections |
-| `CONNECTION_TIMEOUT` | integer | `30` | Connection timeout (seconds) |
+| `MAX_CONNECTIONS` \| integer \| `100` | Maximum concurrent connections |
+| `CONNECTION_TIMEOUT` \| integer \| `30` | Connection timeout (seconds) |
 
 ### MCP Services (`category: mcp`)
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `MCP_SERVER_PORT` | integer | (same as PORT) | MCP protocol port |
-| `MCP_TRANSPORT` | string | `stdio` | Transport protocol (`stdio`, `sse`) |
+| `MCP_TRANSPORT` \| string \| `stdio` \| Transport protocol (`stdio`, `sse`) |
 
 ### Coordination Services (`category: coordination`)
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `REDIS_URL` | string | (required) | Redis connection string |
-| `EVENT_BUS_ENABLED` | boolean | `true` | Enable event bus integration |
+| `EVENT_BUS_ENABLED` \| boolean \| `true` | Enable event bus integration |
 
 ### Cognitive Services (`category: cognitive`)
 
@@ -217,21 +217,21 @@ Services may request exceptions to mandatory env vars via `services/registry.yam
 
 ```yaml
 services:
-  - name: postgres
+- name: postgres
     port: 5432
     enabled_in_smoke: true
     category: infrastructure
     env_contract_exceptions:
-      - variable: PORT
+- variable: PORT
         reason: "PostgreSQL uses internal port 5432, controlled by POSTGRES_PORT"
-      - variable: LOG_LEVEL
+- variable: LOG_LEVEL
         reason: "PostgreSQL logging configured via postgresql.conf"
 ```
 
 **Exception Review**: All exceptions require architectural review and must include:
 1. Variable name
-2. Justification (why exception needed)
-3. Alternative mechanism (how config is handled)
+1. Justification (why exception needed)
+1. Alternative mechanism (how config is handled)
 
 ## Validation
 
@@ -267,11 +267,11 @@ Tests verify:
 ### For Existing Services
 
 1. **Add ServiceConfig class** to service entry point
-2. **Update startup** to load and validate config
-3. **Configure logging** from LOG_LEVEL env var
-4. **Expose health endpoint** at HEALTH_CHECK_PATH
-5. **Update Dockerfile** to accept env vars as ARG/ENV
-6. **Update docker-compose** to pass env vars
+1. **Update startup** to load and validate config
+1. **Configure logging** from LOG_LEVEL env var
+1. **Expose health endpoint** at HEALTH_CHECK_PATH
+1. **Update Dockerfile** to accept env vars as ARG/ENV
+1. **Update docker-compose** to pass env vars
 
 ### Example Migration (task-orchestrator)
 
@@ -328,12 +328,12 @@ CMD ["python", "server.py"]
 
 ### Phase 2: Smoke Stack Services (G33)
 - 🔄 Migrate 6 smoke-enabled services:
-  - postgres (exception: uses POSTGRES_PORT)
-  - redis (exception: uses REDIS_PORT)
-  - qdrant (exception: native config)
-  - conport (migrate to contract)
-  - dopecon-bridge (migrate to contract)
-  - task-orchestrator (migrate to contract)
+- postgres (exception: uses POSTGRES_PORT)
+- redis (exception: uses REDIS_PORT)
+- qdrant (exception: native config)
+- conport (migrate to contract)
+- dopecon-bridge (migrate to contract)
+- task-orchestrator (migrate to contract)
 
 ### Phase 3: Full Ecosystem (Future)
 - ⏳ Migrate remaining 42 services

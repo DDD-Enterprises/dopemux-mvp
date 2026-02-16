@@ -218,15 +218,15 @@ python3 test_error_recovery.py
 
 **Test Coverage**:
 1. ✅ Error classification (retryable vs permanent)
-2. ✅ Retry with exponential backoff (timing validation)
-3. ✅ Timeout manager (defaults + overrides)
-4. ✅ Health monitor (process checks)
-5. ✅ Recovery action mapping (decision tree)
-6. ✅ Severity mapping (notification prioritization)
-7. ✅ Recovery statistics (tracking + metrics)
-8. ✅ Exponential backoff calculation (10s, 20s, 40s, 60s cap)
-9. ✅ Retry failure propagation (all attempts exhausted)
-10. ✅ Comprehensive health report (multi-agent status)
+1. ✅ Retry with exponential backoff (timing validation)
+1. ✅ Timeout manager (defaults + overrides)
+1. ✅ Health monitor (process checks)
+1. ✅ Recovery action mapping (decision tree)
+1. ✅ Severity mapping (notification prioritization)
+1. ✅ Recovery statistics (tracking + metrics)
+1. ✅ Exponential backoff calculation (10s, 20s, 40s, 60s cap)
+1. ✅ Retry failure propagation (all attempts exhausted)
+1. ✅ Comprehensive health report (multi-agent status)
 
 ### Test Individual Components
 ```bash

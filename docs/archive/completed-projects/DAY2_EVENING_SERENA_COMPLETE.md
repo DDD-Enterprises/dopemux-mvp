@@ -25,9 +25,9 @@ prelude: Day2_Evening_Serena_Complete (explanation) for dopemux documentation an
 
 Created standalone FastAPI HTTP server for Serena that exposes:
 1. ✅ `/api/metrics` - Pattern detection metrics with ADHD-friendly formatting
-2. ✅ `/api/detections/summary` - Detection summary with progressive disclosure
-3. ✅ `/api/patterns/top` - Minimal view (dashboard quick glance)
-4. ✅ `/health` - Service health check
+1. ✅ `/api/detections/summary` - Detection summary with progressive disclosure
+1. ✅ `/api/patterns/top` - Minimal view (dashboard quick glance)
+1. ✅ `/health` - Service health check
 
 **Server Details:**
 - **Port:** 8003
@@ -203,28 +203,28 @@ Future Ready: Real aggregator loaded and waiting
 **From code analysis, Serena is ADHD-first by design:**
 
 1. **Progressive Disclosure** ✅
-   - Level 0: Minimal (patterns only)
-   - Level 1: Summary (metrics overview)
-   - Level 2: Breakdown (detailed summary)
-   - Level 3: Trends (not yet implemented)
+- Level 0: Minimal (patterns only)
+- Level 1: Summary (metrics overview)
+- Level 2: Breakdown (detailed summary)
+- Level 3: Trends (not yet implemented)
 
-2. **Cognitive Load Management** ✅
-   - Max 5 items per view
-   - Visual indicators (🔵 🟢 🟡)
-   - Limit parameters enforced
-   - Clear, simple responses
+1. **Cognitive Load Management** ✅
+- Max 5 items per view
+- Visual indicators (🔵 🟢 🟡)
+- Limit parameters enforced
+- Clear, simple responses
 
-3. **Gentle Guidance** ✅
-   - Positive framing ("maintaining good momentum")
-   - Suggestions, not commands
-   - Encouragement, not criticism
-   - Context-aware messaging
+1. **Gentle Guidance** ✅
+- Positive framing ("maintaining good momentum")
+- Suggestions, not commands
+- Encouragement, not criticism
+- Context-aware messaging
 
-4. **ADHD Insights** ✅
-   - Session spanning (healthy for ADHD)
-   - Exploration patterns recognized
-   - Work style validation
-   - Gentle awareness of abandonment
+1. **ADHD Insights** ✅
+- Session spanning (healthy for ADHD)
+- Exploration patterns recognized
+- Work style validation
+- Gentle awareness of abandonment
 
 ---
 
@@ -266,15 +266,15 @@ patterns = await fetcher.get_patterns()
 ### Files Modified/Created
 
 1. **Created:** `services/serena/v2/http_server.py`
-   - FastAPI server with 4 endpoints
-   - MetricsAggregator integration (with fallback)
-   - ADHD-friendly mock data
-   - Progressive disclosure ready
+- FastAPI server with 4 endpoints
+- MetricsAggregator integration (with fallback)
+- ADHD-friendly mock data
+- Progressive disclosure ready
 
-2. **Updated:** `dopemux_dashboard.py`
-   - Updated ENDPOINTS config
-   - Added `get_patterns()` method
-   - Tested end-to-end ✅
+1. **Updated:** `dopemux_dashboard.py`
+- Updated ENDPOINTS config
+- Added `get_patterns()` method
+- Tested end-to-end ✅
 
 ---
 

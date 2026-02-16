@@ -148,8 +148,8 @@ def _validate_json_serializable(self, value: dict) -> bool:
 
 - ✅ Critical issue (thread safety) **FIXED**
 - ⚠️ High issues are non-blocking:
-  - Blocking I/O: Only affects fallback mode (rare)
-  - File cleanup: Only matters after >7 days of bridge downtime
+- Blocking I/O: Only affects fallback mode (rare)
+- File cleanup: Only matters after >7 days of bridge downtime
 - 🔵 Medium/Low issues: Quality-of-life improvements
 
 **Recommendation**: **Ship now**, fix high-priority issues iteratively
@@ -163,12 +163,12 @@ def _validate_json_serializable(self, value: dict) -> bool:
 
 **Next Sprint** (Quality Improvements):
 1. Issue #3: Fallback cleanup (30 min) - Prevents disk issues
-2. Issue #2: Async file I/O (1 hour) - Improves async performance
-3. Issue #6: JSON validation (30 min) - Better error messages
+1. Issue #2: Async file I/O (1 hour) - Improves async performance
+1. Issue #6: JSON validation (30 min) - Better error messages
 
 **Future** (Low Priority):
-4. Issue #4: Document semantic search behavior (15 min)
-5. Issue #7: Shared circuit breaker state (1 hour) - Only if needed
+1. Issue #4: Document semantic search behavior (15 min)
+1. Issue #7: Shared circuit breaker state (1 hour) - Only if needed
 
 ---
 

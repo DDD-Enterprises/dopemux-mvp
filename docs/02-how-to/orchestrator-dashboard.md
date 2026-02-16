@@ -18,10 +18,10 @@ Use the standalone Rich TUI (`scripts/orchestrator_dashboard.py`) to monitor the
 - Python 3.10+
 - Project dependencies installed (`pip install -r requirements.txt`) – the dashboard now relies on `rich`, `httpx`, and `aiohttp`
 - Dopemux services running so the data reflects reality:
-  - ADHD engine (`localhost:3008`) and activity capture (`localhost:3006`)
-  - ConPort / Leantime APIs for sprint + task data
-  - LiteLLM proxy (`localhost:4000`) for cost & latency
-  - Prometheus on `http://localhost:9090` (start with `./scripts/monitoring_stack.sh start`)
+- ADHD engine (`localhost:3008`) and activity capture (`localhost:3006`)
+- ConPort / Leantime APIs for sprint + task data
+- LiteLLM proxy (`localhost:4000`) for cost & latency
+- Prometheus on `http://localhost:9090` (start with `./scripts/monitoring_stack.sh start`)
 
 ## Launching
 
@@ -51,7 +51,7 @@ Add a Makefile target (see `docs/archive/completed-projects/ORCHESTRATOR-INTEGRA
 | Panel            | Source(s)                                       | Notes |
 | ---------------- | ------------------------------------------------ | ----- |
 | Status           | `ImplementationCollector` → ADHD engine & activity capture | Falls back to placeholders if endpoints are offline. |
-| Services         | `ImplementationCollector` → LiteLLM metrics + Docker compose | LiteLLM `/metrics` must be enabled (default when running Dopemux with routing). |
+| Services         | `ImplementationCollector` → LiteLLM metrics + Docker compose \| LiteLLM `/metrics` must be enabled (default when running Dopemux with routing). |
 | Active Tasks     | `PMCollector` → ConPort sprint API + Leantime epics | Displays up to six non-completed tasks across active epics. |
 | Metrics          | `ImplementationCollector` + Prometheus client    | Prometheus health check guards the cognitive load / velocity rows. |
 | Alerts           | Serena untracked-work API + git porcelain scan   | Alerts collapse to “✅ No active alerts” when nothing actionable is found. |

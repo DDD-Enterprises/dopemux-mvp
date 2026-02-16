@@ -21,20 +21,20 @@ Added autonomous file-watching and indexing for **documentation files** (Markdow
 ### New MCP Tools
 
 1. **`start_autonomous_docs_indexing`**
-   - Starts file watcher for docs (*.md,*.pdf, *.html,*.txt)
-   - 5-second debouncing (ADHD-optimized batching)
-   - 10-minute periodic fallback sync
-   - Automatic reindexing on file changes
-   - Zero manual intervention required
+- Starts file watcher for docs (*.md,*.pdf, *.html,*.txt)
+- 5-second debouncing (ADHD-optimized batching)
+- 10-minute periodic fallback sync
+- Automatic reindexing on file changes
+- Zero manual intervention required
 
-2. **`stop_autonomous_docs_indexing`**
-   - Stops autonomous docs indexing for a workspace
-   - Cleans up watchers and background tasks
+1. **`stop_autonomous_docs_indexing`**
+- Stops autonomous docs indexing for a workspace
+- Cleans up watchers and background tasks
 
-3. **`get_autonomous_status` (enhanced)**
-   - Now shows both code AND docs controllers
-   - Separate sections for each type
-   - Summary counts for quick overview
+1. **`get_autonomous_status` (enhanced)**
+- Now shows both code AND docs controllers
+- Separate sections for each type
+- Summary counts for quick overview
 
 ## Architecture
 
@@ -51,10 +51,10 @@ DOCS Indexing:
   Key: /path/to/workspace:docs
 
 Both use same infrastructure:
-  - AutonomousController
-  - WatchdogMonitor (file watcher)
-  - IndexingWorker (background processing)
-  - PeriodicSync (10min fallback)
+- AutonomousController
+- WatchdogMonitor (file watcher)
+- IndexingWorker (background processing)
+- PeriodicSync (10min fallback)
 ```
 
 ### Components Reused
@@ -126,19 +126,19 @@ mcp__dope-context__stop_autonomous_docs_indexing()
 ### On File Changes (Docs)
 
 1. **User edits `docs/README.md`**
-2. Watchdog detects change (immediate)
-3. Debounces for 5 seconds (wait for more changes)
-4. If no more changes: Triggers reindex
-5. Only changed docs reindexed (incremental)
-6. Collection updated in Qdrant
-7. Search immediately reflects new content
+1. Watchdog detects change (immediate)
+1. Debounces for 5 seconds (wait for more changes)
+1. If no more changes: Triggers reindex
+1. Only changed docs reindexed (incremental)
+1. Collection updated in Qdrant
+1. Search immediately reflects new content
 
 ### Periodic Fallback
 
 Every 10 minutes:
 1. Check for any missed file changes
-2. If changes detected: Trigger reindex
-3. Safety net for filesystem event misses
+1. If changes detected: Trigger reindex
+1. Safety net for filesystem event misses
 
 ### On Startup
 
@@ -257,28 +257,28 @@ Different keys = independent controllers = can run both simultaneously!
 ## Future Enhancements
 
 1. **Structure-Aware Chunking** (High Priority)
-   - Parse markdown headers
-   - Chunk by sections
-   - See `CHUNKING_OPTIMIZATION.md`
+- Parse markdown headers
+- Chunk by sections
+- See `CHUNKING_OPTIMIZATION.md`
 
-2. **Selective Reindexing**
-   - Only reindex changed docs (not all)
-   - Currently reindexes all on change
+1. **Selective Reindexing**
+- Only reindex changed docs (not all)
+- Currently reindexes all on change
 
-3. **Change Detection**
-   - Hash-based change detection
-   - Skip if content identical
+1. **Change Detection**
+- Hash-based change detection
+- Skip if content identical
 
-4. **Git Integration**
-   - Detect git commits
-   - Reindex on checkout
+1. **Git Integration**
+- Detect git commits
+- Reindex on checkout
 
 ## Files Modified
 
 - `services/dope-context/src/mcp/server.py`:
-  - Added `start_autonomous_docs_indexing` (+88 lines)
-  - Added `stop_autonomous_docs_indexing` (+24 lines)
-  - Updated `get_autonomous_status` (+20 lines)
+- Added `start_autonomous_docs_indexing` (+88 lines)
+- Added `stop_autonomous_docs_indexing` (+24 lines)
+- Updated `get_autonomous_status` (+20 lines)
 
 ## Testing Checklist
 

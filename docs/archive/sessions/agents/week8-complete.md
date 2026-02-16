@@ -29,36 +29,36 @@ prelude: Week8 Complete (explanation) for dopemux documentation and developer wo
 **Core Features**:
 
 1. **Model Selection by Complexity**
-   - Simple tasks (0.0-0.3) → Fast tier (gpt-5-mini, gemini-flash, grok-4-fast)
-   - Medium tasks (0.3-0.7) → Mid tier (gpt-5, gemini-2.5-pro, gpt-5-codex)
-   - Complex tasks (0.7-1.0) → Power tier (grok-code-fast-1, o3-mini)
+- Simple tasks (0.0-0.3) → Fast tier (gpt-5-mini, gemini-flash, grok-4-fast)
+- Medium tasks (0.3-0.7) → Mid tier (gpt-5, gemini-2.5-pro, gpt-5-codex)
+- Complex tasks (0.7-1.0) → Power tier (grok-code-fast-1, o3-mini)
 
-2. **MCP Server Selection by Task Type**
-   - Analysis → Zen (thinkdeep)
-   - Planning → Zen (planner)
-   - Code review → Zen (codereview)
-   - Debugging → Zen (debug)
-   - Code navigation → Serena (find_symbol) - REQUIRED, no fallback
-   - Code search → Dope-Context (search_code)
-   - Documentation → PAL apilookup (with Exa fallback)
-   - Web research → Exa (with GPT-Researcher for deep research)
+1. **MCP Server Selection by Task Type**
+- Analysis → Zen (thinkdeep)
+- Planning → Zen (planner)
+- Code review → Zen (codereview)
+- Debugging → Zen (debug)
+- Code navigation → Serena (find_symbol) - REQUIRED, no fallback
+- Code search → Dope-Context (search_code)
+- Documentation → PAL apilookup (with Exa fallback)
+- Web research → Exa (with GPT-Researcher for deep research)
 
-3. **Cost Optimization**
-   - Prioritizes FREE models (grok-4-fast, grok-code-fast-1)
-   - Tracks estimated costs
-   - Balances performance vs cost
+1. **Cost Optimization**
+- Prioritizes FREE models (grok-4-fast, grok-code-fast-1)
+- Tracks estimated costs
+- Balances performance vs cost
 
-4. **Performance Priorities**
-   - Fast mode: Max 3s latency
-   - Balanced mode: Max 5s latency
-   - Quality mode: Max 10s latency
+1. **Performance Priorities**
+- Fast mode: Max 3s latency
+- Balanced mode: Max 5s latency
+- Quality mode: Max 10s latency
 
-5. **Natural Language Inference**
-   - Keyword matching to infer task type
-   - "analyze why" → analysis
-   - "debug error" → debugging
-   - "find function" → code_navigation
-   - "research topic" → web_research
+1. **Natural Language Inference**
+- Keyword matching to infer task type
+- "analyze why" → analysis
+- "debug error" → debugging
+- "find function" → code_navigation
+- "research topic" → web_research
 
 **Key Methods**:
 - `select_tools_for_task()`: Get tool selections for task type + complexity
@@ -75,44 +75,44 @@ prelude: Week8 Complete (explanation) for dopemux documentation and developer wo
 **Test Coverage** (8/8 passing):
 
 1. **test_simple_task_fast_model**
-   - Debugging task, complexity 0.2
-   - Expected: Zen + fast tier model (grok-4-fast or gpt-5-mini)
-   - Result: ✅ PASS
+- Debugging task, complexity 0.2
+- Expected: Zen + fast tier model (grok-4-fast or gpt-5-mini)
+- Result: ✅ PASS
 
-2. **test_medium_task_mid_model**
-   - Analysis task, complexity 0.5
-   - Expected: Zen + mid tier model (gpt-5, gemini-2.5-pro)
-   - Result: ✅ PASS
+1. **test_medium_task_mid_model**
+- Analysis task, complexity 0.5
+- Expected: Zen + mid tier model (gpt-5, gemini-2.5-pro)
+- Result: ✅ PASS
 
-3. **test_complex_task_power_model**
-   - Code review, complexity 0.9
-   - Expected: Zen + power tier model (grok-code-fast-1, o3-mini)
-   - Result: ✅ PASS
+1. **test_complex_task_power_model**
+- Code review, complexity 0.9
+- Expected: Zen + power tier model (grok-code-fast-1, o3-mini)
+- Result: ✅ PASS
 
-4. **test_code_navigation_selection**
-   - Code navigation task
-   - Expected: Serena (required, no fallback)
-   - Result: ✅ PASS
+1. **test_code_navigation_selection**
+- Code navigation task
+- Expected: Serena (required, no fallback)
+- Result: ✅ PASS
 
-5. **test_documentation_with_fallback**
-   - Documentation task
-   - Expected: PAL apilookup primary, Exa fallback
-   - Result: ✅ PASS
+1. **test_documentation_with_fallback**
+- Documentation task
+- Expected: PAL apilookup primary, Exa fallback
+- Result: ✅ PASS
 
-6. **test_task_type_inference**
-   - Natural language descriptions
-   - Expected: Correct task type from 6 examples
-   - Result: ✅ PASS (6/6 inferred correctly)
+1. **test_task_type_inference**
+- Natural language descriptions
+- Expected: Correct task type from 6 examples
+- Result: ✅ PASS (6/6 inferred correctly)
 
-7. **test_free_model_priority**
-   - Fast tier selection with cost optimization
-   - Expected: grok-4-fast (FREE) prioritized
-   - Result: ✅ PASS
+1. **test_free_model_priority**
+- Fast tier selection with cost optimization
+- Expected: grok-4-fast (FREE) prioritized
+- Result: ✅ PASS
 
-8. **test_metrics_tracking**
-   - Multiple selections accumulate
-   - Expected: Correct percentages by tier
-   - Result: ✅ PASS
+1. **test_metrics_tracking**
+- Multiple selections accumulate
+- Expected: Correct percentages by tier
+- Result: ✅ PASS
 
 ---
 
@@ -419,22 +419,22 @@ async def dopemux_workflow_v2():
 ## Files Created
 
 1. **tool_orchestrator.py** (342 lines)
-   - ToolOrchestrator class
-   - Model selection logic (9 models)
-   - Task type rules (9 types)
-   - Metrics tracking
-   - Demo code
+- ToolOrchestrator class
+- Model selection logic (9 models)
+- Task type rules (9 types)
+- Metrics tracking
+- Demo code
 
-2. **test_tool_orchestrator.py** (353 lines)
-   - 8 comprehensive test scenarios
-   - All selection logic covered
-   - Task inference validated
-   - Metrics verified
+1. **test_tool_orchestrator.py** (353 lines)
+- 8 comprehensive test scenarios
+- All selection logic covered
+- Task inference validated
+- Metrics verified
 
-3. **WEEK8_COMPLETE.md** (this file)
-   - Complete documentation
-   - Usage examples
-   - Integration patterns
+1. **WEEK8_COMPLETE.md** (this file)
+- Complete documentation
+- Usage examples
+- Integration patterns
 
 **Total**: 3 files, ~750 lines
 

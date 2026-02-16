@@ -271,36 +271,36 @@ Generated: 2025-10-28
 **Critical real-time state - must be visible at all times**
 
 1. **Current energy level** (⚡ icon + state)
-2. **Current attention state** (👁️ icon + state)
-3. **Cognitive load** (0.0-1.0 gauge with color)
-4. **Time in session** (auto-updating)
-5. **Break warning** (☕ icon if needed)
-6. **Flow state** (🌊 if active)
-7. **ConPort connection** (📊 connected / 📴 disconnected)
-8. **Token usage** (raw + percentage + model)
+1. **Current attention state** (👁️ icon + state)
+1. **Cognitive load** (0.0-1.0 gauge with color)
+1. **Time in session** (auto-updating)
+1. **Break warning** (☕ icon if needed)
+1. **Flow state** (🌊 if active)
+1. **ConPort connection** (📊 connected / 📴 disconnected)
+1. **Token usage** (raw + percentage + model)
 
 ### TIER 2: High Value (Toggle View)
 **Important context - show in expanded view**
 
 1. **Tasks completed today** (with completion rate %)
-2. **Decisions logged** (count with trend)
-3. **Context switches** (count with rate)
-4. **Pattern boosts** (active patterns count)
-5. **Abandoned work** (by severity: stale/likely/definitely)
-6. **MCP tool calls** (total + by server)
-7. **Cache hit rate** (percentage)
+1. **Decisions logged** (count with trend)
+1. **Context switches** (count with rate)
+1. **Pattern boosts** (active patterns count)
+1. **Abandoned work** (by severity: stale/likely/definitely)
+1. **MCP tool calls** (total + by server)
+1. **Cache hit rate** (percentage)
 
 ### TIER 3: Deep Metrics (Detailed Panel)
 **Diagnostic data - for troubleshooting and optimization**
 
 1. **Session intelligence**: Focus duration history
-2. **Complexity trends**: Avg complexity over time
-3. **Break adherence**: Suggested vs taken ratio
-4. **Error rates**: By service
-5. **Performance**: P95 latencies by operation
-6. **Event bus**: Consumer lag, throughput
-7. **Database**: Query performance, connection pool
-8. **Workspace**: File activity heatmap
+1. **Complexity trends**: Avg complexity over time
+1. **Break adherence**: Suggested vs taken ratio
+1. **Error rates**: By service
+1. **Performance**: P95 latencies by operation
+1. **Event bus**: Consumer lag, throughput
+1. **Database**: Query performance, connection pool
+1. **Workspace**: File activity heatmap
 
 ---
 
@@ -335,18 +335,18 @@ Services: ConPort 15ms, ADHD 8ms, Serena 120ms
 
 ### Text-Based Graphs
 1. **Sparklines** (trending over time)
-   - Cognitive load: `▁▂▃▅▆▇█▇▆▅`
-   - Task velocity: `▃▄▅▅▆▇▆▅▄`
-   - Context switches: `▂▁▂▃▅▃▂▁`
+- Cognitive load: `▁▂▃▅▆▇█▇▆▅`
+- Task velocity: `▃▄▅▅▆▇▆▅▄`
+- Context switches: `▂▁▂▃▅▃▂▁`
 
-2. **Gauges** (current value with scale)
+1. **Gauges** (current value with scale)
    ```
    Cognitive: [||||····] 65%
    Token:     [███████·] 80%
    Energy:    [███·····] 40%
    ```
 
-3. **Progress bars**
+1. **Progress bars**
    ```
    Session: [====>   ] 2h 15m / 4h
    Break:   [=>      ] 5m / 25m
@@ -472,7 +472,7 @@ mcp__conport__get_stats
 
 **Next Steps:**
 1. Research best tmux dashboard frameworks
-2. Design optimal layout for maximum density + readability
-3. Implement data collection scripts
-4. Build tmux status bar + pane integrations
-5. Add interactivity (keyboard shortcuts for views)
+1. Design optimal layout for maximum density + readability
+1. Implement data collection scripts
+1. Build tmux status bar + pane integrations
+1. Add interactivity (keyboard shortcuts for views)

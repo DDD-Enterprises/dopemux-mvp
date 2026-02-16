@@ -273,12 +273,12 @@ params = {'task_id': task_id}  # Prevents injection
 
 ### Architecture Strengths
 1. ✅ **Testability**: Dependency injection everywhere
-2. ✅ **Graceful Degradation**: Works without KG
-3. ✅ **Security**: No SQL injection possible
-4. ✅ **ADHD Optimization**: Top-3, progressive disclosure
-5. ✅ **Multi-Instance**: Git worktree ready
-6. ✅ **Agent-Friendly**: Flexible metadata
-7. ✅ **Graph-Ready**: Relationship models built-in
+1. ✅ **Graceful Degradation**: Works without KG
+1. ✅ **Security**: No SQL injection possible
+1. ✅ **ADHD Optimization**: Top-3, progressive disclosure
+1. ✅ **Multi-Instance**: Git worktree ready
+1. ✅ **Agent-Friendly**: Flexible metadata
+1. ✅ **Graph-Ready**: Relationship models built-in
 
 ---
 
@@ -386,10 +386,10 @@ class SuggestionEngine:
     def _score_task(task: Dict, context: Dict) -> float:
         """
         Composite score (0-1):
-        - Energy match: 0-0.4
-        - Time match: 0-0.3
-        - Focus match: 0-0.2
-        - Pattern match: 0-0.1
+- Energy match: 0-0.4
+- Time match: 0-0.3
+- Focus match: 0-0.2
+- Pattern match: 0-0.1
         """
 ```
 
@@ -483,16 +483,16 @@ class QueryService:
 
 ### Time Breakdown
 1. **Phase 1**: Decision-Task Linking → 15 min
-2. **Phase 2**: Relationship Mapper → 25 min
-3. **Phase 3**: Suggestion Engine → 35 min
-4. **Phase 4**: QueryService Integration → 20 min
-5. **Total**: ~95 minutes
+1. **Phase 2**: Relationship Mapper → 25 min
+1. **Phase 3**: Suggestion Engine → 35 min
+1. **Phase 4**: QueryService Integration → 20 min
+1. **Total**: ~95 minutes
 
 ### Order of Execution
 1. ✅ Start with Phase 1 (foundation, smallest)
-2. ✅ Then Phase 2 (mapper needs Phase 1)
-3. ✅ Then Phase 3 (suggestions need mapper)
-4. ✅ Finally Phase 4 (integration needs all)
+1. ✅ Then Phase 2 (mapper needs Phase 1)
+1. ✅ Then Phase 3 (suggestions need mapper)
+1. ✅ Finally Phase 4 (integration needs all)
 
 ### Testing Strategy
 - Write tests alongside implementation
@@ -583,11 +583,11 @@ class QueryService:
 - ✅ Parameterized queries (security)
 - ✅ Graceful degradation (all features)
 - ✅ Performance SLAs met:
-  - Decision linking: < 100ms
-  - Task context: < 200ms
-  - Work cluster: < 300ms
-  - Suggestions (cached): < 50ms
-  - Suggestions (uncached): < 500ms
+- Decision linking: < 100ms
+- Task context: < 200ms
+- Work cluster: < 300ms
+- Suggestions (cached): < 50ms
+- Suggestions (uncached): < 500ms
 
 ### Documentation
 - ✅ All methods have docstrings
@@ -668,33 +668,33 @@ return kg_powered_behavior()
 ### Immediate Next Steps (Today)
 
 1. **Implement Phase 1** (15 min)
-   - Open `kg_integration.py`
-   - Add 3 new methods (link, get, unlink)
-   - Write 4-5 tests
-   - Verify passing
+- Open `kg_integration.py`
+- Add 3 new methods (link, get, unlink)
+- Write 4-5 tests
+- Verify passing
 
-2. **Implement Phase 2** (25 min)
-   - Create `relationship_mapper.py`
-   - Implement `RelationshipMapper` class
-   - Add dependency chain + work cluster methods
-   - Write 5-6 tests
+1. **Implement Phase 2** (25 min)
+- Create `relationship_mapper.py`
+- Implement `RelationshipMapper` class
+- Add dependency chain + work cluster methods
+- Write 5-6 tests
 
-3. **Implement Phase 3** (35 min)
-   - Create `suggestion_engine.py`
-   - Implement `SuggestionEngine` class
-   - Add context-aware scoring
-   - Write 8-10 tests
+1. **Implement Phase 3** (35 min)
+- Create `suggestion_engine.py`
+- Implement `SuggestionEngine` class
+- Add context-aware scoring
+- Write 8-10 tests
 
-4. **Implement Phase 4** (20 min)
-   - Extend `queries/service.py`
-   - Add KG integration methods
-   - Wire everything together
-   - Write 4-5 integration tests
+1. **Implement Phase 4** (20 min)
+- Extend `queries/service.py`
+- Add KG integration methods
+- Wire everything together
+- Write 4-5 integration tests
 
-5. **Update Documentation** (10 min)
-   - Mark Day 2 complete in WEEK4_PROGRESS.md
-   - Update README_START_HERE.md
-   - Create API reference if needed
+1. **Update Documentation** (10 min)
+- Mark Day 2 complete in WEEK4_PROGRESS.md
+- Update README_START_HERE.md
+- Create API reference if needed
 
 **Total Time**: ~105 minutes (including documentation)
 
@@ -716,19 +716,19 @@ return kg_powered_behavior()
 ### Medium-term (Week 5)
 
 1. **Storage Migration** (2 hours)
-   - Add Postgres AGE backend
-   - Implement cache sync
-   - Migration script
+- Add Postgres AGE backend
+- Implement cache sync
+- Migration script
 
-2. **Pattern Mining** (2 hours)
-   - Analyze successful decision patterns
-   - ADHD-specific insights
-   - Suggestion improvement
+1. **Pattern Mining** (2 hours)
+- Analyze successful decision patterns
+- ADHD-specific insights
+- Suggestion improvement
 
-3. **Agent Integration** (2 hours)
-   - Serena hover integration
-   - Task-Orchestrator sync
-   - Zen consensus hooks
+1. **Agent Integration** (2 hours)
+- Serena hover integration
+- Task-Orchestrator sync
+- Zen consensus hooks
 
 ---
 
@@ -737,36 +737,36 @@ return kg_powered_behavior()
 ### Technical Decisions Needed
 
 1. **Caching Strategy**
-   - Q: Redis or in-memory for suggestion cache?
-   - A: Start with in-memory (simpler), migrate to Redis if needed
-   - Timeline: Week 5
+- Q: Redis or in-memory for suggestion cache?
+- A: Start with in-memory (simpler), migrate to Redis if needed
+- Timeline: Week 5
 
-2. **Decision Immutability**
-   - Q: Should decisions be immutable (append-only)?
-   - A: Consider for `status=ARCHIVED` (preserve history)
-   - Timeline: Week 5
+1. **Decision Immutability**
+- Q: Should decisions be immutable (append-only)?
+- A: Consider for `status=ARCHIVED` (preserve history)
+- Timeline: Week 5
 
-3. **Conflict Resolution**
-   - Q: How to handle decision conflicts across instances?
-   - A: Use `visibility=SHARED` + last-write-wins (timestamp)
-   - Timeline: Week 4 Day 5
+1. **Conflict Resolution**
+- Q: How to handle decision conflicts across instances?
+- A: Use `visibility=SHARED` + last-write-wins (timestamp)
+- Timeline: Week 4 Day 5
 
 ### Product Questions
 
 1. **Feature Discovery**
-   - Q: How do users discover DDDPG features?
-   - A: Need onboarding flow + LSP hover hints
-   - Timeline: Week 5
+- Q: How do users discover DDDPG features?
+- A: Need onboarding flow + LSP hover hints
+- Timeline: Week 5
 
-2. **Migration Path**
-   - Q: How to migrate from ConPort decision tracking?
-   - A: Migration script (SQLite → DDDPG format)
-   - Timeline: Week 5
+1. **Migration Path**
+- Q: How to migrate from ConPort decision tracking?
+- A: Migration script (SQLite → DDDPG format)
+- Timeline: Week 5
 
-3. **Long-term Vision**
-   - Q: What's the ultimate goal?
-   - A: Unified knowledge graph for entire dopemux ecosystem
-   - Timeline: Month 2+
+1. **Long-term Vision**
+- Q: What's the ultimate goal?
+- A: Unified knowledge graph for entire dopemux ecosystem
+- Timeline: Month 2+
 
 ---
 

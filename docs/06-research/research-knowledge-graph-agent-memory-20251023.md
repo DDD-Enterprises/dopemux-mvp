@@ -24,9 +24,9 @@ prelude: Research_Knowledge_Graph_Agent_Memory_20251023 (reference) for dopemux 
 This research investigated four critical domains for ConPort-KG 2.0 design:
 
 1. **Multi-Tenant Knowledge Graph Systems** - Industry patterns from Neo4j, AWS Neptune, PostgreSQL AGE
-2. **Agent Memory Architectures** - Coordination patterns from LangChain, LlamaIndex, Semantic Kernel, CrewAI
-3. **JWT-Secured Graph APIs** - Security best practices, caching strategies, performance optimization
-4. **ADHD-Optimized UX Patterns** - Cognitive load management, progressive disclosure, neurodivergent-friendly design
+1. **Agent Memory Architectures** - Coordination patterns from LangChain, LlamaIndex, Semantic Kernel, CrewAI
+1. **JWT-Secured Graph APIs** - Security best practices, caching strategies, performance optimization
+1. **ADHD-Optimized UX Patterns** - Cognitive load management, progressive disclosure, neurodivergent-friendly design
 
 **Key Findings**:
 - ✅ ConPort-KG 2.0's JWT + PostgreSQL RLS approach **aligns with industry best practices**
@@ -47,18 +47,18 @@ This research investigated four critical domains for ConPort-KG 2.0 design:
 **Three Core Models** ([AWS Database Blog](https://aws.amazon.com/blogs/database/build-multi-tenant-architectures-on-amazon-neptune/)):
 
 1. **Silo Model** - Individual cluster per tenant
-   - **Pros**: Perfect isolation, customer-managed encryption (AWS KMS), regulatory compliance
-   - **Cons**: Higher cost, operational complexity
-   - **Use Case**: Healthcare, financial services with strict data isolation
+- **Pros**: Perfect isolation, customer-managed encryption (AWS KMS), regulatory compliance
+- **Cons**: Higher cost, operational complexity
+- **Use Case**: Healthcare, financial services with strict data isolation
 
-2. **Pool Model** - Shared cluster with tenant ID tagging
-   - **Pros**: Cost-effective, resource sharing, easier management
-   - **Cons**: Noisy neighbor risk, complex access control
-   - **Use Case**: SaaS with many small tenants
+1. **Pool Model** - Shared cluster with tenant ID tagging
+- **Pros**: Cost-effective, resource sharing, easier management
+- **Cons**: Noisy neighbor risk, complex access control
+- **Use Case**: SaaS with many small tenants
 
-3. **Hybrid Model** - Premium tenants get silos, others pool
-   - **Pros**: Balances cost and isolation
-   - **Cons**: Operational complexity managing both patterns
+1. **Hybrid Model** - Premium tenants get silos, others pool
+- **Pros**: Balances cost and isolation
+- **Cons**: Operational complexity managing both patterns
 
 **Neptune Serverless**: Makes silo model practical via auto-scaling without cluster pre-provisioning.
 
@@ -67,21 +67,21 @@ This research investigated four critical domains for ConPort-KG 2.0 design:
 **Patterns** ([Neo4j Developer Guide](https://neo4j.com/developer/multi-tenancy-worked-example/)):
 
 1. **Database-Level Isolation**
-   - Create separate databases per tenant (`CREATE DATABASE tenant_db`)
-   - Complete data separation with different schemas
-   - Regional data residency support
-   - **Limitation**: Resource overhead for many databases
+- Create separate databases per tenant (`CREATE DATABASE tenant_db`)
+- Complete data separation with different schemas
+- Regional data residency support
+- **Limitation**: Resource overhead for many databases
 
-2. **Composite Database Federation**
-   - Combine multiple databases via `CREATE COMPOSITE DATABASE`
-   - Enables data sharding (identical schemas, partitioned data)
-   - Supports data federation (disjoint graphs linked via proxy nodes)
-   - **Limitation**: Read-only access to composite databases
+1. **Composite Database Federation**
+- Combine multiple databases via `CREATE COMPOSITE DATABASE`
+- Enables data sharding (identical schemas, partitioned data)
+- Supports data federation (disjoint graphs linked via proxy nodes)
+- **Limitation**: Read-only access to composite databases
 
-3. **RBAC + Namespace Approach**
-   - Role-based access control with database-level privileges
-   - Query multiple databases in parallel using `UNWIND` + `graph.byName()`
-   - Sharded databases deployable on different servers
+1. **RBAC + Namespace Approach**
+- Role-based access control with database-level privileges
+- Query multiple databases in parallel using `UNWIND` + `graph.byName()`
+- Sharded databases deployable on different servers
 
 **Performance**: Parallel querying across sharded databases splits load across resources.
 
@@ -96,18 +96,18 @@ This research investigated four critical domains for ConPort-KG 2.0 design:
 **Multi-Tenancy Approaches** (Applied to AGE):
 
 1. **Schema Isolation** ([Multi-Tenant Database Design Patterns](https://daily.dev/blog/multi-tenant-database-design-patterns-2024))
-   - One schema (AGE graph) per tenant
-   - Moderate isolation with customization capability
-   - More complex management than pooled model
+- One schema (AGE graph) per tenant
+- Moderate isolation with customization capability
+- More complex management than pooled model
 
-2. **Row-Level Security (RLS)** ([AWS RLS Blog](https://aws.amazon.com/blogs/database/multi-tenant-data-isolation-with-postgresql-row-level-security/))
-   - Single graph with `tenant_id` column on vertices/edges
-   - PostgreSQL RLS policies enforce isolation: `CREATE POLICY tenant_isolation ON vertices USING (tenant_id = current_setting('app.current_tenant')::uuid)`
-   - **Advantages**:
-     - Centralized enforcement at database level
-     - Removes isolation burden from application code
-     - Even if app code misses a filter, RLS enforces isolation
-   - **Performance**: Minimal overhead (< 5ms according to AWS studies)
+1. **Row-Level Security (RLS)** ([AWS RLS Blog](https://aws.amazon.com/blogs/database/multi-tenant-data-isolation-with-postgresql-row-level-security/))
+- Single graph with `tenant_id` column on vertices/edges
+- PostgreSQL RLS policies enforce isolation: `CREATE POLICY tenant_isolation ON vertices USING (tenant_id = current_setting('app.current_tenant')::uuid)`
+- **Advantages**:
+- Centralized enforcement at database level
+- Removes isolation burden from application code
+- Even if app code misses a filter, RLS enforces isolation
+- **Performance**: Minimal overhead (< 5ms according to AWS studies)
 
 **Recommendation**: RLS preferred over schema-per-tenant for AGE multi-tenancy due to:
 - Simpler management (one graph schema)
@@ -119,17 +119,17 @@ This research investigated four critical domains for ConPort-KG 2.0 design:
 **Key Papers**:
 
 1. **"Multi-Tenancy in Graph Databases"** ([Memgraph Blog](https://memgraph.com/blog/why-multi-tenancy-matters-in-graph-databases))
-   - Graph databases introduce complexities beyond relational databases
-   - Relationships require careful separation management
-   - Approaches: separate instances, tenant ID tagging, access control policies
+- Graph databases introduce complexities beyond relational databases
+- Relationships require careful separation management
+- Approaches: separate instances, tenant ID tagging, access control policies
 
-2. **"Managing Multi-Tenant Research Databases"** ([ACM PEARC 2024](https://dl.acm.org/doi/10.1145/3626203.3670546))
-   - Cost-effective, reliable, secure multi-tenant database services
-   - Empirical evaluation: dedicated/isolated schemas performed better than shared (latency)
+1. **"Managing Multi-Tenant Research Databases"** ([ACM PEARC 2024](https://dl.acm.org/doi/10.1145/3626203.3670546))
+- Cost-effective, reliable, secure multi-tenant database services
+- Empirical evaluation: dedicated/isolated schemas performed better than shared (latency)
 
-3. **"Multi-Tenancy Security in Cloud Computing"** ([ResearchGate 2018](https://www.researchgate.net/publication/372448732_Multi-tenancy_Security_in_Cloud_Computing_Isolation_and_Access_Control_Mechanisms))
-   - Risks of co-located tenants
-   - RBAC vs ABAC (Attribute-Based Access Control) for multi-tenant systems
+1. **"Multi-Tenancy Security in Cloud Computing"** ([ResearchGate 2018](https://www.researchgate.net/publication/372448732_Multi-tenancy_Security_in_Cloud_Computing_Isolation_and_Access_Control_Mechanisms))
+- Risks of co-located tenants
+- RBAC vs ABAC (Attribute-Based Access Control) for multi-tenant systems
 
 **Academic Consensus**: Tenant isolation + access control at database layer > application layer enforcement
 
@@ -176,16 +176,16 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **Two-Tier Memory System** ([MongoDB Blog](https://www.mongodb.com/company/blog/product-release-announcements/powering-long-term-memory-for-agents-langgraph)):
 
 1. **Short-Term Memory** (Thread-Scoped Checkpointers)
-   - Maintains context within single conversation session
-   - MongoDB checkpointer preserves conversation continuity
-   - Thread = individual conversation or session
+- Maintains context within single conversation session
+- MongoDB checkpointer preserves conversation continuity
+- Thread = individual conversation or session
 
-2. **Long-Term Memory** (MongoDB Store - Cross-Thread)
-   - Persists memories across conversation sessions
-   - Namespaces + key-value structure for organization
-   - Vector search (Atlas Vector Search) for semantic retrieval
-   - TTL (time-to-live) for automatic stale data removal
-   - Asynchronous operations support
+1. **Long-Term Memory** (MongoDB Store - Cross-Thread)
+- Persists memories across conversation sessions
+- Namespaces + key-value structure for organization
+- Vector search (Atlas Vector Search) for semantic retrieval
+- TTL (time-to-live) for automatic stale data removal
+- Asynchronous operations support
 
 **Multi-Agent Coordination**:
 - Agent teams "share learned experiences"
@@ -199,13 +199,13 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **Memory Types** ([LangChain Blog](https://blog.langchain.com/memory-for-agents/)):
 
 - **Shared Memory**: Common space for multi-agent coordination
-  - User intent storage
-  - Intermediate results
-  - Conversation history
+- User intent storage
+- Intermediate results
+- Conversation history
 - **Long-Term Memory**: Agent knowledge base for future use
 - **Context Sharing**: Agents access/update shared memory via LangGraph/LCEL
-  - Better coordination
-  - Less repeated work
+- Better coordination
+- Less repeated work
 
 **Framework Comparison** ([Xenoss Blog](https://xenoss.io/blog/langchain-langgraph-llamaindex-llm-frameworks)):
 
@@ -218,10 +218,10 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **Coordination Patterns** ([Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-orchestration/)):
 
 1. **Sequential**: Agents execute in order, passing results
-2. **Concurrent**: Multiple agents work in parallel, results aggregated
-3. **Group Chat**: Collaborative conversation with manager coordination
-4. **Handoff**: Agents transfer control between each other
-5. **Magentic**: Dynamic collaboration for complex, open-ended tasks
+1. **Concurrent**: Multiple agents work in parallel, results aggregated
+1. **Group Chat**: Collaborative conversation with manager coordination
+1. **Handoff**: Agents transfer control between each other
+1. **Magentic**: Dynamic collaboration for complex, open-ended tasks
 
 **Memory Architecture** ([Microsoft Learn](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/agent-architecture)):
 
@@ -258,24 +258,24 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **Common Multi-Agent Memory Patterns**:
 
 1. **Hierarchical Memory**:
-   - Short-term (session/thread)
-   - Long-term (cross-session)
-   - Entity-specific (per-topic or per-user)
+- Short-term (session/thread)
+- Long-term (cross-session)
+- Entity-specific (per-topic or per-user)
 
-2. **Vector Storage for Semantic Retrieval**:
-   - Embeddings for past interactions
-   - Semantic search for relevant context
-   - TTL for memory freshness
+1. **Vector Storage for Semantic Retrieval**:
+- Embeddings for past interactions
+- Semantic search for relevant context
+- TTL for memory freshness
 
-3. **Shared State Management**:
-   - Centralized coordination (Group Chat Manager)
-   - Distributed state (each agent maintains partial view)
-   - Hybrid (shared memory + local state)
+1. **Shared State Management**:
+- Centralized coordination (Group Chat Manager)
+- Distributed state (each agent maintains partial view)
+- Hybrid (shared memory + local state)
 
-4. **Persistence Strategies**:
-   - Database-backed (MongoDB, PostgreSQL)
-   - Vector store (Pinecone, Qdrant, Chroma)
-   - In-memory with snapshots (Redis + periodic saves)
+1. **Persistence Strategies**:
+- Database-backed (MongoDB, PostgreSQL)
+- Vector store (Pinecone, Qdrant, Chroma)
+- In-memory with snapshots (Redis + periodic saves)
 
 ### Comparison to ConPort-KG 2.0 Design
 
@@ -299,14 +299,14 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 
 **Strengths**:
 1. ✅ Graph structure superior to flat key-value for memory associations
-2. ✅ Relationship tracking (builds_upon, validates, extends) enables memory genealogy
-3. ✅ Multi-workspace isolation = multi-agent team isolation
+1. ✅ Relationship tracking (builds_upon, validates, extends) enables memory genealogy
+1. ✅ Multi-workspace isolation = multi-agent team isolation
 
 **Gaps**:
 1. ⚠️ **No vector search** - Can't do semantic memory retrieval ("find similar decisions")
-2. ⚠️ **Basic short-term memory** - active_context is just JSON, not thread-managed
-3. ⚠️ **No TTL** - Old memories never auto-expire
-4. ⚠️ **No query optimization** - No complexity scoring or agent-optimized queries
+1. ⚠️ **Basic short-term memory** - active_context is just JSON, not thread-managed
+1. ⚠️ **No TTL** - Old memories never auto-expire
+1. ⚠️ **No query optimization** - No complexity scoring or agent-optimized queries
 
 **Recommendations**:
 
@@ -317,21 +317,21 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
    # Enable semantic search: "Find decisions similar to X"
    ```
 
-2. **Enhance Short-Term Memory** (Priority: Medium)
+1. **Enhance Short-Term Memory** (Priority: Medium)
    ```python
    # Implement thread/session concept
    # Auto-checkpoint active_context every N operations
    # Support conversation history tracking
    ```
 
-3. **Add TTL Policies** (Priority: Low)
+1. **Add TTL Policies** (Priority: Low)
    ```python
    # Custom data: TTL per category
    # Progress entries: Auto-archive after 90 days
    # Decisions: Never expire (but support archiving)
    ```
 
-4. **Agent-Native Queries** (Priority: High)
+1. **Agent-Native Queries** (Priority: High)
    ```python
    # Add complexity scoring to decisions/patterns
    # Support "get_decisions_for_agent(max_complexity=0.5)"
@@ -349,19 +349,19 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **Core Best Practices** ([Curity JWT Guide](https://curity.io/resources/learn/jwt-best-practices/)):
 
 1. **Token Validation**:
-   - Download public keys from JWKS endpoint
-   - Cache response based on HTTP cache-control headers
-   - Use latest library versions (CVE checks)
-   - Always use HTTPS
+- Download public keys from JWKS endpoint
+- Cache response based on HTTP cache-control headers
+- Use latest library versions (CVE checks)
+- Always use HTTPS
 
-2. **Authentication Protocols**:
-   - OAuth 2.0 + OpenID Connect recommended
-   - Token-based auth with JWT for stateless scalability
+1. **Authentication Protocols**:
+- OAuth 2.0 + OpenID Connect recommended
+- Token-based auth with JWT for stateless scalability
 
-3. **Rate Limiting** ([API Security Guide](https://securityboulevard.com/2023/05/api-security-authorization-rate-limiting-and-twelve-ways-to-protect-apis/)):
-   - Prevent brute-force and DoS attacks
-   - Limit requests per client per time period
-   - Protect against token enumeration attacks
+1. **Rate Limiting** ([API Security Guide](https://securityboulevard.com/2023/05/api-security-authorization-rate-limiting-and-twelve-ways-to-protect-apis/)):
+- Prevent brute-force and DoS attacks
+- Limit requests per client per time period
+- Protect against token enumeration attacks
 
 #### 3.2 JWT Caching Strategies
 
@@ -382,14 +382,14 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
    # TTL = token exp time
    ```
 
-2. **User Session Storage**:
+1. **User Session Storage**:
    ```python
    # Store JWT + user_id in Redis
    # Form user session for logout capability
    # Cache user roles/permissions to avoid DB lookup
    ```
 
-3. **Introspection Result Caching** ([AWS API Gateway Pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/saas-multitenant-managed-postgresql/rls.html)):
+1. **Introspection Result Caching** ([AWS API Gateway Pattern](https://docs.aws.amazon.com/prescriptive-guidance/latest/saas-multitenant-managed-postgresql/rls.html)):
    ```python
    # Cache token introspection/validation results
    # Cache key: SHA256(token)
@@ -406,40 +406,40 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **API Gateway Patterns** ([API7 Guide](https://api7.ai/learning-center/api-gateway-guide/core-api-gateway-features)):
 
 1. **Centralized Enforcement**:
-   - API Gateway handles authentication, authorization, rate limiting
-   - Load balancing, logging at single point
-   - Reduces duplicate security logic in services
+- API Gateway handles authentication, authorization, rate limiting
+- Load balancing, logging at single point
+- Reduces duplicate security logic in services
 
-2. **Rate Limiting Strategies**:
-   - Per-user rate limits (based on JWT sub claim)
-   - Per-endpoint limits (expensive graph queries lower limit)
-   - Sliding window vs fixed window
-   - Token bucket algorithm for burst handling
+1. **Rate Limiting Strategies**:
+- Per-user rate limits (based on JWT sub claim)
+- Per-endpoint limits (expensive graph queries lower limit)
+- Sliding window vs fixed window
+- Token bucket algorithm for burst handling
 
-3. **Graph-Specific Considerations**:
-   - Complex graph traversals = higher resource cost
-   - Limit by query complexity, not just request count
-   - Consider depth limits on graph queries
-   - Separate limits for read vs write operations
+1. **Graph-Specific Considerations**:
+- Complex graph traversals = higher resource cost
+- Limit by query complexity, not just request count
+- Consider depth limits on graph queries
+- Separate limits for read vs write operations
 
 #### 3.4 GraphQL + JWT Patterns
 
 **Best Practices** ([Hasura JWT Guide](https://hasura.io/blog/best-practices-of-using-jwt-with-graphql)):
 
 1. **Client-Side Storage**:
-   - Follow OWASP JWT Guide
-   - Add JWT as Bearer HTTP Authentication header
-   - Add fingerprint information to token
+- Follow OWASP JWT Guide
+- Add JWT as Bearer HTTP Authentication header
+- Add fingerprint information to token
 
-2. **Server-Side Validation**:
-   - Verify signature
-   - Check exp, nbf, aud claims
-   - Validate custom claims (workspace_id, roles)
+1. **Server-Side Validation**:
+- Verify signature
+- Check exp, nbf, aud claims
+- Validate custom claims (workspace_id, roles)
 
-3. **Caching + Security**:
-   - Cache validated tokens (Redis)
-   - Invalidate cache on logout/password change
-   - Monitor for token reuse patterns (security anomaly detection)
+1. **Caching + Security**:
+- Cache validated tokens (Redis)
+- Invalidate cache on logout/password change
+- Monitor for token reuse patterns (security anomaly detection)
 
 ### Comparison to ConPort-KG 2.0 Design
 
@@ -468,8 +468,8 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 
 **Security Gaps**:
 1. ⚠️ **No rate limiting** - Vulnerable to brute-force, DoS
-2. ⚠️ **No token revocation** - Can't logout users or invalidate compromised tokens
-3. ⚠️ **No query complexity limits** - Malicious users can run expensive graph traversals
+1. ⚠️ **No token revocation** - Can't logout users or invalidate compromised tokens
+1. ⚠️ **No query complexity limits** - Malicious users can run expensive graph traversals
 
 **Recommendations**:
 
@@ -490,7 +490,7 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
        return payload
    ```
 
-2. **Add Rate Limiting** (Priority: High)
+1. **Add Rate Limiting** (Priority: High)
    ```python
    from fastapi_limiter import FastAPILimiter
    from fastapi_limiter.depends import RateLimiter
@@ -500,7 +500,7 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
        # Limit: 100 requests per minute per user
    ```
 
-3. **Implement Token Blacklist** (Priority: Medium)
+1. **Implement Token Blacklist** (Priority: Medium)
    ```python
    @app.post("/logout")
    async def logout(token: str = Depends(get_current_token)):
@@ -510,7 +510,7 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
        await redis.setex(f"blacklist:{jti}", int(ttl), "1")
    ```
 
-4. **Add Query Complexity Scoring** (Priority: Medium)
+1. **Add Query Complexity Scoring** (Priority: Medium)
    ```python
    def score_query_complexity(cypher_query: str) -> int:
        # Count MATCH clauses, depth of traversal, filters
@@ -533,43 +533,43 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **Key Architectural Principles**:
 
 1. **Attention as Emergent Property**:
-   - Not a fixed trait, but emerges from task-tool-emotion-environment interactions
-   - Feedback loops between tools, emotions, task urgency
-   - Systems-level modeling vs individual behavior
+- Not a fixed trait, but emerges from task-tool-emotion-environment interactions
+- Feedback loops between tools, emotions, task urgency
+- Systems-level modeling vs individual behavior
 
-2. **Privacy-First Design**:
-   - All behavioral sensing on-device (no cloud transmission)
-   - User control: pause, customize, purge data at will
-   - Addresses workplace stigma vulnerability
+1. **Privacy-First Design**:
+- All behavioral sensing on-device (no cloud transmission)
+- User control: pause, customize, purge data at will
+- Addresses workplace stigma vulnerability
 
-3. **Co-Regulatory vs Corrective**:
-   - "Gentle colleague" providing presence and reflection
-   - NOT enforcement or performance monitoring
-   - Emotional scaffolding over guilt-inducing responses
+1. **Co-Regulatory vs Corrective**:
+- "Gentle colleague" providing presence and reflection
+- NOT enforcement or performance monitoring
+- Emotional scaffolding over guilt-inducing responses
 
 **Cognitive Load Management Strategies**:
 
 1. **Soft Nudging Mechanics**:
-   - Reflective prompts: "Want to pick up where you left off?"
-   - NOT commands: "You must complete this task"
-   - Behavioral triggering: tab overload, inactivity patterns
-   - DopBoost interventions: mood fuel, focus rituals, breathing guides
-   - Customizable frequency to prevent intervention fatigue
+- Reflective prompts: "Want to pick up where you left off?"
+- NOT commands: "You must complete this task"
+- Behavioral triggering: tab overload, inactivity patterns
+- DopBoost interventions: mood fuel, focus rituals, breathing guides
+- Customizable frequency to prevent intervention fatigue
 
-2. **Digital Body Doubling**:
-   - Simulates peer co-working presence
-   - Periodic voice affirmations ("Still with you")
-   - Soft ambient tones at intervals
-   - Gentle accountability without judgment
-   - Context-aware attention pattern reflections
+1. **Digital Body Doubling**:
+- Simulates peer co-working presence
+- Periodic voice affirmations ("Still with you")
+- Soft ambient tones at intervals
+- Gentle accountability without judgment
+- Context-aware attention pattern reflections
 
-3. **Machine Learning Implementation**:
-   - Lightweight, interpretable models (LSTM, Random Forests, SVMs)
-   - Sequential behavior analysis (app/tab switching)
-   - Attention state classification
-   - Anomaly detection for burnout indicators (Isolation Forests)
-   - Reinforcement learning for personalized nudge timing
-   - **No PII analysis** - only non-invasive signals
+1. **Machine Learning Implementation**:
+- Lightweight, interpretable models (LSTM, Random Forests, SVMs)
+- Sequential behavior analysis (app/tab switching)
+- Attention state classification
+- Anomaly detection for burnout indicators (Isolation Forests)
+- Reinforcement learning for personalized nudge timing
+- **No PII analysis** - only non-invasive signals
 
 **User Survey Insights** (25 ADHD professionals):
 - 37% reported 21+ open browser tabs simultaneously
@@ -603,21 +603,21 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **Neurodiversity UX Principles** ([Stéphanie Walter](https://stephaniewalter.design/blog/neurodiversity-and-ux-essential-resources-for-cognitive-accessibility/)):
 
 1. **Reducing Cognitive Load**:
-   - Clear labels, consistent design
-   - Giving users control
-   - Progressive disclosure
-   - Structure, visual clues, whitespace
+- Clear labels, consistent design
+- Giving users control
+- Progressive disclosure
+- Structure, visual clues, whitespace
 
-2. **Attention-Aware Design**:
-   - Consistent user-friendly layout
-   - Visual hierarchy to guide focus
-   - Whitespace prevents cognitive overwhelm
-   - Scannable sections with clear headings
+1. **Attention-Aware Design**:
+- Consistent user-friendly layout
+- Visual hierarchy to guide focus
+- Whitespace prevents cognitive overwhelm
+- Scannable sections with clear headings
 
-3. **Control & Predictability**:
-   - Users understand what will happen before interaction
-   - No surprising behaviors
-   - Ability to undo/pause actions
+1. **Control & Predictability**:
+- Users understand what will happen before interaction
+- No surprising behaviors
+- Ability to undo/pause actions
 
 **ADHD-Specific Challenges** ([UX Matters](https://www.uxmatters.com/mt/archives/2024/04/embracing-neurodiversity-in-ux-design-crafting-inclusive-digital-environments.php)):
 
@@ -633,31 +633,31 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **Effective ADHD Tools** (2024-2025 Research):
 
 1. **Elephas** - Knowledge Assistant:
-   - Super Brain feature: searchable personal knowledge base
-   - Reduces mental load of tracking scattered information
-   - $8.99/month
+- Super Brain feature: searchable personal knowledge base
+- Reduces mental load of tracking scattered information
+- $8.99/month
 
-2. **Goblin.tools "Magic ToDo"**:
-   - AI-driven task breakdown
-   - Combats executive dysfunction
-   - Takes vague tasks → clear, actionable checklists
-   - Lowers barrier to getting started
+1. **Goblin.tools "Magic ToDo"**:
+- AI-driven task breakdown
+- Combats executive dysfunction
+- Takes vague tasks → clear, actionable checklists
+- Lowers barrier to getting started
 
-3. **ChatGPT as Executive Function Partner**:
-   - Task breakdown assistance
-   - Email drafting support
-   - On-demand "body double"
-   - Offloads cognitive tasks
+1. **ChatGPT as Executive Function Partner**:
+- Task breakdown assistance
+- Email drafting support
+- On-demand "body double"
+- Offloads cognitive tasks
 
-4. **Tiimo** - Visual Daily Planner:
-   - Transforms abstract time into visual timeline
-   - Reduces cognitive load for planning/transitions
-   - Built by neurodivergent community
+1. **Tiimo** - Visual Daily Planner:
+- Transforms abstract time into visual timeline
+- Reduces cognitive load for planning/transitions
+- Built by neurodivergent community
 
-5. **Fluidwave**:
-   - Automatically sorts/prioritizes tasks
-   - Reduces decision-making cognitive load
-   - Provides clarity on what to tackle next
+1. **Fluidwave**:
+- Automatically sorts/prioritizes tasks
+- Reduces decision-making cognitive load
+- Provides clarity on what to tackle next
 
 **Common Patterns**:
 - Task breakdown (large → small actionable steps)
@@ -676,24 +676,24 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 **Key Principles**:
 
 1. **Context Preservation**:
-   - "Where Was I?" feature critical
-   - Remember activity sequences
-   - Reduce re-orientation friction after interruption
+- "Where Was I?" feature critical
+- Remember activity sequences
+- Reduce re-orientation friction after interruption
 
-2. **Pauseable Features**:
-   - All features can be paused mid-stream
-   - Data deletable at any time
-   - User sovereignty over system
+1. **Pauseable Features**:
+- All features can be paused mid-stream
+- Data deletable at any time
+- User sovereignty over system
 
-3. **Non-Evaluative Feedback**:
-   - Avoid performance shaming
-   - No productivity gamification
-   - Emotional safety in design
+1. **Non-Evaluative Feedback**:
+- Avoid performance shaming
+- No productivity gamification
+- Emotional safety in design
 
-4. **Voice-First Interfaces**:
-   - Reduce visual cognitive load
-   - Alternative to text-based task boards
-   - More natural for working memory
+1. **Voice-First Interfaces**:
+- Reduce visual cognitive load
+- Alternative to text-based task boards
+- More natural for working memory
 
 ### Comparison to ConPort-KG 2.0 Design
 
@@ -720,17 +720,17 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 
 **Strengths**:
 1. ✅ Stateless API = naturally pauseable
-2. ✅ Workspace isolation = clear mental boundaries
-3. ✅ Decision logging = knowledge capture without memory load
-4. ✅ Self-hosted = privacy-first (no cloud surveillance)
-5. ✅ Hierarchical progress = task breakdown support
+1. ✅ Workspace isolation = clear mental boundaries
+1. ✅ Decision logging = knowledge capture without memory load
+1. ✅ Self-hosted = privacy-first (no cloud surveillance)
+1. ✅ Hierarchical progress = task breakdown support
 
 **Gaps**:
 1. ⚠️ **No progressive disclosure** - Returns all results, overwhelming
-2. ⚠️ **No result limiting** - Can return hundreds of decisions
-3. ⚠️ **No complexity scoring** - Can't warn "this decision is complex, schedule focus time"
-4. ⚠️ **Basic search only** - No semantic "find similar" or fuzzy matching
-5. ⚠️ **No soft nudging** - Could suggest related decisions or next steps
+1. ⚠️ **No result limiting** - Can return hundreds of decisions
+1. ⚠️ **No complexity scoring** - Can't warn "this decision is complex, schedule focus time"
+1. ⚠️ **Basic search only** - No semantic "find similar" or fuzzy matching
+1. ⚠️ **No soft nudging** - Could suggest related decisions or next steps
 
 **Recommendations**:
 
@@ -745,7 +745,7 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
    # Returns: full rationale, implementation_details
    ```
 
-2. **Add Complexity Scoring** (Priority: High)
+1. **Add Complexity Scoring** (Priority: High)
    ```python
    class Decision(BaseModel):
        complexity: float = 0.5  # 0.0-1.0 scale
@@ -756,7 +756,7 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
    GET /decisions?max_complexity=0.5&limit=10
    ```
 
-3. **Enhance Search with Fuzzy Matching** (Priority: Medium)
+1. **Enhance Search with Fuzzy Matching** (Priority: Medium)
    ```python
    # Typo-tolerant search
    GET /decisions/search?q="autentication"  # finds "authentication"
@@ -765,14 +765,14 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
    GET /decisions/similar?id=123&limit=5
    ```
 
-4. **Add Soft Nudging Features** (Priority: Low)
+1. **Add Soft Nudging Features** (Priority: Low)
    ```python
    GET /decisions/recent  # Last 5 decisions (gentle reminder)
    GET /decisions/unimplemented  # Decisions without linked progress
    GET /decisions/next-steps  # Suggested actions based on context
    ```
 
-5. **Result Limiting by Default** (Priority: High)
+1. **Result Limiting by Default** (Priority: High)
    ```python
    # Default limit: 10 (ADHD-safe)
    GET /decisions  # Returns max 10
@@ -816,11 +816,11 @@ ALTER TABLE ag_vertex ENABLE ROW LEVEL SECURITY;
 
 **Critical Path to Production**:
 1. ✅ Add PostgreSQL RLS (security)
-2. ✅ Add rate limiting (DoS protection)
-3. ✅ Add query complexity limits (resource protection)
-4. ✅ Add result limiting (ADHD accommodation)
-5. ⚠️ Add Redis token caching (performance)
-6. ⚠️ Add vector search (agent memory enhancement)
+1. ✅ Add rate limiting (DoS protection)
+1. ✅ Add query complexity limits (resource protection)
+1. ✅ Add result limiting (ADHD accommodation)
+1. ⚠️ Add Redis token caching (performance)
+1. ⚠️ Add vector search (agent memory enhancement)
 
 **Timeline Estimate**:
 - **Security hardening** (1-4): 1-2 weeks
@@ -1457,9 +1457,9 @@ async def restore_from_checkpoint(thread_id: str, checkpoint_index: int = -1):
 
 **Novel Aspects**:
 1. **On-Device Behavioral Sensing**: All attention tracking happens locally, no cloud transmission
-2. **Co-Regulatory vs Corrective**: System is a "gentle colleague" not a performance monitor
-3. **Emotional Scaffolding**: Provides presence/reflection without guilt or shame
-4. **User Sovereignty**: Pause, customize, or purge data at will
+1. **Co-Regulatory vs Corrective**: System is a "gentle colleague" not a performance monitor
+1. **Emotional Scaffolding**: Provides presence/reflection without guilt or shame
+1. **User Sovereignty**: Pause, customize, or purge data at will
 
 **Application to ConPort-KG**:
 ```python
@@ -1643,23 +1643,23 @@ async def transition_workspace(
 
 **Strengths**:
 1. ✅ **Graph structure superior to flat memory** - Relationships enable memory genealogy
-2. ✅ **Workspace isolation well-designed** - Physical/mental boundary pattern
-3. ✅ **JWT + PostgreSQL combination solid** - Industry-standard approach
-4. ✅ **Self-hosted privacy** - Aligns with ADHD co-regulation principles
-5. ✅ **Hierarchical task tracking** - Supports task breakdown pattern
+1. ✅ **Workspace isolation well-designed** - Physical/mental boundary pattern
+1. ✅ **JWT + PostgreSQL combination solid** - Industry-standard approach
+1. ✅ **Self-hosted privacy** - Aligns with ADHD co-regulation principles
+1. ✅ **Hierarchical task tracking** - Supports task breakdown pattern
 
 **Critical Gaps** (Block Production):
 1. 🔴 **No PostgreSQL RLS** - Security risk (application-level filtering vulnerable)
-2. 🔴 **No rate limiting** - DoS risk
-3. 🔴 **No query complexity limits** - Resource exhaustion risk
-4. 🔴 **Unlimited result sets** - ADHD cognitive overload risk
+1. 🔴 **No rate limiting** - DoS risk
+1. 🔴 **No query complexity limits** - Resource exhaustion risk
+1. 🔴 **Unlimited result sets** - ADHD cognitive overload risk
 
 **Enhancement Opportunities** (Post-MVP):
 1. 🟡 **Vector search** - Enables semantic memory retrieval
-2. 🟡 **Redis caching** - 5-10x performance improvement
-3. 🟡 **Thread-based short-term memory** - Better agent coordination
-4. 🟡 **TTL policies** - Automatic memory freshness
-5. 🟡 **Complexity scoring** - ADHD cognitive load awareness
+1. 🟡 **Redis caching** - 5-10x performance improvement
+1. 🟡 **Thread-based short-term memory** - Better agent coordination
+1. 🟡 **TTL policies** - Automatic memory freshness
+1. 🟡 **Complexity scoring** - ADHD cognitive load awareness
 
 ---
 
@@ -1744,12 +1744,12 @@ async def transition_workspace(
    arXiv:2507.06864 (2024)
    https://arxiv.org/html/2507.06864v1
 
-2. **Multi-Tenant Research Databases**
+1. **Multi-Tenant Research Databases**
    *A Model for Managing Multi-Tenant Research Databases*
    ACM PEARC 2024
    https://dl.acm.org/doi/10.1145/3626203.3670546
 
-3. **Multi-Tenancy Security in Cloud Computing**
+1. **Multi-Tenancy Security in Cloud Computing**
    *Multi-tenancy Security in Cloud Computing: Isolation and Access Control Mechanisms*
    ResearchGate (2018)
    https://www.researchgate.net/publication/372448732_Multi-tenancy_Security_in_Cloud_Computing_Isolation_and_Access_Control_Mechanisms
@@ -1761,32 +1761,32 @@ async def transition_workspace(
    AWS Database Blog
    https://aws.amazon.com/blogs/database/build-multi-tenant-architectures-on-amazon-neptune/
 
-2. **Neo4j Multi-Tenancy Patterns**
+1. **Neo4j Multi-Tenancy Patterns**
    *Multi Tenancy in Neo4j: A Worked Example*
    Neo4j Developer Guide
    https://neo4j.com/developer/multi-tenancy-worked-example/
 
-3. **PostgreSQL RLS for Multi-Tenancy**
+1. **PostgreSQL RLS for Multi-Tenancy**
    *Multi-tenant data isolation with PostgreSQL Row Level Security*
    AWS Database Blog
    https://aws.amazon.com/blogs/database/multi-tenant-data-isolation-with-postgresql-row-level-security/
 
-4. **LangGraph Agent Memory**
+1. **LangGraph Agent Memory**
    *Powering Long-Term Memory for Agents With LangGraph and MongoDB*
    MongoDB Blog
    https://www.mongodb.com/company/blog/product-release-announcements/powering-long-term-memory-for-agents-langgraph
 
-5. **Microsoft Semantic Kernel**
+1. **Microsoft Semantic Kernel**
    *Semantic Kernel Agent Framework*
    Microsoft Learn
    https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/
 
-6. **JWT Security Best Practices**
+1. **JWT Security Best Practices**
    *JWT Security Best Practices*
    Curity
    https://curity.io/resources/learn/jwt-best-practices/
 
-7. **Progressive Disclosure UX**
+1. **Progressive Disclosure UX**
     *Progressive Disclosure*
     Nielsen Norman Group
     https://www.nngroup.com/articles/progressive-disclosure/
@@ -1797,11 +1797,11 @@ async def transition_workspace(
     GitHub: https://github.com/memgraph/memgraph
     Blog: https://memgraph.com/blog/why-multi-tenancy-matters-in-graph-databases
 
-2. **Dgraph Multi-Tenancy Discussion**
+1. **Dgraph Multi-Tenancy Discussion**
     GitHub Issue #2693
     https://github.com/dgraph-io/dgraph/issues/2693
 
-3. **Apache AGE**
+1. **Apache AGE**
     Official Site: https://age.apache.org/
     GitHub: https://github.com/apache/age
 
@@ -1811,7 +1811,7 @@ async def transition_workspace(
     Xenoss Blog (2025)
     https://xenoss.io/blog/langchain-langgraph-llamaindex-llm-frameworks
 
-2. **CrewAI Multi-Agent Systems**
+1. **CrewAI Multi-Agent Systems**
     CrewAI Documentation
     https://www.crewai.com/
 
@@ -1821,11 +1821,11 @@ async def transition_workspace(
     Stéphanie Walter Blog
     https://stephaniewalter.design/blog/neurodiversity-and-ux-essential-resources-for-cognitive-accessibility/
 
-2. **ADHD Productivity Tools 2025**
+1. **ADHD Productivity Tools 2025**
     Fluidwave Blog
     https://fluidwave.com/blog/adhd-productivity-apps
 
-3. **Embracing Neurodiversity in UX Design**
+1. **Embracing Neurodiversity in UX Design**
     UX Matters (2024)
     https://www.uxmatters.com/mt/archives/2024/04/embracing-neurodiversity-in-ux-design-crafting-inclusive-digital-environments.php
 
@@ -1999,6 +1999,6 @@ async def semantic_search(query: str, workspace_id: str, limit: int = 10):
 
 **Next Steps**:
 1. Review recommendations with team
-2. Prioritize implementation phases
-3. Begin Phase 1 (Security Hardening)
-4. Schedule user testing with ADHD developers
+1. Prioritize implementation phases
+1. Begin Phase 1 (Security Hardening)
+1. Schedule user testing with ADHD developers

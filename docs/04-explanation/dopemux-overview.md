@@ -17,14 +17,14 @@ Dopemux is an ADHD-optimized development platform that integrates AI agents for 
 
 ### AI Agents
 - **Vanilla Agent**: Fast iterative LLM repairs and bluesky development (ideation to documentation).
-  - CLI: `dopemux code [mode] [task]`
-  - Modes: repair, ideation, design, implementation, integration, testing, documentation.
-  - Best for: Quick fixes, rapid prototyping.
+- CLI: `dopemux code [mode] [task]`
+- Modes: repair, ideation, design, implementation, integration, testing, documentation.
+- Best for: Quick fixes, rapid prototyping.
 
 - **Genetic Agent**: Advanced hybrid LLM + GP for complex optimization.
-  - CLI: `dopemux genetic repair "complex bug"`
-  - Features: Evolutionary variants, performance tuning.
-  - Best for: Legacy refactoring, high-complexity problems.
+- CLI: `dopemux genetic repair "complex bug"`
+- Features: Evolutionary variants, performance tuning.
+- Best for: Legacy refactoring, high-complexity problems.
 
 ### MCP Services
 - **Zen**: Reasoning and planning (GPT-5-Codex for code gen).
@@ -62,16 +62,16 @@ dopemux mcp start genetic-agent  # AI agents
 
 ### Bug Repair Workflow
 1. Detect bug with Serena.
-2. Vanilla agent iterates repairs with Zen LLM.
-3. Log to ConPort for learning.
+1. Vanilla agent iterates repairs with Zen LLM.
+1. Log to ConPort for learning.
 
 ### Bluesky Development Workflow
 1. Ideation (GPT-Researcher research + Zen ideas).
-2. Design (Zen planning + Serena dependencies).
-3. Implementation (GPT-5-Codex code gen).
-4. Integration (Serena conflict resolution).
-5. Testing (pytest generation).
-6. Documentation (Mkdocs/Sphinx).
+1. Design (Zen planning + Serena dependencies).
+1. Implementation (GPT-5-Codex code gen).
+1. Integration (Serena conflict resolution).
+1. Testing (pytest generation).
+1. Documentation (Mkdocs/Sphinx).
 
 ## Configuration
 

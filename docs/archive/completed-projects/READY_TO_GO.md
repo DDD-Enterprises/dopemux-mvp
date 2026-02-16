@@ -22,22 +22,22 @@ prelude: Ready_To_Go (explanation) for dopemux documentation and developer workf
 ### 🛠️ Tools Created
 
 1. **Production Tracker** (`./scripts/production_tracker.sh`)
-   - Real-time service completion status
-   - Test count tracking
-   - Day-specific checklists
-   - Color-coded progress
+- Real-time service completion status
+- Test count tracking
+- Day-specific checklists
+- Color-coded progress
 
-2. **Day 1 Quick Start** (`./scripts/day1_quick_start.sh`)
-   - Interactive task guide
-   - Step-by-step instructions
-   - Test verification points
-   - Progress checkpoints
+1. **Day 1 Quick Start** (`./scripts/day1_quick_start.sh`)
+- Interactive task guide
+- Step-by-step instructions
+- Test verification points
+- Progress checkpoints
 
-3. **Execution Guide** (`DAY1_EXECUTION_GUIDE.md`)
-   - Detailed task breakdown
-   - Code examples for each change
-   - Verification commands
-   - Fallback strategies
+1. **Execution Guide** (`DAY1_EXECUTION_GUIDE.md`)
+- Detailed task breakdown
+- Code examples for each change
+- Verification commands
+- Fallback strategies
 
 ---
 
@@ -105,19 +105,19 @@ vim services/serena/v2/mcp_server.py
 
 ### Morning (2-3h)
 - [ ] Update serena tools 1-6 (HIGH + MED priority)
-  - `find_symbol_tool`
-  - `get_context_tool`
-  - `find_references_tool`
-  - `analyze_complexity_tool`
-  - `get_reading_order_tool`
-  - `find_relationships_tool`
+- `find_symbol_tool`
+- `get_context_tool`
+- `find_references_tool`
+- `analyze_complexity_tool`
+- `get_reading_order_tool`
+- `find_relationships_tool`
 
 ### Afternoon (1-2h)
 - [ ] Update serena tools 7-10 (LOW priority)
-  - `get_navigation_patterns_tool`
-  - `find_similar_code_tool`
-  - `find_test_file_tool`
-  - `get_unified_complexity_tool`
+- `get_navigation_patterns_tool`
+- `find_similar_code_tool`
+- `find_test_file_tool`
+- `get_unified_complexity_tool`
 
 ### Wrap-up (30min)
 - [ ] Run all tests
@@ -172,9 +172,9 @@ grep -r "TODO" services/serena/v2/mcp_server.py
 
 ### Actual Timeline
 - Day 1: **5 hours** → **3 services complete** (60% faster!)
-  - orchestrator ✅ (done already)
-  - activity-capture ✅ (done already)
-  - serena (4-5h remaining)
+- orchestrator ✅ (done already)
+- activity-capture ✅ (done already)
+- serena (4-5h remaining)
 
 ### New Timeline Projection
 - Day 1: serena complete (5h instead of 8h)

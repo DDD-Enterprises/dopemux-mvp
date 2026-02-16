@@ -123,18 +123,18 @@ file_patterns: 10 points  # Recent files match patterns
 **Metrics Tracked:**
 ```python
 ProfileSwitch:
-  - timestamp
-  - from_profile / to_profile
-  - trigger (manual/auto/suggestion_accepted/declined)
-  - confidence (if auto-triggered)
+- timestamp
+- from_profile / to_profile
+- trigger (manual/auto/suggestion_accepted/declined)
+- confidence (if auto-triggered)
 
 ProfileStats (aggregated):
-  - total_switches, manual/auto counts
-  - most_used_profile
-  - avg_switches_per_day
-  - switch_accuracy (% lasting >30 min)
-  - usage_by_hour (time-of-day patterns)
-  - usage_by_profile (frequency distribution)
+- total_switches, manual/auto counts
+- most_used_profile
+- avg_switches_per_day
+- switch_accuracy (% lasting >30 min)
+- usage_by_hour (time-of-day patterns)
+- usage_by_profile (frequency distribution)
 ```
 
 **Storage**: ConPort `custom_data` API (category: `profile_metrics`)
@@ -150,10 +150,10 @@ ProfileStats (aggregated):
 
 **Workflow:**
 1. `GitHistoryAnalyzer` - Extract patterns from commits
-2. Display analysis with suggestions
-3. 3-question interactive flow
-4. Generate Profile object
-5. Save as YAML to `profiles/`
+1. Display analysis with suggestions
+1. 3-question interactive flow
+1. Generate Profile object
+1. Save as YAML to `profiles/`
 
 **Git Analysis:**
 - Branch prefixes (feature/, fix/, docs/)
@@ -360,10 +360,10 @@ python -m dopemux.profile_analytics
 
 **Planned** (not yet implemented):
 1. Machine learning: Learn from user corrections
-2. Multi-signal fusion: Bayesian confidence adjustment
-3. Profile recommendations: "Users like you prefer..."
-4. A/B testing: Compare profile effectiveness
-5. Integration with ADHD Engine: Real-time energy/attention
+1. Multi-signal fusion: Bayesian confidence adjustment
+1. Profile recommendations: "Users like you prefer..."
+1. A/B testing: Compare profile effectiveness
+1. Integration with ADHD Engine: Real-time energy/attention
 
 **Extension Ideas:**
 - Editor integration: VSCode extension for profile switching
@@ -431,10 +431,10 @@ print(f"Most used: {stats.most_used_profile}")
 When adding features to the profile system:
 
 1. **Maintain ADHD optimizations**: Max 3 choices, clear visuals, gentle guidance
-2. **Test with real profiles**: Use the 5 existing profiles for validation
-3. **Update documentation**: Keep user and developer docs in sync
-4. **Log metrics**: Use ConPort for persistence
-5. **Follow patterns**: Match existing code style and structure
+1. **Test with real profiles**: Use the 5 existing profiles for validation
+1. **Update documentation**: Keep user and developer docs in sync
+1. **Log metrics**: Use ConPort for persistence
+1. **Follow patterns**: Match existing code style and structure
 
 ## Support
 

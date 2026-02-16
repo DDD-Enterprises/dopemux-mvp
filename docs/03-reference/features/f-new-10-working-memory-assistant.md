@@ -139,14 +139,14 @@ Recovery Assistant Activated
 📍 You were working on: Implementing JWT refresh tokens
 
 📝 Last activity:
-   - Editing: auth/jwt.py (line 145)
-   - Searching for: "token expiration best practices"
-   - Modified: auth/jwt.py, auth/middleware.py
+- Editing: auth/jwt.py (line 145)
+- Searching for: "token expiration best practices"
+- Modified: auth/jwt.py, auth/middleware.py
 
 💡 You were probably going to:
-   - Add refresh token rotation logic
-   - Update middleware to handle refresh requests
-   - Write tests for token refresh
+- Add refresh token rotation logic
+- Update middleware to handle refresh requests
+- Write tests for token refresh
 
 🎯 Quick actions:
    [1] Resume at auth/jwt.py:145
@@ -166,11 +166,11 @@ Working Memory Stack (3 items):
    ├─ Goal: Add token refresh functionality
    └─ Next: Implement rotation logic
 
-2. [2 min ago] Understanding auth flow
+1. [2 min ago] Understanding auth flow
    ├─ Search: "authentication middleware"
    └─ Context: Researching before implementation
 
-3. [8 min ago] Feature planning
+1. [8 min ago] Feature planning
    └─ Decision: Use JWT for auth (logged to ConPort)
 
 [View full stack (7 items)]
@@ -524,10 +524,10 @@ Response:
 
 **Rationale**:
 1. **Biggest remaining gap**: Working memory is #1 ADHD challenge not addressed
-2. **High synergy**: Works with F-NEW-6, F-NEW-8, F-NEW-9, Desktop Commander
-3. **Measurable impact**: 20-30x faster recovery (10-15min → 30sec)
-4. **Broad applicability**: Helps with interruptions, context switches, multi-file work
-5. **Aligned with Dopemux mission**: Cognitive support for ADHD developers
+1. **High synergy**: Works with F-NEW-6, F-NEW-8, F-NEW-9, Desktop Commander
+1. **Measurable impact**: 20-30x faster recovery (10-15min → 30sec)
+1. **Broad applicability**: Helps with interruptions, context switches, multi-file work
+1. **Aligned with Dopemux mission**: Cognitive support for ADHD developers
 
 **Impact Comparison**:
 - F-NEW-9: +20% completion, -30% context switches
@@ -539,9 +539,9 @@ Response:
 ## Next Steps
 
 1. **This session**: Design approved ✅ (this document)
-2. **Next session**: Implement Week 1 (context capture)
-3. **Week 2**: Recovery system
-4. **Week 3**: Intelligence + learning
+1. **Next session**: Implement Week 1 (context capture)
+1. **Week 2**: Recovery system
+1. **Week 3**: Intelligence + learning
 
 **Total Effort**: 3 weeks (parallel with F-NEW-9 deployment validation)
 

@@ -41,13 +41,13 @@ hyperfocused: 40-50 results (deep dive mode)
 
 **Files Modified**:
 - `services/serena/v2/mcp_server.py` (+60 lines)
-  - Lines 44-93: ADHD Engine integration functions
-  - Line 1392: Added user_id parameter to find_symbol_tool
-  - Line 1413: Dynamic max_results call
-  - Line 1785: Added user_id to find_references_tool
-  - Line 1810: Dynamic max_results call
-  - Lines 623-629: Updated find_symbol schema
-  - Lines 755-771: Updated find_references schema
+- Lines 44-93: ADHD Engine integration functions
+- Line 1392: Added user_id parameter to find_symbol_tool
+- Line 1413: Dynamic max_results call
+- Line 1785: Added user_id to find_references_tool
+- Line 1810: Dynamic max_results call
+- Lines 623-629: Updated find_symbol schema
+- Lines 755-771: Updated find_references schema
 
 **ADHD Benefits**:
 - Prevents information overload during scattered states (3-5 results)
@@ -79,9 +79,9 @@ hyperfocused: 40-50 results (deep dive mode)
 
 **Files Modified**:
 - `services/serena/v2/mcp_server.py` (+85 lines)
-  - Lines 1252-1287: New tool schema
-  - Line 1317-1318: Tool routing
-  - Lines 4365-4445: find_similar_code_tool implementation
+- Lines 1252-1287: New tool schema
+- Line 1317-1318: Tool routing
+- Lines 4365-4445: find_similar_code_tool implementation
 
 **Example Usage**:
 ```python
@@ -143,8 +143,8 @@ python -c "from services.serena.v2.mcp_server import get_dynamic_max_results"
 
 **Expected Behavior**:
 1. find_symbol() now respects attention state
-2. find_similar_code() provides semantic search
-3. Both gracefully degrade if dependencies unavailable
+1. find_similar_code() provides semantic search
+1. Both gracefully degrade if dependencies unavailable
 
 ---
 
@@ -189,8 +189,8 @@ ADHD-optimized code intelligence (21 tools)
 
 **Decisions to Log**:
 1. F-NEW-1: Dynamic ADHD-aware result limits
-2. F-NEW-2: Semantic search integration
-3. Phase 3 enhanced roadmap
+1. F-NEW-2: Semantic search integration
+1. Phase 3 enhanced roadmap
 
 ---
 
@@ -198,21 +198,21 @@ ADHD-optimized code intelligence (21 tools)
 
 **Immediate** (Next session):
 1. Restart Serena v2 to load new features
-2. Test find_symbol with user_id parameter
-3. Test find_similar_code semantic search
-4. Validate ADHD Engine connection logs
+1. Test find_symbol with user_id parameter
+1. Test find_similar_code semantic search
+1. Validate ADHD Engine connection logs
 
 **Phase 3 Week 1** (After validation):
 1. Fix database import issues
-2. Run 14-test database suite
-3. Implement Enhanced LSP
-4. Add Tree-sitter Python AST
+1. Run 14-test database suite
+1. Implement Enhanced LSP
+1. Add Tree-sitter Python AST
 
 **Phase 3 Week 2**:
 1. Implement F-NEW-3 (session fatigue)
-2. Implement F-NEW-4 (DopeconBridge events)
-3. Complete pattern learning
-4. Final validation
+1. Implement F-NEW-4 (DopeconBridge events)
+1. Complete pattern learning
+1. Final validation
 
 ---
 

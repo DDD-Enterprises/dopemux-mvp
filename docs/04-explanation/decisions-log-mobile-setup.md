@@ -69,9 +69,9 @@ Status: COMPLETED
 
 ## Next Steps:
 1. Activate mobile integration: dopemux mobile start
-2. Test QR code scanning and device sync
-3. Validate ADHD Engine mobile integration
-4. Consider additional mobile optimizations
+1. Test QR code scanning and device sync
+1. Validate ADHD Engine mobile integration
+1. Consider additional mobile optimizations
 
 ## Decision Tags:
 - mobile-integration

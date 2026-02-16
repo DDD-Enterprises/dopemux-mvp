@@ -70,10 +70,10 @@ Valid MCP server names (must match Claude settings.json keys):
 ### Critical Rules
 
 1. **ConPort Required**: `conport` MUST be present in every profile's `mcps` array
-2. **Unique Name**: Profile `name` must be unique across all profiles
-3. **Valid MCPs**: All MCP names in `mcps` array must exist in Claude config
-4. **Energy Values**: energy_preference must be one of: any, low, medium, high, hyperfocus
-5. **Attention Values**: attention_mode must be one of: any, scattered, focused, hyperfocused
+1. **Unique Name**: Profile `name` must be unique across all profiles
+1. **Valid MCPs**: All MCP names in `mcps` array must exist in Claude config
+1. **Energy Values**: energy_preference must be one of: any, low, medium, high, hyperfocus
+1. **Attention Values**: attention_mode must be one of: any, scattered, focused, hyperfocused
 
 ### Format Rules
 
@@ -94,7 +94,7 @@ name: minimal
 display_name: "Minimal"
 description: "Bare minimum profile for testing"
 mcps:
-  - conport
+- conport
 ```
 
 ### Full Profile (All MCP Servers)
@@ -104,13 +104,13 @@ name: full
 display_name: "Full Stack"
 description: "All MCP servers for complex multi-domain tasks"
 mcps:
-  - conport
-  - serena-v2
-  - zen
-  - pal
-  - gpt-researcher
-  - claude-context
-  - dope-context
+- conport
+- serena-v2
+- zen
+- pal
+- gpt-researcher
+- claude-context
+- dope-context
 
 adhd_config:
   energy_preference: any
@@ -125,9 +125,9 @@ name: developer
 display_name: "Developer"
 description: "Code implementation and debugging"
 mcps:
-  - conport          # Memory (required)
-  - serena-v2        # LSP navigation
-  - dope-context     # Semantic search
+- conport          # Memory (required)
+- serena-v2        # LSP navigation
+- dope-context     # Semantic search
 
 adhd_config:
   energy_preference: medium-high
@@ -136,24 +136,24 @@ adhd_config:
 
 auto_detection:
   git_branches:
-    - "feature/*"
-    - "fix/*"
-    - "refactor/*"
+- "feature/*"
+- "fix/*"
+- "refactor/*"
 
   directories:
-    - "src/"
-    - "tests/"
-    - "lib/"
+- "src/"
+- "tests/"
+- "lib/"
 
   file_patterns:
-    - "*.py"
-    - "*.ts"
-    - "*.js"
-    - "*.go"
+- "*.py"
+- "*.ts"
+- "*.js"
+- "*.go"
 
   time_windows:
-    - "09:00-12:00"    # Morning focus
-    - "14:00-17:00"    # Afternoon focus
+- "09:00-12:00"    # Morning focus
+- "14:00-17:00"    # Afternoon focus
 ```
 
 ### Researcher Profile
@@ -163,10 +163,10 @@ name: researcher
 display_name: "Researcher"
 description: "Deep investigation and analysis"
 mcps:
-  - conport
-  - zen
-  - gpt-researcher
-  - pal
+- conport
+- zen
+- gpt-researcher
+- pal
 
 adhd_config:
   energy_preference: high
@@ -175,21 +175,21 @@ adhd_config:
 
 auto_detection:
   git_branches:
-    - "research/*"
-    - "analysis/*"
-    - "docs/*"
+- "research/*"
+- "analysis/*"
+- "docs/*"
 
   directories:
-    - "docs/"
-    - "research/"
+- "docs/"
+- "research/"
 
   file_patterns:
-    - "*.md"
-    - "*.pdf"
+- "*.md"
+- "*.pdf"
 
   time_windows:
-    - "10:00-12:00"
-    - "14:00-17:00"
+- "10:00-12:00"
+- "14:00-17:00"
 ```
 
 ### Architect Profile
@@ -199,10 +199,10 @@ name: architect
 display_name: "Architect"
 description: "System design and architectural planning"
 mcps:
-  - conport
-  - zen
-  - serena-v2
-  - dope-context
+- conport
+- zen
+- serena-v2
+- dope-context
 
 adhd_config:
   energy_preference: high
@@ -211,20 +211,20 @@ adhd_config:
 
 auto_detection:
   git_branches:
-    - "design/*"
-    - "arch/*"
-    - "spike/*"
+- "design/*"
+- "arch/*"
+- "spike/*"
 
   directories:
-    - "docs/architecture/"
-    - "docs/design/"
+- "docs/architecture/"
+- "docs/design/"
 
   file_patterns:
-    - "*.md"
-    - "*.yaml"
+- "*.md"
+- "*.yaml"
 
   time_windows:
-    - "09:00-11:00"    # Early morning clarity
+- "09:00-11:00"    # Early morning clarity
 ```
 
 ---
@@ -284,11 +284,11 @@ Fix: Use 24-hour time format
 
 ### Loading Priority
 1. Validate YAML syntax
-2. Check required fields (name, display_name, description, mcps)
-3. Validate ConPort presence
-4. Validate MCP names against Claude config
-5. Validate enum values (energy, attention)
-6. Validate format (time windows, patterns)
+1. Check required fields (name, display_name, description, mcps)
+1. Validate ConPort presence
+1. Validate MCP names against Claude config
+1. Validate enum values (energy, attention)
+1. Validate format (time windows, patterns)
 
 ### Default Values
 - `adhd_config`: Not required (omit if not used)

@@ -112,9 +112,9 @@ python main.py  # Now 100% complete!
 
 **Use Option A** (Pull Request):
 1. Creates audit trail
-2. Allows team review (if applicable)
-3. Safe merge to main
-4. Professional workflow
+1. Allows team review (if applicable)
+1. Safe merge to main
+1. Professional workflow
 
 **Commands**:
 ```bash

@@ -48,8 +48,8 @@ Based on extensive research and analysis of your metrics inventory, here's the o
 ### Why This Approach?
 
 1. **tmux status bar** - Zero CPU when not focused, always visible, perfect for critical state
-2. **Textual dashboard pane** - Rich visuals, real-time updates, ADHD-optimized layout
-3. **tmux popups** - Drill-down without losing context, keyboard-driven
+1. **Textual dashboard pane** - Rich visuals, real-time updates, ADHD-optimized layout
+1. **tmux popups** - Drill-down without losing context, keyboard-driven
 
 ---
 
@@ -482,27 +482,27 @@ COLORS = {
 ### Visual Hierarchy Rules
 
 1. **Size**: Critical > High Value > Detail
-   - Critical metrics: Bold, larger font
-   - High value: Normal font
-   - Detail: Smaller, dimmed
+- Critical metrics: Bold, larger font
+- High value: Normal font
+- Detail: Smaller, dimmed
 
-2. **Color**: Actionable > Informational > Background
-   - Red: TAKE ACTION NOW
-   - Yellow: ATTENTION NEEDED SOON
-   - Green: ALL GOOD / COMPLETED
-   - Blue: INFORMATIONAL
-   - Gray: DISABLED / INACTIVE
+1. **Color**: Actionable > Informational > Background
+- Red: TAKE ACTION NOW
+- Yellow: ATTENTION NEEDED SOON
+- Green: ALL GOOD / COMPLETED
+- Blue: INFORMATIONAL
+- Gray: DISABLED / INACTIVE
 
-3. **Position**: Top-left > Top-right > Bottom
-   - Top-left: Primary focus (ADHD state)
-   - Top-right: Secondary context (time, model)
-   - Center: Working data
-   - Bottom: References, hotkeys
+1. **Position**: Top-left > Top-right > Bottom
+- Top-left: Primary focus (ADHD state)
+- Top-right: Secondary context (time, model)
+- Center: Working data
+- Bottom: References, hotkeys
 
-4. **Animation**: None for critical, subtle for updates
-   - No blinking or flashing (ADHD trigger)
-   - Smooth color transitions (0.3s fade)
-   - Sparklines for trends (not live-updating)
+1. **Animation**: None for critical, subtle for updates
+- No blinking or flashing (ADHD trigger)
+- Smooth color transitions (0.3s fade)
+- Sparklines for trends (not live-updating)
 
 ---
 

@@ -71,12 +71,12 @@ Conducted comprehensive deep dive into Dopemux agent systems using Zen thinkdeep
 
 **Agents**:
 1. **MemoryAgent** - Context preservation (✅ NOW IMPLEMENTED)
-2. **CognitiveGuardian** - ADHD support, break reminders (⏳ Week 3-4)
-3. **TwoPlaneOrchestrator** - Cross-plane coordination (⏳ Week 6)
-4. **TaskDecomposer** - ADHD task planning (⏳ Week 9)
-5. **DopemuxEnforcer** - Compliance validation (⏳ Week 7)
-6. **ToolOrchestrator** - MCP selection (⏳ Week 8)
-7. **WorkflowCoordinator** - Multi-step orchestration (⏳ Week 10)
+1. **CognitiveGuardian** - ADHD support, break reminders (⏳ Week 3-4)
+1. **TwoPlaneOrchestrator** - Cross-plane coordination (⏳ Week 6)
+1. **TaskDecomposer** - ADHD task planning (⏳ Week 9)
+1. **DopemuxEnforcer** - Compliance validation (⏳ Week 7)
+1. **ToolOrchestrator** - MCP selection (⏳ Week 8)
+1. **WorkflowCoordinator** - Multi-step orchestration (⏳ Week 10)
 
 **Status**:
 - Design quality: Excellent (comprehensive spec)
@@ -514,9 +514,9 @@ async def _dispatch_to_serena(self, task):
 
 **Integration Opportunities**:
 1. **MetaMCP Bridge**: Enable role-based tool mounting for SuperClaude commands
-2. **Persona Merge**: Combine SuperClaude 9 + Dopemux 16 personas
-3. **MCP Upgrades**: Replace SuperClaude MCPs with Dopemux equivalents
-4. **ADHD Layer**: Add ADHD accommodations to SuperClaude workflows
+1. **Persona Merge**: Combine SuperClaude 9 + Dopemux 16 personas
+1. **MCP Upgrades**: Replace SuperClaude MCPs with Dopemux equivalents
+1. **ADHD Layer**: Add ADHD accommodations to SuperClaude workflows
 
 **Status**: Designed (`dopemux-superclaude-analysis.md`), not implemented
 
@@ -649,15 +649,15 @@ class WorkflowCoordinator:
 
 **Production Code**:
 1. `services/agents/__init__.py` (21 lines)
-2. `services/agents/memory_agent.py` (327 lines)
-3. `services/agents/memory_agent_conport.py` (195 lines)
+1. `services/agents/memory_agent.py` (327 lines)
+1. `services/agents/memory_agent_conport.py` (195 lines)
 
 **Documentation**:
-4. `services/agents/README.md` (250 lines) - Agent status tracking
-5. `services/agents/INTEGRATION_GUIDE.md` (350 lines) - Usage patterns
+1. `services/agents/README.md` (250 lines) - Agent status tracking
+1. `services/agents/INTEGRATION_GUIDE.md` (350 lines) - Usage patterns
 
 **Testing**:
-6. `services/agents/test_memory_agent.py` (85 lines)
+1. `services/agents/test_memory_agent.py` (85 lines)
 
 **Total**: 6 files, ~1,228 lines
 
@@ -695,27 +695,27 @@ Context loss: 0%
 ### Immediate Actions (Do Now)
 
 1. ✅ **MemoryAgent Implemented** - Complete
-2. 🔧 **Wire ConPort MCP** - Update MemoryAgent to use real mcp__ calls (Week 2)
-3. 🔧 **Wire Task-Orchestrator Stubs** - Replace returns with real MCP calls (Week 2)
-4. 📝 **Document Architecture** - Clarify Task-Orchestrator vs 7-agent relationship
+1. 🔧 **Wire ConPort MCP** - Update MemoryAgent to use real mcp__ calls (Week 2)
+1. 🔧 **Wire Task-Orchestrator Stubs** - Replace returns with real MCP calls (Week 2)
+1. 📝 **Document Architecture** - Clarify Task-Orchestrator vs 7-agent relationship
 
 ### Short-Term (Weeks 3-5)
 
 1. 🤖 **CognitiveGuardian** - Break reminders, energy matching (Weeks 3-4)
-2. 🎯 **ADHD Routing** - Use metadata in task assignment (Week 5)
-3. 🧹 **Clarify agent_spawner** - Deprecate OR integrate with ConPort
+1. 🎯 **ADHD Routing** - Use metadata in task assignment (Week 5)
+1. 🧹 **Clarify agent_spawner** - Deprecate OR integrate with ConPort
 
 ### Medium-Term (Weeks 6-12)
 
 1. 🏗️ **Remaining 5 Agents** - TwoPlane, Task Decomposer, DopemuxEnforcer, ToolOrchestrator, WorkflowCoordinator
-2. 🧪 **Integration Testing** - Full system validation
-3. 📊 **Metrics Dashboard** - Validate ADHD effectiveness
+1. 🧪 **Integration Testing** - Full system validation
+1. 📊 **Metrics Dashboard** - Validate ADHD effectiveness
 
 ### Long-Term (Weeks 13-16)
 
 1. 📝 **Persona Enhancement** - Complete 15 remaining personas
-2. 🔗 **SuperClaude Bridge** - MetaMCP integration
-3. 🚀 **Production Deployment** - Full system operational
+1. 🔗 **SuperClaude Bridge** - MetaMCP integration
+1. 🚀 **Production Deployment** - Full system operational
 
 ---
 
@@ -746,14 +746,14 @@ Context loss: 0%
 
 **Code** (4 files):
 1. `services/task-orchestrator/enhanced_orchestrator.py` (1,179 lines)
-2. `services/orchestrator/src/agent_spawner.py` (478 lines)
-3. `services/agents/memory_agent.py` (327 lines - NEW)
+1. `services/orchestrator/src/agent_spawner.py` (478 lines)
+1. `services/agents/memory_agent.py` (327 lines - NEW)
 
 **Documentation** (4 files):
-4. `.claude/AGENT_ARCHITECTURE.md` (545 lines) - PRIMARY SPEC
-5. `.claude/persona-examples/python-expert-dopemux.md` (501 lines) - TEMPLATE
-6. `claudedocs/multi-agent-ai-systems-research-2025-10-15.md` (2,517 lines)
-7. `integration/superclaude/dopemux-superclaude-analysis.md` (156 lines)
+1. `.claude/AGENT_ARCHITECTURE.md` (545 lines) - PRIMARY SPEC
+1. `.claude/persona-examples/python-expert-dopemux.md` (501 lines) - TEMPLATE
+1. `claudedocs/multi-agent-ai-systems-research-2025-10-15.md` (2,517 lines)
+1. `integration/superclaude/dopemux-superclaude-analysis.md` (156 lines)
 
 **Total Analyzed**: 7 files, ~5,700 lines
 

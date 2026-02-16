@@ -96,12 +96,12 @@ Then execute from ROADMAP-REMAINING-WORK.md
 
 **Must Read** (15 min):
 1. DEEP-DOCUMENTATION-ALL-FINDINGS.md - Everything discovered
-2. ROADMAP-REMAINING-WORK.md - How to continue
-3. FINAL-AUDIT-REPORT.md - Current status
+1. ROADMAP-REMAINING-WORK.md - How to continue
+1. FINAL-AUDIT-REPORT.md - Current status
 
 **Reference**:
-4. DEPLOYMENT-READY-SUMMARY.md - How to deploy fixes
-5. Phase reports (phase-1a through phase-3)
+1. DEPLOYMENT-READY-SUMMARY.md - How to deploy fixes
+1. Phase reports (phase-1a through phase-3)
 
 ---
 

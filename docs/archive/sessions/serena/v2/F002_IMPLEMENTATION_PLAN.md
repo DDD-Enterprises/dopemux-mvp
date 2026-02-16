@@ -174,9 +174,9 @@ Total: 4 active session(s), 2 worktree(s)
 
 **Migration Steps**:
 1. Add columns (session_id, worktree_path, branch, last_updated, status)
-2. Create composite primary key (workspace_id, session_id)
-3. Create performance indexes
-4. Add status constraints
+1. Create composite primary key (workspace_id, session_id)
+1. Create performance indexes
+1. Add status constraints
 
 **Backward Compatibility**:
 - All new columns have defaults (session_id='default')
@@ -247,37 +247,37 @@ workspace_id | session_id | worktree_path | branch | content | created_at | comp
 
 ### Phase 1: Foundation (Build Components)
 1. ✅ Session ID Generator (50 lines)
-2. ✅ Worktree Detector (150 lines)
-3. ✅ Dashboard Formatter (200 lines)
+1. ✅ Worktree Detector (150 lines)
+1. ✅ Dashboard Formatter (200 lines)
 
 ### Phase 2: Lifecycle (Session Management)
 1. ✅ Session Lifecycle Manager (300 lines)
-2. ✅ Session Manager Coordinator (250 lines)
+1. ✅ Session Manager Coordinator (250 lines)
 
 ### Phase 3: Database (Schema Migration)
 1. ✅ Create migration SQL script
-2. ✅ Test migration on dev database
+1. ✅ Test migration on dev database
 
 ### Phase 4: Integration (Wire Everything Together)
 1. ✅ Add MCP tools for session operations
-2. ✅ Update statusline.sh to use sessions
-3. ✅ Integrate into Serena v2 startup
+1. ✅ Update statusline.sh to use sessions
+1. ✅ Integrate into Serena v2 startup
 
 ### Phase 5: Validation
 1. ✅ Test single session (backward compat)
-2. ✅ Test multi-session (2-3 Claude instances)
-3. ✅ Test worktree detection
-4. ✅ Test session dashboard
+1. ✅ Test multi-session (2-3 Claude instances)
+1. ✅ Test worktree detection
+1. ✅ Test session dashboard
 
 ---
 
 ## Edge Cases Handled
 
 1. **Session ID collisions**: Millisecond timestamp + UUID
-2. **Orphaned sessions**: Auto-cleanup after 24h
-3. **Deleted worktrees**: Path validation on startup
-4. **Multiple sessions same worktree**: Allow with warning
-5. **Branch mismatch**: Detect and auto-update
+1. **Orphaned sessions**: Auto-cleanup after 24h
+1. **Deleted worktrees**: Path validation on startup
+1. **Multiple sessions same worktree**: Allow with warning
+1. **Branch mismatch**: Detect and auto-update
 
 ---
 
@@ -369,18 +369,18 @@ workspace_id | session_id | worktree_path | branch | content | created_at | comp
 
 **Immediate** (Start Building):
 1. Create `session_id_generator.py`
-2. Create `worktree_detector.py`
-3. Create `multi_session_dashboard.py`
+1. Create `worktree_detector.py`
+1. Create `multi_session_dashboard.py`
 
 **After Foundation**:
-4. Create `session_lifecycle_manager.py`
-5. Create `session_manager.py` (coordinator)
-6. Create migration SQL
+1. Create `session_lifecycle_manager.py`
+1. Create `session_manager.py` (coordinator)
+1. Create migration SQL
 
 **Integration**:
-7. Add MCP tools
-8. Test thoroughly
-9. Document usage
+1. Add MCP tools
+1. Test thoroughly
+1. Document usage
 
 ---
 

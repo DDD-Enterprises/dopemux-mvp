@@ -139,19 +139,19 @@ async def get_breaks_info(...):
 
 ### Immediate (Complete morning session)
 1. [ ] Restart server cleanly
-2. [ ] Test all 4 new endpoints with curl
-3. [ ] Update dashboard to use new endpoints
-4. [ ] Verify dashboard ADHD panel shows 100% real data
+1. [ ] Test all 4 new endpoints with curl
+1. [ ] Update dashboard to use new endpoints
+1. [ ] Verify dashboard ADHD panel shows 100% real data
 
 ### Afternoon
 1. [ ] Create ConPort HTTP wrapper
-2. [ ] Test decisions and graph stats endpoints
-3. [ ] Update dashboard to use ConPort data
+1. [ ] Test decisions and graph stats endpoints
+1. [ ] Update dashboard to use ConPort data
 
 ### Evening
 1. [ ] Create Serena HTTP wrapper
-2. [ ] Test metrics and detections endpoints
-3. [ ] Update dashboard to use Serena data
+1. [ ] Test metrics and detections endpoints
+1. [ ] Update dashboard to use Serena data
 
 ---
 

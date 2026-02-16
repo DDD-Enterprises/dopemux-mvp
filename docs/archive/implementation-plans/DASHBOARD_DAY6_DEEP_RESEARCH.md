@@ -33,21 +33,21 @@ prelude: Dashboard_Day6_Deep_Research (explanation) for dopemux documentation an
 **Transform from UI prototype → Production monitoring tool**
 
 1. **Wire 4 modals to real backend APIs**
-   - Task Detail → ADHD Engine + ConPort
-   - Service Logs → Docker logs + Health checks
-   - Pattern Analysis → Prometheus aggregations
-   - Metric History → Prometheus time-series
+- Task Detail → ADHD Engine + ConPort
+- Service Logs → Docker logs + Health checks
+- Pattern Analysis → Prometheus aggregations
+- Metric History → Prometheus time-series
 
-2. **Build robust data layer**
-   - API client abstraction
-   - Caching & retry logic
-   - Graceful degradation
-   - Error recovery
+1. **Build robust data layer**
+- API client abstraction
+- Caching & retry logic
+- Graceful degradation
+- Error recovery
 
-3. **Performance optimization**
-   - Response < 500ms for all modals
-   - Background prefetching
-   - Smart cache invalidation
+1. **Performance optimization**
+- Response < 500ms for all modals
+- Background prefetching
+- Smart cache invalidation
 
 ### Success Criteria
 
@@ -241,9 +241,9 @@ Response: {
 
 GET /api/v1/history/energy-levels/{user_id}
 Query Params:
-  - start_date: ISO8601 (default: 7 days ago)
-  - end_date: ISO8601 (default: now)
-  - granularity: hour | day | week
+- start_date: ISO8601 (default: 7 days ago)
+- end_date: ISO8601 (default: now)
+- granularity: hour | day | week
 
 Response: {
     "user_id": "user_123",
@@ -420,7 +420,6 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar('T')
 
-
 class CacheStrategy(Enum):
     """Cache invalidation strategies"""
     NO_CACHE = "no_cache"
@@ -428,7 +427,6 @@ class CacheStrategy(Enum):
     MEDIUM = "medium"    # 30 seconds
     LONG = "long"        # 5 minutes
     PERSISTENT = "persistent"  # Until explicit invalidation
-
 
 @dataclass
 class CacheEntry(Generic[T]):
@@ -442,7 +440,6 @@ class CacheEntry(Generic[T]):
         age = (datetime.now() - self.cached_at).total_seconds()
         return age < self.ttl_seconds
 
-
 @dataclass
 class APIConfig:
     """Configuration for API client"""
@@ -453,17 +450,16 @@ class APIConfig:
     cache_strategy: CacheStrategy = CacheStrategy.MEDIUM
     fallback_enabled: bool = True
 
-
 class APIClient:
     """
     Base API client with built-in retry, caching, and error handling
 
     Features:
-    - Automatic retry with exponential backoff
-    - Response caching with TTL
-    - Graceful fallback to cached/default data
-    - Request deduplication (prevent duplicate in-flight requests)
-    - Comprehensive error logging
+- Automatic retry with exponential backoff
+- Response caching with TTL
+- Graceful fallback to cached/default data
+- Request deduplication (prevent duplicate in-flight requests)
+- Comprehensive error logging
     """
 
     def __init__(self, config: APIConfig):
@@ -666,7 +662,6 @@ class ADHDEngineClient(APIClient):
             "warnings": ["Assessment service unavailable"]
         }
 
-
 class ConPortClient:
     """Client for ConPort decision database"""
 
@@ -702,7 +697,6 @@ class ConPortClient:
         except Exception as e:
             logger.error(f"Failed to fetch decisions: {e}")
             return []
-
 
 class DockerServiceClient:
     """Client for Docker service health and logs"""
@@ -1306,40 +1300,40 @@ async def show_task_modal(task_id: str):
 
 #### Morning (4 hours)
 1. **Build base API client infrastructure** (90 min)
-   - Implement APIClient class with retry/cache
-   - Add CacheEntry and CacheStrategy
-   - Write unit tests
+- Implement APIClient class with retry/cache
+- Add CacheEntry and CacheStrategy
+- Write unit tests
 
-2. **Create service-specific clients** (90 min)
-   - ADHDEngineClient
-   - DockerServiceClient
-   - Test against real services
+1. **Create service-specific clients** (90 min)
+- ADHDEngineClient
+- DockerServiceClient
+- Test against real services
 
-3. **Wire Task Detail Modal** (60 min)
-   - Integrate ADHDEngineClient
-   - Real task assessment
-   - Test with live data
+1. **Wire Task Detail Modal** (60 min)
+- Integrate ADHDEngineClient
+- Real task assessment
+- Test with live data
 
 #### Afternoon (4 hours)
 1. **Wire Service Logs Modal** (60 min)
-   - Integrate DockerServiceClient
-   - Live log streaming
-   - Health status display
+- Integrate DockerServiceClient
+- Live log streaming
+- Health status display
 
-2. **Wire Pattern Analysis Modal** (90 min)
-   - Prometheus aggregation queries
-   - Pattern detection logic
-   - Visualization
+1. **Wire Pattern Analysis Modal** (90 min)
+- Prometheus aggregation queries
+- Pattern detection logic
+- Visualization
 
-3. **Wire Metric History Modal** (60 min)
-   - Multi-timeframe data fetching
-   - Statistics calculation
-   - Sparkline rendering
+1. **Wire Metric History Modal** (60 min)
+- Multi-timeframe data fetching
+- Statistics calculation
+- Sparkline rendering
 
-4. **Testing & refinement** (30 min)
-   - End-to-end modal testing
-   - Performance verification
-   - Error handling validation
+1. **Testing & refinement** (30 min)
+- End-to-end modal testing
+- Performance verification
+- Error handling validation
 
 ### Acceptance Criteria
 
@@ -1477,29 +1471,29 @@ async def test_modal_load_time():
 After completing Day 6 API integration:
 
 1. **WebSocket Integration** (Day 7)
-   - Real-time event streaming
-   - Live sparkline updates
-   - Push notifications
+- Real-time event streaming
+- Live sparkline updates
+- Push notifications
 
-2. **Advanced Analytics** (Day 8)
-   - Predictive break suggestions
-   - Task correlation analysis
-   - Productivity forecasting
+1. **Advanced Analytics** (Day 8)
+- Predictive break suggestions
+- Task correlation analysis
+- Productivity forecasting
 
-3. **Polish & UX** (Day 9-10)
-   - Animation and transitions
-   - Theme customization
-   - Accessibility features
+1. **Polish & UX** (Day 9-10)
+- Animation and transitions
+- Theme customization
+- Accessibility features
 
-4. **Documentation** (Day 11-12)
-   - User guide
-   - API documentation
-   - Troubleshooting guide
+1. **Documentation** (Day 11-12)
+- User guide
+- API documentation
+- Troubleshooting guide
 
-5. **Production Deployment** (Day 13-14)
-   - Docker containerization
-   - CI/CD pipeline
-   - Monitoring & alerting
+1. **Production Deployment** (Day 13-14)
+- Docker containerization
+- CI/CD pipeline
+- Monitoring & alerting
 
 ---
 

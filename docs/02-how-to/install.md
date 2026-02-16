@@ -106,87 +106,87 @@ Running `./install.sh --full --yes` expects these values to be present ahead of 
 
 ### Dopemux Core Services (Always Installed)
 - **ADHD Engine** - FastAPI service for real-time cognitive accommodations
-  - 6 background monitors (energy, attention, cognitive load, breaks, hyperfocus, context switching)
-  - Task assessment API with ML predictions
-  - Energy/attention state tracking
-  - Break recommendation system
+- 6 background monitors (energy, attention, cognitive load, breaks, hyperfocus, context switching)
+- Task assessment API with ML predictions
+- Energy/attention state tracking
+- Break recommendation system
 - **ConPort** - Knowledge graph and persistent memory system
-  - Decision logging with rationale
-  - Progress tracking with ADHD metadata
-  - System patterns and coding best practices
-  - Semantic search across decisions and patterns
+- Decision logging with rationale
+- Progress tracking with ADHD metadata
+- System patterns and coding best practices
+- Semantic search across decisions and patterns
 - **Task Orchestrator** - ADHD-aware task coordination
-  - Multi-plane architecture (PM + Cognitive)
-  - Leantime integration for status authority
-  - Cognitive load balancing
+- Multi-plane architecture (PM + Cognitive)
+- Leantime integration for status authority
+- Cognitive load balancing
 - **Dope-Context** - Semantic code and documentation search
-  - AST-aware code indexing (Python, JavaScript, TypeScript)
-  - Multi-format document indexing (PDF, Markdown, HTML)
-  - Autonomous indexing (zero-touch file monitoring)
-  - Hybrid search with neural reranking
+- AST-aware code indexing (Python, JavaScript, TypeScript)
+- Multi-format document indexing (PDF, Markdown, HTML)
+- Autonomous indexing (zero-touch file monitoring)
+- Hybrid search with neural reranking
 
 ### Advanced MCP Servers (Full Installation Only)
 - **Zen MCP** - Multi-model reasoning suite
-  - thinkdeep: Systematic investigation workflow
-  - planner: Interactive planning with revision support
-  - consensus: Multi-model decision making (2-5 models)
-  - debug: Root cause analysis and hypothesis testing
-  - codereview: Comprehensive quality/security/performance analysis
+- thinkdeep: Systematic investigation workflow
+- planner: Interactive planning with revision support
+- consensus: Multi-model decision making (2-5 models)
+- debug: Root cause analysis and hypothesis testing
+- codereview: Comprehensive quality/security/performance analysis
 - **Context7** - Official framework documentation
-  - React, Vue.js, Next.js, TypeScript, Node.js docs
-  - Version-specific API references
-  - Best practices and patterns
+- React, Vue.js, Next.js, TypeScript, Node.js docs
+- Version-specific API references
+- Best practices and patterns
 - **Serena LSP** - Advanced code intelligence
-  - Semantic navigation with ADHD optimizations
-  - Code complexity scoring (0.0-1.0 scale)
-  - Git-aware navigation (predict next files)
-  - Test file bidirectional mapping
+- Semantic navigation with ADHD optimizations
+- Code complexity scoring (0.0-1.0 scale)
+- Git-aware navigation (predict next files)
+- Test file bidirectional mapping
 - **GPT-Researcher** - Deep web research capabilities
-  - Multi-engine search (Google, Bing, DuckDuckGo, Exa)
-  - Synthesis and report generation
-  - Source credibility assessment
+- Multi-engine search (Google, Bing, DuckDuckGo, Exa)
+- Synthesis and report generation
+- Source credibility assessment
 - **Exa** - Neural search engine
-  - Semantic web search with relevance ranking
-  - Related content discovery
-  - Documentation and tutorial finding
+- Semantic web search with relevance ranking
+- Related content discovery
+- Documentation and tutorial finding
 
 ### Development Tools & Integration
 - **Claude Code Router** - Multi-instance Claude Code management
-  - LiteLLM proxy integration for cost optimization
-  - Model fallback chains (Sonnet → Grok Code Fast → GPT-5)
-  - Session isolation and performance monitoring
+- LiteLLM proxy integration for cost optimization
+- Model fallback chains (Sonnet → Grok Code Fast → GPT-5)
+- Session isolation and performance monitoring
 - **Statusline Integration** - Real-time development HUD
-  - Connection status (ConPort, energy levels, attention state)
-  - Session time tracking with break warnings
-  - Token usage monitoring (prevents autocompact)
-  - Model display and context window awareness
+- Connection status (ConPort, energy levels, attention state)
+- Session time tracking with break warnings
+- Token usage monitoring (prevents autocompact)
+- Model display and context window awareness
 - **Git Integration** - Automatic worktree configuration
-  - Post-checkout hooks for ConPort workspace detection
-  - Multi-worktree support with isolated contexts
-  - Automatic MCP server wiring per worktree
+- Post-checkout hooks for ConPort workspace detection
+- Multi-worktree support with isolated contexts
+- Automatic MCP server wiring per worktree
 - **tmux Integration** - Multi-pane development orchestration
-  - Monitor panes for logs, metrics, and status
-  - Agent panes for different development roles
-  - Session persistence and context restoration
+- Monitor panes for logs, metrics, and status
+- Agent panes for different development roles
+- Session persistence and context restoration
 - **Mobile Support** - Cross-device development
-  - Happy coder integration for phone/tablet coding
-  - QR code session sharing
-  - Mobile-optimized UI for development monitoring
+- Happy coder integration for phone/tablet coding
+- QR code session sharing
+- Mobile-optimized UI for development monitoring
 
 ### System Tools & Scripts
 - **Shell Scripts** (`scripts/` directory)
-  - `start-all.sh` - Complete service orchestration
-  - `setup.sh` - Comprehensive installation
-  - `doctor` - Health checking and diagnostics
-  - `status` - Real-time system status
+- `start-all.sh` - Complete service orchestration
+- `setup.sh` - Comprehensive installation
+- `doctor` - Health checking and diagnostics
+- `status` - Real-time system status
 - **Configuration Management**
-  - `.claude/settings.json` - Claude Code integration
-  - `.dopemux/config.yaml` - Dopemux-specific settings
-  - Environment variable management
+- `.claude/settings.json` - Claude Code integration
+- `.dopemux/config.yaml` - Dopemux-specific settings
+- Environment variable management
 - **Backup & Recovery**
-  - Automatic configuration backup before changes
-  - Service health monitoring and auto-restart
-  - Log aggregation and troubleshooting tools
+- Automatic configuration backup before changes
+- Service health monitoring and auto-restart
+- Log aggregation and troubleshooting tools
 
 ## 🖥️ System Requirements
 
@@ -213,19 +213,19 @@ Dopemux uses multiple AI services that require API keys. This step-by-step guide
 
 #### Create Account & Get API Key
 1. **Go to**: [console.anthropic.com](https://console.anthropic.com/)
-2. **Sign up**: Create account with email/password or Google/GitHub
-3. **Verify email**: Check your inbox and click verification link
-4. **Navigate to API Keys**: Click "API Keys" in left sidebar
-5. **Create key**: Click "Create Key" button
-6. **Name it**: "Dopemux Development" (or your preferred name)
-7. **Copy key**: Save the key that starts with `sk-ant-`
+1. **Sign up**: Create account with email/password or Google/GitHub
+1. **Verify email**: Check your inbox and click verification link
+1. **Navigate to API Keys**: Click "API Keys" in left sidebar
+1. **Create key**: Click "Create Key" button
+1. **Name it**: "Dopemux Development" (or your preferred name)
+1. **Copy key**: Save the key that starts with `sk-ant-`
 
 #### Fund Your Account (Minimum $10)
 1. **Go to Billing**: Click "Billing" in left sidebar
-2. **Add payment method**: Click "Add payment method"
-3. **Enter card details**: Add credit/debit card
-4. **Set up auto-recharge**: Enable $10 auto-recharge when balance drops below $5
-5. **Initial funding**: Add at least $10 to get started
+1. **Add payment method**: Click "Add payment method"
+1. **Enter card details**: Add credit/debit card
+1. **Set up auto-recharge**: Enable $10 auto-recharge when balance drops below $5
+1. **Initial funding**: Add at least $10 to get started
 
 #### Set Environment Variable
 ```bash
@@ -244,19 +244,19 @@ curl -H "x-api-key: $ANTHROPIC_API_KEY" -H "anthropic-version: 2023-06-01" \
 
 #### Create Account & Get API Key
 1. **Go to**: [openrouter.ai](https://openrouter.ai/)
-2. **Sign up**: Create account (can use same email as Anthropic)
-3. **Verify email**: Check inbox and verify
-4. **Go to Keys**: Click "Keys" in top navigation
-5. **Create key**: Click "Create" button
-6. **Name it**: "Dopemux LiteLLM" (or preferred name)
-7. **Copy key**: Save the key (usually starts with `sk-or-v1-`)
+1. **Sign up**: Create account (can use same email as Anthropic)
+1. **Verify email**: Check inbox and verify
+1. **Go to Keys**: Click "Keys" in top navigation
+1. **Create key**: Click "Create" button
+1. **Name it**: "Dopemux LiteLLM" (or preferred name)
+1. **Copy key**: Save the key (usually starts with `sk-or-v1-`)
 
 #### Fund Your Account (Minimum $5)
 1. **Go to Billing**: Click "Billing" in top navigation
-2. **Add credits**: Click "Add Credits" or "Top Up"
-3. **Enter amount**: Start with $5-10
-4. **Payment**: Use card or crypto (crypto is often cheaper)
-5. **Confirm**: Complete the transaction
+1. **Add credits**: Click "Add Credits" or "Top Up"
+1. **Enter amount**: Start with $5-10
+1. **Payment**: Use card or crypto (crypto is often cheaper)
+1. **Confirm**: Complete the transaction
 
 #### Set Environment Variable
 ```bash
@@ -275,11 +275,11 @@ curl -X POST https://openrouter.ai/api/v1/auth/key \
 
 #### Create Account & Get API Key
 1. **Go to**: [console.x.ai](https://console.x.ai/)
-2. **Sign up**: Create account with xAI (free)
-3. **Verify**: Complete any verification steps
-4. **Go to API Keys**: Navigate to API section
-5. **Create key**: Generate new API key
-6. **Copy key**: Save the key
+1. **Sign up**: Create account with xAI (free)
+1. **Verify**: Complete any verification steps
+1. **Go to API Keys**: Navigate to API section
+1. **Create key**: Generate new API key
+1. **Copy key**: Save the key
 
 #### Funding Note
 - xAI provides free credits for development
@@ -298,18 +298,18 @@ export XAI_API_KEY="xai-your-key-here"
 
 #### Create Account & Get API Key
 1. **Go to**: [platform.openai.com](https://platform.openai.com/)
-2. **Sign up**: Create OpenAI account
-3. **Verify**: Complete phone verification
-4. **Go to API Keys**: Click "API Keys" in left sidebar
-5. **Create key**: Click "Create new secret key"
-6. **Name it**: "Dopemux Development"
-7. **Copy key**: Save the key (starts with `sk-`)
+1. **Sign up**: Create OpenAI account
+1. **Verify**: Complete phone verification
+1. **Go to API Keys**: Click "API Keys" in left sidebar
+1. **Create key**: Click "Create new secret key"
+1. **Name it**: "Dopemux Development"
+1. **Copy key**: Save the key (starts with `sk-`)
 
 #### Fund Your Account (Minimum $5)
 1. **Go to Billing**: Click "Billing" in left sidebar
-2. **Add payment method**: Add credit card
-3. **Set spending limit**: Start with $10-20
-4. **Auto-recharge**: Optional but recommended
+1. **Add payment method**: Add credit card
+1. **Set spending limit**: Start with $10-20
+1. **Auto-recharge**: Optional but recommended
 
 #### Set Environment Variable
 ```bash
@@ -323,11 +323,11 @@ export OPENAI_API_KEY="sk-your-key-here"
 
 #### Create Account & Get API Key
 1. **Go to**: [voyageai.com](https://voyageai.com/)
-2. **Sign up**: Create account
-3. **Verify email**: Check inbox
-4. **Go to Dashboard**: Navigate to API keys section
-5. **Create key**: Generate new API key
-6. **Copy key**: Save the key
+1. **Sign up**: Create account
+1. **Verify email**: Check inbox
+1. **Go to Dashboard**: Navigate to API keys section
+1. **Create key**: Generate new API key
+1. **Copy key**: Save the key
 
 #### Funding Note
 - Free tier available for development
@@ -400,9 +400,9 @@ echo "💡 Tip: Add these exports to ~/.bashrc or ~/.zshrc to persist across ses
 
 #### Recommended Key Priority (Cost-Effective)
 1. **Anthropic** (Primary): Claude Sonnet 3.5 - Best quality/cost ratio
-2. **OpenRouter** (Fallback): xAI Grok Code Fast - FREE for development
-3. **OpenRouter** (Heavy lifting): GPT-4 via OpenRouter - Cheaper than direct
-4. **xAI** (Free tier): Grok models - Good for experimentation
+1. **OpenRouter** (Fallback): xAI Grok Code Fast - FREE for development
+1. **OpenRouter** (Heavy lifting): GPT-4 via OpenRouter - Cheaper than direct
+1. **xAI** (Free tier): Grok models - Good for experimentation
 
 #### Monthly Budget Guidelines
 - **Development**: $10-25/month (Anthropic + OpenRouter)
@@ -1234,9 +1234,9 @@ rm -rf dopemux-mvp
 If you encounter issues:
 
 1. Check the troubleshooting section above
-2. Run `dopemux doctor` for diagnostics
-3. Check the [GitHub Issues](https://github.com/DDD-Enterprises/dopemux-mvp/issues) for known problems
-4. Create a new issue if your problem isn't documented
+1. Run `dopemux doctor` for diagnostics
+1. Check the [GitHub Issues](https://github.com/DDD-Enterprises/dopemux-mvp/issues) for known problems
+1. Create a new issue if your problem isn't documented
 
 ---
 

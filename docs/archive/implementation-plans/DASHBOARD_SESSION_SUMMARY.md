@@ -52,8 +52,8 @@ Successfully completed **Day 1** of a planned 3-day sprint:
 
 **Key Decisions Made:**
 1. **Data Access:** Dual-mode services (MCP + HTTP)
-2. **Update Strategy:** Polling (Week 1) → WebSocket (Week 2)
-3. **Caching:** Multi-layer (HTTP → Redis → Mock)
+1. **Update Strategy:** Polling (Week 1) → WebSocket (Week 2)
+1. **Caching:** Multi-layer (HTTP → Redis → Mock)
 
 #### 2. DASHBOARD_QUICKSTART.md (5KB)
 **Purpose:** Day-by-day implementation guide
@@ -280,9 +280,9 @@ asyncio.run(test())
 **Root Cause:** Docker Redis not exposed on host network
 **Debug Steps:**
 1. Checked Docker container IP: `docker inspect dopemux-redis-primary`
-2. Tried connecting: Connection refused
-3. Checked port mappings: `docker port dopemux-redis-primary` (empty)
-4. Found alternative: `lsof -i :6379` → dopemux-redis-events
+1. Tried connecting: Connection refused
+1. Checked port mappings: `docker port dopemux-redis-primary` (empty)
+1. Found alternative: `lsof -i :6379` → dopemux-redis-events
 
 **Solution:** Use localhost:6379 (dopemux-redis-events)
 **Time:** 30 minutes
@@ -293,8 +293,8 @@ asyncio.run(test())
 **Root Cause:** `.env` had `API_PORT=8000`, not 8095
 **Debug Steps:**
 1. Checked logs: "Running on http://0.0.0.0:8000"
-2. Checked config.py: `api_port: int = 8000` (default)
-3. Checked .env: Had wrong port
+1. Checked config.py: `api_port: int = 8000` (default)
+1. Checked .env: Had wrong port
 
 **Solution:** Updated `.env` to `API_PORT=8095` (but 8000 works fine)
 **Time:** 10 minutes
@@ -305,8 +305,8 @@ asyncio.run(test())
 **Root Cause:** Old Python process in bad state
 **Debug Steps:**
 1. Checked processes: `ps aux | grep python.*main.py`
-2. Found stale PID: 26673
-3. Checked port: `lsof -i :8095` (listening but not responding)
+1. Found stale PID: 26673
+1. Checked port: `lsof -i :8095` (listening but not responding)
 
 **Solution:** Kill stale process, start fresh
 **Time:** 15 minutes
@@ -317,8 +317,8 @@ asyncio.run(test())
 **Root Cause:** Using `mode="sync"` for background server starts
 **Debug Steps:**
 1. Tried sync mode: Timeout after 30s
-2. Tried async mode: Couldn't read output
-3. Tried detached mode: Process orphaned
+1. Tried async mode: Couldn't read output
+1. Tried detached mode: Process orphaned
 
 **Solution:** Use `nohup ... &` with log redirection
 **Time:** 20 minutes
@@ -389,20 +389,20 @@ By end of Day 2, have **all dashboard panels** showing real data from services.
 
 **Endpoints to Add:**
 1. `GET /api/v1/cognitive-load/{user_id}`
-   - Returns: `{"cognitive_load": float, "category": str, "threshold_status": str}`
-   - Implementation: Extract from existing engine logic
+- Returns: `{"cognitive_load": float, "category": str, "threshold_status": str}`
+- Implementation: Extract from existing engine logic
 
-2. `GET /api/v1/flow-state/{user_id}`
-   - Returns: `{"active": bool, "duration_minutes": int, "start_time": str}`
-   - Implementation: Check flow state tracker
+1. `GET /api/v1/flow-state/{user_id}`
+- Returns: `{"active": bool, "duration_minutes": int, "start_time": str}`
+- Implementation: Check flow state tracker
 
-3. `GET /api/v1/session-time/{user_id}`
-   - Returns: `{"duration": str, "start_time": str, "total_minutes": int}`
-   - Implementation: Calculate from activity tracker
+1. `GET /api/v1/session-time/{user_id}`
+- Returns: `{"duration": str, "start_time": str, "total_minutes": int}`
+- Implementation: Calculate from activity tracker
 
-4. `GET /api/v1/breaks/{user_id}`
-   - Returns: `{"last_break": str, "minutes_since": int, "recommended_in": int}`
-   - Implementation: Extract from break monitor
+1. `GET /api/v1/breaks/{user_id}`
+- Returns: `{"last_break": str, "minutes_since": int, "recommended_in": int}`
+- Implementation: Extract from break monitor
 
 **Implementation Steps:**
 ```python
@@ -718,48 +718,48 @@ Day 3 Tasks:
 ### Technical Insights
 
 1. **ADHD Engine is Production-Ready**
-   - FastAPI already implemented ✅
-   - 6 background monitors running ✅
-   - ML predictions enabled ✅
-   - Clean API design ✅
+- FastAPI already implemented ✅
+- 6 background monitors running ✅
+- ML predictions enabled ✅
+- Clean API design ✅
 
-2. **Dual-Mode Architecture Works**
-   - Services can run both MCP (stdio) and HTTP simultaneously
-   - No conflicts or issues
-   - Best of both worlds
+1. **Dual-Mode Architecture Works**
+- Services can run both MCP (stdio) and HTTP simultaneously
+- No conflicts or issues
+- Best of both worlds
 
-3. **Graceful Degradation is Critical**
-   - Dashboard never crashes
-   - Falls back to mock data when endpoints unavailable
-   - User always sees *something*
+1. **Graceful Degradation is Critical**
+- Dashboard never crashes
+- Falls back to mock data when endpoints unavailable
+- User always sees *something*
 
-4. **Planning Saves Time**
-   - 1 hour planning saved 2+ hours of trial-and-error
-   - Clear architecture prevented wrong turns
-   - Documentation guides next steps
+1. **Planning Saves Time**
+- 1 hour planning saved 2+ hours of trial-and-error
+- Clear architecture prevented wrong turns
+- Documentation guides next steps
 
 ### Process Insights
 
 1. **Deep Planning Before Coding**
-   - Created 3 comprehensive docs
-   - Analyzed architecture thoroughly
-   - Made key decisions upfront
-   - **Result:** Smooth implementation, no major surprises
+- Created 3 comprehensive docs
+- Analyzed architecture thoroughly
+- Made key decisions upfront
+- **Result:** Smooth implementation, no major surprises
 
-2. **Test Early, Test Often**
-   - Verified each endpoint immediately
-   - Caught issues quickly
-   - Built confidence incrementally
+1. **Test Early, Test Often**
+- Verified each endpoint immediately
+- Caught issues quickly
+- Built confidence incrementally
 
-3. **Document as You Go**
-   - Captured issues & solutions in real-time
-   - Easy to reference later
-   - Knowledge preserved for team
+1. **Document as You Go**
+- Captured issues & solutions in real-time
+- Easy to reference later
+- Knowledge preserved for team
 
-4. **Incremental Progress**
-   - Start with smallest working piece
-   - Build up gradually
-   - Always have something working
+1. **Incremental Progress**
+- Start with smallest working piece
+- Build up gradually
+- Always have something working
 
 ---
 

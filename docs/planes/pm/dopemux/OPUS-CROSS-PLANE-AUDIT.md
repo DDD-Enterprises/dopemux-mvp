@@ -93,7 +93,7 @@ audit_model: "Opus 4.6"
 **Component**: dope-memory EventBus consumer + task-orchestrator sync engine
 **Scenario**: A `task.completed` event fires on the EventBus. Simultaneously:
 1. dope-memory consumer promotes it to a work_log_entry in chronicle.sqlite
-2. task-orchestrator's sync engine detects the Leantime status change and creates a ConPort progress entry
+1. task-orchestrator's sync engine detects the Leantime status change and creates a ConPort progress entry
 
 Result: The same logical event creates two separate authority records in two different stores, with no cross-reference.
 **Impact**: Double-counting in reports, divergent state between memory systems.
@@ -137,9 +137,9 @@ Result: The same logical event creates two separate authority records in two dif
 
 **Evidence**:
 1. `task_orchestrator/app.py:113-134` — `/api/tools/{tool_name}` endpoint executes any of 37 MCP tools via HTTP. This is direct tool execution, not coordination.
-2. `task_orchestrator/app.py:137-188` — `/api/decompose` endpoint calls PAL planner (LLM) to decompose tasks and persists results to ConPort and Leantime. This is policy execution (deciding how to break down tasks).
-3. `coordinator.py:239-248` — `coordinate_operation()` handles `create_task`, `update_progress`, `log_decision`. The "coordination" operations actually CREATE state (new tasks, new decisions), not just route events.
-4. `core.py:228` — `get_pal_client()` creates a direct connection to PAL (LLM reasoning). A "coordination-only" layer should not have an LLM client.
+1. `task_orchestrator/app.py:137-188` — `/api/decompose` endpoint calls PAL planner (LLM) to decompose tasks and persists results to ConPort and Leantime. This is policy execution (deciding how to break down tasks).
+1. `coordinator.py:239-248` — `coordinate_operation()` handles `create_task`, `update_progress`, `log_decision`. The "coordination" operations actually CREATE state (new tasks, new decisions), not just route events.
+1. `core.py:228` — `get_pal_client()` creates a direct connection to PAL (LLM reasoning). A "coordination-only" layer should not have an LLM client.
 
 **Severity**: INV-TX-006 VIOLATED. task-orchestrator is both coordinator AND executor.
 
@@ -149,8 +149,8 @@ Result: The same logical event creates two separate authority records in two dif
 
 **Evidence**:
 1. task-orchestrator's `/api/tools/{tool_name}` endpoint makes any MCP tool callable over HTTP without going through TaskX. Any service that can reach port 8000 can execute MCP tools.
-2. genetic-agent directly calls PAL (port 3003) and ConPort (port 3004) for "AI code repair" — this is code mutation via MCP without TaskX.
-3. However, pure MCP servers (Serena, Dope-Context, PAL) are read-only analyzers and cannot mutate code on their own.
+1. genetic-agent directly calls PAL (port 3003) and ConPort (port 3004) for "AI code repair" — this is code mutation via MCP without TaskX.
+1. However, pure MCP servers (Serena, Dope-Context, PAL) are read-only analyzers and cannot mutate code on their own.
 
 **Severity**: MODERATE. The MCP servers themselves are not execution paths, but the HTTP facades (especially task-orchestrator) create indirect execution paths.
 
@@ -160,8 +160,8 @@ Result: The same logical event creates two separate authority records in two dif
 
 **Evidence**:
 1. `eventbus_consumer.py:58-66` — `HIGH_SIGNAL_EVENTS` are automatically promoted without verification. The PromotionEngine applies deterministic rules but does not verify that the event actually happened (e.g., a `task.completed` event could be fabricated by any Redis publisher).
-2. `dope_memory_main.py:887-910` — Retention job deletes the raw events that serve as provenance for promoted entries. After deletion, there's no way to verify whether a promoted entry was legitimate.
-3. No authentication on the EventBus — any service connected to `redis-events:6379` can publish to `activity.events.v1` stream and have events promoted into the chronicle.
+1. `dope_memory_main.py:887-910` — Retention job deletes the raw events that serve as provenance for promoted entries. After deletion, there's no way to verify whether a promoted entry was legitimate.
+1. No authentication on the EventBus — any service connected to `redis-events:6379` can publish to `activity.events.v1` stream and have events promoted into the chronicle.
 
 **Severity**: HIGH. dope-memory trusts all EventBus publishers implicitly.
 
@@ -337,7 +337,7 @@ The Investigation CLI is described as a "CLI-only meta-layer" in design document
 | Event queue drops events silently at capacity | HIGH | INV-CROSS-006 (new) |
 | No EventBus publisher authentication | HIGH | INV-CROSS-003 (new) |
 | Retention job deletes raw events, breaking provenance chains | MEDIUM | INV-MEM-003 / INV-MEM-004 |
-| `\|\| exit 0` healthchecks mask server failures | MEDIUM | INV-MCP-006 |
+| `\\|\\| exit 0` healthchecks mask server failures | MEDIUM | INV-MCP-006 |
 | genetic-agent operates outside packet model | MEDIUM | INV-TX-008, INV-CROSS-010 |
 
 ---

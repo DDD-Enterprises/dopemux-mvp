@@ -23,55 +23,55 @@ prelude: Readme Start Here (reference) for dopemux documentation and developer w
 ### 🎯 **New here? Start with these (in order)**:
 
 1. **MODERNIZATION_ANALYSIS_2025.md** ← Read this FIRST! 🆕
-   - Complete modernization analysis (Oct 2025)
-   - Current state deep dive
-   - Architecture strengths & unique features
-   - Production readiness assessment
-   - **Most comprehensive document**
+- Complete modernization analysis (Oct 2025)
+- Current state deep dive
+- Architecture strengths & unique features
+- Production readiness assessment
+- **Most comprehensive document**
 
-2. **WEEK4_BUILD_ROADMAP.md** ← Complete build plan 🆕
-   - Day-by-day implementation guide
-   - Phase-by-phase breakdown
-   - Full code samples
-   - Testing strategies
-   - Week 4 complete roadmap
+1. **WEEK4_BUILD_ROADMAP.md** ← Complete build plan 🆕
+- Day-by-day implementation guide
+- Phase-by-phase breakdown
+- Full code samples
+- Testing strategies
+- Week 4 complete roadmap
 
-3. **WEEK4_DAY2_IMPLEMENTATION_PLAN.md** ← Build this TODAY!
-   - Concrete implementation steps
-   - Code snippets ready to paste
-   - Testing strategy
-   - ~95 minutes to complete
+1. **WEEK4_DAY2_IMPLEMENTATION_PLAN.md** ← Build this TODAY!
+- Concrete implementation steps
+- Code snippets ready to paste
+- Testing strategy
+- ~95 minutes to complete
 
-4. **DEEP_ANALYSIS_CURRENT_STATE.md** ← Technical deep dive
-   - Complete current state audit
-   - Architecture overview
-   - What's working, what needs work
-   - Technology stack and design decisions
+1. **DEEP_ANALYSIS_CURRENT_STATE.md** ← Technical deep dive
+- Complete current state audit
+- Architecture overview
+- What's working, what needs work
+- Technology stack and design decisions
 
 ### 📚 **Background/Context**:
 
 1. **ARCHITECTURE_ANALYSIS.md**
-   - Data model deep dive
-   - Multi-instance architecture
-   - Storage strategy decisions
+- Data model deep dive
+- Multi-instance architecture
+- Storage strategy decisions
 
-2. **WEEK4_DAY1_COMPLETE.md**
-   - What we built on Day 1
-   - KG integration foundation
-   - 19/19 tests passing
+1. **WEEK4_DAY1_COMPLETE.md**
+- What we built on Day 1
+- KG integration foundation
+- 19/19 tests passing
 
-3. **WEEK4_PROGRESS.md**
-   - Week 4 tracker
-   - Efficiency metrics (3.5x faster!)
-   - Roadmap overview
+1. **WEEK4_PROGRESS.md**
+- Week 4 tracker
+- Efficiency metrics (3.5x faster!)
+- Roadmap overview
 
 ### 🔍 **Detailed Specs** (optional reading):
 
 1. **WEEK4_DAY1_DEEP_ANALYSIS.md** - Day 1 decisions
-2. **WEEK4_DAY2_DEEP_RESEARCH.md** - Day 2 research
-3. **WEEK4_DAY2_SPEC.md** - Day 2 technical spec
-4. **WEEK4_DAY2_VALIDATION.md** - Day 2 validation
-5. **STORAGE_DESIGN.md** - Storage architecture
+1. **WEEK4_DAY2_DEEP_RESEARCH.md** - Day 2 research
+1. **WEEK4_DAY2_SPEC.md** - Day 2 technical spec
+1. **WEEK4_DAY2_VALIDATION.md** - Day 2 validation
+1. **STORAGE_DESIGN.md** - Storage architecture
 
 ---
 
@@ -83,13 +83,13 @@ prelude: Readme Start Here (reference) for dopemux documentation and developer w
 
 **Steps**:
 1. Read `DEEP_ANALYSIS_CURRENT_STATE.md` (10 min) - understand what we have
-2. Open `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` (2 min) - get the plan
-3. Follow the 4 phases:
-   - Phase 1: Decision-Task Linking (15 min)
-   - Phase 2: Relationship Mapper (25 min)
-   - Phase 3: Suggestion Engine (35 min)
-   - Phase 4: QueryService Integration (20 min)
-4. Run tests, update progress docs (10 min)
+1. Open `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` (2 min) - get the plan
+1. Follow the 4 phases:
+- Phase 1: Decision-Task Linking (15 min)
+- Phase 2: Relationship Mapper (25 min)
+- Phase 3: Suggestion Engine (35 min)
+- Phase 4: QueryService Integration (20 min)
+1. Run tests, update progress docs (10 min)
 
 **Code files you'll create/modify**:
 - `kg_integration.py` - extend with 3 new methods
@@ -323,8 +323,8 @@ pytest -v --tb=short
 
 **Next Steps**:
 1. ✅ Read `DEEP_ANALYSIS_CURRENT_STATE.md` (you're almost done!)
-2. ⏭️ Open `WEEK4_DAY2_IMPLEMENTATION_PLAN.md`
-3. 🔨 Start Phase 1: Decision-Task Linking
+1. ⏭️ Open `WEEK4_DAY2_IMPLEMENTATION_PLAN.md`
+1. 🔨 Start Phase 1: Decision-Task Linking
 
 **Estimated Time**: 95 minutes
 **Confidence**: Very High

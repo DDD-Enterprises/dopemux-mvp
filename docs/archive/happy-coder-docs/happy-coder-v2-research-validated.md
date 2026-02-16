@@ -25,7 +25,7 @@ prelude: Happy_Coder_V2_Research_Validated (explanation) for dopemux documentati
 
 **v2.0 Plan**: Research revealed **2 MUST-add patterns** I missed in initial analysis:
 1. **Focus Mode Presets** (iOS-inspired) - Context-aware rules with one-command switching
-2. **Time-Slot Availability** (Axolo-inspired) - Deep work protection (better than quiet hours!)
+1. **Time-Slot Availability** (Axolo-inspired) - Deep work protection (better than quiet hours!)
 
 Plus validation that **Scheduled Summaries** > Time-window batching for ADHD (predictability wins).
 
@@ -370,10 +370,10 @@ class MobileNotificationManager:
     Centralized notification manager with ADHD-optimized features.
 
     Components:
-    - FocusModeManager: Context-aware notification rules
-    - AvailabilityManager: Time-slot based suppression
-    - ScheduledSummaryManager: Predictable summary delivery
-    - PriorityRouter: Priority-based routing
+- FocusModeManager: Context-aware notification rules
+- AvailabilityManager: Time-slot based suppression
+- ScheduledSummaryManager: Predictable summary delivery
+- PriorityRouter: Priority-based routing
     """
 
     def __init__(self, config: MobileConfig):
@@ -393,10 +393,10 @@ class MobileNotificationManager:
         Smart notification routing with ADHD optimizations.
 
         Decision flow:
-        1. Check focus mode (should notify at all?)
-        2. Check availability (in work block?)
-        3. Check priority (immediate or summary?)
-        4. Route to immediate or scheduled delivery
+1. Check focus mode (should notify at all?)
+1. Check availability (in work block?)
+1. Check priority (immediate or summary?)
+1. Route to immediate or scheduled delivery
         """
 
         # Step 1: Focus mode filtering
@@ -738,8 +738,8 @@ Priority System (importance routing)
 
 ### Documentation Created
 1. **HAPPY_CODER_USAGE_GUIDE.md** (practical how-to)
-2. **HAPPY_CODER_ENHANCEMENTS.md** (original analysis)
-3. **HAPPY_CODER_V2_RESEARCH_VALIDATED.md** (this document)
+1. **HAPPY_CODER_ENHANCEMENTS.md** (original analysis)
+1. **HAPPY_CODER_V2_RESEARCH_VALIDATED.md** (this document)
 
 ### Research Completed
 - ✅ Mobile notification best practices (industry standards)
@@ -757,9 +757,9 @@ Priority System (importance routing)
 ## 🚀 Next Steps
 
 1. **Ship v1.0** ✅ DONE (commit 04729ee5)
-2. **Implement v2.0** (4-week roadmap above)
-3. **Collect user feedback** (validate assumptions)
-4. **Iterate** (refine based on real usage)
+1. **Implement v2.0** (4-week roadmap above)
+1. **Collect user feedback** (validate assumptions)
+1. **Iterate** (refine based on real usage)
 
 **Total Enhancement**: ~330 lines
 **Timeline**: 4 weeks

@@ -112,13 +112,13 @@ These patterns must be replaced with "[REDACTED]" when found in strings.
 ## Redaction Output Rules
 - Replace matched secrets with "[REDACTED]"
 - For denied paths:
-  - if path appears in linked_files, store:
+- if path appears in linked_files, store:
     `{ "path_hash": "sha256(path)", "action": "...", "note": "denied_path" }`
-  - do not store raw path
+- do not store raw path
 
 - Hard size cap:
-  - payload_json and details_json must be <= 64KB after redaction
-  - if larger, truncate and add:
+- payload_json and details_json must be <= 64KB after redaction
+- if larger, truncate and add:
     `{"truncated": true, "original_size": N}`
 
 ## Promotion Rules (Phase 1 Deterministic)
@@ -127,69 +127,69 @@ Events eligible for promotion must meet minimum required data fields.
 ### 1) decision.logged
 - requires: decision_id, title, choice OR rationale
 - produces:
-  - category = "planning" (or "architecture" if tags contain "arch")
-  - entry_type = "decision"
-  - outcome = "success"
-  - importance_score = max(7, inferred_importance)
-  - summary = "Decided: {title} -> {choice}"
-  - reasoning = rationale (redacted)
-  - linked_decisions = [decision_id]
-  - linked_files = affected_files (paths redacted by denylist)
+- category = "planning" (or "architecture" if tags contain "arch")
+- entry_type = "decision"
+- outcome = "success"
+- importance_score = max(7, inferred_importance)
+- summary = "Decided: {title} -> {choice}"
+- reasoning = rationale (redacted)
+- linked_decisions = [decision_id]
+- linked_files = affected_files (paths redacted by denylist)
 
 ### 2) task.failed / task.blocked
 - requires: task_id, title OR error.message
 - produces:
-  - category = "debugging" if failed/blocked else "implementation"
-  - entry_type = "blocker" for blocked; "error" for failed
-  - outcome = "failed" or "blocked"
-  - importance_score = 7
-  - summary = "Task {failed|blocked}: {title}"
-  - details = {task_id, error_kind, message, service, ci_job} redacted
+- category = "debugging" if failed/blocked else "implementation"
+- entry_type = "blocker" for blocked; "error" for failed
+- outcome = "failed" or "blocked"
+- importance_score = 7
+- summary = "Task {failed|blocked}: {title}"
+- details = {task_id, error_kind, message, service, ci_job} redacted
 
 ### 3) task.completed
 - requires: task_id, title
 - produces:
-  - category = "implementation"
-  - entry_type = "milestone"
-  - outcome = "success"
-  - importance_score = 5
-  - summary = "Completed: {title}"
+- category = "implementation"
+- entry_type = "milestone"
+- outcome = "success"
+- importance_score = 5
+- summary = "Completed: {title}"
 
 ### 4) error.encountered
 - requires: message
 - produces:
-  - category = "debugging"
-  - entry_type = "error"
-  - outcome = "in_progress"
-  - importance_score = 6
-  - summary = "Error: {error_kind or message_headline}"
+- category = "debugging"
+- entry_type = "error"
+- outcome = "in_progress"
+- importance_score = 6
+- summary = "Error: {error_kind or message_headline}"
 
 ### 5) workflow.phase_changed
 - requires: from_phase, to_phase
 - produces:
-  - category = "planning" if to_phase is planning else to_phase-derived
-  - entry_type = "workflow_transition"
-  - outcome = "success"
-  - importance_score = 5
-  - summary = "Phase: {from_phase} -> {to_phase}"
+- category = "planning" if to_phase is planning else to_phase-derived
+- entry_type = "workflow_transition"
+- outcome = "success"
+- importance_score = 5
+- summary = "Phase: {from_phase} -> {to_phase}"
 
 ### 6) manual.memory_store
 - requires: category, entry_type, summary
 - produces:
-  - category/entry_type from payload
-  - importance_score from payload (default 6)
-  - summary from payload
-  - details from payload (redacted)
+- category/entry_type from payload
+- importance_score from payload (default 6)
+- summary from payload
+- details from payload (redacted)
 
 ## Tag Extraction (Deterministic)
 - If event.data.tags exists and is a list of strings: use it (after ASCII normalize)
 - Else infer tags from:
-  - decision title keywords (snake_case)
-  - service field (service:xyz)
-  - phase field (phase:implementation)
+- decision title keywords (snake_case)
+- service field (service:xyz)
+- phase field (phase:implementation)
 - Cap tags to 12 max; stable order:
-  - explicit tags first in given order
-  - then inferred tags sorted lexicographically
+- explicit tags first in given order
+- then inferred tags sorted lexicographically
 
 ## Importance Score Rules (Phase 1)
 No LLM scoring in Phase 1.

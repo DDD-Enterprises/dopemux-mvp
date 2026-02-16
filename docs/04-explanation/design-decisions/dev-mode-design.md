@@ -22,8 +22,8 @@ prelude: Dev_Mode_Design (explanation) for dopemux documentation and developer w
 **Three Development Scenarios**:
 
 1. **Zen MCP Development** - Work on thinkdeep, planner, consensus, codereview
-2. **Dopemux Core Development** - Improve CLI, profile system, ConPort commands
-3. **MCP Server Development** - Develop any MCP server (Serena, ConPort, etc.)
+1. **Dopemux Core Development** - Improve CLI, profile system, ConPort commands
+1. **MCP Server Development** - Develop any MCP server (Serena, ConPort, etc.)
 
 **Key Requirements**:
 - Auto-detect local development checkouts
@@ -209,7 +209,7 @@ services:
   conport:
     volumes:
       # Production: use container code
-      - ${CONPORT_DEV_PATH:-./docker/mcp-servers/conport}:/app
+- ${CONPORT_DEV_PATH:-./docker/mcp-servers/conport}:/app
 
       # If CONPORT_DEV_PATH set, mount local checkout
       # → Live code editing with hot reload!
@@ -384,11 +384,11 @@ claude_config["mcpServers"]["zen"]["cwd"] = str(zen_path)
 ## Developing Zen MCP
 
 1. Fork zen-mcp-server on GitHub
-2. Clone: git clone git@github.com:YOU/zen-mcp-server ~/code/zen-mcp-server
-3. Install: pip install -e ".[dev]"
-4. Test: dopemux start (auto-detects your local Zen!)
-5. Commit: git commit -m "feat: improve thinkdeep reasoning"
-6. PR: Push and create pull request
+1. Clone: git clone git@github.com:YOU/zen-mcp-server ~/code/zen-mcp-server
+1. Install: pip install -e ".[dev]"
+1. Test: dopemux start (auto-detects your local Zen!)
+1. Commit: git commit -m "feat: improve thinkdeep reasoning"
+1. PR: Push and create pull request
 ```
 
 ---
@@ -422,9 +422,9 @@ services:
   zen:
     volumes:
       # Mount local code for live editing
-      - ${ZEN_DEV_PATH:-./external/zen-mcp-server}:/app
+- ${ZEN_DEV_PATH:-./external/zen-mcp-server}:/app
     environment:
-      - HOT_RELOAD=true
+- HOT_RELOAD=true
     # Watchdog automatically reloads on changes
 ```
 
@@ -616,9 +616,9 @@ else:
 
 ### **Full Implementation** (~2 hours):
 1. DevMode class (~30 min)
-2. Extract Zen as submodule (~45 min)
-3. Hot reload for Python servers (~30 min)
-4. CONTRIBUTING_ZEN.md docs (~15 min)
+1. Extract Zen as submodule (~45 min)
+1. Hot reload for Python servers (~30 min)
+1. CONTRIBUTING_ZEN.md docs (~15 min)
 
 ---
 
@@ -975,9 +975,9 @@ else:
 
 **Realistic Next Steps:**
 1. ✅ Documentation (COMPLETED 2026-02-02)
-2. Service presets (`--minimal`, `--full`) (future)
-3. Test fixture management (future)
-4. Hot reload implementation (future - lower priority)
+1. Service presets (`--minimal`, `--full`) (future)
+1. Test fixture management (future)
+1. Hot reload implementation (future - lower priority)
 
 ---
 

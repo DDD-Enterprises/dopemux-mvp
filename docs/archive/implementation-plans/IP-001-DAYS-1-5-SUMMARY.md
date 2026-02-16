@@ -37,7 +37,7 @@ prelude: Ip 001 Days 1 5 Summary (explanation) for dopemux documentation and dev
 
 **Migrated Classes**:
 1. ADHDCodeNavigator - 4 dynamic methods
-2. CognitiveLoadManager - 2 dynamic methods
+1. CognitiveLoadManager - 2 dynamic methods
 
 **Eliminated 6 Hardcoded Thresholds**:
 - max_initial_results: 10 → Dynamic 5-40
@@ -154,7 +154,7 @@ complexity_threshold = 1.0
 
 **Remaining Migrations** (1-2 focus blocks, ~25-50 minutes):
 1. dope-context: Migrate DEFAULT_TOP_K and MAX_RESULTS
-2. DopeconBridge: Investigate and migrate (if ADHD code exists)
+1. DopeconBridge: Investigate and migrate (if ADHD code exists)
 
 **Estimated Effort**: 25-50 minutes
 **Complexity**: LOW (following established pattern)

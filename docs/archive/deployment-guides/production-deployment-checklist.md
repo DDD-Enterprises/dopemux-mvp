@@ -159,10 +159,10 @@ docker-compose up -d grafana
 ```bash
 # Test critical user paths
 1. Create decision via ConPort MCP
-2. Search for decision (test FTS + user_id scoping)
-3. Query session intelligence (verify real ADHD data)
-4. Publish event to dopemux:events (verify F-NEW-8 consuming)
-5. Check logs for errors
+1. Search for decision (test FTS + user_id scoping)
+1. Query session intelligence (verify real ADHD data)
+1. Publish event to dopemux:events (verify F-NEW-8 consuming)
+1. Check logs for errors
 ```
 
 ## Post-Deployment Validation
@@ -260,22 +260,22 @@ docker-compose up -d
 
 ### Key Metrics to Track
 1. **ADHD Performance** (P0):
-   - Search latency P95 (target: <200ms)
-   - Session query latency (target: <65ms)
-   - Break suggestion frequency
-   - Task completion rate
+- Search latency P95 (target: <200ms)
+- Session query latency (target: <65ms)
+- Break suggestion frequency
+- Task completion rate
 
-2. **Service Health** (P0):
-   - Uptime %
-   - Error rate
-   - Response times
-   - Database connections
+1. **Service Health** (P0):
+- Uptime %
+- Error rate
+- Response times
+- Database connections
 
-3. **User Experience** (P1):
-   - Task abandonment rate (target: <30%)
-   - Context switch frequency
-   - Average session duration
-   - Break adherence rate
+1. **User Experience** (P1):
+- Task abandonment rate (target: <30%)
+- Context switch frequency
+- Average session duration
+- Break adherence rate
 
 ## Timeline
 

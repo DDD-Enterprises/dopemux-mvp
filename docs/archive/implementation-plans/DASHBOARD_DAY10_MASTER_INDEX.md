@@ -28,9 +28,9 @@ prelude: Dashboard_Day10_Master_Index (explanation) for dopemux documentation an
 
 After completing sparklines and keyboard navigation (Day 9), we're adding:
 1. **5 Drill-Down Screens** - Deep inspection for tasks, services, patterns, logs, timeline
-2. **Context Menu System** - Right-click or `:` key for quick actions
-3. **Full-Text Search** - Ctrl+F to search across all dashboard data
-4. **Production Hardening** - Error boundaries, crash recovery, telemetry
+1. **Context Menu System** - Right-click or `:` key for quick actions
+1. **Full-Text Search** - Ctrl+F to search across all dashboard data
+1. **Production Hardening** - Error boundaries, crash recovery, telemetry
 
 ### Why This Matters
 - **Drill-Downs:** Transform monitoring → debugging (ADHD-friendly investigation)
@@ -40,8 +40,8 @@ After completing sparklines and keyboard navigation (Day 9), we're adding:
 
 ### Files to Read (in order)
 1. **This file** (you're here!) - Navigation and overview
-2. **DASHBOARD_DAY10_IMPLEMENTATION_READY.md** - Start coding with this!
-3. **DASHBOARD_DAY10_ZEN_RESEARCH.md** - Reference when stuck
+1. **DASHBOARD_DAY10_IMPLEMENTATION_READY.md** - Start coding with this!
+1. **DASHBOARD_DAY10_ZEN_RESEARCH.md** - Reference when stuck
 
 ---
 
@@ -77,33 +77,33 @@ After completing sparklines and keyboard navigation (Day 9), we're adding:
 
 **Tasks Covered:**
 1. **Drill-Down Screens** (~400 lines, 4-5 hrs)
-   - TaskDetailScreen
-   - ServiceLogsScreen
-   - PatternAnalysisScreen
-   - TimelineScreen
-   - StateDetailScreen
+- TaskDetailScreen
+- ServiceLogsScreen
+- PatternAnalysisScreen
+- TimelineScreen
+- StateDetailScreen
 
-2. **Context Menu System** (~200 lines, 2-3 hrs)
-   - ContextMenu base class
-   - MenuItem configuration
-   - Panel-specific menus
-   - Keyboard & mouse triggers
+1. **Context Menu System** (~200 lines, 2-3 hrs)
+- ContextMenu base class
+- MenuItem configuration
+- Panel-specific menus
+- Keyboard & mouse triggers
 
-3. **Search System** (~150 lines, 2-3 hrs)
-   - SearchManager (indexing, ranking)
-   - SearchScreen UI
-   - Live search with debouncing
-   - Drill-down integration
+1. **Search System** (~150 lines, 2-3 hrs)
+- SearchManager (indexing, ranking)
+- SearchScreen UI
+- Live search with debouncing
+- Drill-down integration
 
-4. **Production Hardening** (~200 lines, 2-3 hrs)
-   - Error boundaries for widgets
-   - Crash recovery & state persistence
-   - Telemetry & logging
+1. **Production Hardening** (~200 lines, 2-3 hrs)
+- Error boundaries for widgets
+- Crash recovery & state persistence
+- Telemetry & logging
 
-5. **Testing** (~300 lines, 2 hrs)
-   - Integration tests (10+)
-   - Performance tests (5+)
-   - 24-hour stress test
+1. **Testing** (~300 lines, 2 hrs)
+- Integration tests (10+)
+- Performance tests (5+)
+- 24-hour stress test
 
 ---
 
@@ -295,28 +295,28 @@ dopemux-mvp/
 
 ### Functional Requirements
 - ✅ 5+ drill-down screens fully functional
-  - TaskDetailScreen (task history, context, decisions, stats)
-  - ServiceLogsScreen (real-time streaming, 1000-line buffer)
-  - PatternAnalysisScreen (7-day trends, correlations, insights)
-  - TimelineScreen (session events, state changes)
-  - StateDetailScreen (cognitive load breakdown)
+- TaskDetailScreen (task history, context, decisions, stats)
+- ServiceLogsScreen (real-time streaming, 1000-line buffer)
+- PatternAnalysisScreen (7-day trends, correlations, insights)
+- TimelineScreen (session events, state changes)
+- StateDetailScreen (cognitive load breakdown)
 
 - ✅ Context menus on every panel
-  - Keyboard trigger (`:` key)
-  - Mouse trigger (right-click)
-  - Panel-specific actions
-  - Global actions
+- Keyboard trigger (`:` key)
+- Mouse trigger (right-click)
+- Panel-specific actions
+- Global actions
 
 - ✅ Full-text search working
-  - Index 1000+ items
-  - Live search (<100ms)
-  - Ranked results
-  - Drill-down integration
+- Index 1000+ items
+- Live search (<100ms)
+- Ranked results
+- Drill-down integration
 
 - ✅ Production hardening complete
-  - Error boundaries (no crashes)
-  - Crash recovery (state persistence)
-  - Telemetry (events + metrics)
+- Error boundaries (no crashes)
+- Crash recovery (state persistence)
+- Telemetry (events + metrics)
 
 ### Performance Requirements
 - ✅ Drill-down latency <500ms
@@ -617,19 +617,19 @@ You will have:
 
 ### Research Papers & Articles
 1. **ADHD Dashboard Design**
-   - [HogoNext: Keyboard Navigation Accessibility](https://hogonext.com/how-to-create-accessible-keyboard-navigation-for-users-with-disabilities/)
-   - [Equally AI: User Dashboard Best Practices](https://blog.equally.ai/web-accessibility/accessible-user-dashboard-best-practices-to-maximize-full-usability-for-people-with-disabilities/)
-   - [Esri: Dashboard Accessibility](https://www.esri.com/arcgis-blog/products/ops-dashboard/data-management/improving-the-accessibility-of-your-dashboard/)
-   - [Tableau: Accessible Dashboards](https://help.tableau.com/current/pro/desktop/en-us/accessibility_dashboards.htm)
+- [HogoNext: Keyboard Navigation Accessibility](https://hogonext.com/how-to-create-accessible-keyboard-navigation-for-users-with-disabilities/)
+- [Equally AI: User Dashboard Best Practices](https://blog.equally.ai/web-accessibility/accessible-user-dashboard-best-practices-to-maximize-full-usability-for-people-with-disabilities/)
+- [Esri: Dashboard Accessibility](https://www.esri.com/arcgis-blog/products/ops-dashboard/data-management/improving-the-accessibility-of-your-dashboard/)
+- [Tableau: Accessible Dashboards](https://help.tableau.com/current/pro/desktop/en-us/accessibility_dashboards.htm)
 
-2. **Terminal TUI Best Practices**
-   - [RealPython: Textual Tutorial](https://realpython.com/python-textual/)
-   - [Textual Documentation](https://textual.textualize.io/)
-   - [GitHub Awesome-TUIs](https://github.com/rothgar/awesome-tuis)
+1. **Terminal TUI Best Practices**
+- [RealPython: Textual Tutorial](https://realpython.com/python-textual/)
+- [Textual Documentation](https://textual.textualize.io/)
+- [GitHub Awesome-TUIs](https://github.com/rothgar/awesome-tuis)
 
-3. **Prometheus Visualization**
-   - [Grafana Dashboard Patterns](https://www.swiftorial.com/tutorials/devops/prometheus/dashboards/advanced_dashboard_techniques/)
-   - [FasterCapital: Sparklines Integration](https://fastercapital.com/content/Dashboard--Dashboard-Dynamics--Integrating-Sparklines-for-Real-Time-Data-Display.html)
+1. **Prometheus Visualization**
+- [Grafana Dashboard Patterns](https://www.swiftorial.com/tutorials/devops/prometheus/dashboards/advanced_dashboard_techniques/)
+- [FasterCapital: Sparklines Integration](https://fastercapital.com/content/Dashboard--Dashboard-Dynamics--Integrating-Sparklines-for-Real-Time-Data-Display.html)
 
 ### Code Examples
 - [Textual Example Apps](https://github.com/Textualize/textual/tree/main/examples)
@@ -670,8 +670,8 @@ You will have:
 
 ### Read First (10 minutes)
 1. This master index (you're here!) ✅
-2. Quick start section (above)
-3. Architecture overview
+1. Quick start section (above)
+1. Architecture overview
 
 ### Code With (During implementation)
 1. **DASHBOARD_DAY10_IMPLEMENTATION_READY.md** ⭐ (Your primary guide)

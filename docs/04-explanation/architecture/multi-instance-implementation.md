@@ -316,41 +316,41 @@ dopemux start
 ### ADHD Optimization
 
 1. **Zero Context Destruction**
-   - Switch between tasks without losing mental model
-   - Open files, cursor positions preserved per instance
-   - No cognitive overhead from context switching
+- Switch between tasks without losing mental model
+- Open files, cursor positions preserved per instance
+- No cognitive overhead from context switching
 
-2. **Parallel Workflows**
-   - Work on multiple features simultaneously
-   - Emergency hotfixes don't interrupt feature work
-   - Experiments in isolated branches
+1. **Parallel Workflows**
+- Work on multiple features simultaneously
+- Emergency hotfixes don't interrupt feature work
+- Experiments in isolated branches
 
-3. **Automatic Data Sharing**
-   - Completed work visible to all instances
-   - Decisions logged once, available everywhere
-   - Team coordination without manual sync
+1. **Automatic Data Sharing**
+- Completed work visible to all instances
+- Decisions logged once, available everywhere
+- Team coordination without manual sync
 
-4. **Visual Progress**
-   - Rich CLI tables show instance status
-   - Clear separation of isolated vs shared work
-   - Easy cleanup of stopped instances
+1. **Visual Progress**
+- Rich CLI tables show instance status
+- Clear separation of isolated vs shared work
+- Easy cleanup of stopped instances
 
 ### Developer Experience
 
 1. **Automatic Detection**
-   - No manual configuration required
-   - Detects running instances automatically
-   - Suggests next available instance ID/port
+- No manual configuration required
+- Detects running instances automatically
+- Suggests next available instance ID/port
 
-2. **Interactive Setup**
-   - Prompts for branch name with sensible defaults
-   - Shows running instances before starting new one
-   - Confirmation before creating worktrees
+1. **Interactive Setup**
+- Prompts for branch name with sensible defaults
+- Shows running instances before starting new one
+- Confirmation before creating worktrees
 
-3. **Simple Management**
-   - `dopemux instances list` - see all instances
-   - `dopemux instances cleanup` - remove worktrees
-   - Clear error messages and helpful hints
+1. **Simple Management**
+- `dopemux instances list` - see all instances
+- `dopemux instances cleanup` - remove worktrees
+- Clear error messages and helpful hints
 
 ## Performance
 
@@ -374,24 +374,24 @@ dopemux start
 ## Known Limitations (Expected for MVP)
 
 1. **Manual Environment Variables in Worktrees**
-   - No automatic detection within worktree directories
-   - User must export vars or dopemux sets them on startup
+- No automatic detection within worktree directories
+- User must export vars or dopemux sets them on startup
 
-2. **Maximum 5 Instances**
-   - Hardcoded port ranges for simplicity
-   - Can extend by modifying `AVAILABLE_PORTS` array
+1. **Maximum 5 Instances**
+- Hardcoded port ranges for simplicity
+- Can extend by modifying `AVAILABLE_PORTS` array
 
-3. **No Historical Data Migration**
-   - Old decisions/patterns not retroactively instance-aware
-   - Only new data respects instance isolation
+1. **No Historical Data Migration**
+- Old decisions/patterns not retroactively instance-aware
+- Only new data respects instance isolation
 
-4. **No UI Dashboard**
-   - Terminal-only interface currently
-   - Planned for future enhancement
+1. **No UI Dashboard**
+- Terminal-only interface currently
+- Planned for future enhancement
 
-5. **No Automatic Cleanup**
-   - Orphaned worktrees if instance crashes
-   - User must run `cleanup --all` manually
+1. **No Automatic Cleanup**
+- Orphaned worktrees if instance crashes
+- User must run `cleanup --all` manually
 
 **All limitations documented and acceptable for MVP** ✅
 
@@ -460,28 +460,28 @@ dopemux instances cleanup B
 ### Created
 
 1. `src/dopemux/instance_manager.py` (380 lines)
-   - InstanceManager class
-   - RunningInstance dataclass
-   - Async instance detection
-   - Worktree management
+- InstanceManager class
+- RunningInstance dataclass
+- Async instance detection
+- Worktree management
 
-2. `docs/02-how-to/multi-instance-workflow.md` (600 lines)
-   - Complete user guide
-   - ADHD-optimized workflows
-   - Troubleshooting guide
+1. `docs/02-how-to/multi-instance-workflow.md` (600 lines)
+- Complete user guide
+- ADHD-optimized workflows
+- Troubleshooting guide
 
-3. `MULTI_INSTANCE_IMPLEMENTATION.md` (this file)
-   - Technical summary
-   - Architecture documentation
+1. `MULTI_INSTANCE_IMPLEMENTATION.md` (this file)
+- Technical summary
+- Architecture documentation
 
 ### Modified
 
 1. `src/dopemux/cli.py` (~260 lines changed)
-   - Import InstanceManager
-   - Enhanced `dopemux start` command
-   - Added `dopemux instances` group
-   - Added `instances list` subcommand
-   - Added `instances cleanup` subcommand
+- Import InstanceManager
+- Enhanced `dopemux start` command
+- Added `dopemux instances` group
+- Added `instances list` subcommand
+- Added `instances cleanup` subcommand
 
 **Total Code Added**: ~1,240 lines
 **Total Documentation**: ~600 lines
@@ -501,34 +501,34 @@ dopemux instances cleanup B
 ## Future Enhancements (Post-MVP)
 
 1. **Automatic Instance Detection in Worktrees**
-   - Parse git worktree info automatically
-   - No manual env var export needed
-   - Git hook integration
+- Parse git worktree info automatically
+- No manual env var export needed
+- Git hook integration
 
-2. **UI Dashboard**
-   - Visual representation of instances
-   - Real-time status updates
-   - Web-based control panel
+1. **UI Dashboard**
+- Visual representation of instances
+- Real-time status updates
+- Web-based control panel
 
-3. **Extended Instance Limit**
-   - Dynamic port allocation
-   - Support 10+ concurrent instances
-   - Cloud-based instance coordination
+1. **Extended Instance Limit**
+- Dynamic port allocation
+- Support 10+ concurrent instances
+- Cloud-based instance coordination
 
-4. **Automatic Cleanup**
-   - Detect crashed instances
-   - Remove orphaned worktrees
-   - Self-healing system
+1. **Automatic Cleanup**
+- Detect crashed instances
+- Remove orphaned worktrees
+- Self-healing system
 
-5. **Team Collaboration**
-   - Multi-developer instance coordination
-   - Shared instance registry
-   - Remote instance discovery
+1. **Team Collaboration**
+- Multi-developer instance coordination
+- Shared instance registry
+- Remote instance discovery
 
-6. **Instance Profiles**
-   - Pre-configured instance templates
-   - Language-specific setups
-   - Project-type optimizations
+1. **Instance Profiles**
+- Pre-configured instance templates
+- Language-specific setups
+- Project-type optimizations
 
 ## Metrics
 
@@ -557,9 +557,9 @@ Successfully delivered complete multi-instance support for Dopemux with automati
 
 **Next Steps**:
 1. Manual testing of full workflow
-2. User feedback collection
-3. Monitor usage patterns
-4. Plan future enhancements based on real-world needs
+1. User feedback collection
+1. Monitor usage patterns
+1. Plan future enhancements based on real-world needs
 
 ---
 

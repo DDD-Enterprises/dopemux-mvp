@@ -103,11 +103,11 @@ async def save_custom_data(...):
 
 **Violations Found**:
 1. ADHD Engine → ConPort direct writes (`conport_client.py:296`)
-2. ConPort Orchestrator → DopeconBridge TODOs (line 127)
+1. ConPort Orchestrator → DopeconBridge TODOs (line 127)
 
 **Recommended Fix** (Week 7, 12h):
 1. Complete bridge MCP integration (4-6h)
-2. Migrate services to bridge (6-8h)
+1. Migrate services to bridge (6-8h)
 
 ---
 
@@ -136,21 +136,21 @@ async def save_custom_data(...):
 
 **Production-Ready** (4):
 1. **Dope-Context** ✅ - Semantic search, chunking fixed, 4,413 docs indexed
-2. **Serena v2** ✅ - LSP navigation, ADHD optimizations
-3. **ADHD Engine** ✅ - 7 endpoints, 6 monitors (NOW SECURED)
-4. **ConPort KG UI** ✅ - React CLI, well-structured
+1. **Serena v2** ✅ - LSP navigation, ADHD optimizations
+1. **ADHD Engine** ✅ - 7 endpoints, 6 monitors (NOW SECURED)
+1. **ConPort KG UI** ✅ - React CLI, well-structured
 
 **Functional But Issues** (4):
-5. **DopeconBridge** ⚠️ - 80% done, stubs for custom_data
-6. **ConPort KG** ⚠️ - Bridge TODOs not wired
-7. **GPT-Researcher** ⚠️ - CORS fixed, 67 TODOs found
-8. **Zen MCP** ✅ - 27 models, 9 tools (external Docker)
+1. **DopeconBridge** ⚠️ - 80% done, stubs for custom_data
+1. **ConPort KG** ⚠️ - Bridge TODOs not wired
+1. **GPT-Researcher** ⚠️ - CORS fixed, 67 TODOs found
+1. **Zen MCP** ✅ - 27 models, 9 tools (external Docker)
 
 **Needs Investigation** (4):
-9. Claude-Context (legacy?)
-10. ML Risk Assessment
-11. Orchestrator
-12. Taskmaster
+1. Claude-Context (legacy?)
+1. ML Risk Assessment
+1. Orchestrator
+1. Taskmaster
 
 ---
 
@@ -237,23 +237,23 @@ async def save_custom_data(...):
 ### Remaining MEDIUM Risks (4)
 
 1. **DopeconBridge Incomplete** (4-6h to fix) ⚠️ **NOW LOGGED AS CONPORT TASK**
-   - Custom data endpoints are stubs
-   - Missing MCP→ConPort layer
-   - **ConPort Task ID**: 291 - "Fix DopeconBridge - Debug and resolve ConPort communication errors"
+- Custom data endpoints are stubs
+- Missing MCP→ConPort layer
+- **ConPort Task ID**: 291 - "Fix DopeconBridge - Debug and resolve ConPort communication errors"
 
-2. **Direct Database Access** (6-8h to migrate) ⚠️ **NOW LOGGED AS CONPORT TASK**
-   - ADHD Engine → ConPort SQLite
-   - Should use DopeconBridge HTTP API
-   - **ConPort Task ID**: 296 - "Replace Mock Data - Replace mock data in sync functions with real API calls"
+1. **Direct Database Access** (6-8h to migrate) ⚠️ **NOW LOGGED AS CONPORT TASK**
+- ADHD Engine → ConPort SQLite
+- Should use DopeconBridge HTTP API
+- **ConPort Task ID**: 296 - "Replace Mock Data - Replace mock data in sync functions with real API calls"
 
-3. **SQL Injection Candidates** (30min to verify)
-   - `age_client.py:74,111` - f-strings with graph_name
-   - Need to trace data source
+1. **SQL Injection Candidates** (30min to verify)
+- `age_client.py:74,111` - f-strings with graph_name
+- Need to trace data source
 
-4. **Subprocess Audit Pending** (2h)
-   - 54 instances found
-   - Most appear safe (MCP wrappers)
-   - Full review recommended
+1. **Subprocess Audit Pending** (2h)
+- 54 instances found
+- Most appear safe (MCP wrappers)
+- Full review recommended
 
 ### LOW Risks
 
@@ -268,24 +268,24 @@ async def save_custom_data(...):
 ### Immediate Actions (Complete!) ✅
 
 1. ✅ Fix CORS wildcards
-2. ✅ Remove hardcoded credentials
-3. ✅ Add API authentication
-4. ✅ Create .env.example
+1. ✅ Remove hardcoded credentials
+1. ✅ Add API authentication
+1. ✅ Create .env.example
 
 ### Short-Term (This Week)
 
 1. [ ] Test all security fixes
-2. [ ] Verify SQL injection candidates
-3. [ ] Complete Phases 3-4 (documentation validation)
-4. [ ] Run integration test suite
+1. [ ] Verify SQL injection candidates
+1. [ ] Complete Phases 3-4 (documentation validation)
+1. [ ] Run integration test suite
 
 ### Week 7 (Integration Work)
 
 1. [ ] Complete DopeconBridge (4-6h)
-   - Implement MCP client
-   - Wire custom_data to actual ConPort calls
+- Implement MCP client
+- Wire custom_data to actual ConPort calls
 
-2. [ ] Migrate Services (6-8h)
+1. [ ] Migrate Services (6-8h)
 - Remove direct SQLite access
 - Update to HTTP API
 - Test end-to-end
@@ -401,16 +401,16 @@ async def save_custom_data(...):
 
 **Reports** (11 files):
 1. EXHAUSTIVE-AUDIT-PLAN.md (93h detailed plan)
-2. OPTIMIZED-AUDIT-PLAN.md (36h MCP plan)
-3. phase-1a-inventory.md (codebase composition)
-4. phase-1b-service-catalog.md (12 services)
-5. phase-1c-dependency-map.md (infrastructure)
-6. phase-1d-documentation-inventory.md (4,413 chunks)
-7. PHASE-1-COMPLETE.md (summary)
-8. phase-2a-security-scan.md (vulnerabilities)
-9. phase-2-security-quality-complete.md (Zen reviews)
-10. phase-3-manual-review-findings.md (claim verification)
-11. **FINAL-AUDIT-REPORT.md** (this document)
+1. OPTIMIZED-AUDIT-PLAN.md (36h MCP plan)
+1. phase-1a-inventory.md (codebase composition)
+1. phase-1b-service-catalog.md (12 services)
+1. phase-1c-dependency-map.md (infrastructure)
+1. phase-1d-documentation-inventory.md (4,413 chunks)
+1. PHASE-1-COMPLETE.md (summary)
+1. phase-2a-security-scan.md (vulnerabilities)
+1. phase-2-security-quality-complete.md (Zen reviews)
+1. phase-3-manual-review-findings.md (claim verification)
+1. **FINAL-AUDIT-REPORT.md** (this document)
 
 **Code Improvements** (10 files changed):
 - 4 services: CORS fixes
@@ -441,9 +441,9 @@ MCP-enhanced methodology delivered **72% time savings** while maintaining compre
 
 **Recommended Next Steps**:
 1. Deploy with security fixes
-2. Test in staging environment
-3. Schedule Week 7 DopeconBridge completion
-4. Optional: Continue full audit (Phases 3-8, ~20h) for complete coverage
+1. Test in staging environment
+1. Schedule Week 7 DopeconBridge completion
+1. Optional: Continue full audit (Phases 3-8, ~20h) for complete coverage
 
 ---
 

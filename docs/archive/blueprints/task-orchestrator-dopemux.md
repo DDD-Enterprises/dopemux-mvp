@@ -89,20 +89,20 @@ for subtask in plan.subtasks:
 
 ### Standard Task Execution
 1. **Task Intake**: Pull from ConPort upcoming queue
-2. **Planning Phase**: Decompose into 3-5 subtasks maximum
-3. **Implementation**: Execute subtasks using Morph for code edits
-4. **Validation**: Run Playwright scenarios for UI features
-5. **Completion**: Update ConPort with results and artifacts
+1. **Planning Phase**: Decompose into 3-5 subtasks maximum
+1. **Implementation**: Execute subtasks using Morph for code edits
+1. **Validation**: Run Playwright scenarios for UI features
+1. **Completion**: Update ConPort with results and artifacts
 
 ### Escalation Scenarios
 1. **Ambiguous Requirements**: Escalate to Zen for consensus clarification
-2. **Complex Architecture**: Route through Zen for multi-model analysis
-3. **Implementation Blockers**: Use Zen debug workflow for problem resolution
+1. **Complex Architecture**: Route through Zen for multi-model analysis
+1. **Implementation Blockers**: Use Zen debug workflow for problem resolution
 
 ### Recovery Patterns
 1. **Edit Failures**: Automatic Morph revert and re-apply with expanded context
-2. **Validation Flakes**: Playwright retry with exponential backoff
-3. **Service Outages**: Continue with local state, spool operations for replay
+1. **Validation Flakes**: Playwright retry with exponential backoff
+1. **Service Outages**: Continue with local state, spool operations for replay
 
 ## ADHD Optimizations
 
@@ -213,8 +213,8 @@ for subtask in plan.subtasks:
 
 ### Common Issues
 1. **Planning Failures**: Check task description clarity and provide more context
-2. **Status Sync Issues**: Verify ConPort connectivity and permissions
-3. **Validation Timeouts**: Increase Playwright timeouts for complex scenarios
+1. **Status Sync Issues**: Verify ConPort connectivity and permissions
+1. **Validation Timeouts**: Increase Playwright timeouts for complex scenarios
 
 ### Debug Tools
 - **Status Inspection**: Check current task and subtask states

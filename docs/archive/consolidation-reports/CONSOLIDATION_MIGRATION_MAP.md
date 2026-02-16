@@ -176,11 +176,11 @@ docs/
 ## Post-Consolidation Tasks
 
 1. **Update 00-MASTER-INDEX.md**: Reflect new structure and paths
-2. **Update docs_index.yaml**: Update file paths in machine-readable index
-3. **Review remaining directories**: Check development/, synergies/, audit/, services/, mcp-servers/, systems/
-4. **Service README audit**: Ensure service READMEs are brief, extract detailed docs to docs/03-reference/services/
-5. **Verify links**: Update any internal documentation links to new paths
-6. **Update .gitignore**: Ensure archived directories are tracked
+1. **Update docs_index.yaml**: Update file paths in machine-readable index
+1. **Review remaining directories**: Check development/, synergies/, audit/, services/, mcp-servers/, systems/
+1. **Service README audit**: Ensure service READMEs are brief, extract detailed docs to docs/03-reference/services/
+1. **Verify links**: Update any internal documentation links to new paths
+1. **Update .gitignore**: Ensure archived directories are tracked
 
 ## Notes
 

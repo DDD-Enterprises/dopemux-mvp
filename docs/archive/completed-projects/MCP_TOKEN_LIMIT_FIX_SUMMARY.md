@@ -158,8 +158,8 @@ async def take_screenshot(filename: str):
 `★ Insight ─────────────────────────────────────`
 **Three Fix Patterns Emerge**:
 1. **Progressive Truncation** (GPT-Researcher, ConPort) - Truncate fields by priority
-2. **MCP Boundary Enforcement** (Zen, Leantime) - Single interception point
-3. **File Path Pattern** (Desktop-Commander, Serena) - Return paths not data
+1. **MCP Boundary Enforcement** (Zen, Leantime) - Single interception point
+1. **File Path Pattern** (Desktop-Commander, Serena) - Return paths not data
 
 Choose pattern based on response structure and MCP SDK usage.
 `─────────────────────────────────────────────────`
@@ -260,18 +260,18 @@ cd docker/mcp-servers/desktop-commander
 
 ### Phase 1: Critical Fixes (Week 1) ✅ COMPLETE
 1. ✅ Dope-Context (DONE - Decision #137)
-2. ✅ Serena-v2 `read_file` truncation (DONE - Decision #139)
-3. ✅ Desktop-Commander validation (DONE - Decision #140)
+1. ✅ Serena-v2 `read_file` truncation (DONE - Decision #139)
+1. ✅ Desktop-Commander validation (DONE - Decision #140)
 
 ### Phase 2: Medium Risk (Week 2) ✅ COMPLETE
 1. ✅ ConPort bulk query truncation (DONE - Decision #141)
-2. ✅ Zen multi-step response budgeting (DONE - Decision #142)
+1. ✅ Zen multi-step response budgeting (DONE - Decision #142)
 
 ### Phase 3: Hardening (Week 3) ✅ COMPLETE
 1. ✅ GPT-Researcher report truncation (DONE - Decision #143)
-2. ✅ Leantime-Bridge list truncation (DONE - Decision #144)
-3. 🔄 Create shared `mcp_response_budget` utility (Future)
-4. 🔄 Document MCP token budgeting best practices (Future)
+1. ✅ Leantime-Bridge list truncation (DONE - Decision #144)
+1. 🔄 Create shared `mcp_response_budget` utility (Future)
+1. 🔄 Document MCP token budgeting best practices (Future)
 
 **Completion**: **7/9 items complete** (78% - core fixes 100% ✅)
 
@@ -296,14 +296,14 @@ cd docker/mcp-servers/desktop-commander
 
 ### Immediate (Optional Hardening)
 1. Create shared `mcp_response_budget.py` utility library
-2. Add comprehensive MCP best practices documentation
-3. Add monitoring/alerting for token usage approaching limits
+1. Add comprehensive MCP best practices documentation
+1. Add monitoring/alerting for token usage approaching limits
 
 ### Future Enhancements
 1. Dynamic budget adjustment based on available headroom
-2. Smart truncation with AI summarization (for verbose fields)
-3. Pagination support for list-heavy responses
-4. Budget telemetry and analytics
+1. Smart truncation with AI summarization (for verbose fields)
+1. Pagination support for list-heavy responses
+1. Budget telemetry and analytics
 
 ---
 

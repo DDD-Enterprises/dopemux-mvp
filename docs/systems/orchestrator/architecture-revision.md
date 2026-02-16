@@ -29,8 +29,8 @@ AI CLIs expect interactive terminals (TTY) but subprocess.Popen provides pipes.
 
 **Options**:
 1. Use PTY (pseudo-terminal) - complex, platform-specific
-2. Use non-interactive CLI modes - limited functionality
-3. **Use Zen MCP** - already provides multi-model access!
+1. Use non-interactive CLI modes - limited functionality
+1. **Use Zen MCP** - already provides multi-model access!
 
 ---
 
@@ -217,20 +217,20 @@ bus.publish(Event(type=AGENT_OUTPUT, payload=response))
 ### Immediate (Next 2-3 Hours):
 
 1. **Create Zen MCP Client** (replaces agent_spawner.py)
-   - Wrap Zen tools (thinkdeep, planner, consensus, chat, debug, codereview)
-   - Handle model selection based on mode
-   - Return structured responses
+- Wrap Zen tools (thinkdeep, planner, consensus, chat, debug, codereview)
+- Handle model selection based on mode
+- Return structured responses
 
-2. **Update Router** (use Zen instead of subprocess agents)
-   - Route research → zen.thinkdeep with Gemini
-   - Route planning → zen.planner with Claude
-   - Route implement → zen.chat with Grok Code
-   - Route consensus → zen.consensus with multiple models
+1. **Update Router** (use Zen instead of subprocess agents)
+- Route research → zen.thinkdeep with Gemini
+- Route planning → zen.planner with Claude
+- Route implement → zen.chat with Grok Code
+- Route consensus → zen.consensus with multiple models
 
-3. **Test End-to-End**
-   - User command → Dopemux parse → Zen execute → Display result
-   - Verify auto-save works
-   - Test session restoration
+1. **Test End-to-End**
+- User command → Dopemux parse → Zen execute → Display result
+- Verify auto-save works
+- Test session restoration
 
 ### Benefits:
 
@@ -262,11 +262,11 @@ bus.publish(Event(type=AGENT_OUTPUT, payload=response))
 ## Next Steps
 
 1. Create `src/zen_client.py` (Zen MCP wrapper)
-2. Update `src/router.py` to use Zen client
-3. Test `/mode research` → Zen thinkdeep with Gemini
-4. Test `/consensus` → Zen consensus with multiple models
-5. Integrate ConPort for real checkpoints
-6. End-to-end demo
+1. Update `src/router.py` to use Zen client
+1. Test `/mode research` → Zen thinkdeep with Gemini
+1. Test `/consensus` → Zen consensus with multiple models
+1. Integrate ConPort for real checkpoints
+1. End-to-end demo
 
 **Timeline**: Today! (2-3 hours to working demo)
 

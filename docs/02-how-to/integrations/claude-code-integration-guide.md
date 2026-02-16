@@ -358,10 +358,10 @@ Open VS Code Settings (`Cmd+,`) and search for "Dopemux Model Display":
 ## How It Works
 
 1. Extension activates when VS Code starts
-2. Runs `scripts/ccr_model_tracker.sh` every 5 seconds
-3. Falls back to reading `/tmp/dopemux_current_model.txt` if script unavailable
-4. Updates status bar with formatted model display
-5. Tooltip shows full model name on hover
+1. Runs `scripts/ccr_model_tracker.sh` every 5 seconds
+1. Falls back to reading `/tmp/dopemux_current_model.txt` if script unavailable
+1. Updates status bar with formatted model display
+1. Tooltip shows full model name on hover
 
 ## Usage
 
@@ -460,9 +460,9 @@ cat .dopemux/claude-code-router/A/.claude-code-router/config.json | jq '.Router.
 
 After installation or changes:
 1. **Quit VS Code completely** (`Cmd+Q`)
-2. **Reopen VS Code**
-3. Look for model indicator in bottom-right status bar
-4. Wait ~5 seconds for first update
+1. **Reopen VS Code**
+1. Look for model indicator in bottom-right status bar
+1. Wait ~5 seconds for first update
 
 ## Integration with Claude Code Router
 
@@ -661,12 +661,12 @@ Search Results (enriched with impact):
    Impact: 47 callers (high)
      🛑 High impact - coordinate with team
 
-2. validate_token (services/auth/jwt.py)
+1. validate_token (services/auth/jwt.py)
    Relevance: 0.85
    Impact: 23 callers (medium)
      ⚠️ Moderate impact - review callers first
 
-3. check_permissions (services/auth/rbac.py)
+1. check_permissions (services/auth/rbac.py)
    Relevance: 0.78
    Impact: 8 callers (low)
      ✅ Safe to modify (few callers)
@@ -706,9 +706,9 @@ tail -f logs/break-suggester.log
 
 **Trigger Rules**:
 1. **Sustained complexity**: 3+ high complexity events in 25min window
-2. **Time threshold**: Session > 25min OR last break > 25min ago
-3. **Cooldown**: 25min minimum between suggestions (prevents spam)
-4. **Critical escalation**: 60+ min session = MANDATORY break
+1. **Time threshold**: Session > 25min OR last break > 25min ago
+1. **Cooldown**: 25min minimum between suggestions (prevents spam)
+1. **Critical escalation**: 60+ min session = MANDATORY break
 
 **Priority Levels**:
 - **CRITICAL**: 60+ min session → "🛑 MANDATORY 10-minute break"
@@ -798,10 +798,10 @@ curl "http://localhost:6379/ping"  # Redis (EventBus) healthy
 ## ADHD Benefits Summary
 
 1. **F-NEW-3**: Know before reading if you have mental bandwidth (reduces overwhelm)
-2. **F-NEW-4**: Auto-adapted results prevent choice paralysis (no manual adjustment)
-3. **F-NEW-5**: See blast radius reduces change anxiety (confidence in modifications)
-4. **F-NEW-6**: Real-time state awareness enables proactive self-care
-5. **F-NEW-8**: Prevents burnout by catching patterns before exhaustion
+1. **F-NEW-4**: Auto-adapted results prevent choice paralysis (no manual adjustment)
+1. **F-NEW-5**: See blast radius reduces change anxiety (confidence in modifications)
+1. **F-NEW-6**: Real-time state awareness enables proactive self-care
+1. **F-NEW-8**: Prevents burnout by catching patterns before exhaustion
 
 ## Troubleshooting
 

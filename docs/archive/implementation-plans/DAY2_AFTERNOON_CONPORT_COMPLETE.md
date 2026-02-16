@@ -24,8 +24,8 @@ prelude: Day2_Afternoon_Conport_Complete (explanation) for dopemux documentation
 
 Created standalone FastAPI HTTP server for ConPort that exposes:
 1. ✅ `/api/adhd/decisions/recent` - Recent decisions with ADHD metadata
-2. ✅ `/api/adhd/graph/stats` - Knowledge graph statistics
-3. ✅ `/health` - Health check endpoint
+1. ✅ `/api/adhd/graph/stats` - Knowledge graph statistics
+1. ✅ `/health` - Health check endpoint
 
 **Server Details:**
 - **Port:** 8005
@@ -180,14 +180,14 @@ python3 -c "from dopemux_dashboard import MetricsFetcher; ..."
 
 ### Files Modified
 1. **Created:** `services/conport/http_server.py`
-   - FastAPI server with 3 endpoints
-   - PostgreSQL connection logic (with fallback)
-   - Mock data for graceful degradation
+- FastAPI server with 3 endpoints
+- PostgreSQL connection logic (with fallback)
+- Mock data for graceful degradation
 
-2. **Updated:** `dopemux_dashboard.py`
-   - Already had ConPort endpoints configured
-   - `get_decisions()` method works out of the box
-   - No changes needed!
+1. **Updated:** `dopemux_dashboard.py`
+- Already had ConPort endpoints configured
+- `get_decisions()` method works out of the box
+- No changes needed!
 
 ---
 
@@ -298,24 +298,24 @@ Evening (Serena):
 ## 💡 Key Learnings
 
 1. **Mock Data is Powerful**
-   - Allows dashboard to work immediately
-   - Can fix database connection later
-   - Users see something useful now
+- Allows dashboard to work immediately
+- Can fix database connection later
+- Users see something useful now
 
-2. **Graceful Fallback Works**
-   - Try database, fall back to mock
-   - Dashboard never crashes
-   - Clear "source" field indicates data origin
+1. **Graceful Fallback Works**
+- Try database, fall back to mock
+- Dashboard never crashes
+- Clear "source" field indicates data origin
 
-3. **Investigation Paid Off**
-   - Found database schema
-   - Documented all tables
-   - Ready to connect when DB issue resolved
+1. **Investigation Paid Off**
+- Found database schema
+- Documented all tables
+- Ready to connect when DB issue resolved
 
-4. **FastAPI is Fast**
-   - Server created in 20 minutes
-   - Auto-generated docs at /docs
-   - Easy to test and debug
+1. **FastAPI is Fast**
+- Server created in 20 minutes
+- Auto-generated docs at /docs
+- Easy to test and debug
 
 ---
 

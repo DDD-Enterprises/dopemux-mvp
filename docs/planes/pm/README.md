@@ -24,21 +24,21 @@ Purpose: evidence-first audit, redesign constraints, and deterministic rails for
 1. Pass A (`pm-plane/fric-01`)
 - Capture Phase 1 evidence in `docs/planes/pm/_evidence/PM-FRIC-01.outputs/`.
 - Draft:
-  - `docs/planes/pm/PM_FRICTION_MAP.md`
-  - `docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md`
+- `docs/planes/pm/PM_FRICTION_MAP.md`
+- `docs/planes/pm/SIGNAL_VS_NOISE_ANALYSIS.md`
 - Create handoff:
-  - `docs/planes/pm/_handoff/PM-FRIC-01_HANDOFF.md`
+- `docs/planes/pm/_handoff/PM-FRIC-01_HANDOFF.md`
 
 1. Pass B (`pm-plane/fric-02-critique`)
 - Tighten the two Phase 1 docs for citation integrity and PM/Memory/Search boundaries.
 - Add handoff:
-  - `docs/planes/pm/_handoff/PM-FRIC-02_HANDOFF.md`
+- `docs/planes/pm/_handoff/PM-FRIC-02_HANDOFF.md`
 
 1. Pass C (`pm-plane/rails-01`)
 - Add deterministic verifier rails:
-  - `scripts/pm_phase1_verify.sh`
+- `scripts/pm_phase1_verify.sh`
 - Add harness/evidence note:
-  - `docs/planes/pm/_evidence/PM-RAILS-01.outputs/test_discovery_plan.txt`
+- `docs/planes/pm/_evidence/PM-RAILS-01.outputs/test_discovery_plan.txt`
 - Keep this README aligned with the workflow and verifier usage.
 
 ## Evidence Locations

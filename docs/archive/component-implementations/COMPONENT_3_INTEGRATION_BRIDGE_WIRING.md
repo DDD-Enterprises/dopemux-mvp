@@ -72,14 +72,14 @@ async def _dopecon_bridge_subscriber(self) -> None:
 
 **Event Handlers** (lines 943-1097):
 1. `_handle_dopecon_bridge_event()` - Main event dispatcher (8 event types)
-2. `_handle_tasks_imported()` - Sync imported tasks to ConPort
-3. `_handle_session_started()` - Update task status to IN_PROGRESS
-4. `_handle_session_paused()` - Update task status to PAUSED
-5. `_handle_session_completed()` - Update task status to COMPLETED
-6. `_handle_progress_updated()` - Sync progress percentage to ConPort
-7. `_handle_decision_logged()` - Link decisions to related tasks
-8. `_handle_adhd_state_changed()` - Adjust task recommendations by energy/attention
-9. `_handle_break_reminder()` - Update task status to NEEDS_BREAK
+1. `_handle_tasks_imported()` - Sync imported tasks to ConPort
+1. `_handle_session_started()` - Update task status to IN_PROGRESS
+1. `_handle_session_paused()` - Update task status to PAUSED
+1. `_handle_session_completed()` - Update task status to COMPLETED
+1. `_handle_progress_updated()` - Sync progress percentage to ConPort
+1. `_handle_decision_logged()` - Link decisions to related tasks
+1. `_handle_adhd_state_changed()` - Adjust task recommendations by energy/attention
+1. `_handle_break_reminder()` - Update task status to NEEDS_BREAK
 
 **Graceful Shutdown** (lines 1169-1172):
 ```python
@@ -137,12 +137,12 @@ From `event_bus.py` EventType enum:
 ✅ SUCCESS: Received 6 events
 
 Event details:
-  1. decision_logged from conport
-  2. progress_updated from task-orchestrator-test
-  3. tasks_imported from test-publisher
-  4. session_started from test-publisher
-  5. progress_updated from test-publisher
-  6. adhd_state_changed from test-publisher
+1. decision_logged from conport
+1. progress_updated from task-orchestrator-test
+1. tasks_imported from test-publisher
+1. session_started from test-publisher
+1. progress_updated from test-publisher
+1. adhd_state_changed from test-publisher
 ```
 
 **Validation**:
@@ -261,10 +261,10 @@ async with aiohttp.post("http://localhost:3016/events", json={
 ## Next Steps (Component 4)
 
 1. **Wire ConPort MCP Client** to ConPortEventAdapter
-2. **Implement ConPortEventAdapter methods** (update_task_status, etc.)
-3. **Test full event flow**: Task-Orchestrator → DopeconBridge → ConPort → DopeconBridge → Task-Orchestrator
-4. **Validate bidirectional sync**: Leantime updates sync to ConPort, ConPort decisions sync to Leantime
-5. **Add event metrics**: Track event publish/subscribe counts, latency, errors
+1. **Implement ConPortEventAdapter methods** (update_task_status, etc.)
+1. **Test full event flow**: Task-Orchestrator → DopeconBridge → ConPort → DopeconBridge → Task-Orchestrator
+1. **Validate bidirectional sync**: Leantime updates sync to ConPort, ConPort decisions sync to Leantime
+1. **Add event metrics**: Track event publish/subscribe counts, latency, errors
 
 ## Troubleshooting
 

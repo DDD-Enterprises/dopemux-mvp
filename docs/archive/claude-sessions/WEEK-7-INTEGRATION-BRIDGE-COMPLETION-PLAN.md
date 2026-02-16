@@ -60,9 +60,9 @@ class ConPortMCPClient:
         Save custom data to ConPort.
 
         Implementation options:
-        1. HTTP POST to ConPort MCP server (if exposed)
-        2. Direct PostgreSQL AGE write (if bridge has DB access)
-        3. MCP stdio client (if running in same process)
+1. HTTP POST to ConPort MCP server (if exposed)
+1. Direct PostgreSQL AGE write (if bridge has DB access)
+1. MCP stdio client (if running in same process)
         """
         # Option 2: Direct PostgreSQL (bridge already has age_client.py access!)
         try:
@@ -346,8 +346,8 @@ class ConPortBridgeClient:
 
 **Files to Update**:
 1. `conport_client.py` - Replace with bridge client
-2. `engine.py` - Update instantiation (if needed)
-3. `main.py` - Verify no breaking changes
+1. `engine.py` - Update instantiation (if needed)
+1. `main.py` - Verify no breaking changes
 
 **Effort**: 2-3 hours
 - Rewrite client (1-1.5h)
@@ -526,13 +526,13 @@ curl "http://localhost:3016/custom_data?workspace_id=...&category=test" \
 
 **Files to Update**:
 1. `.claude/CLAUDE.md` - Update authority routing (bridge now complete)
-2. `services/mcp-dopecon-bridge/README.md` - Remove "stub" notes
-3. `services/adhd_engine/README.md` - Document bridge integration
-4. `docs/94-architecture/` - Update architecture diagrams
+1. `services/mcp-dopecon-bridge/README.md` - Remove "stub" notes
+1. `services/adhd_engine/README.md` - Document bridge integration
+1. `docs/94-architecture/` - Update architecture diagrams
 
 **Create**:
-5. ADR-207: DopeconBridge Completion (document decisions made)
-6. Integration guide: How to use bridge for new services
+1. ADR-207: DopeconBridge Completion (document decisions made)
+1. Integration guide: How to use bridge for new services
 
 ---
 

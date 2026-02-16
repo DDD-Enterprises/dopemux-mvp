@@ -29,18 +29,18 @@ prelude: Dopeclaude_Progress (explanation) for dopemux documentation and develop
 
 ### 2. **Core Implementation** (60% Complete)
 - ✅ **DopeClaude Bridge System** (`dopeclaude-bridge.py`)
-  - Command interception and parsing (/sc:, /dx:, @agent-)
-  - Session management with ADHD accommodations
-  - MetaMCP integration layer
-  - Role/persona mapping system
-  - Enhanced command routing framework
+- Command interception and parsing (/sc:, /dx:, @agent-)
+- Session management with ADHD accommodations
+- MetaMCP integration layer
+- Role/persona mapping system
+- Enhanced command routing framework
 
 - ✅ **Configuration System** (`dopeclaude-config.yaml`)
-  - Comprehensive persona → role mappings
-  - SuperClaude command → Dopemux tool mappings
-  - ADHD optimization settings
-  - Progressive disclosure configuration
-  - Multi-model consensus settings
+- Comprehensive persona → role mappings
+- SuperClaude command → Dopemux tool mappings
+- ADHD optimization settings
+- Progressive disclosure configuration
+- Multi-model consensus settings
 
 ## 🎯 **Integration Strategy (Approved)**
 
@@ -53,9 +53,9 @@ prelude: Dopeclaude_Progress (explanation) for dopemux documentation and develop
 
 ### **Key Innovations**
 1. **Transparent Enhancement**: `/sc:analyze` → MetaMCP → [zen + claude-context]
-2. **Dual Command Support**: Native `/sc:` + Enhanced `/dx:` commands
-3. **Persona Intelligence**: `@agent-architect` → Auto role switch + appropriate tools
-4. **ADHD Optimization**: Progressive disclosure, break reminders, gentle guidance
+1. **Dual Command Support**: Native `/sc:` + Enhanced `/dx:` commands
+1. **Persona Intelligence**: `@agent-architect` → Auto role switch + appropriate tools
+1. **ADHD Optimization**: Progressive disclosure, break reminders, gentle guidance
 
 ### **Expected Outcomes**
 - **60% Reduction in Cognitive Overwhelm**: Role-based tool mounting
@@ -94,23 +94,23 @@ integration/superclaude/
 **When MetaMCP issues are resolved:**
 
 1. **Complete Enhanced Commands** (2-3 hours)
-   - Finish implementing all enhanced command methods
-   - Add comprehensive error handling and fallbacks
+- Finish implementing all enhanced command methods
+- Add comprehensive error handling and fallbacks
 
-2. **ADHD Session Management** (1-2 hours)
-   - Complete session lifecycle management
-   - Implement break reminder system
-   - Add progress tracking and celebration
+1. **ADHD Session Management** (1-2 hours)
+- Complete session lifecycle management
+- Implement break reminder system
+- Add progress tracking and celebration
 
-3. **Progressive Disclosure** (1-2 hours)
-   - Build cognitive load management
-   - Implement expandable response system
-   - Add complexity auto-detection
+1. **Progressive Disclosure** (1-2 hours)
+- Build cognitive load management
+- Implement expandable response system
+- Add complexity auto-detection
 
-4. **Testing & Validation** (2-3 hours)
-   - End-to-end integration testing
-   - ADHD effectiveness validation
-   - Performance optimization
+1. **Testing & Validation** (2-3 hours)
+- End-to-end integration testing
+- ADHD effectiveness validation
+- Performance optimization
 
 **Total Estimated Completion Time**: 6-10 hours after MetaMCP foundation is stable
 
@@ -119,8 +119,8 @@ integration/superclaude/
 ## 💡 **Key Insights for Later**
 
 1. **Command Preservation**: SuperClaude users get identical syntax with 10x capabilities
-2. **ADHD First**: Every enhancement designed with cognitive accessibility in mind
-3. **Transparent Intelligence**: Users don't need to learn new patterns, just get better results
-4. **Graceful Degradation**: Falls back to standard SuperClaude if Dopemux unavailable
+1. **ADHD First**: Every enhancement designed with cognitive accessibility in mind
+1. **Transparent Intelligence**: Users don't need to learn new patterns, just get better results
+1. **Graceful Degradation**: Falls back to standard SuperClaude if Dopemux unavailable
 
 **Next Focus**: Resolve MetaMCP tool infrastructure → Resume DopeClaude implementation

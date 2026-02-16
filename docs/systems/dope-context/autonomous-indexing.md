@@ -68,9 +68,9 @@ await start_autonomous_indexing()
 
 **What Happens**:
 1. Watchdog starts monitoring your workspace
-2. Background worker begins processing queue
-3. Periodic sync schedules 10-minute checks
-4. Index automatically updates as you code
+1. Background worker begins processing queue
+1. Periodic sync schedules 10-minute checks
+1. Index automatically updates as you code
 
 **Configuration Options**:
 ```python
@@ -284,8 +284,8 @@ status = await get_autonomous_status()
 
 **Common Issues**:
 1. **Watchdog not installed**: Run `pip install watchdog>=3.0.0`
-2. **Permission denied**: Workspace not readable
-3. **Already running**: Only one controller per workspace
+1. **Permission denied**: Workspace not readable
+1. **Already running**: Only one controller per workspace
 
 ### High CPU Usage
 
@@ -293,8 +293,8 @@ status = await get_autonomous_status()
 
 **Solutions**:
 1. Temporarily stop: `await stop_autonomous_indexing()`
-2. Increase debounce: `debounce_seconds=10.0`
-3. Exclude patterns: Add to `exclude_patterns`
+1. Increase debounce: `debounce_seconds=10.0`
+1. Exclude patterns: Add to `exclude_patterns`
 
 ### Indexing Behind Reality
 
@@ -309,8 +309,8 @@ status = await get_autonomous_status()
 
 **Solutions**:
 1. Wait a few seconds (debouncing)
-2. Check worker.last_error for failures
-3. Manual index: `await index_workspace()`
+1. Check worker.last_error for failures
+1. Manual index: `await index_workspace()`
 
 ### Too Many Retries
 
@@ -318,8 +318,8 @@ status = await get_autonomous_status()
 
 **Common Causes**:
 1. Qdrant not running
-2. Voyage API key invalid
-3. Network issues
+1. Voyage API key invalid
+1. Network issues
 
 **Fix**: Check infrastructure and API keys
 
@@ -410,24 +410,24 @@ status = await get_autonomous_status()
 ### Phase 2 (Optional)
 
 1. **Intelligent Scheduling**
-   - Index during idle time (no typing for 30s)
-   - Pause during active typing bursts
-   - ADHD-aware: don't interrupt hyperfocus
+- Index during idle time (no typing for 30s)
+- Pause during active typing bursts
+- ADHD-aware: don't interrupt hyperfocus
 
-2. **Selective Indexing**
-   - Only index files mentioned in current task
-   - Prioritize recently edited files
-   - Defer large files to idle periods
+1. **Selective Indexing**
+- Only index files mentioned in current task
+- Prioritize recently edited files
+- Defer large files to idle periods
 
-3. **Resource Management**
-   - CPU throttling during high load
-   - API rate limiting
-   - Batch size auto-tuning
+1. **Resource Management**
+- CPU throttling during high load
+- API rate limiting
+- Batch size auto-tuning
 
-4. **Editor Integration**
-   - VS Code extension
-   - Neovim plugin
-   - Direct save hooks (more reliable than watchdog)
+1. **Editor Integration**
+- VS Code extension
+- Neovim plugin
+- Direct save hooks (more reliable than watchdog)
 
 ---
 
@@ -436,18 +436,18 @@ status = await get_autonomous_status()
 **Before**:
 ```
 1. Code for 25 minutes
-2. Want to search for something...
-3. "Wait, did I sync the index?"
-4. "When was the last index?"
-5. "Let me manually run sync... then index..."
-6. "Now I forgot what I was searching for..."
+1. Want to search for something...
+1. "Wait, did I sync the index?"
+1. "When was the last index?"
+1. "Let me manually run sync... then index..."
+1. "Now I forgot what I was searching for..."
 ```
 
 **After**:
 ```
 1. Code for 25 minutes
-2. Search for anything
-3. It just works ✅
+1. Search for anything
+1. It just works ✅
 ```
 
 **Cognitive Load Reduction**: 100% (literally never think about indexing)

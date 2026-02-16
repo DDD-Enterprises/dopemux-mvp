@@ -59,7 +59,7 @@ Implemented **2-layer defensive token budget** system:
        return len(text) // 4
    ```
 
-2. **Token Budget Truncation** (lines 4125-4159):
+1. **Token Budget Truncation** (lines 4125-4159):
    ```python
    def _truncate_to_token_budget(
        self,
@@ -90,7 +90,7 @@ Implemented **2-layer defensive token budget** system:
        return result_lines, truncated
    ```
 
-3. **Updated read_file_tool Signature** (lines 4161-4168):
+1. **Updated read_file_tool Signature** (lines 4161-4168):
    ```python
    async def read_file_tool(
        self,
@@ -185,8 +185,8 @@ mcp__serena-v2__read_file(
 `★ Insight ─────────────────────────────────────`
 **ADHD-Safe File Reading**: 500-line default serves dual purpose:
 1. **MCP Safety**: Keeps responses under 10K token budget
-2. **Cognitive Load**: Prevents overwhelming wall of text
-3. **Progressive Disclosure**: Read in manageable chunks
+1. **Cognitive Load**: Prevents overwhelming wall of text
+1. **Progressive Disclosure**: Read in manageable chunks
 `─────────────────────────────────────────────────`
 
 `★ Insight ─────────────────────────────────────`

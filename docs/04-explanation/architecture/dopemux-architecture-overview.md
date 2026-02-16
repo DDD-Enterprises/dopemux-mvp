@@ -22,13 +22,13 @@ prelude: Dopemux_Architecture_Overview (explanation) for dopemux documentation a
 ## 📚 Table of Contents
 
 1. [What is Dopemux?](#what-is-dopemux)
-2. [High-Level Architecture](#high-level-architecture)
-3. [Core Layers](#core-layers)
-4. [Major Subsystems](#major-subsystems)
-5. [MCP Servers](#mcp-servers)
-6. [Services](#services)
-7. [Data Flow](#data-flow)
-8. [Technology Stack](#technology-stack)
+1. [High-Level Architecture](#high-level-architecture)
+1. [Core Layers](#core-layers)
+1. [Major Subsystems](#major-subsystems)
+1. [MCP Servers](#mcp-servers)
+1. [Services](#services)
+1. [Data Flow](#data-flow)
+1. [Technology Stack](#technology-stack)
 
 ---
 
@@ -130,10 +130,10 @@ Dopemux is a **development platform designed specifically for developers with AD
 
 **Layered Design:**
 1. **Interface Layer** - What you see (tmux, statusline)
-2. **Core Platform** - Dopemux logic and orchestration
-3. **MCP Servers** - AI tools and capabilities
-4. **Services** - Background intelligence and automation
-5. **External** - Third-party APIs and databases
+1. **Core Platform** - Dopemux logic and orchestration
+1. **MCP Servers** - AI tools and capabilities
+1. **Services** - Background intelligence and automation
+1. **External** - Third-party APIs and databases
 
 **Key Principles:**
 - 🔌 **Modular** - Each component is independent
@@ -255,9 +255,9 @@ adhd/
 
 **Data Flow:**
 1. Monitors keystrokes, git commits, Claude interactions
-2. ML model predicts attention state
-3. Updates statusline in real-time
-4. Triggers accommodations (break alerts, task simplification)
+1. ML model predicts attention state
+1. Updates statusline in real-time
+1. Triggers accommodations (break alerts, task simplification)
 
 ---
 
@@ -430,9 +430,9 @@ http://localhost:4000 (LiteLLM)
 ```
 1. User commits code
    ↓
-2. Git hook publishes "code_committed" event
+1. Git hook publishes "code_committed" event
    ↓
-3. Subscribers react:
+1. Subscribers react:
    ├─→ ConPort: Index new code in knowledge graph
    ├─→ ADHD Engine: Update productivity metrics
    ├─→ Break Suggester: "Good stopping point?"
@@ -685,10 +685,10 @@ Autonomous research agent that generates comprehensive reports.
 
 **What It Does:**
 1. Takes a research question
-2. Breaks it down into sub-questions
-3. Searches web for each sub-question
-4. Synthesizes findings into structured report
-5. Includes citations and sources
+1. Breaks it down into sub-questions
+1. Searches web for each sub-question
+1. Synthesizes findings into structured report
+1. Includes citations and sources
 
 **Example Output:**
 ```
@@ -696,19 +696,19 @@ Research: "Best practices for PostgreSQL performance in Python"
 
 Report Generated:
 1. Connection Pooling
-   - Use pgbouncer or SQLAlchemy pool
-   - Recommended pool size: 2x CPU cores
-   - Source: [PostgreSQL Docs]
+- Use pgbouncer or SQLAlchemy pool
+- Recommended pool size: 2x CPU cores
+- Source: [PostgreSQL Docs]
 
-2. Query Optimization
-   - Always use prepared statements
-   - Index foreign keys
-   - Source: [High Performance PostgreSQL]
+1. Query Optimization
+- Always use prepared statements
+- Index foreign keys
+- Source: [High Performance PostgreSQL]
 
-3. Async I/O
-   - Use asyncpg for async Python
-   - 3x faster than psycopg2
-   - Source: [Benchmark Study]
+1. Async I/O
+- Use asyncpg for async Python
+- 3x faster than psycopg2
+- Source: [Benchmark Study]
 
 [Full 2000-word report with citations]
 ```
@@ -927,8 +927,8 @@ Decision: "Task too complex for current state"
     ↓
 Alternatives Suggested:
 1. "Write tests for existing auth (simpler)"
-2. "Review auth requirements (no coding)"
-3. "Take a break, tackle this after"
+1. "Review auth requirements (no coding)"
+1. "Take a break, tackle this after"
 ```
 
 **Priority Algorithm:**
@@ -1132,12 +1132,12 @@ Coordinates all services and ensures they work together.
 ```
 Orchestrator starts:
 1. Database (Postgres)
-2. ConPort (needs DB)
-3. Serena (independent)
-4. ADHD Engine (needs ConPort)
-5. Task Router (needs ADHD Engine)
-6. Break Suggester (needs ADHD Engine)
-7. All other services
+1. ConPort (needs DB)
+1. Serena (independent)
+1. ADHD Engine (needs ConPort)
+1. Task Router (needs ADHD Engine)
+1. Break Suggester (needs ADHD Engine)
+1. All other services
 ```
 
 **Files:**

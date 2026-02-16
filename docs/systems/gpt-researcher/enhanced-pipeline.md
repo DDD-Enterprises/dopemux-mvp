@@ -30,58 +30,58 @@ This advanced pipeline takes unstructured chat conversations and produces formal
 - **Module**: `processing/semantic_chunker.py`
 - **Purpose**: Break conversations into semantically coherent chunks
 - **Features**:
-  - Smart boundary detection (topic shifts, speaker changes, time gaps)
-  - Context preservation with overlapping windows
-  - Multiple format support (colon_separated, timestamp_separated)
-  - TF-IDF similarity analysis for topic detection
+- Smart boundary detection (topic shifts, speaker changes, time gaps)
+- Context preservation with overlapping windows
+- Multiple format support (colon_separated, timestamp_separated)
+- TF-IDF similarity analysis for topic detection
 
 ### Phase 2: Vector Embedding
 
 - **Module**: `embeddings/voyage_client.py`
 - **Purpose**: Generate vector embeddings using Voyage AI
 - **Features**:
-  - Dual model strategy (voyage-3 + voyage-context-3)
-  - Automatic model selection based on chunk size
-  - Redis caching for efficiency
-  - Batch processing with rate limiting
-  - Cost tracking and optimization
+- Dual model strategy (voyage-3 + voyage-context-3)
+- Automatic model selection based on chunk size
+- Redis caching for efficiency
+- Batch processing with rate limiting
+- Cost tracking and optimization
 
 ### Phase 3: Classification
 
 - **Purpose**: Multi-label content categorization
 - **Classifications**:
-  - **Content Type**: feature, bug, decision, question, implementation
-  - **Domain**: frontend, backend, database, infrastructure, business
-  - **Priority**: P0 (Critical), P1 (High), P2 (Medium), P3 (Low)
-  - **Status**: proposed, approved, in_progress, completed
+- **Content Type**: feature, bug, decision, question, implementation
+- **Domain**: frontend, backend, database, infrastructure, business
+- **Priority**: P0 (Critical), P1 (High), P2 (Medium), P3 (Low)
+- **Status**: proposed, approved, in_progress, completed
 
 ### Phase 4: Entity Extraction
 
 - **Purpose**: Extract entities, patterns, and relationships
 - **Extractions**:
-  - **People**: Conversation participants
-  - **Products**: Systems, services, components mentioned
-  - **Decisions**: Consensus points and conclusions
-  - **Requirements**: User needs and system capabilities
-  - **Technical Elements**: APIs, databases, architectures
+- **People**: Conversation participants
+- **Products**: Systems, services, components mentioned
+- **Decisions**: Consensus points and conclusions
+- **Requirements**: User needs and system capabilities
+- **Technical Elements**: APIs, databases, architectures
 
 ### Phase 5: Knowledge Graph
 
 - **Purpose**: Build structured knowledge representation
 - **Components**:
-  - **Nodes**: Entities, chunks, concepts
-  - **Edges**: Relationships (mentions, participates_in, implements)
-  - **Properties**: Confidence scores, timestamps, metadata
-  - **Export**: Neo4j-compatible format
+- **Nodes**: Entities, chunks, concepts
+- **Edges**: Relationships (mentions, participates_in, implements)
+- **Properties**: Confidence scores, timestamps, metadata
+- **Export**: Neo4j-compatible format
 
 ### Phase 6: Document Synthesis
 
 - **Purpose**: Generate formal documentation
 - **Templates**:
-  - **PRD**: Goals, requirements, success metrics
-  - **ADR**: Context, decision, consequences
-  - **Design Spec**: Architecture, APIs, data models
-  - **Business Plan**: Market analysis, revenue model
+- **PRD**: Goals, requirements, success metrics
+- **ADR**: Context, decision, consequences
+- **Design Spec**: Architecture, APIs, data models
+- **Business Plan**: Market analysis, revenue model
 
 ## 🛠️ Installation
 
@@ -254,19 +254,19 @@ def find_related_entities(entity_id):
 ### Common Issues
 
 1. **Voyage AI Rate Limits**
-   - Solution: Reduce batch size or add delays
-   - Monitor: Rate limit headers in responses
+- Solution: Reduce batch size or add delays
+- Monitor: Rate limit headers in responses
 
-2. **Memory Issues with Large Files**
-   - Solution: Process in smaller chunks
-   - Use streaming for very large conversations
+1. **Memory Issues with Large Files**
+- Solution: Process in smaller chunks
+- Use streaming for very large conversations
 
-3. **spaCy Model Not Found**
-   - Solution: `python -m spacy download en_core_web_sm`
+1. **spaCy Model Not Found**
+- Solution: `python -m spacy download en_core_web_sm`
 
-4. **Redis Connection Issues**
-   - Solution: Check Redis server status
-   - Disable caching if Redis unavailable
+1. **Redis Connection Issues**
+- Solution: Check Redis server status
+- Disable caching if Redis unavailable
 
 ### Debug Mode
 
@@ -298,10 +298,10 @@ See the `examples/` directory for:
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
+1. Create a feature branch
+1. Add tests for new functionality
+1. Ensure all tests pass
+1. Submit a pull request
 
 ## 📄 License
 

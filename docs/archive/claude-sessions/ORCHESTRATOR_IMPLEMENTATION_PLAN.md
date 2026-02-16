@@ -347,18 +347,18 @@ mcp__zen__planner(
 
 ### Built Into Plan
 1. **Focus Blocks**: 25-minute work sessions with clear break points
-2. **Complexity Scoring**: 0.0-1.0 scale for cognitive load estimation
-3. **Energy Matching**: Low/Medium/High energy requirements per step
-4. **Progressive Complexity**: Steps ordered from simple → complex
-5. **Context Switching**: Warnings for high-risk steps (Step 3)
-6. **One-Agent-Per-Day**: Recommendation for Step 3 implementation
+1. **Complexity Scoring**: 0.0-1.0 scale for cognitive load estimation
+1. **Energy Matching**: Low/Medium/High energy requirements per step
+1. **Progressive Complexity**: Steps ordered from simple → complex
+1. **Context Switching**: Warnings for high-risk steps (Step 3)
+1. **One-Agent-Per-Day**: Recommendation for Step 3 implementation
 
 ### Built Into System
 1. **Auto-Save**: 30-second checkpoints prevent 23-minute recovery cost
-2. **Adaptive Layouts**: 2-4 panes based on energy state
-3. **Gentle Re-orientation**: "Where you left off" summaries
-4. **Progressive Disclosure**: 3-tier information architecture
-5. **Visual Progress**: Clear status indicators throughout
+1. **Adaptive Layouts**: 2-4 panes based on energy state
+1. **Gentle Re-orientation**: "Where you left off" summaries
+1. **Progressive Disclosure**: 3-tier information architecture
+1. **Visual Progress**: Clear status indicators throughout
 
 ---
 
@@ -405,16 +405,16 @@ mcp__conport__update_progress(
 
 ### Immediate
 1. ✅ Plan extracted and saved to ConPort
-2. ✅ Reference file created (`claudedocs/ORCHESTRATOR_IMPLEMENTATION_PLAN.md`)
-3. ⏳ Ready to start Step 1 when you're ready
+1. ✅ Reference file created (`claudedocs/ORCHESTRATOR_IMPLEMENTATION_PLAN.md`)
+1. ⏳ Ready to start Step 1 when you're ready
 
 ### When Ready to Code
 1. Read Step 1 details from ConPort
-2. Create file structure
-3. Implement with 25-minute focus sessions
-4. Validate with provided test commands
-5. Log decision and progress to ConPort
-6. Move to Step 2
+1. Create file structure
+1. Implement with 25-minute focus sessions
+1. Validate with provided test commands
+1. Log decision and progress to ConPort
+1. Move to Step 2
 
 ---
 

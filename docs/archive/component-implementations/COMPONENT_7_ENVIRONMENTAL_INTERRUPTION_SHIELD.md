@@ -24,17 +24,17 @@ prelude: Component_7_Environmental_Interruption_Shield (explanation) for dopemux
 ## Table of Contents
 
 1. [Executive Summary](#executive-summary)
-2. [Architecture Overview](#architecture-overview)
-3. [System Components](#system-components)
-4. [Data Models](#data-models)
-5. [API Integrations](#api-integrations)
-6. [Urgency Scoring Algorithm](#urgency-scoring-algorithm)
-7. [Integration Points](#integration-points)
-8. [Privacy & Security](#privacy--security)
-9. [Testing Strategy](#testing-strategy)
-10. [Deployment Plan](#deployment-plan)
-11. [Performance Targets](#performance-targets)
-12. [Monitoring & Metrics](#monitoring--metrics)
+1. [Architecture Overview](#architecture-overview)
+1. [System Components](#system-components)
+1. [Data Models](#data-models)
+1. [API Integrations](#api-integrations)
+1. [Urgency Scoring Algorithm](#urgency-scoring-algorithm)
+1. [Integration Points](#integration-points)
+1. [Privacy & Security](#privacy--security)
+1. [Testing Strategy](#testing-strategy)
+1. [Deployment Plan](#deployment-plan)
+1. [Performance Targets](#performance-targets)
+1. [Monitoring & Metrics](#monitoring--metrics)
 
 ---
 
@@ -313,9 +313,9 @@ class DNDManager:
     Manages Do Not Disturb across macOS and Slack.
 
     Handles:
-    - macOS Focus Mode activation/deactivation
-    - Slack status updates ("In focus mode until...")
-    - Window management via Desktop Commander
+- macOS Focus Mode activation/deactivation
+- Slack status updates ("In focus mode until...")
+- Window management via Desktop Commander
     """
 
     def __init__(
@@ -445,9 +445,9 @@ class MessageTriage:
         Process incoming Slack message.
 
         If shields active:
-        - Score urgency
-        - If CRITICAL → deliver immediately
-        - Else → queue for later
+- Score urgency
+- If CRITICAL → deliver immediately
+- Else → queue for later
         """
         if not self.queuing_active:
             # Shields not active, pass through
@@ -560,11 +560,11 @@ class UrgencyScorer:
         Score message urgency using multiple signals.
 
         Signals:
-        1. Keyword matching (configurable)
-        2. Sender importance (VIP list)
-        3. Time sensitivity (mentions "today", "now")
-        4. Channel type (DMs higher urgency than channels)
-        5. @mentions (direct mention = higher urgency)
+1. Keyword matching (configurable)
+1. Sender importance (VIP list)
+1. Time sensitivity (mentions "today", "now")
+1. Channel type (DMs higher urgency than channels)
+1. @mentions (direct mention = higher urgency)
         """
         score = 0
 
@@ -1094,10 +1094,10 @@ await conport_client.log_decision(
 ### Privacy-First Design Principles
 
 1. **On-Device Processing**: All urgency scoring happens locally, no cloud message analysis
-2. **Minimal Storage**: Store only metadata (sender, timestamp, urgency score), not message content
-3. **User Control**: Users configure keywords, VIP lists, shield aggressiveness
-4. **Transparent Filtering**: Show exactly what was blocked and why
-5. **Opt-In Features**: AI summarization requires explicit consent
+1. **Minimal Storage**: Store only metadata (sender, timestamp, urgency score), not message content
+1. **User Control**: Users configure keywords, VIP lists, shield aggressiveness
+1. **Transparent Filtering**: Show exactly what was blocked and why
+1. **Opt-In Features**: AI summarization requires explicit consent
 
 ### Data Handling
 
@@ -1255,10 +1255,10 @@ async def test_meeting_buffer_zones():
 **Week 2: Daily Usage**
 - Use shields for normal development work
 - Daily feedback surveys:
-  - Did auto-DND activate appropriately?
-  - Were any important messages incorrectly queued?
-  - Was urgency scoring accurate?
-  - Anxiety level about missing messages (1-10 scale)
+- Did auto-DND activate appropriately?
+- Were any important messages incorrectly queued?
+- Was urgency scoring accurate?
+- Anxiety level about missing messages (1-10 scale)
 
 **Week 3: A/B Testing**
 - Group A: Aggressive filtering (ENFORCE mode)
@@ -1344,9 +1344,9 @@ async def test_meeting_buffer_zones():
 
 **Gradual Release**:
 1. **Internal Alpha** (Week 1-2): Dopemux team only
-2. **Closed Beta** (Week 3-6): 10-20 ADHD developers
-3. **Public Beta** (Week 7-9): Opt-in for all Dopemux users
-4. **General Availability** (Week 10+): Enabled by default
+1. **Closed Beta** (Week 3-6): 10-20 ADHD developers
+1. **Public Beta** (Week 7-9): Opt-in for all Dopemux users
+1. **General Availability** (Week 10+): Enabled by default
 
 **Feature Flags**:
 ```python
@@ -1420,19 +1420,19 @@ FEATURE_FLAGS = {
 **Grafana Panels**:
 
 1. **Focus Sessions**:
-   - Daily shield activations
-   - Average session duration
-   - Attention state distribution
+- Daily shield activations
+- Average session duration
+- Attention state distribution
 
-2. **Interruption Prevention**:
-   - Messages queued vs delivered
-   - Urgency level distribution
-   - Critical interruptions (allowed)
+1. **Interruption Prevention**:
+- Messages queued vs delivered
+- Urgency level distribution
+- Critical interruptions (allowed)
 
-3. **User Satisfaction**:
-   - NPS trend over time
-   - Override frequency
-   - Feedback sentiment analysis
+1. **User Satisfaction**:
+- NPS trend over time
+- Override frequency
+- Feedback sentiment analysis
 
 ### Alerting Rules
 
@@ -1453,10 +1453,10 @@ FEATURE_FLAGS = {
 ### Appendix A: ADHD Research References
 
 1. **Cleveland Clinic (2025)**: Task completion is primary ADHD management paradigm
-2. **CBT Meta-Analysis (2024)**: External reminders + task breakdown = 87% improvement
-3. **Digital Interventions (2024)**: Self-guided systems effective (g = −0.32)
-4. **Context Switching Cost (2022)**: 15-25 minute recovery time for ADHD developers
-5. **Hyperfocus Protection (2023)**: Graduated interventions reduce burnout by 64%
+1. **CBT Meta-Analysis (2024)**: External reminders + task breakdown = 87% improvement
+1. **Digital Interventions (2024)**: Self-guided systems effective (g = −0.32)
+1. **Context Switching Cost (2022)**: 15-25 minute recovery time for ADHD developers
+1. **Hyperfocus Protection (2023)**: Graduated interventions reduce burnout by 64%
 
 ### Appendix B: Configuration Examples
 
@@ -1469,11 +1469,11 @@ shield:
 
   urgency:
     critical_keywords:
-      - "urgent"
-      - "p0"
-      - "production down"
+- "urgent"
+- "p0"
+- "production down"
     vip_users:
-      - "U123ABC"  # CEO
+- "U123ABC"  # CEO
 
   overrides:
     allow_manual: true
@@ -1489,15 +1489,15 @@ shield:
 
   urgency:
     critical_keywords:
-      - "urgent"
-      - "p0"
-      - "p1"
-      - "blocker"
-      - "production"
+- "urgent"
+- "p0"
+- "p1"
+- "blocker"
+- "production"
     vip_users:
-      - "U123ABC"  # CEO
-      - "U456DEF"  # Manager
-      - "U789GHI"  # Tech Lead
+- "U123ABC"  # CEO
+- "U456DEF"  # Manager
+- "U789GHI"  # Tech Lead
 
   overrides:
     allow_manual: false  # No manual override
@@ -1551,10 +1551,10 @@ curl -X POST http://localhost:8096/api/v1/shield/activate \
 ## Next Steps
 
 1. ✅ **Research & Design**: Complete (ConPort Decision #188)
-2. 🔄 **Technical Specification**: Complete (this document)
-3. ⏳ **Stakeholder Approval**: Present to team
-4. ⏳ **Beta Recruitment**: Find 10-20 ADHD developers
-5. ⏳ **Phase 1 Implementation**: 4-week sprint (macOS + Slack MVP)
+1. 🔄 **Technical Specification**: Complete (this document)
+1. ⏳ **Stakeholder Approval**: Present to team
+1. ⏳ **Beta Recruitment**: Find 10-20 ADHD developers
+1. ⏳ **Phase 1 Implementation**: 4-week sprint (macOS + Slack MVP)
 
 **Ready for**: Implementation kickoff pending stakeholder approval
 

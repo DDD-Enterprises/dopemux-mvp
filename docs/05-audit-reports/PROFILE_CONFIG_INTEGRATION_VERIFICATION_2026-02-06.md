@@ -23,8 +23,8 @@ Closure verification for execution-packet backlog item:
 `tests/unit/test_profile_config_integration.py` now covers:
 
 1. full profile parity against current MCP inventory
-2. developer profile reduction to exactly 3 MCP servers
-3. backup + rollback round-trip restoring original config inventory
+1. developer profile reduction to exactly 3 MCP servers
+1. backup + rollback round-trip restoring original config inventory
 
 ## Verification
 

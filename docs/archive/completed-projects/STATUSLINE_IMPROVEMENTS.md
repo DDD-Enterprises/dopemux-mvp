@@ -204,25 +204,25 @@ TMUX_WIDTH_LIMIT=50 ./scripts/pm-status.sh  # Limited space
 
 ### Planned Improvements
 1. **Machine learning**: Predict optimal information display based on user patterns
-2. **Theme support**: Multiple color schemes for different contexts
-3. **Notification integration**: Visual alerts for important state changes
-4. **Historical trends**: Show metric changes over time
-5. **Customizable priorities**: User-configurable display preferences
+1. **Theme support**: Multiple color schemes for different contexts
+1. **Notification integration**: Visual alerts for important state changes
+1. **Historical trends**: Show metric changes over time
+1. **Customizable priorities**: User-configurable display preferences
 
 ### Integration Opportunities
 1. **VS Code extension**: Bring statusline to code editor
-2. **Mobile notifications**: Push alerts for critical states
-3. **Team dashboards**: Shared status across team members
-4. **Analytics**: Track which metrics are most useful
+1. **Mobile notifications**: Push alerts for critical states
+1. **Team dashboards**: Shared status across team members
+1. **Analytics**: Track which metrics are most useful
 
 ## 📚 Migration Guide
 
 ### From Old Statusline
 1. **Backup existing configuration**
-2. **Run setup script**: `./scripts/setup-statusline.sh`
-3. **Test in tmux**: Verify display works correctly
-4. **Adjust environment variables** if needed
-5. **Monitor performance** and adjust cache TTLs
+1. **Run setup script**: `./scripts/setup-statusline.sh`
+1. **Test in tmux**: Verify display works correctly
+1. **Adjust environment variables** if needed
+1. **Monitor performance** and adjust cache TTLs
 
 ### Troubleshooting
 - **Truncated display**: Check TMUX_WIDTH_LIMIT setting

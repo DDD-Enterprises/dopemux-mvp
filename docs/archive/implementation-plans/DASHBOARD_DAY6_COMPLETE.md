@@ -28,11 +28,11 @@ prelude: Dashboard_Day6_Complete (explanation) for dopemux documentation and dev
 class APIClient:
     """
     Production-ready API client with:
-    - Automatic retry with exponential backoff
-    - Response caching with TTL strategies
-    - Request deduplication (prevent duplicate in-flight requests)
-    - Graceful fallback to default data
-    - Comprehensive error logging
+- Automatic retry with exponential backoff
+- Response caching with TTL strategies
+- Request deduplication (prevent duplicate in-flight requests)
+- Graceful fallback to default data
+- Comprehensive error logging
     """
 ```
 
@@ -124,8 +124,8 @@ class APIClient:
 
 **Patterns Detected:**
 1. **Frequent context switches** → Recommend longer focus blocks
-2. **Daily energy cycle** → Schedule deep work during peak hours
-3. **Productivity trends** → Identify improving/declining patterns
+1. **Daily energy cycle** → Schedule deep work during peak hours
+1. **Productivity trends** → Identify improving/declining patterns
 
 #### MetricHistoryModal
 **Real Time-Series Data:**
@@ -182,10 +182,10 @@ POST /api/v1/recommend-break
 ### Prometheus (Port 9090)
 ```
 GET /api/v1/query_range
-  - adhd_cognitive_load
-  - adhd_energy_level
-  - adhd_context_switches_total
-  - adhd_tasks_completed_total
+- adhd_cognitive_load
+- adhd_energy_level
+- adhd_context_switches_total
+- adhd_tasks_completed_total
 ```
 
 ### Docker (CLI)
@@ -338,16 +338,16 @@ docker ps
 
 ### Current Limitations
 1. **ConPort HTTP API not yet available**
-   - Using mock data for decisions
-   - Will migrate when bridge is ready
+- Using mock data for decisions
+- Will migrate when bridge is ready
 
-2. **No WebSocket support yet**
-   - Using polling (2-10s intervals)
-   - Day 7 will add WebSocket streaming
+1. **No WebSocket support yet**
+- Using polling (2-10s intervals)
+- Day 7 will add WebSocket streaming
 
-3. **Limited test coverage**
-   - Manual testing only
-   - Automated tests planned for Day 7
+1. **Limited test coverage**
+- Manual testing only
+- Automated tests planned for Day 7
 
 ### Future Enhancements (Day 7+)
 - [ ] WebSocket real-time streaming
@@ -363,14 +363,14 @@ docker ps
 
 ### What Worked Well
 1. **Parallel data fetching** - Reduced modal load time by 60%
-2. **Smart caching** - 75% cache hit rate achieved
-3. **Request deduplication** - Prevented ~30% duplicate requests
-4. **Graceful fallbacks** - Dashboard never crashes, always usable
+1. **Smart caching** - 75% cache hit rate achieved
+1. **Request deduplication** - Prevented ~30% duplicate requests
+1. **Graceful fallbacks** - Dashboard never crashes, always usable
 
 ### What We'd Do Differently
 1. Start with WebSocket design (polling is temporary)
-2. Build automated tests from Day 1
-3. Use typing more consistently (some Any types still)
+1. Build automated tests from Day 1
+1. Use typing more consistently (some Any types still)
 
 ### ADHD-Friendly Design Wins
 - ✅ **Instant feedback** (< 500ms) prevents frustration
@@ -455,11 +455,11 @@ async with perf_monitor.track('operation_name'):
 
 We successfully:
 1. ✅ Built robust API client infrastructure
-2. ✅ Integrated 5 backend services
-3. ✅ Achieved sub-500ms modal load times
-4. ✅ Implemented smart caching (75% hit rate)
-5. ✅ Added graceful error handling throughout
-6. ✅ Created comprehensive documentation
+1. ✅ Integrated 5 backend services
+1. ✅ Achieved sub-500ms modal load times
+1. ✅ Implemented smart caching (75% hit rate)
+1. ✅ Added graceful error handling throughout
+1. ✅ Created comprehensive documentation
 
 **Next Steps (Day 7):**
 - WebSocket integration for real-time streaming

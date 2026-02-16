@@ -226,8 +226,8 @@ docker start mcp-desktop-commander
 ### Issue: Tools not showing in Claude Code
 **Solution**: Restart Claude Code to reload .claude.json
 1. Close Claude Code
-2. Reopen project
-3. Check MCP servers loaded
+1. Reopen project
+1. Check MCP servers loaded
 
 ### Issue: Permission denied on stdio_bridge.py
 **Solution**: Make executable
@@ -269,13 +269,13 @@ Desktop-Commander is ready! You can now use it in your workflows:
    mcp__desktop-commander__screenshot(filename="/tmp/architecture-decision.png")
    ```
 
-2. **Auto Window Switching**: After code navigation, auto-focus editor
+1. **Auto Window Switching**: After code navigation, auto-focus editor
    ```python
    # After finding code in Serena
    mcp__desktop-commander__focus_window(title="VS Code")
    ```
 
-3. **Workflow Automation**: Combine with other MCP tools
+1. **Workflow Automation**: Combine with other MCP tools
    ```python
    # Research → Screenshot → Log Decision
    research = mcp__gpt-researcher__deep_research(topic="...")

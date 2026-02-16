@@ -110,8 +110,8 @@ await navigation_cache.cache_navigation_result(cache_key, result, ttl=600)
 
 **New Tools** (3):
 1. find_similar_code - Semantic search
-2. predict_navigation_from_git - Git-based prediction
-3. find_test_file - TDD navigation
+1. predict_navigation_from_git - Git-based prediction
+1. find_test_file - TDD navigation
 
 **Enhanced Tools** (2):
 - find_symbol - Now with Redis caching + ADHD limits
@@ -145,11 +145,11 @@ await navigation_cache.cache_navigation_result(cache_key, result, ttl=600)
 ## ADHD Benefits
 
 1. **Cache**: Instant response prevents distraction during waiting
-2. **File Watcher**: No "did I refresh?" anxiety
-3. **Git Prediction**: Reduces "where should I look?" decisions by 30%
-4. **Test Navigation**: Eliminates test file search friction
-5. **Dynamic Limits**: 3 results when scattered, 40 when hyperfocused
-6. **Semantic Search**: Natural language vs exact names
+1. **File Watcher**: No "did I refresh?" anxiety
+1. **Git Prediction**: Reduces "where should I look?" decisions by 30%
+1. **Test Navigation**: Eliminates test file search friction
+1. **Dynamic Limits**: 3 results when scattered, 40 when hyperfocused
+1. **Semantic Search**: Natural language vs exact names
 
 ---
 
@@ -191,21 +191,21 @@ await navigation_cache.cache_navigation_result(cache_key, result, ttl=600)
 
 **Immediate** (Next session):
 1. Restart Serena v2 MCP server
-2. Test Redis cache (watch for "CACHE HIT" logs)
-3. Test file watcher (modify file, check auto-refresh)
-4. Test git predictions (call predict_navigation_from_git)
-5. Test test navigation (call find_test_file)
+1. Test Redis cache (watch for "CACHE HIT" logs)
+1. Test file watcher (modify file, check auto-refresh)
+1. Test git predictions (call predict_navigation_from_git)
+1. Test test navigation (call find_test_file)
 
 **Phase 3 Week 1** (Original plan continues):
 1. Database validation (fix pytest imports)
-2. Enhanced LSP (find_references, hover, symbols)
-3. Tree-sitter Python AST
-4. Integration testing
+1. Enhanced LSP (find_references, hover, symbols)
+1. Tree-sitter Python AST
+1. Integration testing
 
 **Phase 3 Week 2** (Add F-NEW-3, F-NEW-4):
 1. Database schema + DopeconBridge events
-2. Pattern learning + Session fatigue detection
-3. Final validation
+1. Pattern learning + Session fatigue detection
+1. Final validation
 
 ---
 

@@ -4,14 +4,14 @@
 | Root Dir               | Purpose Guess                           | Notes                                                                        |
 | :--------------------- | :-------------------------------------- | :--------------------------------------------------------------------------- |
 | `docs/planes`          | Architectural stratification            | Primary source for PM/Cognitive/Search plane definitions.                    |
-| `docs/spec`            | Protocol and data specifications        | Contains authoritative `dope-memory` v1 specs.                               |
-| `docs/systems`         | Component-level documentation           | Detailed breakdown of `conport`, `task-orchestrator`, etc.                   |
+| `docs/spec`            \| Protocol and data specifications        \| Contains authoritative `dope-memory` v1 specs.                               |
+| `docs/systems`         \| Component-level documentation           \| Detailed breakdown of `conport`, `task-orchestrator`, etc.                   |
 | `docs/task-packets`    | Execution units and instructions        | Contains binding invariants for specific work chunks (e.g., TP-PM-ARCH-04B). |
 | `docs/archive`         | Legacy and completed history            | Useful for audit trails but risky for current contract drift.                |
 | `docs/investigations`  | Ad-hoc research and root cause analysis | Contextual but non-normative.                                                |
 | `docs/best-practices`  | Usage guidelines                        | Operational guidance rather than system invariants.                          |
-| `docs/projects`        | Feature-specific tracking               | Transient until merged into `systems` or `planes`.                           |
-| `docs/pm`              | Project Management specific             | Likely overlaps with `planes/pm`.                                            |
+| `docs/projects`        \| Feature-specific tracking               \| Transient until merged into `systems` or `planes`.                           |
+| `docs/pm`              \| Project Management specific             \| Likely overlaps with `planes/pm`.                                            |
 | `docs/troubleshooting` | Known issues and fixes                  | Operational/Support signal.                                                  |
 
 ## Table 2: Memory/PM High-Signal Docs

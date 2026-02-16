@@ -44,43 +44,43 @@ prelude: Next Steps (explanation) for dopemux documentation and developer workfl
 
 ### Short Term
 1. **Alert System**
-   - Warn if suppression_rate > 80% (excessive filtering)
-   - Suggest focus mode adjustments based on suppression patterns
+- Warn if suppression_rate > 80% (excessive filtering)
+- Suggest focus mode adjustments based on suppression patterns
 
-2. **Per-Worker Telemetry**
-   - Track which workers process most events
-   - Identify load imbalance issues
+1. **Per-Worker Telemetry**
+- Track which workers process most events
+- Identify load imbalance issues
 
-3. **Anomaly Detection**
-   - Detect unusual suppression patterns
-   - Alert on sudden changes in signal/noise ratio
+1. **Anomaly Detection**
+- Detect unusual suppression patterns
+- Alert on sudden changes in signal/noise ratio
 
 ### Medium Term
 1. **Historical Analysis**
-   - Persist telemetry to TimescaleDB (time-series analysis)
-   - Generate weekly/monthly reports on suppression patterns
-   - Identify peak suppression times
+- Persist telemetry to TimescaleDB (time-series analysis)
+- Generate weekly/monthly reports on suppression patterns
+- Identify peak suppression times
 
-2. **ML-Based Rule Tuning**
-   - Analyze which threshold values work best for ADHD users
-   - Auto-adjust suppression thresholds based on event patterns
-   - Learn user preferences for deep focus mode
+1. **ML-Based Rule Tuning**
+- Analyze which threshold values work best for ADHD users
+- Auto-adjust suppression thresholds based on event patterns
+- Learn user preferences for deep focus mode
 
-3. **Integration with ConPort**
-   - Log daily suppression reports to ConPort
-   - Track decision effectiveness over time
-   - Build knowledge base of optimal suppression configurations
+1. **Integration with ConPort**
+- Log daily suppression reports to ConPort
+- Track decision effectiveness over time
+- Build knowledge base of optimal suppression configurations
 
 ### Long Term
 1. **User Dashboard**
-   - Real-time signal/noise visualization
-   - Per-rule suppression breakdown charts
-   - Alerts and recommendations
+- Real-time signal/noise visualization
+- Per-rule suppression breakdown charts
+- Alerts and recommendations
 
-2. **Distributed Telemetry**
-   - Aggregate telemetry across multiple event coordinators
-   - Compare suppression patterns across environments
-   - Benchmark suppression effectiveness
+1. **Distributed Telemetry**
+- Aggregate telemetry across multiple event coordinators
+- Compare suppression patterns across environments
+- Benchmark suppression effectiveness
 
 ## 🔗 Related Components
 
@@ -112,10 +112,10 @@ INFO: 📊 Suppression Telemetry: received=150, passed=120, suppressed=30, signa
 ## ❓ Open Questions
 
 1. What is the actual suppression rate in production?
-2. Which suppression rules are most effective?
-3. Do thresholds need adjustment?
-4. What is the optimal signal/noise ratio for ADHD users?
-5. Should suppression rules be user-configurable?
+1. Which suppression rules are most effective?
+1. Do thresholds need adjustment?
+1. What is the optimal signal/noise ratio for ADHD users?
+1. Should suppression rules be user-configurable?
 
 ## 🏗️ Architecture Notes
 

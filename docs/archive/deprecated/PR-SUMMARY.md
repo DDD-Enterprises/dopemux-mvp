@@ -136,10 +136,10 @@ Completed comprehensive systematic audit covering all 6 original phases (54-67h 
 
 **5-Step Process**:
 1. Architecture Discovery
-2. Security Deep-Dive
-3. Implementation Verification
-4. Integration & Edge Cases
-5. Synthesis & Recommendations
+1. Security Deep-Dive
+1. Implementation Verification
+1. Integration & Edge Cases
+1. Synthesis & Recommendations
 
 **ROI**: 13.5h investment prevented weeks of production issues
 
@@ -149,10 +149,10 @@ Completed comprehensive systematic audit covering all 6 original phases (54-67h 
 
 **Medium Priority** (Week 7 work, ~32h total):
 1. ADHD Engine service boundaries - Fix (3h)
-2. ADHD Engine missing auth - Add OR localhost-only (2h)
-3. DopeconBridge wiring - Complete (12h)
-4. Task-Orchestrator integration - Complete (13h)
-5. Testing import dependencies - Fix (2-4h)
+1. ADHD Engine missing auth - Add OR localhost-only (2h)
+1. DopeconBridge wiring - Complete (12h)
+1. Task-Orchestrator integration - Complete (13h)
+1. Testing import dependencies - Fix (2-4h)
 
 ---
 

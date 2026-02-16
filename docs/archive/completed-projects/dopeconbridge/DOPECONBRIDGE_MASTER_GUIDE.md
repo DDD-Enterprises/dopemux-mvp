@@ -21,13 +21,13 @@ prelude: Dopeconbridge_Master_Guide (explanation) for dopemux documentation and 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Quick Start](#quick-start)
-4. [Service Integration](#service-integration)
-5. [Client Usage](#client-usage)
-6. [Configuration](#configuration)
-7. [Testing](#testing)
-8. [Troubleshooting](#troubleshooting)
+1. [Architecture](#architecture)
+1. [Quick Start](#quick-start)
+1. [Service Integration](#service-integration)
+1. [Client Usage](#client-usage)
+1. [Configuration](#configuration)
+1. [Testing](#testing)
+1. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -38,10 +38,10 @@ prelude: Dopeconbridge_Master_Guide (explanation) for dopemux documentation and 
 ### Core Principles
 
 1. **Single Choke Point**: All PM ↔ Cognitive plane communication flows through DopeconBridge
-2. **No Direct ConPort Access**: Services MUST NOT access ConPort DB/HTTP directly
-3. **Event-Driven**: All state changes publish events to the event bus
-4. **Knowledge Graph Authority**: All KG operations go through `/kg/*` endpoints
-5. **Decision Graph Integration**: All DDG operations use `/ddg/*` endpoints
+1. **No Direct ConPort Access**: Services MUST NOT access ConPort DB/HTTP directly
+1. **Event-Driven**: All state changes publish events to the event bus
+1. **Knowledge Graph Authority**: All KG operations go through `/kg/*` endpoints
+1. **Decision Graph Integration**: All DDG operations use `/ddg/*` endpoints
 
 ### Two-Plane Model
 
@@ -209,10 +209,10 @@ bridge.save_custom_data(
 Every service follows this pattern:
 
 1. **Add bridge adapter** (`bridge_adapter.py`)
-2. **Update config** (read `DOPECONBRIDGE_*` env vars)
-3. **Replace direct ConPort calls** with bridge adapter methods
-4. **Add tests** with mocked bridge client
-5. **Update docs** to reference DopeconBridge
+1. **Update config** (read `DOPECONBRIDGE_*` env vars)
+1. **Replace direct ConPort calls** with bridge adapter methods
+1. **Add tests** with mocked bridge client
+1. **Update docs** to reference DopeconBridge
 
 ---
 
@@ -458,29 +458,29 @@ services:
   dopecon-bridge:
     build: ./services/dopecon-bridge
     ports:
-      - "3016:3016"
+- "3016:3016"
     environment:
-      - DOPECONBRIDGE_HOST=0.0.0.0
-      - DOPECONBRIDGE_PORT=3016
-      - REDIS_URL=redis://redis:6379/0
-      - CONPORT_URL=http://conport:3010
-      - LEANTIME_URL=http://leantime:8080
-      - DOPEBRAINZ_URL=http://dopebrainz:3020
+- DOPECONBRIDGE_HOST=0.0.0.0
+- DOPECONBRIDGE_PORT=3016
+- REDIS_URL=redis://redis:6379/0
+- CONPORT_URL=http://conport:3010
+- LEANTIME_URL=http://leantime:8080
+- DOPEBRAINZ_URL=http://dopebrainz:3020
     depends_on:
-      - redis
-      - conport
+- redis
+- conport
     networks:
-      - dopemux
+- dopemux
 
   your-service:
     build: ./services/your-service
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016
+- DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
     depends_on:
-      - dopecon-bridge
+- dopecon-bridge
     networks:
-      - dopemux
+- dopemux
 ```
 
 ---

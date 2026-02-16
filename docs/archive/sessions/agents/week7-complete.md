@@ -29,31 +29,31 @@ prelude: Week7 Complete (explanation) for dopemux documentation and developer wo
 **Core Validation Rules**:
 
 1. **Two-Plane Boundary Enforcement**
-   - Detects: Direct Leantime imports, PM plane access
-   - Severity: ERROR
-   - Guidance: "Use TwoPlaneOrchestrator for cross-plane coordination"
+- Detects: Direct Leantime imports, PM plane access
+- Severity: ERROR
+- Guidance: "Use TwoPlaneOrchestrator for cross-plane coordination"
 
-2. **Authority Matrix Compliance**
-   - Validates: Correct plane writes to correct data type
-   - Rules: tasks (PM), decisions (Cognitive), adhd_state (Cognitive), progress (Cognitive), sprint_data (PM)
-   - Severity: ERROR
-   - Guidance: "Route through authority plane or use TwoPlaneOrchestrator"
+1. **Authority Matrix Compliance**
+- Validates: Correct plane writes to correct data type
+- Rules: tasks (PM), decisions (Cognitive), adhd_state (Cognitive), progress (Cognitive), sprint_data (PM)
+- Severity: ERROR
+- Guidance: "Route through authority plane or use TwoPlaneOrchestrator"
 
-3. **Tool Preference Enforcement**
-   - Detects: bash cat/grep/find for code operations
-   - Severity: WARNING
-   - Guidance: "Use Read tool, Grep tool, or Serena MCP"
+1. **Tool Preference Enforcement**
+- Detects: bash cat/grep/find for code operations
+- Severity: WARNING
+- Guidance: "Use Read tool, Grep tool, or Serena MCP"
 
-4. **ADHD Constraint Validation**
-   - Detects: Result limits > 10, no pagination
-   - Patterns: limit=50, .limit(50), [:100]
-   - Severity: INFO
-   - Guidance: "Reduce limit to 10 or add pagination"
+1. **ADHD Constraint Validation**
+- Detects: Result limits > 10, no pagination
+- Patterns: limit=50, .limit(50), [:100]
+- Severity: INFO
+- Guidance: "Reduce limit to 10 or add pagination"
 
-5. **Complexity Warnings**
-   - Thresholds: 0.5 (suggest break), 0.7 (recommend break), 0.9 (mandatory break)
-   - Severity: INFO → WARNING → CRITICAL
-   - Guidance: "Take break after 25 minutes for high-complexity tasks"
+1. **Complexity Warnings**
+- Thresholds: 0.5 (suggest break), 0.7 (recommend break), 0.9 (mandatory break)
+- Severity: INFO → WARNING → CRITICAL
+- Guidance: "Take break after 25 minutes for high-complexity tasks"
 
 **Key Features**:
 - Gentle ADHD-friendly warnings (non-blocking by default)
@@ -71,44 +71,44 @@ prelude: Week7 Complete (explanation) for dopemux documentation and developer wo
 **Test Coverage** (8/8 passing):
 
 1. **test_tool_preference_violation**
-   - Code with bash cat command
-   - Expected: WARNING detected
-   - Result: ✅ PASS
+- Code with bash cat command
+- Expected: WARNING detected
+- Result: ✅ PASS
 
-2. **test_two_plane_boundary_violation**
-   - Code with direct Leantime import
-   - Expected: ERROR detected
-   - Result: ✅ PASS
+1. **test_two_plane_boundary_violation**
+- Code with direct Leantime import
+- Expected: ERROR detected
+- Result: ✅ PASS
 
-3. **test_complexity_warning**
-   - Large file (400 lines, complexity 0.80)
-   - Expected: WARNING for high complexity
-   - Result: ✅ PASS
+1. **test_complexity_warning**
+- Large file (400 lines, complexity 0.80)
+- Expected: WARNING for high complexity
+- Result: ✅ PASS
 
-4. **test_adhd_constraint_violation**
-   - Code with .limit(50) (exceeds max 10)
-   - Expected: INFO suggestion
-   - Result: ✅ PASS
+1. **test_adhd_constraint_violation**
+- Code with .limit(50) (exceeds max 10)
+- Expected: INFO suggestion
+- Result: ✅ PASS
 
-5. **test_authority_matrix_validation**
-   - PM trying to write decisions
-   - Expected: ERROR (authority violation)
-   - Result: ✅ PASS
+1. **test_authority_matrix_validation**
+- PM trying to write decisions
+- Expected: ERROR (authority violation)
+- Result: ✅ PASS
 
-6. **test_compliant_code**
-   - Clean code using TwoPlaneOrchestrator correctly
-   - Expected: No violations
-   - Result: ✅ PASS
+1. **test_compliant_code**
+- Clean code using TwoPlaneOrchestrator correctly
+- Expected: No violations
+- Result: ✅ PASS
 
-7. **test_strict_mode_blocking**
-   - Very large file (500 lines, complexity 1.0) in strict mode
-   - Expected: CRITICAL violation, blocking=True
-   - Result: ✅ PASS
+1. **test_strict_mode_blocking**
+- Very large file (500 lines, complexity 1.0) in strict mode
+- Expected: CRITICAL violation, blocking=True
+- Result: ✅ PASS
 
-8. **test_metrics_tracking**
-   - Multiple validations accumulate metrics
-   - Expected: Correct counts
-   - Result: ✅ PASS
+1. **test_metrics_tracking**
+- Multiple validations accumulate metrics
+- Expected: Correct counts
+- Result: ✅ PASS
 
 ---
 
@@ -253,22 +253,22 @@ sprint_data | PM             | PM, Cognitive  | PM only
 ## Files Created
 
 1. **dopemux_enforcer.py** (329 lines)
-   - DopemuxEnforcer class
-   - 5 validation rules
-   - ConPort integration
-   - Metrics tracking
-   - Demo code
+- DopemuxEnforcer class
+- 5 validation rules
+- ConPort integration
+- Metrics tracking
+- Demo code
 
-2. **test_dopemux_enforcer.py** (318 lines)
-   - 8 comprehensive test scenarios
-   - All violation types covered
-   - Strict mode testing
-   - Metrics validation
+1. **test_dopemux_enforcer.py** (318 lines)
+- 8 comprehensive test scenarios
+- All violation types covered
+- Strict mode testing
+- Metrics validation
 
-3. **WEEK7_COMPLETE.md** (this file)
-   - Complete documentation
-   - Usage examples
-   - Integration patterns
+1. **WEEK7_COMPLETE.md** (this file)
+- Complete documentation
+- Usage examples
+- Integration patterns
 
 **Total**: 3 files, ~700 lines
 

@@ -25,24 +25,24 @@ prelude: Ip 004 Status (explanation) for dopemux documentation and developer wor
 **Implemented** in `services/conport/src/context_portal_mcp/handlers/mcp_handlers.py`:
 
 1. **Refactored Main Handler**:
-   - `handle_semantic_search_conport()` now uses delegation pattern
-   - Checks feature flag to route to dope-context or legacy
-   - Maintains API compatibility (no breaking changes)
+- `handle_semantic_search_conport()` now uses delegation pattern
+- Checks feature flag to route to dope-context or legacy
+- Maintains API compatibility (no breaking changes)
 
-2. **Feature Flag Support**:
-   - `_check_search_delegation_flag()` checks Redis flag
-   - Flag: `adhd:feature_flags:conport_search_delegation:global`
-   - Safe default: disabled (uses legacy search)
+1. **Feature Flag Support**:
+- `_check_search_delegation_flag()` checks Redis flag
+- Flag: `adhd:feature_flags:conport_search_delegation:global`
+- Safe default: disabled (uses legacy search)
 
-3. **Delegation Function** (Placeholder):
-   - `_search_via_dope_context()` created with TODO
-   - Logs intent, falls back to legacy for now
-   - Ready for actual dope-context integration
+1. **Delegation Function** (Placeholder):
+- `_search_via_dope_context()` created with TODO
+- Logs intent, falls back to legacy for now
+- Ready for actual dope-context integration
 
-4. **Legacy Preservation**:
-   - `_search_via_conport_legacy()` preserves original 384-dim search
-   - Enables rollback and fallback
-   - Ensures zero regression
+1. **Legacy Preservation**:
+- `_search_via_conport_legacy()` preserves original 384-dim search
+- Enables rollback and fallback
+- Ensures zero regression
 
 ---
 
@@ -129,8 +129,8 @@ async def handle_log_decision(args):
 **Approach**: Complete IP-001 (DONE ✅) and IP-004 architecture (70% DONE ✅), then decide:
 
 1. **Finish IP-004 Now** (2-3 blocks): Get full search quality boost
-2. **Move to IP-002** (9 days): Enable cross-service coordination (higher strategic value)
-3. **Take a Break**: You've done amazing work today!
+1. **Move to IP-002** (9 days): Enable cross-service coordination (higher strategic value)
+1. **Take a Break**: You've done amazing work today!
 
 **My Recommendation**: #3 - Take the win! You completed:
 - Comprehensive research validation
@@ -147,20 +147,20 @@ That's **exceptional productivity** for one day. The remaining 30% of IP-004 can
 **When You Return**:
 
 1. **Option A**: Finish IP-004 (2-3 blocks)
-   - Implement auto-indexing hooks
-   - Complete search delegation
-   - Test quality improvement
-   - Celebrate 2nd completion!
+- Implement auto-indexing hooks
+- Complete search delegation
+- Test quality improvement
+- Celebrate 2nd completion!
 
-2. **Option B**: Start IP-002 (DopeconBridge)
-   - High strategic value
-   - Enables cross-service coordination
-   - 9-day plan ready to execute
+1. **Option B**: Start IP-002 (DopeconBridge)
+- High strategic value
+- Enables cross-service coordination
+- 9-day plan ready to execute
 
-3. **Option C**: Quick Win IP-004 Lite
-   - Just remove sentence-transformers dependency
-   - Reduce container size immediately
-   - Full search delegation later
+1. **Option C**: Quick Win IP-004 Lite
+- Just remove sentence-transformers dependency
+- Reduce container size immediately
+- Full search delegation later
 
 ---
 

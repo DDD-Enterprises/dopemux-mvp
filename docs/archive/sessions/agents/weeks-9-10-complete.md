@@ -44,23 +44,23 @@ prelude: Weeks 9 10 Complete (explanation) for dopemux documentation and develop
 
 **Core Features**:
 1. **PRD Parsing**
-   - Markdown header detection (##, ###)
-   - Section-based task extraction
-   - Simple but effective
+- Markdown header detection (##, ###)
+- Section-based task extraction
+- Simple but effective
 
-2. **ADHD Metadata Generation**
-   - Complexity estimation (0.0-1.0) from keywords
-   - Energy level mapping (low/medium/high)
-   - Time estimation (15-90 min range)
-   - Cognitive load tracking
+1. **ADHD Metadata Generation**
+- Complexity estimation (0.0-1.0) from keywords
+- Energy level mapping (low/medium/high)
+- Time estimation (15-90 min range)
+- Cognitive load tracking
 
-3. **ADHD-Safe Limits**
-   - Max 20 tasks per PRD (prevents overwhelm)
-   - Keyword-based complexity: architecture (0.8), implement (0.6), fix (0.3)
+1. **ADHD-Safe Limits**
+- Max 20 tasks per PRD (prevents overwhelm)
+- Keyword-based complexity: architecture (0.8), implement (0.6), fix (0.3)
 
-4. **Metrics Tracking**
-   - PRDs decomposed
-   - Tasks generated
+1. **Metrics Tracking**
+- PRDs decomposed
+- Tasks generated
 
 **Complexity Estimation**:
 ```python
@@ -87,29 +87,29 @@ Complexity → Energy
 **File**: `services/agents/test_task_decomposer.py` (5/5 passing)
 
 1. **test_simple_prd_decomposition**
-   - PRD with 2 sections
-   - Expected: 2+ tasks created
-   - Result: ✅ PASS
+- PRD with 2 sections
+- Expected: 2+ tasks created
+- Result: ✅ PASS
 
-2. **test_adhd_metadata_generated**
-   - All tasks have metadata
-   - Expected: complexity, energy, minutes, cognitive_load
-   - Result: ✅ PASS
+1. **test_adhd_metadata_generated**
+- All tasks have metadata
+- Expected: complexity, energy, minutes, cognitive_load
+- Result: ✅ PASS
 
-3. **test_complexity_estimation**
-   - Keyword-based estimation
-   - Expected: 4/4 correct estimates
-   - Result: ✅ PASS
+1. **test_complexity_estimation**
+- Keyword-based estimation
+- Expected: 4/4 correct estimates
+- Result: ✅ PASS
 
-4. **test_task_limit_adhd_friendly**
-   - Large PRD (50 sections)
-   - Expected: Limited to max_tasks (5)
-   - Result: ✅ PASS
+1. **test_task_limit_adhd_friendly**
+- Large PRD (50 sections)
+- Expected: Limited to max_tasks (5)
+- Result: ✅ PASS
 
-5. **test_metrics_tracking**
-   - Multiple PRD decompositions
-   - Expected: Correct counts
-   - Result: ✅ PASS
+1. **test_metrics_tracking**
+- Multiple PRD decompositions
+- Expected: Correct counts
+- Result: ✅ PASS
 
 ---
 
@@ -123,27 +123,27 @@ Complexity → Energy
 
 **Core Features**:
 1. **Workflow Templates** (3 predefined)
-   - Feature Implementation (5 steps, 240 min)
-   - Bug Investigation (4 steps, 165 min)
-   - Architecture Decision (3 steps, 135 min)
+- Feature Implementation (5 steps, 240 min)
+- Bug Investigation (4 steps, 165 min)
+- Architecture Decision (3 steps, 135 min)
 
-2. **Step Coordination**
-   - Persona activation (system-architect, python-expert, etc.)
-   - Agent routing (TaskDecomposer, DopemuxEnforcer, etc.)
-   - Dependency tracking
-   - Checkpoint creation
+1. **Step Coordination**
+- Persona activation (system-architect, python-expert, etc.)
+- Agent routing (TaskDecomposer, DopemuxEnforcer, etc.)
+- Dependency tracking
+- Checkpoint creation
 
-3. **Progress Tracking**
-   - Current step tracking
-   - Completed steps list
-   - Progress percentage
-   - Duration calculation
+1. **Progress Tracking**
+- Current step tracking
+- Completed steps list
+- Progress percentage
+- Duration calculation
 
-4. **Multi-Workflow Support**
-   - Multiple active workflows
-   - Unique workflow IDs
-   - Completion tracking
-   - Active workflow management
+1. **Multi-Workflow Support**
+- Multiple active workflows
+- Unique workflow IDs
+- Completion tracking
+- Active workflow management
 
 **Workflow Templates**:
 
@@ -179,39 +179,39 @@ Total: 135 min, 1 break recommended
 **File**: `services/agents/test_workflow_coordinator.py` (7/7 passing)
 
 1. **test_load_workflow_templates**
-   - Load 3 templates
-   - Expected: All templates present
-   - Result: ✅ PASS
+- Load 3 templates
+- Expected: All templates present
+- Result: ✅ PASS
 
-2. **test_start_workflow**
-   - Start Feature Implementation workflow
-   - Expected: Workflow created, step 0
-   - Result: ✅ PASS
+1. **test_start_workflow**
+- Start Feature Implementation workflow
+- Expected: Workflow created, step 0
+- Result: ✅ PASS
 
-3. **test_execute_workflow_step**
-   - Execute first step
-   - Expected: Step completed, current_step++
-   - Result: ✅ PASS
+1. **test_execute_workflow_step**
+- Execute first step
+- Expected: Step completed, current_step++
+- Result: ✅ PASS
 
-4. **test_workflow_status_tracking**
-   - Execute 2 steps, check progress
-   - Expected: 66.7% progress (2/3 steps)
-   - Result: ✅ PASS
+1. **test_workflow_status_tracking**
+- Execute 2 steps, check progress
+- Expected: 66.7% progress (2/3 steps)
+- Result: ✅ PASS
 
-5. **test_workflow_completion**
-   - Execute all steps, complete workflow
-   - Expected: 100% progress, removed from active
-   - Result: ✅ PASS
+1. **test_workflow_completion**
+- Execute all steps, complete workflow
+- Expected: 100% progress, removed from active
+- Result: ✅ PASS
 
-6. **test_multiple_workflows**
-   - Start 2 workflows, complete 1
-   - Expected: 2 active → complete 1 → 1 active
-   - Result: ✅ PASS
+1. **test_multiple_workflows**
+- Start 2 workflows, complete 1
+- Expected: 2 active → complete 1 → 1 active
+- Result: ✅ PASS
 
-7. **test_metrics_summary**
-   - Track workflows and steps
-   - Expected: Correct counts and completion rate
-   - Result: ✅ PASS
+1. **test_metrics_summary**
+- Track workflows and steps
+- Expected: Correct counts and completion rate
+- Result: ✅ PASS
 
 ---
 
@@ -395,13 +395,13 @@ async def complete_dopemux_workflow():
 
 ### Week 9 (3 files)
 1. task_decomposer.py (~100 lines)
-2. test_task_decomposer.py (~200 lines)
-3. Documentation
+1. test_task_decomposer.py (~200 lines)
+1. Documentation
 
 ### Week 10 (3 files)
 1. workflow_coordinator.py (~320 lines)
-2. test_workflow_coordinator.py (~280 lines)
-3. Documentation
+1. test_workflow_coordinator.py (~280 lines)
+1. Documentation
 
 **Total**: 6 files, ~1,000 lines (600 production, 400 tests)
 

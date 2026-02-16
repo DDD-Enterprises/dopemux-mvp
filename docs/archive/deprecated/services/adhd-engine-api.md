@@ -383,11 +383,11 @@ curl -H "X-API-Key: dev-key-123" "http://localhost:8095/"
 The ADHD Engine runs 6 background monitors that operate continuously:
 
 1. **Energy Tracking**: Monitors user energy levels based on activity patterns
-2. **Attention Monitoring**: Detects attention state changes and focus duration
-3. **Cognitive Load Assessment**: Measures real-time cognitive load during work
-4. **Break Suggester**: Provides proactive break recommendations
-5. **Hyperfocus Detection**: Identifies potential hyperfocus states for intervention
-6. **Context Switching Tracker**: Tracks context switches and their impact
+1. **Attention Monitoring**: Detects attention state changes and focus duration
+1. **Cognitive Load Assessment**: Measures real-time cognitive load during work
+1. **Break Suggester**: Provides proactive break recommendations
+1. **Hyperfocus Detection**: Identifies potential hyperfocus states for intervention
+1. **Context Switching Tracker**: Tracks context switches and their impact
 
 These monitors run asynchronously and update user state in Redis for real-time recommendations.
 

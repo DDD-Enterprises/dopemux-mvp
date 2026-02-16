@@ -83,14 +83,14 @@ current_hierarchy = []  # [(level, title), ...]
 
 For each line:
   If header (e.g., ## Subtopic):
-    1. Save previous section as chunk
-    2. Pop items at same/deeper level from stack
-    3. Push new header onto stack
-    4. Include parent headers in chunk text
+1. Save previous section as chunk
+1. Pop items at same/deeper level from stack
+1. Push new header onto stack
+1. Include parent headers in chunk text
 
   Else (content):
-    1. Add to current section
-    2. If size > max: Save chunk, start fresh
+1. Add to current section
+1. If size > max: Save chunk, start fresh
 ```
 
 ### Hierarchy Preservation Example
@@ -167,31 +167,31 @@ def estimate_chunk_complexity(chunk_text):
 ```
 src/preprocessing/models.py                      +8 metadata fields
 src/preprocessing/document_processor.py          +148 lines
-  - chunk_markdown_structured() method
-  - estimate_chunk_complexity() method
-  - Updated process_document() for markdown
-  - Fixed _extract_markdown_text() to preserve headers
+- chunk_markdown_structured() method
+- estimate_chunk_complexity() method
+- Updated process_document() for markdown
+- Fixed _extract_markdown_text() to preserve headers
 
 src/pipeline/docs_pipeline.py                    +25 lines
-  - Preserve chunk metadata (was losing it!)
-  - Enhanced breadcrumb generation from hierarchy
-  - Pass structure metadata to Qdrant
+- Preserve chunk metadata (was losing it!)
+- Enhanced breadcrumb generation from hierarchy
+- Pass structure metadata to Qdrant
 
 src/search/docs_search.py                        +6 payload fields
-  - Store hierarchy in Qdrant
-  - Enable filtering by complexity, section, type
+- Store hierarchy in Qdrant
+- Enable filtering by complexity, section, type
 
 src/mcp/server.py                                +132 lines
-  - start_autonomous_docs_indexing()
-  - stop_autonomous_docs_indexing()
-  - Enhanced get_autonomous_status()
+- start_autonomous_docs_indexing()
+- stop_autonomous_docs_indexing()
+- Enhanced get_autonomous_status()
 ```
 
 ### Testing & Documentation
 ```
 test_structure_aware_chunking.py                 NEW (+224 lines)
-  - 4 comprehensive tests
-  - All passing ✅
+- 4 comprehensive tests
+- All passing ✅
 
 AUTONOMOUS_DOCS_INDEXING.md                      NEW (+350 lines)
 CHUNKING_OPTIMIZATION.md                         NEW (+350 lines)
@@ -202,9 +202,9 @@ OPTIMIZATION_COMPLETE.md                         NEW (this file)
 ### Global Documentation
 ```
 ~/.claude/MCP_DopeContext.md                     Updated
-  - Added autonomous indexing section
-  - Updated docs search description
-  - Enhanced complexity scoring docs
+- Added autonomous indexing section
+- Updated docs search description
+- Enhanced complexity scoring docs
 ```
 
 **Total**: ~2,000 lines across 13 files
@@ -216,27 +216,27 @@ OPTIMIZATION_COMPLETE.md                         NEW (this file)
 **All 4 tests passed** (test_structure_aware_chunking.py):
 
 1. ✅ **Basic Structure-Aware Chunking**
-   - Chunks by markdown sections
-   - Preserves hierarchy in metadata
-   - 2 chunks generated from multi-section doc
+- Chunks by markdown sections
+- Preserves hierarchy in metadata
+- 2 chunks generated from multi-section doc
 
-2. ✅ **Metadata Extraction**
-   - Hierarchy: ['Authentication', 'JWT Tokens']
-   - Parent: "Authentication > JWT Tokens"
-   - Has code blocks: Detected
-   - Complexity: 0.41 (medium)
-   - Section type: code
+1. ✅ **Metadata Extraction**
+- Hierarchy: ['Authentication', 'JWT Tokens']
+- Parent: "Authentication > JWT Tokens"
+- Has code blocks: Detected
+- Complexity: 0.41 (medium)
+- Section type: code
 
-3. ✅ **Complexity Estimation**
-   - Simple text: 0.01 (low)
-   - With code: 0.32 (medium)
-   - With tables: 0.23 (low-medium)
-   - All within expected ranges
+1. ✅ **Complexity Estimation**
+- Simple text: 0.01 (low)
+- With code: 0.32 (medium)
+- With tables: 0.23 (low-medium)
+- All within expected ranges
 
-4. ✅ **Hierarchy Preservation**
-   - Parent headers included in chunks
-   - 3-level hierarchy maintained
-   - Context preserved
+1. ✅ **Hierarchy Preservation**
+- Parent headers included in chunks
+- 3-level hierarchy maintained
+- Context preserved
 
 ---
 
@@ -421,23 +421,23 @@ chunks = processor.chunk_markdown_structured(
 
 ### What Worked Well
 1. **Reusing Infrastructure**: Autonomous code indexing → docs with minimal changes
-2. **Metadata-First Design**: Enhanced models before implementation
-3. **Test-Driven**: Tests caught markdown extraction bug early
-4. **Semantic Boundaries**: Natural chunking points = better results
+1. **Metadata-First Design**: Enhanced models before implementation
+1. **Test-Driven**: Tests caught markdown extraction bug early
+1. **Semantic Boundaries**: Natural chunking points = better results
 
 ### Challenges Overcome
 1. **Markdown Extraction Bug**: Was converting to HTML (lost headers)
-   - Fixed: Return raw markdown
-2. **Metadata Loss**: Pipeline was extracting text only
-   - Fixed: Preserve metadata through entire flow
-3. **Import Issues**: Direct Python scripts for indexing
-   - Workaround: Use MCP tools after server restart
+- Fixed: Return raw markdown
+1. **Metadata Loss**: Pipeline was extracting text only
+- Fixed: Preserve metadata through entire flow
+1. **Import Issues**: Direct Python scripts for indexing
+- Workaround: Use MCP tools after server restart
 
 ### Design Decisions
 1. **Max 1500 chars**: Balance between context and token limits
-2. **Min 100 chars**: Prevent tiny useless chunks
-3. **Preserve hierarchy**: Include parent headers (worth the tokens)
-4. **Complexity scoring**: ADHD-first design principle
+1. **Min 100 chars**: Prevent tiny useless chunks
+1. **Preserve hierarchy**: Include parent headers (worth the tokens)
+1. **Complexity scoring**: ADHD-first design principle
 
 ---
 
@@ -466,9 +466,9 @@ chunks = processor.chunk_markdown_structured(
 
 **Commits**:
 1. `422aba6b` - Autonomous docs indexing + analysis
-2. `462cad82` - Fixes summary
-3. `b3a08d7b` - Structure-aware chunking optimization
-4. `b6402781` - Complete optimization summary
+1. `462cad82` - Fixes summary
+1. `b3a08d7b` - Structure-aware chunking optimization
+1. `b6402781` - Complete optimization summary
 
 **Next**: Reindex existing docs to use new structure-aware chunking!
 

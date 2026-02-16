@@ -51,9 +51,9 @@ FastMCP stdio server
 ## Files Changed
 
 1. **pyproject.toml** (NEW): uvx package configuration
-2. **start_with_uvx.sh** (NEW): Launcher script
-3. **exa_server.py**: Added `main()` entry point
-4. **.claude.json**: Updated to use uvx launcher
+1. **start_with_uvx.sh** (NEW): Launcher script
+1. **exa_server.py**: Added `main()` entry point
+1. **.claude.json**: Updated to use uvx launcher
 
 ## Configuration
 
@@ -128,11 +128,11 @@ docker start mcp-exa
 ## Benefits Summary
 
 1. **No Docker Required**: Native Python execution
-2. **Faster Startup**: 97% faster (156ms vs 5s)
-3. **Fixed Connection**: stdio mode matches Claude Code protocol
-4. **Simpler Debugging**: Direct Python execution, easier to troubleshoot
-5. **Lower Memory**: 75% less memory usage
-6. **Dependency Management**: uvx auto-installs dependencies
+1. **Faster Startup**: 97% faster (156ms vs 5s)
+1. **Fixed Connection**: stdio mode matches Claude Code protocol
+1. **Simpler Debugging**: Direct Python execution, easier to troubleshoot
+1. **Lower Memory**: 75% less memory usage
+1. **Dependency Management**: uvx auto-installs dependencies
 
 ## Next Steps
 

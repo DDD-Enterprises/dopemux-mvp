@@ -441,11 +441,11 @@ conport update_progress --progress_id "$SESSION2_TASK" --status COMPLETED
 ## Best Practices from Examples
 
 1. **One Terminal Per Worktree**: Keep terminals open to preserve mental context
-2. **Descriptive Instance IDs**: Use feature names, not generic names
-3. **Mark Complete Promptly**: Share finished work immediately
-4. **Use BLOCKED for Cross-Cutting Issues**: Make blockers visible to all
-5. **Leverage Active Context**: Store worktree-specific notes and state
-6. **Clean Up Old Worktrees**: Remove when feature is merged
+1. **Descriptive Instance IDs**: Use feature names, not generic names
+1. **Mark Complete Promptly**: Share finished work immediately
+1. **Use BLOCKED for Cross-Cutting Issues**: Make blockers visible to all
+1. **Leverage Active Context**: Store worktree-specific notes and state
+1. **Clean Up Old Worktrees**: Remove when feature is merged
 
 ---
 

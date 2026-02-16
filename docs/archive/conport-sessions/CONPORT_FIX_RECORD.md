@@ -24,18 +24,18 @@ ConPort MCP server was failing with "Failed to reconnect to conport" errors, pre
 ### Primary Issues Found
 
 1. **Duplicate Conflicting Configurations** (Critical)
-   - Global config with invalid `"command": "stdio"`
-   - Project config with correct path and workspace_id
-   - The broken global config was overriding the working project config
+- Global config with invalid `"command": "stdio"`
+- Project config with correct path and workspace_id
+- The broken global config was overriding the working project config
 
-2. **Process Instability in Stdio Mode**
-   - Database pre-warming causing high CPU usage (96.5%) in stdio mode
-   - Process crashes during MCP management
-   - Manual tests worked fine, indicating MCP-specific issue
+1. **Process Instability in Stdio Mode**
+- Database pre-warming causing high CPU usage (96.5%) in stdio mode
+- Process crashes during MCP management
+- Manual tests worked fine, indicating MCP-specific issue
 
-3. **Multiple Installation Conflicts**
-   - System-wide uv installation conflicting with project venv
-   - Various worktree copies causing confusion
+1. **Multiple Installation Conflicts**
+- System-wide uv installation conflicting with project venv
+- Various worktree copies causing confusion
 
 ## Solution Implemented
 
@@ -109,9 +109,9 @@ Added to project CLAUDE.md:
 ### Future Troubleshooting
 
 1. **Always check for duplicate configs** if conport fails
-2. **Use project venv, not system-wide installations**
-3. **Stdio mode bypass is essential** for MCP stability
-4. **Test both `claude mcp list` and manual startup** for validation
+1. **Use project venv, not system-wide installations**
+1. **Stdio mode bypass is essential** for MCP stability
+1. **Test both `claude mcp list` and manual startup** for validation
 
 ## Impact
 
@@ -123,8 +123,8 @@ Added to project CLAUDE.md:
 ## Files Modified
 
 1. `/Users/hue/.claude.json` - Recreated clean MCP configurations
-2. `/Users/hue/code/dopemux-mvp/services/conport/src/context_portal_mcp/main.py` - Added stdio bypass
-3. `/Users/hue/code/dopemux-mvp/.conport/CONPORT_FIX_RECORD.md` - This documentation
+1. `/Users/hue/code/dopemux-mvp/services/conport/src/context_portal_mcp/main.py` - Added stdio bypass
+1. `/Users/hue/code/dopemux-mvp/.conport/CONPORT_FIX_RECORD.md` - This documentation
 
 ---
 

@@ -23,30 +23,30 @@ Closure verification for execution-packet backlog item:
 Updated `src/dopemux/profile_manager.py`:
 
 1. Added `detect_profile_from_claude_config(...)`:
-   - reads Claude settings JSON
-   - checks `_dopemux_active_profile` metadata first
-   - falls back to MCP-set matching against known profiles
-   - uses overlap-based fallback match (`>= 0.8`) when exact match is absent
-2. Added optional workspace marker cache write for detected profile.
+- reads Claude settings JSON
+- checks `_dopemux_active_profile` metadata first
+- falls back to MCP-set matching against known profiles
+- uses overlap-based fallback match (`>= 0.8`) when exact match is absent
+1. Added optional workspace marker cache write for detected profile.
 
 Updated `src/dopemux/profile_commands.py`:
 
 1. `profile current`/`profile show` now attempts detection from Claude config when no active-profile marker exists.
-2. Detected result is cached to workspace marker to avoid repeated recomputation.
+1. Detected result is cached to workspace marker to avoid repeated recomputation.
 
 ## Test Coverage
 
 Added in `tests/unit/test_profile_manager_detection.py`:
 
 1. `test_detect_profile_uses_embedded_active_profile_and_caches`
-2. `test_detect_profile_matches_exact_mcp_set`
-3. `test_detect_profile_uses_overlap_threshold`
-4. `test_detect_profile_returns_none_when_match_is_weak`
+1. `test_detect_profile_matches_exact_mcp_set`
+1. `test_detect_profile_uses_overlap_threshold`
+1. `test_detect_profile_returns_none_when_match_is_weak`
 
 ## Verification
 
 1. `pytest -q --no-cov tests/unit/test_profile_manager_detection.py tests/unit/test_profile_use_command.py tests/unit/test_profile_cli_registration.py` passed.
-2. `python -m py_compile src/dopemux/profile_manager.py src/dopemux/profile_commands.py` passed.
+1. `python -m py_compile src/dopemux/profile_manager.py src/dopemux/profile_commands.py` passed.
 
 ## Status
 

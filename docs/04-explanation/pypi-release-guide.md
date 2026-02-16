@@ -17,8 +17,8 @@ prelude: Pypi_Release_Guide (explanation) for dopemux documentation and develope
 - **Package Name:** dopemux
 - **Version:** 0.1.0
 - **Built Artifacts:**
-  - `dopemux-0.1.0-py3-none-any.whl` (565 KB)
-  - `dopemux-0.1.0.tar.gz` (575 KB)
+- `dopemux-0.1.0-py3-none-any.whl` (565 KB)
+- `dopemux-0.1.0.tar.gz` (575 KB)
 - **Build Date:** 2025-11-13
 - **Python Support:** >= 3.8
 
@@ -76,8 +76,8 @@ dopemux --full              # Full installation
 
 ### Prerequisites
 1. Create account on [PyPI](https://pypi.org)
-2. Create account on [TestPyPI](https://test.pypi.org) (for testing)
-3. Generate API token: Account Settings → API Tokens
+1. Create account on [TestPyPI](https://test.pypi.org) (for testing)
+1. Generate API token: Account Settings → API Tokens
 
 ### Install Twine
 ```bash
@@ -140,17 +140,17 @@ password = pypi-YOUR-TESTPYPI-TOKEN
    git push origin v0.1.0
    ```
 
-2. **Create GitHub Release**
-   - Upload wheel and tarball as release artifacts
-   - Add release notes from CHANGELOG
+1. **Create GitHub Release**
+- Upload wheel and tarball as release artifacts
+- Add release notes from CHANGELOG
 
-3. **Update Documentation**
-   - Add PyPI badge to README
-   - Update installation instructions
+1. **Update Documentation**
+- Add PyPI badge to README
+- Update installation instructions
 
-4. **Announce**
-   - Share on relevant communities
-   - Update project homepage
+1. **Announce**
+- Share on relevant communities
+- Update project homepage
 
 ## Testing the Package
 
@@ -202,10 +202,10 @@ Current version: `0.1.0` (Alpha)
 
 To bump version:
 1. Update `pyproject.toml` → `version = "0.2.0"`
-2. Update `src/dopemux/__version__.py`
-3. Update `CHANGELOG.md`
-4. Rebuild: `python3 -m build`
-5. Tag: `git tag v0.2.0`
+1. Update `src/dopemux/__version__.py`
+1. Update `CHANGELOG.md`
+1. Rebuild: `python3 -m build`
+1. Tag: `git tag v0.2.0`
 
 ## Notes
 

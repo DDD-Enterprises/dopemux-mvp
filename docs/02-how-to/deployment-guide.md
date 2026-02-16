@@ -28,12 +28,12 @@ prelude: Dopemux Deployment Guide (how-to) for dopemux documentation and develop
 ## Table of Contents
 
 1. [Pre-Deployment Checklist](#pre-deployment-checklist)
-2. [Environment Configuration](#environment-configuration)
-3. [Database Setup](#database-setup)
-4. [Service Deployment](#service-deployment)
-5. [Health Checks](#health-checks)
-6. [Rollback Procedures](#rollback-procedures)
-7. [Post-Deployment Validation](#post-deployment-validation)
+1. [Environment Configuration](#environment-configuration)
+1. [Database Setup](#database-setup)
+1. [Service Deployment](#service-deployment)
+1. [Health Checks](#health-checks)
+1. [Rollback Procedures](#rollback-procedures)
+1. [Post-Deployment Validation](#post-deployment-validation)
 
 ---
 

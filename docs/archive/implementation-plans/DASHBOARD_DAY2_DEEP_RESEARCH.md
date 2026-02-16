@@ -48,10 +48,10 @@ prelude: Dashboard_Day2_Deep_Research (explanation) for dopemux documentation an
 
 **Design Principles:**
 1. **High data density** - Maximum information in minimal space
-2. **Contextual** - Embedded inline with text
-3. **Trend focus** - Show direction, not exact values
-4. **No decoration** - No axes, labels, or legends
-5. **Fast perception** - Understand in < 1 second
+1. **Contextual** - Embedded inline with text
+1. **Trend focus** - Show direction, not exact values
+1. **No decoration** - No axes, labels, or legends
+1. **Fast perception** - Understand in < 1 second
 
 ### Examples in Production Systems
 ```
@@ -62,10 +62,10 @@ lazygit:  Commits ▁▁▂▃▅▇█▇▅▃▂ (last 30 days)
 
 ### Best Practices for ADHD Users
 1. **Use color** - Green (↑), Red (↓), Yellow (≈)
-2. **Show recent on right** - Time flows left → right
-3. **Consistent scale** - Same metric = same visual range
-4. **Smooth interpolation** - No jarring jumps
-5. **Context markers** - Highlight anomalies
+1. **Show recent on right** - Time flows left → right
+1. **Consistent scale** - Same metric = same visual range
+1. **Smooth interpolation** - No jarring jumps
+1. **Context markers** - Highlight anomalies
 
 ---
 
@@ -368,44 +368,44 @@ Priority 4: Exact numbers (only on hover/drill-down)
 
 ### Tier 1: Critical ADHD Metrics (Must Have)
 1. **Cognitive Load** (2-hour window)
-   - Query: `adhd_cognitive_load{load_category="optimal"}`
-   - Update: Every 30s
-   - Scale: 0-100%
-   - Color: Green (0-50), Yellow (50-70), Orange (70-85), Red (85-100)
+- Query: `adhd_cognitive_load{load_category="optimal"}`
+- Update: Every 30s
+- Scale: 0-100%
+- Color: Green (0-50), Yellow (50-70), Orange (70-85), Red (85-100)
 
-2. **Task Velocity** (7-day window)
-   - Query: `adhd_task_velocity_per_day`
-   - Update: Every 5 min
-   - Scale: Tasks per day
-   - Color: Green (↑), Red (↓), Yellow (→)
+1. **Task Velocity** (7-day window)
+- Query: `adhd_task_velocity_per_day`
+- Update: Every 5 min
+- Scale: Tasks per day
+- Color: Green (↑), Red (↓), Yellow (→)
 
-3. **Context Switches** (24-hour window)
-   - Query: `adhd_context_switches_total`
-   - Update: Every 1 min
-   - Scale: Switches per hour
-   - Color: Green (low), Red (high)
+1. **Context Switches** (24-hour window)
+- Query: `adhd_context_switches_total`
+- Update: Every 1 min
+- Scale: Switches per hour
+- Color: Green (low), Red (high)
 
 ### Tier 2: Flow State Metrics (Should Have)
 1. **Flow Duration** (24-hour window)
-   - Query: `adhd_flow_duration_seconds`
-   - Update: Every 5 min
-   - Scale: Minutes in flow
-   - Color: Green (high), Yellow (low)
+- Query: `adhd_flow_duration_seconds`
+- Update: Every 5 min
+- Scale: Minutes in flow
+- Color: Green (high), Yellow (low)
 
-2. **Break Adherence** (7-day window)
-   - Query: `adhd_break_adherence_rate`
-   - Update: Every 5 min
-   - Scale: 0-100%
-   - Color: Green (>80%), Yellow (60-80%), Red (<60%)
+1. **Break Adherence** (7-day window)
+- Query: `adhd_break_adherence_rate`
+- Update: Every 5 min
+- Scale: 0-100%
+- Color: Green (>80%), Yellow (60-80%), Red (<60%)
 
 ### Tier 3: Pattern Metrics (Nice to Have)
 1. **Decision Quality** (7-day trend)
-   - Query: `conport_decision_quality_score`
-   - Update: Every 5 min
+- Query: `conport_decision_quality_score`
+- Update: Every 5 min
 
-2. **Pattern Matches** (24-hour trend)
-   - Query: `serena_pattern_matches_total`
-   - Update: Every 1 min
+1. **Pattern Matches** (24-hour trend)
+- Query: `serena_pattern_matches_total`
+- Update: Every 1 min
 
 ---
 
@@ -632,22 +632,22 @@ python3 dopemux_dashboard.py
 
 ### Academic Papers
 1. **"Sparklines: Theory and Practice"** - Edward Tufte, 2006
-   - Information density in minimal space
-   - Word-sized graphics principles
+- Information density in minimal space
+- Word-sized graphics principles
 
-2. **"Color Psychology in HCI"** - Singh, 2006
-   - Color improves recall by 55-78%
-   - Consistency crucial for pattern recognition
+1. **"Color Psychology in HCI"** - Singh, 2006
+- Color improves recall by 55-78%
+- Consistency crucial for pattern recognition
 
-3. **"Visualization for ADHD Users"** - CHADD Research, 2018
-   - High contrast reduces cognitive load
-   - Progressive disclosure prevents overwhelm
+1. **"Visualization for ADHD Users"** - CHADD Research, 2018
+- High contrast reduces cognitive load
+- Progressive disclosure prevents overwhelm
 
 ### Production Systems Analyzed
 1. **btop** - Excellent real-time sparklines
-2. **k9s** - Color-coded resource trends
-3. **lazygit** - Clean historical visualization
-4. **htop** - Classic bar chart approach
+1. **k9s** - Color-coded resource trends
+1. **lazygit** - Clean historical visualization
+1. **htop** - Classic bar chart approach
 
 ### Best Practices Extracted
 - Keep it simple (< 3 colors per sparkline)
@@ -661,24 +661,24 @@ python3 dopemux_dashboard.py
 
 ### What Makes Good Sparklines
 1. **Consistent scale** - Same metric = same visual range
-2. **Recent emphasis** - Right side is "now"
-3. **Smooth rendering** - Interpolate gaps
-4. **Color meaning** - Green/Yellow/Red = Good/Neutral/Bad
-5. **Fast updates** - < 100ms render time
+1. **Recent emphasis** - Right side is "now"
+1. **Smooth rendering** - Interpolate gaps
+1. **Color meaning** - Green/Yellow/Red = Good/Neutral/Bad
+1. **Fast updates** - < 100ms render time
 
 ### ADHD-Specific Optimizations
 1. **High contrast** - Easy to distinguish at a glance
-2. **Predictable layout** - Same position every time
-3. **Clear trends** - Direction obvious without thinking
-4. **No surprises** - Smooth transitions, no jumps
-5. **Actionable** - See problem → take action
+1. **Predictable layout** - Same position every time
+1. **Clear trends** - Direction obvious without thinking
+1. **No surprises** - Smooth transitions, no jumps
+1. **Actionable** - See problem → take action
 
 ### Technical Learnings
 1. **Prometheus query_range** - More efficient than multiple queries
-2. **Unicode blocks** - Better than ASCII for smoothness
-3. **Async updates** - Don't block UI on slow API
-4. **Caching** - Store last N values for trend calculation
-5. **Interpolation** - Linear works fine for most metrics
+1. **Unicode blocks** - Better than ASCII for smoothness
+1. **Async updates** - Don't block UI on slow API
+1. **Caching** - Store last N values for trend calculation
+1. **Interpolation** - Linear works fine for most metrics
 
 ---
 

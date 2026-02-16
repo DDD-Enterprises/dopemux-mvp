@@ -239,25 +239,25 @@ ConPort Orchestrator → (TODOs, events not published)
 ### Immediate (Documentation)
 
 1. **Document Integration Gap** ✅ (this report)
-2. **Update Architecture Docs** (1 hour)
-   - Current state: Designed but not fully integrated
-   - Week 7 plan: Complete integration work
-   - Workaround: Services operate independently
+1. **Update Architecture Docs** (1 hour)
+- Current state: Designed but not fully integrated
+- Week 7 plan: Complete integration work
+- Workaround: Services operate independently
 
 ### Week 7 (Integration Work)
 
 1. **Complete Service Integration** (12 hours)
-   - Wire all services to DopeconBridge
-   - Remove direct database access
-   - Enforce authority boundaries
-   - Validate event routing
+- Wire all services to DopeconBridge
+- Remove direct database access
+- Enforce authority boundaries
+- Validate event routing
 
 ### Long-term
 
 1. **PM Plane Audit** (6-8 hours)
-   - Leantime integration status
-   - Task-Master compliance
-   - Cross-plane coordination validation
+- Leantime integration status
+- Task-Master compliance
+- Cross-plane coordination validation
 
 ---
 

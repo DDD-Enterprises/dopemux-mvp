@@ -172,9 +172,9 @@ CREATE INDEX idx_progress_user ON progress_entries(user_id, status);
 
 **ConPort MCP Server Changes**:
 1. Add user_id parameter to all tool calls
-2. Filter all queries by user_id
-3. Validate user has access to workspace
-4. Default to 'default' user for backward compatibility
+1. Filter all queries by user_id
+1. Validate user has access to workspace
+1. Default to 'default' user for backward compatibility
 
 **Example**:
 ```python

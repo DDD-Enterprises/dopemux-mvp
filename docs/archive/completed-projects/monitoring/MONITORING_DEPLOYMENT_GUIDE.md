@@ -112,11 +112,11 @@ curl http://localhost:3004/metrics
 
 1. Open Prometheus UI: http://localhost:9090
 
-2. Check targets: http://localhost:9090/targets
-   - All services should show "UP" (green)
-   - Previously showed "down" with connection refused errors
+1. Check targets: http://localhost:9090/targets
+- All services should show "UP" (green)
+- Previously showed "down" with connection refused errors
 
-3. Query metrics:
+1. Query metrics:
    ```promql
    # See all services
    dopemux_service_info
@@ -133,12 +133,12 @@ curl http://localhost:3004/metrics
 ### 4. Verify in Grafana
 
 1. Open Grafana: http://localhost:3000
-   - Username: `admin`
-   - Password: `dopemux_admin`
+- Username: `admin`
+- Password: `dopemux_admin`
 
-2. Go to Explore tab
+1. Go to Explore tab
 
-3. Try queries:
+1. Try queries:
    ```promql
    # Service health
    dopemux_health_status
@@ -195,8 +195,8 @@ docker logs dopemux-prometheus | grep <service>
 ```bash
 # Add to docker-compose.yml
 environment:
-  - WORKSPACE_ID=workspace1  # or use actual workspace ID
-  - INSTANCE_ID=1
+- WORKSPACE_ID=workspace1  # or use actual workspace ID
+- INSTANCE_ID=1
 ```
 
 ---
@@ -221,20 +221,20 @@ After deployment, verify:
 ### Created Files
 
 1. `shared/monitoring/base.py` - Core monitoring class (300+ lines)
-2. `shared/monitoring/__init__.py` - Module exports
-3. `services/monitoring/prometheus.yml` - Prometheus configuration
-4. `services/monitoring/alerting_rules.yml` - Alert rules
-5. `services/monitoring/alertmanager.yml` - AlertManager config
-6. `services/monitoring/grafana/provisioning/` - Grafana auto-config
-7. `docker-compose.monitoring.yml` - Monitoring stack compose
-8. `docker/mcp-servers/conport/shared_monitoring.py` - ConPort copy of monitoring
-9. `docker/mcp-servers/conport/shared_monitoring_init.py` - ConPort **init**
+1. `shared/monitoring/__init__.py` - Module exports
+1. `services/monitoring/prometheus.yml` - Prometheus configuration
+1. `services/monitoring/alerting_rules.yml` - Alert rules
+1. `services/monitoring/alertmanager.yml` - AlertManager config
+1. `services/monitoring/grafana/provisioning/` - Grafana auto-config
+1. `docker-compose.monitoring.yml` - Monitoring stack compose
+1. `docker/mcp-servers/conport/shared_monitoring.py` - ConPort copy of monitoring
+1. `docker/mcp-servers/conport/shared_monitoring_init.py` - ConPort **init**
 
 ### Modified Files
 
 1. `services/adhd_engine/main.py` - Added monitoring initialization, middleware, /metrics endpoint
-2. `docker/mcp-servers/conport/enhanced_server.py` - Added monitoring integration
-3. `docker/mcp-servers/conport/Dockerfile` - Added prometheus-client dependency
+1. `docker/mcp-servers/conport/enhanced_server.py` - Added monitoring integration
+1. `docker/mcp-servers/conport/Dockerfile` - Added prometheus-client dependency
 
 ---
 
@@ -243,25 +243,25 @@ After deployment, verify:
 Once all services are deployed and metrics are flowing:
 
 1. **Create Grafana Dashboards**
-   - Service overview dashboard
-   - Workspace comparison dashboard
-   - ADHD-specific metrics dashboard
+- Service overview dashboard
+- Workspace comparison dashboard
+- ADHD-specific metrics dashboard
 
-2. **Test Alerts**
-   - Trigger high error rate
-   - Verify AlertManager notifications
-   - Test workspace-aware routing
+1. **Test Alerts**
+- Trigger high error rate
+- Verify AlertManager notifications
+- Test workspace-aware routing
 
-3. **Performance Validation**
-   - Monitor overhead (should be < 100ms per request)
-   - Check memory usage
-   - Validate label cardinality
+1. **Performance Validation**
+- Monitor overhead (should be < 100ms per request)
+- Check memory usage
+- Validate label cardinality
 
-4. **Integrate Remaining Services**
-   - Orchestrator
-   - Serena
-   - Dopecon Bridge
-   - Dope Context
+1. **Integrate Remaining Services**
+- Orchestrator
+- Serena
+- Dopecon Bridge
+- Dope Context
 
 ---
 

@@ -47,10 +47,10 @@ scripts/smoke_up.sh [--no-build] [--wait-time SECONDS]
 ```
 
 1. Auto-generate `.env.smoke` if missing
-2. `docker compose up -d --build`
-3. Wait for initialization (default 10s)
-4. Run runtime gate
-5. Display results + next steps
+1. `docker compose up -d --build`
+1. Wait for initialization (default 10s)
+1. Run runtime gate
+1. Display results + next steps
 
 **Exit Codes**:
 - `0` - All services healthy
@@ -65,8 +65,8 @@ scripts/smoke_down.sh [--volumes]
 ```
 
 1. Prompt confirmation if `--volumes` flag used
-2. `docker compose down [--volumes]`
-3. Display cleanup summary
+1. `docker compose down [--volumes]`
+1. Display cleanup summary
 
 **Safety**: Preserves volumes by default (no accidental data loss)
 
@@ -109,11 +109,11 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
 ```yaml
 # Line 79: Container internal port is 3004
 environment:
-  - MCP_SERVER_PORT=${CONPORT_CONTAINER_PORT:-3004}
+- MCP_SERVER_PORT=${CONPORT_CONTAINER_PORT:-3004}
 
 # Line 83: Published port mapping
 ports:
-  - "${CONPORT_PORT:-3004}:${CONPORT_CONTAINER_PORT:-3004}"
+- "${CONPORT_PORT:-3004}:${CONPORT_CONTAINER_PORT:-3004}"
 
 # Line 92: Healthcheck expects port 3004
 healthcheck:
@@ -137,9 +137,9 @@ healthcheck:
 + EXPOSE 3004
 
 - HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
--     CMD curl -f http://localhost:8005/health || exit 1
+- CMD curl -f http://localhost:8005/health || exit 1
 + HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-+     CMD curl -f http://localhost:3004/health || exit 1
++ CMD curl -f http://localhost:3004/health || exit 1
 ```
 
 **Option B: Update Compose** (Not Recommended)
@@ -201,7 +201,7 @@ healthcheck:
    # - Line 48: HEALTHCHECK on localhost:3004
    ```
 
-2. **Verify .env.smoke exists** (or let smoke_up.sh generate it):
+1. **Verify .env.smoke exists** (or let smoke_up.sh generate it):
    ```bash
    ls .env.smoke || python tools/generate_smoke_env.py
    ```
@@ -221,8 +221,8 @@ scripts/smoke_up.sh
 
 ### Post-Success (Optional)
 1. Add `scripts/smoke_up.sh` to CI workflow
-2. Create unit tests for ComposeParser and HealthProber
-3. Monitor runtime gate results over time
+1. Create unit tests for ComposeParser and HealthProber
+1. Monitor runtime gate results over time
 
 ---
 

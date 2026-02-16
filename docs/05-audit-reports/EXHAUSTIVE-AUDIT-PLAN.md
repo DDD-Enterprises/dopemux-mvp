@@ -368,9 +368,9 @@ except Exception as e:
 
 **Process**:
 1. Extract all Python/TypeScript/Bash examples
-2. Attempt to run each one
-3. Document which ones fail
-4. Either fix code OR update documentation
+1. Attempt to run each one
+1. Document which ones fail
+1. Either fix code OR update documentation
 
 **Est**: 50+ code examples × 10 min each = 8-10 hours
 
@@ -381,12 +381,12 @@ except Exception as e:
 **For EVERY documented API endpoint**:
 
 1. **Find in Docs**: `POST /api/assess-task`
-2. **Find in Code**: Search for `@router.post("/assess-task")`
-3. **Verify Match**:
-   - Parameters match?
-   - Response format matches?
-   - Status codes documented?
-   - Error cases covered?
+1. **Find in Code**: Search for `@router.post("/assess-task")`
+1. **Verify Match**:
+- Parameters match?
+- Response format matches?
+- Status codes documented?
+- Error cases covered?
 
 **For Each Service API**:
 - Read API docs
@@ -402,12 +402,12 @@ except Exception as e:
 **For EVERY feature claim** (e.g., "Provides real-time risk prediction"):
 
 1. **Extract Claim**: From README or docs
-2. **Find Implementation**: Trace through code
-3. **Verify**:
-   - Feature actually exists?
-   - Works as described?
-   - Has tests?
-   - No TODOs/stubs?
+1. **Find Implementation**: Trace through code
+1. **Verify**:
+- Feature actually exists?
+- Works as described?
+- Has tests?
+- No TODOs/stubs?
 
 **Categories**:
 - ADHD features (energy tracking, attention monitoring, etc.)
@@ -422,9 +422,9 @@ except Exception as e:
 **For EVERY architecture diagram**:
 
 1. **Read Diagram**: Two-plane architecture, service boundaries, etc.
-2. **Trace in Code**: Find actual service calls, database access, event routing
-3. **Verify**: Does code match diagram?
-4. **Document Gaps**: Where does reality differ from diagrams?
+1. **Trace in Code**: Find actual service calls, database access, event routing
+1. **Verify**: Does code match diagram?
+1. **Document Gaps**: Where does reality differ from diagrams?
 
 **Examples**:
 - Two-plane diagram shows DopeconBridge coordination
@@ -539,10 +539,10 @@ pytest tests/ -v --cov=src --cov=services --cov-report=html
 
 **For each failing test**:
 1. Understand what's being tested
-2. Check if code changed (breaking test)
-3. Check if test is wrong
-4. Fix code OR update test
-5. Re-run until passing
+1. Check if code changed (breaking test)
+1. Check if test is wrong
+1. Fix code OR update test
+1. Re-run until passing
 
 ---
 
@@ -603,17 +603,17 @@ curl -X POST localhost:8095/assess-task -d '{"user_id": "test"}'
 
 **Example Claims**:
 - "ConPort is the single source of truth for decisions"
-  - **Verify**: Does ADHD Engine write to ConPort DB directly? (YES - violation)
+- **Verify**: Does ADHD Engine write to ConPort DB directly? (YES - violation)
 - "DopeconBridge handles all cross-plane communication"
-  - **Verify**: Do services use it? (NO - they bypass it)
+- **Verify**: Do services use it? (NO - they bypass it)
 - "ADHD Engine provides energy tracking"
-  - **Verify**: Does it? (YES - implementation exists)
+- **Verify**: Does it? (YES - implementation exists)
 
 **For Each Claim**:
 1. Find claim in documentation
-2. Trace through code
-3. Verify or document discrepancy
-4. Update docs OR flag as architectural debt
+1. Trace through code
+1. Verify or document discrepancy
+1. Update docs OR flag as architectural debt
 
 ---
 

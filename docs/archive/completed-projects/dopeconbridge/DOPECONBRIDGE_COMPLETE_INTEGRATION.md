@@ -33,17 +33,17 @@ This document represents the **complete and final** migration of all Dopemux ser
 
 ### Two-Plane Model
 - **PM Plane**: Leantime, Task-Master, Task-Orchestrator, Taskmaster-MCP
-  - Owns: Tasks, projects, deadlines, assignments
+- Owns: Tasks, projects, deadlines, assignments
 - **Cognitive Plane**: Serena, ADHD Engine, GPT-Researcher, Voice Commands, Dope-Context
-  - Owns: Real-time reasoning, context, interruption protection
+- Owns: Real-time reasoning, context, interruption protection
 
 ### DopeconBridge Role
 **Single cross-plane choke point** for:
 1. Event publishing/consumption
-2. ConPort/KG read/write
-3. PM ↔ Cognitive routing
-4. Decision graph operations
-5. Custom workspace data
+1. ConPort/KG read/write
+1. PM ↔ Cognitive routing
+1. Decision graph operations
+1. Custom workspace data
 
 **No service** should:
 - Access ConPort DB directly (Postgres/SQLite)
@@ -59,12 +59,12 @@ This document represents the **complete and final** migration of all Dopemux ser
 | Service | Status | Adapter | Tests | Notes |
 |---------|--------|---------|-------|-------|
 | **DopeconBridge** | ✅ Complete | N/A (is the bridge) | ✅ Passing | Port 3016, full API |
-| **ADHD Engine** | ✅ Complete | `DopeconBridgeAdapter` | ✅ Fixed | `services/adhd_engine/` |
-| **Serena v2** | ✅ Complete | `DopeconBridgeConPortClient` | ✅ Passing | `services/serena/v2/` |
-| **Task-Orchestrator** | ✅ Complete | `BridgeBackedConPortAdapter` | ✅ Passing | `services/task-orchestrator/` |
-| **Voice Commands** | ✅ Complete | `VoiceConPortBridge` | ✅ Passing | `services/voice-commands/` |
+| **ADHD Engine** | ✅ Complete | `DopeconBridgeAdapter` \| ✅ Fixed \| `services/adhd_engine/` |
+| **Serena v2** | ✅ Complete | `DopeconBridgeConPortClient` \| ✅ Passing \| `services/serena/v2/` |
+| **Task-Orchestrator** | ✅ Complete | `BridgeBackedConPortAdapter` \| ✅ Passing \| `services/task-orchestrator/` |
+| **Voice Commands** | ✅ Complete | `VoiceConPortBridge` \| ✅ Passing \| `services/voice-commands/` |
 | **GPT-Researcher** | ✅ Complete | Uses shared client | ✅ Passing | `services/dopemux-gpt-researcher/` |
-| **Dope-Context** | ✅ Complete | `DopeconBridgeAdapter` | ✅ Passing | `services/dope-context/` |
+| **Dope-Context** | ✅ Complete | `DopeconBridgeAdapter` \| ✅ Passing \| `services/dope-context/` |
 | **Activity Capture** | ✅ Complete | Uses shared client | ✅ Passing | `services/activity-capture/` |
 
 ### ✅ PM-Plane Services
@@ -72,7 +72,7 @@ This document represents the **complete and final** migration of all Dopemux ser
 | Service | Status | Adapter | Tests | Notes |
 |---------|--------|---------|-------|-------|
 | **Leantime Bridge** | ✅ Complete | N/A (MCP server) | ✅ Passing | Uses DopeconBridge for KG |
-| **Task-Master** | ✅ Complete | `TaskMasterBridgeAdapter` | ✅ Passing | `services/taskmaster/` |
+| **Task-Master** | ✅ Complete | `TaskMasterBridgeAdapter` \| ✅ Passing \| `services/taskmaster/` |
 | **Taskmaster-MCP** | ✅ Complete | Uses shared client | ✅ Passing | `services/taskmaster-mcp-client/` |
 
 ### ⚠️ Experimental/Research Services
@@ -81,7 +81,7 @@ This document represents the **complete and final** migration of all Dopemux ser
 |---------|--------|---------|-------|-------|
 | **ML Risk Assessment** | ⚠️ Legacy | Marked deprecated | N/A | ConPort access documented |
 | **Claude-Context** | ⚠️ Legacy | Superseded by dope-context | N/A | May be removed |
-| **Genetic Agent** | ✅ Enhanced | `GeneticAgentBridgeAdapter` | ✅ Basic | `services/genetic_agent/` |
+| **Genetic Agent** | ✅ Enhanced | `GeneticAgentBridgeAdapter` \| ✅ Basic \| `services/genetic_agent/` |
 
 ### ✅ Infrastructure & Tooling
 
@@ -264,11 +264,11 @@ All services now include:
 services:
   adhd-engine:
     environment:
-      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-      - WORKSPACE_ID=${WORKSPACE_ID}
+- DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ID=${WORKSPACE_ID}
     depends_on:
-      - dopecon-bridge
+- dopecon-bridge
 ```
 
 ### MCP Servers Compose (`docker/mcp-servers/docker-compose.yml`)
@@ -277,10 +277,10 @@ services:
   conport-bridge:  # This IS DopeconBridge
     container_name: dopecon-bridge
     ports:
-      - "3016:3016"
+- "3016:3016"
     environment:
-      - CONPORT_URL=http://conport:3004
-      - REDIS_URL=redis://redis-events:6379
+- CONPORT_URL=http://conport:3004
+- REDIS_URL=redis://redis-events:6379
 ```
 
 ---
@@ -319,22 +319,22 @@ Claude Code hooks now publish to DopeconBridge:
 
 ### Updated Files
 1. **Architecture**:
-   - `README.md` - Main architecture section
-   - `claudedocs/phase-1b-service-catalog.md` - Service inventory
-   - `claudedocs/WEEK-7-INTEGRATION-BRIDGE-COMPLETION-PLAN.md` - Migration plan
+- `README.md` - Main architecture section
+- `claudedocs/phase-1b-service-catalog.md` - Service inventory
+- `claudedocs/WEEK-7-INTEGRATION-BRIDGE-COMPLETION-PLAN.md` - Migration plan
 
-2. **Integration Guides**:
-   - `DOPECONBRIDGE_QUICK_START.md` - Getting started
-   - `DOPECONBRIDGE_SERVICE_CATALOG.md` - Full service details
-   - `DOPECONBRIDGE_MASTER_INDEX.md` - Navigation hub
+1. **Integration Guides**:
+- `DOPECONBRIDGE_QUICK_START.md` - Getting started
+- `DOPECONBRIDGE_SERVICE_CATALOG.md` - Full service details
+- `DOPECONBRIDGE_MASTER_INDEX.md` - Navigation hub
 
-3. **API Reference**:
-   - `services/dopecon-bridge/README.md` - Bridge API docs
-   - `services/shared/dopecon_bridge_client/README.md` - Client usage
+1. **API Reference**:
+- `services/dopecon-bridge/README.md` - Bridge API docs
+- `services/shared/dopecon_bridge_client/README.md` - Client usage
 
-4. **Migration Guides**:
-   - `DOPECONBRIDGE_MIGRATION_COMPLETE.md` - This document
-   - `DOPECONBRIDGE_PATH_B_EXECUTION_REPORT.md` - Session report
+1. **Migration Guides**:
+- `DOPECONBRIDGE_MIGRATION_COMPLETE.md` - This document
+- `DOPECONBRIDGE_PATH_B_EXECUTION_REPORT.md` - Session report
 
 ---
 
@@ -370,9 +370,9 @@ Examples:
 
 Scenarios:
 1. ADHD Engine → publish event → Task-Orchestrator receives
-2. Voice command → route to PM → Leantime task created
-3. Serena query → decision search → results returned
-4. Cross-workspace custom data isolation
+1. Voice command → route to PM → Leantime task created
+1. Serena query → decision search → results returned
+1. Cross-workspace custom data isolation
 
 ---
 
@@ -403,11 +403,11 @@ Scenarios:
 
 If DopeconBridge fails:
 1. **Immediate**: Scale bridge service to 0 replicas
-2. **Fallback**: Services will error on bridge calls (expected)
-3. **Recovery Options**:
-   - Restart bridge with increased resources
-   - Enable legacy CONPORT_URL fallback (if implemented)
-   - Emergency patch to direct ConPort access (last resort)
+1. **Fallback**: Services will error on bridge calls (expected)
+1. **Recovery Options**:
+- Restart bridge with increased resources
+- Enable legacy CONPORT_URL fallback (if implemented)
+- Emergency patch to direct ConPort access (last resort)
 
 **Prevention**: Always test bridge changes in staging first.
 
@@ -555,9 +555,9 @@ dopemux bridge decisions recent --limit 10
 
 For issues or questions:
 1. Check `DOPECONBRIDGE_QUICK_START.md`
-2. Review service logs: `docker logs <service>`
-3. Inspect bridge logs: `docker logs dopecon-bridge`
-4. File issue: GitHub Issues with `dopeconbridge` tag
+1. Review service logs: `docker logs <service>`
+1. Inspect bridge logs: `docker logs dopecon-bridge`
+1. File issue: GitHub Issues with `dopeconbridge` tag
 
 ---
 

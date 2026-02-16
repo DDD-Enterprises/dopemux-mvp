@@ -38,8 +38,8 @@ prelude: Process_Cleanup_Guide (explanation) for dopemux documentation and devel
 
 **Changes**:
 1. **Process Tracking**: ClaudeLauncher now tracks spawned processes and temp files
-2. **Signal Handlers**: Graceful shutdown on SIGTERM/SIGINT
-3. **Atexit Cleanup**: Automatic cleanup when Python exits normally
+1. **Signal Handlers**: Graceful shutdown on SIGTERM/SIGINT
+1. **Atexit Cleanup**: Automatic cleanup when Python exits normally
 
 **How it works**:
 ```python
@@ -59,10 +59,10 @@ self._temp_files.append(settings_file)
 
 **What it does**:
 1. Scans for MCP processes (conport-mcp, serena, dope-context)
-2. Checks if parent process is Claude Code
-3. If parent is not Claude Code → marked as orphaned
-4. Prompts to kill orphaned processes
-5. Cleans up with SIGTERM
+1. Checks if parent process is Claude Code
+1. If parent is not Claude Code → marked as orphaned
+1. Prompts to kill orphaned processes
+1. Cleans up with SIGTERM
 
 **Usage**:
 ```bash
@@ -254,9 +254,9 @@ ClaudeLauncher.launch()
 subprocess.Popen(["claude", "--settings", temp.json])
   ↓ (Claude Code reads settings)
 Claude Code spawns MCP servers:
-  - conport-mcp
-  - serena v2
-  - dope-context
+- conport-mcp
+- serena v2
+- dope-context
   ↓ (User works)
 User exits Claude Code
   ↓ (ClaudeLauncher cleanup triggers)

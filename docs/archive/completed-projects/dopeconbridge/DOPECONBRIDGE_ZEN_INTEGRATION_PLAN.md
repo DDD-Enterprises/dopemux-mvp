@@ -124,12 +124,12 @@ All services MUST use DopeconBridge for cross-plane communication:
    bridge = DopeconBridgeClient.from_env()
    ```
 
-2. **Use bridge methods:**
-   - Events: `bridge.publish_event(...)`
-   - PM routing: `bridge.route_pm(...)`
-   - Cognitive routing: `bridge.route_cognitive(...)`
-   - Decisions: `bridge.recent_decisions(...)`
-   - Custom data: `bridge.save_custom_data(...)`
+1. **Use bridge methods:**
+- Events: `bridge.publish_event(...)`
+- PM routing: `bridge.route_pm(...)`
+- Cognitive routing: `bridge.route_cognitive(...)`
+- Decisions: `bridge.recent_decisions(...)`
+- Custom data: `bridge.save_custom_data(...)`
 
 **Never:**
 - Direct ConPort DB access
@@ -169,33 +169,33 @@ DOPECONBRIDGE_RETRY_BACKOFF=2.0
 services:
   adhd-engine:
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016
+- DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
 
   task-orchestrator:
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECONBRIDGE_SOURCE_PLANE=pm_plane
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016
+- DOPECONBRIDGE_SOURCE_PLANE=pm_plane
 
   serena-v2:
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016
+- DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
 
   voice-commands:
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016
+- DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
 
   genetic-agent:
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016
+- DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
 
   dope-context:
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016
+- DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
 ```
 
 #### 4.3 Profile System
@@ -212,9 +212,9 @@ dopecon_bridge:
   source_plane: cognitive_plane
   auto_connect: true
   event_streams:
-    - dopemux:events
-    - dopemux:decisions
-    - dopemux:adhd
+- dopemux:events
+- dopemux:decisions
+- dopemux:adhd
 ```
 
 #### 4.4 MCP Server Configurations
@@ -335,10 +335,10 @@ class PlannerTool:
 
 **Contents:**
 1. Identify direct ConPort usage
-2. Map to bridge client methods
-3. Update configuration
-4. Test migration
-5. Deploy updated service
+1. Map to bridge client methods
+1. Update configuration
+1. Test migration
+1. Deploy updated service
 
 #### 8.2 Rollback Procedures
 **Create:** `docs/02-how-to/operations/DOPECONBRIDGE_ROLLBACK.md`
@@ -356,27 +356,27 @@ class PlannerTool:
 ### Immediate Next Steps (This Session)
 
 1. **CLI Integration** (2 hours)
-   - Audit `src/dopemux/cli/` for bridge integration points
-   - Add bridge initialization to main CLI
-   - Update status/context commands to use bridge
-   - Test CLI commands with bridge
+- Audit `src/dopemux/cli/` for bridge integration points
+- Add bridge initialization to main CLI
+- Update status/context commands to use bridge
+- Test CLI commands with bridge
 
-2. **Hook System Integration** (1 hour)
-   - Update `claude_code_hooks.py` to publish events
-   - Add bridge logging to `hook_manager.py`
-   - Test hook execution with bridge
+1. **Hook System Integration** (1 hour)
+- Update `claude_code_hooks.py` to publish events
+- Add bridge logging to `hook_manager.py`
+- Test hook execution with bridge
 
-3. **Documentation Sprint** (2 hours)
-   - Update top 10 most-read docs with bridge info
-   - Update LLM context files (claudedocs)
-   - Create migration guides
-   - Update architecture docs
+1. **Documentation Sprint** (2 hours)
+- Update top 10 most-read docs with bridge info
+- Update LLM context files (claudedocs)
+- Create migration guides
+- Update architecture docs
 
-4. **Configuration Sweep** (1 hour)
-   - Update all .env templates
-   - Update docker-compose files
-   - Update profile templates
-   - Verify no hardcoded ConPort URLs remain
+1. **Configuration Sweep** (1 hour)
+- Update all .env templates
+- Update docker-compose files
+- Update profile templates
+- Verify no hardcoded ConPort URLs remain
 
 ### Follow-Up Sessions
 
@@ -442,20 +442,20 @@ class PlannerTool:
 ### Identified Risks
 
 1. **Breaking existing functionality**
-   - Mitigation: Comprehensive testing at each phase
-   - Rollback: Feature flags for bridge usage
+- Mitigation: Comprehensive testing at each phase
+- Rollback: Feature flags for bridge usage
 
-2. **Performance degradation**
-   - Mitigation: Load testing before production
-   - Optimization: Connection pooling, caching
+1. **Performance degradation**
+- Mitigation: Load testing before production
+- Optimization: Connection pooling, caching
 
-3. **Documentation drift**
-   - Mitigation: Update docs alongside code
-   - Validation: Automated doc checks
+1. **Documentation drift**
+- Mitigation: Update docs alongside code
+- Validation: Automated doc checks
 
-4. **Configuration complexity**
-   - Mitigation: Sensible defaults
-   - Documentation: Clear examples
+1. **Configuration complexity**
+- Mitigation: Sensible defaults
+- Documentation: Clear examples
 
 ---
 
@@ -470,10 +470,10 @@ All instances of "Integration Bridge" renamed to "DopeconBridge":
 
 ### Critical Integration Points Discovered
 1. **Implicit bridge calls** in session initialization
-2. **Hook-based event publishing** needed for all context switches
-3. **Profile loading** must initialize bridge connection
-4. **Zen MCP tools** are heavy bridge users (discovered during audit)
-5. **Genetic agent** needs KG integration via bridge
+1. **Hook-based event publishing** needed for all context switches
+1. **Profile loading** must initialize bridge connection
+1. **Zen MCP tools** are heavy bridge users (discovered during audit)
+1. **Genetic agent** needs KG integration via bridge
 
 ### Open Questions
 - [ ] Should CLI have a `--no-bridge` flag for debugging?

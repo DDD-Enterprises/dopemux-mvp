@@ -51,9 +51,9 @@ GENETIC_AGENT_MUTATION_RATE=0.2
 
 #### Hybrid LLM + GP Approach
 1. **Population Generation**: Zen LLM generates initial repair variants.
-2. **Evolutionary Loop**: Crossover successful variants, mutate for diversity.
-3. **Fitness Evaluation**: Serena analyzes code quality, performance impact.
-4. **Selection**: Keep top 3 variants for final output.
+1. **Evolutionary Loop**: Crossover successful variants, mutate for diversity.
+1. **Fitness Evaluation**: Serena analyzes code quality, performance impact.
+1. **Selection**: Keep top 3 variants for final output.
 
 #### Optimization Capabilities
 - **Performance Tuning**: Evolve multiple optimization strategies.
@@ -104,9 +104,9 @@ VANILLA_AGENT_DEVELOPMENT_MODE=repair
 
 #### Iterative Repair Loop
 1. **Analysis**: Serena complexity + Dope-Context patterns.
-2. **Generation**: Zen LLM (GPT-5-Codex) creates repair.
-3. **Validation**: Confidence scoring and early exit.
-4. **Learning**: Zen analyzes failures for next iteration.
+1. **Generation**: Zen LLM (GPT-5-Codex) creates repair.
+1. **Validation**: Confidence scoring and early exit.
+1. **Learning**: Zen analyzes failures for next iteration.
 
 #### Bluesky Development Modes
 - **Ideation**: Generate 3 ideas with feasibility scores.

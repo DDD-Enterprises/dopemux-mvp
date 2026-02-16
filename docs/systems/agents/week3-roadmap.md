@@ -24,10 +24,10 @@ prelude: Week3 Roadmap (reference) for dopemux documentation and developer workf
 
 **Key Principles**:
 1. **Focus blocks**: 25-minute intense work, then 5-minute break
-2. **One thing at a time**: Single file/feature per block
-3. **Test immediately**: Validate after each block
-4. **Celebrate wins**: Mark progress after each completion
-5. **Flexible timing**: If hyperfocus hits, ride it (up to 60 min)
+1. **One thing at a time**: Single file/feature per block
+1. **Test immediately**: Validate after each block
+1. **Celebrate wins**: Mark progress after each completion
+1. **Flexible timing**: If hyperfocus hits, ride it (up to 60 min)
 
 **Total Focus Blocks**: 10 blocks (2 per day)
 **Total Break Time**: ~50 minutes (built-in recovery)
@@ -59,7 +59,7 @@ self._in_claude_code = self._detect_claude_code_context()
 
 **Add Methods**:
 1. `_detect_claude_code_context()` (~10 lines)
-2. `_load_user_preferences()` (~20 lines)
+1. `_load_user_preferences()` (~20 lines)
 
 **Test**:
 ```bash
@@ -274,23 +274,23 @@ python test_cognitive_guardian.py
 
 **Tasks**:
 1. Run full test suite
-2. Commit changes:
+1. Commit changes:
    ```bash
    git add services/agents/cognitive_guardian.py
    git add services/agents/test_cognitive_guardian.py
    git commit -m "Week 3 Day 1: ConPort integration foundation
 
-   - Add Claude Code context detection
-   - Implement user preference loading from ConPort
-   - Add user state persistence
-   - Add metrics persistence
-   - Tests: 6/6 passing
+- Add Claude Code context detection
+- Implement user preference loading from ConPort
+- Add user state persistence
+- Add metrics persistence
+- Tests: 6/6 passing
 
    Impact: CognitiveGuardian now persists state to ConPort"
    ```
-3. Document progress:
-   - Update `WEEK3_PROGRESS.md` (create if needed)
-4. Celebrate: ✅ Day 1 complete!
+1. Document progress:
+- Update `WEEK3_PROGRESS.md` (create if needed)
+1. Celebrate: ✅ Day 1 complete!
 
 **Output**: ~195 lines added/modified
 
@@ -551,22 +551,22 @@ python test_cognitive_guardian.py
 
 **Tasks**:
 1. Run full test suite
-2. Commit changes:
+1. Commit changes:
    ```bash
    git add services/agents/cognitive_guardian.py
    git add services/agents/test_cognitive_guardian.py
    git commit -m "Week 3 Day 2: Task suggestions from ConPort
 
-   - Wire ConPort get_progress queries
-   - Add energy + attention-based filtering
-   - Implement task match scoring
-   - Extract simulation fallback
-   - Tests: 8/8 passing
+- Wire ConPort get_progress queries
+- Add energy + attention-based filtering
+- Implement task match scoring
+- Extract simulation fallback
+- Tests: 8/8 passing
 
    Impact: Real task suggestions (not simulation)"
    ```
-3. Update `WEEK3_PROGRESS.md`
-4. Celebrate: ✅ Day 2 complete!
+1. Update `WEEK3_PROGRESS.md`
+1. Celebrate: ✅ Day 2 complete!
 
 **Output**: ~100 lines added
 
@@ -785,9 +785,9 @@ await orchestrator._dispatch_to_agent(task, agent)
 
 **Tests to Write**:
 1. `test_energy_aware_routing()` - High energy → complex tasks
-2. `test_low_energy_blocking()` - Low energy blocks complex tasks
-3. `test_mandatory_break_enforcement()` - 95 min blocks all tasks
-4. `test_conport_persistence()` - State saved to ConPort
+1. `test_low_energy_blocking()` - Low energy blocks complex tasks
+1. `test_mandatory_break_enforcement()` - 95 min blocks all tasks
+1. `test_conport_persistence()` - State saved to ConPort
 
 **Run Tests**:
 ```bash
@@ -810,22 +810,22 @@ python test_week3_integration.py
 
 **Tasks**:
 1. Run all tests (unit + integration)
-2. Commit changes:
+1. Commit changes:
    ```bash
    git add services/task-orchestrator/enhanced_orchestrator.py
    git add services/task-orchestrator/test_week3_integration.py
    git commit -m "Week 3 Day 3: Task-Orchestrator integration
 
-   - Add CognitiveGuardian parameter to orchestrator
-   - User readiness check before routing
-   - Fix routing optimization (complexity before keywords)
-   - Handle break-required state in dispatch
-   - Integration tests: 4/4 passing
+- Add CognitiveGuardian parameter to orchestrator
+- User readiness check before routing
+- Fix routing optimization (complexity before keywords)
+- Handle break-required state in dispatch
+- Integration tests: 4/4 passing
 
    Impact: Energy-aware task routing operational"
    ```
-3. Update `WEEK3_PROGRESS.md`
-4. Celebrate: ✅ Day 3 complete!
+1. Update `WEEK3_PROGRESS.md`
+1. Celebrate: ✅ Day 3 complete!
 
 **Output**: ~280 lines added (80 orchestrator + 200 tests)
 
@@ -1054,13 +1054,13 @@ logger.debug(
 
 **Sections**:
 1. Overview
-2. Prerequisites
-3. Configuration
-4. Usage Examples
-5. Troubleshooting
-6. Performance Tuning
-7. Monitoring
-8. FAQ
+1. Prerequisites
+1. Configuration
+1. Usage Examples
+1. Troubleshooting
+1. Performance Tuning
+1. Monitoring
+1. FAQ
 
 **Content**: ~400 lines (detailed examples, code snippets)
 
@@ -1077,23 +1077,23 @@ logger.debug(
 
 **Tasks**:
 1. Final test run
-2. Commit:
+1. Commit:
    ```bash
    git add services/agents/cognitive_guardian.py
    git add services/task-orchestrator/enhanced_orchestrator.py
    git add COGNITIVE_GUARDIAN_PRODUCTION_GUIDE.md
    git commit -m "Week 3 Day 4: Production patterns & validation
 
-   - Add error handling (timeouts, retries)
-   - Implement state caching (60s TTL)
-   - Enhanced logging for debugging
-   - Production deployment guide
-   - Manual testing: 7/7 scenarios passing
+- Add error handling (timeouts, retries)
+- Implement state caching (60s TTL)
+- Enhanced logging for debugging
+- Production deployment guide
+- Manual testing: 7/7 scenarios passing
 
    Impact: Production-ready, optimized, documented"
    ```
-3. Update progress
-4. Celebrate: ✅ Day 4 complete!
+1. Update progress
+1. Celebrate: ✅ Day 4 complete!
 
 **Output**: ~450 lines (50 code + 400 docs)
 
@@ -1117,12 +1117,12 @@ logger.debug(
 
 **Sections**:
 1. Executive Summary
-2. Deliverables
-3. Code Changes Summary
-4. Test Results
-5. ADHD Impact Metrics
-6. Production Readiness
-7. What's Next (Week 4 preview)
+1. Deliverables
+1. Code Changes Summary
+1. Test Results
+1. ADHD Impact Metrics
+1. Production Readiness
+1. What's Next (Week 4 preview)
 
 **Content**: ~300 lines
 
@@ -1229,11 +1229,11 @@ python test_memory_agent.py
 
 **Questions**:
 1. What went well?
-2. What was challenging?
-3. What surprised you?
-4. What would you do differently?
-5. Energy management: How did breaks help?
-6. Complexity estimates: Were they accurate?
+1. What was challenging?
+1. What surprised you?
+1. What would you do differently?
+1. Energy management: How did breaks help?
+1. Complexity estimates: Were they accurate?
 
 **Document in**: `WEEK3_RETROSPECTIVE.md`
 
@@ -1248,27 +1248,27 @@ python test_memory_agent.py
 
 **Tasks**:
 1. Stage all documentation
-2. Final commit:
+1. Final commit:
    ```bash
    git add services/agents/*.md
    git add COGNITIVE_GUARDIAN_PRODUCTION_GUIDE.md
    git commit -m "Week 3 Day 5: Summary & documentation
 
-   - Week 3 complete summary
-   - Updated integration guide
-   - Production deployment guide
-   - Retrospective & lessons learned
+- Week 3 complete summary
+- Updated integration guide
+- Production deployment guide
+- Retrospective & lessons learned
 
    Week 3 Status: COMPLETE ✅
-   - Tests: 16/16 passing (100%)
-   - Functionality: 60% (+25% from Week 2)
-   - ADHD optimization: 50% active
-   - Production-ready: Yes
+- Tests: 16/16 passing (100%)
+- Functionality: 60% (+25% from Week 2)
+- ADHD optimization: 50% active
+- Production-ready: Yes
 
    Next: Week 4 (Energy learning, advanced features)"
    ```
-3. Push to remote (if applicable)
-4. Celebrate: 🎉 **WEEK 3 COMPLETE!** 🎉
+1. Push to remote (if applicable)
+1. Celebrate: 🎉 **WEEK 3 COMPLETE!** 🎉
 
 ---
 
@@ -1320,10 +1320,10 @@ python test_memory_agent.py
 
 **Why Ahead?**:
 1. CognitiveGuardian already existed (603 lines from prior work)
-2. Clear patterns from MemoryAgent Week 1-2
-3. Excellent research & planning (this roadmap)
-4. ADHD-optimized work blocks (high productivity)
-5. Strong testing discipline (caught issues early)
+1. Clear patterns from MemoryAgent Week 1-2
+1. Excellent research & planning (this roadmap)
+1. ADHD-optimized work blocks (high productivity)
+1. Strong testing discipline (caught issues early)
 
 ---
 
@@ -1331,9 +1331,9 @@ python test_memory_agent.py
 
 **Optional Enhancements** (if time in Week 4):
 1. **Energy Learning**: Learn from user corrections
-2. **Biometric Integration**: Explore wearable data
-3. **Advanced Filtering**: Multi-factor task matching
-4. **Mobile Notifications**: MCP notification bridge (if available)
+1. **Biometric Integration**: Explore wearable data
+1. **Advanced Filtering**: Multi-factor task matching
+1. **Mobile Notifications**: MCP notification bridge (if available)
 
 **Or Jump to Week 5**: ADHD Routing Activation (use CognitiveGuardian in all routing)
 

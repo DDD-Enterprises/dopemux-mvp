@@ -129,9 +129,9 @@ Value: Dashboard shows 100% real data
 
 **Immediate Value Priority:**
 1. **Option B** (1 hour) - See what we built, validate it works
-2. **Option A** (5-8 hours) - Make it useful and delightful
-3. **Option D** (3-4 hours) - Get real data flowing
-4. **Option C** (2-3 days) - Polish to professional quality
+1. **Option A** (5-8 hours) - Make it useful and delightful
+1. **Option D** (3-4 hours) - Get real data flowing
+1. **Option C** (2-3 days) - Polish to professional quality
 
 **Recommendation:** B → A → D → C (progressive value delivery)
 
@@ -213,18 +213,18 @@ Risk: Moderate
    cd services/serena/v2 && python3 http_server.py
    ```
 
-2. **Run Dashboard** (5 min)
+1. **Run Dashboard** (5 min)
    ```bash
    python3 dopemux_dashboard.py
    ```
 
-3. **Verify All Panels** (10 min)
-   - ADHD State panel shows energy, attention, cognitive load
-   - Productivity panel shows tasks, decisions
-   - Services panel shows all 3 services healthy
-   - Trends panel shows patterns (mock data OK)
+1. **Verify All Panels** (10 min)
+- ADHD State panel shows energy, attention, cognitive load
+- Productivity panel shows tasks, decisions
+- Services panel shows all 3 services healthy
+- Trends panel shows patterns (mock data OK)
 
-4. **Test MetricsFetcher** (10 min)
+1. **Test MetricsFetcher** (10 min)
    ```python
    # Quick integration test
    python3 -c "
@@ -243,15 +243,15 @@ Risk: Moderate
    "
    ```
 
-5. **Document Issues** (15 min)
-   - Screenshot dashboard
-   - Note any bugs or missing features
-   - Update planning doc
+1. **Document Issues** (15 min)
+- Screenshot dashboard
+- Note any bugs or missing features
+- Update planning doc
 
-6. **Celebrate** (10 min)
-   - We built a working dashboard in 2 days!
-   - Take a break
-   - Plan next steps with confidence
+1. **Celebrate** (10 min)
+- We built a working dashboard in 2 days!
+- Take a break
+- Plan next steps with confidence
 
 **Success Criteria:**
 - [ ] Dashboard launches without errors
@@ -684,10 +684,10 @@ Output: Full sprint plan Week 1 complete
 
 **Rationale:**
 1. We've built a lot (510 lines, 3 services, 17 endpoints)
-2. We haven't actually run the dashboard yet
-3. Testing foundation gives confidence for next steps
-4. Only 1 hour investment, high value
-5. Find bugs early before building more features
+1. We haven't actually run the dashboard yet
+1. Testing foundation gives confidence for next steps
+1. Only 1 hour investment, high value
+1. Find bugs early before building more features
 
 **Alternative Considered:** Jump to Quick Wins
 - Would be exciting and productive

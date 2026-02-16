@@ -31,9 +31,9 @@ prelude: 2025 Comprehensive Analysis And Plan (explanation) for dopemux document
 **Traditional decision tracking fails ADHD developers in 4 critical ways**:
 
 1. **Information Overload**: Shows everything → Cognitive paralysis
-2. **Context Loss**: No understanding of "why" → Re-research overhead
-3. **Poor Timing**: Random reminders → Interruption chaos
-4. **Isolation**: Decisions tracked separately from code/tasks → Fragmentation
+1. **Context Loss**: No understanding of "why" → Re-research overhead
+1. **Poor Timing**: Random reminders → Interruption chaos
+1. **Isolation**: Decisions tracked separately from code/tasks → Fragmentation
 
 **DDDPG's Solution**: ADHD-native design from day 1, not retrofitted.
 
@@ -207,14 +207,14 @@ class Decision(BaseModel):
    async def search(limit: int = 3)
    ```
 
-2. **Cognitive Load as First-Class Field**:
+1. **Cognitive Load as First-Class Field**:
    ```python
    class Decision(BaseModel):
        cognitive_load: Optional[int] = Field(None, ge=1, le=5)
        # Used by SuggestionEngine to match energy level
    ```
 
-3. **Context Preservation**:
+1. **Context Preservation**:
    ```python
    class WorkSession(BaseModel):
        focus_state: str  # "deep_work", "fragmented", "exploratory"
@@ -222,7 +222,7 @@ class Decision(BaseModel):
        # System suggests tasks matching current state
    ```
 
-4. **Interruption Recovery**:
+1. **Interruption Recovery**:
    ```python
    agent_metadata["adhd"]["last_focus_task"] = task_id
    # Resume exactly where you left off after interruption
@@ -540,19 +540,19 @@ class QueryService:
 **Components**:
 
 1. **Embedding Generation** (1 hour)
-   - Model: `sentence-transformers/all-MiniLM-L6-v2` (small, fast)
-   - Batch processing: 100 decisions at a time
-   - Storage: PostgreSQL `vector` extension OR AGE properties
+- Model: `sentence-transformers/all-MiniLM-L6-v2` (small, fast)
+- Batch processing: 100 decisions at a time
+- Storage: PostgreSQL `vector` extension OR AGE properties
 
-2. **Vector Similarity Search** (1.5 hours)
-   - Cosine similarity queries
-   - Top-K retrieval
-   - Integration with existing search
+1. **Vector Similarity Search** (1.5 hours)
+- Cosine similarity queries
+- Top-K retrieval
+- Integration with existing search
 
-3. **Hybrid Search** (30 min)
-   - Combine FTS5 (keyword) + embeddings (semantic)
-   - Weighted scoring: 0.7 *semantic + 0.3* keyword
-   - Deduplication
+1. **Hybrid Search** (30 min)
+- Combine FTS5 (keyword) + embeddings (semantic)
+- Weighted scoring: 0.7 *semantic + 0.3* keyword
+- Deduplication
 
 **Strategic Value**: "Find decisions about authentication" → Works even if word "auth" not used.
 
@@ -637,14 +637,14 @@ async def on_agent_suggested(event):
 
 **Synchronization Strategy**:
 1. **Writes**: Always to PostgreSQL (source of truth)
-2. **Reads**: SQLite cache first (fast), fallback to Postgres
-3. **Cache Invalidation**: EventBus notifications
-4. **Cache TTL**: 5 minutes for stale data
+1. **Reads**: SQLite cache first (fast), fallback to Postgres
+1. **Cache Invalidation**: EventBus notifications
+1. **Cache TTL**: 5 minutes for stale data
 
 **Implementation**:
 1. Create `PostgresAGEBackend` (2 hours)
-2. Create `HybridBackend` (1 hour)
-3. Add cache sync logic (1 hour)
+1. Create `HybridBackend` (1 hour)
+1. Add cache sync logic (1 hour)
 
 **Strategic Value**: Fast local reads + multi-instance sharing.
 
@@ -782,8 +782,8 @@ async def task_context(task_id: str):
 
 **Alternatives Considered**:
 1. **PostgreSQL only**: Slower reads, no offline support
-2. **SQLite only**: No multi-instance sharing
-3. **Redis cache**: Extra dependency, complexity
+1. **SQLite only**: No multi-instance sharing
+1. **Redis cache**: Extra dependency, complexity
 
 **Choice**: Hybrid (Postgres + SQLite)
 
@@ -803,8 +803,8 @@ async def task_context(task_id: str):
 
 **Alternatives Considered**:
 1. **Required KG**: Simpler code, harder onboarding
-2. **Optional KG**: Graceful degradation, more complexity
-3. **Separate service**: Clean separation, deployment complexity
+1. **Optional KG**: Graceful degradation, more complexity
+1. **Separate service**: Clean separation, deployment complexity
 
 **Choice**: Optional KG (dependency injection)
 
@@ -824,8 +824,8 @@ async def task_context(task_id: str):
 
 **Alternatives Considered**:
 1. **Redis**: Shared cache, persistent, complex
-2. **In-memory**: Simple, fast, process-local
-3. **No cache**: Simplest, slower
+1. **In-memory**: Simple, fast, process-local
+1. **No cache**: Simplest, slower
 
 **Choice**: In-memory (now), Redis (later if needed)
 
@@ -850,8 +850,8 @@ async def task_context(task_id: str):
 
 **Alternatives Considered**:
 1. **Configurable limit**: User chooses
-2. **Adaptive limit**: ML-based
-3. **Fixed limit = 3**: Always 3 items
+1. **Adaptive limit**: ML-based
+1. **Fixed limit = 3**: Always 3 items
 
 **Choice**: Fixed default = 3, override allowed
 
@@ -871,8 +871,8 @@ async def task_context(task_id: str):
 
 **Alternatives Considered**:
 1. **Separate tables**: Type-safe, slower
-2. **JSON dict**: Flexible, less type-safe
-3. **EAV model**: Flexible, query hell
+1. **JSON dict**: Flexible, less type-safe
+1. **EAV model**: Flexible, query hell
 
 **Choice**: JSON dict (PostgreSQL JSONB)
 
@@ -1069,11 +1069,11 @@ Decision: "Use PostgreSQL for storage"
 
 **Contents**:
 1. **Quick Start**: 5-minute setup
-2. **Core Concepts**: Decisions, relationships, ADHD patterns
-3. **API Reference**: All QueryService methods
-4. **Multi-Instance Setup**: Git worktree workflow
-5. **Agent Integration**: How agents use DDDPG
-6. **Examples**: Common use cases
+1. **Core Concepts**: Decisions, relationships, ADHD patterns
+1. **API Reference**: All QueryService methods
+1. **Multi-Instance Setup**: Git worktree workflow
+1. **Agent Integration**: How agents use DDDPG
+1. **Examples**: Common use cases
 
 **Length**: ~800 lines (estimated)
 
@@ -1083,11 +1083,11 @@ Decision: "Use PostgreSQL for storage"
 
 **Contents**:
 1. **System Architecture**: Component diagram
-2. **Data Model**: All Pydantic models explained
-3. **Storage Layer**: SQLite + Postgres architecture
-4. **KG Integration**: How AGE works
-5. **Security**: Parameterized queries, validation
-6. **Performance**: Benchmarks, optimization
+1. **Data Model**: All Pydantic models explained
+1. **Storage Layer**: SQLite + Postgres architecture
+1. **KG Integration**: How AGE works
+1. **Security**: Parameterized queries, validation
+1. **Performance**: Benchmarks, optimization
 
 **Length**: ~600 lines (consolidate from existing docs)
 
@@ -1097,10 +1097,10 @@ Decision: "Use PostgreSQL for storage"
 
 **Contents**:
 1. **Vision**: What DDDPG will be
-2. **Current State**: What works today
-3. **Timeline**: Week-by-week plan
-4. **Success Metrics**: How we measure progress
-5. **Decision Log**: Key technical decisions
+1. **Current State**: What works today
+1. **Timeline**: Week-by-week plan
+1. **Success Metrics**: How we measure progress
+1. **Decision Log**: Key technical decisions
 
 **Length**: ~800 lines (this document, refined)
 
@@ -1110,9 +1110,9 @@ Decision: "Use PostgreSQL for storage"
 
 **Contents**:
 1. **By Role**: Developer / User / PM / Stakeholder
-2. **By Use Case**: "I want to..." → Document
-3. **By Phase**: Week 4, Week 5, Future
-4. **By Component**: Models, Storage, KG, Queries
+1. **By Use Case**: "I want to..." → Document
+1. **By Phase**: Week 4, Week 5, Future
+1. **By Component**: Models, Storage, KG, Queries
 
 **Length**: ~200 lines
 
@@ -1127,34 +1127,34 @@ Decision: "Use PostgreSQL for storage"
 **Action 1**: Implement Week 4 Day 2 (95 min target, ~25 min at 3.5x)
 
 1. ✅ Decision-Task Linking (15 min → ~4 min)
-2. ✅ RelationshipMapper (25 min → ~7 min)
-3. ✅ SuggestionEngine (35 min → ~10 min)
-4. ✅ QueryService Integration (20 min → ~6 min)
+1. ✅ RelationshipMapper (25 min → ~7 min)
+1. ✅ SuggestionEngine (35 min → ~10 min)
+1. ✅ QueryService Integration (20 min → ~6 min)
 
 **Action 2**: Update Documentation (30 min)
 
 1. Mark Week 4 Day 2 complete
-2. Create Week 4 Days 3-4 spec (semantic search)
-3. Update this roadmap with progress
+1. Create Week 4 Days 3-4 spec (semantic search)
+1. Update this roadmap with progress
 
 **Action 3**: Validate & Test (30 min)
 
 1. Run full test suite
-2. Manual smoke tests
-3. Performance benchmarks
+1. Manual smoke tests
+1. Performance benchmarks
 
 ### For Next Session (Week 4 Days 3-4)
 
 **Action 1**: Semantic Search Implementation (3 hours → ~50 min)
 
 1. Embedding generation
-2. Vector similarity search
-3. Hybrid search
+1. Vector similarity search
+1. Hybrid search
 
 **Action 2**: Week 4 Day 5 Prep
 
 1. EventBus integration spec
-2. Event schema design
+1. Event schema design
 
 ### For Week 5
 
@@ -1171,32 +1171,32 @@ Decision: "Use PostgreSQL for storage"
 ### What We Have: Exceptional Foundation ✅
 
 1. **Architecture**: Multi-instance, graph-native, ADHD-optimized
-2. **Code Quality**: 1,834 lines, 100% test coverage (KG), production security
-3. **Velocity**: 3.5x faster than estimated (Week 4 Day 1 proof)
-4. **Documentation**: Comprehensive (23 docs, 7,000 lines)
-5. **Roadmap**: Clear path to production (Week 4-5)
+1. **Code Quality**: 1,834 lines, 100% test coverage (KG), production security
+1. **Velocity**: 3.5x faster than estimated (Week 4 Day 1 proof)
+1. **Documentation**: Comprehensive (23 docs, 7,000 lines)
+1. **Roadmap**: Clear path to production (Week 4-5)
 
 ### What We're Building: Intelligence Layer 🧠
 
 1. **Week 4 Day 2**: Relationship mapping + suggestions (READY TO BUILD)
-2. **Week 4 Days 3-4**: Semantic search (spec needed)
-3. **Week 4 Day 5**: EventBus integration (arch clear)
-4. **Week 5**: Hybrid storage + agents + dashboard (arch clear)
+1. **Week 4 Days 3-4**: Semantic search (spec needed)
+1. **Week 4 Day 5**: EventBus integration (arch clear)
+1. **Week 5**: Hybrid storage + agents + dashboard (arch clear)
 
 ### Strategic Confidence: Very High 🚀
 
 **Why We'll Succeed**:
 1. ✅ Solid technical foundation (validated)
-2. ✅ Clear architecture (no ambiguity)
-3. ✅ Proven velocity (3.5x speedup)
-4. ✅ ADHD-first design (unique differentiator)
-5. ✅ Comprehensive planning (this document)
+1. ✅ Clear architecture (no ambiguity)
+1. ✅ Proven velocity (3.5x speedup)
+1. ✅ ADHD-first design (unique differentiator)
+1. ✅ Comprehensive planning (this document)
 
 **Risk Mitigation**:
 1. **Velocity drops**: Specs are clear, complexity is managed
-2. **KG unavailable**: Graceful degradation everywhere
-3. **Scope creep**: Roadmap is fixed, features are additive
-4. **User adoption**: Documentation + dashboard ensure discoverability
+1. **KG unavailable**: Graceful degradation everywhere
+1. **Scope creep**: Roadmap is fixed, features are additive
+1. **User adoption**: Documentation + dashboard ensure discoverability
 
 ### Timeline Forecast
 

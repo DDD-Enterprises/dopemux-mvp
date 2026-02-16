@@ -23,27 +23,27 @@ Closure verification for execution-packet backlog item:
 Updated `src/dopemux/profile_commands.py`:
 
 1. Save-context and config-apply steps execute in parallel when both are enabled.
-2. Timing metrics are captured for:
-   - `save_session`
-   - `apply_config`
-   - `set_active_profile`
-   - `restart_claude` (when enabled)
-   - `restore_context` (when enabled)
-   - `total`
-3. Threshold governance:
-   - command emits warning when `total > --target-seconds` (default `10.0`).
+1. Timing metrics are captured for:
+- `save_session`
+- `apply_config`
+- `set_active_profile`
+- `restart_claude` (when enabled)
+- `restore_context` (when enabled)
+- `total`
+1. Threshold governance:
+- command emits warning when `total > --target-seconds` (default `10.0`).
 
 ## Test Coverage
 
 Added in `tests/unit/test_profile_use_command.py`:
 
 1. `test_switch_full_to_developer_to_full_flow_with_context` (timing output path)
-2. `test_use_profile_warns_when_switch_exceeds_target` (threshold warning path)
+1. `test_use_profile_warns_when_switch_exceeds_target` (threshold warning path)
 
 ## Verification
 
 1. `pytest -q --no-cov tests/unit/test_profile_use_command.py` passed.
-2. `python -m py_compile src/dopemux/profile_commands.py` passed.
+1. `python -m py_compile src/dopemux/profile_commands.py` passed.
 
 ## Status
 

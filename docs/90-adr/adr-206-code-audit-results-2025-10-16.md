@@ -28,9 +28,9 @@ graph_metadata:
 
 Conducted comprehensive code audit of code-audit workspace to:
 1. Verify documentation matches code reality
-2. Identify security vulnerabilities
-3. Assess architecture compliance
-4. Validate service quality
+1. Identify security vulnerabilities
+1. Assess architecture compliance
+1. Validate service quality
 
 **Audit Approach**: MCP-enhanced methodology using semantic search (Dope-Context), AI validation (Zen), and traditional security tools
 
@@ -40,9 +40,9 @@ Conducted comprehensive code audit of code-audit workspace to:
 
 **Immediate Actions** (Applied):
 1. Fix all 10 HIGH-severity security vulnerabilities immediately
-2. Fix critical infrastructure bug (document chunking)
-3. Document DopeconBridge completion for Week 7
-4. Defer non-critical work (integration tests) as pre-existing issues
+1. Fix critical infrastructure bug (document chunking)
+1. Document DopeconBridge completion for Week 7
+1. Defer non-critical work (integration tests) as pre-existing issues
 
 **Security Fixes Applied**:
 - CORS wildcards → environment-based whitelists (4 services)

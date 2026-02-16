@@ -147,10 +147,10 @@ prelude: Phase1 Sprint Plan (explanation) for dopemux documentation and develope
 ### Day 19-20: Beta Feedback & Iteration
 - [ ] Collect daily feedback surveys
 - [ ] Analyze telemetry data:
-  - Shield activation frequency
-  - Average focus session duration
-  - Messages queued vs delivered immediately
-  - False positive/negative rates
+- Shield activation frequency
+- Average focus session duration
+- Messages queued vs delivered immediately
+- False positive/negative rates
 - [ ] Implement top 3 user-requested features
 - [ ] Fix reported bugs
 - [ ] Adjust default thresholds based on data
@@ -248,27 +248,27 @@ prelude: Phase1 Sprint Plan (explanation) for dopemux documentation and develope
 ## Retrospective Questions (End of Week 4)
 
 1. **What went well?**
-   - Which components were easier than expected?
-   - What processes worked effectively?
+- Which components were easier than expected?
+- What processes worked effectively?
 
-2. **What didn't go well?**
-   - Which components took longer than estimated?
-   - What technical challenges were unexpected?
+1. **What didn't go well?**
+- Which components took longer than estimated?
+- What technical challenges were unexpected?
 
-3. **What should we change for Phase 2?**
-   - Process improvements?
-   - Technical approach adjustments?
-   - Timeline adjustments?
+1. **What should we change for Phase 2?**
+- Process improvements?
+- Technical approach adjustments?
+- Timeline adjustments?
 
-4. **User Feedback Themes**:
-   - Top 3 positive feedback items
-   - Top 3 improvement requests
-   - Critical bugs encountered
+1. **User Feedback Themes**:
+- Top 3 positive feedback items
+- Top 3 improvement requests
+- Critical bugs encountered
 
-5. **Metrics Review**:
-   - Interruption reduction: Actual vs Target
-   - Task completion improvement: Actual vs Target
-   - User satisfaction: Actual vs Target
+1. **Metrics Review**:
+- Interruption reduction: Actual vs Target
+- Task completion improvement: Actual vs Target
+- User satisfaction: Actual vs Target
 
 ---
 

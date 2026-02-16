@@ -29,12 +29,12 @@ prelude: G3 Framework Migration Guide (reference) for dopemux documentation and 
 ## Table of Contents
 
 1. [What is G3 Framework?](#what-is-g3-framework)
-2. [Architectural Changes](#architectural-changes)
-3. [Migration Paths](#migration-paths)
-4. [Module Reference](#module-reference)
-5. [Breaking Changes](#breaking-changes)
-6. [Developer Guide](#developer-guide)
-7. [Troubleshooting](#troubleshooting)
+1. [Architectural Changes](#architectural-changes)
+1. [Migration Paths](#migration-paths)
+1. [Module Reference](#module-reference)
+1. [Breaking Changes](#breaking-changes)
+1. [Developer Guide](#developer-guide)
+1. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -270,15 +270,15 @@ def health_checks():
 
 | Module | Commands | Purpose |
 |--------|----------|---------|
-| `commands/core.py` | `init`, `status`, `doctor`, `wire-conport` | Core Dopemux commands |
-| `commands/tmux.py` | `tmux list`, `tmux send`, `tmux capture`, `tmux happy` | tmux controller |
-| `commands/mcp.py` | `mcp start`, `mcp stop`, `mcp status`, `mcp logs` | MCP server management |
-| `commands/worktrees.py` | `worktrees list`, `worktrees create`, `worktrees cleanup` | Git worktree management |
-| `commands/profile.py` | `profile create`, `profile switch`, `profile list` | Multi-project profiles |
-| `commands/decisions.py` | `decisions log`, `decisions list`, `decisions search` | Decision logging (ConPort) |
-| `commands/extract.py` | `extract docs`, `extract code` | Document/code extraction |
-| `commands/trigger.py` | `trigger precommit`, `trigger postmerge` | Git hook triggers |
-| `commands/code.py` | `code analyze`, `code format` | Code analysis commands |
+| `commands/core.py` \| `init`, `status`, `doctor`, `wire-conport` | Core Dopemux commands |
+| `commands/tmux.py` \| `tmux list`, `tmux send`, `tmux capture`, `tmux happy` | tmux controller |
+| `commands/mcp.py` \| `mcp start`, `mcp stop`, `mcp status`, `mcp logs` | MCP server management |
+| `commands/worktrees.py` \| `worktrees list`, `worktrees create`, `worktrees cleanup` | Git worktree management |
+| `commands/profile.py` \| `profile create`, `profile switch`, `profile list` | Multi-project profiles |
+| `commands/decisions.py` \| `decisions log`, `decisions list`, `decisions search` | Decision logging (ConPort) |
+| `commands/extract.py` \| `extract docs`, `extract code` | Document/code extraction |
+| `commands/trigger.py` \| `trigger precommit`, `trigger postmerge` | Git hook triggers |
+| `commands/code.py` \| `code analyze`, `code format` | Code analysis commands |
 
 ### Client Abstractions
 
@@ -295,19 +295,19 @@ def health_checks():
 
 | Module | Components | Purpose |
 |--------|-----------|---------|
-| `health/checks.py` | `DockerHealthCheck`, `MCPHealthCheck`, `ServiceHealthCheck` | Service health validation |
-| `health/models.py` | `HealthStatus`, `HealthResult`, `HealthReport` | Health data models |
-| `health/errors.py` | `HealthCheckError`, `ServiceUnavailable` | Health-specific exceptions |
-| `health/handlers.py` | `handle_health_error()`, `log_health_status()` | Error handling utilities |
+| `health/checks.py` \| `DockerHealthCheck`, `MCPHealthCheck`, `ServiceHealthCheck` | Service health validation |
+| `health/models.py` \| `HealthStatus`, `HealthResult`, `HealthReport` | Health data models |
+| `health/errors.py` \| `HealthCheckError`, `ServiceUnavailable` | Health-specific exceptions |
+| `health/handlers.py` \| `handle_health_error()`, `log_health_status()` | Error handling utilities |
 
 ### Orchestrator Components
 
 | Module | Components | Purpose |
 |--------|-----------|---------|
-| `orchestrator/engine.py` | `OrchestratorEngine` | Task orchestration engine |
-| `orchestrator/models.py` | `OrchestrationTask`, `AgentType`, `TaskStatus` | Data models |
-| `orchestrator/query.py` | `TaskQuery`, `get_tasks()`, `filter_tasks()` | Task querying |
-| `orchestrator/state.py` | `StateManager`, `save_state()`, `load_state()` | State persistence |
+| `orchestrator/engine.py` \| `OrchestratorEngine` | Task orchestration engine |
+| `orchestrator/models.py` \| `OrchestrationTask`, `AgentType`, `TaskStatus` | Data models |
+| `orchestrator/query.py` \| `TaskQuery`, `get_tasks()`, `filter_tasks()` | Task querying |
+| `orchestrator/state.py` \| `StateManager`, `save_state()`, `load_state()` | State persistence |
 
 ---
 
@@ -317,10 +317,10 @@ def health_checks():
 
 | Old Import | New Import | Notes |
 |------------|-----------|-------|
-| `from dopemux.cli import cli` | `from dopemux.cli import cli` | ✅ No change (backwards compatible) |
-| `from dopemux.health import HealthChecker` | `from dopemux.health.checks import run_health_checks` | ⚠️ Breaking - use new API |
-| `from core.config import Config` | `from dopemux.config.manager import ConfigManager` | ⚠️ Breaking - different module |
-| `from dopemux.cli import status_cmd` | `from dopemux.cli.commands.core import status_cmd` | ⚠️ Breaking - moved to submodule |
+| `from dopemux.cli import cli` \| `from dopemux.cli import cli` | ✅ No change (backwards compatible) |
+| `from dopemux.health import HealthChecker` \| `from dopemux.health.checks import run_health_checks` | ⚠️ Breaking - use new API |
+| `from core.config import Config` \| `from dopemux.config.manager import ConfigManager` | ⚠️ Breaking - different module |
+| `from dopemux.cli import status_cmd` \| `from dopemux.cli.commands.core import status_cmd` | ⚠️ Breaking - moved to submodule |
 
 ### API Changes
 

@@ -41,15 +41,15 @@ graph_metadata:
 **Module**: `server.py` + `enhanced_orchestrator.py`
 
 1. **analyze_dependencies** - Analyze task dependencies and build dependency graph
-2. **detect_conflicts** - Identify resource/timeline conflicts between tasks
-3. **resolve_conflict** - Apply resolution strategies to detected conflicts
-4. **find_critical_path** - Calculate critical path through task dependencies
-5. **identify_blockers** - Find tasks blocking progress
-6. **batch_tasks** - Group independent tasks for parallel execution
-7. **parallelize_tasks** - Identify parallelization opportunities
-8. **sequence_tasks** - Determine optimal task execution order
-9. **estimate_timeline** - Calculate project timeline based on dependencies
-10. **optimize_workflow** - Optimize overall workflow efficiency
+1. **detect_conflicts** - Identify resource/timeline conflicts between tasks
+1. **resolve_conflict** - Apply resolution strategies to detected conflicts
+1. **find_critical_path** - Calculate critical path through task dependencies
+1. **identify_blockers** - Find tasks blocking progress
+1. **batch_tasks** - Group independent tasks for parallel execution
+1. **parallelize_tasks** - Identify parallelization opportunities
+1. **sequence_tasks** - Determine optimal task execution order
+1. **estimate_timeline** - Calculate project timeline based on dependencies
+1. **optimize_workflow** - Optimize overall workflow efficiency
 
 **Value**: Prevents bottlenecks, identifies parallel work opportunities, optimizes execution order
 
@@ -60,12 +60,12 @@ graph_metadata:
 **Module**: `multi_team_coordination.py` (562+ lines)
 
 1. **register_team** - Register team profiles with capacity and ADHD characteristics
-2. **create_cross_team_dependency** - Track dependencies between teams
-3. **optimize_team_workload** - Balance workload across teams with cognitive load consideration
-4. **resolve_coordination_conflicts** - Resolve cross-team dependency conflicts
-5. **get_team_coordination_status** - Get real-time team coordination state
-6. **schedule_coordination** - Schedule cross-team coordination with minimal interruption
-7. **analyze_team_workload** - Analyze team capacity and cognitive load distribution
+1. **create_cross_team_dependency** - Track dependencies between teams
+1. **optimize_team_workload** - Balance workload across teams with cognitive load consideration
+1. **resolve_coordination_conflicts** - Resolve cross-team dependency conflicts
+1. **get_team_coordination_status** - Get real-time team coordination state
+1. **schedule_coordination** - Schedule cross-team coordination with minimal interruption
+1. **analyze_team_workload** - Analyze team capacity and cognitive load distribution
 
 **Unique Features**:
 - **TeamProfile**: Tracks `capacity`, `cognitive_load`, `peak_hours`, `adhd_members`, `context_switch_cost`
@@ -81,13 +81,13 @@ graph_metadata:
 **Module**: `predictive_risk_assessment.py` (562 lines)
 
 1. **assess_task_risk** - ML-based risk prediction for individual tasks
-2. **predict_blockers** - Predict potential blockers before they manifest
-3. **generate_mitigation_strategies** - Auto-generate risk mitigation plans
-4. **calculate_risk_score** - Composite risk scoring (0.0-1.0)
-5. **identify_adhd_risk_factors** - Detect ADHD-specific risks (cognitive overload, hyperfocus burnout)
-6. **track_prediction_accuracy** - Monitor ML model accuracy over time
-7. **update_risk_models** - Continuous learning from outcomes
-8. **get_risk_profile** - Comprehensive risk profile for tasks/projects
+1. **predict_blockers** - Predict potential blockers before they manifest
+1. **generate_mitigation_strategies** - Auto-generate risk mitigation plans
+1. **calculate_risk_score** - Composite risk scoring (0.0-1.0)
+1. **identify_adhd_risk_factors** - Detect ADHD-specific risks (cognitive overload, hyperfocus burnout)
+1. **track_prediction_accuracy** - Monitor ML model accuracy over time
+1. **update_risk_models** - Continuous learning from outcomes
+1. **get_risk_profile** - Comprehensive risk profile for tasks/projects
 
 **Risk Categories Detected**:
 - `COGNITIVE_OVERLOAD` - ADHD-specific cognitive capacity risks
@@ -114,11 +114,11 @@ graph_metadata:
 **Module**: `automation_workflows.py` (946 lines, 54 methods)
 
 1. **automate_sprint_planning** - Implicit sprint setup and task organization
-2. **automate_progress_tracking** - Correlate code commits to task completion
-3. **generate_retrospective** - Auto-generate sprint retrospectives from patterns
-4. **preserve_context** - Automatic context preservation across workflows
-5. **orchestrate_breaks** - Intelligent break timing respecting hyperfocus states
-6. **trigger_workflows** - Event-driven workflow automation
+1. **automate_progress_tracking** - Correlate code commits to task completion
+1. **generate_retrospective** - Auto-generate sprint retrospectives from patterns
+1. **preserve_context** - Automatic context preservation across workflows
+1. **orchestrate_breaks** - Intelligent break timing respecting hyperfocus states
+1. **trigger_workflows** - Event-driven workflow automation
 
 **Automation Types**:
 - `SPRINT_PLANNING` - Automatic sprint setup
@@ -147,9 +147,9 @@ graph_metadata:
 **Module**: `performance_optimizer.py` (589 lines)
 
 1. **learn_productivity_patterns** - ML-based individual productivity pattern recognition
-2. **generate_optimization_recommendations** - Personalized workflow optimization suggestions
-3. **monitor_performance** - Real-time productivity monitoring
-4. **apply_optimizations** - Auto-apply approved optimization strategies
+1. **generate_optimization_recommendations** - Personalized workflow optimization suggestions
+1. **monitor_performance** - Real-time productivity monitoring
+1. **apply_optimizations** - Auto-apply approved optimization strategies
 
 **Productivity Metrics Tracked**:
 - `TASK_COMPLETION_RATE` - How many tasks completed per session
@@ -178,16 +178,16 @@ graph_metadata:
 **Module**: `deployment_orchestration.py` (709 lines)
 
 1. **orchestrate_deployment** - CI/CD pipeline orchestration with ADHD-friendly progress
-2. **monitor_deployment** - Real-time deployment monitoring with rollback capabilities
+1. **monitor_deployment** - Real-time deployment monitoring with rollback capabilities
 
 **Deployment Features**:
 - **DeploymentStage**: Preparation → Testing → Staging → Production → Verification → Rollback
 - **Test Types**: Unit, Integration, E2E, Performance, Security, Accessibility (ADHD-specific)
 - **ADHD Optimization**:
-  - Gentle notifications (not overwhelming alerts)
-  - Batch alerts (non-critical issues batched)
-  - Visual progress dashboards
-  - Natural break points (can pause between stages)
+- Gentle notifications (not overwhelming alerts)
+- Batch alerts (non-critical issues batched)
+- Visual progress dashboards
+- Natural break points (can pause between stages)
 
 **DeploymentTask Metadata**:
 - `cognitive_impact` (0.0-1.0) - Mental overhead of monitoring deployment
@@ -331,14 +331,14 @@ Knowledge graph via link_conport_items
 **Layer 2: Task-Orchestrator (Intelligence)**
 ```
 Subscribes to ConPort events:
-  - progress.created → analyze_dependencies
-  - progress.updated → reassess_risk
-  - decision.logged → correlate_decisions
+- progress.created → analyze_dependencies
+- progress.updated → reassess_risk
+- decision.logged → correlate_decisions
 
 Publishes insights:
-  - dependencies_analyzed → ConPort stores
-  - risks_predicted → ConPort decision
-  - optimizations_recommended → ConPort pattern
+- dependencies_analyzed → ConPort stores
+- risks_predicted → ConPort decision
+- optimizations_recommended → ConPort pattern
 ```
 
 **Layer 3: Leantime (Visualization)**
@@ -353,20 +353,20 @@ Status updates → sync_engine → ConPort → triggers re-analysis
 ```
 1. User creates task in Leantime
    ↓
-2. Leantime → Sync Engine → ConPort (stores task)
+1. Leantime → Sync Engine → ConPort (stores task)
    ↓
-3. ConPort publishes "progress.created" event
+1. ConPort publishes "progress.created" event
    ↓
-4. Task-Orchestrator receives event:
-   - analyze_dependencies (finds blockers)
-   - assess_task_risk (predicts risks)
-   - optimize_team_workload (assigns to best team)
+1. Task-Orchestrator receives event:
+- analyze_dependencies (finds blockers)
+- assess_task_risk (predicts risks)
+- optimize_team_workload (assigns to best team)
    ↓
-5. Task-Orchestrator publishes insights
+1. Task-Orchestrator publishes insights
    ↓
-6. ConPort stores insights as decisions/patterns
+1. ConPort stores insights as decisions/patterns
    ↓
-7. Sync Engine → Leantime (updates dashboard with insights)
+1. Sync Engine → Leantime (updates dashboard with insights)
 ```
 
 ---
@@ -377,52 +377,52 @@ Based on module analysis, here are the 37 specialized orchestration tools:
 
 ### Dependency Analysis (10)
 1. analyze_dependencies
-2. detect_conflicts
-3. resolve_conflict
-4. find_critical_path
-5. identify_blockers
-6. batch_tasks
-7. parallelize_tasks
-8. sequence_tasks
-9. estimate_timeline
-10. optimize_workflow
+1. detect_conflicts
+1. resolve_conflict
+1. find_critical_path
+1. identify_blockers
+1. batch_tasks
+1. parallelize_tasks
+1. sequence_tasks
+1. estimate_timeline
+1. optimize_workflow
 
 ### Multi-Team Coordination (7)
 1. register_team
-2. create_cross_team_dependency
-3. optimize_team_workload
-4. resolve_coordination_conflicts
-5. get_team_coordination_status
-6. schedule_coordination
-7. analyze_team_workload
+1. create_cross_team_dependency
+1. optimize_team_workload
+1. resolve_coordination_conflicts
+1. get_team_coordination_status
+1. schedule_coordination
+1. analyze_team_workload
 
 ### ML Risk Assessment (8)
 1. assess_task_risk
-2. predict_blockers
-3. generate_mitigation_strategies
-4. calculate_risk_score
-5. identify_adhd_risk_factors
-6. track_prediction_accuracy
-7. update_risk_models
-8. get_risk_profile
+1. predict_blockers
+1. generate_mitigation_strategies
+1. calculate_risk_score
+1. identify_adhd_risk_factors
+1. track_prediction_accuracy
+1. update_risk_models
+1. get_risk_profile
 
 ### Workflow Automation (6)
 1. automate_sprint_planning
-2. automate_progress_tracking
-3. generate_retrospective
-4. preserve_context
-5. orchestrate_breaks
-6. trigger_workflows
+1. automate_progress_tracking
+1. generate_retrospective
+1. preserve_context
+1. orchestrate_breaks
+1. trigger_workflows
 
 ### Performance Optimization (4)
 1. learn_productivity_patterns
-2. generate_optimization_recommendations
-3. monitor_performance
-4. apply_optimizations
+1. generate_optimization_recommendations
+1. monitor_performance
+1. apply_optimizations
 
 ### Deployment Orchestration (2)
 1. orchestrate_deployment
-2. monitor_deployment
+1. monitor_deployment
 
 **Total**: 37 specialized orchestration tools
 
@@ -445,10 +445,10 @@ Based on module analysis, here are the 37 specialized orchestration tools:
 
 **Background Workers**:
 1. `_leantime_poller()` - Poll Leantime every 30s
-2. `_sync_processor()` - Process sync queue
-3. `_adhd_monitor()` - Monitor ADHD accommodations
-4. `_implicit_automation_engine()` - Trigger automations
-5. `_progress_correlator()` - Correlate progress across systems
+1. `_sync_processor()` - Process sync queue
+1. `_adhd_monitor()` - Monitor ADHD accommodations
+1. `_implicit_automation_engine()` - Trigger automations
+1. `_progress_correlator()` - Correlate progress across systems
 
 ---
 
@@ -593,12 +593,12 @@ Based on module analysis, here are the 37 specialized orchestration tools:
 
 **Sync Directions** (7):
 1. Leantime → ConPort
-2. Leantime → Local
-3. ConPort → Leantime
-4. Local → Leantime
-5. Local → ConPort
-6. ConPort → Local
-7. Agent → All
+1. Leantime → Local
+1. ConPort → Leantime
+1. Local → Leantime
+1. Local → ConPort
+1. ConPort → Local
+1. Agent → All
 
 **Conflict Resolution Strategies** (5):
 - LEANTIME_WINS, LOCAL_WINS, CONPORT_WINS
@@ -730,32 +730,32 @@ Based on module analysis, here are the 37 specialized orchestration tools:
 ### What's Ready Out-of-Box ✅
 
 1. **Leantime Integration**: Complete API client + sync engine
-2. **Event Infrastructure**: Event coordinator with priority queues
-3. **ADHD Accommodations**: Pervasive throughout all modules
-4. **Multi-Project Support**: Workspace ID isolation built-in
-5. **Conflict Resolution**: 5 strategies with intelligent merging
+1. **Event Infrastructure**: Event coordinator with priority queues
+1. **ADHD Accommodations**: Pervasive throughout all modules
+1. **Multi-Project Support**: Workspace ID isolation built-in
+1. **Conflict Resolution**: 5 strategies with intelligent merging
 
 ### What Needs Architecture 3.0 Updates 🔄
 
 1. **ConPort as Authority**:
-   - Replace local `orchestrated_tasks` dict with ConPort queries
-   - Use ConPort HTTP API for task storage
-   - Publish insights to ConPort via DopeconBridge
+- Replace local `orchestrated_tasks` dict with ConPort queries
+- Use ConPort HTTP API for task storage
+- Publish insights to ConPort via DopeconBridge
 
-2. **Event-Driven Integration**:
-   - Subscribe to ConPort events (not direct API calls)
-   - Publish results via DopeconBridge (not direct ConPort writes)
-   - Version event schemas
+1. **Event-Driven Integration**:
+- Subscribe to ConPort events (not direct API calls)
+- Publish results via DopeconBridge (not direct ConPort writes)
+- Version event schemas
 
-3. **Authority Boundaries**:
-   - Task-Orchestrator analyzes ONLY (no storage)
-   - Results flow through ConPort (authoritative)
-   - Leantime updates flow through ConPort (not direct)
+1. **Authority Boundaries**:
+- Task-Orchestrator analyzes ONLY (no storage)
+- Results flow through ConPort (authoritative)
+- Leantime updates flow through ConPort (not direct)
 
-4. **Deployment Infrastructure**:
-   - Docker configs for Task-Orchestrator service
-   - Environment variable management
-   - CI/CD integration
+1. **Deployment Infrastructure**:
+- Docker configs for Task-Orchestrator service
+- Environment variable management
+- CI/CD integration
 
 ---
 
@@ -828,15 +828,15 @@ Based on module analysis, here are the 37 specialized orchestration tools:
 
 **Core Tools to Activate** (Essential 15):
 1. analyze_dependencies ⭐
-2. find_critical_path ⭐
-3. identify_blockers ⭐
-4. detect_conflicts
-5. resolve_conflict
-6. batch_tasks
-7. parallelize_tasks
-8. sequence_tasks
-9. estimate_timeline
-10. optimize_workflow
+1. find_critical_path ⭐
+1. identify_blockers ⭐
+1. detect_conflicts
+1. resolve_conflict
+1. batch_tasks
+1. parallelize_tasks
+1. sequence_tasks
+1. estimate_timeline
+1. optimize_workflow
 
 **Plus Supporting Infrastructure**:
 - Event Coordinator (event routing)
@@ -877,9 +877,9 @@ workspace_mapping = {
 ## Next Steps
 
 1. ✅ **37 Tools Documented** - This document
-2. **Update ADR-207** - Reference this capabilities inventory
-3. **Phase 1 Detailed Planning** - Break down 20h into specific tasks
-4. **Create Implementation Roadmap** - Week-by-week plan with milestones
+1. **Update ADR-207** - Reference this capabilities inventory
+1. **Phase 1 Detailed Planning** - Break down 20h into specific tasks
+1. **Create Implementation Roadmap** - Week-by-week plan with milestones
 
 ---
 

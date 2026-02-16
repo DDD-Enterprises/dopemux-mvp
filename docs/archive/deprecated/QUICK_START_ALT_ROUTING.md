@@ -34,11 +34,11 @@ That's it! Everything happens automatically.
 ## 🎯 What Happens Automatically
 
 1. **Loads your API keys** from `.env.routing`
-2. **Kills stuck LiteLLM** instances (if any)
-3. **Starts LiteLLM** proxy on port 4000
-4. **Waits for health check** (up to 15 seconds)
-5. **Configures Claude** to use LiteLLM
-6. **Launches dopemux** normally
+1. **Kills stuck LiteLLM** instances (if any)
+1. **Starts LiteLLM** proxy on port 4000
+1. **Waits for health check** (up to 15 seconds)
+1. **Configures Claude** to use LiteLLM
+1. **Launches dopemux** normally
 
 ---
 

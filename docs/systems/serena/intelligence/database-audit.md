@@ -107,18 +107,18 @@ prelude: Database Audit (reference) for dopemux documentation and developer work
 ### Critical Path Tests
 
 1. **test_database_initialization** - Connection pool creation, health check
-2. **test_connection_pooling** - Min/max connections, pool exhaustion, connection reuse
-3. **test_query_performance_under_200ms** - ADHD compliance validation
-4. **test_query_timeout_handling** - Timeout scenarios, graceful degradation
-5. **test_batch_query_execution** - Concurrent queries, semaphore limiting
-6. **test_cache_functionality** - Cache hits, TTL expiration, cache clearing
-7. **test_complexity_filtering** - ADHD complexity sorting, metadata addition
-8. **test_progressive_disclosure** - Result limiting, activation tracking
-9. **test_adhd_session_optimization** - Attention span adaptation, cognitive load filtering
-10. **test_health_status_monitoring** - Pool status, ADHD insights generation
-11. **test_metrics_tracking** - Rolling averages, compliance rate calculation
-12. **test_connection_error_handling** - Connection failures, retry logic
-13. **test_transaction_support** - Rollback scenarios (if implemented)
+1. **test_connection_pooling** - Min/max connections, pool exhaustion, connection reuse
+1. **test_query_performance_under_200ms** - ADHD compliance validation
+1. **test_query_timeout_handling** - Timeout scenarios, graceful degradation
+1. **test_batch_query_execution** - Concurrent queries, semaphore limiting
+1. **test_cache_functionality** - Cache hits, TTL expiration, cache clearing
+1. **test_complexity_filtering** - ADHD complexity sorting, metadata addition
+1. **test_progressive_disclosure** - Result limiting, activation tracking
+1. **test_adhd_session_optimization** - Attention span adaptation, cognitive load filtering
+1. **test_health_status_monitoring** - Pool status, ADHD insights generation
+1. **test_metrics_tracking** - Rolling averages, compliance rate calculation
+1. **test_connection_error_handling** - Connection failures, retry logic
+1. **test_transaction_support** - Rollback scenarios (if implemented)
 
 ### Performance Benchmarks
 
@@ -175,9 +175,9 @@ from ..adhd_features import CodeComplexityAnalyzer
 **Next Actions:**
 
 1. Create `tests/v2/test_database.py`
-2. Write 13 core test cases
-3. Run pytest → Expect failures or import errors
-4. Document which tests pass/fail
+1. Write 13 core test cases
+1. Run pytest → Expect failures or import errors
+1. Document which tests pass/fail
 
 **Estimated Test File Size:** ~400-600 lines for comprehensive coverage
 

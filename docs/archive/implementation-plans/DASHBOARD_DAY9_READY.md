@@ -37,8 +37,8 @@ prelude: Dashboard_Day9_Ready (explanation) for dopemux documentation and develo
 
 ### What We're Building Next (Day 9)
 1. **Enhanced Sparklines** - Integrate real Prometheus data → widgets
-2. **Keyboard Navigation** - Full dashboard control (no mouse needed)
-3. **Testing & Polish** - Integration tests, performance profiling
+1. **Keyboard Navigation** - Full dashboard control (no mouse needed)
+1. **Testing & Polish** - Integration tests, performance profiling
 
 ---
 
@@ -110,10 +110,10 @@ class PrometheusSparklineIntegration:
     Bridges Prometheus metrics to sparkline visualization.
 
     Responsibilities:
-    - Fetch time-series data from Prometheus
-    - Transform to sparkline-compatible format
-    - Cache results (30s TTL)
-    - Handle errors gracefully
+- Fetch time-series data from Prometheus
+- Transform to sparkline-compatible format
+- Cache results (30s TTL)
+- Handle errors gracefully
     """
 
     def __init__(self, prometheus_client: PrometheusClient):
@@ -295,10 +295,10 @@ class FocusManager:
     Manages panel focus state and keyboard navigation.
 
     ADHD Principles:
-    - Always clear which panel is focused (high contrast border)
-    - Smooth transitions (no jarring jumps)
-    - Escape always works (safety net)
-    - Visual + optional auditory feedback
+- Always clear which panel is focused (high contrast border)
+- Smooth transitions (no jarring jumps)
+- Escape always works (safety net)
+- Visual + optional auditory feedback
     """
 
     def __init__(self, app: "DopemuxDashboard"):
@@ -312,10 +312,10 @@ class FocusManager:
         Focus specific panel with visual feedback.
 
         Visual Changes:
-        1. Previous panel → remove "focused" class
-        2. New panel → add "focused" class (triggers CSS)
-        3. Scroll into view if needed
-        4. Optional sound (macOS only)
+1. Previous panel → remove "focused" class
+1. New panel → add "focused" class (triggers CSS)
+1. Scroll into view if needed
+1. Optional sound (macOS only)
         """
         # Unfocus previous
         if self.focused_panel_id:
@@ -767,10 +767,10 @@ async def test_keyboard_action_latency():
 ## 📝 NEXT STEPS
 
 1. **Review this document** (5 minutes)
-2. **Start with Task 1** (Prometheus Sparklines) - 2 hours
-3. **Move to Task 2** (Keyboard Navigation) - 3 hours
-4. **Finish with Task 3** (Testing) - 1-2 hours
-5. **Celebrate!** 🎉
+1. **Start with Task 1** (Prometheus Sparklines) - 2 hours
+1. **Move to Task 2** (Keyboard Navigation) - 3 hours
+1. **Finish with Task 3** (Testing) - 1-2 hours
+1. **Celebrate!** 🎉
 
 **Let's build the most keyboard-friendly, visual ADHD dashboard ever!** 🚀
 

@@ -33,9 +33,9 @@ Description
 - Dope-Memory may drift into becoming a second canonical store or semantic archive.
 Mitigation
 - Strict ownership boundaries:
-  - DopeQuery owns decisions and truth.
-  - DopeContext owns semantic archival.
-  - Dope-Memory owns temporal narrative + reflections.
+- DopeQuery owns decisions and truth.
+- DopeContext owns semantic archival.
+- Dope-Memory owns temporal narrative + reflections.
 
 ## R4: Non-deterministic retrieval erodes trust
 Description

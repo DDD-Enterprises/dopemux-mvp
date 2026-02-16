@@ -190,9 +190,9 @@ Metric History:        350-450ms ✅
 
 ### Goals
 1. Replace polling with WebSocket real-time updates
-2. Live sparkline animation
-3. Push notifications for events
-4. Optimized update batching
+1. Live sparkline animation
+1. Push notifications for events
+1. Optimized update batching
 
 ### Dependencies
 - ADHD Engine WebSocket endpoint
@@ -234,21 +234,21 @@ Metric History:        350-450ms ✅
 
 ### Performance
 1. **Use prefetcher** - Start it in `on_mount()`, always
-2. **Cache aggressively** - SHORT for real-time, MEDIUM for metrics
-3. **Parallel fetches** - Use `asyncio.gather()` for independent requests
-4. **Monitor perf** - Check logs for >500ms warnings
+1. **Cache aggressively** - SHORT for real-time, MEDIUM for metrics
+1. **Parallel fetches** - Use `asyncio.gather()` for independent requests
+1. **Monitor perf** - Check logs for >500ms warnings
 
 ### Error Handling
 1. **Always provide fallback** - Never show stack traces to users
-2. **Log errors** - Use logger.error() for debugging
-3. **User-friendly messages** - "Service unavailable" not "Connection refused"
-4. **Graceful degradation** - Show stale data if fresh fetch fails
+1. **Log errors** - Use logger.error() for debugging
+1. **User-friendly messages** - "Service unavailable" not "Connection refused"
+1. **Graceful degradation** - Show stale data if fresh fetch fails
 
 ### ADHD-Friendly Design
 1. **Instant feedback** - <500ms response times
-2. **Clear errors** - Tell user what to do, not what broke
-3. **Smart defaults** - Fallback to sensible values
-4. **Progressive disclosure** - Don't overwhelm with data
+1. **Clear errors** - Tell user what to do, not what broke
+1. **Smart defaults** - Fallback to sensible values
+1. **Progressive disclosure** - Don't overwhelm with data
 
 ---
 

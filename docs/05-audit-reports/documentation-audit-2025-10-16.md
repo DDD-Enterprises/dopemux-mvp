@@ -66,11 +66,11 @@ docs/
 
 **Missing ADRs** (from today's audit alone):
 1. ConPort KG security vulnerability fixes
-2. Serena v2 production readiness validation
-3. Task-Orchestrator un-deprecation reversal
-4. ADHD Engine service boundary concerns
-5. ML Risk Assessment extraction
-6. ConPort UI URL encoding fixes
+1. Serena v2 production readiness validation
+1. Task-Orchestrator un-deprecation reversal
+1. ADHD Engine service boundary concerns
+1. ML Risk Assessment extraction
+1. ConPort UI URL encoding fixes
 
 **Impact**: Major architectural decisions undocumented = context loss
 
@@ -125,29 +125,29 @@ From INDEX.md:
 **Create ADRs for Today's Audit**:
 
 1. **ADR-XXX: ConPort KG Security Hardening**
-   - SQL injection fixes (4 locations)
-   - ReDoS prevention
-   - Security test suite
+- SQL injection fixes (4 locations)
+- ReDoS prevention
+- Security test suite
 
-2. **ADR-XXX: Serena v2 Production Validation**
-   - Secure-by-design assessment
-   - Parameterized query verification
-   - Production readiness: 8.5/10
+1. **ADR-XXX: Serena v2 Production Validation**
+- Secure-by-design assessment
+- Parameterized query verification
+- Production readiness: 8.5/10
 
-3. **ADR-XXX: Task-Orchestrator Un-Deprecation**
-   - Systematic analysis findings
-   - ML capabilities preservation
-   - Migration incomplete (17%)
+1. **ADR-XXX: Task-Orchestrator Un-Deprecation**
+- Systematic analysis findings
+- ML capabilities preservation
+- Migration incomplete (17%)
 
-4. **ADR-XXX: ML Risk Assessment Service Extraction**
-   - Standalone service creation
-   - Unique value proposition
-   - Integration plan
+1. **ADR-XXX: ML Risk Assessment Service Extraction**
+- Standalone service creation
+- Unique value proposition
+- Integration plan
 
-5. **ADR-XXX: Code Audit Methodology**
-   - Zen systematic analysis process
-   - Rush review vs systematic comparison
-   - Quality assurance standards
+1. **ADR-XXX: Code Audit Methodology**
+- Zen systematic analysis process
+- Rush review vs systematic comparison
+- Quality assurance standards
 
 **Why Immediate**: Capture decisions while context is fresh
 
@@ -156,33 +156,33 @@ From INDEX.md:
 ### Phase 2: Short-term (4 hours) 🟡 IMPORTANT
 
 1. **Create Basic Tutorial** (2h)
-   - Getting Started guide
-   - Quick start workflow
-   - Architecture overview
+- Getting Started guide
+- Quick start workflow
+- Architecture overview
 
-2. **Document Missing Services** (2h)
-   - ConPort KG service guide
-   - ConPort UI usage guide
-   - ML Risk Assessment reference
+1. **Document Missing Services** (2h)
+- ConPort KG service guide
+- ConPort UI usage guide
+- ML Risk Assessment reference
 
 ---
 
 ### Phase 3: Long-term (8 hours) 🟢 RECOMMENDED
 
 1. **Resolve TODOs** (4h)
-   - Fill "coming soon" sections
-   - Complete incomplete docs
-   - Update outdated information
+- Fill "coming soon" sections
+- Complete incomplete docs
+- Update outdated information
 
-2. **Expand How-To Guides** (2h)
-   - Service deployment guides
-   - Troubleshooting workflows
-   - Integration patterns
+1. **Expand How-To Guides** (2h)
+- Service deployment guides
+- Troubleshooting workflows
+- Integration patterns
 
-3. **Standardize Format** (2h)
-   - Consistent ADR template
-   - Standard service doc structure
-   - ADHD-optimized formatting
+1. **Standardize Format** (2h)
+- Consistent ADR template
+- Standard service doc structure
+- ADHD-optimized formatting
 
 **Total Documentation Work**: 14 hours
 

@@ -17,10 +17,10 @@ Use this mode when executing packet-scoped work that must be deterministic and a
 ## Operating Contract
 
 1. Treat repository state as the only source of truth.
-2. Reject hidden memory, implicit assumptions, or fabricated context.
-3. Execute only explicit packet scope.
-4. Keep changes minimal, reversible, and test-covered.
-5. Refuse with exit code 2 when packet preconditions fail.
+1. Reject hidden memory, implicit assumptions, or fabricated context.
+1. Execute only explicit packet scope.
+1. Keep changes minimal, reversible, and test-covered.
+1. Refuse with exit code 2 when packet preconditions fail.
 
 ## Determinism Rules
 
@@ -41,13 +41,13 @@ Refuse (exit 2) if any of these are true:
 ## Execution Flow
 
 1. Validate packet preconditions.
-2. Validate repository identity and branch isolation.
-3. Implement only declared file changes.
-4. Add or update tests that guard invariants.
-5. Run required verification commands.
-6. Write deterministic artifacts under `out/<packet-id>/`.
-7. Commit with the exact packet commit message.
-8. Print verification outputs verbatim.
+1. Validate repository identity and branch isolation.
+1. Implement only declared file changes.
+1. Add or update tests that guard invariants.
+1. Run required verification commands.
+1. Write deterministic artifacts under `out/<packet-id>/`.
+1. Commit with the exact packet commit message.
+1. Print verification outputs verbatim.
 
 ## Artifact Rules
 

@@ -27,9 +27,9 @@ Integrate Day 7's WebSocket streaming infrastructure into the live dashboard, ad
 
 ### Why This Matters (ADHD Research-Backed)
 1. **Instant Feedback Loop** - WebSocket <100ms latency → +40% task completion (Barkley, 2015)
-2. **Reduced Cognitive Load** - Keyboard navigation eliminates mouse context-switching (-30% cognitive load)
-3. **Visual Time Perception** - Sparklines with real data anchor time awareness (+25% time estimation accuracy)
-4. **Flow Protection** - Real-time state detection prevents interruptions (3x longer engagement)
+1. **Reduced Cognitive Load** - Keyboard navigation eliminates mouse context-switching (-30% cognitive load)
+1. **Visual Time Perception** - Sparklines with real data anchor time awareness (+25% time estimation accuracy)
+1. **Flow Protection** - Real-time state detection prevents interruptions (3x longer engagement)
 
 ### Success Criteria
 - [ ] WebSocket client integrated and streaming live data
@@ -291,9 +291,9 @@ class MetricsCache:
 
 **Keybinding Philosophy:**
 1. **Numbers = Direct access** (no searching menus)
-2. **Arrows = Spatial navigation** (intuitive, no memorization)
-3. **Enter/Escape = Universal actions** (muscle memory)
-4. **Single-key shortcuts** (no multi-key combos)
+1. **Arrows = Spatial navigation** (intuitive, no memorization)
+1. **Enter/Escape = Universal actions** (muscle memory)
+1. **Single-key shortcuts** (no multi-key combos)
 
 **Keybinding Map:**
 ```python
@@ -510,10 +510,10 @@ During Operation
 
 **Tasks:**
 1. Import `StreamingClient` from `dashboard/streaming.py`
-2. Create `MetricsManager` class to coordinate WS + polling
-3. Add worker to spawn WebSocket listener
-4. Wire callbacks to widget update methods
-5. Add connection status footer widget
+1. Create `MetricsManager` class to coordinate WS + polling
+1. Add worker to spawn WebSocket listener
+1. Wire callbacks to widget update methods
+1. Add connection status footer widget
 
 **Code Skeleton:**
 ```python
@@ -572,10 +572,10 @@ class DopemuxDashboard(App):
 
 **Tasks:**
 1. Add reactive variables to `ADHDStateWidget`
-2. Add reactive variables to `ProductivityWidget`
-3. Add reactive variables to `TrendsWidget`
-4. Implement `update_from_ws()` methods
-5. Test real-time updates
+1. Add reactive variables to `ProductivityWidget`
+1. Add reactive variables to `TrendsWidget`
+1. Implement `update_from_ws()` methods
+1. Test real-time updates
 
 **Code Example:**
 ```python
@@ -617,10 +617,10 @@ class ADHDStateWidget(Static):
 
 **Tasks:**
 1. Create `PrometheusDataFetcher` class
-2. Implement query builders for each metric
-3. Add caching layer (30s TTL)
-4. Wire sparklines to TrendsWidget
-5. Add auto-refresh every 30s
+1. Implement query builders for each metric
+1. Add caching layer (30s TTL)
+1. Wire sparklines to TrendsWidget
+1. Add auto-refresh every 30s
 
 **Code Example:**
 ```python
@@ -678,10 +678,10 @@ class TrendsWidget(Static):
 
 **Tasks:**
 1. Add keybindings to App class
-2. Implement panel focusing logic
-3. Add visual focus indicators (CSS)
-4. Implement scroll handlers
-5. Add help popup (press `?`)
+1. Implement panel focusing logic
+1. Add visual focus indicators (CSS)
+1. Implement scroll handlers
+1. Add help popup (press `?`)
 
 **Code Example:**
 ```python
@@ -1128,13 +1128,13 @@ Dashboard Day 8 is COMPLETE when:
 
 1. **Barkley, R. A. (2015).** "Attention-Deficit Hyperactivity Disorder: A Handbook for Diagnosis and Treatment." Guilford Press.
 
-2. **Weisman, K., & Brown, M. (2023).** "Visual Time Perception in ADHD Adults: Effects of Time-Series Visualization." Journal of Attention Disorders, 27(4), 412-428.
+1. **Weisman, K., & Brown, M. (2023).** "Visual Time Perception in ADHD Adults: Effects of Time-Series Visualization." Journal of Attention Disorders, 27(4), 412-428.
 
-3. **Rapport, M. D., et al. (2013).** "Hyperactivity in Boys with ADHD: A Ubiquitous Core Symptom or Manifestation of Working Memory Deficits?" Journal of Abnormal Child Psychology, 41(3), 465-477.
+1. **Rapport, M. D., et al. (2013).** "Hyperactivity in Boys with ADHD: A Ubiquitous Core Symptom or Manifestation of Working Memory Deficits?" Journal of Abnormal Child Psychology, 41(3), 465-477.
 
-4. **Textual Documentation.** https://textual.textualize.io/guide/workers/
+1. **Textual Documentation.** https://textual.textualize.io/guide/workers/
 
-5. **FastAPI WebSocket Guide.** https://fastapi.tiangolo.com/advanced/websockets/
+1. **FastAPI WebSocket Guide.** https://fastapi.tiangolo.com/advanced/websockets/
 
 ---
 
@@ -1147,8 +1147,8 @@ Dashboard Day 8 is COMPLETE when:
 
 **Key Insights:**
 1. WebSocket + Reactive Variables = Perfect match for Textual
-2. Graceful degradation is critical (not all users have reliable connections)
-3. Keyboard navigation is ADHD superpower (eliminate context switching)
-4. Real sparklines provide visual time anchoring (combat time blindness)
+1. Graceful degradation is critical (not all users have reliable connections)
+1. Keyboard navigation is ADHD superpower (eliminate context switching)
+1. Real sparklines provide visual time anchoring (combat time blindness)
 
 **Ready to implement!** 🚀

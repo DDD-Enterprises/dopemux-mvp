@@ -26,9 +26,9 @@ next_review: '2026-01-15'
 Instance state persistence enables Dopemux to automatically recover from crashes by saving instance metadata to ConPort's shared database. When an instance crashes, the state remains in ConPort and can be used to:
 
 1. Detect orphaned worktrees (worktree exists but no services running)
-2. Resume sessions with preserved context (working directory, focus state)
-3. Clean up stopped instances systematically
-4. Provide instance history and health monitoring
+1. Resume sessions with preserved context (working directory, focus state)
+1. Clean up stopped instances systematically
+1. Provide instance history and health monitoring
 
 ## Architecture
 
@@ -67,7 +67,7 @@ Instance state persistence enables Dopemux to automatically recover from crashes
 | Status | Meaning | Use Case |
 |--------|---------|----------|
 | `active` | Instance currently running | Normal operation |
-| `stopped` | Clean shutdown | User ran Ctrl+C or `dopemux stop` |
+| `stopped` \| Clean shutdown \| User ran Ctrl+C or `dopemux stop` |
 | `orphaned` | Crashed, worktree exists | Requires cleanup or resume |
 
 ## API Reference
@@ -264,9 +264,9 @@ When resumed, instance can:
    Working dir: /worktrees/B/src/auth
 
 Would you like to:
-  1. Resume instance B (restore context)
-  2. Clean up worktree (discard changes)
-  3. Keep worktree but start fresh instance
+1. Resume instance B (restore context)
+1. Clean up worktree (discard changes)
+1. Keep worktree but start fresh instance
 ```
 
 ### 3. Health Monitoring
@@ -401,8 +401,8 @@ python src/dopemux/test_instance_state.py
 **Cause**: ConPort not running or wrong port
 **Solution**:
 1. Verify ConPort running: `curl http://localhost:3007/health`
-2. Check port number matches instance's ConPort
-3. Check logs for connection errors
+1. Check port number matches instance's ConPort
+1. Check logs for connection errors
 
 ### Cannot load saved state
 
@@ -410,8 +410,8 @@ python src/dopemux/test_instance_state.py
 **Cause**: State was cleaned up or ConPort reset
 **Solution**:
 1. List all states to verify existence
-2. Check ConPort database wasn't reset
-3. Verify workspace_id matches
+1. Check ConPort database wasn't reset
+1. Verify workspace_id matches
 
 ### Orphaned instances not detected
 
@@ -419,18 +419,18 @@ python src/dopemux/test_instance_state.py
 **Cause**: Instance crashed without marking status
 **Solution**:
 1. Use `dopemux instances list` to probe health
-2. Manually mark as orphaned if needed
-3. Run cleanup to remove worktree and state
+1. Manually mark as orphaned if needed
+1. Run cleanup to remove worktree and state
 
 ## Summary
 
 Instance state persistence provides **zero-overhead crash recovery** for ADHD developers by:
 
 1. ✅ **Automatic saving** - No manual state management
-2. ✅ **Graceful degradation** - Works even when ConPort unavailable
-3. ✅ **Context preservation** - Remember what you were doing
-4. ✅ **Health monitoring** - Detect issues proactively
-5. ✅ **Clean APIs** - Both async and sync for any use case
+1. ✅ **Graceful degradation** - Works even when ConPort unavailable
+1. ✅ **Context preservation** - Remember what you were doing
+1. ✅ **Health monitoring** - Detect issues proactively
+1. ✅ **Clean APIs** - Both async and sync for any use case
 
 **Impact**: Reduces context-switching anxiety and enables confident experimentation across multiple instances.
 

@@ -23,20 +23,20 @@ Closure verification for execution-packet backlog item:
 Updated `src/dopemux/profile_detector.py` `_score_file_patterns`:
 
 1. Scores by percentage match across up to 10 recent files (`matches / files_checked`).
-2. Deduplicates repeated recent file entries before scoring.
-3. Matches patterns against both full path and basename for better extension-pattern coverage.
+1. Deduplicates repeated recent file entries before scoring.
+1. Matches patterns against both full path and basename for better extension-pattern coverage.
 
 ## Test Coverage
 
 Added in `tests/unit/test_profile_detector_scoring.py`:
 
 1. `test_file_pattern_analyzer_scores_by_percentage`
-2. `test_file_pattern_analyzer_deduplicates_recent_files`
+1. `test_file_pattern_analyzer_deduplicates_recent_files`
 
 ## Verification
 
 1. `pytest -q --no-cov tests/unit/test_profile_detector_scoring.py` passed.
-2. `python -m py_compile src/dopemux/profile_detector.py` passed.
+1. `python -m py_compile src/dopemux/profile_detector.py` passed.
 
 ## Status
 

@@ -32,11 +32,11 @@ class MetricsManager:
     Unified metrics coordinator with WebSocket + HTTP fallback.
 
     Features:
-    - Attempts WebSocket connection first
-    - Falls back to HTTP polling if unavailable
-    - Auto-reconnect in background (exponential backoff)
-    - Routes updates to dashboard widgets
-    - Graceful degradation
+- Attempts WebSocket connection first
+- Falls back to HTTP polling if unavailable
+- Auto-reconnect in background (exponential backoff)
+- Routes updates to dashboard widgets
+- Graceful degradation
     """
 ```
 
@@ -86,9 +86,9 @@ class ADHDStateWidget(Static):
 
 **How It Works:**
 1. WebSocket message arrives → `MetricsManager.handle_state_update()`
-2. Manager calls → `widget.update_from_ws(data)`
-3. Widget updates reactive vars → Textual auto-triggers `render()`
-4. User sees update in <100ms ✨
+1. Manager calls → `widget.update_from_ws(data)`
+1. Widget updates reactive vars → Textual auto-triggers `render()`
+1. User sees update in <100ms ✨
 
 **No manual refresh() calls needed!**
 
@@ -185,7 +185,7 @@ def compose(self):
    # Verify: Dashboard updates <100ms
    ```
 
-2. **Add Connection Status Widget**
+1. **Add Connection Status Widget**
    ```python
    class ConnectionStatusWidget(Static):
        """Footer connection indicator"""
@@ -201,38 +201,38 @@ def compose(self):
            return Text(icons[self.status])
    ```
 
-3. **Extend to Other Widgets**
-   - MetricsWidget → WebSocket updates
-   - ServicesWidget → WebSocket health checks
-   - TrendsWidget → Real-time sparklines
+1. **Extend to Other Widgets**
+- MetricsWidget → WebSocket updates
+- ServicesWidget → WebSocket health checks
+- TrendsWidget → Real-time sparklines
 
 ### Short-Term (Day 9)
 1. **Enhanced Sparklines**
-   - Fetch historical data from Prometheus
-   - Generate sparklines with real metrics
-   - Auto-refresh every 30s
+- Fetch historical data from Prometheus
+- Generate sparklines with real metrics
+- Auto-refresh every 30s
 
-2. **Keyboard Navigation**
-   - Panel focusing (1-4 keys)
-   - Tab/Shift-Tab cycling
-   - Visual focus indicators
-   - Help popup (? key)
+1. **Keyboard Navigation**
+- Panel focusing (1-4 keys)
+- Tab/Shift-Tab cycling
+- Visual focus indicators
+- Help popup (? key)
 
-3. **Performance Profiling**
-   - Measure latency end-to-end
-   - Check CPU/memory usage
-   - Optimize if needed
+1. **Performance Profiling**
+- Measure latency end-to-end
+- Check CPU/memory usage
+- Optimize if needed
 
 ### Medium-Term (Day 10)
 1. **Drill-Down Modals**
-   - Task detail view
-   - Service logs viewer
-   - Pattern analysis popup
+- Task detail view
+- Service logs viewer
+- Pattern analysis popup
 
-2. **Advanced Features**
-   - Layout presets
-   - Metric subscriptions
-   - Desktop notifications
+1. **Advanced Features**
+- Layout presets
+- Metric subscriptions
+- Desktop notifications
 
 ---
 
@@ -271,10 +271,10 @@ def compose(self):
 - **Before:** Manual `refresh()` calls, potential race conditions
 - **After:** Reactive variables, automatic invalidation
 - **Benefits:**
-  - Less code
-  - No manual DOM updates
-  - Textual optimizes render cycles
-  - Impossible to forget refresh
+- Less code
+- No manual DOM updates
+- Textual optimizes render cycles
+- Impossible to forget refresh
 
 ### 3. Graceful Degradation
 - **WebSocket available:** Real-time updates, <100ms latency
@@ -351,19 +351,19 @@ Missed:      0% (all state changes captured) ✅
 
 ### Modified (1 file, +245 lines)
 1. `dopemux_dashboard.py`
-   - Added `MetricsManager` class (+235 lines)
-   - Updated `ADHDStateWidget.update_from_ws()` (+10 lines)
-   - Updated `DopemuxDashboard.__init__()` (+3 lines)
-   - Updated `DopemuxDashboard.on_mount()` (+15 lines)
-   - Added `start_metrics_streaming()` method (+15 lines)
+- Added `MetricsManager` class (+235 lines)
+- Updated `ADHDStateWidget.update_from_ws()` (+10 lines)
+- Updated `DopemuxDashboard.__init__()` (+3 lines)
+- Updated `DopemuxDashboard.on_mount()` (+15 lines)
+- Added `start_metrics_streaming()` method (+15 lines)
 
 ### Created (1 file, ~1,300 lines)
 1. `docs/implementation-plans/DASHBOARD_DAY8_DEEP_RESEARCH.md`
-   - Deep research on WebSocket integration patterns
-   - ADHD-specific UX research
-   - Performance benchmarks
-   - Risk analysis
-   - Hour-by-hour implementation plan
+- Deep research on WebSocket integration patterns
+- ADHD-specific UX research
+- Performance benchmarks
+- Risk analysis
+- Hour-by-hour implementation plan
 
 **Total:** 2 files, ~1,545 lines of code + documentation
 
@@ -433,27 +433,27 @@ Missed:      0% (all state changes captured) ✅
 ## 📝 NOTES FOR NEXT SESSION
 
 1. **ADHD Engine WebSocket Endpoint**
-   - Check if `/api/v1/ws/stream` exists
-   - If not, use `/ws/metrics` or create endpoint
-   - Verify message format matches `StreamingClient` expectations
+- Check if `/api/v1/ws/stream` exists
+- If not, use `/ws/metrics` or create endpoint
+- Verify message format matches `StreamingClient` expectations
 
-2. **Prometheus Setup**
-   - Verify Prometheus running on `localhost:9090`
-   - Check available metrics (cognitive load, velocity, etc.)
-   - Test query_range API
+1. **Prometheus Setup**
+- Verify Prometheus running on `localhost:9090`
+- Check available metrics (cognitive load, velocity, etc.)
+- Test query_range API
 
-3. **Testing Strategy**
-   - End-to-end test first (full flow)
-   - Then unit tests (individual components)
-   - Then stress test (1 hour runtime)
+1. **Testing Strategy**
+- End-to-end test first (full flow)
+- Then unit tests (individual components)
+- Then stress test (1 hour runtime)
 
-4. **Performance Profiling**
+1. **Performance Profiling**
    ```bash
    python -m cProfile -o dashboard.prof dopemux_dashboard.py
    python -c "import pstats; p = pstats.Stats('dashboard.prof'); p.sort_stats('cumulative'); p.print_stats(20)"
    ```
 
-5. **Memory Leak Detection**
+1. **Memory Leak Detection**
    ```bash
    # Run for 1 hour, monitor memory every minute
    while true; do

@@ -22,16 +22,16 @@ prelude: Metamcp_Complete_Setup (explanation) for dopemux documentation and deve
 
 ### Currently Running & Ready (7 servers) ✅
 1. **conport** (port 3004) - Decision logging, knowledge graph (25+ tools)
-2. **pal** (port 3003) - External library documentation (2 tools)
-3. **zen** (port 3003) - Multi-model orchestration (7 tools)
-4. **serena** (port 3006) - Code navigation & LSP (26 tools)
-5. **mas-sequential-thinking** (stdio) - Multi-step reasoning (via docker exec)
-6. **exa** (port 3008) - Web research
-7. **desktop-commander** (port 3012) - Desktop automation
+1. **pal** (port 3003) - External library documentation (2 tools)
+1. **zen** (port 3003) - Multi-model orchestration (7 tools)
+1. **serena** (port 3006) - Code navigation & LSP (26 tools)
+1. **mas-sequential-thinking** (stdio) - Multi-step reasoning (via docker exec)
+1. **exa** (port 3008) - Web research
+1. **desktop-commander** (port 3012) - Desktop automation
 
 ### Optional Servers (2 servers) ⏸️
 1. **gptr-mcp** (port 3009) - Deep research (building, add later)
-2. **claude-context** (port 3007) - Semantic code search (needs OPENAI_API_KEY)
+1. **claude-context** (port 3007) - Semantic code search (needs OPENAI_API_KEY)
 
 **Available NOW: 60+ tools across 7 operational servers!**
 
@@ -278,7 +278,7 @@ docker-compose -f docker-compose.unified.yml up -d mcp-gptr-mcp
 
 **For claude-context (optional - needs API key):**
 1. Add real OPENAI_API_KEY to `.env`
-2. `docker-compose -f docker-compose.unified.yml up -d mcp-claude-context`
+1. `docker-compose -f docker-compose.unified.yml up -d mcp-claude-context`
 
 ---
 
@@ -403,16 +403,16 @@ The CLI applies the matching profile, rewrites Claude settings, and warns if sup
 
 **Immediate (Now - 4 servers running):**
 1. Configure QUICKFIX and ACT modes
-2. Start using with 4 working servers
-3. Test role switching
+1. Start using with 4 working servers
+1. Test role switching
 
 **Phase 1B (When mas-sequential-thinking ready):**
-4. Add PLAN mode configuration
-5. Enhanced ACT mode
+1. Add PLAN mode configuration
+1. Enhanced ACT mode
 
 **Phase 1C (When all servers ready):**
-6. Add RESEARCH mode
-7. Complete all 5 roles
+1. Add RESEARCH mode
+1. Complete all 5 roles
 
 **Phased approach = immediate value + progressive enhancement** (ADHD-optimized!)
 

@@ -88,7 +88,7 @@ All healthy and serving specific purposes:
 
 ### Issues to Fix:
 1. `mcp-serena` - No health check
-2. `mcp-qdrant` - No health check
+1. `mcp-qdrant` - No health check
 
 ---
 
@@ -172,14 +172,14 @@ The memory-stack was an attempt to use **Milvus** for vector similarity search t
 
 ### Why remove it?
 1. **Redundant**: Qdrant already provides vector search
-2. **Heavyweight**: Milvus needs 3 containers (Milvus + MinIO + etcd)
-3. **Not Running**: All containers exited 4 days ago
-4. **Not Used**: No code references it (grep confirmed)
-5. **Better Alternative**: Qdrant is:
-   - Lighter weight (1 container)
-   - Already running and healthy
-   - Better documented
-   - More actively maintained
+1. **Heavyweight**: Milvus needs 3 containers (Milvus + MinIO + etcd)
+1. **Not Running**: All containers exited 4 days ago
+1. **Not Used**: No code references it (grep confirmed)
+1. **Better Alternative**: Qdrant is:
+- Lighter weight (1 container)
+- Already running and healthy
+- Better documented
+- More actively maintained
 
 ### What replaces it?
 **mcp-qdrant** (already running on ports 6333-6334)
@@ -262,15 +262,15 @@ curl -f http://localhost:6333/health
 
 ### Immediate Actions:
 1. ✅ Remove staging containers (docker-compose.staging.yml down)
-2. ✅ Remove memory-stack/Milvus (not needed, have Qdrant)
-3. ✅ Remove orphaned containers
-4. ⚠️ Add health checks to mcp-serena and mcp-qdrant
+1. ✅ Remove memory-stack/Milvus (not needed, have Qdrant)
+1. ✅ Remove orphaned containers
+1. ⚠️ Add health checks to mcp-serena and mcp-qdrant
 
 ### Future Optimizations:
 1. **Consolidate Redis**: 3 Redis instances might be reduced to 2
-2. **Decision Graph Qdrant**: Start the created container or remove if not needed
-3. **Monitor Resource Usage**: Track which services are actively used
-4. **Document Service Dependencies**: Create service dependency map
+1. **Decision Graph Qdrant**: Start the created container or remove if not needed
+1. **Monitor Resource Usage**: Track which services are actively used
+1. **Document Service Dependencies**: Create service dependency map
 
 ### Files to Update/Remove:
 - `docker-compose.staging.yml` - Can be archived or removed

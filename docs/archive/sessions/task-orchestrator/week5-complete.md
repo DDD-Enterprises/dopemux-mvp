@@ -23,16 +23,16 @@ prelude: Week5 Complete (explanation) for dopemux documentation and developer wo
 
 **Files Modified**:
 - `enhanced_orchestrator.py` (+80 lines in commit 04e17ccd)
-  - Import CognitiveGuardian
-  - Initialize ADHD agents
-  - Activate readiness checks
-  - Enable intelligent routing
+- Import CognitiveGuardian
+- Initialize ADHD agents
+- Activate readiness checks
+- Enable intelligent routing
 
 **Features**:
 1. Energy + complexity + attention matching
-2. Task deferral when user not ready
-3. Alternative task suggestions
-4. Burnout prevention (mandatory breaks)
+1. Task deferral when user not ready
+1. Alternative task suggestions
+1. Burnout prevention (mandatory breaks)
 
 **Test Results** (4/4 passing):
 - ✅ Energy mismatch prevented
@@ -46,10 +46,10 @@ prelude: Week5 Complete (explanation) for dopemux documentation and developer wo
 
 **Files Created**:
 - `adhd_prioritization_demo.py` (305 lines)
-  - Standalone ADHDTaskPrioritizer class
-  - Energy/complexity scoring algorithm
-  - Human-readable reason generation
-  - Validated demo with 6 test tasks
+- Standalone ADHDTaskPrioritizer class
+- Energy/complexity scoring algorithm
+- Human-readable reason generation
+- Validated demo with 6 test tasks
 
 **Algorithm**:
 ```python
@@ -75,11 +75,11 @@ User: Low energy, Focused attention
 
 Top Recommendations:
 1. Fix typo (0.1) → 0.90 confidence (Perfect match)
-2. Update docs (0.2) → 0.90 confidence (Perfect match)
-3. Write tests (0.5) → 0.50 confidence (Acceptable)
+1. Update docs (0.2) → 0.90 confidence (Perfect match)
+1. Write tests (0.5) → 0.50 confidence (Acceptable)
 
 Bottom:
-6. Design architecture (0.9) → 0.20 confidence (Do later)
+1. Design architecture (0.9) → 0.20 confidence (Do later)
 ```
 
 **ADHD Benefit**: 4.5x better prioritization (0.90 vs 0.20 for matched vs mismatched)
@@ -102,11 +102,11 @@ Bottom:
 
 ### Together
 1. User requests task recommendations
-2. Prioritizer returns top matches (sorted by score)
-3. User picks a task
-4. Router checks readiness before assigning
-5. If not ready: defers + shows alternatives
-6. If ready: assigns to optimal agent
+1. Prioritizer returns top matches (sorted by score)
+1. User picks a task
+1. Router checks readiness before assigning
+1. If not ready: defers + shows alternatives
+1. If ready: assigns to optimal agent
 
 ---
 
@@ -143,27 +143,27 @@ Bottom:
 ## Files Created
 
 1. **test_week5_adhd_routing.py** (260 lines)
-   - 4 routing tests (100% passing)
-   - Energy mismatch prevention
-   - Complexity routing validation
+- 4 routing tests (100% passing)
+- Energy mismatch prevention
+- Complexity routing validation
 
-2. **WEEK5_ADHD_ROUTING.md** (160 lines)
-   - Routing documentation
-   - Test results
-   - ADHD impact analysis
+1. **WEEK5_ADHD_ROUTING.md** (160 lines)
+- Routing documentation
+- Test results
+- ADHD impact analysis
 
-3. **adhd_prioritization_demo.py** (305 lines)
-   - Standalone prioritizer
-   - Scoring algorithm
-   - Validated demo
+1. **adhd_prioritization_demo.py** (305 lines)
+- Standalone prioritizer
+- Scoring algorithm
+- Validated demo
 
-4. **test_adhd_prioritization.py** (316 lines)
-   - Integration tests (for future use)
-   - Comprehensive test suite
+1. **test_adhd_prioritization.py** (316 lines)
+- Integration tests (for future use)
+- Comprehensive test suite
 
-5. **WEEK5_COMPLETE.md** (this file)
-   - Complete summary
-   - Combined impact analysis
+1. **WEEK5_COMPLETE.md** (this file)
+- Complete summary
+- Combined impact analysis
 
 **Total**: 5 files, ~1,401 lines
 

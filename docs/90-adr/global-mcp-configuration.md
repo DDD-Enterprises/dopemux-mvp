@@ -82,11 +82,11 @@ MCP servers and ADHD-optimized workflows should work **identically everywhere**:
 ## Benefits
 
 1. ✅ **DRY Principle**: Configure once, works everywhere
-2. ✅ **Worktree-Friendly**: All worktrees automatically get full Dopemux stack
-3. ✅ **New Projects**: Any new project gets Dopemux superpowers immediately
-4. ✅ **Consistent Experience**: `~/.claude/CLAUDE.md` + global MCPs = Consistent everywhere
-5. ✅ **Maintainable**: Update one place, not 11+ projects
-6. ✅ **Platform Thinking**: Aligns with "Dopemux is a platform" philosophy
+1. ✅ **Worktree-Friendly**: All worktrees automatically get full Dopemux stack
+1. ✅ **New Projects**: Any new project gets Dopemux superpowers immediately
+1. ✅ **Consistent Experience**: `~/.claude/CLAUDE.md` + global MCPs = Consistent everywhere
+1. ✅ **Maintainable**: Update one place, not 11+ projects
+1. ✅ **Platform Thinking**: Aligns with "Dopemux is a platform" philosophy
 
 ## Architecture Pattern
 
@@ -105,13 +105,13 @@ Consistent Dopemux Experience Everywhere
 All 8 servers now available globally:
 
 1. **pal**: Official framework documentation (React, Next.js, etc.)
-2. **conport**: Decision logging, knowledge graph, ADHD task management
-3. **exa**: Fast neural web search
-4. **mas-sequential-thinking**: Multi-step reasoning (may be replaced by Zen)
-5. **dope-context**: AST-aware code search, semantic doc search
-6. **serena-v2**: LSP code navigation with ADHD optimizations
-7. **zen**: Multi-model reasoning (thinkdeep, planner, consensus, debug, codereview)
-8. **gpt-researcher**: Deep multi-source research with synthesis
+1. **conport**: Decision logging, knowledge graph, ADHD task management
+1. **exa**: Fast neural web search
+1. **mas-sequential-thinking**: Multi-step reasoning (may be replaced by Zen)
+1. **dope-context**: AST-aware code search, semantic doc search
+1. **serena-v2**: LSP code navigation with ADHD optimizations
+1. **zen**: Multi-model reasoning (thinkdeep, planner, consensus, debug, codereview)
+1. **gpt-researcher**: Deep multi-source research with synthesis
 
 ## Impact
 
@@ -127,10 +127,10 @@ All 8 servers now available globally:
 ## Next Steps
 
 1. ✅ Global config implemented and verified
-2. ⏳ Log this decision to ConPort (on next session with MCP reload)
-3. ⏳ Document in project architecture docs
-4. ⏳ Update WORKTREE_MCP_SETUP.md with new approach
+1. ⏳ Log this decision to ConPort (on next session with MCP reload)
+1. ⏳ Document in project architecture docs
+1. ⏳ Update WORKTREE_MCP_SETUP.md with new approach
 
 ion to ConPort (on next session with MCP reload)
-3. ⏳ Document in project architecture docs
-4. ⏳ Update WORKTREE_MCP_SETUP.md with new approach
+1. ⏳ Document in project architecture docs
+1. ⏳ Update WORKTREE_MCP_SETUP.md with new approach

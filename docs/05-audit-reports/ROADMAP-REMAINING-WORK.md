@@ -29,17 +29,17 @@ prelude: Roadmap Remaining Work (reference) for dopemux documentation and develo
    cat claudedocs/FINAL-AUDIT-REPORT.md
    ```
 
-2. **Check MCP status** (2 min):
+1. **Check MCP status** (2 min):
    ```bash
    # Verify all searches working
    mcp__dope-context__search_code("authentication")
    mcp__dope-context__docs_search("architecture")
    ```
 
-3. **Pick up Phase 3** (start work):
-   - See "Phase 3 Execution Plan" below
-   - Or jump to Phase 4 (doc validation)
-   - Or jump to Phase 6 (integration tests)
+1. **Pick up Phase 3** (start work):
+- See "Phase 3 Execution Plan" below
+- Or jump to Phase 4 (doc validation)
+- Or jump to Phase 6 (integration tests)
 
 ---
 
@@ -52,23 +52,23 @@ prelude: Roadmap Remaining Work (reference) for dopemux documentation and develo
 **Priority 1: High-Risk Services** (4h):
 
 1. **GPT-Researcher** (2h)
-   - Found: 67 TODOs, CORS fixed
-   - Review: API endpoints, research orchestration, WebSocket streaming
-   - Files: `backend/main.py`, `backend/api/main.py`, research engine
-   - Method: Zen codereview OR manual bash grep + reading
+- Found: 67 TODOs, CORS fixed
+- Review: API endpoints, research orchestration, WebSocket streaming
+- Files: `backend/main.py`, `backend/api/main.py`, research engine
+- Method: Zen codereview OR manual bash grep + reading
 
-2. **ML Risk Assessment** (1h)
-   - Status: Code exists, not yet reviewed
-   - Files: `services/ml-risk-assessment/`
-   - Check: Risk prediction algorithms, model accuracy, integration
+1. **ML Risk Assessment** (1h)
+- Status: Code exists, not yet reviewed
+- Files: `services/ml-risk-assessment/`
+- Check: Risk prediction algorithms, model accuracy, integration
 
-3. **Orchestrator** (30min)
-   - Files: `services/orchestrator/src/main.py`
-   - Check: What does this orchestrate? Relationship to Task-Orchestrator?
+1. **Orchestrator** (30min)
+- Files: `services/orchestrator/src/main.py`
+- Check: What does this orchestrate? Relationship to Task-Orchestrator?
 
-4. **Taskmaster** (30min)
-   - Files: `services/taskmaster/server.py` (MCP wrapper)
-   - Check: PRD parsing implementation, Task-Master integration
+1. **Taskmaster** (30min)
+- Files: `services/taskmaster/server.py` (MCP wrapper)
+- Check: PRD parsing implementation, Task-Master integration
 
 **Priority 2: Verification Tasks** (2h):
 
@@ -80,7 +80,7 @@ prelude: Roadmap Remaining Work (reference) for dopemux documentation and develo
    # If from API param: Add validation
    ```
 
-2. **Subprocess Full Audit** (1h)
+1. **Subprocess Full Audit** (1h)
    ```bash
    # Review all 54 instances
    grep -rn "subprocess\.\|os\.system" services/ --include="*.py" > subprocess_audit.txt
@@ -88,17 +88,17 @@ prelude: Roadmap Remaining Work (reference) for dopemux documentation and develo
    # Check: All use list args (not shell=True)
    ```
 
-3. **DopeconBridge Completion Assessment** (30min)
-   - Read kg_endpoints.py custom_data stubs
-   - Estimate effort to implement MCP integration
-   - Create Week 7 implementation plan
+1. **DopeconBridge Completion Assessment** (30min)
+- Read kg_endpoints.py custom_data stubs
+- Estimate effort to implement MCP integration
+- Create Week 7 implementation plan
 
 **Priority 3: Remaining Services** (Optional, 2-4h):
 
 1. **Claude-Context** (1h) - Determine if legacy/active
-2. **ConPort Orchestrator** (1h) - Review automation logic
-3. **Task-Orchestrator Wrapper** (30min) - Verify Kotlin integration
-4. **Serena Wrapper** (30min) - Review LSP proxy logic
+1. **ConPort Orchestrator** (1h) - Review automation logic
+1. **Task-Orchestrator Wrapper** (30min) - Verify Kotlin integration
+1. **Serena Wrapper** (30min) - Review LSP proxy logic
 
 ---
 
@@ -263,9 +263,9 @@ Create actionable roadmap:
 
 **Week 7 (12h)**:
 1. Complete DopeconBridge MCP integration (4-6h)
-2. Migrate ADHD Engine to bridge HTTP API (2-3h)
-3. Wire ConPort Orchestrator to bridge (2-3h)
-4. Integration tests (2h)
+1. Migrate ADHD Engine to bridge HTTP API (2-3h)
+1. Wire ConPort Orchestrator to bridge (2-3h)
+1. Integration tests (2h)
 
 **Future (Optional)**:
 - Full subprocess audit (2h)
@@ -617,8 +617,8 @@ and identify security/quality issues.
 
 ## Decision
 1. Fix all HIGH-severity issues immediately (CORS, credentials, auth)
-2. Document DopeconBridge completion for Week 7
-3. Defer deep audit of all services (focus on critical)
+1. Document DopeconBridge completion for Week 7
+1. Defer deep audit of all services (focus on critical)
 
 ## Consequences
 - Production-ready security (8/10)

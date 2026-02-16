@@ -32,8 +32,8 @@ Dopemux implements a **three-layer context architecture** designed specifically 
 
 **Three Context Layers**:
 1. **Memory Layer (ConPort)**: Persistent knowledge graph for decisions, progress, and patterns
-2. **Navigation Layer (Serena)**: LSP-powered code intelligence with adaptive learning
-3. **Retrieval Layer (dope-context)**: Multi-index semantic search for code and documentation
+1. **Navigation Layer (Serena)**: LSP-powered code intelligence with adaptive learning
+1. **Retrieval Layer (dope-context)**: Multi-index semantic search for code and documentation
 
 **Design Rationale** (Decision #23, #75, #84):
 - ADHD developers lose context during interruptions → Automatic preservation every 30s
@@ -302,52 +302,52 @@ Dopemux implements a **three-layer context architecture** designed specifically 
 **Context Flow Patterns**:
 
 1. **Session Start** (Context Restoration):
-   - ConPort: `get_active_context` → Current focus, sprint, mode
-   - ConPort: `get_recent_activity_summary` → Last 24h changes
-   - Serena: Restore cursor positions and file context
-   - dope-context: Pre-warm cache with recent search terms
+- ConPort: `get_active_context` → Current focus, sprint, mode
+- ConPort: `get_recent_activity_summary` → Last 24h changes
+- Serena: Restore cursor positions and file context
+- dope-context: Pre-warm cache with recent search terms
 
-2. **Code Navigation** (Developer explores codebase):
-   - User: "Find authentication implementation"
-   - ADHD Engine: Detects attention state (focused/scattered)
-   - dope-context: Semantic search → Top 10 code chunks with context
-   - Serena: `find_symbol` + `goto_definition` → LSP navigation
-   - Serena: Complexity scoring → Safe to read? (0.0-1.0)
-   - ConPort: Log navigation pattern for learning
-   - Result: Progressively disclosed, complexity-aware results
+1. **Code Navigation** (Developer explores codebase):
+- User: "Find authentication implementation"
+- ADHD Engine: Detects attention state (focused/scattered)
+- dope-context: Semantic search → Top 10 code chunks with context
+- Serena: `find_symbol` + `goto_definition` → LSP navigation
+- Serena: Complexity scoring → Safe to read? (0.0-1.0)
+- ConPort: Log navigation pattern for learning
+- Result: Progressively disclosed, complexity-aware results
 
-3. **Implementation** (Developer writes code):
-   - User: Implementing new feature
-   - ConPort: `log_progress` → Create task with complexity score
-   - dope-context: `search_code` (profile="implementation") → Examples
-   - Serena: `find_references` → Usage patterns
-   - Serena: Pattern learning → Suggests related files
-   - ConPort: Auto-save context every 30s
-   - Result: Context-aware implementation with examples
+1. **Implementation** (Developer writes code):
+- User: Implementing new feature
+- ConPort: `log_progress` → Create task with complexity score
+- dope-context: `search_code` (profile="implementation") → Examples
+- Serena: `find_references` → Usage patterns
+- Serena: Pattern learning → Suggests related files
+- ConPort: Auto-save context every 30s
+- Result: Context-aware implementation with examples
 
-4. **Debugging** (Developer investigates bug):
-   - User: "Why is authentication failing?"
-   - ADHD Engine: Scattered attention detected
-   - dope-context: `search_code` (profile="debugging") → Error handlers
-   - Serena: `analyze_complexity` → Identify complex areas
-   - ConPort: Search decisions for related fixes
-   - Serena: `find_references` → All call sites (max 10)
-   - Result: Focused debugging context, limited scope
+1. **Debugging** (Developer investigates bug):
+- User: "Why is authentication failing?"
+- ADHD Engine: Scattered attention detected
+- dope-context: `search_code` (profile="debugging") → Error handlers
+- Serena: `analyze_complexity` → Identify complex areas
+- ConPort: Search decisions for related fixes
+- Serena: `find_references` → All call sites (max 10)
+- Result: Focused debugging context, limited scope
 
-5. **Decision Logging** (Architectural choice):
-   - User: Makes design decision
-   - ConPort: `log_decision` → Summary, rationale, implementation
-   - ConPort: `link_conport_items` → Connect to related decisions
-   - dope-context: Index decision for future search
-   - Serena: Link decision to affected code files
-   - Result: Decision preserved with full genealogy
+1. **Decision Logging** (Architectural choice):
+- User: Makes design decision
+- ConPort: `log_decision` → Summary, rationale, implementation
+- ConPort: `link_conport_items` → Connect to related decisions
+- dope-context: Index decision for future search
+- Serena: Link decision to affected code files
+- Result: Decision preserved with full genealogy
 
-6. **Session End** (Context Preservation):
-   - ConPort: `update_active_context` → Save current state
-   - Serena: Persist navigation patterns to PostgreSQL
-   - Serena: Update pattern learning models
-   - dope-context: Save query history for next session
-   - Result: Full context preserved for resumption
+1. **Session End** (Context Preservation):
+- ConPort: `update_active_context` → Save current state
+- Serena: Persist navigation patterns to PostgreSQL
+- Serena: Update pattern learning models
+- dope-context: Save query history for next session
+- Result: Full context preserved for resumption
 
 #### 1.6 ADHD-Specific Context Accommodations
 
@@ -533,9 +533,9 @@ git log --oneline --since="60 days ago" -- services/ | wc -l  # Result: 18
 - **Last Validated**: 2025-10-05T12:30:00Z
 - **Source Code Version**: git commit 6fd2756 (feat: worktree Epic 3 commands)
 - **Test Coverage**:
-  - ConPort: Operational validation (200+ decisions)
-  - Serena: 12 test files, comprehensive
-  - dope-context: 93/94 tests (98.9%)
+- ConPort: Operational validation (200+ decisions)
+- Serena: 12 test files, comprehensive
+- dope-context: 93/94 tests (98.9%)
 - **Evidence Quality Score**: 94%
 - **Next Review Date**: 2025-11-05 (monthly validation)
 
@@ -544,8 +544,8 @@ git log --oneline --since="60 days ago" -- services/ | wc -l  # Result: 18
 ## Document Evolution Log
 
 - **2025-10-05 13:30**: Part 1 added - Executive Summary & Context Architecture (4,847 words, 5 sources)
-  - Defined three-layer context architecture (Memory/Navigation/Retrieval)
-  - Documented ConPort (knowledge graph), Serena (LSP intelligence), dope-context (semantic search)
-  - Validated performance achievements (all exceed ADHD targets)
-  - Mapped ADHD-specific accommodations and context flow patterns
-  - Cross-validated with deep dive docs, git history, file system
+- Defined three-layer context architecture (Memory/Navigation/Retrieval)
+- Documented ConPort (knowledge graph), Serena (LSP intelligence), dope-context (semantic search)
+- Validated performance achievements (all exceed ADHD targets)
+- Mapped ADHD-specific accommodations and context flow patterns
+- Cross-validated with deep dive docs, git history, file system

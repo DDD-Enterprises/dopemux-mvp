@@ -36,9 +36,9 @@ Resolve Open Questions into a structured, evidence-anchored bundle. Research hap
 
 ## Open questions
 - **Bundle Format**: JSON vs SQLite for the index?
-  - *Resolution*: JSON for git-diffability.
+- *Resolution*: JSON for git-diffability.
 - **Bundle Format**: JSON vs SQLite for the index?
-  - *Resolution*: JSON for git-diffability.
+- *Resolution*: JSON for git-diffability.
 
 ## Required Structure
 
@@ -64,10 +64,10 @@ Minimal diffs to spec docs with File, Section, Action (Add/Modify/Clarify), Just
 
 ## Research Rules
 1. No invented pricing numbers.
-2. No inferred API limits unless labeled INFERRED.
-3. No summarizing without citations.
-4. No mixing policy decisions into factual claims.
-5. Do not modify spec docs directly.
+1. No inferred API limits unless labeled INFERRED.
+1. No summarizing without citations.
+1. No mixing policy decisions into factual claims.
+1. Do not modify spec docs directly.
 
 ## Stop Conditions
 Stop and mark bundle as `needs-more-evidence` if:

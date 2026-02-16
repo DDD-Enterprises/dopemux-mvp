@@ -212,9 +212,9 @@ docker logs -f dopecon-bridge
 ## Next Steps
 
 1. **Full Documentation**: [`DOPECONBRIDGE_COMPLETE_INTEGRATION.md`](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)
-2. **Migration Guide**: See "Migration Checklist" in complete docs
-3. **API Reference**: `services/dopecon-bridge/README.md`
-4. **Examples**: Check migrated services (ADHD Engine, Serena, Task-Orchestrator)
+1. **Migration Guide**: See "Migration Checklist" in complete docs
+1. **API Reference**: `services/dopecon-bridge/README.md`
+1. **Examples**: Check migrated services (ADHD Engine, Serena, Task-Orchestrator)
 
 ---
 

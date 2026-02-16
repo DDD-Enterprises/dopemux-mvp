@@ -15,8 +15,8 @@
 * <bullet decision>
 * Invariants:
 
-  * <inv>
-  * <inv>
+* <inv>
+* <inv>
 
 ## Consequences
 

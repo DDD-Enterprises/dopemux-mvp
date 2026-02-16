@@ -30,8 +30,8 @@ Transform DDDPG from a solid foundation into a fully-featured, production-ready 
 
 ### Phases
 1. **Days 1-2**: KG Query Layer (Core infrastructure)
-2. **Days 3-4**: Semantic Search Enhancement (Embeddings)
-3. **Day 5**: Integration, Polish & Production Readiness
+1. **Days 3-4**: Semantic Search Enhancement (Embeddings)
+1. **Day 5**: Integration, Polish & Production Readiness
 
 ---
 
@@ -213,7 +213,6 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class DependencyChain:
     """Structured dependency chain result"""
@@ -221,7 +220,6 @@ class DependencyChain:
     downstream: List[str]    # Tasks that depend on this
     parallel: List[str]      # Sibling tasks (same upstream)
     depth: int               # Max traversal depth reached
-
 
 @dataclass
 class WorkCluster:
@@ -231,7 +229,6 @@ class WorkCluster:
     patterns: List[str]      # Common patterns found
     size: int                # Total items
 
-
 class RelationshipMapper:
     """
     Build composite relationship views from Knowledge Graph data.
@@ -240,10 +237,10 @@ class RelationshipMapper:
     meaningful relationship structures for ADHD-optimized display.
 
     Features:
-    - Dependency chain building (multi-level traversal)
-    - Work cluster creation (theme-based grouping)
-    - Task context assembly (comprehensive views)
-    - Graceful degradation (works without KG)
+- Dependency chain building (multi-level traversal)
+- Work cluster creation (theme-based grouping)
+- Task context assembly (comprehensive views)
+- Graceful degradation (works without KG)
     """
 
     def __init__(self, kg):
@@ -394,10 +391,10 @@ class RelationshipMapper:
         Build complete task context for ADHD-friendly display.
 
         Assembles all relationship information for a single task:
-        - Dependencies (upstream/downstream)
-        - Related tasks (semantic similarity)
-        - Decisions (linked decisions)
-        - Clusters (work themes)
+- Dependencies (upstream/downstream)
+- Related tasks (semantic similarity)
+- Decisions (linked decisions)
+- Clusters (work themes)
 
         Args:
             task_id: Task identifier
@@ -455,7 +452,6 @@ import pytest
 from unittest.mock import Mock, AsyncMock
 from relationship_mapper import RelationshipMapper, DependencyChain, WorkCluster
 
-
 @pytest.mark.asyncio
 async def test_build_dependency_chain():
     """Test dependency chain building"""
@@ -480,7 +476,6 @@ async def test_build_dependency_chain():
     assert chain.downstream == ['task-c']
     assert chain.parallel == ['task-d']
 
-
 @pytest.mark.asyncio
 async def test_build_work_cluster():
     """Test work cluster building"""
@@ -497,7 +492,6 @@ async def test_build_work_cluster():
     assert isinstance(cluster, WorkCluster)
     assert len(cluster.tasks) == 2
     assert 'api' in cluster.patterns
-
 
 @pytest.mark.asyncio
 async def test_build_task_context():
@@ -600,19 +594,19 @@ async def suggest_next_tasks(workspace_id, context):
 
 ### Components
 1. **Embedding Service** (NEW)
-   - Generate embeddings (OpenAI/local)
-   - Store in AGE (vector properties)
-   - Update on content changes
+- Generate embeddings (OpenAI/local)
+- Store in AGE (vector properties)
+- Update on content changes
 
-2. **Vector Search** (NEW)
-   - Cosine similarity queries
-   - Hybrid search (keyword + semantic)
-   - Result ranking
+1. **Vector Search** (NEW)
+- Cosine similarity queries
+- Hybrid search (keyword + semantic)
+- Result ranking
 
-3. **Enhanced Suggestions**
-   - Use semantic similarity
-   - Pattern learning
-   - Success prediction
+1. **Enhanced Suggestions**
+- Use semantic similarity
+- Pattern learning
+- Success prediction
 
 ---
 
@@ -623,24 +617,24 @@ async def suggest_next_tasks(workspace_id, context):
 
 ### Tasks
 1. **Performance Optimization**
-   - Query optimization
-   - Caching strategy
-   - Batch operations
+- Query optimization
+- Caching strategy
+- Batch operations
 
-2. **EventBus Integration**
-   - Decision events
-   - Task events
-   - Agent notifications
+1. **EventBus Integration**
+- Decision events
+- Task events
+- Agent notifications
 
-3. **Documentation**
-   - API reference
-   - Integration guides
-   - Migration docs
+1. **Documentation**
+- API reference
+- Integration guides
+- Migration docs
 
-4. **Testing**
-   - End-to-end tests
-   - Performance benchmarks
-   - Load testing
+1. **Testing**
+- End-to-end tests
+- Performance benchmarks
+- Load testing
 
 ---
 

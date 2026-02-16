@@ -15,20 +15,20 @@ prelude: 01_Architecture (explanation) for dopemux documentation and developer w
 
 ### Dope-Memory owns
 1) Chronicle store
-   - Raw activity events (short retention)
-   - Curated work log entries (durable)
+- Raw activity events (short retention)
+- Curated work log entries (durable)
 
 2) Promotion + redaction engine
-   - Ingest raw events from EventBus
-   - Redact sensitive content
-   - Promote only high-signal events to curated log (Phase 1 rule set)
+- Ingest raw events from EventBus
+- Redact sensitive content
+- Promote only high-signal events to curated log (Phase 1 rule set)
 
 3) Retrieval + ranking
-   - Phase 1: deterministic keyword search + filters
-   - Phase 2+: trajectory boosts, hybrid bundles across Trinity
+- Phase 1: deterministic keyword search + filters
+- Phase 2+: trajectory boosts, hybrid bundles across Trinity
 
 4) MCP interface
-   - Exposes stable tool contracts for search/store/recap/issues/replay
+- Exposes stable tool contracts for search/store/recap/issues/replay
 
 ### Dope-Memory integrates with (but does not own)
 - DopeQuery (ConPort): decisions, tasks, rationale, genealogy
@@ -97,33 +97,33 @@ Reflections (Phase 2)
 ## Capture Adapters and Canonical Ledger (ADR-213)
 - Canonical per-project ledger path: `repo_root/.dopemux/chronicle.sqlite`
 - Repo root resolution is deterministic:
-  - Walk upward from current path
-  - First match of `.git/` or `.dopemux/` is authoritative
-  - If no marker exists, capture fails closed with a user-visible error
+- Walk upward from current path
+- First match of `.git/` or `.dopemux/` is authoritative
+- If no marker exists, capture fails closed with a user-visible error
 - Capture adapters must write through one shared capture client:
-  - `plugin` (Claude hook capture)
-  - `cli` (Dopemux CLI capture)
-  - `mcp` (MCP/bridge capture)
-  - `auto` (context-driven selection)
+- `plugin` (Claude hook capture)
+- `cli` (Dopemux CLI capture)
+- `mcp` (MCP/bridge capture)
+- `auto` (context-driven selection)
 - **Dual-Capture Convergence** (ADR-213):
-  - All modes write to the **same canonical ledger**
-  - Same event from different modes produces **identical event_id**
-  - Event ID is content-based, mode-independent (enables idempotent retry)
-  - Duplicate events deduplicate via `INSERT OR IGNORE`
+- All modes write to the **same canonical ledger**
+- Same event from different modes produces **identical event_id**
+- Event ID is content-based, mode-independent (enables idempotent retry)
+- Duplicate events deduplicate via `INSERT OR IGNORE`
 - Capture writes append-only `raw_activity_events` with:
-  - redaction before persistence
-  - deterministic idempotency key (`event_id`)
-  - duplicate-safe inserts (`INSERT OR IGNORE`)
+- redaction before persistence
+- deterministic idempotency key (`event_id`)
+- duplicate-safe inserts (`INSERT OR IGNORE`)
 - Injection policy remains explicit:
-  - Capture does not auto-inject prompt context
-  - Retrieval/injection is controlled by explicit tool calls only
+- Capture does not auto-inject prompt context
+- Retrieval/injection is controlled by explicit tool calls only
 
 ### Capture Mode Matrix
 
 | Mode | Trigger | Ledger Path | Event ID | Use Case |
 |------|---------|-------------|----------|----------|
 | **plugin** | Claude Code hooks | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Auto-capture during Claude sessions |
-| **cli** | `dopemux memory capture` | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Manual/scripted capture |
+| **cli** | `dopemux memory capture` \| `repo_root/.dopemux/chronicle.sqlite` | Content hash | Manual/scripted capture |
 | **mcp** | MCP tool calls | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Bridge from external tools |
 | **auto** | Context-driven selection | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Smart mode resolution |
 
@@ -141,8 +141,8 @@ Ordering
 
 Pagination
 - Cursor token must encode:
-  - last_sort_tuple (importance_score, ts, id)
-  - scope (workspace_id, instance_id, session_id, filters)
+- last_sort_tuple (importance_score, ts, id)
+- scope (workspace_id, instance_id, session_id, filters)
 Cursor token is opaque to callers (base64 JSON, signed if needed).
 
 Normalization

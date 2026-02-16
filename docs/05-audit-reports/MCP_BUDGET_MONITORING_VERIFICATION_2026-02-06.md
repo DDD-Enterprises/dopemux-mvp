@@ -21,22 +21,22 @@ Closure verification for backlog item:
 ## Implementation
 
 1. Shared monitoring functions added in:
-   - `services/shared/mcp/response_budget.py`
-   - `budget_usage_pct`
-   - `record_budget_outcome`
-   - `get_budget_stats`
-2. Serena read-file telemetry now logs:
-   - usage percent
-   - truncation rate percent
-3. GPT-Researcher MCP telemetry now logs:
-   - usage percent
-   - truncation rate percent
-   - truncated/non-truncated outcome
+- `services/shared/mcp/response_budget.py`
+- `budget_usage_pct`
+- `record_budget_outcome`
+- `get_budget_stats`
+1. Serena read-file telemetry now logs:
+- usage percent
+- truncation rate percent
+1. GPT-Researcher MCP telemetry now logs:
+- usage percent
+- truncation rate percent
+- truncated/non-truncated outcome
 
 ## Verification
 
 1. `pytest -q --no-cov tests/unit/test_mcp_response_budget.py` passed.
-2. Python compile checks passed for modified modules.
+1. Python compile checks passed for modified modules.
 
 ## Status
 

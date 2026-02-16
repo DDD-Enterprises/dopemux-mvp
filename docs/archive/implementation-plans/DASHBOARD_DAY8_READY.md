@@ -25,22 +25,22 @@ prelude: Dashboard_Day8_Ready (explanation) for dopemux documentation and develo
 
 **Files Modified:**
 1. `dopemux_dashboard.py` (+245 lines)
-   - New `MetricsManager` class (WebSocket + HTTP fallback coordinator)
-   - Updated `ADHDStateWidget` with `update_from_ws()` method
-   - Updated `DopemuxDashboard` to use MetricsManager
-   - Automatic WebSocket connection on startup
+- New `MetricsManager` class (WebSocket + HTTP fallback coordinator)
+- Updated `ADHDStateWidget` with `update_from_ws()` method
+- Updated `DopemuxDashboard` to use MetricsManager
+- Automatic WebSocket connection on startup
 
 **Files Created:**
 1. `docs/implementation-plans/DASHBOARD_DAY8_DEEP_RESEARCH.md` (~1,300 lines)
-   - Deep dive into WebSocket integration patterns
-   - ADHD-specific UX research
-   - Performance benchmarks
-   - Hour-by-hour implementation plan
+- Deep dive into WebSocket integration patterns
+- ADHD-specific UX research
+- Performance benchmarks
+- Hour-by-hour implementation plan
 
-2. `docs/implementation-plans/DASHBOARD_DAY8_IMPLEMENTATION_SUMMARY.md` (~650 lines)
-   - Complete implementation summary
-   - Testing strategy
-   - Next steps roadmap
+1. `docs/implementation-plans/DASHBOARD_DAY8_IMPLEMENTATION_SUMMARY.md` (~650 lines)
+- Complete implementation summary
+- Testing strategy
+- Next steps roadmap
 
 **Key Features Implemented:**
 - ✅ WebSocket streaming client integration
@@ -181,7 +181,7 @@ python main.py
    )
    ```
 
-2. **Option B:** Create endpoint if missing
+1. **Option B:** Create endpoint if missing
    ```python
    # In services/adhd_engine/api/routes.py
    @router.websocket("/api/v1/ws/stream")
@@ -191,9 +191,9 @@ python main.py
        ...
    ```
 
-3. **Option C:** Update dashboard to use correct endpoint
-   - Check `services/adhd_engine/api/routes.py` for actual endpoint
-   - Update `MetricsManager._start_websocket()` URL
+1. **Option C:** Update dashboard to use correct endpoint
+- Check `services/adhd_engine/api/routes.py` for actual endpoint
+- Update `MetricsManager._start_websocket()` URL
 
 ### StreamingClient Import
 **Issue:** Assumes `dashboard/streaming.py` exists
@@ -230,47 +230,47 @@ class ConnectionStatusWidget(Static):
 
 ### High Priority (Today/Tomorrow)
 1. **Test WebSocket Integration** (30 min)
-   - Verify connection works
-   - Measure actual latency
-   - Test fallback behavior
+- Verify connection works
+- Measure actual latency
+- Test fallback behavior
 
-2. **Fix Any Integration Issues** (1-2 hrs)
-   - Update endpoint URLs if needed
-   - Fix message format mismatches
-   - Handle edge cases
+1. **Fix Any Integration Issues** (1-2 hrs)
+- Update endpoint URLs if needed
+- Fix message format mismatches
+- Handle edge cases
 
-3. **Add Connection Status Widget** (30 min)
-   - Persistent footer indicator
-   - Replace notifications with widget
-   - Show latency/stats
+1. **Add Connection Status Widget** (30 min)
+- Persistent footer indicator
+- Replace notifications with widget
+- Show latency/stats
 
 ### Medium Priority (This Week)
 1. **Enhanced Sparklines** (2-3 hrs)
-   - Connect to Prometheus
-   - Fetch historical data
-   - Real-time sparkline updates
+- Connect to Prometheus
+- Fetch historical data
+- Real-time sparkline updates
 
-2. **Keyboard Navigation** (2-3 hrs)
-   - Panel focusing (1-4 keys)
-   - Tab cycling
-   - Visual focus indicators
-   - Help popup
+1. **Keyboard Navigation** (2-3 hrs)
+- Panel focusing (1-4 keys)
+- Tab cycling
+- Visual focus indicators
+- Help popup
 
-3. **Performance Profiling** (1 hr)
-   - Measure CPU/memory
-   - Optimize if needed
-   - 1-hour stress test
+1. **Performance Profiling** (1 hr)
+- Measure CPU/memory
+- Optimize if needed
+- 1-hour stress test
 
 ### Low Priority (Next Sprint)
 1. **Drill-Down Modals** (3-4 hrs)
-   - Task detail view
-   - Service logs
-   - Pattern analysis
+- Task detail view
+- Service logs
+- Pattern analysis
 
-2. **Advanced Features** (2-3 hrs)
-   - Layout presets
-   - Desktop notifications
-   - Metric subscriptions
+1. **Advanced Features** (2-3 hrs)
+- Layout presets
+- Desktop notifications
+- Metric subscriptions
 
 ---
 
@@ -425,21 +425,21 @@ Day 8 is COMPLETE when:
 **Common Issues:**
 
 1. **WebSocket connection fails**
-   - Check ADHD Engine is running: `curl http://localhost:8000/health`
-   - Check WebSocket endpoint exists: Look for `/ws/stream` in routes
-   - Check URL in dashboard matches endpoint
+- Check ADHD Engine is running: `curl http://localhost:8000/health`
+- Check WebSocket endpoint exists: Look for `/ws/stream` in routes
+- Check URL in dashboard matches endpoint
 
-2. **Dashboard shows "Polling" mode**
-   - Expected if WebSocket unavailable
-   - Dashboard still works (5s updates)
-   - Will auto-reconnect when server available
+1. **Dashboard shows "Polling" mode**
+- Expected if WebSocket unavailable
+- Dashboard still works (5s updates)
+- Will auto-reconnect when server available
 
-3. **No updates appearing**
-   - Check ADHD Engine logs for errors
-   - Verify state changes with: `curl localhost:8000/api/v1/state`
-   - Check dashboard logs: `tail -f dopemux-error.log`
+1. **No updates appearing**
+- Check ADHD Engine logs for errors
+- Verify state changes with: `curl localhost:8000/api/v1/state`
+- Check dashboard logs: `tail -f dopemux-error.log`
 
-4. **Import errors**
+1. **Import errors**
    ```bash
    pip install textual rich httpx websockets
    ```

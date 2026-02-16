@@ -247,9 +247,9 @@ What state exists, where it lives, and how it is written/read without cross-work
 
 | Invariant   | Enforcement Point   | Mechanism                               | Automated?                 |
 | ----------- | ------------------- | --------------------------------------- | -------------------------- |
-| INV-MEM-001 | `repo_preflight.sh` | `.repo_id` match, exit 2                | Yes                        |
-| INV-MEM-001 | `scripts/taskx`     | `.taskxroot` check, exit 2              | Yes                        |
-| INV-MEM-002 | `compose.yml`       | `depends_on: service_healthy`           | Yes                        |
+| INV-MEM-001 | `repo_preflight.sh` \| `.repo_id` match, exit 2                | Yes                        |
+| INV-MEM-001 | `scripts/taskx`     \| `.taskxroot` check, exit 2              | Yes                        |
+| INV-MEM-002 | `compose.yml`       \| `depends_on: service_healthy`           | Yes                        |
 | INV-MEM-002 | Runtime             | Fail on ConPort write failure           | Yes                        |
 | INV-MEM-003 | Schema              | No UPDATE/DELETE on `events`            | Partially (needs triggers) |
 | INV-MEM-004 | Runtime             | `source_event_id` required on promotion | FUTURE                     |
@@ -286,9 +286,9 @@ What state exists, where it lives, and how it is written/read without cross-work
 
 | Claim                                | Source                         | Status                                                             |
 | ------------------------------------ | ------------------------------ | ------------------------------------------------------------------ |
-| `.repo_id` enforces isolation        | `repo_preflight.sh`            | CONFIRMED — script exits 2 on mismatch                             |
+| `.repo_id` enforces isolation        \| `repo_preflight.sh`            | CONFIRMED — script exits 2 on mismatch                             |
 | ConPort is authority                 | Architecture docs, compose.yml | CONFIRMED — task-orchestrator depends_on conport                   |
-| `packets/` directory is active       | ADR references                 | UNCONFIRMED — no active service references `packets/` directory    |
+| `packets/` directory is active       \| ADR references                 \| UNCONFIRMED — no active service references `packets/` directory    |
 | `state.db` uses append-only triggers | Design doc                     | UNCONFIRMED — schema defined but triggers not observed in code     |
 | Redaction rules exist                | Design doc                     | FUTURE — `config/security/redaction_rules.json` does not exist yet |
 
@@ -304,9 +304,9 @@ What state exists, where it lives, and how it is written/read without cross-work
 ### Workspace (per-worktree)
 - **Workspace Identity**: `.repo_id` file containing `project=dopemux-mvp`, `owner=hu3mann`.
 - **Local State Store**: `.dopemux/state.db` (SQLite) containing:
-  - Session history (prompts/responses).
-  - Local usage limits and quotas.
-  - Checkpoint metadata.
+- Session history (prompts/responses).
+- Local usage limits and quotas.
+- Checkpoint metadata.
 - **Per-worktree Memory Views**: `.dopemux/memory/` containing summarized context files.
 - **Chronicle Ledger**: `.dopemux/chronicle.sqlite` (via dope-memory service).
 
@@ -329,8 +329,8 @@ ConPort is the "Constitution and Port" of the project. If it's not in ConPort, i
 
 **Minimum Required ConPort Records for a Run**:
 1. **Packet ID**: Every run must be associated with a valid Packet ID.
-2. **Result State**: Success, Failure, or Refusal.
-3. **Artifact List**: Files modified or created.
+1. **Result State**: Success, Failure, or Refusal.
+1. **Artifact List**: Files modified or created.
 
 ## Session Context SQLite usage
 **Path**: `.dopemux/state.db`
@@ -386,15 +386,15 @@ END;
 
 ## Open questions
 - **Global Rollups**: How do we aggregate multi-repo stats without breaking isolation?
-  - *Resolution*: Define a separate "Observer" plane that reads-only from multiple approved roots.
+- *Resolution*: Define a separate "Observer" plane that reads-only from multiple approved roots.
 - **Secret Redaction**: What is the exact regex list for redaction?
-  - *Resolution*: `config/security/redaction_rules.json` (to be created).
+- *Resolution*: `config/security/redaction_rules.json` (to be created).
 - **Global Search**: How do we search across all worktrees if ConPort is isolated?
-  - *Resolution*: `dope-context` (3010) supports multi-repo indexing via Qdrant/Voyage. Verify multi-tenant segregation.
+- *Resolution*: `dope-context` (3010) supports multi-repo indexing via Qdrant/Voyage. Verify multi-tenant segregation.
 
 ## Acceptance criteria
 1. **Isolation Test**: Spawn two shells in different repo roots. Ensure `dopemux run` in one does not affect the `.dopemux/state.db` of the other.
-2. **Persistence Test**: Run a packet, kill the process, restart. Ensure session history up to the kill point is preserved in SQLite.
-3. **Refusal Test**: Manually lock the `state.db` (e.g., via `sqlite3` shell). Attempt to run Dopemux. It must exit with a clear "Database Locked" error, not hang.
-4. **Integrity Test**: Corrupt `state.db` (truncate to 100 bytes). Start Dopemux. It must refuse with "integrity check failed" and not attempt auto-repair.
-5. **Append-Only Test**: Attempt `UPDATE events SET payload='hacked' WHERE id='evt-1'`. SQLite trigger must reject with INV-MEM-003 message.
+1. **Persistence Test**: Run a packet, kill the process, restart. Ensure session history up to the kill point is preserved in SQLite.
+1. **Refusal Test**: Manually lock the `state.db` (e.g., via `sqlite3` shell). Attempt to run Dopemux. It must exit with a clear "Database Locked" error, not hang.
+1. **Integrity Test**: Corrupt `state.db` (truncate to 100 bytes). Start Dopemux. It must refuse with "integrity check failed" and not attempt auto-repair.
+1. **Append-Only Test**: Attempt `UPDATE events SET payload='hacked' WHERE id='evt-1'`. SQLite trigger must reject with INV-MEM-003 message.

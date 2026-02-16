@@ -77,9 +77,9 @@ dopemux-mvp main | ✅ Component 6 [2h 15m] | 🧠 ⚡= 👁️● 215K/1000K (2
 
 The original statusline:
 1. ✅ Parses `transcript_path` for accurate token counts (STILL NEEDED)
-2. ✅ Detects model ID to infer context window size (STILL NEEDED)
-3. ✅ Uses safe defaults for unknown models (STILL NEEDED)
-4. ✅ Now includes `exceeds_200k_tokens` warning (NEW)
+1. ✅ Detects model ID to infer context window size (STILL NEEDED)
+1. ✅ Uses safe defaults for unknown models (STILL NEEDED)
+1. ✅ Now includes `exceeds_200k_tokens` warning (NEW)
 
 Claude Code does not provide:
 - ❌ Direct `.context.used` count

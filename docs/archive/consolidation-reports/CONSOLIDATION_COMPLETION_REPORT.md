@@ -187,10 +187,10 @@ Empty directories cleaned up:
 All consolidation scripts saved in session workspace:
 
 1. **extract_features.py** - Extract features before archiving
-2. **comprehensive_consolidation.py** - Main consolidation (40 moves)
-3. **review_consolidation.py** - Post-consolidation validation
-4. **Phase 2 cleanup** - Remaining directories (inline script)
-5. **Final cleanup** - audit/ and systems/ merge (inline script)
+1. **comprehensive_consolidation.py** - Main consolidation (40 moves)
+1. **review_consolidation.py** - Post-consolidation validation
+1. **Phase 2 cleanup** - Remaining directories (inline script)
+1. **Final cleanup** - audit/ and systems/ merge (inline script)
 
 ## Next Steps
 

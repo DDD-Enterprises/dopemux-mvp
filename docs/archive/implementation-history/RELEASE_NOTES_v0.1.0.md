@@ -71,17 +71,17 @@ curl -fsSL https://raw.githubusercontent.com/dopemux/dopemux-mvp/main/install.sh
 ### Critical Fixes (Pre-Release)
 
 1. **Python Version Compatibility**
-   - Fixed: Installer required Python 3.11+ (too strict)
-   - Now: Python 3.10+ (Ubuntu 22.04 LTS compatible)
-   - Impact: Major LTS platform now supported
+- Fixed: Installer required Python 3.11+ (too strict)
+- Now: Python 3.10+ (Ubuntu 22.04 LTS compatible)
+- Impact: Major LTS platform now supported
 
-2. **Package Dependencies**
-   - Fixed: Missing `litellm` dependency
-   - Impact: Clean installation now works
+1. **Package Dependencies**
+- Fixed: Missing `litellm` dependency
+- Impact: Clean installation now works
 
-3. **Code Quality**
-   - Fixed: IndentationError in cli.py
-   - Impact: Package imports correctly
+1. **Code Quality**
+- Fixed: IndentationError in cli.py
+- Impact: Package imports correctly
 
 ---
 
@@ -136,8 +136,8 @@ New documentation includes:
 ## ⚠️ Known Limitations
 
 1. **Docker-in-Docker** - Not supported in container environments
-2. **Full Functionality** - Requires Docker daemon running
-3. **System Dependencies** - Some features need system-level tools
+1. **Full Functionality** - Requires Docker daemon running
+1. **System Dependencies** - Some features need system-level tools
 
 ---
 

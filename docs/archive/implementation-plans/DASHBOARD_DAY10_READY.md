@@ -23,8 +23,8 @@ prelude: Dashboard_Day10_Ready (explanation) for dopemux documentation and devel
 
 ### What We're Building
 1. **PrometheusSparklineIntegration** - Wire Prometheus → SparklineGenerator → Widgets
-2. **Full Keyboard Navigation** - 100% keyboard control, zero mouse dependency
-3. **Integration Testing** - 95%+ coverage, performance validation
+1. **Full Keyboard Navigation** - 100% keyboard control, zero mouse dependency
+1. **Integration Testing** - 95%+ coverage, performance validation
 
 ### Why Now
 - ✅ WebSocket streaming complete (Day 8)
@@ -66,7 +66,6 @@ from sparkline_generator import SparklineGenerator
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class SparklineConfig:
     """Configuration for a single sparkline metric"""
@@ -77,7 +76,6 @@ class SparklineConfig:
     metric_type: str = "gauge"  # For color coding
     label: str = ""             # Display label
     cache_ttl: int = 30         # Cache seconds
-
 
 @dataclass
 class SparklineResult:
@@ -90,16 +88,15 @@ class SparklineResult:
     last_updated: datetime
     from_cache: bool
 
-
 class PrometheusSparklineIntegration:
     """
     Integrates Prometheus metrics with sparkline visualization.
 
     Features:
-    - Batch fetching for efficiency
-    - Intelligent caching with TTL
-    - Error recovery (fallbacks, retries)
-    - Real-time updates via callback
+- Batch fetching for efficiency
+- Intelligent caching with TTL
+- Error recovery (fallbacks, retries)
+- Real-time updates via callback
 
     Usage:
         prom = PrometheusClient(...)
@@ -138,12 +135,12 @@ class PrometheusSparklineIntegration:
         Generate a single sparkline from Prometheus data.
 
         Process:
-        1. Check cache (if enabled)
-        2. Query Prometheus for time-series data
-        3. Generate sparkline using SparklineGenerator
-        4. Add color coding and stats
-        5. Cache result
-        6. Return SparklineResult
+1. Check cache (if enabled)
+1. Query Prometheus for time-series data
+1. Generate sparkline using SparklineGenerator
+1. Add color coding and stats
+1. Cache result
+1. Return SparklineResult
         """
         # 1. Check cache
         if use_cache:
@@ -378,7 +375,6 @@ class PrometheusSparklineIntegration:
             "max_size": 100,  # Could make configurable
         }
 
-
 # Predefined sparkline configurations for dashboard
 DASHBOARD_SPARKLINES = [
     SparklineConfig(
@@ -559,7 +555,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class PanelID(Enum):
     """Panel identifiers for navigation"""
     ADHD = "adhd"
@@ -568,15 +563,14 @@ class PanelID(Enum):
     TRENDS = "trends"
     FOOTER = "footer"
 
-
 class KeybindingRegistry:
     """
     Central registry for all keyboard shortcuts.
 
     Features:
-    - Conflict detection
-    - Context-aware bindings (modal vs main)
-    - Help text generation
+- Conflict detection
+- Context-aware bindings (modal vs main)
+- Help text generation
     """
 
     def __init__(self):
@@ -648,15 +642,14 @@ class KeybindingRegistry:
 
         return "\n".join(lines)
 
-
 class FocusManager:
     """
     Manages focus state across dashboard panels.
 
     Features:
-    - Logical focus order (top→bottom, left→right)
-    - Focus history (for back navigation)
-    - Visual feedback coordination
+- Logical focus order (top→bottom, left→right)
+- Focus history (for back navigation)
+- Visual feedback coordination
     """
 
     def __init__(self, app):
@@ -859,7 +852,6 @@ from dopemux.integrations.prometheus_sparkline import (
 from prometheus_client import PrometheusClient, PrometheusConfig
 from sparkline_generator import SparklineGenerator
 
-
 @pytest.fixture
 async def integration():
     """Create test integration instance"""
@@ -867,7 +859,6 @@ async def integration():
     prom_client = PrometheusClient(prom_config)
     sparkgen = SparklineGenerator()
     return PrometheusSparklineIntegration(prom_client, sparkgen)
-
 
 @pytest.fixture
 def sample_config():
@@ -881,7 +872,6 @@ def sample_config():
         label="Test Metric"
     )
 
-
 @pytest.mark.asyncio
 async def test_generate_sparkline_basic(integration, sample_config):
     """Test basic sparkline generation"""
@@ -891,7 +881,6 @@ async def test_generate_sparkline_basic(integration, sample_config):
     assert len(result.sparkline) == sample_config.width
     assert result.label or True  # Has some label
     assert result.trend in ["up", "down", "stable"]
-
 
 @pytest.mark.asyncio
 async def test_generate_batch(integration):
@@ -917,7 +906,6 @@ async def test_generate_batch(integration):
     assert "Metric 1" in results
     assert "Metric 2" in results
 
-
 @pytest.mark.asyncio
 async def test_caching(integration, sample_config):
     """Test sparkline caching"""
@@ -932,7 +920,6 @@ async def test_caching(integration, sample_config):
     # Third call - bypass cache
     result3 = await integration.generate_sparkline(sample_config, use_cache=False)
     assert result3.from_cache == False
-
 
 @pytest.mark.asyncio
 async def test_error_handling(integration):
@@ -950,7 +937,6 @@ async def test_error_handling(integration):
     assert isinstance(result, SparklineResult)
     assert result.sparkline == "─" * config.width
 
-
 @pytest.mark.asyncio
 async def test_trend_detection(integration):
     """Test trend detection accuracy"""
@@ -962,13 +948,11 @@ async def test_trend_detection(integration):
     assert trend == "up"
     assert icon == "▲"
 
-
 def test_cache_stats(integration):
     """Test cache statistics"""
     stats = integration.get_cache_stats()
     assert "size" in stats
     assert isinstance(stats["size"], int)
-
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
@@ -988,12 +972,10 @@ from dopemux.ui.keybindings import (
     PanelID
 )
 
-
 @pytest.fixture
 def keybindings():
     """Create test keybinding registry"""
     return KeybindingRegistry()
-
 
 @pytest.fixture
 def mock_app():
@@ -1006,12 +988,10 @@ def mock_app():
             return MockWidget()
     return MockApp()
 
-
 @pytest.fixture
 def focus_manager(mock_app):
     """Create test focus manager"""
     return FocusManager(mock_app)
-
 
 def test_register_keybinding(keybindings):
     """Test keybinding registration"""
@@ -1022,7 +1002,6 @@ def test_register_keybinding(keybindings):
     assert "f" in keybindings.bindings
     assert keybindings.bindings["f"]["description"] == "Test Action"
 
-
 def test_get_action(keybindings):
     """Test action retrieval"""
     def action(): return "test"
@@ -1032,7 +1011,6 @@ def test_get_action(keybindings):
 
     assert retrieved == action
     assert retrieved() == "test"
-
 
 def test_context_filtering(keybindings):
     """Test context-aware bindings"""
@@ -1049,7 +1027,6 @@ def test_context_filtering(keybindings):
     # Modal context should get both
     assert keybindings.get_action("m", "modal") == modal_action
 
-
 def test_help_text_generation(keybindings):
     """Test help text generation"""
     keybindings.register("f", lambda: None, "Focus", show_in_help=True)
@@ -1060,14 +1037,12 @@ def test_help_text_generation(keybindings):
     assert "Focus" in help_text
     assert "Hidden" not in help_text
 
-
 def test_focus_panel(focus_manager):
     """Test panel focusing"""
     focus_manager.focus_panel(PanelID.ADHD)
 
     assert focus_manager.current_panel == PanelID.ADHD
     assert len(focus_manager.focus_history) == 0
-
 
 def test_next_panel(focus_manager):
     """Test next panel navigation"""
@@ -1076,14 +1051,12 @@ def test_next_panel(focus_manager):
 
     assert focus_manager.current_panel == PanelID.PRODUCTIVITY
 
-
 def test_prev_panel(focus_manager):
     """Test previous panel navigation"""
     focus_manager.focus_panel(PanelID.PRODUCTIVITY)
     focus_manager.prev_panel()
 
     assert focus_manager.current_panel == PanelID.ADHD
-
 
 def test_focus_wrap_around(focus_manager):
     """Test focus wraps around at ends"""
@@ -1092,7 +1065,6 @@ def test_focus_wrap_around(focus_manager):
 
     # Should wrap to first panel
     assert focus_manager.current_panel == PanelID.ADHD
-
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

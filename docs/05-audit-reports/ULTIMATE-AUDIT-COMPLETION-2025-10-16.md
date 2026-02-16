@@ -157,23 +157,23 @@ prelude: Ultimate Audit Completion 2025 10 16 (reference) for dopemux documentat
 
 **Tier 1: Production-Ready Immediately** ✅
 1. Serena v2 (8.5/10) - Secure by design, fully implemented
-2. ConPort KG (9/10) - Security fixed, excellent
-3. Orchestrator (9/10) - 100% tests, ready to ship
-4. Dope-Context (8.5/10) - Fully validated, operational
-5. ConPort UI (8/10) - URL encoding fixed
-6. GPT-Researcher (8/10) - Implementation complete
+1. ConPort KG (9/10) - Security fixed, excellent
+1. Orchestrator (9/10) - 100% tests, ready to ship
+1. Dope-Context (8.5/10) - Fully validated, operational
+1. ConPort UI (8/10) - URL encoding fixed
+1. GPT-Researcher (8/10) - Implementation complete
 
 **Tier 2: Deploy with Restrictions** ⚠️
-7. ADHD Engine (7/10) - Localhost-only OR add auth
-8. DopeconBridge (7/10) - Exists, needs wiring
+1. ADHD Engine (7/10) - Localhost-only OR add auth
+1. DopeconBridge (7/10) - Exists, needs wiring
 
 **Tier 3: Future Work Required** 📦
-9. Task-Orchestrator (Active) - Week 7 integration (13h)
-10. ML Risk Assessment (New) - Week 7 API layer (4h)
+1. Task-Orchestrator (Active) - Week 7 integration (13h)
+1. ML Risk Assessment (New) - Week 7 API layer (4h)
 
 **Tier 4: Non-Functional** ❌
-11. TaskMaster - External package missing (blocker)
-12. claude-context - Empty directory (remove?)
+1. TaskMaster - External package missing (blocker)
+1. claude-context - Empty directory (remove?)
 
 ---
 
@@ -300,19 +300,19 @@ Complete audit trail with:
 ### Immediate (Before Production)
 
 1. ✅ **DONE**: Fix ConPort security
-2. ✅ **DONE**: Fix ConPort UI encoding
-3. ✅ **DONE**: Un-deprecate Task-Orchestrator
-4. ✅ **DONE**: Create ADRs
-5. **TODO**: Fix TaskMaster dependency OR remove service
-6. **TODO**: ADHD Engine: Add auth OR localhost-only
+1. ✅ **DONE**: Fix ConPort UI encoding
+1. ✅ **DONE**: Un-deprecate Task-Orchestrator
+1. ✅ **DONE**: Create ADRs
+1. **TODO**: Fix TaskMaster dependency OR remove service
+1. **TODO**: ADHD Engine: Add auth OR localhost-only
 
 ### Week 7 Integration Sprint (~37h)
 
 1. Complete DopeconBridge wiring (12h)
-2. Task-Orchestrator integration (13h)
-3. ML Risk Assessment API (4h)
-4. Fix testing imports (2-4h)
-5. TaskMaster resolution (4-6h)
+1. Task-Orchestrator integration (13h)
+1. ML Risk Assessment API (4h)
+1. Fix testing imports (2-4h)
+1. TaskMaster resolution (4-6h)
 
 ---
 

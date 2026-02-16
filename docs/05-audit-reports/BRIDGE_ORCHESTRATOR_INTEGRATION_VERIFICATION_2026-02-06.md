@@ -17,28 +17,28 @@ prelude: Verification evidence that the live backlog bridge-orchestrator integra
 Verify implementation status for live backlog `bridge_orchestrator` tasks:
 
 1. Configure Integration Bridge
-2. Implement Event Subscription
-3. Implement Insight Publishing
-4. Test Bridge Communication
-5. Enable Dependency Analysis
-6. Configure ADHD Engine integration with ConPort
+1. Implement Event Subscription
+1. Implement Insight Publishing
+1. Test Bridge Communication
+1. Enable Dependency Analysis
+1. Configure ADHD Engine integration with ConPort
 
 ## Code Evidence
 
 1. `services/dopecon-bridge/integrations/task_orchestrator.py`
-   - event publishing for progress/completion/blocked flows
-   - bidirectional integration manager wiring
-2. `services/task-orchestrator/integration_bridge_connector.py`
-   - connector bootstrap with bidirectional integration enablement
-3. `services/task-orchestrator/app/adapters/conport_adapter.py`
-   - ConPort ↔ Task-Orchestrator schema transforms + sync adapter
-4. `services/dopecon-bridge/main.py`
-   - dependency analysis and Task-Orchestrator orchestration integration paths
+- event publishing for progress/completion/blocked flows
+- bidirectional integration manager wiring
+1. `services/task-orchestrator/integration_bridge_connector.py`
+- connector bootstrap with bidirectional integration enablement
+1. `services/task-orchestrator/app/adapters/conport_adapter.py`
+- ConPort ↔ Task-Orchestrator schema transforms + sync adapter
+1. `services/dopecon-bridge/main.py`
+- dependency analysis and Task-Orchestrator orchestration integration paths
 
 ## Test Evidence
 
 1. `pytest -q --no-cov services/dopecon-bridge/tests/test_task_orchestrator_integration.py services/task-orchestrator/test_eventbus_subscription.py`
-   - Result: passed
+- Result: passed
 
 ## Residual Risk
 

@@ -887,11 +887,11 @@ All tools meet ADHD performance targets (<200ms):
 ### Cognitive Load Management
 
 1. **Result Limiting**: Max 10 items everywhere
-2. **Progressive Disclosure**: Start simple, add detail on request
-3. **Context Sizing**: 3-7 lines (not full files)
-4. **Decision Reduction**: Max 3 suggestions
-5. **Complexity Assessment**: Reading time estimates
-6. **Attention Adaptation**: Filter by focus state
+1. **Progressive Disclosure**: Start simple, add detail on request
+1. **Context Sizing**: 3-7 lines (not full files)
+1. **Decision Reduction**: Max 3 suggestions
+1. **Complexity Assessment**: Reading time estimates
+1. **Attention Adaptation**: Filter by focus state
 
 ### Visual Clarity
 

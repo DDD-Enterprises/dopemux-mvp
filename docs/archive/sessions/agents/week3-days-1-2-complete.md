@@ -34,9 +34,9 @@ prelude: Week3 Days 1 2 Complete (explanation) for dopemux documentation and dev
 
 **Delivered**:
 1. Claude Code context detection
-2. User preference loading
-3. User state persistence
-4. Metrics persistence
+1. User preference loading
+1. User state persistence
+1. Metrics persistence
 
 **Lines**: +99 lines
 
@@ -46,9 +46,9 @@ prelude: Week3 Days 1 2 Complete (explanation) for dopemux documentation and dev
 
 **Delivered**:
 1. Real ConPort `get_progress()` queries
-2. Energy + attention-based filtering
-3. Task match scoring algorithm
-4. Simulation fallback extraction
+1. Energy + attention-based filtering
+1. Task match scoring algorithm
+1. Simulation fallback extraction
 
 **Lines**: +106 lines
 

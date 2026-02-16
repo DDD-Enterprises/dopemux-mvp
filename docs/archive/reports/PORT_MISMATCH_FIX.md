@@ -33,9 +33,9 @@ HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
 **Expected by docker-compose.smoke.yml**:
 ```yaml
 environment:
-  - MCP_SERVER_PORT=${CONPORT_CONTAINER_PORT:-3004}
+- MCP_SERVER_PORT=${CONPORT_CONTAINER_PORT:-3004}
 ports:
-  - "${CONPORT_PORT:-3004}:${CONPORT_CONTAINER_PORT:-3004}"
+- "${CONPORT_PORT:-3004}:${CONPORT_CONTAINER_PORT:-3004}"
 healthcheck:
   test: ["CMD-SHELL", "curl -f http://localhost:${CONPORT_CONTAINER_PORT:-3004}/health || exit 1"]
 ```

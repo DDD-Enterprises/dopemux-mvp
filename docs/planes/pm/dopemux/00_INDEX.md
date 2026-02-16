@@ -32,15 +32,15 @@ TODO: Insert the short boundary bullets from the Brain Dump, verbatim where poss
 
 Read order:
 1. [01_SYSTEM_ARCHITECTURE.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/01_SYSTEM_ARCHITECTURE.md)
-2. [07_TASKX_INTEGRATION.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md)
-3. [02_MEMORY_AND_STATE.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/02_MEMORY_AND_STATE.md)
-4. [03_MCP_LIFECYCLE_AND_RELIABILITY.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md)
-5. [04_ROUTING_POLICY_AND_COST.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/04_ROUTING_POLICY_AND_COST.md)
-6. [05_ADHD_EXECUTION_MODEL.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/05_ADHD_EXECUTION_MODEL.md)
-7. [06_INSTANCE_AND_WORKTREE_ISOLATION.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/06_INSTANCE_AND_WORKTREE_ISOLATION.md)
-8. [08_SUPERVISOR_PACKET_FORMAT.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/08_SUPERVISOR_PACKET_FORMAT.md)
-9. [09_USAGE_LIMITS_AND_RESETS.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/09_USAGE_LIMITS_AND_RESETS.md)
-10. [10_PLAYBOOKS.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/10_PLAYBOOKS.md)
+1. [07_TASKX_INTEGRATION.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/07_TASKX_INTEGRATION.md)
+1. [02_MEMORY_AND_STATE.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/02_MEMORY_AND_STATE.md)
+1. [03_MCP_LIFECYCLE_AND_RELIABILITY.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/03_MCP_LIFECYCLE_AND_RELIABILITY.md)
+1. [04_ROUTING_POLICY_AND_COST.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/04_ROUTING_POLICY_AND_COST.md)
+1. [05_ADHD_EXECUTION_MODEL.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/05_ADHD_EXECUTION_MODEL.md)
+1. [06_INSTANCE_AND_WORKTREE_ISOLATION.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/06_INSTANCE_AND_WORKTREE_ISOLATION.md)
+1. [08_SUPERVISOR_PACKET_FORMAT.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/08_SUPERVISOR_PACKET_FORMAT.md)
+1. [09_USAGE_LIMITS_AND_RESETS.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/09_USAGE_LIMITS_AND_RESETS.md)
+1. [10_PLAYBOOKS.md](file:///Users/hue/code/dopemux-mvp/docs/planes/pm/dopemux/10_PLAYBOOKS.md)
 
 ## Glossary
 
@@ -105,8 +105,8 @@ Each doc must contain these headings (exact text):
 ### UNKNOWN discipline
 - [ ] No "UNKNOWN" appears outside "FACT ANCHORS" or "Open questions".
 - [ ] Every UNKNOWN has a matching bullet in "Open questions" describing:
-  - [ ] what is unknown
-  - [ ] what file/command would resolve it
+- [ ] what is unknown
+- [ ] what file/command would resolve it
 
 ### Boundary enforcement (TaskX vs Supervisor)
 - [ ] 07_TASKX_INTEGRATION.md states TaskX is deterministic and does not own:

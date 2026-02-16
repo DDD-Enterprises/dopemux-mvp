@@ -19,13 +19,13 @@ prelude: Verification for ConPort packet row 32 covering deterministic optimizat
 ## Implemented Changes
 
 1. Added recommendation engine in `/Users/hue/code/dopemux-mvp/src/dopemux/profile_analytics.py`:
-   - `generate_optimization_suggestions(stats)`.
-2. Added suggestion archival path:
-   - `archive_optimization_suggestions(...)`.
-   - `archive_optimization_suggestions_sync(...)`.
-3. Updated `dopemux profile stats` in `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py` to:
-   - render deterministic suggestion list.
-   - archive recommendations into ConPort category `profile_optimization_recommendations`.
+- `generate_optimization_suggestions(stats)`.
+1. Added suggestion archival path:
+- `archive_optimization_suggestions(...)`.
+- `archive_optimization_suggestions_sync(...)`.
+1. Updated `dopemux profile stats` in `/Users/hue/code/dopemux-mvp/src/dopemux/cli.py` to:
+- render deterministic suggestion list.
+- archive recommendations into ConPort category `profile_optimization_recommendations`.
 
 ## Verification Commands
 
@@ -36,5 +36,5 @@ pytest -q --no-cov tests/unit/test_profile_analytics.py tests/unit/test_profile_
 ## Result
 
 1. Command passed.
-2. Suggestion generation and archival payload shape are covered by unit tests.
-3. Row `32` is reclassified to implemented.
+1. Suggestion generation and archival payload shape are covered by unit tests.
+1. Row `32` is reclassified to implemented.

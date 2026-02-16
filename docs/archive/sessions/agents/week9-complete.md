@@ -34,11 +34,11 @@ TaskDecomposer breaks complex tasks into ADHD-friendly subtasks with progressive
 Input: "Implement JWT auth" (120min, 0.8 complexity)
 
 Output: 5 subtasks
-  1. Design (24min, 0.40, low energy)
-  2. Implement (24min, 0.50, medium energy) → depends on #1
-  3. Implement (24min, 0.60, medium energy) → depends on #2
-  4. Implement (24min, 0.70, high energy) → depends on #3
-  5. Test (24min, 0.80, high energy) → depends on #4
+1. Design (24min, 0.40, low energy)
+1. Implement (24min, 0.50, medium energy) → depends on #1
+1. Implement (24min, 0.60, medium energy) → depends on #2
+1. Implement (24min, 0.70, high energy) → depends on #3
+1. Test (24min, 0.80, high energy) → depends on #4
 
 Recommendations:
   • Start with Part 1 (complexity 0.4) to build momentum
@@ -521,24 +521,24 @@ Total: ~3KB (negligible)
 
 ### Potential Additions
 1. **AI-Assisted Decomposition** (Zen planner integration):
-   - For complex tasks (complexity > 0.8)
-   - Better dependency detection
-   - Creative decomposition strategies
+- For complex tasks (complexity > 0.8)
+- Better dependency detection
+- Creative decomposition strategies
 
-2. **ML-Based Subtask Count**:
-   - Learn optimal count from completion data
-   - Personalized to user's ADHD patterns
-   - Adapt to time of day, energy levels
+1. **ML-Based Subtask Count**:
+- Learn optimal count from completion data
+- Personalized to user's ADHD patterns
+- Adapt to time of day, energy levels
 
-3. **Smart Dependency Detection**:
-   - Analyze task description with NLP
-   - Detect parallel-safe subtasks
-   - Optimize execution order
+1. **Smart Dependency Detection**:
+- Analyze task description with NLP
+- Detect parallel-safe subtasks
+- Optimize execution order
 
-4. **Historical Learning**:
-   - Track which decompositions led to completions
-   - Refine algorithm based on outcomes
-   - Personalize complexity distribution
+1. **Historical Learning**:
+- Track which decompositions led to completions
+- Refine algorithm based on outcomes
+- Personalize complexity distribution
 
 ---
 

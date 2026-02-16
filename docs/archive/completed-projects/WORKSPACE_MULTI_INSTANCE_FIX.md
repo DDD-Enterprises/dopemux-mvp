@@ -110,9 +110,9 @@ env_vars = {
 # docker/mcp-servers/docker-compose.yml (OLD)
 conport:
   environment:
-    - MCP_SERVER_PORT=3004  # ❌ Hardcoded!
+- MCP_SERVER_PORT=3004  # ❌ Hardcoded!
   ports:
-    - "3004:3004"  # ❌ Fixed port - second instance fails!
+- "3004:3004"  # ❌ Fixed port - second instance fails!
 ```
 
 **Fix**:
@@ -121,10 +121,10 @@ conport:
 conport:
   container_name: mcp-conport${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}
   environment:
-    - MCP_SERVER_PORT=${CONPORT_PORT:-3004}  # ✅ Dynamic from env
-    - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}   # ✅ Instance workspace
+- MCP_SERVER_PORT=${CONPORT_PORT:-3004}  # ✅ Dynamic from env
+- WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}   # ✅ Instance workspace
   ports:
-    - "${CONPORT_PORT:-3004}:${CONPORT_PORT:-3004}"  # ✅ Multi-instance ports
+- "${CONPORT_PORT:-3004}:${CONPORT_PORT:-3004}"  # ✅ Multi-instance ports
 ```
 
 **Why This Matters**:
@@ -137,23 +137,23 @@ conport:
 ## 📋 Files Changed
 
 1. **NEW**: `src/dopemux/workspace_utils.py`
-   - Git root detection with worktree support
-   - Functions: `get_workspace_root()`, `is_worktree()`, `get_git_branch()`
+- Git root detection with worktree support
+- Functions: `get_workspace_root()`, `is_worktree()`, `get_git_branch()`
 
-2. **MODIFIED**: `src/dopemux/cli.py`
-   - Line 170: Use `get_workspace_root()` instead of `Path.cwd()`
-   - Line 2565: Updated `_start_mcp_servers_with_progress()` signature
-   - Line 2585-2589: Create `env_for_subprocess` with instance vars
-   - Line 2617: Pass `env=env_for_subprocess` to subprocess
-   - Line 486: Pass `instance_env=instance_env_vars` to MCP startup
+1. **MODIFIED**: `src/dopemux/cli.py`
+- Line 170: Use `get_workspace_root()` instead of `Path.cwd()`
+- Line 2565: Updated `_start_mcp_servers_with_progress()` signature
+- Line 2585-2589: Create `env_for_subprocess` with instance vars
+- Line 2617: Pass `env=env_for_subprocess` to subprocess
+- Line 486: Pass `instance_env=instance_env_vars` to MCP startup
 
-3. **MODIFIED**: `src/dopemux/instance_manager.py`
-   - Line 261-263: Use `actual_workspace` for `DOPEMUX_WORKSPACE_ID`
-   - Added `DOPEMUX_MAIN_REPO` for reference
+1. **MODIFIED**: `src/dopemux/instance_manager.py`
+- Line 261-263: Use `actual_workspace` for `DOPEMUX_WORKSPACE_ID`
+- Added `DOPEMUX_MAIN_REPO` for reference
 
-4. **MODIFIED**: `docker/mcp-servers/docker-compose.yml`
-   - ConPort: Dynamic ports, container naming, workspace ID
-   - Serena: Dynamic ports, container naming, workspace ID
+1. **MODIFIED**: `docker/mcp-servers/docker-compose.yml`
+- ConPort: Dynamic ports, container naming, workspace ID
+- Serena: Dynamic ports, container naming, workspace ID
 
 ---
 
@@ -231,30 +231,30 @@ Context restoration perfect = ADHD bliss ✨
 def get_workspace_root(start_path=None):
     """
     Detection order (matches dope-context pattern):
-    1. Git root (git rev-parse --show-toplevel) - PRIMARY
-       - Returns worktree root for worktrees
-       - Returns main repo root for main repo
-    2. Project markers (pyproject.toml, package.json, .dopemux)
-    3. Fallback to start_path (better than crashing)
+1. Git root (git rev-parse --show-toplevel) - PRIMARY
+- Returns worktree root for worktrees
+- Returns main repo root for main repo
+1. Project markers (pyproject.toml, package.json, .dopemux)
+1. Fallback to start_path (better than crashing)
     """
 ```
 
 ### Multi-Instance Port Allocation
 ```
 Instance A: port_base = 3000
-  - ConPort: 3004 (3000 + 4)
-  - Serena: 3006 (3000 + 6)
-  - Task-Master: 3005 (3000 + 5)
+- ConPort: 3004 (3000 + 4)
+- Serena: 3006 (3000 + 6)
+- Task-Master: 3005 (3000 + 5)
 
 Instance B: port_base = 3100
-  - ConPort: 3104 (3100 + 4)
-  - Serena: 3106 (3100 + 6)
-  - Task-Master: 3105 (3100 + 5)
+- ConPort: 3104 (3100 + 4)
+- Serena: 3106 (3100 + 6)
+- Task-Master: 3105 (3100 + 5)
 
 Instance C: port_base = 3200
-  - ConPort: 3204 (3200 + 4)
-  - Serena: 3206 (3200 + 6)
-  - Task-Master: 3205 (3200 + 5)
+- ConPort: 3204 (3200 + 4)
+- Serena: 3206 (3200 + 6)
+- Task-Master: 3205 (3200 + 5)
 
 Available: D (3300), E (3400)
 ```
@@ -285,15 +285,15 @@ MCP server uses correct workspace ✅
 
 ### User Impact (Before Fix):
 1. **Context Never Restored**: Running from subdirectory = wrong workspace = no context
-2. **Decisions Lost**: All decisions logged to default workspace, not current project
-3. **Multi-Instance Failed**: Port conflicts prevented second instance from starting
-4. **Worktree Chaos**: Worktree instances used main repo workspace, mixing contexts
+1. **Decisions Lost**: All decisions logged to default workspace, not current project
+1. **Multi-Instance Failed**: Port conflicts prevented second instance from starting
+1. **Worktree Chaos**: Worktree instances used main repo workspace, mixing contexts
 
 ### System Impact (Before Fix):
 1. **ConPort**: All instances shared `/workspaces/dopemux-mvp` workspace
-2. **Serena**: Couldn't find correct project files
-3. **Dope-Context**: Wrong Qdrant collection (workspace hash mismatch)
-4. **Context Manager**: Failed to restore sessions from wrong path
+1. **Serena**: Couldn't find correct project files
+1. **Dope-Context**: Wrong Qdrant collection (workspace hash mismatch)
+1. **Context Manager**: Failed to restore sessions from wrong path
 
 ---
 
@@ -310,10 +310,10 @@ This fix addresses multiple user-reported issues:
 ## 🎓 Lessons Learned
 
 1. **Always use git root detection** for multi-repo/worktree projects
-2. **Always pass environment to subprocess** when isolation matters
-3. **Always use dynamic ports** for multi-instance support
-4. **Always test from subdirectories** - users don't always start from root
-5. **ADHD optimization depends on context** - wrong workspace = total failure
+1. **Always pass environment to subprocess** when isolation matters
+1. **Always use dynamic ports** for multi-instance support
+1. **Always test from subdirectories** - users don't always start from root
+1. **ADHD optimization depends on context** - wrong workspace = total failure
 
 ---
 

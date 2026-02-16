@@ -305,32 +305,32 @@ async def get_all_payloads(self, batch_size: int = 100) -> List[Dict]:
 ### From Anthropic's Contextual Retrieval
 
 1. **Contextual Embeddings** (35% improvement):
-   - ✅ We have this: Claude generates 50-100 token contexts
-   - ✅ Prepended before embedding
-   - ✅ Using voyage-code-3 for code, voyage-context-3 for docs
+- ✅ We have this: Claude generates 50-100 token contexts
+- ✅ Prepended before embedding
+- ✅ Using voyage-code-3 for code, voyage-context-3 for docs
 
-2. **BM25 for Exact Matching** (+14% improvement):
-   - ❌ We were missing this - **NOW FIXED**
-   - ✅ Code-aware tokenizer (handles camelCase, snake_case)
-   - ✅ Built after indexing, cached for fast loading
-   - ✅ RRF fusion (k=60) for balanced ranking
+1. **BM25 for Exact Matching** (+14% improvement):
+- ❌ We were missing this - **NOW FIXED**
+- ✅ Code-aware tokenizer (handles camelCase, snake_case)
+- ✅ Built after indexing, cached for fast loading
+- ✅ RRF fusion (k=60) for balanced ranking
 
-3. **Reranking** (+18% improvement):
-   - ✅ We have this: Voyage rerank-2.5
-   - ✅ Top-50 candidates → top-10 results
-   - ✅ Progressive disclosure (ADHD-friendly)
+1. **Reranking** (+18% improvement):
+- ✅ We have this: Voyage rerank-2.5
+- ✅ Top-50 candidates → top-10 results
+- ✅ Progressive disclosure (ADHD-friendly)
 
-4. **Cost Optimization**:
-   - Anthropic: ~$1.02 per million document tokens
-   - Dope-Context: ~$0.10 per 250 functions
-   - ✅ **5x more cost-efficient**
+1. **Cost Optimization**:
+- Anthropic: ~$1.02 per million document tokens
+- Dope-Context: ~$0.10 per 250 functions
+- ✅ **5x more cost-efficient**
 
 ### From Your Design Documentation
 
 **DOPEMUX-CONTEXT-DEEP-DIVE.md** shows three-layer architecture:
 1. **Memory (ConPort)**: Knowledge graph ✅
-2. **Navigation (Serena)**: LSP + Tree-sitter ✅
-3. **Retrieval (dope-context)**: Semantic search ✅
+1. **Navigation (Serena)**: LSP + Tree-sitter ✅
+1. **Retrieval (dope-context)**: Semantic search ✅
 
 **Integration validated**:
 - ✅ Serena's Tree-sitter used for AST chunking
@@ -436,10 +436,10 @@ sync_workspace("/path/to/project", auto_reindex=True)
 ### Architecture Patterns Used
 
 1. **LRU Cache Pattern**: Lazy initialization with automatic eviction
-2. **Scroll API Pattern**: Efficient pagination for large collections
-3. **Pickle Persistence**: Fast serialization for BM25 index
-4. **Graceful Degradation**: Reranking failures don't break search
-5. **Per-Request Workspace**: Components keyed by collection name
+1. **Scroll API Pattern**: Efficient pagination for large collections
+1. **Pickle Persistence**: Fast serialization for BM25 index
+1. **Graceful Degradation**: Reranking failures don't break search
+1. **Per-Request Workspace**: Components keyed by collection name
 
 ---
 
@@ -610,19 +610,19 @@ ls ~/.dope-context/snapshots/*/bm25_index.pkl
 ### Still Need Improvement
 
 1. **Removed File Cleanup** (line 995):
-   - Detection working ✅
-   - Deletion from Qdrant: TODO
-   - Workaround: Rebuild index periodically
+- Detection working ✅
+- Deletion from Qdrant: TODO
+- Workaround: Rebuild index periodically
 
-2. **Function-Level Incremental** (OPTIMIZATION_ROADMAP Phase 3):
-   - Current: File-level reindex
-   - Future: Only update changed functions
-   - Impact: 10x faster for small edits
+1. **Function-Level Incremental** (OPTIMIZATION_ROADMAP Phase 3):
+- Current: File-level reindex
+- Future: Only update changed functions
+- Impact: 10x faster for small edits
 
-3. **MCP Timeout for Large Indexing**:
-   - Still an issue for >100 files
-   - Workaround: Use direct Python scripts
-   - Future: Async with progress callbacks
+1. **MCP Timeout for Large Indexing**:
+- Still an issue for >100 files
+- Workaround: Use direct Python scripts
+- Future: Async with progress callbacks
 
 ### Non-Issues (Working as Designed)
 
@@ -655,18 +655,18 @@ ls ~/.dope-context/snapshots/*/bm25_index.pkl
 
 ### Immediate (You Can Do Now)
 1. Test the fixes with diagnostic commands above
-2. Reindex your main workspace to create BM25 cache
-3. Try incremental sync with auto_reindex=True
+1. Reindex your main workspace to create BM25 cache
+1. Try incremental sync with auto_reindex=True
 
 ### Short-term (If Needed)
 1. Implement removed file deletion from Qdrant
-2. Add BM25 cache invalidation on full reindex
-3. Improve error messages further
+1. Add BM25 cache invalidation on full reindex
+1. Improve error messages further
 
 ### Long-term (Future Enhancement)
 1. Function-level incremental updates (Phase 3)
-2. DocumentProcessor for PDF/DOCX (Phase 2)
-3. Async indexing with progress streaming
+1. DocumentProcessor for PDF/DOCX (Phase 2)
+1. Async indexing with progress streaming
 
 ---
 

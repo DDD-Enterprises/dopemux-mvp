@@ -86,19 +86,19 @@ This research synthesizes findings from cognitive science, terminal multiplexer 
 **Most Common Layouts by Task Type**
 
 1. **Coding Layout** (70% of users)
-   - Main editor: 70% screen width
-   - Terminal/output: 30% screen width
-   - Position: Editor left, terminal right
+- Main editor: 70% screen width
+- Terminal/output: 30% screen width
+- Position: Editor left, terminal right
 
-2. **Debugging Layout** (60% of users)
-   - Code: 50% top half
-   - Debug console: 25% bottom left
-   - Variable inspector: 25% bottom right
+1. **Debugging Layout** (60% of users)
+- Code: 50% top half
+- Debug console: 25% bottom left
+- Variable inspector: 25% bottom right
 
-3. **Operations Layout** (55% of users)
-   - Logs: 60% screen
-   - Metrics/commands: 40% screen
-   - Real-time updates in all panes
+1. **Operations Layout** (55% of users)
+- Logs: 60% screen
+- Metrics/commands: 40% screen
+- Real-time updates in all panes
 
 **Key Insight**: Users overwhelmingly prefer vertical splits (65%) over horizontal (35%) for primary workflow
 
@@ -107,19 +107,19 @@ This research synthesizes findings from cognitive science, terminal multiplexer 
 ```yaml
 ---
 layout:
-  - direction: Horizontal
+- direction: Horizontal
     parts:
-      - direction: Vertical
+- direction: Vertical
         split_size:
           Percent: 70
         parts:
-          - name: "editor"
-      - direction: Vertical
+- name: "editor"
+- direction: Vertical
         split_size:
           Percent: 30
         parts:
-          - name: "terminal"
-          - name: "output"
+- name: "terminal"
+- name: "output"
 ```
 
 **Lesson for Dopemux**: YAML-based layouts enable user customization without code changes
@@ -445,8 +445,8 @@ layout:
 
 **Three Popular Patterns**
 1. **Spinner**: Indeterminate progress, unknown duration
-2. **X of Y**: Countable items (Processing 47 of 150 files)
-3. **Progress Bar**: Percentage-based (█████░░░░░ 47%)
+1. **X of Y**: Countable items (Processing 47 of 150 files)
+1. **Progress Bar**: Percentage-based (█████░░░░░ 47%)
 
 **User Expectations**
 > "Good loading indicators tell users what's happening, entertain users, and provide a notion of how much more waiting is needed"
@@ -524,7 +524,7 @@ layout:
 
 **Two Planes**
 1. **PM Plane**: Status updates, task decomposition, team visibility
-2. **Cognitive Plane**: Decisions, code navigation, memory, context
+1. **Cognitive Plane**: Decisions, code navigation, memory, context
 
 **DopeconBridge**: Cross-plane coordination at PORT_BASE+16
 
@@ -725,9 +725,9 @@ PM Plane (30%)              Cognitive Plane (70%)
 
 **P0 - Critical**
 1. Two-pane vertical split with 60/40 ratio
-2. F6 pane navigation
-3. Tab/Arrow keyboard navigation within panes
-4. Bold focus indicators (4px border)
+1. F6 pane navigation
+1. Tab/Arrow keyboard navigation within panes
+1. Bold focus indicators (4px border)
 
 **Success Criteria**
 - Keyboard-only navigation works completely
@@ -738,9 +738,9 @@ PM Plane (30%)              Cognitive Plane (70%)
 
 **P1 - High Priority**
 1. Collapsible sections in both panes
-2. Summary vs detail views
-3. "Expand/Collapse All" shortcuts
-4. Remember expanded state in ConPort
+1. Summary vs detail views
+1. "Expand/Collapse All" shortcuts
+1. Remember expanded state in ConPort
 
 **Success Criteria**
 - Information density reduced by 50% in default view
@@ -751,9 +751,9 @@ PM Plane (30%)              Cognitive Plane (70%)
 
 **P2 - Medium Priority**
 1. PLAN mode layout (70/30 PM/Cognitive)
-2. ACT mode layout (30/70 PM/Cognitive)
-3. Smooth transitions between modes (300ms)
-4. Mode-specific keyboard shortcuts
+1. ACT mode layout (30/70 PM/Cognitive)
+1. Smooth transitions between modes (300ms)
+1. Mode-specific keyboard shortcuts
 
 **Success Criteria**
 - Mode switch feels natural, not jarring
@@ -764,9 +764,9 @@ PM Plane (30%)              Cognitive Plane (70%)
 
 **P3 - Nice to Have**
 1. Custom layout persistence (user overrides)
-2. Responsive layouts for small terminals
-3. Theme support (dark/light)
-4. Animation preferences (reduced motion)
+1. Responsive layouts for small terminals
+1. Theme support (dark/light)
+1. Animation preferences (reduced motion)
 
 **Success Criteria**
 - Power users can customize layouts
@@ -786,10 +786,10 @@ PM Plane (30%)              Cognitive Plane (70%)
 
 **Test Scenarios**
 1. Navigate between PM and Cognitive planes
-2. Find specific decision in Cognitive plane
-3. Update task status in PM plane
-4. Switch between PLAN and ACT modes
-5. Recover from interruption (simulate break)
+1. Find specific decision in Cognitive plane
+1. Update task status in PM plane
+1. Switch between PLAN and ACT modes
+1. Recover from interruption (simulate break)
 
 **Success Metrics**
 - Task completion rate: >90%
@@ -830,50 +830,50 @@ PM Plane (30%)              Cognitive Plane (70%)
 
 ### Cognitive Science & Window Management
 1. [Cognitive Layouts of Windows and Multiple Screens](https://www.sciencedirect.com/science/article/abs/pii/S0020737386800773) - ScienceDirect
-2. [Productivity and Multi-Screen Computer Displays](https://www.researchgate.net/publication/285773035_Productivity_and_multi-screen_computer_displays) - ResearchGate
-3. [Developer Productivity - Navigation & Window Management](https://frontendmasters.com/courses/developer-productivity/navigation-window-management/) - Frontend Masters
+1. [Productivity and Multi-Screen Computer Displays](https://www.researchgate.net/publication/285773035_Productivity_and_multi-screen_computer_displays) - ResearchGate
+1. [Developer Productivity - Navigation & Window Management](https://frontendmasters.com/courses/developer-productivity/navigation-window-management/) - Frontend Masters
 
 ### Terminal Multiplexers
 1. [Zellij vs Tmux: Complete Comparison](https://rrmartins.medium.com/zellij-vs-tmux-complete-comparison-or-almost-8e5b57d234ae) - Medium
-2. [From Zellij to Tmux Back to Zellij](https://vadosware.io/post/from-zellij-to-tmux-back-to-zellij) - Vadosware
-3. [About Zellij](https://zellij.dev/about/) - Official Documentation
-4. [Zellij: The Impressions of a Casual tmux User](https://keyholesoftware.com/zellij-the-impressions-of-a-casual-tmux-user/) - Keyhole Software
+1. [From Zellij to Tmux Back to Zellij](https://vadosware.io/post/from-zellij-to-tmux-back-to-zellij) - Vadosware
+1. [About Zellij](https://zellij.dev/about/) - Official Documentation
+1. [Zellij: The Impressions of a Casual tmux User](https://keyholesoftware.com/zellij-the-impressions-of-a-casual-tmux-user/) - Keyhole Software
 
 ### IDE Multi-Pane Design
 1. [Custom Layout - Visual Studio Code](https://code.visualstudio.com/docs/configure/custom-layout) - Official Docs
-2. [Editor Layout in Visual Studio Code](https://stevekinney.com/courses/visual-studio-code/vscode-editor-layout) - Steve Kinney
-3. [Comparing IntelliJ IDEA and Visual Studio Code](https://graphite.dev/guides/intellij-vs-vscode) - Graphite
+1. [Editor Layout in Visual Studio Code](https://stevekinney.com/courses/visual-studio-code/vscode-editor-layout) - Steve Kinney
+1. [Comparing IntelliJ IDEA and Visual Studio Code](https://graphite.dev/guides/intellij-vs-vscode) - Graphite
 
 ### Dashboard Design
 1. [Dashboards - Grafana Documentation](https://grafana.com/docs/grafana/latest/dashboards/) - Official Docs
-2. [Grafana Dashboard Best Practices](https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/best-practices/) - Official Docs
-3. [Getting Started with Dashboards - Datadog](https://docs.datadoghq.com/getting_started/dashboards/) - Official Docs
+1. [Grafana Dashboard Best Practices](https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/best-practices/) - Official Docs
+1. [Getting Started with Dashboards - Datadog](https://docs.datadoghq.com/getting_started/dashboards/) - Official Docs
 
 ### Accessibility
 1. [Keyboard Accessibility - Windows Apps](https://learn.microsoft.com/en-us/windows/apps/design/accessibility/keyboard-accessibility) - Microsoft Learn
-2. [Tabbed Interfaces](https://inclusive-components.design/tabbed-interfaces/) - Inclusive Components
-3. [Complete Guide To Accessible Front-End Components](https://www.smashingmagazine.com/2021/03/complete-guide-accessible-front-end-components/) - Smashing Magazine
+1. [Tabbed Interfaces](https://inclusive-components.design/tabbed-interfaces/) - Inclusive Components
+1. [Complete Guide To Accessible Front-End Components](https://www.smashingmagazine.com/2021/03/complete-guide-accessible-front-end-components/) - Smashing Magazine
 
 ### ADHD-Specific Design
 1. [Software Accessibility for Users with Attention Deficit Disorder](https://www.carlociccarelli.com/post/software-accessibility-for-users-with-attention-deficit-disorder) - Carlo Ciccarelli
-2. [Inclusive UX/UI for Neurodivergent Users](https://medium.com/design-bootcamp/inclusive-ux-ui-for-neurodivergent-users-best-practices-and-challenges-488677ed2c6e) - Medium
-3. [Designing for ADHD Users: A Psychology-Informed Approach](https://medium.com/design-bootcamp/designing-for-adhd-users-a-psychology-informed-approach-d2fc055d5e33) - Medium
-4. [Hacking ADHD - Strategies for the Modern Developer](https://www.ledger.com/blog/hacking-adhd-strategies-for-the-modern-developer) - Ledger
+1. [Inclusive UX/UI for Neurodivergent Users](https://medium.com/design-bootcamp/inclusive-ux-ui-for-neurodivergent-users-best-practices-and-challenges-488677ed2c6e) - Medium
+1. [Designing for ADHD Users: A Psychology-Informed Approach](https://medium.com/design-bootcamp/designing-for-adhd-users-a-psychology-informed-approach-d2fc055d5e33) - Medium
+1. [Hacking ADHD - Strategies for the Modern Developer](https://www.ledger.com/blog/hacking-adhd-strategies-for-the-modern-developer) - Ledger
 
 ### Progressive Disclosure
 1. [Progressive Disclosure - NN/G](https://www.nngroup.com/articles/progressive-disclosure/) - Nielsen Norman Group
-2. [What is Progressive Disclosure?](https://www.interaction-design.org/literature/topics/progressive-disclosure) - Interaction Design Foundation
-3. [Progressive Disclosure in UX Design](https://blog.logrocket.com/ux-design/using-progressive-disclosure-complex-content/) - LogRocket
+1. [What is Progressive Disclosure?](https://www.interaction-design.org/literature/topics/progressive-disclosure) - Interaction Design Foundation
+1. [Progressive Disclosure in UX Design](https://blog.logrocket.com/ux-design/using-progressive-disclosure-complex-content/) - LogRocket
 
 ### Golden Ratio & Split Ratios
 1. [Mastering The Golden Ratio In Design](https://www.elegantthemes.com/blog/design/mastering-the-golden-ratio-in-design) - Elegant Themes
-2. [The Golden Ratio - Principles of Form and Layout](https://www.interaction-design.org/literature/article/the-golden-ratio-principles-of-form-and-layout) - IxDF
-3. [Split-Screen Layouts](https://profiletree.com/split-screen-layouts/) - ProfileTree
+1. [The Golden Ratio - Principles of Form and Layout](https://www.interaction-design.org/literature/article/the-golden-ratio-principles-of-form-and-layout) - IxDF
+1. [Split-Screen Layouts](https://profiletree.com/split-screen-layouts/) - ProfileTree
 
 ### Terminal UI Design
 1. [Command Line Interface Guidelines](https://clig.dev/) - Open Source Guide
-2. [UX Patterns for CLI Tools](https://lucasfcosta.com/2022/06/01/ux-patterns-cli-tools.html) - Lucas Costa
-3. [CLI UX Best Practices: Progress Displays](https://evilmartians.com/chronicles/cli-ux-best-practices-3-patterns-for-improving-progress-displays) - Evil Martians
+1. [UX Patterns for CLI Tools](https://lucasfcosta.com/2022/06/01/ux-patterns-cli-tools.html) - Lucas Costa
+1. [CLI UX Best Practices: Progress Displays](https://evilmartians.com/chronicles/cli-ux-best-practices-3-patterns-for-improving-progress-displays) - Evil Martians
 
 ---
 
@@ -911,11 +911,11 @@ PM Plane (30%)              Cognitive Plane (70%)
 ### Next Steps
 
 1. **Prototype Phase 1** (Core Layout) - 2 weeks
-2. **ADHD user testing** - 1 week
-3. **Iterate based on feedback** - 1 week
-4. **Implement Phase 2** (Progressive Disclosure) - 2 weeks
-5. **Accessibility audit** - 1 week
-6. **Production release** - 1 week
+1. **ADHD user testing** - 1 week
+1. **Iterate based on feedback** - 1 week
+1. **Implement Phase 2** (Progressive Disclosure) - 2 weeks
+1. **Accessibility audit** - 1 week
+1. **Production release** - 1 week
 
 **Total Timeline**: 8 weeks to production-ready two-plane layout
 

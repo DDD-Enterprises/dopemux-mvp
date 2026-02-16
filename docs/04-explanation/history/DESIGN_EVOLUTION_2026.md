@@ -32,9 +32,9 @@ Dopemux-MVP has evolved from a simple tmux-based workspace manager into a sophis
 
 **Key Evolutionary Themes:**
 1. **From Reactive to Proactive**: Initially reacting to user commands (tmux scripts), now anticipating needs (ML Risk Assessment, Background Prediction Service).
-2. **Two-Plane Architecture**: Explicit separation between the **Human Plane** (Leantime, CLI) and the **Intelligence Plane** (ConPort KG, AI Agents, Taskmaster).
-3. **Event-Driven Coordination**: Moving from direct API calls to an asynchronous **Redis Streams Event Bus** (DopeconBridge).
-4. **Cognitive Load Management**: "ADHD-First" isn't just a label—it's implemented via **Progressive Disclosure**, strictly typed **API Contracts** for context snapshots, and **Visual Indicators** (sparklines, color coding).
+1. **Two-Plane Architecture**: Explicit separation between the **Human Plane** (Leantime, CLI) and the **Intelligence Plane** (ConPort KG, AI Agents, Taskmaster).
+1. **Event-Driven Coordination**: Moving from direct API calls to an asynchronous **Redis Streams Event Bus** (DopeconBridge).
+1. **Cognitive Load Management**: "ADHD-First" isn't just a label—it's implemented via **Progressive Disclosure**, strictly typed **API Contracts** for context snapshots, and **Visual Indicators** (sparklines, color coding).
 
 ---
 
@@ -87,9 +87,9 @@ Clickable index of deep-dive history for every service component.
 - **State**: Enterprise-grade (PostgreSQL, Qdrant, Redis Streams).
 - **Communication**: **DopeconBridge** (Async Event Bus) + MCP (stdio).
 - **Key Components**:
-  - **PM Plane**: Leantime (Human) ↔ Task Orchestrator ↔ ConPort (AI).
-  - **Proactive Engine**: ML-driven background predictions.
-  - **Session Manager**: Multi-AI orchestration via tmux.
+- **PM Plane**: Leantime (Human) ↔ Task Orchestrator ↔ ConPort (AI).
+- **Proactive Engine**: ML-driven background predictions.
+- **Session Manager**: Multi-AI orchestration via tmux.
 
 ---
 
@@ -117,8 +117,8 @@ Clickable index of deep-dive history for every service component.
 
 **Evolutionary Path:**
 1. **Tmux Status Line**: Simple bash scripts showing CPU/Mem.
-2. **Compact Dashboard**: 3-line Python script (Rich library) showing Energy, Warnings, Tasks.
-3. **Full Interactive Dashboard**: Textual-based TUI with sparklines, modal drill-downs, and keyboard navigation.
+1. **Compact Dashboard**: 3-line Python script (Rich library) showing Energy, Warnings, Tasks.
+1. **Full Interactive Dashboard**: Textual-based TUI with sparklines, modal drill-downs, and keyboard navigation.
 
 **Design Philosophy (ADHD-Optimized):**
 - **Miller's Law**: Status bar limited to 7±2 items.
@@ -145,10 +145,10 @@ Clickable index of deep-dive history for every service component.
 **History**:
 - **Oct 2025**: Deprecated (Decision #140) in favor of "SuperClaude".
 - **Oct 16, 2025**: **Un-Deprecated** (ADR-203). Systematic audit proved uniqueness.
-  - **Capabilities**: ML Risk Assessment (blocker prediction), Multi-team coordination.
+- **Capabilities**: ML Risk Assessment (blocker prediction), Multi-team coordination.
 - **Current Role**: Central node in the **PM Plane**.
-  - Connects **Leantime** (Human Project Management) with **ConPort** (Knowledge Graph).
-  - Routes tasks to specialized agents (Serena, PAL/Zen-legacy lineage, Taskmaster family).
+- Connects **Leantime** (Human Project Management) with **ConPort** (Knowledge Graph).
+- Routes tasks to specialized agents (Serena, PAL/Zen-legacy lineage, Taskmaster family).
 - **Evolution Source**: `task-orchestrator/docs/pm-plane-architecture.md`, `ADR-203`.
 
 ### 5. DopeconBridge
@@ -197,9 +197,9 @@ Clickable index of deep-dive history for every service component.
 
 Based on the latest implementation plans:
 1. **Full "Zen" Mode**: Deep integration of "Flow State" metrics into IDEs.
-2. **Autonomous Context**: `autonomous-indexing-daemon` implies self-healing/self-updating context without user intervention.
-3. **Bio-Feedback Integration**: Placeholders in ADHD engine suggest future hardware integration for energy monitoring.
-4. **Two-Plane Maturity**: Deeper integration between the Human Plane (Leantime) and AI Plane (ConPort) to fully automate project management overhead.
+1. **Autonomous Context**: `autonomous-indexing-daemon` implies self-healing/self-updating context without user intervention.
+1. **Bio-Feedback Integration**: Placeholders in ADHD engine suggest future hardware integration for energy monitoring.
+1. **Two-Plane Maturity**: Deeper integration between the Human Plane (Leantime) and AI Plane (ConPort) to fully automate project management overhead.
 
 ---
 

@@ -52,11 +52,11 @@ prelude: Session_Summary_Week1_Day1 (explanation) for dopemux documentation and 
 - ✅ Dependency checking (Python 3.11+, Git 2.30+, Docker 20.10+)
 - ✅ Auto-installation with user approval
 - ✅ 5 installation modes:
-  - Interactive (guided prompts)
-  - Quick (core only, fast)
-  - Full (all features, automated)
-  - Verify (health check)
-  - Uninstall (with backup)
+- Interactive (guided prompts)
+- Quick (core only, fast)
+- Full (all features, automated)
+- Verify (health check)
+- Uninstall (with backup)
 - ✅ Pre-flight checks (disk space, ports, permissions)
 - ✅ Progress indicators (spinner + progress bar)
 - ✅ Color-coded output (green/yellow/red)
@@ -126,17 +126,17 @@ prelude: Session_Summary_Week1_Day1 (explanation) for dopemux documentation and 
 
 ### Technical Insights
 1. **Bash scripting:** Function-based design makes complex installers maintainable
-2. **Platform detection:** `/proc/version` for WSL2, `uname -m` for architecture
-3. **Progress indicators:** Spinner for long operations, progress bar for steps
-4. **Error handling:** `set -e -u -o pipefail` catches most errors early
-5. **ADHD UX:** Visual feedback reduces anxiety during long operations
+1. **Platform detection:** `/proc/version` for WSL2, `uname -m` for architecture
+1. **Progress indicators:** Spinner for long operations, progress bar for steps
+1. **Error handling:** `set -e -u -o pipefail` catches most errors early
+1. **ADHD UX:** Visual feedback reduces anxiety during long operations
 
 ### Process Insights
 1. **Planning first:** 30 min planning saved hours of coding
-2. **Checkboxes work:** 738 tasks feels manageable when broken down
-3. **Quick reference:** One-page summary is gold for daily work
-4. **Test early:** Building testing infrastructure Day 1 prevents bugs later
-5. **Commit often:** Small, focused commits make history readable
+1. **Checkboxes work:** 738 tasks feels manageable when broken down
+1. **Quick reference:** One-page summary is gold for daily work
+1. **Test early:** Building testing infrastructure Day 1 prevents bugs later
+1. **Commit often:** Small, focused commits make history readable
 
 ---
 
@@ -144,25 +144,25 @@ prelude: Session_Summary_Week1_Day1 (explanation) for dopemux documentation and 
 
 ### Immediate (Next 2-3 hours)
 1. ✅ Test installer --verify on macOS (done)
-2. ⏳ Test full install in Ubuntu 22.04 container
-3. ⏳ Measure install times (quick vs full)
-4. ⏳ Test error scenarios (low disk, port conflicts)
-5. ⏳ Fix any bugs found
-6. ⏳ Document platform quirks
+1. ⏳ Test full install in Ubuntu 22.04 container
+1. ⏳ Measure install times (quick vs full)
+1. ⏳ Test error scenarios (low disk, port conflicts)
+1. ⏳ Fix any bugs found
+1. ⏳ Document platform quirks
 
 ### Tomorrow (Day 2)
 1. Complete platform testing (Ubuntu, WSL2, Arch)
-2. Measure performance (install times)
-3. Start Priority 2: Package distribution
-4. Draft Homebrew formula
-5. Build PyPI package structure
+1. Measure performance (install times)
+1. Start Priority 2: Package distribution
+1. Draft Homebrew formula
+1. Build PyPI package structure
 
 ### This Week (Days 3-5)
 1. Homebrew formula (brew install dopemux)
-2. PyPI package (pip install dopemux)
-3. Docker Hub image (docker pull dopemux/dopemux)
-4. First-run wizard (dopemux init)
-5. Week 1 retrospective
+1. PyPI package (pip install dopemux)
+1. Docker Hub image (docker pull dopemux/dopemux)
+1. First-run wizard (dopemux init)
+1. Week 1 retrospective
 
 ---
 
@@ -305,19 +305,19 @@ prelude: Session_Summary_Week1_Day1 (explanation) for dopemux documentation and 
 
 **Morning (High Energy):**
 1. Test installer on Ubuntu 22.04
-2. Test installer on Arch Linux (Docker)
-3. Measure install times
-4. Fix any critical bugs
+1. Test installer on Arch Linux (Docker)
+1. Measure install times
+1. Fix any critical bugs
 
 **Midday (Medium Energy):**
 1. Start Homebrew formula
-2. Research PyPI packaging
-3. Test error scenarios
+1. Research PyPI packaging
+1. Test error scenarios
 
 **Afternoon (Lower Energy):**
 1. Update documentation
-2. Write troubleshooting guide
-3. Plan Day 3 work
+1. Write troubleshooting guide
+1. Plan Day 3 work
 
 ---
 

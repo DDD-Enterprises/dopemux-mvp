@@ -42,21 +42,21 @@ Built an **intelligent, automatic, ADHD-optimized knowledge graph system** for d
 
 **Backend (Python)** - 2,870 lines:
 1. AGE Client with connection pooling
-2. 8 ADHD-optimized data models
-3. 12 query methods across 3 tiers
-4. Performance benchmarking framework
-5. Event-driven orchestration
-6. Attention-aware query selection
-7. Serena LSP integration
+1. 8 ADHD-optimized data models
+1. 12 query methods across 3 tiers
+1. Performance benchmarking framework
+1. Event-driven orchestration
+1. Attention-aware query selection
+1. Serena LSP integration
 
 **API Layer** - 346 lines:
-8. DopeconBridge REST API (5 endpoints)
-9. Authority middleware (Two-Plane enforcement)
+1. DopeconBridge REST API (5 endpoints)
+1. Authority middleware (Two-Plane enforcement)
 
 **Frontend (TypeScript)** - 887 lines:
-10. React Ink Terminal UI (3 components)
-11. HTTP client with type safety
-12. Routing state machine
+1. React Ink Terminal UI (3 components)
+1. HTTP client with type safety
+1. Routing state machine
 
 ### Intelligence: Automatic, Implicit Operation
 
