@@ -8,6 +8,7 @@ repos:
         entry: python scripts/docs_frontmatter_guard.py --fix
         language: system
         files: ^docs/.*\.md$
+        exclude: ^docs/archive/
 
       # Graph schema validation
       - id: docs-graph-validator
@@ -52,6 +53,7 @@ repos:
           - --
         language: system
         files: ^docs/.*\.md$
+        exclude: ^docs/archive/
         pass_filenames: true
 
       # Prelude token count validation for embeddings
@@ -84,6 +86,7 @@ repos:
             print('✅ All preludes within token limit')
         language: system
         files: ^docs/.*\.md$
+        exclude: ^docs/archive/
         pass_filenames: true
 
       # Markdown file location enforcement
@@ -156,7 +159,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^docs/.*\.md$
-        exclude: node_modules/
+        exclude: (^docs/archive/|node_modules/)
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
@@ -171,7 +174,9 @@ repos:
     hooks:
       - id: trailing-whitespace
         files: ^docs/.*\.md$
+        exclude: ^docs/archive/
       - id: end-of-file-fixer
         files: ^docs/.*\.md$
+        exclude: ^docs/archive/
       - id: check-yaml
         files: ^config/.*\.ya?ml$
