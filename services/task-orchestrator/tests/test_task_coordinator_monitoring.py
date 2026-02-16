@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Unit tests for TaskCoordinator._monitor_execution method.
 
@@ -67,29 +66,38 @@ def task_coordinator():
     return TaskCoordinator(workspace_id=workspace_id)
 
 
+def create_fast_monitor(coordinator, simulated_duration=1.0, sleep_interval=0.2, check_threshold=True):
+    """
+    Helper to create a fast monitoring function for testing.
+    
+    Args:
+        coordinator: TaskCoordinator instance
+        simulated_duration: How long the monitoring should simulate (seconds)
+        sleep_interval: How often to check conditions (seconds)
+        check_threshold: Whether to check focus_session_duration threshold
+    """
+    async def fast_monitor_execution(task):
+        start_time = datetime.now()
+        
+        while (datetime.now() - start_time).total_seconds() < simulated_duration:
+            elapsed = (datetime.now() - coordinator.coordination_state.session_start_time).total_seconds()
+            coordinator.coordination_state.focus_session_timer = int(elapsed)
+            
+            if check_threshold and coordinator.coordination_state.focus_session_timer >= coordinator.focus_session_duration:
+                break
+                
+            await asyncio.sleep(sleep_interval)
+    
+    return fast_monitor_execution
+
+
 @pytest.mark.asyncio
 async def test_monitor_execution_completes(task_coordinator, sample_tasks):
     """Test that _monitor_execution completes after simulated duration."""
     task = sample_tasks[0]
     
-    # Override simulated duration to make test faster
-    original_method = task_coordinator._monitor_execution
-    
-    async def fast_monitor_execution(task):
-        """Fast version of monitor execution for testing."""
-        simulated_duration = 2  # 2 seconds for fast test
-        start_time = datetime.now()
-        
-        while (datetime.now() - start_time).total_seconds() < simulated_duration:
-            elapsed = (datetime.now() - task_coordinator.coordination_state.session_start_time).total_seconds()
-            task_coordinator.coordination_state.focus_session_timer = int(elapsed)
-            
-            if task_coordinator.coordination_state.focus_session_timer >= task_coordinator.focus_session_duration:
-                break
-                
-            await asyncio.sleep(0.5)
-    
-    task_coordinator._monitor_execution = fast_monitor_execution
+    # Use fast monitoring for testing (2 seconds)
+    task_coordinator._monitor_execution = create_fast_monitor(task_coordinator, simulated_duration=2.0, sleep_interval=0.5)
     
     start = datetime.now()
     await task_coordinator._monitor_execution(task)
@@ -105,17 +113,8 @@ async def test_focus_session_timer_updated(task_coordinator, sample_tasks):
     """Test that focus_session_timer is correctly updated during monitoring."""
     task = sample_tasks[0]
     
-    # Fast monitoring for testing
-    async def fast_monitor_execution(task):
-        simulated_duration = 1
-        start_time = datetime.now()
-        
-        while (datetime.now() - start_time).total_seconds() < simulated_duration:
-            elapsed = (datetime.now() - task_coordinator.coordination_state.session_start_time).total_seconds()
-            task_coordinator.coordination_state.focus_session_timer = int(elapsed)
-            await asyncio.sleep(0.2)
-    
-    task_coordinator._monitor_execution = fast_monitor_execution
+    # Use fast monitoring for testing (1 second)
+    task_coordinator._monitor_execution = create_fast_monitor(task_coordinator, simulated_duration=1.0, sleep_interval=0.2)
     
     initial_timer = task_coordinator.coordination_state.focus_session_timer
     await task_coordinator._monitor_execution(task)
@@ -134,21 +133,8 @@ async def test_session_duration_threshold_respected(task_coordinator, sample_tas
     # Set a low threshold for testing
     task_coordinator.focus_session_duration = 2
     
-    async def fast_monitor_execution(task):
-        simulated_duration = 10  # Would take 10 seconds
-        start_time = datetime.now()
-        
-        while (datetime.now() - start_time).total_seconds() < simulated_duration:
-            elapsed = (datetime.now() - task_coordinator.coordination_state.session_start_time).total_seconds()
-            task_coordinator.coordination_state.focus_session_timer = int(elapsed)
-            
-            # Check threshold
-            if task_coordinator.coordination_state.focus_session_timer >= task_coordinator.focus_session_duration:
-                break
-                
-            await asyncio.sleep(0.2)
-    
-    task_coordinator._monitor_execution = fast_monitor_execution
+    # Use fast monitoring with a longer duration that should be cut short by threshold
+    task_coordinator._monitor_execution = create_fast_monitor(task_coordinator, simulated_duration=10.0, sleep_interval=0.2, check_threshold=True)
     
     start = datetime.now()
     await task_coordinator._monitor_execution(task)
@@ -201,11 +187,8 @@ async def test_task_marked_completed_after_monitoring(task_coordinator, sample_t
     task = sample_tasks[0]
     task_coordinator.tasks[task.id] = task
     
-    # Mock fast monitoring
-    async def fast_monitor(*args, **kwargs):
-        await asyncio.sleep(0.1)
-    
-    task_coordinator._monitor_execution = fast_monitor
+    # Use fast monitoring
+    task_coordinator._monitor_execution = create_fast_monitor(task_coordinator, simulated_duration=0.1, sleep_interval=0.05, check_threshold=False)
     
     # Mock ConPort adapter
     async def mock_update(*args, **kwargs):

@@ -495,6 +495,10 @@ class TaskCoordinator:
 
                 except Exception as e:
                     logger.error(f"❌ Task execution failed {task_id}: {e}")
+                    task.status = TaskStatus.FAILED
+                    # Remove from in_progress if it was added
+                    if task_id in results["in_progress"]:
+                        results["in_progress"].remove(task_id)
                     results["failed"].append(task_id)
                     break
 
