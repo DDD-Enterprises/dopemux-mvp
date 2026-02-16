@@ -156,11 +156,11 @@ jobs:
         run: |
           # Read .taskx-pin
           source .taskx-pin
-          echo "Installing TaskX from $repo @ $commit"
+          echo "Installing TaskX from $repo @ $ref"
 
           python -m venv .taskx_venv
           source .taskx_venv/bin/activate
-          pip install "git+$repo@$commit"
+          pip install "git+$repo@$ref"
 
       - name: ✅ Verify TaskX wiring
         run: |
