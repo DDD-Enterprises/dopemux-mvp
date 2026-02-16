@@ -282,8 +282,8 @@ Having trouble migrating?
 After migration, explore multi-workspace features:
 
 1. [Multi-Workspace Usage Guide](README.md#multi-workspace-usage)
-2. [Workspace API Reference](docs/api/workspace.md)
-3. [Advanced Workspace Patterns](docs/advanced/workspace-patterns.md)
+1. [Workspace API Reference](docs/api/workspace.md)
+1. [Advanced Workspace Patterns](docs/advanced/workspace-patterns.md)
 
 ---
 

@@ -42,10 +42,10 @@ prelude: G35_Implementation_Summary (explanation) for dopemux documentation and 
 
 **Workflow**:
 1. Generate `.env.smoke` if missing
-2. `docker compose up -d --build`
-3. Wait 10 seconds (configurable)
-4. Run runtime gate
-5. Display results + next steps
+1. `docker compose up -d --build`
+1. Wait 10 seconds (configurable)
+1. Run runtime gate
+1. Display results + next steps
 
 **Options**:
 - `--no-build` - Skip build step
@@ -56,8 +56,8 @@ prelude: G35_Implementation_Summary (explanation) for dopemux documentation and 
 
 **Workflow**:
 1. Optionally confirm volume removal
-2. `docker compose down [--volumes]`
-3. Display cleanup summary
+1. `docker compose down [--volumes]`
+1. Display cleanup summary
 
 **Safety**: Preserves volumes by default, requires confirmation for `--volumes`
 
@@ -91,8 +91,8 @@ prelude: G35_Implementation_Summary (explanation) for dopemux documentation and 
 
 **Recommendation**: Fix before running smoke_up.sh
 1. Change Dockerfile line 45 to `EXPOSE 3004`
-2. Change Dockerfile line 48 healthcheck to use `localhost:3004`
-3. OR update compose to use 8005 instead of 3004
+1. Change Dockerfile line 48 healthcheck to use `localhost:3004`
+1. OR update compose to use 8005 instead of 3004
 
 ---
 
@@ -178,8 +178,8 @@ scripts/smoke_up.sh
 
 ### Immediate (Before First Run)
 1. **Fix conport port mismatch** (Dockerfile EXPOSE 3004, not 8005)
-2. **Verify .env.smoke exists** (or let smoke_up.sh generate it)
-3. **Check dopecon-bridge and task-orchestrator ports** (verify no similar mismatches)
+1. **Verify .env.smoke exists** (or let smoke_up.sh generate it)
+1. **Check dopecon-bridge and task-orchestrator ports** (verify no similar mismatches)
 
 ### First Test Run
 ```bash
@@ -194,8 +194,8 @@ scripts/smoke_up.sh
 
 ### Post-Success (Optional)
 1. Add `scripts/smoke_up.sh` to CI workflow
-2. Create unit tests for ComposeParser and HealthProber
-3. Add monitoring integration for runtime gate results
+1. Create unit tests for ComposeParser and HealthProber
+1. Add monitoring integration for runtime gate results
 
 ---
 

@@ -101,9 +101,9 @@ If Docker container remains problematic, use the local stdio MCP server (Decisio
 
 Monitor gpt-researcher releases for langchain 1.0 compatibility. When available:
 1. Remove version pins from Dockerfile
-2. Update to latest gpt-researcher version
-3. Rebuild container
-4. Test thoroughly
+1. Update to latest gpt-researcher version
+1. Rebuild container
+1. Test thoroughly
 
 ## ADHD Note
 

@@ -278,7 +278,7 @@ class TaskStatus(Enum):
 
 | System            | Primary Key         | ConPort Link       | External Link       |
 | ----------------- | ------------------- | ------------------ | ------------------- |
-| task-orchestrator | `id` (str)          | `conport_id` (int) | `leantime_id` (int) |
+| task-orchestrator | `id` (str)          \| `conport_id` (int) \| `leantime_id` (int) |
 | taskmaster        | `id` (from ConPort) | implicit           | none                |
 | CLI               | `id` (str, UUID)    | none               | none                |
 
@@ -422,14 +422,14 @@ async def create_task(title, description, priority, tags, metadata):
 
 **Solutions**:
 1. **Option A**: Canonical 7-state model (task-orchestrator wins)
-   - Pros: Most complete, ADHD-aware
-   - Cons: CLI needs major refactor
-2. **Option B**: Minimal 3-state + metadata flags
-   - Pros: Simple, backwards-compatible
-   - Cons: Loses ADHD states
-3. **Option C**: Extensible state + substates
-   - Pros: Flexible, supports all systems
-   - Cons: Complex mapping logic
+- Pros: Most complete, ADHD-aware
+- Cons: CLI needs major refactor
+1. **Option B**: Minimal 3-state + metadata flags
+- Pros: Simple, backwards-compatible
+- Cons: Loses ADHD states
+1. **Option C**: Extensible state + substates
+- Pros: Flexible, supports all systems
+- Cons: Complex mapping logic
 
 ### Challenge 2: Priority Type Mismatch
 
@@ -503,36 +503,36 @@ adhd_metadata: Optional[ADHDMetadata] = None  # Backwards-compatible
 ### Immediate (Week 2)
 
 1. **Fix taskmaster update sync** (HIGH priority)
-   - `update_task_status()` must call ConPort API, not just emit event
-   - Effort: 2-3 hours
-   - Blocker: Current implementation creates orphaned state
+- `update_task_status()` must call ConPort API, not just emit event
+- Effort: 2-3 hours
+- Blocker: Current implementation creates orphaned state
 
-2. **Add CLI ConPort client** (HIGH priority)
-   - Wire ConPort MCP client to TaskDecomposer
-   - Dual-write: filesystem + ConPort for migration period
-   - Effort: 4-6 hours
+1. **Add CLI ConPort client** (HIGH priority)
+- Wire ConPort MCP client to TaskDecomposer
+- Dual-write: filesystem + ConPort for migration period
+- Effort: 4-6 hours
 
-3. **Design unified schema** (BLOCKING)
-   - Propose canonical schema (PM-INV-03)
-   - Get stakeholder approval
-   - Effort: 6-8 hours
+1. **Design unified schema** (BLOCKING)
+- Propose canonical schema (PM-INV-03)
+- Get stakeholder approval
+- Effort: 6-8 hours
 
 ### Phase 1 (Week 3-4)
 
 1. **Implement unified schema**
-   - Create shared schema module
-   - Adapter pattern for system-specific extensions
-   - Effort: 12-16 hours
+- Create shared schema module
+- Adapter pattern for system-specific extensions
+- Effort: 12-16 hours
 
-2. **Migration utilities**
-   - CLI tasks → ConPort import script
-   - Validation tools
-   - Effort: 6-8 hours
+1. **Migration utilities**
+- CLI tasks → ConPort import script
+- Validation tools
+- Effort: 6-8 hours
 
-3. **Integration tests**
-   - Cross-system task operations
-   - State transition validation
-   - Effort: 12-18 hours
+1. **Integration tests**
+- Cross-system task operations
+- State transition validation
+- Effort: 12-18 hours
 
 ---
 

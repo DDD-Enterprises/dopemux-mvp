@@ -42,10 +42,10 @@ Systematic code audit investigated this claim and discovered **critical error** 
 
 **Actions Taken**:
 1. ✅ Removed DEPRECATED.md
-2. ✅ Created STATUS.md marking service as ACTIVE
-3. ✅ Extracted ML components to standalone service
-4. ✅ Cancelled 2025-11-01 deletion
-5. ✅ Logged as ConPort Decision #5 (CRITICAL tag)
+1. ✅ Created STATUS.md marking service as ACTIVE
+1. ✅ Extracted ML components to standalone service
+1. ✅ Cancelled 2025-11-01 deletion
+1. ✅ Logged as ConPort Decision #5 (CRITICAL tag)
 
 ---
 
@@ -101,28 +101,28 @@ f9a176f feat(task-orchestrator): complete 37 specialized tools implementation
 **What Was Lost** (NOT replaced):
 
 1. **ML-Based Predictive Risk Assessment** (562 lines)
-   - Real-time blocker prediction
-   - ADHD-specific risk factors (cognitive overload, hyperfocus burnout)
-   - Historical pattern learning
-   - Confidence interval calculation
-   - Proactive mitigation suggestions
+- Real-time blocker prediction
+- ADHD-specific risk factors (cognitive overload, hyperfocus burnout)
+- Historical pattern learning
+- Confidence interval calculation
+- Proactive mitigation suggestions
 
-2. **Multi-Team Coordination Engine**
-   - Cross-team dependency tracking
-   - Team capacity management
-   - ADHD-aware workload optimization
+1. **Multi-Team Coordination Engine**
+- Cross-team dependency tracking
+- Team capacity management
+- ADHD-aware workload optimization
 
-3. **Enhanced Orchestration** (973 lines)
-   - Advanced task orchestration
-   - Dependency analysis
-   - Conflict detection
+1. **Enhanced Orchestration** (973 lines)
+- Advanced task orchestration
+- Dependency analysis
+- Conflict detection
 
-4. **Automation Workflows** (946 lines, 54 methods)
-   - Workflow templates
-   - Pattern automation
+1. **Automation Workflows** (946 lines, 54 methods)
+- Workflow templates
+- Pattern automation
 
-5. **Sync Engine** (1029 lines)
-   - Leantime PM plane synchronization
+1. **Sync Engine** (1029 lines)
+- Leantime PM plane synchronization
 
 **Total Unique Functionality Lost**: ~4,615 lines with no replacement
 
@@ -198,22 +198,22 @@ f9a176f feat(task-orchestrator): complete 37 specialized tools implementation
 ### Immediate Actions (Completed)
 
 1. ✅ Remove DEPRECATED.md
-2. ✅ Create STATUS.md (document reversal)
-3. ✅ Extract ML components to services/ml-risk-assessment/
-   - engine.py (predictive_risk_assessment.py)
-   - multi_team_coordination.py
-   - README.md
-4. ✅ Log ConPort Decision #5 (CRITICAL tag)
-5. ✅ Git commit: 68b8a4b
+1. ✅ Create STATUS.md (document reversal)
+1. ✅ Extract ML components to services/ml-risk-assessment/
+- engine.py (predictive_risk_assessment.py)
+- multi_team_coordination.py
+- README.md
+1. ✅ Log ConPort Decision #5 (CRITICAL tag)
+1. ✅ Git commit: 68b8a4b
 
 ### Week 7 Integration (13 hours)
 
 **Security & Architecture**:
 1. Security audit (2h) - Apply ConPort/Serena learnings
-2. Fix service boundaries (3h) - Use ConPort HTTP API
-3. Add authentication (2h) - Follow ADHD Engine pattern
-4. DopeconBridge wiring (4h)
-5. Run tests and validate (2h)
+1. Fix service boundaries (3h) - Use ConPort HTTP API
+1. Add authentication (2h) - Follow ADHD Engine pattern
+1. DopeconBridge wiring (4h)
+1. Run tests and validate (2h)
 
 **Result**: Fully integrated active service
 

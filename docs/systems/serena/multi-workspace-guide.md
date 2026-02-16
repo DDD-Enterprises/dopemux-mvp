@@ -558,8 +558,8 @@ workspace_paths=[os.path.abspath("../other-project")]
 
 **Implementation**: All multi-workspace tools use the `SerenaMultiWorkspace` wrapper class which:
 1. Creates per-workspace Serena instances
-2. Aggregates results using appropriate strategies
-3. Manages instance lifecycle and caching
+1. Aggregates results using appropriate strategies
+1. Manages instance lifecycle and caching
 
 **Supported Tools**: 6 tools currently support multi-workspace:
 - `find_similar_code` (F-NEW-2)

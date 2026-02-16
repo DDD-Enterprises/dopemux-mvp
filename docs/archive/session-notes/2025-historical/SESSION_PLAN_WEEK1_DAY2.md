@@ -40,28 +40,28 @@ prelude: Session_Plan_Week1_Day2 (explanation) for dopemux documentation and dev
 
 #### Block 1: Platform Testing (90 minutes)
 - [ ] **Test 1:** Ubuntu 22.04 in Docker
-  - Run: `./test_installer_ubuntu.sh`
-  - Measure install time
-  - Document any issues
-  - Fix critical bugs
+- Run: `./test_installer_ubuntu.sh`
+- Measure install time
+- Document any issues
+- Fix critical bugs
 
 - [ ] **Test 2:** Arch Linux in Docker
-  - Create test script (copy Ubuntu pattern)
-  - Run installer with --full --yes
-  - Verify all checks pass
+- Create test script (copy Ubuntu pattern)
+- Run installer with --full --yes
+- Verify all checks pass
 
 - [ ] **Test 3:** macOS full install
-  - Run: `./install.sh --quick`
-  - Verify shell integration
-  - Test uninstall + reinstall
+- Run: `./install.sh --quick`
+- Verify shell integration
+- Test uninstall + reinstall
 
 **Break 1:** 10 minutes ☕ (stretch, hydrate, look away from screen)
 
 #### Block 2: Bug Fixing & Performance (60 minutes)
 - [ ] Fix any bugs found in testing
 - [ ] Measure install times:
-  - Quick mode: Target <2 min
-  - Full mode: Target <5 min
+- Quick mode: Target <2 min
+- Full mode: Target <5 min
 - [ ] Optimize slow parts if needed
 - [ ] Update INSTALLER_TESTING_REPORT.md with results
 
@@ -75,9 +75,9 @@ prelude: Session_Plan_Week1_Day2 (explanation) for dopemux documentation and dev
 
 #### Block 3: Homebrew Formula (90 minutes)
 - [ ] **Research Homebrew packaging**
-  - Read: `brew create` documentation
-  - Study existing formulas (e.g., tmux, jq)
-  - Understand dependencies syntax
+- Read: `brew create` documentation
+- Study existing formulas (e.g., tmux, jq)
+- Understand dependencies syntax
 
 - [ ] **Draft formula** (`dopemux.rb`)
   ```ruby
@@ -102,21 +102,21 @@ prelude: Session_Plan_Week1_Day2 (explanation) for dopemux documentation and dev
   ```
 
 - [ ] **Test formula locally**
-  - `brew install --build-from-source ./dopemux.rb`
-  - Verify installation works
-  - Test uninstall
+- `brew install --build-from-source ./dopemux.rb`
+- Verify installation works
+- Test uninstall
 
 **Break 3:** 10 minutes ☕
 
 #### Block 4: PyPI Package Setup (60 minutes)
 - [ ] **Review pyproject.toml**
-  - Already exists! Check if complete
-  - Verify dependencies
-  - Update version to 1.0.0
+- Already exists! Check if complete
+- Verify dependencies
+- Update version to 1.0.0
 
 - [ ] **Create MANIFEST.in**
-  - Include all necessary files
-  - Exclude development files
+- Include all necessary files
+- Exclude development files
 
 - [ ] **Test package build**
   ```bash
@@ -125,8 +125,8 @@ prelude: Session_Plan_Week1_Day2 (explanation) for dopemux documentation and dev
   ```
 
 - [ ] **Document publishing process**
-  - Add to PRODUCTION_READINESS_PLAN.md
-  - Create release checklist
+- Add to PRODUCTION_READINESS_PLAN.md
+- Create release checklist
 
 **Break 4:** 15 minutes 🚶 (walk, fresh air)
 
@@ -138,19 +138,19 @@ prelude: Session_Plan_Week1_Day2 (explanation) for dopemux documentation and dev
 
 #### Block 5: Documentation & Cleanup (60 minutes)
 - [ ] **Update INSTALLER_TESTING_REPORT.md**
-  - Mark completed tests as ✅
-  - Add performance metrics
-  - Document platform quirks
+- Mark completed tests as ✅
+- Add performance metrics
+- Document platform quirks
 
 - [ ] **Update PRODUCTION_READINESS_QUICK_REF.md**
-  - Update progress percentages
-  - Mark completed tasks
-  - Update metrics dashboard
+- Update progress percentages
+- Mark completed tasks
+- Update metrics dashboard
 
 - [ ] **Create troubleshooting guide**
-  - Common installation issues
-  - Platform-specific fixes
-  - Error message explanations
+- Common installation issues
+- Platform-specific fixes
+- Error message explanations
 
 #### Block 6: Tomorrow's Planning (30 minutes)
 - [ ] Review Week 1 progress
@@ -239,10 +239,10 @@ time ./install.sh --quick
 
 **Steps:**
 1. Research: Read 3-5 example formulas
-2. Draft: Create dopemux.rb
-3. Test: `brew install --build-from-source`
-4. Iterate: Fix issues
-5. Document: Add to README.md
+1. Draft: Create dopemux.rb
+1. Test: `brew install --build-from-source`
+1. Iterate: Fix issues
+1. Document: Add to README.md
 
 **Formula Template:**
 ```ruby
@@ -280,9 +280,9 @@ end
 
 **Already have pyproject.toml! Just need to:**
 1. Verify it's complete
-2. Add entry points for CLI
-3. Test build locally
-4. Document release process
+1. Add entry points for CLI
+1. Test build locally
+1. Document release process
 
 **Build & Test:**
 ```bash

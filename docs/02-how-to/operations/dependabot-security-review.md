@@ -39,23 +39,23 @@ prelude: Dependabot_Security_Review (how-to) for dopemux documentation and devel
    # Visit: https://github.com/DDD-Enterprises/dopemux-mvp/security/dependabot
    ```
 
-2. **Review Each Alert**:
-   - Identify affected packages
-   - Check available patches
-   - Assess exploit risk
+1. **Review Each Alert**:
+- Identify affected packages
+- Check available patches
+- Assess exploit risk
 
 ### Short-term (Within 1 week)
 1. **Enable Automated Dependency Updates**:
-   - Configure Dependabot auto-updates
-   - Set up PR auto-merge for patch versions
+- Configure Dependabot auto-updates
+- Set up PR auto-merge for patch versions
 
-2. **Add npm lockfiles**:
+1. **Add npm lockfiles**:
    ```bash
    cd <javascript-project> && pnpm install
    git add pnpm-lock.yaml
    ```
 
-3. **Run Security Audits**:
+1. **Run Security Audits**:
    ```bash
    # Python
    pip-audit
@@ -67,16 +67,16 @@ prelude: Dependabot_Security_Review (how-to) for dopemux documentation and devel
 
 ### Long-term (Best Practices)
 1. **Automated Scanning**:
-   - Enable GitHub security scanning
-   - Add pre-commit hooks for dependency checks
+- Enable GitHub security scanning
+- Add pre-commit hooks for dependency checks
 
-2. **Regular Updates**:
-   - Monthly dependency review
-   - Quarterly major version updates
+1. **Regular Updates**:
+- Monthly dependency review
+- Quarterly major version updates
 
-3. **Security Policy**:
-   - Document vulnerability response process
-   - Set SLA for security patches (24-48 hours)
+1. **Security Policy**:
+- Document vulnerability response process
+- Set SLA for security patches (24-48 hours)
 
 ---
 
@@ -95,10 +95,10 @@ prelude: Dependabot_Security_Review (how-to) for dopemux documentation and devel
 ## Next Steps
 
 1. ✅ **Review complete** - aiohttp already patched
-2. 🔄 **Access Dependabot dashboard** - Manual review required
-3. ⏭️  **Generate lockfiles** - Run `pnpm install` in the target JS project
-4. ⏭️  **Run audits** - After lockfiles generated
-5. ⏭️  **Apply patches** - Based on audit results
+1. 🔄 **Access Dependabot dashboard** - Manual review required
+1. ⏭️  **Generate lockfiles** - Run `pnpm install` in the target JS project
+1. ⏭️  **Run audits** - After lockfiles generated
+1. ⏭️  **Apply patches** - Based on audit results
 
 ---
 

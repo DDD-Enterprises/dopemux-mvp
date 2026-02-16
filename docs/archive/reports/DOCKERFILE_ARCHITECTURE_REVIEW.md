@@ -24,10 +24,10 @@ prelude: Dockerfile_Architecture_Review (explanation) for dopemux documentation 
 
 | Aspect | conport | dopecon-bridge | task-orchestrator |
 |--------|---------|----------------|-------------------|
-| **Build Context** | Repo root (`.`) | Repo root (`.`) | Repo root (`.`) |
-| **WORKDIR** | `/app/services/conport` | `/app` ❌ | `/app` ❌ |
-| **Code Location** | `/app/services/conport/` | `/app/services/dopecon-bridge/` | `/app/services/task-orchestrator/` |
-| **CMD** | `python app.py` ✅ | `python main.py` ❌ | `python server.py` ❌ |
+| **Build Context** | Repo root (`.`) \| Repo root (`.`) \| Repo root (`.`) |
+| **WORKDIR** | `/app/services/conport` \| `/app` ❌ \| `/app` ❌ |
+| **Code Location** | `/app/services/conport/` \| `/app/services/dopecon-bridge/` \| `/app/services/task-orchestrator/` |
+| **CMD** | `python app.py` ✅ \| `python main.py` ❌ \| `python server.py` ❌ |
 | **Works?** | No (import errors) | No (wrong path) | No (wrong path) |
 
 ### Root Cause: Build Context Migration Incomplete
@@ -237,11 +237,11 @@ services:
       context: .  # Always repo root
       dockerfile: services/<service-name>/Dockerfile
     environment:
-      - PORT=${PORT}
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - ENVIRONMENT=${ENVIRONMENT:-dev}
+- PORT=${PORT}
+- LOG_LEVEL=${LOG_LEVEL:-INFO}
+- ENVIRONMENT=${ENVIRONMENT:-dev}
     ports:
-      - "${PORT}:${PORT}"
+- "${PORT}:${PORT}"
 ```
 
 ---
@@ -304,27 +304,27 @@ WORKDIR /app/service
 ```
 Infrastructure: ✅ UP (postgres, redis, qdrant)
 Applications:   ❌ ALL DOWN
-  - conport: Import errors (dopemux.logging)
-  - dopecon-bridge: Wrong path (/app/main.py)
-  - task-orchestrator: Wrong path (/app/server.py)
+- conport: Import errors (dopemux.logging)
+- dopecon-bridge: Wrong path (/app/main.py)
+- task-orchestrator: Wrong path (/app/server.py)
 ```
 
 ### After Fix 2 & 3 (WORKDIR alignment)
 ```
 Infrastructure: ✅ UP
 Applications:   🟡 PARTIAL
-  - conport: ❌ Still import errors
-  - dopecon-bridge: ✅ Should start
-  - task-orchestrator: ✅ Should start
+- conport: ❌ Still import errors
+- dopecon-bridge: ✅ Should start
+- task-orchestrator: ✅ Should start
 ```
 
 ### After Fix 1 (Remove dopemux imports)
 ```
 Infrastructure: ✅ UP
 Applications:   ✅ ALL UP (expected)
-  - conport: ✅ Standalone
-  - dopecon-bridge: ✅ Running
-  - task-orchestrator: ✅ Running
+- conport: ✅ Standalone
+- dopecon-bridge: ✅ Running
+- task-orchestrator: ✅ Running
 ```
 
 ---
@@ -333,23 +333,23 @@ Applications:   ✅ ALL UP (expected)
 
 ### Phase 1: Quick Wins (WORKDIR fixes)
 1. Fix dopecon-bridge Dockerfile (add WORKDIR line)
-2. Fix task-orchestrator Dockerfile (add WORKDIR line)
-3. Rebuild and test
+1. Fix task-orchestrator Dockerfile (add WORKDIR line)
+1. Rebuild and test
 
 **Expected Result**: 2/3 services working
 
 ### Phase 2: Conport Standalone
 1. Analyze conport's dopemux imports usage
-2. Replace with standard Python equivalents
-3. Update app.py to be standalone
-4. Rebuild and test
+1. Replace with standard Python equivalents
+1. Update app.py to be standalone
+1. Rebuild and test
 
 **Expected Result**: 3/3 services working
 
 ### Phase 3: Standardization (Future)
 1. Create Dockerfile template
-2. Migrate all 3 services to standard pattern
-3. Document pattern in `docs/engineering/dockerfile-standard.md`
+1. Migrate all 3 services to standard pattern
+1. Document pattern in `docs/engineering/dockerfile-standard.md`
 
 ---
 

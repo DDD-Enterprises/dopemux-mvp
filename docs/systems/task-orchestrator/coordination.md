@@ -163,16 +163,16 @@ Cognitive Plane ─┘
 ```yaml
 plane-coordinator:
   environment:
-    - COORDINATION_API_PORT=8090
-    - MCP_SERVER_PORT=8090
-    - PORT=8090
-    - REDIS_URL=redis://dopemux-redis-primary:6379
-    - CONPORT_URL=http://conport:3004
-    - ADHD_ENGINE_URL=http://host.docker.internal:8095
+- COORDINATION_API_PORT=8090
+- MCP_SERVER_PORT=8090
+- PORT=8090
+- REDIS_URL=redis://dopemux-redis-primary:6379
+- CONPORT_URL=http://conport:3004
+- ADHD_ENGINE_URL=http://host.docker.internal:8095
   ports:
-    - "8090:8090"
+- "8090:8090"
   depends_on:
-    - redis-primary
+- redis-primary
 ```
 
 ### Health Checks

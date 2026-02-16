@@ -521,8 +521,8 @@ Imports: {imports}
 
 Context should explain:
 1. What module/file this is from
-2. What this function/class does
-3. How it relates to the system
+1. What this function/class does
+1. How it relates to the system
 
 Keep it concise and factual."""
 
@@ -691,27 +691,27 @@ await event_bus.publish('search.completed', {
 **Phase 1 (MVP - Week 1)**:
 
 1. Code index only (voyage-code-3 + Claude context)
-2. Simple dense search (no BM25 yet)
-3. Basic reranking (top-50 → top-10)
-4. Stdio MCP server with `code_search` tool
+1. Simple dense search (no BM25 yet)
+1. Basic reranking (top-50 → top-10)
+1. Stdio MCP server with `code_search` tool
 
 **Phase 2 (Week 2)**:
-5. Docs index (voyage-context-3, no Claude calls)
-6. API index (PAL apilookup integration)
-7. Multi-index fusion with task profiles
-8. Enhanced MCP tools: `semantic_search`, `docurag_query`
+1. Docs index (voyage-context-3, no Claude calls)
+1. API index (PAL apilookup integration)
+1. Multi-index fusion with task profiles
+1. Enhanced MCP tools: `semantic_search`, `docurag_query`
 
 **Phase 3 (Week 3)**:
-9. Chat index with preludes
-10. BM25 sparse search per index
-11. Full hybrid (BM25 + dense + RRF)
-12. ConPort integration and event publishing
+1. Chat index with preludes
+1. BM25 sparse search per index
+1. Full hybrid (BM25 + dense + RRF)
+1. ConPort integration and event publishing
 
 **Phase 4 (Week 4)**:
-13. Performance tuning (efSearch, chunk size, weights)
-14. Semantic caching with Redis
-15. Incremental indexing and file watching
-16. Production deployment and monitoring
+1. Performance tuning (efSearch, chunk size, weights)
+1. Semantic caching with Redis
+1. Incremental indexing and file watching
+1. Production deployment and monitoring
 
 ---
 

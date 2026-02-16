@@ -387,9 +387,9 @@ class PostgresAGEBackend(StorageBackend):
 
     async def create_decision(self, decision: Decision) -> Decision:
         """
-        1. Generate properties dict from Decision model
-        2. Execute Cypher CREATE query
-        3. Return decision with ID
+1. Generate properties dict from Decision model
+1. Execute Cypher CREATE query
+1. Return decision with ID
         """
         query = """
         SELECT * FROM cypher('dddpg', $$
@@ -429,9 +429,9 @@ class SQLiteCacheBackend(StorageBackend):
     async def list_decisions(self, workspace_id, instance_id, ...) -> List[Decision]:
         """
         Fast read from local cache
-        1. Query SQLite
-        2. Parse rows to Decision models
-        3. Return list
+1. Query SQLite
+1. Parse rows to Decision models
+1. Return list
         """
         query = """
         SELECT * FROM decisions
@@ -467,9 +467,9 @@ class HybridStorage(StorageBackend):
     async def create_decision(self, decision: Decision) -> Decision:
         """
         Write path:
-        1. Persist to Postgres (source of truth)
-        2. Update local SQLite cache
-        3. Publish to EventBus (other instances will update their caches)
+1. Persist to Postgres (source of truth)
+1. Update local SQLite cache
+1. Publish to EventBus (other instances will update their caches)
         """
         # 1. Postgres
         decision = await self.postgres.create_decision(decision)
@@ -486,9 +486,9 @@ class HybridStorage(StorageBackend):
     async def get_decision(self, decision_id: int) -> Optional[Decision]:
         """
         Read path (optimized):
-        1. Check SQLite cache (< 1ms)
-        2. If miss, query Postgres
-        3. Cache result
+1. Check SQLite cache (< 1ms)
+1. If miss, query Postgres
+1. Cache result
         """
         # Cache first
         decision = await self.sqlite.get_decision(decision_id)
@@ -777,14 +777,14 @@ async def migrate_from_conport_mcp(old_db_path: str):
 
 ### Tonight (1-2 hours):
 1. Build SQLite storage backend (CRUD)
-2. Test with actual Decision models
-3. Validate multi-instance isolation
-4. Get DDDPG storing decisions! 🎉
+1. Test with actual Decision models
+1. Validate multi-instance isolation
+1. Get DDDPG storing decisions! 🎉
 
 ### Tomorrow:
 1. Add Postgres AGE backend
-2. Build hybrid coordinator
-3. Add graph queries
-4. EventBus integration
+1. Build hybrid coordinator
+1. Add graph queries
+1. EventBus integration
 
 **Start with SQLite = Ship something tonight! 🚀**

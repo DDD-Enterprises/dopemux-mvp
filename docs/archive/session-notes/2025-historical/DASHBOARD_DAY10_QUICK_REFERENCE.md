@@ -198,10 +198,10 @@ DashboardApp
 ## 💡 TOP 5 TIPS
 
 1. **Keep implementation guide open** - It has all the code!
-2. **Take breaks every 45 min** - ADHD-friendly!
-3. **Copy-paste first, customize later** - Don't reinvent!
-4. **Test as you go** - Don't wait until the end!
-5. **Commit often** - Atomic changes, easy to revert!
+1. **Take breaks every 45 min** - ADHD-friendly!
+1. **Copy-paste first, customize later** - Don't reinvent!
+1. **Test as you go** - Don't wait until the end!
+1. **Commit often** - Atomic changes, easy to revert!
 
 ---
 
@@ -261,9 +261,9 @@ Update this as you go! ✏️
 
 **Stuck?** Check these in order:
 1. Implementation Ready guide (search for your issue)
-2. Zen Research doc (architecture section)
-3. Master Index (tips & tricks section)
-4. Existing code (Day 9 sparklines/keyboard)
+1. Zen Research doc (architecture section)
+1. Master Index (tips & tricks section)
+1. Existing code (Day 9 sparklines/keyboard)
 
 **Can't find API?** Check:
 - ADHD Engine: `http://localhost:8000`

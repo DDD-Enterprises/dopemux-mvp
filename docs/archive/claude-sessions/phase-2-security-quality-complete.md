@@ -133,9 +133,9 @@ async def get_custom_data(...):
 
 **Why Services Bypass It**:
 1. Bridge can't actually save/retrieve data (endpoints are stubs)
-2. Missing MCP→ConPort integration layer
-3. Direct SQLite access is simpler than incomplete bridge
-4. Extra network hop with no value (HTTP → Stub → Nothing)
+1. Missing MCP→ConPort integration layer
+1. Direct SQLite access is simpler than incomplete bridge
+1. Extra network hop with no value (HTTP → Stub → Nothing)
 
 **What's Implemented** (✅):
 - Authority middleware (clean, rule-based)
@@ -235,33 +235,33 @@ services/conport_kg/orchestrator.py - Multiple "TODO: DopeconBridge" comments
 ### Immediate (Before Production) - 2 hours
 
 1. **Fix CORS Wildcards** (4 services × 10 min = 40 min)
-   - Replace `["*"]` with env-based whitelist
-   - Add `ALLOWED_ORIGINS` to all configs
+- Replace `["*"]` with env-based whitelist
+- Add `ALLOWED_ORIGINS` to all configs
 
-2. **Remove Hardcoded Credentials** (2 files × 15 min = 30 min)
-   - Move to environment variables
-   - Remove from git history
+1. **Remove Hardcoded Credentials** (2 files × 15 min = 30 min)
+- Move to environment variables
+- Remove from git history
 
-3. **Add API Authentication** (ADHD Engine, 1h)
-   - Implement API key middleware
-   - Secure 7 endpoints
+1. **Add API Authentication** (ADHD Engine, 1h)
+- Implement API key middleware
+- Secure 7 endpoints
 
 ### Week 7 (Integration Work) - 12 hours
 
 1. **Complete DopeconBridge** (4-6h)
-   - Implement MCP→ConPort integration
-   - Wire custom_data endpoints
-   - Test end-to-end
+- Implement MCP→ConPort integration
+- Wire custom_data endpoints
+- Test end-to-end
 
-2. **Migrate Services to Bridge** (6-8h)
-   - Remove direct SQLite access
-   - Update ADHD Engine to use HTTP API
-   - Wire ConPort orchestrator
+1. **Migrate Services to Bridge** (6-8h)
+- Remove direct SQLite access
+- Update ADHD Engine to use HTTP API
+- Wire ConPort orchestrator
 
-3. **Verify Authority Enforcement** (2h)
-   - Test X-Source-Plane enforcement
-   - Validate PM plane read-only
-   - Integration tests
+1. **Verify Authority Enforcement** (2h)
+- Test X-Source-Plane enforcement
+- Validate PM plane read-only
+- Integration tests
 
 ---
 
@@ -298,9 +298,9 @@ services/conport_kg/orchestrator.py - Multiple "TODO: DopeconBridge" comments
 
 Based on Phase 2 findings, Phase 3 should focus on:
 1. DopeconBridge completion verification
-2. ADHD Engine background monitors (claim not verified)
-3. ConPort orchestrator bridge TODOs
-4. GPT-Researcher (67 TODOs found)
+1. ADHD Engine background monitors (claim not verified)
+1. ConPort orchestrator bridge TODOs
+1. GPT-Researcher (67 TODOs found)
 
 ---
 

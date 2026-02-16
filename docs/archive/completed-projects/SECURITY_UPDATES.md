@@ -121,10 +121,10 @@ Addressed critical and high-priority security vulnerabilities identified by safe
 ## Next Steps
 
 1. **Deploy updates** to staging environment for testing
-2. **Run security tests** to validate fixes
-3. **Monitor ecdsa** for upstream security patches
-4. **Schedule regular** security scans and dependency updates
-5. **Document procedures** for future security updates
+1. **Run security tests** to validate fixes
+1. **Monitor ecdsa** for upstream security patches
+1. **Schedule regular** security scans and dependency updates
+1. **Document procedures** for future security updates
 
 ---
 

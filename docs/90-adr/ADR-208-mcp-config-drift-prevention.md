@@ -39,8 +39,8 @@ During the migration from local stdio-based MCP servers to containerized HTTP/SS
 When infrastructure evolves (local → Docker, stdio → HTTP), client configurations (`.claude.json`) lag behind, creating three failure modes:
 
 1. **Symptom Mismatch**: Servers report "healthy" in Docker, but clients can't connect
-2. **Protocol Misalignment**: Config expects stdio/files, servers provide HTTP/SSE
-3. **Commit Gap**: Infrastructure changes without corresponding config commits
+1. **Protocol Misalignment**: Config expects stdio/files, servers provide HTTP/SSE
+1. **Commit Gap**: Infrastructure changes without corresponding config commits
 
 ### Concrete Example
 ```json
@@ -194,15 +194,15 @@ def build_config(info):
 
 ### Technical Benefits
 1. **Health Checks Work**: `curl http://localhost:3009/health`
-2. **Network Debugging**: Standard HTTP tools apply (curl, tcpdump, wireshark)
-3. **Port Isolation**: Each server isolated, prevents conflicts
-4. **No Wrapper Scripts**: Direct connection, simpler architecture
+1. **Network Debugging**: Standard HTTP tools apply (curl, tcpdump, wireshark)
+1. **Port Isolation**: Each server isolated, prevents conflicts
+1. **No Wrapper Scripts**: Direct connection, simpler architecture
 
 ### Operational Benefits
 1. **Monitoring**: Prometheus metrics at `/metrics`
-2. **Load Balancing**: Standard HTTP load balancers work
-3. **Security**: mTLS, API keys, rate limiting all standard
-4. **Logging**: Access logs, error logs, structured logging
+1. **Load Balancing**: Standard HTTP load balancers work
+1. **Security**: mTLS, API keys, rate limiting all standard
+1. **Logging**: Access logs, error logs, structured logging
 
 ### Comparison
 ```
@@ -264,27 +264,27 @@ Central service discovery:
 
 ### Positive
 1. **Eliminates Manual Sync**: Config generated from running state
-2. **Prevents Drift**: CI/CD catches mismatches immediately
-3. **Single Source of Truth**: Servers advertise their own config
-4. **Version Tracking**: `/info` includes version, tracks evolution
-5. **Easier Onboarding**: New developers run one script
+1. **Prevents Drift**: CI/CD catches mismatches immediately
+1. **Single Source of Truth**: Servers advertise their own config
+1. **Version Tracking**: `/info` includes version, tracks evolution
+1. **Easier Onboarding**: New developers run one script
 
 ### Negative
 1. **Initial Migration Cost**: All servers need `/info` endpoint
-2. **Tooling Dependency**: Requires Python + Docker SDK
-3. **Runtime Dependency**: Must have servers running to generate config
+1. **Tooling Dependency**: Requires Python + Docker SDK
+1. **Runtime Dependency**: Must have servers running to generate config
 
 ### Neutral
 1. **Breaking Change**: Existing manual .claude.json workflows deprecated
-2. **New Convention**: Developers must understand service discovery pattern
+1. **New Convention**: Developers must understand service discovery pattern
 
 ## Validation
 
 ### Success Criteria
 1. ✅ All MCP servers expose `/info` endpoint
-2. ✅ `generate-claude-config.py` produces valid .claude.json
-3. ✅ CI/CD validates on every change
-4. ✅ Zero drift between running servers and client config
+1. ✅ `generate-claude-config.py` produces valid .claude.json
+1. ✅ CI/CD validates on every change
+1. ✅ Zero drift between running servers and client config
 
 ### Testing
 ```bash

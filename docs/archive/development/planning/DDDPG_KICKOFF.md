@@ -23,22 +23,22 @@ prelude: Dddpg_Kickoff (explanation) for dopemux documentation and developer wor
 ### Path C Validation ✅
 
 1. **EventBus Pattern Works** ✅
-   - Clean, simple architecture
-   - < 50ms event latency
-   - Easy to add consumers
-   - Scales trivially
+- Clean, simple architecture
+- < 50ms event latency
+- Easy to add consumers
+- Scales trivially
 
-2. **Decision Context Valuable** ✅
-   - Demo shows clear developer value
-   - ADHD-friendly (Top-3 pattern)
-   - < 1ms lookups (instant)
-   - Graceful degradation
+1. **Decision Context Valuable** ✅
+- Demo shows clear developer value
+- ADHD-friendly (Top-3 pattern)
+- < 1ms lookups (instant)
+- Graceful degradation
 
-3. **Production Ready** ✅
-   - Running in Docker now
-   - Health monitoring
-   - Auto-restart
-   - Zero downtime
+1. **Production Ready** ✅
+- Running in Docker now
+- Health monitoring
+- Auto-restart
+- Zero downtime
 
 **Conclusion**: Pattern proven → Build unified system!
 
@@ -49,25 +49,25 @@ prelude: Dddpg_Kickoff (explanation) for dopemux documentation and developer wor
 ### Current State: 3 Incomplete Systems
 
 1. **ConPort MCP** (services/conport/)
-   - ✅ STDIO/MCP protocol
-   - ✅ Claude Code integration
-   - ❌ No graph queries
-   - ❌ No auth
-   - ❌ SQLite only
+- ✅ STDIO/MCP protocol
+- ✅ Claude Code integration
+- ❌ No graph queries
+- ❌ No auth
+- ❌ SQLite only
 
-2. **ConPort Enhanced** (docker/mcp-servers/conport/)
-   - ✅ HTTP + SSE
-   - ✅ Multi-client
-   - ❌ No auth
-   - ❌ Limited queries
-   - ❌ SQLite only
+1. **ConPort Enhanced** (docker/mcp-servers/conport/)
+- ✅ HTTP + SSE
+- ✅ Multi-client
+- ❌ No auth
+- ❌ Limited queries
+- ❌ SQLite only
 
-3. **ConPort-KG** (services/conport_kg/)
-   - ✅ PostgreSQL AGE (graph)
-   - ✅ Auth (JWT + RBAC)
-   - ✅ Advanced queries (3-tier)
-   - ❌ No STDIO/MCP
-   - ❌ No EventBus
+1. **ConPort-KG** (services/conport_kg/)
+- ✅ PostgreSQL AGE (graph)
+- ✅ Auth (JWT + RBAC)
+- ✅ Advanced queries (3-tier)
+- ❌ No STDIO/MCP
+- ❌ No EventBus
 
 **Result**: Feature fragmentation, maintenance burden, confusion
 
@@ -102,10 +102,10 @@ prelude: Dddpg_Kickoff (explanation) for dopemux documentation and developer wor
 ### Key Principles
 
 1. **Unified Codebase** - One implementation, multiple interfaces
-2. **Progressive Enhancement** - Start simple, add features as needed
-3. **ADHD-Optimized** - Top-3, visual cues, progressive disclosure
-4. **Production Ready** - Auth, monitoring, health checks, logging
-5. **EventBus Native** - Real-time coordination between agents
+1. **Progressive Enhancement** - Start simple, add features as needed
+1. **ADHD-Optimized** - Top-3, visual cues, progressive disclosure
+1. **Production Ready** - Auth, monitoring, health checks, logging
+1. **EventBus Native** - Real-time coordination between agents
 
 ---
 
@@ -224,11 +224,11 @@ conport_v3/
 
 **Integrate 6 Agents**:
 1. Serena (already done via EventBus)
-2. Task-Orchestrator (add consumer)
-3. Zen (consensus decisions)
-4. ADHD Engine (break detection)
-5. Desktop Commander (file operations)
-6. Dope-Context (workspace awareness)
+1. Task-Orchestrator (add consumer)
+1. Zen (consensus decisions)
+1. ADHD Engine (break detection)
+1. Desktop Commander (file operations)
+1. Dope-Context (workspace awareness)
 
 **Deliverable**: All agents using unified ConPort v3
 
@@ -283,10 +283,10 @@ profile: minimal
 storage: sqlite
 auth: false
 modes:
-  - stdio
+- stdio
 features:
-  - basic_decisions
-  - local_cache
+- basic_decisions
+- local_cache
 ```
 
 **Use case**: Claude Code integration, single user, local development
@@ -300,13 +300,13 @@ profile: standard
 storage: postgres
 auth: false
 modes:
-  - http
-  - eventbus
+- http
+- eventbus
 features:
-  - graph_queries
-  - multi_client
-  - real_time_updates
-  - agent_coordination
+- graph_queries
+- multi_client
+- real_time_updates
+- agent_coordination
 ```
 
 **Use case**: Team collaboration, agent coordination, real-time updates
@@ -320,18 +320,18 @@ profile: full
 storage: postgres
 auth: true
 modes:
-  - stdio
-  - http
-  - rest
-  - eventbus
+- stdio
+- http
+- rest
+- eventbus
 features:
-  - graph_queries
-  - auth_rbac
-  - multi_client
-  - real_time_updates
-  - agent_coordination
-  - dashboard
-  - analytics
+- graph_queries
+- auth_rbac
+- multi_client
+- real_time_updates
+- agent_coordination
+- dashboard
+- analytics
 ```
 
 **Use case**: Production deployment, multi-team, full feature set
@@ -509,19 +509,19 @@ At our current pace (7-8x faster than planned), Path A will take **1-2 weeks**, 
 ### Questions to Answer NOW
 
 1. **Start Path A immediately?**
-   - ✅ YES - Pattern validated, momentum high
-   - ⏰ Time: ~1-2 weeks total
-   - 🎯 Value: One excellent system vs 3 incomplete
+- ✅ YES - Pattern validated, momentum high
+- ⏰ Time: ~1-2 weeks total
+- 🎯 Value: One excellent system vs 3 incomplete
 
-2. **Which profile first?**
-   - Option A: Minimal (STDIO only) - Fastest path
-   - Option B: Standard (HTTP + EventBus) - Most valuable
-   - Option C: Full (everything) - Longest, most complete
+1. **Which profile first?**
+- Option A: Minimal (STDIO only) - Fastest path
+- Option B: Standard (HTTP + EventBus) - Most valuable
+- Option C: Full (everything) - Longest, most complete
 
-3. **Migration approach?**
-   - Option A: Big bang (risky, fast)
-   - Option B: Parallel run (safe, slower)
-   - Option C: Agent by agent (safest, controlled)
+1. **Migration approach?**
+- Option A: Big bang (risky, fast)
+- Option B: Parallel run (safe, slower)
+- Option C: Agent by agent (safest, controlled)
 
 ---
 
@@ -531,9 +531,9 @@ At our current pace (7-8x faster than planned), Path A will take **1-2 weeks**, 
 
 **Approach**:
 1. Build **Standard** profile first (HTTP + EventBus)
-2. **Parallel run** migration (safe)
-3. Start with **Serena** (already EventBus-ready)
-4. **2 weeks** total timeline
+1. **Parallel run** migration (safe)
+1. Start with **Serena** (already EventBus-ready)
+1. **2 weeks** total timeline
 
 **Why**:
 - Path C validated the architecture

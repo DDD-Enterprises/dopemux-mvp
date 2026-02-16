@@ -41,26 +41,26 @@ prelude: Pre/post integrity evidence for the first non-dry-run import of histori
 ## Observations
 
 1. Core record families imported successfully (`decisions`, `progress_entries`, `custom_data`).
-2. `custom_data` delta is lower than payload count because one key was upserted over an existing row.
-3. `workspace_contexts` accepted one row and rejected `product_context` in this run due unique `workspace_id`.
-4. `context_links` did not materialize as `entity_relationships` in this run.
+1. `custom_data` delta is lower than payload count because one key was upserted over an existing row.
+1. `workspace_contexts` accepted one row and rejected `product_context` in this run due unique `workspace_id`.
+1. `context_links` did not materialize as `entity_relationships` in this run.
 
 ## Follow-up Fixes Added in Code After This Run
 
 1. Importer schema detection now supports both `ag_catalog` and `public`.
-2. Importer now adapts inserts to discovered columns per table.
-3. Progress-entry IDs now join the ID mapping (required for relationship restoration).
-4. Single-row `workspace_contexts` schemas now use combined-context upsert behavior.
+1. Importer now adapts inserts to discovered columns per table.
+1. Progress-entry IDs now join the ID mapping (required for relationship restoration).
+1. Single-row `workspace_contexts` schemas now use combined-context upsert behavior.
 
 ## Relationship Backfill Closure
 
 Executed with `scripts/deploy/migration/backfill_conport_relationships.py` against the same bundle and workspace.
 
 1. `context_links_total`: 111
-2. first pass inserted: 110 (1 skipped custom_data edge case)
-3. second pass inserted: 1, deduplicated: 110 (idempotent closure run)
-4. skipped after final run: 0
-5. live table count moved from `0` to `111`
+1. first pass inserted: 110 (1 skipped custom_data edge case)
+1. second pass inserted: 1, deduplicated: 110 (idempotent closure run)
+1. skipped after final run: 0
+1. live table count moved from `0` to `111`
 
 This closes the previously open relationship-restoration gap to 100% parity for this bundle.
 

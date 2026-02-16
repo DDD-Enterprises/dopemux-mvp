@@ -186,11 +186,11 @@ All your decision patterns contribute to shared learning across projects.
 **When Ready** (not blocking multi-user deployment):
 
 1. Create zen-mcp-server repo
-2. Extract current zen code
-3. Add as submodule: `git submodule add URL external/zen-mcp-server`
-4. Update Dockerfile paths
-5. Dev mode detection in .claude.json generation
-6. Write CONTRIBUTING_ZEN.md
+1. Extract current zen code
+1. Add as submodule: `git submodule add URL external/zen-mcp-server`
+1. Update Dockerfile paths
+1. Dev mode detection in .claude.json generation
+1. Write CONTRIBUTING_ZEN.md
 
 **Why Later**: Current embedded Zen works fine for users. Submodule mainly benefits contributors who want to improve Zen tools (thinkdeep, planner, consensus). Not critical for multi-user deployment.
 
@@ -249,10 +249,10 @@ dopemux profile show
 
 ### **Why 18.2x Productivity?**
 1. **Clear design upfront** (CONPORT_ENHANCEMENTS_DESIGN.md eliminated uncertainty)
-2. **Research-backed decisions** (Click docs, workspace detection patterns)
-3. **Test-driven** (21 test decisions, 6 energy logs validated design)
-4. **Incremental commits** (each commit fully functional)
-5. **Code reuse** (ProfileManager, workspace detection shared)
+1. **Research-backed decisions** (Click docs, workspace detection patterns)
+1. **Test-driven** (21 test decisions, 6 energy logs validated design)
+1. **Incremental commits** (each commit fully functional)
+1. **Code reuse** (ProfileManager, workspace detection shared)
 
 ### **ADHD Optimization in Practice**:
 - Clear phases prevented scope creep

@@ -23,9 +23,9 @@ prelude: Component_6_Phase3_Specification (explanation) for dopemux documentatio
 
 **Key Features**:
 1. **Flow State Detection**: Real-time recognition of flow states (4 levels)
-2. **Multi-Task Sequencing**: Intelligent task ordering for momentum preservation
-3. **Contextual Task Batching**: Group similar tasks to reduce context switching
-4. **Interruption Prevention**: Proactive strategies to protect deep work
+1. **Multi-Task Sequencing**: Intelligent task ordering for momentum preservation
+1. **Contextual Task Batching**: Group similar tasks to reduce context switching
+1. **Interruption Prevention**: Proactive strategies to protect deep work
 
 **Target Outcomes**:
 - 3x longer average flow sessions (45 min → 135 min)
@@ -47,10 +47,10 @@ prelude: Component_6_Phase3_Specification (explanation) for dopemux documentatio
 
 **Flow State Characteristics** (Csikszentmihalyi, 1990; ADHD adaptations):
 1. **Challenge-Skill Balance**: Task difficulty matches current capability
-2. **Clear Goals**: Unambiguous next steps reduce decision fatigue
-3. **Immediate Feedback**: Progress visibility maintains engagement
-4. **Focus Intensity**: Deep concentration with minimal distractions
-5. **Time Distortion**: Hours feel like minutes (hyperfocus indicator)
+1. **Clear Goals**: Unambiguous next steps reduce decision fatigue
+1. **Immediate Feedback**: Progress visibility maintains engagement
+1. **Focus Intensity**: Deep concentration with minimal distractions
+1. **Time Distortion**: Hours feel like minutes (hyperfocus indicator)
 
 ### Task Sequencing for ADHD
 
@@ -62,9 +62,9 @@ prelude: Component_6_Phase3_Specification (explanation) for dopemux documentatio
 
 **Optimal Sequencing Strategies**:
 1. **Complexity Gradient**: Easy → Medium → Hard → Medium → Easy (bell curve)
-2. **Context Clustering**: Group by domain (all auth tasks, then all UI tasks)
-3. **Energy Matching**: High-energy tasks during peak hours (9-11 AM)
-4. **Momentum Building**: Start with quick win to trigger dopamine release
+1. **Context Clustering**: Group by domain (all auth tasks, then all UI tasks)
+1. **Energy Matching**: High-energy tasks during peak hours (9-11 AM)
+1. **Momentum Building**: Start with quick win to trigger dopamine release
 
 ### Interruption Impact on ADHD
 
@@ -76,9 +76,9 @@ prelude: Component_6_Phase3_Specification (explanation) for dopemux documentatio
 
 **Effective Prevention Strategies**:
 1. **Flow Detection**: Recognize flow state automatically (physiological + behavioral)
-2. **Interruption Filtering**: Non-urgent notifications delayed until natural break
-3. **Gentle Transitions**: 5-minute warnings before scheduled interruptions
-4. **User Boundaries**: Honor "do not disturb" modes with emergency override
+1. **Interruption Filtering**: Non-urgent notifications delayed until natural break
+1. **Gentle Transitions**: 5-minute warnings before scheduled interruptions
+1. **User Boundaries**: Honor "do not disturb" modes with emergency override
 
 ---
 
@@ -123,10 +123,10 @@ class FlowStateDetector:
         Real-time flow detection using multiple signals.
 
         Returns FlowState with:
-        - level: scattered/transitioning/focused/flow
-        - score: 0.0-1.0 flow intensity
-        - duration: How long in current state
-        - indicators: Breakdown of contributing factors
+- level: scattered/transitioning/focused/flow
+- score: 0.0-1.0 flow intensity
+- duration: How long in current state
+- indicators: Breakdown of contributing factors
         """
 ```
 
@@ -196,24 +196,24 @@ class SequenceOptimizer:
         Generate optimal task sequence.
 
         Strategies:
-        1. Momentum Building:
-           - Start with quick win (complexity 0.2-0.3)
-           - Ramp up to peak complexity
-           - End with moderate task
+1. Momentum Building:
+- Start with quick win (complexity 0.2-0.3)
+- Ramp up to peak complexity
+- End with moderate task
 
-        2. Context Clustering:
-           - Group by domain (auth, UI, database)
-           - Group by technology (Python, TypeScript)
-           - Minimize context switch cost
+1. Context Clustering:
+- Group by domain (auth, UI, database)
+- Group by technology (Python, TypeScript)
+- Minimize context switch cost
 
-        3. Energy Matching:
-           - Complex tasks during high energy (9-11 AM)
-           - Routine tasks during low energy (2-4 PM)
-           - Break tasks during energy dips
+1. Energy Matching:
+- Complex tasks during high energy (9-11 AM)
+- Routine tasks during low energy (2-4 PM)
+- Break tasks during energy dips
 
-        4. Flow Preservation:
-           - If in flow, continue similar tasks
-           - If scattered, start with simple wins
+1. Flow Preservation:
+- If in flow, continue similar tasks
+- If scattered, start with simple wins
         """
 
         if flow_state.level == "flow":
@@ -252,9 +252,9 @@ class SwitchCostCalculator:
         Estimate cognitive cost of switching tasks.
 
         Returns:
-        - cost: 0.0-1.0 (0=no cost, 1=maximum cost)
-        - recovery_time_estimate: Minutes to regain focus
-        - recommendation: Should switch or continue?
+- cost: 0.0-1.0 (0=no cost, 1=maximum cost)
+- recovery_time_estimate: Minutes to regain focus
+- recommendation: Should switch or continue?
         """
 
         # Base cost from task differences
@@ -296,11 +296,11 @@ def evaluate_sequence(sequence: TaskSequence) -> SequenceQuality:
     Evaluate sequence quality.
 
     Metrics:
-    - Total switch cost: Sum of all context switches
-    - Flow preservation: % of flow-compatible transitions
-    - Energy efficiency: % of tasks matched to energy level
-    - Momentum score: Early wins → sustained productivity
-    - Completion likelihood: % expected to complete
+- Total switch cost: Sum of all context switches
+- Flow preservation: % of flow-compatible transitions
+- Energy efficiency: % of tasks matched to energy level
+- Momentum score: Early wins → sustained productivity
+- Completion likelihood: % expected to complete
     """
 ```
 
@@ -344,14 +344,14 @@ class TaskBatcher:
         Group tasks into efficient batches.
 
         Strategies:
-        1. Similarity-First: Maximize within-batch similarity
-        2. Momentum-First: Easy → Hard progression within batch
-        3. Deadline-First: Urgent tasks batched together
-        4. Flow-First: Preserve flow state batching
+1. Similarity-First: Maximize within-batch similarity
+1. Momentum-First: Easy → Hard progression within batch
+1. Deadline-First: Urgent tasks batched together
+1. Flow-First: Preserve flow state batching
 
         Returns:
-        - batches: List of TaskBatch objects
-        - metadata: Quality scores, switch costs
+- batches: List of TaskBatch objects
+- metadata: Quality scores, switch costs
         """
 
         if batching_strategy == "similarity_first":
@@ -374,17 +374,17 @@ class BatchQualityScorer:
         Comprehensive batch quality assessment.
 
         Metrics:
-        - Cohesion: 0.0-1.0 (how similar tasks are)
-        - Switch Cost: Total cognitive cost of transitions
-        - Duration Balance: Within ADHD attention span?
-        - Complexity Gradient: Smooth progression?
-        - Completion Likelihood: % chance to finish batch
+- Cohesion: 0.0-1.0 (how similar tasks are)
+- Switch Cost: Total cognitive cost of transitions
+- Duration Balance: Within ADHD attention span?
+- Complexity Gradient: Smooth progression?
+- Completion Likelihood: % chance to finish batch
 
         ADHD Targets:
-        - Cohesion > 0.7 (high similarity)
-        - Switch Cost < 0.3 (low friction)
-        - Duration: 60-120 min (optimal ADHD focus window)
-        - Completion Likelihood > 80%
+- Cohesion > 0.7 (high similarity)
+- Switch Cost < 0.3 (low friction)
+- Duration: 60-120 min (optimal ADHD focus window)
+- Completion Likelihood > 80%
         """
 ```
 
@@ -403,10 +403,10 @@ class DynamicBatcher:
         Adapt batch after each completion.
 
         Decisions:
-        - Continue batch if flow maintained
-        - Re-batch if energy/attention dropped
-        - Insert break if cognitive load high
-        - Promote urgent task if deadline approaching
+- Continue batch if flow maintained
+- Re-batch if energy/attention dropped
+- Insert break if cognitive load high
+- Promote urgent task if deadline approaching
         """
 ```
 
@@ -443,17 +443,17 @@ class InterruptionFilter:
         Decide whether to allow interruption.
 
         Decision Process:
-        1. Classify interruption priority
-        2. Check flow state intensity
-        3. Consider user preferences
-        4. Calculate interruption cost
-        5. Allow, delay, or block
+1. Classify interruption priority
+1. Check flow state intensity
+1. Consider user preferences
+1. Calculate interruption cost
+1. Allow, delay, or block
 
         Flow State Protection:
-        - FLOW (0.8-1.0): Block all except critical
-        - FOCUSED (0.6-0.8): Allow high priority only
-        - TRANSITIONING (0.3-0.6): Allow medium+ priority
-        - SCATTERED (0.0-0.3): Allow all interruptions
+- FLOW (0.8-1.0): Block all except critical
+- FOCUSED (0.6-0.8): Allow high priority only
+- TRANSITIONING (0.3-0.6): Allow medium+ priority
+- SCATTERED (0.0-0.3): Allow all interruptions
         """
 
         # Critical interruptions always allowed
@@ -498,16 +498,16 @@ class GentleTransitionManager:
         Plan gentle transition from current task.
 
         Steps:
-        1. Give 5-minute advance warning
-        2. Suggest save points in current task
-        3. Capture current context (Phase 1 integration)
-        4. Provide transition checklist
-        5. Execute transition when ready
+1. Give 5-minute advance warning
+1. Suggest save points in current task
+1. Capture current context (Phase 1 integration)
+1. Provide transition checklist
+1. Execute transition when ready
 
         ADHD Benefits:
-        - Reduces surprise/anxiety from interruptions
-        - Allows mental preparation for switch
-        - Preserves context for later return
+- Reduces surprise/anxiety from interruptions
+- Allows mental preparation for switch
+- Preserves context for later return
         """
 ```
 
@@ -526,11 +526,11 @@ class NaturalBreakDetector:
         Find natural break points in workflow.
 
         Break Indicators:
-        - Task completion (best time)
-        - Test passing (good stopping point)
-        - Commit creation (natural checkpoint)
-        - Energy dip (2-4 PM typically)
-        - Cognitive load spike (need break anyway)
+- Task completion (best time)
+- Test passing (good stopping point)
+- Commit creation (natural checkpoint)
+- Energy dip (2-4 PM typically)
+- Cognitive load spike (need break anyway)
 
         Returns break points sorted by quality.
         """
@@ -803,34 +803,34 @@ def test_natural_breaks():
 
 **Must Have** (Required for completion):
 1. ✅ Flow state detection with 4 levels
-2. ✅ Multi-task sequence optimization
-3. ✅ Contextual task batching (3-5 tasks)
-4. ✅ Interruption filtering and prevention
-5. ✅ Prometheus metrics for all features
-6. ✅ Integration with Phase 1 + Phase 2
+1. ✅ Multi-task sequence optimization
+1. ✅ Contextual task batching (3-5 tasks)
+1. ✅ Interruption filtering and prevention
+1. ✅ Prometheus metrics for all features
+1. ✅ Integration with Phase 1 + Phase 2
 
 **Should Have** (High priority):
 1. Dynamic re-batching on state changes
-2. Gentle transition management
-3. Natural break detection
-4. User preference controls
+1. Gentle transition management
+1. Natural break detection
+1. User preference controls
 
 **Could Have** (Nice to have):
 1. Machine learning for flow prediction
-2. Team interruption coordination
-3. Calendar integration for breaks
-4. Flow session analytics dashboard
+1. Team interruption coordination
+1. Calendar integration for breaks
+1. Flow session analytics dashboard
 
 ---
 
 ## 📚 References
 
 1. **Csikszentmihalyi, M. (1990)**. *Flow: The Psychology of Optimal Experience*
-2. **Stanford ADHD Flow Study (2024)**. n=847, flow scaffolding research
-3. **UCLA Task Switching Study (2025)**. n=1,203, context switch cost analysis
-4. **Cleveland Clinic Interruption Study (2024)**. n=654, ADHD recovery patterns
-5. **Choice Overload Meta-Analysis (2024)**. 3-4 options optimal for ADHD
-6. **Cognitive Load Theory (2025)**. Reduce choices when overwhelmed
+1. **Stanford ADHD Flow Study (2024)**. n=847, flow scaffolding research
+1. **UCLA Task Switching Study (2025)**. n=1,203, context switch cost analysis
+1. **Cleveland Clinic Interruption Study (2024)**. n=654, ADHD recovery patterns
+1. **Choice Overload Meta-Analysis (2024)**. 3-4 options optimal for ADHD
+1. **Cognitive Load Theory (2025)**. Reduce choices when overwhelmed
 
 ---
 

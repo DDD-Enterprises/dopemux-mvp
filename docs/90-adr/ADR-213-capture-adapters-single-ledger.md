@@ -14,7 +14,7 @@ graph_metadata:
   node_type: ADR
   impact: high
   relates_to:
-  - ADR-207-architecture-3.0-three-layer-integration
+- ADR-207-architecture-3.0-three-layer-integration
 ---
 
 # Context
@@ -30,15 +30,15 @@ rollup index.
 # Decision
 
 1. Dopemux adopts dual capture adapters with a shared capture client.
-2. Both adapters write to one canonical per-project ledger path:
+1. Both adapters write to one canonical per-project ledger path:
    `repo_root/.dopemux/chronicle.sqlite`.
-3. MCP is not a capture authority. MCP remains a capability surface for explicit
+1. MCP is not a capture authority. MCP remains a capability surface for explicit
    retrieval and downstream processing.
-4. Capture uses deterministic idempotency (`event_id`) plus uniqueness-backed
+1. Capture uses deterministic idempotency (`event_id`) plus uniqueness-backed
    dedupe semantics.
-5. Redaction occurs before persistence and fails closed on redaction dependency
+1. Redaction occurs before persistence and fails closed on redaction dependency
    errors.
-6. Injection remains explicit and opt-in only. No implicit prompt injection is
+1. Injection remains explicit and opt-in only. No implicit prompt injection is
    permitted in capture paths.
 
 # Architecture
@@ -46,39 +46,39 @@ rollup index.
 Capture adapters:
 
 1. Claude adapter: hook/plugin events route through `dopemux capture emit`.
-2. CLI/MCP adapter: trigger/tool events route through the same capture client.
+1. CLI/MCP adapter: trigger/tool events route through the same capture client.
 
 Shared capture guarantees:
 
 1. Deterministic repo-root resolution using `.git` or `.dopemux` markers.
-2. Fail-closed behavior outside a repository context.
-3. Append-only raw event writes into `raw_activity_events`.
-4. Duplicate-safe retries via `INSERT OR IGNORE` keyed by unique `event_id`.
+1. Fail-closed behavior outside a repository context.
+1. Append-only raw event writes into `raw_activity_events`.
+1. Duplicate-safe retries via `INSERT OR IGNORE` keyed by unique `event_id`.
 
 # Consequences
 
 Positive:
 
 1. Capture remains available even when MCP services are disabled.
-2. Deterministic event semantics stay consistent across adapters.
-3. Memory quality improves by enforcing one canonical project ledger.
+1. Deterministic event semantics stay consistent across adapters.
+1. Memory quality improves by enforcing one canonical project ledger.
 
 Tradeoffs:
 
 1. Hook reliability depends on Claude runtime surfaces.
-2. Deterministic `event_id` design must avoid coarse collisions.
-3. Global rollup must stay read-only to avoid split-brain memory ownership.
+1. Deterministic `event_id` design must avoid coarse collisions.
+1. Global rollup must stay read-only to avoid split-brain memory ownership.
 
 # Non-goals
 
 1. Making global rollup a write authority for project ledgers.
-2. Introducing implicit prompt injection or hidden recap insertion.
-3. Rewriting WMA promotion logic in this ADR scope.
+1. Introducing implicit prompt injection or hidden recap insertion.
+1. Rewriting WMA promotion logic in this ADR scope.
 
 # Acceptance Criteria
 
 1. Both adapters write the same schema into `repo_root/.dopemux/chronicle.sqlite`.
-2. Dedupe is enforced by schema uniqueness and deterministic `event_id`.
-3. Redaction is applied before write and fails closed on dependency failures.
-4. Disabling MCP does not stop baseline capture.
-5. No implicit injection defaults are introduced.
+1. Dedupe is enforced by schema uniqueness and deterministic `event_id`.
+1. Redaction is applied before write and fails closed on dependency failures.
+1. Disabling MCP does not stop baseline capture.
+1. No implicit injection defaults are introduced.

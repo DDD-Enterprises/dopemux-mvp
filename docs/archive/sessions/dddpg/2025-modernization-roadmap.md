@@ -37,28 +37,28 @@ prelude: 2025 Modernization Roadmap (explanation) for dopemux documentation and 
 ### What Makes DDDPG Unique? 🌟
 
 1. **ADHD-Native Design**
-   - Top-3 pattern everywhere (never overwhelm)
-   - Progressive disclosure (overview → exploration → deep)
-   - Cognitive load tracking (1-5 scale)
-   - Context preservation across interruptions
+- Top-3 pattern everywhere (never overwhelm)
+- Progressive disclosure (overview → exploration → deep)
+- Cognitive load tracking (1-5 scale)
+- Context preservation across interruptions
 
-2. **Multi-Instance from Day 1**
-   - Supports Git worktrees natively
-   - Workspace + instance isolation
-   - Visibility controls (PRIVATE/SHARED/GLOBAL)
-   - No collision bugs between branches
+1. **Multi-Instance from Day 1**
+- Supports Git worktrees natively
+- Workspace + instance isolation
+- Visibility controls (PRIVATE/SHARED/GLOBAL)
+- No collision bugs between branches
 
-3. **Graph-Native Architecture**
-   - PostgreSQL AGE knowledge graph
-   - Typed relationships (SUPERSEDES, IMPLEMENTS, CONTRADICTS, etc)
-   - Semantic search (future: embeddings)
-   - Dependency tracking and traversal
+1. **Graph-Native Architecture**
+- PostgreSQL AGE knowledge graph
+- Typed relationships (SUPERSEDES, IMPLEMENTS, CONTRADICTS, etc)
+- Semantic search (future: embeddings)
+- Dependency tracking and traversal
 
-4. **Production-Grade Security**
-   - Parameterized queries (100% - no SQL injection)
-   - Input validation via Pydantic
-   - Graceful degradation (works without KG)
-   - Comprehensive error handling
+1. **Production-Grade Security**
+- Parameterized queries (100% - no SQL injection)
+- Input validation via Pydantic
+- Graceful degradation (works without KG)
+- Comprehensive error handling
 
 ---
 
@@ -259,10 +259,10 @@ class SuggestionEngine:
     Context-aware task suggestions using KG relationships.
 
     Features:
-    - Energy/time/focus matching
-    - Dependency satisfaction checking
-    - In-memory caching (5 min TTL)
-    - Pattern-based ranking
+- Energy/time/focus matching
+- Dependency satisfaction checking
+- In-memory caching (5 min TTL)
+- Pattern-based ranking
     """
 
     def __init__(
@@ -289,10 +289,10 @@ class SuggestionEngine:
         Get ADHD-optimized task suggestions.
 
         Context Scoring:
-        - Energy match: 0-0.4
-        - Time match: 0-0.3
-        - Focus match: 0-0.2
-        - Pattern match: 0-0.1 (future)
+- Energy match: 0-0.4
+- Time match: 0-0.3
+- Focus match: 0-0.2
+- Pattern match: 0-0.1 (future)
 
         Returns:
             {
@@ -429,12 +429,12 @@ class DDDPGEventPublisher:
     Publish DDDPG events to EventBus for agent coordination.
 
     Events:
-    - decision.created
-    - decision.updated
-    - decision.superseded
-    - decision.related (graph edge added)
-    - session.started
-    - session.ended
+- decision.created
+- decision.updated
+- decision.superseded
+- decision.related (graph edge added)
+- session.started
+- session.ended
     """
 
     def __init__(self, redis_client):
@@ -590,9 +590,9 @@ async def validate_decision(decision: Decision) -> float:
 
 **Dashboard Features**:
 1. **Decision Timeline** (chronological view)
-2. **Cognitive Load Heatmap** (visualize complexity over time)
-3. **Focus Session Tracker** (session duration & quality)
-4. **Real-time Updates** (WebSocket integration)
+1. **Cognitive Load Heatmap** (visualize complexity over time)
+1. **Focus Session Tracker** (session duration & quality)
+1. **Real-time Updates** (WebSocket integration)
 
 **Tech Stack**:
 - React + TypeScript
@@ -651,27 +651,27 @@ async def validate_decision(decision: Decision) -> float:
 
 ### Step 1: Decision-Task Linking (15 min)
 1. Open `kg_integration.py`
-2. Add 3 methods: `link_decision_to_task()`, `get_task_decisions()`, `unlink_decision_from_task()`
-3. Add 4 tests to `test_kg_integration.py`
-4. Run tests: `pytest test_kg_integration.py -v`
+1. Add 3 methods: `link_decision_to_task()`, `get_task_decisions()`, `unlink_decision_from_task()`
+1. Add 4 tests to `test_kg_integration.py`
+1. Run tests: `pytest test_kg_integration.py -v`
 
 ### Step 2: Relationship Mapper (25 min)
 1. Create `relationship_mapper.py`
-2. Implement `RelationshipMapper` class
-3. Create `test_relationship_mapper.py`
-4. Run tests: `pytest test_relationship_mapper.py -v`
+1. Implement `RelationshipMapper` class
+1. Create `test_relationship_mapper.py`
+1. Run tests: `pytest test_relationship_mapper.py -v`
 
 ### Step 3: Suggestion Engine (35 min)
 1. Create `suggestion_engine.py`
-2. Implement `SuggestionEngine` class with scoring
-3. Create `test_suggestion_engine.py`
-4. Run tests: `pytest test_suggestion_engine.py -v`
+1. Implement `SuggestionEngine` class with scoring
+1. Create `test_suggestion_engine.py`
+1. Run tests: `pytest test_suggestion_engine.py -v`
 
 ### Step 4: QueryService Integration (20 min)
 1. Extend `queries/service.py`
-2. Add factory method and KG integration
-3. Add integration tests
-4. Run full test suite: `pytest -v`
+1. Add factory method and KG integration
+1. Add integration tests
+1. Run full test suite: `pytest -v`
 
 ---
 

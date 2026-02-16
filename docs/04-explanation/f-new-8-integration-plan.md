@@ -138,11 +138,11 @@ fi
 
 **Test Flow**:
 1. Start both services
-2. Trigger high complexity events (Serena code analysis)
-3. Wait 25+ minutes
-4. Verify F-NEW-8 detects pattern
-5. Verify ADHD Notifier receives suggestion
-6. Verify notification + voice delivered
+1. Trigger high complexity events (Serena code analysis)
+1. Wait 25+ minutes
+1. Verify F-NEW-8 detects pattern
+1. Verify ADHD Notifier receives suggestion
+1. Verify notification + voice delivered
 
 **Files**:
 - services/break-suggester/engine.py (add event emission)

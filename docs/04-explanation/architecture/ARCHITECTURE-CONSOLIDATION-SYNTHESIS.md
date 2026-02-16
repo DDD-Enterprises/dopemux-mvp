@@ -26,16 +26,16 @@ prelude: Architecture Consolidation Synthesis (explanation) for dopemux document
 **Key Metrics** (Validated through 7 Deep Dives + Infrastructure Review):
 - 📊 **Effort**: 21 days total (9 + 7 + 5 days across 3 phases) + 6-9 days infrastructure cleanup (parallel)
 - 🎯 **Comprehensive Impact**:
-  - **Embeddings**: +35-67% quality (384-dim → 1024-dim) [Decision #5]
-  - **API Costs**: -75% through deduplication & pooling [Decision #8]
-  - **Latency**: -60% via service mesh [Decision #8] + -20-30% via selective middleware [#32]
-  - **Throughput**: +200% with async event-driven architecture [Decision #8]
-  - **Code Duplication**: -60% via dopemux-core [Decision #7]
-  - **Container Footprint**: -42% (19→11 containers) [#7: -3, #31: -8 containers]
-  - **Memory Savings**: ~2-3GB from infrastructure consolidation [Decision #31]
-  - **Database Consolidation**: 3 PostgreSQL → 1 (2 orphaned eliminated) [#31], Vector DBs: Milvus (3-service) → Qdrant (1-service) [#31]
-  - **ADHD Consistency**: 100% (23+ scattered thresholds → centralized) [Decision #6]
-  - **Port Conflicts**: Resolved (5455 conflict eliminated) [Decision #31]
+- **Embeddings**: +35-67% quality (384-dim → 1024-dim) [Decision #5]
+- **API Costs**: -75% through deduplication & pooling [Decision #8]
+- **Latency**: -60% via service mesh [Decision #8] + -20-30% via selective middleware [#32]
+- **Throughput**: +200% with async event-driven architecture [Decision #8]
+- **Code Duplication**: -60% via dopemux-core [Decision #7]
+- **Container Footprint**: -42% (19→11 containers) [#7: -3, #31: -8 containers]
+- **Memory Savings**: ~2-3GB from infrastructure consolidation [Decision #31]
+- **Database Consolidation**: 3 PostgreSQL → 1 (2 orphaned eliminated) [#31], Vector DBs: Milvus (3-service) → Qdrant (1-service) [#31]
+- **ADHD Consistency**: 100% (23+ scattered thresholds → centralized) [Decision #6]
+- **Port Conflicts**: Resolved (5455 conflict eliminated) [Decision #31]
 - ⚠️ **Critical Blockers**: 3 (PostgreSQL AGE compatibility [#4], DopeconBridge completion [#8], Unknown decision flow [#8])
 - ✅ **Quick Wins**: 8 identified (ConPort search removal, embedding upgrade, ADHD centralization, API pooling, Redis event activation, decommission orphaned DBs [#31], selective middleware [#32], standardize ConPort SDK [#32])
 - 🔗 **Synergies**: 8 opportunities (unified graph, semantic nav, auto-indexing, service mesh, event-driven, decision flow tracing, Docker DNS service discovery [#32], connection pooling [#32])
@@ -98,13 +98,13 @@ prelude: Architecture Consolidation Synthesis (explanation) for dopemux document
 **Method**: Zen thinkdeep with anti-pattern detection
 **Key Findings**:
 - **7 Anti-Patterns Identified**:
-  1. Phantom Orchestrator: DopeconBridge documented as event orchestrator but only 5 read-only GET endpoints
-  2. Isolated Islands: Zero MCP-to-MCP communication despite same Cognitive Plane
-  3. Unknown Decision Flow: Cannot trace how decisions get logged in ConPort
-  4. Redis Ghost Bus: Deployed for events but unused (only ADHD Engine uses for state)
-  5. Synchronous API Gauntlet: 4 MCPs duplicate OpenAI calls, no pooling/coordination
-  6. ConPort Split-Brain: Writes to 2 PostgreSQL instances
-  7. No Circuit Breakers: Single point of failure for external APIs
+1. Phantom Orchestrator: DopeconBridge documented as event orchestrator but only 5 read-only GET endpoints
+1. Isolated Islands: Zero MCP-to-MCP communication despite same Cognitive Plane
+1. Unknown Decision Flow: Cannot trace how decisions get logged in ConPort
+1. Redis Ghost Bus: Deployed for events but unused (only ADHD Engine uses for state)
+1. Synchronous API Gauntlet: 4 MCPs duplicate OpenAI calls, no pooling/coordination
+1. ConPort Split-Brain: Writes to 2 PostgreSQL instances
+1. No Circuit Breakers: Single point of failure for external APIs
 **Recommendation**: Complete DopeconBridge (9d), implement service mesh (7d), activate Redis event bus (4d), document decision flow (4d). -75% API costs, -60% latency, +200% throughput
 
 ### Decision #31: MCP Infrastructure Consolidation (2025-10-16) ✅
@@ -120,12 +120,12 @@ prelude: Architecture Consolidation Synthesis (explanation) for dopemux document
 **Method**: Direct analysis of DopeconBridge and cross-service communication patterns
 **Key Findings**:
 - **6 Anti-Patterns Identified**:
-  1. Fragile Service Discovery: Hardcoded `{CONTAINER_PREFIX}-task-master-ai:3005`, environment variable dependencies
-  2. Inconsistent ConPort Clients: 3 different implementations (ConPortSQLiteClient, HTTP client, ConPortKnowledgeGraphBridge)
-  3. HTTP N+1 Pattern: Individual HTTP calls, no batching/pooling, 30s timeouts
-  4. ConPortMiddleware Overhead: Wraps ALL HTTP requests (should be selective)
-  5. Multi-Instance Port Offset Complexity: PORT_BASE+16 system (Decision #29 cleanup incomplete)
-  6. Circular Dependency Risk: Serena → ConPort → DopeconBridge → Serena (potential 4-hop loop)
+1. Fragile Service Discovery: Hardcoded `{CONTAINER_PREFIX}-task-master-ai:3005`, environment variable dependencies
+1. Inconsistent ConPort Clients: 3 different implementations (ConPortSQLiteClient, HTTP client, ConPortKnowledgeGraphBridge)
+1. HTTP N+1 Pattern: Individual HTTP calls, no batching/pooling, 30s timeouts
+1. ConPortMiddleware Overhead: Wraps ALL HTTP requests (should be selective)
+1. Multi-Instance Port Offset Complexity: PORT_BASE+16 system (Decision #29 cleanup incomplete)
+1. Circular Dependency Risk: Serena → ConPort → DopeconBridge → Serena (potential 4-hop loop)
 - **Correct Patterns**: PM/Cognitive plane isolation ✅, KGAuthorityMiddleware ✅, Event bus coordination ✅
 - **Inefficient Patterns**: 3-hop PM→DopeconBridge→ConPort→PostgreSQL (better: direct with authority), HTTP overhead for every cross-plane query
 **Recommendation**: 4-Phase optimization - (1) Quick wins (remove multi-instance code, selective middleware, standardize ConPort SDK - 1-2 days, HIGH ROI), (2) Service discovery (Docker DNS, health check registry - 2-3 days, MEDIUM ROI), (3) HTTP optimization (connection pooling, batch endpoints, Redis caching - 3-4 days, MEDIUM-HIGH ROI), (4) Advanced (gRPC, GraphQL, Event Sourcing - future consideration)
@@ -221,8 +221,8 @@ dopemux-core/
 
 **Actions**:
 1. Create test environment with both services
-2. Run concurrent operations to test conflicts
-3. Verify AGE graph queries don't break standard PostgreSQL
+1. Run concurrent operations to test conflicts
+1. Verify AGE graph queries don't break standard PostgreSQL
 
 **Success Criteria**:
 - ✅ Both services operational simultaneously
@@ -240,8 +240,8 @@ dopemux-core/
 
 **Actions**:
 1. Document actual Context Integration architecture
-2. Identify what exists vs what was planned
-3. Clarify layer boundaries and responsibilities
+1. Identify what exists vs what was planned
+1. Clarify layer boundaries and responsibilities
 
 **Success Criteria**:
 - ✅ Clear architecture documentation
@@ -278,13 +278,13 @@ src/dopemux-core/
 
 **Implementation**:
 1. Create package structure with API client module
-2. Unified API clients: OpenAI (4 MCPs use), VoyageAI (2 MCPs use), Gemini
-3. Connection pooling (max 10 concurrent), coordinated rate limiting
-4. Extract VoyageEmbedder from dope-context (make singleton)
-5. Create MilvusClient for vector operations
-6. Create ADHDConfigService wrapper for ADHD Engine
-7. Circuit breaker pattern (Tenacity library with exponential backoff)
-8. Write unit tests for shared components
+1. Unified API clients: OpenAI (4 MCPs use), VoyageAI (2 MCPs use), Gemini
+1. Connection pooling (max 10 concurrent), coordinated rate limiting
+1. Extract VoyageEmbedder from dope-context (make singleton)
+1. Create MilvusClient for vector operations
+1. Create ADHDConfigService wrapper for ADHD Engine
+1. Circuit breaker pattern (Tenacity library with exponential backoff)
+1. Write unit tests for shared components
 
 **Success Criteria**:
 - ✅ All MCPs can import dopemux-core
@@ -371,10 +371,10 @@ src/dopemux-core/
 
 **Actions**:
 1. Investigate current flow: Trace ConPort MCP database writes
-2. Document standard flow: Any service → mcp-conport.log_decision() → postgres-age
-3. Add request_id header for end-to-end tracing
-4. Create audit log for all decision writes (who, when, what)
-5. Integration test: Create decision from each MCP, verify in KG
+1. Document standard flow: Any service → mcp-conport.log_decision() → postgres-age
+1. Add request_id header for end-to-end tracing
+1. Create audit log for all decision writes (who, when, what)
+1. Integration test: Create decision from each MCP, verify in KG
 
 **Success Criteria**:
 - ✅ Decision flow fully documented with diagrams
@@ -388,18 +388,18 @@ src/dopemux-core/
 
 **Implementation**:
 1. **Event Channels**:
-   - pm_plane_events: Status updates, task changes
-   - cognitive_plane_events: Decision created, pattern learned
-   - adhd_events: Energy state, focus mode, break reminders
-   - cross_plane_events: Bridge-mediated events
+- pm_plane_events: Status updates, task changes
+- cognitive_plane_events: Decision created, pattern learned
+- adhd_events: Energy state, focus mode, break reminders
+- cross_plane_events: Bridge-mediated events
 
-2. **Publisher/Subscriber Pattern**:
-   - DopeconBridge: Primary cross-plane publisher
-   - ADHD Engine: Publishes state changes
-   - Leantime Bridge: Subscribes to task events
-   - MCPs: Publish domain events, subscribe to relevant channels
+1. **Publisher/Subscriber Pattern**:
+- DopeconBridge: Primary cross-plane publisher
+- ADHD Engine: Publishes state changes
+- Leantime Bridge: Subscribes to task events
+- MCPs: Publish domain events, subscribe to relevant channels
 
-3. **Event Schema**:
+1. **Event Schema**:
    ```json
    {
      "event_type": "decision.created",
@@ -423,9 +423,9 @@ src/dopemux-core/
 
 **Actions**:
 1. Remove `conport/semantic_search_conport` MCP tool
-2. Update documentation: direct users to `dope-context/search_code`
-3. Keep decision logging and knowledge graph (ConPort's core function)
-4. Add deprecation warnings in code
+1. Update documentation: direct users to `dope-context/search_code`
+1. Keep decision logging and knowledge graph (ConPort's core function)
+1. Add deprecation warnings in code
 
 **Success Criteria**:
 - ✅ Semantic search removed from ConPort
@@ -439,11 +439,11 @@ src/dopemux-core/
 
 **Actions**:
 1. Export existing Qdrant indexes (code + docs collections)
-2. Set up Milvus with persistence tuned (SSD, IVF/HNSW configs)
-3. Update dope-context vector_store.py to use MilvusClient from dopemux-core
-4. Re-index code and docs with Milvus
-5. Staged cutover with validation testing
-6. Remove Qdrant container from docker-compose
+1. Set up Milvus with persistence tuned (SSD, IVF/HNSW configs)
+1. Update dope-context vector_store.py to use MilvusClient from dopemux-core
+1. Re-index code and docs with Milvus
+1. Staged cutover with validation testing
+1. Remove Qdrant container from docker-compose
 
 **Success Criteria**:
 - ✅ Single vector DB (Milvus) for all semantic search
@@ -458,9 +458,9 @@ src/dopemux-core/
 
 **Actions**:
 1. Remove `services/conport/embedding_service.py` entirely
-2. Keep PostgreSQL full-text search for decision keyword queries (<5ms)
-3. Update documentation: ConPort focuses on decision logging & graph, not semantic search
-4. Direct users to dope-context for semantic code/doc search
+1. Keep PostgreSQL full-text search for decision keyword queries (<5ms)
+1. Update documentation: ConPort focuses on decision logging & graph, not semantic search
+1. Direct users to dope-context for semantic code/doc search
 
 **Success Criteria**:
 - ✅ ConPort embeddings removed (no 384-dim vectors)
@@ -481,10 +481,10 @@ src/dopemux-core/
 
 **Implementation** (with feature flags for gradual rollout):
 1. Create ADHDConfigClient in dopemux-core
-2. Enhance ADHD Engine with GET /api/v1/config/thresholds endpoint
-3. Remove hardcoded thresholds from all services
-4. Import `dopemux-core/adhd/ADHDConfigService` and query dynamically
-5. Migration testing with feature flags
+1. Enhance ADHD Engine with GET /api/v1/config/thresholds endpoint
+1. Remove hardcoded thresholds from all services
+1. Import `dopemux-core/adhd/ADHDConfigService` and query dynamically
+1. Migration testing with feature flags
 
 **Success Criteria**:
 - ✅ Zero hardcoded ADHD thresholds (100% centralized)
@@ -502,11 +502,11 @@ src/dopemux-core/
 
 **MCP Migration Order**:
 1. mcp-conport: Update to use shared VoyageEmbedder, MilvusClient, ADHDConfigService
-2. mcp-claude-context: Switch to shared API clients and MilvusClient
-3. mcp-zen: Use shared OpenAI/Gemini clients with circuit breakers
-4. mcp-gptr-mcp: Use shared OpenAI client
-5. mcp-serena: Use shared ADHDConfigService
-6. mcp-pal: Minimal changes (external API dependency)
+1. mcp-claude-context: Switch to shared API clients and MilvusClient
+1. mcp-zen: Use shared OpenAI/Gemini clients with circuit breakers
+1. mcp-gptr-mcp: Use shared OpenAI client
+1. mcp-serena: Use shared ADHDConfigService
+1. mcp-pal: Minimal changes (external API dependency)
 
 **Success Criteria**:
 - ✅ All MCPs successfully import dopemux-core
@@ -521,9 +521,9 @@ src/dopemux-core/
 
 **Event Flows to Implement**:
 1. **PM → Cognitive**: Task status changes trigger ADHD context updates
-2. **Cognitive → PM**: Decision creation triggers Leantime notifications
-3. **ADHD Alerts**: Energy/focus state changes notify both planes
-4. **Bidirectional Sync**: Status updates flow PM ↔ Cognitive via DopeconBridge
+1. **Cognitive → PM**: Decision creation triggers Leantime notifications
+1. **ADHD Alerts**: Energy/focus state changes notify both planes
+1. **Bidirectional Sync**: Status updates flow PM ↔ Cognitive via DopeconBridge
 
 **Success Criteria**:
 - ✅ Events flow correctly between planes
@@ -538,11 +538,11 @@ src/dopemux-core/
 
 **Test Scenarios**:
 1. **Full Decision Flow**: Create decision → Log in ConPort → Index in Milvus → Query via DopeconBridge → Display in Leantime
-2. **Service Mesh**: mcp-serena calls mcp-conport via service registry
-3. **ADHD Consistency**: All services query ADHDConfigService, verify consistent thresholds
-4. **Event Routing**: Publish PM plane event → Bridge routes → Cognitive plane receives
-5. **API Deduplication**: Multiple MCPs request same data → Single external API call
-6. **Failover**: Simulate MCP failure → Service mesh handles gracefully
+1. **Service Mesh**: mcp-serena calls mcp-conport via service registry
+1. **ADHD Consistency**: All services query ADHDConfigService, verify consistent thresholds
+1. **Event Routing**: Publish PM plane event → Bridge routes → Cognitive plane receives
+1. **API Deduplication**: Multiple MCPs request same data → Single external API call
+1. **Failover**: Simulate MCP failure → Service mesh handles gracefully
 
 **Success Criteria**:
 - ✅ All integration tests pass
@@ -557,8 +557,8 @@ src/dopemux-core/
 
 **Implementation**:
 1. Populate Serena's `conport_integration_links` table (currently empty)
-2. Create bidirectional links: code elements ↔ decisions
-3. New MCP tool: `trace_decision_to_code(decision_id)`
+1. Create bidirectional links: code elements ↔ decisions
+1. New MCP tool: `trace_decision_to_code(decision_id)`
 
 **Example Usage**:
 ```python
@@ -614,7 +614,7 @@ def find_similar_code(current_function):
 ```yaml
 # dope-context config
 auto_index:
-  - path: services/conport/decisions
+- path: services/conport/decisions
     type: decision
     embedding: decision.summary + decision.rationale
     metadata:
@@ -725,9 +725,9 @@ results = dope_context.search_all(
 
 ### Immediate Actions (This Week)
 1. ✅ Review and approve synthesis recommendations
-2. ⏭️ Start Phase 1: PostgreSQL AGE compatibility test
-3. ⏭️ Create dopemux-core package structure
-4. ⏭️ Document Context Integration layer status
+1. ⏭️ Start Phase 1: PostgreSQL AGE compatibility test
+1. ⏭️ Create dopemux-core package structure
+1. ⏭️ Document Context Integration layer status
 
 ### Tracking & Monitoring
 - Log implementation progress in ConPort

@@ -141,15 +141,15 @@ reports/g35/
 ### Phase 4: Ergonomic Scripts
 **smoke_up.sh**:
 1. Generate `.env.smoke` if missing
-2. `docker compose up -d --build`
-3. Wait 10 seconds for initialization
-4. Run `smoke_runtime_gate.py`
-5. Display next steps
+1. `docker compose up -d --build`
+1. Wait 10 seconds for initialization
+1. Run `smoke_runtime_gate.py`
+1. Display next steps
 
 **smoke_down.sh**:
 1. Prompt confirmation if `--volumes` flag used
-2. `docker compose down [--volumes]`
-3. Display cleanup summary
+1. `docker compose down [--volumes]`
+1. Display cleanup summary
 
 ---
 
@@ -218,20 +218,20 @@ reports/g35/
 
 ### Immediate (Block Removal)
 1. **Fix Port Mismatches**: Ensure Dockerfile EXPOSE matches compose published port
-2. **Fix Health Path Mismatches**: Align service `/health` endpoints with compose healthcheck
-3. **Verify .env.smoke**: Check env var values match expected container ports
+1. **Fix Health Path Mismatches**: Align service `/health` endpoints with compose healthcheck
+1. **Verify .env.smoke**: Check env var values match expected container ports
 
 ### CI Integration (Future)
 1. Add `scripts/smoke_up.sh` to GitHub Actions workflow
-2. Run as nightly smoke test
-3. Fail PR builds if runtime gate fails
-4. Archive evidence bundle as CI artifact
+1. Run as nightly smoke test
+1. Fail PR builds if runtime gate fails
+1. Archive evidence bundle as CI artifact
 
 ### Monitoring Integration (Future)
 1. Export runtime gate results to monitoring system
-2. Alert on degraded health (e.g., high restart counts)
-3. Track time-to-healthy metrics
-4. Dashboard for historical trends
+1. Alert on degraded health (e.g., high restart counts)
+1. Track time-to-healthy metrics
+1. Dashboard for historical trends
 
 ---
 

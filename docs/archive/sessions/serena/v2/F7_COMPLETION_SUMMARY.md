@@ -26,29 +26,29 @@ F7 aggregates F1-F6 analytics into an ADHD-optimized dashboard with 3-level prog
 
 ### Files Created (2)
 1. **services/serena/v2/metrics_dashboard.py** (405 lines)
-   - MetricsAggregator class: Aggregate detection results into statistics
-   - MetricsDashboard class: Format in 3 progressive disclosure levels
-   - calculate_f1_f4_metrics(): Detection system stats (pass rate, confidence)
-   - calculate_f5_metrics(): Pattern learning stats (boost rate, top patterns)
-   - calculate_f6_metrics(): Abandonment stats (severity distribution)
-   - format_level1(): At-a-glance summary (always shown)
-   - format_level2(): Feature breakdown (F1-F6 sections)
-   - format_level3(): Time-series trends (requires ConPort history)
+- MetricsAggregator class: Aggregate detection results into statistics
+- MetricsDashboard class: Format in 3 progressive disclosure levels
+- calculate_f1_f4_metrics(): Detection system stats (pass rate, confidence)
+- calculate_f5_metrics(): Pattern learning stats (boost rate, top patterns)
+- calculate_f6_metrics(): Abandonment stats (severity distribution)
+- format_level1(): At-a-glance summary (always shown)
+- format_level2(): Feature breakdown (F1-F6 sections)
+- format_level3(): Time-series trends (requires ConPort history)
 
-2. **tests/serena/v2/test_metrics_dashboard_f7.py** (450 lines)
-   - 15 comprehensive tests (100% passing)
-   - TestMetricsAggregator (5 tests): Aggregation logic validation
-   - TestMetricsDashboard (6 tests): Dashboard formatting
-   - TestADHDPresentation (2 tests): ADHD rules enforcement
-   - TestIntegration (2 tests): Full workflow validation
+1. **tests/serena/v2/test_metrics_dashboard_f7.py** (450 lines)
+- 15 comprehensive tests (100% passing)
+- TestMetricsAggregator (5 tests): Aggregation logic validation
+- TestMetricsDashboard (6 tests): Dashboard formatting
+- TestADHDPresentation (2 tests): ADHD rules enforcement
+- TestIntegration (2 tests): Full workflow validation
 
 ### Files Modified (1)
 1. **services/serena/v2/mcp_server.py** (+~200 lines)
-   - Added get_metrics_dashboard_tool (75 lines)
-   - Added get_metric_history_tool (58 lines)
-   - Added save_metrics_snapshot_tool (48 lines)
-   - Tool registrations (3 tools, lines 1018-1077)
-   - Dispatcher routing (3 routes, lines 1217-1222)
+- Added get_metrics_dashboard_tool (75 lines)
+- Added get_metric_history_tool (58 lines)
+- Added save_metrics_snapshot_tool (48 lines)
+- Tool registrations (3 tools, lines 1018-1077)
+- Dispatcher routing (3 routes, lines 1217-1222)
 
 ## Technical Decisions
 
@@ -202,10 +202,10 @@ value: {
 
 ### Lines of Code (Total: ~1055)
 - **Production Code**: 605 lines
-  - metrics_dashboard.py: 405 lines
-  - mcp_server.py: +200 lines (tool implementations + registrations)
+- metrics_dashboard.py: 405 lines
+- mcp_server.py: +200 lines (tool implementations + registrations)
 - **Test Code**: 450 lines
-  - test_metrics_dashboard_f7.py: 450 lines
+- test_metrics_dashboard_f7.py: 450 lines
 
 ### Complexity Analysis
 - **MetricsAggregator**: Low complexity (simple aggregation, no branching)
@@ -230,36 +230,36 @@ value: {
 ### Immediate: F8 - Session Statistics (Optional)
 F8 was planned as final Phase 2 feature but may be superseded by F7's comprehensive dashboard. Consider:
 1. Is F8 redundant given F7's session_distribution metrics?
-2. Focus on ConPort integration instead (enable F7 Level 3 trends)?
+1. Focus on ConPort integration instead (enable F7 Level 3 trends)?
 
 ### Priority: ConPort Integration for F7
 1. Implement save_daily_snapshot() to persist metrics
-2. Implement get_trends() to query historical data
-3. Enable Level 3 (trends) dashboard functionality
-4. 90-day retention with cleanup script
+1. Implement get_trends() to query historical data
+1. Enable Level 3 (trends) dashboard functionality
+1. 90-day retention with cleanup script
 
 ### Future Enhancements
 1. **Visualization**: Add sparkline text graphs for trends
-2. **Comparison**: Compare current week vs last week
-3. **Alerts**: Notify when metrics degrade (e.g., confidence drops)
-4. **Export**: Generate CSV/JSON export for external analysis
+1. **Comparison**: Compare current week vs last week
+1. **Alerts**: Notify when metrics degrade (e.g., confidence drops)
+1. **Export**: Generate CSV/JSON export for external analysis
 
 ## Lessons Learned
 
 ### What Worked Well
 1. **Separation of Concerns**: Aggregator + Dashboard classes clean separation
-2. **Test-First Approach**: 15 tests caught zero bugs (design validated before implementation)
-3. **Progressive Disclosure**: Tiered information architecture proven effective
-4. **Zen Thinkdeep**: 4-step analysis extracted requirements efficiently (despite step 5 timeout)
+1. **Test-First Approach**: 15 tests caught zero bugs (design validated before implementation)
+1. **Progressive Disclosure**: Tiered information architecture proven effective
+1. **Zen Thinkdeep**: 4-step analysis extracted requirements efficiently (despite step 5 timeout)
 
 ### Issues Encountered
 None - implementation went smoothly, all tests passed on first run.
 
 ### Design Insights
 1. **ADHD Limits Work**: Max 5 items prevents analysis paralysis
-2. **Visual Indicators Essential**: Emoji scanning faster than reading numbers
-3. **Default to Summary**: Level 1 default reduces user decision burden
-4. **Text-Based Viable**: No GUI needed for effective dashboards
+1. **Visual Indicators Essential**: Emoji scanning faster than reading numbers
+1. **Default to Summary**: Level 1 default reduces user decision burden
+1. **Text-Based Viable**: No GUI needed for effective dashboards
 
 ## Dependencies
 

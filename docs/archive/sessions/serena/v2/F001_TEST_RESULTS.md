@@ -195,20 +195,20 @@ All enhancement messages validated:
 
 ### Immediate
 1. ✅ All modules working independently
-2. ⏳ Integrate ConPort MCP client
-3. ⏳ Test with real untracked work
+1. ⏳ Integrate ConPort MCP client
+1. ⏳ Test with real untracked work
 
 ### Testing
 1. ⏳ Test E2 with multi-heuristic scenario (7+ files, 3+ dirs)
-2. ⏳ Test E3 with real ConPort abandoned work
-3. ⏳ Test E4 with real active tasks
-4. ⏳ Performance benchmark (<200ms target)
+1. ⏳ Test E3 with real ConPort abandoned work
+1. ⏳ Test E4 with real active tasks
+1. ⏳ Performance benchmark (<200ms target)
 
 ### Production
 1. ⏳ MCP server restart (pick up new tool)
-2. ⏳ Call `detect_untracked_work_enhanced` via MCP
-3. ⏳ User acceptance testing
-4. ⏳ Analytics integration
+1. ⏳ Call `detect_untracked_work_enhanced` via MCP
+1. ⏳ User acceptance testing
+1. ⏳ Analytics integration
 
 ---
 

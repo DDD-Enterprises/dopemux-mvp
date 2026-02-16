@@ -19,17 +19,17 @@ prelude: Runtime verification of historical LiteLLM database blocker from ConPor
 ## Runtime Verification
 
 1. PostgreSQL check in `dopemux-postgres-age` confirms `litellm` database exists.
-2. `mcp-litellm` container is up and healthy.
-3. LiteLLM runtime env exposes `DATABASE_URL=.../litellm`.
-4. In-container probe to `http://127.0.0.1:4000/health` returns `401` auth error, which confirms service reachability and auth enforcement.
+1. `mcp-litellm` container is up and healthy.
+1. LiteLLM runtime env exposes `DATABASE_URL=.../litellm`.
+1. In-container probe to `http://127.0.0.1:4000/health` returns `401` auth error, which confirms service reachability and auth enforcement.
 
 ## Conclusion
 
 This blocker is stale in current runtime state.
 
 1. Effective status: `resolved_in_runtime`
-2. Action: reclassify from active `BLOCKED` dependency to historical note.
-3. Follow-on: treat LiteLLM work as auth/config hardening and integration quality, not DB-creation blocking.
+1. Action: reclassify from active `BLOCKED` dependency to historical note.
+1. Follow-on: treat LiteLLM work as auth/config hardening and integration quality, not DB-creation blocking.
 
 ## Evidence Artifact
 

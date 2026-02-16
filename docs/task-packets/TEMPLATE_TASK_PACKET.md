@@ -33,8 +33,8 @@ If an invariant appears impossible, stop and report.
 ## Plan (Numbered)
 
 1. <Step 1>
-2. <Step 2>
-3. <Step 3>
+1. <Step 2>
+1. <Step 3>
 
 Keep steps mechanical and verifiable.
 

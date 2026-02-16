@@ -44,12 +44,12 @@ prelude: All_Done (explanation) for dopemux documentation and developer workflow
 
 ### MCP Servers (100% of critical services)
 1. ✅ **dope-context** - Code & docs search, indexing
-2. ✅ **serena** - Code graph analysis
-3. ✅ **conport_kg** - Knowledge graph (workspace-scoped)
+1. ✅ **serena** - Code graph analysis
+1. ✅ **conport_kg** - Knowledge graph (workspace-scoped)
 
 ### Supporting Services (100% of high-priority)
 1. ✅ **orchestrator** - Service coordination & routing
-2. ✅ **activity-capture** - Event logging with workspace tags
+1. ✅ **activity-capture** - Event logging with workspace tags
 
 ---
 
@@ -101,17 +101,17 @@ prelude: All_Done (explanation) for dopemux documentation and developer workflow
 
 ### Documentation (12 files, ~6000 lines)
 1. `START_HERE_MULTI_WORKSPACE.md`
-2. `MULTI_WORKSPACE_INDEX.md`
-3. `MULTI_WORKSPACE_FINAL_STATUS.md`
-4. `MULTI_WORKSPACE_COMPLETE_SUMMARY.md`
-5. `MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md`
-6. `MULTI_WORKSPACE_ROLLOUT_PLAN.md`
-7. `MULTI_WORKSPACE_ECOSYSTEM_STATUS.md`
-8. `SERVICE_WORKSPACE_ANALYSIS.md`
-9. `DOPE_CONTEXT_MULTI_WORKSPACE_COMPLETE.md`
-10. `DOPE_CONTEXT_QUICK_START.md`
-11. `ROLLOUT_COMPLETE.md`
-12. `ALL_DONE.md` (this file)
+1. `MULTI_WORKSPACE_INDEX.md`
+1. `MULTI_WORKSPACE_FINAL_STATUS.md`
+1. `MULTI_WORKSPACE_COMPLETE_SUMMARY.md`
+1. `MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md`
+1. `MULTI_WORKSPACE_ROLLOUT_PLAN.md`
+1. `MULTI_WORKSPACE_ECOSYSTEM_STATUS.md`
+1. `SERVICE_WORKSPACE_ANALYSIS.md`
+1. `DOPE_CONTEXT_MULTI_WORKSPACE_COMPLETE.md`
+1. `DOPE_CONTEXT_QUICK_START.md`
+1. `ROLLOUT_COMPLETE.md`
+1. `ALL_DONE.md` (this file)
 
 **Total Lines**: ~7500 (code + tests + docs)
 
@@ -326,24 +326,24 @@ DOPE_CONTEXT_WORKSPACES="/main,/feature-a,/feature-b" \
 
 ### Technical Wins
 1. Shared utilities eliminate code duplication
-2. Wrapper pattern works for complex stateful services
-3. Routing pattern is quick and effective
-4. Metadata pattern is simplest (15-20 min)
-5. Tests validate patterns work across backends
+1. Wrapper pattern works for complex stateful services
+1. Routing pattern is quick and effective
+1. Metadata pattern is simplest (15-20 min)
+1. Tests validate patterns work across backends
 
 ### Process Wins
 1. Template-driven implementation is fast
-2. Documentation-first approach pays off
-3. Test-driven validation catches issues early
-4. Pattern categorization guides implementation
-5. Incremental rollout works well
+1. Documentation-first approach pays off
+1. Test-driven validation catches issues early
+1. Pattern categorization guides implementation
+1. Incremental rollout works well
 
 ### Best Practices Established
 1. Always use shared utilities
-2. Test both single and multi-workspace
-3. Document return type changes
-4. Support both comma and semicolon separators
-5. Make identifiers URL/database safe
+1. Test both single and multi-workspace
+1. Document return type changes
+1. Support both comma and semicolon separators
+1. Make identifiers URL/database safe
 
 ---
 
@@ -360,10 +360,10 @@ DOPE_CONTEXT_WORKSPACES="/main,/feature-a,/feature-b" \
 
 ### What You Can Do NOW
 1. Use dope-context with multiple workspaces
-2. Index across Git worktrees automatically
-3. Search code in parallel projects
-4. Store workspace-scoped context in ConPort
-5. Route requests with workspace awareness
+1. Index across Git worktrees automatically
+1. Search code in parallel projects
+1. Store workspace-scoped context in ConPort
+1. Route requests with workspace awareness
 
 ### For Future Development
 - Clear patterns for any service type

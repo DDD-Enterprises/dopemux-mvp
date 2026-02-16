@@ -36,10 +36,10 @@ graph_metadata:
 
 **Success Criteria**:
 1. Task-Orchestrator processes ConPort events without errors
-2. Dependency analysis identifies blockers accurately
-3. Results flow: ConPort → Task-Orchestrator → ConPort (< 2s latency)
-4. Integration test suite passes (>90% coverage)
-5. No data stored in Task-Orchestrator (ConPort authority enforced)
+1. Dependency analysis identifies blockers accurately
+1. Results flow: ConPort → Task-Orchestrator → ConPort (< 2s latency)
+1. Integration test suite passes (>90% coverage)
+1. No data stored in Task-Orchestrator (ConPort authority enforced)
 
 ---
 
@@ -61,10 +61,10 @@ graph_metadata:
 
 **Specific Actions**:
 1. Read `requirements.txt` or `setup.py` (if exists)
-2. Scan all 13 modules for imports (aiohttp, redis, etc.)
-3. Check Docker dependencies
-4. List required environment variables
-5. Document API key requirements (Leantime, OpenAI if ML features)
+1. Scan all 13 modules for imports (aiohttp, redis, etc.)
+1. Check Docker dependencies
+1. List required environment variables
+1. Document API key requirements (Leantime, OpenAI if ML features)
 
 **Deliverable**: `task-orchestrator-dependencies.md` with:
 - Python package dependencies
@@ -90,10 +90,10 @@ graph_metadata:
 
 **Specific Actions**:
 1. Check if Redis is running (`redis-cli ping`)
-2. Verify Redis port availability (default 6379)
-3. Test Redis connectivity from Python
-4. Check Redis DB allocation (Task-Orchestrator uses DB 2 & 3)
-5. Verify Redis persistence configuration
+1. Verify Redis port availability (default 6379)
+1. Test Redis connectivity from Python
+1. Check Redis DB allocation (Task-Orchestrator uses DB 2 & 3)
+1. Verify Redis persistence configuration
 
 **Deliverable**: Redis connection validated
 
@@ -115,10 +115,10 @@ graph_metadata:
 
 **Specific Actions**:
 1. Search for ConPort API calls across all modules
-2. Identify schema assumptions (what fields are expected)
-3. Find direct storage operations (`self.orchestrated_tasks[...]`)
-4. Document current vs needed API contracts
-5. Create migration checklist
+1. Identify schema assumptions (what fields are expected)
+1. Find direct storage operations (`self.orchestrated_tasks[...]`)
+1. Document current vs needed API contracts
+1. Create migration checklist
 
 **Deliverable**: `conport-api-audit.md` with:
 - List of all ConPort API calls in current code
@@ -144,10 +144,10 @@ graph_metadata:
 
 **Specific Actions**:
 1. Check for Dockerfile in `services/task-orchestrator/`
-2. Check for docker-compose configuration
-3. Verify environment variable setup (`.env.example`)
-4. Check CI/CD integration (if any)
-5. Document missing infrastructure
+1. Check for docker-compose configuration
+1. Verify environment variable setup (`.env.example`)
+1. Check CI/CD integration (if any)
+1. Document missing infrastructure
 
 **Deliverable**: `deployment-audit.md` with:
 - Existing infrastructure (Docker, configs)
@@ -172,10 +172,10 @@ graph_metadata:
 
 **Specific Actions**:
 1. Compile findings from Tasks 1.1-1.4
-2. Identify critical blockers (if any)
-3. Prioritize remediation work
-4. Update Phase 1 timeline if needed
-5. Create go/no-go recommendation
+1. Identify critical blockers (if any)
+1. Prioritize remediation work
+1. Update Phase 1 timeline if needed
+1. Create go/no-go recommendation
 
 **Deliverable**: `phase-1-audit-summary.md` with:
 - Infrastructure readiness score
@@ -203,10 +203,10 @@ graph_metadata:
 
 **Specific Actions**:
 1. Review ConPort's current event structure (DopeconBridge)
-2. Map ConPort `progress_entry` fields to OrchestrationTask
-3. Define event types (progress.created, progress.updated, progress.deleted)
-4. Add versioning to schemas (v1.0)
-5. Document event payload examples
+1. Map ConPort `progress_entry` fields to OrchestrationTask
+1. Define event types (progress.created, progress.updated, progress.deleted)
+1. Add versioning to schemas (v1.0)
+1. Document event payload examples
 
 **Deliverable**: `conport-event-schema.json` with:
 ```json
@@ -239,11 +239,11 @@ graph_metadata:
 
 **Specific Actions**:
 1. Create `adapters/conport_event_adapter.py`
-2. Implement `ConPortEventAdapter` class
-3. Add schema validation (pydantic)
-4. Map ConPort fields → OrchestrationTask fields
-5. Handle missing/optional fields gracefully
-6. Add comprehensive error handling
+1. Implement `ConPortEventAdapter` class
+1. Add schema validation (pydantic)
+1. Map ConPort fields → OrchestrationTask fields
+1. Handle missing/optional fields gracefully
+1. Add comprehensive error handling
 
 **Deliverable**: `adapters/conport_event_adapter.py` with:
 - ConPortEventAdapter class
@@ -284,10 +284,10 @@ class ConPortEventAdapter:
 
 **Specific Actions**:
 1. Create `adapters/insight_publisher.py`
-2. Define insight event schemas (dependency_analysis_complete, risk_assessment_complete)
-3. Implement `InsightPublisher` class
-4. Add DopeconBridge publishing logic
-5. Handle publishing failures (queue for retry)
+1. Define insight event schemas (dependency_analysis_complete, risk_assessment_complete)
+1. Implement `InsightPublisher` class
+1. Add DopeconBridge publishing logic
+1. Handle publishing failures (queue for retry)
 
 **Deliverable**: `adapters/insight_publisher.py` with:
 - InsightPublisher class
@@ -337,10 +337,10 @@ class InsightPublisher:
 
 **Specific Actions**:
 1. Create `utils/schema_mapping.py`
-2. Implement `conport_to_orchestration_task()`
-3. Implement `orchestration_task_to_conport()`
-4. Handle ADHD metadata preservation
-5. Add validation
+1. Implement `conport_to_orchestration_task()`
+1. Implement `orchestration_task_to_conport()`
+1. Handle ADHD metadata preservation
+1. Add validation
 
 **Deliverable**: `utils/schema_mapping.py` with mapping functions
 
@@ -362,10 +362,10 @@ class InsightPublisher:
 
 **Specific Actions**:
 1. Find all `self.orchestrated_tasks` usage in enhanced_orchestrator.py
-2. Replace with ConPort queries via DopeconBridge
-3. Update to event-driven pattern (subscribe/publish)
-4. Remove local storage dictionary
-5. Update all methods that read/write tasks
+1. Replace with ConPort queries via DopeconBridge
+1. Update to event-driven pattern (subscribe/publish)
+1. Remove local storage dictionary
+1. Update all methods that read/write tasks
 
 **Deliverable**: `enhanced_orchestrator.py` updated to use ConPort as authority
 
@@ -402,10 +402,10 @@ await self.insight_publisher.publish_task_update(updated_task)
 
 **Specific Actions**:
 1. Create `tests/integration/test_conport_event_flow.py`
-2. Test: Create task in ConPort → Event received by Task-Orchestrator
-3. Test: Task-Orchestrator publishes insight → Received by ConPort
-4. Test: Round-trip latency < 2 seconds
-5. Test: Error handling (malformed events, connection failures)
+1. Test: Create task in ConPort → Event received by Task-Orchestrator
+1. Test: Task-Orchestrator publishes insight → Received by ConPort
+1. Test: Round-trip latency < 2 seconds
+1. Test: Error handling (malformed events, connection failures)
 
 **Deliverable**: Integration test suite for event flow
 
@@ -429,10 +429,10 @@ await self.insight_publisher.publish_task_update(updated_task)
 
 **Specific Actions**:
 1. Review DopeconBridge configuration (PORT_BASE+16)
-2. Add Task-Orchestrator as subscriber/publisher
-3. Configure event routing rules
-4. Set up Redis Streams integration
-5. Test connection to DopeconBridge
+1. Add Task-Orchestrator as subscriber/publisher
+1. Configure event routing rules
+1. Set up Redis Streams integration
+1. Test connection to DopeconBridge
 
 **Deliverable**: DopeconBridge config updated
 
@@ -474,10 +474,10 @@ task_orchestrator_config = {
 
 **Specific Actions**:
 1. Update `enhanced_orchestrator.py` with event subscription
-2. Implement `_subscribe_to_conport_events()` method
-3. Add event handlers for each event type
-4. Integrate ConPortEventAdapter
-5. Add error handling and logging
+1. Implement `_subscribe_to_conport_events()` method
+1. Add event handlers for each event type
+1. Integrate ConPortEventAdapter
+1. Add error handling and logging
 
 **Deliverable**: Event subscription working in enhanced_orchestrator.py
 
@@ -518,10 +518,10 @@ async def _handle_task_created(self, event: Dict):
 
 **Specific Actions**:
 1. Update dependency analysis methods to use InsightPublisher
-2. Publish results via DopeconBridge
-3. Format insights for ConPort decision logging
-4. Add retry logic for failed publishes
-5. Log all publish events
+1. Publish results via DopeconBridge
+1. Format insights for ConPort decision logging
+1. Add retry logic for failed publishes
+1. Log all publish events
 
 **Deliverable**: Insight publishing integrated into all analysis methods
 
@@ -561,10 +561,10 @@ async def _analyze_task_dependencies(self, task: OrchestrationTask):
 
 **Specific Actions**:
 1. Create `tests/integration/test_dopecon_bridge.py`
-2. Test: ConPort event → DopeconBridge → Task-Orchestrator
-3. Test: Task-Orchestrator insight → DopeconBridge → ConPort
-4. Test: Event latency < 2 seconds
-5. Test: Error handling (Bridge down, malformed events)
+1. Test: ConPort event → DopeconBridge → Task-Orchestrator
+1. Test: Task-Orchestrator insight → DopeconBridge → ConPort
+1. Test: Event latency < 2 seconds
+1. Test: Error handling (Bridge down, malformed events)
 
 **Deliverable**: DopeconBridge test suite
 
@@ -588,10 +588,10 @@ async def _analyze_task_dependencies(self, task: OrchestrationTask):
 
 **Specific Actions**:
 1. Review dependency analysis code in enhanced_orchestrator.py
-2. Update to use ConPort task queries (not local storage)
-3. Test analyze_dependencies, find_critical_path, identify_blockers
-4. Validate insights are published correctly
-5. Ensure no direct storage operations
+1. Update to use ConPort task queries (not local storage)
+1. Test analyze_dependencies, find_critical_path, identify_blockers
+1. Validate insights are published correctly
+1. Ensure no direct storage operations
 
 **Deliverable**: Dependency analysis operational
 
@@ -628,10 +628,10 @@ Expected: Critical path includes C (waiting for both A and B)
 
 **Specific Actions**:
 1. Review adhd_engine.py requirements
-2. Configure Redis connection (DB 3)
-3. Enable energy level tracking
-4. Enable attention state monitoring
-5. Test ADHD metadata flows through system
+1. Configure Redis connection (DB 3)
+1. Enable energy level tracking
+1. Enable attention state monitoring
+1. Test ADHD metadata flows through system
 
 **Deliverable**: ADHD engine operational and integrated
 
@@ -660,12 +660,12 @@ Expected: Critical path includes C (waiting for both A and B)
 
 **Specific Actions**:
 1. Add feature flags for advanced modules
-2. Disable multi-team coordination (tools 11-17)
-3. Disable ML risk assessment (tools 18-25)
-4. Disable workflow automation (tools 26-31)
-5. Disable performance optimizer (tools 32-35)
-6. Disable deployment orchestration (tools 36-37)
-7. Log which features are disabled
+1. Disable multi-team coordination (tools 11-17)
+1. Disable ML risk assessment (tools 18-25)
+1. Disable workflow automation (tools 26-31)
+1. Disable performance optimizer (tools 32-35)
+1. Disable deployment orchestration (tools 36-37)
+1. Log which features are disabled
 
 **Deliverable**: Feature flag system with Phase 3 features disabled
 
@@ -700,11 +700,11 @@ ORCHESTRATOR_FEATURES = {
 
 **Specific Actions**:
 1. Create real ConPort task
-2. Verify Task-Orchestrator receives event
-3. Verify dependency analysis runs
-4. Verify insights published back to ConPort
-5. Verify ConPort stores insights
-6. Measure end-to-end latency
+1. Verify Task-Orchestrator receives event
+1. Verify dependency analysis runs
+1. Verify insights published back to ConPort
+1. Verify ConPort stores insights
+1. Measure end-to-end latency
 
 **Deliverable**: End-to-end validation report
 
@@ -712,13 +712,13 @@ ORCHESTRATOR_FEATURES = {
 ```
 1. Create task in ConPort (via mcp__conport__log_progress)
    ↓
-2. Wait for Task-Orchestrator to receive event (< 1s)
+1. Wait for Task-Orchestrator to receive event (< 1s)
    ↓
-3. Wait for dependency analysis to complete (< 500ms)
+1. Wait for dependency analysis to complete (< 500ms)
    ↓
-4. Wait for insights to publish (< 500ms)
+1. Wait for insights to publish (< 500ms)
    ↓
-5. Verify ConPort received insights (query decisions/patterns)
+1. Verify ConPort received insights (query decisions/patterns)
    ↓
 Total latency target: < 2 seconds
 ```
@@ -743,25 +743,25 @@ Total latency target: < 2 seconds
 
 **Specific Actions**:
 1. Create `tests/integration/test_phase1_integration.py`
-2. Test: Simple dependency chain (3 tasks)
-3. Test: Parallel tasks (no dependencies)
-4. Test: Complex dependency graph (10+ tasks)
-5. Test: Blocker identification
-6. Test: Critical path calculation
-7. Test: Authority boundaries (Task-Orchestrator doesn't store)
-8. Test: Error recovery (ConPort down, Bridge down)
+1. Test: Simple dependency chain (3 tasks)
+1. Test: Parallel tasks (no dependencies)
+1. Test: Complex dependency graph (10+ tasks)
+1. Test: Blocker identification
+1. Test: Critical path calculation
+1. Test: Authority boundaries (Task-Orchestrator doesn't store)
+1. Test: Error recovery (ConPort down, Bridge down)
 
 **Deliverable**: Comprehensive integration test suite
 
 **Test Cases** (minimum 8):
 1. Simple dependency chain
-2. Parallel task detection
-3. Complex dependency graph
-4. Blocker identification
-5. Critical path accuracy
-6. Authority boundary enforcement
-7. Error recovery (ConPort unavailable)
-8. Error recovery (DopeconBridge unavailable)
+1. Parallel task detection
+1. Complex dependency graph
+1. Blocker identification
+1. Critical path accuracy
+1. Authority boundary enforcement
+1. Error recovery (ConPort unavailable)
+1. Error recovery (DopeconBridge unavailable)
 
 **Acceptance Criteria**:
 - ✅ All test cases pass
@@ -781,11 +781,11 @@ Total latency target: < 2 seconds
 
 **Specific Actions**:
 1. Create `tests/load/test_phase1_load.py`
-2. Test: 100 tasks created in ConPort simultaneously
-3. Test: Dependency analysis completes for all (< 5s)
-4. Test: Memory usage stays < 500MB
-5. Test: CPU usage stays < 50%
-6. Measure throughput (events/second)
+1. Test: 100 tasks created in ConPort simultaneously
+1. Test: Dependency analysis completes for all (< 5s)
+1. Test: Memory usage stays < 500MB
+1. Test: CPU usage stays < 50%
+1. Measure throughput (events/second)
 
 **Deliverable**: Load test suite with performance report
 
@@ -1046,18 +1046,18 @@ Start
 
 ### Immediate (This Session)
 1. ✅ Review this implementation plan
-2. **Import to ConPort** (optional): Create progress entries for all 20 tasks
-3. **Begin Task 1.1** (Inventory Dependencies) - 45 minutes, can start now
+1. **Import to ConPort** (optional): Create progress entries for all 20 tasks
+1. **Begin Task 1.1** (Inventory Dependencies) - 45 minutes, can start now
 
 ### This Week
 1. Complete Component 1 (Audit) - 4 hours
-2. Make go/no-go decision based on audit
-3. Begin Component 2 (Adapters) if go
+1. Make go/no-go decision based on audit
+1. Begin Component 2 (Adapters) if go
 
 ### Next Week
 1. Complete integration and activation
-2. Run comprehensive tests
-3. Validate Phase 1 complete
+1. Run comprehensive tests
+1. Validate Phase 1 complete
 
 ---
 

@@ -51,9 +51,9 @@ A next-generation decision tracking system designed for:
 
 **Ready to Build** (~95 minutes):
 1. Decision-Task Linking (15 min)
-2. Relationship Mapper (25 min)
-3. Suggestion Engine (35 min)
-4. QueryService Integration (20 min)
+1. Relationship Mapper (25 min)
+1. Suggestion Engine (35 min)
+1. QueryService Integration (20 min)
 
 **All planning complete**:
 - ✅ Architecture validated
@@ -215,18 +215,18 @@ A next-generation decision tracking system designed for:
 
 **Start Here** (in order):
 1. `README_START_HERE.md` ← Navigation guide
-2. `DEEP_ANALYSIS_CURRENT_STATE.md` ← What we have
-3. `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` ← What to build
+1. `DEEP_ANALYSIS_CURRENT_STATE.md` ← What we have
+1. `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` ← What to build
 
 **Background**:
-4. `WEEK4_DAY1_COMPLETE.md` ← Day 1 results
-5. `WEEK4_PROGRESS.md` ← Week tracker
-6. `ARCHITECTURE_ANALYSIS.md` ← Design deep dive
+1. `WEEK4_DAY1_COMPLETE.md` ← Day 1 results
+1. `WEEK4_PROGRESS.md` ← Week tracker
+1. `ARCHITECTURE_ANALYSIS.md` ← Design deep dive
 
 **Reference**:
-7. `WEEK4_DAY2_FINAL_ROADMAP.md` ← Full roadmap
-8. `WEEK4_DAY2_SPEC.md` ← Technical spec
-9. `STORAGE_DESIGN.md` ← Storage architecture
+1. `WEEK4_DAY2_FINAL_ROADMAP.md` ← Full roadmap
+1. `WEEK4_DAY2_SPEC.md` ← Technical spec
+1. `STORAGE_DESIGN.md` ← Storage architecture
 
 ---
 

@@ -47,9 +47,9 @@ prelude: Profile Manager Design (explanation) for dopemux documentation and deve
 
 ### Why MetaMCP Was Abandoned
 1. **MCP Protocol Limitation**: Can't change tools without restarting Claude (no lazy loading)
-2. **Over-Engineering**: Complexity should be in config generation, not runtime
-3. **Never Deployed**: Built but never actually used - profiles are simpler
-4. **ADHD Friction**: Managing broker + roles adds cognitive overhead
+1. **Over-Engineering**: Complexity should be in config generation, not runtime
+1. **Never Deployed**: Built but never actually used - profiles are simpler
+1. **ADHD Friction**: Managing broker + roles adds cognitive overhead
 
 ---
 
@@ -104,9 +104,9 @@ description: "Code implementation and debugging"
 
 # MCP Server Selection (ConPort required in all profiles)
 mcps:
-  - serena-v2        # Code navigation, LSP
-  - conport          # Memory (MANDATORY)
-  - dope-context     # Semantic code search
+- serena-v2        # Code navigation, LSP
+- conport          # Memory (MANDATORY)
+- dope-context     # Semantic code search
 
 # ADHD Optimization
 adhd_config:
@@ -117,24 +117,24 @@ adhd_config:
 # Auto-Detection Rules
 auto_detection:
   git_branches:
-    - "feature/*"
-    - "fix/*"
-    - "refactor/*"
+- "feature/*"
+- "fix/*"
+- "refactor/*"
 
   directories:
-    - "src/"
-    - "tests/"
-    - "lib/"
+- "src/"
+- "tests/"
+- "lib/"
 
   file_patterns:
-    - "*.py"
-    - "*.ts"
-    - "*.js"
-    - "*.go"
+- "*.py"
+- "*.ts"
+- "*.js"
+- "*.go"
 
   time_windows:
-    - "09:00-12:00"  # Morning focus
-    - "14:00-17:00"  # Afternoon focus
+- "09:00-12:00"  # Morning focus
+- "14:00-17:00"  # Afternoon focus
 ```
 
 ### Core Profiles
@@ -208,10 +208,10 @@ def detect_profile(context: ProfileContext) -> ProfileMatch:
 ### Fallback Hierarchy
 
 1. ADHD Engine available? → Use energy + attention state
-2. Git branch detected? → Use branch patterns
-3. Directory patterns match? → Use pwd matching
-4. Time of day match? → Use time windows
-5. Manual override → User knows best (always respected)
+1. Git branch detected? → Use branch patterns
+1. Directory patterns match? → Use pwd matching
+1. Time of day match? → Use time windows
+1. Manual override → User knows best (always respected)
 
 ---
 
@@ -297,13 +297,13 @@ PROFILE SWITCH COMPLETE
 name: full
 display_name: "Full Stack"
 mcps:
-  - serena-v2
-  - conport
-  - zen
-  - gpt-researcher
-  - pal
-  - mas-sequential-thinking
-  - dope-context
+- serena-v2
+- conport
+- zen
+- gpt-researcher
+- pal
+- mas-sequential-thinking
+- dope-context
 
 adhd_config:
   energy_preference: any
@@ -356,8 +356,8 @@ dopemux start
 
 **Components**:
 1. Profile YAML parser
-2. Config generator (profile.yaml → Claude config.json)
-3. Manual profile selection (`dopemux start --profile <name>`)
+1. Config generator (profile.yaml → Claude config.json)
+1. Manual profile selection (`dopemux start --profile <name>`)
 
 **Deliverables**:
 - `src/dopemux/profile_manager.py` (100-150 LOC)
@@ -368,8 +368,8 @@ dopemux start
 
 **Components**:
 1. Auto-detection algorithm (git, directory, ADHD, time, files)
-2. ConPort session management (save/restore)
-3. Profile switching command (`dopemux switch <profile>`)
+1. ConPort session management (save/restore)
+1. Profile switching command (`dopemux switch <profile>`)
 
 **Deliverables**:
 - `src/dopemux/detection.py` (200-250 LOC)
@@ -380,8 +380,8 @@ dopemux start
 
 **Components**:
 1. Statusline profile indicator
-2. Gentle suggestion UI
-3. Usage analytics and optimization
+1. Gentle suggestion UI
+1. Usage analytics and optimization
 
 **Deliverables**:
 - Updated statusline script
@@ -488,12 +488,12 @@ class ProfileDetector:
 ## Next Steps
 
 1. Create 4 YAML profile templates in `.dopemux/profiles/`
-2. Implement `profile_manager.py` and `config_generator.py` (P0)
-3. Test token reduction with developer profile
-4. Validate backward compatibility with full profile
-5. Implement auto-detection algorithm (P1)
-6. Add ConPort session save/restore (P1)
-7. Integrate with statusline (P2)
+1. Implement `profile_manager.py` and `config_generator.py` (P0)
+1. Test token reduction with developer profile
+1. Validate backward compatibility with full profile
+1. Implement auto-detection algorithm (P1)
+1. Add ConPort session save/restore (P1)
+1. Integrate with statusline (P2)
 
 ---
 

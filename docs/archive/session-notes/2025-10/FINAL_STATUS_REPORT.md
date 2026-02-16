@@ -153,8 +153,8 @@ instances = await detect_running_instances(use_cache=False)
 **Status**: Not working
 **Issues**:
 1. ✅ langgraph dependency - FIXED (added to requirements.txt)
-2. ✅ PYTHONPATH - FIXED (changed /app/backend to /app)
-3. ❌ Package name collision - "backend" module conflict in site-packages
+1. ✅ PYTHONPATH - FIXED (changed /app/backend to /app)
+1. ❌ Package name collision - "backend" module conflict in site-packages
 **Impact**: None - Zen MCP provides full research capabilities
 **Priority**: Low (nice-to-have, not required)
 **Fix**: Rename backend/ directory to avoid collision (e.g., research_api/)
@@ -225,9 +225,9 @@ instances = await detect_running_instances(use_cache=False)
 ## 📚 Documentation Delivered
 
 1. **SESSION_2025-10-16_SUMMARY.md** - Complete session log
-2. **PROCESS_CLEANUP_GUIDE.md** - Troubleshooting orphaned processes
-3. **PERFORMANCE_OPTIMIZATIONS.md** - Technical deep-dive
-4. **FINAL_STATUS_REPORT.md** - This document
+1. **PROCESS_CLEANUP_GUIDE.md** - Troubleshooting orphaned processes
+1. **PERFORMANCE_OPTIMIZATIONS.md** - Technical deep-dive
+1. **FINAL_STATUS_REPORT.md** - This document
 
 ---
 
@@ -235,17 +235,17 @@ instances = await detect_running_instances(use_cache=False)
 
 ### What Worked Brilliantly
 1. **Pure bash > Python wrappers** - 35-50x performance gain
-2. **Caching > HTTP probing** - 5000x improvement
-3. **Env vars > Repeated detection** - Eliminated redundancy
-4. **atexit > Manual cleanup** - Reliability improvement
-5. **Empirical testing** - Stopped broken container immediately
+1. **Caching > HTTP probing** - 5000x improvement
+1. **Env vars > Repeated detection** - Eliminated redundancy
+1. **atexit > Manual cleanup** - Reliability improvement
+1. **Empirical testing** - Stopped broken container immediately
 
 ### What to Remember
 1. **Docker cache gotchas** - Use `--no-cache` for dependency changes
-2. **Package name collisions** - Generic names (backend, api, etc.) can conflict
-3. **PYTHONPATH order matters** - Site-packages can shadow local modules
-4. **Shell integration must be sourced** - Functions only work in terminal, not subprocesses
-5. **Data in volumes is safe** - Rebuild containers freely
+1. **Package name collisions** - Generic names (backend, api, etc.) can conflict
+1. **PYTHONPATH order matters** - Site-packages can shadow local modules
+1. **Shell integration must be sourced** - Functions only work in terminal, not subprocesses
+1. **Data in volumes is safe** - Rebuild containers freely
 
 ---
 
@@ -291,13 +291,13 @@ echo $DOPEMUX_WORKSPACE_ROOT
    # Update Dockerfile CMD and PYTHONPATH accordingly
    ```
 
-2. **Investigate Qdrant unhealthy** (if semantic search issues):
+1. **Investigate Qdrant unhealthy** (if semantic search issues):
    ```bash
    docker logs mcp-qdrant --tail 100
    # Check for errors, may need collection recreation
    ```
 
-3. **Remove obsolete mas-sequential** (cleanup):
+1. **Remove obsolete mas-sequential** (cleanup):
    ```bash
    # Edit docker/mcp-servers/docker-compose.yml
    # Remove mas-sequential-thinking service definition
@@ -305,14 +305,14 @@ echo $DOPEMUX_WORKSPACE_ROOT
 
 ### Medium Priority
 1. **Test shell integration thoroughly**:
-   - Create test worktrees
-   - Time switching operations
-   - Verify fuzzy matching works
+- Create test worktrees
+- Time switching operations
+- Verify fuzzy matching works
 
-2. **Benchmark performance gains**:
-   - Before/after startup time
-   - Memory usage over time
-   - Response latency
+1. **Benchmark performance gains**:
+- Before/after startup time
+- Memory usage over time
+- Response latency
 
 ---
 
@@ -358,14 +358,14 @@ echo $DOPEMUX_WORKSPACE_ROOT
 
 **If Issues Arise**:
 1. Check `docs/PROCESS_CLEANUP_GUIDE.md` for orphan issues
-2. Check `docs/PERFORMANCE_OPTIMIZATIONS.md` for speed issues
-3. Check `docs/SESSION_2025-10-16_SUMMARY.md` for complete history
+1. Check `docs/PERFORMANCE_OPTIMIZATIONS.md` for speed issues
+1. Check `docs/SESSION_2025-10-16_SUMMARY.md` for complete history
 
 **To Continue Work**:
 1. Source shell integration for instant worktree switching
-2. Use `dopemux health --cleanup` weekly
-3. Monitor for new orphaned processes (shouldn't happen anymore!)
-4. Enjoy the 25-50x performance boost!
+1. Use `dopemux health --cleanup` weekly
+1. Monitor for new orphaned processes (shouldn't happen anymore!)
+1. Enjoy the 25-50x performance boost!
 
 ---
 

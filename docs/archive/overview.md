@@ -29,24 +29,24 @@ Sprint summaries, session notes, and daily progress logs organized by date.
 Documentation from completed initiatives, kept for historical reference:
 
 - **ConPort Projects:**
-  - Event Bridge Success
-  - HTTP Migration
-  - LSP Hover Feature
-  - Production Deployment
+- Event Bridge Success
+- HTTP Migration
+- LSP Hover Feature
+- Production Deployment
 
 - **Integration Projects:**
-  - Leantime MCP Integration
-  - MetaMCP Complete Setup
+- Leantime MCP Integration
+- MetaMCP Complete Setup
 
 - **Infrastructure:**
-  - Multi-Instance Workspace Fix
-  - Docker Cleanup
-  - Security Audit & Fixes
-  - Token Limit Fixes
+- Multi-Instance Workspace Fix
+- Docker Cleanup
+- Security Audit & Fixes
+- Token Limit Fixes
 
 - **Dashboard:**
-  - Compact Dashboard Implementation
-  - Orchestrator Integration
+- Compact Dashboard Implementation
+- Orchestrator Integration
 
 ### `deprecated/`
 Outdated or superseded documentation:
@@ -78,8 +78,8 @@ Keep in active docs if:
 
 Use the search function or browse by:
 1. **Date**: `session-notes/YYYY-MM/`
-2. **Project**: Look for related file names in `completed-projects/`
-3. **Type**: Check `deprecated/` for old versions
+1. **Project**: Look for related file names in `completed-projects/`
+1. **Type**: Check `deprecated/` for old versions
 
 ## Retention Policy
 

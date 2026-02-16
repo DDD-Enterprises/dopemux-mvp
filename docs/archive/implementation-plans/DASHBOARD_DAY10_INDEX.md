@@ -23,20 +23,20 @@ prelude: Dashboard_Day10_Index (explanation) for dopemux documentation and devel
 ### Main Documents
 
 1. **[DASHBOARD_DAY10_DEEP_RESEARCH.md](./DASHBOARD_DAY10_DEEP_RESEARCH.md)** (6,500 words)
-   - Complete research foundation
-   - Neuroscience & UX research
-   - Technical architecture
-   - Design patterns
-   - 📖 Read for: Understanding WHY
+- Complete research foundation
+- Neuroscience & UX research
+- Technical architecture
+- Design patterns
+- 📖 Read for: Understanding WHY
 
-2. **[DASHBOARD_DAY10_READY.md](./DASHBOARD_DAY10_READY.md)** (Implementation Guide)
-   - Ready-to-copy code
-   - Step-by-step tasks
-   - Testing procedures
-   - Verification checklist
-   - 🛠️ Read for: HOW to implement
+1. **[DASHBOARD_DAY10_READY.md](./DASHBOARD_DAY10_READY.md)** (Implementation Guide)
+- Ready-to-copy code
+- Step-by-step tasks
+- Testing procedures
+- Verification checklist
+- 🛠️ Read for: HOW to implement
 
-3. **THIS FILE** - Quick navigation
+1. **THIS FILE** - Quick navigation
 
 ---
 
@@ -263,12 +263,12 @@ dopemux-mvp/
 **You're done when:**
 
 1. ✅ Dashboard shows 6 sparklines with real Prometheus data
-2. ✅ Can navigate entire dashboard with keyboard only
-3. ✅ Sparklines update every 30 seconds automatically
-4. ✅ Performance < 100ms, < 5% CPU maintained
-5. ✅ 95%+ test coverage achieved
-6. ✅ Zero crashes in 1-hour stress test
-7. ✅ Clean git history with descriptive commits
+1. ✅ Can navigate entire dashboard with keyboard only
+1. ✅ Sparklines update every 30 seconds automatically
+1. ✅ Performance < 100ms, < 5% CPU maintained
+1. ✅ 95%+ test coverage achieved
+1. ✅ Zero crashes in 1-hour stress test
+1. ✅ Clean git history with descriptive commits
 
 **Then:**
 - Update tracker: `tmux-dashboard-implementation-tracker.md`
@@ -299,12 +299,12 @@ dopemux-mvp/
 ## 💡 PRO TIPS
 
 1. **Read research first** - Understand WHY before coding
-2. **Copy, don't type** - Use code from READY.md
-3. **Test incrementally** - After each task, not at end
-4. **Small commits** - Easy to debug if something breaks
-5. **Watch logs** - `logger.info()` throughout code
-6. **Use cache stats** - Monitor hit rate for tuning
-7. **Profile early** - Don't wait for performance issues
+1. **Copy, don't type** - Use code from READY.md
+1. **Test incrementally** - After each task, not at end
+1. **Small commits** - Easy to debug if something breaks
+1. **Watch logs** - `logger.info()` throughout code
+1. **Use cache stats** - Monitor hit rate for tuning
+1. **Profile early** - Don't wait for performance issues
 
 ---
 

@@ -71,9 +71,9 @@ dopemux start
 **What happens:**
 
 1. ✅ Instance A registered (main worktree)
-2. ✅ Port 3000 allocated
-3. ✅ Services start (ConPort:3007, Serena:3006, Task-Master:3005)
-4. ✅ Environment: `DOPEMUX_INSTANCE_ID=""` (main worktree)
+1. ✅ Port 3000 allocated
+1. ✅ Services start (ConPort:3007, Serena:3006, Task-Master:3005)
+1. ✅ Environment: `DOPEMUX_INSTANCE_ID=""` (main worktree)
 
 ### Routing Through LiteLLM Proxy
 
@@ -349,24 +349,24 @@ Each instance uses a different port base:
 
 1. **One Instance Per Mental Context**
 
-   - Main branch = Instance A
-   - Feature work = Instance B
-   - Hotfixes = Instance C
-   - Experiments = Instance D
+- Main branch = Instance A
+- Feature work = Instance B
+- Hotfixes = Instance C
+- Experiments = Instance D
 
-2. **Let Completed Work Flow**
+1. **Let Completed Work Flow**
 
-   - Mark tasks COMPLETED when done
-   - Automatically becomes visible to all instances
-   - Team can see your progress
+- Mark tasks COMPLETED when done
+- Automatically becomes visible to all instances
+- Team can see your progress
 
-3. **Isolated Focus**
+1. **Isolated Focus**
 
-   - IN_PROGRESS tasks stay private to your worktree
-   - No cross-contamination between contexts
-   - Zero context switching overhead
+- IN_PROGRESS tasks stay private to your worktree
+- No cross-contamination between contexts
+- Zero context switching overhead
 
-4. **Clean Up Regularly**
+1. **Clean Up Regularly**
 
    ```bash
    # Weekly cleanup of stopped instances
@@ -448,13 +448,13 @@ kill -9 <PID>
    git branch -d feature/instance-B  # Delete if safe
    ```
 
-2. **Worktree path exists:**
+1. **Worktree path exists:**
 
    ```bash
    rm -rf worktrees/B  # Remove if safe
    ```
 
-3. **Git lock file:**
+1. **Git lock file:**
    ```bash
    rm .git/worktrees/B/locked  # If worktree is not actually locked
    ```
@@ -472,14 +472,14 @@ kill -9 <PID>
    echo $DOPEMUX_WORKSPACE_ID
    ```
 
-2. **Task status allows sharing:**
+1. **Task status allows sharing:**
 
    ```bash
    # Only COMPLETED/BLOCKED/CANCELLED are shared
    # IN_PROGRESS/PLANNED are isolated
    ```
 
-3. **Database connection:**
+1. **Database connection:**
    ```bash
    psql -h localhost -p 5455 -U dopemux -d dopemux_memory -c "\dt"
    ```
@@ -528,22 +528,22 @@ docker exec mcp-serena cat /workspaces/ui-build/.claude/claude.md
 
 1. **Manual Environment Variables**
 
-   - No automatic git detection yet
-   - Must use worktree path for commands
+- No automatic git detection yet
+- Must use worktree path for commands
 
-2. **Maximum 5 Instances**
+1. **Maximum 5 Instances**
 
-   - Hardcoded port ranges
-   - Can extend by modifying `InstanceManager.AVAILABLE_PORTS`
+- Hardcoded port ranges
+- Can extend by modifying `InstanceManager.AVAILABLE_PORTS`
 
-3. **No Historical Migration**
+1. **No Historical Migration**
 
-   - Old decisions/patterns not retroactively instance-aware
-   - Only new data respects instance isolation
+- Old decisions/patterns not retroactively instance-aware
+- Only new data respects instance isolation
 
-4. **No UI Dashboard**
-   - Terminal-only interface
-   - Planned for future enhancement
+1. **No UI Dashboard**
+- Terminal-only interface
+- Planned for future enhancement
 
 ### Workarounds
 
@@ -601,15 +601,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+- uses: actions/checkout@v2
 
-      - name: Start Dopemux Instance
+- name: Start Dopemux Instance
         run: |
           export DOPEMUX_INSTANCE_ID=CI
           export DOPEMUX_WORKSPACE_ID=$PWD
           dopemux start --no-mcp --background
 
-      - name: Run Tests
+- name: Run Tests
         run: pytest
 ```
 

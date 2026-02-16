@@ -94,34 +94,34 @@ Built a **complete ADHD-optimized development environment** with tmux integratio
 ### 3. Documentation (6 files, ~40 KB)
 
 1. **3-PANE-DASHBOARD-GUIDE.md** (10 KB)
-   - Complete usage guide
-   - All features documented
-   - Tmux controls reference
+- Complete usage guide
+- All features documented
+- Tmux controls reference
 
-2. **TYPER-DASHBOARD-COMPLETE.md** (Not saved to disk)
-   - Typer/Rich dashboard guide
-   - CLI commands reference
-   - Integration examples
+1. **TYPER-DASHBOARD-COMPLETE.md** (Not saved to disk)
+- Typer/Rich dashboard guide
+- CLI commands reference
+- Integration examples
 
-3. **COMPACT-DASHBOARD-COMPLETE.md** (8.3 KB)
-   - Compact design specification
-   - Integration roadmap
-   - Serena/Leantime/ConPort integration
+1. **COMPACT-DASHBOARD-COMPLETE.md** (8.3 KB)
+- Compact design specification
+- Integration roadmap
+- Serena/Leantime/ConPort integration
 
-4. **ORCHESTRATOR-INTEGRATION-COMPLETE.md** (10 KB)
-   - Full orchestrator documentation
-   - Layout customization guide
-   - Workflow examples
+1. **ORCHESTRATOR-INTEGRATION-COMPLETE.md** (10 KB)
+- Full orchestrator documentation
+- Layout customization guide
+- Workflow examples
 
-5. **ADDITIONAL-ADHD-METRICS.md** (7.7 KB)
-   - All available metrics catalog
-   - Service integration points
-   - Future roadmap
+1. **ADDITIONAL-ADHD-METRICS.md** (7.7 KB)
+- All available metrics catalog
+- Service integration points
+- Future roadmap
 
-6. **ADHD-DASHBOARD-SESSION-SUMMARY.md**
-   - Session overview
-   - Next steps
-   - Key decisions
+1. **ADHD-DASHBOARD-SESSION-SUMMARY.md**
+- Session overview
+- Next steps
+- Key decisions
 
 ### 4. Makefile Integration (COMPLETE ✅)
 
@@ -244,30 +244,30 @@ python3 scripts/dopemux-dashboard.py tmux
 ### ADHD-Optimized Principles
 
 1. **Visual Hierarchy**
-   - Most important info first (energy, attention)
-   - Color coding (🔥⚡✓⚠️🚨)
-   - Progressive disclosure
+- Most important info first (energy, attention)
+- Color coding (🔥⚡✓⚠️🚨)
+- Progressive disclosure
 
-2. **Concrete, Not Vague**
-   - "24 files" not "some files"
-   - "23 min" not "a while"
-   - "95/100" not "pretty good"
+1. **Concrete, Not Vague**
+- "24 files" not "some files"
+- "23 min" not "a while"
+- "95/100" not "pretty good"
 
-3. **Actionable Guidance**
-   - "git add/commit" not "files modified"
-   - "Take a break" not "session long"
-   - "Enable Focus Mode" not "too many interruptions"
+1. **Actionable Guidance**
+- "git add/commit" not "files modified"
+- "Take a break" not "session long"
+- "Enable Focus Mode" not "too many interruptions"
 
-4. **No Blame Language**
-   - "🚨 24 uncommitted" not "Error: forgot to commit"
-   - "⚠️ Approaching break time" not "Warning: you've been working too long"
-   - "Stale branch (21d)" not "Abandoned work detected"
+1. **No Blame Language**
+- "🚨 24 uncommitted" not "Error: forgot to commit"
+- "⚠️ Approaching break time" not "Warning: you've been working too long"
+- "Stale branch (21d)" not "Abandoned work detected"
 
-5. **Minimal Cognitive Load**
-   - Compact layouts (3-5 lines for top pane)
-   - Auto-refresh (no manual checks)
-   - Single glance awareness
-   - Tmux integration (always visible)
+1. **Minimal Cognitive Load**
+- Compact layouts (3-5 lines for top pane)
+- Auto-refresh (no manual checks)
+- Single glance awareness
+- Tmux integration (always visible)
 
 ---
 
@@ -396,28 +396,28 @@ make kill-orchestrator
 
 ### Immediate (Can do now)
 1. Test orchestrator in real development session
-2. Adjust pane sizes to preference
-3. Add to daily workflow
-4. Gather feedback on dashboard metrics
+1. Adjust pane sizes to preference
+1. Add to daily workflow
+1. Gather feedback on dashboard metrics
 
 ### Short-term (2-3 hours)
 1. Implement compact dashboard script (templates done)
-2. Wire up Serena abandonment tracker
-3. Add Leantime API integration
-4. Test ConPort context tracking
+1. Wire up Serena abandonment tracker
+1. Add Leantime API integration
+1. Test ConPort context tracking
 
 ### Medium-term (1-2 days)
 1. Add click handlers (Rich supports mouse)
-2. Historical view (scroll back)
-3. Export metrics to JSON/CSV
-4. Add custom themes
+1. Historical view (scroll back)
+1. Export metrics to JSON/CSV
+1. Add custom themes
 
 ### Long-term (Future sessions)
 1. Momentum tracking (streaks, deep work hours)
-2. Interactive task management
-3. Desktop notifications
-4. Mobile companion app
-5. Web dashboard export
+1. Interactive task management
+1. Desktop notifications
+1. Mobile companion app
+1. Web dashboard export
 
 ---
 
@@ -425,25 +425,25 @@ make kill-orchestrator
 
 ### Architecture
 1. **Both Bash AND Typer**
-   - Bash: Zero deps, instant, reliable
-   - Typer: Modern, beautiful, extensible
-   - Keep both for different use cases
+- Bash: Zero deps, instant, reliable
+- Typer: Modern, beautiful, extensible
+- Keep both for different use cases
 
-2. **Top Pane for Dashboard**
-   - Always visible (no switching)
-   - Compact (3-5 lines, 20% height)
-   - Auto-updates (no manual refresh)
+1. **Top Pane for Dashboard**
+- Always visible (no switching)
+- Compact (3-5 lines, 20% height)
+- Auto-updates (no manual refresh)
 
-3. **4-Pane Orchestrator**
-   - Dashboard (top)
-   - CLI (bottom-left)
-   - Logs (bottom-middle)
-   - Monitoring (bottom-right)
+1. **4-Pane Orchestrator**
+- Dashboard (top)
+- CLI (bottom-left)
+- Logs (bottom-middle)
+- Monitoring (bottom-right)
 
-4. **Makefile Integration**
-   - Quick launch (make orchestrator)
-   - Easy attach (make attach)
-   - Discoverable (make help)
+1. **Makefile Integration**
+- Quick launch (make orchestrator)
+- Easy attach (make attach)
+- Discoverable (make help)
 
 ---
 

@@ -50,10 +50,10 @@ prelude: Today 2025 10 16 Summary (explanation) for dopemux documentation and de
 **Total Roadmap**: 37-40 days of integration work fully documented
 
 1. **IP-001**: ADHD Engine Integration (7 days) ✅ **EXECUTED TODAY!**
-2. **IP-002**: DopeconBridge Completion (9 days) - Ready
-3. **IP-003**: Infrastructure Consolidation (6-9 days) - Ready
-4. **IP-004**: ConPort Search Delegation (1 day) - 70% complete today
-5. **IP-005**: Orchestrator TUI (14 days) - Ready
+1. **IP-002**: DopeconBridge Completion (9 days) - Ready
+1. **IP-003**: Infrastructure Consolidation (6-9 days) - Ready
+1. **IP-004**: ConPort Search Delegation (1 day) - 70% complete today
+1. **IP-005**: Orchestrator TUI (14 days) - Ready
 
 **Documentation Created**:
 - Master index with 3 execution strategies
@@ -189,12 +189,12 @@ prelude: Today 2025 10 16 Summary (explanation) for dopemux documentation and de
 
 **Output Delivered**:
 1. Comprehensive research validation (10+ documents)
-2. 5 complete implementation plans (37-40 days mapped)
-3. IP-001 fully executed (7-day plan in 1 day)
-4. IP-004 architecture (70% complete)
-5. 57 passing tests
-6. 12 documentation files
-7. 15 ConPort decisions logged
+1. 5 complete implementation plans (37-40 days mapped)
+1. IP-001 fully executed (7-day plan in 1 day)
+1. IP-004 architecture (70% complete)
+1. 57 passing tests
+1. 12 documentation files
+1. 15 ConPort decisions logged
 
 **ROI**: Exceptional - transformed 40% → 78% integrated in single day
 

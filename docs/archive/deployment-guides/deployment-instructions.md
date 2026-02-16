@@ -155,8 +155,8 @@ docker-compose restart
 
 **Most Likely Issues** (and fixes):
 1. CORS too restrictive → Add origin to ALLOWED_ORIGINS
-2. API key not set → Services run in dev mode (no auth)
-3. Bridge not connecting → Check DOPECON_BRIDGE_URL
+1. API key not set → Services run in dev mode (no auth)
+1. Bridge not connecting → Check DOPECON_BRIDGE_URL
 
 **All changes are backwards compatible** - rollback is safe
 

@@ -96,9 +96,9 @@ return chunks
 - **Cost**: < $0.001 (Voyage embeddings cached)
 - **Search Latency**: < 2 seconds
 - **Models Used**:
-  - Code: voyage-code-3 (embeddings), gpt-5-mini (context, if enabled)
-  - Docs: voyage-context-3 (contextualized embeddings)
-  - Reranking: voyage-rerank-2.5
+- Code: voyage-code-3 (embeddings), gpt-5-mini (context, if enabled)
+- Docs: voyage-context-3 (contextualized embeddings)
+- Reranking: voyage-rerank-2.5
 
 **Why Only 26 Code Chunks**:
 - Code-audit is a documentation/audit workspace
@@ -114,9 +114,9 @@ return chunks
 
 **Files Modified**:
 1. `services/adhd_engine/main.py:93-102`
-2. `services/dopemux-gpt-researcher/backend/main.py:110-119`
-3. `services/dopemux-gpt-researcher/backend/api/main.py:233-242`
-4. `services/mcp-dopecon-bridge/main.py:1164-1172`
+1. `services/dopemux-gpt-researcher/backend/main.py:110-119`
+1. `services/dopemux-gpt-researcher/backend/api/main.py:233-242`
+1. `services/mcp-dopecon-bridge/main.py:1164-1172`
 
 **Change Pattern**:
 ```python
@@ -150,7 +150,7 @@ app.add_middleware(
    # AFTER:  password: str = os.getenv("SERENA_DB_PASSWORD", "serena_dev_pass")
    ```
 
-2. `services/serena/v2/intelligence/integration_test.py:67`
+1. `services/serena/v2/intelligence/integration_test.py:67`
    ```python
    # BEFORE: password="serena_test_pass"
    # AFTER:  password=os.getenv("SERENA_TEST_PASSWORD", "serena_test_pass")
@@ -191,12 +191,12 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
 
 **Secured Endpoints**:
 1. `POST /api/v1/assess-task`
-2. `GET /api/v1/energy-level/{user_id}`
-3. `GET /api/v1/attention-state/{user_id}`
-4. `POST /api/v1/recommend-break`
-5. `POST /api/v1/user-profile`
-6. `PUT /api/v1/activity/{user_id}`
-7. (Plus root endpoints `/` and `/health` remain public)
+1. `GET /api/v1/energy-level/{user_id}`
+1. `GET /api/v1/attention-state/{user_id}`
+1. `POST /api/v1/recommend-break`
+1. `POST /api/v1/user-profile`
+1. `PUT /api/v1/activity/{user_id}`
+1. (Plus root endpoints `/` and `/health` remain public)
 
 **Testing**: ✅ Imports successful, router registers 48 routes
 
@@ -225,9 +225,9 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
 
 **Investigation Path**:
 1. Phase 1: Found DopeconBridge at port 3016, services bypass it
-2. Documented as "architecture violation" (ADHD Engine direct SQLite writes)
-3. Phase 2: Read all 3 bridge files (1,589 lines total)
-4. **Found**: Custom data endpoints are STUBS!
+1. Documented as "architecture violation" (ADHD Engine direct SQLite writes)
+1. Phase 2: Read all 3 bridge files (1,589 lines total)
+1. **Found**: Custom data endpoints are STUBS!
 
 **Evidence** (`services/mcp-dopecon-bridge/kg_endpoints.py:357-363`):
 ```python
@@ -312,21 +312,21 @@ async def get_custom_data(...):
 
 **Production-Ready** (4 services):
 1. **Dope-Context**: Semantic search, just fixed chunking bug, 9 MCP tools
-2. **ADHD Engine**: 7 endpoints, 6 monitors verified, NOW SECURED
-3. **Serena v2**: LSP navigation, ADHD features, production-quality
-4. **ConPort KG UI**: React terminal UI, clean code, proper patterns
+1. **ADHD Engine**: 7 endpoints, 6 monitors verified, NOW SECURED
+1. **Serena v2**: LSP navigation, ADHD features, production-quality
+1. **ConPort KG UI**: React terminal UI, clean code, proper patterns
 
 **Functional with Issues** (4 services):
-5. **DopeconBridge**: 80% done, custom_data stubs (12h to complete)
-6. **ConPort KG**: Orchestrator with bridge TODOs (works independently)
-7. **GPT-Researcher**: FastAPI service, CORS fixed, 67 TODOs found
-8. **Zen MCP**: External Docker, 27 models, 9 tools (validated working)
+1. **DopeconBridge**: 80% done, custom_data stubs (12h to complete)
+1. **ConPort KG**: Orchestrator with bridge TODOs (works independently)
+1. **GPT-Researcher**: FastAPI service, CORS fixed, 67 TODOs found
+1. **Zen MCP**: External Docker, 27 models, 9 tools (validated working)
 
 **Needs Deep Investigation** (4 services):
-9. **Claude-Context**: Legacy? Milvus-based, unclear if active
-10. **ML Risk Assessment**: Code exists, not reviewed
-11. **Orchestrator**: Module exists, not reviewed
-12. **Taskmaster**: MCP wrapper, not reviewed
+1. **Claude-Context**: Legacy? Milvus-based, unclear if active
+1. **ML Risk Assessment**: Code exists, not reviewed
+1. **Orchestrator**: Module exists, not reviewed
+1. **Taskmaster**: MCP wrapper, not reviewed
 
 ---
 
@@ -336,20 +336,20 @@ All claims tested against actual code:
 
 **ADHD Engine**:
 - ✅ "6 background monitors" → VERIFIED (all 6 found in engine.py:150-156)
-  1. _energy_level_monitor
-  2. _attention_state_monitor
-  3. _cognitive_load_monitor
-  4. _break_timing_monitor
-  5. _hyperfocus_protection_monitor
-  6. _context_switch_analyzer
+1. _energy_level_monitor
+1. _attention_state_monitor
+1. _cognitive_load_monitor
+1. _break_timing_monitor
+1. _hyperfocus_protection_monitor
+1. _context_switch_analyzer
 
 - ✅ "7 API endpoints" → CLOSE (6 /api/v1/* + 2 root = 8 total)
-  1. POST /api/v1/assess-task
-  2. GET /api/v1/energy-level/{user_id}
-  3. GET /api/v1/attention-state/{user_id}
-  4. POST /api/v1/recommend-break
-  5. POST /api/v1/user-profile
-  6. PUT /api/v1/activity/{user_id}
+1. POST /api/v1/assess-task
+1. GET /api/v1/energy-level/{user_id}
+1. GET /api/v1/attention-state/{user_id}
+1. POST /api/v1/recommend-break
+1. POST /api/v1/user-profile
+1. PUT /api/v1/activity/{user_id}
   7-8. GET /, GET /health (root endpoints)
 
 **DopeconBridge**:
@@ -485,7 +485,7 @@ DopeconBridge| Cross-plane coord      | ⚠️ Incomplete
 
 **Violations Found**:
 1. ADHD Engine → ConPort direct SQLite (should use bridge HTTP API)
-2. ConPort Orchestrator → DopeconBridge TODOs (not wired)
+1. ConPort Orchestrator → DopeconBridge TODOs (not wired)
 
 ---
 
@@ -493,28 +493,28 @@ DopeconBridge| Cross-plane coord      | ⚠️ Incomplete
 
 **Databases**:
 1. PostgreSQL Primary (5432) - Multi-database setup
-2. PostgreSQL AGE (5455) - ConPort graph (`dopemux_knowledge_graph.conport_knowledge`)
-3. MySQL (3306) - Leantime
-4. Redis Primary (6379) - Event bus, caching
-5. Redis Leantime (6380) - Leantime cache
-6. Qdrant (6333) - Dope-Context vectors
-7. Milvus (19530) - Claude-Context (legacy?)
+1. PostgreSQL AGE (5455) - ConPort graph (`dopemux_knowledge_graph.conport_knowledge`)
+1. MySQL (3306) - Leantime
+1. Redis Primary (6379) - Event bus, caching
+1. Redis Leantime (6380) - Leantime cache
+1. Qdrant (6333) - Dope-Context vectors
+1. Milvus (19530) - Claude-Context (legacy?)
 
 **External APIs**:
 1. **VoyageAI** - Embeddings (voyage-code-3, voyage-context-3, voyage-rerank-2.5)
-   - Rate limit: 2000 RPM
-   - Cost: ~$0.12 per 1M tokens
-   - Usage: Dope-Context indexing + search
+- Rate limit: 2000 RPM
+- Cost: ~$0.12 per 1M tokens
+- Usage: Dope-Context indexing + search
 
-2. **Anthropic** - Context generation (claude-3-5-haiku-20241022)
-   - Rate limit: 50 RPM, 50K tokens/min
-   - Optional: Dope-Context context generation
-   - Used: GPT-Researcher (if enabled)
+1. **Anthropic** - Context generation (claude-3-5-haiku-20241022)
+- Rate limit: 50 RPM, 50K tokens/min
+- Optional: Dope-Context context generation
+- Used: GPT-Researcher (if enabled)
 
-3. **OpenAI** - Multi-model reasoning (Zen MCP)
-   - Models: gpt-5-pro, gpt-5-codex, gpt-5, gpt-5-mini, o3-pro, etc. (27 total)
-   - Usage: Zen codereview, thinkdeep, planner, consensus, debug
-   - Rate limits: Vary by model
+1. **OpenAI** - Multi-model reasoning (Zen MCP)
+- Models: gpt-5-pro, gpt-5-codex, gpt-5, gpt-5-mini, o3-pro, etc. (27 total)
+- Usage: Zen codereview, thinkdeep, planner, consensus, debug
+- Rate limits: Vary by model
 
 **Service-to-Service**:
 - ConPort KG UI → DopeconBridge (HTTP, port 3016) - ✅ Working
@@ -529,31 +529,31 @@ DopeconBridge| Cross-plane coord      | ⚠️ Incomplete
 **Operational MCP Servers**:
 
 1. **Serena-v2** ✅
-   - 20 tools available (Phase 2A)
-   - LSP: find_symbol, goto_definition, find_references, get_context
-   - ADHD: analyze_complexity, filter_by_focus, get_reading_order
-   - File ops: read_file, list_dir
-   - Workspace: `/Users/hue/code/code-audit` detected
+- 20 tools available (Phase 2A)
+- LSP: find_symbol, goto_definition, find_references, get_context
+- ADHD: analyze_complexity, filter_by_focus, get_reading_order
+- File ops: read_file, list_dir
+- Workspace: `/Users/hue/code/code-audit` detected
 
-2. **Dope-Context** ✅
-   - 9 tools (just validated!)
-   - Indexing: index_workspace, index_docs, sync_workspace, sync_docs
-   - Search: search_code, docs_search, search_all
-   - Management: get_index_status, clear_index
-   - Collections: code_92e96527 (26), docs_92e96527 (4,413)
+1. **Dope-Context** ✅
+- 9 tools (just validated!)
+- Indexing: index_workspace, index_docs, sync_workspace, sync_docs
+- Search: search_code, docs_search, search_all
+- Management: get_index_status, clear_index
+- Collections: code_92e96527 (26), docs_92e96527 (4,413)
 
-3. **Zen** ✅
-   - 9 specialized tools
-   - Workflows: thinkdeep, planner, consensus, debug, codereview
-   - Simple: chat, challenge, apilookup
-   - Management: listmodels, version
-   - Models: 27 available (OpenAI configured)
-   - Version: 9.0.2 (update to 9.0.3 available)
+1. **Zen** ✅
+- 9 specialized tools
+- Workflows: thinkdeep, planner, consensus, debug, codereview
+- Simple: chat, challenge, apilookup
+- Management: listmodels, version
+- Models: 27 available (OpenAI configured)
+- Version: 9.0.2 (update to 9.0.3 available)
 
-4. **PAL apilookup** ✅
-   - 2 tools: apilookup, apilookup
-   - Purpose: Official framework documentation
-   - Tested: React library resolution working
+1. **PAL apilookup** ✅
+- 2 tools: apilookup, apilookup
+- Purpose: Official framework documentation
+- Tested: React library resolution working
 
 **Offline** (not critical for audit):
 - ConPort (not configured for this workspace)
@@ -622,27 +622,27 @@ app = FastAPI(lifespan=lifespan)
 ### Modified Files (9):
 
 1. `services/dope-context/src/preprocessing/document_processor.py`
-   - Rewrote `chunk_text()` method (lines 146-233)
-   - Fixed missing final chunk append
-   - Proper paragraph/sentence handling
+- Rewrote `chunk_text()` method (lines 146-233)
+- Fixed missing final chunk append
+- Proper paragraph/sentence handling
 
-2. `services/dope-context/src/mcp/server.py`
-   - Added `max_content_length` parameter to docs_search
-   - Truncation with metadata (lines 744, 808-818, 827, 847, 873)
+1. `services/dope-context/src/mcp/server.py`
+- Added `max_content_length` parameter to docs_search
+- Truncation with metadata (lines 744, 808-818, 827, 847, 873)
 
-3. `services/adhd_engine/main.py`
-   - CORS: allow_origins wildcard → environment list (lines 93-102)
+1. `services/adhd_engine/main.py`
+- CORS: allow_origins wildcard → environment list (lines 93-102)
 
-4. `services/adhd_engine/api/routes.py`
-   - Added auth import
-   - Added api_key parameter to all 7 endpoints
+1. `services/adhd_engine/api/routes.py`
+- Added auth import
+- Added api_key parameter to all 7 endpoints
 
 5-7. GPT-Researcher CORS fixes:
 - `backend/main.py:110-119`
 - `backend/api/main.py:233-242`
 
 1. `services/mcp-dopecon-bridge/main.py`
-   - CORS fix (lines 1164-1172)
+- CORS fix (lines 1164-1172)
 
 9-10. Serena credential fixes:
 - `v2/intelligence/database.py:39`
@@ -651,34 +651,34 @@ app = FastAPI(lifespan=lifespan)
 ### New Files Created (6):
 
 1. `services/adhd_engine/auth.py` - API key authentication
-2. `.env.example` - Secure configuration template
-3. `scripts/index_code_correctly.py` - Production indexing
-4. `scripts/index_docs.py` - Documentation indexing
-5. `scripts/fix_mcp_token_limit.py` - MCP improvements (used)
-6. `scripts/test_chunking_fix.py` - Validation script
+1. `.env.example` - Secure configuration template
+1. `scripts/index_code_correctly.py` - Production indexing
+1. `scripts/index_docs.py` - Documentation indexing
+1. `scripts/fix_mcp_token_limit.py` - MCP improvements (used)
+1. `scripts/test_chunking_fix.py` - Validation script
 
 ### Documentation Created (15):
 
 **Audit Plans**:
 1. EXHAUSTIVE-AUDIT-PLAN.md
-2. OPTIMIZED-AUDIT-PLAN.md
+1. OPTIMIZED-AUDIT-PLAN.md
 
 **Phase Reports**:
-3. phase-1a-inventory.md
-4. phase-1b-service-catalog.md
-5. phase-1c-dependency-map.md
-6. phase-1d-documentation-inventory.md
-7. PHASE-1-COMPLETE.md
-8. phase-2a-security-scan.md
-9. phase-2-security-quality-complete.md
-10. phase-3-manual-review-findings.md
+1. phase-1a-inventory.md
+1. phase-1b-service-catalog.md
+1. phase-1c-dependency-map.md
+1. phase-1d-documentation-inventory.md
+1. PHASE-1-COMPLETE.md
+1. phase-2a-security-scan.md
+1. phase-2-security-quality-complete.md
+1. phase-3-manual-review-findings.md
 
 **Summaries**:
-11. AUDIT-SUMMARY-2025-10-16.md
-12. FINAL-AUDIT-REPORT.md
-13. DEPLOYMENT-READY-SUMMARY.md
-14. README.md (index)
-15. **DEEP-DOCUMENTATION-ALL-FINDINGS.md** (this document)
+1. AUDIT-SUMMARY-2025-10-16.md
+1. FINAL-AUDIT-REPORT.md
+1. DEPLOYMENT-READY-SUMMARY.md
+1. README.md (index)
+1. **DEEP-DOCUMENTATION-ALL-FINDINGS.md** (this document)
 
 Total: **38 documents** in claudedocs/
 
@@ -689,13 +689,13 @@ Total: **38 documents** in claudedocs/
 **8 Major Commits**:
 
 1. `26b2f285` - fix: Critical dope-context chunking bug + audit infrastructure
-2. `a66acf98` - docs: Phase 1 audit complete - Intelligent Inventory (1.5h)
-3. `e90ba41e` - docs: Phase 2A security scan - 6 high-risk issues found
-4. `a7a3c734` - docs: Phase 2 complete - Security & quality scan (2h, 50% faster)
-5. `62202733` - fix: Critical security vulnerabilities - CORS, credentials, authentication
-6. `ebc0d96d` - docs: Comprehensive audit summary - 5.5h, 10 critical fixes applied
-7. `370684cd` - docs: Final audit report - Critical objectives achieved in 5.5h
-8. `e360d476` - docs: Deployment readiness guide with security validation
+1. `a66acf98` - docs: Phase 1 audit complete - Intelligent Inventory (1.5h)
+1. `e90ba41e` - docs: Phase 2A security scan - 6 high-risk issues found
+1. `a7a3c734` - docs: Phase 2 complete - Security & quality scan (2h, 50% faster)
+1. `62202733` - fix: Critical security vulnerabilities - CORS, credentials, authentication
+1. `ebc0d96d` - docs: Comprehensive audit summary - 5.5h, 10 critical fixes applied
+1. `370684cd` - docs: Final audit report - Critical objectives achieved in 5.5h
+1. `e360d476` - docs: Deployment readiness guide with security validation
 
 **Plus**: 44 earlier commits (pre-audit baseline)
 
@@ -773,20 +773,20 @@ Total: **38 documents** in claudedocs/
 
 **Read First**:
 1. FINAL-AUDIT-REPORT.md (audit summary)
-2. DEPLOYMENT-READY-SUMMARY.md (security fixes)
-3. DEEP-DOCUMENTATION-ALL-FINDINGS.md (this document)
+1. DEPLOYMENT-READY-SUMMARY.md (security fixes)
+1. DEEP-DOCUMENTATION-ALL-FINDINGS.md (this document)
 
 **Then**:
-4. Pick up Phase 3 manual review (services 5-12)
-5. Or jump to Phase 4 (doc validation with semantic search)
+1. Pick up Phase 3 manual review (services 5-12)
+1. Or jump to Phase 4 (doc validation with semantic search)
 
 ### Key Insights to Remember
 
 1. **DopeconBridge is 80% complete** - custom_data endpoints are stubs
-2. **Workspace is documentation-heavy** - 26 code chunks, 4,413 doc chunks
-3. **Security fixes applied** - all committed, tested, ready for deployment
-4. **MCP tools working** - semantic search operational, no token overflow
-5. **Bash grep effective** - needed for Python services (limited chunks)
+1. **Workspace is documentation-heavy** - 26 code chunks, 4,413 doc chunks
+1. **Security fixes applied** - all committed, tested, ready for deployment
+1. **MCP tools working** - semantic search operational, no token overflow
+1. **Bash grep effective** - needed for Python services (limited chunks)
 
 ### Files Modified (Need Testing)
 

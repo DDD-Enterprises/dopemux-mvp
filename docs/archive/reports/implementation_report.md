@@ -27,14 +27,14 @@ Registry is the single source of truth, `.env.smoke` is generated from it, and `
 
 ### New Files (9)
 1. ✅ `services/registry.yaml` - Canonical truth source (7 services defined)
-2. ✅ `docker-compose.smoke.yml` - Smoke stack with env var placeholders
-3. ✅ `.env.smoke` - Generated environment (6 services, ports defined)
-4. ✅ `tools/generate_smoke_env.py` - Env generator script (3,471 bytes)
-5. ✅ `tools/ports_health_audit.py` - Health check tool (10,254 bytes)
-6. ✅ `tests/arch/test_registry_compose_alignment.py` - Alignment test (8,080 bytes)
-7. ✅ `docs/engineering/ports_and_registry_truth.md` - Documentation
-8. ✅ `reports/registry_alignment/current_state.md` - Baseline snapshot
-9. ✅ `reports/registry_alignment/baseline-unified-compose.yml` - Original unified compose
+1. ✅ `docker-compose.smoke.yml` - Smoke stack with env var placeholders
+1. ✅ `.env.smoke` - Generated environment (6 services, ports defined)
+1. ✅ `tools/generate_smoke_env.py` - Env generator script (3,471 bytes)
+1. ✅ `tools/ports_health_audit.py` - Health check tool (10,254 bytes)
+1. ✅ `tests/arch/test_registry_compose_alignment.py` - Alignment test (8,080 bytes)
+1. ✅ `docs/engineering/ports_and_registry_truth.md` - Documentation
+1. ✅ `reports/registry_alignment/current_state.md` - Baseline snapshot
+1. ✅ `reports/registry_alignment/baseline-unified-compose.yml` - Original unified compose
 
 ### Modified Files (1)
 1. ✅ `.gitignore` - Added `.env.smoke`
@@ -138,15 +138,15 @@ CONPORT_PORT=3004
 
 ### Immediate (User-Driven)
 1. Build service Docker images if needed
-2. Start smoke stack: `docker compose -f docker-compose.smoke.yml up -d --build`
-3. Run runtime validation: `python tools/ports_health_audit.py --mode runtime`
+1. Start smoke stack: `docker compose -f docker-compose.smoke.yml up -d --build`
+1. Run runtime validation: `python tools/ports_health_audit.py --mode runtime`
 
 ### Future Enhancements
 1. Add remaining services to registry (adhd-engine, working-memory-assistant, etc.)
-2. Extend registry with additional metadata (dependencies, startup_timeout, etc.)
-3. Create `tools/registry_validate.py` for schema validation
-4. Add health contract tests for each service
-5. Integrate with CI/CD to enforce alignment on every PR
+1. Extend registry with additional metadata (dependencies, startup_timeout, etc.)
+1. Create `tools/registry_validate.py` for schema validation
+1. Add health contract tests for each service
+1. Integrate with CI/CD to enforce alignment on every PR
 
 ## Implementation Notes
 

@@ -225,9 +225,9 @@ REDIS_URL=redis://localhost:6379
 
 1. **Task Storage**: Currently in-memory only. Tasks created via decomposition won't persist across service restarts until ConPort sync is tested.
 
-2. **Pal MCP Dependency**: Requires Pal MCP server running on port 3003. Falls back to simple pattern-based decomposition if unavailable.
+1. **Pal MCP Dependency**: Requires Pal MCP server running on port 3003. Falls back to simple pattern-based decomposition if unavailable.
 
-3. **Leantime Sync**: Optional feature. Requires valid Leantime credentials and network access.
+1. **Leantime Sync**: Optional feature. Requires valid Leantime credentials and network access.
 
 ## Next Steps
 
@@ -250,11 +250,11 @@ REDIS_URL=redis://localhost:6379
 
 1. **Lazy Singleton Pattern**: Instances created on first request, not at startup. Allows service to start even if dependencies unavailable.
 
-2. **In-Memory Task Storage**: Simple Dict cache for MVP. Proper persistence via ConPort happens asynchronously to avoid blocking.
+1. **In-Memory Task Storage**: Simple Dict cache for MVP. Proper persistence via ConPort happens asynchronously to avoid blocking.
 
-3. **Fallback to Pattern-Based**: If Pal planner fails, use simple duration-based splitting. ADHD users should never get stuck waiting for AI.
+1. **Fallback to Pattern-Based**: If Pal planner fails, use simple duration-based splitting. ADHD users should never get stuck waiting for AI.
 
-4. **Workspace-Scoped Instances**: Each workspace gets its own TaskCoordinator/ConPortAdapter to avoid cross-contamination.
+1. **Workspace-Scoped Instances**: Each workspace gets its own TaskCoordinator/ConPortAdapter to avoid cross-contamination.
 
 ---
 

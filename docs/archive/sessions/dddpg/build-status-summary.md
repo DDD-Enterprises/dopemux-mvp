@@ -43,33 +43,33 @@ prelude: Build Status Summary (explanation) for dopemux documentation and develo
 ### Core Components ✅
 ```
 ✅ core/models.py (222 lines)
-   - Decision, DecisionStatus, DecisionType
-   - Multi-instance support (workspace_id + instance_id)
-   - ADHD-optimized (Top-3 pattern)
+- Decision, DecisionStatus, DecisionType
+- Multi-instance support (workspace_id + instance_id)
+- ADHD-optimized (Top-3 pattern)
 
 ✅ storage/sqlite_backend.py (12,322 bytes)
-   - FTS5 full-text search
-   - Transaction management
-   - Migration system
+- FTS5 full-text search
+- Transaction management
+- Migration system
 
 ✅ queries/service.py (12,624 bytes)
-   - ADHD-optimized query patterns
-   - Progressive disclosure
-   - Context-aware filtering
+- ADHD-optimized query patterns
+- Progressive disclosure
+- Context-aware filtering
 
 ✅ kg_integration.py (378 lines)
-   - Task relationship queries
-   - Semantic search
-   - Graceful degradation
-   - Parameterized queries (security)
+- Task relationship queries
+- Semantic search
+- Graceful degradation
+- Parameterized queries (security)
 ```
 
 ### Tests ✅
 ```
 ✅ test_kg_integration.py (295 lines)
-   - 19/19 tests passing (100% coverage)
-   - Security validation
-   - Error handling validation
+- 19/19 tests passing (100% coverage)
+- Security validation
+- Error handling validation
 ```
 
 ---
@@ -113,27 +113,27 @@ prelude: Build Status Summary (explanation) for dopemux documentation and develo
 
 ### New Documents (2025-10-29)
 1. **MODERNIZATION_ANALYSIS_2025.md** (21,801 chars)
-   - Complete modernization analysis
-   - Architecture deep dive
-   - Unique features breakdown
-   - Design decisions retrospective
-   - Integration points mapping
-   - **Most comprehensive document**
+- Complete modernization analysis
+- Architecture deep dive
+- Unique features breakdown
+- Design decisions retrospective
+- Integration points mapping
+- **Most comprehensive document**
 
-2. **WEEK4_BUILD_ROADMAP.md** (20,376 chars)
-   - Day-by-day implementation guide
-   - Complete code samples
-   - Testing strategies
-   - Week 4 full roadmap
+1. **WEEK4_BUILD_ROADMAP.md** (20,376 chars)
+- Day-by-day implementation guide
+- Complete code samples
+- Testing strategies
+- Week 4 full roadmap
 
 ### Updated Documents
 1. **README_START_HERE.md** (UPDATED)
-   - Added new docs to navigation
-   - Updated quick start flow
+- Added new docs to navigation
+- Updated quick start flow
 
-2. **WEEK4_PROGRESS.md** (UPDATED)
-   - Marked Day 2 as fully analyzed
-   - Added analysis completion details
+1. **WEEK4_PROGRESS.md** (UPDATED)
+- Marked Day 2 as fully analyzed
+- Added analysis completion details
 
 ---
 
@@ -175,10 +175,10 @@ prelude: Build Status Summary (explanation) for dopemux documentation and develo
 
 ### Immediate (Today - 95 minutes)
 1. Build Phase 1: Decision-Task Linking
-2. Build Phase 2: Relationship Mapper
-3. Build Phase 3: Suggestion Engine
-4. Build Phase 4: QueryService Integration
-5. Run all tests, validate coverage
+1. Build Phase 2: Relationship Mapper
+1. Build Phase 3: Suggestion Engine
+1. Build Phase 4: QueryService Integration
+1. Run all tests, validate coverage
 
 ### Short-term (Week 4 Days 3-4)
 - Semantic search with embeddings
@@ -198,13 +198,13 @@ prelude: Build Status Summary (explanation) for dopemux documentation and develo
 
 ### For Quick Start
 1. Read this summary (you are here!)
-2. Open `WEEK4_DAY2_IMPLEMENTATION_PLAN.md`
-3. Start building Phase 1
+1. Open `WEEK4_DAY2_IMPLEMENTATION_PLAN.md`
+1. Start building Phase 1
 
 ### For Deep Understanding
 1. Read `MODERNIZATION_ANALYSIS_2025.md`
-2. Review `WEEK4_BUILD_ROADMAP.md`
-3. Check `DEEP_ANALYSIS_CURRENT_STATE.md`
+1. Review `WEEK4_BUILD_ROADMAP.md`
+1. Check `DEEP_ANALYSIS_CURRENT_STATE.md`
 
 ### For Reference
 - `README_START_HERE.md` - Navigation hub
@@ -228,10 +228,10 @@ prelude: Build Status Summary (explanation) for dopemux documentation and develo
 - 🎯 100% test coverage maintained
 - 🎯 All new features working
 - 🎯 Performance SLAs met:
-  - Decision linking: < 100ms
-  - Task context: < 200ms
-  - Work cluster: < 300ms
-  - Suggestions: < 500ms
+- Decision linking: < 100ms
+- Task context: < 200ms
+- Work cluster: < 300ms
+- Suggestions: < 500ms
 
 ---
 
@@ -239,29 +239,29 @@ prelude: Build Status Summary (explanation) for dopemux documentation and develo
 
 ### What Makes DDDPG Special
 1. **Only ADHD-first knowledge graph system**
-   - Top-3 pattern is revolutionary
-   - Cognitive load management built-in
-   - Progressive disclosure everywhere
+- Top-3 pattern is revolutionary
+- Cognitive load management built-in
+- Progressive disclosure everywhere
 
-2. **Multi-instance from day 1**
-   - Git worktree support built-in
-   - No collision bugs possible
-   - Learned from ConPort mistakes
+1. **Multi-instance from day 1**
+- Git worktree support built-in
+- No collision bugs possible
+- Learned from ConPort mistakes
 
-3. **Graph-native architecture**
-   - PostgreSQL AGE integration
-   - Relationship-first thinking
-   - Cypher queries throughout
+1. **Graph-native architecture**
+- PostgreSQL AGE integration
+- Relationship-first thinking
+- Cypher queries throughout
 
-4. **Agent-friendly design**
-   - No schema changes needed
-   - Flexible metadata system
-   - Easy integration
+1. **Agent-friendly design**
+- No schema changes needed
+- Flexible metadata system
+- Easy integration
 
-5. **Security-conscious**
-   - Parameterized queries only
-   - Validated via tests
-   - No SQL injection possible
+1. **Security-conscious**
+- Parameterized queries only
+- Validated via tests
+- No SQL injection possible
 
 ---
 

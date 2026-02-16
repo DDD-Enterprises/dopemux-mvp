@@ -50,27 +50,27 @@ prelude: 03 Infrastructure Consolidation (explanation) for dopemux documentation
 **PostgreSQL Instances** (3 instances → should be 1):
 ```
 1. dopemux-postgres           ORPHANED - No connections, can delete
-2. dopemux-postgres-age       ACTIVE - Used by ConPort, port 5432
-3. conport-kg-postgres-age    DEFERRED - Port 5455 (CONFLICTS!), part of old stack
+1. dopemux-postgres-age       ACTIVE - Used by ConPort, port 5432
+1. conport-kg-postgres-age    DEFERRED - Port 5455 (CONFLICTS!), part of old stack
 ```
 
 **Redis Instances** (4+ instances → should be 2):
 ```
 1. dopemux-redis-primary      UNNAMED - Used by services, port 6379
-2. dopemux-redis-events       ACTIVE - Event bus, port 6380
-3. conport-kg-redis           DEFERRED - Part of old stack, port 6381
-4. redis_leantime             ISOLATED - Leantime only, keep separate
+1. dopemux-redis-events       ACTIVE - Event bus, port 6380
+1. conport-kg-redis           DEFERRED - Part of old stack, port 6381
+1. redis_leantime             ISOLATED - Leantime only, keep separate
 ```
 
 **Vector DBs** (2 different technologies → should be 1):
 ```
 Qdrant Stack (1 container):
-  - qdrant                    ACTIVE - Simple, modern, port 6333
+- qdrant                    ACTIVE - Simple, modern, port 6333
 
 Milvus Stack (3 containers):
-  - milvus-standalone         Complex multi-component system
-  - milvus-etcd               Coordination service
-  - milvus-minio              Object storage
+- milvus-standalone         Complex multi-component system
+- milvus-etcd               Coordination service
+- milvus-minio              Object storage
   Total: 3 containers for same functionality as Qdrant's 1
 ```
 
@@ -82,10 +82,10 @@ Milvus Stack (3 containers):
 
 ### Tasks
 1. Verify no connections to `dopemux-postgres`
-2. Backup (safety measure)
-3. Stop and remove container
-4. Remove volume
-5. Update docker-compose
+1. Backup (safety measure)
+1. Stop and remove container
+1. Remove volume
+1. Update docker-compose
 
 **Verification Script** (`scripts/verify_orphaned_postgres.sh`):
 ```bash
@@ -195,24 +195,24 @@ fi
 **4 Redis Instances**:
 ```yaml
 1. dopemux-redis-primary (port 6379):
-   - Used by: ADHD Engine (db=5), Serena (db=0), dope-context (caching)
-   - Purpose: General shared Redis
-   - Status: KEEP
+- Used by: ADHD Engine (db=5), Serena (db=0), dope-context (caching)
+- Purpose: General shared Redis
+- Status: KEEP
 
-2. dopemux-redis-events (port 6380):
-   - Used by: DopeconBridge (db=6)
-   - Purpose: Event bus pub/sub
-   - Status: KEEP (dedicated for events)
+1. dopemux-redis-events (port 6380):
+- Used by: DopeconBridge (db=6)
+- Purpose: Event bus pub/sub
+- Status: KEEP (dedicated for events)
 
-3. conport-kg-redis (port 6381):
-   - Used by: NOTHING (part of old conport-kg stack)
-   - Purpose: Obsolete
-   - Status: DELETE
+1. conport-kg-redis (port 6381):
+- Used by: NOTHING (part of old conport-kg stack)
+- Purpose: Obsolete
+- Status: DELETE
 
-4. redis_leantime (port 6382):
-   - Used by: Leantime PM system
-   - Purpose: Leantime session storage
-   - Status: KEEP (Leantime isolation)
+1. redis_leantime (port 6382):
+- Used by: Leantime PM system
+- Purpose: Leantime session storage
+- Status: KEEP (Leantime isolation)
 ```
 
 **Consolidation Target**: 4 instances → 2 instances
@@ -551,24 +551,24 @@ docker volume rm conport-kg-postgres-data
 ### Before Consolidation (19 containers)
 ```
 PostgreSQL:
-  - dopemux-postgres          ❌ ORPHANED
-  - dopemux-postgres-age      ✅ KEEP
-  - conport-kg-postgres-age   ❌ REMOVE
+- dopemux-postgres          ❌ ORPHANED
+- dopemux-postgres-age      ✅ KEEP
+- conport-kg-postgres-age   ❌ REMOVE
 
 Redis:
-  - dopemux-redis-primary     ✅ KEEP
-  - dopemux-redis-events      ✅ KEEP
-  - conport-kg-redis          ❌ REMOVE
-  - redis_leantime            ✅ KEEP (isolated)
+- dopemux-redis-primary     ✅ KEEP
+- dopemux-redis-events      ✅ KEEP
+- conport-kg-redis          ❌ REMOVE
+- redis_leantime            ✅ KEEP (isolated)
 
 Vector DBs:
-  - qdrant                    ✅ KEEP
-  - milvus-standalone         ❌ REMOVE
-  - milvus-etcd               ❌ REMOVE
-  - milvus-minio              ❌ REMOVE
+- qdrant                    ✅ KEEP
+- milvus-standalone         ❌ REMOVE
+- milvus-etcd               ❌ REMOVE
+- milvus-minio              ❌ REMOVE
 
 Other:
-  - (Various MCP services)    ✅ KEEP
+- (Various MCP services)    ✅ KEEP
 
 Total: 19 containers
 ```
@@ -576,18 +576,18 @@ Total: 19 containers
 ### After Consolidation (11 containers)
 ```
 PostgreSQL:
-  - dopemux-postgres-age      ✅ ONLY ONE
+- dopemux-postgres-age      ✅ ONLY ONE
 
 Redis:
-  - dopemux-redis-primary     ✅ SHARED
-  - dopemux-redis-events      ✅ EVENTS
-  - redis_leantime            ✅ LEANTIME (isolated)
+- dopemux-redis-primary     ✅ SHARED
+- dopemux-redis-events      ✅ EVENTS
+- redis_leantime            ✅ LEANTIME (isolated)
 
 Vector DBs:
-  - qdrant                    ✅ ONLY ONE
+- qdrant                    ✅ ONLY ONE
 
 Other:
-  - (MCP services)            ✅ UNCHANGED
+- (MCP services)            ✅ UNCHANGED
 
 Total: 11 containers (-8 containers, -42% reduction)
 ```
@@ -615,9 +615,9 @@ services:
       POSTGRES_PASSWORD: dopemux_dev_password
       POSTGRES_DB: dopemux
     ports:
-      - "5432:5432"
+- "5432:5432"
     volumes:
-      - postgres-age-data:/var/lib/postgresql/data
+- postgres-age-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dopemux"]
       interval: 10s
@@ -629,9 +629,9 @@ services:
     image: redis:7-alpine
     container_name: dopemux-redis-primary
     ports:
-      - "6379:6379"
+- "6379:6379"
     volumes:
-      - redis-primary-data:/data
+- redis-primary-data:/data
     command: redis-server --appendonly yes
 
   # Events Redis (DopeconBridge)
@@ -639,9 +639,9 @@ services:
     image: redis:7-alpine
     container_name: dopemux-redis-events
     ports:
-      - "6380:6379"
+- "6380:6379"
     volumes:
-      - redis-events-data:/data
+- redis-events-data:/data
     command: redis-server --appendonly yes
 
   # Leantime Redis (isolated, PM plane)
@@ -649,19 +649,19 @@ services:
     image: redis:7-alpine
     container_name: redis_leantime
     ports:
-      - "6382:6379"
+- "6382:6379"
     volumes:
-      - redis-leantime-data:/data
+- redis-leantime-data:/data
 
   # Single Vector DB (Qdrant)
   qdrant:
     image: qdrant/qdrant:latest
     container_name: qdrant
     ports:
-      - "6333:6333"
-      - "6334:6334"
+- "6333:6333"
+- "6334:6334"
     volumes:
-      - qdrant-data:/qdrant/storage
+- qdrant-data:/qdrant/storage
 
   # === MCP SERVICES ===
   # (Unchanged - ConPort, Serena, etc.)

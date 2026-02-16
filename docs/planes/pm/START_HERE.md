@@ -15,9 +15,9 @@ If you are starting PM Plane work now:
 
 1) Read: README.md
 2) Evidence capture:
-   - _evidence/PM-INV-00.commands.txt
-   - store outputs in _evidence/PM-INV-00.outputs/
+- _evidence/PM-INV-00.commands.txt
+- store outputs in _evidence/PM-INV-00.outputs/
 3) Supervisor instructions:
-   - SUPERVISOR.md (existing)
+- SUPERVISOR.md (existing)
 4) Hub overview:
-   - HUB.md (existing)
+- HUB.md (existing)

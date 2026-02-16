@@ -496,9 +496,9 @@ await self.slack.users_profile_set(
 ```python
 # Test cases with real messages:
 1. "URGENT: Production down!" → CRITICAL (delivered immediately)
-2. "Hey, quick question" → MEDIUM (queued)
-3. "FYI, docs updated" → LOW (queued)
-4. "Important: deadline today" → HIGH (queued, but notified at next break)
+1. "Hey, quick question" → MEDIUM (queued)
+1. "FYI, docs updated" → LOW (queued)
+1. "Important: deadline today" → HIGH (queued, but notified at next break)
 ```
 
 **Acceptance Criteria**:
@@ -580,9 +580,9 @@ await self.slack.users_profile_set(
 
 **Deployment Process**:
 1. Send installation script to beta testers
-2. Provide Zoom support for installation issues
-3. Verify each tester has shields activating correctly
-4. Monitor telemetry for errors
+1. Provide Zoom support for installation issues
+1. Verify each tester has shields activating correctly
+1. Monitor telemetry for errors
 
 **Acceptance Criteria**:
 - All beta testers successfully installed
@@ -605,10 +605,10 @@ await self.slack.users_profile_set(
 **Tasks**:
 - [ ] Collect daily feedback surveys
 - [ ] Analyze telemetry data:
-  - Shield activation frequency
-  - Average focus session duration
-  - Messages queued vs delivered immediately
-  - False positive/negative rates
+- Shield activation frequency
+- Average focus session duration
+- Messages queued vs delivered immediately
+- False positive/negative rates
 - [ ] Implement top 3 user-requested features
 - [ ] Fix reported bugs (prioritize by severity)
 - [ ] Adjust default thresholds based on data
@@ -618,12 +618,12 @@ await self.slack.users_profile_set(
 ```python
 # Key metrics to track:
 1. Shield activations per day per user
-2. Average focus session duration
-3. Messages queued per session
-4. Critical interruptions (allowed) per session
-5. False positive rate (important messages queued)
-6. False negative rate (unimportant messages interrupting)
-7. User override frequency (manual deactivation)
+1. Average focus session duration
+1. Messages queued per session
+1. Critical interruptions (allowed) per session
+1. False positive rate (important messages queued)
+1. False negative rate (unimportant messages interrupting)
+1. User override frequency (manual deactivation)
 ```
 
 **Acceptance Criteria**:
@@ -649,29 +649,29 @@ await self.slack.users_profile_set(
 
 **Retrospective Questions**:
 1. **What went well?**
-   - Which features were most valuable to beta testers?
-   - What exceeded expectations?
+- Which features were most valuable to beta testers?
+- What exceeded expectations?
 
-2. **What didn't go well?**
-   - Which features caused frustration?
-   - What bugs were most impactful?
+1. **What didn't go well?**
+- Which features caused frustration?
+- What bugs were most impactful?
 
-3. **What should we change for Phase 2?**
-   - Feature priorities?
-   - Timeline adjustments?
-   - Technical approach changes?
+1. **What should we change for Phase 2?**
+- Feature priorities?
+- Timeline adjustments?
+- Technical approach changes?
 
-4. **User Feedback Themes**:
-   - Top 3 positive feedback items
-   - Top 3 improvement requests
-   - Critical bugs encountered
+1. **User Feedback Themes**:
+- Top 3 positive feedback items
+- Top 3 improvement requests
+- Critical bugs encountered
 
-5. **Metrics Review**:
-   - Interruption reduction: Actual vs Target
-   - Task completion improvement: Actual vs Target
-   - User satisfaction: Actual vs Target
-   - False positive rate: Actual vs Target
-   - Focus session duration: Actual vs Target
+1. **Metrics Review**:
+- Interruption reduction: Actual vs Target
+- Task completion improvement: Actual vs Target
+- User satisfaction: Actual vs Target
+- False positive rate: Actual vs Target
+- Focus session duration: Actual vs Target
 
 **Estimated Time**: 12-14 hours (Day 19-20 combined)
 
@@ -758,9 +758,9 @@ await self.slack.users_profile_set(
 **Branch C: <2 metrics met, NPS <50%**
 - **PIVOT**: Re-evaluate approach
 - Options:
-  - Simplify to essentials only (Slack status + basic queuing)
-  - Focus on different interruption type (meetings instead of Slack)
-  - Integrate with existing tools (Slack Do Not Disturb API)
+- Simplify to essentials only (Slack status + basic queuing)
+- Focus on different interruption type (meetings instead of Slack)
+- Integrate with existing tools (Slack Do Not Disturb API)
 - Timeline: +3 weeks for pivot
 
 ---
@@ -875,9 +875,9 @@ await self.slack.users_profile_set(
 
 **Review Questions**:
 1. What assumptions were wrong?
-2. What took longer than expected?
-3. What was easier than expected?
-4. What should we change for next week?
+1. What took longer than expected?
+1. What was easier than expected?
+1. What should we change for next week?
 
 **Adaptation Protocol**:
 - If >20% behind schedule → identify bottlenecks, reassess estimates
@@ -890,24 +890,24 @@ await self.slack.users_profile_set(
 
 **Immediate** (This Week):
 1. Review and approve this plan
-2. Set up Week 1 Day 2 tasks
-3. Begin ADHD Engine integration testing
+1. Set up Week 1 Day 2 tasks
+1. Begin ADHD Engine integration testing
 
 **Short-term** (Week 1):
 1. Complete all Week 1 tasks
-2. Achieve 85% test coverage
-3. Validate Week 1 checkpoint
+1. Achieve 85% test coverage
+1. Validate Week 1 checkpoint
 
 **Medium-term** (Week 2-3):
 1. Complete macOS and Slack integrations
-2. Validate urgency scoring accuracy
-3. Prepare for beta testing
+1. Validate urgency scoring accuracy
+1. Prepare for beta testing
 
 **Long-term** (Week 4):
 1. Recruit and onboard beta testers
-2. Deploy and iterate
-3. Achieve Phase 1 success criteria
-4. Decide: GO/ITERATE/PIVOT for Phase 2
+1. Deploy and iterate
+1. Achieve Phase 1 success criteria
+1. Decide: GO/ITERATE/PIVOT for Phase 2
 
 ---
 

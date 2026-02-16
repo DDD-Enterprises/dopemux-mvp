@@ -53,17 +53,17 @@ prelude: Phase 1A Inventory (explanation) for dopemux documentation and develope
 Via Serena `list_dir(services/)`:
 
 1. **adhd_engine/** - ADHD optimizations and energy tracking
-2. **claude-context/** - Context management
-3. **conport_kg/** - Knowledge graph backend
-4. **conport_kg_ui/** - ✅ React UI (substantial code found)
-5. **dope-context/** - Semantic search (just indexed!)
-6. **dopemux-gpt-researcher/** - Research orchestration
-7. **mcp-dopecon-bridge/** - Cross-plane coordination
-8. **ml-risk-assessment/** - ML risk prediction
-9. **orchestrator/** - Task orchestration
-10. **serena/** - LSP and code intelligence
-11. **task-orchestrator/** - 37 specialized tools
-12. **taskmaster/** - PRD parsing and decomposition
+1. **claude-context/** - Context management
+1. **conport_kg/** - Knowledge graph backend
+1. **conport_kg_ui/** - ✅ React UI (substantial code found)
+1. **dope-context/** - Semantic search (just indexed!)
+1. **dopemux-gpt-researcher/** - Research orchestration
+1. **mcp-dopecon-bridge/** - Cross-plane coordination
+1. **ml-risk-assessment/** - ML risk prediction
+1. **orchestrator/** - Task orchestration
+1. **serena/** - LSP and code intelligence
+1. **task-orchestrator/** - 37 specialized tools
+1. **taskmaster/** - PRD parsing and decomposition
 
 **Action Required**: Phase 1B will use Serena to navigate INTO each service to find actual Python code.
 
@@ -139,20 +139,20 @@ Via Serena `list_dir(services/)`:
 ### What We Learned
 
 1. **Code-audit workspace composition**:
-   - Heavy on documentation (4,413 chunks)
-   - Light on substantive code (26 chunks)
-   - One well-developed React UI app
-   - Python services need deeper navigation
+- Heavy on documentation (4,413 chunks)
+- Light on substantive code (26 chunks)
+- One well-developed React UI app
+- Python services need deeper navigation
 
-2. **Indexing insights**:
-   - AST chunker works correctly (skips imports/config)
-   - Most Python files are utilities/init files
-   - Substantive Python code likely in `main.py`, `server.py` files not yet discovered
+1. **Indexing insights**:
+- AST chunker works correctly (skips imports/config)
+- Most Python files are utilities/init files
+- Substantive Python code likely in `main.py`, `server.py` files not yet discovered
 
-3. **MCP semantic search effectiveness**:
-   - ✅ Excellent for finding React components
-   - ⚠️ Limited for Python services (need different discovery approach)
-   - ✅ Documentation search working perfectly
+1. **MCP semantic search effectiveness**:
+- ✅ Excellent for finding React components
+- ⚠️ Limited for Python services (need different discovery approach)
+- ✅ Documentation search working perfectly
 
 ### Phase 1B Strategy
 

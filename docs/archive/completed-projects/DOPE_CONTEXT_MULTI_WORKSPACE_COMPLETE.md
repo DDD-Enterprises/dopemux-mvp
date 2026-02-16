@@ -151,10 +151,10 @@ result = await search_code(
 
 ### Functions Supporting Multi-Workspace
 1. `search_code()` - Code search
-2. `docs_search()` - Documentation search
-3. `search_all()` - Unified code + docs search
-4. `sync_workspace()` - Workspace synchronization
-5. `sync_docs()` - Documentation synchronization
+1. `docs_search()` - Documentation search
+1. `search_all()` - Unified code + docs search
+1. `sync_workspace()` - Workspace synchronization
+1. `sync_docs()` - Documentation synchronization
 
 ## Test Results
 
@@ -198,14 +198,14 @@ DOPE_CONTEXT_WORKSPACES="/path/ws1,/path/ws2;/path/ws3" \
 
 ### Library Code
 1. `services/dope-context/src/preprocessing/document_processor.py` - Added fallback imports
-2. `services/dope-context/src/mcp/server.py` - Added `workspace_to_hash` import
-3. `scripts/enable-autonomous-indexing.py` - Updated documentation
+1. `services/dope-context/src/mcp/server.py` - Added `workspace_to_hash` import
+1. `scripts/enable-autonomous-indexing.py` - Updated documentation
 
 ### Test Code
 1. `services/dope-context/tests/test_mcp_server.py`:
-   - Changed pytest markers from `asyncio` to `anyio`
-   - Added 3 new multi-workspace test functions
-   - Added `sync_docs` to imports
+- Changed pytest markers from `asyncio` to `anyio`
+- Added 3 new multi-workspace test functions
+- Added `sync_docs` to imports
 
 ## Backward Compatibility
 
@@ -227,9 +227,9 @@ These failures are due to pre-existing issues with mocking and are **not** cause
 
 ### Potential Improvements
 1. Add parallel workspace querying (currently sequential)
-2. Add workspace health checks before querying
-3. Consider adding workspace aliases for easier reference
-4. Add metrics/logging for multi-workspace operations
+1. Add workspace health checks before querying
+1. Consider adding workspace aliases for easier reference
+1. Add metrics/logging for multi-workspace operations
 
 ## Usage Examples
 
@@ -296,10 +296,10 @@ PYTHONPATH="$(pwd)/services/dope-context" python3 -m pytest \
 ## Next Steps (Optional Future Work)
 
 1. **Performance**: Add parallel workspace querying for better performance
-2. **Error Handling**: Add workspace-level error boundaries
-3. **Documentation**: Update main README with multi-workspace examples
-4. **Metrics**: Add Prometheus metrics for multi-workspace operations
-5. **UI**: Update dashboard to show per-workspace index status
+1. **Error Handling**: Add workspace-level error boundaries
+1. **Documentation**: Update main README with multi-workspace examples
+1. **Metrics**: Add Prometheus metrics for multi-workspace operations
+1. **UI**: Update dashboard to show per-workspace index status
 
 ---
 

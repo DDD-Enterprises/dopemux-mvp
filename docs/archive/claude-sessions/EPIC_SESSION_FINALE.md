@@ -59,49 +59,49 @@ dopemux-mvp main | ✅ Focus | 📚🧠🔬📊🔎🖥️🎯 | 🧠 ⚡= 👁�
 ### Services (5 Total):
 
 1. **Activity Capture** (Docker, port 8096)
-   - Redis Streams consumer
-   - Session tracking
-   - 750 lines
+- Redis Streams consumer
+- Session tracking
+- 750 lines
 
-2. **ADHD Engine** (background, port 8095)
-   - 6/6 monitors active
-   - Energy/attention assessment
-   - Profile persistence
+1. **ADHD Engine** (background, port 8095)
+- 6/6 monitors active
+- Energy/attention assessment
+- Profile persistence
 
-3. **Workspace Watcher** (background)
-   - Polls apps every 5s
-   - File activity detection
-   - 500 lines
+1. **Workspace Watcher** (background)
+- Polls apps every 5s
+- File activity detection
+- 500 lines
 
-4. **ADHD Notifier** (background)
-   - Break reminders (visual + voice)
-   - Hyperfocus alerts
-   - 550 lines
+1. **ADHD Notifier** (background)
+- Break reminders (visual + voice)
+- Hyperfocus alerts
+- 550 lines
 
-5. **Dashboard** (optional, port 8097)
-   - Web UI + REST API
-   - Task recommendations
-   - 600 lines
+1. **Dashboard** (optional, port 8097)
+- Web UI + REST API
+- Task recommendations
+- 600 lines
 
 ### Features (12 Complete):
 
 **Automatic Tracking**:
 1. ✅ Workspace switch detection
-2. ✅ Session tracking (start/end/interruptions)
-3. ✅ Git commit velocity
-4. ✅ File activity detection
+1. ✅ Session tracking (start/end/interruptions)
+1. ✅ Git commit velocity
+1. ✅ File activity detection
 
 **ADHD Support**:
-5. ✅ Energy/attention assessment
-6. ✅ Break reminders (25+ min, visual + voice)
-7. ✅ Hyperfocus protection (60+ min, urgent)
-8. ✅ Profile persistence (Redis)
+1. ✅ Energy/attention assessment
+1. ✅ Break reminders (25+ min, visual + voice)
+1. ✅ Hyperfocus protection (60+ min, urgent)
+1. ✅ Profile persistence (Redis)
 
 **Intelligence & Insights**:
-9. ✅ Daily reports
-10. ✅ Web dashboard
-11. ✅ Task recommendations
-12. ✅ Performance optimization
+1. ✅ Daily reports
+1. ✅ Web dashboard
+1. ✅ Task recommendations
+1. ✅ Performance optimization
 
 ---
 

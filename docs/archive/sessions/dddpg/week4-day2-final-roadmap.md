@@ -159,9 +159,9 @@ class RelationshipMapper:
     Aggregates multiple DDDPGKG queries into composite views.
 
     Responsibilities:
-    - Coordinate parallel queries
-    - Synthesize results
-    - Identify patterns/clusters
+- Coordinate parallel queries
+- Synthesize results
+- Identify patterns/clusters
     """
 
     def __init__(self, kg: DDDPGKG):
@@ -175,10 +175,10 @@ class RelationshipMapper:
         Get complete task context in one call.
 
         Aggregates:
-        - Dependencies (upstream/downstream)
-        - Related tasks (semantic)
-        - Decisions (rationale)
-        - Clusters (themes)
+- Dependencies (upstream/downstream)
+- Related tasks (semantic)
+- Decisions (rationale)
+- Clusters (themes)
 
         Returns:
             {
@@ -203,9 +203,9 @@ class RelationshipMapper:
         Build cluster of related work by theme.
 
         Uses:
-        - Semantic search (DDDPGKG)
-        - Relationship traversal
-        - Decision linking
+- Semantic search (DDDPGKG)
+- Relationship traversal
+- Decision linking
 
         Returns:
             {
@@ -254,15 +254,15 @@ class SuggestionEngine:
     ADHD-optimized task suggestions using KG relationships.
 
     Features:
-    - Context-aware scoring (energy, time, focus)
-    - Dependency satisfaction checking
-    - Pattern-based ranking
-    - In-memory caching (5 min TTL)
+- Context-aware scoring (energy, time, focus)
+- Dependency satisfaction checking
+- Pattern-based ranking
+- In-memory caching (5 min TTL)
 
     Architecture:
-    - Uses RelationshipMapper for data
-    - Caches by workspace+context
-    - Graceful degradation
+- Uses RelationshipMapper for data
+- Caches by workspace+context
+- Graceful degradation
     """
 
     def __init__(
@@ -289,9 +289,9 @@ class SuggestionEngine:
         Get context-aware task suggestions.
 
         Context Parameters:
-        - energy_level: "low" | "medium" | "high"
-        - available_time_mins: integer (minutes)
-        - focus_state: "scattered" | "normal" | "deep"
+- energy_level: "low" | "medium" | "high"
+- available_time_mins: integer (minutes)
+- focus_state: "scattered" | "normal" | "deep"
 
         Returns:
             {
@@ -371,10 +371,10 @@ class SuggestionEngine:
         Score task by context match (0.0-1.0).
 
         Scoring:
-        - Energy match: 0-0.4
-        - Time match: 0-0.3
-        - Focus match: 0-0.2
-        - Pattern match: 0-0.1
+- Energy match: 0-0.4
+- Time match: 0-0.3
+- Focus match: 0-0.2
+- Pattern match: 0-0.1
         """
         score = 0.0
 

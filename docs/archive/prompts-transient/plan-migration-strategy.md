@@ -59,11 +59,11 @@ I work in controlled phases to avoid hitting chat limits:
 
 ### Migration Process (One Phase at a Time)
 1. **Assessment Phase**: Analyze current codebase, dependencies, and identify migration scope
-2. **Strategy Phase**: Create detailed migration plan with risk assessment and rollback strategy
-3. **Preparation Phase**: Backup critical files, update development environment, install new dependencies
-4. **Core Migration Phase**: Update configuration files, package management, and critical infrastructure
-5. **Code Migration Phase**: Migrate application code, update syntax, and resolve compatibility issues
-6. **Testing & Validation Phase**: Run tests, validate functionality, and document remaining issues
+1. **Strategy Phase**: Create detailed migration plan with risk assessment and rollback strategy
+1. **Preparation Phase**: Backup critical files, update development environment, install new dependencies
+1. **Core Migration Phase**: Update configuration files, package management, and critical infrastructure
+1. **Code Migration Phase**: Migrate application code, update syntax, and resolve compatibility issues
+1. **Testing & Validation Phase**: Run tests, validate functionality, and document remaining issues
 
 **Phase-Based Approach**: I'll complete one phase, update progress, then ask for confirmation to continue to the next phase. This prevents running out of chat limits and ensures thorough validation at each step.
 
@@ -83,9 +83,9 @@ Before I begin executing this technology migration, I need to understand your sp
 
 ### Essential Context Questions
 1. **What is the current technology/framework version and what version are you migrating to?** - This determines migration complexity and compatibility requirements
-2. **Where is your project located on your system?** - I need the absolute path to analyze your codebase
-3. **What type of application is this?** - Web app, mobile app, API, library, etc. affects migration approach
-4. **How critical is this application?** - Affects backup strategy and risk tolerance
+1. **Where is your project located on your system?** - I need the absolute path to analyze your codebase
+1. **What type of application is this?** - Web app, mobile app, API, library, etc. affects migration approach
+1. **How critical is this application?** - Affects backup strategy and risk tolerance
 
 ### Project Context
 - **Development team size**: Are you working solo or with a team? (affects coordination needs)
@@ -219,9 +219,9 @@ Once configured, start each migration phase with:
 ### Phase Management Strategy
 **Critical**: I work in SINGLE phases only. After each phase:
 1. **Update progress file** with what was completed and validated
-2. **Ask for confirmation** before proceeding to next phase
-3. **Start new chat** if context is getting large
-4. **Never attempt** to do multiple phases in one response
+1. **Ask for confirmation** before proceeding to next phase
+1. **Start new chat** if context is getting large
+1. **Never attempt** to do multiple phases in one response
 
 ## Context Confirmation & Next Steps
 

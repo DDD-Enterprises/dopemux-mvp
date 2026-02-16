@@ -17,11 +17,11 @@ prelude: Repository-wide verified baseline of components, features, integrations
 This report reconciles:
 
 1. `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md`
-2. `docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md`
-3. `docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md`
-4. Current code state in `services/`, `src/dopemux/`, `docker/mcp-servers/`, and UI directories
-5. Current architecture contracts in `services/registry.yaml`, `compose.yml`, and `docker-compose.smoke.yml`
-6. Historical service master histories in `docs/archive/services/history/`
+1. `docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md`
+1. `docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md`
+1. Current code state in `services/`, `src/dopemux/`, `docker/mcp-servers/`, and UI directories
+1. Current architecture contracts in `services/registry.yaml`, `compose.yml`, and `docker-compose.smoke.yml`
+1. Historical service master histories in `docs/archive/services/history/`
 
 This is a verified baseline, not a design-only document.
 
@@ -137,26 +137,26 @@ Executed verification checks (latest pass on 2026-02-06):
 ## Executive Findings
 
 1. Repository-scale drift is real: code, docs, registry, compose, and tests disagree in multiple critical places.
-2. The three archaeology docs are directionally useful but contain stale assertions.
-3. Core orchestration/event/memory components exist and are non-trivial; immediate contract/test/build blockers found in this pass were remediated, but broader architecture and docs parity work remains.
-4. ADR-197 Stage-1/Stage-2 workflow is now implemented across runtime API, coordinator operations, persistence, and CLI commands; remaining work is production hardening and deeper integration coverage.
-5. The largest systemic risk is governance: no current single source of truth is actually enforced end-to-end despite docs claiming that it is.
-6. Leantime bridge readiness blocker was closed in this wave: deep health and project-list calls now return `200`, and setup/token automation is verified.
+1. The three archaeology docs are directionally useful but contain stale assertions.
+1. Core orchestration/event/memory components exist and are non-trivial; immediate contract/test/build blockers found in this pass were remediated, but broader architecture and docs parity work remains.
+1. ADR-197 Stage-1/Stage-2 workflow is now implemented across runtime API, coordinator operations, persistence, and CLI commands; remaining work is production hardening and deeper integration coverage.
+1. The largest systemic risk is governance: no current single source of truth is actually enforced end-to-end despite docs claiming that it is.
+1. Leantime bridge readiness blocker was closed in this wave: deep health and project-list calls now return `200`, and setup/token automation is verified.
 
 ## Claim Verification Matrix
 
 | Claim | Source | Verification | Evidence | Conclusion |
 |---|---|---|---|---|
-| 6/7 infrastructure agents are missing | `UNBUILT_FEATURES_AND_ROADMAP.md` | False | Files exist for all 7 modules in `services/agents/` | Implementation exists; readiness is mixed, not missing |
-| Auto-resume is unbuilt | `UNBUILT_FEATURES_AND_ROADMAP.md` | False/Partial | Orphan detection + resume in `src/dopemux/instance_manager.py`, `src/dopemux/worktree_recovery.py`, `src/dopemux/cli.py` | Feature exists; needs stabilization/testing |
-| Task-Orchestrator event adapters are unbuilt | `UNBUILT_FEATURES_AND_ROADMAP.md` | False | Event handlers/adapters present in `services/task-orchestrator/app/services/enhanced_orchestrator.py` and `services/task-orchestrator/app/adapters/conport_insight_publisher.py` | Implemented at code level |
-| Idea -> Epic workflow is missing | `UNBUILT_FEATURES_AND_ROADMAP.md` | False | Runtime and CLI references now exist in `services/task-orchestrator/app/main.py`, `services/task-orchestrator/app/services/workflow_service.py`, `services/task-orchestrator/app/services/workflow_store.py`, `services/task-orchestrator/app/models/workflow.py`, `src/dopemux/cli.py` | Reclassify as Implemented with remaining hardening backlog |
-| Zen MCP server was deleted (root cause for stalled features) | `PROJECT_ARCHAEOLOGY_REPORT.md` | Partial | `docker/mcp-servers/zen` removed; commit indicates rename to PAL (`refactor: rename zen MCP server to PAL`) | Renamed/rebased, not purely removed; migration incomplete |
-| Persona command system was deleted | `PROJECT_ARCHAEOLOGY_REPORT.md` | True | `git log --diff-filter=D --summary -- .claude/commands` shows bulk deletions | Deterministic prompt library was reduced significantly |
-| DopeconBridge is event-bus centric | `DESIGN_EVOLUTION_2026.md` | True | Redis Streams event bus implementation in `services/dopecon-bridge/event_bus.py` and usage in integrations/tests | Correct |
+| 6/7 infrastructure agents are missing | `UNBUILT_FEATURES_AND_ROADMAP.md` \| False \| Files exist for all 7 modules in `services/agents/` | Implementation exists; readiness is mixed, not missing |
+| Auto-resume is unbuilt | `UNBUILT_FEATURES_AND_ROADMAP.md` \| False/Partial \| Orphan detection + resume in `src/dopemux/instance_manager.py`, `src/dopemux/worktree_recovery.py`, `src/dopemux/cli.py` | Feature exists; needs stabilization/testing |
+| Task-Orchestrator event adapters are unbuilt | `UNBUILT_FEATURES_AND_ROADMAP.md` \| False \| Event handlers/adapters present in `services/task-orchestrator/app/services/enhanced_orchestrator.py` and `services/task-orchestrator/app/adapters/conport_insight_publisher.py` | Implemented at code level |
+| Idea -> Epic workflow is missing | `UNBUILT_FEATURES_AND_ROADMAP.md` \| False \| Runtime and CLI references now exist in `services/task-orchestrator/app/main.py`, `services/task-orchestrator/app/services/workflow_service.py`, `services/task-orchestrator/app/services/workflow_store.py`, `services/task-orchestrator/app/models/workflow.py`, `src/dopemux/cli.py` | Reclassify as Implemented with remaining hardening backlog |
+| Zen MCP server was deleted (root cause for stalled features) | `PROJECT_ARCHAEOLOGY_REPORT.md` \| Partial \| `docker/mcp-servers/zen` removed; commit indicates rename to PAL (`refactor: rename zen MCP server to PAL`) | Renamed/rebased, not purely removed; migration incomplete |
+| Persona command system was deleted | `PROJECT_ARCHAEOLOGY_REPORT.md` \| True \| `git log --diff-filter=D --summary -- .claude/commands` shows bulk deletions | Deterministic prompt library was reduced significantly |
+| DopeconBridge is event-bus centric | `DESIGN_EVOLUTION_2026.md` \| True \| Redis Streams event bus implementation in `services/dopecon-bridge/event_bus.py` and usage in integrations/tests | Correct |
 | Task-Orchestrator is central PM-plane coordinator | `DESIGN_EVOLUTION_2026.md` | Mostly true | Large codebase and event integration exist; Leantime/ConPort adapters present | Correct directionally; integration quality varies |
 | WMA guarantees <200ms capture and instant recovery | `DESIGN_EVOLUTION_2026.md` | Unverified | Performance claims documented, but no current benchmark evidence in this pass | Needs benchmark suite and SLO validation |
-| Registry is the single source of truth | `docs/03-reference/ports-and-registry-truth.md` | Partial | `tests/arch/test_registry_compose_alignment.py` now passes for smoke stack after remediation | Smoke contract repaired; full-stack canonicalization still pending |
+| Registry is the single source of truth | `docs/03-reference/ports-and-registry-truth.md` \| Partial \| `tests/arch/test_registry_compose_alignment.py` now passes for smoke stack after remediation | Smoke contract repaired; full-stack canonicalization still pending |
 
 ## Complete Component Baseline
 
@@ -169,8 +169,8 @@ Executed verification checks (latest pass on 2026-02-06):
 | `services/task-orchestrator` | Dependency analysis, event handling, adapters, coordination engines | Strong ties to bridge + ConPort + Leantime semantics | Medium-High |
 | `services/adhd_engine` | Cognitive/energy/attention/break logic, multiple domains | Integrated with event flows and external services | Medium |
 | `services/serena` | Large intelligence stack, MCP server, code intelligence surfaces | Broad integration references | Medium |
-| `services/working-memory-assistant` | WMA API + dope-memory mode (`dope_memory_main.py`) | Integrates with ADHD/ConPort/Serena, smoke service path exists | Medium |
-| `services/dope-query` / `services/conport` | KG/context capabilities split across naming eras | Naming and ownership drift with `conport` compose naming | Medium |
+| `services/working-memory-assistant` \| WMA API + dope-memory mode (`dope_memory_main.py`) | Integrates with ADHD/ConPort/Serena, smoke service path exists | Medium |
+| `services/dope-query` / `services/conport` \| KG/context capabilities split across naming eras \| Naming and ownership drift with `conport` compose naming | Medium |
 | `services/dope-context` | Context indexing/search services | Linked to bridge + multiple AI services | Medium |
 | `services/dddpg` | Supporting data/query functionality | Limited standalone surface, referenced by query stack | Medium-Low |
 | `services/session-manager` | TUI and session coordination runtime | Integrates with ConPort + agents + ADHD concepts | Medium |
@@ -224,7 +224,7 @@ Executed verification checks (latest pass on 2026-02-06):
 | `postgres` | registry + compose | Active infrastructure dependency | Smoke-stack port alignment fixed; multi-compose alias drift remains |
 | `redis` / `redis-primary` / `redis-events` | registry + compose aliases | Multiple naming variants in compose | Naming and topology ambiguity |
 | `qdrant` / `mcp-qdrant` | registry + compose aliases | Active vector infrastructure | Smoke-stack host/container alignment fixed; alias governance still needed |
-| `pal` (Zen successor) | compose + `docker/mcp-servers/pal` | Active but migration-incomplete ecosystem | Residual stale Zen references |
+| `pal` (Zen successor) \| compose + `docker/mcp-servers/pal` | Active but migration-incomplete ecosystem | Residual stale Zen references |
 | `exa` | registry + compose | Present and referenced | Registry/compose smoke inclusion inconsistency |
 | `litellm` | registry + compose | Present and referenced | Intentionally excluded from smoke baseline; still needs explicit contract coverage in broader stack tests |
 | `desktop-commander` | registry + compose | Present | Needs consistent contract tests |
@@ -235,7 +235,7 @@ Executed verification checks (latest pass on 2026-02-06):
 
 | Artifact | Verified historical state | Current implication |
 |---|---|---|
-| `docker/mcp-servers/zen` | Removed by rename commit to PAL | Documentation and code still contain stale `zen` references |
+| `docker/mcp-servers/zen` \| Removed by rename commit to PAL \| Documentation and code still contain stale `zen` references |
 | `.claude/commands/*` command library | Bulk deletion verified in git history | Deterministic prompt behaviors were reduced; only a small subset remains |
 | Master history docs under `docs/archive/services/history` | Present and rich, but not correctly linked from history index doc | Knowledge exists but is partially disconnected from current navigation |
 
@@ -244,17 +244,17 @@ Executed verification checks (latest pass on 2026-02-06):
 ### Primary Control and Data Flows
 
 1. **Event Flow**: Services publish/consume through DopeconBridge Redis Streams (`dopemux:events`).
-2. **Coordination Flow**: Task-Orchestrator subscribes to bridge events and writes updates/insights via ConPort adapters.
-3. **Cognitive Flow**: ADHD Engine and Serena feed state/recommendations into orchestration and UI surfaces.
-4. **Memory Flow**: Working Memory Assistant and dope-memory mode preserve/recover context and integrate with ADHD/ConPort.
-5. **PM Flow**: Leantime bridge paths exist, but stage-1/2 pipeline semantics are not fully implemented in runtime.
+1. **Coordination Flow**: Task-Orchestrator subscribes to bridge events and writes updates/insights via ConPort adapters.
+1. **Cognitive Flow**: ADHD Engine and Serena feed state/recommendations into orchestration and UI surfaces.
+1. **Memory Flow**: Working Memory Assistant and dope-memory mode preserve/recover context and integrate with ADHD/ConPort.
+1. **PM Flow**: Leantime bridge paths exist, but stage-1/2 pipeline semantics are not fully implemented in runtime.
 
 ### Critical Contract Drift
 
 1. **Registry vs Compose**: `services/registry.yaml` and `compose.yml` diverge materially.
-2. **Naming Drift**: `dope-query` vs `conport`, `adhd-engine` vs `adhd_engine`, `zen` vs `pal`.
-3. **Port Drift**: Smoke-stack mismatches were fixed in this pass; broader multi-compose drift remains.
-4. **Architecture Doc Drift**: ADR-207 body is now restored; remaining drift is
+1. **Naming Drift**: `dope-query` vs `conport`, `adhd-engine` vs `adhd_engine`, `zen` vs `pal`.
+1. **Port Drift**: Smoke-stack mismatches were fixed in this pass; broader multi-compose drift remains.
+1. **Architecture Doc Drift**: ADR-207 body is now restored; remaining drift is
    cross-doc link integrity and stale references in dependent architecture docs.
 
 ## Additional Gaps Not Fully Captured in the 3 Input Files
@@ -263,31 +263,31 @@ Executed verification checks (latest pass on 2026-02-06):
    (`DESIGN_EVOLUTION_2026.md`, `PROJECT_ARCHAEOLOGY_REPORT.md`,
    `UNBUILT_FEATURES_AND_ROADMAP.md`); keep link checks in ongoing parity gates
    (`reports/strict_closure/history_docs_link_integrity_2026-02-08.json`).
-2. `ui-dashboard-backend` now provides deterministic fallback plus optional live pull integration, but still lacks an event-stream push channel.
-3. Coverage policy (`fail-under=80`) still blocks targeted verification unless `--no-cov` is used.
-4. Multiple service directories have minimal scaffolding and no tests, but remain present in architecture narratives.
-5. First non-dry-run ConPort historical import surfaced schema-shape drift (`ag_catalog` assumptions vs live `public` tables); importer and backfill hardening are now in place and verified for one selected bundle.
-6. Full import/backfill replay across remaining exported historical bundles is still pending a dedupe/merge policy decision (avoid duplicating historical records in active runtime DB).
-7. Historical ConPort backlog extraction surfaced additional unresolved work (132 TODO, 1 BLOCKED) not yet fully reflected in the active prioritized gap register.
-8. Leantime bridge deep integration is now operational (`/health?deep=1` and `/api/tools/list_projects` return `200`), with `LEANTIME_API_TOKEN` wired in runtime.
-9. Serena HTTP API had host-specific path coupling (`/Users/hue/code/dopemux-mvp`) in runtime endpoint code; this was fixed in current wave, but explicit contract tests for workspace-path resolution across container/host runtimes are still missing.
-10. New deterministic capture client module (`src/dopemux/memory/capture_client.py`) is present but not yet wired as the default ingress in CLI/plugin/MCP capture surfaces.
-11. Capture client schema bootstrap overhead was remediated with one-time per-ledger initialization guardrails, but explicit latency benchmarking is still pending.
-12. Capture client contract coverage now includes mode precedence, repo fail-closed behavior, idempotent duplicate retries, schema/redactor dependency failures, and event-stream toggle behavior; remaining work is latency benchmarking and contract documentation polish.
+1. `ui-dashboard-backend` now provides deterministic fallback plus optional live pull integration, but still lacks an event-stream push channel.
+1. Coverage policy (`fail-under=80`) still blocks targeted verification unless `--no-cov` is used.
+1. Multiple service directories have minimal scaffolding and no tests, but remain present in architecture narratives.
+1. First non-dry-run ConPort historical import surfaced schema-shape drift (`ag_catalog` assumptions vs live `public` tables); importer and backfill hardening are now in place and verified for one selected bundle.
+1. Full import/backfill replay across remaining exported historical bundles is still pending a dedupe/merge policy decision (avoid duplicating historical records in active runtime DB).
+1. Historical ConPort backlog extraction surfaced additional unresolved work (132 TODO, 1 BLOCKED) not yet fully reflected in the active prioritized gap register.
+1. Leantime bridge deep integration is now operational (`/health?deep=1` and `/api/tools/list_projects` return `200`), with `LEANTIME_API_TOKEN` wired in runtime.
+1. Serena HTTP API had host-specific path coupling (`/Users/hue/code/dopemux-mvp`) in runtime endpoint code; this was fixed in current wave, but explicit contract tests for workspace-path resolution across container/host runtimes are still missing.
+1. New deterministic capture client module (`src/dopemux/memory/capture_client.py`) is present but not yet wired as the default ingress in CLI/plugin/MCP capture surfaces.
+1. Capture client schema bootstrap overhead was remediated with one-time per-ledger initialization guardrails, but explicit latency benchmarking is still pending.
+1. Capture client contract coverage now includes mode precedence, repo fail-closed behavior, idempotent duplicate retries, schema/redactor dependency failures, and event-stream toggle behavior; remaining work is latency benchmarking and contract documentation polish.
 
 ## Resolved In Current Wave
 
 1. ConPort relationship restoration reached full parity for selected bundle (`111/111` `context_links` -> `entity_relationships`).
-2. AGE/PG compatibility and concurrency stress validation completed with `overall_ok=true` and zero query failures.
-3. AGE extension registration drift was fixed (`CREATE EXTENSION age`) and validated (`extversion 1.6.0`).
-4. Profile CLI command-shadowing defect was fixed by unifying profile-group registration; `profile apply`, `profile current`, `profile create`, `profile copy`, `profile edit`, `profile delete`, and top-level `switch` are now exposed with command-registration test coverage, and manual switches now log telemetry as best-effort.
-5. Shared MCP response-budget utility is now implemented and integrated in Serena + GPT-Researcher MCP servers with unit test coverage.
-6. Serena HTTP API workspace resolution is now runtime-safe (env/cwd based) and no longer pinned to host-local path assumptions:
+1. AGE/PG compatibility and concurrency stress validation completed with `overall_ok=true` and zero query failures.
+1. AGE extension registration drift was fixed (`CREATE EXTENSION age`) and validated (`extversion 1.6.0`).
+1. Profile CLI command-shadowing defect was fixed by unifying profile-group registration; `profile apply`, `profile current`, `profile create`, `profile copy`, `profile edit`, `profile delete`, and top-level `switch` are now exposed with command-registration test coverage, and manual switches now log telemetry as best-effort.
+1. Shared MCP response-budget utility is now implemented and integrated in Serena + GPT-Researcher MCP servers with unit test coverage.
+1. Serena HTTP API workspace resolution is now runtime-safe (env/cwd based) and no longer pinned to host-local path assumptions:
    `services/serena/http_server.py` (`fix(serena): remove hardcoded workspace path in http api`, commit `6a2451cc`).
-7. ADHD engine runtime health recheck after settings-contract hotfix shows sustained healthy state with successful `/health` probes and Dopecon bridge reads (`dopemux-mvp-adhd-engine-1`).
-8. Capture pipeline schema initialization now runs once per ledger path (instead of per-event bootstrap), with dedicated unit coverage for same-ledger and multi-ledger behavior:
+1. ADHD engine runtime health recheck after settings-contract hotfix shows sustained healthy state with successful `/health` probes and Dopecon bridge reads (`dopemux-mvp-adhd-engine-1`).
+1. Capture pipeline schema initialization now runs once per ledger path (instead of per-event bootstrap), with dedicated unit coverage for same-ledger and multi-ledger behavior:
    `src/dopemux/memory/capture_client.py`, `tests/unit/test_memory_capture_client.py`.
-9. Capture-client contract tests now cover schema dependency failures, redactor dependency failures, and event-stream toggle paths:
+1. Capture-client contract tests now cover schema dependency failures, redactor dependency failures, and event-stream toggle paths:
    `tests/unit/test_memory_capture_client.py`.
 
 ## ConPort Backlog Misses Extracted Into Master Fix Scope
@@ -296,119 +296,119 @@ Source: `reports/strict_closure/conport_backlog_extract_2026-02-06.json` (from h
 
 1. Historical BLOCKED LiteLLM DB dependency from ConPort backlog was runtime-reverified and is now stale/resolved:
    `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`.
-2. Legacy architecture-consolidation epic backlog remains unresolved:
+1. Legacy architecture-consolidation epic backlog remains unresolved:
    `EPIC: Architecture Consolidation - Shared Infrastructure Layer | 3 phases, 27 tasks, 24h total | P0-P2 priorities`.
-3. Legacy profile/automation epics are now represented in active runtime and compatibility module surfaces:
+1. Legacy profile/automation epics are now represented in active runtime and compatibility module surfaces:
    profile manager implementation epic, auto-detection engine epic, profile switching epic, UX integration epic.
-4. Knowledge-graph integration backlog still open in historical queue:
+1. Knowledge-graph integration backlog still open in historical queue:
    `conport_integration_links`, bidirectional linking, `trace_decision_to_code` MCP tool, and traversal performance validation.
-5. Historical dependency-unification backlog still open:
+1. Historical dependency-unification backlog still open:
    remove duplicated semantic-search paths, centralize ADHD config service, and complete migration test coverage around those changes.
 
 Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`.
 
 1. Unique pending items mined from all export bundles: 231 (230 TODO, 1 BLOCKED).
-2. Coverage diff against this master doc: 24 pending items were not represented clearly enough in the active plan text.
-3. Missed clusters now explicitly in scope:
+1. Coverage diff against this master doc: 24 pending items were not represented clearly enough in the active plan text.
+1. Missed clusters now explicitly in scope:
    AGE/PG stress + compatibility validation tasks, Slack client/status/triage workflow tasks, macOS focus/window-management integration tasks, beta-prep/recruitment/deployment tasks, and Leantime readiness automation/regression coverage tasks.
-4. Normalized priority matrix for the 24 underrepresented items:
+1. Normalized priority matrix for the 24 underrepresented items:
    `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`.
-5. Secondary explicit-task-line extraction against current master docs surfaced `19` additional underrepresented implementation tasks from historical TODO samples (core package extraction, semantic/embedding deprecation path, ADHDConfigService rollouts, KG link/tool/test/perf/documentation tasks):
+1. Secondary explicit-task-line extraction against current master docs surfaced `19` additional underrepresented implementation tasks from historical TODO samples (core package extraction, semantic/embedding deprecation path, ADHDConfigService rollouts, KG link/tool/test/perf/documentation tasks):
    `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
-6. Coverage recheck confirms the original `24` miss-extract items are now explicitly represented in master docs (`24/24` closure):
+1. Coverage recheck confirms the original `24` miss-extract items are now explicitly represented in master docs (`24/24` closure):
    `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`.
-7. Full-bundle ConPort TODO/BLOCKED coverage extraction across all available import bundles shows `231` unique pending items with `167` still underrepresented in current master docs:
+1. Full-bundle ConPort TODO/BLOCKED coverage extraction across all available import bundles shows `231` unique pending items with `167` still underrepresented in current master docs:
    `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`.
-8. First execution packet for the underrepresented set is now materialized with owner buckets and verification anchors for the top `40` items:
+1. First execution packet for the underrepresented set is now materialized with owner buckets and verification anchors for the top `40` items:
    `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
-9. Profile/auto-detection workstream verification shows `12` extracted tasks already implemented and `3` partial, reducing true open scope in that cluster:
+1. Profile/auto-detection workstream verification shows `12` extracted tasks already implemented and `3` partial, reducing true open scope in that cluster:
    `reports/strict_closure/profile_workstream_verification_2026-02-06.json`.
-10. Shared MCP response-budget work item from the underrepresented packet is now implemented and verified:
+1. Shared MCP response-budget work item from the underrepresented packet is now implemented and verified:
    `reports/strict_closure/mcp_response_budget_verification_2026-02-06.json`.
-11. Deep status-field extraction from ConPort `custom_data` payloads identified `4` additional missed milestone checkpoints (not present in the prior full-coverage artifact), and these are now explicitly promoted in the master miss matrix:
+1. Deep status-field extraction from ConPort `custom_data` payloads identified `4` additional missed milestone checkpoints (not present in the prior full-coverage artifact), and these are now explicitly promoted in the master miss matrix:
    `reports/strict_closure/conport_deep_status_task_extract_2026-02-06.json`.
-12. Recheck confirms the `4` deep-extraction misses are now represented in active master docs (`new_uncovered_vs_full_coverage = 0`):
+1. Recheck confirms the `4` deep-extraction misses are now represented in active master docs (`new_uncovered_vs_full_coverage = 0`):
    `reports/strict_closure/conport_deep_status_task_recheck_2026-02-06.json`.
-13. Config backup-safety backlog item (`1.2.3`) is now implemented in `ConfigGenerator` with atomic write, rollback safety, and targeted unit tests:
+1. Config backup-safety backlog item (`1.2.3`) is now implemented in `ConfigGenerator` with atomic write, rollback safety, and targeted unit tests:
    `reports/strict_closure/config_backup_safety_verification_2026-02-06.json`.
-14. Profile-config integration backlog item (`1.2.4`) is now implemented with explicit tests for full-profile parity, developer 3-MCP shape, and backup rollback restore:
+1. Profile-config integration backlog item (`1.2.4`) is now implemented with explicit tests for full-profile parity, developer 3-MCP shape, and backup rollback restore:
    `reports/strict_closure/profile_config_integration_verification_2026-02-06.json`.
-15. End-to-end profile start-flow backlog item (`1.4.1`) is now implemented with additive `dopemux start --profile` support and dry-run coverage for success and invalid-profile paths:
+1. End-to-end profile start-flow backlog item (`1.4.1`) is now implemented with additive `dopemux start --profile` support and dry-run coverage for success and invalid-profile paths:
    `reports/strict_closure/profile_start_e2e_verification_2026-02-06.json`.
-16. Profile documentation backlog item (`1.4.2`) is now implemented with README updates, a dedicated profile usage guide, and schema-linked examples:
+1. Profile documentation backlog item (`1.4.2`) is now implemented with README updates, a dedicated profile usage guide, and schema-linked examples:
    `reports/strict_closure/profile_documentation_verification_2026-02-06.json`.
-17. ADHD-engine signal collection backlog item (`2.1.3`) is now implemented with runtime endpoint probing (5448-first), energy/attention extraction, and graceful fallback:
+1. ADHD-engine signal collection backlog item (`2.1.3`) is now implemented with runtime endpoint probing (5448-first), energy/attention extraction, and graceful fallback:
    `reports/strict_closure/adhd_engine_profile_detector_verification_2026-02-06.json`.
-18. File-pattern analyzer backlog item (`2.1.5`) is now implemented with percentage-based 0-10 scoring against deduplicated recent files:
+1. File-pattern analyzer backlog item (`2.1.5`) is now implemented with percentage-based 0-10 scoring against deduplicated recent files:
    `reports/strict_closure/file_pattern_analyzer_verification_2026-02-06.json`.
-19. Detector threshold-coverage backlog item (`2.2.4`) is now implemented with explicit unit coverage for auto/prompt/none confidence transitions and signal combinations:
+1. Detector threshold-coverage backlog item (`2.2.4`) is now implemented with explicit unit coverage for auto/prompt/none confidence transitions and signal combinations:
    `reports/strict_closure/profile_detector_threshold_tests_verification_2026-02-06.json`.
-20. Profile config swap and restart backlog item (`3.2.3`) is now implemented with backup-safe config application and optional restart command support in `profile apply/use`:
+1. Profile config swap and restart backlog item (`3.2.3`) is now implemented with backup-safe config application and optional restart command support in `profile apply/use`:
    `reports/strict_closure/profile_config_swap_restart_verification_2026-02-06.json`.
-21. Profile error recovery and rollback backlog item (`3.2.4`) is now implemented with failure-path guardrails that preserve prior active state and restore Claude config backups when activation fails:
+1. Profile error recovery and rollback backlog item (`3.2.4`) is now implemented with failure-path guardrails that preserve prior active state and restore Claude config backups when activation fails:
    `reports/strict_closure/profile_error_recovery_rollback_verification_2026-02-06.json`.
-22. Profile switch-command backlog item (`3.3.1`) is now implemented with orchestrated save/swap/restart/restore behavior and compatibility-preserving command surface:
+1. Profile switch-command backlog item (`3.3.1`) is now implemented with orchestrated save/swap/restart/restore behavior and compatibility-preserving command surface:
    `reports/strict_closure/profile_switch_command_verification_2026-02-06.json`.
-23. Switch time-optimization backlog item (`3.3.2`) is now implemented with parallel save/apply execution and step-level timing telemetry with target-threshold warning:
+1. Switch time-optimization backlog item (`3.3.2`) is now implemented with parallel save/apply execution and step-level timing telemetry with target-threshold warning:
    `reports/strict_closure/profile_switch_time_optimization_verification_2026-02-06.json`.
-24. Switch integration-test backlog item (`3.3.3`) is now implemented with full->developer->full flow validation and save/restore/timing assertions:
+1. Switch integration-test backlog item (`3.3.3`) is now implemented with full->developer->full flow validation and save/restore/timing assertions:
    `reports/strict_closure/profile_switch_integration_tests_verification_2026-02-06.json`.
-25. Current-profile detection backlog item (`4.1.1`) is now implemented with Claude-config MCP-set matching and workspace marker cache updates:
+1. Current-profile detection backlog item (`4.1.1`) is now implemented with Claude-config MCP-set matching and workspace marker cache updates:
    `reports/strict_closure/profile_current_detection_verification_2026-02-06.json`.
-26. Auto-detection service backlog items (`4.2.1` through `4.2.4`) are now implemented and verified for 5-minute cadence, confidence/debounce/quiet-hour gating, suggestion UX, acceptance branches, and persisted settings:
+1. Auto-detection service backlog items (`4.2.1` through `4.2.4`) are now implemented and verified for 5-minute cadence, confidence/debounce/quiet-hour gating, suggestion UX, acceptance branches, and persisted settings:
    `reports/strict_closure/auto_detection_service_verification_2026-02-06.json`.
-27. Profile management command backlog items (`4.3.1` through `4.3.5`) are now implemented and verified for create/edit/copy/delete/current workflows, including interactive create and fallback current-profile detection:
+1. Profile management command backlog items (`4.3.1` through `4.3.5`) are now implemented and verified for create/edit/copy/delete/current workflows, including interactive create and fallback current-profile detection:
    `reports/strict_closure/profile_management_commands_verification_2026-02-06.json`.
-28. Profile analytics backlog items (`4.4.1` through `4.4.3`) are now implemented and verified for metrics capture, stats command insights, and ASCII dashboard/heatmap rendering:
+1. Profile analytics backlog items (`4.4.1` through `4.4.3`) are now implemented and verified for metrics capture, stats command insights, and ASCII dashboard/heatmap rendering:
    `reports/strict_closure/profile_analytics_verification_2026-02-06.json`.
-29. Dope-context decision auto-index configuration backlog item (`3.3.1`) is now implemented with workspace-scoped decision retrieval settings and persisted config:
+1. Dope-context decision auto-index configuration backlog item (`3.3.1`) is now implemented with workspace-scoped decision retrieval settings and persisted config:
    `reports/strict_closure/dope_context_decision_auto_index_unified_search_verification_2026-02-06.json`.
-30. Unified search validation backlog item (`3.3.2`) is now implemented with merged code/docs/decision behavior verification:
+1. Unified search validation backlog item (`3.3.2`) is now implemented with merged code/docs/decision behavior verification:
    `reports/strict_closure/dope_context_decision_auto_index_unified_search_verification_2026-02-06.json`.
-31. Profile optimization suggestion backlog item (`4.4.4`) is now implemented with deterministic recommendation generation and ConPort archival:
+1. Profile optimization suggestion backlog item (`4.4.4`) is now implemented with deterministic recommendation generation and ConPort archival:
    `reports/strict_closure/profile_optimization_suggestions_verification_2026-02-06.json`.
-32. Usage pattern analysis backlog item (`4.5.1`) is now implemented with `dopemux profile analyze-usage` and unit coverage:
+1. Usage pattern analysis backlog item (`4.5.1`) is now implemented with `dopemux profile analyze-usage` and unit coverage:
    `reports/strict_closure/profile_usage_analysis_and_init_wizard_verification_2026-02-06.json`.
-33. Profile init wizard backlog item (`4.5.2`) is now implemented and verified with wizard build/save coverage:
+1. Profile init wizard backlog item (`4.5.2`) is now implemented and verified with wizard build/save coverage:
    `reports/strict_closure/profile_usage_analysis_and_init_wizard_verification_2026-02-06.json`.
-34. Migration guide documentation backlog item (`4.5.3`) is now implemented with code-truth tutorial updates:
+1. Migration guide documentation backlog item (`4.5.3`) is now implemented with code-truth tutorial updates:
    `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
-35. User documentation backlog item (`4.6.1`) is now implemented with complete tutorial and operational command guidance:
+1. User documentation backlog item (`4.6.1`) is now implemented with complete tutorial and operational command guidance:
    `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
-36. Developer documentation backlog item (`4.6.2`) is now implemented with architecture, interface, and signal-collector extension guidance:
+1. Developer documentation backlog item (`4.6.2`) is now implemented with architecture, interface, and signal-collector extension guidance:
    `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
-37. Remaining profile UX docs polish (`4.6.3`) is now addressed for active docs through command-parity updates and index refresh:
+1. Remaining profile UX docs polish (`4.6.3`) is now addressed for active docs through command-parity updates and index refresh:
    `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
-38. Week-2 integration/testing backlog item (`Day 10`) is now implemented with a reusable end-to-end verification harness:
+1. Week-2 integration/testing backlog item (`Day 10`) is now implemented with a reusable end-to-end verification harness:
    `reports/strict_closure/profile_week2_integration_testing_verification_2026-02-06.json`.
-39. Historical EPIC deliverable module gaps for rows `2`, `3`, and `4` are now implemented with compatibility shims (`signal_collectors`, `scorer`, `session_manager`, `claude_manager`, `switcher`, `statusline_integration`, `suggestion_engine`, `analytics`, `migration`) and targeted verification coverage:
+1. Historical EPIC deliverable module gaps for rows `2`, `3`, and `4` are now implemented with compatibility shims (`signal_collectors`, `scorer`, `session_manager`, `claude_manager`, `switcher`, `statusline_integration`, `suggestion_engine`, `analytics`, `migration`) and targeted verification coverage:
    `reports/strict_closure/profile_epic_compat_shims_verification_2026-02-06.json`.
-40. Live ConPort backlog extraction from runtime `progress_entries` now shows `134` unique active backlog items with `66` still underrepresented in active master docs, and has been promoted into an owner-routed matrix:
+1. Live ConPort backlog extraction from runtime `progress_entries` now shows `134` unique active backlog items with `66` still underrepresented in active master docs, and has been promoted into an owner-routed matrix:
    `reports/strict_closure/conport_live_backlog_doc_coverage_2026-02-06.json`.
-41. Live underrepresented backlog clusters are now explicitly enumerated for closure (`profile_alias_or_residual=33`, `shield_slack_beta=11`, `kg_dependency_unification=7`, `bridge_orchestrator=6`, `mcp_token_ops=4`, `conport_persistence=1`, `other=4`):
+1. Live underrepresented backlog clusters are now explicitly enumerated for closure (`profile_alias_or_residual=33`, `shield_slack_beta=11`, `kg_dependency_unification=7`, `bridge_orchestrator=6`, `mcp_token_ops=4`, `conport_persistence=1`, `other=4`):
    `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`.
-42. Live underrepresented backlog has now been triaged into `25` likely true-open candidates, `33` likely alias/already-implemented phrasing mismatches, and `8` resolved-in-current-wave items:
+1. Live underrepresented backlog has now been triaged into `25` likely true-open candidates, `33` likely alias/already-implemented phrasing mismatches, and `8` resolved-in-current-wave items:
    `reports/strict_closure/conport_live_backlog_true_open_candidates_2026-02-06.json`.
-43. A dedicated live backlog execution packet is now materialized for the true-open set with owner and verification anchors, and now includes runtime/documentation reclassification for persistence, MCP token-doc parity, and bridge-orchestrator integration tasks:
+1. A dedicated live backlog execution packet is now materialized for the true-open set with owner and verification anchors, and now includes runtime/documentation reclassification for persistence, MCP token-doc parity, and bridge-orchestrator integration tasks:
    `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`.
-44. Live true-open packet rows have now been explicitly promoted into the master miss matrix to close literal line-coverage drift (`25/25` exact-line additions; canonical residual pre-promotion `14`):
+1. Live true-open packet rows have now been explicitly promoted into the master miss matrix to close literal line-coverage drift (`25/25` exact-line additions; canonical residual pre-promotion `14`):
    `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`.
-45. Post-promotion recheck confirms exact-line closure for the full live true-open packet (`0` exact misses of `25`), with remaining canonical drift now limited to wording-level variants (`8`):
+1. Post-promotion recheck confirms exact-line closure for the full live true-open packet (`0` exact misses of `25`), with remaining canonical drift now limited to wording-level variants (`8`):
    `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`.
-46. KG dependency-unification deep verification now records `2` implemented items, `1` implemented-in-code item, and `4` partial items with explicit residual gaps and next actions:
+1. KG dependency-unification deep verification now records `2` implemented items, `1` implemented-in-code item, and `4` partial items with explicit residual gaps and next actions:
    `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`.
-47. Serena KG-related regression harnesses were unblocked by fixing annotation-time import failures and async test execution defaults; targeted suites now run green (`13` passed):
+1. Serena KG-related regression harnesses were unblocked by fixing annotation-time import failures and async test execution defaults; targeted suites now run green (`13` passed):
    `services/serena/intelligence/database.py`, `services/serena/tree_sitter_analyzer.py`, `pytest.ini`.
-48. ConPort semantic-search compatibility paths are now explicitly hard-deprecated in runtime responses/logging and active architecture docs, reducing ambiguity while preserving backward compatibility:
+1. ConPort semantic-search compatibility paths are now explicitly hard-deprecated in runtime responses/logging and active architecture docs, reducing ambiguity while preserving backward compatibility:
    `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py`, `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3.0-implementation.md`.
-49. A caller inventory for deprecated ConPort semantic-search paths is now captured to guide safe shim removal sequencing:
+1. A caller inventory for deprecated ConPort semantic-search paths is now captured to guide safe shim removal sequencing:
    `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`.
-50. Live ConPort backlog delta recheck (`2026-02-08` vs `2026-02-07`) confirms no
+1. Live ConPort backlog delta recheck (`2026-02-08` vs `2026-02-07`) confirms no
    newly introduced TODO descriptions and no new master-doc representation gaps:
    `reports/strict_closure/conport_live_backlog_delta_2026-02-08.json`.
-51. Task-orchestrator workflow HTTP contracts are now covered by endpoint-level unit tests (success paths + error mapping for `404/409/503/400`), reducing ADR-197 stage-1/stage-2 drift risk:
+1. Task-orchestrator workflow HTTP contracts are now covered by endpoint-level unit tests (success paths + error mapping for `404/409/503/400`), reducing ADR-197 stage-1/stage-2 drift risk:
    `tests/unit/test_task_orchestrator_workflow_api.py`.
-52. ADHD engine startup is now resilient to legacy settings objects that do not expose `task_orchestrator_url`; runtime falls back to env/default instead of crashing:
+1. ADHD engine startup is now resilient to legacy settings objects that do not expose `task_orchestrator_url`; runtime falls back to env/default instead of crashing:
    `services/adhd_engine/core/engine.py`, `tests/unit/test_adhd_engine_task_orchestrator_url.py`.
 
 ## Prioritized Gap Register
@@ -416,38 +416,38 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 ### P0 (Blockers to Production Readiness)
 
 1. Registry/compose/service naming drift across non-smoke stacks (`compose.yml` vs smoke contracts).
-2. Architecture source-of-truth consistency gaps (dependent doc links/references
+1. Architecture source-of-truth consistency gaps (dependent doc links/references
    need recheck after ADR-207 restoration).
-3. PAL migration incompleteness (stale Zen references across runtime/docs).
-4. Web UI real-time path still lacks production push transport (currently socket fallback to polling).
-5. ADR-197 Stage 1/Stage 2 implementation is in place; full integration hardening and expanded end-to-end coverage remain open.
+1. PAL migration incompleteness (stale Zen references across runtime/docs).
+1. Web UI real-time path still lacks production push transport (currently socket fallback to polling).
+1. ADR-197 Stage 1/Stage 2 implementation is in place; full integration hardening and expanded end-to-end coverage remain open.
 
 ### P1 (High Impact, Not Immediate Blockers)
 
 1. Harden WMA/dope-memory and settle service boundary/port ownership.
-2. Resolve duplicated or ambiguous service families (`session-intelligence` vs `session_intelligence`, taskmaster variants).
-3. Add tests for peripheral services with no coverage evidence (workspace-watcher, activity-capture, voice-commands, slack-integration).
-4. Clarify `dope-query`/`conport` split and deprecate one naming contract.
-5. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (LiteLLM DB creation blocker reclassified as resolved-in-runtime).
-6. Decide and execute policy for replaying the remaining historical ConPort bundles (merge, dedupe, or archive-only import path).
-7. Preserve Leantime readiness closure with regression checks (deep-health/project-list probes and token/env compatibility coverage) so PM-plane integration remains operational.
-8. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
-9. Close the remaining full-bundle underrepresented ConPort backlog set (`167`) in phased owner-assigned packets.
-10. Execute packet #1 (`top 40`) from `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
-11. Close the live ConPort underrepresented set (`66`) from runtime backlog coverage diff and merge results into the master execution packet:
+1. Resolve duplicated or ambiguous service families (`session-intelligence` vs `session_intelligence`, taskmaster variants).
+1. Add tests for peripheral services with no coverage evidence (workspace-watcher, activity-capture, voice-commands, slack-integration).
+1. Clarify `dope-query`/`conport` split and deprecate one naming contract.
+1. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (LiteLLM DB creation blocker reclassified as resolved-in-runtime).
+1. Decide and execute policy for replaying the remaining historical ConPort bundles (merge, dedupe, or archive-only import path).
+1. Preserve Leantime readiness closure with regression checks (deep-health/project-list probes and token/env compatibility coverage) so PM-plane integration remains operational.
+1. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
+1. Close the remaining full-bundle underrepresented ConPort backlog set (`167`) in phased owner-assigned packets.
+1. Execute packet #1 (`top 40`) from `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
+1. Close the live ConPort underrepresented set (`66`) from runtime backlog coverage diff and merge results into the master execution packet:
     `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`.
-12. Execute the live true-open packet (`25`) and fold closure evidence back into the master fix stream:
+1. Execute the live true-open packet (`25`) and fold closure evidence back into the master fix stream:
     `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`.
-13. Add Serena HTTP API endpoint tests that verify workspace resolution behavior with and without `SERENA_WORKSPACE_PATH` / `WORKSPACE_PATH`.
-14. Promote `src/dopemux/memory/capture_client.py` from isolated module to explicit runtime contract (owner, ingress points, compatibility surface) and wire it into active capture paths.
-15. Publish capture-client contract guarantees (mode precedence, idempotency, and dependency-failure behavior) in active docs and pair with latency evidence from runtime benchmarks.
+1. Add Serena HTTP API endpoint tests that verify workspace resolution behavior with and without `SERENA_WORKSPACE_PATH` / `WORKSPACE_PATH`.
+1. Promote `src/dopemux/memory/capture_client.py` from isolated module to explicit runtime contract (owner, ingress points, compatibility surface) and wire it into active capture paths.
+1. Publish capture-client contract guarantees (mode precedence, idempotency, and dependency-failure behavior) in active docs and pair with latency evidence from runtime benchmarks.
 
 ### P2 (Optimization and Scale)
 
 1. End-to-end latency/SLO instrumentation for event and recovery flows.
-2. Performance regression suite for ADHD-aware adaptation logic.
-3. Documentation lifecycle controls to prevent future archaeology drift.
-4. Measure and enforce capture-path latency after one-time schema initialization change (add regression guardrails for `capture_client.emit_capture_event`).
+1. Performance regression suite for ADHD-aware adaptation logic.
+1. Documentation lifecycle controls to prevent future archaeology drift.
+1. Measure and enforce capture-path latency after one-time schema initialization change (add regression guardrails for `capture_client.emit_capture_event`).
 
 ## Phased Implementation Plan (Detailed and Prioritized)
 
@@ -456,10 +456,10 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 Goal: establish one deployable truth model.
 
 1. Define canonical service identity map (`service_id`, aliases, canonical ports, canonical compose name).
-2. Repair registry/compose alignment until `tests/arch/test_registry_compose_alignment.py` passes.
-3. Validate ADR-207 dependent-document links and stale architecture references.
-4. Fix broken links in `DESIGN_EVOLUTION_2026.md`.
-5. Freeze a signed baseline artifact in `docs/05-audit-reports/`.
+1. Repair registry/compose alignment until `tests/arch/test_registry_compose_alignment.py` passes.
+1. Validate ADR-207 dependent-document links and stale architecture references.
+1. Fix broken links in `DESIGN_EVOLUTION_2026.md`.
+1. Freeze a signed baseline artifact in `docs/05-audit-reports/`.
 
 Exit criteria:
 
@@ -472,9 +472,9 @@ Exit criteria:
 Goal: make verification deterministic.
 
 1. Standardize pytest async configuration and remove environment-dependent failures.
-2. Split coverage gates from targeted suites to allow surgical verification without disabling quality policy globally.
-3. Fix known failing tests in `services/agents/` and `tests/unit/test_taskmaster_bridge.py`.
-4. Create per-service “minimum readiness contract”: health endpoint, Docker path, smoke test, owner.
+1. Split coverage gates from targeted suites to allow surgical verification without disabling quality policy globally.
+1. Fix known failing tests in `services/agents/` and `tests/unit/test_taskmaster_bridge.py`.
+1. Create per-service “minimum readiness contract”: health endpoint, Docker path, smoke test, owner.
 
 Exit criteria:
 
@@ -486,9 +486,9 @@ Exit criteria:
 Goal: stabilize the main operating loop.
 
 1. Finalize DopeconBridge ↔ Task-Orchestrator ↔ ConPort contract versioning.
-2. Formalize WMA + dope-memory runtime boundary and ports.
-3. Harden ADR-197 Stage 1/2 implementation with end-to-end integration coverage and operational safeguards for production readiness.
-4. Verify auto-resume end-to-end across crash scenarios with deterministic tests.
+1. Formalize WMA + dope-memory runtime boundary and ports.
+1. Harden ADR-197 Stage 1/2 implementation with end-to-end integration coverage and operational safeguards for production readiness.
+1. Verify auto-resume end-to-end across crash scenarios with deterministic tests.
 
 Exit criteria:
 
@@ -500,9 +500,9 @@ Exit criteria:
 Goal: convert partial agent ecosystem to production-safe.
 
 1. Complete Zen→PAL naming and client migration across code/docs/config.
-2. Replace simulation/fallback paths in agents with real MCP integrations where intended.
-3. Define an explicit “designed-only vs implemented” boundary per agent capability.
-4. Enforce runtime flags for experimental agent features.
+1. Replace simulation/fallback paths in agents with real MCP integrations where intended.
+1. Define an explicit “designed-only vs implemented” boundary per agent capability.
+1. Enforce runtime flags for experimental agent features.
 
 Exit criteria:
 
@@ -514,9 +514,9 @@ Exit criteria:
 Goal: ship one coherent user experience.
 
 1. Choose primary UI stack for production (terminal-first or web-first with clear fallback).
-2. Fix `ui-dashboard` build and connect backend to real service signals (remove simulated random data for production mode).
-3. Standardize ADHD UX rules across CLI/TUI/Web (progressive disclosure, load-aware suppression, break prompts).
-4. Add UX regression tests for key workflows: start/resume, task routing, break intervention, context recovery.
+1. Fix `ui-dashboard` build and connect backend to real service signals (remove simulated random data for production mode).
+1. Standardize ADHD UX rules across CLI/TUI/Web (progressive disclosure, load-aware suppression, break prompts).
+1. Add UX regression tests for key workflows: start/resume, task routing, break intervention, context recovery.
 
 Exit criteria:
 
@@ -528,9 +528,9 @@ Exit criteria:
 Goal: operationally production-ready system.
 
 1. Define SLOs for core paths (event publish/consume, task sync latency, recovery latency, health probe reliability).
-2. Implement full observability contract (logs, metrics, traces, alert routing).
-3. Complete threat model and authn/authz audit for bridge/orchestrator/memory/data services.
-4. Run resilience suite: dependency outages, Redis/Postgres partial failures, retry/backoff validation.
+1. Implement full observability contract (logs, metrics, traces, alert routing).
+1. Complete threat model and authn/authz audit for bridge/orchestrator/memory/data services.
+1. Run resilience suite: dependency outages, Redis/Postgres partial failures, retry/backoff validation.
 
 Exit criteria:
 
@@ -542,8 +542,8 @@ Exit criteria:
 Goal: controlled production rollout.
 
 1. Staging soak test with realistic load and interruption scenarios.
-2. Final runbooks and operator playbooks published.
-3. Release train with rollback plan and post-release verification checklist.
+1. Final runbooks and operator playbooks published.
+1. Release train with rollback plan and post-release verification checklist.
 
 Exit criteria:
 
@@ -582,27 +582,27 @@ Exit criteria:
 ### Cross-Layer Rules
 
 1. Storage authority remains in memory/data plane.
-2. Coordination services do not become persistence silos.
-3. UI layers do not embed business logic or private state machines.
-4. Experimental features are isolated by flags and versioned contracts.
-5. Every architectural claim must map to executable evidence.
+1. Coordination services do not become persistence silos.
+1. UI layers do not embed business logic or private state machines.
+1. Experimental features are isolated by flags and versioned contracts.
+1. Every architectural claim must map to executable evidence.
 
 ## Immediate Next Work (First Sprint)
 
 1. Fix registry/compose alignment failures and naming map.
-2. Complete history-doc and architecture link-integrity recheck (ADR-207 body restored).
-3. Stabilize test harness (async plugin + targeted suite policy).
-4. Resolve `ui-dashboard` build failures.
-5. Expand integration/doc verification and operational hardening for implemented ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
-6. Define and execute replay strategy for the remaining historical ConPort bundles with dedupe guardrails.
-7. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
-8. Maintain Leantime readiness closure by re-running `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refreshing strict-closure evidence on each wave.
-9. Resolve the secondary explicit-task miss set from `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
-10. Execute and close the full-bundle underrepresented set from `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json` and refresh coverage counts.
-11. Execute and close packet #1 and regenerate packet #2 from remaining uncovered items.
-12. Add Serena HTTP API workspace-resolution tests and pin expected behavior across host/container environments.
-13. Define capture-client ownership and integration plan; wire `src/dopemux/memory/capture_client.py` into the canonical ingress path.
-14. Publish latency evidence after schema-init optimization and codify capture-client contract guarantees in active docs.
+1. Complete history-doc and architecture link-integrity recheck (ADR-207 body restored).
+1. Stabilize test harness (async plugin + targeted suite policy).
+1. Resolve `ui-dashboard` build failures.
+1. Expand integration/doc verification and operational hardening for implemented ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
+1. Define and execute replay strategy for the remaining historical ConPort bundles with dedupe guardrails.
+1. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
+1. Maintain Leantime readiness closure by re-running `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refreshing strict-closure evidence on each wave.
+1. Resolve the secondary explicit-task miss set from `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
+1. Execute and close the full-bundle underrepresented set from `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json` and refresh coverage counts.
+1. Execute and close packet #1 and regenerate packet #2 from remaining uncovered items.
+1. Add Serena HTTP API workspace-resolution tests and pin expected behavior across host/container environments.
+1. Define capture-client ownership and integration plan; wire `src/dopemux/memory/capture_client.py` into the canonical ingress path.
+1. Publish latency evidence after schema-init optimization and codify capture-client contract guarantees in active docs.
 
 ---
 

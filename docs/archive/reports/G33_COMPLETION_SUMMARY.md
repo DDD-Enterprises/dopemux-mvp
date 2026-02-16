@@ -73,16 +73,16 @@ prelude: G33_Completion_Summary (explanation) for dopemux documentation and deve
 
 **Services Fixed**:
 1. **conport** (services/conport/app.py)
-   - Added: ENVIRONMENT, SERVICE_NAME, HEALTH_CHECK_PATH
-   - Exception: MCP_SERVER_PORT (redundant with PORT)
+- Added: ENVIRONMENT, SERVICE_NAME, HEALTH_CHECK_PATH
+- Exception: MCP_SERVER_PORT (redundant with PORT)
 
-2. **dopecon-bridge** (services/dopecon-bridge/main.py)
-   - Added: PORT, ENVIRONMENT, SERVICE_NAME, HEALTH_CHECK_PATH
-   - Maintained backward compatibility with PORT_BASE
+1. **dopecon-bridge** (services/dopecon-bridge/main.py)
+- Added: PORT, ENVIRONMENT, SERVICE_NAME, HEALTH_CHECK_PATH
+- Maintained backward compatibility with PORT_BASE
 
-3. **task-orchestrator** (services/task-orchestrator/server.py)
-   - Added: ENVIRONMENT, SERVICE_NAME, HEALTH_CHECK_PATH
-   - Exception: DATABASE_URL (delegates to ConPort)
+1. **task-orchestrator** (services/task-orchestrator/server.py)
+- Added: ENVIRONMENT, SERVICE_NAME, HEALTH_CHECK_PATH
+- Exception: DATABASE_URL (delegates to ConPort)
 
 **Registry Exceptions Added** (services/registry.yaml):
 - postgres: 5 exceptions (uses native PostgreSQL config)
@@ -154,16 +154,16 @@ All exceptions documented with clear reasons:
 ## Next Steps (Future Work)
 
 1. **Phase 5: Full Ecosystem** (42 remaining services)
-   - Gradually migrate non-smoke services to contract
-   - Enable metrics endpoints across all services
+- Gradually migrate non-smoke services to contract
+- Enable metrics endpoints across all services
 
-2. **Monitoring Integration**
-   - Add Prometheus metrics support
-   - Enable health check monitoring
+1. **Monitoring Integration**
+- Add Prometheus metrics support
+- Enable health check monitoring
 
-3. **CI/CD Integration**
-   - Add env_drift_scan.py to CI pipeline
-   - Fail builds on contract violations
+1. **CI/CD Integration**
+- Add env_drift_scan.py to CI pipeline
+- Fail builds on contract violations
 
 ---
 

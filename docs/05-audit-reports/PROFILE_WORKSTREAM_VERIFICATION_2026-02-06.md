@@ -19,23 +19,23 @@ Verification of profile and auto-detection tasks from the underrepresented ConPo
 ## Summary
 
 1. Implemented: `12`
-2. Partial: `3`
-3. Unverified: `0`
+1. Partial: `3`
+1. Unverified: `0`
 
 ## Key Verifications
 
 1. `profile` command registration bug fixed:
-   - all expected lifecycle commands are now exposed (`apply`, `current`, `create`, `copy`, `edit`, `delete`, plus auto-detection/stats commands)
-   - regression test: `tests/unit/test_profile_cli_registration.py`
-2. Auto-detection flow is implemented:
-   - background service, quiet-hours logic, debounce, suggestion prompting, acceptance/decline/never branches
-3. Profile analytics and stats rendering are implemented:
-   - ConPort-backed metrics logging and terminal dashboard output
+- all expected lifecycle commands are now exposed (`apply`, `current`, `create`, `copy`, `edit`, `delete`, plus auto-detection/stats commands)
+- regression test: `tests/unit/test_profile_cli_registration.py`
+1. Auto-detection flow is implemented:
+- background service, quiet-hours logic, debounce, suggestion prompting, acceptance/decline/never branches
+1. Profile analytics and stats rendering are implemented:
+- ConPort-backed metrics logging and terminal dashboard output
 
 ## Partial Areas
 
 1. Broader metrics scope beyond switch events remains partial (current logging is switch-focused).
-2. Dashboard-level analytics beyond terminal rendering remains partial.
+1. Dashboard-level analytics beyond terminal rendering remains partial.
 
 ## Evidence Artifact
 

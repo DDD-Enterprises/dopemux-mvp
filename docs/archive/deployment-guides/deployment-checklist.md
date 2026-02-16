@@ -102,19 +102,19 @@ print('✅ Database credentials from environment')
 services:
   adhd-engine:
     environment:
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
-      - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY}
-      - SERENA_DB_PASSWORD=${SERENA_DB_PASSWORD}
+- ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+- ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY}
+- SERENA_DB_PASSWORD=${SERENA_DB_PASSWORD}
     # ... rest of config
 
   gpt-researcher:
     environment:
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+- ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     # ... rest of config
 
   dopecon-bridge:
     environment:
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+- ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     # ... rest of config
 ```
 
@@ -176,24 +176,24 @@ docker logs adhd-engine | grep "403\|401\|CORS"
 ### Step 1: Staging Environment
 
 1. Deploy to staging with production-like config
-2. Run all validation tests
-3. Monitor for 24 hours
-4. Check: No security bypasses, no credential exposure
+1. Run all validation tests
+1. Monitor for 24 hours
+1. Check: No security bypasses, no credential exposure
 
 ### Step 2: Production Deployment
 
 1. Update environment variables in production
-2. Deploy new code (git pull on code-audit branch)
-3. Restart services
-4. Run smoke tests
-5. Monitor closely for first hour
+1. Deploy new code (git pull on code-audit branch)
+1. Restart services
+1. Run smoke tests
+1. Monitor closely for first hour
 
 ### Step 3: Post-Deployment
 
 1. Verify all services healthy
-2. Check security logs (no unauthorized access)
-3. Validate CORS working (browser console, no errors)
-4. Monitor performance (no degradation)
+1. Check security logs (no unauthorized access)
+1. Validate CORS working (browser console, no errors)
+1. Monitor performance (no degradation)
 
 ---
 

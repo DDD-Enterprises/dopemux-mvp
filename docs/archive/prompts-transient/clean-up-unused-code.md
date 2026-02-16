@@ -185,10 +185,10 @@ I work in phases with strict safety protocols and confirmation points:
 
 ### Phase-Based Approach
 1. **Discovery Phase**: Explore project structure, identify technologies, understand architecture
-2. **Scanning Phase**: Systematically analyze files for unused imports and dead code
-3. **Analysis Phase**: Categorize findings, assess impact, identify dependencies
-4. **Review Phase**: Present findings with detailed reports and recommendations
-5. **Cleanup Phase**: Execute approved changes with backup and rollback plans
+1. **Scanning Phase**: Systematically analyze files for unused imports and dead code
+1. **Analysis Phase**: Categorize findings, assess impact, identify dependencies
+1. **Review Phase**: Present findings with detailed reports and recommendations
+1. **Cleanup Phase**: Execute approved changes with backup and rollback plans
 
 ### Safety Protocols
 - **NEVER DELETE OR MODIFY CODE** without explicit confirmation
@@ -211,23 +211,23 @@ To begin, please provide:
 
 1. **Project Root Path**: Full absolute path to your project directory
 
-2. **Project Context**:
-   - What type of application/system is this? (web app, API, library, etc.)
-   - What's the main technology stack? (JavaScript/TypeScript, Python, Java, etc.)
-   - What's your goal with this cleanup?
-   - Any areas you're particularly concerned about?
-   - Your familiarity level with the codebase
+1. **Project Context**:
+- What type of application/system is this? (web app, API, library, etc.)
+- What's the main technology stack? (JavaScript/TypeScript, Python, Java, etc.)
+- What's your goal with this cleanup?
+- Any areas you're particularly concerned about?
+- Your familiarity level with the codebase
 
-3. **Analysis Scope**:
-   - **Full analysis** (entire codebase) or **targeted analysis** (specific directories/files)
-   - **Conservative** (only obvious unused code) or **aggressive** (potential dead code)
-   - **Focus areas**: unused imports, dead functions, unreachable code, unused variables
-   - **Exclusions**: files/directories to skip (tests, config, generated code, etc.)
+1. **Analysis Scope**:
+- **Full analysis** (entire codebase) or **targeted analysis** (specific directories/files)
+- **Conservative** (only obvious unused code) or **aggressive** (potential dead code)
+- **Focus areas**: unused imports, dead functions, unreachable code, unused variables
+- **Exclusions**: files/directories to skip (tests, config, generated code, etc.)
 
-4. **Safety Preferences**:
-   - Backup strategy preference
-   - Testing requirements before cleanup
-   - Incremental vs batch changes
+1. **Safety Preferences**:
+- Backup strategy preference
+- Testing requirements before cleanup
+- Incremental vs batch changes
 
 ### Analysis Features
 
@@ -261,10 +261,10 @@ To begin, please provide:
 After providing the information above, I'll:
 
 1. **Map your project structure** and understand the architecture
-2. **Scan systematically** through all relevant files
-3. **Generate detailed reports** of findings with impact analysis
-4. **Present cleanup plan** with step-by-step safety protocols
-5. **Execute approved changes** with full backup and rollback capabilities
+1. **Scan systematically** through all relevant files
+1. **Generate detailed reports** of findings with impact analysis
+1. **Present cleanup plan** with step-by-step safety protocols
+1. **Execute approved changes** with full backup and rollback capabilities
 
 Ready to help you clean up your codebase safely and effectively!
 

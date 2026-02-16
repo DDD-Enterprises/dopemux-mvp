@@ -23,8 +23,8 @@ prelude: Week4 Research (reference) for dopemux documentation and developer work
 Week 4 will build **Advanced ADHD Features** on top of the production-ready Week 3 foundation. Research shows three high-impact paths:
 
 1. **Biometric Integration** (heart rate, activity tracking)
-2. **ML Energy Prediction** (attention patterns, behavioral analytics)
-3. **Knowledge Graph Integration** (ConPort-KG semantic search)
+1. **ML Energy Prediction** (attention patterns, behavioral analytics)
+1. **Knowledge Graph Integration** (ConPort-KG semantic search)
 
 **Key Finding**: ConPort-KG infrastructure **already exists** (discovered during research). Week 4 can focus on ADHD-optimized integration.
 
@@ -143,11 +143,11 @@ Week 4 will build **Advanced ADHD Features** on top of the production-ready Week
 
 **Infrastructure Discovered**:
 - ✅ **ConPort-KG exists!** (`services/conport_kg/`)
-  - Apache AGE graph database client
-  - ADHD query adapter
-  - Orchestrator integration
-  - API layer
-  - Authentication & middleware
+- Apache AGE graph database client
+- ADHD query adapter
+- Orchestrator integration
+- API layer
+- Authentication & middleware
 
 **Status**: Solid foundation, ready for enhancement
 
@@ -160,10 +160,10 @@ Week 4 will build **Advanced ADHD Features** on top of the production-ready Week
 
 **Enhancement**:
 1. Wearable API integration (Apple Health, Fitbit, Garmin)
-2. Heart rate monitoring (real-time stress detection)
-3. HRV-based stress classification
-4. Activity level tracking (sedentary detection)
-5. Sleep quality integration (fatigue prediction)
+1. Heart rate monitoring (real-time stress detection)
+1. HRV-based stress classification
+1. Activity level tracking (sedentary detection)
+1. Sleep quality integration (fatigue prediction)
 
 **Complexity**: 0.7 (API integration + data processing)
 
@@ -172,10 +172,10 @@ Week 4 will build **Advanced ADHD Features** on top of the production-ready Week
 
 **Enhancement**:
 1. Historical energy pattern analysis
-2. LSTM-based energy forecasting (30-60 min ahead)
-3. Personalized break timing prediction
-4. Attention span learning (per-user adaptation)
-5. Hyperfocus detection (early warning)
+1. LSTM-based energy forecasting (30-60 min ahead)
+1. Personalized break timing prediction
+1. Attention span learning (per-user adaptation)
+1. Hyperfocus detection (early warning)
 
 **Complexity**: 0.8 (ML model training + deployment)
 
@@ -184,10 +184,10 @@ Week 4 will build **Advanced ADHD Features** on top of the production-ready Week
 
 **Enhancement**:
 1. Task relationship mapping (dependencies, blockers)
-2. Semantic task search (natural language)
-3. Decision context graphs (track "why" decisions made)
-4. Pattern mining (successful work patterns)
-5. Agent knowledge sharing (cross-session learning)
+1. Semantic task search (natural language)
+1. Decision context graphs (track "why" decisions made)
+1. Pattern mining (successful work patterns)
+1. Agent knowledge sharing (cross-session learning)
 
 **Complexity**: 0.6 (integration, KG already built)
 
@@ -200,26 +200,26 @@ Week 4 will build **Advanced ADHD Features** on top of the production-ready Week
 **Why?**
 
 1. **Existing Infrastructure** ✅
-   - ConPort-KG already built & operational
-   - AGE graph database integrated
-   - ADHD query adapter in place
-   - Lower risk, faster delivery
+- ConPort-KG already built & operational
+- AGE graph database integrated
+- ADHD query adapter in place
+- Lower risk, faster delivery
 
-2. **High ADHD Impact** 🎯
-   - Task relationships reduce cognitive load
-   - Semantic search = no exact keyword memory needed
-   - Decision graphs = context preservation
-   - Pattern mining = learn what works
+1. **High ADHD Impact** 🎯
+- Task relationships reduce cognitive load
+- Semantic search = no exact keyword memory needed
+- Decision graphs = context preservation
+- Pattern mining = learn what works
 
-3. **Foundation for Future** 🚀
-   - Enables Options A & B later (store biometric data, ML patterns in KG)
-   - GraphRAG architecture = industry standard 2024
-   - Extensible for multi-agent coordination
+1. **Foundation for Future** 🚀
+- Enables Options A & B later (store biometric data, ML patterns in KG)
+- GraphRAG architecture = industry standard 2024
+- Extensible for multi-agent coordination
 
-4. **Reasonable Complexity** 📊
-   - Complexity: 0.6 (vs. 0.7-0.8 for A/B)
-   - Clear integration points
-   - Proven patterns (research validated)
+1. **Reasonable Complexity** 📊
+- Complexity: 0.6 (vs. 0.7-0.8 for A/B)
+- Clear integration points
+- Proven patterns (research validated)
 
 **Alternative**: Options A & B deferred to Weeks 15-16 (advanced features)
 
@@ -233,29 +233,29 @@ Week 4 will build **Advanced ADHD Features** on top of the production-ready Week
 ### Key Deliverables
 
 1. **Task Relationship Graph**
-   - Map dependencies, blockers, related tasks
-   - Visualize task context
-   - Prevent "forgetting prerequisite" issues
+- Map dependencies, blockers, related tasks
+- Visualize task context
+- Prevent "forgetting prerequisite" issues
 
-2. **Semantic Task Search**
-   - Natural language queries ("tasks about API integration")
-   - No need to remember exact titles
-   - Fuzzy matching for ADHD memory challenges
+1. **Semantic Task Search**
+- Natural language queries ("tasks about API integration")
+- No need to remember exact titles
+- Fuzzy matching for ADHD memory challenges
 
-3. **Decision Context Graphs**
-   - Track "why" decisions made
-   - Link tasks → decisions → outcomes
-   - Reduce "what was I thinking?" moments
+1. **Decision Context Graphs**
+- Track "why" decisions made
+- Link tasks → decisions → outcomes
+- Reduce "what was I thinking?" moments
 
-4. **ADHD Pattern Mining**
-   - Identify successful work patterns
-   - Energy-task combinations that worked
-   - Personalized recommendations
+1. **ADHD Pattern Mining**
+- Identify successful work patterns
+- Energy-task combinations that worked
+- Personalized recommendations
 
-5. **Agent Knowledge Sharing**
-   - Cross-session learning
-   - Task insights persist beyond single session
-   - Build institutional memory
+1. **Agent Knowledge Sharing**
+- Cross-session learning
+- Task insights persist beyond single session
+- Build institutional memory
 
 ---
 
@@ -321,9 +321,9 @@ CognitiveGuardian
 
 **Deliverables**:
 1. `cognitive_guardian_kg.py` (wrapper around ConPort-KG)
-2. Task relationship queries
-3. Basic semantic search
-4. Unit tests
+1. Task relationship queries
+1. Basic semantic search
+1. Unit tests
 
 **Output**: ~150 lines
 
@@ -334,9 +334,9 @@ CognitiveGuardian
 
 **Deliverables**:
 1. Relationship extraction from task metadata
-2. Graph construction (tasks → edges)
-3. Dependency visualization helpers
-4. Integration tests
+1. Graph construction (tasks → edges)
+1. Dependency visualization helpers
+1. Integration tests
 
 **Output**: ~120 lines
 
@@ -347,9 +347,9 @@ CognitiveGuardian
 
 **Deliverables**:
 1. Vector embedding generation (task descriptions)
-2. Semantic similarity queries
-3. Fuzzy matching for ADHD memory
-4. Orchestrator integration
+1. Semantic similarity queries
+1. Fuzzy matching for ADHD memory
+1. Orchestrator integration
 
 **Output**: ~100 lines
 
@@ -360,9 +360,9 @@ CognitiveGuardian
 
 **Deliverables**:
 1. Decision node creation (tasks → decisions)
-2. Outcome tracking (success/failure links)
-3. Context retrieval ("why did I do this?")
-4. Integration with CognitiveGuardian
+1. Outcome tracking (success/failure links)
+1. Context retrieval ("why did I do this?")
+1. Integration with CognitiveGuardian
 
 **Output**: ~130 lines
 
@@ -373,9 +373,9 @@ CognitiveGuardian
 
 **Deliverables**:
 1. ADHD pattern analyzer implementation
-2. Energy-task correlation mining
-3. Personalized recommendations
-4. Week 4 complete summary
+1. Energy-task correlation mining
+1. Personalized recommendations
+1. Week 4 complete summary
 
 **Output**: ~200 lines (code) + 600 lines (docs)
 
@@ -493,10 +493,10 @@ CognitiveGuardian
 
 **Weeks 15-16 Implementation**:
 1. Apple HealthKit integration (iOS/watchOS)
-2. Real-time heart rate monitoring
-3. HRV-based stress classification
-4. Activity tracking (sedentary alerts)
-5. Sleep quality → fatigue prediction
+1. Real-time heart rate monitoring
+1. HRV-based stress classification
+1. Activity tracking (sedentary alerts)
+1. Sleep quality → fatigue prediction
 
 **Benefit of KG Foundation**:
 - Store biometric patterns in graph
@@ -509,10 +509,10 @@ CognitiveGuardian
 
 **Weeks 15-16 Implementation**:
 1. Historical energy data collection (from Week 3-14)
-2. LSTM model training (30-60 min forecasts)
-3. Personalized break timing
-4. Attention span learning
-5. Hyperfocus early warning
+1. LSTM model training (30-60 min forecasts)
+1. Personalized break timing
+1. Attention span learning
+1. Hyperfocus early warning
 
 **Benefit of KG Foundation**:
 - Store ML patterns in graph
@@ -527,10 +527,10 @@ CognitiveGuardian
 
 **Why This Path**:
 1. ✅ Infrastructure exists (low risk)
-2. ✅ High ADHD impact (cognitive load reduction)
-3. ✅ Industry-validated architecture (GraphRAG)
-4. ✅ Foundation for future (biometric + ML ready)
-5. ✅ Reasonable complexity (0.6 vs. 0.7-0.8)
+1. ✅ High ADHD impact (cognitive load reduction)
+1. ✅ Industry-validated architecture (GraphRAG)
+1. ✅ Foundation for future (biometric + ML ready)
+1. ✅ Reasonable complexity (0.6 vs. 0.7-0.8)
 
 **Expected Outcomes**:
 - ADHD-optimized task relationship mapping
@@ -549,10 +549,10 @@ CognitiveGuardian
 ## Next Steps
 
 1. ✅ Week 4 research complete (this document)
-2. ⏭️ Explore ConPort-KG codebase (30 min)
-3. ⏭️ Create detailed technical spec (60 min)
-4. ⏭️ Build day-by-day implementation roadmap (30 min)
-5. ⏭️ Begin Day 1 implementation
+1. ⏭️ Explore ConPort-KG codebase (30 min)
+1. ⏭️ Create detailed technical spec (60 min)
+1. ⏭️ Build day-by-day implementation roadmap (30 min)
+1. ⏭️ Begin Day 1 implementation
 
 **Status**: Ready for Week 4 execution when you are!
 

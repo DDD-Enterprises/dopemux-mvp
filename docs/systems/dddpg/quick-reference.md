@@ -20,14 +20,14 @@ prelude: Quick Reference (reference) for dopemux documentation and developer wor
 
 ### If you're new, read in this order:
 1. **README_START_HERE.md** (5 min) - Navigation
-2. **EXECUTIVE_SUMMARY.md** (10 min) - Overview
-3. **WEEK4_DAY2_IMPLEMENTATION_PLAN.md** (2 min scan) - What to build
+1. **EXECUTIVE_SUMMARY.md** (10 min) - Overview
+1. **WEEK4_DAY2_IMPLEMENTATION_PLAN.md** (2 min scan) - What to build
 
 ### If you want to build today:
 1. Open **WEEK4_DAY2_IMPLEMENTATION_PLAN.md**
-2. Follow 4 phases (~95 minutes total)
-3. Phase 1 → Phase 2 → Phase 3 → Phase 4
-4. Run tests, update docs
+1. Follow 4 phases (~95 minutes total)
+1. Phase 1 → Phase 2 → Phase 3 → Phase 4
+1. Run tests, update docs
 
 ---
 

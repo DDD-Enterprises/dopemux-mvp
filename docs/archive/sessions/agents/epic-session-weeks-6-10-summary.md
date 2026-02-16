@@ -494,29 +494,29 @@ async def production_feature_workflow(feature_description: str):
 ### Why So Fast?
 
 1. **Code Reuse** (~72% average)
-   - Wrappers around Zen, Serena, ConPort
-   - Similar patterns across agents
-   - Test structure reusable
+- Wrappers around Zen, Serena, ConPort
+- Similar patterns across agents
+- Test structure reusable
 
-2. **Clear Architecture** (AGENT_ARCHITECTURE.md)
-   - Detailed specifications
-   - Reuse percentages predicted accurately
-   - Clear dependencies
+1. **Clear Architecture** (AGENT_ARCHITECTURE.md)
+- Detailed specifications
+- Reuse percentages predicted accurately
+- Clear dependencies
 
-3. **Zen Tools**:
-   - thinkdeep: Caught issues early
-   - planner: Clear implementation paths
-   - Fast models: Quick iterations
+1. **Zen Tools**:
+- thinkdeep: Caught issues early
+- planner: Clear implementation paths
+- Fast models: Quick iterations
 
-4. **MCP Tools**:
-   - Fast code navigation
-   - No infrastructure delays
-   - Deterministic testing (mocks)
+1. **MCP Tools**:
+- Fast code navigation
+- No infrastructure delays
+- Deterministic testing (mocks)
 
-5. **Focused Execution**:
-   - No context switching
-   - Clear daily goals
-   - Momentum maintained
+1. **Focused Execution**:
+- No context switching
+- Clear daily goals
+- Momentum maintained
 
 ---
 
@@ -617,10 +617,10 @@ async def production_feature_workflow(feature_description: str):
 ### Architecture Patterns Established
 
 1. **Two-Plane Coordination**: REST → EventBus translation
-2. **Authority Enforcement**: 5-rule matrix
-3. **Model Selection**: Complexity-based tiering
-4. **Task Planning**: ADHD metadata generation
-5. **Workflow Orchestration**: Template-based automation
+1. **Authority Enforcement**: 5-rule matrix
+1. **Model Selection**: Complexity-based tiering
+1. **Task Planning**: ADHD metadata generation
+1. **Workflow Orchestration**: Template-based automation
 
 ### Code Reuse Validation
 

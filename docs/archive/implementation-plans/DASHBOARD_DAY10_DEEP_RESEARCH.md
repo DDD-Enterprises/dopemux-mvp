@@ -40,19 +40,19 @@ prelude: Dashboard_Day10_Deep_Research (explanation) for dopemux documentation a
 **Mission:** Transform the dashboard from "working" to "exceptional" through:
 
 1. **PrometheusSparklineIntegration** (3-4 hours)
-   - Wire Prometheus historical data → SparklineGenerator → TrendsWidget
-   - Real-time updating sparklines (not static placeholders)
-   - Intelligent caching and error recovery
+- Wire Prometheus historical data → SparklineGenerator → TrendsWidget
+- Real-time updating sparklines (not static placeholders)
+- Intelligent caching and error recovery
 
-2. **Full Keyboard Navigation** (2-3 hours)
-   - Complete keyboard control (zero mouse dependency)
-   - Vim-inspired keybindings with visual feedback
-   - Accessible focus management (WCAG 2.1 Level AA)
+1. **Full Keyboard Navigation** (2-3 hours)
+- Complete keyboard control (zero mouse dependency)
+- Vim-inspired keybindings with visual feedback
+- Accessible focus management (WCAG 2.1 Level AA)
 
-3. **Integration Testing & Polish** (1-2 hours)
-   - End-to-end testing of sparkline updates
-   - Keyboard navigation integration tests
-   - Performance profiling under load
+1. **Integration Testing & Polish** (1-2 hours)
+- End-to-end testing of sparkline updates
+- Keyboard navigation integration tests
+- Performance profiling under load
 
 ### Why This Matters for ADHD Users
 **Research-Backed Impact:**
@@ -88,29 +88,29 @@ From "Beautiful Evidence" (Tufte, 2006):
 **Key Research Findings:**
 
 1. **Visual > Numbers for ADHD:**
-   - Pattern recognition: 3x faster with sparklines
-   - Long-term recall: 60% better after 1 week
-   - Cognitive load: ~40% reduction vs numerical tables
-   - Engagement: 2.3x longer attention on visual data
+- Pattern recognition: 3x faster with sparklines
+- Long-term recall: 60% better after 1 week
+- Cognitive load: ~40% reduction vs numerical tables
+- Engagement: 2.3x longer attention on visual data
 
-2. **Optimal Sparkline Design Principles:**
+1. **Optimal Sparkline Design Principles:**
    ```
    ✅ ADHD-OPTIMIZED:
-   - High contrast colors (Catppuccin Mocha palette)
-   - Clear trend indicators (▲ up, ▼ down, → stable)
-   - Time context labels ("Last 2h", "7 days")
-   - Smooth curves (averaging, interpolation)
-   - Consistent scales (for comparison)
+- High contrast colors (Catppuccin Mocha palette)
+- Clear trend indicators (▲ up, ▼ down, → stable)
+- Time context labels ("Last 2h", "7 days")
+- Smooth curves (averaging, interpolation)
+- Consistent scales (for comparison)
 
    ❌ ADHD-HOSTILE:
-   - Gray/muted colors (invisible to many)
-   - Unlabeled axes (cognitive overhead)
-   - Jagged/noisy data (distracting)
-   - Misleading scales (trust violation)
-   - Too many points (overwhelming)
+- Gray/muted colors (invisible to many)
+- Unlabeled axes (cognitive overhead)
+- Jagged/noisy data (distracting)
+- Misleading scales (trust violation)
+- Too many points (overwhelming)
    ```
 
-3. **Ideal Time Windows for Each Metric:**
+1. **Ideal Time Windows for Each Metric:**
    Based on ADHD working memory and attention span research:
 
    | Metric | Time Window | Why This Duration |
@@ -122,7 +122,7 @@ From "Beautiful Evidence" (Tufte, 2006):
    | Flow Events | 7 days | Long-term habit tracking |
    | Break Compliance | 24 hours | Daily routine optimization |
 
-4. **Color Psychology for ADHD:**
+1. **Color Psychology for ADHD:**
    From Nielsen Norman Group (2019) research on neurodivergent users:
 
    ```python
@@ -150,7 +150,7 @@ From "Beautiful Evidence" (Tufte, 2006):
    adhd_cognitive_load{load_category="optimal"}
    ```
 
-2. **Range Queries (for sparklines):**
+1. **Range Queries (for sparklines):**
    ```promql
    # Cognitive load over 2 hours, 5-min resolution
    adhd_cognitive_load{load_category="optimal"}[2h:5m]
@@ -162,7 +162,7 @@ From "Beautiful Evidence" (Tufte, 2006):
    increase(adhd_context_switches_total[1m])[1h:1m]
    ```
 
-3. **Aggregation for Trends:**
+1. **Aggregation for Trends:**
    ```promql
    # Average energy level over week
    avg_over_time(adhd_energy_level[7d])
@@ -194,7 +194,7 @@ Based on Prometheus 2.x documentation and real-world testing:
    }
    ```
 
-2. **Query Simplification on Timeout:**
+1. **Query Simplification on Timeout:**
    ```python
    # Fallback strategy
    if timeout:
@@ -205,7 +205,7 @@ Based on Prometheus 2.x documentation and real-world testing:
            return last_cached_sparkline
    ```
 
-3. **Batch Fetching:**
+1. **Batch Fetching:**
    ```python
    # Fetch all sparklines in one HTTP request
    queries = [
@@ -235,7 +235,7 @@ Based on Prometheus 2.x documentation and real-world testing:
        show_gap()  # Large gaps must be visible
    ```
 
-2. **Prometheus Down:**
+1. **Prometheus Down:**
    ```python
    # Always prefer stale data over no data
    try:
@@ -247,7 +247,7 @@ Based on Prometheus 2.x documentation and real-world testing:
            return "─" * width  # Empty sparkline as last resort
    ```
 
-3. **Query Timeout:**
+1. **Query Timeout:**
    ```python
    try:
        result = await prometheus.query(query, timeout=5.0)
@@ -275,16 +275,16 @@ From W3C ARIA Authoring Practices (2023):
 **ADHD-Specific Impact:**
 
 1. **Flow Preservation:**
-   - Mouse reach: 500-800ms context switch
-   - Keyboard shortcut: 50-100ms (8x faster!)
-   - ADHD developers: 67% prefer keyboard-only workflows
-   - Flow state preservation: 3x longer with keyboard nav
+- Mouse reach: 500-800ms context switch
+- Keyboard shortcut: 50-100ms (8x faster!)
+- ADHD developers: 67% prefer keyboard-only workflows
+- Flow state preservation: 3x longer with keyboard nav
 
-2. **Muscle Memory Benefits:**
-   - Vim users: 40% faster editing with keyboard nav
-   - ADHD users: prefer consistent patterns (no hunting)
-   - Learning curve: 2-3 days to fluency
-   - Long-term retention: 95% after 1 month
+1. **Muscle Memory Benefits:**
+- Vim users: 40% faster editing with keyboard nav
+- ADHD users: prefer consistent patterns (no hunting)
+- Learning curve: 2-3 days to fluency
+- Long-term retention: 95% after 1 month
 
 #### Keybinding Design Principles
 
@@ -302,14 +302,14 @@ From W3C ARIA Authoring Practices (2023):
    Why? First letter = instant mental mapping
    ```
 
-2. **Visual/Spatial Shortcuts (Second Easiest):**
+1. **Visual/Spatial Shortcuts (Second Easiest):**
    ```
    1-4 = Panel numbers (ADHD, Productivity, Services, Trends)
 
    Why? Visual layout maps to keyboard layout
    ```
 
-3. **Directional Navigation (Universal Patterns):**
+1. **Directional Navigation (Universal Patterns):**
    ```
    Tab / Shift+Tab = Next/Previous panel
    Arrow keys = Navigate within panel
@@ -319,7 +319,7 @@ From W3C ARIA Authoring Practices (2023):
    Why? Matches platform conventions (muscle memory)
    ```
 
-4. **Power User Shortcuts (Advanced):**
+1. **Power User Shortcuts (Advanced):**
    ```
    Ctrl+R = Refresh all
    Ctrl+P = Prometheus queries
@@ -363,19 +363,19 @@ From W3C ARIA Authoring Practices (2023):
    transition: border 150ms ease-in-out;
    ```
 
-2. **Logical Focus Order:**
+1. **Logical Focus Order:**
    ```
    Top → Bottom, Left → Right
 
    Dashboard Example:
-   1. ADHD State panel (top-left)
-   2. Productivity panel (top-right)
-   3. Services panel (bottom-left)
-   4. Trends panel (bottom-right)
-   5. Footer actions
+1. ADHD State panel (top-left)
+1. Productivity panel (top-right)
+1. Services panel (bottom-left)
+1. Trends panel (bottom-right)
+1. Footer actions
    ```
 
-3. **Focus Trapping in Modals:**
+1. **Focus Trapping in Modals:**
    ```python
    class Modal(Screen):
        def on_key(self, event):
@@ -386,7 +386,7 @@ From W3C ARIA Authoring Practices (2023):
                self.focus_next()
    ```
 
-4. **Skip Links for Efficiency:**
+1. **Skip Links for Efficiency:**
    ```
    ? = Help (from anywhere)
    / = Search/filter (from anywhere)
@@ -507,11 +507,11 @@ User                Dashboard           PrometheusSparkline    Prometheus    Spa
 
 **Responsibilities:**
 1. Fetch historical time-series data from Prometheus
-2. Transform data into sparkline-ready format
-3. Generate sparklines using SparklineGenerator
-4. Cache results with intelligent TTL
-5. Handle errors gracefully (fallbacks, retries)
-6. Provide reactive updates to widgets
+1. Transform data into sparkline-ready format
+1. Generate sparklines using SparklineGenerator
+1. Cache results with intelligent TTL
+1. Handle errors gracefully (fallbacks, retries)
+1. Provide reactive updates to widgets
 
 **Class Design:**
 
@@ -549,10 +549,10 @@ class PrometheusSparklineIntegration:
     Integrates Prometheus metrics with sparkline visualization.
 
     Features:
-    - Batch fetching for efficiency
-    - Intelligent caching with TTL
-    - Error recovery (fallbacks, retries)
-    - Real-time updates via callback
+- Batch fetching for efficiency
+- Intelligent caching with TTL
+- Error recovery (fallbacks, retries)
+- Real-time updates via callback
     """
 
     def __init__(
@@ -576,12 +576,12 @@ class PrometheusSparklineIntegration:
         Generate a single sparkline from Prometheus data.
 
         Process:
-        1. Check cache (if enabled)
-        2. Query Prometheus for time-series data
-        3. Generate sparkline using SparklineGenerator
-        4. Add color coding and stats
-        5. Cache result
-        6. Return SparklineResult
+1. Check cache (if enabled)
+1. Query Prometheus for time-series data
+1. Generate sparkline using SparklineGenerator
+1. Add color coding and stats
+1. Cache result
+1. Return SparklineResult
 
         Args:
             config: Sparkline configuration
@@ -829,9 +829,9 @@ for label, result in sparklines.items():
 **Components:**
 
 1. **FocusManager:** Tracks focus state across panels
-2. **KeybindingRegistry:** Maps keys to actions
-3. **VisualFeedbackController:** Highlights focused elements
-4. **AccessibilityLayer:** ARIA attributes and WCAG compliance
+1. **KeybindingRegistry:** Maps keys to actions
+1. **VisualFeedbackController:** Highlights focused elements
+1. **AccessibilityLayer:** ARIA attributes and WCAG compliance
 
 **Implementation Design:**
 
@@ -855,9 +855,9 @@ class KeybindingRegistry:
     Central registry for all keyboard shortcuts.
 
     Features:
-    - Conflict detection
-    - Context-aware bindings (modal vs main)
-    - Help text generation
+- Conflict detection
+- Context-aware bindings (modal vs main)
+- Help text generation
     """
 
     def __init__(self):
@@ -941,9 +941,9 @@ class FocusManager:
     Manages focus state across dashboard panels.
 
     Features:
-    - Logical focus order (top→bottom, left→right)
-    - Focus history (for back navigation)
-    - Visual feedback coordination
+- Logical focus order (top→bottom, left→right)
+- Focus history (for back navigation)
+- Visual feedback coordination
     """
 
     def __init__(self, app: App):
@@ -1126,10 +1126,10 @@ class VisualFeedbackController:
     Provides visual feedback for keyboard interactions.
 
     Feedback types:
-    - Focus indicators (border, glow)
-    - Action confirmation (flash)
-    - Error states (red flash)
-    - Loading states (pulse)
+- Focus indicators (border, glow)
+- Action confirmation (flash)
+- Error states (red flash)
+- Loading states (pulse)
     """
 
     async def flash_action(self, widget, color: str = "green", duration: float = 0.3):
@@ -1157,27 +1157,27 @@ class VisualFeedbackController:
 **Subtasks:**
 
 1. **Create integration class** (1 hour)
-   - [ ] Implement `PrometheusSparklineIntegration` class
-   - [ ] Add `SparklineConfig` and `SparklineResult` dataclasses
-   - [ ] Implement caching layer
-   - [ ] Add error handling
+- [ ] Implement `PrometheusSparklineIntegration` class
+- [ ] Add `SparklineConfig` and `SparklineResult` dataclasses
+- [ ] Implement caching layer
+- [ ] Add error handling
 
-2. **Implement sparkline generation** (1 hour)
-   - [ ] `generate_sparkline()` method
-   - [ ] Prometheus query construction
-   - [ ] SparklineGenerator integration
-   - [ ] Stats calculation
-   - [ ] Trend detection
+1. **Implement sparkline generation** (1 hour)
+- [ ] `generate_sparkline()` method
+- [ ] Prometheus query construction
+- [ ] SparklineGenerator integration
+- [ ] Stats calculation
+- [ ] Trend detection
 
-3. **Add batch processing** (30 min)
-   - [ ] `generate_batch()` for parallel fetching
-   - [ ] Optimize for efficiency
+1. **Add batch processing** (30 min)
+- [ ] `generate_batch()` for parallel fetching
+- [ ] Optimize for efficiency
 
-4. **Wire to TrendsWidget** (1-1.5 hours)
-   - [ ] Update TrendsWidget to use integration
-   - [ ] Add auto-update mechanism
-   - [ ] Display sparklines + stats
-   - [ ] Add loading states
+1. **Wire to TrendsWidget** (1-1.5 hours)
+- [ ] Update TrendsWidget to use integration
+- [ ] Add auto-update mechanism
+- [ ] Display sparklines + stats
+- [ ] Add loading states
 
 **Acceptance Criteria:**
 - [ ] All 6 key metrics show real Prometheus sparklines
@@ -1193,26 +1193,26 @@ class VisualFeedbackController:
 **Subtasks:**
 
 1. **Implement FocusManager** (1 hour)
-   - [ ] Create `FocusManager` class
-   - [ ] Implement focus state tracking
-   - [ ] Add panel navigation (next/prev)
-   - [ ] Visual focus indicators
+- [ ] Create `FocusManager` class
+- [ ] Implement focus state tracking
+- [ ] Add panel navigation (next/prev)
+- [ ] Visual focus indicators
 
-2. **Add KeybindingRegistry** (30 min)
-   - [ ] Create centralized binding registry
-   - [ ] Register all shortcuts
-   - [ ] Implement conflict detection
+1. **Add KeybindingRegistry** (30 min)
+- [ ] Create centralized binding registry
+- [ ] Register all shortcuts
+- [ ] Implement conflict detection
 
-3. **Update Dashboard app** (1 hour)
-   - [ ] Add BINDINGS to dashboard
-   - [ ] Implement action methods
-   - [ ] Wire focus manager
-   - [ ] Add CSS for focus indicators
+1. **Update Dashboard app** (1 hour)
+- [ ] Add BINDINGS to dashboard
+- [ ] Implement action methods
+- [ ] Wire focus manager
+- [ ] Add CSS for focus indicators
 
-4. **Create help screen** (30 min)
-   - [ ] Generate help text from registry
-   - [ ] Create HelpModal
-   - [ ] Add `?` shortcut
+1. **Create help screen** (30 min)
+- [ ] Generate help text from registry
+- [ ] Create HelpModal
+- [ ] Add `?` shortcut
 
 **Acceptance Criteria:**
 - [ ] 100% keyboard navigable (no mouse needed)
@@ -1228,19 +1228,19 @@ class VisualFeedbackController:
 **Subtasks:**
 
 1. **Write integration tests** (45 min)
-   - [ ] Test sparkline updates end-to-end
-   - [ ] Test keyboard navigation flows
-   - [ ] Test error recovery
+- [ ] Test sparkline updates end-to-end
+- [ ] Test keyboard navigation flows
+- [ ] Test error recovery
 
-2. **Performance profiling** (30 min)
-   - [ ] Profile sparkline generation
-   - [ ] Profile keyboard event handling
-   - [ ] Ensure < 100ms, < 5% CPU
+1. **Performance profiling** (30 min)
+- [ ] Profile sparkline generation
+- [ ] Profile keyboard event handling
+- [ ] Ensure < 100ms, < 5% CPU
 
-3. **Polish & bug fixes** (45 min)
-   - [ ] Fix any visual glitches
-   - [ ] Improve error messages
-   - [ ] Add logging
+1. **Polish & bug fixes** (45 min)
+- [ ] Fix any visual glitches
+- [ ] Improve error messages
+- [ ] Add logging
 
 **Acceptance Criteria:**
 - [ ] 95%+ test coverage on new code
@@ -1328,14 +1328,14 @@ Hour 7-8: Testing & polish
 
 **Files to Create:**
 1. `dopemux/integrations/prometheus_sparkline.py` - Integration class (300 lines)
-2. `dopemux/ui/focus_manager.py` - Focus management (200 lines)
-3. `dopemux/ui/keybindings.py` - Keybinding registry (150 lines)
-4. `tests/test_prometheus_sparkline.py` - Integration tests (250 lines)
-5. `tests/test_keyboard_nav.py` - Navigation tests (200 lines)
+1. `dopemux/ui/focus_manager.py` - Focus management (200 lines)
+1. `dopemux/ui/keybindings.py` - Keybinding registry (150 lines)
+1. `tests/test_prometheus_sparkline.py` - Integration tests (250 lines)
+1. `tests/test_keyboard_nav.py` - Navigation tests (200 lines)
 
 **Files to Modify:**
 1. `dopemux_dashboard.py` - Add keyboard navigation (50 lines)
-2. `dopemux_dashboard.py` - Wire sparkline integration (30 lines)
+1. `dopemux_dashboard.py` - Wire sparkline integration (30 lines)
 
 **Estimated Total:** ~900 new lines, ~80 modified lines
 
@@ -1364,30 +1364,30 @@ git push origin feature/day10-sparklines-keyboard-nav
 ### Research Sources
 
 1. **Tufte, E. (2006).** "Beautiful Evidence" - Sparklines chapter
-2. **Barkley, R. (2015).** "ADHD and Visual Information Processing"
-3. **Nielsen Norman Group (2019).** "Data Visualization for Neurodivergent Users"
-4. **Raskin, J. (2000).** "The Humane Interface" - Keyboard navigation
-5. **W3C (2023).** "ARIA Authoring Practices Guide"
-6. **WCAG 2.1 (2018).** "Web Content Accessibility Guidelines"
+1. **Barkley, R. (2015).** "ADHD and Visual Information Processing"
+1. **Nielsen Norman Group (2019).** "Data Visualization for Neurodivergent Users"
+1. **Raskin, J. (2000).** "The Humane Interface" - Keyboard navigation
+1. **W3C (2023).** "ARIA Authoring Practices Guide"
+1. **WCAG 2.1 (2018).** "Web Content Accessibility Guidelines"
 
 ### Technical Documentation
 
 1. Prometheus API: https://prometheus.io/docs/prometheus/latest/querying/api/
-2. Textual Framework: https://textual.textualize.io/
-3. Rich Library: https://rich.readthedocs.io/
-4. Python asyncio: https://docs.python.org/3/library/asyncio.html
+1. Textual Framework: https://textual.textualize.io/
+1. Rich Library: https://rich.readthedocs.io/
+1. Python asyncio: https://docs.python.org/3/library/asyncio.html
 
 ---
 
 ## 🎯 NEXT STEPS
 
 1. **Review this document** - Ensure alignment with goals
-2. **Set up environment** - Verify Prometheus is running
-3. **Create feature branch** - Git workflow
-4. **Implement Task 1** - PrometheusSparklineIntegration (3-4 hrs)
-5. **Implement Task 2** - Keyboard navigation (2-3 hrs)
-6. **Implement Task 3** - Testing & polish (1-2 hrs)
-7. **Demo & celebrate!** 🎉
+1. **Set up environment** - Verify Prometheus is running
+1. **Create feature branch** - Git workflow
+1. **Implement Task 1** - PrometheusSparklineIntegration (3-4 hrs)
+1. **Implement Task 2** - Keyboard navigation (2-3 hrs)
+1. **Implement Task 3** - Testing & polish (1-2 hrs)
+1. **Demo & celebrate!** 🎉
 
 ---
 

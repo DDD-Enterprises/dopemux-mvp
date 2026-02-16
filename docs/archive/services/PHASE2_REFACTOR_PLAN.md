@@ -14,13 +14,13 @@ prelude: Phase2_Refactor_Plan (explanation) for dopemux documentation and develo
 
 ## Completed ✅
 1. Created `reflection/reflection.py` with `ReflectionGenerator` class
-2. Created `trajectory/manager.py` with `TrajectoryManager` class
-3. Added Phase 2 methods to `chronicle/store.py`:
-   - `insert_reflection_card()`
-   - `get_reflection_cards()`
-   - `upsert_trajectory_state()`
-   - `get_trajectory_state()`
-   - `get_work_log_window()`
+1. Created `trajectory/manager.py` with `TrajectoryManager` class
+1. Added Phase 2 methods to `chronicle/store.py`:
+- `insert_reflection_card()`
+- `get_reflection_cards()`
+- `upsert_trajectory_state()`
+- `get_trajectory_state()`
+- `get_work_log_window()`
 
 ## Remaining Work
 
@@ -84,12 +84,12 @@ prelude: Phase2_Refactor_Plan (explanation) for dopemux documentation and develo
 
 **Changes needed**:
 1. **Remove inline Phase 2 code** (lines 420-650 approx)
-   - Remove `memory_generate_reflection()` method from `DopeMemoryMCPServer`
-   - Remove `memory_reflections()` method
-   - Remove `memory_trajectory()` method
-   - Remove `_update_trajectory_state()` method
+- Remove `memory_generate_reflection()` method from `DopeMemoryMCPServer`
+- Remove `memory_reflections()` method
+- Remove `memory_trajectory()` method
+- Remove `_update_trajectory_state()` method
 
-2. **Add imports**:
+1. **Add imports**:
 ```python
 from reflection.reflection import ReflectionGenerator
 from trajectory.manager import TrajectoryManager
@@ -160,14 +160,14 @@ async def lifespan(app: FastAPI):
 
 **Rename files**:
 - `tests/test_phase2_reflection_trajectory.py` →
-  - `tests/test_reflection.py` (reflection tests)
-  - `tests/test_trajectory.py` (trajectory tests)
+- `tests/test_reflection.py` (reflection tests)
+- `tests/test_trajectory.py` (trajectory tests)
 
 **Add new test file**:
 - `tests/test_pulse_emission.py` - Test pulse gating logic
-  - Verify pulse not emitted more frequently than 30min
-  - Verify session end forces pulse
-  - Verify pulse payload structure matches schema
+- Verify pulse not emitted more frequently than 30min
+- Verify session end forces pulse
+- Verify pulse payload structure matches schema
 
 ### 5. Update Documentation
 
@@ -180,18 +180,18 @@ async def lifespan(app: FastAPI):
 
 After refactoring:
 1. Run all existing tests: `pytest tests/ --no-cov`
-2. Verify imports: `python3 -c "from reflection.reflection import ReflectionGenerator; from trajectory.manager import TrajectoryManager"`
-3. Test reflection generation manually
-4. Test trajectory updates manually
-5. Test pulse emission (if eventbus enabled)
+1. Verify imports: `python3 -c "from reflection.reflection import ReflectionGenerator; from trajectory.manager import TrajectoryManager"`
+1. Test reflection generation manually
+1. Test trajectory updates manually
+1. Test pulse emission (if eventbus enabled)
 
 ## Rollback Plan
 
 If refactoring breaks:
 1. Keep backup of current `dope_memory_main.py`
-2. Verify new modules work standalone first
-3. Integrate one endpoint at a time
-4. Run tests after each integration step
+1. Verify new modules work standalone first
+1. Integrate one endpoint at a time
+1. Run tests after each integration step
 
 ## Estimated Effort
 
@@ -205,8 +205,8 @@ Total: ~2-3 hours careful work
 ## Questions Before Proceeding
 
 1. **EventBus Option**: Prefer full consumer (Option A) or simple background task (Option B)?
-2. **DopeContext indexing**: Include in Phase 2 or defer to Phase 3?
-3. **Session end detection**: How to detect session end events? (need event type or timeout heuristic?)
+1. **DopeContext indexing**: Include in Phase 2 or defer to Phase 3?
+1. **Session end detection**: How to detect session end events? (need event type or timeout heuristic?)
 
 ---
 

@@ -83,15 +83,15 @@ async def find_symbol_tool(
 
 **Functions to modify**:
 1. `find_symbol_tool` (line ~1499)
-2. `get_context_tool` (line ~1814)
-3. `find_references_tool` (line ~1913)
-4. `analyze_complexity_tool` (line ~2126)
-5. `get_reading_order_tool` (line ~2411)
-6. `find_relationships_tool` (line ~2493)
-7. `get_navigation_patterns_tool` (line ~2586)
-8. `find_similar_code_tool` (line ~4493)
-9. `find_test_file_tool` (line ~4654)
-10. `get_unified_complexity_tool` (line ~4753)
+1. `get_context_tool` (line ~1814)
+1. `find_references_tool` (line ~1913)
+1. `analyze_complexity_tool` (line ~2126)
+1. `get_reading_order_tool` (line ~2411)
+1. `find_relationships_tool` (line ~2493)
+1. `get_navigation_patterns_tool` (line ~2586)
+1. `find_similar_code_tool` (line ~4493)
+1. `find_test_file_tool` (line ~4654)
+1. `get_unified_complexity_tool` (line ~4753)
 
 **Estimated**: 2-3 hours
 
@@ -356,17 +356,17 @@ Ensure workspace metadata is preserved
 ### Phase 1: Complete First 5 (13-17 hours)
 **Order**:
 1. orchestrator (1.5h) - Quick win
-2. activity-capture (1.5h) - Quick win
-3. serena (4-6h) - High value
-4. conport_kg (6-8h) - High value
+1. activity-capture (1.5h) - Quick win
+1. serena (4-6h) - High value
+1. conport_kg (6-8h) - High value
 
 ### Phase 2: Next 5 Services (8-13 hours)
 **Order**:
 1. task-orchestrator (3-4h) - High priority
-2. session_intelligence (2-3h) - High priority
-3. mcp-client (1-2h) - Enables others
-4. adhd_engine (1-2h) - Quick
-5. intelligence (1-2h) - Quick
+1. session_intelligence (2-3h) - High priority
+1. mcp-client (1-2h) - Enables others
+1. adhd_engine (1-2h) - Quick
+1. intelligence (1-2h) - Quick
 
 ### Phase 3: Polish & Integration (4-6 hours)
 - Cross-service integration tests
@@ -394,8 +394,8 @@ For each service:
 
 **Right now, let's**:
 1. Complete orchestrator (1.5h) - Quick win
-2. Complete activity-capture (1.5h) - Quick win
-3. Then tackle serena MCP integration (4-6h)
+1. Complete activity-capture (1.5h) - Quick win
+1. Then tackle serena MCP integration (4-6h)
 
 **After that**:
 - Complete conport_kg AGE integration

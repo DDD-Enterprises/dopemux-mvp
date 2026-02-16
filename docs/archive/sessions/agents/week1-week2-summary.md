@@ -59,9 +59,9 @@ prelude: Week1 Week2 Summary (explanation) for dopemux documentation and develop
 
 **Enhanced**:
 - `services/task-orchestrator/enhanced_orchestrator.py`:
-  - `_dispatch_to_conport`: Real ConPort progress tracking
-  - `_dispatch_to_serena`: Real Serena complexity analysis
-  - `_dispatch_to_zen`: Real Zen multi-model reasoning
+- `_dispatch_to_conport`: Real ConPort progress tracking
+- `_dispatch_to_serena`: Real Serena complexity analysis
+- `_dispatch_to_zen`: Real Zen multi-model reasoning
 - `services/agents/memory_agent.py`: Real ConPort save/restore
 - `services/agents/demo_claude_code.py`: Production integration demo
 
@@ -140,20 +140,20 @@ Got: ConPort (no 'design' keyword match)
 
 **Week 1** (8 files, ~1,880 lines):
 1. services/agents/memory_agent.py
-2. services/agents/memory_agent_conport.py
-3. services/agents/test_memory_agent.py
-4. services/agents/test_real_workflow.py
-5. services/agents/README.md
-6. services/agents/INTEGRATION_GUIDE.md
-7. services/agents/QUICK_START.md
-8. services/agents/IMPLEMENTATION_PLAN.md
+1. services/agents/memory_agent_conport.py
+1. services/agents/test_memory_agent.py
+1. services/agents/test_real_workflow.py
+1. services/agents/README.md
+1. services/agents/INTEGRATION_GUIDE.md
+1. services/agents/QUICK_START.md
+1. services/agents/IMPLEMENTATION_PLAN.md
 
 **Week 2** (5 files, ~830 lines):
-9. services/agents/demo_claude_code.py
-10. services/task-orchestrator/test_week2_integration.py
-11. services/task-orchestrator/WEEK2_INTEGRATION.md
-12. claudedocs/AGENT_DEEP_DIVE_ANALYSIS_20251024.md
-13. services/agents/WEEK1_WEEK2_SUMMARY.md (this file)
+1. services/agents/demo_claude_code.py
+1. services/task-orchestrator/test_week2_integration.py
+1. services/task-orchestrator/WEEK2_INTEGRATION.md
+1. claudedocs/AGENT_DEEP_DIVE_ANALYSIS_20251024.md
+1. services/agents/WEEK1_WEEK2_SUMMARY.md (this file)
 
 **Total**: 13 files, ~2,710 lines
 
@@ -252,12 +252,12 @@ Got: ConPort (no 'design' keyword match)
 
 **Designed** (545 lines in AGENT_ARCHITECTURE.md):
 1. MemoryAgent - ✅ COMPLETE
-2. CognitiveGuardian - Week 3-4
-3. TwoPlaneOrchestrator - Week 6
-4. TaskDecomposer - Week 9
-5. DopemuxEnforcer - Week 7
-6. ToolOrchestrator - Week 8
-7. WorkflowCoordinator - Week 10
+1. CognitiveGuardian - Week 3-4
+1. TwoPlaneOrchestrator - Week 6
+1. TaskDecomposer - Week 9
+1. DopemuxEnforcer - Week 7
+1. ToolOrchestrator - Week 8
+1. WorkflowCoordinator - Week 10
 
 **Implemented**: 1/7 (14%)
 **MCP Integration**: 3/4 dispatches wired (75%)

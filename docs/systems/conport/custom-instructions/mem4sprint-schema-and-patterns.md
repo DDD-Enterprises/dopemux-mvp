@@ -15,8 +15,8 @@ prelude: "Defines entity shapes and validation rules for ConPort sprint entities
 mem4sprint_meta:
   version: "1.0.0"
   notes:
-    - "This file defines entity shapes and allowed relations."
-    - "Use these for validation before writing to ConPort."
+- "This file defines entity shapes and allowed relations."
+- "Use these for validation before writing to ConPort."
 
   entities:
     sprint_goal:
@@ -196,13 +196,13 @@ starters:
 
 routines:
   PLAN:
-    - "Load recent contexts and goals; confirm sprint_id."
-    - "Derive plan; log decisions; set active_context.mode=PLAN."
-    - "Propose entities/relations using starters; await confirm before logging."
+- "Load recent contexts and goals; confirm sprint_id."
+- "Derive plan; log decisions; set active_context.mode=PLAN."
+- "Propose entities/relations using starters; await confirm before logging."
   ACT:
-    - "Fetch active goal/subtasks; execute change."
-    - "Log progress, artifacts, tests; link via relations."
-    - "Update statuses; set active_context.mode=ACT."
+- "Fetch active goal/subtasks; execute change."
+- "Log progress, artifacts, tests; link via relations."
+- "Update statuses; set active_context.mode=ACT."
 
 # --- Relationships Diagram (Mermaid) ---
 
@@ -238,11 +238,11 @@ diagram:
 
 appendix_operational_call_recipes:
   notes:
-    - "All calls require workspace_id set to the absolute workspace path."
-    - "IDs/keys shown as placeholders; replace with actual IDs."
+- "All calls require workspace_id set to the absolute workspace path."
+- "IDs/keys shown as placeholders; replace with actual IDs."
 
   canonical_mcp_call_recipes:
-    - name: "create_doc_artifact"
+- name: "create_doc_artifact"
       call: |
         mcp0_log_custom_data({
           workspace_id: "<ABS_PATH>",
@@ -258,35 +258,35 @@ appendix_operational_call_recipes:
             provenance: { agent: "dev", tool: "mem4sprint", ts: "" }
           }
         })
-    - name: "create_rfc"
+- name: "create_rfc"
       call: |
         mcp0_log_custom_data({ workspace_id: "<ABS_PATH>", category: "rfc_doc", key: "<rfc-id>", value: { title: "<title>", link_or_path: "mdc:/tasks/rfc/<file>.md", status: "draft", tags: ["rfc"], provenance: { agent: "architect", tool: "mem4sprint", ts: "" } } })
-    - name: "record_lesson_learned"
+- name: "record_lesson_learned"
       call: |
         mcp0_log_custom_data({ workspace_id: "<ABS_PATH>", category: "retrospective", key: "<retro-id>", value: { type: "retrospective_item", content: "<lesson>", kind: "action|keep_doing|stop_doing|start_doing", status: "open|done", tags: ["lessons_learned"], provenance: { agent: "facilitator", tool: "mem4sprint", ts: "" } } })
-    - name: "update_active_context"
+- name: "update_active_context"
       call: |
         mcp0_update_active_context({ workspace_id: "<ABS_PATH>", patch_content: { mode: "PLAN|ACT", focus: "<focus>", sprint_id: "S-YYYY.MM" } })
-    - name: "link_doc_clarifies_decision"
+- name: "link_doc_clarifies_decision"
       call: |
         mcp0_link_conport_items({ workspace_id: "<ABS_PATH>", relationship_type: "CLARIFIES", source_item_type: "custom_data", source_item_id: "<artifact-id>", target_item_type: "decision", target_item_id: "<decision-id>" })
-    - name: "fetch_requirements_architecture_plan"
+- name: "fetch_requirements_architecture_plan"
       calls: |
         mcp0_search_custom_data_value_fts({ workspace_id: "<ABS_PATH>", query_term: "category:artifacts value_text:\"tag:requirements\"", limit: 5 })
         mcp0_search_custom_data_value_fts({ workspace_id: "<ABS_PATH>", query_term: "category:artifacts value_text:\"tag:architecture\"", limit: 5 })
         mcp0_search_custom_data_value_fts({ workspace_id: "<ABS_PATH>", query_term: "category:artifacts value_text:\"tag:sprint_plan\" value_text:\"sprint_id:S-YYYY.MM\"", limit: 5 })
-    - name: "query_docs_by_tag"
+- name: "query_docs_by_tag"
       call: |
         mcp0_search_custom_data_value_fts({
           workspace_id: "<ABS_PATH>",
           query_term: "category:artifacts value_text:\"tag:architecture\"",
           limit: 10
         })
-    - name: "fetch_top_recent_decisions_for_sprint"
+- name: "fetch_top_recent_decisions_for_sprint"
       calls: |
         mcp0_search_decisions_fts({ workspace_id: "<ABS_PATH>", query_term: "tags:\"S-YYYY.MM\"", limit: 5 })
 
   public_docs_policy_calls:
-    - name: "draft_quickstart_minimal"
+- name: "draft_quickstart_minimal"
       call: |
         mcp0_log_custom_data({ workspace_id: "<ABS_PATH>", category: "artifacts", key: "quickstart", value: { artifact_kind: "doc", title: "Quickstart", tags: ["public_doc","quickstart"], visibility: "public", publish_status: "DRAFT" } })

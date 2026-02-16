@@ -25,8 +25,8 @@ prelude: Dashboard_Day9_Deep_Research (explanation) for dopemux documentation an
 ### What We're Building Today
 After completing WebSocket streaming infrastructure (Day 8), we now focus on:
 1. **Enhanced Sparklines** - Real historical data from Prometheus (3-4 hrs)
-2. **Keyboard Navigation** - Full dashboard control (2-3 hrs)
-3. **Testing & Polish** - Integration testing, performance profiling (2-3 hrs)
+1. **Keyboard Navigation** - Full dashboard control (2-3 hrs)
+1. **Testing & Polish** - Integration testing, performance profiling (2-3 hrs)
 
 ### Why This Matters
 - **Sparklines:** Transform abstract numbers into visual trends (ADHD: visual > numbers)
@@ -54,30 +54,30 @@ After completing WebSocket streaming infrastructure (Day 8), we now focus on:
 
 **Key Findings:**
 1. **Visual > Numerical for ADHD brains**
-   - 3x faster pattern recognition with sparklines
-   - 60% better trend recall after 1 week
-   - Reduces cognitive load by ~40% vs tables
+- 3x faster pattern recognition with sparklines
+- 60% better trend recall after 1 week
+- Reduces cognitive load by ~40% vs tables
 
-2. **Optimal Sparkline Design for ADHD:**
+1. **Optimal Sparkline Design for ADHD:**
    ```
    ✅ DO:
-   - High contrast colors (Catppuccin works!)
-   - Clear trend direction (▲▼ arrows)
-   - Context labels ("Last 7 days")
-   - Smooth curves (not jagged)
+- High contrast colors (Catppuccin works!)
+- Clear trend direction (▲▼ arrows)
+- Context labels ("Last 7 days")
+- Smooth curves (not jagged)
 
    ❌ DON'T:
-   - Gray/muted colors (invisible to ADHD)
-   - Unlabeled axes (what am I looking at?)
-   - Too many datapoints (overwhelming)
-   - Misleading scales (trust issues)
+- Gray/muted colors (invisible to ADHD)
+- Unlabeled axes (what am I looking at?)
+- Too many datapoints (overwhelming)
+- Misleading scales (trust issues)
    ```
 
-3. **Ideal Time Windows for ADHD Metrics:**
-   - **Cognitive Load:** 2 hours (working memory context)
-   - **Task Velocity:** 7 days (weekly patterns)
-   - **Energy Level:** 24 hours (circadian rhythm)
-   - **Context Switches:** 1 hour (recent distractions)
+1. **Ideal Time Windows for ADHD Metrics:**
+- **Cognitive Load:** 2 hours (working memory context)
+- **Task Velocity:** 7 days (weekly patterns)
+- **Energy Level:** 24 hours (circadian rhythm)
+- **Context Switches:** 1 hour (recent distractions)
 
 #### Prometheus Query Research
 
@@ -120,26 +120,26 @@ quantile_over_time(0.95, adhd_context_switches[24h])
 
 **Key Findings:**
 1. **Flow Preservation for ADHD:**
-   - Mouse use → 500-800ms context switch
-   - Keyboard use → 50-100ms (8x faster!)
-   - ADHD developers: 67% prefer keyboard-only
+- Mouse use → 500-800ms context switch
+- Keyboard use → 50-100ms (8x faster!)
+- ADHD developers: 67% prefer keyboard-only
 
-2. **Optimal Keybinding Design:**
+1. **Optimal Keybinding Design:**
    ```
    ✅ PRINCIPLES:
-   - Mnemonic (f=focus, b=break, d=detail)
-   - Visual (1-4 for panels, not abstract)
-   - Muscle memory (vim/emacs patterns)
-   - Discoverable (? for help)
+- Mnemonic (f=focus, b=break, d=detail)
+- Visual (1-4 for panels, not abstract)
+- Muscle memory (vim/emacs patterns)
+- Discoverable (? for help)
 
    ❌ ANTI-PATTERNS:
-   - Ctrl+Shift+Alt+K (impossible to remember)
-   - No visual feedback (did it work?)
-   - Conflicting shortcuts (confusing)
-   - Hidden features (frustrating)
+- Ctrl+Shift+Alt+K (impossible to remember)
+- No visual feedback (did it work?)
+- Conflicting shortcuts (confusing)
+- Hidden features (frustrating)
    ```
 
-3. **Focus Management Best Practices:**
+1. **Focus Management Best Practices:**
    ```python
    # Clear focus indicators
    .panel:focus {
@@ -184,10 +184,10 @@ quantile_over_time(0.95, adhd_context_switches[24h])
 
 **Stress Test Scenarios:**
 1. **Rapid State Changes:** 100 updates/sec for 1 minute
-2. **Long Runtime:** 8 hours unattended
-3. **Resource Constraints:** Limited to 512MB RAM
-4. **Network Failures:** Disconnect WebSocket every 30s
-5. **API Errors:** 50% error rate from endpoints
+1. **Long Runtime:** 8 hours unattended
+1. **Resource Constraints:** Limited to 512MB RAM
+1. **Network Failures:** Disconnect WebSocket every 30s
+1. **API Errors:** 50% error rate from endpoints
 
 #### ADHD-Specific Testing
 
@@ -197,10 +197,10 @@ quantile_over_time(0.95, adhd_context_switches[24h])
 async def adhd_user_simulation():
     """
     Typical ADHD interaction patterns:
-    - Rapid key presses (5-10/sec)
-    - Long idle periods (5-30min)
-    - Sudden intense engagement (1-2 min bursts)
-    - Frequent mode switching
+- Rapid key presses (5-10/sec)
+- Long idle periods (5-30min)
+- Sudden intense engagement (1-2 min bursts)
+- Frequent mode switching
     """
     # Burst of activity
     for _ in range(50):
@@ -285,9 +285,9 @@ User Opens Dashboard
 class SparklineCache:
     """
     Multi-tier cache for sparkline data:
-    - L1: In-memory dict (instant)
-    - L2: Redis (5ms)
-    - L3: Prometheus (50-200ms)
+- L1: In-memory dict (instant)
+- L2: Redis (5ms)
+- L3: Prometheus (50-200ms)
     """
 
     def __init__(self):
@@ -373,10 +373,10 @@ class FocusManager:
     Manages panel focus state and visual indicators.
 
     ADHD Principles:
-    - Always clear which panel is focused
-    - Smooth transitions (no jarring jumps)
-    - Escape always available
-    - Visual + auditory feedback
+- Always clear which panel is focused
+- Smooth transitions (no jarring jumps)
+- Escape always available
+- Visual + auditory feedback
     """
 
     def __init__(self, app: "DopemuxDashboard"):
@@ -390,10 +390,10 @@ class FocusManager:
         Focus specific panel with visual feedback.
 
         Visual Changes:
-        1. Previous panel → remove focus border
-        2. New panel → add thick blue border + shadow
-        3. Smooth transition (150ms)
-        4. Scroll into view if needed
+1. Previous panel → remove focus border
+1. New panel → add thick blue border + shadow
+1. Smooth transition (150ms)
+1. Scroll into view if needed
         """
         # Unfocus previous
         if self.focused_panel_id:
@@ -688,10 +688,10 @@ async def test_memory_usage_1hour():
 
 **Tasks:**
 1. Create `sparkline_generator.py` module
-2. Implement `PrometheusQueryBuilder` class
-3. Implement `SparklineRenderer` class
-4. Write unit tests (15 tests)
-5. Test with mock data
+1. Implement `PrometheusQueryBuilder` class
+1. Implement `SparklineRenderer` class
+1. Write unit tests (15 tests)
+1. Test with mock data
 
 **Code to Write:**
 ```python
@@ -880,10 +880,10 @@ class SparklineGenerator:
 
 **Tasks:**
 1. Import `SparklineGenerator` in dashboard
-2. Update `TrendsWidget` to use real data
-3. Add auto-refresh logic (30s interval)
-4. Handle errors gracefully
-5. Test with live Prometheus
+1. Update `TrendsWidget` to use real data
+1. Add auto-refresh logic (30s interval)
+1. Handle errors gracefully
+1. Test with live Prometheus
 
 **Code Changes:**
 ```python
@@ -978,10 +978,10 @@ class TrendsWidget(Static):
 
 **Tasks:**
 1. Create `FocusManager` class
-2. Add keybindings to `DopemuxDashboard`
-3. Implement focus actions
-4. Add CSS styling for focus
-5. Test all shortcuts
+1. Add keybindings to `DopemuxDashboard`
+1. Implement focus actions
+1. Add CSS styling for focus
+1. Test all shortcuts
 
 **Code to Write:**
 ```python
@@ -1089,10 +1089,10 @@ class DopemuxDashboard(App):
 
 **Tasks:**
 1. Write integration tests (keyboard + sparklines)
-2. Performance profiling (latency, CPU, memory)
-3. 1-hour stress test
-4. Fix any bugs found
-5. Update documentation
+1. Performance profiling (latency, CPU, memory)
+1. 1-hour stress test
+1. Fix any bugs found
+1. Update documentation
 
 **Testing Commands:**
 ```bash
@@ -1184,18 +1184,18 @@ mprof plot
 
 ### Research Papers
 1. Tufte, E. (2006). "Beautiful Evidence" - Sparklines chapter
-2. Barkley, R. (2015). "ADHD and Visual Information Processing"
-3. Nielsen Norman Group (2019). "Data Visualization for Neurodivergent Users"
+1. Barkley, R. (2015). "ADHD and Visual Information Processing"
+1. Nielsen Norman Group (2019). "Data Visualization for Neurodivergent Users"
 
 ### Technical Documentation
 1. [Prometheus Query API](https://prometheus.io/docs/prometheus/latest/querying/api/)
-2. [Textual Keyboard Events](https://textual.textualize.io/guide/input/#keyboard-input)
-3. [WAI-ARIA 1.2 Authoring Practices](https://www.w3.org/TR/wai-aria-practices-1.2/)
+1. [Textual Keyboard Events](https://textual.textualize.io/guide/input/#keyboard-input)
+1. [WAI-ARIA 1.2 Authoring Practices](https://www.w3.org/TR/wai-aria-practices-1.2/)
 
 ### Code Examples
 1. [Sparklines in Python](https://github.com/deeplook/sparklines)
-2. [Textual Focus Management](https://github.com/Textualize/textual/discussions)
-3. [Prometheus Client Examples](https://github.com/prometheus/client_python/tree/master/examples)
+1. [Textual Focus Management](https://github.com/Textualize/textual/discussions)
+1. [Prometheus Client Examples](https://github.com/prometheus/client_python/tree/master/examples)
 
 ---
 

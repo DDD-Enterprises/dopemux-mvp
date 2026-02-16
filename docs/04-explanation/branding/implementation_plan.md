@@ -18,24 +18,24 @@ prelude: Implementation Plan (explanation) for dopemux documentation and develop
 We will create `src/dopemux/ui/branding.py` to house the brand logic.
 
 ### Components:
-*   **Color Palette**: `ink.black`, `ritual.cyan`, `server.mint`, `gilt.edge`, etc.
-*   **Chips**: `[LIVE]`, `[BLOCKER]`, `[LOGGED]`, `[AFTERCARE]`, `[CONSENT CHECK?]`.
-*   **RitualConsole**: A `rich.console.Console` subclass that:
-  * Applies the global theme.
-  * Prefixes output with `[LIVE]` by default.
-  * Handles `brand_status()` calls.
-*   **Copy Library**:
-  * `ROASTS`: Self-deprecating one-liners.
-  * `AFTERCARE`: Hydration reminders and reassurance.
+* **Color Palette**: `ink.black`, `ritual.cyan`, `server.mint`, `gilt.edge`, etc.
+* **Chips**: `[LIVE]`, `[BLOCKER]`, `[LOGGED]`, `[AFTERCARE]`, `[CONSENT CHECK?]`.
+* **RitualConsole**: A `rich.console.Console` subclass that:
+* Applies the global theme.
+* Prefixes output with `[LIVE]` by default.
+* Handles `brand_status()` calls.
+* **Copy Library**:
+* `ROASTS`: Self-deprecating one-liners.
+* `AFTERCARE`: Hydration reminders and reassurance.
 
 ## 2. Inject into CLI (`src/dopemux/cli.py`)
 We will refactor `cli.py` to use `RitualConsole`.
 
 ### Changes:
-*   **Replace Console**: Switch `console = Console()` to `console = RitualConsole()`.
-*   **Update Banner**: Add the "Ø" ascii art banner to the `cli()` entry point.
-*   **Exit Hook**: Add an `atexit` or `finally` block to the main execution to print an `[AFTERCARE]` message.
-*   **Status Messages**: Replace generic `console.print` with `brand_status` where appropriate (e.g., successful initialization, context loading).
+* **Replace Console**: Switch `console = Console()` to `console = RitualConsole()`.
+* **Update Banner**: Add the "Ø" ascii art banner to the `cli()` entry point.
+* **Exit Hook**: Add an `atexit` or `finally` block to the main execution to print an `[AFTERCARE]` message.
+* **Status Messages**: Replace generic `console.print` with `brand_status` where appropriate (e.g., successful initialization, context loading).
 
 ## 3. Persona "Glow-Up"
 We will update `src/dopemux/ui/dashboard.py` (if feasible) to use the new color palette for TUI elements.

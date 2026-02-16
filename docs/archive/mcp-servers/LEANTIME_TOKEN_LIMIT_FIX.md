@@ -36,9 +36,9 @@ Implemented **MCP boundary enforcement** - cleanest architectural approach (foll
 ### Why MCP Boundary?
 
 1. **Single Point of Control**: All tools funnel through `call_tool()` → return TextContent
-2. **Tool-Agnostic**: Works for all 8 tools without modifying individual implementations
-3. **Maintainable**: Future tools automatically inherit protection
-4. **Transparent**: Adds truncation metadata without changing tool logic
+1. **Tool-Agnostic**: Works for all 8 tools without modifying individual implementations
+1. **Maintainable**: Future tools automatically inherit protection
+1. **Transparent**: Adds truncation metadata without changing tool logic
 
 ### Implementation Strategy
 
@@ -83,25 +83,25 @@ return enforce_token_budget_on_text_content(result_content, name, max_tokens=SAF
    SAFE_TOKEN_BUDGET = 9000  # 10% headroom
    ```
 
-2. **Token Utility** (lines 27-34):
+1. **Token Utility** (lines 27-34):
    ```python
    def estimate_tokens(text: str) -> int:
        """Conservative token estimation: 1 token ≈ 4 chars."""
        return len(str(text)) // 4
    ```
 
-3. **Budget Enforcement** (lines 36-80):
-   - `enforce_token_budget_on_text_content()` function
-   - Parses TextContent.text
-   - Truncates if over budget
-   - Adds metadata for transparency
+1. **Budget Enforcement** (lines 36-80):
+- `enforce_token_budget_on_text_content()` function
+- Parses TextContent.text
+- Truncates if over budget
+- Adds metadata for transparency
 
 **1 modification**:
 
 1. **Apply at MCP Boundary** (lines 257-328):
-   - Refactored `call_tool()` to collect result_content first
-   - Apply enforcement before return: `return enforce_token_budget_on_text_content(...)`
-   - Applied to both success and error paths
+- Refactored `call_tool()` to collect result_content first
+- Apply enforcement before return: `return enforce_token_budget_on_text_content(...)`
+- Applied to both success and error paths
 
 ## 📊 Performance Impact
 

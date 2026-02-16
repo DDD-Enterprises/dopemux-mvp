@@ -135,7 +135,7 @@ that might be worth reviving:
    Idle: 14 days
    → Highly relevant - consider resuming this instead?
 
-2. 👀 Session management
+1. 👀 Session management
    Relevance: 58% (2 overlapping files, from this month)
    Idle: 21 days
    → Review first - might save work

@@ -40,37 +40,37 @@ The original handoff document focused on 5 core services. This session went **ab
 
 ### Core Services (8 → Complete)
 1. ✅ **DopeconBridge** - Central gateway service
-2. ✅ **ADHD Engine** - Real-time accommodation system
-3. ✅ **Serena v2** - Cognitive reasoning engine
-4. ✅ **Task-Orchestrator** - Multi-agent task coordination
-5. ✅ **Voice Commands** - Spoken task management
-6. ✅ **GPT-Researcher** - Autonomous research agent
-7. ✅ **Dope-Context** - Semantic code search
-8. ✅ **Activity Capture** - User activity monitoring
+1. ✅ **ADHD Engine** - Real-time accommodation system
+1. ✅ **Serena v2** - Cognitive reasoning engine
+1. ✅ **Task-Orchestrator** - Multi-agent task coordination
+1. ✅ **Voice Commands** - Spoken task management
+1. ✅ **GPT-Researcher** - Autonomous research agent
+1. ✅ **Dope-Context** - Semantic code search
+1. ✅ **Activity Capture** - User activity monitoring
 
 ### PM-Plane Services (3 → Complete)
 1. ✅ **Leantime Bridge** - Project management MCP server
-2. ✅ **Task-Master** - Task execution engine
-3. ✅ **Taskmaster-MCP** - MCP client for task management
+1. ✅ **Task-Master** - Task execution engine
+1. ✅ **Taskmaster-MCP** - MCP client for task management
 
 ### Experimental/Research (3 → Documented)
 1. ⚠️ **ML Risk Assessment** - Marked as legacy (deprecated)
-2. ⚠️ **Claude-Context** - Superseded by dope-context
-3. ✅ **Genetic Agent** - Enhanced with bridge adapter
+1. ⚠️ **Claude-Context** - Superseded by dope-context
+1. ✅ **Genetic Agent** - Enhanced with bridge adapter
 
 ### Infrastructure & Tooling (6 → Complete)
 1. ✅ **Shared Client Library** - `services/shared/dopecon_bridge_client/`
-2. ✅ **Docker Compose** - All compose files updated
-3. ✅ **Environment Templates** - All .env files updated
-4. ✅ **CLI Integration** - `dopemux bridge` commands
-5. ✅ **Makefile** - Bridge management targets
-6. ✅ **Documentation** - Comprehensive guides created
+1. ✅ **Docker Compose** - All compose files updated
+1. ✅ **Environment Templates** - All .env files updated
+1. ✅ **CLI Integration** - `dopemux bridge` commands
+1. ✅ **Makefile** - Bridge management targets
+1. ✅ **Documentation** - Comprehensive guides created
 
 ### Additional Coverage (Not in Original Plan)
 1. ✅ **Claude Code Hooks** - Event publishing on file changes
-2. ✅ **Global Configs** - Updated all config profiles
-3. ✅ **README.md** - Updated architecture section
-4. ✅ **claudedocs/** - Updated all technical documentation
+1. ✅ **Global Configs** - Updated all config profiles
+1. ✅ **README.md** - Updated architecture section
+1. ✅ **claudedocs/** - Updated all technical documentation
 
 **Total**: 24 components fully integrated or documented
 
@@ -83,29 +83,29 @@ The original handoff document focused on 5 core services. This session went **ab
 #### [`DOPECONBRIDGE_COMPLETE_INTEGRATION.md`](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)
 - **16,013 characters**
 - **Comprehensive reference** covering:
-  - Architectural invariant & two-plane model
-  - Complete migration status table
-  - Shared client library documentation
-  - Service-specific adapter patterns
-  - Environment configuration
-  - Docker Compose integration
-  - CLI commands
-  - Testing strategy
-  - Validation checklist
-  - Rollback plan
-  - Performance considerations
-  - Security model
-  - Monitoring & observability
-  - Future enhancements roadmap
+- Architectural invariant & two-plane model
+- Complete migration status table
+- Shared client library documentation
+- Service-specific adapter patterns
+- Environment configuration
+- Docker Compose integration
+- CLI commands
+- Testing strategy
+- Validation checklist
+- Rollback plan
+- Performance considerations
+- Security model
+- Monitoring & observability
+- Future enhancements roadmap
 
 #### [`DOPECONBRIDGE_QUICK_START.md`](./DOPECONBRIDGE_QUICK_START.md)
 - **4,587 characters**
 - **Quick reference** for:
-  - 5-minute setup guide
-  - CLI command reference
-  - Python usage examples
-  - Troubleshooting guide
-  - Links to full docs
+- 5-minute setup guide
+- CLI command reference
+- Python usage examples
+- Troubleshooting guide
+- Links to full docs
 
 #### Updated: [`README.md`](./README.md)
 - Added DopeconBridge to key features
@@ -115,15 +115,15 @@ The original handoff document focused on 5 core services. This session went **ab
 
 #### Updated: [`Makefile`](./Makefile)
 - **18 new targets** for DopeconBridge management:
-  - `make bridge-status` - Health check
-  - `make bridge-stats` - Usage statistics
-  - `make bridge-test-event` - Publish test event
-  - `make bridge-logs` - Tail logs
-  - `make bridge-up` - Start bridge
-  - `make bridge-down` - Stop bridge
-  - `make bridge-restart` - Restart bridge
-  - `make bridge-validate` - Run validation
-  - `make bridge-client-test` - Run client tests
+- `make bridge-status` - Health check
+- `make bridge-stats` - Usage statistics
+- `make bridge-test-event` - Publish test event
+- `make bridge-logs` - Tail logs
+- `make bridge-up` - Start bridge
+- `make bridge-down` - Stop bridge
+- `make bridge-restart` - Restart bridge
+- `make bridge-validate` - Run validation
+- `make bridge-client-test` - Run client tests
 
 ### 2. CLI Integration (`src/dopemux/cli.py`)
 
@@ -150,8 +150,8 @@ dopemux bridge data save/get        # Custom data management
 
 #### Updated Files:
 1. `.env.example` - Added DopeconBridge section
-2. `.env.dopecon_bridge.example` - Complete reference template
-3. All service `.env.example` files
+1. `.env.dopecon_bridge.example` - Complete reference template
+1. All service `.env.example` files
 
 #### New Environment Variables:
 ```bash
@@ -446,11 +446,11 @@ JSON logs include:
 If DopeconBridge fails in production:
 
 1. **Immediate**: Stop bridge service
-2. **Fallback**: Services will error (expected)
-3. **Recovery Options**:
-   - Restart bridge with increased resources
-   - Enable legacy CONPORT_URL fallback (if implemented)
-   - Emergency patch to direct ConPort access (last resort)
+1. **Fallback**: Services will error (expected)
+1. **Recovery Options**:
+- Restart bridge with increased resources
+- Enable legacy CONPORT_URL fallback (if implemented)
+- Emergency patch to direct ConPort access (last resort)
 
 **Prevention**: Always test in staging first
 

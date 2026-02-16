@@ -88,26 +88,26 @@ That's it! Everything else is automatic.
 
 **Deliverables**:
 1. **Unified Workspace Detection** (`src/dopemux/workspace_detection.py`)
-   - Single source of truth for all components
-   - 5-layer fallback system
-   - Works for main repo and worktrees
-   - < 1ms detection time
+- Single source of truth for all components
+- 5-layer fallback system
+- Works for main repo and worktrees
+- < 1ms detection time
 
-2. **Shared Bash Script** (`src/dopemux/export_workspace_env.sh`)
-   - Eliminates duplicate code (90 lines removed)
-   - Consistent env var export
-   - Used by all MCP wrapper scripts
+1. **Shared Bash Script** (`src/dopemux/export_workspace_env.sh`)
+- Eliminates duplicate code (90 lines removed)
+- Consistent env var export
+- Used by all MCP wrapper scripts
 
-3. **Bug Fix: Worktree Detection**
-   - **Critical Issue**: Old code checked for `.git` directory
-   - **Problem**: Worktrees have `.git` as FILE, not directory
-   - **Solution**: Use `git rev-parse --show-toplevel` (works for both)
-   - Fixed in: dope-context, Serena, all wrappers
+1. **Bug Fix: Worktree Detection**
+- **Critical Issue**: Old code checked for `.git` directory
+- **Problem**: Worktrees have `.git` as FILE, not directory
+- **Solution**: Use `git rev-parse --show-toplevel` (works for both)
+- Fixed in: dope-context, Serena, all wrappers
 
-4. **Comprehensive Test Suite** (`tests/test_workspace_detection.py`)
-   - 25 tests covering all scenarios
-   - 20/21 critical tests passing
-   - Validates all Phase 1 success metrics
+1. **Comprehensive Test Suite** (`tests/test_workspace_detection.py`)
+- 25 tests covering all scenarios
+- 20/21 critical tests passing
+- Validates all Phase 1 success metrics
 
 **Metrics**:
 - Manual steps: 5 → 3
@@ -120,24 +120,24 @@ That's it! Everything else is automatic.
 
 **Deliverables**:
 1. **WorktreeAutoConfigurator** (`src/dopemux/auto_configurator.py`)
-   - Intelligent change detection (< 50ms)
-   - Automatic backups before changes
-   - User customization preservation
-   - Legacy mode support (rollback option)
+- Intelligent change detection (< 50ms)
+- Automatic backups before changes
+- User customization preservation
+- Legacy mode support (rollback option)
 
-2. **Integration Points**:
-   - `dopemux start`: Auto-configures before launching
-   - `dwt <branch>`: Auto-configures during switch
-   - Both use same configurator (DRY principle)
+1. **Integration Points**:
+- `dopemux start`: Auto-configures before launching
+- `dwt <branch>`: Auto-configures during switch
+- Both use same configurator (DRY principle)
 
-3. **Workspace-Aware MCP Servers**:
-   - **ConPort**: Updates `--workspace_id` argument
-   - **Dope-Context**: Updates script path
-   - **Serena**: Auto-detects via env vars (no config needed)
+1. **Workspace-Aware MCP Servers**:
+- **ConPort**: Updates `--workspace_id` argument
+- **Dope-Context**: Updates script path
+- **Serena**: Auto-detects via env vars (no config needed)
 
-4. **Global MCP Servers** (unchanged):
-   - PAL apilookup, Zen, GPT-Researcher, Exa, Desktop-Commander
-   - These don't need workspace-specific configuration
+1. **Global MCP Servers** (unchanged):
+- PAL apilookup, Zen, GPT-Researcher, Exa, Desktop-Commander
+- These don't need workspace-specific configuration
 
 **Metrics**:
 - Manual steps: 3 → 0 (100% automation)
@@ -150,28 +150,28 @@ That's it! Everything else is automatic.
 
 **Deliverables**:
 1. **Worktree Template System** (`src/dopemux/worktree_templates.py`)
-   - Intelligent file copying from main repo
-   - Preserves user customizations
-   - Respects .gitignore (no build artifacts)
-   - Skips personal data (.env, secrets)
+- Intelligent file copying from main repo
+- Preserves user customizations
+- Respects .gitignore (no build artifacts)
+- Skips personal data (.env, secrets)
 
-2. **Comprehensive Diagnostics** (`src/dopemux/worktree_diagnostics.py`)
-   - Command: `dopemux doctor --worktree`
-   - 4 check categories (Phase 1, 2, 3 components)
-   - Visual indicators: ✅ ⚠️ ❌
-   - < 1 second execution
+1. **Comprehensive Diagnostics** (`src/dopemux/worktree_diagnostics.py`)
+- Command: `dopemux doctor --worktree`
+- 4 check categories (Phase 1, 2, 3 components)
+- Visual indicators: ✅ ⚠️ ❌
+- < 1 second execution
 
-3. **ADHD-Friendly Errors** (`src/dopemux/adhd_error_messages.py`)
-   - Clear structure: Problem → Why → Fix → Context
-   - Visual hierarchy (emojis, colors)
-   - 9 predefined error types
-   - Step-by-step fixes
+1. **ADHD-Friendly Errors** (`src/dopemux/adhd_error_messages.py`)
+- Clear structure: Problem → Why → Fix → Context
+- Visual hierarchy (emojis, colors)
+- 9 predefined error types
+- Step-by-step fixes
 
-4. **Shell Auto-Install** (`src/dopemux/shell_integration_installer.py`)
-   - Opt-in prompts (easy to accept)
-   - Auto-detection (bash/zsh)
-   - Safety backups
-   - One-click installation
+1. **Shell Auto-Install** (`src/dopemux/shell_integration_installer.py`)
+- Opt-in prompts (easy to accept)
+- Auto-detection (bash/zsh)
+- Safety backups
+- One-click installation
 
 **Metrics**:
 - Cognitive load: 2/10 → 1/10
@@ -185,18 +185,18 @@ That's it! Everything else is automatic.
 Priority order (first match wins):
 
 1. **Environment Variable** (`DOPEMUX_WORKSPACE_ROOT`)
-   - Explicit user override
-   - Highest priority
+- Explicit user override
+- Highest priority
 
-2. **Git Command** (`git rev-parse --show-toplevel`)
-   - Works for main repo AND worktrees
-   - **Critical fix**: Previous `.git` directory checks failed on worktrees
+1. **Git Command** (`git rev-parse --show-toplevel`)
+- Works for main repo AND worktrees
+- **Critical fix**: Previous `.git` directory checks failed on worktrees
 
-3. **Project Markers** (pyproject.toml, package.json, etc.)
-   - Fallback for non-git projects
+1. **Project Markers** (pyproject.toml, package.json, etc.)
+- Fallback for non-git projects
 
-4. **Current Directory**
-   - Last resort fallback
+1. **Current Directory**
+- Last resort fallback
 
 ### Auto-Configuration Flow
 
@@ -213,8 +213,8 @@ Check if MCP config needs update
     Create backup of .claude.json
     ↓
     Update workspace-aware MCP servers:
-      - ConPort: --workspace_id argument
-      - Dope-Context: script path
+- ConPort: --workspace_id argument
+- Dope-Context: script path
     ↓
     Atomic write (safe update)
     ↓
@@ -503,35 +503,35 @@ export DOPEMUX_WORKSPACE_ROOT=/custom/path
 ### For ADHD Users
 
 1. **Use `dopemux doctor --worktree`** regularly
-   - Quick health check
-   - Instant feedback
-   - Catches issues early
+- Quick health check
+- Instant feedback
+- Catches issues early
 
-2. **Trust auto-configuration**
-   - Don't manually edit .claude.json for worktrees
-   - Let the system handle it
+1. **Trust auto-configuration**
+- Don't manually edit .claude.json for worktrees
+- Let the system handle it
 
-3. **Use shell integration**
-   - `dwt` is faster than `cd` + manual config
-   - Fuzzy matching reduces cognitive load
+1. **Use shell integration**
+- `dwt` is faster than `cd` + manual config
+- Fuzzy matching reduces cognitive load
 
-4. **Check diagnostics when stuck**
-   - Run with `-v` for details
-   - Follow actionable fix suggestions
+1. **Check diagnostics when stuck**
+- Run with `-v` for details
+- Follow actionable fix suggestions
 
 ### For Teams
 
 1. **Document custom patterns**
-   - If you extend template system
-   - If you add custom MCP servers
+- If you extend template system
+- If you add custom MCP servers
 
-2. **Share shell integration**
-   - Include in onboarding docs
-   - One command setup
+1. **Share shell integration**
+- Include in onboarding docs
+- One command setup
 
-3. **Use worktrees for isolation**
-   - Each developer can have multiple instances
-   - No conflicts, no manual coordination
+1. **Use worktrees for isolation**
+- Each developer can have multiple instances
+- No conflicts, no manual coordination
 
 ## FAQ
 
@@ -1086,10 +1086,10 @@ export DOPEMUX_WORKSPACE_ID="/Users/hue/code/dopemux-mvp"
 ### Recommended Workflow
 
 1. **One feature = One worktree**
-2. **One terminal per worktree** (keep open)
-3. **Descriptive instance IDs**
-4. **Cleanup after merging**
-5. **Use dwt for switching** (not cd)
+1. **One terminal per worktree** (keep open)
+1. **Descriptive instance IDs**
+1. **Cleanup after merging**
+1. **Use dwt for switching** (not cd)
 
 ---
 
@@ -1193,10 +1193,10 @@ NEW (Working):
 When you run `dopemux shell-setup bash >> ~/.bashrc`, you get:
 
 1. **dopemux_switch()** - Main function for switching
-2. **dwt** - Convenient alias (dwt = dopemux worktree)
-3. **dwtls** - Quick worktree listing
-4. **dwtcur** - Show current worktree
-5. **Tab completion** - Auto-complete branch names
+1. **dwt** - Convenient alias (dwt = dopemux worktree)
+1. **dwtls** - Quick worktree listing
+1. **dwtcur** - Show current worktree
+1. **Tab completion** - Auto-complete branch names
 
 ---
 
@@ -1420,21 +1420,21 @@ dwt docs && code .
 ### Files Modified
 
 1. **src/dopemux/worktree_manager_enhanced.py**
-   - Added: `get_worktree_path_for_switch()` method
-   - Provides path lookup without directory change
+- Added: `get_worktree_path_for_switch()` method
+- Provides path lookup without directory change
 
-2. **src/dopemux/worktree_commands.py**
-   - Added: `get_worktree_path()` wrapper function
+1. **src/dopemux/worktree_commands.py**
+- Added: `get_worktree_path()` wrapper function
 
-3. **src/dopemux/cli.py**
-   - Added: `worktrees switch-path` command (machine-readable output)
-   - Added: `shell-setup` command (installation helper)
-   - Updated: `worktrees switch` with deprecation warning
+1. **src/dopemux/cli.py**
+- Added: `worktrees switch-path` command (machine-readable output)
+- Added: `shell-setup` command (installation helper)
+- Updated: `worktrees switch` with deprecation warning
 
-4. **scripts/shell_integration.sh** (NEW)
-   - Shell functions for bash/zsh
-   - Tab completion support
-   - ADHD-friendly aliases
+1. **scripts/shell_integration.sh** (NEW)
+- Shell functions for bash/zsh
+- Tab completion support
+- ADHD-friendly aliases
 
 ### Why This Solution
 
@@ -1459,8 +1459,8 @@ dwt docs && code .
 ## Next Steps
 
 1. **Install**: `dopemux shell-setup bash >> ~/.bashrc && source ~/.bashrc`
-2. **Test**: `dwt ui-build && pwd`
-3. **Use**: Enjoy proper worktree switching!
+1. **Test**: `dwt ui-build && pwd`
+1. **Use**: Enjoy proper worktree switching!
 
 For questions or issues, see the main Dopemux documentation or run:
 ```bash
@@ -1491,21 +1491,21 @@ Isolation rules:
 - Event publishing: decision/progress events to DopeconBridge.
 - Auto seeding for new worktrees: first context read seeds from shared context if present.
 - Auto fork (enabled): first progress read copies PLANNED/IN_PROGRESS items from shared into the new instance.
-  - Toggle: `DOPEMUX_AUTO_FORK_PROGRESS=1` (default on)
+- Toggle: `DOPEMUX_AUTO_FORK_PROGRESS=1` (default on)
 
 ### Instance Management Endpoints
 
 - `POST /api/instance/fork`
-  - Body: `{ "workspace_id": "...", "source_instance": null|"main"|"...", "target_instance": "optional" }`
-  - Copies PLANNED/IN_PROGRESS progress from source (shared or instance) to the target instance.
+- Body: `{ "workspace_id": "...", "source_instance": null|"main"|"...", "target_instance": "optional" }`
+- Copies PLANNED/IN_PROGRESS progress from source (shared or instance) to the target instance.
 
 - `POST /api/progress/promote`
-  - Body: `{ "progress_id": "..." }`
-  - Promotes an instance-local progress entry to shared (clears instance_id).
+- Body: `{ "progress_id": "..." }`
+- Promotes an instance-local progress entry to shared (clears instance_id).
 
 - `POST /api/progress/promote_all`
-  - Body: `{ "workspace_id": "..." }`
-  - Promotes all instance-local PLANNED/IN_PROGRESS entries to shared for the current instance.
+- Body: `{ "workspace_id": "..." }`
+- Promotes all instance-local PLANNED/IN_PROGRESS entries to shared for the current instance.
 
 ## Dope Decision Graph (DDG)
 
@@ -1513,9 +1513,9 @@ Isolation rules:
 - Bridge: HTTP service that ingests ConPort events, provides endpoints, and mirrors data.
 - Relational mirrors: `ddg_decisions`, `ddg_progress` for lightweight search/analytics.
 - Graph upserts (best-effort): Project nodes, Decision nodes, Progress nodes, and edges:
-  - `(:Decision)-[:BELONGS_TO]->(:Project)`
-  - `(:Progress)-[:BELONGS_TO]->(:Project)`
-  - `(:Progress)-[:RELATES_TO]->(:Decision)` when linked
+- `(:Decision)-[:BELONGS_TO]->(:Project)`
+- `(:Progress)-[:BELONGS_TO]->(:Project)`
+- `(:Progress)-[:RELATES_TO]->(:Decision)` when linked
 
 ### DDG Endpoints
 
@@ -1544,9 +1544,9 @@ AGE config env (optional): `AGE_HOST`, `AGE_PORT`, `AGE_USER`, `AGE_PASSWORD`, `
 
 - Global config wires all Docker MCP servers (stdio/SSE) automatically.
 - Project config is auto-wired for ConPort per worktree; `.claude/claude_config.json` is maintained by:
-  - `dopemux start` (auto)
-  - `scripts/stack_up_all.sh` (auto)
-  - `.git/hooks/post-checkout` (auto-installed)
+- `dopemux start` (auto)
+- `scripts/stack_up_all.sh` (auto)
+- `.git/hooks/post-checkout` (auto-installed)
 
 Server names in Claude:
 - Global: `mas-sequential-thinking`, `zen`, `pal`, `serena`, `exa`, `leantime-bridge`, `task-orchestrator`, `gptr-researcher-stdio`.
@@ -1554,14 +1554,14 @@ Server names in Claude:
 
 Optional DDG MCP tools (global): `ddg-mcp` (stdio)
 - Tools:
-  - `related_decisions(decision_id, k)`
-  - `related_text(query, workspace_id, k)`
-  - `instance_diff(workspace_id, a, b, kind)`
-  - `recent_decisions(workspace_id, limit)`
-  - `search_decisions(q, workspace_id, limit)`
-  - `conport_fork_instance(workspace_id, source_instance, target_instance, conport_url)`
-  - `conport_promote(progress_id, conport_url)`
-  - `conport_promote_all(workspace_id, conport_url)`
+- `related_decisions(decision_id, k)`
+- `related_text(query, workspace_id, k)`
+- `instance_diff(workspace_id, a, b, kind)`
+- `recent_decisions(workspace_id, limit)`
+- `search_decisions(q, workspace_id, limit)`
+- `conport_fork_instance(workspace_id, source_instance, target_instance, conport_url)`
+- `conport_promote(progress_id, conport_url)`
+- `conport_promote_all(workspace_id, conport_url)`
 
 Tip: For project-local ConPort, `conport_url` is typically `http://localhost:3004` when your project’s ConPort container maps 3004 on the host.
 

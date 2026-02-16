@@ -24,18 +24,18 @@ SuperClaude is a sophisticated meta-programming configuration framework that enh
 
 ### Current MCP Servers in SuperClaude
 1. **PAL apilookup**: Documentation lookup (similar to our `pal`)
-2. **Sequential**: Multi-step reasoning (similar to our `mas-sequential-thinking`)
-3. **Magic**: UI component generation (unique capability)
-4. **Puppeteer**: Browser automation/testing (similar to our `desktop-commander`)
+1. **Sequential**: Multi-step reasoning (similar to our `mas-sequential-thinking`)
+1. **Magic**: UI component generation (unique capability)
+1. **Puppeteer**: Browser automation/testing (similar to our `desktop-commander`)
 
 ## Dopemux Stack Advantages Over Standard SuperClaude MCPs
 
 | **SuperClaude MCP** | **Dopemux Enhanced Equivalent** | **Dopemux Advantages** |
 |-------------------|--------------------------------|------------------------|
-| `PAL apilookup` (basic docs) | `pal` + `claude-context` + `docrag` | **Semantic code search, RAG-enhanced documentation, project-specific knowledge graphs** |
-| `Sequential` (basic reasoning) | `mas-sequential-thinking` + `zen` | **Multi-model consensus, ADHD-optimized thinking patterns, role-aware reasoning** |
-| `Magic` (UI generation) | `morphllm-fast-apply` + `serena` | **Advanced code transformations, intelligent refactoring, cross-language support** |
-| `Puppeteer` (browser automation) | `desktop-commander` + `task-master-ai` | **System-wide automation, intelligent task orchestration, ADHD task management** |
+| `PAL apilookup` (basic docs) \| `pal` + `claude-context` + `docrag` | **Semantic code search, RAG-enhanced documentation, project-specific knowledge graphs** |
+| `Sequential` (basic reasoning) \| `mas-sequential-thinking` + `zen` | **Multi-model consensus, ADHD-optimized thinking patterns, role-aware reasoning** |
+| `Magic` (UI generation) \| `morphllm-fast-apply` + `serena` | **Advanced code transformations, intelligent refactoring, cross-language support** |
+| `Puppeteer` (browser automation) \| `desktop-commander` + `task-master-ai` | **System-wide automation, intelligent task orchestration, ADHD task management** |
 
 ### Unique Dopemux Capabilities Not in SuperClaude
 - **MetaMCP Orchestration**: Role-based tool mounting and intelligent routing
@@ -104,21 +104,21 @@ Puppeteer → desktop-commander + task-master-ai
 
 ### For ADHD Developers
 1. **Enhanced Cognitive Support**: SuperClaude's structured commands + Dopemux ADHD accommodations
-2. **Intelligent Tool Selection**: MetaMCP automatically mounts appropriate tools for each SuperClaude command
-3. **Session Continuity**: Never lose context between SuperClaude workflows
-4. **Progressive Complexity**: Start simple, escalate to advanced tools when needed
+1. **Intelligent Tool Selection**: MetaMCP automatically mounts appropriate tools for each SuperClaude command
+1. **Session Continuity**: Never lose context between SuperClaude workflows
+1. **Progressive Complexity**: Start simple, escalate to advanced tools when needed
 
 ### For SuperClaude Users
 1. **Dramatically Enhanced Capabilities**: Replace basic MCPs with enterprise-grade alternatives
-2. **Multi-Model Intelligence**: Zen consensus for critical SuperClaude decisions
-3. **Advanced Memory**: Cross-session knowledge retention and project understanding
-4. **Superior Research**: Exa + PAL apilookup for comprehensive information gathering
+1. **Multi-Model Intelligence**: Zen consensus for critical SuperClaude decisions
+1. **Advanced Memory**: Cross-session knowledge retention and project understanding
+1. **Superior Research**: Exa + PAL apilookup for comprehensive information gathering
 
 ### For Complex Development Projects
 1. **Orchestrated Workflows**: SuperClaude commands backed by intelligent tool selection
-2. **Project Management Integration**: Leantime integration for complex multi-phase projects
-3. **Quality Assurance**: Multi-model consensus for code reviews and architectural decisions
-4. **Scalable Architecture**: Role-based access patterns that grow with team complexity
+1. **Project Management Integration**: Leantime integration for complex multi-phase projects
+1. **Quality Assurance**: Multi-model consensus for code reviews and architectural decisions
+1. **Scalable Architecture**: Role-based access patterns that grow with team complexity
 
 ## Technical Implementation Plan
 

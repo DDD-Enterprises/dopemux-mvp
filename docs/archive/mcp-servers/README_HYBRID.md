@@ -58,13 +58,13 @@ Desktop Commander needs permissions to automate your Mac:
 
 **For Screenshots**:
 1. System Settings → Privacy & Security → Screen Recording
-2. Add your terminal app (kitty, iTerm2, Terminal.app)
-3. Restart terminal
+1. Add your terminal app (kitty, iTerm2, Terminal.app)
+1. Restart terminal
 
 **For Keyboard Automation**:
 1. System Settings → Privacy & Security → Accessibility
-2. Add your terminal app
-3. Restart terminal
+1. Add your terminal app
+1. Restart terminal
 
 ### 3. Configuration
 
@@ -188,9 +188,9 @@ rm /tmp/desktop-commander-uvx.pid
 **Fix**: Ensure docker-compose.yml has:
 ```yaml
 environment:
-  - DISPLAY=${DISPLAY:-:0}
+- DISPLAY=${DISPLAY:-:0}
 volumes:
-  - /tmp/.X11-unix:/tmp/.X11-unix:rw
+- /tmp/.X11-unix:/tmp/.X11-unix:rw
 ```
 
 ## Development
@@ -257,9 +257,9 @@ docker stop mcp-desktop-commander
 
 1. Update `.claude.json` to use `start_with_uvx.sh`
 
-2. Grant macOS permissions (see above)
+1. Grant macOS permissions (see above)
 
-3. Test with Claude Code
+1. Test with Claude Code
 
 **Benefits**:
 - ✅ No Docker overhead (~80% faster startup)
@@ -289,9 +289,9 @@ Part of Dopemux MVP - ADHD-optimized development platform
 
 For issues or questions:
 1. Check this README
-2. Review `CONNECTION_GUIDE.md` for connection patterns
-3. Check `DESKTOP_COMMANDER_VALIDATION.md` for testing procedures
-4. Open issue in Dopemux repository
+1. Review `CONNECTION_GUIDE.md` for connection patterns
+1. Check `DESKTOP_COMMANDER_VALIDATION.md` for testing procedures
+1. Open issue in Dopemux repository
 
 ---
 

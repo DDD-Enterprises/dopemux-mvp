@@ -111,9 +111,9 @@ curl http://localhost:8000/api/v1/energy-level/test-user
 ```bash
 # Add to docker-compose environment:
 environment:
-  - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
-  - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY}
-  - SERENA_DB_PASSWORD=${SERENA_DB_PASSWORD}
+- ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+- ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY}
+- SERENA_DB_PASSWORD=${SERENA_DB_PASSWORD}
 
 # Deploy
 docker-compose up -d
@@ -175,23 +175,23 @@ docker-compose up -d
 
 **Option A: Deploy Now** ✅
 1. Configure .env with your values
-2. Test locally with API key
-3. Deploy to staging
-4. Validate security improvements
-5. **Time**: 1-2 hours
+1. Test locally with API key
+1. Deploy to staging
+1. Validate security improvements
+1. **Time**: 1-2 hours
 
 **Option B: Complete Full Audit First** 📋
 1. Continue Phase 3 (deep service review, ~10h)
-2. Phase 4 (documentation validation, ~4h)
-3. Phase 6 (integration tests, ~4h)
-4. Phase 8 (final synthesis, ~2h)
-5. **Time**: ~20 hours additional
+1. Phase 4 (documentation validation, ~4h)
+1. Phase 6 (integration tests, ~4h)
+1. Phase 8 (final synthesis, ~2h)
+1. **Time**: ~20 hours additional
 
 **Option C: Hybrid** ⚡
 1. Deploy security fixes now
-2. Continue audit in parallel
-3. Fix issues as discovered
-4. **Time**: Flexible
+1. Continue audit in parallel
+1. Fix issues as discovered
+1. **Time**: Flexible
 
 ---
 

@@ -19,8 +19,8 @@ prelude: Deprecated (explanation) for dopemux documentation and developer workfl
 
 **Replaced By**:
 1. **ConPort progress_entry** - Task storage with ADHD metadata
-2. **SuperClaude /dx: commands** - Workflow automation
-3. **ADHD Engine Service** - Intelligent task assessment
+1. **SuperClaude /dx: commands** - Workflow automation
+1. **ADHD Engine Service** - Intelligent task assessment
 
 ## Migration Details
 

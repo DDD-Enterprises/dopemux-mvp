@@ -106,10 +106,10 @@ The assumption that web is needed for visual richness is outdated. Modern termin
 
 **Rationale**:
 1. Fastest path to MVP (2 weeks vs 3-4 weeks)
-2. Aligns with target user preferences (terminal-centric developers)
-3. Minimal complexity = fewer bugs, faster iteration
-4. Modern terminals are more capable than assumed
-5. Can always add web dashboard later if TUI proves insufficient (progressive enhancement path)
+1. Aligns with target user preferences (terminal-centric developers)
+1. Minimal complexity = fewer bugs, faster iteration
+1. Modern terminals are more capable than assumed
+1. Can always add web dashboard later if TUI proves insufficient (progressive enhancement path)
 
 **Risk Mitigation**:
 - If visual richness becomes limiting, we can add web dashboard later
@@ -235,10 +235,10 @@ SSH tunneling for web UI is one command: `ssh -L 8080:localhost:8080 user@host`.
 
 **Rationale**:
 1. Core mission is ADHD optimization - web delivers superior visual feedback
-2. Accessibility compliance easier with web standards
-3. Analytics and monitoring essential for multi-AI orchestration
-4. Future extensibility aligns with product evolution
-5. Market expectations favor web interfaces
+1. Accessibility compliance easier with web standards
+1. Analytics and monitoring essential for multi-AI orchestration
+1. Future extensibility aligns with product evolution
+1. Market expectations favor web interfaces
 
 **Implementation Path**:
 - Week 1-2: tmux backend + message bus integration
@@ -479,10 +479,10 @@ API layer decouples interfaces. Maintaining two views on same state is easier th
 
 **Rationale**:
 1. **Progressive enhancement** de-risks implementation
-2. **User choice** maximizes addressable audience
-3. **Natural separation** between command (terminal) and monitoring (web)
-4. **Real-world precedent** validates pattern (Docker, K8s, Git)
-5. **Risk mitigation** through optionality preservation
+1. **User choice** maximizes addressable audience
+1. **Natural separation** between command (terminal) and monitoring (web)
+1. **Real-world precedent** validates pattern (Docker, K8s, Git)
+1. **Risk mitigation** through optionality preservation
 
 **Implementation Priority**:
 - Phase 1 (tmux TUI): **MUST HAVE** - Delivers core functionality
@@ -511,10 +511,10 @@ Hybrid allows deferring full web investment until **empirical validation** of ne
 All three models agree on:
 
 1. **tmux backend is essential** regardless of interface choice
-2. **Terminal is preferred for core workflow** (chat, AI switching)
-3. **Visual feedback matters for ADHD optimization**
-4. **2-3 week MVP timeline is achievable** (with scope adjustment)
-5. **Modern terminals are more capable** than traditionally assumed
+1. **Terminal is preferred for core workflow** (chat, AI switching)
+1. **Visual feedback matters for ADHD optimization**
+1. **2-3 week MVP timeline is achievable** (with scope adjustment)
+1. **Modern terminals are more capable** than traditionally assumed
 
 ### Points of Disagreement (Productive Tensions)
 
@@ -668,10 +668,10 @@ Breakdown:
 **ADHD-Optimized Workflow**:
 ```
 1. Start 25-min Pomodoro → Terminal interface (full focus)
-2. Work on task → Chat in tmux, AI switching via hotkeys
-3. Visual check → Glance at tmux pane colors (green = ready)
-4. Break (5 min) → Switch to web dashboard for progress review
-5. Repeat → Return to terminal for next Pomodoro
+1. Work on task → Chat in tmux, AI switching via hotkeys
+1. Visual check → Glance at tmux pane colors (green = ready)
+1. Break (5 min) → Switch to web dashboard for progress review
+1. Repeat → Return to terminal for next Pomodoro
 ```
 
 This workflow minimizes context switching during focus periods while providing rich visual feedback during natural breaks.
@@ -724,10 +724,10 @@ This workflow minimizes context switching during focus periods while providing r
 ### Rationale Summary
 
 1. **Maximizes User Base**: Satisfies terminal purists AND visual learners
-2. **Risk Mitigation**: Progressive rollout with validation gates
-3. **ADHD Optimization**: Terminal focus + optional web monitoring = best of both
-4. **Proven Pattern**: Docker, Kubernetes, Git validate hybrid approach
-5. **Future Flexibility**: Preserves optionality without locking into single interface
+1. **Risk Mitigation**: Progressive rollout with validation gates
+1. **ADHD Optimization**: Terminal focus + optional web monitoring = best of both
+1. **Proven Pattern**: Docker, Kubernetes, Git validate hybrid approach
+1. **Future Flexibility**: Preserves optionality without locking into single interface
 
 ### Implementation Commitment
 
@@ -803,10 +803,10 @@ This workflow minimizes context switching during focus periods while providing r
 ## Next Steps
 
 1. **Validate Decision**: Present analysis to stakeholders for consensus
-2. **Create Phase 1 Backlog**: Break down tmux TUI into user stories
-3. **Set Up Testing Framework**: Prepare for Phase 1 user validation
-4. **Define Go/No-Go Criteria**: Specific metrics for Phase 2/3 decisions
-5. **Log Decision in ConPort**: Record architectural choice with rationale
+1. **Create Phase 1 Backlog**: Break down tmux TUI into user stories
+1. **Set Up Testing Framework**: Prepare for Phase 1 user validation
+1. **Define Go/No-Go Criteria**: Specific metrics for Phase 2/3 decisions
+1. **Log Decision in ConPort**: Record architectural choice with rationale
 
 **Decision Owner**: Architecture Team
 **Review Date**: After Phase 1 completion (Week 2 end)

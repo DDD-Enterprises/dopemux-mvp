@@ -40,13 +40,13 @@ Most of these are **false positives** (e.g., Redis keys, dictionary keys), but r
 These are Redis key names, NOT secrets:
 
 - `services/conport/src/context_portal_mcp/v2/vector_store.py`:
-  - Lines 221, 230, 367, 500, 606: `key="workspace_id"` etc.
+- Lines 221, 230, 367, 500, 606: `key="workspace_id"` etc.
 
 - `services/serena/v2/untracked_work_storage.py`:
-  - Lines 877, 931: `key="untracked_work_config"`
+- Lines 877, 931: `key="untracked_work_config"`
 
 - `services/serena/v2/bridge_adapter.py`:
-  - Lines 297, 324: `key="latest_state"`
+- Lines 297, 324: `key="latest_state"`
 
 **Recommendation**: ✅ No action needed - these are configuration keys, not secrets
 
@@ -88,18 +88,18 @@ These are Redis key names, NOT secrets:
 ### Best Practices Going Forward
 
 1. **All credentials must use environment variables**:
-   - Database URLs → `DATABASE_URL`
-   - API keys → `{SERVICE}_API_KEY`
-   - Passwords → `{SERVICE}_PASSWORD`
+- Database URLs → `DATABASE_URL`
+- API keys → `{SERVICE}_API_KEY`
+- Passwords → `{SERVICE}_PASSWORD`
 
-2. **Test credentials**:
-   - Use fixtures/factories
-   - Keep in dedicated test config files
-   - Never commit real credentials even to test files
+1. **Test credentials**:
+- Use fixtures/factories
+- Keep in dedicated test config files
+- Never commit real credentials even to test files
 
-3. **Redis/Cache keys**:
-   - These are safe as string literals
-   - Use constants for consistency: `CACHE_KEY_WORKSPACE = "workspace_id"`
+1. **Redis/Cache keys**:
+- These are safe as string literals
+- Use constants for consistency: `CACHE_KEY_WORKSPACE = "workspace_id"`
 
 ## Verification
 

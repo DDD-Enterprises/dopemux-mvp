@@ -25,38 +25,38 @@ prelude: Monitoring_Implementation_Progress (explanation) for dopemux documentat
 
 - ✅ docker-compose.monitoring.yml created
 - ✅ Prometheus deployed (v2.47.0)
-  - Running at http://localhost:9090
-  - Health check passing
-  - Configured to scrape 6 services
+- Running at http://localhost:9090
+- Health check passing
+- Configured to scrape 6 services
 - ✅ Grafana deployed (v10.1.0)
-  - Running at http://localhost:3000
-  - Credentials: admin / dopemux_admin
-  - Prometheus datasource configured
+- Running at http://localhost:3000
+- Credentials: admin / dopemux_admin
+- Prometheus datasource configured
 - ✅ AlertManager deployed (v0.26.0)
-  - Running at http://localhost:9093
-  - Basic routing configured
+- Running at http://localhost:9093
+- Basic routing configured
 
 **Monitoring Base Class** ✅
 
 - ✅ shared/monitoring/base.py created (11KB)
-  - DopemuxMonitoring class
-  - workspace_id label support
-  - instance_id label support
-  - FastAPI middleware
-  - Prometheus integration
-  - Complete documentation
+- DopemuxMonitoring class
+- workspace_id label support
+- instance_id label support
+- FastAPI middleware
+- Prometheus integration
+- Complete documentation
 
 **Configuration Files** ✅
 
 - ✅ services/monitoring/prometheus.yml
-  - 6 service targets configured
-  - Label-based multi-tenancy
-  - 15s scrape interval
+- 6 service targets configured
+- Label-based multi-tenancy
+- 15s scrape interval
 - ✅ services/monitoring/alertmanager.yml
-  - Basic routing rules
-  - Workspace-aware grouping
+- Basic routing rules
+- Workspace-aware grouping
 - ✅ services/monitoring/grafana/provisioning/datasources/prometheus.yml
-  - Prometheus datasource auto-provisioned
+- Prometheus datasource auto-provisioned
 
 **Documentation** ✅
 
@@ -205,23 +205,23 @@ Currently all showing "down" - expected until containers are rebuilt with monito
    docker-compose up -d adhd-engine
    ```
 
-2. **Rebuild ConPort container**
+1. **Rebuild ConPort container**
    ```bash
    # Already updated Dockerfile with prometheus-client
    docker-compose build conport
    docker-compose up -d conport
    ```
 
-3. **Test metrics endpoints**
+1. **Test metrics endpoints**
    ```bash
    curl http://localhost:8001/metrics  # ADHD Engine
    curl http://localhost:3004/metrics  # ConPort
    ```
 
-4. **Verify in Prometheus**
-   - Open http://localhost:9090/targets
-   - Check adhd-engine target status
-   - Query: `dopemux_requests_total{service="adhd-engine"}`
+1. **Verify in Prometheus**
+- Open http://localhost:9090/targets
+- Check adhd-engine target status
+- Query: `dopemux_requests_total{service="adhd-engine"}`
 
 ### Today's Goals
 
@@ -264,14 +264,14 @@ None yet - smooth deployment!
 
 1. **Docker Networking**: Using `host.docker.internal` to access host services from containers (macOS Docker Desktop)
 
-2. **Multi-Workspace Labels**: Every metric automatically includes:
-   - `workspace_id` (from WORKSPACE_ID env var or "default")
-   - `instance_id` (from INSTANCE_ID env var or "0")
-   - `service` (set in monitoring initialization)
+1. **Multi-Workspace Labels**: Every metric automatically includes:
+- `workspace_id` (from WORKSPACE_ID env var or "default")
+- `instance_id` (from INSTANCE_ID env var or "0")
+- `service` (set in monitoring initialization)
 
-3. **Prometheus Scraping**: Currently all targets show "down" because services aren't exporting metrics yet - this is expected and will be fixed as we integrate the monitoring base class
+1. **Prometheus Scraping**: Currently all targets show "down" because services aren't exporting metrics yet - this is expected and will be fixed as we integrate the monitoring base class
 
-4. **Grafana**: Datasource auto-provisioned, but dashboards need to be created manually or imported
+1. **Grafana**: Datasource auto-provisioned, but dashboards need to be created manually or imported
 
 ---
 

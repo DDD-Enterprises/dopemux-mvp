@@ -19,112 +19,112 @@ Extend multi-workspace support to all dopemux services, MCP servers, and infrast
 
 ### ✅ COMPLETED
 1. **dope-context** (MCP Server)
-   - ✅ Multi-workspace search (code, docs, all)
-   - ✅ Multi-workspace sync
-   - ✅ Autonomous indexing daemon
-   - ✅ Tests passing (10/10)
+- ✅ Multi-workspace search (code, docs, all)
+- ✅ Multi-workspace sync
+- ✅ Autonomous indexing daemon
+- ✅ Tests passing (10/10)
 
 ### 🔥 HIGH PRIORITY - Core MCP Servers
 
 1. **serena** (Code Graph Analysis)
-   - Location: `services/serena/`
-   - Functions: Call graph, dependency analysis, impact assessment
-   - Multi-workspace need: Track relationships across worktrees
-   - Priority: HIGH (used by dope-context for graph enrichment)
+- Location: `services/serena/`
+- Functions: Call graph, dependency analysis, impact assessment
+- Multi-workspace need: Track relationships across worktrees
+- Priority: HIGH (used by dope-context for graph enrichment)
 
-2. **conport_kg** (Knowledge Graph)
-   - Location: `services/conport_kg/`
-   - Functions: Context storage, decision logging, session memory
-   - Multi-workspace need: Isolate contexts per workspace
-   - Priority: HIGH (persistent memory across sessions)
+1. **conport_kg** (Knowledge Graph)
+- Location: `services/conport_kg/`
+- Functions: Context storage, decision logging, session memory
+- Multi-workspace need: Isolate contexts per workspace
+- Priority: HIGH (persistent memory across sessions)
 
-3. **workspace-watcher** (File Monitoring)
-   - Location: `services/workspace-watcher/`
-   - Functions: File change detection, git event monitoring
-   - Multi-workspace need: Monitor multiple directories
-   - Priority: HIGH (triggers indexing)
+1. **workspace-watcher** (File Monitoring)
+- Location: `services/workspace-watcher/`
+- Functions: File change detection, git event monitoring
+- Multi-workspace need: Monitor multiple directories
+- Priority: HIGH (triggers indexing)
 
 ### 🟡 MEDIUM PRIORITY - Intelligence & Coordination
 
 1. **task-orchestrator** (Task Management)
-   - Location: `services/task-orchestrator/`
-   - Functions: Task routing, workflow coordination
-   - Multi-workspace need: Per-workspace task queues
-   - Priority: MEDIUM
+- Location: `services/task-orchestrator/`
+- Functions: Task routing, workflow coordination
+- Multi-workspace need: Per-workspace task queues
+- Priority: MEDIUM
 
-2. **orchestrator** (Service Coordination)
-   - Location: `services/orchestrator/`
-   - Functions: Service health, message routing
-   - Multi-workspace need: Workspace-aware routing
-   - Priority: MEDIUM
+1. **orchestrator** (Service Coordination)
+- Location: `services/orchestrator/`
+- Functions: Service health, message routing
+- Multi-workspace need: Workspace-aware routing
+- Priority: MEDIUM
 
-3. **session_intelligence** (Session Context)
-   - Location: `services/session_intelligence/`
-   - Functions: Session state, context switching
-   - Multi-workspace need: Track sessions per workspace
-   - Priority: MEDIUM
+1. **session_intelligence** (Session Context)
+- Location: `services/session_intelligence/`
+- Functions: Session state, context switching
+- Multi-workspace need: Track sessions per workspace
+- Priority: MEDIUM
 
-4. **intelligence** (AI Coordination)
-   - Location: `services/intelligence/`
-   - Functions: Model selection, prompt routing
-   - Multi-workspace need: Workspace-specific prompts
-   - Priority: MEDIUM
+1. **intelligence** (AI Coordination)
+- Location: `services/intelligence/`
+- Functions: Model selection, prompt routing
+- Multi-workspace need: Workspace-specific prompts
+- Priority: MEDIUM
 
 ### 🟢 LOW PRIORITY - ADHD Features
 
 1. **adhd_engine** (ADHD Accommodations)
-   - Location: `services/adhd_engine/`
-   - Functions: Energy tracking, attention state
-   - Multi-workspace need: Per-workspace energy tracking
-   - Priority: LOW (nice-to-have)
+- Location: `services/adhd_engine/`
+- Functions: Energy tracking, attention state
+- Multi-workspace need: Per-workspace energy tracking
+- Priority: LOW (nice-to-have)
 
-2. **activity-capture** (Activity Logging)
-    - Location: `services/activity-capture/`
-    - Functions: Event logging, metrics
-    - Multi-workspace need: Tag events by workspace
-    - Priority: LOW
+1. **activity-capture** (Activity Logging)
+- Location: `services/activity-capture/`
+- Functions: Event logging, metrics
+- Multi-workspace need: Tag events by workspace
+- Priority: LOW
 
-3. **context-switch-tracker** (Context Switching)
-    - Location: `services/context-switch-tracker/`
-    - Functions: Track workspace switches
-    - Multi-workspace need: Core feature!
-    - Priority: MEDIUM-HIGH
+1. **context-switch-tracker** (Context Switching)
+- Location: `services/context-switch-tracker/`
+- Functions: Track workspace switches
+- Multi-workspace need: Core feature!
+- Priority: MEDIUM-HIGH
 
 ### 🔧 INFRASTRUCTURE
 
 1. **Docker Compose Files**
-    - Environment variables for multi-workspace
-    - Volume mounts for multiple workspaces
-    - Service configuration
+- Environment variables for multi-workspace
+- Volume mounts for multiple workspaces
+- Service configuration
 
-2. **MCP DopeconBridge**
-    - Location: `services/mcp-dopecon-bridge/`
-    - Workspace-aware request routing
-    - Priority: HIGH
+1. **MCP DopeconBridge**
+- Location: `services/mcp-dopecon-bridge/`
+- Workspace-aware request routing
+- Priority: HIGH
 
 ## 🏗️ Implementation Strategy
 
 ### Phase 1: Core MCP Servers (Week 1)
 1. ✅ dope-context (DONE)
-2. serena - Code graph
-3. conport_kg - Knowledge graph
-4. workspace-watcher - File monitoring
+1. serena - Code graph
+1. conport_kg - Knowledge graph
+1. workspace-watcher - File monitoring
 
 ### Phase 2: Coordination Layer (Week 2)
 1. mcp-dopecon-bridge - Request routing
-2. orchestrator - Service coordination
-3. task-orchestrator - Task management
+1. orchestrator - Service coordination
+1. task-orchestrator - Task management
 
 ### Phase 3: Intelligence & ADHD (Week 3)
 1. session_intelligence - Session context
-2. context-switch-tracker - Workspace switching
-3. intelligence - AI coordination
+1. context-switch-tracker - Workspace switching
+1. intelligence - AI coordination
 
 ### Phase 4: Infrastructure & Polish (Week 4)
 1. Docker compose updates
-2. Environment variable standards
-3. Documentation & examples
-4. Integration tests
+1. Environment variable standards
+1. Documentation & examples
+1. Integration tests
 
 ## 🎨 Design Patterns
 
@@ -190,12 +190,12 @@ CONPORT_WORKSPACES="/path1,/path2"
 services:
   service-name:
     environment:
-      - DOPE_WORKSPACES=${DOPE_WORKSPACES:-/workspace}
+- DOPE_WORKSPACES=${DOPE_WORKSPACES:-/workspace}
     volumes:
       # Mount all workspaces
-      - ${WORKSPACE_1:-/workspace}:/workspace1:ro
-      - ${WORKSPACE_2}:/workspace2:ro
-      - ${WORKSPACE_3}:/workspace3:ro
+- ${WORKSPACE_1:-/workspace}:/workspace1:ro
+- ${WORKSPACE_2}:/workspace2:ro
+- ${WORKSPACE_3}:/workspace3:ro
 ```
 
 ### CLI Pattern
@@ -251,10 +251,10 @@ For each service:
 
 Each service needs:
 1. **README update** - Multi-workspace usage examples
-2. **API docs** - Parameter descriptions, return types
-3. **Architecture docs** - Multi-workspace design decisions
-4. **Environment variables** - All workspace-related vars
-5. **Docker compose** - Multi-workspace configuration
+1. **API docs** - Parameter descriptions, return types
+1. **Architecture docs** - Multi-workspace design decisions
+1. **Environment variables** - All workspace-related vars
+1. **Docker compose** - Multi-workspace configuration
 
 ## 🔍 Verification Commands
 
@@ -295,10 +295,10 @@ DOPE_WORKSPACES="/ws1,/ws2" pytest integration/test_cross_service.py
 ## 🚀 Next Steps
 
 1. Start with **serena** (code graph) - High priority, clear scope
-2. Then **conport_kg** (knowledge graph) - Critical for context
-3. Then **workspace-watcher** - Enables autonomous indexing
-4. Document patterns as we go
-5. Create shared utilities for common functionality
+1. Then **conport_kg** (knowledge graph) - Critical for context
+1. Then **workspace-watcher** - Enables autonomous indexing
+1. Document patterns as we go
+1. Create shared utilities for common functionality
 
 ---
 

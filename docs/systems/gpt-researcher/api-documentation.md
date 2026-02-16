@@ -414,10 +414,10 @@ Error responses include detailed messages:
 ## Security Considerations
 
 1. **API Keys**: Store in environment variables, never commit
-2. **CORS**: Configure appropriately for production
-3. **Session Storage**: Use secure file permissions
-4. **WebSocket**: Implement authentication for production
-5. **Rate Limiting**: Prevent abuse with request limits
+1. **CORS**: Configure appropriately for production
+1. **Session Storage**: Use secure file permissions
+1. **WebSocket**: Implement authentication for production
+1. **Rate Limiting**: Prevent abuse with request limits
 
 ## Deployment
 
@@ -448,7 +448,7 @@ CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ## Next Steps
 
 1. **Add Authentication**: Implement JWT-based auth
-2. **Database Integration**: PostgreSQL for production sessions
-3. **Caching**: Redis for performance optimization
-4. **Monitoring**: Prometheus metrics endpoint
-5. **UI Development**: React Ink terminal interface
+1. **Database Integration**: PostgreSQL for production sessions
+1. **Caching**: Redis for performance optimization
+1. **Monitoring**: Prometheus metrics endpoint
+1. **UI Development**: React Ink terminal interface
