@@ -792,6 +792,28 @@ async def get_breaks_info(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/tasks", tags=["dashboard"])
+async def get_tasks(
+    user_id: str = "default",
+    engine = Depends(get_engine),
+    api_key: str = Security(verify_api_key)
+):
+    """
+    Get task completion metrics for dashboard.
+
+    Returns:
+        Dict with completed, total, rate
+    """
+    try:
+        if engine.activity_tracker:
+            return await engine.activity_tracker.get_daily_task_stats(user_id)
+        else:
+            return {"completed": 0, "total": 0, "rate": 0.0}
+    except Exception as e:
+        logger.error(f"Tasks retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ML Pattern & Prediction Endpoints (IP-005 Days 11-12)
 
 @router.get("/patterns/{user_id}", response_model=schemas.PatternsResponse)
