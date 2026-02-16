@@ -13,7 +13,8 @@ from .genetic.genetic_agent import GeneticAgent
 
 logger = logging.getLogger(__name__)
 
-# Global agent instances
+# Global configuration and agent instances
+config = AgentConfig()
 vanilla_agent = None
 genetic_agent = None
 
@@ -23,7 +24,6 @@ async def lifespan(_app: FastAPI):
     """Initialize and tear down agent instances for app lifecycle."""
     global vanilla_agent, genetic_agent
 
-    config = AgentConfig()
     vanilla_agent = VanillaAgent(config)
     genetic_agent = GeneticAgent(config)
 
@@ -45,10 +45,10 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=config.allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
 
 @app.get("/")
