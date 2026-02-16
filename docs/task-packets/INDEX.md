@@ -30,6 +30,7 @@ A packet changes status
 A packet is superseded by another packet
 ────────────────────────────────────────────────────────────
 🟡 Active Task Packets
+
 | Packet ID | Subsystem | Title | Status | Related ADR |
 | --- | --- | --- | --- | --- |
 | PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
@@ -37,6 +38,7 @@ A packet is superseded by another packet
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets
+
 | Packet ID | Subsystem | Title | Completion Date | Outcome |
 | --- | --- | --- | --- | --- |
 | PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
@@ -44,6 +46,7 @@ A packet is superseded by another packet
 
 ────────────────────────────────────────────────────────────
 ⚪ Superseded Task Packets
+
 | Packet ID | Superseded By | Reason |
 | --- | --- | --- |
 | PACKET_017 | PACKET_021 | Incomplete determinism guarantees |

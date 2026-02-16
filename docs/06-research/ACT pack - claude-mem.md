@@ -73,10 +73,10 @@ Run `npm audit` for details.
 📋 Building React viewer...
 Building React viewer...
 ✓ React viewer built successfully
-  * plugin/ui/viewer-bundle.js
-  * plugin/ui/viewer.html (from viewer-template.html)
-  * plugin/ui/assets/fonts/* (font files)
-  * plugin/ui/icon-thick-*.svg (4 icon files)
+* plugin/ui/viewer-bundle.js
+* plugin/ui/viewer.html (from viewer-template.html)
+* plugin/ui/assets/fonts/* (font files)
+* plugin/ui/icon-thick-*.svg (4 icon files)
 
 🔧 Building worker service...
 ✓ worker-service built (1722.09 KB)

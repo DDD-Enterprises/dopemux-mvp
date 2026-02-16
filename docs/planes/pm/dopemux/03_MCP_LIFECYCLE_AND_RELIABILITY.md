@@ -135,7 +135,7 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 **Classification (derived from compose.yml evidence)**:
 
 | Server | Port | Classification | Rationale |
-|--------|------|----------------|-----------|
+|---|---|---|---|
 | postgres (AGE) | 5432 | REQUIRED | Backing store for ConPort, LiteLLM. Everything depends on it. |
 | redis-events | 6379 | REQUIRED | EventBus streaming. DopeconBridge depends on it (healthy). |
 | redis-primary | — | REQUIRED | Caching. ConPort, task-orchestrator, adhd-engine depend on it (healthy). |
@@ -185,12 +185,12 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
   * `task-orchestrator`: `curl -f http://localhost:8000/health`, interval 30s, retries 3, start_period 40s.
   * `adhd-engine`: `curl -f http://localhost:8095/health`, interval 30s, retries 3, start_period 30s.
   * `pal`: `exit 0` (always healthy — no real check). **GAP**: should have real health endpoint.
-  * `dope-context`: `curl -f http://localhost:3010/health || exit 0`. **GAP**: `exit 0` fallback means unhealthy is never reported.
-  * `conport`: `curl -f http://localhost:3004/health || exit 0`. **GAP**: same `exit 0` fallback issue.
+  * `dope-context`: `curl -f http://localhost:3010/health  exit 0`. **GAP**: `exit 0` fallback means unhealthy is never reported.
+  * `conport`: `curl -f http://localhost:3004/health  exit 0`. **GAP**: same `exit 0` fallback issue.
 
 **GAPS IDENTIFIED**:
 * `pal` healthcheck is `exit 0` — always passes regardless of actual health.
-* `conport` and `dope-context` use `|| exit 0` — failures are swallowed.
+* `conport` and `dope-context` use `exit 0` — failures are swallowed.
 * These should be fixed to return real health status.
 
 ---
@@ -202,7 +202,7 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 * **OBSERVED: MCP Servers**: ConPort (3004), PAL/Zen (3003), LiteLLM (4000), Dope-Context (3010), Serena (3006), GPTR (3009), Desktop Commander (3012), Leantime Bridge (3015).
 * **OBSERVED: Application Services**: DopeconBridge (3016), Task Orchestrator (8000), ADHD Engine (8095), Genetic Agent (8000), Dope-Memory (3020/8096).
 * **OBSERVED: Dependency Chain**: postgres → conport → task-orchestrator; redis-events → dopecon-bridge → conport.
-* **OBSERVED: Health Endpoints**: All services have healthcheck blocks in compose.yml, but quality varies (some use `|| exit 0` fallback).
+* **OBSERVED: Health Endpoints**: All services have healthcheck blocks in compose.yml, but quality varies (some use `exit 0` fallback).
 * **OBSERVED: Task-Orchestrator Tools**: `/info` endpoint reports "37 tools" (line 306 of main.py).
 * **OBSERVED: Restart Policy**: All services use `restart: unless-stopped`.
 
@@ -231,10 +231,10 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 * **Containment**: Docker Compose will error on startup if host ports conflict.
 
 ### 4. Swallowed Health Failures
-* **Trigger**: Services using `|| exit 0` in healthcheck (conport, dope-context, pal).
+* **Trigger**: Services using `exit 0` in healthcheck (conport, dope-context, pal).
 * **Impact**: Docker reports container as healthy when it may not be. Dependent services start prematurely or don't detect failures.
 * **Severity**: S2 medium.
-* **Containment**: Fix healthchecks to remove `|| exit 0` fallback. Replace `exit 0` in pal with actual health probe.
+* **Containment**: Fix healthchecks to remove `exit 0` fallback. Replace `exit 0` in pal with actual health probe.
 
 ### 5. Startup Race Condition
 * **Trigger**: `depends_on` with `condition: service_started` (not `service_healthy`) — used for `mcp-qdrant` in dopecon-bridge.
@@ -368,4 +368,4 @@ If a server is UNHEALTHY or STOPPED:
 1. **Dependency Test**: Stop PostgreSQL. Ensure ConPort fails its healthcheck. Ensure task-orchestrator does not start (or restarts and fails to connect).
 1. **Fallback Test**: Stop `dope-context`. Execute a search operation. Ensure it falls back to keyword search or refuses with clear message.
 1. **Zombie Test**: Run `docker compose down`. Verify zero dopemux containers running with `docker ps`.
-1. **Health Gap Test**: Stop the actual ConPort process inside its container (but keep container running). Verify healthcheck reports unhealthy (currently fails due to `|| exit 0` — this test documents the gap).
+1. **Health Gap Test**: Stop the actual ConPort process inside its container (but keep container running). Verify healthcheck reports unhealthy (currently fails due to `exit 0` — this test documents the gap).
