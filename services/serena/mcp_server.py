@@ -34,7 +34,8 @@ from mcp.types import Tool, TextContent, EmptyResult
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger("serena-v2-mcp")
 
@@ -150,7 +151,7 @@ class SimpleLSPClient:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                cwd=str(self.workspace),
+                cwd=str(self.workspace)
             )
 
             # Start response reader task
@@ -160,7 +161,7 @@ class SimpleLSPClient:
             init_params = {
                 "processId": None,
                 "rootUri": f"file://{self.workspace}",
-                "capabilities": {},
+                "capabilities": {}
             }
 
             response = await self._send_request("initialize", init_params)
@@ -172,15 +173,10 @@ class SimpleLSPClient:
             logger.info(f"SimpleLSPClient initialized for {self.workspace}")
 
         except FileNotFoundError:
-            raise RuntimeError(
-                "pylsp not found - install with: pip install python-lsp-server[all]"
-            )
+            raise RuntimeError("pylsp not found - install with: pip install python-lsp-server[all]")
         except Exception as e:
             raise RuntimeError(f"Failed to start LSP client: {e}") from e
-
-    async def goto_definition(
-        self, file_uri: str, line: int, column: int
-    ) -> List[Dict]:
+    async def goto_definition(self, file_uri: str, line: int, column: int) -> List[Dict]:
         """
         Request definition location for symbol at position
 
@@ -197,14 +193,12 @@ class SimpleLSPClient:
 
         params = {
             "textDocument": {"uri": file_uri},
-            "position": {"line": line, "character": column},
+            "position": {"line": line, "character": column}
         }
 
         try:
             # ADHD Optimization: Fast-fail timeout (500ms) for large workspaces
-            response = await self._send_request(
-                "textDocument/definition", params, timeout=0.5
-            )
+            response = await self._send_request("textDocument/definition", params, timeout=0.5)
 
             # LSP returns either Location, Location[], or null
             if response is None:
@@ -216,14 +210,10 @@ class SimpleLSPClient:
 
         except asyncio.TimeoutError:
             # Expected for large workspaces - grep fallback is faster
-            logger.info(
-                f"LSP definition timed out after 500ms (workspace too large), using grep fallback"
-            )
+            logger.info(f"LSP definition timed out after 500ms (workspace too large), using grep fallback")
             return []
 
-    async def find_references(
-        self, file_uri: str, line: int, column: int, include_declaration: bool = True
-    ) -> List[Dict]:
+    async def find_references(self, file_uri: str, line: int, column: int, include_declaration: bool = True) -> List[Dict]:
         """
         Find all references to symbol at position
 
@@ -242,15 +232,13 @@ class SimpleLSPClient:
         params = {
             "textDocument": {"uri": file_uri},
             "position": {"line": line, "character": column},
-            "context": {"includeDeclaration": include_declaration},
+            "context": {"includeDeclaration": include_declaration}
         }
 
         try:
             # ADHD Optimization: Fast-fail timeout for large workspaces
             # Target: <200ms total, use 500ms LSP timeout (allows grep fallback time)
-            response = await self._send_request(
-                "textDocument/references", params, timeout=0.5
-            )
+            response = await self._send_request("textDocument/references", params, timeout=0.5)
 
             # LSP returns Location[] or null
             if response is None:
@@ -262,14 +250,10 @@ class SimpleLSPClient:
 
         except asyncio.TimeoutError:
             # Expected for large workspaces (28K+ files) - grep fallback is faster
-            logger.info(
-                f"LSP references timed out after 500ms (workspace too large), using grep fallback"
-            )
+            logger.info(f"LSP references timed out after 500ms (workspace too large), using grep fallback")
             return []
 
-    async def _send_request(
-        self, method: str, params: Dict, timeout: float = 10.0
-    ) -> Any:
+    async def _send_request(self, method: str, params: Dict, timeout: float = 10.0) -> Any:
         """Send JSON-RPC request and wait for response"""
         self.request_id += 1
         request_id = self.request_id
@@ -278,7 +262,7 @@ class SimpleLSPClient:
             "jsonrpc": "2.0",
             "id": request_id,
             "method": method,
-            "params": params,
+            "params": params
         }
 
         # Send request
@@ -291,7 +275,8 @@ class SimpleLSPClient:
         # Wait for response with timeout
         try:
             response = await asyncio.wait_for(
-                self._wait_for_response(request_id), timeout=timeout
+                self._wait_for_response(request_id),
+                timeout=timeout
             )
 
             if "error" in response:
@@ -300,13 +285,15 @@ class SimpleLSPClient:
             return response.get("result")
 
         except asyncio.TimeoutError:
-            raise asyncio.TimeoutError(
-                f"LSP request {method} timed out after {timeout}s"
-            )
+            raise asyncio.TimeoutError(f"LSP request {method} timed out after {timeout}s")
 
     async def _send_notification(self, method: str, params: Dict):
         """Send JSON-RPC notification (no response expected)"""
-        notification = {"jsonrpc": "2.0", "method": method, "params": params}
+        notification = {
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params
+        }
 
         message = json.dumps(notification)
         content = f"Content-Length: {len(message)}\r\n\r\n{message}"
@@ -357,9 +344,7 @@ class SimpleLSPClient:
                             if "id" in response:  # It's a response, not a notification
                                 await self._response_queue.put(response)
                         except json.JSONDecodeError:
-                            logger.warning(
-                                f"Failed to parse LSP response: {message[:100]}"
-                            )
+                            logger.warning(f"Failed to parse LSP response: {message[:100]}")
                     else:
                         # Need more data
                         buffer = header + b"\r\n\r\n" + rest
@@ -466,9 +451,7 @@ class SerenaV2MCPServer:
         # Enhanced: Start background services (file watcher)
         await self._ensure_component("file_watcher")
 
-        logger.info(
-            f"✓ Server ready in {(datetime.now() - self.server_start_time).total_seconds():.2f}s"
-        )
+        logger.info(f"✓ Server ready in {(datetime.now() - self.server_start_time).total_seconds():.2f}s")
 
     def _detect_workspace(self) -> Optional[Path]:
         """
@@ -480,7 +463,7 @@ class SerenaV2MCPServer:
 
         # Walk up looking for .git
         for _ in range(10):
-            if (current / ".git").exists():
+            if (current / '.git').exists():
                 return current
 
             parent = current.parent
@@ -506,42 +489,23 @@ class SerenaV2MCPServer:
 
         try:
             # Quick count with timeout (ADHD: don't wait >200ms)
-            # Security: Use create_subprocess_exec instead of shell to avoid command injection
-            process = await asyncio.create_subprocess_exec(
-                "find",
-                str(self.workspace),
-                "-name",
-                "*.py",
-                "-type",
-                "f",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+            result = await asyncio.wait_for(
+                asyncio.create_subprocess_shell(
+                    f'find "{self.workspace}" -name "*.py" -type f | wc -l',
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                ),
+                timeout=0.2
             )
-
-            # Wait for the process to complete with a timeout
-            try:
-                stdout, _ = await asyncio.wait_for(process.communicate(), timeout=0.2)
-                # Count lines in stdout (each line is one file)
-                count = len(stdout.splitlines())
-            except asyncio.TimeoutError:
-                # Kill the process if it times out
-                if process.returncode is None:
-                    try:
-                        process.terminate()
-                        await process.wait()
-                    except Exception:
-                        pass
-                raise
-
+            stdout, _ = await result.communicate()
+            count = int(stdout.decode().strip())
             self.workspace_python_file_count = count
             logger.info(f"Workspace size: {count} Python files")
             return count
 
         except (asyncio.TimeoutError, Exception) as e:
             # Assume large workspace if count times out
-            logger.info(
-                f"Workspace file count timed out - assuming large workspace (>5K files)"
-            )
+            logger.info(f"Workspace file count timed out - assuming large workspace (>5K files)")
             self.workspace_python_file_count = 10000  # Assume large
             return self.workspace_python_file_count
 
@@ -561,7 +525,7 @@ class SerenaV2MCPServer:
                 host="localhost",
                 port=5455,
                 database="dopemux_knowledge_graph",
-                user="dopemux_age",
+                user="dopemux_age"
             )
 
             await self.conport_client.connect()
@@ -698,10 +662,7 @@ class SerenaV2MCPServer:
 
     async def _init_claude_context(self):
         """Initialize claude-context MCP integration"""
-        from .claude_context_integration import (
-            ClaudeContextIntegration,
-            ClaudeContextConfig,
-        )
+        from .claude_context_integration import ClaudeContextIntegration, ClaudeContextConfig
 
         config = ClaudeContextConfig()
         self.claude_context = ClaudeContextIntegration(config)
@@ -731,8 +692,8 @@ class SerenaV2MCPServer:
             redis_url="redis://localhost:6379",
             db_index=6,  # Dedicated DB for Serena navigation
             default_ttl=300,  # 5 minutes
-            symbol_ttl=600,  # 10 minutes
-            definition_ttl=1800,  # 30 minutes
+            symbol_ttl=600,   # 10 minutes
+            definition_ttl=1800  # 30 minutes
         )
 
         self.navigation_cache = NavigationCache(config)
@@ -745,7 +706,8 @@ class SerenaV2MCPServer:
 
         # Create watcher with reference to server instance
         self.file_watcher = FileWatcherManager(
-            serena_system={"server": self}, workspace_path=self.workspace
+            serena_system={"server": self},
+            workspace_path=self.workspace
         )
 
         # Start watching
@@ -765,7 +727,11 @@ class SerenaV2MCPServer:
                 Tool(
                     name="get_workspace_status",
                     description="Health check and diagnostic information for Serena v2 system",
-                    inputSchema={"type": "object", "properties": {}, "required": []},
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="find_symbol",
@@ -775,31 +741,23 @@ class SerenaV2MCPServer:
                         "properties": {
                             "query": {
                                 "type": "string",
-                                "description": "Search query (symbol name or partial match)",
+                                "description": "Search query (symbol name or partial match)"
                             },
                             "symbol_type": {
                                 "type": "string",
                                 "description": "Optional: filter by type (function, class, variable, method, etc)",
-                                "enum": [
-                                    "function",
-                                    "class",
-                                    "variable",
-                                    "method",
-                                    "module",
-                                    "interface",
-                                    "property",
-                                ],
+                                "enum": ["function", "class", "variable", "method", "module", "interface", "property"]
                             },
                             "max_results": {
                                 "type": "integer",
                                 "description": "Maximum results to return (default: 10, max: 10 for ADHD optimization)",
                                 "default": 10,
                                 "minimum": 1,
-                                "maximum": 10,
-                            },
+                                "maximum": 10
+                            }
                         },
-                        "required": ["query"],
-                    },
+                        "required": ["query"]
+                    }
                 ),
                 Tool(
                     name="goto_definition",
@@ -809,19 +767,19 @@ class SerenaV2MCPServer:
                         "properties": {
                             "file_path": {
                                 "type": "string",
-                                "description": "File path (relative to workspace or absolute)",
+                                "description": "File path (relative to workspace or absolute)"
                             },
                             "line": {
                                 "type": "integer",
-                                "description": "Line number (1-indexed, like editor display)",
+                                "description": "Line number (1-indexed, like editor display)"
                             },
                             "column": {
                                 "type": "integer",
-                                "description": "Column number (1-indexed, like editor display)",
-                            },
+                                "description": "Column number (1-indexed, like editor display)"
+                            }
                         },
-                        "required": ["file_path", "line", "column"],
-                    },
+                        "required": ["file_path", "line", "column"]
+                    }
                 ),
                 Tool(
                     name="get_context",
@@ -831,27 +789,27 @@ class SerenaV2MCPServer:
                         "properties": {
                             "file_path": {
                                 "type": "string",
-                                "description": "File path (relative to workspace)",
+                                "description": "File path (relative to workspace)"
                             },
                             "line": {
                                 "type": "integer",
-                                "description": "Center line number (1-indexed)",
+                                "description": "Center line number (1-indexed)"
                             },
                             "context_lines": {
                                 "type": "integer",
                                 "description": "Lines before and after (default: 10, max: 50 for ADHD)",
                                 "default": 10,
                                 "minimum": 1,
-                                "maximum": 50,
+                                "maximum": 50
                             },
                             "include_complexity": {
                                 "type": "boolean",
                                 "description": "Add complexity score annotation (default: true)",
-                                "default": True,
-                            },
+                                "default": True
+                            }
                         },
-                        "required": ["file_path", "line"],
-                    },
+                        "required": ["file_path", "line"]
+                    }
                 ),
                 Tool(
                     name="find_references",
@@ -861,36 +819,36 @@ class SerenaV2MCPServer:
                         "properties": {
                             "file_path": {
                                 "type": "string",
-                                "description": "File path (relative to workspace)",
+                                "description": "File path (relative to workspace)"
                             },
                             "line": {
                                 "type": "integer",
-                                "description": "Line number (1-indexed)",
+                                "description": "Line number (1-indexed)"
                             },
                             "column": {
                                 "type": "integer",
-                                "description": "Column number (1-indexed)",
+                                "description": "Column number (1-indexed)"
                             },
                             "max_results": {
                                 "type": "integer",
                                 "description": "Maximum results (default: 10, dynamically adjusted 3-40 by ADHD Engine)",
                                 "default": 10,
                                 "minimum": 1,
-                                "maximum": 50,
+                                "maximum": 50
                             },
                             "include_declaration": {
                                 "type": "boolean",
                                 "description": "Include the declaration in results (default: true)",
-                                "default": True,
+                                "default": True
                             },
                             "user_id": {
                                 "type": "string",
                                 "description": "User identifier for ADHD state lookup (default: 'default')",
-                                "default": "default",
-                            },
+                                "default": "default"
+                            }
                         },
-                        "required": ["file_path", "line", "column"],
-                    },
+                        "required": ["file_path", "line", "column"]
+                    }
                 ),
                 Tool(
                     name="analyze_complexity",
@@ -900,24 +858,24 @@ class SerenaV2MCPServer:
                         "properties": {
                             "file_path": {
                                 "type": "string",
-                                "description": "File path (relative to workspace)",
+                                "description": "File path (relative to workspace)"
                             },
                             "symbol_name": {
                                 "type": "string",
-                                "description": "Optional: specific symbol to analyze (null = whole file)",
+                                "description": "Optional: specific symbol to analyze (null = whole file)"
                             },
                             "workspace_path": {
                                 "type": "string",
-                                "description": "Optional single workspace path",
+                                "description": "Optional single workspace path"
                             },
                             "workspace_paths": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Optional multiple workspace paths for aggregated analysis",
-                            },
+                                "description": "Optional multiple workspace paths for aggregated analysis"
+                            }
                         },
-                        "required": ["file_path"],
-                    },
+                        "required": ["file_path"]
+                    }
                 ),
                 Tool(
                     name="filter_by_focus",
@@ -928,16 +886,16 @@ class SerenaV2MCPServer:
                             "attention_state": {
                                 "type": "string",
                                 "description": "Current attention level",
-                                "enum": ["focused", "scattered", "transitioning"],
+                                "enum": ["focused", "scattered", "transitioning"]
                             },
                             "items": {
                                 "type": "array",
                                 "description": "Items to filter (symbols, files, references)",
-                                "items": {"type": "object"},
-                            },
+                                "items": {"type": "object"}
+                            }
                         },
-                        "required": ["attention_state", "items"],
-                    },
+                        "required": ["attention_state", "items"]
+                    }
                 ),
                 Tool(
                     name="suggest_next_step",
@@ -947,15 +905,15 @@ class SerenaV2MCPServer:
                         "properties": {
                             "current_file": {
                                 "type": "string",
-                                "description": "Current file path",
+                                "description": "Current file path"
                             },
                             "current_symbol": {
                                 "type": "string",
-                                "description": "Optional: current symbol name",
-                            },
+                                "description": "Optional: current symbol name"
+                            }
                         },
-                        "required": ["current_file"],
-                    },
+                        "required": ["current_file"]
+                    }
                 ),
                 Tool(
                     name="predict_navigation_from_git",
@@ -965,16 +923,16 @@ class SerenaV2MCPServer:
                         "properties": {
                             "current_file": {
                                 "type": "string",
-                                "description": "Current file you're viewing",
+                                "description": "Current file you're viewing"
                             },
                             "days_back": {
                                 "type": "integer",
                                 "description": "Days of git history to analyze (default: 90)",
-                                "default": 90,
-                            },
+                                "default": 90
+                            }
                         },
-                        "required": ["current_file"],
-                    },
+                        "required": ["current_file"]
+                    }
                 ),
                 Tool(
                     name="find_similar_code",
@@ -984,32 +942,32 @@ class SerenaV2MCPServer:
                         "properties": {
                             "query": {
                                 "type": "string",
-                                "description": "Natural language query (e.g., 'authentication middleware patterns')",
+                                "description": "Natural language query (e.g., 'authentication middleware patterns')"
                             },
                             "top_k": {
                                 "type": "integer",
                                 "description": "Number of results (default: 10, ADHD-adjusted)",
                                 "default": 10,
                                 "minimum": 1,
-                                "maximum": 50,
+                                "maximum": 50
                             },
                             "user_id": {
                                 "type": "string",
                                 "description": "User identifier for ADHD state lookup (default: 'default')",
-                                "default": "default",
+                                "default": "default"
                             },
                             "workspace_path": {
                                 "type": "string",
-                                "description": "Optional single workspace path",
+                                "description": "Optional single workspace path"
                             },
                             "workspace_paths": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Optional multiple workspace paths for cross-workspace search",
-                            },
+                                "description": "Optional multiple workspace paths for cross-workspace search"
+                            }
                         },
-                        "required": ["query"],
-                    },
+                        "required": ["query"]
+                    }
                 ),
                 Tool(
                     name="find_test_file",
@@ -1019,20 +977,20 @@ class SerenaV2MCPServer:
                         "properties": {
                             "file_path": {
                                 "type": "string",
-                                "description": "Current file path (implementation or test)",
+                                "description": "Current file path (implementation or test)"
                             },
                             "workspace_path": {
                                 "type": "string",
-                                "description": "Optional single workspace path for scoped search",
+                                "description": "Optional single workspace path for scoped search"
                             },
                             "workspace_paths": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Optional multiple workspace paths for multi-workspace search",
-                            },
+                                "description": "Optional multiple workspace paths for multi-workspace search"
+                            }
                         },
-                        "required": ["file_path"],
-                    },
+                        "required": ["file_path"]
+                    }
                 ),
                 Tool(
                     name="get_unified_complexity",
@@ -1042,29 +1000,29 @@ class SerenaV2MCPServer:
                         "properties": {
                             "file_path": {
                                 "type": "string",
-                                "description": "File path to analyze",
+                                "description": "File path to analyze"
                             },
                             "symbol": {
                                 "type": "string",
-                                "description": "Optional function/class name (analyzes whole file if omitted)",
+                                "description": "Optional function/class name (analyzes whole file if omitted)"
                             },
                             "user_id": {
                                 "type": "string",
                                 "description": "User identifier for ADHD adjustments (default: 'default')",
-                                "default": "default",
+                                "default": "default"
                             },
                             "workspace_path": {
                                 "type": "string",
-                                "description": "Optional single workspace path",
+                                "description": "Optional single workspace path"
                             },
                             "workspace_paths": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Optional multiple workspace paths for aggregated complexity",
-                            },
+                                "description": "Optional multiple workspace paths for aggregated complexity"
+                            }
                         },
-                        "required": ["file_path"],
-                    },
+                        "required": ["file_path"]
+                    }
                 ),
                 Tool(
                     name="get_reading_order",
@@ -1075,25 +1033,25 @@ class SerenaV2MCPServer:
                             "files": {
                                 "type": "array",
                                 "description": "File paths to order",
-                                "items": {"type": "string"},
+                                "items": {"type": "string"}
                             },
                             "symbols": {
                                 "type": "array",
                                 "description": "Optional: symbol names to order",
-                                "items": {"type": "string"},
+                                "items": {"type": "string"}
                             },
                             "workspace_path": {
                                 "type": "string",
-                                "description": "Optional single workspace path",
+                                "description": "Optional single workspace path"
                             },
                             "workspace_paths": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Optional multiple workspace paths for cross-workspace reading order",
-                            },
+                                "description": "Optional multiple workspace paths for cross-workspace reading order"
+                            }
                         },
-                        "required": ["files"],
-                    },
+                        "required": ["files"]
+                    }
                 ),
                 Tool(
                     name="find_relationships",
@@ -1103,24 +1061,24 @@ class SerenaV2MCPServer:
                         "properties": {
                             "symbol": {
                                 "type": "string",
-                                "description": "Symbol to find relationships for",
+                                "description": "Symbol to find relationships for"
                             },
                             "relationship_type": {
                                 "type": "string",
                                 "description": "Type of relationship",
                                 "enum": ["calls", "imports", "inherits", "all"],
-                                "default": "all",
+                                "default": "all"
                             },
                             "depth": {
                                 "type": "integer",
                                 "description": "Max depth (default: 2, max: 3)",
                                 "default": 2,
                                 "minimum": 1,
-                                "maximum": 3,
-                            },
+                                "maximum": 3
+                            }
                         },
-                        "required": ["symbol"],
-                    },
+                        "required": ["symbol"]
+                    }
                 ),
                 Tool(
                     name="get_navigation_patterns",
@@ -1131,20 +1089,20 @@ class SerenaV2MCPServer:
                             "days_back": {
                                 "type": "integer",
                                 "description": "Days of history (default: 7)",
-                                "default": 7,
+                                "default": 7
                             },
                             "workspace_path": {
                                 "type": "string",
-                                "description": "Optional single workspace path",
+                                "description": "Optional single workspace path"
                             },
                             "workspace_paths": {
                                 "type": "array",
                                 "items": {"type": "string"},
-                                "description": "Optional multiple workspace paths for pattern analysis",
-                            },
+                                "description": "Optional multiple workspace paths for pattern analysis"
+                            }
                         },
-                        "required": [],
-                    },
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="update_focus_mode",
@@ -1155,11 +1113,11 @@ class SerenaV2MCPServer:
                             "mode": {
                                 "type": "string",
                                 "description": "Focus mode",
-                                "enum": ["focused", "scattered", "transitioning"],
+                                "enum": ["focused", "scattered", "transitioning"]
                             }
                         },
-                        "required": ["mode"],
-                    },
+                        "required": ["mode"]
+                    }
                 ),
                 Tool(
                     name="detect_untracked_work",
@@ -1171,16 +1129,16 @@ class SerenaV2MCPServer:
                                 "type": "integer",
                                 "description": "Current session number for adaptive thresholds (default: 1)",
                                 "default": 1,
-                                "minimum": 1,
+                                "minimum": 1
                             },
                             "show_details": {
                                 "type": "boolean",
                                 "description": "Show detailed confidence breakdown (default: false)",
-                                "default": False,
-                            },
+                                "default": False
+                            }
                         },
-                        "required": [],
-                    },
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="track_untracked_work",
@@ -1190,21 +1148,21 @@ class SerenaV2MCPServer:
                         "properties": {
                             "work_name": {
                                 "type": "string",
-                                "description": "Work name from detection (auto-generated or custom)",
+                                "description": "Work name from detection (auto-generated or custom)"
                             },
                             "custom_description": {
                                 "type": "string",
-                                "description": "Optional: Override auto-generated description",
+                                "description": "Optional: Override auto-generated description"
                             },
                             "complexity": {
                                 "type": "number",
                                 "description": "Cognitive load score 0.0-1.0 (auto-estimated if not provided)",
                                 "minimum": 0.0,
-                                "maximum": 1.0,
-                            },
+                                "maximum": 1.0
+                            }
                         },
-                        "required": ["work_name"],
-                    },
+                        "required": ["work_name"]
+                    }
                 ),
                 Tool(
                     name="snooze_untracked_work",
@@ -1214,17 +1172,17 @@ class SerenaV2MCPServer:
                         "properties": {
                             "work_id": {
                                 "type": "string",
-                                "description": "Untracked work UUID from detection",
+                                "description": "Untracked work UUID from detection"
                             },
                             "duration": {
                                 "type": "string",
                                 "description": "Snooze duration",
                                 "enum": ["short", "medium", "long"],
-                                "default": "medium",
-                            },
+                                "default": "medium"
+                            }
                         },
-                        "required": ["work_id"],
-                    },
+                        "required": ["work_id"]
+                    }
                 ),
                 Tool(
                     name="ignore_untracked_work",
@@ -1234,15 +1192,15 @@ class SerenaV2MCPServer:
                         "properties": {
                             "work_id": {
                                 "type": "string",
-                                "description": "Untracked work UUID from detection",
+                                "description": "Untracked work UUID from detection"
                             },
                             "reason": {
                                 "type": "string",
-                                "description": "Optional: Why abandoning (experiment, cleanup, false positive)",
-                            },
+                                "description": "Optional: Why abandoning (experiment, cleanup, false positive)"
+                            }
                         },
-                        "required": ["work_id"],
-                    },
+                        "required": ["work_id"]
+                    }
                 ),
                 Tool(
                     name="suggest_branch_organization",
@@ -1254,16 +1212,20 @@ class SerenaV2MCPServer:
                                 "type": "integer",
                                 "description": "Minimum files per cluster (default: 2)",
                                 "default": 2,
-                                "minimum": 1,
+                                "minimum": 1
                             }
                         },
-                        "required": [],
-                    },
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="get_pattern_stats",
                     description="F5: Pattern Learning Stats (Analytics tool). Get pattern learning statistics including cache performance, pattern counts, and top patterns. ADHD benefit: Quick health check of learning system.",
-                    inputSchema={"type": "object", "properties": {}, "required": []},
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="get_top_patterns",
@@ -1275,29 +1237,25 @@ class SerenaV2MCPServer:
                                 "type": "string",
                                 "description": "Type of pattern (file_extension, directory, branch_prefix)",
                                 "default": "file_extension",
-                                "enum": [
-                                    "file_extension",
-                                    "directory",
-                                    "branch_prefix",
-                                ],
+                                "enum": ["file_extension", "directory", "branch_prefix"]
                             },
                             "limit": {
                                 "type": "integer",
                                 "description": "Max patterns to return (default 10, ADHD limit)",
                                 "default": 10,
                                 "minimum": 1,
-                                "maximum": 10,
+                                "maximum": 10
                             },
                             "min_probability": {
                                 "type": "number",
                                 "description": "Minimum probability threshold (0.0-1.0, default 0.1)",
                                 "default": 0.1,
                                 "minimum": 0.0,
-                                "maximum": 1.0,
-                            },
+                                "maximum": 1.0
+                            }
                         },
-                        "required": [],
-                    },
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="get_abandoned_work",
@@ -1309,25 +1267,25 @@ class SerenaV2MCPServer:
                                 "type": "integer",
                                 "description": "Minimum days idle (default 7)",
                                 "default": 7,
-                                "minimum": 1,
+                                "minimum": 1
                             },
                             "min_score": {
                                 "type": "number",
                                 "description": "Minimum abandonment score 0.0-1.0 (default 0.5)",
                                 "default": 0.5,
                                 "minimum": 0.0,
-                                "maximum": 1.0,
+                                "maximum": 1.0
                             },
                             "limit": {
                                 "type": "integer",
                                 "description": "Max results (default 10, ADHD limit)",
                                 "default": 10,
                                 "minimum": 1,
-                                "maximum": 10,
-                            },
+                                "maximum": 10
+                            }
                         },
-                        "required": [],
-                    },
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="mark_abandoned",
@@ -1337,21 +1295,25 @@ class SerenaV2MCPServer:
                         "properties": {
                             "work_name": {
                                 "type": "string",
-                                "description": "Name of work from get_abandoned_work",
+                                "description": "Name of work from get_abandoned_work"
                             },
                             "action_taken": {
                                 "type": "string",
                                 "description": "Action taken (commit, delete, archive)",
-                                "enum": ["commit", "delete", "archive"],
-                            },
+                                "enum": ["commit", "delete", "archive"]
+                            }
                         },
-                        "required": ["work_name", "action_taken"],
-                    },
+                        "required": ["work_name", "action_taken"]
+                    }
                 ),
                 Tool(
                     name="get_abandonment_stats",
                     description="F6: Abandonment Stats (Analytics tool). Get statistics on abandoned work patterns. Shows total abandoned, by severity, avg days idle. ADHD benefit: Understand personal patterns, no judgment.",
-                    inputSchema={"type": "object", "properties": {}, "required": []},
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="get_metrics_dashboard",
@@ -1363,20 +1325,20 @@ class SerenaV2MCPServer:
                                 "type": "integer",
                                 "description": "Time window for aggregation (default: 7)",
                                 "minimum": 1,
-                                "maximum": 90,
+                                "maximum": 90
                             },
                             "level": {
                                 "type": "integer",
                                 "description": "Disclosure level (1=summary, 2=breakdown, 3=trends)",
-                                "enum": [1, 2, 3],
+                                "enum": [1, 2, 3]
                             },
                             "include_trends": {
                                 "type": "boolean",
-                                "description": "Show trend arrows (requires history)",
-                            },
+                                "description": "Show trend arrows (requires history)"
+                            }
                         },
-                        "required": [],
-                    },
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="get_metric_history",
@@ -1387,37 +1349,40 @@ class SerenaV2MCPServer:
                             "metric_name": {
                                 "type": "string",
                                 "description": "Metric to retrieve",
-                                "enum": [
-                                    "confidence",
-                                    "pattern_boost",
-                                    "abandonment_rate",
-                                    "pass_rate",
-                                ],
+                                "enum": ["confidence", "pattern_boost", "abandonment_rate", "pass_rate"]
                             },
                             "days": {
                                 "type": "integer",
                                 "description": "Historical window (default: 30)",
                                 "minimum": 1,
-                                "maximum": 90,
+                                "maximum": 90
                             },
                             "granularity": {
                                 "type": "string",
                                 "description": "daily or weekly",
-                                "enum": ["daily", "weekly"],
-                            },
+                                "enum": ["daily", "weekly"]
+                            }
                         },
-                        "required": ["metric_name"],
-                    },
+                        "required": ["metric_name"]
+                    }
                 ),
                 Tool(
                     name="save_metrics_snapshot",
                     description="F7: Save Metrics Snapshot (Internal tool). Save daily metrics to ConPort for historical tracking. Called automatically after detections. ADHD benefit: Automatic tracking, no manual effort.",
-                    inputSchema={"type": "object", "properties": {}, "required": []},
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="get_untracked_work_config",
                     description="Feature 1 Config: Get user configuration (Feature tool). Returns thresholds, grace period, quiet hours, snooze durations. Shows current settings.",
-                    inputSchema={"type": "object", "properties": {}, "required": []},
+                    inputSchema={
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="update_untracked_work_config",
@@ -1427,35 +1392,35 @@ class SerenaV2MCPServer:
                         "properties": {
                             "enabled": {
                                 "type": "boolean",
-                                "description": "Enable/disable Feature 1 entirely",
+                                "description": "Enable/disable Feature 1 entirely"
                             },
                             "confidence_threshold": {
                                 "type": "number",
                                 "description": "Min confidence to show reminders (0.0-1.0)",
                                 "minimum": 0.0,
-                                "maximum": 1.0,
+                                "maximum": 1.0
                             },
                             "grace_period_minutes": {
                                 "type": "integer",
                                 "description": "Grace period for new work (default: 30)",
                                 "minimum": 0,
-                                "maximum": 180,
+                                "maximum": 180
                             },
                             "quiet_hours_enabled": {
                                 "type": "boolean",
-                                "description": "Enable quiet hours (no reminders)",
+                                "description": "Enable quiet hours (no reminders)"
                             },
                             "quiet_hours_start": {
                                 "type": "string",
-                                "description": "Quiet hours start (HH:MM format, e.g. '22:00')",
+                                "description": "Quiet hours start (HH:MM format, e.g. '22:00')"
                             },
                             "quiet_hours_end": {
                                 "type": "string",
-                                "description": "Quiet hours end (HH:MM format, e.g. '08:00')",
-                            },
+                                "description": "Quiet hours end (HH:MM format, e.g. '08:00')"
+                            }
                         },
-                        "required": [],
-                    },
+                        "required": []
+                    }
                 ),
                 Tool(
                     name="read_file",
@@ -1465,20 +1430,20 @@ class SerenaV2MCPServer:
                         "properties": {
                             "relative_path": {
                                 "type": "string",
-                                "description": "Path relative to workspace root",
+                                "description": "Path relative to workspace root"
                             },
                             "start_line": {
                                 "type": "integer",
                                 "description": "First line to read (0-indexed, optional)",
-                                "default": 0,
+                                "default": 0
                             },
                             "end_line": {
                                 "type": "integer",
-                                "description": "Last line to read (optional, null = end of file)",
-                            },
+                                "description": "Last line to read (optional, null = end of file)"
+                            }
                         },
-                        "required": ["relative_path"],
-                    },
+                        "required": ["relative_path"]
+                    }
                 ),
                 Tool(
                     name="list_dir",
@@ -1488,16 +1453,16 @@ class SerenaV2MCPServer:
                         "properties": {
                             "relative_path": {
                                 "type": "string",
-                                "description": "Directory path relative to workspace",
+                                "description": "Directory path relative to workspace"
                             },
                             "recursive": {
                                 "type": "boolean",
                                 "description": "Whether to list recursively",
-                                "default": False,
-                            },
+                                "default": False
+                            }
                         },
-                        "required": ["relative_path"],
-                    },
+                        "required": ["relative_path"]
+                    }
                 ),
             ]
 
@@ -1602,70 +1567,49 @@ class SerenaV2MCPServer:
                 "name": "serena-v2",
                 "phase": "2A",
                 "uptime_seconds": round(uptime, 2),
-                "started_at": self.server_start_time.isoformat(),
+                "started_at": self.server_start_time.isoformat()
             },
             "workspace": {
                 "path": str(self.workspace),
-                "detected": self.workspace is not None,
+                "detected": self.workspace is not None
             },
             "components": {
                 "database": {
                     "loaded": self.lazy_components.get("database", False),
-                    "error": self.initialization_errors.get("database"),
+                    "error": self.initialization_errors.get("database")
                 },
                 "lsp": {
                     "loaded": self.lazy_components.get("lsp", False),
-                    "error": self.initialization_errors.get("lsp"),
+                    "error": self.initialization_errors.get("lsp")
                 },
                 "claude_context": {
                     "loaded": self.lazy_components.get("claude_context", False),
-                    "error": self.initialization_errors.get("claude_context"),
+                    "error": self.initialization_errors.get("claude_context")
                 },
                 "tree_sitter": {
                     "loaded": self.lazy_components.get("tree_sitter", False),
-                    "error": self.initialization_errors.get("tree_sitter"),
+                    "error": self.initialization_errors.get("tree_sitter")
                 },
                 "adhd_features": {
                     "loaded": self.lazy_components.get("adhd_features", False),
-                    "error": self.initialization_errors.get("adhd_features"),
-                },
+                    "error": self.initialization_errors.get("adhd_features")
+                }
             },
             "tools": {
                 "phase_1": ["read_file", "list_dir"],
                 "phase_2a": ["get_workspace_status"],
-                "phase_2b": [
-                    "find_symbol",
-                    "goto_definition",
-                    "get_context",
-                    "find_references",
-                ],
-                "phase_2c": [
-                    "analyze_complexity",
-                    "filter_by_focus",
-                    "suggest_next_step",
-                    "get_reading_order",
-                ],
-                "phase_2d": [
-                    "find_relationships",
-                    "get_navigation_patterns",
-                    "update_focus_mode",
-                ],
+                "phase_2b": ["find_symbol", "goto_definition", "get_context", "find_references"],
+                "phase_2c": ["analyze_complexity", "filter_by_focus", "suggest_next_step", "get_reading_order"],
+                "phase_2d": ["find_relationships", "get_navigation_patterns", "update_focus_mode"],
                 "feature_1_detection": ["detect_untracked_work"],
-                "feature_1_actions": [
-                    "track_untracked_work",
-                    "snooze_untracked_work",
-                    "ignore_untracked_work",
-                ],
-                "feature_1_config": [
-                    "get_untracked_work_config",
-                    "update_untracked_work_config",
-                ],
+                "feature_1_actions": ["track_untracked_work", "snooze_untracked_work", "ignore_untracked_work"],
+                "feature_1_config": ["get_untracked_work_config", "update_untracked_work_config"],
                 "phase_2_deferred": ["semantic_search"],
                 "total_available": 20,
                 "total_planned": 21,
                 "feature_1_status": "complete (detection + actions + storage + config + reminders)",
-                "tier_3_mode": "simplified (Phase 3 will add full database integration)",
-            },
+                "tier_3_mode": "simplified (Phase 3 will add full database integration)"
+            }
         }
 
         return json.dumps(status, indent=2)
@@ -1703,15 +1647,10 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.find_symbol_multi(
-                query,
-                symbol_type,
-                max_results,
-                user_id,
-                workspace_path,
-                workspace_paths,
+                query, symbol_type, max_results, user_id,
+                workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
 
@@ -1750,7 +1689,7 @@ class SerenaV2MCPServer:
                         try:
                             complexity = await self.tree_sitter.analyze_complexity(
                                 symbol.get("location", {}).get("uri", ""),
-                                symbol.get("name"),
+                                symbol.get("name")
                             )
                             symbol["complexity"] = complexity.get("score", 0.0)
                         except (FileNotFoundError, RuntimeError) as e:
@@ -1765,7 +1704,7 @@ class SerenaV2MCPServer:
                     "found": len(symbols),
                     "max_results": max_results,
                     "adhd_filtered": True,
-                    "symbols": symbols,
+                    "symbols": symbols
                 }
 
                 # Cache result for future queries (symbol_ttl: 10 minutes)
@@ -1778,9 +1717,7 @@ class SerenaV2MCPServer:
                 return json.dumps(result, indent=2)
 
             except (asyncio.TimeoutError, RuntimeError) as e:
-                logger.warning(
-                    f"LSP symbol search failed: {e}, falling back to basic search"
-                )
+                logger.warning(f"LSP symbol search failed: {e}, falling back to basic search")
             except Exception:
                 logger.exception("Unexpected LSP symbol search error; falling back")
                 # Fall through to fallback mode
@@ -1793,9 +1730,7 @@ class SerenaV2MCPServer:
         from pathlib import Path
 
         matches = []
-        pattern = re.compile(
-            rf"(class|def)\s+{re.escape(query)}\w*\s*[\(\:]", re.IGNORECASE
-        )
+        pattern = re.compile(rf"(class|def)\s+{re.escape(query)}\w*\s*[\(\:]", re.IGNORECASE)
 
         for py_file in self.workspace.rglob("*.py"):
             if ".venv" in str(py_file) or "__pycache__" in str(py_file):
@@ -1805,16 +1740,14 @@ class SerenaV2MCPServer:
                 content = py_file.read_text()
                 for line_num, line in enumerate(content.splitlines(), 1):
                     if pattern.search(line):
-                        matches.append(
-                            {
-                                "name": query,
-                                "kind": "class" if "class" in line else "function",
-                                "file": str(py_file.relative_to(self.workspace)),
-                                "line": line_num,
-                                "complexity": None,
-                                "fallback_mode": True,
-                            }
-                        )
+                        matches.append({
+                            "name": query,
+                            "kind": "class" if "class" in line else "function",
+                            "file": str(py_file.relative_to(self.workspace)),
+                            "line": line_num,
+                            "complexity": None,
+                            "fallback_mode": True
+                        })
 
                         if len(matches) >= max_results:
                             break
@@ -1835,7 +1768,7 @@ class SerenaV2MCPServer:
             "adhd_filtered": True,
             "fallback_mode": True,
             "lsp_unavailable": not lsp_available,
-            "symbols": matches,
+            "symbols": matches
         }
 
         # Cache fallback results too (shorter TTL since less reliable)
@@ -1847,7 +1780,12 @@ class SerenaV2MCPServer:
 
         return json.dumps(result, indent=2)
 
-    async def goto_definition_tool(self, file_path: str, line: int, column: int) -> str:
+    async def goto_definition_tool(
+        self,
+        file_path: str,
+        line: int,
+        column: int
+    ) -> str:
         """
         Navigate from usage to definition location
 
@@ -1874,13 +1812,10 @@ class SerenaV2MCPServer:
             resolved_path = self.workspace / file_path
 
         if not resolved_path.exists():
-            return json.dumps(
-                {
-                    "error": f"File not found: {file_path}",
-                    "query": {"file": file_path, "line": line, "column": column},
-                },
-                indent=2,
-            )
+            return json.dumps({
+                "error": f"File not found: {file_path}",
+                "query": {"file": file_path, "line": line, "column": column}
+            }, indent=2)
 
         # Convert to file URI and 0-indexed position
         file_uri = f"file://{resolved_path}"
@@ -1895,9 +1830,7 @@ class SerenaV2MCPServer:
 
         if lsp_available and self.lsp:
             try:
-                locations = await self.lsp.goto_definition(
-                    file_uri, lsp_line, lsp_column
-                )
+                locations = await self.lsp.goto_definition(file_uri, lsp_line, lsp_column)
 
                 if locations:
                     # Take first definition (ADHD: avoid overwhelm from multiple defs)
@@ -1915,33 +1848,33 @@ class SerenaV2MCPServer:
 
                     # Extract 7-line context (3 before, def line, 3 after)
                     context = await self._extract_definition_context(
-                        Path(def_file_path), def_line, def_column
+                        Path(def_file_path),
+                        def_line,
+                        def_column
                     )
 
                     elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
                     result = {
-                        "query": {"file": file_path, "line": line, "column": column},
+                        "query": {
+                            "file": file_path,
+                            "line": line,
+                            "column": column
+                        },
                         "definition": {
-                            "file": (
-                                str(Path(def_file_path).relative_to(self.workspace))
-                                if self.workspace in Path(def_file_path).parents
-                                else def_file_path
-                            ),
+                            "file": str(Path(def_file_path).relative_to(self.workspace)) if self.workspace in Path(def_file_path).parents else def_file_path,
                             "line": def_line,
                             "column": def_column,
-                            "context": context,
+                            "context": context
                         },
                         "performance": {
                             "latency_ms": round(elapsed_ms, 2),
                             "mode": "lsp",
-                            "cached": False,
-                        },
+                            "cached": False
+                        }
                     }
 
-                    logger.info(
-                        f"goto_definition: {file_path}:{line}:{column} → {def_line} ({elapsed_ms:.1f}ms)"
-                    )
+                    logger.info(f"goto_definition: {file_path}:{line}:{column} → {def_line} ({elapsed_ms:.1f}ms)")
                     return json.dumps(result, indent=2)
 
             except (asyncio.TimeoutError, RuntimeError) as e:
@@ -1971,7 +1904,6 @@ class SerenaV2MCPServer:
 
             # Grep for definition
             import re
-
             pattern = re.compile(rf"(class|def)\s+{re.escape(symbol)}\s*[\(\:]")
 
             # Search current file first, then workspace
@@ -1985,32 +1917,26 @@ class SerenaV2MCPServer:
                         if pattern.search(line_text):
                             # Found definition!
                             context = await self._extract_definition_context(
-                                search_file, line_num, column
+                                search_file,
+                                line_num,
+                                column
                             )
 
-                            elapsed_ms = (
-                                datetime.now() - start_time
-                            ).total_seconds() * 1000
+                            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
                             result = {
-                                "query": {
-                                    "file": file_path,
-                                    "line": line,
-                                    "column": column,
-                                },
+                                "query": {"file": file_path, "line": line, "column": column},
                                 "definition": {
-                                    "file": str(
-                                        search_file.relative_to(self.workspace)
-                                    ),
+                                    "file": str(search_file.relative_to(self.workspace)),
                                     "line": line_num,
                                     "column": 0,
-                                    "context": context,
+                                    "context": context
                                 },
                                 "performance": {
                                     "latency_ms": round(elapsed_ms, 2),
                                     "mode": "fallback_grep",
-                                    "lsp_unavailable": not lsp_available,
-                                },
+                                    "lsp_unavailable": not lsp_available
+                                }
                             }
 
                             return json.dumps(result, indent=2)
@@ -2018,19 +1944,15 @@ class SerenaV2MCPServer:
                 except Exception as e:
                     continue
             # No definition found
-            return json.dumps(
-                {
-                    "error": "No definition found",
-                    "query": {"file": file_path, "line": line, "column": column},
-                    "symbol": symbol,
-                    "mode": "fallback_grep",
-                },
-                indent=2,
-            )
+            return json.dumps({
+                "error": "No definition found",
+                "query": {"file": file_path, "line": line, "column": column},
+                "symbol": symbol,
+                "mode": "fallback_grep"
+            }, indent=2)
 
         except Exception as e:
             return json.dumps({"error": str(e)}, indent=2)
-
     async def get_context_tool(
         self,
         file_path: str,
@@ -2064,10 +1986,10 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.get_context_multi(
-                file_path, line, context_lines, workspace_path, workspace_paths
+                file_path, line, context_lines,
+                workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
 
@@ -2081,7 +2003,9 @@ class SerenaV2MCPServer:
         file_path_obj = self._resolve_path(file_path)
 
         if not file_path_obj.exists():
-            return json.dumps({"error": f"File not found: {file_path}"}, indent=2)
+            return json.dumps({
+                "error": f"File not found: {file_path}"
+            }, indent=2)
 
         # Read file content
         content = file_path_obj.read_text()
@@ -2113,7 +2037,8 @@ class SerenaV2MCPServer:
                 try:
                     # Analyze the visible range
                     analysis = await self.tree_sitter.analyze_complexity(
-                        str(file_path_obj), None  # Analyze whole file
+                        str(file_path_obj),
+                        None  # Analyze whole file
                     )
                     complexity_score = analysis.get("score", 0.0)
                 except (RuntimeError, FileNotFoundError) as e:
@@ -2129,26 +2054,20 @@ class SerenaV2MCPServer:
             "range": {
                 "start": start_line + 1,
                 "end": end_line,
-                "total_lines": end_line - start_line,
+                "total_lines": end_line - start_line
             },
             "context": context_text,
-            "complexity": (
-                {
-                    "score": complexity_score,
-                    "available": complexity_score is not None,
-                    "safe_reading_minutes": (
-                        round(complexity_score * 15, 1) if complexity_score else None
-                    ),
-                }
-                if include_complexity
-                else None
-            ),
-            "performance": {"latency_ms": round(elapsed_ms, 2)},
+            "complexity": {
+                "score": complexity_score,
+                "available": complexity_score is not None,
+                "safe_reading_minutes": round(complexity_score * 15, 1) if complexity_score else None
+            } if include_complexity else None,
+            "performance": {
+                "latency_ms": round(elapsed_ms, 2)
+            }
         }
 
-        logger.info(
-            f"get_context: {file_path}:{line} ±{context_lines} lines ({elapsed_ms:.1f}ms)"
-        )
+        logger.info(f"get_context: {file_path}:{line} ±{context_lines} lines ({elapsed_ms:.1f}ms)")
         return json.dumps(result, indent=2)
 
     async def find_references_tool(
@@ -2188,17 +2107,11 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.find_references_multi(
-                file_path,
-                line,
-                column,
-                max_results,
-                include_declaration,
-                user_id,
-                workspace_path,
-                workspace_paths,
+                file_path, line, column, max_results,
+                include_declaration, user_id,
+                workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
 
@@ -2215,7 +2128,9 @@ class SerenaV2MCPServer:
             resolved_path = self.workspace / file_path
 
         if not resolved_path.exists():
-            return json.dumps({"error": f"File not found: {file_path}"}, indent=2)
+            return json.dumps({
+                "error": f"File not found: {file_path}"
+            }, indent=2)
 
         # Convert to file URI and 0-indexed
         file_uri = f"file://{resolved_path}"
@@ -2231,7 +2146,10 @@ class SerenaV2MCPServer:
         if lsp_available and self.lsp:
             try:
                 locations = await self.lsp.find_references(
-                    file_uri, lsp_line, lsp_column, include_declaration
+                    file_uri,
+                    lsp_line,
+                    lsp_column,
+                    include_declaration
                 )
 
                 # Apply ADHD filtering
@@ -2251,21 +2169,16 @@ class SerenaV2MCPServer:
 
                     # Extract 3-line context (1 before, ref line, 1 after)
                     context = await self._extract_reference_context(
-                        Path(ref_file_path), ref_line
+                        Path(ref_file_path),
+                        ref_line
                     )
 
-                    references.append(
-                        {
-                            "file": (
-                                str(Path(ref_file_path).relative_to(self.workspace))
-                                if self.workspace in Path(ref_file_path).parents
-                                else ref_file_path
-                            ),
-                            "line": ref_line,
-                            "column": ref_column,
-                            "context": context,
-                        }
-                    )
+                    references.append({
+                        "file": str(Path(ref_file_path).relative_to(self.workspace)) if self.workspace in Path(ref_file_path).parents else ref_file_path,
+                        "line": ref_line,
+                        "column": ref_column,
+                        "context": context
+                    })
 
                 elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
@@ -2275,12 +2188,13 @@ class SerenaV2MCPServer:
                     "max_results": max_results,
                     "adhd_filtered": len(locations) > max_results,
                     "references": references,
-                    "performance": {"latency_ms": round(elapsed_ms, 2), "mode": "lsp"},
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2),
+                        "mode": "lsp"
+                    }
                 }
 
-                logger.info(
-                    f"find_references: {file_path}:{line}:{column} → {len(references)} refs ({elapsed_ms:.1f}ms)"
-                )
+                logger.info(f"find_references: {file_path}:{line}:{column} → {len(references)} refs ({elapsed_ms:.1f}ms)")
                 return json.dumps(result, indent=2)
 
             except (asyncio.TimeoutError, RuntimeError) as e:
@@ -2308,7 +2222,6 @@ class SerenaV2MCPServer:
 
             # Grep for symbol usage
             import re
-
             # Match whole word to avoid partial matches
             pattern = re.compile(rf"\b{re.escape(symbol)}\b")
 
@@ -2321,18 +2234,14 @@ class SerenaV2MCPServer:
                     content = py_file.read_text()
                     for line_num, line_text in enumerate(content.splitlines(), 1):
                         if pattern.search(line_text):
-                            context = await self._extract_reference_context(
-                                py_file, line_num
-                            )
+                            context = await self._extract_reference_context(py_file, line_num)
 
-                            references.append(
-                                {
-                                    "file": str(py_file.relative_to(self.workspace)),
-                                    "line": line_num,
-                                    "column": 0,
-                                    "context": context,
-                                }
-                            )
+                            references.append({
+                                "file": str(py_file.relative_to(self.workspace)),
+                                "line": line_num,
+                                "column": 0,
+                                "context": context
+                            })
 
                             if len(references) >= max_results:
                                 break
@@ -2353,15 +2262,14 @@ class SerenaV2MCPServer:
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2),
                     "mode": "fallback_grep",
-                    "lsp_unavailable": not lsp_available,
-                },
+                    "lsp_unavailable": not lsp_available
+                }
             }
 
             return json.dumps(result, indent=2)
 
         except Exception as e:
             return json.dumps({"error": str(e)}, indent=2)
-
     async def _extract_reference_context(self, file_path: Path, line: int) -> str:
         """
         Extract 3-line context for reference (1 before, ref line, 1 after)
@@ -2391,7 +2299,6 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             return f"(context unavailable: {e})"
-
     async def analyze_complexity_tool(
         self,
         file_path: str,
@@ -2422,10 +2329,10 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.analyze_complexity_multi(
-                file_path, symbol_name, workspace_path, workspace_paths
+                file_path, symbol_name,
+                workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
 
@@ -2436,7 +2343,9 @@ class SerenaV2MCPServer:
         file_path_obj = self._resolve_path(file_path)
 
         if not file_path_obj.exists():
-            return json.dumps({"error": f"File not found: {file_path}"}, indent=2)
+            return json.dumps({
+                "error": f"File not found: {file_path}"
+            }, indent=2)
 
         # Try Tree-sitter analysis
         tree_sitter_available = await self._ensure_component("tree_sitter")
@@ -2444,7 +2353,8 @@ class SerenaV2MCPServer:
         if tree_sitter_available and self.tree_sitter:
             try:
                 analysis = await self.tree_sitter.analyze_complexity(
-                    str(file_path_obj), symbol_name
+                    str(file_path_obj),
+                    symbol_name
                 )
 
                 elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
@@ -2462,9 +2372,7 @@ class SerenaV2MCPServer:
                     recommendation = "Schedule focused time block"
                 else:
                     assessment = "HIGH - Complex code"
-                    recommendation = (
-                        "Peak focus hours only, consider breaking into chunks"
-                    )
+                    recommendation = "Peak focus hours only, consider breaking into chunks"
 
                 result = {
                     "file": file_path,
@@ -2472,36 +2380,32 @@ class SerenaV2MCPServer:
                     "complexity": {
                         "score": complexity_score,
                         "level": assessment,
-                        "recommendation": recommendation,
+                        "recommendation": recommendation
                     },
                     "metrics": {
                         "cyclomatic_complexity": analysis.get("cyclomatic", 0),
                         "nesting_depth": analysis.get("nesting", 0),
                         "lines_of_code": analysis.get("lines", 0),
-                        "function_count": analysis.get("functions", 0),
+                        "function_count": analysis.get("functions", 0)
                     },
                     "adhd_guidance": {
                         "safe_reading_minutes": safe_reading_minutes,
                         "break_after_minutes": 25,  # Standard Pomodoro
-                        "chunk_if_exceeds_minutes": 15,
+                        "chunk_if_exceeds_minutes": 15
                     },
                     "performance": {
                         "latency_ms": round(elapsed_ms, 2),
-                        "mode": "tree_sitter",
-                    },
+                        "mode": "tree_sitter"
+                    }
                 }
 
-                logger.info(
-                    f"analyze_complexity: {file_path} → {complexity_score:.2f} ({elapsed_ms:.1f}ms)"
-                )
+                logger.info(f"analyze_complexity: {file_path} → {complexity_score:.2f} ({elapsed_ms:.1f}ms)")
                 return json.dumps(result, indent=2)
 
             except (RuntimeError, FileNotFoundError) as e:
                 logger.warning(f"Tree-sitter analysis failed: {e}, using fallback")
             except Exception:
-                logger.exception(
-                    "Unexpected tree-sitter analysis error; using fallback"
-                )
+                logger.exception("Unexpected tree-sitter analysis error; using fallback")
                 # Fall through to fallback
 
         # Fallback: Basic line/character counting
@@ -2541,31 +2445,32 @@ class SerenaV2MCPServer:
                 "complexity": {
                     "score": round(score, 2),
                     "level": assessment,
-                    "recommendation": "Estimate based on file size",
+                    "recommendation": "Estimate based on file size"
                 },
                 "metrics": {
                     "lines_of_code": line_count,
                     "characters": char_count,
-                    "estimated": True,
+                    "estimated": True
                 },
                 "adhd_guidance": {
                     "safe_reading_minutes": safe_reading_minutes,
-                    "break_after_minutes": 25,
+                    "break_after_minutes": 25
                 },
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2),
                     "mode": "fallback_basic",
-                    "tree_sitter_unavailable": not tree_sitter_available,
-                },
+                    "tree_sitter_unavailable": not tree_sitter_available
+                }
             }
 
             return json.dumps(result, indent=2)
 
         except Exception as e:
             return json.dumps({"error": str(e)}, indent=2)
-
     async def filter_by_focus_tool(
-        self, attention_state: str, items: List[Dict[str, Any]]
+        self,
+        attention_state: str,
+        items: List[Dict[str, Any]]
     ) -> str:
         """
         Filter navigation results by attention state
@@ -2584,7 +2489,11 @@ class SerenaV2MCPServer:
             Filtered and prioritized items
         """
         # ADHD filtering thresholds
-        limits = {"focused": 10, "scattered": 3, "transitioning": 5}
+        limits = {
+            "focused": 10,
+            "scattered": 3,
+            "transitioning": 5
+        }
 
         max_items = limits.get(attention_state, 10)
 
@@ -2599,17 +2508,17 @@ class SerenaV2MCPServer:
             "items": filtered_items,
             "adhd_guidance": {
                 "max_items_for_state": max_items,
-                "recommendation": f"Showing {len(filtered_items)} items optimal for {attention_state} state",
-            },
+                "recommendation": f"Showing {len(filtered_items)} items optimal for {attention_state} state"
+            }
         }
 
-        logger.info(
-            f"filter_by_focus: {attention_state} → {len(items)} items → {len(filtered_items)} items"
-        )
+        logger.info(f"filter_by_focus: {attention_state} → {len(items)} items → {len(filtered_items)} items")
         return json.dumps(result, indent=2)
 
     async def suggest_next_step_tool(
-        self, current_file: str, current_symbol: Optional[str] = None
+        self,
+        current_file: str,
+        current_symbol: Optional[str] = None
     ) -> str:
         """
         Learning-based navigation suggestions
@@ -2640,45 +2549,36 @@ class SerenaV2MCPServer:
         # Suggestion 1: If in test file, suggest source file
         if "test_" in file_path_obj.name or "_test" in file_path_obj.name:
             source_file = file_path_obj.name.replace("test_", "").replace("_test", "")
-            suggestions.append(
-                {
-                    "type": "source_file",
-                    "target": source_file,
-                    "reason": "Test file → Source file pattern",
-                    "confidence": 0.8,
-                }
-            )
+            suggestions.append({
+                "type": "source_file",
+                "target": source_file,
+                "reason": "Test file → Source file pattern",
+                "confidence": 0.8
+            })
         # Suggestion 2: If in source, suggest test file
         elif not file_path_obj.name.startswith("test_"):
             test_file = f"test_{file_path_obj.name}"
-            suggestions.append(
-                {
-                    "type": "test_file",
-                    "target": test_file,
-                    "reason": "Source file → Test file pattern",
-                    "confidence": 0.7,
-                }
-            )
+            suggestions.append({
+                "type": "test_file",
+                "target": test_file,
+                "reason": "Source file → Test file pattern",
+                "confidence": 0.7
+            })
 
         # Suggestion 3: Related imports (files imported in current file)
         try:
             content = file_path_obj.read_text()
             import re
-
-            import_pattern = re.compile(
-                r"^from\s+\.(\w+)\s+import|^import\s+\.(\w+)", re.MULTILINE
-            )
+            import_pattern = re.compile(r"^from\s+\.(\w+)\s+import|^import\s+\.(\w+)", re.MULTILINE)
             for match in import_pattern.finditer(content):
                 module = match.group(1) or match.group(2)
                 if module:
-                    suggestions.append(
-                        {
-                            "type": "imported_module",
-                            "target": f"{module}.py",
-                            "reason": f"Imported in {file_path_obj.name}",
-                            "confidence": 0.6,
-                        }
-                    )
+                    suggestions.append({
+                        "type": "imported_module",
+                        "target": f"{module}.py",
+                        "reason": f"Imported in {file_path_obj.name}",
+                        "confidence": 0.6
+                    })
                 if len(suggestions) >= 3:
                     break
         except Exception as e:
@@ -2693,13 +2593,11 @@ class SerenaV2MCPServer:
             "mode": "heuristic",
             "adhd_guidance": {
                 "decision_reduction": f"Showing {len(suggestions)} suggestions to reduce choice paralysis",
-                "upgrade_note": "Phase 2D will add pattern learning based on your navigation history",
-            },
+                "upgrade_note": "Phase 2D will add pattern learning based on your navigation history"
+            }
         }
 
-        logger.info(
-            f"suggest_next_step: {current_file} → {len(suggestions)} suggestions"
-        )
+        logger.info(f"suggest_next_step: {current_file} → {len(suggestions)} suggestions")
         return json.dumps(result, indent=2)
 
     async def get_reading_order_tool(
@@ -2730,7 +2628,6 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.get_reading_order_multi(
                 files, symbols, workspace_path, workspace_paths
@@ -2750,32 +2647,24 @@ class SerenaV2MCPServer:
                 complexity_data = json.loads(complexity_result)
 
                 score = complexity_data.get("complexity", {}).get("score", 0.5)
-                reading_minutes = complexity_data.get("adhd_guidance", {}).get(
-                    "safe_reading_minutes", 5.0
-                )
+                reading_minutes = complexity_data.get("adhd_guidance", {}).get("safe_reading_minutes", 5.0)
 
-                file_complexities.append(
-                    {
-                        "file": file_path,
-                        "complexity_score": score,
-                        "reading_minutes": reading_minutes,
-                        "level": complexity_data.get("complexity", {}).get(
-                            "level", "UNKNOWN"
-                        ),
-                    }
-                )
+                file_complexities.append({
+                    "file": file_path,
+                    "complexity_score": score,
+                    "reading_minutes": reading_minutes,
+                    "level": complexity_data.get("complexity", {}).get("level", "UNKNOWN")
+                })
 
             except Exception as e:
                 logger.warning(f"Failed to analyze {file_path}: {e}")
                 # Default complexity if analysis fails
-                file_complexities.append(
-                    {
-                        "file": file_path,
-                        "complexity_score": 0.5,
-                        "reading_minutes": 7.5,
-                        "level": "UNKNOWN",
-                    }
-                )
+                file_complexities.append({
+                    "file": file_path,
+                    "complexity_score": 0.5,
+                    "reading_minutes": 7.5,
+                    "level": "UNKNOWN"
+                })
 
         # Sort by complexity (simple first)
         file_complexities.sort(key=lambda x: x["complexity_score"])
@@ -2793,19 +2682,19 @@ class SerenaV2MCPServer:
                 "total_reading_minutes": round(total_minutes, 1),
                 "pomodoro_sessions_needed": sessions_needed,
                 "breaks_recommended": sessions_needed - 1,
-                "progressive_disclosure": "Start with simplest files to build understanding",
+                "progressive_disclosure": "Start with simplest files to build understanding"
             },
             "adhd_guidance": {
                 "strategy": "Complexity progression (simple → complex)",
                 "chunk_recommendation": "Read 1-2 files per 25-min session",
-                "break_pattern": "5-min break between sessions, 15-min after 4 sessions",
+                "break_pattern": "5-min break between sessions, 15-min after 4 sessions"
             },
-            "performance": {"latency_ms": round(elapsed_ms, 2)},
+            "performance": {
+                "latency_ms": round(elapsed_ms, 2)
+            }
         }
 
-        logger.info(
-            f"get_reading_order: {len(files)} files → {sessions_needed} sessions ({elapsed_ms:.1f}ms)"
-        )
+        logger.info(f"get_reading_order: {len(files)} files → {sessions_needed} sessions ({elapsed_ms:.1f}ms)")
         return json.dumps(result, indent=2)
 
     async def find_relationships_tool(
@@ -2838,10 +2727,10 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.find_relationships_multi(
-                symbol, relationship_type, depth, workspace_path, workspace_paths
+                symbol, relationship_type, depth,
+                workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
 
@@ -2863,20 +2752,11 @@ class SerenaV2MCPServer:
 
         if relationship_type in ["imports", "all"]:
             # Find imports: from X import symbol, import symbol
-            patterns.append(
-                (
-                    "imports",
-                    re.compile(
-                        rf"(from .* import .*\b{re.escape(symbol)}\b|import .*\b{re.escape(symbol)}\b)"
-                    ),
-                )
-            )
+            patterns.append(("imports", re.compile(rf"(from .* import .*\b{re.escape(symbol)}\b|import .*\b{re.escape(symbol)}\b)")))
 
         if relationship_type in ["inherits", "all"]:
             # Find class inheritance: class X(symbol)
-            patterns.append(
-                ("inherits", re.compile(rf"class \w+\([^)]*\b{re.escape(symbol)}\b"))
-            )
+            patterns.append(("inherits", re.compile(rf"class \w+\([^)]*\b{re.escape(symbol)}\b")))
 
         # Search workspace
         for py_file in self.workspace.rglob("*.py"):
@@ -2888,16 +2768,12 @@ class SerenaV2MCPServer:
                 for line_num, line_text in enumerate(content.splitlines(), 1):
                     for rel_type, pattern in patterns:
                         if pattern.search(line_text):
-                            relationships.append(
-                                {
-                                    "type": rel_type,
-                                    "file": str(py_file.relative_to(self.workspace)),
-                                    "line": line_num,
-                                    "context": line_text.strip()[
-                                        :100
-                                    ],  # First 100 chars
-                                }
-                            )
+                            relationships.append({
+                                "type": rel_type,
+                                "file": str(py_file.relative_to(self.workspace)),
+                                "line": line_num,
+                                "context": line_text.strip()[:100]  # First 100 chars
+                            })
 
                             if len(relationships) >= 10:  # ADHD limit
                                 break
@@ -2922,12 +2798,12 @@ class SerenaV2MCPServer:
             "relationships": relationships,
             "mode": "simplified_grep",
             "upgrade_note": "Phase 3 will add PostgreSQL graph for multi-level traversal",
-            "performance": {"latency_ms": round(elapsed_ms, 2)},
+            "performance": {
+                "latency_ms": round(elapsed_ms, 2)
+            }
         }
 
-        logger.info(
-            f"find_relationships: {symbol} ({relationship_type}) → {len(relationships)} rels ({elapsed_ms:.1f}ms)"
-        )
+        logger.info(f"find_relationships: {symbol} ({relationship_type}) → {len(relationships)} rels ({elapsed_ms:.1f}ms)")
         return json.dumps(result, indent=2)
 
     async def get_navigation_patterns_tool(
@@ -2955,7 +2831,6 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.get_navigation_patterns_multi(
                 days_back, workspace_path, workspace_paths
@@ -2970,21 +2845,24 @@ class SerenaV2MCPServer:
             "current_capabilities": {
                 "heuristic_suggestions": "Available via suggest_next_step tool",
                 "test_source_patterns": "Detects test/source file relationships",
-                "import_following": "Suggests imported modules",
+                "import_following": "Suggests imported modules"
             },
             "phase_3_features": {
                 "adaptive_learning": "Learns from your navigation sequences",
                 "personalized_patterns": "Recognizes your coding style",
                 "effectiveness_tracking": "Measures which patterns help you",
-                "context_switching": "Optimizes for interruptions",
+                "context_switching": "Optimizes for interruptions"
             },
-            "upgrade_timeline": "Phase 3: Full adaptive learning with PostgreSQL persistence",
+            "upgrade_timeline": "Phase 3: Full adaptive learning with PostgreSQL persistence"
         }
 
         logger.info(f"get_navigation_patterns: placeholder (days_back={days_back})")
         return json.dumps(result, indent=2)
 
-    async def update_focus_mode_tool(self, mode: str) -> str:
+    async def update_focus_mode_tool(
+        self,
+        mode: str
+    ) -> str:
         """
         Set current focus state for adaptive filtering
 
@@ -3004,7 +2882,11 @@ class SerenaV2MCPServer:
         self.current_focus_mode = mode
 
         # Get filtering thresholds
-        limits = {"focused": 10, "scattered": 3, "transitioning": 5}
+        limits = {
+            "focused": 10,
+            "scattered": 3,
+            "transitioning": 5
+        }
 
         result = {
             "mode": mode,
@@ -3013,20 +2895,22 @@ class SerenaV2MCPServer:
             "filtering_behavior": {
                 "focused": "Show up to 10 items - full cognitive capacity",
                 "scattered": "Show top 3 items - reduce overwhelm",
-                "transitioning": "Show top 5 items - moderate filtering",
+                "transitioning": "Show top 5 items - moderate filtering"
             }.get(mode, "Unknown mode"),
             "persistence": {
                 "saved_to_database": False,
                 "restart_behavior": "Resets to 'focused' on server restart",
-                "upgrade_note": "Phase 3 will persist across sessions",
-            },
+                "upgrade_note": "Phase 3 will persist across sessions"
+            }
         }
 
         logger.info(f"update_focus_mode: {old_mode} → {mode}")
         return json.dumps(result, indent=2)
 
     async def detect_untracked_work_tool(
-        self, session_number: int = 1, show_details: bool = False
+        self,
+        session_number: int = 1,
+        show_details: bool = False
     ) -> str:
         """
         Feature 1: ADHD-optimized untracked work detection
@@ -3055,7 +2939,8 @@ class SerenaV2MCPServer:
 
             # Initialize detector
             detector = UntrackedWorkDetector(
-                workspace=self.workspace, workspace_id=str(self.workspace)
+                workspace=self.workspace,
+                workspace_id=str(self.workspace)
             )
 
             await self._ensure_conport_client()
@@ -3063,7 +2948,8 @@ class SerenaV2MCPServer:
 
             # Run detection with ConPort when available (falls back safely when unavailable).
             detection = await detector.detect(
-                conport_client=conport_client, session_number=session_number
+                conport_client=conport_client,
+                session_number=session_number
             )
 
             # F1: Auto-track if confidence >= threshold
@@ -3077,13 +2963,11 @@ class SerenaV2MCPServer:
                 auto_track_result = await storage.auto_track_if_threshold_met(
                     detection=detection,
                     threshold=auto_track_threshold,
-                    conport_client=conport_client,
+                    conport_client=conport_client
                 )
 
                 if auto_track_result:
-                    logger.info(
-                        f"Auto-tracked work as task #{auto_track_result['task_id']}"
-                    )
+                    logger.info(f"Auto-tracked work as task #{auto_track_result['task_id']}")
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
@@ -3094,7 +2978,9 @@ class SerenaV2MCPServer:
                     "message": "✅ All work is tracked in ConPort or below threshold",
                     "confidence_score": detection["confidence_score"],
                     "threshold_used": detection["threshold_used"],
-                    "performance": {"latency_ms": round(elapsed_ms, 2)},
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
                 }
             else:
                 # Untracked work detected!
@@ -3109,112 +2995,88 @@ class SerenaV2MCPServer:
                         "score": round(detection["confidence_score"], 2),
                         "threshold": detection["threshold_used"],
                         "passes_threshold": detection["passes_threshold"],
-                        "session_number": session_number,
+                        "session_number": session_number
                     },
                     "git_summary": {
                         "branch": detection["git_detection"]["branch"],
-                        "is_feature_branch": detection["git_detection"][
-                            "is_feature_branch"
-                        ],
+                        "is_feature_branch": detection["git_detection"]["is_feature_branch"],
                         "files_changed": file_count,
                         "stats": git_stats,
-                        "common_directory": detection["git_detection"][
-                            "common_directory"
-                        ],
+                        "common_directory": detection["git_detection"]["common_directory"]
                     },
                     "conport_status": {
                         "is_orphaned": detection["conport_matching"]["is_orphaned"],
                         "orphan_reason": detection["conport_matching"]["orphan_reason"],
-                        "matched_tasks": len(
-                            detection["conport_matching"]["matched_tasks"]
-                        ),
+                        "matched_tasks": len(detection["conport_matching"]["matched_tasks"])
                     },
                     "timing": {
-                        "first_change_time": detection["detection_signals"]["timing"][
-                            "first_change_time"
-                        ],
-                        "past_grace_period": detection["grace_period_satisfied"],
+                        "first_change_time": detection["detection_signals"]["timing"]["first_change_time"],
+                        "past_grace_period": detection["grace_period_satisfied"]
                     },
                     "reminder": {
                         "should_show": detection["should_remind"],
-                        "reason": detection["reminder_reason"],
+                        "reason": detection["reminder_reason"]
                     },
                     "suggestions": {
                         "options": [
                             {
                                 "action": "track",
                                 "description": "Create ConPort task (pre-filled form)",
-                                "recommended": True,
+                                "recommended": True
                             },
                             {
                                 "action": "snooze",
                                 "description": "Remind later (1h | 4h | 1d)",
-                                "recommended": False,
+                                "recommended": False
                             },
                             {
                                 "action": "ignore",
                                 "description": "Mark as experiment (won't remind again)",
-                                "recommended": False,
-                            },
+                                "recommended": False
+                            }
                         ],
-                        "adhd_guidance": "✨ Completing existing work builds momentum and reduces cognitive sprawl",
+                        "adhd_guidance": "✨ Completing existing work builds momentum and reduces cognitive sprawl"
                     },
-                    "auto_track": (
-                        auto_track_result
-                        if auto_track_result
-                        else {
-                            "enabled": True,
-                            "threshold": (
-                                config.get("auto_track_threshold", 0.85)
-                                if "config" in locals()
-                                else 0.85
-                            ),
-                            "triggered": False,
-                            "reason": f"Confidence {detection['confidence_score']:.2f} < threshold",
-                        }
-                    ),
-                    "performance": {"latency_ms": round(elapsed_ms, 2)},
+                    "auto_track": auto_track_result if auto_track_result else {
+                        "enabled": True,
+                        "threshold": config.get("auto_track_threshold", 0.85) if 'config' in locals() else 0.85,
+                        "triggered": False,
+                        "reason": f"Confidence {detection['confidence_score']:.2f} < threshold"
+                    },
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
                 }
 
                 # Add details if requested
                 if show_details:
                     result["details"] = {
                         "detection_signals": detection["detection_signals"],
-                        "confidence_breakdown": detection["detection_signals"][
-                            "confidence"
-                        ]["breakdown"],
-                        "files": detection["git_detection"]["files"][:10],  # ADHD limit
+                        "confidence_breakdown": detection["detection_signals"]["confidence"]["breakdown"],
+                        "files": detection["git_detection"]["files"][:10]  # ADHD limit
                     }
 
-            logger.info(
-                f"detect_untracked_work: session={session_number} → {detection['has_untracked_work']} (confidence: {detection['confidence_score']:.2f}, {elapsed_ms:.1f}ms)"
-            )
+            logger.info(f"detect_untracked_work: session={session_number} → {detection['has_untracked_work']} (confidence: {detection['confidence_score']:.2f}, {elapsed_ms:.1f}ms)")
             return json.dumps(result, indent=2)
 
         except ImportError as e:
             # Feature 1 components not available yet
-            return json.dumps(
-                {
-                    "error": "Feature 1 components not fully integrated",
-                    "message": "untracked_work_detector.py requires git_detector.py and conport_matcher.py",
-                    "details": str(e),
-                },
-                indent=2,
-            )
+            return json.dumps({
+                "error": "Feature 1 components not fully integrated",
+                "message": "untracked_work_detector.py requires git_detector.py and conport_matcher.py",
+                "details": str(e)
+            }, indent=2)
         except (OSError, RuntimeError) as e:
             logger.error(f"detect_untracked_work failed: {e}")
-            return json.dumps(
-                {"error": str(e), "fallback": "Use git status manually"}, indent=2
-            )
+            return json.dumps({"error": str(e), "fallback": "Use git status manually"}, indent=2)
         except Exception:
             logger.exception("detect_untracked_work unexpected error")
-            return json.dumps(
-                {"error": "unexpected error", "fallback": "manual investigation"},
-                indent=2,
-            )
+            return json.dumps({"error": "unexpected error", "fallback": "manual investigation"}, indent=2)
 
     async def detect_untracked_work_enhanced_tool(
-        self, session_number: int = 1, show_details: bool = False
+        self,
+        session_number: int = 1,
+        show_details: bool = False
     ) -> str:
         """
         Feature 1 Enhanced: Untracked work detection with E1-E4 enhancements
@@ -3246,7 +3108,8 @@ class SerenaV2MCPServer:
 
             # Initialize detector (includes E1-E4)
             detector = UntrackedWorkDetector(
-                workspace=self.workspace, workspace_id=str(self.workspace)
+                workspace=self.workspace,
+                workspace_id=str(self.workspace)
             )
 
             # Ensure ConPort client connected
@@ -3254,7 +3117,8 @@ class SerenaV2MCPServer:
 
             # Run enhanced detection with ConPort integration
             detection = await detector.detect_with_enhancements(
-                conport_client=self.conport_client, session_number=session_number
+                conport_client=self.conport_client,
+                session_number=session_number
             )
             enhancements = detection.get("enhancements", {})
 
@@ -3267,7 +3131,9 @@ class SerenaV2MCPServer:
                     "message": "✅ All work is tracked or below threshold",
                     "confidence_score": detection["confidence_score"],
                     "threshold_used": detection["threshold_used"],
-                    "performance": {"latency_ms": round(elapsed_ms, 2)},
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
                 }
             else:
                 # Untracked work detected - show enhancements!
@@ -3279,64 +3145,44 @@ class SerenaV2MCPServer:
                         "confidence": detection["confidence_score"],
                         "threshold": detection["threshold_used"],
                         "files_changed": len(detection["git_detection"]["files"]),
-                        "branch": detection["git_detection"].get("branch"),
-                    },
+                        "branch": detection["git_detection"].get("branch")
+                    }
                 }
 
                 # E1: False-starts dashboard (always shown)
                 if enhancements.get("false_starts"):
                     result["false_starts_dashboard"] = {
-                        "total_unfinished": enhancements["false_starts"]["summary"][
-                            "total_unfinished"
-                        ],
-                        "status_breakdown": enhancements["false_starts"]["summary"][
-                            "status_breakdown"
-                        ],
-                        "message": enhancements["false_starts"]["dashboard_message"],
+                        "total_unfinished": enhancements["false_starts"]["summary"]["total_unfinished"],
+                        "status_breakdown": enhancements["false_starts"]["summary"]["status_breakdown"],
+                        "message": enhancements["false_starts"]["dashboard_message"]
                     }
 
                 # E2: Design-first prompting (conditional)
                 if enhancements.get("design_first"):
                     result["design_first_recommendation"] = {
                         "should_create_design": True,
-                        "confidence": enhancements["design_first"]["detection"][
-                            "confidence"
-                        ],
-                        "document_type": enhancements["design_first"]["detection"][
-                            "suggested_document_type"
-                        ],
+                        "confidence": enhancements["design_first"]["detection"]["confidence"],
+                        "document_type": enhancements["design_first"]["detection"]["suggested_document_type"],
                         "reasons": enhancements["design_first"]["detection"]["reasons"],
-                        "message": enhancements["design_first"]["prompt_message"],
+                        "message": enhancements["design_first"]["prompt_message"]
                     }
 
                 # E3: Abandoned work revival (conditional)
                 if enhancements.get("revival"):
                     result["revival_suggestions"] = {
-                        "count": enhancements["revival"]["suggestions"][
-                            "suggestion_count"
-                        ],
-                        "suggestions": enhancements["revival"]["suggestions"][
-                            "suggestions"
-                        ],
-                        "message": enhancements["revival"]["revival_message"],
+                        "count": enhancements["revival"]["suggestions"]["suggestion_count"],
+                        "suggestions": enhancements["revival"]["suggestions"]["suggestions"],
+                        "message": enhancements["revival"]["revival_message"]
                     }
 
                 # E4: Prioritization context (conditional)
                 if enhancements.get("priority"):
                     result["prioritization_context"] = {
-                        "active_tasks": enhancements["priority"]["context"][
-                            "total_active"
-                        ],
-                        "in_progress": enhancements["priority"]["context"][
-                            "in_progress_count"
-                        ],
-                        "overcommitment_risk": enhancements["priority"]["context"][
-                            "overcommitment_risk"
-                        ],
-                        "recommendation": enhancements["priority"]["context"][
-                            "urgent_recommendation"
-                        ],
-                        "message": enhancements["priority"]["priority_message"],
+                        "active_tasks": enhancements["priority"]["context"]["total_active"],
+                        "in_progress": enhancements["priority"]["context"]["in_progress_count"],
+                        "overcommitment_risk": enhancements["priority"]["context"]["overcommitment_risk"],
+                        "recommendation": enhancements["priority"]["context"]["urgent_recommendation"],
+                        "message": enhancements["priority"]["priority_message"]
                     }
 
                 # Actions (same as base F001)
@@ -3345,38 +3191,30 @@ class SerenaV2MCPServer:
                         {
                             "action": "track",
                             "description": "Create ConPort task (pre-filled)",
-                            "recommended": True,
+                            "recommended": True
                         },
                         {
                             "action": "design_first",
-                            "description": (
-                                "Create ADR/RFC first"
-                                if enhancements.get("design_first")
-                                else None
-                            ),
-                            "recommended": bool(enhancements.get("design_first")),
+                            "description": "Create ADR/RFC first" if enhancements.get("design_first") else None,
+                            "recommended": bool(enhancements.get("design_first"))
                         },
                         {
                             "action": "resume_abandoned",
-                            "description": (
-                                "Resume abandoned work instead"
-                                if enhancements.get("revival")
-                                else None
-                            ),
-                            "recommended": bool(enhancements.get("revival")),
+                            "description": "Resume abandoned work instead" if enhancements.get("revival") else None,
+                            "recommended": bool(enhancements.get("revival"))
                         },
                         {
                             "action": "snooze",
                             "description": "Remind later (1h | 4h | 1d)",
-                            "recommended": False,
+                            "recommended": False
                         },
                         {
                             "action": "ignore",
                             "description": "Mark as experiment (won't remind)",
-                            "recommended": False,
-                        },
+                            "recommended": False
+                        }
                     ],
-                    "adhd_guidance": "✨ The most productive choice isn't always starting new work",
+                    "adhd_guidance": "✨ The most productive choice isn't always starting new work"
                 }
 
                 # Add details if requested
@@ -3385,10 +3223,12 @@ class SerenaV2MCPServer:
                         "detection_signals": detection["detection_signals"],
                         "pattern_boost": detection.get("pattern_boost_details"),
                         "abandonment_data": detection.get("abandonment_data"),
-                        "files": detection["git_detection"]["files"][:10],  # ADHD limit
+                        "files": detection["git_detection"]["files"][:10]  # ADHD limit
                     }
 
-                result["performance"] = {"latency_ms": round(elapsed_ms, 2)}
+                result["performance"] = {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
 
             logger.info(
                 f"detect_untracked_work_enhanced: session={session_number} → "
@@ -3403,35 +3243,26 @@ class SerenaV2MCPServer:
 
         except ImportError as e:
             # Feature 1 enhanced components not available
-            return json.dumps(
-                {
-                    "error": "F001 Enhanced components not fully integrated",
-                    "message": "Missing enhancement modules (E1-E4)",
-                    "details": str(e),
-                    "fallback": "Use detect_untracked_work_tool instead",
-                },
-                indent=2,
-            )
+            return json.dumps({
+                "error": "F001 Enhanced components not fully integrated",
+                "message": "Missing enhancement modules (E1-E4)",
+                "details": str(e),
+                "fallback": "Use detect_untracked_work_tool instead"
+            }, indent=2)
         except ImportError as e:
             logger.error(f"detect_untracked_work_enhanced missing dependency: {e}")
-            return json.dumps(
-                {"error": str(e), "fallback": "Install enhancement modules"}, indent=2
-            )
+            return json.dumps({"error": str(e), "fallback": "Install enhancement modules"}, indent=2)
         except (OSError, RuntimeError) as e:
             logger.error(f"detect_untracked_work_enhanced failed: {e}")
-            return json.dumps(
-                {"error": str(e), "fallback": "Use base detect_untracked_work_tool"},
-                indent=2,
-            )
+            return json.dumps({"error": str(e), "fallback": "Use base detect_untracked_work_tool"}, indent=2)
         except Exception:
             logger.exception("detect_untracked_work_enhanced unexpected error")
-            return json.dumps(
-                {"error": "unexpected error", "fallback": "manual investigation"},
-                indent=2,
-            )
+            return json.dumps({"error": "unexpected error", "fallback": "manual investigation"}, indent=2)
 
     async def initialize_session_tool(
-        self, initial_focus: str = None, transcript_path: str = None
+        self,
+        initial_focus: str = None,
+        transcript_path: str = None
     ) -> str:
         """
         F002: Initialize new session with worktree detection and ConPort tracking
@@ -3457,7 +3288,10 @@ class SerenaV2MCPServer:
             from session_manager import SessionManager
 
             # Initialize session manager with auto-detection
-            manager = SessionManager(workspace_path=self.workspace, auto_detect=True)
+            manager = SessionManager(
+                workspace_path=self.workspace,
+                auto_detect=True
+            )
 
             # Ensure ConPort client connected
             await self._ensure_conport_client()
@@ -3466,7 +3300,7 @@ class SerenaV2MCPServer:
             session_state = await manager.initialize_session(
                 initial_focus=initial_focus,
                 conport_client=self.conport_client,
-                transcript_path=transcript_path,
+                transcript_path=transcript_path
             )
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
@@ -3479,29 +3313,24 @@ class SerenaV2MCPServer:
                     "worktree_path": session_state.worktree_path,
                     "branch": session_state.branch,
                     "current_focus": session_state.current_focus,
-                    "session_start": session_state.session_start.isoformat(),
+                    "session_start": session_state.session_start.isoformat()
                 },
                 "worktree_info": manager.get_worktree_info().to_dict(),
                 "message": f"✅ Session {session_state.session_id[:20]}... started",
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
             }
 
-            logger.info(
-                f"initialize_session: {session_state.session_id} ({elapsed_ms:.1f}ms)"
-            )
+            logger.info(f"initialize_session: {session_state.session_id} ({elapsed_ms:.1f}ms)")
             return json.dumps(result, indent=2)
 
         except (ValueError, FileNotFoundError) as e:
             logger.error(f"initialize_session validation failed: {e}")
-            return json.dumps(
-                {"error": str(e), "fallback": "Check parameters"}, indent=2
-            )
+            return json.dumps({"error": str(e), "fallback": "Check parameters"}, indent=2)
         except (OSError, RuntimeError) as e:
             logger.error(f"initialize_session failed: {e}")
-            return json.dumps(
-                {"error": str(e), "fallback": "Continue without multi-session support"},
-                indent=2,
-            )
+            return json.dumps({"error": str(e), "fallback": "Continue without multi-session support"}, indent=2)
         except Exception:
             logger.exception("initialize_session unexpected error")
             return json.dumps({"error": "unexpected error"}, indent=2)
@@ -3538,14 +3367,10 @@ class SerenaV2MCPServer:
             await self._ensure_conport_client()
 
             # Get dashboard with ConPort integration
-            dashboard_text = await manager.get_startup_dashboard(
-                conport_client=self.conport_client
-            )
+            dashboard_text = await manager.get_startup_dashboard(conport_client=self.conport_client)
 
             # Get statistics
-            stats = await manager.lifecycle_manager.get_session_statistics(
-                conport_client=self.conport_client
-            )
+            stats = await manager.lifecycle_manager.get_session_statistics(conport_client=self.conport_client)
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
@@ -3553,29 +3378,21 @@ class SerenaV2MCPServer:
                 "status": "dashboard_ready",
                 "dashboard": dashboard_text,
                 "statistics": stats,
-                "worktree_info": (
-                    manager.get_worktree_info().to_dict()
-                    if manager.get_worktree_info()
-                    else None
-                ),
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
+                "worktree_info": manager.get_worktree_info().to_dict() if manager.get_worktree_info() else None,
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
             }
 
-            logger.info(
-                f"get_multi_session_dashboard: {stats.get('active_sessions', 0)} sessions ({elapsed_ms:.1f}ms)"
-            )
+            logger.info(f"get_multi_session_dashboard: {stats.get('active_sessions', 0)} sessions ({elapsed_ms:.1f}ms)")
             return json.dumps(result, indent=2)
 
         except (OSError, RuntimeError) as e:
             logger.error(f"get_multi_session_dashboard failed: {e}")
-            return json.dumps(
-                {"error": str(e), "fallback": "Check session manager"}, indent=2
-            )
+            return json.dumps({"error": str(e), "fallback": "Check session manager"}, indent=2)
         except Exception:
             logger.exception("get_multi_session_dashboard unexpected error")
-            return json.dumps(
-                {"error": "unexpected error", "fallback": "Retry later"}, indent=2
-            )
+            return json.dumps({"error": "unexpected error", "fallback": "Retry later"}, indent=2)
 
     async def get_session_info_tool(self) -> str:
         """
@@ -3605,19 +3422,21 @@ class SerenaV2MCPServer:
                     "status": "session_active",
                     "session": session_info,
                     "worktree": worktree_info.to_dict() if worktree_info else None,
-                    "performance": {"latency_ms": round(elapsed_ms, 2)},
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
                 }
             else:
                 result = {
                     "status": "no_session",
                     "message": "No session initialized - call initialize_session first",
                     "worktree": worktree_info.to_dict() if worktree_info else None,
-                    "performance": {"latency_ms": round(elapsed_ms, 2)},
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
                 }
 
-            logger.info(
-                f"get_session_info: {session_info is not None} ({elapsed_ms:.1f}ms)"
-            )
+            logger.info(f"get_session_info: {session_info is not None} ({elapsed_ms:.1f}ms)")
             return json.dumps(result, indent=2)
 
         except (OSError, RuntimeError) as e:
@@ -3627,7 +3446,10 @@ class SerenaV2MCPServer:
             logger.exception("get_session_info unexpected error")
             return json.dumps({"error": "unexpected error"}, indent=2)
 
-    async def suggest_branch_organization_tool(self, min_cluster_size: int = 2) -> str:
+    async def suggest_branch_organization_tool(
+        self,
+        min_cluster_size: int = 2
+    ) -> str:
         """
         F4: Auto-Branch Suggestions - Help organize scattered work
 
@@ -3657,19 +3479,19 @@ class SerenaV2MCPServer:
 
             if not git_detection.get("has_uncommitted"):
                 elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
-                return json.dumps(
-                    {
-                        "status": "no_uncommitted_work",
-                        "message": "✅ No uncommitted files detected",
-                        "suggestion": None,
-                        "performance": {"latency_ms": round(elapsed_ms, 2)},
-                    },
-                    indent=2,
-                )
+                return json.dumps({
+                    "status": "no_uncommitted_work",
+                    "message": "✅ No uncommitted files detected",
+                    "suggestion": None,
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
+                }, indent=2)
 
             # Get branch organization suggestions
             suggestion = await detector.suggest_branch_organization(
-                detection=git_detection, min_cluster_size=min_cluster_size
+                detection=git_detection,
+                min_cluster_size=min_cluster_size
             )
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
@@ -3682,7 +3504,9 @@ class SerenaV2MCPServer:
                     "current_branch": suggestion["current_branch"],
                     "file_count": len(git_detection["files"]),
                     "reason": suggestion["reason"],
-                    "performance": {"latency_ms": round(elapsed_ms, 2)},
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
                 }
             else:
                 # Build ADHD-optimized suggestion output
@@ -3695,9 +3519,7 @@ class SerenaV2MCPServer:
                             "branch_name": cluster["name"],
                             "file_count": cluster["size"],
                             "directory": cluster["directory"],
-                            "sample_files": cluster["files"][
-                                :3
-                            ],  # ADHD limit: show first 3
+                            "sample_files": cluster["files"][:3]  # ADHD limit: show first 3
                         }
                         for cluster in suggestion["clusters"]
                     ],
@@ -3705,37 +3527,30 @@ class SerenaV2MCPServer:
                         "✓ Clearer commit history per feature",
                         "✓ Easier code review (focused changes)",
                         "✓ Reduced context switching",
-                        "✓ Better git blame tracking",
+                        "✓ Better git blame tracking"
                     ],
-                    "next_steps": (
-                        [
-                            f"1. git checkout -b {suggestion['clusters'][0]['name']}",
-                            f"2. git stash push -- {' '.join(suggestion['clusters'][1]['files'][:3])}...",
-                            "3. Commit work on current branch",
-                            f"4. git checkout -b {suggestion['clusters'][1]['name']}",
-                            "5. git stash pop and commit",
-                        ]
-                        if len(suggestion["clusters"]) >= 2
-                        else []
-                    ),
+                    "next_steps": [
+                        f"1. git checkout -b {suggestion['clusters'][0]['name']}",
+                        f"2. git stash push -- {' '.join(suggestion['clusters'][1]['files'][:3])}...",
+                        "3. Commit work on current branch",
+                        f"4. git checkout -b {suggestion['clusters'][1]['name']}",
+                        "5. git stash pop and commit"
+                    ] if len(suggestion['clusters']) >= 2 else [],
                     "adhd_guidance": "🧠 Focused branches = focused mind. One context at a time prevents overwhelm.",
-                    "performance": {"latency_ms": round(elapsed_ms, 2)},
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
                 }
 
-            logger.info(
-                f"suggest_branch_organization: {len(suggestion['clusters'])} clusters, should_split={suggestion['should_split']}, {elapsed_ms:.1f}ms"
-            )
+            logger.info(f"suggest_branch_organization: {len(suggestion['clusters'])} clusters, should_split={suggestion['should_split']}, {elapsed_ms:.1f}ms")
             return json.dumps(result, indent=2)
 
         except Exception as e:
             logger.error(f"suggest_branch_organization failed: {e}", exc_info=True)
-            return json.dumps(
-                {
-                    "error": str(e),
-                    "fallback": "Use git status and manually organize changes",
-                },
-                indent=2,
-            )
+            return json.dumps({
+                "error": str(e),
+                "fallback": "Use git status and manually organize changes"
+            }, indent=2)
 
     async def get_pattern_stats_tool(self) -> str:
         """
@@ -3767,15 +3582,18 @@ class SerenaV2MCPServer:
 
             # Get top patterns by category
             top_file_extensions = await detector.pattern_learner.get_top_patterns(
-                "file_extension", limit=5
+                "file_extension",
+                limit=5
             )
 
             top_directories = await detector.pattern_learner.get_top_patterns(
-                "directory", limit=5
+                "directory",
+                limit=5
             )
 
             top_branch_prefixes = await detector.pattern_learner.get_top_patterns(
-                "branch_prefix", limit=5
+                "branch_prefix",
+                limit=5
             )
 
             # Calculate latency
@@ -3788,30 +3606,26 @@ class SerenaV2MCPServer:
                     "max_size": cache_stats["max_size"],
                     "utilization": f"{cache_stats['utilization']:.1%}",
                     "total_accesses": cache_stats["total_accesses"],
-                    "avg_accesses_per_pattern": round(
-                        cache_stats["avg_accesses_per_pattern"], 2
-                    ),
+                    "avg_accesses_per_pattern": round(cache_stats["avg_accesses_per_pattern"], 2)
                 },
                 "pattern_counts": {
                     "file_extensions": len(top_file_extensions),
                     "directories": len(top_directories),
-                    "branch_prefixes": len(top_branch_prefixes),
+                    "branch_prefixes": len(top_branch_prefixes)
                 },
                 "top_patterns": {
                     "file_extensions": top_file_extensions[:3],
                     "directories": top_directories[:3],
-                    "branch_prefixes": top_branch_prefixes[:3],
+                    "branch_prefixes": top_branch_prefixes[:3]
                 },
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2),
-                    "target": "< 1000ms (ADHD)",
+                    "target": "< 1000ms (ADHD)"
                 },
-                "adhd_guidance": "📊 Pattern learning active - detection improves over time!",
+                "adhd_guidance": "📊 Pattern learning active - detection improves over time!"
             }
 
-            logger.info(
-                f"get_pattern_stats: cache_size={cache_stats['size']}, {elapsed_ms:.1f}ms"
-            )
+            logger.info(f"get_pattern_stats: cache_size={cache_stats['size']}, {elapsed_ms:.1f}ms")
             return json.dumps(result, indent=2)
 
         except Exception as e:
@@ -3822,7 +3636,7 @@ class SerenaV2MCPServer:
         self,
         pattern_type: str = "file_extension",
         limit: int = 10,
-        min_probability: float = 0.1,
+        min_probability: float = 0.1
     ) -> str:
         """
         F5: Get Top Patterns - Retrieve most frequent learned patterns
@@ -3851,7 +3665,9 @@ class SerenaV2MCPServer:
 
             # Get top patterns
             patterns = await detector.pattern_learner.get_top_patterns(
-                pattern_type, limit=limit, min_probability=min_probability
+                pattern_type,
+                limit=limit,
+                min_probability=min_probability
             )
 
             # Calculate latency
@@ -3866,14 +3682,12 @@ class SerenaV2MCPServer:
                 "patterns": patterns,
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2),
-                    "target": "< 1000ms (ADHD)",
+                    "target": "< 1000ms (ADHD)"
                 },
-                "adhd_guidance": f"🎯 Found {len(patterns)} '{pattern_type}' patterns. Higher probability = stronger pattern.",
+                "adhd_guidance": f"🎯 Found {len(patterns)} '{pattern_type}' patterns. Higher probability = stronger pattern."
             }
 
-            logger.info(
-                f"get_top_patterns: type={pattern_type}, found={len(patterns)}, {elapsed_ms:.1f}ms"
-            )
+            logger.info(f"get_top_patterns: type={pattern_type}, found={len(patterns)}, {elapsed_ms:.1f}ms")
             return json.dumps(result, indent=2)
 
         except Exception as e:
@@ -3881,7 +3695,10 @@ class SerenaV2MCPServer:
             return json.dumps({"error": str(e)}, indent=2)
 
     async def get_abandoned_work_tool(
-        self, min_days_idle: int = 7, min_score: float = 0.5, limit: int = 10
+        self,
+        min_days_idle: int = 7,
+        min_score: float = 0.5,
+        limit: int = 10
     ) -> str:
         """
         F6: Get Abandoned Work - List uncommitted work that's been idle
@@ -3914,50 +3731,40 @@ class SerenaV2MCPServer:
             git_detection = await detector.git_detector.detect_uncommitted_work()
 
             if not git_detection.get("has_uncommitted"):
-                return json.dumps(
-                    {
-                        "status": "no_uncommitted_work",
-                        "message": "✅ No uncommitted work detected",
-                        "abandoned_items": [],
-                    },
-                    indent=2,
-                )
+                return json.dumps({
+                    "status": "no_uncommitted_work",
+                    "message": "✅ No uncommitted work detected",
+                    "abandoned_items": []
+                }, indent=2)
 
             # Calculate abandonment for current work
-            abandonment_data = detector.abandonment_tracker.calculate_abandonment_score(
-                git_detection
-            )
+            abandonment_data = detector.abandonment_tracker.calculate_abandonment_score(git_detection)
 
             # Filter by criteria
             abandoned_items = []
-            if (
-                abandonment_data["days_idle"] >= min_days_idle
-                and abandonment_data["score"] >= min_score
-            ):
+            if (abandonment_data["days_idle"] >= min_days_idle and
+                abandonment_data["score"] >= min_score):
 
                 # Generate work name
-                work_name = await detector.git_detector.generate_work_name(
-                    git_detection
-                )
+                work_name = await detector.git_detector.generate_work_name(git_detection)
 
                 # Get action suggestion
                 action_suggestion = detector.abandonment_tracker.suggest_action(
-                    abandonment_data, git_detection
+                    abandonment_data,
+                    git_detection
                 )
 
-                abandoned_items.append(
-                    {
-                        "work_name": work_name,
-                        "days_idle": abandonment_data["days_idle"],
-                        "abandonment_score": abandonment_data["score"],
-                        "severity": abandonment_data["severity"],
-                        "message": abandonment_data["message"],
-                        "files_changed": len(git_detection.get("files", [])),
-                        "suggested_action": action_suggestion["action"],
-                        "action_rationale": action_suggestion["rationale"],
-                        "urgency": action_suggestion["urgency"],
-                    }
-                )
+                abandoned_items.append({
+                    "work_name": work_name,
+                    "days_idle": abandonment_data["days_idle"],
+                    "abandonment_score": abandonment_data["score"],
+                    "severity": abandonment_data["severity"],
+                    "message": abandonment_data["message"],
+                    "files_changed": len(git_detection.get("files", [])),
+                    "suggested_action": action_suggestion["action"],
+                    "action_rationale": action_suggestion["rationale"],
+                    "urgency": action_suggestion["urgency"]
+                })
 
             # Apply limit
             abandoned_items = abandoned_items[:limit]
@@ -3970,27 +3777,29 @@ class SerenaV2MCPServer:
                 "filters": {
                     "min_days_idle": min_days_idle,
                     "min_score": min_score,
-                    "limit": limit,
+                    "limit": limit
                 },
                 "abandoned_count": len(abandoned_items),
                 "abandoned_items": abandoned_items,
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2),
-                    "target": "< 1000ms (ADHD)",
+                    "target": "< 1000ms (ADHD)"
                 },
-                "adhd_guidance": "🧹 Old work found - time to wrap up, stash, or delete. No guilt, just clarity!",
+                "adhd_guidance": "🧹 Old work found - time to wrap up, stash, or delete. No guilt, just clarity!"
             }
 
-            logger.info(
-                f"get_abandoned_work: found={len(abandoned_items)}, {elapsed_ms:.1f}ms"
-            )
+            logger.info(f"get_abandoned_work: found={len(abandoned_items)}, {elapsed_ms:.1f}ms")
             return json.dumps(result, indent=2)
 
         except Exception as e:
             logger.error(f"get_abandoned_work failed: {e}", exc_info=True)
             return json.dumps({"error": str(e)}, indent=2)
 
-    async def mark_abandoned_tool(self, work_name: str, action_taken: str) -> str:
+    async def mark_abandoned_tool(
+        self,
+        work_name: str,
+        action_taken: str
+    ) -> str:
         """
         F6: Mark Abandoned - Record action taken on abandoned work
 
@@ -4017,12 +3826,9 @@ class SerenaV2MCPServer:
             # Validate action
             valid_actions = ["commit", "delete", "archive"]
             if action_taken not in valid_actions:
-                return json.dumps(
-                    {
-                        "error": f"Invalid action '{action_taken}'. Must be one of: {valid_actions}"
-                    },
-                    indent=2,
-                )
+                return json.dumps({
+                    "error": f"Invalid action '{action_taken}'. Must be one of: {valid_actions}"
+                }, indent=2)
 
             # Record action (in future, store in ConPort custom_data: abandonment_actions)
             logger.info(f"mark_abandoned: work='{work_name}', action={action_taken}")
@@ -4034,7 +3840,7 @@ class SerenaV2MCPServer:
             feedback_messages = {
                 "commit": "🎉 Great! Completing old work builds momentum.",
                 "delete": "🗑️ Clean slate! Removing clutter helps focus.",
-                "archive": "📦 Stashed for later - smart move to reduce cognitive load.",
+                "archive": "📦 Stashed for later - smart move to reduce cognitive load."
             }
 
             result = {
@@ -4044,9 +3850,11 @@ class SerenaV2MCPServer:
                 "message": feedback_messages[action_taken],
                 "pattern_learning": {
                     "status": "recorded",
-                    "note": "Future: Feed to F5 pattern learning to detect risky patterns",
+                    "note": "Future: Feed to F5 pattern learning to detect risky patterns"
                 },
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
             }
 
             return json.dumps(result, indent=2)
@@ -4087,29 +3895,25 @@ class SerenaV2MCPServer:
                 "total_abandoned": 0,
                 "by_severity": {},
                 "avg_days_idle": 0.0,
-                "oldest_work": None,
+                "oldest_work": None
             }
 
             if git_detection.get("has_uncommitted"):
-                abandonment_data = (
-                    detector.abandonment_tracker.calculate_abandonment_score(
-                        git_detection
-                    )
-                )
+                abandonment_data = detector.abandonment_tracker.calculate_abandonment_score(git_detection)
 
                 if abandonment_data["is_abandoned"]:
-                    work_name = await detector.git_detector.generate_work_name(
-                        git_detection
-                    )
+                    work_name = await detector.git_detector.generate_work_name(git_detection)
 
                     abandoned_summary = {
                         "total_abandoned": 1,
-                        "by_severity": {abandonment_data["severity"]: 1},
+                        "by_severity": {
+                            abandonment_data["severity"]: 1
+                        },
                         "avg_days_idle": abandonment_data["days_idle"],
                         "oldest_work": {
                             "work_name": work_name,
-                            "days_idle": abandonment_data["days_idle"],
-                        },
+                            "days_idle": abandonment_data["days_idle"]
+                        }
                     }
 
             # Calculate latency
@@ -4120,15 +3924,13 @@ class SerenaV2MCPServer:
                 "summary": abandoned_summary,
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2),
-                    "target": "< 1000ms (ADHD)",
+                    "target": "< 1000ms (ADHD)"
                 },
                 "adhd_guidance": "📊 Track patterns to understand what work gets forgotten - no judgment, just awareness!",
-                "note": "Full implementation will query all detections from ConPort for comprehensive stats",
+                "note": "Full implementation will query all detections from ConPort for comprehensive stats"
             }
 
-            logger.info(
-                f"get_abandonment_stats: total={abandoned_summary['total_abandoned']}, {elapsed_ms:.1f}ms"
-            )
+            logger.info(f"get_abandonment_stats: total={abandoned_summary['total_abandoned']}, {elapsed_ms:.1f}ms")
             return json.dumps(result, indent=2)
 
         except Exception as e:
@@ -4136,7 +3938,10 @@ class SerenaV2MCPServer:
             return json.dumps({"error": str(e)}, indent=2)
 
     async def get_metrics_dashboard_tool(
-        self, days: int = 7, level: int = 1, include_trends: bool = False
+        self,
+        days: int = 7,
+        level: int = 1,
+        include_trends: bool = False
     ) -> str:
         """
         F7: Get Metrics Dashboard - Analytics dashboard with progressive disclosure
@@ -4179,7 +3984,9 @@ class SerenaV2MCPServer:
 
             # Generate dashboard
             summary = dashboard.generate_summary(
-                detection_results, level=level, include_trends=include_trends
+                detection_results,
+                level=level,
+                include_trends=include_trends
             )
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
@@ -4193,16 +4000,14 @@ class SerenaV2MCPServer:
                     "detections_analyzed": len(detection_results),
                     "performance": {
                         "latency_ms": round(elapsed_ms, 2),
-                        "target": "< 1000ms (ADHD)",
-                    },
+                        "target": "< 1000ms (ADHD)"
+                    }
                 },
                 "adhd_guidance": f"📊 Level {level}/3 disclosure - request level 2 for details, level 3 for trends",
-                "note": "Full implementation will aggregate all detections from ConPort history",
+                "note": "Full implementation will aggregate all detections from ConPort history"
             }
 
-            logger.info(
-                f"get_metrics_dashboard: level={level}, {len(detection_results)} detections, {elapsed_ms:.1f}ms"
-            )
+            logger.info(f"get_metrics_dashboard: level={level}, {len(detection_results)} detections, {elapsed_ms:.1f}ms")
             return json.dumps(result, indent=2)
 
         except Exception as e:
@@ -4210,7 +4015,10 @@ class SerenaV2MCPServer:
             return json.dumps({"error": str(e)}, indent=2)
 
     async def get_metric_history_tool(
-        self, metric_name: str, days: int = 30, granularity: str = "daily"
+        self,
+        metric_name: str,
+        days: int = 30,
+        granularity: str = "daily"
     ) -> str:
         """
         F7: Get Metric History - Time-series data for specific metric
@@ -4237,21 +4045,16 @@ class SerenaV2MCPServer:
         start_time = datetime.now()
 
         try:
-            valid_metrics = {
-                "confidence",
-                "pattern_boost",
-                "abandonment_rate",
-                "pass_rate",
-            }
+            valid_metrics = {"confidence", "pattern_boost", "abandonment_rate", "pass_rate"}
             if metric_name not in valid_metrics:
                 return json.dumps(
-                    {"error": f"metric_name must be one of: {sorted(valid_metrics)}"},
+                    {
+                        "error": f"metric_name must be one of: {sorted(valid_metrics)}"
+                    },
                     indent=2,
                 )
             if granularity not in {"daily", "weekly"}:
-                return json.dumps(
-                    {"error": "granularity must be 'daily' or 'weekly'"}, indent=2
-                )
+                return json.dumps({"error": "granularity must be 'daily' or 'weekly'"}, indent=2)
 
             await self._ensure_conport_client()
             if not self.conport_client:
@@ -4307,7 +4110,9 @@ class SerenaV2MCPServer:
                 "points": points,
                 "count": len(points),
                 "trend": trend,
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
             }
 
             logger.info(f"get_metric_history: {metric_name}, {days}d, {granularity}")
@@ -4397,7 +4202,9 @@ class SerenaV2MCPServer:
                 "status": "saved" if saved else "save_failed",
                 "key": key,
                 "snapshot": snapshot["metrics"],
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
             }
 
             logger.info(f"save_metrics_snapshot: {elapsed_ms:.1f}ms")
@@ -4411,7 +4218,7 @@ class SerenaV2MCPServer:
         self,
         work_name: str,
         custom_description: Optional[str] = None,
-        complexity: Optional[float] = None,
+        complexity: Optional[float] = None
     ) -> str:
         """
         Feature 1 Action: Create ConPort task from untracked work
@@ -4449,10 +4256,7 @@ class SerenaV2MCPServer:
                         "task_data": {
                             "status": "IN_PROGRESS",
                             "description": description,
-                            "metadata": {
-                                "complexity": complexity,
-                                "work_name": work_name,
-                            },
+                            "metadata": {"complexity": complexity, "work_name": work_name},
                         },
                     },
                     indent=2,
@@ -4468,8 +4272,8 @@ class SerenaV2MCPServer:
                     "detected_via": "serena_feature_1",
                     "created_at": datetime.now().isoformat(),
                     "auto_generated": True,
-                    "complexity": complexity,
-                },
+                    "complexity": complexity
+                }
             }
 
             entry = await self.conport_client.log_progress(
@@ -4496,9 +4300,11 @@ class SerenaV2MCPServer:
                 "next_steps": [
                     "Task is now tracked in ConPort",
                     "View with: mcp__conport__get_progress",
-                    "Update status when complete",
+                    "Update status when complete"
                 ],
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
             }
 
             logger.info(f"track_untracked_work: '{work_name}' → task created")
@@ -4506,10 +4312,14 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             logger.error(f"track_untracked_work failed: {e}", exc_info=True)
-            return json.dumps({"error": str(e)}, indent=2)
+            return json.dumps({
+                "error": str(e)
+            }, indent=2)
 
     async def snooze_untracked_work_tool(
-        self, work_id: str, duration: str = "medium"
+        self,
+        work_id: str,
+        duration: str = "medium"
     ) -> str:
         """
         Feature 1 Action: Snooze untracked work reminder
@@ -4533,16 +4343,20 @@ class SerenaV2MCPServer:
 
         # Duration mapping (from Feature 1 spec)
         durations = {
-            "short": 3600,  # 1 hour
-            "medium": 14400,  # 4 hours
-            "long": 86400,  # 1 day
+            "short": 3600,      # 1 hour
+            "medium": 14400,    # 4 hours
+            "long": 86400       # 1 day
         }
 
         duration_seconds = durations.get(duration, 14400)
         snooze_until = datetime.now() + timedelta(seconds=duration_seconds)
 
         # Human-readable duration
-        duration_names = {"short": "1 hour", "medium": "4 hours", "long": "1 day"}
+        duration_names = {
+            "short": "1 hour",
+            "medium": "4 hours",
+            "long": "1 day"
+        }
         duration_text = duration_names.get(duration, "4 hours")
 
         try:
@@ -4569,8 +4383,10 @@ class SerenaV2MCPServer:
                 "snooze_until": snooze_until.isoformat(),
                 "duration_seconds": duration_seconds,
                 "next_reminder": f"Will remind at {snooze_until.strftime('%H:%M on %b %d')}",
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
-                "persisted_to_conport": bool(persisted),
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                },
+                "persisted_to_conport": bool(persisted)
             }
 
             logger.info(f"snooze_untracked_work: {work_id} → {duration_text}")
@@ -4578,10 +4394,14 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             logger.error(f"snooze_untracked_work failed: {e}", exc_info=True)
-            return json.dumps({"error": str(e)}, indent=2)
+            return json.dumps({
+                "error": str(e)
+            }, indent=2)
 
     async def ignore_untracked_work_tool(
-        self, work_id: str, reason: Optional[str] = None
+        self,
+        work_id: str,
+        reason: Optional[str] = None
     ) -> str:
         """
         Feature 1 Action: Mark work as abandoned
@@ -4624,10 +4444,12 @@ class SerenaV2MCPServer:
                 "next_steps": [
                     "Work is marked as experiment/abandoned",
                     "Won't appear in future reminders",
-                    "Can manually unignore in ConPort if needed",
+                    "Can manually unignore in ConPort if needed"
                 ],
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
-                "persisted_to_conport": bool(persisted),
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                },
+                "persisted_to_conport": bool(persisted)
             }
 
             logger.info(f"ignore_untracked_work: {work_id} → abandoned ({reason})")
@@ -4635,7 +4457,9 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             logger.error(f"ignore_untracked_work failed: {e}", exc_info=True)
-            return json.dumps({"error": str(e)}, indent=2)
+            return json.dumps({
+                "error": str(e)
+            }, indent=2)
 
     async def get_untracked_work_config_tool(self) -> str:
         """
@@ -4678,10 +4502,12 @@ class SerenaV2MCPServer:
                     "quiet_hours": "Suppress reminders during sleep/focus time",
                     "snooze_durations": "Snooze lengths in seconds",
                     "max_reminded_count": "Stop reminding after this many times",
-                    "auto_abandon_after_days": "Auto-abandon work older than this",
+                    "auto_abandon_after_days": "Auto-abandon work older than this"
                 },
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
-                "persisted_source": bool(self.conport_client),
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                },
+                "persisted_source": bool(self.conport_client)
             }
 
             logger.info(f"get_untracked_work_config: enabled={config.get('enabled')}")
@@ -4689,7 +4515,9 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             logger.error(f"get_untracked_work_config failed: {e}", exc_info=True)
-            return json.dumps({"error": str(e)}, indent=2)
+            return json.dumps({
+                "error": str(e)
+            }, indent=2)
 
     async def update_untracked_work_config_tool(
         self,
@@ -4699,7 +4527,7 @@ class SerenaV2MCPServer:
         auto_track_threshold: Optional[float] = None,
         quiet_hours_enabled: Optional[bool] = None,
         quiet_hours_start: Optional[str] = None,
-        quiet_hours_end: Optional[str] = None,
+        quiet_hours_end: Optional[str] = None
     ) -> str:
         """
         Feature 1 Config: Update user configuration
@@ -4739,25 +4567,19 @@ class SerenaV2MCPServer:
 
             if confidence_threshold is not None:
                 if not 0.0 <= confidence_threshold <= 1.0:
-                    return json.dumps(
-                        {"error": "confidence_threshold must be 0.0-1.0"}, indent=2
-                    )
+                    return json.dumps({"error": "confidence_threshold must be 0.0-1.0"}, indent=2)
                 config["confidence_threshold"] = confidence_threshold
                 updates["confidence_threshold"] = confidence_threshold
 
             if grace_period_minutes is not None:
                 if not 0 <= grace_period_minutes <= 180:
-                    return json.dumps(
-                        {"error": "grace_period_minutes must be 0-180"}, indent=2
-                    )
+                    return json.dumps({"error": "grace_period_minutes must be 0-180"}, indent=2)
                 config["grace_period_minutes"] = grace_period_minutes
                 updates["grace_period_minutes"] = grace_period_minutes
 
             if auto_track_threshold is not None:
                 if not 0.0 <= auto_track_threshold <= 1.0:
-                    return json.dumps(
-                        {"error": "auto_track_threshold must be 0.0-1.0"}, indent=2
-                    )
+                    return json.dumps({"error": "auto_track_threshold must be 0.0-1.0"}, indent=2)
                 config["auto_track_threshold"] = auto_track_threshold
                 updates["auto_track_threshold"] = auto_track_threshold
 
@@ -4772,9 +4594,7 @@ class SerenaV2MCPServer:
                     config["quiet_hours"]["start"] = quiet_hours_start
                     updates["quiet_hours_start"] = quiet_hours_start
                 except ValueError:
-                    return json.dumps(
-                        {"error": "quiet_hours_start must be HH:MM format"}, indent=2
-                    )
+                    return json.dumps({"error": "quiet_hours_start must be HH:MM format"}, indent=2)
 
             if quiet_hours_end is not None:
                 # Validate format
@@ -4783,9 +4603,7 @@ class SerenaV2MCPServer:
                     config["quiet_hours"]["end"] = quiet_hours_end
                     updates["quiet_hours_end"] = quiet_hours_end
                 except ValueError:
-                    return json.dumps(
-                        {"error": "quiet_hours_end must be HH:MM format"}, indent=2
-                    )
+                    return json.dumps({"error": "quiet_hours_end must be HH:MM format"}, indent=2)
 
             saved = await storage.save_user_config(config, self.conport_client)
 
@@ -4796,8 +4614,10 @@ class SerenaV2MCPServer:
                 "message": f"✅ Updated {len(updates)} setting(s)",
                 "updates": updates,
                 "current_config": config,
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
-                "persisted_to_conport": bool(saved),
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                },
+                "persisted_to_conport": bool(saved)
             }
 
             logger.info(f"update_untracked_work_config: {len(updates)} fields updated")
@@ -4805,7 +4625,9 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             logger.error(f"update_untracked_work_config failed: {e}", exc_info=True)
-            return json.dumps({"error": str(e)}, indent=2)
+            return json.dumps({
+                "error": str(e)
+            }, indent=2)
 
     def _extract_metric_timestamp(
         self,
@@ -4917,9 +4739,8 @@ class SerenaV2MCPServer:
 
         # Find word boundaries around column
         import re
-
         # Word characters: letters, numbers, underscore
-        word_chars = re.compile(r"\w")
+        word_chars = re.compile(r'\w')
 
         # Find start of word
         start = column
@@ -4935,7 +4756,10 @@ class SerenaV2MCPServer:
         return symbol if symbol else None
 
     async def _extract_definition_context(
-        self, file_path: Path, line: int, column: int
+        self,
+        file_path: Path,
+        line: int,
+        column: int
     ) -> str:
         """
         Extract 7-line context around definition
@@ -4960,9 +4784,7 @@ class SerenaV2MCPServer:
 
                 # Highlight definition line
                 if line_num == line:
-                    context_lines.append(
-                        f">>> {line_num:4d}: {line_text}  ← DEFINITION"
-                    )
+                    context_lines.append(f">>> {line_num:4d}: {line_text}  ← DEFINITION")
                 else:
                     context_lines.append(f"    {line_num:4d}: {line_text}")
 
@@ -4970,13 +4792,15 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             return f"(context unavailable: {e})"
-
     def _estimate_tokens(self, text: str) -> int:
         """Conservative token estimation delegated to shared utility."""
         return estimate_mcp_tokens(text)
 
     def _truncate_to_token_budget(
-        self, lines: list[str], max_tokens: int, start_line_num: int = 1
+        self,
+        lines: list[str],
+        max_tokens: int,
+        start_line_num: int = 1
     ) -> tuple[list[str], bool]:
         """
         Truncate lines to fit token budget with line numbers.
@@ -4995,7 +4819,7 @@ class SerenaV2MCPServer:
         start_line: int = 0,
         end_line: Optional[int] = None,
         max_lines: int = 500,  # ADHD-safe limit
-        max_tokens: int = 9000,  # MCP budget (10K limit with headroom)
+        max_tokens: int = 9000  # MCP budget (10K limit with headroom)
     ) -> str:
         """
         Read file with optional line range
@@ -5033,11 +4857,13 @@ class SerenaV2MCPServer:
                 actual_end = start_line + max_lines
                 selected_lines = lines[start_line:actual_end]
             else:
-                selected_lines = lines[start_line : end_line + 1]
+                selected_lines = lines[start_line:end_line + 1]
 
         # Format with token budget enforcement
         numbered_lines, was_truncated = self._truncate_to_token_budget(
-            selected_lines, max_tokens=max_tokens, start_line_num=start_line + 1
+            selected_lines,
+            max_tokens=max_tokens,
+            start_line_num=start_line + 1
         )
 
         result = "\n".join(numbered_lines)
@@ -5063,7 +4889,11 @@ class SerenaV2MCPServer:
 
         return result
 
-    async def list_dir_tool(self, relative_path: str, recursive: bool = False) -> str:
+    async def list_dir_tool(
+        self,
+        relative_path: str,
+        recursive: bool = False
+    ) -> str:
         """
         List directory contents
 
@@ -5089,9 +4919,9 @@ class SerenaV2MCPServer:
 
         if recursive:
             # Recursive listing
-            for item in dir_path.rglob("*"):
+            for item in dir_path.rglob('*'):
                 # Skip .git and common ignore patterns
-                if ".git" in item.parts or "__pycache__" in item.parts:
+                if '.git' in item.parts or '__pycache__' in item.parts:
                     continue
 
                 rel_path = str(item.relative_to(dir_path))
@@ -5103,7 +4933,7 @@ class SerenaV2MCPServer:
             # Non-recursive listing
             for item in dir_path.iterdir():
                 # Skip hidden files starting with .
-                if item.name.startswith("."):
+                if item.name.startswith('.'):
                     continue
 
                 if item.is_dir():
@@ -5133,9 +4963,7 @@ class SerenaV2MCPServer:
         if not result["directories"] and not result["files"]:
             output_lines.append("(empty directory)")
 
-        logger.info(
-            f"list_dir: {relative_path} ({len(result['directories'])} dirs, {len(result['files'])} files)"
-        )
+        logger.info(f"list_dir: {relative_path} ({len(result['directories'])} dirs, {len(result['files'])} files)")
         return "\n".join(output_lines)
 
     async def find_similar_code_tool(
@@ -5169,10 +4997,10 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.find_similar_code_multi(
-                query, top_k, user_id, workspace_path, workspace_paths
+                query, top_k, user_id,
+                workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
 
@@ -5190,23 +5018,15 @@ class SerenaV2MCPServer:
 
             try:
                 from mcp.server import search_code_impl
-
-                results = await search_code_impl(
-                    query, top_k, workspace_path=str(self.workspace)
-                )
+                results = await search_code_impl(query, top_k, workspace_path=str(self.workspace))
             except ImportError:
                 # Fallback: Use MCP client to call dope-context
-                logger.warning(
-                    "Dope-Context not available for direct call, semantic search unavailable"
-                )
-                return json.dumps(
-                    {
-                        "error": "Semantic search unavailable (Dope-Context MCP not configured)",
-                        "query": query,
-                        "fallback": "Use find_symbol for exact name matching",
-                    },
-                    indent=2,
-                )
+                logger.warning("Dope-Context not available for direct call, semantic search unavailable")
+                return json.dumps({
+                    "error": "Semantic search unavailable (Dope-Context MCP not configured)",
+                    "query": query,
+                    "fallback": "Use find_symbol for exact name matching"
+                }, indent=2)
 
             # Enrich results with Serena's complexity analysis
             tree_sitter_available = await self._ensure_component("tree_sitter")
@@ -5217,9 +5037,7 @@ class SerenaV2MCPServer:
                         file_path = result.get("file_path", "")
                         function_name = result.get("function_name", "")
 
-                        complexity = await self.tree_sitter.analyze_complexity(
-                            file_path, function_name
-                        )
+                        complexity = await self.tree_sitter.analyze_complexity(file_path, function_name)
                         result["serena_complexity"] = complexity.get("score", 0.0)
                         result["adhd_category"] = complexity.get("category", "unknown")
                     except Exception as e:
@@ -5237,13 +5055,11 @@ class SerenaV2MCPServer:
                 "performance": {
                     "latency_ms": round(elapsed_ms, 2),
                     "source": "dope-context",
-                    "serena_enhanced": tree_sitter_available,
-                },
+                    "serena_enhanced": tree_sitter_available
+                }
             }
 
-            logger.info(
-                f"find_similar_code: '{query}' → {len(results)} results ({elapsed_ms:.1f}ms)"
-            )
+            logger.info(f"find_similar_code: '{query}' → {len(results)} results ({elapsed_ms:.1f}ms)")
             return json.dumps(output, indent=2)
 
         except Exception as e:
@@ -5251,7 +5067,9 @@ class SerenaV2MCPServer:
             return json.dumps({"error": str(e), "query": query}, indent=2)
 
     async def predict_navigation_from_git_tool(
-        self, current_file: str, days_back: int = 90
+        self,
+        current_file: str,
+        days_back: int = 90
     ) -> str:
         """
         Predict navigation targets from git history patterns (F-NEW-12)
@@ -5277,9 +5095,7 @@ class SerenaV2MCPServer:
             analysis = analyzer.analyze(days_back=days_back, max_commits=500)
 
             # Get directory of current file
-            current_dir = (
-                Path(current_file).parent if "/" in current_file else Path(".")
-            )
+            current_dir = Path(current_file).parent if "/" in current_file else Path(".")
 
             # Find related directories from git patterns
             related_dirs = []
@@ -5290,17 +5106,15 @@ class SerenaV2MCPServer:
                 # Calculate confidence based on commit frequency
                 confidence = min(1.0, commit_count / 50)  # Normalize to 0-1
 
-                related_dirs.append(
-                    {
-                        "directory": dir_path,
-                        "commit_count": commit_count,
-                        "confidence": round(confidence, 2),
-                        "reasoning": f"Modified together in {commit_count} commits",
-                    }
-                )
+                related_dirs.append({
+                    "directory": dir_path,
+                    "commit_count": commit_count,
+                    "confidence": round(confidence, 2),
+                    "reasoning": f"Modified together in {commit_count} commits"
+                })
 
             # Sort by confidence and take top 5 (ADHD limit)
-            related_dirs.sort(key=lambda x: x["confidence"], reverse=True)
+            related_dirs.sort(key=lambda x: x['confidence'], reverse=True)
             suggestions = related_dirs[:5]
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
@@ -5313,26 +5127,23 @@ class SerenaV2MCPServer:
                     "total_commits": analysis.total_commits,
                     "days_analyzed": days_back,
                     "peak_work_time": analysis.peak_work_time,
-                    "suggested_energy": analysis.suggested_energy_level,
+                    "suggested_energy": analysis.suggested_energy_level
                 },
-                "performance": {"latency_ms": round(elapsed_ms, 2)},
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
             }
 
-            logger.info(
-                f"predict_navigation_from_git: {current_file} → {len(suggestions)} suggestions ({elapsed_ms:.1f}ms)"
-            )
+            logger.info(f"predict_navigation_from_git: {current_file} → {len(suggestions)} suggestions ({elapsed_ms:.1f}ms)")
             return json.dumps(output, indent=2)
 
         except Exception as e:
             logger.error(f"Git prediction failed: {e}")
-            return json.dumps(
-                {
-                    "error": str(e),
-                    "current_file": current_file,
-                    "fallback": "Use suggest_next_step for pattern-based suggestions",
-                },
-                indent=2,
-            )
+            return json.dumps({
+                "error": str(e),
+                "current_file": current_file,
+                "fallback": "Use suggest_next_step for pattern-based suggestions"
+            }, indent=2)
 
     async def find_test_file_tool(
         self,
@@ -5361,7 +5172,6 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.find_test_file_multi(
                 file_path, workspace_path, workspace_paths
@@ -5375,12 +5185,7 @@ class SerenaV2MCPServer:
             parent_dir = path.parent
 
             # Check if this is a test file
-            is_test = (
-                filename.startswith("test_")
-                or "_test." in filename
-                or path.parts
-                and "test" in path.parts[0]
-            )
+            is_test = filename.startswith("test_") or "_test." in filename or path.parts and "test" in path.parts[0]
 
             if is_test:
                 # Find implementation file
@@ -5395,77 +5200,60 @@ class SerenaV2MCPServer:
                     self.workspace / "services" / impl_name,
                     self.workspace / impl_name,
                     parent_dir.parent / "src" / impl_name,
-                    parent_dir.parent / impl_name,
+                    parent_dir.parent / impl_name
                 ]
 
                 for candidate in search_paths:
                     if candidate.exists():
-                        return json.dumps(
-                            {
-                                "found": True,
-                                "test_file": file_path,
-                                "implementation_file": str(
-                                    candidate.relative_to(self.workspace)
-                                ),
-                                "relationship": "test→impl",
-                            },
-                            indent=2,
-                        )
+                        return json.dumps({
+                            "found": True,
+                            "test_file": file_path,
+                            "implementation_file": str(candidate.relative_to(self.workspace)),
+                            "relationship": "test→impl"
+                        }, indent=2)
 
-                return json.dumps(
-                    {
-                        "found": False,
-                        "test_file": file_path,
-                        "suggestion": f"Implementation file not found. Expected: {impl_name}",
-                    },
-                    indent=2,
-                )
+                return json.dumps({
+                    "found": False,
+                    "test_file": file_path,
+                    "suggestion": f"Implementation file not found. Expected: {impl_name}"
+                }, indent=2)
 
             else:
                 # Find test file
-                test_names = [f"test_{filename}", filename.replace(".py", "_test.py")]
+                test_names = [
+                    f"test_{filename}",
+                    filename.replace(".py", "_test.py")
+                ]
 
                 # Search common test locations
                 search_paths = []
                 for test_name in test_names:
-                    search_paths.extend(
-                        [
-                            self.workspace / "tests" / test_name,
-                            self.workspace / "test" / test_name,
-                            parent_dir / test_name,
-                            (
-                                self.workspace / f"tests/{parent_dir.name}/{test_name}"
-                                if parent_dir.name != "."
-                                else None
-                            ),
-                        ]
-                    )
+                    search_paths.extend([
+                        self.workspace / "tests" / test_name,
+                        self.workspace / "test" / test_name,
+                        parent_dir / test_name,
+                        self.workspace / f"tests/{parent_dir.name}/{test_name}" if parent_dir.name != "." else None
+                    ])
 
                 search_paths = [p for p in search_paths if p]  # Remove None
 
                 for candidate in search_paths:
                     if candidate.exists():
-                        return json.dumps(
-                            {
-                                "found": True,
-                                "implementation_file": file_path,
-                                "test_file": str(candidate.relative_to(self.workspace)),
-                                "relationship": "impl→test",
-                            },
-                            indent=2,
-                        )
+                        return json.dumps({
+                            "found": True,
+                            "implementation_file": file_path,
+                            "test_file": str(candidate.relative_to(self.workspace)),
+                            "relationship": "impl→test"
+                        }, indent=2)
 
                 # Suggest test file creation
                 suggested_path = self.workspace / "tests" / f"test_{filename}"
-                return json.dumps(
-                    {
-                        "found": False,
-                        "implementation_file": file_path,
-                        "suggestion": f"Create test: {suggested_path.relative_to(self.workspace)}",
-                        "adhd_tip": "TDD helps break down complex tasks into smaller steps",
-                    },
-                    indent=2,
-                )
+                return json.dumps({
+                    "found": False,
+                    "implementation_file": file_path,
+                    "suggestion": f"Create test: {suggested_path.relative_to(self.workspace)}",
+                    "adhd_tip": "TDD helps break down complex tasks into smaller steps"
+                }, indent=2)
 
         except Exception as e:
             logger.error(f"find_test_file failed: {e}")
@@ -5502,10 +5290,10 @@ class SerenaV2MCPServer:
         # Multi-workspace mode
         if workspace_paths or workspace_path:
             from multi_workspace_wrapper import SerenaMultiWorkspace
-
             wrapper = SerenaMultiWorkspace()
             result = await wrapper.get_unified_complexity_multi(
-                file_path, symbol, user_id, workspace_path, workspace_paths
+                file_path, symbol, user_id,
+                workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
 
@@ -5513,7 +5301,6 @@ class SerenaV2MCPServer:
         try:
             # Import complexity coordinator
             import sys
-
             coord_path = Path(__file__).parent.parent.parent / "complexity_coordinator"
             if str(coord_path) not in sys.path:
                 sys.path.insert(0, str(coord_path))
@@ -5527,25 +5314,22 @@ class SerenaV2MCPServer:
 
         except Exception as e:
             logger.error(f"get_unified_complexity failed: {e}")
-            return json.dumps(
-                {
-                    "error": str(e),
-                    "file_path": file_path,
-                    "symbol": symbol,
-                    "fallback_score": 0.5,
-                    "interpretation": "Error - using medium complexity estimate",
-                },
-                indent=2,
-            )
+            return json.dumps({
+                "error": str(e),
+                "file_path": file_path,
+                "symbol": symbol,
+                "fallback_score": 0.5,
+                "interpretation": "Error - using medium complexity estimate"
+            }, indent=2)
 
 
 async def main():
     """Main entry point for Serena v2 MCP server"""
-    logger.info("=" * 60)
+    logger.info("="*60)
     logger.info("SERENA V2 MCP SERVER - PHASE 2 + ENHANCED FEATURES")
     logger.info("ADHD-optimized code intelligence (24 tools)")
     logger.info("Enhanced: Cache (100x faster), Unified Complexity, File Watcher")
-    logger.info("=" * 60)
+    logger.info("="*60)
 
     # Create server instance
     server_instance = SerenaV2MCPServer()
@@ -5556,49 +5340,31 @@ async def main():
     # Register tools
     server_instance.register_tools()
 
-    logger.info("=" * 60)
+    logger.info("="*60)
     logger.info("Server ready - awaiting tool calls")
     logger.info(f"Workspace: {server_instance.workspace}")
     logger.info(f"Tools available: 24")
     logger.info(f"  - Health (1): get_workspace_status")
-    logger.info(
-        f"  - Navigation Tier 1 (4): find_symbol, goto_definition, get_context, find_references"
-    )
-    logger.info(
-        f"  - Enhanced Navigation (4): find_similar_code, predict_navigation_from_git, find_test_file, get_unified_complexity"
-    )
-    logger.info(
-        f"  - Performance: Redis cache (100x faster), File watcher, Unified complexity"
-    )
-    logger.info(
-        f"  - ADHD Intelligence Tier 2 (4): analyze_complexity, filter_by_focus, suggest_next_step, get_reading_order"
-    )
-    logger.info(
-        f"  - Advanced Tier 3 (3): find_relationships, get_navigation_patterns, update_focus_mode"
-    )
+    logger.info(f"  - Navigation Tier 1 (4): find_symbol, goto_definition, get_context, find_references")
+    logger.info(f"  - Enhanced Navigation (4): find_similar_code, predict_navigation_from_git, find_test_file, get_unified_complexity")
+    logger.info(f"  - Performance: Redis cache (100x faster), File watcher, Unified complexity")
+    logger.info(f"  - ADHD Intelligence Tier 2 (4): analyze_complexity, filter_by_focus, suggest_next_step, get_reading_order")
+    logger.info(f"  - Advanced Tier 3 (3): find_relationships, get_navigation_patterns, update_focus_mode")
     logger.info(f"  - Feature 1 Detection (1): detect_untracked_work")
-    logger.info(
-        f"  - Feature 1 Actions (3): track_untracked_work, snooze_untracked_work, ignore_untracked_work"
-    )
-    logger.info(
-        f"  - Feature 1 Config (2): get_untracked_work_config, update_untracked_work_config"
-    )
+    logger.info(f"  - Feature 1 Actions (3): track_untracked_work, snooze_untracked_work, ignore_untracked_work")
+    logger.info(f"  - Feature 1 Config (2): get_untracked_work_config, update_untracked_work_config")
     logger.info(f"  - Files (2): read_file, list_dir")
-    logger.info(
-        f"Lazy loading: database, lsp, claude_context, tree_sitter, adhd_features"
-    )
-    logger.info(
-        f"Feature 1: COMPLETE - Detection + Actions + Storage + Config + Reminders ✅"
-    )
+    logger.info(f"Lazy loading: database, lsp, claude_context, tree_sitter, adhd_features")
+    logger.info(f"Feature 1: COMPLETE - Detection + Actions + Storage + Config + Reminders ✅")
     logger.info(f"Tier 3: Simplified implementations (Phase 3 will add full database)")
-    logger.info("=" * 60)
+    logger.info("="*60)
 
     # Run server with stdio transport
     async with stdio_server() as (read_stream, write_stream):
         await server_instance.server.run(
             read_stream,
             write_stream,
-            server_instance.server.create_initialization_options(),
+            server_instance.server.create_initialization_options()
         )
 
 

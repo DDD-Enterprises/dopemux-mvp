@@ -31,23 +31,23 @@ The service is a FastAPI-based Python application configured to run as a backend
 
 **Core Modules**:
 1. **`voice_api.py`**: The entry point. Handles the `/api/v1/decompose-task` POST endpoint.
-2. **`voice_task_decomposer.py`**: The logic layer. Extracts task descriptions from strings via regex and coordinates calls to Zen and ADHD Engine.
-3. **`bridge_adapter.py`**: Handles pushing the final decomposition into DopeconBridge.
+1. **`voice_task_decomposer.py`**: The logic layer. Extracts task descriptions from strings via regex and coordinates calls to Zen and ADHD Engine.
+1. **`bridge_adapter.py`**: Handles pushing the final decomposition into DopeconBridge.
 
 ### Failure & Drift Analysis
 **Status**: **Not Running / Un-orchestrated**.
 
 **Findings**:
 1. **Orchestration Gap**: While a `Dockerfile` exists, the service is not included in the master orchestration. This suggests it is a peripheral feature not currently enabled in the baseline stack.
-2. **Missing Documentation**: No `README.md` exists within the service directory.
-3. **Hardcoded Defaults**: While it uses environment variables, several internal URLs (like `adhd_engine_url` in `VoiceTaskDecomposer`) have hardcoded `localhost` fallbacks which may cause issues in containerized environments if not correctly overridden.
+1. **Missing Documentation**: No `README.md` exists within the service directory.
+1. **Hardcoded Defaults**: While it uses environment variables, several internal URLs (like `adhd_engine_url` in `VoiceTaskDecomposer`) have hardcoded `localhost` fallbacks which may cause issues in containerized environments if not correctly overridden.
 
 ### Integration Patterns & Data Flow
 1. **Input**: Receives `voice_input` and `user_id` via HTTP POST.
-2. **Context**: Fetch user attention state from `ADHD Engine`.
-3. **Process**: Call `Zen MCP` to perform the actual decomposition based on the task prompt and ADHD context.
-4. **Persistence**: Post result back to `DopeconBridge`.
-5. **Output**: Returns a structured task breakdown to the caller.
+1. **Context**: Fetch user attention state from `ADHD Engine`.
+1. **Process**: Call `Zen MCP` to perform the actual decomposition based on the task prompt and ADHD context.
+1. **Persistence**: Post result back to `DopeconBridge`.
+1. **Output**: Returns a structured task breakdown to the caller.
 
 ### Testing, Performance, Limitations & Opportunities
 * **Testing**: Test coverage is sparse. Internal tests exist in `adhd_engine` (`test_voice_assistant.py`) but not within the component itself.
