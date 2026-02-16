@@ -1,3 +1,19 @@
+---
+id: TEMPLATE_ADR_LIGHT
+title: Template Adr Light
+type: adr
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Template Adr Light (adr) for dopemux documentation and developer workflows.
+status: proposed
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
+---
 # ADR-XXXX: <Title>
 
 ────────────────────────────────────────────────────────────

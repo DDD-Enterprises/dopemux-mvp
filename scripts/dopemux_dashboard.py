@@ -24,10 +24,14 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from prometheus_client import PrometheusClient, PrometheusConfig
 from sparkline_generator import SparklineGenerator
+
+# Setup logging
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(__name__)
 
 try:
     from dashboard.streaming import StreamingClient, StreamingConfig
@@ -38,8 +42,8 @@ except ImportError:
 
 try:
     from textual.app import App, ComposeResult
-    from textual.containers import Container, Horizontal, Vertical
-    from textual.widgets import Header, Footer, Static, DataTable
+    from textual.containers import Container
+    from textual.widgets import Header, Footer, Static, DataTable, ListView, ListItem, Label
     from textual.reactive import reactive
     from textual.screen import Screen
     from rich.table import Table
@@ -51,10 +55,6 @@ except ImportError:
     TEXTUAL_AVAILABLE = False
     print("⚠️  Textual not installed. Install with: pip install textual rich")
     print("Falling back to simple console output...")
-
-# Setup logging
-logging.basicConfig(level=logging.WARNING)
-logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -1420,11 +1420,10 @@ Run: docker start dopemux-prometheus
             # Show service selection menu
             self.push_screen(ServiceSelectionModal())
         
-        def action_show_pattern_detail(self) -> None:
+        async def action_show_pattern_detail(self) -> None:
             """Show detailed view of a behavioral pattern"""
             # Get the top pattern from Serena
             try:
-                import httpx
                 async with httpx.AsyncClient(timeout=5.0) as client:
                     response = await client.get("http://localhost:8003/api/patterns/top?limit=1")
                     if response.status_code == 200:
