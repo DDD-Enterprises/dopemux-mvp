@@ -16,12 +16,40 @@ import subprocess
 import sys
 import time
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
+try:
+    from lib.chunking import (
+        build_file_manifest_hash,
+        build_partition_context,
+        estimate_tokens_from_text,
+        plan_chunks_for_step,
+    )
+    from lib.retry import (
+        is_retryable_exception,
+        parse_retry_after_seconds,
+        retry_delay_seconds,
+        should_retry_status,
+    )
+    from lib.throttle import ProviderLimiter, ProviderRateConfig
+except ImportError:
+    from UPGRADES.lib.chunking import (
+        build_file_manifest_hash,
+        build_partition_context,
+        estimate_tokens_from_text,
+        plan_chunks_for_step,
+    )
+    from UPGRADES.lib.retry import (
+        is_retryable_exception,
+        parse_retry_after_seconds,
+        retry_delay_seconds,
+        should_retry_status,
+    )
+    from UPGRADES.lib.throttle import ProviderLimiter, ProviderRateConfig
 
 # --- Configuration & Constants ---
 
@@ -275,6 +303,13 @@ class RunnerConfig:
     home_scan_mode: str
     r_profile: str
     resume: bool
+    rpm_openai: int
+    tpm_openai: int
+    rpm_gemini: int
+    tpm_gemini: int
+    rpm_xai: int
+    tpm_xai: int
+    max_inflight: int
 
 
 @dataclass(frozen=True)
@@ -288,6 +323,31 @@ class PromptSpec:
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def normalized_headers(headers: Any) -> Dict[str, str]:
+    snapshot: Dict[str, str] = {}
+    if headers is None:
+        return snapshot
+    for key in headers.keys():
+        key_str = str(key).strip().lower()
+        if not key_str:
+            continue
+        try:
+            snapshot[key_str] = str(headers.get(key, "")).strip()
+        except Exception:
+            snapshot[key_str] = ""
+    return snapshot
+
+
+def is_valid_json_file(path: Path) -> bool:
+    if not path.exists() or not path.is_file():
+        return False
+    try:
+        json.loads(safe_read(path))
+        return True
+    except Exception:
+        return False
 
 
 def load_run_id(root: Path) -> str:
@@ -426,6 +486,13 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "file_truncate_chars": args.file_truncate_chars,
             "home_scan_mode": args.home_scan_mode,
             "r_profile": args.r_profile,
+            "rpm_openai": args.rpm_openai,
+            "tpm_openai": args.tpm_openai,
+            "rpm_gemini": args.rpm_gemini,
+            "tpm_gemini": args.tpm_gemini,
+            "rpm_xai": args.rpm_xai,
+            "tpm_xai": args.tpm_xai,
+            "max_inflight": args.max_inflight,
         },
     }
     write_json(dirs["root"] / "RUN_MANIFEST.json", manifest)
@@ -579,6 +646,17 @@ def write_phase_manifest(
             "max_files_phase_effective": max_files,
             "max_chars": cfg.max_chars,
             "file_truncate_chars": cfg.file_truncate_chars,
+            "max_inflight": cfg.max_inflight,
+            "rpm": {
+                "openai": cfg.rpm_openai,
+                "gemini": cfg.rpm_gemini,
+                "xai": cfg.rpm_xai,
+            },
+            "tpm": {
+                "openai": cfg.tpm_openai,
+                "gemini": cfg.tpm_gemini,
+                "xai": cfg.tpm_xai,
+            },
             "truncate_markers": [
                 "...[TRUNCATED]...",
                 "...[CONTEXT_TRUNCATED_FOR_LIMIT]...",
@@ -1125,7 +1203,8 @@ def normalize_step(
 
     for partition_id in partition_ids:
         raw_file = raw_dir / f"{step_id}__{partition_id}.json"
-        fail_file = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+        fail_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+        fail_txt = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
         if raw_file.exists():
             payload_text = safe_read(raw_file)
             try:
@@ -1177,9 +1256,12 @@ def normalize_step(
             raw_failed += 1
             reason = "missing_output"
             file_path = str(raw_file)
-            if fail_file.exists():
+            if fail_json.exists():
                 reason = "llm_output_parse_failed"
-                file_path = str(fail_file)
+                file_path = str(fail_json)
+            elif fail_txt.exists():
+                reason = "llm_output_parse_failed"
+                file_path = str(fail_txt)
             parse_failures.append(
                 {"partition_id": partition_id, "reason": reason, "file": file_path}
             )
@@ -1191,7 +1273,7 @@ def normalize_step(
 
     for artifact_name in expected_artifacts:
         chunks = artifacts_by_name.get(artifact_name, [])
-        if not chunks:
+        if not chunks or len(chunks) != len(partition_ids):
             missing_expected_artifacts.append(artifact_name)
             continue
 
@@ -1274,65 +1356,175 @@ def llm_base_url(provider: str) -> str:
     return PROVIDER_BASE_URL.get(provider, PROVIDER_BASE_URL["openai"])
 
 
-def call_llm(
-    provider: str,
-    model_id: str,
-    api_key_env: str,
-    system_prompt: str,
-    user_content: str,
-) -> str:
-    api_key = os.getenv(api_key_env)
-    if not api_key:
-        logger.error("Missing API key env var: %s", api_key_env)
-        return ""
+@dataclass
+class RequestController:
+    run_id: str
+    cfg: RunnerConfig
+    provider_limits: Dict[str, ProviderLimiter] = field(default_factory=dict)
+    missing_api_env_emitted: set = field(default_factory=set)
 
-    payload = {
-        "model": model_id,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content},
-        ],
-        "temperature": 0.1,
-    }
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    url = f"{llm_base_url(provider)}/chat/completions"
+    def __post_init__(self) -> None:
+        self.provider_limits = {
+            "openai": ProviderLimiter(
+                ProviderRateConfig(
+                    rpm=max(self.cfg.rpm_openai, 0),
+                    tpm=max(self.cfg.tpm_openai, 0),
+                    max_inflight=max(self.cfg.max_inflight, 1),
+                )
+            ),
+            "gemini": ProviderLimiter(
+                ProviderRateConfig(
+                    rpm=max(self.cfg.rpm_gemini, 0),
+                    tpm=max(self.cfg.tpm_gemini, 0),
+                    max_inflight=max(self.cfg.max_inflight, 1),
+                )
+            ),
+            "xai": ProviderLimiter(
+                ProviderRateConfig(
+                    rpm=max(self.cfg.rpm_xai, 0),
+                    tpm=max(self.cfg.tpm_xai, 0),
+                    max_inflight=max(self.cfg.max_inflight, 1),
+                )
+            ),
+        }
 
-    for attempt in range(1, 4):
-        try:
-            response = requests.post(url, headers=headers, json=payload, timeout=180)
-            response.raise_for_status()
-            data = response.json()
-            return data["choices"][0]["message"]["content"]
-        except Exception as exc:
+    def _require_api_key(self, provider: str, api_key_env: str) -> str:
+        api_key = os.getenv(api_key_env, "").strip()
+        if api_key:
+            return api_key
+        if api_key_env not in self.missing_api_env_emitted:
+            self.missing_api_env_emitted.add(api_key_env)
+            raise RuntimeError(
+                f"Missing API key env var for provider '{provider}': {api_key_env}. "
+                "Set it and rerun with --resume."
+            )
+        raise RuntimeError(f"Missing API key env var: {api_key_env}")
+
+    def execute_chat_completion(
+        self,
+        provider: str,
+        model_id: str,
+        api_key_env: str,
+        system_prompt: str,
+        user_content: str,
+        retry_seed: str,
+        est_tokens: int,
+    ) -> Tuple[str, Dict[str, Any]]:
+        api_key = self._require_api_key(provider, api_key_env)
+        limiter = self.provider_limits.get(provider)
+        if limiter is None:
+            limiter = ProviderLimiter(ProviderRateConfig(rpm=0, tpm=0))
+            self.provider_limits[provider] = limiter
+
+        payload = {
+            "model": model_id,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            "temperature": 0.1,
+        }
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        url = f"{llm_base_url(provider)}/chat/completions"
+        max_attempts = 6
+        max_retry_seconds = 600.0
+        start_ts = time.time()
+        retry_trace: List[Dict[str, Any]] = []
+
+        for attempt in range(1, max_attempts + 1):
+            scheduled_sleep = limiter.acquire(est_tokens)
+            status_code: Optional[int] = None
+            headers_snapshot: Dict[str, str] = {}
+            retry_after_seconds: Optional[float] = None
             response_body = ""
-            if "response" in locals():
-                try:
-                    response_body = response.text[:1200]
-                except Exception:
-                    response_body = ""
-            if response_body:
+            body_excerpt = ""
+
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=180)
+                status_code = response.status_code
+                headers_snapshot = normalized_headers(response.headers)
+                retry_after_seconds = parse_retry_after_seconds(
+                    headers_snapshot.get("retry-after", "")
+                )
+                limiter.apply_server_feedback(provider, headers_snapshot)
+                response.raise_for_status()
+                data = response.json()
+                content = str(data["choices"][0]["message"]["content"])
+                meta = {
+                    "attempts": attempt,
+                    "status_code": status_code,
+                    "headers": headers_snapshot,
+                    "scheduled_sleep_seconds": scheduled_sleep,
+                    "retry_trace": retry_trace,
+                    "total_retry_seconds": max(time.time() - start_ts, 0.0),
+                    "limiter_state": limiter.export_state(),
+                }
+                return content, meta
+            except Exception as exc:
+                if "response" in locals():
+                    try:
+                        response_body = response.text
+                    except Exception:
+                        response_body = ""
+                if response_body:
+                    body_excerpt = response_body[:1200]
+
+                if status_code is None and isinstance(exc, requests.HTTPError):
+                    try:
+                        status_code = exc.response.status_code if exc.response is not None else None
+                    except Exception:
+                        status_code = None
+                should_retry_flag = should_retry_status(status_code) or (
+                    status_code is None and is_retryable_exception(exc)
+                )
+                if status_code == 429:
+                    limiter.adapt_on_429()
+
+                retry_event = {
+                    "attempt": attempt,
+                    "status_code": status_code,
+                    "error": str(exc),
+                    "scheduled_sleep_seconds": scheduled_sleep,
+                    "retry_after_seconds": retry_after_seconds,
+                    "limiter_state": limiter.export_state(),
+                }
+                retry_trace.append(retry_event)
+
+                if not should_retry_flag or attempt >= max_attempts:
+                    extra = f" | body={body_excerpt}" if body_excerpt else ""
+                    raise RuntimeError(
+                        f"LLM call failed provider={provider} model={model_id} "
+                        f"attempt={attempt}/{max_attempts} status={status_code} error={exc}{extra}"
+                    ) from exc
+
+                sleep_seconds = retry_delay_seconds(
+                    attempt=attempt,
+                    retry_after=retry_after_seconds,
+                    seed_material=f"{retry_seed}|attempt={attempt}",
+                )
+                elapsed = time.time() - start_ts
+                if elapsed + sleep_seconds > max_retry_seconds:
+                    raise RuntimeError(
+                        f"Retry time budget exceeded provider={provider} model={model_id} "
+                        f"elapsed={elapsed:.2f}s budget={max_retry_seconds:.2f}s "
+                        f"status={status_code} last_error={exc}"
+                    ) from exc
+                retry_event["backoff_sleep_seconds"] = sleep_seconds
                 logger.warning(
-                    "LLM call failed attempt %s/3 provider=%s model=%s: %s | body=%s",
-                    attempt,
+                    "LLM retry provider=%s model=%s attempt=%s/%s status=%s sleep=%.3fs",
                     provider,
                     model_id,
-                    exc,
-                    response_body,
-                )
-            else:
-                logger.warning(
-                    "LLM call failed attempt %s/3 provider=%s model=%s: %s",
                     attempt,
-                    provider,
-                    model_id,
-                    exc,
+                    max_attempts,
+                    status_code,
+                    sleep_seconds,
                 )
-            time.sleep(2 * attempt)
-    logger.error("LLM call failed after retries provider=%s model=%s.", provider, model_id)
-    return ""
+                time.sleep(sleep_seconds)
+
+        raise RuntimeError(f"Unreachable retry exit provider={provider} model={model_id}")
 
 
 def parse_json_from_response(text: str) -> Optional[Any]:
@@ -1359,70 +1551,6 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         except Exception:
             return None
     return None
-
-
-def build_partition_context(
-    phase: str,
-    partition_paths: List[str],
-    file_truncate_chars: int,
-    home_scan_mode: str,
-    max_files: int,
-    max_chars: int,
-) -> Tuple[str, Dict[str, int]]:
-    chunks: List[str] = []
-    redaction_hits = 0
-    skipped_files = 0
-    context_bytes = 0
-    safe_mode_blocked = 0
-    home_root = Path.home()
-
-    for path_str in partition_paths:
-        if len(chunks) >= max_files:
-            skipped_files += 1
-            continue
-
-        path = Path(path_str)
-        enforce_home_allowlist = phase == "H" and home_scan_mode == "safe"
-        safe_redaction_active = phase == "M" or enforce_home_allowlist
-        if enforce_home_allowlist:
-            violation = home_safe_violation_reason(path, home_root)
-            if violation:
-                skipped_files += 1
-                safe_mode_blocked += 1
-                logger.warning("Blocked unsafe home file in SAFE mode: %s (%s)", path, violation)
-                continue
-
-        content = safe_read(path)
-        if len(content) > file_truncate_chars:
-            content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
-        if safe_redaction_active:
-            content, hits = redact_sensitive_lines(content)
-            redaction_hits += hits
-        chunk_text = f"--- FILE: {path} ---\n{content}\n"
-        chunk_bytes = len(chunk_text.encode("utf-8"))
-
-        if chunks and (context_bytes + chunk_bytes > max_chars):
-            skipped_files += 1
-            continue
-
-        if not chunks and chunk_bytes > max_chars:
-            chunk_text = chunk_text.encode("utf-8")[:max_chars].decode("utf-8", errors="ignore")
-            chunk_text += "\n...[CONTEXT_TRUNCATED_FOR_LIMIT]...\n"
-            chunk_bytes = len(chunk_text.encode("utf-8"))
-
-        chunks.append(chunk_text)
-        context_bytes += chunk_bytes
-
-    context = "\n".join(chunks)
-    stats = {
-        "files_total": len(partition_paths),
-        "files_included": len(chunks),
-        "files_skipped": skipped_files,
-        "context_bytes": len(context.encode("utf-8")),
-        "redaction_hits": redaction_hits,
-        "safe_mode_blocked": safe_mode_blocked,
-    }
-    return context, stats
 
 
 def build_output_envelope_instructions(output_artifacts: Tuple[str, ...]) -> str:
@@ -1482,22 +1610,39 @@ def execute_step_for_partitions(
     phase: str,
     prompt_spec: PromptSpec,
     partitions: List[Dict[str, Any]],
+    inventory_by_path: Dict[str, Dict[str, Any]],
     phase_dir: Path,
     cfg: RunnerConfig,
-) -> None:
+    request_controller: RequestController,
+) -> Dict[str, Any]:
     step_id = prompt_spec.step_id
     prompt_path = prompt_spec.prompt_path
     output_artifacts = prompt_spec.output_artifacts
     prompt_text = safe_read(prompt_path)
     if not prompt_text:
         logger.error("Could not read prompt: %s", prompt_path)
-        return
+        return {
+            "step_id": step_id,
+            "planned_chunks": len(partitions),
+            "completed_chunks": 0,
+            "skipped_chunks": 0,
+            "failed_chunks": len(partitions),
+            "failed_chunk_ids": [str(partition.get("id", "")) for partition in partitions],
+            "chunk_ids": [str(partition.get("id", "")) for partition in partitions],
+        }
 
     raw_dir = phase_dir / "raw"
+    inputs_dir = phase_dir / "inputs"
+    payload_cache_dir = inputs_dir / "payload_cache"
+    payload_cache_dir.mkdir(parents=True, exist_ok=True)
     provider, model_id, api_key_env = MODEL_ROUTING.get(
         phase, ("xai", "grok-code-fast-1", "XAI_API_KEY")
     )
+    if not cfg.dry_run:
+        request_controller._require_api_key(provider, api_key_env)
     max_files = max_files_for_phase(phase, cfg)
+    prompt_hash = hashlib.sha256(prompt_text.encode("utf-8", errors="ignore")).hexdigest()
+    prompt_version = sha256_text(prompt_path)
     logger.info(
         "Step %s using prompt %s outputs=%s",
         step_id,
@@ -1505,17 +1650,29 @@ def execute_step_for_partitions(
         list(output_artifacts),
     )
     resume_skipped = 0
+    completed_chunks = 0
+    failed_chunks = 0
+    failed_chunk_ids: List[str] = []
+    chunk_ids: List[str] = []
+
+    chunk_manifest_rows: List[Dict[str, Any]] = []
+    truncated_only_chunks = 0
+    chunks_with_tail_snippets = 0
+    home_root = Path.home()
+    tail_chars = min(max(int(cfg.file_truncate_chars * 0.1), 256), 2048)
 
     for partition in partitions:
         partition_id = partition["id"]
+        chunk_ids.append(partition_id)
         out_json = raw_dir / f"{step_id}__{partition_id}.json"
-        out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+        out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
         out_trace = raw_dir / f"{step_id}__{partition_id}.TRACE.md"
+        out_meta = raw_dir / f"{step_id}__{partition_id}.request_meta.json"
+        payload_cache = payload_cache_dir / f"{step_id}__{partition_id}.prompt.txt"
 
-        if cfg.resume and out_json.exists():
-            resume_skipped += 1
-            continue
-
+        file_manifest_hash = str(partition.get("file_manifest_hash", ""))
+        if not file_manifest_hash:
+            file_manifest_hash = build_file_manifest_hash(partition.get("paths", []), inventory_by_path)
         output_instructions = build_output_envelope_instructions(output_artifacts)
         prompt_prefix = (
             "Extract from the files below.\n"
@@ -1524,16 +1681,97 @@ def execute_step_for_partitions(
         )
         reserved_bytes = len(prompt_prefix.encode("utf-8"))
         context_budget = max(cfg.max_chars - reserved_bytes, 2048)
-        context, context_stats = build_partition_context(
-            phase=phase,
-            partition_paths=partition["paths"],
+        filtered_paths: List[str] = []
+        safe_mode_blocked = 0
+        for path_str in partition.get("paths", []):
+            path = Path(path_str)
+            enforce_home_allowlist = phase == "H" and cfg.home_scan_mode == "safe"
+            if enforce_home_allowlist:
+                violation = home_safe_violation_reason(path, home_root)
+                if violation:
+                    safe_mode_blocked += 1
+                    logger.warning("Blocked unsafe home file in SAFE mode: %s (%s)", path, violation)
+                    continue
+            filtered_paths.append(path_str)
+
+        redaction_hits_total = 0
+
+        def _read_for_chunk(path_str: str) -> str:
+            nonlocal redaction_hits_total
+            content_local = safe_read(Path(path_str))
+            safe_redaction_active = phase == "M" or (phase == "H" and cfg.home_scan_mode == "safe")
+            if safe_redaction_active:
+                content_local, hits = redact_sensitive_lines(content_local)
+                redaction_hits_total += hits
+            return content_local
+
+        context, context_stats, file_entries = build_partition_context(
+            partition_paths=filtered_paths,
+            read_text_fn=_read_for_chunk,
             file_truncate_chars=cfg.file_truncate_chars,
-            home_scan_mode=cfg.home_scan_mode,
             max_files=max_files,
             max_chars=context_budget,
+            tail_chars=tail_chars,
         )
-        user_prompt = f"{prompt_prefix}{context}"
+        context_stats["redaction_hits"] = redaction_hits_total
+        context_stats["safe_mode_blocked"] = safe_mode_blocked
+        if context_stats.get("files_included", 0) > 0 and context_stats.get("truncated_files", 0) == context_stats.get(
+            "files_included", 0
+        ):
+            truncated_only_chunks += 1
+        if context_stats.get("tail_snippet_files", 0) > 0:
+            chunks_with_tail_snippets += 1
+
+        if payload_cache.exists():
+            cached_prompt = safe_read(payload_cache)
+            user_prompt = cached_prompt if cached_prompt else f"{prompt_prefix}{context}"
+        else:
+            user_prompt = f"{prompt_prefix}{context}"
+            payload_cache.write_text(user_prompt, encoding="utf-8")
+        injected_text_sha256 = hashlib.sha256(
+            user_prompt.encode("utf-8", errors="ignore")
+        ).hexdigest()
+
+        chunk_contract = {
+            "prompt_version": prompt_version,
+            "provider": provider,
+            "model": model_id,
+            "system_prompt_hash": prompt_hash,
+            "file_manifest_hash": file_manifest_hash,
+            "caps": {
+                "max_chars": cfg.max_chars,
+                "file_truncate_chars": cfg.file_truncate_chars,
+                "max_files_phase_effective": max_files,
+            },
+            "home_scan_mode": cfg.home_scan_mode,
+            "safe_redaction_active": phase_uses_safe_redaction(phase, cfg),
+            "redaction_version": "safe-redaction-v1",
+            "injected_text_sha256": injected_text_sha256,
+        }
+        chunk_key = hashlib.sha256(
+            json.dumps(chunk_contract, sort_keys=True, ensure_ascii=True).encode("utf-8", errors="ignore")
+        ).hexdigest()
+
+        if cfg.resume and out_json.exists() and out_meta.exists():
+            if is_valid_json_file(out_json):
+                meta_payload = parse_json_from_response(safe_read(out_meta))
+                if isinstance(meta_payload, dict) and str(meta_payload.get("chunk_key", "")) == chunk_key:
+                    resume_skipped += 1
+                    continue
+
         payload_bytes = len(user_prompt.encode("utf-8"))
+        chunk_manifest_rows.append(
+            {
+                "chunk_id": partition_id,
+                "base_partition_id": str(partition.get("base_partition_id", "")),
+                "file_manifest_hash": file_manifest_hash,
+                "chunk_key": chunk_key,
+                "injected_text_sha256": injected_text_sha256,
+                "request_payload_bytes": payload_bytes,
+                "file_entries": file_entries,
+                "context_stats": context_stats,
+            }
+        )
         if payload_bytes > cfg.max_chars:
             raise RuntimeError(
                 f"Payload limit exceeded for {step_id} {partition_id}: "
@@ -1574,6 +1812,23 @@ def execute_step_for_partitions(
                     "dry_run": True,
                 },
             )
+            write_json(
+                out_meta,
+                {
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "provider": provider,
+                    "model_id": model_id,
+                    "chunk_key": chunk_key,
+                    "file_manifest_hash": file_manifest_hash,
+                    "request_payload_bytes": payload_bytes,
+                    "context_stats": context_stats,
+                    "injected_text_sha256": injected_text_sha256,
+                    "status": "dry_run",
+                    "generated_at": now_iso(),
+                },
+            )
             if out_failed.exists():
                 out_failed.unlink()
             continue
@@ -1588,13 +1843,59 @@ def execute_step_for_partitions(
             context_stats["files_skipped"],
             context_stats["context_bytes"],
         )
-        response = call_llm(
-            provider=provider,
-            model_id=model_id,
-            api_key_env=api_key_env,
-            system_prompt=prompt_text,
-            user_content=user_prompt,
-        )
+        request_meta: Dict[str, Any] = {
+            "phase": phase,
+            "step_id": step_id,
+            "partition_id": partition_id,
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env": api_key_env,
+            "chunk_key": chunk_key,
+            "file_manifest_hash": file_manifest_hash,
+            "request_payload_bytes": payload_bytes,
+            "context_stats": context_stats,
+            "started_at": now_iso(),
+            "status": "in_progress",
+        }
+        write_json(out_meta, request_meta)
+        try:
+            response, call_meta = request_controller.execute_chat_completion(
+                provider=provider,
+                model_id=model_id,
+                api_key_env=api_key_env,
+                system_prompt=prompt_text,
+                user_content=user_prompt,
+                retry_seed=f"{request_controller.run_id}|{phase}|{step_id}|{partition_id}",
+                est_tokens=estimate_tokens_from_text(user_prompt),
+            )
+            request_meta.update(call_meta)
+        except Exception as exc:
+            failed_chunks += 1
+            failed_chunk_ids.append(partition_id)
+            error_text = str(exc)
+            write_json(
+                out_failed,
+                {
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "status": "failed",
+                    "error": error_text,
+                    "retry_trace": request_meta.get("retry_trace", []),
+                    "generated_at": now_iso(),
+                },
+            )
+            request_meta.update(
+                {
+                    "status": "failed",
+                    "finished_at": now_iso(),
+                    "error": error_text,
+                }
+            )
+            write_json(out_meta, request_meta)
+            logger.error("LLM execution failed for %s %s: %s", step_id, partition_id, error_text)
+            continue
+
         parsed = parse_json_from_response(response)
         artifacts = coerce_artifacts_from_response(
             parsed=parsed,
@@ -1602,8 +1903,30 @@ def execute_step_for_partitions(
             expected_artifacts=output_artifacts,
         )
         if not artifacts:
-            out_failed.write_text(response, encoding="utf-8")
+            write_json(
+                out_failed,
+                {
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "status": "failed",
+                    "error": "artifact_parse_failed",
+                    "raw_response_excerpt": response[:4000],
+                    "retry_trace": request_meta.get("retry_trace", []),
+                    "generated_at": now_iso(),
+                },
+            )
             logger.error("Artifact parse failed for %s %s", step_id, partition_id)
+            failed_chunks += 1
+            failed_chunk_ids.append(partition_id)
+            request_meta.update(
+                {
+                    "status": "failed",
+                    "finished_at": now_iso(),
+                    "error": "artifact_parse_failed",
+                }
+            )
+            write_json(out_meta, request_meta)
             continue
 
         write_json(
@@ -1616,11 +1939,26 @@ def execute_step_for_partitions(
                 "artifacts": artifacts,
             },
         )
+        request_meta.update({"status": "ok", "finished_at": now_iso()})
+        write_json(out_meta, request_meta)
         if out_failed.exists():
             out_failed.unlink()
+        completed_chunks += 1
 
     if resume_skipped:
         logger.info("Resume: skipped %s existing outputs for step %s", resume_skipped, step_id)
+    return {
+        "step_id": step_id,
+        "planned_chunks": len(partitions),
+        "completed_chunks": completed_chunks,
+        "skipped_chunks": resume_skipped,
+        "failed_chunks": failed_chunks,
+        "failed_chunk_ids": sorted(set(failed_chunk_ids)),
+        "chunk_ids": chunk_ids,
+        "truncated_only_chunks": truncated_only_chunks,
+        "chunks_with_tail_snippets": chunks_with_tail_snippets,
+        "chunk_manifest_rows": chunk_manifest_rows,
+    }
 
 
 def write_phase_merge_report(
@@ -1637,13 +1975,13 @@ def write_phase_merge_report(
     for qa_payload in sorted(step_qas, key=lambda item: str(item.get("step_id", ""))):
         parse_failures = qa_payload.get("parse_failures", [])
         missing_expected = qa_payload.get("missing_expected_artifacts", [])
-        successful = set(qa_payload.get("successful_partitions", []))
-        missing_partitions = sorted(set(partition_ids) - successful)
+        successful = list(qa_payload.get("successful_partitions", []))
+        missing_partitions = list(qa_payload.get("missing_partitions", []))
         step_reports.append(
             {
                 "step_id": qa_payload.get("step_id"),
                 "partitions_total": qa_payload.get("partitions_total", len(partition_ids)),
-                "successful_partitions": sorted(successful),
+                "successful_partitions": successful,
                 "missing_partitions": missing_partitions,
                 "missing_expected_artifacts": missing_expected,
                 "parse_failures": parse_failures,
@@ -1692,6 +2030,7 @@ def _run_phase_inner(
             logger.info("Collected %s context files.", len(context_items))
 
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
+    inventory_by_path = {str(item.get("path", "")): item for item in inventory}
     max_files = max_files_for_phase(phase, cfg)
     partitions = build_partitions(phase, inventory, max_files=max_files, max_chars=cfg.max_chars)
 
@@ -1739,20 +2078,45 @@ def _run_phase_inner(
         cfg.max_chars,
     )
 
+    request_controller = RequestController(run_id=dirs["root"].name, cfg=cfg)
     step_qas: List[Dict[str, Any]] = []
     for prompt_spec in prompts:
-        execute_step_for_partitions(
+        chunk_plan = plan_chunks_for_step(
+            partitions=partitions,
+            inventory_by_path=inventory_by_path,
+            max_files=max_files,
+            max_chars=cfg.max_chars,
+        )
+        coverage = execute_step_for_partitions(
             phase=phase,
             prompt_spec=prompt_spec,
-            partitions=partitions,
+            partitions=chunk_plan,
+            inventory_by_path=inventory_by_path,
             phase_dir=phase_dir,
             cfg=cfg,
+            request_controller=request_controller,
         )
+        write_json(
+            phase_dir / "inputs" / f"CHUNK_MANIFEST_{prompt_spec.step_id}.json",
+            {
+                "phase": phase,
+                "step_id": prompt_spec.step_id,
+                "generated_at": now_iso(),
+                "max_files": max_files,
+                "max_chars": cfg.max_chars,
+                "soft_target_chars": max(int(cfg.max_chars * 0.7), 2048),
+                "chunks": coverage.get("chunk_manifest_rows", []),
+            },
+        )
+        if "chunk_manifest_rows" in coverage:
+            del coverage["chunk_manifest_rows"]
+        write_json(phase_dir / "qa" / f"{prompt_spec.step_id}__chunk_coverage.json", coverage)
+        write_json(phase_dir / "qa" / f"{prompt_spec.step_id}_COVERAGE.json", coverage)
         qa_payload = normalize_step(
             phase=phase,
             prompt_spec=prompt_spec,
             phase_dir=phase_dir,
-            partitions=partitions,
+            partitions=chunk_plan,
         )
         step_qas.append(qa_payload)
 
@@ -2513,6 +2877,13 @@ def main() -> None:
     parser.add_argument("--home-scan-mode", choices=["safe", "full"], default="safe")
     parser.add_argument("--r-profile", choices=["base", "full"], default="base")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--rpm-openai", type=int, default=60)
+    parser.add_argument("--tpm-openai", type=int, default=120000)
+    parser.add_argument("--rpm-gemini", type=int, default=15)
+    parser.add_argument("--tpm-gemini", type=int, default=64000)
+    parser.add_argument("--rpm-xai", type=int, default=30)
+    parser.add_argument("--tpm-xai", type=int, default=90000)
+    parser.add_argument("--max-inflight", type=int, default=1)
     args = parser.parse_args()
 
     root = Path.cwd()
@@ -2532,6 +2903,13 @@ def main() -> None:
         home_scan_mode=args.home_scan_mode,
         r_profile=args.r_profile,
         resume=args.resume,
+        rpm_openai=args.rpm_openai,
+        tpm_openai=args.tpm_openai,
+        rpm_gemini=args.rpm_gemini,
+        tpm_gemini=args.tpm_gemini,
+        rpm_xai=args.rpm_xai,
+        tpm_xai=args.tpm_xai,
+        max_inflight=max(args.max_inflight, 1),
     )
 
     write_run_manifest(root, dirs, run_id, args)
