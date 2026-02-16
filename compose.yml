@@ -486,6 +486,7 @@ services:
       - POSTGRES_URL=postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@postgres:5432/dopemux_knowledge_graph
       - DOPEMUX_CAPTURE_LEDGER_PATH=/data/chronicle.sqlite
       - DOPEMUX_SQLITE_JOURNAL_MODE=DELETE
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097}
     volumes:
       - ./.dopemux:/data
     depends_on:
