@@ -15,9 +15,9 @@ prelude: Data Query Services Master History (explanation) for dopemux documentat
 **Services**: `dddpg`, `dope-query`, `conport_kg_ui`
 **Role**: The Memory & Recall Layer
 **Status**:
-*   DDD-PG: Week 4 Implementation (Solid Foundation)
-*   Dope-Query: Production (Multi-workspace)
-*   KG-UI: Production (TUI)
+* DDD-PG: Week 4 Implementation (Solid Foundation)
+* Dope-Query: Production (Multi-workspace)
+* KG-UI: Production (TUI)
 
 ---
 
@@ -32,22 +32,22 @@ The **Data & Query Services** operate on the "Intelligence Plane" to manage the 
 ## 2. Feature Catalog
 
 ### 🏛️ DDD-PG (`services/dddpg`)
-*   **Hybrid Storage**: Uses SQLite for fast, offline-capable local reads and PostgreSQL AGE for powerful graph queries.
-*   **Multi-Instance**: Supports Git worktrees by tagging every decision with `workspace_id` and `instance_id`.
-*   **ADHD Optimization**: Enforces "Top-3 Pattern" in API design—never show more than 3 items by default to prevent overwhelm.
+* **Hybrid Storage**: Uses SQLite for fast, offline-capable local reads and PostgreSQL AGE for powerful graph queries.
+* **Multi-Instance**: Supports Git worktrees by tagging every decision with `workspace_id` and `instance_id`.
+* **ADHD Optimization**: Enforces "Top-3 Pattern" in API design—never show more than 3 items by default to prevent overwhelm.
 
 ### 🔍 Dope-Query (`services/dope-query`)
-*   **Cross-Workspace Search**: "Show me all auth decisions across *all* my projects."
-*   **Genealogy**: Traces decision lineage (e.g., "This Refactor supersedes That Migration").
-*   **Unified Context**: Merges context from code (AST) and decisions (KG).
+* **Cross-Workspace Search**: "Show me all auth decisions across *all* my projects."
+* **Genealogy**: Traces decision lineage (e.g., "This Refactor supersedes That Migration").
+* **Unified Context**: Merges context from code (AST) and decisions (KG).
 
 ### 🖥️ ConPort KG UI (`services/conport_kg_ui`)
-*   **TUI**: A Terminal User Interface for graph exploration (built with `ink` & React).
-*   **Progressive Disclosure**:
-    *   **Tier 1**: Top-3 recent decisions.
-    *   **Tier 2**: 1-hop neighbors (what did this decision impact?).
-    *   **Tier 3**: Full context and metadata.
-*   **Visuals**: Color-coded cognitive load indicators.
+* **TUI**: A Terminal User Interface for graph exploration (built with `ink` & React).
+* **Progressive Disclosure**:
+    * **Tier 1**: Top-3 recent decisions.
+    * **Tier 2**: 1-hop neighbors (what did this decision impact?).
+    * **Tier 3**: Full context and metadata.
+* **Visuals**: Color-coded cognitive load indicators.
 
 ---
 
@@ -67,21 +67,21 @@ The **Data & Query Services** operate on the "Intelligence Plane" to manage the 
 ```
 
 ### Integration Points
-*   **DDD-PG** captures data from *all* other agents (Serena, Task Orchestrator).
-*   **KG-UI** is the primary way for humans to "browse" their external brain.
+* **DDD-PG** captures data from *all* other agents (Serena, Task Orchestrator).
+* **KG-UI** is the primary way for humans to "browse" their external brain.
 
 ---
 
 ## 4. Validated Status (Audit Results)
 
 **✅ Operational:**
-*   **DDD-PG**: Core models and SQLite backend are production-ready. 100% test coverage on KG integration.
-*   **Dope-Query**: Multi-workspace guide confirms functionality.
-*   **KG-UI**: `npm run demo` confirmed working.
+* **DDD-PG**: Core models and SQLite backend are production-ready. 100% test coverage on KG integration.
+* **Dope-Query**: Multi-workspace guide confirms functionality.
+* **KG-UI**: `npm run demo` confirmed working.
 
 **🚧 In Progress:**
-*   **Semantic Search**: Embedding-based retrieval is planned for "Week 5".
-*   **EventBus Integration**: Publishing change events is specified but pending implementation.
+* **Semantic Search**: Embedding-based retrieval is planned for "Week 5".
+* **EventBus Integration**: Publishing change events is specified but pending implementation.
 
 ---
 
