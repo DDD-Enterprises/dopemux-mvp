@@ -31,9 +31,8 @@ def test_ccr_models_env_for_altp(mock_which, mock_start_proxy, mock_router_cls, 
 
     runner = CliRunner()
     env = os.environ.copy()
-    env["ALTP_OPUS_KEY"] = "sk-opus"
-    env["ALTP_SONNET_KEY"] = "sk-sonnet"
-    env["ALTP_HAIKU_KEY"] = "sk-haiku"
+    env["OPENROUTER_API_KEY"] = "sk-openrouter"
+    env["XAI_API_KEY"] = "sk-xai"
     
     with patch("dopemux.cli.Path") as mock_path, \
          patch("dopemux.workspace_utils.get_workspace_root") as mock_get_root, \
