@@ -40,6 +40,13 @@ help:
 	@echo "  pm-up          Start PM stack (docker-compose up -d)"
 	@echo "  pm-down        Stop PM stack (docker-compose down)"
 	@echo "  pm-logs        Tail PM stack logs"
+	@echo ""
+	@echo "Extraction Pipeline (Upgrade Pipeline):"
+	@echo "  x-run-init RUN_ID=YYYYMMDD_HHMM_<slug>  Initialize new extraction run scaffolding"
+	@echo "  x-phase-dirs PHASE=<A|H|D|C|R|R2|X|T>       Print target directories for a phase"
+	@echo "  x-status                                     Print file counts per phase"
+	@echo "  x-manifest                                   Update/generate MANIFEST.json for run"
+	@echo "  x-doctor                                     Run pipeline doctor on latest run"
 
 # Installation targets
 install:
@@ -176,4 +183,52 @@ kill-minimal:  ## Kill minimal session
 
 list-sessions:  ## List all tmux sessions
 	@tmux list-sessions 2>/dev/null || echo "No tmux sessions running"
+
+# ---- Extraction Pipeline (Upgrade Pipeline) ----
+LATEST_RUN := $(shell cat extraction/latest_run_id.txt 2>/dev/null)
+
+x-run-init:
+	@if [ -n "$(RUN_ID)" ]; then \
+		ID="$(RUN_ID)"; \
+	else \
+		SHA=$$(git rev-parse --short HEAD 2>/dev/null || echo nogit); \
+		ID=$$(date '+%Y%m%d_%H%M%S_PST')_$$SHA; \
+	fi; \
+	echo "Initializing run $$ID..."; \
+	mkdir -p "extraction/runs/$$ID/A_repo_control_plane/raw" "extraction/runs/$$ID/A_repo_control_plane/norm" "extraction/runs/$$ID/A_repo_control_plane/qa"; \
+	mkdir -p "extraction/runs/$$ID/H_home_control_plane/raw" "extraction/runs/$$ID/H_home_control_plane/norm" "extraction/runs/$$ID/H_home_control_plane/qa"; \
+	mkdir -p "extraction/runs/$$ID/D_docs_pipeline/raw" "extraction/runs/$$ID/D_docs_pipeline/norm" "extraction/runs/$$ID/D_docs_pipeline/qa"; \
+	mkdir -p "extraction/runs/$$ID/C_code_surfaces/raw" "extraction/runs/$$ID/C_code_surfaces/norm" "extraction/runs/$$ID/C_code_surfaces/qa"; \
+	mkdir -p "extraction/runs/$$ID/R_arbitration/out"; \
+	mkdir -p "extraction/runs/$$ID/R2_synthesis/out"; \
+	mkdir -p "extraction/runs/$$ID/X_feature_index/out"; \
+	mkdir -p "extraction/runs/$$ID/T_task_packets/out"; \
+	echo "$$ID" > extraction/latest_run_id.txt; \
+	rm -f extraction/latest; \
+	ln -s "runs/$$ID" extraction/latest; \
+	echo "✓ Initialized run $$ID in extraction/latest"
+
+x-phase-dirs:
+	@if [ -z "$(PHASE)" ]; then echo "Usage: make x-phase-dirs PHASE=<A|H|D|C|R|R2|X|T>"; exit 1; fi
+	@case $(PHASE) in \
+		A) echo "extraction/latest/A_repo_control_plane" ;; \
+		H) echo "extraction/latest/H_home_control_plane" ;; \
+		D) echo "extraction/latest/D_docs_pipeline" ;; \
+		C) echo "extraction/latest/C_code_surfaces" ;; \
+		R) echo "extraction/latest/R_arbitration" ;; \
+		R2) echo "extraction/latest/R2_synthesis" ;; \
+		X) echo "extraction/latest/X_feature_index" ;; \
+		T) echo "extraction/latest/T_task_packets" ;; \
+		*) echo "Invalid phase $(PHASE)"; exit 1 ;; \
+	esac
+
+x-status:
+	@echo "Current Run: $(LATEST_RUN)"
+	@find extraction/latest -maxdepth 2 -not -path '*/.*' | sort
+
+x-manifest:
+	@python3 scripts/pipeline_manifest.py
+
+x-doctor:
+	@python3 scripts/pipeline_doctor.py
 
