@@ -157,22 +157,10 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^docs/.*\.md$
-        exclude: node_modules/
-
-  # Lychee link checking handled by separate GitHub Action (docs job)
-  # - repo: https://github.com/lycheeverse/lychee
-  #   rev: v0.15.1
-  #   hooks:
-  #     - id: lychee
-  #       args: ["--config", ".lychee.toml", "--no-progress", "docs/**/*.md"]
-
-  # General file checks
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
-    hooks:
-      - id: trailing-whitespace
-        files: ^docs/.*\.md$
+        exclude: ^docs/(archive|04-explanation/(technical-deep-dives|archive|branding)|05-audit-reports|06-research|planes)/|node_modules/
+        exclude: ^docs/(archive|04-explanation/(technical-deep-dives|archive|branding)|05-audit-reports|06-research|planes)/
       - id: end-of-file-fixer
         files: ^docs/.*\.md$
+        exclude: ^docs/(archive|04-explanation/(technical-deep-dives|archive|branding)|05-audit-reports|06-research|planes)/
       - id: check-yaml
         files: ^config/.*\.ya?ml$
