@@ -1,0 +1,5427 @@
+[
+  {
+    "name": "PORT_BASE",
+    "default": "3000",
+    "location": "./src/integrations/bridge_client.py:39"
+  },
+  {
+    "name": "DOPEMUX_ADHD_ENGINE_BASE_URL",
+    "default": "\"\"",
+    "location": "./src/dopemux/profile_detector.py:379"
+  },
+  {
+    "name": "DOPEMUX_ADHD_ENGINE_PORT",
+    "default": "\"\"",
+    "location": "./src/dopemux/profile_detector.py:384"
+  },
+  {
+    "name": "DOPEMUX_ADHD_USER_ID",
+    "default": "default_user",
+    "location": "./src/dopemux/profile_detector.py:411"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": "\"\"",
+    "location": "./src/dopemux/profile_detector.py:412"
+  },
+  {
+    "name": "DOPEMUX_CONPORT_PORT",
+    "default": null,
+    "location": "./src/dopemux/instance_state.py:466"
+  },
+  {
+    "name": "CONPORT_PORT",
+    "default": null,
+    "location": "./src/dopemux/instance_state.py:467"
+  },
+  {
+    "name": "CONPORT_URL",
+    "default": null,
+    "location": "./src/dopemux/instance_state.py:470"
+  },
+  {
+    "name": "DOPEMUX_PORT_BASE",
+    "default": null,
+    "location": "./src/dopemux/instance_state.py:480"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ROOT",
+    "default": null,
+    "location": "./src/dopemux/worktree_commands.py:83"
+  },
+  {
+    "name": "DOPEMUX_PROJECT_ROOT",
+    "default": null,
+    "location": "./src/dopemux/worktree_commands.py:88"
+  },
+  {
+    "name": "DOPEMUX_AGENT_ROLE",
+    "default": null,
+    "location": "./src/dopemux/roles/catalog.py:299"
+  },
+  {
+    "name": "DOPEMUX_ACTIVE_ROLE",
+    "default": null,
+    "location": "./src/dopemux/roles/catalog.py:300"
+  },
+  {
+    "name": "DOPEMUX_ROLE_ATTENTION_STATE",
+    "default": null,
+    "location": "./src/dopemux/roles/catalog.py:301"
+  },
+  {
+    "name": "DOPEMUX_ROLE_DESCRIPTION",
+    "default": null,
+    "location": "./src/dopemux/roles/catalog.py:302"
+  },
+  {
+    "name": "DOPEMUX_ACTIVE_PROFILE",
+    "default": null,
+    "location": "./src/dopemux/roles/catalog.py:305"
+  },
+  {
+    "name": "DOPEMUX_METAMCP_NAMESPACE",
+    "default": null,
+    "location": "./src/dopemux/roles/catalog.py:310"
+  },
+  {
+    "name": "DOPEMUX_RECOVERY_MAX_DAYS",
+    "default": "0",
+    "location": "./src/dopemux/worktree_recovery.py:83"
+  },
+  {
+    "name": "DOPEMUX_DISABLE_CLAUDE_HOOKS",
+    "default": null,
+    "location": "./src/dopemux/claude_config.py:215"
+  },
+  {
+    "name": "DOPEMUX_LEGACY_DETECTION",
+    "default": "0",
+    "location": "./src/dopemux/auto_configurator.py:60"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./src/dopemux/conport/wire_project.py:42"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./src/dopemux/conport/wire_project.py:57"
+  },
+  {
+    "name": "HEALTH_DETAIL",
+    "default": null,
+    "location": "./src/dopemux/service_base/health.py:134"
+  },
+  {
+    "name": "DD_AGENT_HOST",
+    "default": "127.0.0.1",
+    "location": "./src/dopemux/core_logging/__init__.py:78"
+  },
+  {
+    "name": "DD_DOGSTATSD_PORT",
+    "default": "8125",
+    "location": "./src/dopemux/core_logging/__init__.py:79"
+  },
+  {
+    "name": "DOPMUX_LOG_STATSD_PREFIX",
+    "default": "dopemux",
+    "location": "./src/dopemux/core_logging/__init__.py:80"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./src/dopemux/core_logging/__init__.py:209"
+  },
+  {
+    "name": "LOG_FORMAT",
+    "default": "\"\"",
+    "location": "./src/dopemux/core_logging/__init__.py:213"
+  },
+  {
+    "name": "EDITOR",
+    "default": null,
+    "location": "./src/dopemux/profile_commands.py:442"
+  },
+  {
+    "name": "SHELL",
+    "default": "\"\"",
+    "location": "./src/dopemux/shell_integration_installer.py:53"
+  },
+  {
+    "name": "DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT",
+    "default": null,
+    "location": "./tests/test_cli.py:159"
+  },
+  {
+    "name": "DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT",
+    "default": null,
+    "location": "./tests/test_cli.py:169"
+  },
+  {
+    "name": "DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT",
+    "default": null,
+    "location": "./tests/test_cli.py:218"
+  },
+  {
+    "name": "DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT",
+    "default": null,
+    "location": "./tests/test_cli.py:272"
+  },
+  {
+    "name": "DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT",
+    "default": null,
+    "location": "./tests/test_cli.py:341"
+  },
+  {
+    "name": "ZEN_DEFAULT_MODEL",
+    "default": "openai/gpt-4o",
+    "location": "./src/dopemux/config/manager.py:838"
+  },
+  {
+    "name": "LITELLM_PROXY",
+    "default": "http://localhost:4000",
+    "location": "./src/dopemux/config/manager.py:842"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": "\"\"",
+    "location": "./src/dopemux/config/manager.py:843"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/dope_brainz_router.py:152"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/dope_brainz_router.py:153"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/dope_brainz_router.py:154"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/dope_brainz_router.py:155"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/dope_brainz_router.py:156"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/dope_brainz_router.py:157"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/dope_brainz_router.py:158"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/dope_brainz_router.py:159"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./scripts/indexing/index_conport_in_dope_context.py:63"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./scripts/indexing/index_conport_in_dope_context.py:137"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./scripts/indexing/index_conport_in_dope_context.py:192"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./scripts/indexing/index_conport_in_dope_context.py:197"
+  },
+  {
+    "name": "DOPEMUX_ALLOW_MAIN",
+    "default": null,
+    "location": "./src/dopemux/protection_interceptor.py:172"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./src/conport/memory_server.py:30"
+  },
+  {
+    "name": "MILVUS_HOST",
+    "default": "localhost",
+    "location": "./src/conport/memory_server.py:44"
+  },
+  {
+    "name": "MILVUS_PORT",
+    "default": "19530",
+    "location": "./src/conport/memory_server.py:45"
+  },
+  {
+    "name": "ZEP_API_URL",
+    "default": "http://localhost:8000",
+    "location": "./src/conport/memory_server.py:46"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./src/conport/memory_server.py:47"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./src/conport/memory_server.py:48"
+  },
+  {
+    "name": "EMBEDDING_MODEL",
+    "default": "voyage-code-3",
+    "location": "./src/conport/memory_server.py:49"
+  },
+  {
+    "name": "EMBEDDING_DIMENSION",
+    "default": "1024",
+    "location": "./src/conport/memory_server.py:50"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./src/conport/memory_server.py:144"
+  },
+  {
+    "name": "MCP_HTTP_MODE",
+    "default": "false",
+    "location": "./src/conport/memory_server.py:763"
+  },
+  {
+    "name": "PORT",
+    "default": "3004",
+    "location": "./src/conport/memory_server.py:932"
+  },
+  {
+    "name": "DOPEMUX_MCP_BRIDGE_TIMEOUT",
+    "default": null,
+    "location": "./src/dopemux/mcp/http_stdio_bridge.py:51"
+  },
+  {
+    "name": "DOPEMUX_DEV_MODE",
+    "default": null,
+    "location": "./src/dopemux/dev_mode.py:45"
+  },
+  {
+    "name": "DOPEMUX_USE_TEST_DB",
+    "default": null,
+    "location": "./src/dopemux/dev_mode.py:117"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "DEBUG",
+    "location": "./src/dopemux/dev_mode.py:127"
+  },
+  {
+    "name": "DOPEMUX_SKIP_SERVICES",
+    "default": "\"\"",
+    "location": "./src/dopemux/dev_mode.py:140"
+  },
+  {
+    "name": "DOPEMUX_SKIP_SERVICES",
+    "default": "\"\"",
+    "location": "./src/dopemux/dev_mode.py:164"
+  },
+  {
+    "name": "CLAUDE_SESSION_ID",
+    "default": null,
+    "location": "./src/dopemux/hooks/claude_code_hooks.py:251"
+  },
+  {
+    "name": "SHELL",
+    "default": "''",
+    "location": "./src/dopemux/hooks/shell_hook_installer.py:36"
+  },
+  {
+    "name": "TMUX",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:369"
+  },
+  {
+    "name": "DOPEMUX_TMUX_SESSION",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:596"
+  },
+  {
+    "name": "DOPEMUX_TMUX_SESSION",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:654"
+  },
+  {
+    "name": "TMUX",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:681"
+  },
+  {
+    "name": "SHELL",
+    "default": "/bin/bash",
+    "location": "./src/dopemux/tmux/cli.py:708"
+  },
+  {
+    "name": "TMUX_PANE",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:709"
+  },
+  {
+    "name": "SHELL",
+    "default": "/bin/bash",
+    "location": "./src/dopemux/tmux/cli.py:801"
+  },
+  {
+    "name": "DOPEMUX_CLAUDE_VIA_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:1006"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": "\"\"",
+    "location": "./src/dopemux/tmux/cli.py:1007"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_DB_URL",
+    "default": "\"\"",
+    "location": "./src/dopemux/tmux/cli.py:1008"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_URL",
+    "default": "''",
+    "location": "./src/dopemux/tmux/cli.py:1019"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": "''",
+    "location": "./src/dopemux/tmux/cli.py:1021"
+  },
+  {
+    "name": "DOPEMUX_CLAUDE_VIA_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:1077"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": "\"\"",
+    "location": "./src/dopemux/tmux/cli.py:1078"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_DB_URL",
+    "default": "\"\"",
+    "location": "./src/dopemux/tmux/cli.py:1079"
+  },
+  {
+    "name": "SHELL",
+    "default": "/bin/bash",
+    "location": "./src/dopemux/tmux/cli.py:1156"
+  },
+  {
+    "name": "DOPEMUX_CLAUDE_VIA_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:1430"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": "\"\"",
+    "location": "./src/dopemux/tmux/cli.py:1431"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_DB_URL",
+    "default": "\"\"",
+    "location": "./src/dopemux/tmux/cli.py:1432"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_URL",
+    "default": "''",
+    "location": "./src/dopemux/tmux/cli.py:1446"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": "''",
+    "location": "./src/dopemux/tmux/cli.py:1448"
+  },
+  {
+    "name": "DOPEMUX_CLAUDE_VIA_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:1502"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": "\"\"",
+    "location": "./src/dopemux/tmux/cli.py:1503"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_DB_URL",
+    "default": "\"\"",
+    "location": "./src/dopemux/tmux/cli.py:1504"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_URL",
+    "default": "''",
+    "location": "./src/dopemux/tmux/cli.py:1515"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": "''",
+    "location": "./src/dopemux/tmux/cli.py:1517"
+  },
+  {
+    "name": "DOPEMUX_DEBUG_LOG",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:1910"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_REMEMBER_DB",
+    "default": "\"\"",
+    "location": "./src/dopemux/tmux/cli.py:1938"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_DB_URL",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:1941"
+  },
+  {
+    "name": "LITELLM_DATABASE_URL",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:1942"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:1943"
+  },
+  {
+    "name": "LITELLM_MASTER_KEY",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:1967"
+  },
+  {
+    "name": "LITELLM_MASTER_KEY",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2027"
+  },
+  {
+    "name": "DOPEMUX_CLAUDE_VIA_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2138"
+  },
+  {
+    "name": "DOPEMUX_DEFAULT_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2139"
+  },
+  {
+    "name": "ANTHROPIC_BASE_URL",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2140"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2141"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2142"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_PROVIDER",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2144"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_URL",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2145"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2146"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2157"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_DB_URL",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2159"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2161"
+  },
+  {
+    "name": "TMUX",
+    "default": null,
+    "location": "./src/dopemux/tmux/cli.py:2349"
+  },
+  {
+    "name": "LEANTIME_API_TOKEN",
+    "default": null,
+    "location": "./tests/test_leantime_integration.py:340"
+  },
+  {
+    "name": "LEAN_MCP_TOKEN",
+    "default": null,
+    "location": "./tests/test_leantime_integration.py:340"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ROOT",
+    "default": null,
+    "location": "./src/dopemux/workspace_detection.py:108"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ROOT",
+    "default": null,
+    "location": "./src/dopemux/workspace_detection.py:115"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ROOT",
+    "default": null,
+    "location": "./src/dopemux/workspace_detection.py:338"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_HOST",
+    "default": "\"\"",
+    "location": "./src/dopemux/litellm_proxy.py:560"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_PORT_BASE",
+    "default": null,
+    "location": "./src/dopemux/litellm_proxy.py:562"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/litellm_proxy.py:717"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_CONFIG",
+    "default": null,
+    "location": "./src/dopemux/litellm_proxy.py:725"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_DB_URL",
+    "default": "\"\"",
+    "location": "./src/dopemux/litellm_proxy.py:775"
+  },
+  {
+    "name": "SHELL",
+    "default": "\"\"",
+    "location": "./src/dopemux/worktree_diagnostics.py:182"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "''",
+    "location": "./docker/mcp-servers/services/mcp-client/services/mcp-client/main.py:227"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": "''",
+    "location": "./docker/mcp-servers/services/mcp-client/services/mcp-client/main.py:228"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "<REDACTED_GEMINI_KEY>",
+    "location": "./docker/mcp-servers/services/mcp-client/services/mcp-client/main.py:229"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": "<REDACTED_XAI_KEY>",
+    "location": "./docker/mcp-servers/services/mcp-client/services/mcp-client/main.py:230"
+  },
+  {
+    "name": "EXA_API_KEY",
+    "default": "''",
+    "location": "./docker/mcp-servers/services/mcp-client/services/mcp-client/main.py:241"
+  },
+  {
+    "name": "DISPLAY",
+    "default": ":0",
+    "location": "./docker/mcp-servers/services/mcp-client/services/mcp-client/main.py:249"
+  },
+  {
+    "name": "CLAUDE_CODE_SKIP_PERMISSIONS",
+    "default": null,
+    "location": "./src/dopemux/claude/launcher.py:177"
+  },
+  {
+    "name": "DOPEMUX_DANGEROUS_MODE",
+    "default": null,
+    "location": "./src/dopemux/claude/launcher.py:178"
+  },
+  {
+    "name": "DOPEMUX_CONPORT_PORT",
+    "default": null,
+    "location": "./src/dopemux/port_config.py:31"
+  },
+  {
+    "name": "DOPEMUX_CONPORT_PORT",
+    "default": null,
+    "location": "./src/dopemux/port_config.py:38"
+  },
+  {
+    "name": "DOPEMUX_ROLLUP_PROJECTS",
+    "default": "\"\"",
+    "location": "./src/dopemux/memory/global_rollup.py:148"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "''",
+    "location": "./docker/mcp-servers/services/mcp-client/main.py:276"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": "''",
+    "location": "./docker/mcp-servers/services/mcp-client/main.py:277"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "<REDACTED_GEMINI_KEY>",
+    "location": "./docker/mcp-servers/services/mcp-client/main.py:278"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": "<REDACTED_XAI_KEY>",
+    "location": "./docker/mcp-servers/services/mcp-client/main.py:279"
+  },
+  {
+    "name": "EXA_API_KEY",
+    "default": "''",
+    "location": "./docker/mcp-servers/services/mcp-client/main.py:291"
+  },
+  {
+    "name": "DISPLAY",
+    "default": ":0",
+    "location": "./docker/mcp-servers/services/mcp-client/main.py:300"
+  },
+  {
+    "name": "SLACK_WEBHOOK_URL",
+    "default": null,
+    "location": "./services/slack-integration/notifier.py:45"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_MODE",
+    "default": "\"\"",
+    "location": "./src/dopemux/memory/capture_client.py:116"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_CONTEXT",
+    "default": "\"\"",
+    "location": "./src/dopemux/memory/capture_client.py:125"
+  },
+  {
+    "name": "CLAUDE_SESSION_ID",
+    "default": null,
+    "location": "./src/dopemux/memory/capture_client.py:132"
+  },
+  {
+    "name": "CLAUDECODE",
+    "default": null,
+    "location": "./src/dopemux/memory/capture_client.py:132"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH",
+    "default": "\"\"",
+    "location": "./src/dopemux/memory/capture_client.py:244"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./src/dopemux/memory/capture_client.py:331"
+  },
+  {
+    "name": "DOPE_MEMORY_INPUT_STREAM",
+    "default": "activity.events.v1",
+    "location": "./src/dopemux/memory/capture_client.py:332"
+  },
+  {
+    "name": "REDIS_PASSWORD",
+    "default": null,
+    "location": "./src/dopemux/memory/capture_client.py:333"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": "A",
+    "location": "./src/dopemux/memory/capture_client.py:398"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_EMIT_EVENTBUS",
+    "default": "false",
+    "location": "./src/dopemux/memory/capture_client.py:468"
+  },
+  {
+    "name": "DOPEMUX_EXPORT_SECRETS",
+    "default": null,
+    "location": "./src/dopemux/cli.py:212"
+  },
+  {
+    "name": "DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT",
+    "default": "0",
+    "location": "./src/dopemux/cli.py:412"
+  },
+  {
+    "name": "DOPEMUX_DEBUG_LOG",
+    "default": null,
+    "location": "./src/dopemux/cli.py:489"
+  },
+  {
+    "name": "DOPEMUX_DEBUG_LOG",
+    "default": null,
+    "location": "./src/dopemux/cli.py:502"
+  },
+  {
+    "name": "DOPEMUX_CLAUDE_VIA_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/cli.py:799"
+  },
+  {
+    "name": "DOPEMUX_DEFAULT_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/cli.py:800"
+  },
+  {
+    "name": "ANTHROPIC_BASE_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:801"
+  },
+  {
+    "name": "LITELLM_MASTER_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:802"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:803"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:804"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_PROVIDER",
+    "default": null,
+    "location": "./src/dopemux/cli.py:807"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:808"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR",
+    "default": null,
+    "location": "./src/dopemux/cli.py:809"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": null,
+    "location": "./src/dopemux/cli.py:814"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": null,
+    "location": "./src/dopemux/cli.py:816"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_REMEMBER_DB",
+    "default": "\"\"",
+    "location": "./src/dopemux/cli.py:845"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_DB_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:848"
+  },
+  {
+    "name": "LITELLM_DATABASE_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:849"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:850"
+  },
+  {
+    "name": "LITELLM_MASTER_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:881"
+  },
+  {
+    "name": "LITELLM_MASTER_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:944"
+  },
+  {
+    "name": "DOPEMUX_CLAUDE_VIA_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1062"
+  },
+  {
+    "name": "DOPEMUX_DEFAULT_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1063"
+  },
+  {
+    "name": "ANTHROPIC_BASE_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1064"
+  },
+  {
+    "name": "LITELLM_MASTER_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1065"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1066"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1067"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1070"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1071"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_PROVIDER",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1072"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1079"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_DB_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1083"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1085"
+  },
+  {
+    "name": "DOPEMUX_DEFAULT_LITELLM",
+    "default": "0",
+    "location": "./src/dopemux/cli.py:1099"
+  },
+  {
+    "name": "DOPEMUX_AGENT_ROLE",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1108"
+  },
+  {
+    "name": "TMUX",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1209"
+  },
+  {
+    "name": "TMUX",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1213"
+  },
+  {
+    "name": "DOPEMUX_ALLOW_MAIN",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1287"
+  },
+  {
+    "name": "DOPEMUX_FORCE_INSTANCE_ID",
+    "default": "\"\"",
+    "location": "./src/dopemux/cli.py:1399"
+  },
+  {
+    "name": "DOPEMUX_USE_OPENROUTER",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1421"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": "\"\"",
+    "location": "./src/dopemux/cli.py:1425"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1425"
+  },
+  {
+    "name": "ANTHROPIC_BASE_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1426"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_PROVIDER",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1429"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1430"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1431"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1487"
+  },
+  {
+    "name": "DOPEMUX_CLAUDE_VIA_LITELLM",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1500"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_PROVIDER",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1538"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": "\"\"",
+    "location": "./src/dopemux/cli.py:1551"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1574"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": "\"\"",
+    "location": "./src/dopemux/cli.py:1575"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_PROVIDER",
+    "default": "custom",
+    "location": "./src/dopemux/cli.py:1578"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:1579"
+  },
+  {
+    "name": "DOPEMUX_SKIP_MCP_AUTOCONFIG",
+    "default": "0",
+    "location": "./src/dopemux/cli.py:1683"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_PROVIDER",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4052"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4053"
+  },
+  {
+    "name": "CLAUDE_CODE_ROUTER_MODELS",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4054"
+  },
+  {
+    "name": "ZEN_DEFAULT_MODEL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4057"
+  },
+  {
+    "name": "ZEN_FALLBACK_MODELS",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4058"
+  },
+  {
+    "name": "LITELLM_PROXY_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4061"
+  },
+  {
+    "name": "CLAUDE_CODE_LLM_PROVIDER",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4064"
+  },
+  {
+    "name": "CLAUDE_CODE_LLM_BASE_URL",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4065"
+  },
+  {
+    "name": "DOPEMUX_LITELLM_MASTER_KEY",
+    "default": "\"\"",
+    "location": "./src/dopemux/cli.py:4066"
+  },
+  {
+    "name": "CLAUDE_CODE_LLM_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4066"
+  },
+  {
+    "name": "DOPEMUX_SKIP_MCP_START",
+    "default": "0",
+    "location": "./src/dopemux/cli.py:4089"
+  },
+  {
+    "name": "DOPEMUX_DANGEROUS_MODE",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4261"
+  },
+  {
+    "name": "DOPEMUX_DANGEROUS_EXPIRES",
+    "default": "0",
+    "location": "./src/dopemux/cli.py:4262"
+  },
+  {
+    "name": "DOPEMUX_DANGEROUS_MODE",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4300"
+  },
+  {
+    "name": "DOPEMUX_DANGEROUS_EXPIRES",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4301"
+  },
+  {
+    "name": "DOPEMUX_DANGEROUS_PID",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4302"
+  },
+  {
+    "name": "HOOKS_ENABLE_ADAPTIVE_SECURITY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4305"
+  },
+  {
+    "name": "CLAUDE_CODE_SKIP_PERMISSIONS",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4306"
+  },
+  {
+    "name": "METAMCP_ROLE_ENFORCEMENT",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4307"
+  },
+  {
+    "name": "METAMCP_APPROVAL_REQUIRED",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4308"
+  },
+  {
+    "name": "METAMCP_BUDGET_ENFORCEMENT",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4309"
+  },
+  {
+    "name": "CLAUDE_DANGEROUS",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4312"
+  },
+  {
+    "name": "SKIP_PERMISSIONS",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4313"
+  },
+  {
+    "name": "DOPEMUX_DANGEROUS_MODE",
+    "default": null,
+    "location": "./src/dopemux/cli.py:4343"
+  },
+  {
+    "name": "DOPEMUX_DANGEROUS_EXPIRES",
+    "default": "0",
+    "location": "./src/dopemux/cli.py:4344"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:5875"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/cli.py:5876"
+  },
+  {
+    "name": "DOPEMUX_WORKFLOW_API_URL",
+    "default": "http://localhost:8000",
+    "location": "./src/dopemux/cli.py:6948"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./src/dopemux/embeddings/enhancers/consensus.py:213"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": null,
+    "location": "./services/adhd-engine/auth.py:15"
+  },
+  {
+    "name": "TMUX_PANE",
+    "default": null,
+    "location": "./src/dopemux/memory/lane_policy.py:160"
+  },
+  {
+    "name": "DOPEMUX_LANE",
+    "default": null,
+    "location": "./src/dopemux/memory/lane_policy.py:165"
+  },
+  {
+    "name": "LEANTIME_URL",
+    "default": "http://localhost:8080",
+    "location": "./scripts/create_phase3_leantime_tasks.py:24"
+  },
+  {
+    "name": "LEANTIME_API_KEY",
+    "default": "lt_S0wuTCITdeHneelmbiprocJAxzaJdirs_dGON1EuvZTXb8mS8Cp3L30P8hc9ykbwe",
+    "location": "./scripts/create_phase3_leantime_tasks.py:25"
+  },
+  {
+    "name": "PROJECT_ID",
+    "default": "1",
+    "location": "./scripts/create_phase3_leantime_tasks.py:26"
+  },
+  {
+    "name": "DOPEMUX_SESSION_DURATION",
+    "default": null,
+    "location": "./src/dopemux/profile_manager.py:363"
+  },
+  {
+    "name": "DOPEMUX_SESSION_DURATION",
+    "default": null,
+    "location": "./src/dopemux/profile_manager.py:366"
+  },
+  {
+    "name": "DOPEMUX_ENERGY_TRACKING",
+    "default": null,
+    "location": "./src/dopemux/profile_manager.py:370"
+  },
+  {
+    "name": "DOPEMUX_ENERGY_TRACKING",
+    "default": null,
+    "location": "./src/dopemux/profile_manager.py:373"
+  },
+  {
+    "name": "VAR",
+    "default": null,
+    "location": "./tests/arch/test_service_env_contract.py:125"
+  },
+  {
+    "name": "VAR",
+    "default": null,
+    "location": "./tests/arch/test_service_env_contract.py:125"
+  },
+  {
+    "name": "PORT",
+    "default": "8080",
+    "location": "./tests/arch/test_service_env_contract.py:261"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./tests/arch/test_service_env_contract.py:262"
+  },
+  {
+    "name": "ENVIRONMENT",
+    "default": "dev",
+    "location": "./tests/arch/test_service_env_contract.py:263"
+  },
+  {
+    "name": "DASHBOARD_BACKEND_HOST",
+    "default": "0.0.0.0",
+    "location": "./ui-dashboard-backend/main.py:13"
+  },
+  {
+    "name": "DASHBOARD_BACKEND_PORT",
+    "default": "3001",
+    "location": "./ui-dashboard-backend/main.py:14"
+  },
+  {
+    "name": "LEANTIME_URL",
+    "default": "http://localhost:8080",
+    "location": "./ui-dashboard-backend/config.py:10"
+  },
+  {
+    "name": "LEANTIME_API_KEY",
+    "default": "\"\"",
+    "location": "./ui-dashboard-backend/config.py:11"
+  },
+  {
+    "name": "ADHD_ENGINE_URL",
+    "default": "http://localhost:8095",
+    "location": "./ui-dashboard-backend/config.py:14"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": "\"\"",
+    "location": "./ui-dashboard-backend/config.py:15"
+  },
+  {
+    "name": "USER_ID",
+    "default": "hue",
+    "location": "./ui-dashboard-backend/config.py:18"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": "A",
+    "location": "./scripts/utilities/claude_code_event_integration.py:42"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./scripts/utilities/claude_code_event_integration.py:77"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "\"\"",
+    "location": "./scripts/utilities/claude_code_event_integration.py:78"
+  },
+  {
+    "name": "ADHD_ENGINE_URL",
+    "default": "http://localhost:8095",
+    "location": "./ui-dashboard-backend/app.py:256"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": null,
+    "location": "./ui-dashboard-backend/app.py:257"
+  },
+  {
+    "name": "TASK_ORCHESTRATOR_URL",
+    "default": "http://localhost:3017",
+    "location": "./ui-dashboard-backend/app.py:292"
+  },
+  {
+    "name": "ADHD_ENGINE_URL",
+    "default": "http://localhost:8095",
+    "location": "./ui-dashboard-backend/app.py:402"
+  },
+  {
+    "name": "TASK_ORCHESTRATOR_URL",
+    "default": "http://localhost:3017",
+    "location": "./ui-dashboard-backend/app.py:403"
+  },
+  {
+    "name": "DASHBOARD_BACKEND_HOST",
+    "default": "0.0.0.0",
+    "location": "./ui-dashboard-backend/app.py:413"
+  },
+  {
+    "name": "DASHBOARD_BACKEND_PORT",
+    "default": "3001",
+    "location": "./ui-dashboard-backend/app.py:414"
+  },
+  {
+    "name": "DOPEMUX_AGENT_ROLE",
+    "default": null,
+    "location": "./tests/test_roles_catalog.py:85"
+  },
+  {
+    "name": "DEFAULT_WORKSPACE_PATH",
+    "default": null,
+    "location": "./tests/test_multi_workspace.py:43"
+  },
+  {
+    "name": "WORKSPACE_PATHS",
+    "default": null,
+    "location": "./tests/test_multi_workspace.py:44"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./tests/test_multi_workspace.py:45"
+  },
+  {
+    "name": "DEFAULT_WORKSPACE_PATH",
+    "default": null,
+    "location": "./tests/test_multi_workspace.py:69"
+  },
+  {
+    "name": "APPDATA",
+    "default": null,
+    "location": "./scripts/mcp/wire_claude_mcp.py:44"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./scripts/mcp/mcp_event_wrapper.py:82"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "\"\"",
+    "location": "./scripts/mcp/mcp_event_wrapper.py:83"
+  },
+  {
+    "name": "TAVILY_API_KEY",
+    "default": "\"\"",
+    "location": "./scripts/mcp/mcp_event_wrapper.py:109"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./scripts/mcp/mcp_event_wrapper.py:110"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": "A",
+    "location": "./scripts/mcp/mcp_event_wrapper.py:373"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE",
+    "default": "default",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:63"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:64"
+  },
+  {
+    "name": "MAX_SEARCH_RESULTS",
+    "default": "10",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:74"
+  },
+  {
+    "name": "CONTEXT_DEPTH",
+    "default": "3",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:75"
+  },
+  {
+    "name": "PROGRESSIVE_DISCLOSURE",
+    "default": "true",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:76"
+  },
+  {
+    "name": "NAVIGATION_BREADCRUMBS",
+    "default": "true",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:77"
+  },
+  {
+    "name": "INTELLIGENT_SUGGESTIONS",
+    "default": "true",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:78"
+  },
+  {
+    "name": "GENTLE_GUIDANCE",
+    "default": "true",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:79"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:98"
+  },
+  {
+    "name": "SERENA_COMMAND",
+    "default": "serena",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:117"
+  },
+  {
+    "name": "USE_UVX",
+    "default": "true",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:120"
+  },
+  {
+    "name": "USE_PIP_INSTALL",
+    "default": "false",
+    "location": "./SYSTEM_ARCHIVE/serena-legacy/server.py:123"
+  },
+  {
+    "name": "DD_API_KEY",
+    "default": null,
+    "location": "./scripts/collect_task_packet.py:569"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./docker/mcp-servers/conport-bridge/main.py:37"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./dashboard/workspace_selector.py:15"
+  },
+  {
+    "name": "DEFAULT_WORKSPACE_PATH",
+    "default": "os.getcwd(",
+    "location": "./dashboard/workspace_selector.py:20"
+  },
+  {
+    "name": "WORKSPACE_PATHS",
+    "default": "\"\"",
+    "location": "./dashboard/workspace_selector.py:21"
+  },
+  {
+    "name": "AGE_HOST",
+    "default": "localhost",
+    "location": "./services/dddpg/kg_integration.py:113"
+  },
+  {
+    "name": "AGE_PORT",
+    "default": "5455",
+    "location": "./services/dddpg/kg_integration.py:114"
+  },
+  {
+    "name": "AGE_DATABASE",
+    "default": "dopemux_knowledge_graph",
+    "location": "./services/dddpg/kg_integration.py:115"
+  },
+  {
+    "name": "AGE_USER",
+    "default": "dopemux_age",
+    "location": "./services/dddpg/kg_integration.py:116"
+  },
+  {
+    "name": "AGE_PASSWORD",
+    "default": null,
+    "location": "./services/dddpg/kg_integration.py:117"
+  },
+  {
+    "name": "AGE_GRAPH",
+    "default": "conport_knowledge",
+    "location": "./services/dddpg/kg_integration.py:118"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./docs/systems/orchestrator/known-issues.md:110"
+  },
+  {
+    "name": "PORT_BASE",
+    "default": "3000",
+    "location": "./services/dopecon-bridge/orchestrator_endpoints.py:29"
+  },
+  {
+    "name": "USE_MOCK_FALLBACK",
+    "default": "true",
+    "location": "./services/dopecon-bridge/orchestrator_endpoints.py:31"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory",
+    "location": "./scripts/memory/test-memory-system.py:29"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./scripts/deploy/migration/backfill_embeddings.py:267"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/dopecon-bridge/mcp_client.py:43"
+  },
+  {
+    "name": "AGE_HOST",
+    "default": "localhost",
+    "location": "./services/dopecon-bridge/mcp_client.py:47"
+  },
+  {
+    "name": "AGE_PORT",
+    "default": "5455",
+    "location": "./services/dopecon-bridge/mcp_client.py:48"
+  },
+  {
+    "name": "AGE_DATABASE",
+    "default": "dopemux_knowledge_graph",
+    "location": "./services/dopecon-bridge/mcp_client.py:49"
+  },
+  {
+    "name": "AGE_USER",
+    "default": "dopemux_age",
+    "location": "./services/dopecon-bridge/mcp_client.py:50"
+  },
+  {
+    "name": "AGE_PASSWORD",
+    "default": "dopemux_age_dev_password",
+    "location": "./services/dopecon-bridge/mcp_client.py:51"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./scripts/deploy/migration/backfill_embeddings_simple.py:30"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": null,
+    "location": "./shared/monitoring/base.py:21"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": null,
+    "location": "./shared/monitoring/base.py:22"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./shared/monitoring/base.py:78"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": "0",
+    "location": "./shared/monitoring/base.py:79"
+  },
+  {
+    "name": "SERVICE_VERSION",
+    "default": "unknown",
+    "location": "./shared/monitoring/base.py:80"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./shared/monitoring.py:112"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://redis-primary:6379",
+    "location": "./shared/config.py:41"
+  },
+  {
+    "name": "ENVIRONMENT",
+    "default": "development",
+    "location": "./shared/config.py:149"
+  },
+  {
+    "name": "ENVIRONMENT",
+    "default": null,
+    "location": "./shared/config.py:212"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": null,
+    "location": "./shared/config.py:219"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": null,
+    "location": "./shared/config.py:223"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": null,
+    "location": "./shared/config.py:227"
+  },
+  {
+    "name": "API_PORT",
+    "default": null,
+    "location": "./shared/config.py:231"
+  },
+  {
+    "name": "API_HOST",
+    "default": null,
+    "location": "./shared/config.py:233"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": null,
+    "location": "./shared/config.py:235"
+  },
+  {
+    "name": "ADHD_USER_ID",
+    "default": null,
+    "location": "./shared/config.py:240"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": null,
+    "location": "./shared/config.py:242"
+  },
+  {
+    "name": "BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./services/dopecon-bridge/ddg_mcp_stdio.py:25"
+  },
+  {
+    "name": "QDRANT_API_KEY",
+    "default": null,
+    "location": "./docs/systems/dope-context/deployment.md:417"
+  },
+  {
+    "name": "AGE_HOST",
+    "default": "localhost",
+    "location": "./docs/systems/agents/week4-roadmap.md:106"
+  },
+  {
+    "name": "AGE_PORT",
+    "default": "5455",
+    "location": "./docs/systems/agents/week4-roadmap.md:107"
+  },
+  {
+    "name": "NEON_DASHBOARD_PANE_ROLE",
+    "default": "left",
+    "location": "./scripts/ui/neon_dashboard/core/app.py:76"
+  },
+  {
+    "name": "NEON_DASHBOARD_PANE_ROLE",
+    "default": "left",
+    "location": "./scripts/ui/neon_dashboard/core/app.py:284"
+  },
+  {
+    "name": "VAR_NAME",
+    "default": null,
+    "location": "./tools/env_drift_scan.py:178"
+  },
+  {
+    "name": "VAR_NAME",
+    "default": null,
+    "location": "./tools/env_drift_scan.py:178"
+  },
+  {
+    "name": "METAMCP_CONFIG_PATH",
+    "default": "config/mcp",
+    "location": "./docs/archive/integration-transient/claude-code/enhanced_metamcp_server.py:96"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "8000",
+    "location": "./docker/mcp-servers/gptr-mcp/Dockerfile:18"
+  },
+  {
+    "name": "DISPLAY",
+    "default": null,
+    "location": "./docker/mcp-servers/desktop-commander/server.py:28"
+  },
+  {
+    "name": "DISPLAY",
+    "default": null,
+    "location": "./docker/mcp-servers/desktop-commander/server.py:29"
+  },
+  {
+    "name": "DISPLAY",
+    "default": null,
+    "location": "./docker/mcp-servers/desktop-commander/server.py:30"
+  },
+  {
+    "name": "DISPLAY",
+    "default": null,
+    "location": "./docker/mcp-servers/desktop-commander/server.py:32"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3012",
+    "location": "./docker/mcp-servers/desktop-commander/server.py:61"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3012",
+    "location": "./docker/mcp-servers/desktop-commander/server.py:435"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3009",
+    "location": "./docker/mcp-servers/gptr-mcp/wrapper.py:28"
+  },
+  {
+    "name": "GPTR_UPSTREAM_PORT",
+    "default": "3013",
+    "location": "./docker/mcp-servers/gptr-mcp/wrapper.py:29"
+  },
+  {
+    "name": "PORT",
+    "default": "8080",
+    "location": "./docs/03-reference/service-env-contract.md:103"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./docs/03-reference/service-env-contract.md:104"
+  },
+  {
+    "name": "ENVIRONMENT",
+    "default": "dev",
+    "location": "./docs/03-reference/service-env-contract.md:105"
+  },
+  {
+    "name": "HEALTH_CHECK_PATH",
+    "default": "/health",
+    "location": "./docs/03-reference/service-env-contract.md:108"
+  },
+  {
+    "name": "METRICS_ENABLED",
+    "default": "false",
+    "location": "./docs/03-reference/service-env-contract.md:109"
+  },
+  {
+    "name": "METRICS_PORT",
+    "default": "9090",
+    "location": "./docs/03-reference/service-env-contract.md:110"
+  },
+  {
+    "name": "SERVICE_NAME",
+    "default": "self._detect_service_name(",
+    "location": "./docs/03-reference/service-env-contract.md:113"
+  },
+  {
+    "name": "SERVICE_VERSION",
+    "default": "1.0.0",
+    "location": "./docs/03-reference/service-env-contract.md:114"
+  },
+  {
+    "name": "ENVIRONMENT",
+    "default": "dev",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:18"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "info",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:19"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE",
+    "default": "default",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:22"
+  },
+  {
+    "name": "PORT_BASE",
+    "default": "3000",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:23"
+  },
+  {
+    "name": "HOST",
+    "default": "0.0.0.0",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:29"
+  },
+  {
+    "name": "SERVICE_NAME",
+    "default": "dopecon-bridge",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:30"
+  },
+  {
+    "name": "HEALTH_CHECK_PATH",
+    "default": "/health",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:31"
+  },
+  {
+    "name": "CONPORT_URL",
+    "default": "http://conport:3020",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:37"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://redis:6379",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:50"
+  },
+  {
+    "name": "REDIS_PASSWORD",
+    "default": "\"\"",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:51"
+  },
+  {
+    "name": "QDRANT_URL",
+    "default": "http://qdrant:6333",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:54"
+  },
+  {
+    "name": "QDRANT_ENABLED",
+    "default": "true",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:55"
+  },
+  {
+    "name": "SECRET_KEY",
+    "default": "your-secret-key-change-in-production",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:59"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:68"
+  },
+  {
+    "name": "CONTAINER_PREFIX",
+    "default": "f\"mcp-{self.instance_name}\"",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:76"
+  },
+  {
+    "name": "NETWORK_NAME",
+    "default": "f\"mcp-network-{self.instance_name}\"",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:77"
+  },
+  {
+    "name": "PORT",
+    "default": "str(self.port_base + 16",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:80"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": "http://localhost:3000,http://localhost:8080",
+    "location": "./services/dopecon-bridge/dopecon_bridge/config.py:88"
+  },
+  {
+    "name": "SERENA_DB_PASSWORD",
+    "default": "serena_dev_pass",
+    "location": "./docs/archive/claude-sessions/serena-v2-analysis-2025-10-16.md:185"
+  },
+  {
+    "name": "SERENA_DB_PASSWORD",
+    "default": "serena_dev_pass",
+    "location": "./docs/archive/claude-sessions/serena-v2-analysis-2025-10-16.md:371"
+  },
+  {
+    "name": "SERENA_DB_PASSWORD",
+    "default": "serena_dev_pass",
+    "location": "./docs/archive/claude-sessions/serena-v2-analysis-2025-10-16.md:460"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3006",
+    "location": "./docker/mcp-servers/serena/info_server.py:18"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": null,
+    "location": "./docs/archive/claude-sessions/adhd-engine-analysis-2025-10-16.md:383"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": "http://localhost:3000,http://localhost:8080",
+    "location": "./docs/archive/claude-sessions/DEEP-DOCUMENTATION-ALL-FINDINGS.md:131"
+  },
+  {
+    "name": "SERENA_DB_PASSWORD",
+    "default": "serena_dev_pass",
+    "location": "./docs/archive/claude-sessions/DEEP-DOCUMENTATION-ALL-FINDINGS.md:150"
+  },
+  {
+    "name": "SERENA_TEST_PASSWORD",
+    "default": "serena_test_pass",
+    "location": "./docs/archive/claude-sessions/DEEP-DOCUMENTATION-ALL-FINDINGS.md:156"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": null,
+    "location": "./docs/archive/claude-sessions/DEEP-DOCUMENTATION-ALL-FINDINGS.md:174"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3006",
+    "location": "./docker/mcp-servers/serena/wrapper.py:19"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/docker/README.md:185"
+  },
+  {
+    "name": "EXA_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/exa/exa_server.py:29"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3008",
+    "location": "./docker/mcp-servers/exa/exa_server.py:71"
+  },
+  {
+    "name": "MCP_RUN_MODE",
+    "default": "http",
+    "location": "./docker/mcp-servers/exa/exa_server.py:386"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3008",
+    "location": "./docker/mcp-servers/exa/exa_server.py:393"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_openrouter_models.py:35"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": "postgresql://localhost/app",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:163"
+  },
+  {
+    "name": "DB_POOL_SIZE",
+    "default": "5",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:164"
+  },
+  {
+    "name": "DB_MAX_OVERFLOW",
+    "default": "10",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:165"
+  },
+  {
+    "name": "DB_ECHO",
+    "default": "false",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:166"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:170"
+  },
+  {
+    "name": "CACHE_TTL",
+    "default": "3600",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:171"
+  },
+  {
+    "name": "REDIS_MAX_CONN",
+    "default": "20",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:172"
+  },
+  {
+    "name": "ENVIRONMENT",
+    "default": "development",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:176"
+  },
+  {
+    "name": "DEBUG",
+    "default": "false",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:177"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:178"
+  },
+  {
+    "name": "SECRET_KEY",
+    "default": "dev-key-not-secure",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_analyze_validation.py:185"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": "sqlite:///app.db",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:757"
+  },
+  {
+    "name": "DEBUG",
+    "default": "False",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:758"
+  },
+  {
+    "name": "MAX_CONNECTIONS",
+    "default": "10",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_debug_validation.py:759"
+  },
+  {
+    "name": "MIRROR_SYNC_INTERVAL_SEC",
+    "default": "60",
+    "location": "./_audit_out/stash_patches/stash0_postgres_mirror.patch:137"
+  },
+  {
+    "name": "MIRROR_SYNC_BATCH_SIZE",
+    "default": "100",
+    "location": "./_audit_out/stash_patches/stash0_postgres_mirror.patch:138"
+  },
+  {
+    "name": "MIRROR_SCHEMA_RESET",
+    "default": "false",
+    "location": "./_audit_out/stash_patches/stash0_postgres_mirror.patch:141"
+  },
+  {
+    "name": "MIRROR_RAW_RETENTION_ENABLED",
+    "default": "true",
+    "location": "./_audit_out/stash_patches/stash0_postgres_mirror.patch:143"
+  },
+  {
+    "name": "MIRROR_RAW_RETENTION_MAX_DELETE",
+    "default": "5000",
+    "location": "./_audit_out/stash_patches/stash0_postgres_mirror.patch:146"
+  },
+  {
+    "name": "MIRROR_RAW_RETENTION_GRACE_SEC",
+    "default": "0",
+    "location": "./_audit_out/stash_patches/stash0_postgres_mirror.patch:149"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": "sqlite:///users.db",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:132"
+  },
+  {
+    "name": "DATABASE_PATH",
+    "default": "app.db",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_precommitworkflow_validation.py:840"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/integration_bridge_client.py:42"
+  },
+  {
+    "name": "SERENA_DB_PASSWORD",
+    "default": "serena_dev_pass",
+    "location": "./docs/archive/claude-sessions/DEPLOYMENT-READY-SUMMARY.md:43"
+  },
+  {
+    "name": "HOST",
+    "default": "0.0.0.0",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:150"
+  },
+  {
+    "name": "PORT",
+    "default": "3004",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:151"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "info",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:152"
+  },
+  {
+    "name": "HOST",
+    "default": "0.0.0.0",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:162"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "info",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:163"
+  },
+  {
+    "name": "HOST",
+    "default": "0.0.0.0",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:173"
+  },
+  {
+    "name": "PORT",
+    "default": "8000",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:174"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "info",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:175"
+  },
+  {
+    "name": "HOST",
+    "default": "0.0.0.0",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:418"
+  },
+  {
+    "name": "PORT",
+    "default": "3004",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:419"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "info",
+    "location": "./docs/archive/reports/IMPLEMENTATION_SUMMARY.md:420"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": "http://localhost:3000",
+    "location": "./docs/archive/claude-sessions/phase-2a-security-scan.md:75"
+  },
+  {
+    "name": "SERENA_DB_PASSWORD",
+    "default": null,
+    "location": "./docs/archive/claude-sessions/phase-2a-security-scan.md:108"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/instance_detector.py:68"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/instance_detector.py:94"
+  },
+  {
+    "name": "MCP_PROXY_PORT",
+    "default": "os.getenv('MCP_SERVER_PORT', 3005",
+    "location": "./docker/mcp-servers/conport/server.py:19"
+  },
+  {
+    "name": "CUSTOM_API_URL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_ollama_custom_url.py:35"
+  },
+  {
+    "name": "CONPORT_URL",
+    "default": "http://localhost:3004",
+    "location": "./docker/mcp-servers/conport/conport_mcp_stdio.py:24"
+  },
+  {
+    "name": "GPT_RESEARCHER_API_KEY",
+    "default": null,
+    "location": "./docs/archive/claude-sessions/gpt-researcher-review.md:94"
+  },
+  {
+    "name": "KG_DIRECT_CONNECTION",
+    "default": "true",
+    "location": "./docs/archive/claude-sessions/conport-kg-analysis-2025-10-16.md:434"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./services/dope-context/src/rerank/voyage_reranker.py:244"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./docker/mcp-servers/conport/simple_metrics_server.py:17"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": "0",
+    "location": "./docker/mcp-servers/conport/simple_metrics_server.py:18"
+  },
+  {
+    "name": "SERVICE_VERSION",
+    "default": "1.0.0",
+    "location": "./docker/mcp-servers/conport/simple_metrics_server.py:19"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3004",
+    "location": "./docker/mcp-servers/conport/simple_metrics_server.py:44"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_xai_models.py:35"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3004",
+    "location": "./docker/mcp-servers/conport/info_server.py:18"
+  },
+  {
+    "name": "MCP_PROXY_PORT",
+    "default": "3005",
+    "location": "./docker/mcp-servers/conport/info_server.py:19"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3004",
+    "location": "./docker/mcp-servers/conport/direct_server.py:37"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:27"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:33"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:39"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:50"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:62"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:63"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:109"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:114"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:119"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:120"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:152"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:153"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:166"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:179"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:197"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_instance_detector.py:198"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": null,
+    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:225"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": null,
+    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:226"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": null,
+    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:532"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": null,
+    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:533"
+  },
+  {
+    "name": "SERENA_DB_PASSWORD",
+    "default": null,
+    "location": "./docs/05-audit-reports/ROADMAP-REMAINING-WORK.md:539"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:24"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:25"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:31"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:36"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:52"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:53"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:74"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:107"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:130"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:156"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:176"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:216"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:221"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:286"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:296"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:328"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:329"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/tests/test_worktree_routing.py:335"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/shared_monitoring.py:21"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/shared_monitoring.py:22"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./docker/mcp-servers/conport/shared_monitoring.py:73"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": "0",
+    "location": "./docker/mcp-servers/conport/shared_monitoring.py:74"
+  },
+  {
+    "name": "SERVICE_VERSION",
+    "default": "unknown",
+    "location": "./docker/mcp-servers/conport/shared_monitoring.py:75"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3003",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/pal_http_wrapper.py:80"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3004",
+    "location": "./docker/mcp-servers/conport/enhanced_server.py:90"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/enhanced_server.py:105"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": null,
+    "location": "./docker/mcp-servers/conport/enhanced_server.py:106"
+  },
+  {
+    "name": "SERVICE_VERSION",
+    "default": "1.0.0",
+    "location": "./docker/mcp-servers/conport/enhanced_server.py:107"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://redis-primary:6379",
+    "location": "./docker/mcp-servers/conport/enhanced_server.py:116"
+  },
+  {
+    "name": "DB_POOL_MIN",
+    "default": "5",
+    "location": "./docker/mcp-servers/conport/enhanced_server.py:124"
+  },
+  {
+    "name": "DB_POOL_MAX",
+    "default": "20",
+    "location": "./docker/mcp-servers/conport/enhanced_server.py:125"
+  },
+  {
+    "name": "DOPEMUX_AUTO_FORK_PROGRESS",
+    "default": "1",
+    "location": "./docker/mcp-servers/conport/enhanced_server.py:146"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_o3_model_selection.py:34"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_o3_model_selection.py:35"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3010",
+    "location": "./services/dope-context/src/mcp/server.py:96"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:506"
+  },
+  {
+    "name": "QDRANT_URL",
+    "default": "localhost",
+    "location": "./services/dope-context/src/mcp/server.py:508"
+  },
+  {
+    "name": "QDRANT_PORT",
+    "default": "6333",
+    "location": "./services/dope-context/src/mcp/server.py:509"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./services/dope-context/src/mcp/server.py:552"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./services/dope-context/src/mcp/server.py:580"
+  },
+  {
+    "name": "QDRANT_URL",
+    "default": "localhost",
+    "location": "./services/dope-context/src/mcp/server.py:601"
+  },
+  {
+    "name": "QDRANT_PORT",
+    "default": "6333",
+    "location": "./services/dope-context/src/mcp/server.py:602"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:610"
+  },
+  {
+    "name": "QDRANT_URL",
+    "default": "localhost",
+    "location": "./services/dope-context/src/mcp/server.py:773"
+  },
+  {
+    "name": "QDRANT_PORT",
+    "default": "6333",
+    "location": "./services/dope-context/src/mcp/server.py:774"
+  },
+  {
+    "name": "QDRANT_URL",
+    "default": "localhost",
+    "location": "./services/dope-context/src/mcp/server.py:1114"
+  },
+  {
+    "name": "QDRANT_PORT",
+    "default": "6333",
+    "location": "./services/dope-context/src/mcp/server.py:1115"
+  },
+  {
+    "name": "QDRANT_URL",
+    "default": "localhost",
+    "location": "./services/dope-context/src/mcp/server.py:1192"
+  },
+  {
+    "name": "QDRANT_PORT",
+    "default": "6333",
+    "location": "./services/dope-context/src/mcp/server.py:1193"
+  },
+  {
+    "name": "QDRANT_URL",
+    "default": "localhost",
+    "location": "./services/dope-context/src/mcp/server.py:1270"
+  },
+  {
+    "name": "QDRANT_PORT",
+    "default": "6333",
+    "location": "./services/dope-context/src/mcp/server.py:1271"
+  },
+  {
+    "name": "QDRANT_URL",
+    "default": "localhost",
+    "location": "./services/dope-context/src/mcp/server.py:1364"
+  },
+  {
+    "name": "QDRANT_PORT",
+    "default": "6333",
+    "location": "./services/dope-context/src/mcp/server.py:1365"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./services/dope-context/src/mcp/server.py:1510"
+  },
+  {
+    "name": "QDRANT_URL",
+    "default": "localhost",
+    "location": "./services/dope-context/src/mcp/server.py:1832"
+  },
+  {
+    "name": "QDRANT_PORT",
+    "default": "6333",
+    "location": "./services/dope-context/src/mcp/server.py:1833"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:1838"
+  },
+  {
+    "name": "MCP_TRANSPORT",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:2644"
+  },
+  {
+    "name": "FASTMCP_TRANSPORT",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:2644"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:2647"
+  },
+  {
+    "name": "MCP_SERVER_HOST",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:2663"
+  },
+  {
+    "name": "FASTMCP_HOST",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:2664"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:2668"
+  },
+  {
+    "name": "FASTMCP_PORT",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:2669"
+  },
+  {
+    "name": "PORT",
+    "default": null,
+    "location": "./services/dope-context/src/mcp/server.py:2670"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ROOT",
+    "default": null,
+    "location": "./services/dope-context/src/utils/workspace.py:43"
+  },
+  {
+    "name": "WORKSPACE_HASH_OVERRIDE",
+    "default": null,
+    "location": "./services/dope-context/src/utils/workspace.py:137"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./docs/archive/claude-sessions/WEEK-7-INTEGRATION-BRIDGE-COMPLETION-PLAN.md:51"
+  },
+  {
+    "name": "LEANTIME_API_URL",
+    "default": null,
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py:32"
+  },
+  {
+    "name": "LEANTIME_URL",
+    "default": null,
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py:33"
+  },
+  {
+    "name": "LEANTIME_API_TOKEN",
+    "default": null,
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py:36"
+  },
+  {
+    "name": "LEANTIME_TOKEN",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py:36"
+  },
+  {
+    "name": "LEAN_TIME_RATE_LIMIT_SECONDS",
+    "default": "1.0",
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py:37"
+  },
+  {
+    "name": "MCP_SERVER_HOST",
+    "default": "0.0.0.0",
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py:38"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3015",
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py:39"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_openrouter_fallback.py:34"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_openrouter_fallback.py:35"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/simulator_tests/test_openrouter_fallback.py:36"
+  },
+  {
+    "name": "WORKSPACE_HASH_OVERRIDE",
+    "default": null,
+    "location": "./docs/archive/completed-projects/DOPE_CONTEXT_FIX_SUMMARY.md:70"
+  },
+  {
+    "name": "LEANTIME_API_URL",
+    "default": "http://leantime:80",
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/server.py:84"
+  },
+  {
+    "name": "LEANTIME_API_TOKEN",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/server.py:85"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3015",
+    "location": "./docker/mcp-servers/leantime-bridge/leantime_bridge/server.py:86"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./services/dope-context/src/context/grok_generator.py:64"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./services/dope-context/src/context/grok_generator.py:253"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:209"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": "0",
+    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:210"
+  },
+  {
+    "name": "SERVICE_VERSION",
+    "default": "unknown",
+    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:233"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": null,
+    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:301"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": null,
+    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_COMPREHENSIVE_AUDIT.md:302"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "default": null,
+    "location": "./services/dope-context/src/context/claude_generator.py:397"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": null,
+    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_QUICK_REF.md:82"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": null,
+    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_QUICK_REF.md:83"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_QUICK_REF.md:245"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": "0",
+    "location": "./docs/archive/completed-projects/monitoring/MONITORING_TMUX_QUICK_REF.md:246"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./services/dope-context/src/embeddings/contextualized_embedder.py:332"
+  },
+  {
+    "name": "ZEN_QWEN_CMD",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/run-server.sh:2013"
+  },
+  {
+    "name": "ZEN_QWEN_ARG",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/run-server.sh:2014"
+  },
+  {
+    "name": "ZEN_QWEN_CWD",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/run-server.sh:2015"
+  },
+  {
+    "name": "ZEN_QWEN_ENV",
+    "default": "''",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/run-server.sh:2016"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./services/dope-context/src/embeddings/voyage_embedder.py:384"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "test",
+    "location": "./services/dope-context/src/pipeline/indexing_pipeline.py:559"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": "test",
+    "location": "./services/dope-context/src/pipeline/indexing_pipeline.py:564"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": "test",
+    "location": "./services/dope-context/src/pipeline/indexing_pipeline.py:569"
+  },
+  {
+    "name": "EXAMPLE_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/docs/adding_providers.md:216"
+  },
+  {
+    "name": "EMBEDDING",
+    "default": null,
+    "location": "./docker/mcp-servers/gpt-researcher/scripts/mcp_server.py:26"
+  },
+  {
+    "name": "FAST_LLM",
+    "default": null,
+    "location": "./docker/mcp-servers/gpt-researcher/scripts/mcp_server.py:27"
+  },
+  {
+    "name": "SMART_LLM",
+    "default": null,
+    "location": "./docker/mcp-servers/gpt-researcher/scripts/mcp_server.py:28"
+  },
+  {
+    "name": "RETRIEVER",
+    "default": null,
+    "location": "./docker/mcp-servers/gpt-researcher/scripts/mcp_server.py:29"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "''",
+    "location": "./services/mcp-client/main.py:287"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": "''",
+    "location": "./services/mcp-client/main.py:288"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "<REDACTED_GEMINI_KEY>",
+    "location": "./services/mcp-client/main.py:289"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": "<REDACTED_XAI_KEY>",
+    "location": "./services/mcp-client/main.py:290"
+  },
+  {
+    "name": "EXA_API_KEY",
+    "default": "''",
+    "location": "./services/mcp-client/main.py:302"
+  },
+  {
+    "name": "DISPLAY",
+    "default": ":0",
+    "location": "./services/mcp-client/main.py:311"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3003",
+    "location": "./docker/mcp-servers/pal/pal_http_wrapper.py:80"
+  },
+  {
+    "name": "HOME",
+    "default": null,
+    "location": "./services/dope-context/tests/test_mcp_server.py:18"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_INTEGRATION.md:124"
+  },
+  {
+    "name": "DOPECON_BRIDGE_TOKEN",
+    "default": null,
+    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_INTEGRATION.md:125"
+  },
+  {
+    "name": "DOPECON_BRIDGE_SOURCE_PLANE",
+    "default": "cognitive_plane",
+    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_INTEGRATION.md:126"
+  },
+  {
+    "name": "CONPORT_WORKSPACE_ID",
+    "default": "os.getcwd(",
+    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md:48"
+  },
+  {
+    "name": "CONPORT_URL",
+    "default": "http://localhost:3010",
+    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md:49"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/workspace",
+    "location": "./services/shared/dopecon_bridge_client/README.md:412"
+  },
+  {
+    "name": "LOCALE",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/docs/locale-configuration.md:58"
+  },
+  {
+    "name": "LOCALE",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/docs/locale-configuration.md:162"
+  },
+  {
+    "name": "LOCALE",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/docs/locale-configuration.md:179"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./services/shared/dopecon_bridge_client/client.py:13"
+  },
+  {
+    "name": "DOPECON_BRIDGE_TOKEN",
+    "default": null,
+    "location": "./services/shared/dopecon_bridge_client/client.py:14"
+  },
+  {
+    "name": "DOPECON_BRIDGE_SOURCE_PLANE",
+    "default": "cognitive_plane",
+    "location": "./services/shared/dopecon_bridge_client/client.py:15"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./services/adhd_engine/services/background_prediction_service.py:29"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./services/adhd_engine/services/background_prediction_service.py:79"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_consensus_integration.py:34"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_consensus_integration.py:35"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_consensus_integration.py:174"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_consensus_integration.py:175"
+  },
+  {
+    "name": "TMUX",
+    "default": null,
+    "location": "./docs/04-explanation/design-decisions/UI-IMPLEMENTATION-ROADMAP.md:187"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_workflow_utf8.py:21"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_workflow_utf8.py:23"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_workflow_utf8.py:28"
+  },
+  {
+    "name": "CONPORT_URL",
+    "default": "http://localhost:8005",
+    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_QUICK_START_OLD.md:118"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "os.getcwd(",
+    "location": "./docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_QUICK_START_OLD.md:123"
+  },
+  {
+    "name": "ZEN_DEV_PATH",
+    "default": null,
+    "location": "./docs/04-explanation/design-decisions/dev-mode-design.md:70"
+  },
+  {
+    "name": "ZEN_DEV_PATH",
+    "default": null,
+    "location": "./docs/04-explanation/design-decisions/dev-mode-design.md:70"
+  },
+  {
+    "name": "DOPEMUX_DEV_MODE",
+    "default": null,
+    "location": "./docs/04-explanation/design-decisions/dev-mode-design.md:153"
+  },
+  {
+    "name": "DOPEMUX_DEV_MODE",
+    "default": null,
+    "location": "./docs/04-explanation/design-decisions/dev-mode-design.md:166"
+  },
+  {
+    "name": "DOPEMUX_DEV_MODE",
+    "default": null,
+    "location": "./docs/04-explanation/design-decisions/dev-mode-design.md:261"
+  },
+  {
+    "name": "DOPEMUX_DEV_MODE",
+    "default": null,
+    "location": "./docs/04-explanation/design-decisions/dev-mode-design.md:401"
+  },
+  {
+    "name": "DOPEMUX_DEV_MODE",
+    "default": null,
+    "location": "./docs/04-explanation/design-decisions/dev-mode-design.md:503"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_provider.py:161"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_provider.py:162"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_provider.py:206"
+  },
+  {
+    "name": "OPENROUTER_ALLOWED_MODELS",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_provider.py:208"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_provider.py:209"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_provider.py:252"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_provider.py:263"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_provider.py:264"
+  },
+  {
+    "name": "MORPH_API_KEY",
+    "default": null,
+    "location": "./services/adhd_engine/core/failure_playbook.py:302"
+  },
+  {
+    "name": "DASHBOARD_API_KEY",
+    "default": "dashboard-key-456",
+    "location": "./services/adhd_engine/services/adhd-dashboard/main.py:25"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": "http://localhost:3000,http://localhost:8097",
+    "location": "./services/adhd_engine/services/adhd-dashboard/main.py:37"
+  },
+  {
+    "name": "API_PORT",
+    "default": "8097",
+    "location": "./services/adhd_engine/services/adhd-dashboard/main.py:149"
+  },
+  {
+    "name": "CONPORT_URL",
+    "default": "http://localhost:8005",
+    "location": "./services/task-orchestrator/test_conport_http_integration.py:23"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_restrictions.py:401"
+  },
+  {
+    "name": "TASK_ORCHESTRATOR_URL",
+    "default": "http://task-orchestrator:8000",
+    "location": "./services/adhd_engine/core/engine.py:89"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./services/adhd_engine/adhd_monitoring_patch.py:15"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": "0",
+    "location": "./services/adhd_engine/adhd_monitoring_patch.py:16"
+  },
+  {
+    "name": "SERVICE_VERSION",
+    "default": "1.0.0",
+    "location": "./services/adhd_engine/adhd_monitoring_patch.py:17"
+  },
+  {
+    "name": "PORT_BASE",
+    "default": "3000",
+    "location": "./services/task-orchestrator/query_server.py:22"
+  },
+  {
+    "name": "LEANTIME_URL",
+    "default": "http://leantime:80",
+    "location": "./services/task-orchestrator/query_server.py:24"
+  },
+  {
+    "name": "LEANTIME_TOKEN",
+    "default": "\"\"",
+    "location": "./services/task-orchestrator/query_server.py:25"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://redis:6379",
+    "location": "./services/task-orchestrator/query_server.py:26"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ROOT",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/task-orchestrator/query_server.py:27"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": null,
+    "location": "./services/adhd_engine/main.py:121"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": null,
+    "location": "./services/adhd_engine/main.py:122"
+  },
+  {
+    "name": "SERVICE_VERSION",
+    "default": "1.0.0",
+    "location": "./services/adhd_engine/main.py:123"
+  },
+  {
+    "name": "WORKSPACE_PATH",
+    "default": "os.getcwd(",
+    "location": "./services/adhd_engine/main.py:206"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": "postgresql://dopemux_age:dopemux_age_dev_password@...",
+    "location": "./docs/archive/completed-projects/PHASE2_COMPLETION_REPORT.md:142"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://redis-primary:6379",
+    "location": "./docs/archive/completed-projects/PHASE2_COMPLETION_REPORT.md:151"
+  },
+  {
+    "name": "API_PORT",
+    "default": "8095",
+    "location": "./services/adhd_engine/config.py:15"
+  },
+  {
+    "name": "HOST",
+    "default": "0.0.0.0",
+    "location": "./services/adhd_engine/config.py:16"
+  },
+  {
+    "name": "API_HOST",
+    "default": "os.getenv(\"HOST\", \"0.0.0.0\"",
+    "location": "./services/adhd_engine/config.py:18"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": "dev-key-123",
+    "location": "./services/adhd_engine/config.py:27"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://redis-primary:6379",
+    "location": "./services/adhd_engine/config.py:30"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./services/adhd_engine/config.py:33"
+  },
+  {
+    "name": "CONPORT_URL",
+    "default": "http://localhost:3010",
+    "location": "./services/adhd_engine/config.py:36"
+  },
+  {
+    "name": "PAL_URL",
+    "default": "os.getenv(\"ZEN_URL\", \"http://localhost:3003\"",
+    "location": "./services/adhd_engine/config.py:37"
+  },
+  {
+    "name": "ADHD_WORKSPACE_ID",
+    "default": "os.getcwd(",
+    "location": "./services/adhd_engine/config.py:38"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "os.getenv(\"CONPORT_BRIDGE_URL\", \"http://localhost:3016\"",
+    "location": "./services/adhd_engine/config.py:39"
+  },
+  {
+    "name": "DOPECON_BRIDGE_TOKEN",
+    "default": null,
+    "location": "./services/adhd_engine/config.py:40"
+  },
+  {
+    "name": "DOPECON_BRIDGE_SOURCE_PLANE",
+    "default": "cognitive_plane",
+    "location": "./services/adhd_engine/config.py:41"
+  },
+  {
+    "name": "TASK_ORCHESTRATOR_URL",
+    "default": "http://task-orchestrator:8000",
+    "location": "./services/adhd_engine/config.py:42"
+  },
+  {
+    "name": "MONITOR_CHECK_INTERVAL",
+    "default": "60",
+    "location": "./services/adhd_engine/config.py:45"
+  },
+  {
+    "name": "ENERGY_DECAY_RATE",
+    "default": "0.95",
+    "location": "./services/adhd_engine/config.py:46"
+  },
+  {
+    "name": "ATTENTION_RESET_THRESHOLD",
+    "default": "300",
+    "location": "./services/adhd_engine/config.py:47"
+  },
+  {
+    "name": "ENERGY_MONITOR_INTERVAL",
+    "default": "60",
+    "location": "./services/adhd_engine/config.py:48"
+  },
+  {
+    "name": "ATTENTION_MONITOR_INTERVAL",
+    "default": "os.getenv(\"ATTENTION_CHECK_INTERVAL\", \"60\"",
+    "location": "./services/adhd_engine/config.py:50"
+  },
+  {
+    "name": "COGNITIVE_MONITOR_INTERVAL",
+    "default": "60",
+    "location": "./services/adhd_engine/config.py:52"
+  },
+  {
+    "name": "BREAK_MONITOR_INTERVAL",
+    "default": "60",
+    "location": "./services/adhd_engine/config.py:53"
+  },
+  {
+    "name": "HYPERFOCUS_MONITOR_INTERVAL",
+    "default": "60",
+    "location": "./services/adhd_engine/config.py:54"
+  },
+  {
+    "name": "ENABLE_ML_PREDICTIONS",
+    "default": "true",
+    "location": "./services/adhd_engine/config.py:57"
+  },
+  {
+    "name": "ML_MODEL_PATH",
+    "default": "/app/models",
+    "location": "./services/adhd_engine/config.py:58"
+  },
+  {
+    "name": "ENABLE_BACKGROUND_PREDICTIONS",
+    "default": "true",
+    "location": "./services/adhd_engine/config.py:61"
+  },
+  {
+    "name": "ENABLE_MOBILE_PUSH",
+    "default": "false",
+    "location": "./services/adhd_engine/config.py:64"
+  },
+  {
+    "name": "NTFY_TOPIC",
+    "default": "adhd-dopemux-dev",
+    "location": "./services/adhd_engine/config.py:65"
+  },
+  {
+    "name": "ML_RETRAIN_INTERVAL_HOURS",
+    "default": "24",
+    "location": "./services/adhd_engine/config.py:68"
+  },
+  {
+    "name": "MIN_TRAINING_SAMPLES",
+    "default": "50",
+    "location": "./services/adhd_engine/config.py:69"
+  },
+  {
+    "name": "ADHD_FORCE_INMEMORY_CACHE",
+    "default": "\"\"",
+    "location": "./services/adhd_engine/api/routes.py:115"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://redis-primary:6379",
+    "location": "./services/adhd_engine/docker/mcp-servers/shared/redis_pool.py:32"
+  },
+  {
+    "name": "REDIS_MAX_CONNECTIONS",
+    "default": "20",
+    "location": "./services/adhd_engine/docker/mcp-servers/shared/redis_pool.py:36"
+  },
+  {
+    "name": "REDIS_CONNECTION_TIMEOUT",
+    "default": "5.0",
+    "location": "./services/adhd_engine/docker/mcp-servers/shared/redis_pool.py:37"
+  },
+  {
+    "name": "REDIS_RETRY_ON_TIMEOUT",
+    "default": "true",
+    "location": "./services/adhd_engine/docker/mcp-servers/shared/redis_pool.py:38"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": "postgresql://...",
+    "location": "./docs/archive/completed-projects/PHASE2_SECURITY_REVIEW.md:60"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_clink_integration.py:16"
+  },
+  {
+    "name": "GOOGLE_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_clink_integration.py:16"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "default",
+    "location": "./services/adhd_engine/adhd_metrics_server.py:17"
+  },
+  {
+    "name": "INSTANCE_ID",
+    "default": "5",
+    "location": "./services/adhd_engine/adhd_metrics_server.py:18"
+  },
+  {
+    "name": "SERVICE_VERSION",
+    "default": "1.0.0",
+    "location": "./services/adhd_engine/adhd_metrics_server.py:19"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": null,
+    "location": "./services/adhd_engine/auth.py:15"
+  },
+  {
+    "name": "DESKTOP_COMMANDER_URL",
+    "default": "http://localhost:3012",
+    "location": "./services/adhd_engine/external_activity.py:623"
+  },
+  {
+    "name": "CALENDAR_SOURCE",
+    "default": "apple",
+    "location": "./services/adhd_engine/external_activity.py:628"
+  },
+  {
+    "name": "AGE_HOST",
+    "default": "localhost",
+    "location": "./docs/archive/sessions/dddpg/week4-day1-deep-analysis.md:437"
+  },
+  {
+    "name": "AGE_PORT",
+    "default": "5455",
+    "location": "./docs/archive/sessions/dddpg/week4-day1-deep-analysis.md:438"
+  },
+  {
+    "name": "ADHD_ENGINE_URL",
+    "default": "http://adhd-engine:8095",
+    "location": "./services/activity-capture/main.py:67"
+  },
+  {
+    "name": "ADHD_USER_ID",
+    "default": "default",
+    "location": "./services/activity-capture/main.py:68"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://redis-primary:6379",
+    "location": "./services/activity-capture/main.py:69"
+  },
+  {
+    "name": "STREAM_NAME",
+    "default": "dopemux:events",
+    "location": "./services/activity-capture/main.py:70"
+  },
+  {
+    "name": "CONSUMER_GROUP",
+    "default": "activity-capture",
+    "location": "./services/activity-capture/main.py:71"
+  },
+  {
+    "name": "CONSUMER_NAME",
+    "default": "activity-capture-1",
+    "location": "./services/activity-capture/main.py:72"
+  },
+  {
+    "name": "AGGREGATION_WINDOW_SECONDS",
+    "default": "300",
+    "location": "./services/activity-capture/main.py:73"
+  },
+  {
+    "name": "API_PORT",
+    "default": "8096",
+    "location": "./services/activity-capture/main.py:110"
+  },
+  {
+    "name": "ADHD_ENGINE_URL",
+    "default": "http://adhd-engine:8095",
+    "location": "./services/activity-capture/main.py:174"
+  },
+  {
+    "name": "API_PORT",
+    "default": "8096",
+    "location": "./services/activity-capture/main.py:243"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./services/adhd_engine/domains/break-suggester/start_service.py:37"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./services/adhd_engine/domains/break-suggester/event_consumer.py:204"
+  },
+  {
+    "name": "ADHD_ENGINE_URL",
+    "default": "http://localhost:3333",
+    "location": "./services/adhd_engine/cli/adhd.py:49"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:47"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:48"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:53"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:54"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:145"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:146"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:151"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:152"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:247"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:248"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:253"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:254"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:376"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:377"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:382"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_tools.py:383"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_large_prompt_handling.py:153"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_large_prompt_handling.py:154"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_large_prompt_handling.py:159"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_large_prompt_handling.py:160"
+  },
+  {
+    "name": "MY_CUSTOM_VAR",
+    "default": "\"\"",
+    "location": "./docs/archive/completed-projects/multi-workspace/MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md:499"
+  },
+  {
+    "name": "DIAL_API_VERSION",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_dial_provider.py:213"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:48"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:49"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:54"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:55"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:121"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:122"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:127"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:128"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:190"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:191"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:196"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:197"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:260"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:261"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:266"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:267"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:329"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:330"
+  },
+  {
+    "name": "DEFAULT_THINKING_MODE_THINKDEEP",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:331"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:336"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:337"
+  },
+  {
+    "name": "DEFAULT_THINKING_MODE_THINKDEEP",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_thinking_modes.py:338"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_image_support_integration.py:255"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_image_support_integration.py:256"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_image_support_integration.py:261"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_image_support_integration.py:262"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_comprehensive.py:30"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_comprehensive.py:46"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_comprehensive.py:48"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_comprehensive.py:159"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_enumeration.py:26"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_enumeration.py:27"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_enumeration.py:28"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_enumeration.py:29"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_enumeration.py:30"
+  },
+  {
+    "name": "CUSTOM_API_URL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_enumeration.py:31"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_enumeration.py:68"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./services/adhd_engine/domains/context-switch-tracker/bridge_adapter.py:14"
+  },
+  {
+    "name": "DOPMUX_WORKFLOW_ENABLE",
+    "default": "true",
+    "location": "./services/task-orchestrator/app/services/workflow_service.py:78"
+  },
+  {
+    "name": "DOPMUX_WORKFLOW_DEFAULT_IDEA_LIMIT",
+    "default": "50",
+    "location": "./services/task-orchestrator/app/services/workflow_service.py:79"
+  },
+  {
+    "name": "DOPMUX_WORKFLOW_DEFAULT_EPIC_LIMIT",
+    "default": "50",
+    "location": "./services/task-orchestrator/app/services/workflow_service.py:80"
+  },
+  {
+    "name": "DOPMUX_WORKFLOW_PROMOTION_SYNC_LEANTIME",
+    "default": "true",
+    "location": "./services/task-orchestrator/app/services/workflow_service.py:82"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./services/task-orchestrator/app/services/workflow_service.py:92"
+  },
+  {
+    "name": "DOPECON_BRIDGE_TOKEN",
+    "default": null,
+    "location": "./services/task-orchestrator/app/services/workflow_service.py:93"
+  },
+  {
+    "name": "DOPECON_BRIDGE_SOURCE_PLANE",
+    "default": "cognitive_plane",
+    "location": "./services/task-orchestrator/app/services/workflow_service.py:95"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_docker_config_complete.py:201"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_docker_config_complete.py:201"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_docker_config_complete.py:201"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_metadata_continuation.py:128"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_metadata_continuation.py:129"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_model_metadata_continuation.py:172"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./services/task-orchestrator/app/services/workflow_store.py:60"
+  },
+  {
+    "name": "DOPECON_BRIDGE_TOKEN",
+    "default": null,
+    "location": "./services/task-orchestrator/app/services/workflow_store.py:61"
+  },
+  {
+    "name": "DOPECON_BRIDGE_SOURCE_PLANE",
+    "default": "cognitive_plane",
+    "location": "./services/task-orchestrator/app/services/workflow_store.py:63"
+  },
+  {
+    "name": "SERVICE_NAME",
+    "default": "task-orchestrator",
+    "location": "./services/task-orchestrator/app/main.py:43"
+  },
+  {
+    "name": "HEALTH_CHECK_PATH",
+    "default": "/health",
+    "location": "./services/task-orchestrator/app/main.py:44"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "8000",
+    "location": "./services/task-orchestrator/app/main.py:291"
+  },
+  {
+    "name": "PORT",
+    "default": "3014",
+    "location": "./services/task-orchestrator/app/main.py:812"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./services/task-orchestrator/app/main.py:813"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ROOT",
+    "default": "get_workspace_root(",
+    "location": "./services/task-orchestrator/app/main.py:821"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:18"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:22"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:31"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:40"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:78"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:82"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:102"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:110"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:114"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:134"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:143"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:147"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:168"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:181"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:186"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:187"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:261"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:296"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:300"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:312"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode.py:324"
+  },
+  {
+    "name": "ADHD_ENGINE_USER_ID",
+    "default": null,
+    "location": "./services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/adhd_engine_client.py:47"
+  },
+  {
+    "name": "USER",
+    "default": "current_user",
+    "location": "./services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/adhd_engine_client.py:47"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_workflow_metadata.py:66"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_workflow_metadata.py:149"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_workflow_metadata.py:276"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_chat_codegen_integration.py:41"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_utf8.py:23"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_utf8.py:28"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_utf8.py:236"
+  },
+  {
+    "name": "LOCALE",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_utf8.py:306"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_utf8.py:317"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_utf8.py:322"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_utf8.py:328"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_utf8.py:341"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_utf8.py:379"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "3008",
+    "location": "./docs/02-how-to/mcp-service-discovery-guide.md:32"
+  },
+  {
+    "name": "PYTEST_CURRENT_TEST",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_server.py:27"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_server.py:31"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_server.py:32"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_server.py:37"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_server.py:38"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_collaboration.py:168"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_collaboration.py:171"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_collaboration.py:267"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_docker_implementation.py:141"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_docker_implementation.py:141"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_docker_implementation.py:141"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_docker_implementation.py:146"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_docker_implementation.py:146"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_docker_implementation.py:146"
+  },
+  {
+    "name": "DASHBOARD_API_KEY",
+    "default": "None",
+    "location": "./services/adhd-dashboard/backend.py:22"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./services/adhd-dashboard/backend.py:26"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": "http://localhost:8097,http://127.0.0.1:8097",
+    "location": "./services/adhd-dashboard/backend.py:35"
+  },
+  {
+    "name": "ACTIVITY_CAPTURE_URL",
+    "default": "http://localhost:8096",
+    "location": "./services/adhd-dashboard/backend.py:39"
+  },
+  {
+    "name": "ADHD_ENGINE_URL",
+    "default": "http://localhost:8095",
+    "location": "./services/adhd-dashboard/backend.py:40"
+  },
+  {
+    "name": "DOPEMUX_HOME",
+    "default": "os.path.expanduser(\"~/.dopemux\"",
+    "location": "./docs/archive/completed-projects/HARDCODED_PATHS_AUDIT.md:106"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE_ROOT",
+    "default": null,
+    "location": "./docs/archive/completed-projects/HARDCODED_PATHS_AUDIT.md:118"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./services/task-orchestrator/app/core/coordinator.py:147"
+  },
+  {
+    "name": "DOPE_WORKSPACES",
+    "default": null,
+    "location": "./services/shared/workspace_utils.py:52"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE",
+    "default": "default",
+    "location": "./services/taskmaster/server.py:59"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/taskmaster/server.py:60"
+  },
+  {
+    "name": "TASK_CHUNK_SIZE",
+    "default": "5",
+    "location": "./services/taskmaster/server.py:64"
+  },
+  {
+    "name": "FOCUS_DURATION",
+    "default": "25",
+    "location": "./services/taskmaster/server.py:65"
+  },
+  {
+    "name": "CELEBRATION_ENABLED",
+    "default": "true",
+    "location": "./services/taskmaster/server.py:66"
+  },
+  {
+    "name": "PROGRESS_VIZ",
+    "default": "true",
+    "location": "./services/taskmaster/server.py:67"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./services/taskmaster/server.py:80"
+  },
+  {
+    "name": "USE_UVX",
+    "default": "true",
+    "location": "./services/taskmaster/server.py:99"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./services/taskmaster/server.py:110"
+  },
+  {
+    "name": "ANTHROPIC_API_KEY",
+    "default": "\"\"",
+    "location": "./services/taskmaster/server.py:111"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_chat_cross_model_continuation.py:63"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_chat_cross_model_continuation.py:64"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": "http://localhost:3000,http://localhost:8080",
+    "location": "./docs/90-adr/adr-206-code-audit-results-2025-10-16.md:132"
+  },
+  {
+    "name": "SERENA_DB_PASSWORD",
+    "default": "serena_dev_pass",
+    "location": "./docs/90-adr/adr-206-code-audit-results-2025-10-16.md:144"
+  },
+  {
+    "name": "DOPEMUX_ZEN_MODEL_CATALOG",
+    "default": null,
+    "location": "./services/agents/tool_orchestrator.py:229"
+  },
+  {
+    "name": "DOPEMUX_ZEN_MODEL_CATALOG_FILE",
+    "default": null,
+    "location": "./services/agents/tool_orchestrator.py:232"
+  },
+  {
+    "name": "DISABLED_TOOLS",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_disabled_tools.py:35"
+  },
+  {
+    "name": "WORKSPACE_ROOT",
+    "default": "str(Path.cwd(",
+    "location": "./services/serena/conport_client_unified.py:53"
+  },
+  {
+    "name": "OPENROUTER_MODELS_CONFIG_PATH",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_registry.py:67"
+  },
+  {
+    "name": "OPENROUTER_MODELS_CONFIG_PATH",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_registry.py:68"
+  },
+  {
+    "name": "OPENROUTER_MODELS_CONFIG_PATH",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_registry.py:80"
+  },
+  {
+    "name": "OPENROUTER_MODELS_CONFIG_PATH",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_openrouter_registry.py:82"
+  },
+  {
+    "name": "SERENA_WORKSPACE_ID",
+    "default": null,
+    "location": "./services/serena/http_server.py:271"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": null,
+    "location": "./services/serena/http_server.py:271"
+  },
+  {
+    "name": "ENVIRONMENT",
+    "default": "dev",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:17"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "info",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:18"
+  },
+  {
+    "name": "DOPEMUX_INSTANCE",
+    "default": "default",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:24"
+  },
+  {
+    "name": "PORT_BASE",
+    "default": "3000",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:25"
+  },
+  {
+    "name": "LEANTIME_URL",
+    "default": "http://leantime:8080",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:29"
+  },
+  {
+    "name": "LEANTIME_TOKEN",
+    "default": "\"\"",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:30"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://redis:6379",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:33"
+  },
+  {
+    "name": "REDIS_PASSWORD",
+    "default": "\"\"",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:34"
+  },
+  {
+    "name": "CONPORT_URL",
+    "default": "http://conport:8005",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:38"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:41"
+  },
+  {
+    "name": "PORT",
+    "default": "str(self.port_base + 14",
+    "location": "./services/task-orchestrator/task_orchestrator/config.py:57"
+  },
+  {
+    "name": "WORKSPACE_ROOT",
+    "default": null,
+    "location": "./services/task-router/router_api.py:425"
+  },
+  {
+    "name": "ADHD_ENGINE_URL",
+    "default": "http://localhost:8095",
+    "location": "./services/adhd-notifier/main.py:48"
+  },
+  {
+    "name": "USER_ID",
+    "default": "hue",
+    "location": "./services/adhd-notifier/main.py:49"
+  },
+  {
+    "name": "OPENROUTER_ALLOWED_MODELS",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_custom_provider.py:53"
+  },
+  {
+    "name": "OPENROUTER_ALLOWED_MODELS",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_custom_provider.py:75"
+  },
+  {
+    "name": "CUSTOM_API_URL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_prompt_regression.py:43"
+  },
+  {
+    "name": "AGE_HOST",
+    "default": "localhost",
+    "location": "./services/agents/cognitive_guardian_kg.py:112"
+  },
+  {
+    "name": "AGE_PORT",
+    "default": "5455",
+    "location": "./services/agents/cognitive_guardian_kg.py:113"
+  },
+  {
+    "name": "AGE_DATABASE",
+    "default": "dopemux_knowledge_graph",
+    "location": "./services/agents/cognitive_guardian_kg.py:114"
+  },
+  {
+    "name": "AGE_USER",
+    "default": "dopemux_age",
+    "location": "./services/agents/cognitive_guardian_kg.py:115"
+  },
+  {
+    "name": "AGE_PASSWORD",
+    "default": null,
+    "location": "./services/agents/cognitive_guardian_kg.py:116"
+  },
+  {
+    "name": "AGE_GRAPH",
+    "default": "conport_knowledge",
+    "location": "./services/agents/cognitive_guardian_kg.py:117"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/dopemux-gpt-researcher/research_api/main.py:81"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": "http://localhost:3000,http://localhost:8080",
+    "location": "./services/dopemux-gpt-researcher/research_api/main.py:114"
+  },
+  {
+    "name": "GPT_RESEARCHER_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/research_api/main.py:346"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/conftest.py:25"
+  },
+  {
+    "name": "CUSTOM_API_URL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/conftest.py:53"
+  },
+  {
+    "name": "PYTEST_CURRENT_TEST",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/conftest.py:53"
+  },
+  {
+    "name": "CUSTOM_API_URL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/conftest.py:58"
+  },
+  {
+    "name": "CUSTOM_API_URL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/conftest.py:129"
+  },
+  {
+    "name": "PYTEST_CURRENT_TEST",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/conftest.py:130"
+  },
+  {
+    "name": "CUSTOM_API_URL",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/conftest.py:136"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_integration_utf8.py:22"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_integration_utf8.py:23"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_integration_utf8.py:24"
+  },
+  {
+    "name": "LOCALE",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_integration_utf8.py:130"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_integration_utf8.py:145"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_integration_utf8.py:157"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_routing_bugs.py:76"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_routing_bugs.py:184"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_routing_bugs.py:185"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_routing_bugs.py:186"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_routing_bugs.py:271"
+  },
+  {
+    "name": "OPENROUTER_ALLOWED_MODELS",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_routing_bugs.py:272"
+  },
+  {
+    "name": "OPENROUTER_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_routing_bugs.py:340"
+  },
+  {
+    "name": "OPENROUTER_ALLOWED_MODELS",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_provider_routing_bugs.py:341"
+  },
+  {
+    "name": "SERENA_TEST_PASSWORD",
+    "default": "serena_test_pass",
+    "location": "./services/serena/intelligence/integration_test.py:69"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_o3_pro_output_text_fix.py:67"
+  },
+  {
+    "name": "DEFAULT_MODEL",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_listmodels.py:32"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:57"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:62"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:69"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:81"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:92"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:276"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:281"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:288"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:289"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:309"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:318"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:323"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:328"
+  },
+  {
+    "name": "LOCALE",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_utf8_localization.py:333"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_chat_openai_integration.py:31"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_chat_openai_integration.py:46"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_chat_openai_integration.py:97"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/research_api/embeddings/voyage_client.py:118"
+  },
+  {
+    "name": "EXA_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:190"
+  },
+  {
+    "name": "TAVILY_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:191"
+  },
+  {
+    "name": "PERPLEXITY_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:192"
+  },
+  {
+    "name": "WORKSPACE_PATH",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:196"
+  },
+  {
+    "name": "API_PORT",
+    "default": "8000",
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:211"
+  },
+  {
+    "name": "ALLOWED_ORIGINS",
+    "default": "http://localhost:3000,http://localhost:8080",
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:242"
+  },
+  {
+    "name": "RESEARCHER_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:514"
+  },
+  {
+    "name": "API_PORT",
+    "default": "8000",
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:636"
+  },
+  {
+    "name": "DEBUG",
+    "default": "false",
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:642"
+  },
+  {
+    "name": "DEBUG",
+    "default": "false",
+    "location": "./services/dopemux-gpt-researcher/research_api/api/main.py:643"
+  },
+  {
+    "name": "MIRROR_SYNC_INTERVAL_SEC",
+    "default": "60",
+    "location": "./inventory_audit.txt:511"
+  },
+  {
+    "name": "MIRROR_SYNC_BATCH_SIZE",
+    "default": "100",
+    "location": "./inventory_audit.txt:512"
+  },
+  {
+    "name": "MIRROR_SCHEMA_RESET",
+    "default": "false",
+    "location": "./inventory_audit.txt:515"
+  },
+  {
+    "name": "MIRROR_RAW_RETENTION_ENABLED",
+    "default": "true",
+    "location": "./inventory_audit.txt:517"
+  },
+  {
+    "name": "MIRROR_RAW_RETENTION_MAX_DELETE",
+    "default": "5000",
+    "location": "./inventory_audit.txt:520"
+  },
+  {
+    "name": "MIRROR_RAW_RETENTION_GRACE_SEC",
+    "default": "0",
+    "location": "./inventory_audit.txt:523"
+  },
+  {
+    "name": "DEBUG",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/mcp-server/server.py:17"
+  },
+  {
+    "name": "EXA_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/mcp-server/server.py:140"
+  },
+  {
+    "name": "TAVILY_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/mcp-server/server.py:141"
+  },
+  {
+    "name": "PERPLEXITY_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/mcp-server/server.py:142"
+  },
+  {
+    "name": "WORKSPACE_PATH",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/dopemux-gpt-researcher/mcp-server/server.py:147"
+  },
+  {
+    "name": "VOYAGE_API_KEY",
+    "default": null,
+    "location": "./services/dopemux-gpt-researcher/research_api/enhanced_chatlog_extractor.py:1008"
+  },
+  {
+    "name": "PUSH_PROVIDER",
+    "default": "ntfy",
+    "location": "./services/adhd-notifier/monitor.py:59"
+  },
+  {
+    "name": "NTFY_TOPIC",
+    "default": "adhd-alerts-hue",
+    "location": "./services/adhd-notifier/monitor.py:62"
+  },
+  {
+    "name": "NTFY_SERVER",
+    "default": "https://ntfy.sh",
+    "location": "./services/adhd-notifier/monitor.py:63"
+  },
+  {
+    "name": "PUSHOVER_API_KEY",
+    "default": null,
+    "location": "./services/adhd-notifier/monitor.py:64"
+  },
+  {
+    "name": "PUSHOVER_USER_KEY",
+    "default": null,
+    "location": "./services/adhd-notifier/monitor.py:65"
+  },
+  {
+    "name": "ENABLE_MOBILE_PUSH",
+    "default": "true",
+    "location": "./services/adhd-notifier/monitor.py:66"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:45"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:84"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:123"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:124"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:165"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:204"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:205"
+  },
+  {
+    "name": "OPENAI_ALLOWED_MODELS",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:206"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:253"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:254"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:255"
+  },
+  {
+    "name": "GEMINI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:304"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:305"
+  },
+  {
+    "name": "XAI_API_KEY",
+    "default": null,
+    "location": "./docker/mcp-servers/pal/pal-mcp-server/tests/test_auto_mode_provider_selection.py:306"
+  },
+  {
+    "name": "SERENA_DB_PASSWORD",
+    "default": "serena_dev_pass",
+    "location": "./services/serena/intelligence/database.py:50"
+  },
+  {
+    "name": "CLAUDE_TRANSCRIPT_PATH",
+    "default": null,
+    "location": "./services/serena/session_id_generator.py:116"
+  },
+  {
+    "name": "CLAUDE_SESSION_ID",
+    "default": null,
+    "location": "./services/serena/session_id_generator.py:121"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH",
+    "default": "\"\"",
+    "location": "./services/copilot_transcript_ingester/main.py:38"
+  },
+  {
+    "name": "ZEN_URL",
+    "default": "http://localhost:3003",
+    "location": "./services/voice-commands/voice_api.py:50"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./services/voice-commands/voice_api.py:51"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/voice-commands/voice_api.py:52"
+  },
+  {
+    "name": "PORT",
+    "default": "3007",
+    "location": "./services/voice-commands/voice_api.py:96"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./docs/archive/implementation-plans/task-orchestrator-dependencies.md:184"
+  },
+  {
+    "name": "LEANTIME_URL",
+    "default": "http://localhost:8080",
+    "location": "./docs/archive/implementation-plans/task-orchestrator-dependencies.md:185"
+  },
+  {
+    "name": "OPENAI_API_KEY",
+    "default": "\"\"",
+    "location": "./docs/archive/implementation-plans/task-orchestrator-dependencies.md:188"
+  },
+  {
+    "name": "DOPE_MEMORY_URL",
+    "default": "http://localhost:8096",
+    "location": "./services/working-memory-assistant/runtime_smoke.py:31"
+  },
+  {
+    "name": "DOPE_MEMORY_REDIS_CONTAINER",
+    "default": "redis-events",
+    "location": "./services/working-memory-assistant/runtime_smoke.py:32"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH_HOST",
+    "default": ".dopemux/chronicle.sqlite",
+    "location": "./services/working-memory-assistant/runtime_smoke.py:34"
+  },
+  {
+    "name": "DOPE_MEMORY_WORKSPACE_ID",
+    "default": "str(Path.cwd(",
+    "location": "./services/working-memory-assistant/runtime_smoke.py:36"
+  },
+  {
+    "name": "DOPE_MEMORY_INSTANCE_ID",
+    "default": "A",
+    "location": "./services/working-memory-assistant/runtime_smoke.py:37"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH",
+    "default": null,
+    "location": "./services/working-memory-assistant/runtime_smoke.py:126"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": null,
+    "location": "./services/session-manager/src/layout_adapter.py:37"
+  },
+  {
+    "name": "DOPEMUX_WORKSPACE",
+    "default": null,
+    "location": "./services/session-manager/src/layout_adapter.py:37"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH",
+    "default": null,
+    "location": "./services/working-memory-assistant/phase2_demo.py:30"
+  },
+  {
+    "name": "DOPECON_BRIDGE_URL",
+    "default": "http://localhost:3016",
+    "location": "./services/session-manager/tmux/conport_http_client.py:13"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "redis://localhost:6379",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:34"
+  },
+  {
+    "name": "REDIS_PASSWORD",
+    "default": null,
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:35"
+  },
+  {
+    "name": "DOPE_MEMORY_INPUT_STREAM",
+    "default": "activity.events.v1",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:36"
+  },
+  {
+    "name": "DOPE_MEMORY_OUTPUT_STREAM",
+    "default": "memory.derived.v1",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:37"
+  },
+  {
+    "name": "DOPE_MEMORY_CONSUMER_GROUP",
+    "default": "dope-memory-ingestor",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:38"
+  },
+  {
+    "name": "DOPE_MEMORY_IDLE_MINUTES",
+    "default": "20",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:42"
+  },
+  {
+    "name": "DOPE_MEMORY_PULSE_INTERVAL_SECONDS",
+    "default": "2700",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:43"
+  },
+  {
+    "name": "DOPE_MEMORY_PULSE_JITTER_SECONDS",
+    "default": "300",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:44"
+  },
+  {
+    "name": "DOPE_MEMORY_REFLECTION_MIN_WINDOW_MINUTES",
+    "default": "30",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:45"
+  },
+  {
+    "name": "DOPE_MEMORY_REFLECTION_MAX_WINDOW_HOURS",
+    "default": "2",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:46"
+  },
+  {
+    "name": "DOPE_MEMORY_REFLECTION_COOLDOWN_SECONDS",
+    "default": "300",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:47"
+  },
+  {
+    "name": "ENABLE_DOPECONTEXT_INDEX",
+    "default": "false",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:48"
+  },
+  {
+    "name": "DOPECONTEXT_URL",
+    "default": "http://localhost:3010",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:49"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./services/working-memory-assistant/eventbus_consumer.py:760"
+  },
+  {
+    "name": "DATABASE_URL",
+    "default": "postgresql://localhost:5432/dopemux",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:30"
+  },
+  {
+    "name": "MIRROR_SYNC_INTERVAL_SEC",
+    "default": "60",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:32"
+  },
+  {
+    "name": "MIRROR_SYNC_BATCH_SIZE",
+    "default": "100",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:33"
+  },
+  {
+    "name": "MIRROR_SCHEMA_RESET",
+    "default": "false",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:35"
+  },
+  {
+    "name": "MIRROR_RAW_TTL_CAP_DAYS",
+    "default": "7",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:36"
+  },
+  {
+    "name": "MIRROR_RAW_RETENTION_ENABLED",
+    "default": "true",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:38"
+  },
+  {
+    "name": "MIRROR_RAW_RETENTION_MAX_DELETE",
+    "default": "5000",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:41"
+  },
+  {
+    "name": "MIRROR_RAW_RETENTION_GRACE_SEC",
+    "default": "0",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:44"
+  },
+  {
+    "name": "DOPE_MEMORY_WORKSPACE_ID",
+    "default": "default",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:294"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./services/working-memory-assistant/postgres_mirror_sync.py:798"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH",
+    "default": "\"\"",
+    "location": "./services/working-memory-assistant/canonical_ledger.py:74"
+  },
+  {
+    "name": "DOPE_MEMORY_IDLE_MINUTES",
+    "default": "20",
+    "location": "./services/working-memory-assistant/tests/test_session_tracker.py:62"
+  },
+  {
+    "name": "DOPE_MEMORY_REFLECTION_MIN_WINDOW_MINUTES",
+    "default": "30",
+    "location": "./services/working-memory-assistant/tests/test_session_tracker.py:158"
+  },
+  {
+    "name": "DOPE_MEMORY_IDLE_MINUTES",
+    "default": "20",
+    "location": "./services/working-memory-assistant/tests/test_session_tracker.py:159"
+  },
+  {
+    "name": "DOPE_MEMORY_REFLECTION_MAX_WINDOW_HOURS",
+    "default": "2",
+    "location": "./services/working-memory-assistant/tests/test_session_tracker.py:193"
+  },
+  {
+    "name": "DOPE_MEMORY_REFLECTION_MIN_WINDOW_MINUTES",
+    "default": "30",
+    "location": "./services/working-memory-assistant/tests/test_session_tracker.py:228"
+  },
+  {
+    "name": "DOPE_MEMORY_IDLE_MINUTES",
+    "default": "20",
+    "location": "./services/working-memory-assistant/tests/test_session_tracker.py:379"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH",
+    "default": null,
+    "location": "./services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:28"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH",
+    "default": null,
+    "location": "./services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:224"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH",
+    "default": null,
+    "location": "./services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py:319"
+  },
+  {
+    "name": "DOPEMUX_SQLITE_JOURNAL_MODE",
+    "default": "WAL",
+    "location": "./services/working-memory-assistant/chronicle/store.py:67"
+  },
+  {
+    "name": "SERENA_API_KEY",
+    "default": "''",
+    "location": "./services/working-memory-assistant/serena_client.py:27"
+  },
+  {
+    "name": "REDIS_HOST",
+    "default": "localhost",
+    "location": "./services/working-memory-assistant/predictive_context_restoration.py:406"
+  },
+  {
+    "name": "REDIS_PORT",
+    "default": "6379",
+    "location": "./services/working-memory-assistant/predictive_context_restoration.py:407"
+  },
+  {
+    "name": "REDIS_DB",
+    "default": "1",
+    "location": "./services/working-memory-assistant/predictive_context_restoration.py:408"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "INFO",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:47"
+  },
+  {
+    "name": "PORT",
+    "default": "os.getenv(\"DOPE_MEMORY_PORT\", \"3020\"",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:51"
+  },
+  {
+    "name": "MCP_SERVER_PORT",
+    "default": "str(PORT",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:52"
+  },
+  {
+    "name": "SERVICE_NAME",
+    "default": "dope-memory",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:53"
+  },
+  {
+    "name": "HEALTH_CHECK_PATH",
+    "default": "/health",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:54"
+  },
+  {
+    "name": "DOPE_MEMORY_DATA_DIR",
+    "default": "str(Path.home(",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:55"
+  },
+  {
+    "name": "DOPE_MEMORY_WORKSPACE_ID",
+    "default": "default",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:56"
+  },
+  {
+    "name": "DOPE_MEMORY_INSTANCE_ID",
+    "default": "A",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:57"
+  },
+  {
+    "name": "ENABLE_EVENTBUS",
+    "default": "false",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:851"
+  },
+  {
+    "name": "REDIS_URL",
+    "default": "\"\"",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:852"
+  },
+  {
+    "name": "ENABLE_RETENTION_JOB",
+    "default": "true",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:855"
+  },
+  {
+    "name": "RETENTION_INTERVAL_SEC",
+    "default": "3600",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:856"
+  },
+  {
+    "name": "ENABLE_MIRROR_SYNC",
+    "default": "false",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:859"
+  },
+  {
+    "name": "POSTGRES_URL",
+    "default": "os.getenv(\"DATABASE_URL\", \"\"",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:860"
+  },
+  {
+    "name": "MIRROR_SYNC_INTERVAL_SEC",
+    "default": "60",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:959"
+  },
+  {
+    "name": "ENVIRONMENT",
+    "default": "development",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:1302"
+  },
+  {
+    "name": "LOG_LEVEL",
+    "default": "info",
+    "location": "./services/working-memory-assistant/dope_memory_main.py:1303"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/working-memory-assistant/wma_core.py:249"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/working-memory-assistant/wma_core.py:656"
+  },
+  {
+    "name": "REDIS_HOST",
+    "default": "localhost",
+    "location": "./services/working-memory-assistant/wma_core.py:780"
+  },
+  {
+    "name": "REDIS_PORT",
+    "default": "6379",
+    "location": "./services/working-memory-assistant/wma_core.py:781"
+  },
+  {
+    "name": "REDIS_DB",
+    "default": "0",
+    "location": "./services/working-memory-assistant/wma_core.py:782"
+  },
+  {
+    "name": "WORKSPACE_ID",
+    "default": "/Users/hue/code/dopemux-mvp",
+    "location": "./services/working-memory-assistant/wma_core.py:1030"
+  },
+  {
+    "name": "POSTGRES_HOST",
+    "default": "localhost",
+    "location": "./services/working-memory-assistant/main.py:46"
+  },
+  {
+    "name": "POSTGRES_PORT",
+    "default": "5455",
+    "location": "./services/working-memory-assistant/main.py:47"
+  },
+  {
+    "name": "POSTGRES_DB",
+    "default": "dopemux_knowledge_graph",
+    "location": "./services/working-memory-assistant/main.py:48"
+  },
+  {
+    "name": "POSTGRES_USER",
+    "default": "dopemux_age",
+    "location": "./services/working-memory-assistant/main.py:49"
+  },
+  {
+    "name": "POSTGRES_PASSWORD",
+    "default": "dopemux_age_dev_password",
+    "location": "./services/working-memory-assistant/main.py:50"
+  },
+  {
+    "name": "REDIS_HOST",
+    "default": "localhost",
+    "location": "./services/working-memory-assistant/main.py:54"
+  },
+  {
+    "name": "REDIS_PORT",
+    "default": "6379",
+    "location": "./services/working-memory-assistant/main.py:55"
+  },
+  {
+    "name": "WMA_SECRET_KEY",
+    "default": "your-secret-key-change-in-production",
+    "location": "./services/working-memory-assistant/main.py:87"
+  },
+  {
+    "name": "WMA_ENCRYPTION_KEY",
+    "default": "Fernet.generate_key(",
+    "location": "./services/working-memory-assistant/main.py:98"
+  },
+  {
+    "name": "WMA_PORT",
+    "default": "8096",
+    "location": "./services/working-memory-assistant/main.py:896"
+  },
+  {
+    "name": "DOPEMUX_CAPTURE_LEDGER_PATH",
+    "default": null,
+    "location": "./services/working-memory-assistant/tests/test_eventbus_consumer.py:22"
+  },
+  {
+    "name": "DOPE_MEMORY_INPUT_STREAM",
+    "default": "activity.events.v1",
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:44"
+  },
+  {
+    "name": "REDIS_PASSWORD",
+    "default": null,
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:45"
+  },
+  {
+    "name": "DOPE_MEMORY_INPUT_STREAM",
+    "default": "activity.events.v1",
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:62"
+  },
+  {
+    "name": "DOPE_MEMORY_OUTPUT_STREAM",
+    "default": "memory.derived.v1",
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:63"
+  },
+  {
+    "name": "DOPE_MEMORY_CONSUMER_GROUP",
+    "default": "dope-memory-ingestor",
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA.md:64"
+  },
+  {
+    "name": "ADHD_ENGINE_URL",
+    "default": "http://localhost:8095",
+    "location": "./services/working-memory-assistant/adhd_engine_client.py:26"
+  },
+  {
+    "name": "ADHD_ENGINE_API_KEY",
+    "default": "dev-key-123",
+    "location": "./services/working-memory-assistant/adhd_engine_client.py:27"
+  },
+  {
+    "name": "ENABLE_RETENTION_JOB",
+    "default": "true",
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06_DOPE_MEMORY_PROMOTION_RETENTION_PROVENANCE.md:114"
+  },
+  {
+    "name": "RETENTION_INTERVAL_SEC",
+    "default": "3600",
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/06_DOPE_MEMORY_PROMOTION_RETENTION_PROVENANCE.md:115"
+  },
+  {
+    "name": "POSTGRES_HOST",
+    "default": "localhost",
+    "location": "./services/working-memory-assistant/migration_runner.py:42"
+  },
+  {
+    "name": "POSTGRES_PORT",
+    "default": "5432",
+    "location": "./services/working-memory-assistant/migration_runner.py:43"
+  },
+  {
+    "name": "POSTGRES_DB",
+    "default": "dopemux_knowledge_graph",
+    "location": "./services/working-memory-assistant/migration_runner.py:44"
+  },
+  {
+    "name": "POSTGRES_USER",
+    "default": "dopemux_age",
+    "location": "./services/working-memory-assistant/migration_runner.py:45"
+  },
+  {
+    "name": "POSTGRES_PASSWORD",
+    "default": "dopemux_age_dev_password",
+    "location": "./services/working-memory-assistant/migration_runner.py:46"
+  },
+  {
+    "name": "ADHD_FORCE_INMEMORY_CACHE",
+    "default": "\"\"",
+    "location": "./docs/planes/pm/dopemux/_opus_inputs/bundle_20260213/08_ADHD_COGNITIVE_PLANE_SURFACES.md:33"
+  }
+]

@@ -1,0 +1,157 @@
+{
+    "mcp_servers": [
+        {
+            "name": "Serena v2",
+            "port": 3002,
+            "description": "ADHD-optimized code intelligence",
+            "tools": [
+                "find_symbol",
+                "goto_definition",
+                "get_context",
+                "find_references",
+                "analyze_complexity",
+                "filter_by_focus",
+                "suggest_next_step",
+                "predict_navigation_from_git",
+                "find_test_file",
+                "get_unified_complexity",
+                "get_reading_order",
+                "find_relationships",
+                "get_navigation_patterns",
+                "update_focus_mode",
+                "detect_untracked_work",
+                "track_untracked_work",
+                "snooze_untracked_work",
+                "ignore_untracked_work",
+                "suggest_branch_organization",
+                "get_pattern_stats",
+                "get_top_patterns",
+                "get_abandoned_work",
+                "mark_abandoned",
+                "get_abandonment_stats",
+                "get_metrics_dashboard",
+                "get_metric_history",
+                "save_metrics_snapshot",
+                "get_untracked_work_config",
+                "update_untracked_work_config",
+                "read_file",
+                "list_dir",
+                "find_similar_code"
+            ]
+        },
+        {
+            "name": "ConPort",
+            "port": 3005,
+            "description": "Workspace and decision tracking",
+            "tools": [
+                "get_progress",
+                "get_decisions",
+                "fork_instance",
+                "promote",
+                "promote_all"
+            ]
+        },
+        {
+            "name": "Pal/Zen",
+            "port": 3003,
+            "description": "Code assistance and refactoring",
+            "tools": [
+                "code_lookup",
+                "dependency_analysis",
+                "refactor_suggestion",
+                "token_budget_check"
+            ]
+        },
+        {
+            "name": "GPTR (GPT Researcher)",
+            "port": 3009,
+            "description": "Web-based research and summarization",
+            "tools": [
+                "quick_search",
+                "deep_research",
+                "documentation_search",
+                "code_examples",
+                "trend_analysis",
+                "summarize_research"
+            ]
+        },
+        {
+            "name": "Desktop Commander",
+            "port": 3012,
+            "description": "Local desktop automation",
+            "tools": [
+                "screenshot",
+                "window_list",
+                "focus_window",
+                "type_text"
+            ]
+        },
+        {
+            "name": "Leantime Bridge",
+            "port": 3015,
+            "description": "Leantime project management integration",
+            "tools": [
+                "create_project",
+                "list_projects",
+                "create_ticket",
+                "list_tickets",
+                "update_ticket",
+                "get_project_stats",
+                "create_milestone",
+                "sync_with_external"
+            ]
+        },
+        {
+            "name": "Exa",
+            "port": 3008,
+            "description": "Neural web search",
+            "tools": [
+                "search_web",
+                "get_contents",
+                "search_and_contents",
+                "find_similar"
+            ]
+        },
+        {
+            "name": "Dope-Context",
+            "port": 3010,
+            "description": "Semantic code indexing and search",
+            "tools": [
+                "index_workspace",
+                "search_code",
+                "get_index_status",
+                "clear_index"
+            ]
+        },
+        {
+            "name": "Dope-Memory (WMA)",
+            "description": "Working memory and trajectory logging",
+            "tools": [
+                "memory_search",
+                "memory_store",
+                "memory_recap",
+                "memory_mark_issue",
+                "memory_link_resolution",
+                "memory_replay_session",
+                "memory_correct"
+            ]
+        },
+        {
+            "name": "Capture",
+            "port": 3018,
+            "description": "Event capture and Chronicle ingestion",
+            "tools": [
+                "capture/emit"
+            ]
+        },
+        {
+            "name": "TaskMaster",
+            "description": "PRD parsing and task decomposition",
+            "tools": [
+                "create_task",
+                "parse_prd",
+                "decompose_task"
+            ]
+        }
+    ]
+}
