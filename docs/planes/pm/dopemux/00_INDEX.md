@@ -1,10 +1,18 @@
 ---
-title: "Dopemux PM Plane Docs"
-plane: "pm"
-component: "dopemux"
-status: "skeleton"
+title: Dopemux PM Plane Docs
+plane: pm
+component: dopemux
+status: skeleton
+id: 00_INDEX
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Dopemux PM Plane Docs (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # Dopemux PM Plane Docs (Canonical)
 
 ## What Dopemux is
