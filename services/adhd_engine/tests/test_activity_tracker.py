@@ -117,3 +117,144 @@ class TestAttentionIndicators:
         assert "abandoned_tasks" in result
         assert "average_focus_duration" in result
         assert "distraction_events" in result
+
+
+class TestDailyStats:
+    """Test daily statistics retrieval from ConPort."""
+
+    @pytest.mark.asyncio
+    async def test_get_daily_stats_with_mcp_client(self, mock_redis):
+        """Should retrieve daily stats from MCP client when available."""
+        mock_mcp = AsyncMock()
+        mock_mcp.get_progress = AsyncMock(return_value=[
+            {"id": 1, "status": "DONE", "description": "Task 1"},
+            {"id": 2, "status": "DONE", "description": "Task 2"},
+            {"id": 3, "status": "IN_PROGRESS", "description": "Task 3"},
+            {"id": 4, "status": "TODO", "description": "Task 4"},
+        ])
+
+        tracker = ActivityTracker(
+            redis_client=mock_redis,
+            conport_db_path="/fake/path.db",
+            conport_mcp_client=mock_mcp
+        )
+
+        result = await tracker.get_daily_stats("user1")
+
+        assert result["completed"] == 2, "Should count 2 DONE tasks"
+        assert result["total"] == 4, "Should count 4 total tasks"
+        mock_mcp.get_progress.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_daily_stats_fallback_to_sqlite(self, mock_redis, mock_conport_client):
+        """Should fallback to SQLite when MCP client is not available."""
+        tracker = ActivityTracker(
+            redis_client=mock_redis,
+            conport_db_path="/fake/path.db",
+            conport_mcp_client=None
+        )
+        tracker.conport = mock_conport_client
+
+        result = await tracker.get_daily_stats("user1")
+
+        # Mock has 1 DONE out of 3 total (from conftest.py)
+        assert result["completed"] == 1, "Should count 1 DONE task from SQLite"
+        assert result["total"] == 3, "Should count 3 total tasks from SQLite"
+        mock_conport_client.get_progress_entries.assert_called_once_with(
+            limit=100,
+            hours_ago=24
+        )
+
+    @pytest.mark.asyncio
+    async def test_get_daily_stats_various_statuses(self, mock_redis):
+        """Should correctly filter by DONE status among various status values."""
+        mock_mcp = AsyncMock()
+        mock_mcp.get_progress = AsyncMock(return_value=[
+            {"id": 1, "status": "DONE", "description": "Task 1"},
+            {"id": 2, "status": "COMPLETED", "description": "Task 2"},  # Not DONE
+            {"id": 3, "status": "DONE", "description": "Task 3"},
+            {"id": 4, "status": "IN_PROGRESS", "description": "Task 4"},
+            {"id": 5, "status": "FAILED", "description": "Task 5"},
+            {"id": 6, "status": "DONE", "description": "Task 6"},
+        ])
+
+        tracker = ActivityTracker(
+            redis_client=mock_redis,
+            conport_db_path="/fake/path.db",
+            conport_mcp_client=mock_mcp
+        )
+
+        result = await tracker.get_daily_stats("user1")
+
+        assert result["completed"] == 3, "Should only count tasks with status='DONE'"
+        assert result["total"] == 6, "Should count all tasks"
+
+    @pytest.mark.asyncio
+    async def test_get_daily_stats_empty_data(self, mock_redis):
+        """Should handle empty progress entries gracefully."""
+        mock_mcp = AsyncMock()
+        mock_mcp.get_progress = AsyncMock(return_value=[])
+
+        tracker = ActivityTracker(
+            redis_client=mock_redis,
+            conport_db_path="/fake/path.db",
+            conport_mcp_client=mock_mcp
+        )
+
+        result = await tracker.get_daily_stats("user1")
+
+        assert result["completed"] == 0, "Should return 0 for empty data"
+        assert result["total"] == 0, "Should return 0 for empty data"
+
+    @pytest.mark.asyncio
+    async def test_get_daily_stats_none_data(self, mock_redis):
+        """Should handle None progress entries gracefully."""
+        mock_mcp = AsyncMock()
+        mock_mcp.get_progress = AsyncMock(return_value=None)
+
+        tracker = ActivityTracker(
+            redis_client=mock_redis,
+            conport_db_path="/fake/path.db",
+            conport_mcp_client=mock_mcp
+        )
+
+        result = await tracker.get_daily_stats("user1")
+
+        assert result["completed"] == 0, "Should return 0 for None data"
+        assert result["total"] == 0, "Should return 0 for None data"
+
+    @pytest.mark.asyncio
+    async def test_get_daily_stats_error_handling(self, mock_redis):
+        """Should return default values when both data sources fail."""
+        mock_mcp = AsyncMock()
+        mock_mcp.get_progress = AsyncMock(side_effect=Exception("Connection failed"))
+
+        tracker = ActivityTracker(
+            redis_client=mock_redis,
+            conport_db_path="/fake/path.db",
+            conport_mcp_client=mock_mcp
+        )
+
+        result = await tracker.get_daily_stats("user1")
+
+        assert result["completed"] == 0, "Should return 0 on error"
+        assert result["total"] == 0, "Should return 0 on error"
+
+    @pytest.mark.asyncio
+    async def test_get_daily_stats_sqlite_error_handling(self, mock_redis, mock_conport_client):
+        """Should return default values when SQLite fallback fails."""
+        mock_conport_client.get_progress_entries = MagicMock(
+            side_effect=Exception("SQLite error")
+        )
+
+        tracker = ActivityTracker(
+            redis_client=mock_redis,
+            conport_db_path="/fake/path.db",
+            conport_mcp_client=None
+        )
+        tracker.conport = mock_conport_client
+
+        result = await tracker.get_daily_stats("user1")
+
+        assert result["completed"] == 0, "Should return 0 on SQLite error"
+        assert result["total"] == 0, "Should return 0 on SQLite error"
