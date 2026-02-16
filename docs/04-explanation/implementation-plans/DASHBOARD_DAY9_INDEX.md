@@ -419,10 +419,10 @@ git push origin feature/day9-sparklines-keyboard
 2. [DASHBOARD_DAY9_SUMMARY.md](../../DASHBOARD_DAY9_SUMMARY.md)
 
 ### Code With (During implementation)
-3. [DASHBOARD_DAY9_READY.md](./DASHBOARD_DAY9_READY.md)
+1. [DASHBOARD_DAY9_READY.md](./DASHBOARD_DAY9_READY.md)
 
 ### Reference When Needed
-4. [DASHBOARD_DAY9_DEEP_RESEARCH.md](./DASHBOARD_DAY9_DEEP_RESEARCH.md)
+1. [DASHBOARD_DAY9_DEEP_RESEARCH.md](./DASHBOARD_DAY9_DEEP_RESEARCH.md)
 
 ---
 

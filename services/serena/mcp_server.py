@@ -1653,7 +1653,7 @@ class SerenaV2MCPServer:
                 workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         # Get dynamic max_results from ADHD Engine (F-NEW-1)
         max_results = await get_dynamic_max_results(user_id, max_results)
@@ -1992,7 +1992,7 @@ class SerenaV2MCPServer:
                 workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
@@ -2114,7 +2114,7 @@ class SerenaV2MCPServer:
                 workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
@@ -2335,7 +2335,7 @@ class SerenaV2MCPServer:
                 workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
@@ -2633,7 +2633,7 @@ class SerenaV2MCPServer:
                 files, symbols, workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
@@ -2733,7 +2733,7 @@ class SerenaV2MCPServer:
                 workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
@@ -2836,7 +2836,7 @@ class SerenaV2MCPServer:
                 days_back, workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         result = {
             "status": "learning_phase",
@@ -5003,7 +5003,7 @@ class SerenaV2MCPServer:
                 workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         # Start search
         start_time = datetime.now()
@@ -5177,7 +5177,7 @@ class SerenaV2MCPServer:
                 file_path, workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         try:
             path = Path(file_path)
@@ -5296,7 +5296,7 @@ class SerenaV2MCPServer:
                 workspace_path, workspace_paths
             )
             return json.dumps(result, indent=2)
-        
+
         # Single workspace mode (backward compatible)
         try:
             # Import complexity coordinator
