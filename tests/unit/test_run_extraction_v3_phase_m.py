@@ -52,6 +52,13 @@ def make_cfg(profile: str) -> runner.RunnerConfig:
         home_scan_mode="safe",
         r_profile=profile,
         resume=True,
+        rpm_openai=60,
+        tpm_openai=120000,
+        rpm_gemini=15,
+        tpm_gemini=64000,
+        rpm_xai=30,
+        tpm_xai=90000,
+        max_inflight=1,
     )
 
 
