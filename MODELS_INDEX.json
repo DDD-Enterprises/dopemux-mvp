@@ -1,0 +1,58 @@
+[
+    {
+        "model_name": "Profile",
+        "type": "Pydantic BaseModel",
+        "path": "src/dopemux/profile_models.py",
+        "line_range": "133-210",
+        "description": "Main user profile model containing ADHD configuration, energy preferences, and server settings."
+    },
+    {
+        "model_name": "ADHDConfig",
+        "type": "Pydantic BaseModel",
+        "path": "src/dopemux/profile_models.py",
+        "line_range": "61-83",
+        "description": "ADHD-specific UI and behavior settings including focus modes and cognitive load thresholds."
+    },
+    {
+        "model_name": "Event",
+        "type": "Pydantic BaseModel",
+        "path": "src/dopemux/events/types.py",
+        "line_range": "23-31",
+        "description": "Base event model for the internal Dopemux event bus."
+    },
+    {
+        "model_name": "WorktreeEvent",
+        "type": "Pydantic BaseModel",
+        "path": "src/dopemux/events/types.py",
+        "line_range": "36-50",
+        "description": "Event representing git worktree changes."
+    },
+    {
+        "model_name": "BudgetState",
+        "type": "Pydantic BaseModel",
+        "path": "src/dopemux/mcp/token_manager.py",
+        "line_range": "45-112",
+        "description": "Tracks token budget usage and limits for a role/session."
+    },
+    {
+        "model_name": "MemoryNode",
+        "type": "Pydantic BaseModel",
+        "path": "src/conport/memory_server.py",
+        "line_range": "53-62",
+        "description": "Structure for semantic memory nodes (decisions, tasks, etc.)."
+    },
+    {
+        "model_name": "ContextSnapshot",
+        "type": "Pydantic BaseModel",
+        "path": "src/dopemux/adhd/context_manager.py",
+        "line_range": "29-71",
+        "description": "Comprehensive snapshot of development context including git state and environment."
+    },
+    {
+        "model_name": "ToolCallRequest",
+        "type": "dataclass",
+        "path": "src/dopemux/mcp/broker.py",
+        "line_range": "123-134",
+        "description": "Broker request for executing an MCP tool."
+    }
+]

@@ -13,19 +13,12 @@ class PipelineRunner:
     """Orchestrates the Full Pipeline execution (Phases A-S)."""
 
     PHASES = {
-        'A': ['A_repo_control_plane.md'],
-        'H': ['H_home_control_plane.md'],
-        'D': [
-            'D0_inventory_partition.md',
-            'D1_claims_boundaries.md',
-            'D2_deep_extraction.md',
-            'D3_citation_graph.md',
-            'D4_merge_qa.md',
-            'D5_topic_clusters.md'
-        ],
-        'C': ['C_code_surfaces.md'],
-        'R': ['R_arbitration.md'],
-        'S': ['S_synthesis.md']
+        'A': ['PHASE_A_REPO_CONTROL_PLANE.md'],
+        'H': ['PHASE_H_HOME_CONTROL_PLANE.md'],
+        'D': ['PHASE_D_DOCS_PIPELINE.md'],
+        'C': ['PHASE_C_CODE_SURFACES.md'],
+        'R': ['PHASE_R_ARBITRATION_GPT52.md'],
+        'S': ['PHASE_S_SYSTEM_TRUTHS_GPT52.md']
     }
 
     def __init__(self, project_root: Path, output_dir: Optional[Path] = None):
@@ -51,7 +44,7 @@ class PipelineRunner:
             logger.error(f"❌ Unknown phase: {phase}")
             return
 
-        logger.info(f"running phase {phase}...")
+        logger.info(f"Running phase {phase}...")
         prompts = self.PHASES[phase]
 
         context_content = self.context_gatherer.get_context_for_phase(phase)
