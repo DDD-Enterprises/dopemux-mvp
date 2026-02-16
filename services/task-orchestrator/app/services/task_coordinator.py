@@ -118,6 +118,8 @@ class TaskCoordinator:
         # Update coordination state
         self.coordination_state.current_adhd_state = current_adhd_state
         self.coordination_state.active_tasks = [t.id for t in tasks if t.status == TaskStatus.IN_PROGRESS]
+        for task in tasks:
+            self.tasks[task.id] = task
 
         # Step 1: Assess task batch based on cognitive capacity
         batch_plan = await self._assess_cognitive_batch(tasks, current_adhd_state)
@@ -466,23 +468,26 @@ class TaskCoordinator:
             # Execute task (placeholder - actual execution via agents)
             # Find the task object from internal storage
             task = self.tasks.get(task_id)
-            if task:
-                try:
-                    # Update status
-                    task.status = TaskStatus.IN_PROGRESS
-                    results["in_progress"].append(task_id)
+            if task is None:
+                logger.warning(f"⚠️ Task {task_id} not found in coordinator cache")
+                results["failed"].append(task_id)
+                continue
+            try:
+                # Update status
+                task.status = TaskStatus.IN_PROGRESS
+                results["in_progress"].append(task_id)
 
-                    # Simulate execution with monitoring
-                    # We await this to maintain sequential execution order
-                    await self._monitor_execution(task)
+                # Simulate execution with monitoring
+                # We await this to maintain sequential execution order
+                await self._monitor_execution(task)
 
-                    # Sync to ConPort
-                    await self.conport_adapter.update_task_in_conport(task)
+                # Sync to ConPort
+                await self.conport_adapter.update_task_in_conport(task)
 
-                except Exception as e:
-                    logger.error(f"❌ Task execution failed {task_id}: {e}")
-                    results["failed"].append(task_id)
-                    break
+            except Exception as e:
+                logger.error(f"❌ Task execution failed {task_id}: {e}")
+                results["failed"].append(task_id)
+                break
 
         # Check for context switching
         await self.context_recovery.detect_context_switch()
@@ -520,6 +525,8 @@ class TaskCoordinator:
         # In a real system, this would monitor an actual agent's progress
         simulated_duration = 60  # 1 minute simulation per task
         start_time = datetime.now()
+        if self.coordination_state.session_start_time is None:
+            self.coordination_state.session_start_time = start_time
 
         # Check energy decay over time
         while (datetime.now() - start_time).total_seconds() < simulated_duration:
