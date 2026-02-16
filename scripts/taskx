@@ -113,4 +113,6 @@ if [[ "$INSTALLED_COMMIT" != "$PIN_COMMIT" ]]; then
 fi
 
 source "$VENV/bin/activate"
+# Ensure dependencies required by TaskX are present in the venv
+python3 -c "import yaml" 2>/dev/null || pip install PyYAML >/dev/null 2>&1 || true
 exec taskx "$@"
