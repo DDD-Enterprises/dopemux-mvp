@@ -1,3 +1,15 @@
+---
+id: 07_PM_PLANE_BYPASS_AND_EXECUTION_SURFACES
+title: 07 Pm Plane Bypass And Execution Surfaces
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 07 Pm Plane Bypass And Execution Surfaces (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 07 PM Plane Bypass And Execution Surfaces
 
 ## Findings (severity-tagged)
