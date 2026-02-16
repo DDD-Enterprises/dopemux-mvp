@@ -231,3 +231,41 @@ class TestUserProfile:
 
             assert data["user_id"] == "new_user"
             assert data["profile_created"] is True
+
+
+class TestTaskDetail:
+    """Test task detail endpoint."""
+
+    def test_get_task_detail_found(self, client, mock_initialized_engine):
+        """Should return task details when found."""
+        mock_task = {
+            "id": "task_1",
+            "title": "Test Task",
+            "status": "todo",
+            "priority": "medium",
+            "timestamp": "2023-10-27T10:00:00Z"
+        }
+
+        # Mock conport to return our task
+        mock_initialized_engine.conport = MagicMock()
+        mock_initialized_engine.conport.get_custom_data.return_value = mock_task
+
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
+            response = client.get("/api/v1/tasks/task_1")
+
+            assert response.status_code == 200
+            data = response.json()
+            assert data["id"] == "task_1"
+            assert data["title"] == "Test Task"
+            assert data["status"] == "todo"
+
+    def test_get_task_detail_not_found(self, client, mock_initialized_engine):
+        """Should return 404 when task not found."""
+        mock_initialized_engine.conport = MagicMock()
+        mock_initialized_engine.conport.get_custom_data.return_value = None
+        mock_initialized_engine.conport.get_progress_entries.return_value = []
+
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
+            response = client.get("/api/v1/tasks/unknown")
+
+            assert response.status_code == 404
