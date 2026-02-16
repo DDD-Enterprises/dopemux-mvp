@@ -19,6 +19,7 @@ Usage:
 import asyncio
 import httpx
 import sys
+import os
 import shutil
 import subprocess
 import json
@@ -62,6 +63,8 @@ except ImportError:
 # Configuration
 # =============================================================================
 
+ADHD_ENGINE_API_KEY = os.getenv("ADHD_ENGINE_API_KEY", "dev-key-123")
+
 ENDPOINTS = {
     "adhd_state": "http://localhost:8095/api/v1/statusline/default_user",  # ADHD Engine (REAL)
     "adhd_energy": "http://localhost:8095/api/v1/energy-level/default_user",  # ADHD Engine
@@ -70,7 +73,7 @@ ENDPOINTS = {
     "adhd_flow": "http://localhost:8095/api/v1/flow-state/default_user",  # Day 2: NEW
     "adhd_session": "http://localhost:8095/api/v1/session-time/default_user",  # Day 2: NEW
     "adhd_breaks": "http://localhost:8095/api/v1/breaks/default_user",  # Day 2: NEW
-    "tasks": "http://localhost:8001/api/v1/tasks",
+    "tasks": "http://localhost:8095/api/v1/tasks",
     "decisions": "http://localhost:8005/api/adhd/decisions/recent",  # ConPort (Day 2)
     "services": "http://localhost:3016/health",
     "patterns": "http://localhost:8003/api/patterns/top",  # Serena (Day 2: NEW)
@@ -439,7 +442,10 @@ class MetricsManager:
         self.streaming_client: Optional[StreamingClient] = None
         self.polling_task: Optional[asyncio.Task] = None
         self.reconnect_task: Optional[asyncio.Task] = None
-        self.http_client = httpx.AsyncClient(timeout=2.0)
+
+        # Initialize HTTP client with API key if available
+        headers = {"X-API-Key": ADHD_ENGINE_API_KEY} if ADHD_ENGINE_API_KEY else {}
+        self.http_client = httpx.AsyncClient(timeout=2.0, headers=headers)
         
         # Latest data cache (for widgets)
         self.latest_data = {
@@ -647,7 +653,9 @@ class MetricsFetcher:
     """Async fetcher for all dashboard metrics"""
     
     def __init__(self):
-        self.client = httpx.AsyncClient(timeout=2.0)
+        # Initialize HTTP client with API key if available
+        headers = {"X-API-Key": ADHD_ENGINE_API_KEY} if ADHD_ENGINE_API_KEY else {}
+        self.client = httpx.AsyncClient(timeout=2.0, headers=headers)
         self.cache: Dict[str, Any] = {}
     
     async def get_adhd_state(self) -> Dict[str, Any]:
@@ -728,7 +736,7 @@ class MetricsFetcher:
         """Get health status of all services"""
         services = {
             "ConPort": "http://localhost:8005/health",
-            "ADHD Engine": "http://localhost:8001/health",
+            "ADHD Engine": "http://localhost:8095/health",
             "Serena": "http://localhost:8003/health",
             "MCP Bridge": "http://localhost:3016/health",
         }
@@ -747,6 +755,34 @@ class MetricsFetcher:
         
         return health
     
+    async def fetch_task_details(self, task_id: Union[int, str]) -> Dict:
+        """Fetch all task-related data from real API"""
+        try:
+            url = f"{ENDPOINTS['tasks']}/{task_id}"
+            response = await self.client.get(url, timeout=3.0)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.warning(f"API returned {response.status_code} for task {task_id}")
+        except Exception as e:
+            logger.error(f"Failed to fetch task details from real API: {e}")
+
+        # Fallback to mock data if API fails
+        return {
+            "id": task_id,
+            "title": "Implement drill-down modals (Fallback)",
+            "status": "in_progress",
+            "priority": "high",
+            "created": "2h ago",
+            "due": "Today 5pm",
+            "tags": ["coding", "deep-work", "backend"],
+            "time_worked": "1h 23m",
+            "estimated": "3h",
+            "focus_sessions": 2,
+            "context_switches": 4,
+            "cognitive_load_trend": "▃▄▅▆▅▄▃",
+        }
+
     async def close(self):
         await self.client.aclose()
 
@@ -1415,7 +1451,7 @@ Run: docker start dopemux-prometheus
             # For now, show a sample task
             # TODO: Get currently selected task from UI
             task_id = 1
-            self.push_screen(TaskDetailModal(task_id))
+            self.push_screen(TaskDetailModal(task_id, fetcher=self.fetcher))
         
         def action_show_service_logs(self) -> None:
             """Show live logs for a service"""
@@ -1524,9 +1560,10 @@ Run: docker start dopemux-prometheus
     class TaskDetailModal(ModalView):
         """Detailed view of a single task with full context"""
         
-        def __init__(self, task_id: int, task_data: Optional[Dict] = None):
+        def __init__(self, task_id: int, fetcher: Optional[MetricsFetcher] = None, task_data: Optional[Dict] = None):
             super().__init__()
             self.task_id = task_id
+            self.fetcher = fetcher
             self._task_data = task_data
         
         def compose(self) -> ComposeResult:
@@ -1541,22 +1578,24 @@ Run: docker start dopemux-prometheus
             content.update("⏳ Loading task details...")
             
             try:
-                task_data = await self.fetch_task_details()
+                if self._task_data:
+                    task_data = self._task_data
+                elif self.fetcher:
+                    task_data = await self.fetcher.fetch_task_details(self.task_id)
+                else:
+                    # Fallback if no fetcher
+                    task_data = await self.fetch_fallback_data()
+
                 rendered = self.render_task_content(task_data)
                 content.update(rendered)
             except Exception as e:
                 content.update(f"❌ Error loading task: {e}")
-        
-        async def fetch_task_details(self) -> Dict:
-            """Fetch all task-related data"""
-            if self._task_data:
-                return self._task_data
-            
-            # TODO: Fetch from real API
-            # For now, return mock data
+
+        async def fetch_fallback_data(self) -> Dict:
+            """Fallback to mock data if no fetcher available"""
             return {
                 "id": self.task_id,
-                "title": "Implement drill-down modals",
+                "title": "Implement drill-down modals (No Fetcher)",
                 "status": "in_progress",
                 "priority": "high",
                 "created": "2h ago",

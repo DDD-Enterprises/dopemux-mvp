@@ -814,6 +814,56 @@ async def get_tasks(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/tasks/{task_id}", tags=["dashboard"])
+async def get_task_detail(
+    task_id: str,
+    user_id: str = "default",
+    engine = Depends(get_engine),
+    api_key: str = Security(verify_api_key)
+):
+    """
+    Get detailed task information for dashboard.
+    """
+    try:
+        # Try to get task from conport via engine
+        task = None
+        if hasattr(engine, "conport") and engine.conport:
+            task = engine.conport.get_custom_data("adhd_progress_entries", key=task_id)
+
+        if not task:
+            # Fallback to searching in recent tasks
+            if hasattr(engine, "conport") and engine.conport:
+                recent_tasks = engine.conport.get_progress_entries(limit=100)
+                for t in recent_tasks:
+                    if str(t.get("id")) == task_id:
+                        task = t
+                        break
+
+        if not task:
+             raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+
+        # Map to dashboard expected format
+        return {
+            "id": task.get("id", task_id),
+            "title": task.get("title", task.get("description", "Untitled Task")),
+            "status": task.get("status", "unknown"),
+            "priority": task.get("priority", "medium"),
+            "created": task.get("timestamp", "unknown"),
+            "due": task.get("due", "Not set"),
+            "tags": task.get("tags", []),
+            "time_worked": task.get("time_worked", "0m"),
+            "estimated": task.get("estimated", "0m"),
+            "focus_sessions": task.get("focus_sessions", 0),
+            "context_switches": task.get("context_switches", 0),
+            "cognitive_load_trend": task.get("cognitive_load_trend", "───"),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Task detail retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ML Pattern & Prediction Endpoints (IP-005 Days 11-12)
 
 @router.get("/patterns/{user_id}", response_model=schemas.PatternsResponse)
