@@ -65,6 +65,7 @@
     "pytest.ini",
     "requirements*.txt",
     "dopemux.rb",
+    "dopemux.toml",
     "install.sh",
     "mcp_server_health_report.sh",
     "run_all_multi_workspace_tests.sh",

@@ -254,27 +254,28 @@ _OPENROUTER_PARAMS = {
 ALTP_TARGETS = [
     {
         "name": "altp-opus",
-        "model": "xai/grok-code-fast",
-        "api_key_env": "XAI_API_KEY",
-        "max_tokens": 131072,
+        "model": "openrouter/openai/gpt-5.2-codex",
+        "api_key_env": "OPENROUTER_API_KEY",
+        "max_tokens": 32768,
         "aliases": CLAUDE_OPUS_ALIASES,
-        "label": "Grok Code Fast (Opus Tier)",
+        "label": "GPT-5.2 Codex (High Thinking)",
+        "extra_litellm_params": _OPENROUTER_PARAMS,
     },
     {
         "name": "altp-sonnet",
-        "model": "xai/grok-code-fast",
+        "model": "xai/grok-code-fast-1",
         "api_key_env": "XAI_API_KEY",
         "max_tokens": 131072,
         "aliases": CLAUDE_SONNET_ALIASES,
-        "label": "Grok Code Fast",
+        "label": "Grok Code Fast 1",
     },
     {
         "name": "altp-haiku",
-        "model": "xai/grok-code-fast",
+        "model": "xai/grok-4-thinking",
         "api_key_env": "XAI_API_KEY",
         "max_tokens": 131072,
         "aliases": CLAUDE_HAIKU_ALIASES,
-        "label": "Grok Code Fast (Haiku Tier)",
+        "label": "Grok 4 Thinking",
     },
 ]
 
@@ -282,7 +283,7 @@ ALTP_PROVIDER = {
     "name": "altp",
     "label": "Alternative Provider Routing",
     "targets": ALTP_TARGETS,
-    "required_keys": [],
+    "required_keys": ["OPENROUTER_API_KEY", "XAI_API_KEY"],
 }
 
 
