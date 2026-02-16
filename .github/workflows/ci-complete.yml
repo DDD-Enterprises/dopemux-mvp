@@ -154,12 +154,15 @@ jobs:
           pip install -r requirements.txt
           pip install -e .[dev]
 
-      - name: 🧠 Bootstrap TaskX
+      - name: ⚙️ Setup TaskX venv
         run: |
-          PIN_REPO="$(sed -n 's/^repo=//p' .taskx-pin | head -n 1)"
-          PIN_REF="$(sed -n 's/^ref=//p' .taskx-pin | head -n 1)"
-          python3 -m venv .taskx_venv
-          .taskx_venv/bin/pip install "git+${PIN_REPO}@${PIN_REF}"
+          # Read .taskx-pin
+          source .taskx-pin
+          echo "Installing TaskX from $repo @ $ref"
+
+          python -m venv .taskx_venv
+          source .taskx_venv/bin/activate
+          pip install "git+$repo@$ref"
 
       - name: ✅ Verify TaskX wiring
         run: |
