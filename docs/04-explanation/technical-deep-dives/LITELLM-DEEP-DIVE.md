@@ -26,22 +26,22 @@ The service is a LiteLLM Proxy server running in a Python container.
 
 **Core Elements**:
 1. **`litellm.config.yaml`**: defines the model list and router settings. it includes extensive fallback logic and alias mapping (e.g., `fast` -> `grok-4-fast`).
-2. **`entrypoint.sh`**: Handles Prisma client generation and database migrations on startup.
-3. **Database**: Integrates with `dopemux-postgres-age` for request logging and caching.
+1. **`entrypoint.sh`**: Handles Prisma client generation and database migrations on startup.
+1. **Database**: Integrates with `dopemux-postgres-age` for request logging and caching.
 
 ### Failure & Drift Analysis
 **Status**: **Running (Unhealthy)**.
 
 **Findings**:
 1. **Health Check Latency**: The container is marked as unhealthy because the healthcheck `curl` command times out (10s). Logs indicate the service *is* responding with 200 OK, but potentially with enough latency to trigger the timeout.
-2. **Configuration Robustness**: The router settings include sophisticated retry policies and fallback chains, indicating a highly mature integration.
-3. **Security**: Uses a hardcoded `master_key` for internal health checks, which is correctly configured in the compose file.
+1. **Configuration Robustness**: The router settings include sophisticated retry policies and fallback chains, indicating a highly mature integration.
+1. **Security**: Uses a hardcoded `master_key` for internal health checks, which is correctly configured in the compose file.
 
 ### Integration Patterns & Data Flow
 1. **Request**: Systems (like Genetic Agent or MCP Client) send OpenAI-compatible requests to `http://litellm:4000`.
-2. **Route**: LiteLLM matches the model alias and selects the healthiest/best provider from the list.
-3. **Analytics**: Request metadata is logged to the PostgreSQL database.
-4. **Resilience**: If a provider fails, LiteLLM automatically tries the defined fallbacks.
+1. **Route**: LiteLLM matches the model alias and selects the healthiest/best provider from the list.
+1. **Analytics**: Request metadata is logged to the PostgreSQL database.
+1. **Resilience**: If a provider fails, LiteLLM automatically tries the defined fallbacks.
 
 ### Testing, Performance, Limitations & Opportunities
 * **Testing**: Verification is primarily via the `/health` endpoint and runtime logs.
