@@ -137,9 +137,9 @@ healthcheck:
 + EXPOSE 3004
 
 - HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
--     CMD curl -f http://localhost:8005/health || exit 1
+- CMD curl -f http://localhost:8005/health || exit 1
 + HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-+     CMD curl -f http://localhost:3004/health || exit 1
++ CMD curl -f http://localhost:3004/health || exit 1
 ```
 
 **Option B: Update Compose** (Not Recommended)

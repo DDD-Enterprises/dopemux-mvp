@@ -13,6 +13,7 @@ redis>=4.5.0  # Task-Orchestrator event bus integration (Fix C1-001)
 # Environment & Configuration
 python-dotenv>=1.0.0
 typer>=0.9.0
+pyyaml>=6.0
 
 # Utilities
 rich>=13.0.0
