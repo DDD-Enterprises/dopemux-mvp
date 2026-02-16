@@ -4,14 +4,16 @@ title: MCP Lifecycle and Reliability
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-02-16'
-last_review: '2026-02-16'
-next_review: '2026-05-17'
-prelude: MCP Lifecycle and Reliability (explanation) for dopemux documentation and developer workflows.
+date: '2026-02-15'
+last_review: '2026-02-15'
+next_review: '2026-05-16'
+prelude: MCP Lifecycle and Reliability (explanation) for dopemux documentation and developer
+  workflows.
 plane: pm
 component: dopemux
 status: proposed
 ---
+
 # MCP Lifecycle and Circuit Breakers
 
 ## Purpose
@@ -133,21 +135,21 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 **Classification (derived from compose.yml evidence)**:
 
 | Server | Port | Classification | Rationale |
-| ------ | ---- | -------------- | --------- ||  |
-| postgres (AGE)    | 5432 | REQUIRED       | Backing store for ConPort, LiteLLM. Everything depends on it.            |
-| redis-events      | 6379 | REQUIRED       | EventBus streaming. DopeconBridge depends on it (healthy).               |
-| redis-primary     | —    | REQUIRED       | Caching. ConPort, task-orchestrator, adhd-engine depend on it (healthy). |
-| conport           | 3004 | REQUIRED       | Knowledge graph authority (INV-MEM-002). Multiple services depend on it. |
-| dopecon-bridge    | 3016 | REQUIRED       | Event processing. ConPort depends on it.                                 |
-| qdrant            | 6333 | REQUIRED       | Vector DB for semantic search. ConPort and dope-context depend on it.    |
-| litellm           | 4000 | OPTIONAL       | Model router. Services can fall back to direct API calls.                |
-| pal (zen)         | 3003 | OPTIONAL       | Multi-model reasoning. Enhances but not required for core operations.    |
-| dope-context      | 3010 | OPTIONAL       | Semantic search. Fallback: grep/ripgrep keyword search.                  |
-| serena            | 3006 | OPTIONAL       | ADHD engine interface. System functions without ADHD accommodations.     |
-| gptr-mcp          | 3009 | OPTIONAL       | Deep research. Not required for core task execution.                     |
-| desktop-commander | 3012 | OPTIONAL       | Desktop automation. No core dependency.                                  |
-| leantime-bridge   | 3015 | OPTIONAL       | PM integration. Task-orchestrator degrades without it.                   |
-| leantime          | 8080 | OPTIONAL       | PM UI. System functions without web PM interface.                        |
+|---|---|---|---|
+| postgres (AGE) | 5432 | REQUIRED | Backing store for ConPort, LiteLLM. Everything depends on it. |
+| redis-events | 6379 | REQUIRED | EventBus streaming. DopeconBridge depends on it (healthy). |
+| redis-primary | — | REQUIRED | Caching. ConPort, task-orchestrator, adhd-engine depend on it (healthy). |
+| conport | 3004 | REQUIRED | Knowledge graph authority (INV-MEM-002). Multiple services depend on it. |
+| dopecon-bridge | 3016 | REQUIRED | Event processing. ConPort depends on it. |
+| qdrant | 6333 | REQUIRED | Vector DB for semantic search. ConPort and dope-context depend on it. |
+| litellm | 4000 | OPTIONAL | Model router. Services can fall back to direct API calls. |
+| pal (zen) | 3003 | OPTIONAL | Multi-model reasoning. Enhances but not required for core operations. |
+| dope-context | 3010 | OPTIONAL | Semantic search. Fallback: grep/ripgrep keyword search. |
+| serena | 3006 | OPTIONAL | ADHD engine interface. System functions without ADHD accommodations. |
+| gptr-mcp | 3009 | OPTIONAL | Deep research. Not required for core task execution. |
+| desktop-commander | 3012 | OPTIONAL | Desktop automation. No core dependency. |
+| leantime-bridge | 3015 | OPTIONAL | PM integration. Task-orchestrator degrades without it. |
+| leantime | 8080 | OPTIONAL | PM UI. System functions without web PM interface. |
 
 **Enforcement Surface**:
 * Startup: REQUIRED servers use `condition: service_healthy` in `depends_on`.
@@ -183,12 +185,12 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
   * `task-orchestrator`: `curl -f http://localhost:8000/health`, interval 30s, retries 3, start_period 40s.
   * `adhd-engine`: `curl -f http://localhost:8095/health`, interval 30s, retries 3, start_period 30s.
   * `pal`: `exit 0` (always healthy — no real check). **GAP**: should have real health endpoint.
-  * `dope-context`: `curl -f http://localhost:3010/health || exit 0`. **GAP**: `exit 0` fallback means unhealthy is never reported.
-  * `conport`: `curl -f http://localhost:3004/health || exit 0`. **GAP**: same `exit 0` fallback issue.
+  * `dope-context`: `curl -f http://localhost:3010/health  exit 0`. **GAP**: `exit 0` fallback means unhealthy is never reported.
+  * `conport`: `curl -f http://localhost:3004/health  exit 0`. **GAP**: same `exit 0` fallback issue.
 
 **GAPS IDENTIFIED**:
 * `pal` healthcheck is `exit 0` — always passes regardless of actual health.
-* `conport` and `dope-context` use `|| exit 0` — failures are swallowed.
+* `conport` and `dope-context` use `exit 0` — failures are swallowed.
 * These should be fixed to return real health status.
 
 ---
@@ -200,7 +202,7 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 * **OBSERVED: MCP Servers**: ConPort (3004), PAL/Zen (3003), LiteLLM (4000), Dope-Context (3010), Serena (3006), GPTR (3009), Desktop Commander (3012), Leantime Bridge (3015).
 * **OBSERVED: Application Services**: DopeconBridge (3016), Task Orchestrator (8000), ADHD Engine (8095), Genetic Agent (8000), Dope-Memory (3020/8096).
 * **OBSERVED: Dependency Chain**: postgres → conport → task-orchestrator; redis-events → dopecon-bridge → conport.
-* **OBSERVED: Health Endpoints**: All services have healthcheck blocks in compose.yml, but quality varies (some use `|| exit 0` fallback).
+* **OBSERVED: Health Endpoints**: All services have healthcheck blocks in compose.yml, but quality varies (some use `exit 0` fallback).
 * **OBSERVED: Task-Orchestrator Tools**: `/info` endpoint reports "37 tools" (line 306 of main.py).
 * **OBSERVED: Restart Policy**: All services use `restart: unless-stopped`.
 
@@ -229,10 +231,10 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 * **Containment**: Docker Compose will error on startup if host ports conflict.
 
 ### 4. Swallowed Health Failures
-* **Trigger**: Services using `|| exit 0` in healthcheck (conport, dope-context, pal).
+* **Trigger**: Services using `exit 0` in healthcheck (conport, dope-context, pal).
 * **Impact**: Docker reports container as healthy when it may not be. Dependent services start prematurely or don't detect failures.
 * **Severity**: S2 medium.
-* **Containment**: Fix healthchecks to remove `|| exit 0` fallback. Replace `exit 0` in pal with actual health probe.
+* **Containment**: Fix healthchecks to remove `exit 0` fallback. Replace `exit 0` in pal with actual health probe.
 
 ### 5. Startup Race Condition
 * **Trigger**: `depends_on` with `condition: service_started` (not `service_healthy`) — used for `mcp-qdrant` in dopecon-bridge.
@@ -244,29 +246,29 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 
 ## Enforcement surface summary
 
-| Invariant   | Enforcement Point | Mechanism                       | Automated?            |
-| ----------- | ----------------- | ------------------------------- | --------------------- |
-| INV-MCP-001 | Docker Compose    | `down` sends SIGTERM/SIGKILL    | Yes                   |
-| INV-MCP-002 | `depends_on`      | `condition: service_healthy`    | Yes (for startup)     |
-| INV-MCP-002 | Runtime           | Timeout + explicit error        | FUTURE                |
-| INV-MCP-003 | MCPServerManager  | Circuit breaker state machine   | FUTURE                |
-| INV-MCP-004 | Docker Compose    | `depends_on` + `start_period`   | Yes                   |
-| INV-MCP-005 | Configuration     | Classification table (this doc) | Documentation only    |
-| INV-MCP-006 | Docker Compose    | `healthcheck` blocks            | Yes (with gaps noted) |
+| Invariant | Enforcement Point | Mechanism | Automated? |
+|-----------|-------------------|-----------|------------|
+| INV-MCP-001 | Docker Compose | `down` sends SIGTERM/SIGKILL | Yes |
+| INV-MCP-002 | `depends_on` | `condition: service_healthy` | Yes (for startup) |
+| INV-MCP-002 | Runtime | Timeout + explicit error | FUTURE |
+| INV-MCP-003 | MCPServerManager | Circuit breaker state machine | FUTURE |
+| INV-MCP-004 | Docker Compose | `depends_on` + `start_period` | Yes |
+| INV-MCP-005 | Configuration | Classification table (this doc) | Documentation only |
+| INV-MCP-006 | Docker Compose | `healthcheck` blocks | Yes (with gaps noted) |
 
 ---
 
 ## Degradation ladder
 
-| Level                   | Condition                         | Behavior                          | User Impact                                |
-| ----------------------- | --------------------------------- | --------------------------------- | ------------------------------------------ |
-| L0: Nominal             | All servers healthy               | Full capability                   | None                                       |
-| L1: Optional Degraded   | One or more OPTIONAL servers down | Reduced capability with fallbacks | Slower search, no desktop automation, etc. |
-| L2: Cache Lost          | Redis-primary down                | Continue without caching          | Slower response times                      |
-| L3: Event Bus Down      | Redis-events down                 | DopeconBridge degraded            | No real-time event streaming               |
-| L4: Authority Degraded  | ConPort slow (>5s response)       | Queue writes, warn operator       | Decision recording delayed                 |
-| L5: Authority Down      | ConPort unreachable               | Refuse authority operations       | Cannot make formal decisions               |
-| L6: Infrastructure Down | PostgreSQL down                   | All REQUIRED services fail        | Full stop                                  |
+| Level | Condition | Behavior | User Impact |
+|-------|-----------|----------|-------------|
+| L0: Nominal | All servers healthy | Full capability | None |
+| L1: Optional Degraded | One or more OPTIONAL servers down | Reduced capability with fallbacks | Slower search, no desktop automation, etc. |
+| L2: Cache Lost | Redis-primary down | Continue without caching | Slower response times |
+| L3: Event Bus Down | Redis-events down | DopeconBridge degraded | No real-time event streaming |
+| L4: Authority Degraded | ConPort slow (>5s response) | Queue writes, warn operator | Decision recording delayed |
+| L5: Authority Down | ConPort unreachable | Refuse authority operations | Cannot make formal decisions |
+| L6: Infrastructure Down | PostgreSQL down | All REQUIRED services fail | Full stop |
 
 ---
 
@@ -281,16 +283,16 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 
 ## Contradiction analysis
 
-| Claim                               | Source               | Status                                      |
-| ----------------------------------- | -------------------- | ------------------------------------------- |
-| ConPort uses `                      |                      | exit 0` healthcheck                         | compose.yml line 254 | CONFIRMED — masks failures |
-| PAL healthcheck is `exit 0`         | compose.yml line 277 | CONFIRMED — never actually checks health    |
-| Dope-context uses `\|\| exit 0`     | compose.yml line 334 | CONFIRMED — masks failures                  |
-| Task-orchestrator has real health   | compose.yml line 406 | CONFIRMED — `curl -f` without fallback      |
-| DopeconBridge has real health       | compose.yml line 372 | CONFIRMED — `curl -f` without fallback      |
-| `config/mcp_servers.yaml` exists    | Earlier doc version  | NOT FOUND — file does not exist in repo     |
-| `src/dopemux/mcp/manager.py` exists | Earlier doc version  | NOT VERIFIED — needs confirmation           |
-| All servers expose `/health`        | Design requirement   | PARTIALLY — pal has no real health endpoint |
+| Claim | Source | Status |
+|-------|--------|--------|
+| ConPort uses `\|\| exit 0` healthcheck | compose.yml line 254 | CONFIRMED — masks failures |
+| PAL healthcheck is `exit 0` | compose.yml line 277 | CONFIRMED — never actually checks health |
+| Dope-context uses `\|\| exit 0` | compose.yml line 334 | CONFIRMED — masks failures |
+| Task-orchestrator has real health | compose.yml line 406 | CONFIRMED — `curl -f` without fallback |
+| DopeconBridge has real health | compose.yml line 372 | CONFIRMED — `curl -f` without fallback |
+| `config/mcp_servers.yaml` exists | Earlier doc version | NOT FOUND — file does not exist in repo |
+| `src/dopemux/mcp/manager.py` exists | Earlier doc version | NOT VERIFIED — needs confirmation |
+| All servers expose `/health` | Design requirement | PARTIALLY — pal has no real health endpoint |
 
 ---
 
@@ -366,4 +368,4 @@ If a server is UNHEALTHY or STOPPED:
 1. **Dependency Test**: Stop PostgreSQL. Ensure ConPort fails its healthcheck. Ensure task-orchestrator does not start (or restarts and fails to connect).
 1. **Fallback Test**: Stop `dope-context`. Execute a search operation. Ensure it falls back to keyword search or refuses with clear message.
 1. **Zombie Test**: Run `docker compose down`. Verify zero dopemux containers running with `docker ps`.
-1. **Health Gap Test**: Stop the actual ConPort process inside its container (but keep container running). Verify healthcheck reports unhealthy (currently fails due to `|| exit 0` — this test documents the gap).
+1. **Health Gap Test**: Stop the actual ConPort process inside its container (but keep container running). Verify healthcheck reports unhealthy (currently fails due to `exit 0` — this test documents the gap).

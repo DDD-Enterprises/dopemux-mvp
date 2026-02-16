@@ -26,6 +26,7 @@ logging.basicConfig(
 logger = logging.getLogger("run_extraction")
 
 # --- Constants & Configuration ---
+
 HOME_DIRS = [
     ".dopemux",
     ".config/dopemux",
@@ -70,6 +71,7 @@ HOME_EXCLUDES = [
 DOCS_ORDER = ["D0", "D3", "M1", "QA", "CL"]
 
 # --- Redaction Logic ---
+
 class Redactor:
     """Handles text redaction for sensitive patterns."""
 
@@ -132,7 +134,9 @@ class Redactor:
     def clear_report(self):
         self.hits = []
 
+
 # --- Collection Logic ---
+
 class ContentCollector:
     """Collects file content with exclusion and redaction."""
 
@@ -234,7 +238,9 @@ class ContentCollector:
                 json.dump(report, f, indent=2)
             logger.info(f"Redaction report saved to {report_path} ({len(report)} hits)")
 
+
 # --- Runner Logic ---
+
 def run_phase_a(output_dir: Path, dry_run: bool):
     """Run Phase A: Repo Control Plane Scan."""
     logger.info("Starting Phase A: Repo Control Plane...")
@@ -310,7 +316,7 @@ def run_phase_d(output_dir: Path, dry_run: bool, partition: Optional[str] = None
         collector = ContentCollector(Path.cwd() / "docs", ["archive"]) # Exclude archive from D0?
         # Actually D0 logic is specific: just list files, don't read content yet
         # But for this runner we simulate content reading or just metadata
-        
+
         # We need to run D0 logic. Since we don't have the D0 script, we mock it or use collector
         # Assuming D0 prompt does the work if we feed it file list.
         # But D0 usually produces the JSONs.
