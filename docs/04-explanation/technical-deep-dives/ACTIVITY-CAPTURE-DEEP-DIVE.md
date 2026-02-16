@@ -27,8 +27,8 @@ The service is a Python-based FastAPI application that acts primarily as a Redis
 
 **Core Modules**:
 1. **`EventSubscriber`**: Manages the Redis Consumer Group and acknowledges processed messages.
-2. **`ActivityTracker`**: Aggregates raw events into time-windowed summaries (default 300s) to reduce noise and API pressure on the ADHD Engine.
-3. **`ADHDEngineClient`**: Handles authenticated communication with the ADHD Engine's `/activity` endpoints.
+1. **`ActivityTracker`**: Aggregates raw events into time-windowed summaries (default 300s) to reduce noise and API pressure on the ADHD Engine.
+1. **`ADHDEngineClient`**: Handles authenticated communication with the ADHD Engine's `/activity` endpoints.
 
 ### Failure Analysis: CRITICAL BUG IDENTIFIED
 **Status**: **Unhealthy / Blocked**.
@@ -44,8 +44,8 @@ There is a fundamental "blocking startup" bug in the service's lifecycle managem
 
 ### Integration Patterns & Data Flow
 1. **Subscribe**: Joins the `activity-capture` consumer group on the `dopemux:events` stream.
-2. **Aggregate**: Batches events over 5-minute windows.
-3. **Sync**: Sends summaries to `ADHD Engine -> /activity/batch`.
+1. **Aggregate**: Batches events over 5-minute windows.
+1. **Sync**: Sends summaries to `ADHD Engine -> /activity/batch`.
 
 ### Testing, Performance, Limitations & Opportunities
 * **Testing**: No automated tests found.

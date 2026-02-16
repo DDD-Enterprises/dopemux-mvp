@@ -375,11 +375,9 @@ async def get_dashboard_snapshot(
     user_id: str = Query(default="default", min_length=1),
     limit: int = Query(default=4, ge=1, le=20),
 ) -> DashboardData:
-    cognitive_payload, tasks, team_members = await asyncio.gather(
-        get_cognitive_state(user_id=user_id),
-        get_tasks(limit=limit),
-        get_team_members(),
-    )
+    cognitive_payload = await get_cognitive_state(user_id=user_id)
+    tasks = await get_tasks(limit=limit)
+    team_members = await get_team_members()
 
     return DashboardData(
         cognitive_state=CognitiveState(**cognitive_payload["cognitive_state"]),

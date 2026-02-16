@@ -93,7 +93,6 @@ reference:
   features_index: "docs/03-reference/features/features-index.md"
   task_orchestrator_service: "docs/03-reference/services/task-orchestrator.md"
   mcp_tools_overview: "docs/03-reference/mcp-tools-overview.md"
-  layouts_and_themes: "docs/03-reference/layouts-and-themes.md"
   mcp_token_management_best_practices: "docs/best-practices/mcp-token-management.md"
   memory_capture_cli: "docs/03-reference/memory-capture-cli.md"
 
@@ -105,11 +104,6 @@ explanation:
   dope_memory: "docs/04-explanation/technical-deep-dives/DOPE-MEMORY-DEEP-DIVE.md"
   adhd_engine: "docs/04-explanation/technical-deep-dives/ADHD-ENGINE-DEEP-DIVE-PART1.md"
   dope_context: "docs/04-explanation/technical-deep-dives/DOPEMUX-CONTEXT-DEEP-DIVE.md"
-
-# Audit Reports
-audit_reports:
-  directory: "docs/05-audit-reports/"
-  missing_upgrades: "docs/05-audit-reports/MISSING_UPGRADES_REPORT.md"
 
 # Archive - Historical documents
 archive:
