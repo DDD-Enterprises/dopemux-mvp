@@ -27,9 +27,9 @@ The dashboard is a hybrid FastAPI application that serves a single-page HTML int
 
 **Core Modules**:
 1. **`backend.py`**: The main FastAPI application.
-  * **WebSocket**: Manages live connections to the browser via `/ws/state`.
-  * **Redis Listener**: Subscribes to `adhd:state_changes:*` and broadcasts updates to all connected WebSockets.
-  * **HTML**: Embeds a modern, dark-themed CSS/JS dashboard directly in the code (lines 136-224).
+* **WebSocket**: Manages live connections to the browser via `/ws/state`.
+* **Redis Listener**: Subscribes to `adhd:state_changes:*` and broadcasts updates to all connected WebSockets.
+* **HTML**: Embeds a modern, dark-themed CSS/JS dashboard directly in the code (lines 136-224).
 1. **`task_recommender.py`**: Intelligent logic for suggesting tasks based on current cognitive state (referenced but potentially elective).
 
 ### Failure & Drift Analysis

@@ -38,12 +38,12 @@ The service is built as a FastAPI application (`server.py`) serving MCP tools ov
 
 ### Integration Patterns & Data Flow
 1. **ADHD Engine Integration**:
-  * The `DesktopActivityMonitor` in `adhd_engine/external_activity.py` polls Desktop Commander every 5 seconds.
-  * It uses `list_resources` (or custom tool calls) to fetch active window state.
-  * **Data Flow**: `Desktop Commander -> ADHD Engine -> Event Bus (WindowSwitchEvent)`.
+* The `DesktopActivityMonitor` in `adhd_engine/external_activity.py` polls Desktop Commander every 5 seconds.
+* It uses `list_resources` (or custom tool calls) to fetch active window state.
+* **Data Flow**: `Desktop Commander -> ADHD Engine -> Event Bus (WindowSwitchEvent)`.
 
 1. **Dopecon Bridge Integration**:
-  * Direct integration via `integration_bridge_connector.py` allows it to emit `workspace_switched` events directly to the global event bus, bypassing the polling loop for critical latency-sensitive actions.
+* Direct integration via `integration_bridge_connector.py` allows it to emit `workspace_switched` events directly to the global event bus, bypassing the polling loop for critical latency-sensitive actions.
 
 ### Testing, Performance, Limitations & Opportunities
 * **Performance**: Local tool execution (AppleScript/subprocess) is generally fast (<100ms), but polling overhead in ADHD engine could be optimized.
