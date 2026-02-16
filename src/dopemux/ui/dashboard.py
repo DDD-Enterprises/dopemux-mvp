@@ -154,7 +154,7 @@ class ServicesGrid(Static):
             ("ConPort", "http://localhost:8005/health"),
             ("ADHD Engine", "http://localhost:8001/health"),
             ("Serena", "http://localhost:8003/health"),
-            ("MCP Bridge", "http://localhost:8002/health"),
+            ("MCP Bridge", "http://localhost:3016/health"),
         ]
 
         async with httpx.AsyncClient() as client:
