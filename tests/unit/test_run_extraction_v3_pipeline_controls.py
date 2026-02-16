@@ -67,6 +67,90 @@ def test_build_partitions_stable_priority_order(tmp_path: Path) -> None:
     assert first_paths == second_paths
     assert first_paths[0].endswith(".claude/settings.json")
     assert first_paths[-1].endswith("docs/archive/old.md")
+    assert runner.classify_tier(first_paths[0]) == 0
+    assert runner.classify_tier(first_paths[-1]) == 3
+
+
+def test_tier0_exhausted_before_tier2_or_tier3(tmp_path: Path) -> None:
+    tier0_files = [
+        tmp_path / ".claude" / "settings.json",
+        tmp_path / ".dopemux" / "router.yaml",
+        tmp_path / "compose.yml",
+    ]
+    tier2_file = tmp_path / "src" / "main.py"
+    tier3_file = tmp_path / "docs" / "archive" / "old.md"
+    for idx, file_path in enumerate(tier0_files + [tier2_file, tier3_file]):
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        file_path.write_text(("x" * 250) + f"-{idx}\n", encoding="utf-8")
+
+    items = [
+        {"path": str(path), "size": path.stat().st_size, "mtime": float(path.stat().st_mtime)}
+        for path in [tier3_file, tier2_file] + tier0_files
+    ]
+    inventory = runner.build_inventory(items, file_truncate_chars=120)
+    partitions = runner.build_partitions(
+        "A",
+        inventory,
+        max_files=2,
+        max_chars=320,
+        file_truncate_chars=120,
+    )
+
+    flattened = [path for part in partitions for path in part.get("ordered_paths", [])]
+    first_non_tier0 = next(
+        (idx for idx, path in enumerate(flattened) if runner.classify_tier(path) != 0),
+        len(flattened),
+    )
+    assert all(runner.classify_tier(path) == 0 for path in flattened[:first_non_tier0])
+    assert first_non_tier0 < len(flattened)
+
+
+def test_magic_surface_index_emits_tier0_files(tmp_path: Path) -> None:
+    magic = tmp_path / ".claude" / "settings.json"
+    non_magic = tmp_path / "src" / "main.py"
+    for path in [magic, non_magic]:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("test\n", encoding="utf-8")
+
+    inventory = runner.build_inventory(
+        [
+            {"path": str(magic), "size": magic.stat().st_size, "mtime": float(magic.stat().st_mtime)},
+            {"path": str(non_magic), "size": non_magic.stat().st_size, "mtime": float(non_magic.stat().st_mtime)},
+        ],
+        file_truncate_chars=80,
+    )
+
+    dirs = {"root": tmp_path / "run_123", "inputs": tmp_path / "run_123" / "00_inputs"}
+    dirs["inputs"].mkdir(parents=True, exist_ok=True)
+    runner.update_magic_surface_index(dirs, "A", inventory, file_truncate_chars=80)
+
+    index_path = dirs["inputs"] / "MAGIC_SURFACE_INDEX.json"
+    payload = json.loads(index_path.read_text(encoding="utf-8"))
+    paths = {row["path"] for row in payload["files"]}
+    assert str(magic.resolve()) in paths
+    assert str(non_magic.resolve()) not in paths
+    assert payload["file_count"] == 1
+
+
+def test_home_safe_filter_blocks_non_allowlisted_paths(tmp_path: Path) -> None:
+    home = tmp_path / "home"
+    safe_file = home / ".config" / "dopemux" / "config.yaml"
+    unsafe_file = home / ".ssh" / "id_rsa"
+    safe_file.parent.mkdir(parents=True, exist_ok=True)
+    unsafe_file.parent.mkdir(parents=True, exist_ok=True)
+    safe_file.write_text("ok: true\n", encoding="utf-8")
+    unsafe_file.write_text("secret\n", encoding="utf-8")
+
+    filtered = runner.home_safe_filter(
+        [
+            {"path": str(safe_file.resolve()), "size": safe_file.stat().st_size, "mtime": float(safe_file.stat().st_mtime)},
+            {"path": str(unsafe_file.resolve()), "size": unsafe_file.stat().st_size, "mtime": float(unsafe_file.stat().st_mtime)},
+        ],
+        home,
+    )
+    kept_paths = {item["path"] for item in filtered}
+    assert str(safe_file.resolve()) in kept_paths
+    assert str(unsafe_file.resolve()) not in kept_paths
 
 
 def test_partition_payload_hash_stable(tmp_path: Path) -> None:
