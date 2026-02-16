@@ -25,7 +25,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional, List, Tuple, Union
+from typing import Dict, Any, Optional, List, Union
 from dataclasses import dataclass
 from prometheus_client import PrometheusClient, PrometheusConfig
 from sparkline_generator import SparklineGenerator
