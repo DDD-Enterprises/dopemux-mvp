@@ -516,10 +516,6 @@ class TaskCoordinator:
         """
         Monitor task execution with ADHD-aware breaks.
         """
-        # Ensure session start time is set
-        if not self.coordination_state.session_start_time:
-            self.coordination_state.session_start_time = datetime.now()
-
         # Simulate task duration (demo mode)
         # In a real system, this would monitor an actual agent's progress
         simulated_duration = 60  # 1 minute simulation per task
