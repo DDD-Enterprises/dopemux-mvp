@@ -1,6 +1,5 @@
 import json
 import re
-import os
 
 def parse_rg_json(filepath):
     matches = []
