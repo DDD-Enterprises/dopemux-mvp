@@ -7,6 +7,23 @@
 1. (Optional) Continue through R/X/T/Z after Phase R succeeds to complete the full master extraction sweep.
 
 ## 2. Artifact presence checks
+- Verify the run-level magic index exists and is populated before Phase R:
+  ```
+  run_id="$(cat extraction/latest_run_id.txt)"
+  jq '.file_count, .files[0:5][]?.relative_path' "extraction/runs/$run_id/00_inputs/MAGIC_SURFACE_INDEX.json"
+  ```
+- Confirm partition ordering keeps Tier 0 first:
+  ```
+  run_id="$(cat extraction/latest_run_id.txt)"
+  jq '.partitions[].files[].priority_tier' "extraction/runs/$run_id/A_repo_control_plane/inputs/PARTITION_MANIFEST.json" | head -40
+  ```
+- Prove deterministic dry-run ordering by running the same phase twice and diffing partition manifests:
+  ```
+  py UPGRADES/run_extraction_v3.py --phase A --dry-run --resume
+  cp "extraction/runs/$run_id/A_repo_control_plane/inputs/PARTITION_MANIFEST.json" /tmp/A_PARTITION_MANIFEST_1.json
+  py UPGRADES/run_extraction_v3.py --phase A --dry-run --resume
+  diff -u /tmp/A_PARTITION_MANIFEST_1.json "extraction/runs/$run_id/A_repo_control_plane/inputs/PARTITION_MANIFEST.json"
+  ```
 - Ensure each norm directory contains at least one JSON artifact with:
   ```
   run_id="$(cat extraction/latest_run_id.txt)"
@@ -36,5 +53,6 @@
 - [ ] `UPGRADES/PIPELINE_PROOF.md` is added or updated
 - [ ] No duplicate prompt IDs per phase (verify via `rg PROMPT_<phase> UPGRADES/`)
 - [ ] Home scan remained in safe mode (`--home-scan-mode=safe` is the default argument)
+- [ ] `MAGIC_SURFACE_INDEX.json` exists and lists Tier 0 files for the run
 
 Collect `stdout`/`stderr` from each command and attach a QA summary that lists the commands run, the counts from the artifact check, and the Phase R outcome. Include the folder name and the missing glob list if the gate still fails.
