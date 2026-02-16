@@ -24,29 +24,29 @@ prelude: Genetic Ml Services Master History (explanation) for dopemux documentat
 The **Experimental Plane** of Dopemux contains advanced AI research services designed to push the boundaries of "Self-Healing Code" and "Predictive Risk Assessment". These services are less critical than the Core Plane but provide powerful advanced capabilities.
 
 **Evolutionary Phases:**
-* **Phase 1 (Vanilla)**: Iterative LLM repair loops (standard "AI coding agent").
-* **Phase 2 (Genetic)**: Introduction of **Genetic Programming (GP)** to evolve populations of code solutions, optimizing for multiple objectives (speed, size, memory) beyond just correctness.
-* **Phase 3 (ML Extraction)**: Separating the random-forest based Risk Assessment from the Task Orchestrator into a dedicated ML service.
+*   **Phase 1 (Vanilla)**: Iterative LLM repair loops (standard "AI coding agent").
+*   **Phase 2 (Genetic)**: Introduction of **Genetic Programming (GP)** to evolve populations of code solutions, optimizing for multiple objectives (speed, size, memory) beyond just correctness.
+*   **Phase 3 (ML Extraction)**: Separating the random-forest based Risk Assessment from the Task Orchestrator into a dedicated ML service.
 
 ---
 
 ## 2. Feature Catalog (Exhaustive)
 
 ### 🧬 Genetic Agent (Hybrid LLM + GP)
-* **Population Evolution**: Generates 15+ solution variants.
-* **Genetic Operators**: Uses Crossover (mixing two solutions) and Mutation (random changes) to explore the search space.
-* **Fitness Function**: Scores code based on `0.4*Success + 0.3*Size + 0.3*Quality`.
-* **Use Case**: Complex optimization (e.g., "Make this function 50% faster") or deep bug repair.
+*   **Population Evolution**: Generates 15+ solution variants.
+*   **Genetic Operators**: Uses Crossover (mixing two solutions) and Mutation (random changes) to explore the search space.
+*   **Fitness Function**: Scores code based on `0.4*Success + 0.3*Size + 0.3*Quality`.
+*   **Use Case**: Complex optimization (e.g., "Make this function 50% faster") or deep bug repair.
 
 ### 🤖 Vanilla Agent (Baseline)
-* **Iterative Repair**: Fast, feedback-based repair loop using compiler/test errors.
-* **Bluesky Mode**: Ideation -> Design -> Implementation pipeline.
-* **Status**: Active, used for quick fixes.
+*   **Iterative Repair**: Fast, feedback-based repair loop using compiler/test errors.
+*   **Bluesky Mode**: Ideation -> Design -> Implementation pipeline.
+*   **Status**: Active, used for quick fixes.
 
 ### 🔮 ML Risk Assessment
-* **Predictive Risk**: Scores tasks 0.0-1.0 on failure probability.
-* **ADHD Patterns**: Detects "Hyperfocus Burnout" and "Cognitive Overload" risks.
-* **Status**: Extracted standalone Python module (services/ml-risk-assessment).
+*   **Predictive Risk**: Scores tasks 0.0-1.0 on failure probability.
+*   **ADHD Patterns**: Detects "Hyperfocus Burnout" and "Cognitive Overload" risks.
+*   **Status**: Extracted standalone Python module (services/ml-risk-assessment).
 
 ---
 
@@ -71,12 +71,12 @@ The **Experimental Plane** of Dopemux contains advanced AI research services des
 ## 4. Validated Status (Audit Results)
 
 **🧪 Experimental / Research:**
-* **Genetic Agent**: Functional but heavy. Contains "Technical Debt" (nested directories `genetic_agent/genetic_agent/...`).
-* **ML Risk**: Extracted code is safe and operational as a library, but lacks a full HTTP API wrapper (planned for future).
+*   **Genetic Agent**: Functional but heavy. Contains "Technical Debt" (nested directories `genetic_agent/genetic_agent/...`).
+*   **ML Risk**: Extracted code is safe and operational as a library, but lacks a full HTTP API wrapper (planned for future).
 
 **Performance**:
-* **Vanilla**: 5-15s response.
-* **Genetic**: 30-120s response (computationally expensive).
+*   **Vanilla**: 5-15s response.
+*   **Genetic**: 30-120s response (computationally expensive).
 
 ---
 
