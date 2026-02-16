@@ -11,6 +11,91 @@ from unittest.mock import patch
 
 import pytest
 
+# Provide a lightweight pydantic stub when the library is unavailable.
+try:
+    import pydantic
+except ImportError:
+    import types
+    pydantic_stub = types.ModuleType("pydantic")
+
+    class MockBaseModel:
+        def __init__(self, **kwargs):
+            for k, v in kwargs.items():
+                setattr(self, k, v)
+
+        @classmethod
+        def model_validate(cls, obj):
+            return cls(**obj)
+
+        def model_dump(self):
+            return self.__dict__
+
+    def mock_field(*args, **kwargs):
+        return None
+
+    def mock_validator(*args, **kwargs):
+        def decorator(f):
+            return f
+        return decorator
+
+    pydantic_stub.BaseModel = MockBaseModel
+    pydantic_stub.Field = mock_field
+    pydantic_stub.field_validator = mock_validator
+    pydantic_stub.model_validator = mock_validator
+    pydantic_stub.ValidationError = Exception
+    pydantic_stub.ConfigDict = dict
+
+    sys.modules["pydantic"] = pydantic_stub
+
+# Provide a lightweight yaml stub when the library is unavailable.
+try:
+    import yaml
+except ImportError:
+    import types
+    yaml_stub = types.ModuleType("yaml")
+
+    def safe_load(stream):
+        return {}
+
+    yaml_stub.safe_load = safe_load
+    yaml_stub.YAMLError = Exception
+
+    sys.modules["yaml"] = yaml_stub
+
+# Provide a lightweight rich stub when the library is unavailable.
+try:
+    import rich
+except ImportError:
+    import types
+    rich_stub = types.ModuleType("rich")
+    rich_console_stub = types.ModuleType("rich.console")
+
+    class MockConsole:
+        def __init__(self, *args, **kwargs): pass
+        def print(self, *args, **kwargs): pass
+        def status(self, *args, **kwargs):
+             class Status:
+                 def __enter__(self): return self
+                 def __exit__(self, *args): pass
+             return Status()
+
+    rich_console_stub.Console = MockConsole
+    sys.modules["rich"] = rich_stub
+    sys.modules["rich.console"] = rich_console_stub
+
+# Provide a lightweight toml stub when the library is unavailable.
+try:
+    import toml
+except ImportError:
+    import types
+    toml_stub = types.ModuleType("toml")
+
+    def load(f):
+        return {}
+
+    toml_stub.load = load
+    sys.modules["toml"] = toml_stub
+
 # Provide a lightweight aiohttp stub when the library is unavailable.
 from dopemux.adhd.attention_monitor import AttentionMonitor
 from dopemux.adhd.context_manager import ContextManager
