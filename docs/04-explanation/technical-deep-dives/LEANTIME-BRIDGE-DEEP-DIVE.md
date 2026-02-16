@@ -29,19 +29,19 @@ The service is a Python-based MCP server using `Starlette` and `Uvicorn`, implem
 
 **Core Modules**:
 1. **`http_server.py`**: The main entry point. Implements the MCP server, tool registration, and the `Starlette` app. It handles:
-  * **SSE Transport**: `/sse` and `/messages/` for standard MCP clients.
-  * **REST Compatibility**: `/api/tools/{tool_name}` for legacy/simple clients.
-  * **Health & Info**: `/health` (deep/shallow) and `/info` (discovery).
+* **SSE Transport**: `/sse` and `/messages/` for standard MCP clients.
+* **REST Compatibility**: `/api/tools/{tool_name}` for legacy/simple clients.
+* **Health & Info**: `/health` (deep/shallow) and `/info` (discovery).
 1. **`LeantimeClient`**: A wrapper around `httpx` that handles the specific JSON-RPC format of Leantime, including authentication tokens and error parsing.
 1. **Method Fallback Architecture**: The bridge implements a sophisticated "method candidate" system (e.g., trying `leantime.rpc.Projects.addProject`, then `leantime.addProject`) to remain robust across different Leantime API versions.
 
 ### Integration Patterns & Data Flow
 1. **Task Orchestrator Integration**:
-  * Orchestrator calls the bridge to create tasks, update statuses, and log work.
-  * **Data Flow**: `Orchestrator -> Bridge (MCP) -> Leantime (JSON-RPC)`.
+* Orchestrator calls the bridge to create tasks, update statuses, and log work.
+* **Data Flow**: `Orchestrator -> Bridge (MCP) -> Leantime (JSON-RPC)`.
 1. **Health & Readiness**:
-  * Implements a "Deep Health" check (`/health?deep=1`) that actively probes the upstream Leantime instance.
-  * Capable of detecting "Setup Required" states (redirects to `/install`) and reporting them as structured health degradation (`503 Needs Setup`).
+* Implements a "Deep Health" check (`/health?deep=1`) that actively probes the upstream Leantime instance.
+* Capable of detecting "Setup Required" states (redirects to `/install`) and reporting them as structured health degradation (`503 Needs Setup`).
 
 ### Testing, Performance, Limitations & Opportunities
 * **Testing**: Comprehensive contract tests (`test_contract_api_tools.py`) verify API interactions, error handling, and method fallbacks.
