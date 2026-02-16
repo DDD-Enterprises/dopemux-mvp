@@ -135,7 +135,7 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 **Classification (derived from compose.yml evidence)**:
 
 | Server | Port | Classification | Rationale |
-|--------|------|----------------|-----------|
+|---|---|---|---|---|---
 | postgres (AGE) | 5432 | REQUIRED | Backing store for ConPort, LiteLLM. Everything depends on it. |
 | redis-events | 6379 | REQUIRED | EventBus streaming. DopeconBridge depends on it (healthy). |
 | redis-primary | — | REQUIRED | Caching. ConPort, task-orchestrator, adhd-engine depend on it (healthy). |
@@ -284,7 +284,7 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 ## Contradiction analysis
 
 | Claim | Source | Status |
-|-------|--------|--------|
+|---|---|---|---|
 | ConPort uses `|| exit 0` healthcheck | compose.yml line 254 | CONFIRMED — masks failures |
 | PAL healthcheck is `exit 0` | compose.yml line 277 | CONFIRMED — never actually checks health |
 | Dope-context uses `|| exit 0` | compose.yml line 334 | CONFIRMED — masks failures |

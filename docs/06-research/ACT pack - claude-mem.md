@@ -73,10 +73,10 @@ Run `npm audit` for details.
 📋 Building React viewer...
 Building React viewer...
 ✓ React viewer built successfully
-  * plugin/ui/viewer-bundle.js
-  * plugin/ui/viewer.html (from viewer-template.html)
-  * plugin/ui/assets/fonts/* (font files)
-  * plugin/ui/icon-thick-*.svg (4 icon files)
+* plugin/ui/viewer-bundle.js
+* plugin/ui/viewer.html (from viewer-template.html)
+* plugin/ui/assets/fonts/* (font files)
+* plugin/ui/icon-thick-*.svg (4 icon files)
 
 🔧 Building worker service...
 ✓ worker-service built (1722.09 KB)
@@ -89,9 +89,9 @@ Building React viewer...
 
 ✅ Worker service, MCP server, and context generator built successfully!
    Output: plugin/scripts/
-   * Worker: worker-service.cjs
-   * MCP Server: mcp-server.cjs
-   * Context Generator: context-generator.cjs
+* Worker: worker-service.cjs
+* MCP Server: mcp-server.cjs
+* Context Generator: context-generator.cjs
 
 > claude-mem@9.0.17 worker:start
 > bun plugin/scripts/worker-service.cjs start

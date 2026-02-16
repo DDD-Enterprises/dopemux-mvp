@@ -1,3 +1,15 @@
+---
+id: 11_UNKNOWNs_AND_REQUIRED_EVIDENCE
+title: 11 Unknowns And Required Evidence
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 11 Unknowns And Required Evidence (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 11 UNKNOWNs And Required Evidence
 
 Only UNKNOWNs that can block a no-guess Master Contract are listed.
