@@ -285,9 +285,9 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 
 | Claim | Source | Status |
 |-------|--------|--------|
-| ConPort uses `|| exit 0` healthcheck | compose.yml line 254 | CONFIRMED — masks failures |
+| ConPort uses `\|\| exit 0` healthcheck | compose.yml line 254 | CONFIRMED — masks failures |
 | PAL healthcheck is `exit 0` | compose.yml line 277 | CONFIRMED — never actually checks health |
-| Dope-context uses `|| exit 0` | compose.yml line 334 | CONFIRMED — masks failures |
+| Dope-context uses `\|\| exit 0` | compose.yml line 334 | CONFIRMED — masks failures |
 | Task-orchestrator has real health | compose.yml line 406 | CONFIRMED — `curl -f` without fallback |
 | DopeconBridge has real health | compose.yml line 372 | CONFIRMED — `curl -f` without fallback |
 | `config/mcp_servers.yaml` exists | Earlier doc version | NOT FOUND — file does not exist in repo |
