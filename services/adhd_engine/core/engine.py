@@ -1627,6 +1627,9 @@ Format: {{
             session_start_str = await self.redis_client.get(f"adhd:session_start:{user_id}")
             if session_start_str:
                 session_start = datetime.fromisoformat(session_start_str)
+                # Ensure session_start is timezone-aware (assume stored times are in UTC if naive)
+                if session_start.tzinfo is None:
+                    session_start = session_start.replace(tzinfo=timezone.utc)
                 delta = datetime.now(timezone.utc) - session_start
                 return int(delta.total_seconds() / 60)
 
