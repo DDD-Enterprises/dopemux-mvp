@@ -75,34 +75,44 @@ When running the v3 extraction runner (`UPGRADES/run_extraction_v3.py`), follow 
 
 1. `python UPGRADES/run_extraction_v3.py --phase A --resume`
 2. `python UPGRADES/run_extraction_v3.py --phase H --resume`
-3. `python UPGRADES/run_extraction_v3.py --phase D --resume`
-4. `python UPGRADES/run_extraction_v3.py --phase C --resume`
-5. Once norms exist for A/H/D/C, run `python UPGRADES/run_extraction_v3.py --phase R --dry-run` to verify the gate passes before moving downstream.
+3. `python UPGRADES/run_extraction_v3.py --phase M --resume`
+4. `python UPGRADES/run_extraction_v3.py --phase D --resume`
+5. `python UPGRADES/run_extraction_v3.py --phase E --resume`
+6. `python UPGRADES/run_extraction_v3.py --phase C --resume`
+7. For the arbitration gate:
+   - Base gate: `python UPGRADES/run_extraction_v3.py --phase R --dry-run --r-profile base`
+   - Full gate: `python UPGRADES/run_extraction_v3.py --phase R --dry-run --r-profile full`
 
 ### Default Phase Order (when running `--phase ALL`)
 1. `A` – Repo Control Plane
 2. `H` – Home Control Plane
-3. `D` – Docs Pipeline
-4. `C` – Code Surfaces
+3. `M` – Runtime Exports Plane
+4. `D` – Docs Pipeline
 5. `E` – Execution Plane
-6. `W` – Workflow Plane
-7. `B` – Boundary Plane
-8. `G` – Governance Plane
-9. `Q` – Pipeline Doctor
-10. `R` – Arbitration
-11. `X` – Feature Index
-12. `T` – Task Packets
-13. `Z` – Handoff Freeze
+6. `C` – Code Surfaces
+7. `W` – Workflow Plane
+8. `B` – Boundary Plane
+9. `G` – Governance Plane
+10. `Q` – Pipeline Doctor
+11. `R` – Arbitration
+12. `X` – Feature Index
+13. `T` – Task Packets
+14. `Z` – Handoff Freeze
 
 ## 6. Guardrails
 
 - Prompt files must match `UPGRADES/PROMPT_{phase}{step}_*.md` and no duplicate step IDs are allowed (duplicates fail closed).
-- Phase R fails closed unless the following norm directories contain at least one JSON:
+- Phase R supports two deterministic profiles:
+  - `--r-profile base` requires A/H/D/C norm artifacts.
+  - `--r-profile full` requires A/H/D/C norm artifacts plus M runtime-export norm artifacts.
+- Phase R fails closed unless required norm directories contain at least one JSON:
   - `extraction/runs/<run_id>/A_repo_control_plane/norm`
   - `extraction/runs/<run_id>/H_home_control_plane/norm`
+  - `extraction/runs/<run_id>/M_runtime_exports/norm` (full profile only)
   - `extraction/runs/<run_id>/D_docs_pipeline/norm`
   - `extraction/runs/<run_id>/C_code_surfaces/norm`
 - Phase R only ingests norm artifacts—no raw rescans or unsanctioned directories.
+- Every phase writes `qa/PHASE_<phase>_MANIFEST.json` with prompts executed, inputs, outputs, caps, redaction policy, and resume metadata.
 - When troubleshooting empty `norm/` buckets, check:
   - Raw outputs in `extraction/runs/<run_id>/<phase>/raw` to see if normalization steps failed.
-  - Presence of merge/normalize prompts (`A9`, `H9`, `D4`, `C9`) in `UPGRADES/` to ensure the final steps exist.
+  - Presence of merge/normalize prompts (`A9`, `H9`, `D4`, `C9`) and runtime prompts (`M0..M6`) in `UPGRADES/`.
