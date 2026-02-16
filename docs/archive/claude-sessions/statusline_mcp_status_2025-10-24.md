@@ -61,11 +61,11 @@ dopemux-mvp main | ✅ Focus [2h] | 📚🧠🔬📊🔎🖥️ | 💤 215K/1000
 These are the **core MCP servers** for ADHD-optimized development:
 
 1. **PAL apilookup 📚** - Official documentation lookup (prevents guessing APIs)
-2. **Zen 🧠** - Multi-model reasoning (thinkdeep, consensus, debug, planner)
-3. **Serena 🔬** - Code intelligence (LSP navigation, complexity scoring)
-4. **DDG-MCP 📊** - Decision graph queries (related decisions, instance diff, cross-workspace)
-5. **Dope-Context 🔎** - Semantic code/docs search (AST-aware, ADHD-optimized)
-6. **Desktop-Commander 🖥️** - Context switch recovery (ADHD critical)
+1. **Zen 🧠** - Multi-model reasoning (thinkdeep, consensus, debug, planner)
+1. **Serena 🔬** - Code intelligence (LSP navigation, complexity scoring)
+1. **DDG-MCP 📊** - Decision graph queries (related decisions, instance diff, cross-workspace)
+1. **Dope-Context 🔎** - Semantic code/docs search (AST-aware, ADHD-optimized)
+1. **Desktop-Commander 🖥️** - Context switch recovery (ADHD critical)
 
 **Not shown** (managed differently):
 - ConPort - Has dedicated ✅/⚠️ indicator (already in statusline)

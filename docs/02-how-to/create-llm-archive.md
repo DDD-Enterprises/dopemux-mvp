@@ -93,22 +93,22 @@ The script automatically filters out:
 Each archive includes:
 
 1. **ARCHIVE_MANIFEST.txt** - Complete manifest with:
-   - File listing (all 3,000+ files)
-   - Directory tree visualization
-   - Size analysis by category
-   - Archive metadata (commit hash, branch, timestamp)
-   - Usage instructions and LLM analysis suggestions
+- File listing (all 3,000+ files)
+- Directory tree visualization
+- Size analysis by category
+- Archive metadata (commit hash, branch, timestamp)
+- Usage instructions and LLM analysis suggestions
 
-2. **All source and documentation files** - Everything needed for comprehensive code review
+1. **All source and documentation files** - Everything needed for comprehensive code review
 
 ## Using with ChatGPT
 
 ### Upload Process
 
 1. Open ChatGPT (web or desktop app)
-2. Click the attachment/paperclip icon
-3. Select your `dopemux-mvp-llm-*.zip` file
-4. Wait for upload to complete (~30 seconds for 40MB)
+1. Click the attachment/paperclip icon
+1. Select your `dopemux-mvp-llm-*.zip` file
+1. Wait for upload to complete (~30 seconds for 40MB)
 
 ### Example Prompts
 
@@ -116,9 +116,9 @@ Each archive includes:
 ```
 I've uploaded the dopemux-mvp codebase. Please:
 1. Review for common security vulnerabilities
-2. Check for exposed secrets or credentials
-3. Analyze authentication/authorization patterns
-4. Review input validation and sanitization
+1. Check for exposed secrets or credentials
+1. Analyze authentication/authorization patterns
+1. Review input validation and sanitization
 ```
 
 **Architecture Review**:
@@ -227,30 +227,30 @@ Create specialized archives for different purposes:
 
 If the archive exceeds 100 MB:
 1. Check for large log files that weren't excluded
-2. Verify no large binaries are included
-3. Review the exclude patterns in the script
+1. Verify no large binaries are included
+1. Review the exclude patterns in the script
 
 ### Missing Files
 
 If expected files are missing:
 1. Check if files are in `.gitignore` (script uses `git ls-files`)
-2. Review exclude patterns in script
-3. Verify files are committed to git
+1. Review exclude patterns in script
+1. Verify files are committed to git
 
 ### Upload Fails
 
 If ChatGPT rejects the upload:
 1. Verify file size is under 512 MB
-2. Try uploading via web interface instead of desktop app
-3. Extract and re-zip if corruption suspected
+1. Try uploading via web interface instead of desktop app
+1. Extract and re-zip if corruption suspected
 
 ## Best Practices
 
 1. **Create fresh archives** before each major review session
-2. **Include commit hash** in prompts for traceability
-3. **Be specific** in your review requests
-4. **Ask follow-up questions** to drill into findings
-5. **Document findings** from LLM reviews in ConPort or issues
+1. **Include commit hash** in prompts for traceability
+1. **Be specific** in your review requests
+1. **Ask follow-up questions** to drill into findings
+1. **Document findings** from LLM reviews in ConPort or issues
 
 ## Automation
 

@@ -30,7 +30,7 @@ python scripts/export_conport_sqlite_snapshot.py
 ## Databases Exported
 
 1. `context_portal/context.db` (5.0 MB)
-2. `.dopemux/context.db` (32 KB)
+1. `.dopemux/context.db` (32 KB)
 
 ## Extracted Row Totals
 

@@ -95,8 +95,8 @@ tests/embeddings/integration/test_embedding_system_integration.py:14: in <module
 
 **Fix Options**:
 1. Fix dopemux-mvp dataclass issues (different workspace)
-2. Make code-audit self-contained
-3. Document as known limitation
+1. Make code-audit self-contained
+1. Document as known limitation
 
 ---
 
@@ -184,17 +184,17 @@ TypeError: non-default argument 'processing_time_ms' follows default argument
 
 **Fix Import Issues**:
 1. Resolve ../dopemux-mvp/ dependency
-   - Option A: Fix dataclass in parent workspace
-   - Option B: Make code-audit self-contained
-   - Option C: Document as known limitation
+- Option A: Fix dataclass in parent workspace
+- Option B: Make code-audit self-contained
+- Option C: Document as known limitation
 
-2. Consolidate pytest configuration (30 min)
-   - Choose pytest.ini OR pyproject.toml (not both)
-   - Ensure markers properly registered
+1. Consolidate pytest configuration (30 min)
+- Choose pytest.ini OR pyproject.toml (not both)
+- Ensure markers properly registered
 
-3. Validate tests run (1h)
-   - Run full suite after fixes
-   - Document any remaining failures
+1. Validate tests run (1h)
+- Run full suite after fixes
+- Document any remaining failures
 
 ---
 
@@ -202,9 +202,9 @@ TypeError: non-default argument 'processing_time_ms' follows default argument
 
 **Service Test Coverage**:
 1. Add tests for security fixes (ConPort KG) - ✅ DONE
-2. Add tests for URL encoding (ConPort UI) - Pending
-3. Validate existing service tests run
-4. Document test coverage gaps
+1. Add tests for URL encoding (ConPort UI) - Pending
+1. Validate existing service tests run
+1. Document test coverage gaps
 
 ---
 

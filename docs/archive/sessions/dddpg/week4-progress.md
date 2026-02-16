@@ -26,28 +26,28 @@ prelude: Week4 Progress (explanation) for dopemux documentation and developer wo
 ### Deliverables
 
 1. **Deep Architecture Analysis** (`WEEK4_DAY1_DEEP_ANALYSIS.md`)
-   - 5 critical decisions documented
-   - Dependency injection pattern chosen
-   - Graceful degradation strategy
-   - Parameterized queries (security)
-   - Per-instance AGE client approach
+- 5 critical decisions documented
+- Dependency injection pattern chosen
+- Graceful degradation strategy
+- Parameterized queries (security)
+- Per-instance AGE client approach
 
-2. **DDDPGKG Implementation** (`kg_integration.py` - 378 lines)
-   - Task relationship queries (dependencies, blockers, related)
-   - Semantic search (keyword matching)
-   - Graceful degradation (ADHD-friendly)
-   - Parameterized queries (prevents SQL injection)
-   - Connection pooling support
-   - Comprehensive error handling
+1. **DDDPGKG Implementation** (`kg_integration.py` - 378 lines)
+- Task relationship queries (dependencies, blockers, related)
+- Semantic search (keyword matching)
+- Graceful degradation (ADHD-friendly)
+- Parameterized queries (prevents SQL injection)
+- Connection pooling support
+- Comprehensive error handling
 
-3. **Test Suite** (`test_kg_integration.py` - 295 lines)
-   - 19/19 tests passing (100%)
-   - Initialization tests (3)
-   - Task relationship tests (4)
-   - Semantic search tests (5)
-   - Helper method tests (4)
-   - Graceful degradation tests (2)
-   - Security tests (1)
+1. **Test Suite** (`test_kg_integration.py` - 295 lines)
+- 19/19 tests passing (100%)
+- Initialization tests (3)
+- Task relationship tests (4)
+- Semantic search tests (5)
+- Helper method tests (4)
+- Graceful degradation tests (2)
+- Security tests (1)
 
 ### Architecture Highlights
 
@@ -108,9 +108,9 @@ kg = DDDPGKG("/test", age_client=mock_client)
 
 **Tasks** (est. 95 min):
 1. Phase 1: Decision-Task Linking (15 min)
-2. Phase 2: Relationship Mapper (25 min)
-3. Phase 3: Suggestion Engine (35 min)
-4. Phase 4: QueryService Integration (20 min)
+1. Phase 2: Relationship Mapper (25 min)
+1. Phase 3: Suggestion Engine (35 min)
+1. Phase 4: QueryService Integration (20 min)
 
 **Deliverables Prepared**:
 - ✅ MODERNIZATION_ANALYSIS_2025.md - Complete modernization analysis (NEW!)

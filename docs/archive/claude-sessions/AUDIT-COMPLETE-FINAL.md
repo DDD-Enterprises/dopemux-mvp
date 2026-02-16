@@ -117,17 +117,17 @@ async def save_custom_data(...):
 
 **Production-Ready** (8/12):
 1. ✅ Dope-Context - Semantic search (chunking bug FIXED!)
-2. ✅ ADHD Engine - 7 endpoints, 6 monitors (NOW SECURED!)
-3. ✅ Serena v2 - LSP navigation (credentials secured)
-4. ✅ ConPort KG UI - React terminal UI (clean code)
-5. ✅ GPT-Researcher - Research orchestration (1 TODO only!)
-6. ✅ ML Risk Assessment - Predictive blockers (high value)
-7. ✅ Orchestrator - Multi-AI coordination (MVP complete)
-8. ✅ Taskmaster - PRD parsing (clean wrapper)
+1. ✅ ADHD Engine - 7 endpoints, 6 monitors (NOW SECURED!)
+1. ✅ Serena v2 - LSP navigation (credentials secured)
+1. ✅ ConPort KG UI - React terminal UI (clean code)
+1. ✅ GPT-Researcher - Research orchestration (1 TODO only!)
+1. ✅ ML Risk Assessment - Predictive blockers (high value)
+1. ✅ Orchestrator - Multi-AI coordination (MVP complete)
+1. ✅ Taskmaster - PRD parsing (clean wrapper)
 
 **Needs Week 7 Work** (2/12):
-9. ⚠️ DopeconBridge - 80% done (stubs)
-10. ⚠️ ConPort Orchestrator - Bridge TODOs
+1. ⚠️ DopeconBridge - 80% done (stubs)
+1. ⚠️ ConPort Orchestrator - Bridge TODOs
 
 **Legacy/Unknown** (2/12):
 11-12. Claude-Context, misc

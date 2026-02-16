@@ -362,11 +362,11 @@ async def test_rate_limit_enforcement(client):
 
 ### Security Incident Process
 1. **Detection**: Automated monitoring alerts security team
-2. **Assessment**: Determine scope and impact of incident
-3. **Containment**: Isolate affected systems and stop attack
-4. **Eradication**: Remove root cause and backdoors
-5. **Recovery**: Restore systems and validate security
-6. **Lessons Learned**: Update security measures and documentation
+1. **Assessment**: Determine scope and impact of incident
+1. **Containment**: Isolate affected systems and stop attack
+1. **Eradication**: Remove root cause and backdoors
+1. **Recovery**: Restore systems and validate security
+1. **Lessons Learned**: Update security measures and documentation
 
 ### Automated Response
 ```python

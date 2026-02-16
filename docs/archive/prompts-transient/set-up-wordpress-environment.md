@@ -55,10 +55,10 @@ I work in phases with clear confirmation points:
 
 ### Phase-Based Approach
 1. **Requirements Phase**: Understand your WordPress development needs
-2. **Core Setup Phase**: Get basic WordPress + database running
-3. **Enhancement Phase**: Add requested development tools (only what you need)
-4. **Verification Phase**: Test everything works correctly
-5. **Documentation Phase**: Provide usage instructions and next steps
+1. **Core Setup Phase**: Get basic WordPress + database running
+1. **Enhancement Phase**: Add requested development tools (only what you need)
+1. **Verification Phase**: Test everything works correctly
+1. **Documentation Phase**: Provide usage instructions and next steps
 
 **Approval Checkpoint**: I'll show you the basic setup first and confirm what additional tools you want before adding complexity.
 
@@ -73,26 +73,26 @@ I use Desktop Commander for performing this setup.
 To begin, please provide:
 
 1. **Development Type**:
-   - Just need WordPress running locally?
-   - Theme development (CSS/JS customization)?
-   - Plugin development (PHP coding)?
-   - Full-stack development (themes + plugins + database work)?
+- Just need WordPress running locally?
+- Theme development (CSS/JS customization)?
+- Plugin development (PHP coding)?
+- Full-stack development (themes + plugins + database work)?
 
-2. **Brief Context**:
-   - What's the purpose of this WordPress site/development?
-   - Are you a beginner or experienced with WordPress?
-   - Any specific WordPress features you need (multisite, e-commerce, etc.)?
-   - Do you prefer simple setup or don't mind complexity?
+1. **Brief Context**:
+- What's the purpose of this WordPress site/development?
+- Are you a beginner or experienced with WordPress?
+- Any specific WordPress features you need (multisite, e-commerce, etc.)?
+- Do you prefer simple setup or don't mind complexity?
 
-3. **Setup Scope Options**:
-   - **Minimal**: Just WordPress + database running
-   - **Standard**: + database management tool (phpMyAdmin)
-   - **Developer**: + Node.js build tools for theme/plugin development
-   - **Complete**: Full development environment with sample code
+1. **Setup Scope Options**:
+- **Minimal**: Just WordPress + database running
+- **Standard**: + database management tool (phpMyAdmin)
+- **Developer**: + Node.js build tools for theme/plugin development
+- **Complete**: Full development environment with sample code
 
-4. **System Preferences**:
-   - Prefer Docker (isolated, consistent) or direct installation?
-   - Any specific WordPress version requirements?
-   - Custom ports needed or default (8080 for WordPress) fine?
+1. **System Preferences**:
+- Prefer Docker (isolated, consistent) or direct installation?
+- Any specific WordPress version requirements?
+- Custom ports needed or default (8080 for WordPress) fine?
 
 **I'll start with the minimal viable setup and only add complexity you specifically request.**

@@ -63,24 +63,24 @@ Flow: Select process → Press 'F9' → Action menu modal
 #### ADHD-Optimized Modal Design Principles
 
 1. **Instant Context Recognition**
-   - Clear title: "Task #42 Details" not just "Details"
-   - Visual distinction from main view (different border/color)
-   - Show breadcrumb: "ADHD Panel → Task Details"
+- Clear title: "Task #42 Details" not just "Details"
+- Visual distinction from main view (different border/color)
+- Show breadcrumb: "ADHD Panel → Task Details"
 
-2. **Progressive Disclosure**
-   - Most important info at top
-   - Collapsible sections for deep details
-   - Visual hierarchy (color-coded sections)
+1. **Progressive Disclosure**
+- Most important info at top
+- Collapsible sections for deep details
+- Visual hierarchy (color-coded sections)
 
-3. **Zero Friction Exit**
-   - Multiple exit keys: Esc, q, Ctrl+C
-   - Always show "[Esc] Close" in footer
-   - Auto-close on selection (if appropriate)
+1. **Zero Friction Exit**
+- Multiple exit keys: Esc, q, Ctrl+C
+- Always show "[Esc] Close" in footer
+- Auto-close on selection (if appropriate)
 
-4. **Maintain Context**
-   - Don't lose place in parent view
-   - Show "preview" without full drill-down (optional)
-   - Breadcrumb trail for nested drills
+1. **Maintain Context**
+- Don't lose place in parent view
+- Show "preview" without full drill-down (optional)
+- Breadcrumb trail for nested drills
 
 ---
 
@@ -724,10 +724,10 @@ Before marking Day 4 complete:
 
 After completing drill-downs:
 1. **Advanced Layouts:** Grid system with custom panel sizing
-2. **Real-time Streaming:** WebSocket integration for instant updates
-3. **Export Functions:** CSV/JSON export of metrics and logs
-4. **Keyboard Help:** Press `?` for full command reference
-5. **Theme Switcher:** Multiple color schemes
+1. **Real-time Streaming:** WebSocket integration for instant updates
+1. **Export Functions:** CSV/JSON export of metrics and logs
+1. **Keyboard Help:** Press `?` for full command reference
+1. **Theme Switcher:** Multiple color schemes
 
 ---
 

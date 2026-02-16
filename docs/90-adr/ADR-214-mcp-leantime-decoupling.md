@@ -116,31 +116,31 @@ Modified `start-all-mcp-servers.sh`:
 
 ### Negative
 - ⚠️ **Documentation burden**: Must explain standalone vs linked modes
-  - *Mitigation*: Comprehensive README with examples created
+- *Mitigation*: Comprehensive README with examples created
 
 ## Implementation
 
 ### Files Modified
 1. **`docker/mcp-servers/docker-compose.yml`** (standalone)
-   - Removed: `leantime-net` network definition
-   - Removed: `leantime-bridge` service (37 lines)
-   - Removed: `mcp_leantime_bridge_data` and `mcp_leantime_bridge_logs` volumes
+- Removed: `leantime-net` network definition
+- Removed: `leantime-bridge` service (37 lines)
+- Removed: `mcp_leantime_bridge_data` and `mcp_leantime_bridge_logs` volumes
 
-2. **`docker/mcp-servers/docker-compose.leantime.yml`** (NEW - overlay)
-   - Added: Complete `leantime-bridge` service definition
-   - Added: `leantime-net` external network
-   - Added: Bridge service volumes
+1. **`docker/mcp-servers/docker-compose.leantime.yml`** (NEW - overlay)
+- Added: Complete `leantime-bridge` service definition
+- Added: `leantime-net` external network
+- Added: Bridge service volumes
 
-3. **`docker/mcp-servers/start-all-mcp-servers.sh`**
-   - Line 140: Conditional `leantime-net` creation
-   - Line 89: Conditional `leantime-bridge/.env` placeholder
-   - Line 356-360: Conditional bridge startup
+1. **`docker/mcp-servers/start-all-mcp-servers.sh`**
+- Line 140: Conditional `leantime-net` creation
+- Line 89: Conditional `leantime-bridge/.env` placeholder
+- Line 356-360: Conditional bridge startup
 
-4. **`docker/mcp-servers/README.md`** (NEW)
-   - Complete documentation of standalone vs linked usage
-   - Service reference table (14 services including optional bridge)
-   - Troubleshooting guide
-   - Preflight checks for linked mode
+1. **`docker/mcp-servers/README.md`** (NEW)
+- Complete documentation of standalone vs linked usage
+- Service reference table (14 services including optional bridge)
+- Troubleshooting guide
+- Preflight checks for linked mode
 
 ### Validation
 - ✅ Standalone boot: 12 services running (exit code 0)
@@ -156,7 +156,7 @@ Modified `start-all-mcp-servers.sh`:
 leantime-bridge:
   profiles: [leantime]
   networks:
-    - leantime-net  # Still external in top-level networks
+- leantime-net  # Still external in top-level networks
 ```
 **Rejected**: Docker still validates top-level external networks regardless of profiles. Blast radius remains 100%.
 

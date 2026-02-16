@@ -87,14 +87,14 @@ dopemux start
     ↓
 1. Detect running instances (health probe ports)
     ↓
-2. Load persisted instance states from ConPort
+1. Load persisted instance states from ConPort
     ↓
-3. Find orphaned instances:
-   - Worktree exists on disk
-   - State shows "active" or "orphaned"
-   - But health probe failed (no running services)
+1. Find orphaned instances:
+- Worktree exists on disk
+- State shows "active" or "orphaned"
+- But health probe failed (no running services)
     ↓
-4. Present options to user:
+1. Present options to user:
    a) Resume orphaned instance
    b) Start new instance
    c) Cleanup orphaned instance
@@ -125,9 +125,9 @@ Resume instance B? [Y/n]:
 📁 Worktree: worktrees/B (feature/auth)
 🔄 Restoring environment variables...
 🚀 Starting services...
-   - ConPort: port 3037 ✅
-   - Serena: port 3036 ✅
-   - Task-Master: port 3035 ✅
+- ConPort: port 3037 ✅
+- Serena: port 3036 ✅
+- Task-Master: port 3035 ✅
 
 ✅ Instance B resumed successfully!
 📍 You were working on: authentication (JWT middleware)
@@ -137,8 +137,8 @@ Resume instance B? [Y/n]:
 ```bash
 Options:
 1. Start new instance (C) on port 3060
-2. Cleanup orphaned instance B and start fresh
-3. Cancel
+1. Cleanup orphaned instance B and start fresh
+1. Cancel
 
 Choice [1-3]:
 ```
@@ -210,19 +210,19 @@ class InstanceManager:
     def detect_orphaned_instances(self) -> List[OrphanedInstance]:
         """
         Find instances with:
-        1. Persisted state in ConPort
-        2. Worktree exists on disk
-        3. Health probe fails (no running services)
+1. Persisted state in ConPort
+1. Worktree exists on disk
+1. Health probe fails (no running services)
         """
 
     def resume_instance(self, instance_id: str) -> bool:
         """
         Resume orphaned instance:
-        1. Load state from ConPort
-        2. Verify worktree exists
-        3. Inject environment variables
-        4. Start services on saved port_base
-        5. Update state to 'active'
+1. Load state from ConPort
+1. Verify worktree exists
+1. Inject environment variables
+1. Start services on saved port_base
+1. Update state to 'active'
         """
 ```
 
@@ -256,9 +256,9 @@ def start(...):
 def handle_shutdown(signal, frame):
     """
     Catch Ctrl+C:
-    1. Mark instance as 'stopped' in ConPort
-    2. Save last_active timestamp
-    3. Clean shutdown of services
+1. Mark instance as 'stopped' in ConPort
+1. Save last_active timestamp
+1. Clean shutdown of services
     """
 
     instance_state.mark_instance_stopped(current_instance_id)

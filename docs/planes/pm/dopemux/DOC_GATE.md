@@ -54,11 +54,11 @@ Every doc must include:
 
 ### 5) UNKNOWN discipline
 - "UNKNOWN" may appear only under:
-  - "## FACT ANCHORS (Repo-derived)"
-  - "## Open questions"
+- "## FACT ANCHORS (Repo-derived)"
+- "## Open questions"
 - For every UNKNOWN token, Open questions must contain a bullet that describes:
-  - what is unknown
-  - how to resolve (file path or command to run)
+- what is unknown
+- how to resolve (file path or command to run)
 
 ### 6) Boundary enforcement (regex v0)
 Hard rule: TaskX must not be described as owning any of these responsibilities:
@@ -73,26 +73,26 @@ Exception: 07_TASKX_INTEGRATION.md may mention these only to explicitly deny own
 ### 7) FACT ANCHORS hygiene (v0)
 - FACT ANCHORS section must be non-empty in every doc
 - Each bullet should include at least one of:
-  - component name
-  - service directory
-  - config path
-  - env var
-  - CLI surface
-  - port/offset info
+- component name
+- service directory
+- config path
+- env var
+- CLI surface
+- port/offset info
 - Encourage `path:line-range` pointers when available (warning if absent, not hard fail in v0)
 
 ### 8) Open questions are actionable
 - Open questions section must be non-empty
 - Each open question should specify a resolution action:
-  - command to run, or file to inspect
+- command to run, or file to inspect
 
 ## Outputs
 - Human-readable report:
-  - PASS/FAIL
-  - Failed checks list
-  - File/heading that failed
+- PASS/FAIL
+- Failed checks list
+- File/heading that failed
 - Machine output (future):
-  - docs/planes/pm/dopemux/DOC_GATE_REPORT.json (canonical JSON)
+- docs/planes/pm/dopemux/DOC_GATE_REPORT.json (canonical JSON)
 
 ## Stop conditions
 - If presence or headings fail: stop immediately.

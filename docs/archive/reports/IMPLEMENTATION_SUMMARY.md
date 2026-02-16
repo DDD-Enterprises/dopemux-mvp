@@ -98,8 +98,8 @@ python tools/env_drift_scan.py --verbose  # Detailed
 
 **Violations detected**:
 1. **conport**: Missing HOST, PORT, LOG_LEVEL
-2. **dopecon-bridge**: Missing HOST, LOG_LEVEL
-3. **task-orchestrator**: Missing HOST, PORT, LOG_LEVEL + sys.path.insert violation
+1. **dopecon-bridge**: Missing HOST, LOG_LEVEL
+1. **task-orchestrator**: Missing HOST, PORT, LOG_LEVEL + sys.path.insert violation
 
 **Deliverables**:
 - ✅ `tools/env_drift_scan.py`
@@ -299,12 +299,12 @@ $ pytest tests/arch/test_service_env_contract.py -q --no-cov
 ## Commits
 
 1. **953d909f** - feat(g33): implement unified service env contract + drift scanner (Phases 0-3)
-   - 9 files added (2,403 lines)
-   - Contract definition, scanner tool, architecture tests, reports
+- 9 files added (2,403 lines)
+- Contract definition, scanner tool, architecture tests, reports
 
-2. **ae0eadcc** - feat(g33): Phase 4 - service fixes for env contract compliance
-   - 4 files modified (45 insertions, 63 deletions)
-   - Service updates, test path fix, validation passing
+1. **ae0eadcc** - feat(g33): Phase 4 - service fixes for env contract compliance
+- 4 files modified (45 insertions, 63 deletions)
+- Service updates, test path fix, validation passing
 
 ---
 
@@ -335,22 +335,22 @@ $ pytest tests/arch/test_service_env_contract.py -q --no-cov
    python tools/ports_health_audit.py --mode runtime
    ```
 
-2. **CI Integration** (recommended):
-   - Add `python tools/env_drift_scan.py` to CI pipeline
-   - Ensure arch tests run on PR builds
+1. **CI Integration** (recommended):
+- Add `python tools/env_drift_scan.py` to CI pipeline
+- Ensure arch tests run on PR builds
 
-3. **Documentation** (optional):
-   - Add env contract to service READMEs
-   - Update deployment docs with env var examples
+1. **Documentation** (optional):
+- Add env contract to service READMEs
+- Update deployment docs with env var examples
 
 ---
 
 ## Lessons Learned
 
 1. **Pre-existing Issues**: dopecon-bridge had syntax error unrelated to this work (line 1752)
-2. **Settings Class Removal**: conport's ConPortSettings didn't exist yet, simplified to env vars
-3. **Port Patterns**: dopecon-bridge uses PORT_BASE + offset pattern (now explicit with HOST)
-4. **Test Maintenance**: Doc paths changed during pre-commit (engineering → 04-explanation)
+1. **Settings Class Removal**: conport's ConPortSettings didn't exist yet, simplified to env vars
+1. **Port Patterns**: dopecon-bridge uses PORT_BASE + offset pattern (now explicit with HOST)
+1. **Test Maintenance**: Doc paths changed during pre-commit (engineering → 04-explanation)
 
 ---
 
@@ -422,16 +422,16 @@ Total Time: ~2 hours (estimation + implementation + validation)
    logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
    ```
 
-2. **Update entry point** to use config:
+1. **Update entry point** to use config:
    ```python
    from config import HOST, PORT
 
    uvicorn.run(app, host=HOST, port=PORT)
    ```
 
-3. **For task-orchestrator**: Remove line 32 `sys.path.insert(0, str(project_root))`
-   - Add parent to PYTHONPATH in Docker/compose instead
-   - Or use relative imports
+1. **For task-orchestrator**: Remove line 32 `sys.path.insert(0, str(project_root))`
+- Add parent to PYTHONPATH in Docker/compose instead
+- Or use relative imports
 
 **Estimated effort**: 15-30 minutes per service = ~1 hour total
 
@@ -440,5 +440,5 @@ Total Time: ~2 hours (estimation + implementation + validation)
 ## Questions for Implementer
 
 1. **Proceed with Phase 4 fixes?** (Yes/No/Modify)
-2. **Alternative approach?** (Document exceptions in registry instead)
-3. **Skip runtime validation?** (Phase 5 optional if confident in fixes)
+1. **Alternative approach?** (Document exceptions in registry instead)
+1. **Skip runtime validation?** (Phase 5 optional if confident in fixes)

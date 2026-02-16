@@ -90,11 +90,11 @@ services/serena/v2/
 
 **Heuristics**:
 1. 5+ files modified → +0.3 confidence
-2. 3+ directories → +0.25 confidence
-3. Architecture keywords → +0.35 confidence
-4. New service creation → +0.4 confidence
-5. Schema changes → +0.3 confidence
-6. API changes → +0.25 confidence
+1. 3+ directories → +0.25 confidence
+1. Architecture keywords → +0.35 confidence
+1. New service creation → +0.4 confidence
+1. Schema changes → +0.3 confidence
+1. API changes → +0.25 confidence
 
 ---
 
@@ -299,35 +299,35 @@ services/serena/v2/
 
 ### Immediate (Ready Now)
 1. **Manual Testing**
-   - Call `detect_untracked_work_enhanced` with test data
-   - Verify all 4 enhancements trigger correctly
-   - Check message formatting
+- Call `detect_untracked_work_enhanced` with test data
+- Verify all 4 enhancements trigger correctly
+- Check message formatting
 
-2. **ConPort Integration**
-   - Replace `conport_client=None` with real MCP client
-   - Test E1, E3, E4 with actual ConPort data
+1. **ConPort Integration**
+- Replace `conport_client=None` with real MCP client
+- Test E1, E3, E4 with actual ConPort data
 
 ### Short-Term (Next Session)
 1. **Automated Testing**
-   - Write unit tests for each module
-   - Create integration test suite
-   - Add performance benchmarks
+- Write unit tests for each module
+- Create integration test suite
+- Add performance benchmarks
 
-2. **Documentation**
-   - Add usage examples
-   - Create troubleshooting guide
-   - Update F001 main docs
+1. **Documentation**
+- Add usage examples
+- Create troubleshooting guide
+- Update F001 main docs
 
 ### Long-Term (Future Enhancement)
 1. **UI Integration**
-   - Terminal formatting for messages
-   - Interactive action selection
-   - Quick actions (Create ADR, Resume work)
+- Terminal formatting for messages
+- Interactive action selection
+- Quick actions (Create ADR, Resume work)
 
-2. **Analytics**
-   - Track enhancement effectiveness
-   - Measure false-start reduction
-   - User satisfaction metrics
+1. **Analytics**
+- Track enhancement effectiveness
+- Measure false-start reduction
+- User satisfaction metrics
 
 ---
 

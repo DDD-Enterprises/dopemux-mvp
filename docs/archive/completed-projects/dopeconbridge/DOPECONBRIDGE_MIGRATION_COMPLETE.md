@@ -45,15 +45,15 @@ Single authority point for cross-plane coordination
 - Type-safe response models
 - Environment-based configuration
 - Comprehensive endpoint coverage:
-  - Event publishing (`/events`)
-  - Cross-plane routing (`/route/pm`, `/route/cognitive`)
-  - Decision queries (`/ddg/decisions/*`)
-  - Custom KG data (`/kg/custom_data`)
-  - **NEW:** Direct ConPort operations:
-    - `create_decision()` - Create decisions
-    - `create_progress_entry()` - Create progress entries
-    - `create_link()` - Link items
-    - `get_progress_entries()` - Query progress
+- Event publishing (`/events`)
+- Cross-plane routing (`/route/pm`, `/route/cognitive`)
+- Decision queries (`/ddg/decisions/*`)
+- Custom KG data (`/kg/custom_data`)
+- **NEW:** Direct ConPort operations:
+- `create_decision()` - Create decisions
+- `create_progress_entry()` - Create progress entries
+- `create_link()` - Link items
+- `get_progress_entries()` - Query progress
 
 **Usage:**
 ```python
@@ -171,10 +171,10 @@ decision = client.create_decision(
 #### Services to Migrate (Not Yet Complete)
 
 1. **agents/cognitive_guardian.py** - Uses ConPort imports
-2. **agents/memory_agent_conport.py** - Direct ConPort access
-3. **orchestrator/src/context_protocol.py** - ConPort imports
-4. **orchestrator/src/conversation_manager.py** - ConPort references
-5. **genetic_agent/** - Multiple files with ConPort imports
+1. **agents/memory_agent_conport.py** - Direct ConPort access
+1. **orchestrator/src/context_protocol.py** - ConPort imports
+1. **orchestrator/src/conversation_manager.py** - ConPort references
+1. **genetic_agent/** - Multiple files with ConPort imports
 
 #### Deprecated/Experimental Services
 
@@ -214,37 +214,37 @@ CONPORT_URL=http://localhost:3004
 # docker-compose.yml
 voice-commands:
   environment:
-    - DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
-    - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-    - WORKSPACE_ID=/workspace
-    - ZEN_URL=http://zen-mcp:3003
+- DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ID=/workspace
+- ZEN_URL=http://zen-mcp:3003
 ```
 
 #### Task Orchestrator
 ```yaml
 task-orchestrator:
   environment:
-    - DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
-    - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-    - WORKSPACE_ID=/workspace
+- DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ID=/workspace
 ```
 
 #### Serena v2
 ```yaml
 serena:
   environment:
-    - DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
-    - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-    - WORKSPACE_ROOT=/workspace
+- DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ROOT=/workspace
 ```
 
 #### GPT-Researcher
 ```yaml
 dopemux-gpt-researcher:
   environment:
-    - DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
-    - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-    - WORKSPACE_ID=/workspace
+- DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ID=/workspace
 ```
 
 ## DopeconBridge Endpoints
@@ -398,7 +398,7 @@ def test_voice_decomposition_via_bridge():
    pip install httpx pytest pytest-asyncio
    ```
 
-2. **Update service to use bridge:**
+1. **Update service to use bridge:**
    ```python
    # Old way (DON'T DO THIS):
    from conport_client import ConPortClient
@@ -411,13 +411,13 @@ def test_voice_decomposition_via_bridge():
    adapter = {Service}BridgeAdapter(workspace_id=...)
    ```
 
-3. **Update environment:**
+1. **Update environment:**
    ```bash
    export DOPECON_BRIDGE_URL=http://localhost:3016
    export DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
    ```
 
-4. **Test:**
+1. **Test:**
    ```bash
    python3 -m pytest tests/shared/test_dopecon_bridge_client.py
    ```
@@ -425,22 +425,22 @@ def test_voice_decomposition_via_bridge():
 ## Benefits Achieved
 
 1. **Single Authority Point:** All ConPort/KG access goes through DopeconBridge
-2. **Consistent Client:** One shared client replaces 3+ different implementations
-3. **Cross-Plane Coordination:** Events and routing properly tracked
-4. **Type Safety:** Pydantic models for all responses
-5. **Testability:** MockTransport makes testing easy
-6. **Observability:** All cross-plane calls visible in bridge logs/metrics
-7. **Future-Proof:** Easy to add caching, rate limiting, or proxy additional backends
+1. **Consistent Client:** One shared client replaces 3+ different implementations
+1. **Cross-Plane Coordination:** Events and routing properly tracked
+1. **Type Safety:** Pydantic models for all responses
+1. **Testability:** MockTransport makes testing easy
+1. **Observability:** All cross-plane calls visible in bridge logs/metrics
+1. **Future-Proof:** Easy to add caching, rate limiting, or proxy additional backends
 
 ## Next Steps
 
 1. **Add missing DopeconBridge endpoints** (decisions, progress, links)
-2. **Update docker-compose.yml** files with bridge configuration
-3. **Migrate remaining agents** to use bridge adapters
-4. **Run integration tests** to verify end-to-end flows
-5. **Update architecture documentation** with new flow diagrams
-6. **Deploy to staging** for validation
-7. **Monitor metrics** to ensure no regressions
+1. **Update docker-compose.yml** files with bridge configuration
+1. **Migrate remaining agents** to use bridge adapters
+1. **Run integration tests** to verify end-to-end flows
+1. **Update architecture documentation** with new flow diagrams
+1. **Deploy to staging** for validation
+1. **Monitor metrics** to ensure no regressions
 
 ## Support
 

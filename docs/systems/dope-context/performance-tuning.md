@@ -1033,9 +1033,9 @@ ClaudeContextGenerator(cache_ttl_hours=720)
 **Check:**
 
 1. API rate limits (Voyage: 300 RPM)
-2. Network latency to Qdrant
-3. File I/O (slow disk?)
-4. Large files (increase max_file_size filter)
+1. Network latency to Qdrant
+1. File I/O (slow disk?)
+1. Large files (increase max_file_size filter)
 
 **Solutions:**
 
@@ -1049,9 +1049,9 @@ ClaudeContextGenerator(cache_ttl_hours=720)
 **Check:**
 
 1. Collection size (>100K vectors?)
-2. ef parameter (too high?)
-3. Reranking enabled?
-4. Network latency
+1. ef parameter (too high?)
+1. Reranking enabled?
+1. Network latency
 
 **Solutions:**
 
@@ -1065,8 +1065,8 @@ ClaudeContextGenerator(cache_ttl_hours=720)
 **Check:**
 
 1. Cache sizes
-2. Multiple workspace instances
-3. Large collections
+1. Multiple workspace instances
+1. Large collections
 
 **Solutions:**
 

@@ -150,46 +150,46 @@ ConPort-KG 2.0 transforms the existing single-user knowledge graph into a **mult
 **✅ STRENGTHS**:
 
 1. **PostgreSQL RLS Approach** (Recommended by AWS, industry standard)
-   - Defense in depth: DB-level enforcement even if app code fails
-   - Minimal performance overhead (< 5ms per industry studies)
-   - Session variable pattern: `SET app.current_workspace = 'workspace-uuid'`
+- Defense in depth: DB-level enforcement even if app code fails
+- Minimal performance overhead (< 5ms per industry studies)
+- Session variable pattern: `SET app.current_workspace = 'workspace-uuid'`
 
-2. **JWT + Refresh Token Design** (Industry best practice)
-   - Short access tokens (15min) for security
-   - Long refresh tokens (7-30 days) for convenience
-   - Token rotation prevents replay attacks
+1. **JWT + Refresh Token Design** (Industry best practice)
+- Short access tokens (15min) for security
+- Long refresh tokens (7-30 days) for convenience
+- Token rotation prevents replay attacks
 
-3. **Event-Driven Architecture** (Scales well)
-   - Redis Streams for buffering (handles 10K events/sec)
-   - Consumer groups for horizontal scaling
-   - Async processing doesn't block agents
+1. **Event-Driven Architecture** (Scales well)
+- Redis Streams for buffering (handles 10K events/sec)
+- Consumer groups for horizontal scaling
+- Async processing doesn't block agents
 
-4. **ADHD-First Design** (Unique competitive advantage)
-   - Top-3 pattern prevents overwhelm
-   - Progressive disclosure reduces cognitive load
-   - Attention-aware query adaptation (novel pattern)
+1. **ADHD-First Design** (Unique competitive advantage)
+- Top-3 pattern prevents overwhelm
+- Progressive disclosure reduces cognitive load
+- Attention-aware query adaptation (novel pattern)
 
 **⚠️ GAPS IDENTIFIED**:
 
 1. **No PostgreSQL RLS Policies Yet**
-   - Currently rely on application-level filtering only
-   - Vulnerable to bugs in query construction
-   - **Fix**: Add RLS policies to all vertex/edge tables
+- Currently rely on application-level filtering only
+- Vulnerable to bugs in query construction
+- **Fix**: Add RLS policies to all vertex/edge tables
 
-2. **No Query Complexity Scoring**
-   - Agents can trigger expensive 5-hop graph traversals
-   - DoS risk if many agents query simultaneously
-   - **Fix**: Add complexity budgets per query type
+1. **No Query Complexity Scoring**
+- Agents can trigger expensive 5-hop graph traversals
+- DoS risk if many agents query simultaneously
+- **Fix**: Add complexity budgets per query type
 
-3. **No Cross-Workspace Query Support**
-   - Multi-workspace users can't search across workspaces they own
-   - Limits discoverability for power users
-   - **Fix**: Add `?workspaces=ws1,ws2,ws3` query parameter
+1. **No Cross-Workspace Query Support**
+- Multi-workspace users can't search across workspaces they own
+- Limits discoverability for power users
+- **Fix**: Add `?workspaces=ws1,ws2,ws3` query parameter
 
-4. **Missing Agent-Native Optimizations**
-   - Agents get same response format as humans
-   - Could optimize for agent consumption (structured data)
-   - **Fix**: Add `Accept: application/vnd.agent+json` content negotiation
+1. **Missing Agent-Native Optimizations**
+- Agents get same response format as humans
+- Could optimize for agent consumption (structured data)
+- **Fix**: Add `Accept: application/vnd.agent+json` content negotiation
 
 ---
 
@@ -201,21 +201,21 @@ ConPort-KG 2.0 transforms the existing single-user knowledge graph into a **mult
 **CRITICAL VULNERABILITIES**:
 
 1. **No Authentication** (Severity: CRITICAL)
-   - Anyone can access the API
-   - No user identity tracking
-   - Cannot attribute decisions to users
-   - **Impact**: Complete system compromise
+- Anyone can access the API
+- No user identity tracking
+- Cannot attribute decisions to users
+- **Impact**: Complete system compromise
 
-2. **No Authorization** (Severity: CRITICAL)
-   - No workspace isolation enforcement
-   - Cross-workspace data leakage possible
-   - No role-based access control
-   - **Impact**: Privacy violations, data breaches
+1. **No Authorization** (Severity: CRITICAL)
+- No workspace isolation enforcement
+- Cross-workspace data leakage possible
+- No role-based access control
+- **Impact**: Privacy violations, data breaches
 
-3. **Cypher Injection in search_by_tag()** (Severity: MEDIUM)
-   - Unvalidated tag parameter in `overview.py:290`
-   - Attack: `tag='"] OR 1=1 --'` bypasses filters
-   - **Fix**: Sanitize tags: `re.sub(r'[^\w\s-]', '', tag)`
+1. **Cypher Injection in search_by_tag()** (Severity: MEDIUM)
+- Unvalidated tag parameter in `overview.py:290`
+- Attack: `tag='"] OR 1=1 --'` bypasses filters
+- **Fix**: Sanitize tags: `re.sub(r'[^\w\s-]', '', tag)`
 
 **IMPLEMENTED SECURITY** (Good foundation):
 - ✅ SQL injection prevention via `_validate_limit()`
@@ -249,29 +249,29 @@ ConPort-KG 2.0 transforms the existing single-user knowledge graph into a **mult
 **Industry Consensus** (From 40+ sources):
 
 1. **Use Row-Level Security (RLS)** ✅ Recommended
-   - PostgreSQL RLS is production-proven for multi-tenancy
-   - Session variables over database users: `SET app.current_user_id = 'uuid'`
-   - Defense in depth: DB enforces even if app code fails
-   - Performance: < 5ms overhead (AWS studies)
+- PostgreSQL RLS is production-proven for multi-tenancy
+- Session variables over database users: `SET app.current_user_id = 'uuid'`
+- Defense in depth: DB enforces even if app code fails
+- Performance: < 5ms overhead (AWS studies)
 
-2. **Three Multi-Tenancy Models**:
-   - **Silo**: Separate database per tenant (highest isolation, highest cost)
-   - **Pool**: Shared database with tenant_id column (lowest cost, complex isolation)
-   - **Hybrid**: Mix of both (balance)
+1. **Three Multi-Tenancy Models**:
+- **Silo**: Separate database per tenant (highest isolation, highest cost)
+- **Pool**: Shared database with tenant_id column (lowest cost, complex isolation)
+- **Hybrid**: Mix of both (balance)
 
    **Recommendation for ConPort-KG**: **Pool model with RLS** (cost-effective, proven pattern)
 
-3. **LangGraph Memory Patterns**:
-   - **Short-term**: Thread-based scratchpad (in-memory, session-scoped)
-   - **Long-term**: Cross-session persistent storage (MongoDB/PostgreSQL)
-   - **Shared Scratchpad**: Multiple agents collaborate on same memory
+1. **LangGraph Memory Patterns**:
+- **Short-term**: Thread-based scratchpad (in-memory, session-scoped)
+- **Long-term**: Cross-session persistent storage (MongoDB/PostgreSQL)
+- **Shared Scratchpad**: Multiple agents collaborate on same memory
 
    **Recommendation**: ConPort-KG = Long-term memory layer for all agents
 
-4. **Agent Coordination Patterns**:
-   - **Supervisor**: Central agent orchestrates (like Task-Orchestrator)
-   - **Swarm**: Agents hand off dynamically
-   - **Collaboration**: Shared scratchpad (like ConPort event log)
+1. **Agent Coordination Patterns**:
+- **Supervisor**: Central agent orchestrates (like Task-Orchestrator)
+- **Swarm**: Agents hand off dynamically
+- **Collaboration**: Shared scratchpad (like ConPort event log)
 
    **Recommendation**: ConPort enables **Collaboration** pattern across Dopemux
 
@@ -419,26 +419,26 @@ Focused attention:
 **Pattern Types**:
 
 1. **Energy-Complexity Mismatch**
-   - Serena: High complexity code (0.78)
-   - ADHD Engine: Low energy (0.42)
-   - Insight: "Defer refactoring to high-energy period"
+- Serena: High complexity code (0.78)
+- ADHD Engine: Low energy (0.42)
+- Insight: "Defer refactoring to high-energy period"
 
-2. **Converging Recommendations**
-   - Serena: "Refactor auth.py" (complexity 0.78)
-   - Zen: "Simplify authentication flow" (consensus 0.85)
-   - Dope-Context: "Found simpler pattern in other projects"
-   - Insight: "Strong consensus - 3 agents agree on refactoring"
+1. **Converging Recommendations**
+- Serena: "Refactor auth.py" (complexity 0.78)
+- Zen: "Simplify authentication flow" (consensus 0.85)
+- Dope-Context: "Found simpler pattern in other projects"
+- Insight: "Strong consensus - 3 agents agree on refactoring"
 
-3. **Context Switch Overload**
-   - Desktop Commander: 5 workspace switches in 10min
-   - ADHD Engine: Declining productivity
-   - Task-Orchestrator: 3 tasks started, 0 completed
-   - Insight: "Reduce workspace switching - finish one task first"
+1. **Context Switch Overload**
+- Desktop Commander: 5 workspace switches in 10min
+- ADHD Engine: Declining productivity
+- Task-Orchestrator: 3 tasks started, 0 completed
+- Insight: "Reduce workspace switching - finish one task first"
 
-4. **Learning Opportunity**
-   - Dope-Context: "Pattern discovered - JWT validation"
-   - Serena: "Your code uses similar pattern"
-   - Insight: "Reusable pattern found - document as system pattern"
+1. **Learning Opportunity**
+- Dope-Context: "Pattern discovered - JWT validation"
+- Serena: "Your code uses similar pattern"
+- Insight: "Reusable pattern found - document as system pattern"
 
 **Implementation**:
 ```python
@@ -617,66 +617,66 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 
 **Week 1: Core Authentication**
 1. Implement JWT utilities (jwt_utils.py - 300 lines)
-   - Token generation (RS256 signing)
-   - Token validation with caching
-   - Refresh token rotation
-   - Token blacklisting (Redis)
+- Token generation (RS256 signing)
+- Token validation with caching
+- Refresh token rotation
+- Token blacklisting (Redis)
 
-2. Implement password security (password_utils.py - 250 lines)
-   - bcrypt + Argon2id hybrid
-   - Password strength validation
-   - Breach detection (HaveIBeenPwned API)
-   - Password reset flow
+1. Implement password security (password_utils.py - 250 lines)
+- bcrypt + Argon2id hybrid
+- Password strength validation
+- Breach detection (HaveIBeenPwned API)
+- Password reset flow
 
-3. Create user models (models.py - 200 lines)
-   - User (SQLAlchemy)
-   - UserWorkspace (many-to-many)
-   - RefreshToken
-   - AuditLog
+1. Create user models (models.py - 200 lines)
+- User (SQLAlchemy)
+- UserWorkspace (many-to-many)
+- RefreshToken
+- AuditLog
 
-4. Database schema (auth_schema.sql - 100 lines)
-   - Tables: users, user_workspaces, refresh_tokens, audit_logs
-   - Indexes for performance
-   - Foreign keys with cascade
-   - Audit trigger functions
+1. Database schema (auth_schema.sql - 100 lines)
+- Tables: users, user_workspaces, refresh_tokens, audit_logs
+- Indexes for performance
+- Foreign keys with cascade
+- Audit trigger functions
 
-5. User service (service.py - 400 lines)
-   - User CRUD operations
-   - Login/logout endpoints
-   - Token refresh endpoint
-   - Workspace membership management
+1. User service (service.py - 400 lines)
+- User CRUD operations
+- Login/logout endpoints
+- Token refresh endpoint
+- Workspace membership management
 
 **Week 2: PostgreSQL RLS + Authorization**
-6. Implement PostgreSQL RLS policies (rls_policies.sql - 150 lines)
+1. Implement PostgreSQL RLS policies (rls_policies.sql - 150 lines)
 - Policy on Decision vertices
 - Policy on relationship edges
 - Session variable setup
 - Testing policies with multiple users
 
 1. Add workspace isolation to queries (refactor queries/ - 500 lines)
-   - Update all 12 query methods
-   - Add `workspace_id` filtering
-   - Test cross-workspace isolation
-   - Performance regression testing
+- Update all 12 query methods
+- Add `workspace_id` filtering
+- Test cross-workspace isolation
+- Performance regression testing
 
-2. Implement RBAC middleware (rbac.py - 300 lines)
-   - Role checking (owner/admin/member/viewer)
-   - Permission enforcement
-   - Workspace access validation
-   - Audit logging integration
+1. Implement RBAC middleware (rbac.py - 300 lines)
+- Role checking (owner/admin/member/viewer)
+- Permission enforcement
+- Workspace access validation
+- Audit logging integration
 
-3. Create FastAPI endpoints (api/auth_routes.py - 400 lines)
-   - POST /auth/register
-   - POST /auth/login
-   - POST /auth/refresh
-   - POST /auth/logout
-   - GET /auth/me
-   - GET /auth/workspaces
+1. Create FastAPI endpoints (api/auth_routes.py - 400 lines)
+- POST /auth/register
+- POST /auth/login
+- POST /auth/refresh
+- POST /auth/logout
+- GET /auth/me
+- GET /auth/workspaces
 
-4. Fix Cypher injection vulnerability (30 lines)
-    - Sanitize tag parameter in search_by_tag()
-    - Add validation to decision_id parameters
-    - Security regression testing
+1. Fix Cypher injection vulnerability (30 lines)
+- Sanitize tag parameter in search_by_tag()
+- Add validation to decision_id parameters
+- Security regression testing
 
 **Deliverables**:
 - ✅ Complete authentication system (1,650 lines)
@@ -699,67 +699,67 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 **Tasks**:
 
 **Week 3: Event Bus Infrastructure**
-11. Redis Streams event bus (event_bus.py - 400 lines)
-    - Stream setup with consumer groups
-    - Event publishing utilities
-    - Event schema validation
-    - Dead letter queue for failures
+1. Redis Streams event bus (event_bus.py - 400 lines)
+- Stream setup with consumer groups
+- Event publishing utilities
+- Event schema validation
+- Dead letter queue for failures
 
 1. Event processor workers (event_processor.py - 500 lines)
-    - Worker pool (4 workers)
-    - Event deduplication (content hashing)
-    - Pattern detection (7 patterns)
-    - Insight generation
-    - Database persistence
+- Worker pool (4 workers)
+- Event deduplication (content hashing)
+- Pattern detection (7 patterns)
+- Insight generation
+- Database persistence
 
-2. Circuit breaker implementation (circuit_breaker.py - 200 lines)
-    - Failure threshold tracking
-    - Automatic fallback to local logging
-    - Recovery detection
-    - Health monitoring
+1. Circuit breaker implementation (circuit_breaker.py - 200 lines)
+- Failure threshold tracking
+- Automatic fallback to local logging
+- Recovery detection
+- Health monitoring
 
-3. Agent event middleware (agent_middleware.py - 300 lines)
-    - Transparent event interception
-    - Correlation ID propagation
-    - Workspace detection
-    - Non-blocking emission
+1. Agent event middleware (agent_middleware.py - 300 lines)
+- Transparent event interception
+- Correlation ID propagation
+- Workspace detection
+- Non-blocking emission
 
-4. Event aggregation engine (aggregation.py - 400 lines)
-    - Deduplication by content hash
-    - Merge similar events from multiple agents
-    - Provenance tracking
-    - Confidence scoring
+1. Event aggregation engine (aggregation.py - 400 lines)
+- Deduplication by content hash
+- Merge similar events from multiple agents
+- Provenance tracking
+- Confidence scoring
 
 **Week 4: Agent-Specific Integrations**
-16. Serena integration (integrations/serena.py - 250 lines)
-    - Hook: Complexity analysis events
-    - Event: code.complexity.high (>0.6 threshold)
-    - Decision: Auto-log refactoring recommendations
+1. Serena integration (integrations/serena.py - 250 lines)
+- Hook: Complexity analysis events
+- Event: code.complexity.high (>0.6 threshold)
+- Decision: Auto-log refactoring recommendations
 
 1. Dope-Context integration (integrations/dope_context.py - 250 lines)
-    - Hook: Pattern discovery events
-    - Event: search.pattern.discovered
-    - Pattern: Auto-create system_pattern entries
+- Hook: Pattern discovery events
+- Event: search.pattern.discovered
+- Pattern: Auto-create system_pattern entries
 
-2. Zen integration (integrations/zen.py - 250 lines)
-    - Hook: Consensus reached events
-    - Event: decision.consensus.reached
-    - Decision: Auto-log architectural choices
+1. Zen integration (integrations/zen.py - 250 lines)
+- Hook: Consensus reached events
+- Event: decision.consensus.reached
+- Decision: Auto-log architectural choices
 
-3. ADHD Engine integration (integrations/adhd_engine.py - 300 lines)
-    - Hook: Cognitive state changes (buffered, every 30s)
-    - Event: cognitive.state.changed
-    - Context: Update active_context with ADHD state
+1. ADHD Engine integration (integrations/adhd_engine.py - 300 lines)
+- Hook: Cognitive state changes (buffered, every 30s)
+- Event: cognitive.state.changed
+- Context: Update active_context with ADHD state
 
-4. Task-Orchestrator integration (integrations/task_orchestrator.py - 350 lines)
-    - Hook: Task progress updates
-    - Event: task.progress.updated
-    - Progress: Auto-sync task status to ConPort
+1. Task-Orchestrator integration (integrations/task_orchestrator.py - 350 lines)
+- Hook: Task progress updates
+- Event: task.progress.updated
+- Progress: Auto-sync task status to ConPort
 
-5. Desktop Commander integration (integrations/desktop_commander.py - 250 lines)
-    - Hook: Workspace switch events
-    - Event: workspace.switched
-    - Context: Auto-capture context for recovery
+1. Desktop Commander integration (integrations/desktop_commander.py - 250 lines)
+- Hook: Workspace switch events
+- Event: workspace.switched
+- Context: Auto-capture context for recovery
 
 **Deliverables**:
 - ✅ Event-driven agent integration (2,450 lines)
@@ -781,41 +781,41 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 **Tasks**:
 
 1. Multi-tier caching (cache.py - 300 lines)
-    - Memory tier (5s TTL, <0.1ms)
-    - Redis tier (60s TTL, ~2ms)
-    - Database tier (permanent)
-    - Cache invalidation on writes
+- Memory tier (5s TTL, <0.1ms)
+- Redis tier (60s TTL, ~2ms)
+- Database tier (permanent)
+- Cache invalidation on writes
 
-2. Rate limiting (rate_limiter.py - 200 lines)
-    - 100 req/min per user
-    - 1000 req/min per workspace
-    - Sliding window algorithm
-    - Redis-backed counters
+1. Rate limiting (rate_limiter.py - 200 lines)
+- 100 req/min per user
+- 1000 req/min per workspace
+- Sliding window algorithm
+- Redis-backed counters
 
-3. Query complexity budgets (complexity_scorer.py - 250 lines)
-    - Score queries by graph depth + result count
-    - Budget: 1000 complexity points per user per minute
-    - Reject expensive queries when budget exceeded
-    - Alert user with simpler alternative
+1. Query complexity budgets (complexity_scorer.py - 250 lines)
+- Score queries by graph depth + result count
+- Budget: 1000 complexity points per user per minute
+- Reject expensive queries when budget exceeded
+- Alert user with simpler alternative
 
-4. Monitoring & metrics (monitoring.py - 400 lines)
-    - Prometheus metrics (20+ metrics)
-    - Event processing latency
-    - Cache hit rates
-    - Agent activity tracking
-    - Query complexity distribution
+1. Monitoring & metrics (monitoring.py - 400 lines)
+- Prometheus metrics (20+ metrics)
+- Event processing latency
+- Cache hit rates
+- Agent activity tracking
+- Query complexity distribution
 
-5. Error handling & retry (error_handler.py - 300 lines)
-    - Exponential backoff for retries
-    - Graceful degradation strategies
-    - Error categorization (retryable vs fatal)
-    - Dead letter queue for manual intervention
+1. Error handling & retry (error_handler.py - 300 lines)
+- Exponential backoff for retries
+- Graceful degradation strategies
+- Error categorization (retryable vs fatal)
+- Dead letter queue for manual intervention
 
-6. Performance testing (tests/performance/ - 500 lines)
-    - Load testing (10K events/min)
-    - Concurrency testing (100 concurrent users)
-    - Cache performance validation
-    - RLS performance impact measurement
+1. Performance testing (tests/performance/ - 500 lines)
+- Load testing (10K events/min)
+- Concurrency testing (100 concurrent users)
+- Cache performance validation
+- RLS performance impact measurement
 
 **Deliverables**:
 - ✅ Production-grade caching (3-tier)
@@ -838,55 +838,55 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 **Tasks**:
 
 **Week 6: Core UI Components**
-28. Agent decision timeline (ui/timeline.tsx - 400 lines)
-    - Chronological event display
-    - Agent icon visual scanning
-    - Collapsed details (click to expand)
-    - WebSocket real-time updates
+1. Agent decision timeline (ui/timeline.tsx - 400 lines)
+- Chronological event display
+- Agent icon visual scanning
+- Collapsed details (click to expand)
+- WebSocket real-time updates
 
 1. Cross-agent insight cards (ui/insights.tsx - 350 lines)
-    - Priority-based display (High/Medium/Low)
-    - Actionable buttons (implement, snooze, dismiss)
-    - Pattern visualization
-    - Persistent across sessions
+- Priority-based display (High/Medium/Low)
+- Actionable buttons (implement, snooze, dismiss)
+- Pattern visualization
+- Persistent across sessions
 
-2. Cognitive load dashboard (ui/dashboard.tsx - 500 lines)
-    - Real-time energy/load graphs
-    - Task complexity breakdown
-    - Predictive recommendations
-    - Break reminders (Pomodoro)
+1. Cognitive load dashboard (ui/dashboard.tsx - 500 lines)
+- Real-time energy/load graphs
+- Task complexity breakdown
+- Predictive recommendations
+- Break reminders (Pomodoro)
 
-3. Adaptive UI framework (ui/adaptive.tsx - 300 lines)
-    - Detect attention state from ADHD Engine
-    - Render different UI based on state:
-      - Scattered: Simple UI (3 results, large text)
-      - Transitioning: Progressive disclosure
-      - Focused: Full capabilities
+1. Adaptive UI framework (ui/adaptive.tsx - 300 lines)
+- Detect attention state from ADHD Engine
+- Render different UI based on state:
+- Scattered: Simple UI (3 results, large text)
+- Transitioning: Progressive disclosure
+- Focused: Full capabilities
 
 **Week 7: Advanced Features**
-32. Agent recommendation sidebar (ui/sidebar.tsx - 400 lines)
-    - Priority-grouped recommendations
-    - Snooze/dismiss functionality
-    - Notification preferences
-    - Real-time WebSocket updates
+1. Agent recommendation sidebar (ui/sidebar.tsx - 400 lines)
+- Priority-grouped recommendations
+- Snooze/dismiss functionality
+- Notification preferences
+- Real-time WebSocket updates
 
 1. Cognitive load heatmap (ui/heatmap.tsx - 350 lines)
-    - File tree with complexity colors
-    - Agent activity overlay
-    - Energy-appropriate task highlighting
-    - Export reports
+- File tree with complexity colors
+- Agent activity overlay
+- Energy-appropriate task highlighting
+- Export reports
 
-2. Decision provenance viewer (ui/provenance.tsx - 450 lines)
-    - Sankey diagram of decision flow
-    - Contributing agents visualization
-    - Confidence scores displayed
-    - Interactive exploration
+1. Decision provenance viewer (ui/provenance.tsx - 450 lines)
+- Sankey diagram of decision flow
+- Contributing agents visualization
+- Confidence scores displayed
+- Interactive exploration
 
-3. Agent collaboration graph (ui/agent_graph.tsx - 400 lines)
-    - D3.js force-directed graph
-    - Real-time agent coordination display
-    - Click nodes for event details
-    - Export capabilities
+1. Agent collaboration graph (ui/agent_graph.tsx - 400 lines)
+- D3.js force-directed graph
+- Real-time agent coordination display
+- Click nodes for event details
+- Export capabilities
 
 **Deliverables**:
 - ✅ ADHD-optimized React UI (2,750 lines)
@@ -908,46 +908,46 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 **Tasks**:
 
 1. Test infrastructure setup (tests/conftest.py - 500 lines)
-    - Pytest fixtures (auth, database, Redis)
-    - Factory Boy for test data
-    - Testcontainers for PostgreSQL
-    - Mock agent event generators
+- Pytest fixtures (auth, database, Redis)
+- Factory Boy for test data
+- Testcontainers for PostgreSQL
+- Mock agent event generators
 
-2. Authentication tests (tests/auth/ - 800 lines)
-    - JWT creation/validation (20 tests)
-    - Password hashing/validation (15 tests)
-    - Refresh token rotation (10 tests)
-    - Audit logging (8 tests)
+1. Authentication tests (tests/auth/ - 800 lines)
+- JWT creation/validation (20 tests)
+- Password hashing/validation (15 tests)
+- Refresh token rotation (10 tests)
+- Audit logging (8 tests)
 
-3. Authorization tests (tests/authorization/ - 600 lines)
-    - RLS policy enforcement (15 tests)
-    - Role-based access (12 tests)
-    - Cross-workspace isolation (10 tests)
-    - Permission checks (10 tests)
+1. Authorization tests (tests/authorization/ - 600 lines)
+- RLS policy enforcement (15 tests)
+- Role-based access (12 tests)
+- Cross-workspace isolation (10 tests)
+- Permission checks (10 tests)
 
-4. Agent integration tests (tests/agents/ - 700 lines)
-    - Event publishing (6 agents × 5 tests = 30 tests)
-    - Deduplication (10 tests)
-    - Pattern detection (7 patterns × 3 tests = 21 tests)
-    - Insight generation (10 tests)
+1. Agent integration tests (tests/agents/ - 700 lines)
+- Event publishing (6 agents × 5 tests = 30 tests)
+- Deduplication (10 tests)
+- Pattern detection (7 patterns × 3 tests = 21 tests)
+- Insight generation (10 tests)
 
-5. Performance tests (tests/performance/ - 500 lines)
-    - Load testing (10K events/min sustained)
-    - Concurrent users (100 simultaneous)
-    - Cache hit rate validation (>80%)
-    - Query latency (p95 <20ms)
+1. Performance tests (tests/performance/ - 500 lines)
+- Load testing (10K events/min sustained)
+- Concurrent users (100 simultaneous)
+- Cache hit rate validation (>80%)
+- Query latency (p95 <20ms)
 
-6. ADHD UX validation (tests/ux/ - 400 lines)
-    - Adaptive UI behavior (3 states × 5 tests)
-    - Progressive disclosure (10 tests)
-    - Notification priority (7 tests)
-    - Cognitive load calculation (8 tests)
+1. ADHD UX validation (tests/ux/ - 400 lines)
+- Adaptive UI behavior (3 states × 5 tests)
+- Progressive disclosure (10 tests)
+- Notification priority (7 tests)
+- Cognitive load calculation (8 tests)
 
-7. Integration testing (tests/integration/ - 600 lines)
-    - End-to-end workflows (10 scenarios)
-    - Cross-service coordination (5 tests)
-    - Error handling (15 tests)
-    - Graceful degradation (10 tests)
+1. Integration testing (tests/integration/ - 600 lines)
+- End-to-end workflows (10 scenarios)
+- Cross-service coordination (5 tests)
+- Error handling (15 tests)
+- Graceful degradation (10 tests)
 
 **Deliverables**:
 - ✅ 200+ tests with 85%+ coverage
@@ -969,49 +969,49 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 **Tasks**:
 
 1. Docker Compose configuration (docker-compose.conport-kg.yml - 200 lines)
-    - PostgreSQL + AGE service
-    - Redis service
-    - ConPort-KG API service
-    - Event processor workers (4 containers)
-    - Monitoring stack (Prometheus + Grafana)
+- PostgreSQL + AGE service
+- Redis service
+- ConPort-KG API service
+- Event processor workers (4 containers)
+- Monitoring stack (Prometheus + Grafana)
 
-2. Database migrations (migrations/ - 400 lines)
-    - Alembic setup for schema versioning
-    - Initial migration (create tables)
-    - RLS policy migration
-    - Data seeding for dev/staging
+1. Database migrations (migrations/ - 400 lines)
+- Alembic setup for schema versioning
+- Initial migration (create tables)
+- RLS policy migration
+- Data seeding for dev/staging
 
-3. Monitoring dashboards (monitoring/ - 600 lines)
-    - Grafana dashboards (4 dashboards):
-      - Agent Activity Dashboard
-      - Query Performance Dashboard
-      - Security & Auth Dashboard
-      - ADHD UX Metrics Dashboard
-    - Prometheus alert rules (15 rules)
-    - Anomaly detection
+1. Monitoring dashboards (monitoring/ - 600 lines)
+- Grafana dashboards (4 dashboards):
+- Agent Activity Dashboard
+- Query Performance Dashboard
+- Security & Auth Dashboard
+- ADHD UX Metrics Dashboard
+- Prometheus alert rules (15 rules)
+- Anomaly detection
 
-4. Deployment runbook (docs/runbook.md - 800 lines)
-    - Pre-deployment checklist
-    - Staging deployment procedure
-    - Production deployment (blue-green)
-    - Rollback procedures
-    - Health check verification
-    - Troubleshooting guide
+1. Deployment runbook (docs/runbook.md - 800 lines)
+- Pre-deployment checklist
+- Staging deployment procedure
+- Production deployment (blue-green)
+- Rollback procedures
+- Health check verification
+- Troubleshooting guide
 
-5. API documentation (docs/api/ - 1,000 lines)
-    - OpenAPI specification
-    - Authentication guide
-    - Agent integration guide
-    - Query reference
-    - Event schema reference
-    - Code examples
+1. API documentation (docs/api/ - 1,000 lines)
+- OpenAPI specification
+- Authentication guide
+- Agent integration guide
+- Query reference
+- Event schema reference
+- Code examples
 
-6. User acceptance testing (Week 10)
-    - Internal dogfooding (5 users, 1 week)
-    - ADHD user testing (3 users)
-    - Agent coordination validation
-    - Performance monitoring
-    - Bug fixing
+1. User acceptance testing (Week 10)
+- Internal dogfooding (5 users, 1 week)
+- ADHD user testing (3 users)
+- Agent coordination validation
+- Performance monitoring
+- Bug fixing
 
 **Deliverables**:
 - ✅ Production Docker Compose stack
@@ -1277,8 +1277,8 @@ Breakdown:
 ⚠️ Recommendation:
 This task is challenging. Consider:
 1. Starting during high-energy period (9-11am for you)
-2. Breaking into 3 smaller subtasks
-3. Allocating 90min (not 60min)
+1. Breaking into 3 smaller subtasks
+1. Allocating 90min (not 60min)
 
 [Start Anyway] [Schedule for Tomorrow 9am] [Break Down Task]
 ```
@@ -1663,8 +1663,8 @@ Triggers:
 Recommendation:
 This decision shows signs of instability. Consider:
 1. Reviewing if approach still appropriate
-2. Refactoring to reduce complexity
-3. Documenting why superseded multiple times
+1. Refactoring to reduce complexity
+1. Documenting why superseded multiple times
 
 [Review Decision] [Schedule Refactor] [Archive] [Dismiss]
 ```
@@ -1727,18 +1727,18 @@ async def generate_code_from_decision(decision_id):
 ```
 1. Team decides: "Use Redis for session storage"
    ↓
-2. Decision logged in ConPort with implementation details
+1. Decision logged in ConPort with implementation details
    ↓
-3. Developer clicks "Generate Code Scaffold"
+1. Developer clicks "Generate Code Scaffold"
    ↓
-4. System:
-   - Finds 3 similar Redis session implementations (Dope-Context)
-   - Generates code following patterns (Grok Code Fast 1)
-   - Creates task with generated code attached
+1. System:
+- Finds 3 similar Redis session implementations (Dope-Context)
+- Generates code following patterns (Grok Code Fast 1)
+- Creates task with generated code attached
    ↓
-5. Developer reviews, adapts, implements
+1. Developer reviews, adapts, implements
    ↓
-6. Task completion auto-validates decision (link created)
+1. Task completion auto-validates decision (link created)
 ```
 
 **Benefits**:
@@ -1883,12 +1883,12 @@ ALTER TABLE conport_knowledge."Decision" DROP COLUMN workspace_id;
 
 **Zero-Downtime Migration**:
 1. Deploy v2.0 code with feature flag `MULTI_TENANT=false`
-2. Run schema migration (adds workspace_id, doesn't enable RLS)
-3. Test with single-tenant mode
-4. Enable `MULTI_TENANT=true` flag
-5. Enable RLS policies
-6. Monitor for issues
-7. Rollback flag if problems (RLS disabled, back to single-tenant)
+1. Run schema migration (adds workspace_id, doesn't enable RLS)
+1. Test with single-tenant mode
+1. Enable `MULTI_TENANT=true` flag
+1. Enable RLS policies
+1. Monitor for issues
+1. Rollback flag if problems (RLS disabled, back to single-tenant)
 
 ---
 
@@ -1974,9 +1974,9 @@ services:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+- postgres_data:/var/lib/postgresql/data
     ports:
-      - "5455:5432"
+- "5455:5432"
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
@@ -1987,9 +1987,9 @@ services:
     image: redis:7.2-alpine
     command: redis-server --appendonly yes
     volumes:
-      - redis_data:/data
+- redis_data:/data
     ports:
-      - "6379:6379"
+- "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -2007,7 +2007,7 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "5455:5455"
+- "5455:5455"
     deploy:
       replicas: 2
       resources:
@@ -2022,30 +2022,30 @@ services:
       DATABASE_URL: postgresql://user:pass@postgres:5432/dopemux
       REDIS_URL: redis://redis:6379
     depends_on:
-      - postgres
-      - redis
+- postgres
+- redis
     deploy:
       replicas: 4  # 4 worker processes
 
   prometheus:
     image: prom/prometheus:latest
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+- ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+- prometheus_data:/prometheus
     ports:
-      - "9090:9090"
+- "9090:9090"
 
   grafana:
     image: grafana/grafana:latest
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
     volumes:
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - grafana_data:/var/lib/grafana
+- ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+- grafana_data:/var/lib/grafana
     ports:
-      - "3000:3000"
+- "3000:3000"
     depends_on:
-      - prometheus
+- prometheus
 
 volumes:
   postgres_data:
@@ -2064,10 +2064,10 @@ networks:
 
 ### Must-Have for MVP (Phase 1-2, 4 weeks)
 1. Authentication (JWT + password hashing)
-2. PostgreSQL RLS (workspace isolation)
-3. Basic agent integration (at least Serena + Task-Orchestrator)
-4. Event bus infrastructure
-5. Query API with auth middleware
+1. PostgreSQL RLS (workspace isolation)
+1. Basic agent integration (at least Serena + Task-Orchestrator)
+1. Event bus infrastructure
+1. Query API with auth middleware
 
 **Without these**: System is insecure and single-tenant only
 
@@ -2075,8 +2075,8 @@ networks:
 
 ### High-Value Additions (Phase 3, 1 week)
 1. Multi-tier caching (3x performance improvement)
-2. Rate limiting (DoS prevention)
-3. Monitoring (production observability)
+1. Rate limiting (DoS prevention)
+1. Monitoring (production observability)
 
 **Without these**: System works but lacks production reliability
 
@@ -2084,8 +2084,8 @@ networks:
 
 ### ADHD Differentiation (Phase 4, 2 weeks)
 1. Adaptive UI (cognitive load management)
-2. Energy-matched tasks (completion rate improvement)
-3. Decision health scoring (quality tracking)
+1. Energy-matched tasks (completion rate improvement)
+1. Decision health scoring (quality tracking)
 
 **Without these**: System is functional but loses ADHD competitive advantage
 
@@ -2193,25 +2193,25 @@ networks:
 ### Immediate Actions (This Week)
 
 1. **Review and Approve Master Plan**
-   - Stakeholder review (1 hour)
-   - Architecture sign-off
-   - Resource allocation approval
+- Stakeholder review (1 hour)
+- Architecture sign-off
+- Resource allocation approval
 
-2. **Log Key Decisions to ConPort**
-   - Decision: Pool model + PostgreSQL RLS
-   - Decision: Event-driven agent integration
-   - Decision: ADHD-adaptive query complexity
-   - Decision: Multi-agent insight generation
+1. **Log Key Decisions to ConPort**
+- Decision: Pool model + PostgreSQL RLS
+- Decision: Event-driven agent integration
+- Decision: ADHD-adaptive query complexity
+- Decision: Multi-agent insight generation
 
-3. **Set Up Project Tracking**
-   - Create ConPort progress entries for all 48 tasks
-   - Link tasks to decisions
-   - Set up sprint tracking in Leantime
+1. **Set Up Project Tracking**
+- Create ConPort progress entries for all 48 tasks
+- Link tasks to decisions
+- Set up sprint tracking in Leantime
 
-4. **Prepare Development Environment**
-   - Set up authentication database
-   - Configure JWT key generation
-   - Set up test infrastructure
+1. **Prepare Development Environment**
+- Set up authentication database
+- Configure JWT key generation
+- Set up test infrastructure
 
 ### Phase 1 Kickoff (Next Week)
 
@@ -2234,10 +2234,10 @@ ConPort-KG 2.0 represents a **foundational transformation** from single-user kno
 
 **Key Strengths**:
 1. ✅ Research-backed architecture (PostgreSQL RLS, JWT, event-driven)
-2. ✅ Industry-aligned patterns (LangGraph, Neo4j, AWS best practices)
-3. ✅ ADHD-first design (unique competitive advantage)
-4. ✅ 7 novel features (decision health, cognitive forecasting, smart recovery, etc.)
-5. ✅ Comprehensive testing strategy (200+ tests planned)
+1. ✅ Industry-aligned patterns (LangGraph, Neo4j, AWS best practices)
+1. ✅ ADHD-first design (unique competitive advantage)
+1. ✅ 7 novel features (decision health, cognitive forecasting, smart recovery, etc.)
+1. ✅ Comprehensive testing strategy (200+ tests planned)
 
 **Critical Path**:
 - **4 weeks** to MVP (authentication + basic agent integration)

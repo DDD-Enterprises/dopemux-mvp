@@ -52,21 +52,21 @@ Phase 1 successfully mapped the code-audit workspace using MCP semantic search a
 
 **Production-Ready** (4):
 1. **Dope-Context** - Semantic search (just fixed chunking bug!)
-2. **ConPort KG UI** - React terminal UI with ADHD patterns
-3. **ADHD Engine** - FastAPI with 7 endpoints, 6 monitors
-4. **Serena v2** - LSP with ADHD accommodations
+1. **ConPort KG UI** - React terminal UI with ADHD patterns
+1. **ADHD Engine** - FastAPI with 7 endpoints, 6 monitors
+1. **Serena v2** - LSP with ADHD accommodations
 
 **Functional** (4):
-5. **GPT-Researcher** - FastAPI research service
-6. **Task-Orchestrator** - MCP wrapper (37 Kotlin tools)
-7. **ConPort KG** - Knowledge graph orchestrator
-8. **DopeconBridge** - ⚠️ Implemented but **DISCONNECTED**
+1. **GPT-Researcher** - FastAPI research service
+1. **Task-Orchestrator** - MCP wrapper (37 Kotlin tools)
+1. **ConPort KG** - Knowledge graph orchestrator
+1. **DopeconBridge** - ⚠️ Implemented but **DISCONNECTED**
 
 **Needs Investigation** (4):
-9. Claude-Context (legacy?)
-10. ML Risk Assessment
-11. Orchestrator
-12. Taskmaster
+1. Claude-Context (legacy?)
+1. ML Risk Assessment
+1. Orchestrator
+1. Taskmaster
 
 ---
 
@@ -216,14 +216,14 @@ Phase 1 successfully mapped the code-audit workspace using MCP semantic search a
 
 ✅ **Reports** (4):
 1. `phase-1a-inventory.md` - Codebase composition
-2. `phase-1b-service-catalog.md` - 12 services detailed
-3. `phase-1c-dependency-map.md` - Infrastructure, dependencies, violations
-4. `phase-1d-documentation-inventory.md` - 4,413 chunks categorized
+1. `phase-1b-service-catalog.md` - 12 services detailed
+1. `phase-1c-dependency-map.md` - Infrastructure, dependencies, violations
+1. `phase-1d-documentation-inventory.md` - 4,413 chunks categorized
 
 ✅ **Infrastructure**:
-5. `scripts/index_code_correctly.py` - Production indexing script
-6. `scripts/index_docs.py` - Documentation indexing
-7. Dope-Context chunking bug FIXED (447 → 4,413 chunks)
+1. `scripts/index_code_correctly.py` - Production indexing script
+1. `scripts/index_docs.py` - Documentation indexing
+1. Dope-Context chunking bug FIXED (447 → 4,413 chunks)
 
 ✅ **Index**:
 - code_92e96527: 26 code chunks
@@ -238,19 +238,19 @@ Based on Phase 1 findings, the audit should prioritize:
 
 **High Priority**:
 1. ✅ **DopeconBridge disconnection** (already documented)
-2. **ADHD Engine direct DB writes** (verify scope of violation)
-3. **Security**: Hardcoded passwords, CORS wildcards
-4. **Feature claim validation** (ADHD features, API endpoints)
+1. **ADHD Engine direct DB writes** (verify scope of violation)
+1. **Security**: Hardcoded passwords, CORS wildcards
+1. **Feature claim validation** (ADHD features, API endpoints)
 
 **Medium Priority**:
-5. Event bus adoption status
-6. Service API documentation gaps
-7. Test infrastructure (import issues from earlier)
+1. Event bus adoption status
+1. Service API documentation gaps
+1. Test infrastructure (import issues from earlier)
 
 **Low Priority**:
-8. Legacy services (Claude-Context, Milvus usage)
-9. Documentation gaps (minor)
-10. Performance optimization opportunities
+1. Legacy services (Claude-Context, Milvus usage)
+1. Documentation gaps (minor)
+1. Performance optimization opportunities
 
 ---
 
@@ -298,13 +298,13 @@ zen.codereview(
 
 **Immediate**:
 1. ✅ Commit Phase 1 reports
-2. Begin Phase 2A (Security scan with semantic search)
-3. Use Zen codereview for automated function validation
+1. Begin Phase 2A (Security scan with semantic search)
+1. Use Zen codereview for automated function validation
 
 **Week 7** (post-audit):
 1. Wire DopeconBridge (8-12 hours)
-2. Remove direct database access patterns
-3. Complete event bus adoption
+1. Remove direct database access patterns
+1. Complete event bus adoption
 
 ---
 

@@ -74,13 +74,13 @@ result = "\n".join(numbered_lines)
 
 ### Files Modified
 1. **`/Users/hue/code/dopemux-mvp/services/serena/v2/mcp_server.py`**
-   - Fixed line 4214: String literal syntax error
-   - Applied token limit protections
+- Fixed line 4214: String literal syntax error
+- Applied token limit protections
 
-2. **`~/.claude.json`**
-   - Removed `mas-sequential-thinking` from dopemux project
-   - Retained `zen` MCP configuration
-   - Backup created before changes
+1. **`~/.claude.json`**
+- Removed `mas-sequential-thinking` from dopemux project
+- Retained `zen` MCP configuration
+- Backup created before changes
 
 ### Validation Steps Completed
 ✅ Serena syntax check (`py_compile`)
@@ -94,9 +94,9 @@ result = "\n".join(numbered_lines)
 ### Required: Restart Claude Code
 **IMPORTANT**: Restart Claude Code to apply all fixes:
 1. **File → Quit Claude Code** (or Cmd+Q)
-2. **Relaunch Claude Code**
-3. Serena will auto-start with fixes
-4. Zen will be available without mas-sequential
+1. **Relaunch Claude Code**
+1. Serena will auto-start with fixes
+1. Zen will be available without mas-sequential
 
 ### Post-Restart Verification
 Test Serena:
@@ -144,8 +144,8 @@ mcp__zen__debug(
 
 **What's Fixed**:
 1. Serena syntax error → Server starts cleanly ✅
-2. mas-sequential removed → Zen MCP only ✅
-3. Zen validated → All 18 tools accessible ✅
+1. mas-sequential removed → Zen MCP only ✅
+1. Zen validated → All 18 tools accessible ✅
 
 **What's Required**:
 - Restart Claude Code to apply changes

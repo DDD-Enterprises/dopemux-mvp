@@ -34,9 +34,9 @@ prelude: Launch Plan (explanation) for dopemux documentation and developer workf
 
 **Steps**:
 1. Merge code-audit branch to main
-2. Configure production .env
-3. Deploy services
-4. Monitor for 24h
+1. Configure production .env
+1. Deploy services
+1. Monitor for 24h
 
 **Time**: 30 minutes
 **Risk**: LOW (all tested)

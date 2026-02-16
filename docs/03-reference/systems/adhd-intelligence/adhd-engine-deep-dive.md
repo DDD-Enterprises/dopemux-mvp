@@ -33,13 +33,13 @@ prelude: ADHD Engine - Complete Deep Dive (reference) for dopemux documentation 
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [The ADHD Challenge in Software Development](#the-adhd-challenge)
-3. [Cognitive Load Theory Foundations](#cognitive-load-theory)
-4. [System Architecture Overview](#architecture-overview)
-5. [Core Design Principles](#design-principles)
-6. [Component Breakdown](#component-breakdown)
-7. [Integration Philosophy](#integration-philosophy)
-8. [What's Next](#whats-next)
+1. [The ADHD Challenge in Software Development](#the-adhd-challenge)
+1. [Cognitive Load Theory Foundations](#cognitive-load-theory)
+1. [System Architecture Overview](#architecture-overview)
+1. [Core Design Principles](#design-principles)
+1. [Component Breakdown](#component-breakdown)
+1. [Integration Philosophy](#integration-philosophy)
+1. [What's Next](#whats-next)
 
 ---
 
@@ -54,8 +54,8 @@ This is **not** a cosmetic layer of "friendly reminders." This is a deeply integ
 **Traditional development tools fail ADHD developers in three critical ways:**
 
 1. **Context Loss**: A 5-minute interruption means 20 minutes rebuilding mental models
-2. **Energy Mismatch**: Complex tasks assigned during low-energy periods lead to burnout
-3. **Hyperfocus Traps**: No protection mechanisms result in exhaustion and health impacts
+1. **Energy Mismatch**: Complex tasks assigned during low-energy periods lead to burnout
+1. **Hyperfocus Traps**: No protection mechanisms result in exhaustion and health impacts
 
 The ADHD Engine addresses these systematically through **real-time monitoring**, **intelligent task routing**, and **protective interventions**.
 
@@ -85,8 +85,8 @@ ADHD is fundamentally an **executive function disorder**. This impacts software 
 **ADHD attention exists in three problematic states:**
 
 1. **Scattered**: Difficulty initiating and sustaining focus (executive function deficit)
-2. **Hyperfocus**: Inability to disengage from engaging tasks (regulation failure)
-3. **Transitioning**: High cognitive cost switching between contexts (set-shifting impairment)
+1. **Hyperfocus**: Inability to disengage from engaging tasks (regulation failure)
+1. **Transitioning**: High cognitive cost switching between contexts (set-shifting impairment)
 
 **Traditional Tool Response**: "Just focus" (useless)
 **ADHD Engine Response**: Detect state → adapt environment → protect user health
@@ -248,8 +248,8 @@ Capacity = 0.6 × 1.5 × 1.3 = 1.17 (117% of neurotypical peak!)
 ### Data Flow
 
 1. **Input**: Activity signals from ConPort (task completion), Serena (navigation patterns), user input
-2. **Processing**: Real-time state detection, cognitive load calculation, accommodation recommendation
-3. **Output**: UI adaptations, task routing decisions, break interventions, context preservation
+1. **Processing**: Real-time state detection, cognitive load calculation, accommodation recommendation
+1. **Output**: UI adaptations, task routing decisions, break interventions, context preservation
 
 ### Storage Architecture
 
@@ -307,9 +307,9 @@ CELEBRATE_COMPLETION() {
 Level 1 (Scattered): "🎯 One clear action: [Most important step]"
 
 Level 2 (Focused):   "📋 Breaking this down into steps:
-                      1. [First step]
-                      2. [Second step]
-                      3. [Third step]"
+1. [First step]
+1. [Second step]
+1. [Third step]"
 
 Level 3 (Hyperfocus): "🔬 Comprehensive breakdown:
                        [Full analysis, implementation, alternatives]"
@@ -379,8 +379,8 @@ Capacity: 0.6 × 0.3 × 0.4 = 0.072 (7% of peak)
 
 Available Tasks:
 1. Refactor authentication module (complexity: 0.8, priority: HIGH)
-2. Update README documentation (complexity: 0.2, priority: LOW)
-3. Fix typo in error message (complexity: 0.1, priority: LOW)
+1. Update README documentation (complexity: 0.2, priority: LOW)
+1. Fix typo in error message (complexity: 0.1, priority: LOW)
 
 Traditional Tool: Routes task #1 (highest priority)
 Outcome: Developer stares at code for 30min, makes no progress, feels demoralized
@@ -422,8 +422,8 @@ Actually Routes: "🌟 Your energy is very low. Recommend: Take 15min break, the
 
 Next steps:
 1. Add expiry check
-2. Write tests
-3. Update docs
+1. Write tests
+1. Update docs
 ```
 
 **Cognitive Benefit**: Zero context rebuild time. Developer can resume immediately, even after multi-day interruptions.
@@ -470,8 +470,8 @@ async def initialize(self) -> None:
 
 **Background Monitoring**: Three async tasks run continuously:
 1. Energy level monitor (every 5 minutes)
-2. Attention state detector (every 2 minutes)
-3. Break recommendation engine (every 1 minute)
+1. Attention state detector (every 2 minutes)
+1. Break recommendation engine (every 1 minute)
 
 #### 2. ActivityTracker (`activity_tracker.py:25-51`)
 
@@ -623,14 +623,14 @@ The answer involves real-time activity analysis, ConPort task metadata, Redis st
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Energy Level Detection System](#energy-detection)
-3. [Task Cognitive Load Calculation](#cognitive-load-calculation)
-4. [Energy Matching Algorithm](#energy-matching)
-5. [Attention State Compatibility](#attention-compatibility)
-6. [Task Suitability Assessment](#task-suitability)
-7. [Real-World Routing Examples](#routing-examples)
-8. [Break Recommendation Engine](#break-recommendations)
-9. [What's Next](#whats-next)
+1. [Energy Level Detection System](#energy-detection)
+1. [Task Cognitive Load Calculation](#cognitive-load-calculation)
+1. [Energy Matching Algorithm](#energy-matching)
+1. [Attention State Compatibility](#attention-compatibility)
+1. [Task Suitability Assessment](#task-suitability)
+1. [Real-World Routing Examples](#routing-examples)
+1. [Break Recommendation Engine](#break-recommendations)
+1. [What's Next](#whats-next)
 
 ---
 
@@ -851,10 +851,10 @@ Activity Data:
 
 Calculation:
 energy_score = 0.6 (base)
-             + 0.3 (high completion)
-             + 0.0 (low context switching)
-             + 0.0 (good break compliance)
-             + 0.0 (recent break)
++ 0.3 (high completion)
++ 0.0 (low context switching)
++ 0.0 (good break compliance)
++ 0.0 (recent break)
              = 0.9
 
 Result: EnergyLevel.HYPERFOCUS
@@ -871,10 +871,10 @@ Activity Data:
 
 Calculation:
 energy_score = 0.6 (base)
-             - 0.4 (low completion)
-             - 0.3 (high context switching)
-             - 0.2 (poor break compliance)
-             - 0.3 (overdue break)
+- 0.4 (low completion)
+- 0.3 (high context switching)
+- 0.2 (poor break compliance)
+- 0.3 (overdue break)
              = -0.6 → capped at 0.0
 
 Result: EnergyLevel.VERY_LOW
@@ -891,10 +891,10 @@ Activity Data:
 
 Calculation:
 energy_score = 0.6 (base)
-             + 0.0 (moderate completion)
-             + 0.0 (moderate switching)
-             + 0.0 (decent compliance)
-             + 0.0 (reasonable break)
++ 0.0 (moderate completion)
++ 0.0 (moderate switching)
++ 0.0 (decent compliance)
++ 0.0 (reasonable break)
              = 0.6
 
 Result: EnergyLevel.MEDIUM
@@ -1363,10 +1363,10 @@ suitability = (0.0 * 0.5) + (0.0 * 0.5) = 0.0
 
 Suggested actions:
 1. ⏸️ Take 15-minute break (you're 90min overdue)
-2. 🌟 After break, try simpler task:
-   - "Update README" (complexity: 0.2)
-   - "Fix typo in error messages" (complexity: 0.1)
-3. 📅 Schedule complex task for tomorrow morning (peak energy)
+1. 🌟 After break, try simpler task:
+- "Update README" (complexity: 0.2)
+- "Fix typo in error messages" (complexity: 0.1)
+1. 📅 Schedule complex task for tomorrow morning (peak energy)
 ```
 
 ### Example 3: Acceptable with Accommodations
@@ -1404,9 +1404,9 @@ suitability = (0.9 * 0.5) + (0.32 * 0.5) = 0.61
 ```
 Suggested accommodations:
 1. 🔄 Use 15-minute focus blocks (shorter than 30min estimate)
-2. ✅ Start with simplest test case for momentum
-3. ⏰ Set timer to prevent overrun
-4. 💡 Take 5min break halfway through
+1. ✅ Start with simplest test case for momentum
+1. ⏰ Set timer to prevent overrun
+1. 💡 Take 5min break halfway through
 
 Cognitive benefit: Accommodations reduce effective load from 0.55 → 0.4
 After adjustment: Task becomes better match for transitioning state
@@ -1556,14 +1556,14 @@ The answer involves real-time activity pattern analysis, Redis state tracking, b
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [The `/dx:implement` Workflow](#dx-implement-workflow)
-3. [Context Preservation Flow](#context-preservation)
-4. [Cross-System Coordination](#cross-system-coordination)
-5. [A Day in the Life](#day-in-the-life)
-6. [DopeconBridge Event Routing](#event-routing)
-7. [Performance Validation](#performance)
-8. [Future Enhancements](#future-enhancements)
-9. [Conclusion](#conclusion)
+1. [The `/dx:implement` Workflow](#dx-implement-workflow)
+1. [Context Preservation Flow](#context-preservation)
+1. [Cross-System Coordination](#cross-system-coordination)
+1. [A Day in the Life](#day-in-the-life)
+1. [DopeconBridge Event Routing](#event-routing)
+1. [Performance Validation](#performance)
+1. [Future Enhancements](#future-enhancements)
+1. [Conclusion](#conclusion)
 
 ---
 
@@ -1805,14 +1805,14 @@ Suggestions:
    Suitability: 85% EXCELLENT MATCH
    💡 This is a quick win to build momentum
 
-2. 📝 Update README with new installation steps
+1. 📝 Update README with new installation steps
    Complexity: LOW (0.2)
    Duration: 15 minutes
    Energy required: LOW
    Suitability: 68% ACCEPTABLE
    💡 Good follow-up after the quick win
 
-3. ⏸️ Take a 15-minute recovery break
+1. ⏸️ Take a 15-minute recovery break
    💡 If you're not ready to work yet, that's okay
 
 ❌ Not recommended right now:
@@ -1906,8 +1906,8 @@ Your completion rate is building momentum.
 
 📋 Ready for next task?
 1. Update README (15min, LOW complexity)
-2. Take 5min break
-3. See all available tasks
+1. Take 5min break
+1. See all available tasks
 """)
 ```
 
@@ -1971,10 +1971,10 @@ async def save_session_context(user_id: str, user_input: Optional[str] = None):
 ✅ Session Saved!
 
 📸 Snapshot captured:
-   - Current task: Update README documentation
-   - Time invested: 8 minutes
-   - Energy: LOW → MEDIUM (improving!)
-   - Files: README.md, docs/installation.md
+- Current task: Update README documentation
+- Time invested: 8 minutes
+- Energy: LOW → MEDIUM (improving!)
+- Files: README.md, docs/installation.md
 
 💾 All work auto-saved
 🔄 Safe to switch contexts now
@@ -2035,8 +2035,8 @@ async def load_session_context(user_id: str) -> Dict:
 
 🎯 Ready to continue?
 1. Resume README update task
-2. Switch to different task
-3. Take a break first (you've been gone 45min)
+1. Switch to different task
+1. Take a break first (you've been gone 45min)
     """
 
     return {
@@ -2049,9 +2049,9 @@ async def load_session_context(user_id: str) -> Dict:
 
 **ADHD Benefit**: Zero mental effort to resume. Developer sees:
 1. **Where they were**: Task, files, progress
-2. **What happened**: Meeting interruption, 45min elapsed
-3. **Current state**: Energy updated (may have recovered)
-4. **Next actions**: Clear options (max 3)
+1. **What happened**: Meeting interruption, 45min elapsed
+1. **Current state**: Energy updated (may have recovered)
+1. **Next actions**: Clear options (max 3)
 
 **Cognitive Load**: Without /dx:load = 15-20 minutes rebuilding mental model
 **With /dx:load**: < 1 minute to full context restoration
@@ -2071,22 +2071,22 @@ The DopeconBridge provides **event-driven coordination** without violating autho
 ```
 1. Developer completes task in IDE
    ↓
-2. Serena detects file save + test pass
+1. Serena detects file save + test pass
    → Publishes "code_change_detected" event
    ↓
-3. ADHD Engine receives event
+1. ADHD Engine receives event
    → Updates task completion rate
    → Recalculates energy level (completion boost)
    ↓
-4. ConPort receives event
+1. ConPort receives event
    → Updates progress_entry status to DONE
    → Logs completion timestamp
    ↓
-5. DopeconBridge routes events to Dashboard
+1. DopeconBridge routes events to Dashboard
    → Updates UI with completion animation
    → Shows updated task list
    ↓
-6. ADHD Engine publishes "energy_state_changed"
+1. ADHD Engine publishes "energy_state_changed"
    → Dashboard updates energy indicator
    → Suggests next task based on new energy
 ```
@@ -2160,8 +2160,8 @@ print("""
 
 🛡️ Protective recommendations:
 1. Take immediate 10-15 minute break
-2. Hydrate and eat a small snack
-3. When you return, we'll suggest simpler tasks
+1. Hydrate and eat a small snack
+1. When you return, we'll suggest simpler tasks
 
 📊 Pattern note: This happened 45min after your last break
    → Recommendation: Try 30-minute work cycles today
@@ -2285,8 +2285,8 @@ print("""
 
 Recommendations:
 1. Take 10-15 minute break
-2. After break: Switch to lighter tasks (docs, code review)
-3. Avoid starting new complex work
+1. After break: Switch to lighter tasks (docs, code review)
+1. Avoid starting new complex work
 
 # Developer takes 15-minute walk
 # 3:20pm - Returns partially recovered
@@ -2323,9 +2323,9 @@ Recommendations:
 🎉 Great work today!
 
 💡 Tomorrow's prep:
-   - Start time: 9:00am
-   - Predicted energy: MEDIUM (Tuesday recovery better than Monday)
-   - Recommended first task: Deploy auth changes (MODERATE complexity)
+- Start time: 9:00am
+- Predicted energy: MEDIUM (Tuesday recovery better than Monday)
+- Recommended first task: Deploy auth changes (MODERATE complexity)
 
 🌙 Have a great evening!
 ```
@@ -2361,9 +2361,9 @@ Recommendations:
         │                 │                   │
         │                 │                   │
    Publishes:        Publishes:          Publishes:
-   - adhd_state     - task_updated      - code_changed
-   - break_reminder - decision_logged   - complexity_scored
-   - session_start  - progress_changed  - navigation_event
+- adhd_state     - task_updated      - code_changed
+- break_reminder - decision_logged   - complexity_scored
+- session_start  - progress_changed  - navigation_event
 ```
 
 ### Event Stream Schema
@@ -2544,10 +2544,10 @@ The ADHD Engine represents a **fundamental shift** in development tools: from pa
 ### Key Innovations
 
 1. **Real-Time Cognitive State Assessment**: First system to continuously monitor developer ADHD state
-2. **Energy-Aware Task Routing**: Revolutionary approach matching task complexity to current capacity
-3. **Graduated Hyperfocus Protection**: Medical-grade intervention system preventing burnout
-4. **Zero-Cost Context Preservation**: Eliminates the 15-30 minute ADHD context switch penalty
-5. **Cross-System Coordination**: ConPort + Serena + ADHD Engine working as integrated ecosystem
+1. **Energy-Aware Task Routing**: Revolutionary approach matching task complexity to current capacity
+1. **Graduated Hyperfocus Protection**: Medical-grade intervention system preventing burnout
+1. **Zero-Cost Context Preservation**: Eliminates the 15-30 minute ADHD context switch penalty
+1. **Cross-System Coordination**: ConPort + Serena + ADHD Engine working as integrated ecosystem
 
 ### The Evidence
 

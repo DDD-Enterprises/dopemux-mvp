@@ -13,9 +13,9 @@ graph_metadata:
   node_type: ADR
   impact: high
   relates_to:
-  - PM_ARCHITECTURE
-  - ADR-PM-001-canonical-task-object
-  - ADR-PM-002-pm-event-taxonomy
+- PM_ARCHITECTURE
+- ADR-PM-001-canonical-task-object
+- ADR-PM-002-pm-event-taxonomy
 ---
 # Context
 
@@ -35,20 +35,20 @@ PM requires a strict boundary to remain Trinity-correct and avoid duplicate trut
 PM adopts the following storage contract:
 
 1. Canonical task state is PM-owned and written once per accepted transition.
-2. ConPort stores decisions/progress as memory artifacts linked from canonical task records.
-3. Chronicle stores high-signal mirrored events only; it is never canonical task authority.
-4. Telemetry, suppression rates, and dashboards are derived views and cannot override canonical state.
-5. Leantime/taskmaster sync surfaces are mirror/projection paths, not canonical authorities.
+1. ConPort stores decisions/progress as memory artifacts linked from canonical task records.
+1. Chronicle stores high-signal mirrored events only; it is never canonical task authority.
+1. Telemetry, suppression rates, and dashboards are derived views and cannot override canonical state.
+1. Leantime/taskmaster sync surfaces are mirror/projection paths, not canonical authorities.
 
 # Consequences
 
 - Positive:
-  - Eliminates split-brain ambiguity between lifecycle state and observability data.
-  - Preserves Memory/Search boundary ownership.
-  - Keeps PM default outputs minimal while allowing richer opt-in evidence paths.
+- Eliminates split-brain ambiguity between lifecycle state and observability data.
+- Preserves Memory/Search boundary ownership.
+- Keeps PM default outputs minimal while allowing richer opt-in evidence paths.
 - Tradeoffs:
-  - Requires explicit link maintenance between canonical records and external mirrors.
-  - Degraded-mode queue/retry contracts must be implemented carefully to remain idempotent.
+- Requires explicit link maintenance between canonical records and external mirrors.
+- Degraded-mode queue/retry contracts must be implemented carefully to remain idempotent.
 
 # Alternatives Considered
 

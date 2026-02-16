@@ -34,24 +34,24 @@ We transformed the dashboard from a **passive display** into an **interactive co
 **4 Modal Views Implemented:**
 
 1. **Task Detail Modal** (`d` key)
-   - Full task context, metrics, history
-   - ADHD insights and recommendations
-   - Quick actions (complete, priority, notes)
+- Full task context, metrics, history
+- ADHD insights and recommendations
+- Quick actions (complete, priority, notes)
 
-2. **Service Logs Modal** (`l` key)
-   - Live log viewer with DataTable
-   - Color-coded by log level
-   - Filter and export functionality
+1. **Service Logs Modal** (`l` key)
+- Live log viewer with DataTable
+- Color-coded by log level
+- Filter and export functionality
 
-3. **Pattern Detail Modal** (`p` key)
-   - Behavioral pattern analysis
-   - Success rate, occurrences, trends
-   - Actionable recommendations
+1. **Pattern Detail Modal** (`p` key)
+- Behavioral pattern analysis
+- Success rate, occurrences, trends
+- Actionable recommendations
 
-4. **Metric History Modal** (`h` key)
-   - Historical graphs and sparklines
-   - Statistical summary
-   - Annotated events and insights
+1. **Metric History Modal** (`h` key)
+- Historical graphs and sparklines
+- Statistical summary
+- Annotated events and insights
 
 ---
 
@@ -441,36 +441,36 @@ Before considering Day 5 complete:
 ### What Worked
 
 1. **Base Class Pattern**
-   - Huge time saver
-   - Consistent UX automatically
-   - Easy to extend
+- Huge time saver
+- Consistent UX automatically
+- Easy to extend
 
-2. **Mock Data First**
-   - Build UI without API dependencies
-   - Faster iteration
-   - Clear separation of concerns
+1. **Mock Data First**
+- Build UI without API dependencies
+- Faster iteration
+- Clear separation of concerns
 
-3. **Rich Documentation**
-   - Future you will thank you
-   - Onboarding time: minutes not hours
-   - Decisions documented
+1. **Rich Documentation**
+- Future you will thank you
+- Onboarding time: minutes not hours
+- Decisions documented
 
 ### What to Watch Out For
 
 1. **API Error Handling**
-   - Services will be down sometimes
-   - Network timeouts happen
-   - Plan for degraded states
+- Services will be down sometimes
+- Network timeouts happen
+- Plan for degraded states
 
-2. **Performance with Real Data**
-   - Mock data is small
-   - Real logs could be huge
-   - Pagination will be needed
+1. **Performance with Real Data**
+- Mock data is small
+- Real logs could be huge
+- Pagination will be needed
 
-3. **State Management**
-   - Multiple modals stacking
-   - Selection state preservation
-   - Cache invalidation
+1. **State Management**
+- Multiple modals stacking
+- Selection state preservation
+- Cache invalidation
 
 ---
 
@@ -535,8 +535,8 @@ ENDPOINTS = {
 
 ### Read These First
 1. `DASHBOARD_DAY4_DEEP_RESEARCH.md` - Design decisions
-2. `DASHBOARD_DAY4_COMPLETE.md` - What was implemented
-3. `DASHBOARD_DAY4_TEST_GUIDE.md` - How to test
+1. `DASHBOARD_DAY4_COMPLETE.md` - What was implemented
+1. `DASHBOARD_DAY4_TEST_GUIDE.md` - How to test
 
 ### Code Comments
 - Modal base class is well-documented
@@ -577,13 +577,13 @@ ENDPOINTS = {
 Day 5 is complete when:
 
 1. **All modals show real data** from actual APIs
-2. **Service logs auto-update** every 1-2 seconds
-3. **Metrics pull from Prometheus** with actual queries
-4. **Patterns come from Serena** with real analysis
-5. **Tasks from Task Orchestrator** with full context
-6. **Export functions create files** in correct format
-7. **Error handling works** for all API failures
-8. **Performance acceptable** (<500ms load with real data)
+1. **Service logs auto-update** every 1-2 seconds
+1. **Metrics pull from Prometheus** with actual queries
+1. **Patterns come from Serena** with real analysis
+1. **Tasks from Task Orchestrator** with full context
+1. **Export functions create files** in correct format
+1. **Error handling works** for all API failures
+1. **Performance acceptable** (<500ms load with real data)
 
 ---
 

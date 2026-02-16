@@ -18,10 +18,10 @@ prelude: Litellm_Claude_Code_Setup (how-to) for dopemux documentation and develo
 
 ### Providers Configured:
 1. **xAI Grok** (via OpenRouter) - FREE code generation!
-2. **OpenAI GPT-5** (direct) - Logic and reasoning
-3. **OpenAI** (via OpenRouter) - Fallback routing
-4. **DeepSeek R1** (via OpenRouter) - Thinking mode
-5. **Google Gemini 2.5 Pro** - Large context, analysis
+1. **OpenAI GPT-5** (direct) - Logic and reasoning
+1. **OpenAI** (via OpenRouter) - Fallback routing
+1. **DeepSeek R1** (via OpenRouter) - Thinking mode
+1. **Google Gemini 2.5 Pro** - Large context, analysis
 
 ### Routing Strategy:
 - **Code tasks** → grok-code-fast-1 (FREE!)
@@ -147,9 +147,9 @@ Use gemini-2.5-pro for large context analysis
 ```yaml
 model_list:
   # Define all available models
-  - model_name: grok-code-fast-1
-  - model_name: gpt-5
-  - model_name: gemini-2.5-pro
+- model_name: grok-code-fast-1
+- model_name: gpt-5
+- model_name: gemini-2.5-pro
   # etc.
 
 litellm_settings:
@@ -161,8 +161,8 @@ litellm_settings:
 
   # Fallback chains
   fallbacks:
-    - grok-code-fast-1: [gpt-5]
-    - gpt-5: [grok-code-fast-1, gpt-5-or, gemini-2.5-pro]
+- grok-code-fast-1: [gpt-5]
+- gpt-5: [grok-code-fast-1, gpt-5-or, gemini-2.5-pro]
 
 router_settings:
   routing_strategy: usage-based-routing-v2
@@ -212,8 +212,8 @@ curl http://localhost:4000/v1/models \
 
 ### Test with Claude Code:
 1. Open Claude Code
-2. Type: "Use grok-code-fast-1 to write hello world"
-3. Verify it responds (using Grok via LiteLLM)
+1. Type: "Use grok-code-fast-1 to write hello world"
+1. Verify it responds (using Grok via LiteLLM)
 
 ---
 

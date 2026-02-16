@@ -17,11 +17,11 @@ This primer is a deterministic restart rail for Dopemux work in a fresh thread.
 ## Start Sequence
 
 1. Read repository governance:
-   - `.claude/PROJECT_INSTRUCTIONS.md`
-   - `.claude/PRIMER.md`
-2. Read active packet and lock scope.
-3. Verify branch, clean tree, and required directories.
-4. Confirm refusal semantics (`exit 2`).
+- `.claude/PROJECT_INSTRUCTIONS.md`
+- `.claude/PRIMER.md`
+1. Read active packet and lock scope.
+1. Verify branch, clean tree, and required directories.
+1. Confirm refusal semantics (`exit 2`).
 
 ## Working Rules
 

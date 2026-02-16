@@ -23,19 +23,19 @@ Closure verification for execution-packet backlog item:
 Added focused threshold/signal coverage in `tests/unit/test_profile_detector_scoring.py`:
 
 1. `test_confidence_threshold_auto_exact_85`
-2. `test_confidence_threshold_prompt_exact_65`
-3. `test_confidence_threshold_none_below_65`
+1. `test_confidence_threshold_prompt_exact_65`
+1. `test_confidence_threshold_none_below_65`
 
 These tests verify:
 
 1. Exact threshold transitions (`0.85` => `auto`, `0.65` => `prompt`).
-2. Below-threshold behavior (`<0.65` => `none`).
-3. Signal-combination scoring composition for `git_branch`, `directory`, and `file_patterns`.
+1. Below-threshold behavior (`<0.65` => `none`).
+1. Signal-combination scoring composition for `git_branch`, `directory`, and `file_patterns`.
 
 ## Verification
 
 1. `pytest -q --no-cov tests/unit/test_profile_detector_scoring.py` passed.
-2. `pytest -q --no-cov tests/unit/test_profile_detector_adhd_client.py` passed.
+1. `pytest -q --no-cov tests/unit/test_profile_detector_adhd_client.py` passed.
 
 ## Status
 

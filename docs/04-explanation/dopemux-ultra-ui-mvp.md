@@ -22,36 +22,36 @@ The Dopemux Ultra UI MVP represents a comprehensive enhancement of the Dopemux p
 #### 1. Activity Capture (`services/adhd_engine/services/activity-capture/`)
 - **Purpose**: Tracks developer activity patterns and cognitive load
 - **Features**:
-  - Real-time activity monitoring
-  - ADHD event subscriber
-  - Cognitive load assessment
+- Real-time activity monitoring
+- ADHD event subscriber
+- Cognitive load assessment
 - **Benefits**: Provides data foundation for personalized ADHD accommodations
 
 #### 2. ADHD Dashboard (`services/adhd_engine/services/adhd-dashboard/`)
 - **Purpose**: REST API backend for ADHD metrics visualization
 - **API Endpoints**:
-  - `/api/metrics` - Current ADHD metrics
-  - `/api/adhd-state` - Current attention state
-  - `/api/sessions/today` - Today's session data
-  - `/api/analytics/trends` - Historical trends
+- `/api/metrics` - Current ADHD metrics
+- `/api/adhd-state` - Current attention state
+- `/api/sessions/today` - Today's session data
+- `/api/analytics/trends` - Historical trends
 - **Frontend Integration**: Supports real-time dashboard with charts and indicators
 
 #### 3. ADHD Notifier (`services/adhd_engine/services/adhd-notifier/`)
 - **Purpose**: Intelligent notification system for ADHD accommodations
 - **Features**:
-  - Break reminders
-  - Attention alerts
-  - Multiple notification methods (terminal, voice, system)
-  - Priority-based notifications
+- Break reminders
+- Attention alerts
+- Multiple notification methods (terminal, voice, system)
+- Priority-based notifications
 - **Benefits**: Prevents burnout with proactive notifications
 
 #### 4. Break Suggester (`services/adhd_engine/services/break-suggester/`)
 - **Purpose**: Proactive break suggestions using cognitive load patterns
 - **Features**:
-  - 25-minute focus sessions (ADHD-optimized)
-  - Cognitive load monitoring
-  - Automatic break recommendations
-  - Redis-based state management
+- 25-minute focus sessions (ADHD-optimized)
+- Cognitive load monitoring
+- Automatic break recommendations
+- Redis-based state management
 - **Benefits**: Prevents ADHD exhaustion before it occurs
 
 #### 5. Complexity Coordinator (`services/adhd_engine/services/complexity-coordinator/`)
@@ -69,9 +69,9 @@ The Dopemux Ultra UI MVP represents a comprehensive enhancement of the Dopemux p
 #### 8. Workspace Watcher (`services/adhd_engine/services/workspace-watcher/`)
 - **Purpose**: Monitors workspace changes and activity
 - **Features**:
-  - App detection
-  - File activity monitoring
-  - Event emission for other services
+- App detection
+- File activity monitoring
+- Event emission for other services
 - **Benefits**: Maintains awareness of development context
 
 ## 🔍 Enhanced Dope-Context Capabilities
@@ -244,15 +244,15 @@ The Dopemux Ultra UI MVP represents a comprehensive enhancement of the Dopemux p
 
 ### Immediate Priorities
 1. **Testing**: Comprehensive testing of all new services
-2. **Documentation**: User guides for ADHD features
-3. **Integration**: Frontend dashboard implementation
-4. **Performance**: Optimization and monitoring
+1. **Documentation**: User guides for ADHD features
+1. **Integration**: Frontend dashboard implementation
+1. **Performance**: Optimization and monitoring
 
 ### Future Enhancements
 1. **Mobile App**: Companion mobile application
-2. **Team Features**: Collaborative development support
-3. **Advanced Analytics**: Machine learning insights
-4. **Plugin Ecosystem**: Third-party ADHD tool integration
+1. **Team Features**: Collaborative development support
+1. **Advanced Analytics**: Machine learning insights
+1. **Plugin Ecosystem**: Third-party ADHD tool integration
 
 ---
 

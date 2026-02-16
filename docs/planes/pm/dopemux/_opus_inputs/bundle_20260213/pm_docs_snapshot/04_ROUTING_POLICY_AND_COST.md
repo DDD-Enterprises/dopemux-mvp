@@ -31,27 +31,27 @@ How Supervisor chooses the optimal runner + model combination for a given task s
 
 **Evidence**
 - FACT ANCHORS:
-  - `config/models.yaml` (Static configuration)
+- `config/models.yaml` (Static configuration)
 
 **Enforcement**
 - Mechanism:
-  - Runtime: Hardcoded `Stage-to-Model` lookup table.
+- Runtime: Hardcoded `Stage-to-Model` lookup table.
 
 **Test**
 - Local command(s):
-  - `dmux route --stage "Design" --budget "High"`
+- `dmux route --stage "Design" --budget "High"`
 - Expected signals:
-  - Always returns "Claude 3.5 Sonnet" (or configured Tier 3).
+- Always returns "Claude 3.5 Sonnet" (or configured Tier 3).
 - Failure signature:
-  - Returns "GPT-4o-mini" randomly.
+- Returns "GPT-4o-mini" randomly.
 - Exit behavior:
-  - Log decision and proceed (if valid).
+- Log decision and proceed (if valid).
 
 **Failure modes**
 - If violated:
-  - Impact: nondeterminism, cost variance.
-  - Severity: S2 medium.
-  - Containment: Lock random seed (if applicable).
+- Impact: nondeterminism, cost variance.
+- Severity: S2 medium.
+- Containment: Lock random seed (if applicable).
 
 ### INV-COST-002: Routing Decisions are Logged
 **Statement**
@@ -66,27 +66,27 @@ How Supervisor chooses the optimal runner + model combination for a given task s
 
 **Evidence**
 - FACT ANCHORS:
-  - `src/dopemux/supervisor/router.py` (logging calls)
+- `src/dopemux/supervisor/router.py` (logging calls)
 
 **Enforcement**
 - Mechanism:
-  - Runtime: Router component integrity check.
+- Runtime: Router component integrity check.
 
 **Test**
 - Local command(s):
-  - `grep "Routing decision:" logs/supervisor.log`
+- `grep "Routing decision:" logs/supervisor.log`
 - Expected signals:
-  - "Selected Runner: X Reason: Y"
+- "Selected Runner: X Reason: Y"
 - Failure signature:
-  - Missing log lines.
+- Missing log lines.
 - Exit behavior:
-  - N/A.
+- N/A.
 
 **Failure modes**
 - If violated:
-  - Impact: audit loss.
-  - Severity: S3 low.
-  - Containment: Fix logging.
+- Impact: audit loss.
+- Severity: S3 low.
+- Containment: Fix logging.
 
 ### INV-COST-003: Limits Model Never Guessed
 **Statement**
@@ -101,27 +101,27 @@ How Supervisor chooses the optimal runner + model combination for a given task s
 
 **Evidence**
 - FACT ANCHORS:
-  - `config/pricing.yaml` (source of truth)
+- `config/pricing.yaml` (source of truth)
 
 **Enforcement**
 - Mechanism:
-  - Runtime: Default to `SAFE_MODE` if config missing.
+- Runtime: Default to `SAFE_MODE` if config missing.
 
 **Test**
 - Local command(s):
-  - `mv config/limits.yaml config/limits.bak && dmux run`
+- `mv config/limits.yaml config/limits.bak && dmux run`
 - Expected signals:
-  - "Limits config missing. Entering Safe Mode (Budget: $0.00)."
+- "Limits config missing. Entering Safe Mode (Budget: $0.00)."
 - Failure signature:
-  - Runs with infinite budget.
+- Runs with infinite budget.
 - Exit behavior:
-  - Fallback to Safe Mode.
+- Fallback to Safe Mode.
 
 **Failure modes**
 - If violated:
-  - Impact: cost leak.
-  - Severity: S1 high.
-  - Containment: Hard API quotas on provider side.
+- Impact: cost leak.
+- Severity: S1 high.
+- Containment: Hard API quotas on provider side.
 
 ### INV-COST-004: Cheap-Mode Triggers Reduce Scope
 **Statement**
@@ -136,27 +136,27 @@ How Supervisor chooses the optimal runner + model combination for a given task s
 
 **Evidence**
 - FACT ANCHORS:
-  - `config/limits.yaml` (defines cheap mode threshold)
+- `config/limits.yaml` (defines cheap mode threshold)
 
 **Enforcement**
 - Mechanism:
-  - Runtime: If `cheap_mode=True`, max_steps = 3 (vs 7).
+- Runtime: If `cheap_mode=True`, max_steps = 3 (vs 7).
 
 **Test**
 - Local command(s):
-  - `dmux run --profile economy --objective "Massive refactor"`
+- `dmux run --profile economy --objective "Massive refactor"`
 - Expected signals:
-  - "Objective too large for Economy Profile. Breaking down..."
+- "Objective too large for Economy Profile. Breaking down..."
 - Failure signature:
-  - Attempts massive refactor on Haiku and fails.
+- Attempts massive refactor on Haiku and fails.
 - Exit behavior:
-  - Refusal / Decomposition.
+- Refusal / Decomposition.
 
 **Failure modes**
 - If violated:
-  - Impact: failed runs, wasted tokens.
-  - Severity: S2 medium.
-  - Containment: User intervention.
+- Impact: failed runs, wasted tokens.
+- Severity: S2 medium.
+- Containment: User intervention.
 
 ### INV-COST-005: External Pricing Stored as Config
 **Statement**
@@ -171,27 +171,27 @@ How Supervisor chooses the optimal runner + model combination for a given task s
 
 **Evidence**
 - FACT ANCHORS:
-  - `config/pricing.yaml`
+- `config/pricing.yaml`
 
 **Enforcement**
 - Mechanism:
-  - Gate: `doc_gate.py` (could check for hardcoded rates in src).
+- Gate: `doc_gate.py` (could check for hardcoded rates in src).
 
 **Test**
 - Local command(s):
-  - `grep "0.0001" src/dopemux/supervisor/cost.py`
+- `grep "0.0001" src/dopemux/supervisor/cost.py`
 - Expected signals:
-  - No results (should import from config).
+- No results (should import from config).
 - Failure signature:
-  - Hardcoded magic numbers.
+- Hardcoded magic numbers.
 - Exit behavior:
-  - Code Review Rejection.
+- Code Review Rejection.
 
 **Failure modes**
 - If violated:
-  - Impact: stale pricing, maintenance nightmare.
-  - Severity: S3 low.
-  - Containment: Update code.
+- Impact: stale pricing, maintenance nightmare.
+- Severity: S3 low.
+- Containment: Update code.
 
 ## FACT ANCHORS (Repo-derived)
 
@@ -203,30 +203,30 @@ How Supervisor chooses the optimal runner + model combination for a given task s
 
 ## Open questions
 - **Real-time Pricing**: Do we fetch live pricing API or stick to config?
-  - *Resolution*: Config-based pricing updated via `dmux update-models`.
+- *Resolution*: Config-based pricing updated via `dmux update-models`.
 - **Quality Metrics**: How do we measure "quality" automatically?
-  - *Resolution*: Start with binary "Success/Fail" and "Rewrite Count". Later add "Linter Score".
+- *Resolution*: Start with binary "Success/Fail" and "Rewrite Count". Later add "Linter Score".
 
 ## Preference Ladder (Policy)
 The Supervisor evaluates available runners in this order:
 
 1. **Tier 1: Included Plans** (Sunk Cost)
-   - **GitHub Copilot Chat** (if active subscription detected).
-   - **ChatGPT Plus / Team** (via local bridge/browser integration if available).
-   - **Anthropic Pro** (via local bridge).
+- **GitHub Copilot Chat** (if active subscription detected).
+- **ChatGPT Plus / Team** (via local bridge/browser integration if available).
+- **Anthropic Pro** (via local bridge).
    *Rationale*: Already paid for; marginal cost is near zero.
 
-2. **Tier 2: Prepaid Credits / Low Cost API**
-   - **OpenRouter (Route-to-Cheapest)**: For bulk/low-risk tasks.
-   - **DeepSeek V3 / Grok Beta**: High performant, lower cost points.
+1. **Tier 2: Prepaid Credits / Low Cost API**
+- **OpenRouter (Route-to-Cheapest)**: For bulk/low-risk tasks.
+- **DeepSeek V3 / Grok Beta**: High performant, lower cost points.
 
-3. **Tier 3: Premium API (Pay-as-you-go)**
-   - **Claude 3.5 Sonnet / 3 Opus**: For complex reasoning/coding.
-   - **GPT-4o**: For general high-quality output.
+1. **Tier 3: Premium API (Pay-as-you-go)**
+- **Claude 3.5 Sonnet / 3 Opus**: For complex reasoning/coding.
+- **GPT-4o**: For general high-quality output.
 
-4. **Tier 4: Local Models (Free)**
-   - **Ollama / Local LLM**: If hardware permits (e.g., M-series Mac).
-   - *Constraint*: Only used if explicit "Offline Mode" or if API is down.
+1. **Tier 4: Local Models (Free)**
+- **Ollama / Local LLM**: If hardware permits (e.g., M-series Mac).
+- *Constraint*: Only used if explicit "Offline Mode" or if API is down.
 
 ## Stage-to-Model Mapping Table
 
@@ -262,9 +262,9 @@ The Supervisor evaluates available runners in this order:
 
 **Process**:
 1. **Analyze**: Identify stages with high failure rate on "Cheap" models.
-2. **Adjust**: Update `Stage-to-Model Mapping` to promote those stages to "Smart" models.
-3. **Analyze**: Identify stages with 100% success on "Smart" models.
-4. **Adjust**: Test "downgrading" to "Cheapest/Fast" models to save cost.
+1. **Adjust**: Update `Stage-to-Model Mapping` to promote those stages to "Smart" models.
+1. **Analyze**: Identify stages with 100% success on "Smart" models.
+1. **Adjust**: Test "downgrading" to "Cheapest/Fast" models to save cost.
 
 **Policy V1**:
 - "If pass_rate < 80% on Tier 2, force upgrade to Tier 3 for that Stage."
@@ -288,5 +288,5 @@ The Supervisor evaluates available runners in this order:
 
 ## Acceptance Criteria
 1. **Budget Enforcement**: Run a synthetic task with a $0.01 limit. Ensure it pauses/stops before exceeding it.
-2. **Routing Verification**: Request a "Design" task. Logs MUST show Tier 3 model selection. Request a "Bulk" task. Logs MUST show Tier 2/4.
-3. **Fallback Logic**: Simulate "API Down" for Primary. Ensure Supervisor picks correct Fallback from the table.
+1. **Routing Verification**: Request a "Design" task. Logs MUST show Tier 3 model selection. Request a "Bulk" task. Logs MUST show Tier 2/4.
+1. **Fallback Logic**: Simulate "API Down" for Primary. Ensure Supervisor picks correct Fallback from the table.

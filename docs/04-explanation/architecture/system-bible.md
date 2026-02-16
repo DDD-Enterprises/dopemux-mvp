@@ -18,39 +18,39 @@ Of course. Based on the provided document `IMPLEMENTATION_Dopemux_Phase1.md`, he
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a development platform.
 * **Success Metrics & Targets:**
-  * **Benchmarking:** 84.8% on SWE-Bench.
-  * **Throughput:** 626 QPS (Queries Per Second).
-  * **Latency:** <100ms p99 response time.
+* **Benchmarking:** 84.8% on SWE-Bench.
+* **Throughput:** 626 QPS (Queries Per Second).
+* **Latency:** <100ms p99 response time.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:**
-  * A 64-agent distributed system.
-  * Features a hierarchical memory architecture.
+* A 64-agent distributed system.
+* Features a hierarchical memory architecture.
 * **Primary Components:**
-  * **Claude-flow:** Core workflow or orchestration engine.
-  * **Letta Memory:** A named memory system component.
-  * **MCP Servers:** Master Control Program (MCP) servers, likely for coordination or state management.
-  * **CCFlare Proxy:** A proxy layer, likely built on or interfacing with Cloudflare.
+* **Claude-flow:** Core workflow or orchestration engine.
+* **Letta Memory:** A named memory system component.
+* **MCP Servers:** Master Control Program (MCP) servers, likely for coordination or state management.
+* **CCFlare Proxy:** A proxy layer, likely built on or interfacing with Cloudflare.
 
 ### 3. Technology Stack
 * **Databases:**
-  * PostgreSQL with the `pgvector` extension for vector storage and search.
-  * Redis for caching or message queuing.
-  * Qdrant as a dedicated vector database.
-  * Neo4j for graph-based data representation.
+* PostgreSQL with the `pgvector` extension for vector storage and search.
+* Redis for caching or message queuing.
+* Qdrant as a dedicated vector database.
+* Neo4j for graph-based data representation.
 * **Frameworks & Libraries:**
-  * DSPy for language model programming and optimization.
-  * React Ink for building command-line user interfaces.
+* DSPy for language model programming and optimization.
+* React Ink for building command-line user interfaces.
 * **Infrastructure:**
-  * Docker for containerization.
+* Docker for containerization.
 
 ### 4. Key Algorithms & Protocols
 * **Distributed Systems:**
-  * **PBFT (Practical Byzantine Fault Tolerance):** A consensus algorithm used for state machine replication in a distributed environment, ensuring resilience against malicious nodes.
+* **PBFT (Practical Byzantine Fault Tolerance):** A consensus algorithm used for state machine replication in a distributed environment, ensuring resilience against malicious nodes.
 * **Data Retrieval:**
-  * **Hybrid Search Weighting:** An algorithm that combines and weights results from multiple search modalities (e.g., keyword, semantic, graph) to improve retrieval relevance.
+* **Hybrid Search Weighting:** An algorithm that combines and weights results from multiple search modalities (e.g., keyword, semantic, graph) to improve retrieval relevance.
 * **Communication:**
-  * **JSON-RPC 2.0:** The specified protocol for inter-service communication.
+* **JSON-RPC 2.0:** The specified protocol for inter-service communication.
 
 ### 5. Unique User-Facing Features & Implementations
 * **ADHD-optimized tmux config:** A specific terminal multiplexer configuration designed to reduce cognitive load, likely through layout, color schemes, and information pacing.
@@ -83,10 +83,10 @@ Here is the structured summary based on the provided technical architecture docu
 ### 1. Architectural Vision & Goals
 
 * **Primary Architectural Goals:**
-  * Not specified. *(Awaiting document content. This would typically include goals like Scalability, High Availability, Security, Maintainability, Cost-Effectiveness, etc.)*
+* Not specified. *(Awaiting document content. This would typically include goals like Scalability, High Availability, Security, Maintainability, Cost-Effectiveness, etc.)*
 
 * **Architectural Style:**
-  * Not specified. *(Awaiting document content. Examples could be Microservices, Event-Driven Architecture, Service-Oriented Architecture (SOA), Modular Monolith, etc.)*
+* Not specified. *(Awaiting document content. Examples could be Microservices, Event-Driven Architecture, Service-Oriented Architecture (SOA), Modular Monolith, etc.)*
 
 ### 2. Core Components & Services
 
@@ -100,10 +100,10 @@ Awaiting document content. The following is a placeholder for the expected forma
 ### 3. Interactions & Data Flow
 
 * **Component Interaction Model:**
-  * Not specified. *(Awaiting document content. This section will describe the communication patterns, e.g., Synchronous REST APIs for user-facing interactions, an asynchronous message bus (like Kafka or RabbitMQ) for inter-service events, and gRPC for high-performance internal communication.)*
+* Not specified. *(Awaiting document content. This section will describe the communication patterns, e.g., Synchronous REST APIs for user-facing interactions, an asynchronous message bus (like Kafka or RabbitMQ) for inter-service events, and gRPC for high-performance internal communication.)*
 
 * **High-Level Data Flow:**
-  * Not specified. *(Awaiting document content. This will be a narrative description of data movement, e.g., "User requests initiated via the Web App are authenticated by the Auth Service. The API Gateway then routes the request to the appropriate business logic service. Data is persisted in the primary database, and events are published to the message bus for consumption by downstream analytics and notification services.")*
+* Not specified. *(Awaiting document content. This will be a narrative description of data movement, e.g., "User requests initiated via the Web App are authenticated by the Auth Service. The API Gateway then routes the request to the appropriate business logic service. Data is persisted in the primary database, and events are published to the message bus for consumption by downstream analytics and notification services.")*
 
 ### 4. Technology Stack Decisions
 
@@ -117,10 +117,10 @@ Awaiting document content. The following is a placeholder for the expected forma
 ### 5. Design Principles & Constraints
 
 * **Guiding Principles:**
-  * Not specified. *(Awaiting document content. Examples could include: "Stateless services first," "Infrastructure as Code (IaC)," "Domain-Driven Design (DDD)," "Security by Design," "API-first development.")*
+* Not specified. *(Awaiting document content. Examples could include: "Stateless services first," "Infrastructure as Code (IaC)," "Domain-Driven Design (DDD)," "Security by Design," "API-first development.")*
 
 * **Key Constraints:**
-  * Not specified. *(Awaiting document content. Examples could include: "Must be deployable on-premises," "Adherence to GDPR and CCPA regulations," "Budgetary limitations on third-party software," "Must integrate with legacy System X.")*
+* Not specified. *(Awaiting document content. Examples could include: "Must be deployable on-premises," "Adherence to GDPR and CCPA regulations," "Budgetary limitations on third-party software," "Must integrate with legacy System X.")*
 
 ---
 
@@ -132,61 +132,61 @@ Here is the analysis of the document `PRD_Dopemux_Comprehensive.md`.
 
 ### 1. Core Business Goals & User Problems
 * **What is the primary business objective this document addresses?**
-  * To capture 15% of the multi-streaming market within two years by providing a simple, reliable, and affordable cloud-based solution, measured by active subscribers and MRR.
+* To capture 15% of the multi-streaming market within two years by providing a simple, reliable, and affordable cloud-based solution, measured by active subscribers and MRR.
 * **What specific user pain points or needs are mentioned?**
-  * Streamers struggle with the high hardware costs and software complexity of managing multiple live broadcasts simultaneously.
-  * Lack of a unified dashboard to monitor stream health and audience engagement across different platforms.
+* Streamers struggle with the high hardware costs and software complexity of managing multiple live broadcasts simultaneously.
+* Lack of a unified dashboard to monitor stream health and audience engagement across different platforms.
 
 ### 2. Key Actors & Personas
 * **Who are the users or systems interacting with this component? (e.g., End-User, Administrator, Downstream Service)**
-  * Indie Streamer (User)
-  * Media Manager (User)
-  * System Administrator (Internal User)
-  * Viewer (Indirect Consumer)
-  * Twitch API (Downstream Service)
-  * YouTube Live Streaming API (Downstream Service)
+* Indie Streamer (User)
+* Media Manager (User)
+* System Administrator (Internal User)
+* Viewer (Indirect Consumer)
+* Twitch API (Downstream Service)
+* YouTube Live Streaming API (Downstream Service)
 
 ### 3. Functional Requirements & Features
 * **List the explicit features, user stories, or functional requirements described.**
-  * Users must be able to connect their Twitch and YouTube accounts via OAuth.
-  * The system must accept a single incoming stream and route it to multiple connected platforms.
-  * A unified dashboard must display the status, bitrate, and viewer count for all active streams.
-  * Media Managers must be able to invite and manage streamer accounts within their organization.
-  * The system must provide a combined chat window aggregating messages from all connected platforms.
+* Users must be able to connect their Twitch and YouTube accounts via OAuth.
+* The system must accept a single incoming stream and route it to multiple connected platforms.
+* A unified dashboard must display the status, bitrate, and viewer count for all active streams.
+* Media Managers must be able to invite and manage streamer accounts within their organization.
+* The system must provide a combined chat window aggregating messages from all connected platforms.
 
 ### 4. Non-Functional Requirements (NFRs)
 * **Performance (e.g., latency, throughput).**
-  * End-to-end glass-to-glass latency must not exceed 5 seconds.
-  * The platform must support ingesting a single 1080p 60fps stream at 8 Mbps.
+* End-to-end glass-to-glass latency must not exceed 5 seconds.
+* The platform must support ingesting a single 1080p 60fps stream at 8 Mbps.
 * **Scalability (e.g., number of users, data volume).**
-  * The system must support 1,000 concurrent streamers at launch, with a defined path to scale to 10,000.
+* The system must support 1,000 concurrent streamers at launch, with a defined path to scale to 10,000.
 * **Security (e.g., authentication, data encryption, compliance).**
-  * Authentication must use OAuth 2.0.
-  * All stream keys and access tokens must be encrypted at rest (AES-256) and in transit (TLS 1.2+).
+* Authentication must use OAuth 2.0.
+* All stream keys and access tokens must be encrypted at rest (AES-256) and in transit (TLS 1.2+).
 * **Reliability (e.g., uptime, fault tolerance).**
-  * The core streaming service must maintain 99.95% uptime.
-  * The system must feature automatic reconnection attempts to destination platforms upon connection loss.
+* The core streaming service must maintain 99.95% uptime.
+* The system must feature automatic reconnection attempts to destination platforms upon connection loss.
 
 ### 5. Technical Constraints & Decisions
 * **Are any specific technologies, languages, or platforms mandated?**
-  * Backend: Go
-  * Frontend: React (as a single-page application)
-  * Infrastructure: Must be deployed on AWS.
+* Backend: Go
+* Frontend: React (as a single-page application)
+* Infrastructure: Must be deployed on AWS.
 * **Are there any existing systems this must integrate with?**
-  * Yes, it must integrate with the Twitch API and the YouTube Live Streaming API.
+* Yes, it must integrate with the Twitch API and the YouTube Live Streaming API.
 * **Are there any architectural decisions already made?**
-  * Not mentioned.
+* Not mentioned.
 
 ### 6. Data & Integration Points
 * **What are the key data entities or models described?**
-  * `User`
-  * `Organization`
-  * `StreamDestination`
-  * `ActiveStream`
+* `User`
+* `Organization`
+* `StreamDestination`
+* `ActiveStream`
 * **What are the inputs and outputs? Does it mention specific APIs?**
-  * **Inputs:** Ingests an RTMP stream from the user's broadcasting software.
-  * **Outputs:** Egresses RTMP streams to configured destination platforms (e.g., Twitch, YouTube).
-  * **APIs:** A RESTful API will be used for the frontend, with key endpoints like `/auth/login`, `/destinations`, and `/stream/start`.
+* **Inputs:** Ingests an RTMP stream from the user's broadcasting software.
+* **Outputs:** Egresses RTMP streams to configured destination platforms (e.g., Twitch, YouTube).
+* **APIs:** A RESTful API will be used for the frontend, with key endpoints like `/auth/login`, `/destinations`, and `/stream/start`.
 
 ---
 
@@ -195,9 +195,9 @@ Based on the document provided, here is the extracted information in the require
 ### 1. Core Business Goals & User Problems
 * **Primary Business Objective:** To reduce the time and engineering effort required to launch new marketing campaigns and A/B tests.
 * **User Pain Points:**
-  * Launching simple tests requires a full code deployment cycle, leading to slow turnaround times (up to two weeks).
-  * Non-technical users are highly dependent on the engineering team to make simple configuration changes.
-  * Manual configuration changes in code are prone to human error, causing production incidents.
+* Launching simple tests requires a full code deployment cycle, leading to slow turnaround times (up to two weeks).
+* Non-technical users are highly dependent on the engineering team to make simple configuration changes.
+* Manual configuration changes in code are prone to human error, causing production incidents.
 
 ### 2. Key Actors & Personas
 * **Marketing Manager (Maria):** A non-technical user who needs to quickly launch and modify promotional campaigns.
@@ -221,23 +221,23 @@ Based on the document provided, here is the extracted information in the require
 
 ### 5. Technical Constraints & Decisions
 * **Mandated Technologies:**
-  * **Language:** Go
-  * **Database:** PostgreSQL (company's shared instance)
-  * **Deployment:** AWS on the existing Kubernetes cluster
+* **Language:** Go
+* **Database:** PostgreSQL (company's shared instance)
+* **Deployment:** AWS on the existing Kubernetes cluster
 * **Existing System Integrations:**
-  * Must integrate with the existing `AuthService` via gRPC for user authentication and authorization.
+* Must integrate with the existing `AuthService` via gRPC for user authentication and authorization.
 * **Architectural Decisions:**
-  * The system must expose a RESTful API.
+* The system must expose a RESTful API.
 
 ### 6. Data & Integration Points
 * **Key Data Entities:**
-  * **Dope:** Represents a configuration, containing `id`, `name`, `project_id`, `created_at`, `updated_at`.
-  * **DopeVersion:** Represents a specific version of a Dope, containing `id`, `dope_id`, `version_number`, `config_payload` (JSONB), `targeting_rules` (JSONB), `created_by_user_id`, `created_at`.
+* **Dope:** Represents a configuration, containing `id`, `name`, `project_id`, `created_at`, `updated_at`.
+* **DopeVersion:** Represents a specific version of a Dope, containing `id`, `dope_id`, `version_number`, `config_payload` (JSONB), `targeting_rules` (JSONB), `created_by_user_id`, `created_at`.
 * **Inputs & Outputs (APIs):**
-  * **Input:** `GET /api/v1/dope/{name}` - Fetches the active configuration.
-  * **Output:** A JSON object representing the `config_payload`.
-  * **Input:** `POST /api/v1/dope` - Creates a new Dope configuration.
-  * **Output:** A JSON object with the newly created Dope's metadata.
+* **Input:** `GET /api/v1/dope/{name}` - Fetches the active configuration.
+* **Output:** A JSON object representing the `config_payload`.
+* **Input:** `POST /api/v1/dope` - Creates a new Dope configuration.
+* **Output:** A JSON object with the newly created Dope's metadata.
 
 ---
 
@@ -293,38 +293,38 @@ Based on the analysis of `DOPEMUX_IMPLEMENTATION_GUIDE_v2.md`, here is the extra
 
 * **Primary Technical Goal:** Deliver a multi-agent, AI-augmented terminal development environment designed to accelerate complex software engineering tasks.
 * **Key Performance Indicators:**
-  * **Software Engineering Task Resolution:** 84.8% pass rate on the SWE-Bench benchmark.
-  * **Agent Orchestration Throughput:** 626 QPS on the Master Control Plane (MCP) servers.
-  * **Interactive Latency:** <100ms P99 latency for user-facing terminal interactions.
-  * **Code Completion Accuracy:** >70% line completion accuracy on the HumanEval-X benchmark.
-  * **Client Resource Footprint:** <250MB idle RAM consumption for the client-side PTY process.
+* **Software Engineering Task Resolution:** 84.8% pass rate on the SWE-Bench benchmark.
+* **Agent Orchestration Throughput:** 626 QPS on the Master Control Plane (MCP) servers.
+* **Interactive Latency:** <100ms P99 latency for user-facing terminal interactions.
+* **Code Completion Accuracy:** >70% line completion accuracy on the HumanEval-X benchmark.
+* **Client Resource Footprint:** <250MB idle RAM consumption for the client-side PTY process.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A client-server, multi-agent swarm architecture. The system is composed of 64 discrete agents operating on a hierarchical, multi-layered memory system. A central Master Control Plane manages agent lifecycle and task distribution.
 * **Primary Components:**
-  * **Claude-flow:** The primary agentic workflow engine responsible for state machine orchestration, task decomposition, and agent scheduling.
-  * **Letta Memory:** A hierarchical memory system comprised of three layers:
-    * **L1 (Working Context):** In-memory Redis cache for ephemeral data and active agent state. TTL of 5 minutes.
-    * **L2 (Episodic):** PostgreSQL database storing conversational history and short-term project context.
-    * **L3 (Long-Term):** A knowledge graph (Neo4j) and a vector database (Qdrant/pgvector) for embedding-based retrieval of documentation, codebase semantics, and historical solutions.
-  * **MCP (Master Control Plane) Servers:** A set of gRPC servers responsible for agent lifecycle management, resource allocation, and routing tasks to available agents based on skill and load.
-  * **CCFlare Proxy:** A secure ingress proxy routing user requests from the client to the appropriate MCP instance, handling authentication and rate limiting.
-  * **DTerm Client:** A custom pseudo-terminal (PTY) client built with Rust and WebAssembly, responsible for rendering the UI and managing local state.
+* **Claude-flow:** The primary agentic workflow engine responsible for state machine orchestration, task decomposition, and agent scheduling.
+* **Letta Memory:** A hierarchical memory system comprised of three layers:
+* **L1 (Working Context):** In-memory Redis cache for ephemeral data and active agent state. TTL of 5 minutes.
+* **L2 (Episodic):** PostgreSQL database storing conversational history and short-term project context.
+* **L3 (Long-Term):** A knowledge graph (Neo4j) and a vector database (Qdrant/pgvector) for embedding-based retrieval of documentation, codebase semantics, and historical solutions.
+* **MCP (Master Control Plane) Servers:** A set of gRPC servers responsible for agent lifecycle management, resource allocation, and routing tasks to available agents based on skill and load.
+* **CCFlare Proxy:** A secure ingress proxy routing user requests from the client to the appropriate MCP instance, handling authentication and rate limiting.
+* **DTerm Client:** A custom pseudo-terminal (PTY) client built with Rust and WebAssembly, responsible for rendering the UI and managing local state.
 
 ### 3. Technology Stack
 
 * **Backend & Orchestration:** Rust (MCP Servers), Python (Agents), DSPy (Agent development framework).
 * **Databases & Storage:**
-  * **PostgreSQL + pgvector:** Primary relational store and L3 vector storage.
-  * **Redis:** L1 working memory cache and message bus for inter-agent communication.
-  * **Qdrant:** Dedicated high-performance vector store for semantic search.
-  * **Neo4j:** Knowledge graph for representing codebase relationships and dependencies.
+* **PostgreSQL + pgvector:** Primary relational store and L3 vector storage.
+* **Redis:** L1 working memory cache and message bus for inter-agent communication.
+* **Qdrant:** Dedicated high-performance vector store for semantic search.
+* **Neo4j:** Knowledge graph for representing codebase relationships and dependencies.
 * **Frontend / Client:** TypeScript, React Ink (Terminal UI rendering), Rust, WebAssembly (Core terminal logic).
 * **Infrastructure & Communication:**
-  * **Containerization:** Docker.
-  * **Orchestration:** Kubernetes (K8s).
-  * **Protocols:** gRPC with Protocol Buffers (Internal service-to-service), JSON-RPC 2.0 over WebSockets (Client-to-server).
+* **Containerization:** Docker.
+* **Orchestration:** Kubernetes (K8s).
+* **Protocols:** gRPC with Protocol Buffers (Internal service-to-service), JSON-RPC 2.0 over WebSockets (Client-to-server).
 
 ### 4. Key Algorithms & Protocols
 
@@ -343,21 +343,21 @@ Based on the analysis of `DOPEMUX_IMPLEMENTATION_GUIDE_v2.md`, here is the extra
 
 * **Timeline:** A 16-week, 4-phase implementation is outlined.
 * **Initial Deliverables:**
-  * **Phase 1 (Weeks 1-4): Core Infrastructure & Memory.**
-    * Deliverable: A provisioned Kubernetes cluster running PostgreSQL/pgvector, Redis, and Qdrant.
-    * Deliverable: A functional Letta Memory L2/L3 API with the core hybrid search algorithm implemented.
-  * **Phase 2 (Weeks 5-8): Agent & Orchestration MVP.**
-    * Deliverable: A single-node MCP server capable of managing the lifecycle of a single agent.
-    * Deliverable: A baseline Python agent built with DSPy capable of performing a "hello world" task via gRPC.
+* **Phase 1 (Weeks 1-4): Core Infrastructure & Memory.**
+* Deliverable: A provisioned Kubernetes cluster running PostgreSQL/pgvector, Redis, and Qdrant.
+* Deliverable: A functional Letta Memory L2/L3 API with the core hybrid search algorithm implemented.
+* **Phase 2 (Weeks 5-8): Agent & Orchestration MVP.**
+* Deliverable: A single-node MCP server capable of managing the lifecycle of a single agent.
+* Deliverable: A baseline Python agent built with DSPy capable of performing a "hello world" task via gRPC.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk:** Cascading LLM inference latency in multi-agent chains will violate the <100ms P99 interactive latency KPI.
-  * **Mitigation:** Implement aggressive, multi-layer caching in Letta Memory (L1/L2). Utilize speculative execution for parallelizable agent sub-tasks. Develop and fine-tune smaller, distilled models for routine, low-level tasks (e.g., code classification, intent recognition).
+* **Mitigation:** Implement aggressive, multi-layer caching in Letta Memory (L1/L2). Utilize speculative execution for parallelizable agent sub-tasks. Develop and fine-tune smaller, distilled models for routine, low-level tasks (e.g., code classification, intent recognition).
 * **Risk:** State synchronization and consistency across a 64-agent distributed system is prone to race conditions and data corruption.
-  * **Mitigation:** Enforce an immutable state transition model within the Claude-flow orchestrator. Utilize Redis as a centralized, authoritative state store with optimistic locking mechanisms for concurrent writes.
+* **Mitigation:** Enforce an immutable state transition model within the Claude-flow orchestrator. Utilize Redis as a centralized, authoritative state store with optimistic locking mechanisms for concurrent writes.
 * **Risk:** The system is vulnerable to prompt injection and other adversarial inputs that could compromise agent behavior or data security.
-  * **Mitigation:** Implement a dual-LLM security architecture. A "sanitizer" LLM validates and rewrites user input against predefined security policies before passing it to the primary "execution" LLM. Employ strict input/output schemas and context fencing to limit the operational scope of each agent.
+* **Mitigation:** Implement a dual-LLM security architecture. A "sanitizer" LLM validates and rewrites user input against predefined security policies before passing it to the primary "execution" LLM. Employ strict input/output schemas and context fencing to limit the operational scope of each agent.
 
 ---
 
@@ -375,31 +375,31 @@ Of course. As a Research Analyst, I have meticulously analyzed the document `DOP
 
 ### 3. Key Findings & Data
 * **Task Completion Time (Efficiency):**
-  * The TWM interface was **28% faster** on average for a multi-model code comparison task (avg 45s vs. 62.5s for Tabs).
-  * The TWM interface was **41% faster** for tasks requiring significant context-switching between prompts.
+* The TWM interface was **28% faster** on average for a multi-model code comparison task (avg 45s vs. 62.5s for Tabs).
+* The TWM interface was **41% faster** for tasks requiring significant context-switching between prompts.
 * **User Satisfaction (System Usability Scale - SUS):**
-  * TWM Interface SUS Score: **88.5** (Excellent range).
-  * Tab-based Interface SUS Score: **71.3** (Good range).
-  * The difference in SUS scores was statistically significant (p < 0.05).
+* TWM Interface SUS Score: **88.5** (Excellent range).
+* Tab-based Interface SUS Score: **71.3** (Good range).
+* The difference in SUS scores was statistically significant (p < 0.05).
 * **Qualitative Preference:**
-  * **83%** of participants (10 out of 12) explicitly stated a preference for the TWM-style interface.
-  * Common feedback for TWM praised its "better spatial awareness" and "reduced context switching overhead."
+* **83%** of participants (10 out of 12) explicitly stated a preference for the TWM-style interface.
+* Common feedback for TWM praised its "better spatial awareness" and "reduced context switching overhead."
 
 ### 4. Conclusions & Implications
 * **Conclusions:** The evidence strongly supports the hypothesis. The TWM-style interface is demonstrably superior for Dopemux's core use cases, improving user efficiency and satisfaction.
 * **Implications & Recommendations:**
-    1. **Prioritize TWM:** The project should focus development efforts on the TWM interface as the primary mode of interaction.
-    2. **Retain Tabs as Secondary:** The Tab-based interface should be kept as a secondary, simpler option for new users or less complex workflows.
-    3. **Incorporate Feedback:** Future iterations should incorporate user feedback, specifically improving keyboard shortcuts for TWM pane management.
+1. **Prioritize TWM:** The project should focus development efforts on the TWM interface as the primary mode of interaction.
+1. **Retain Tabs as Secondary:** The Tab-based interface should be kept as a secondary, simpler option for new users or less complex workflows.
+1. **Incorporate Feedback:** Future iterations should incorporate user feedback, specifically improving keyboard shortcuts for TWM pane management.
 
 ### 5. Cited Technologies or Concepts
 * **UI/UX Paradigms:**
-  * Tab-based Interface
-  * Tiling Window Manager (TWM)
+* Tab-based Interface
+* Tiling Window Manager (TWM)
 * **Usability Metrics:**
-  * System Usability Scale (SUS)
+* System Usability Scale (SUS)
 * **Research Method:**
-  * Within-subjects A/B Testing
+* Within-subjects A/B Testing
 
 ---
 
@@ -422,10 +422,10 @@ Here is the high-level distillation of the "DOPEMUX" system architecture, based 
 ### 1. Architectural Vision & Goals
 
 * **Primary Goals:** The architecture is fundamentally designed to achieve:
-  * **High Scalability:** To handle significant growth in user traffic and data volume without performance degradation.
-  * **High Availability & Resilience:** To ensure the system remains operational and responsive, even in the event of component failures.
-  * **Developer Velocity & Maintainability:** To enable development teams to build, test, and deploy new features independently and rapidly.
-  * **Decoupling:** To reduce dependencies between different functional areas of the system, minimizing the blast radius of changes and failures.
+* **High Scalability:** To handle significant growth in user traffic and data volume without performance degradation.
+* **High Availability & Resilience:** To ensure the system remains operational and responsive, even in the event of component failures.
+* **Developer Velocity & Maintainability:** To enable development teams to build, test, and deploy new features independently and rapidly.
+* **Decoupling:** To reduce dependencies between different functional areas of the system, minimizing the blast radius of changes and failures.
 
 * **Architectural Style:** The system employs a **Microservices Architecture** in conjunction with an **Event-Driven** pattern for asynchronous communication between services. This hybrid approach supports the goals of decoupling and scalability.
 
@@ -450,17 +450,17 @@ The system is decomposed into several key services, each with a distinct and bou
 ### 3. Interactions & Data Flow
 
 * **Interaction Patterns:**
-  * **Synchronous Communication:** Client-facing and internal request/response interactions are handled via **RESTful APIs** exposed by each microservice. The API Gateway is the primary consumer of these internal APIs.
-  * **Asynchronous Communication:** Services communicate business events and trigger workflows via a central **Message Bus (e.g., Kafka or RabbitMQ)**. This decouples services, allowing them to evolve independently and improves system resilience. For example, the `Order Processing Service` publishes an `OrderCreated` event, which is consumed by the `Notification Service` and `Data Analytics Pipeline`.
+* **Synchronous Communication:** Client-facing and internal request/response interactions are handled via **RESTful APIs** exposed by each microservice. The API Gateway is the primary consumer of these internal APIs.
+* **Asynchronous Communication:** Services communicate business events and trigger workflows via a central **Message Bus (e.g., Kafka or RabbitMQ)**. This decouples services, allowing them to evolve independently and improves system resilience. For example, the `Order Processing Service` publishes an `OrderCreated` event, which is consumed by the `Notification Service` and `Data Analytics Pipeline`.
 
 * **High-Level Data Flow (Example: User Places an Order):**
-    1. A user's client application sends a `POST /orders` request to the **API Gateway**.
-    2. The **API Gateway** validates the user's JWT with the **Identity Service**.
-    3. Upon successful validation, the gateway routes the request to the **Order Processing Service**.
-    4. The **Order Processing Service** validates the order details (e.g., checking stock with the **Product Catalog Service**).
-    5. It writes the new order to its own database with a `PENDING` status and publishes an `OrderCreated` event to the message bus.
-    6. The **Notification Service** consumes this event and sends an order confirmation email to the user.
-    7. The **Data Analytics Pipeline** consumes the event and forwards the data to the analytics warehouse.
+1. A user's client application sends a `POST /orders` request to the **API Gateway**.
+1. The **API Gateway** validates the user's JWT with the **Identity Service**.
+1. Upon successful validation, the gateway routes the request to the **Order Processing Service**.
+1. The **Order Processing Service** validates the order details (e.g., checking stock with the **Product Catalog Service**).
+1. It writes the new order to its own database with a `PENDING` status and publishes an `OrderCreated` event to the message bus.
+1. The **Notification Service** consumes this event and sends an order confirmation email to the user.
+1. The **Data Analytics Pipeline** consumes the event and forwards the data to the analytics warehouse.
 
 ---
 
@@ -482,14 +482,14 @@ The technology choices reflect a commitment to open-source, cloud-native princip
 ### 5. Design Principles & Constraints
 
 * **Overarching Design Principles:**
-  * **Domain-Driven Design (DDD):** Services are modeled around specific business domains (e.g., Identity, Order, Product), each with its own bounded context and data ownership.
-  * **Database per Service:** Each microservice owns and manages its own database schema to ensure loose coupling and prevent data-level integration issues.
-  * **API-First Design:** APIs are treated as first-class products, with contracts (e.g., OpenAPI specs) defined and agreed upon before implementation.
-  * **Infrastructure as Code (IaC):** All cloud infrastructure is provisioned and managed using declarative tools like Terraform, ensuring repeatability and auditability.
-  * **Observability:** Services must be designed with observability in mind, exposing structured logs, metrics, and distributed traces to facilitate monitoring and debugging.
+* **Domain-Driven Design (DDD):** Services are modeled around specific business domains (e.g., Identity, Order, Product), each with its own bounded context and data ownership.
+* **Database per Service:** Each microservice owns and manages its own database schema to ensure loose coupling and prevent data-level integration issues.
+* **API-First Design:** APIs are treated as first-class products, with contracts (e.g., OpenAPI specs) defined and agreed upon before implementation.
+* **Infrastructure as Code (IaC):** All cloud infrastructure is provisioned and managed using declarative tools like Terraform, ensuring repeatability and auditability.
+* **Observability:** Services must be designed with observability in mind, exposing structured logs, metrics, and distributed traces to facilitate monitoring and debugging.
 
 * **Constraints:**
-  * Not specified. (This section would typically include items like regulatory compliance requirements (e.g., GDPR, PCI-DSS), budget limitations, or mandated integration with specific legacy systems).
+* Not specified. (This section would typically include items like regulatory compliance requirements (e.g., GDPR, PCI-DSS), budget limitations, or mandated integration with specific legacy systems).
 
 ---
 
@@ -541,31 +541,31 @@ Of course. Based on the provided document `MCP_Integration_Patterns.md`, here is
 
 * **Primary Technical Goal:** Deliver a development platform.
 * **Success Metrics & Targets:**
-  * **Model Performance:** 84.8% on SWE-Bench.
-  * **System Throughput:** 626 QPS (Queries Per Second).
-  * **Latency:** P99 latency <100ms.
+* **Model Performance:** 84.8% on SWE-Bench.
+* **System Throughput:** 626 QPS (Queries Per Second).
+* **Latency:** P99 latency <100ms.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** The system is designed as a 64-agent distributed system featuring a hierarchical memory architecture.
 * **Primary Components:**
-  * **MCP Servers:** Core application and logic servers.
-  * **Claude-flow:** An orchestration or workflow management component.
-  * **Letta Memory:** The specialized hierarchical memory system.
-  * **CCFlare Proxy:** A proxy layer, likely for routing, caching, or security.
+* **MCP Servers:** Core application and logic servers.
+* **Claude-flow:** An orchestration or workflow management component.
+* **Letta Memory:** The specialized hierarchical memory system.
+* **CCFlare Proxy:** A proxy layer, likely for routing, caching, or security.
 
 ### 3. Technology Stack
 
 * **Databases & Data Stores:**
-  * **Relational/Vector:** PostgreSQL with the `pgvector` extension.
-  * **Vector (Standalone):** Qdrant.
-  * **Graph:** Neo4j.
-  * **In-Memory/Cache:** Redis.
+* **Relational/Vector:** PostgreSQL with the `pgvector` extension.
+* **Vector (Standalone):** Qdrant.
+* **Graph:** Neo4j.
+* **In-Memory/Cache:** Redis.
 * **Frameworks & Libraries:**
-  * **AI/LLM Orchestration:** DSPy.
-  * **CLI User Interface:** React Ink.
+* **AI/LLM Orchestration:** DSPy.
+* **CLI User Interface:** React Ink.
 * **Containerization:**
-  * Docker.
+* Docker.
 
 ### 4. Key Algorithms & Protocols
 
@@ -600,21 +600,21 @@ Of course. As a Principal Engineer, I have analyzed the technical implementation
 
 * **Primary Technical Goal:** Deliver a multi-agent AI development platform for complex software engineering tasks, optimized for both performance and user cognitive load.
 * **Success Metrics & Targets:**
-  * **SWE-Bench Score:** >84.8%
-  * **QPS (Queries Per Second) per Node:** >600
-  * **P99 Latency (Agent Response):** <250ms
-  * **Human-in-the-loop Interventions per Task:** <2
-  * **Mean Time to Resolution (MTTR) for Standard Bug-Fix Task:** <15 minutes
+* **SWE-Bench Score:** >84.8%
+* **QPS (Queries Per Second) per Node:** >600
+* **P99 Latency (Agent Response):** <250ms
+* **Human-in-the-loop Interventions per Task:** <2
+* **Mean Time to Resolution (MTTR) for Standard Bug-Fix Task:** <15 minutes
 
 #### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A 64-agent, hierarchical system designed for parallelized task execution. The architecture is centered around a centralized command bus and a hierarchical memory system to manage state and context across agents.
 * **Primary Components:**
-  * **Claude-flow:** A DSPy-based agent orchestration framework responsible for managing agent state, defining execution graphs, and handling retries/fallbacks.
-  * **Letta Memory:** A hierarchical, hybrid memory system combining long-term storage (vector DB), a short-term L2 cache (Redis), and a working context scratchpad (local files).
-  * **MCP (Master Control Program):** The central task scheduler and agent dispatcher. It receives user requests, breaks them into sub-tasks, and assigns them to specialized agents via the command bus.
-  * **CCFlare Proxy:** A Cloudflare Worker-based proxy that provides a secure, sandboxed environment for agents to execute tools and access external APIs. It also handles rate limiting and cost control.
-  * **DopeMux TUI:** The primary user interface, a Terminal User Interface (TUI) built with React Ink.
+* **Claude-flow:** A DSPy-based agent orchestration framework responsible for managing agent state, defining execution graphs, and handling retries/fallbacks.
+* **Letta Memory:** A hierarchical, hybrid memory system combining long-term storage (vector DB), a short-term L2 cache (Redis), and a working context scratchpad (local files).
+* **MCP (Master Control Program):** The central task scheduler and agent dispatcher. It receives user requests, breaks them into sub-tasks, and assigns them to specialized agents via the command bus.
+* **CCFlare Proxy:** A Cloudflare Worker-based proxy that provides a secure, sandboxed environment for agents to execute tools and access external APIs. It also handles rate limiting and cost control.
+* **DopeMux TUI:** The primary user interface, a Terminal User Interface (TUI) built with React Ink.
 
 #### 3. Technology Stack
 
@@ -641,17 +641,17 @@ Of course. As a Principal Engineer, I have analyzed the technical implementation
 
 * **Timeline:** A 16-week, 3-phase implementation plan.
 * **Initial Deliverables:**
-  * **Phase 1 (Weeks 1-6):** Core MCP server, basic agent scaffolding, Letta Memory v1 (PostgreSQL + pgvector only), and initial TUI prototype.
-  * **Phase 2 (Weeks 7-12):** Integration of Claude-flow, expansion to a 16-agent cluster, CCFlare Proxy deployment, and implementation of the hybrid search algorithm.
+* **Phase 1 (Weeks 1-6):** Core MCP server, basic agent scaffolding, Letta Memory v1 (PostgreSQL + pgvector only), and initial TUI prototype.
+* **Phase 2 (Weeks 7-12):** Integration of Claude-flow, expansion to a 16-agent cluster, CCFlare Proxy deployment, and implementation of the hybrid search algorithm.
 
 #### 7. Critical Risks & Mitigation Strategies
 
 * **Risk:** LLM Hallucination / Inaccurate Code Generation.
-  * **Mitigation:** Implement a multi-agent validation loop where a "Reviewer" agent must approve code generated by a "Coder" agent. Utilize a Test-Driven Generation (TDG) approach where unit tests are written first.
+* **Mitigation:** Implement a multi-agent validation loop where a "Reviewer" agent must approve code generated by a "Coder" agent. Utilize a Test-Driven Generation (TDG) approach where unit tests are written first.
 * **Risk:** Runaway Cloud/API Costs.
-  * **Mitigation:** Enforce strict, configurable budget controls and real-time monitoring at the CCFlare Proxy layer. Implement model cascading (e.g., Haiku for simple tasks, Opus for complex analysis) and aggressive Redis caching for repeated sub-problems.
+* **Mitigation:** Enforce strict, configurable budget controls and real-time monitoring at the CCFlare Proxy layer. Implement model cascading (e.g., Haiku for simple tasks, Opus for complex analysis) and aggressive Redis caching for repeated sub-problems.
 * **Risk:** Context Window Limitations.
-  * **Mitigation:** Employ dynamic context management within Letta Memory, using dedicated summarization agents and a knowledge graph (Neo4j) to condense and retrieve only the most salient information for the current task's scope.
+* **Mitigation:** Employ dynamic context management within Letta Memory, using dedicated summarization agents and a knowledge graph (Neo4j) to condense and retrieve only the most salient information for the current task's scope.
 
 ---
 
@@ -676,58 +676,58 @@ Here is a sample analysis, assuming "DOPEMUX" is a modern, distributed media pro
 ### 1. Architectural Vision & Goals
 
 * **Primary Goals:**
-  * **Scalability:** The architecture must scale horizontally to handle variable loads for media ingestion and processing.
-  * **Decoupling:** Components must be loosely coupled to allow for independent development, deployment, and scaling.
-  * **Resiliency:** The system must be fault-tolerant, with failures in one component not cascading to others.
-  * **Extensibility:** The platform should be easy to extend with new media formats, processing steps, and integrations.
+* **Scalability:** The architecture must scale horizontally to handle variable loads for media ingestion and processing.
+* **Decoupling:** Components must be loosely coupled to allow for independent development, deployment, and scaling.
+* **Resiliency:** The system must be fault-tolerant, with failures in one component not cascading to others.
+* **Extensibility:** The platform should be easy to extend with new media formats, processing steps, and integrations.
 
 * **Architectural Style:**
-  * Microservices combined with an Event-Driven Architecture (EDA).
+* Microservices combined with an Event-Driven Architecture (EDA).
 
 ### 2. Core Components & Services
 
 * **API Gateway:**
-  * **Responsibility:** The single entry point for all client requests. Handles request routing, authentication, rate limiting, and SSL termination.
+* **Responsibility:** The single entry point for all client requests. Handles request routing, authentication, rate limiting, and SSL termination.
 * **User Service:**
-  * **Responsibility:** Manages user identity, authentication (e.g., JWT generation), and profile information.
+* **Responsibility:** Manages user identity, authentication (e.g., JWT generation), and profile information.
 * **Media Ingestion Service:**
-  * **Responsibility:** Handles the initial upload of media files. Validates formats, generates a unique ID, and places the raw file into object storage. Publishes an event upon successful ingestion.
+* **Responsibility:** Handles the initial upload of media files. Validates formats, generates a unique ID, and places the raw file into object storage. Publishes an event upon successful ingestion.
 * **Transcoding Worker Service:**
-  * **Responsibility:** A pool of scalable workers that listen for "media ingested" events. Responsible for the computationally intensive task of transcoding video/audio into various formats and bitrates.
+* **Responsibility:** A pool of scalable workers that listen for "media ingested" events. Responsible for the computationally intensive task of transcoding video/audio into various formats and bitrates.
 * **Metadata Service:**
-  * **Responsibility:** Manages all metadata associated with media files, such as title, description, duration, format, and processing status.
+* **Responsibility:** Manages all metadata associated with media files, such as title, description, duration, format, and processing status.
 * **Notification Service:**
-  * **Responsibility:** Sends asynchronous notifications (e.g., email, push notifications) to users upon completion of events, like a successful transcode.
+* **Responsibility:** Sends asynchronous notifications (e.g., email, push notifications) to users upon completion of events, like a successful transcode.
 
 ### 3. Interactions & Data Flow
 
 * **Interaction Model:**
-  * **Synchronous:** Client-facing interactions are handled via RESTful APIs through the **API Gateway**.
-  * **Asynchronous:** Internal service-to-service communication for long-running processes (like transcoding) is achieved via a **Message Bus** (e.g., Kafka or RabbitMQ). This decouples the ingestion process from the processing workflows.
+* **Synchronous:** Client-facing interactions are handled via RESTful APIs through the **API Gateway**.
+* **Asynchronous:** Internal service-to-service communication for long-running processes (like transcoding) is achieved via a **Message Bus** (e.g., Kafka or RabbitMQ). This decouples the ingestion process from the processing workflows.
 
 * **High-Level Data Flow (Video Upload Example):**
-    1. A user uploads a video file via a client application, which sends a request to the **API Gateway**.
-    2. The Gateway authenticates the user with the **User Service** and routes the file to the **Media Ingestion Service**.
-    3. The Ingestion Service saves the raw file to a "raw" bucket in object storage and publishes a `Media.Uploaded` event to the message bus. This event contains the file ID and location.
-    4. The **Transcoding Worker Service** and **Metadata Service** both consume this event.
-    5. The **Transcoding Service** fetches the raw file, performs transcoding, and saves the resulting formats to a "processed" bucket in object storage. Upon completion, it publishes a `Media.Processing.Complete` event.
-    6. The **Metadata Service** updates the media's status from "processing" to "available" upon receiving the completion event.
-    7. The **Notification Service** consumes the completion event and sends a confirmation to the user.
+1. A user uploads a video file via a client application, which sends a request to the **API Gateway**.
+1. The Gateway authenticates the user with the **User Service** and routes the file to the **Media Ingestion Service**.
+1. The Ingestion Service saves the raw file to a "raw" bucket in object storage and publishes a `Media.Uploaded` event to the message bus. This event contains the file ID and location.
+1. The **Transcoding Worker Service** and **Metadata Service** both consume this event.
+1. The **Transcoding Service** fetches the raw file, performs transcoding, and saves the resulting formats to a "processed" bucket in object storage. Upon completion, it publishes a `Media.Processing.Complete` event.
+1. The **Metadata Service** updates the media's status from "processing" to "available" upon receiving the completion event.
+1. The **Notification Service** consumes the completion event and sends a confirmation to the user.
 
 ### 4. Technology Stack Decisions
 
 * **Microservices Runtime:** Go (for performance-critical services like Ingestion/Transcoding) and Node.js (for I/O-bound services like User/Notifications).
-  * *Justification:* Polyglot approach to use the best tool for the job.
+* *Justification:* Polyglot approach to use the best tool for the job.
 * **Containerization & Orchestration:** Docker & Kubernetes.
-  * *Justification:* Provides standardized deployments, scalability, and service discovery in a cloud-agnostic manner.
+* *Justification:* Provides standardized deployments, scalability, and service discovery in a cloud-agnostic manner.
 * **Message Bus:** Apache Kafka.
-  * *Justification:* Chosen for its high throughput, durability, and ability to support a persistent event log for stream processing and system replays.
+* *Justification:* Chosen for its high throughput, durability, and ability to support a persistent event log for stream processing and system replays.
 * **Databases:**
-  * **PostgreSQL:** For the User Service (relational data).
-  * **MongoDB:** For the Metadata Service (flexible schema for diverse metadata).
-  * *Justification:* Polyglot persistence, aligning database technology with the specific data model of each service.
+* **PostgreSQL:** For the User Service (relational data).
+* **MongoDB:** For the Metadata Service (flexible schema for diverse metadata).
+* *Justification:* Polyglot persistence, aligning database technology with the specific data model of each service.
 * **Object Storage:** AWS S3 (or compatible equivalent).
-  * *Justification:* Highly scalable, durable, and cost-effective solution for storing large binary files.
+* *Justification:* Highly scalable, durable, and cost-effective solution for storing large binary files.
 
 ### 5. Design Principles & Constraints
 
@@ -743,12 +743,12 @@ Based on the document at `/Users/hue/code/dmpx/docs/DOPEMUX_PRD.md`, here is the
 
 ### 1. Core Business Goals & User Problems
 * **What is the primary business objective this document addresses?**
-  * To increase developer productivity and reduce the time-to-market for AI-powered applications by providing a single, unified interface for interacting with multiple AI models. The ultimate goal is to establish the company as a key player in the MLOps/LLMOps space.
+* To increase developer productivity and reduce the time-to-market for AI-powered applications by providing a single, unified interface for interacting with multiple AI models. The ultimate goal is to establish the company as a key player in the MLOps/LLMOps space.
 * **What specific user pain points or needs are mentioned?**
-  * Developers write repetitive, boilerplate code to interact with different AI model APIs.
-  * Managing multiple API keys for different services is complex.
-  * Handling varied and inconsistent response formats from different AI models requires custom parsing logic.
-  * High learning curve for developers trying to integrate new model APIs.
+* Developers write repetitive, boilerplate code to interact with different AI model APIs.
+* Managing multiple API keys for different services is complex.
+* Handling varied and inconsistent response formats from different AI models requires custom parsing logic.
+* High learning curve for developers trying to integrate new model APIs.
 
 ### 2. Key Actors & Personas
 * **AI/ML Engineer:** Technical user building applications with LLMs.
@@ -764,37 +764,37 @@ Based on the document at `/Users/hue/code/dmpx/docs/DOPEMUX_PRD.md`, here is the
 
 ### 4. Non-Functional Requirements (NFRs)
 * **Performance:**
-  * The P99 latency overhead introduced by the service must be less than 50ms.
-  * The system must handle a throughput of up to 1,000 requests per second (RPS).
+* The P99 latency overhead introduced by the service must be less than 50ms.
+* The system must handle a throughput of up to 1,000 requests per second (RPS).
 * **Scalability:**
-  * The architecture must be horizontally scalable.
-  * It must be designed to handle future growth to 10,000 RPS within the first year.
+* The architecture must be horizontally scalable.
+* It must be designed to handle future growth to 10,000 RPS within the first year.
 * **Security:**
-  * All API keys and sensitive credentials must be stored encrypted at rest using AES-256.
-  * All external communication with the service must be over TLS 1.2+.
+* All API keys and sensitive credentials must be stored encrypted at rest using AES-256.
+* All external communication with the service must be over TLS 1.2+.
 * **Reliability:**
-  * The service must maintain 99.9% uptime.
-  * It must implement a circuit-breaker pattern to gracefully handle failures from downstream AI provider APIs.
+* The service must maintain 99.9% uptime.
+* It must implement a circuit-breaker pattern to gracefully handle failures from downstream AI provider APIs.
 
 ### 5. Technical Constraints & Decisions
 * **Are any specific technologies, languages, or platforms mandated?**
-  * The service must be written in the Go programming language.
-  * It must be deployed as a set of containers on a Kubernetes cluster in AWS.
+* The service must be written in the Go programming language.
+* It must be deployed as a set of containers on a Kubernetes cluster in AWS.
 * **Are there any existing systems this must integrate with?**
-  * Yes, it must integrate with:
-    * The internal `Authz-Service` for securing its management API.
-    * The existing Prometheus/Grafana stack for monitoring.
+* Yes, it must integrate with:
+* The internal `Authz-Service` for securing its management API.
+* The existing Prometheus/Grafana stack for monitoring.
 * **Are there any architectural decisions already made?**
-  * The decision to deploy on Kubernetes is a stated architectural choice.
+* The decision to deploy on Kubernetes is a stated architectural choice.
 
 ### 6. Data & Integration Points
 * **What are the key data entities or models described?**
-  * `Request`: Represents an incoming query from a user.
-  * `ProviderConfig`: Stores configuration and credentials for a downstream AI provider.
-  * `RoutingRule`: Defines the logic for directing requests.
+* `Request`: Represents an incoming query from a user.
+* `ProviderConfig`: Stores configuration and credentials for a downstream AI provider.
+* `RoutingRule`: Defines the logic for directing requests.
 * **What are the inputs and outputs? Does it mention specific APIs?**
-  * **API Endpoint:** `POST /v1/multiplex`
-  * **Input:** A JSON object specifying the prompt, target models, and configuration.
+* **API Endpoint:** `POST /v1/multiplex`
+* **Input:** A JSON object specifying the prompt, target models, and configuration.
     ```json
     {
       "prompt": "What is the capital of France?",
@@ -802,7 +802,7 @@ Based on the document at `/Users/hue/code/dmpx/docs/DOPEMUX_PRD.md`, here is the
       "config": { "temperature": 0.7 }
     }
     ```
-  * **Output:** A unified JSON object containing an array of results from each model.
+* **Output:** A unified JSON object containing an array of results from each model.
     ```json
     {
       "results": [
@@ -857,12 +857,12 @@ The proposed agent types are:
 
 ### 5. Cited Technologies or Concepts
 * **Concepts:**
-  * Multi-Agent Systems (MAS)
-  * Separation of Concerns (Software Engineering Principle)
-  * Software Development Lifecycle (SDLC)
+* Multi-Agent Systems (MAS)
+* Separation of Concerns (Software Engineering Principle)
+* Software Development Lifecycle (SDLC)
 * **Technologies:**
-  * Large Language Models (LLMs) (as the foundation for the agents)
-  * Vector Databases (mentioned as a mechanism for agent memory)
+* Large Language Models (LLMs) (as the foundation for the agents)
+* Vector Databases (mentioned as a mechanism for agent memory)
 
 ---
 
@@ -871,10 +871,10 @@ Of course. As a world-class Systems Analyst, I have read and analyzed the docume
 ### 1. Core Business Goals & User Problems
 * **Primary Business Objective:** To increase daily user engagement by 25% by providing tangible, time-saving automations for everyday tasks, making the product a central hub for users' digital lives.
 * **User Pain Points:**
-  * Repetitive manual data entry between different applications.
-  * Decision fatigue from recurring small decisions.
-  * Missing opportunities or tasks due to a lack of follow-up.
-  * High cognitive load from context switching between multiple apps.
+* Repetitive manual data entry between different applications.
+* Decision fatigue from recurring small decisions.
+* Missing opportunities or tasks due to a lack of follow-up.
+* High cognitive load from context switching between multiple apps.
 
 ### 2. Key Actors & Personas
 * **The "Productivity Pro" (Persona: Alex):** A tech-savvy power user who wants a unified system to connect existing tools.
@@ -884,51 +884,51 @@ Of course. As a world-class Systems Analyst, I have read and analyzed the docume
 
 ### 3. Functional Requirements & Features
 * **Automated Daily Briefing:**
-  * Users can schedule a personalized daily briefing.
-  * The briefing includes today's calendar events, top 3 priority tasks, and the weather forecast.
-  * Delivery channels are email or push notification.
+* Users can schedule a personalized daily briefing.
+* The briefing includes today's calendar events, top 3 priority tasks, and the weather forecast.
+* Delivery channels are email or push notification.
 * **Smart Task Triage:**
-  * Automatically convert emails from specific senders into high-priority tasks.
-  * Use NLP to suggest a task title from the email subject.
-  * Attach the email body as a note to the created task.
+* Automatically convert emails from specific senders into high-priority tasks.
+* Use NLP to suggest a task title from the email subject.
+* Attach the email body as a note to the created task.
 * **Meal Planning Assistant:**
-  * Connect to a user's recipe database.
-  * Automatically generate a weekly meal plan and a corresponding grocery list.
-  * Considers user's dietary preferences stored in their profile.
+* Connect to a user's recipe database.
+* Automatically generate a weekly meal plan and a corresponding grocery list.
+* Considers user's dietary preferences stored in their profile.
 
 ### 4. Non-Functional Requirements (NFRs)
 * **Performance:**
-  * API response time for triggering an automation must be under 200ms.
-  * Daily briefing generation for 10,000 users must complete within a 5-minute window.
+* API response time for triggering an automation must be under 200ms.
+* Daily briefing generation for 10,000 users must complete within a 5-minute window.
 * **Scalability:** Not mentioned.
 * **Security:**
-  * User credentials and third-party API keys must be encrypted at rest (AES-256).
-  * All data in transit must use TLS 1.3.
-  * The system must be SOC 2 compliant.
+* User credentials and third-party API keys must be encrypted at rest (AES-256).
+* All data in transit must use TLS 1.3.
+* The system must be SOC 2 compliant.
 * **Reliability:**
-  * The automation engine must have an uptime of 99.95%.
-  * Failed automation runs must trigger an alert and be retried up to 3 times with exponential backoff.
+* The automation engine must have an uptime of 99.95%.
+* Failed automation runs must trigger an alert and be retried up to 3 times with exponential backoff.
 
 ### 5. Technical Constraints & Decisions
 * **Mandated Technologies:**
-  * The core automation engine must be written in **Go**.
-  * The system must be deployed as containerized microservices on an existing **Kubernetes (EKS) cluster**.
+* The core automation engine must be written in **Go**.
+* The system must be deployed as containerized microservices on an existing **Kubernetes (EKS) cluster**.
 * **Existing System Integrations:**
-  * Must integrate with the existing **PostgreSQL database**.
-  * Must use the existing **`AuthService`** for user authentication (OAuth 2.0).
+* Must integrate with the existing **PostgreSQL database**.
+* Must use the existing **`AuthService`** for user authentication (OAuth 2.0).
 * **Architectural Decisions:**
-  * A message queue (**RabbitMQ** is the likely choice) will be used to decouple automation triggers from the execution engine.
+* A message queue (**RabbitMQ** is the likely choice) will be used to decouple automation triggers from the execution engine.
 
 ### 6. Data & Integration Points
 * **Key Data Entities:**
-  * `User`: User profile and preferences.
-  * `Automation`: A user-defined rule containing a trigger and an action.
-  * `Credential`: Encrypted storage for third-party service tokens/API keys.
-  * `ExecutionLog`: A record of the history and status of each automation run.
+* `User`: User profile and preferences.
+* `Automation`: A user-defined rule containing a trigger and an action.
+* `Credential`: Encrypted storage for third-party service tokens/API keys.
+* `ExecutionLog`: A record of the history and status of each automation run.
 * **Inputs and Outputs:**
-  * **Inputs:** Webhook events from third-party services; Time-based triggers from the `SchedulerService`.
-  * **Outputs:** API calls to third-party services (e.g., create calendar event, send Slack message) made via the `ThirdPartyAPIGateway`.
-  * **APIs:** A new internal gRPC API, `AutomationService`, will be created to manage the CRUD and triggering of automations.
+* **Inputs:** Webhook events from third-party services; Time-based triggers from the `SchedulerService`.
+* **Outputs:** API calls to third-party services (e.g., create calendar event, send Slack message) made via the `ThirdPartyAPIGateway`.
+* **APIs:** A new internal gRPC API, `AutomationService`, will be created to manage the CRUD and triggering of automations.
 
 ---
 
@@ -937,29 +937,29 @@ Of course. As an expert Principal Engineer, I have analyzed the provided documen
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a development platform featuring a 64-agent system designed to function as an autonomous software engineer.
 * **Success Metrics & Targets:**
-  * **SWE-Bench Score:** 84.8%
-  * **Throughput:** 626 QPS (Queries Per Second) at peak load.
-  * **Latency:** <100ms p99 latency for interactive CLI operations.
+* **SWE-Bench Score:** 84.8%
+* **Throughput:** 626 QPS (Queries Per Second) at peak load.
+* **Latency:** <100ms p99 latency for interactive CLI operations.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** A decentralized, 64-agent system orchestrated via a central controller. The architecture utilizes a hierarchical memory system to manage state and context across agents.
 * **Primary Components:**
-  * **Claude-flow:** The central orchestration engine responsible for task decomposition and agent coordination.
-  * **Letta Memory:** A hierarchical memory system combining long-term (vector DB), short-term (relational DB), and working (in-memory cache) memory tiers.
-  * **MCP Servers (Master Control Program):** Stateless backend servers that manage agent lifecycle and execute tasks. Designed for horizontal scaling.
-  * **CCFlare Proxy:** A Cloudflare-based proxy layer for security, routing, and caching of API requests.
+* **Claude-flow:** The central orchestration engine responsible for task decomposition and agent coordination.
+* **Letta Memory:** A hierarchical memory system combining long-term (vector DB), short-term (relational DB), and working (in-memory cache) memory tiers.
+* **MCP Servers (Master Control Program):** Stateless backend servers that manage agent lifecycle and execute tasks. Designed for horizontal scaling.
+* **CCFlare Proxy:** A Cloudflare-based proxy layer for security, routing, and caching of API requests.
 
 ### 3. Technology Stack
 * **Databases:**
-  * PostgreSQL with `pgvector` extension (for short-term memory and relational data).
-  * Redis (for working memory, caching, and message queueing).
-  * Qdrant (for long-term vector memory).
-  * Neo4j (for knowledge graph representation of codebases).
+* PostgreSQL with `pgvector` extension (for short-term memory and relational data).
+* Redis (for working memory, caching, and message queueing).
+* Qdrant (for long-term vector memory).
+* Neo4j (for knowledge graph representation of codebases).
 * **Frameworks & Libraries:**
-  * **DSPy:** LLM orchestration and prompt engineering framework.
-  * **React Ink:** Framework for building the interactive command-line interface (CLI).
+* **DSPy:** LLM orchestration and prompt engineering framework.
+* **React Ink:** Framework for building the interactive command-line interface (CLI).
 * **Infrastructure:**
-  * Docker & Kubernetes (for containerization and orchestration of MCP servers).
+* Docker & Kubernetes (for containerization and orchestration of MCP servers).
 
 ### 4. Key Algorithms & Protocols
 * **Consensus:** PBFT (Practical Byzantine Fault Tolerance) for consensus among a subset of specialized agents on critical decisions (e.g., final code commits).
@@ -974,17 +974,17 @@ Of course. As an expert Principal Engineer, I have analyzed the provided documen
 ### 6. Implementation Plan Summary
 * **Timeline:** A 16-week phased implementation plan.
 * **Phase 1 Deliverables:**
-    1. Core agent framework with a single-agent capability.
-    2. Letta Memory v1, utilizing a Redis-backed implementation for the working memory tier.
-    3. A functional CLI MVP built with React Ink, capable of basic file system interaction and code generation.
+1. Core agent framework with a single-agent capability.
+1. Letta Memory v1, utilizing a Redis-backed implementation for the working memory tier.
+1. A functional CLI MVP built with React Ink, capable of basic file system interaction and code generation.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risk: LLM Hallucination & Inaccurate Code Generation.**
-  * **Mitigation:** Implement a strict Retrieval-Augmented Generation (RAG) pipeline. All code generation must be grounded in vectorized codebase context from Letta Memory. Implement a confidence scoring mechanism and require human-in-the-loop confirmation for low-confidence outputs.
+* **Mitigation:** Implement a strict Retrieval-Augmented Generation (RAG) pipeline. All code generation must be grounded in vectorized codebase context from Letta Memory. Implement a confidence scoring mechanism and require human-in-the-loop confirmation for low-confidence outputs.
 * **Risk: Prompt Injection & Security Vulnerabilities.**
-  * **Mitigation:** A dual-LLM architecture. A sandboxed "Worker" LLM performs the primary tasks, while a privileged "Guardian" LLM validates all incoming user prompts and outgoing agent actions against a set of security heuristics.
+* **Mitigation:** A dual-LLM architecture. A sandboxed "Worker" LLM performs the primary tasks, while a privileged "Guardian" LLM validates all incoming user prompts and outgoing agent actions against a set of security heuristics.
 * **Risk: Scalability of the 64-agent system under load.**
-  * **Mitigation:** Design MCP Servers to be completely stateless, allowing for horizontal scaling via Kubernetes. Implement an asynchronous job queue (Redis-based) to decouple agent tasks from synchronous API requests, ensuring the system remains responsive.
+* **Mitigation:** Design MCP Servers to be completely stateless, allowing for horizontal scaling via Kubernetes. Implement an asynchronous job queue (Redis-based) to decouple agent tasks from synchronous API requests, ensuring the system remains responsive.
 
 ---
 
@@ -1029,40 +1029,40 @@ Of course. Based on the provided document `DOPEMUX_FEATURE_DESIGN.md`, here is t
 
 * **Primary Technical Goal:** To construct a distributed, agentic software development platform capable of autonomous code generation, repository management, and task execution via a command-line interface.
 * **Key Performance Indicators:**
-  * **SWE-Bench Score:** 84.8% success rate on the SWE-Bench evaluation benchmark.
-  * **Agentic Throughput:** 626 QPS (Queries Per Second) on the `inter-agent` communication bus.
-  * **End-to-End Latency:** P99 latency of < 100ms for user-facing CLI commands.
+* **SWE-Bench Score:** 84.8% success rate on the SWE-Bench evaluation benchmark.
+* **Agentic Throughput:** 626 QPS (Queries Per Second) on the `inter-agent` communication bus.
+* **End-to-End Latency:** P99 latency of < 100ms for user-facing CLI commands.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A distributed, 64-agent swarm system based on a Hierarchical Cognitive Architecture. A central proxy routes user requests to a cluster of Master Control Program servers, which orchestrate the agent swarm. A dedicated hierarchical memory service provides context and long-term storage for the agents.
 * **Primary Components:**
-  * **`Claude-flow`:** The core orchestration engine responsible for task decomposition using a Hierarchical Task Network (HTN) planner and coordinating the agent swarm.
-  * **`Letta Memory`:** A hierarchical memory system comprised of three layers:
-        1. **Ephemeral (L1):** In-memory storage for active task context (Redis).
-        2. **Short-Term (L2):** Vector and keyword search for recent interactions (Qdrant).
-        3. **Long-Term (L3):** Persistent storage of project knowledge graphs and indexed codebases (PostgreSQL with `pgvector` and Neo4j).
-  * **`MCP (Master Control Program) Servers`:** A cluster of horizontally-scalable, stateless servers that manage agent lifecycles, state, and task execution.
-  * **`CCFlare Proxy`:** A custom reverse proxy responsible for request routing, authentication, rate limiting, and terminating WebSocket connections from the client CLI.
+* **`Claude-flow`:** The core orchestration engine responsible for task decomposition using a Hierarchical Task Network (HTN) planner and coordinating the agent swarm.
+* **`Letta Memory`:** A hierarchical memory system comprised of three layers:
+1. **Ephemeral (L1):** In-memory storage for active task context (Redis).
+1. **Short-Term (L2):** Vector and keyword search for recent interactions (Qdrant).
+1. **Long-Term (L3):** Persistent storage of project knowledge graphs and indexed codebases (PostgreSQL with `pgvector` and Neo4j).
+* **`MCP (Master Control Program) Servers`:** A cluster of horizontally-scalable, stateless servers that manage agent lifecycles, state, and task execution.
+* **`CCFlare Proxy`:** A custom reverse proxy responsible for request routing, authentication, rate limiting, and terminating WebSocket connections from the client CLI.
 
 ### 3. Technology Stack
 
 * **Databases / Storage:**
-  * PostgreSQL + `pgvector` (Long-term vectorized storage)
-  * Redis (Ephemeral L1 cache and session management)
-  * Qdrant (Short-term L2 vector database)
-  * Neo4j (Knowledge graph storage for code-base analysis)
+* PostgreSQL + `pgvector` (Long-term vectorized storage)
+* Redis (Ephemeral L1 cache and session management)
+* Qdrant (Short-term L2 vector database)
+* Neo4j (Knowledge graph storage for code-base analysis)
 * **Backend / Services:**
-  * FastAPI (Python)
+* FastAPI (Python)
 * **Frontend / CLI:**
-  * React Ink
-  * `Typer` (Python library for CLI applications)
+* React Ink
+* `Typer` (Python library for CLI applications)
 * **AI / ML / Orchestration:**
-  * DSPy (Framework for programming language models)
-  * LangChain
-  * LlamaIndex
+* DSPy (Framework for programming language models)
+* LangChain
+* LlamaIndex
 * **Infrastructure & DevOps:**
-  * Docker
+* Docker
 
 ### 4. Key Algorithms & Protocols
 
@@ -1080,18 +1080,18 @@ Of course. Based on the provided document `DOPEMUX_FEATURE_DESIGN.md`, here is t
 
 * **Timeline:** 16-week, 4-phase implementation plan.
 * **Phase 1 Deliverables (Weeks 1-4):**
-  * Core infrastructure provisioned (Docker, CI/CD pipeline).
-  * `Letta Memory` service MVP with a PostgreSQL + `pgvector` backend.
-  * Initial CLI prototype using React Ink and `Typer` capable of basic authentication and command dispatch.
+* Core infrastructure provisioned (Docker, CI/CD pipeline).
+* `Letta Memory` service MVP with a PostgreSQL + `pgvector` backend.
+* Initial CLI prototype using React Ink and `Typer` capable of basic authentication and command dispatch.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk:** LLM Hallucination / Inaccurate Code Generation.
-  * **Mitigation:** Implement a strict Retrieval-Augmented Generation (RAG) pipeline where all code generation must be grounded in and cite source code retrieved from the `Letta Memory` service.
+* **Mitigation:** Implement a strict Retrieval-Augmented Generation (RAG) pipeline where all code generation must be grounded in and cite source code retrieved from the `Letta Memory` service.
 * **Risk:** Prompt Injection Attacks via the CLI.
-  * **Mitigation:** Implement input sanitization, context-fencing for user inputs within prompts, and continuous adversarial testing using frameworks like `garak`.
+* **Mitigation:** Implement input sanitization, context-fencing for user inputs within prompts, and continuous adversarial testing using frameworks like `garak`.
 * **Risk:** Scalability bottlenecks at the `MCP Server` layer under heavy load.
-  * **Mitigation:** Design `MCP` servers to be horizontally scalable and stateless. Utilize Redis for distributed session management and task queuing to allow for seamless scaling of the compute layer.
+* **Mitigation:** Design `MCP` servers to be horizontally scalable and stateless. Utilize Redis for distributed session management and task queuing to allow for seamless scaling of the compute layer.
 
 ---
 
@@ -1103,55 +1103,55 @@ Based on the analysis of the research document `DOPEMUX_GAP_ANALYSIS.md`, here a
 ### 2. Methodology
 * **Research Method:** The research was conducted as a **comparative feature review**. The analysis involved a qualitative, feature-by-feature comparison of `dopemux` against its competitors, based on official documentation and hands-on usage.
 * **Sample Size / Test Environment:** The analysis was performed by comparing `dopemux` against a sample of four primary competitors:
-  * `tmux`
-  * `Zellij`
-  * `WezTerm`
-  * `Warp`
+* `tmux`
+* `Zellij`
+* `WezTerm`
+* `Warp`
 
 ### 3. Key Findings & Data
 The analysis identified several key feature gaps in `dopemux` when compared to established and modern alternatives.
 
 * **Critical Missing Features:**
-  * **Plugin System:** No system for extending functionality (unlike Zellij's WASM or WezTerm's Lua-based plugins).
-  * **Scrollback Search:** Lacks the ability to search through the terminal history/scrollback buffer.
-  * **Full Mouse Support:** Mouse support is only partial (pane resizing) and lacks text selection and pane selection capabilities.
+* **Plugin System:** No system for extending functionality (unlike Zellij's WASM or WezTerm's Lua-based plugins).
+* **Scrollback Search:** Lacks the ability to search through the terminal history/scrollback buffer.
+* **Full Mouse Support:** Mouse support is only partial (pane resizing) and lacks text selection and pane selection capabilities.
 
 * **High-Priority Missing Features:**
-  * **Savable Layouts:** No native system for saving and loading pre-defined pane layouts.
-  * **Advanced Scripting:** No dedicated scripting language for advanced configuration and automation.
+* **Savable Layouts:** No native system for saving and loading pre-defined pane layouts.
+* **Advanced Scripting:** No dedicated scripting language for advanced configuration and automation.
 
 * **Missing Differentiating Features:**
-  * **Real-time Collaboration:** No session-sharing functionality (a key feature of Warp).
-  * **AI Integration:** Lacks built-in AI for command suggestions or debugging (a key feature of Warp).
+* **Real-time Collaboration:** No session-sharing functionality (a key feature of Warp).
+* **AI Integration:** Lacks built-in AI for command suggestions or debugging (a key feature of Warp).
 
 ### 4. Conclusions & Implications
 * **Conclusions:** The research concludes that `dopemux` has a solid foundation in session management but significantly lags behind its competitors in three main areas:
-    1. **Extensibility** (plugins and scripting)
-    2. **Interactivity** (full mouse support and search)
-    3. **Modern Features** (collaboration and AI)
+1. **Extensibility** (plugins and scripting)
+1. **Interactivity** (full mouse support and search)
+1. **Modern Features** (collaboration and AI)
 * **Implications & Recommendations:**
-    1. **Top Priority:** Implement a WebAssembly (WASM)-based plugin system to foster community contributions and feature growth.
-    2. **Next Cycle:** Add comprehensive scrollback search and full mouse support for text selection to meet user expectations.
-    3. **Short-Term Roadmap:** Develop a system for saving and loading custom layouts.
-    4. **Long-Term Strategy:** Consider adding real-time collaboration and AI-assisted features to differentiate from open-source competitors and challenge modern terminals like Warp.
+1. **Top Priority:** Implement a WebAssembly (WASM)-based plugin system to foster community contributions and feature growth.
+1. **Next Cycle:** Add comprehensive scrollback search and full mouse support for text selection to meet user expectations.
+1. **Short-Term Roadmap:** Develop a system for saving and loading custom layouts.
+1. **Long-Term Strategy:** Consider adding real-time collaboration and AI-assisted features to differentiate from open-source competitors and challenge modern terminals like Warp.
 
 ### 5. Cited Technologies or Concepts
 * **Terminal Multiplexers:**
-  * `dopemux`
-  * `tmux`
-  * `Zellij`
+* `dopemux`
+* `tmux`
+* `Zellij`
 * **Terminal Emulators (with multiplexing):**
-  * `WezTerm`
-  * `Warp`
+* `WezTerm`
+* `Warp`
 * **Languages & Runtimes:**
-  * Rust
-  * Lua
-  * WebAssembly (WASM)
+* Rust
+* Lua
+* WebAssembly (WASM)
 * **Academic/Technical Concepts:**
-  * Gap Analysis
-  * Plugin Systems
-  * AI Integration in Developer Tools
-  * Real-time Collaboration
+* Gap Analysis
+* Plugin Systems
+* AI Integration in Developer Tools
+* Real-time Collaboration
 
 ---
 
@@ -1168,67 +1168,67 @@ This analysis provides a high-level overview of the Dopemux system architecture,
 ### 1. Architectural Vision & Goals
 
 * **Primary Goals:**
-  * **Developer Experience:** To provide a streamlined, intuitive, and powerful command-line interface for managing complex development environments and workflows.
-  * **Extensibility:** The architecture is designed to be easily extendable with new commands and functionality without requiring a full rewrite.
-  * **Performance:** The application prioritizes fast startup times and low-latency responses for a smooth interactive user experience.
-  * **Portability:** To ensure consistent operation across major development platforms (macOS, Linux, and Windows).
+* **Developer Experience:** To provide a streamlined, intuitive, and powerful command-line interface for managing complex development environments and workflows.
+* **Extensibility:** The architecture is designed to be easily extendable with new commands and functionality without requiring a full rewrite.
+* **Performance:** The application prioritizes fast startup times and low-latency responses for a smooth interactive user experience.
+* **Portability:** To ensure consistent operation across major development platforms (macOS, Linux, and Windows).
 
 * **Architectural Style:**
-  * **Modular Monolith:** The application is a single, self-contained executable. Internally, it is architected with a strong separation of concerns, comprising distinct, loosely-coupled modules that handle specific domains of functionality (e.g., command parsing, process management, configuration).
+* **Modular Monolith:** The application is a single, self-contained executable. Internally, it is architected with a strong separation of concerns, comprising distinct, loosely-coupled modules that handle specific domains of functionality (e.g., command parsing, process management, configuration).
 
 ---
 
 ### 2. Core Components & Services
 
 * **CLI Entrypoint & Command Router:**
-  * **Responsibility:** The initial point of execution. It parses command-line arguments, flags, and sub-commands, and routes the request to the appropriate Command Handler. This acts as the primary user-facing controller.
+* **Responsibility:** The initial point of execution. It parses command-line arguments, flags, and sub-commands, and routes the request to the appropriate Command Handler. This acts as the primary user-facing controller.
 
 * **Command Handler Modules:**
-  * **Responsibility:** A collection of discrete modules, where each module implements the business logic for a specific command (e.g., `start`, `stop`, `list`, `logs`). This isolates command-specific logic, promoting maintainability.
+* **Responsibility:** A collection of discrete modules, where each module implements the business logic for a specific command (e.g., `start`, `stop`, `list`, `logs`). This isolates command-specific logic, promoting maintainability.
 
 * **Process Management Core (The "Multiplexer"):**
-  * **Responsibility:** This is the heart of the application. It is responsible for spawning, monitoring, managing, and terminating child processes as defined in the user's configuration. It handles process lifecycle, I/O streaming (stdout/stderr), and state tracking.
+* **Responsibility:** This is the heart of the application. It is responsible for spawning, monitoring, managing, and terminating child processes as defined in the user's configuration. It handles process lifecycle, I/O streaming (stdout/stderr), and state tracking.
 
 * **Configuration Manager:**
-  * **Responsibility:** Loads, validates, and provides access to application and project configurations. It sources settings from configuration files (e.g., `dopemux.yml`), environment variables, and command-line flags, presenting a unified configuration view to the rest of the application.
+* **Responsibility:** Loads, validates, and provides access to application and project configurations. It sources settings from configuration files (e.g., `dopemux.yml`), environment variables, and command-line flags, presenting a unified configuration view to the rest of the application.
 
 * **State Manager:**
-  * **Responsibility:** Manages the runtime state of the application, such as the PIDs of running processes and their current status. This state can be in-memory for a single session or persisted to the local file system to enable daemonized operation and state restoration.
+* **Responsibility:** Manages the runtime state of the application, such as the PIDs of running processes and their current status. This state can be in-memory for a single session or persisted to the local file system to enable daemonized operation and state restoration.
 
 * **UI/Output Renderer:**
-  * **Responsibility:** Formats and presents output to the user's terminal. This component is responsible for rendering tables, logs with colored prefixes, status indicators, and potentially interactive Terminal User Interfaces (TUIs). It decouples presentation logic from the core business logic.
+* **Responsibility:** Formats and presents output to the user's terminal. This component is responsible for rendering tables, logs with colored prefixes, status indicators, and potentially interactive Terminal User Interfaces (TUIs). It decouples presentation logic from the core business logic.
 
 ---
 
 ### 3. Interactions & Data Flow
 
 * **Interaction Model:**
-  * Inter-component communication occurs primarily through **direct in-process function and method calls**. As a monolithic application, there is no need for network-based communication protocols like REST APIs or gRPC between internal components.
+* Inter-component communication occurs primarily through **direct in-process function and method calls**. As a monolithic application, there is no need for network-based communication protocols like REST APIs or gRPC between internal components.
 
 * **High-Level Data Flow (Example: `dopemux start`):**
-    1. A user executes the command in their terminal.
-    2. The **CLI Entrypoint** parses the `start` command and its arguments.
-    3. The **Command Router** invokes the `start` **Command Handler**.
-    4. The `start` handler requests project settings from the **Configuration Manager**.
-    5. Using this configuration, the handler instructs the **Process Management Core** to initialize and run the defined services.
-    6. The **Process Management Core** spawns the child processes, captures their output streams, and updates the **State Manager** with their status.
-    7. Process output is streamed to the **UI/Output Renderer**, which formats it (e.g., adds prefixes, colors) and prints it to standard output for the user to see.
+1. A user executes the command in their terminal.
+1. The **CLI Entrypoint** parses the `start` command and its arguments.
+1. The **Command Router** invokes the `start` **Command Handler**.
+1. The `start` handler requests project settings from the **Configuration Manager**.
+1. Using this configuration, the handler instructs the **Process Management Core** to initialize and run the defined services.
+1. The **Process Management Core** spawns the child processes, captures their output streams, and updates the **State Manager** with their status.
+1. Process output is streamed to the **UI/Output Renderer**, which formats it (e.g., adds prefixes, colors) and prints it to standard output for the user to see.
 
 ---
 
 ### 4. Technology Stack Decisions
 
 * **Primary Language: Go (Golang)**
-  * **Justification:** Chosen for its excellent performance, strong concurrency primitives (goroutines, channels) ideal for process multiplexing, and its ability to compile to a single, statically-linked, cross-platform binary. This simplifies distribution and eliminates runtime dependencies.
+* **Justification:** Chosen for its excellent performance, strong concurrency primitives (goroutines, channels) ideal for process multiplexing, and its ability to compile to a single, statically-linked, cross-platform binary. This simplifies distribution and eliminates runtime dependencies.
 
 * **CLI Framework: Cobra**
-  * **Justification:** A powerful library for creating modern CLI applications in Go. It provides a robust structure for commands, sub-commands, and flag parsing, aligning with the goal of extensibility.
+* **Justification:** A powerful library for creating modern CLI applications in Go. It provides a robust structure for commands, sub-commands, and flag parsing, aligning with the goal of extensibility.
 
 * **Configuration Handling: Viper**
-  * **Justification:** Works seamlessly with Cobra to handle configuration from various sources (files, environment variables, flags), supporting formats like YAML, JSON, and TOML.
+* **Justification:** Works seamlessly with Cobra to handle configuration from various sources (files, environment variables, flags), supporting formats like YAML, JSON, and TOML.
 
 * **Interactive UI (TUI): Bubble Tea**
-  * **Justification:** A functional, component-based framework for building sophisticated Terminal User Interfaces. This is used for interactive modes, providing a richer user experience than simple text output.
+* **Justification:** A functional, component-based framework for building sophisticated Terminal User Interfaces. This is used for interactive modes, providing a richer user experience than simple text output.
 
 ---
 
@@ -1255,10 +1255,10 @@ Based on the document `DOPEMUX_MCD.md`, here is the extracted information in the
 ### 1. Core Business Goals & User Problems
 * **Primary Business Objective:** To centralize and streamline the process of managing multiple marketing campaigns by providing a unified dashboard for performance tracking and analysis.
 * **User Pain Points:**
-  * Fragmented tooling and lack of a consolidated view of campaign performance.
-  * Difficulty in tracking cross-channel campaign metrics effectively.
-  * Time-consuming manual data aggregation from various sources.
-  * Inability to quickly pivot marketing strategies due to delayed insights.
+* Fragmented tooling and lack of a consolidated view of campaign performance.
+* Difficulty in tracking cross-channel campaign metrics effectively.
+* Time-consuming manual data aggregation from various sources.
+* Inability to quickly pivot marketing strategies due to delayed insights.
 
 ### 2. Key Actors & Personas
 * **Marketing Manager:** Primary user who needs a high-level, aggregated view of campaign performance.
@@ -1276,38 +1276,38 @@ Based on the document `DOPEMUX_MCD.md`, here is the extracted information in the
 
 ### 4. Non-Functional Requirements (NFRs)
 * **Performance:**
-  * Dashboard page load time must be less than 3 seconds.
-  * API response times must be under 200ms for 95% of requests.
+* Dashboard page load time must be less than 3 seconds.
+* API response times must be under 200ms for 95% of requests.
 * **Scalability:**
-  * The system must support up to 1,000 concurrent users.
-  * It must be capable of handling data ingestion from over 50 external ad platforms.
+* The system must support up to 1,000 concurrent users.
+* It must be capable of handling data ingestion from over 50 external ad platforms.
 * **Security:**
-  * All data must be encrypted at rest and in transit.
-  * The system must be compliant with GDPR regulations.
+* All data must be encrypted at rest and in transit.
+* The system must be compliant with GDPR regulations.
 * **Reliability:**
-  * The system must have an uptime of 99.9%.
+* The system must have an uptime of 99.9%.
 
 ### 5. Technical Constraints & Decisions
 * **Mandated Technologies:**
-  * **Backend:** Python (FastAPI framework)
-  * **Frontend:** TypeScript, React
-  * **Database:** PostgreSQL
+* **Backend:** Python (FastAPI framework)
+* **Frontend:** TypeScript, React
+* **Database:** PostgreSQL
 * **Existing Systems Integration:**
-  * Must integrate with the company's existing single sign-on (SSO) solution, Okta.
+* Must integrate with the company's existing single sign-on (SSO) solution, Okta.
 * **Architectural Decisions:**
-  * The system must be built using a microservices architecture.
-  * Data ingestion must be handled asynchronously via a message queue (RabbitMQ).
-  * The entire solution must be deployed on Amazon Web Services (AWS).
+* The system must be built using a microservices architecture.
+* Data ingestion must be handled asynchronously via a message queue (RabbitMQ).
+* The entire solution must be deployed on Amazon Web Services (AWS).
 
 ### 6. Data & Integration Points
 * **Key Data Entities:**
-  * `Campaign`
-  * `AdPlatform`
-  * `PerformanceMetric`
-  * `User`
+* `Campaign`
+* `AdPlatform`
+* `PerformanceMetric`
+* `User`
 * **Inputs & Outputs (APIs):**
-  * **Input:** An ingestion API endpoint for receiving data from external platforms (`POST /api/v1/ingest`).
-  * **Output:** An API endpoint to provide campaign metrics to the frontend (`GET /api/v1/campaigns/{id}/metrics`).
+* **Input:** An ingestion API endpoint for receiving data from external platforms (`POST /api/v1/ingest`).
+* **Output:** An API endpoint to provide campaign metrics to the frontend (`GET /api/v1/campaigns/{id}/metrics`).
 
 ---
 
@@ -1319,41 +1319,41 @@ Based on the content of this file type, here is the structured analysis:
 
 ### 1. Core Business Goals & User Problems
 * **What is the primary business objective this document addresses?**
-  * Not mentioned.
+* Not mentioned.
 * **What specific user pain points or needs are mentioned?**
-  * Not mentioned.
+* Not mentioned.
 
 ### 2. Key Actors & Personas
 * **Who are the users or systems interacting with this component? (e.g., End-User, Administrator, Downstream Service)**
-  * Not mentioned.
+* Not mentioned.
 
 ### 3. Functional Requirements & Features
 * **List the explicit features, user stories, or functional requirements described.**
-  * Not mentioned.
+* Not mentioned.
 
 ### 4. Non-Functional Requirements (NFRs)
 * **Performance (e.g., latency, throughput).**
-  * Not mentioned.
+* Not mentioned.
 * **Scalability (e.g., number of users, data volume).**
-  * Not mentioned.
+* Not mentioned.
 * **Security (e.g., authentication, data encryption, compliance).**
-  * Not mentioned.
+* Not mentioned.
 * **Reliability (e.g., uptime, fault tolerance).**
-  * Not mentioned.
+* Not mentioned.
 
 ### 5. Technical Constraints & Decisions
 * **Are any specific technologies, languages, or platforms mandated?**
-  * Not mentioned.
+* Not mentioned.
 * **Are there any existing systems this must integrate with?**
-  * Not mentioned.
+* Not mentioned.
 * **Are there any architectural decisions already made?**
-  * Not mentioned.
+* Not mentioned.
 
 ### 6. Data & Integration Points
 * **What are the key data entities or models described?**
-  * Not mentioned.
+* Not mentioned.
 * **What are the inputs and outputs? Does it mention specific APIs?**
-  * Not mentioned.
+* Not mentioned.
 
 ---
 
@@ -1364,19 +1364,19 @@ Of course. Here is the engineering and architectural analysis of the provided do
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a massively-multiplayer, agent-native development platform engineered for high-concurrency planning and state management.
 * **Success Metrics & Targets:**
-  * **SWE-Bench Score:** 84.8% (unresolved tickets)
-  * **Planning Throughput:** 626 QPS (concurrent planning operations)
-  * **State Latency:** <100ms p99 for agent state changes
-  * **Concurrency:** 512 concurrent agents per MCP Server instance
-  * **Code Quality:** 100% test coverage for core components
+* **SWE-Bench Score:** 84.8% (unresolved tickets)
+* **Planning Throughput:** 626 QPS (concurrent planning operations)
+* **State Latency:** <100ms p99 for agent state changes
+* **Concurrency:** 512 concurrent agents per MCP Server instance
+* **Code Quality:** 100% test coverage for core components
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** A federated, multi-instance architecture composed of 64-agent instances per server. The system features a hierarchical memory system designed for multi-modal data retrieval and long-term agent state persistence.
 * **Primary Components:**
-  * **Claude-flow:** A custom state management and orchestration engine for coordinating agent actions.
-  * **Letta Memory:** The hierarchical memory system combining multiple database technologies for different access patterns (long-term, short-term, vector).
-  * **MCP (Massively-Concurrent Planner) Servers:** Core compute nodes, each running an instance of the 64-agent system.
-  * **CCFlare Proxy:** An intelligent routing proxy built on Cloudflare workers, responsible for load balancing, authentication, and routing client requests to the appropriate MCP Server.
+* **Claude-flow:** A custom state management and orchestration engine for coordinating agent actions.
+* **Letta Memory:** The hierarchical memory system combining multiple database technologies for different access patterns (long-term, short-term, vector).
+* **MCP (Massively-Concurrent Planner) Servers:** Core compute nodes, each running an instance of the 64-agent system.
+* **CCFlare Proxy:** An intelligent routing proxy built on Cloudflare workers, responsible for load balancing, authentication, and routing client requests to the appropriate MCP Server.
 
 ### 3. Technology Stack
 * **Databases:** PostgreSQL (with `pgvector` extension), Redis, Qdrant, Neo4j
@@ -1398,24 +1398,24 @@ Of course. Here is the engineering and architectural analysis of the provided do
 ### 6. Implementation Plan Summary
 * **Timeline:** A 16-week, 4-phase plan is outlined.
 * **Initial Phase (Phase 1) Deliverables:**
-  * **Letta Memory v1:** Initial implementation using PostgreSQL + Redis only.
-  * **Single-Node MCP Server:** A non-federated, standalone instance.
-  * **CLI:** Core functionality built with React Ink.
-  * **Deployment:** Internal alpha deployment for a team of 10 engineers.
+* **Letta Memory v1:** Initial implementation using PostgreSQL + Redis only.
+* **Single-Node MCP Server:** A non-federated, standalone instance.
+* **CLI:** Core functionality built with React Ink.
+* **Deployment:** Internal alpha deployment for a team of 10 engineers.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **State Synchronization Failure:**
-  * **Risk:** Divergence in state between MCP servers leading to inconsistent system behavior.
-  * **Mitigation:** Implement PBFT consensus for deterministic state replication.
+* **Risk:** Divergence in state between MCP servers leading to inconsistent system behavior.
+* **Mitigation:** Implement PBFT consensus for deterministic state replication.
 * **Memory Retrieval Bottleneck:**
-  * **Risk:** High-latency lookups in the Letta Memory system under heavy load.
-  * **Mitigation:** Offload vector search to a dedicated Qdrant cluster; implement read-replicas for PostgreSQL.
+* **Risk:** High-latency lookups in the Letta Memory system under heavy load.
+* **Mitigation:** Offload vector search to a dedicated Qdrant cluster; implement read-replicas for PostgreSQL.
 * **LLM Hallucination Cascade:**
-  * **Risk:** A single agent's hallucination propagating and corrupting the plans of other agents.
-  * **Mitigation:** Implement a dedicated "Red Team" agent within each 64-agent instance responsible for validating plans against a set of logical constraints before execution.
+* **Risk:** A single agent's hallucination propagating and corrupting the plans of other agents.
+* **Mitigation:** Implement a dedicated "Red Team" agent within each 64-agent instance responsible for validating plans against a set of logical constraints before execution.
 * **Prompt Injection:**
-  * **Risk:** Malicious user input manipulating agent behavior.
-  * **Mitigation:** Not specified.
+* **Risk:** Malicious user input manipulating agent behavior.
+* **Mitigation:** Not specified.
 
 ---
 
@@ -1430,29 +1430,29 @@ Here is the structured extraction of the core engineering and architectural deta
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a cognitive-aware, agent-based development environment integrated within a terminal multiplexer to augment software engineering tasks.
 * **Success Metrics & Targets:**
-  * **Agent Performance:** 84.8% pass rate on the SWE-Bench benchmark.
-  * **Throughput:** 626 QPS (Queries Per Second) sustained load for the agent coordination service.
-  * **Latency:** <100ms p99 latency for the core agent response loop (request-to-TUI-render).
+* **Agent Performance:** 84.8% pass rate on the SWE-Bench benchmark.
+* **Throughput:** 626 QPS (Queries Per Second) sustained load for the agent coordination service.
+* **Latency:** <100ms p99 latency for the core agent response loop (request-to-TUI-render).
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** A distributed, multi-agent system composed of 64 specialized agents. The architecture utilizes a shared, hierarchical memory model for context persistence and inter-agent communication, managed by a central coordination process.
 * **Primary Components:**
-  * **Claude-flow:** An orchestration layer responsible for defining, executing, and managing complex agentic workflows using Claude-family models.
-  * **Letta Memory:** A hierarchical memory system providing short-term (volatile, Redis-based) and long-term (persistent, vector-DB-based) storage for agent context, conversation history, and project state.
-  * **MCP (Multi-agent Coordination Process) Servers:** The core backend service that manages agent lifecycles, dispatches tasks, and ensures state consistency across the agent swarm.
-  * **CCFlare Proxy:** A reverse proxy layer, likely built on Cloudflare, for routing CLI requests to the appropriate MCP instance, handling authentication, and providing DDoS mitigation.
+* **Claude-flow:** An orchestration layer responsible for defining, executing, and managing complex agentic workflows using Claude-family models.
+* **Letta Memory:** A hierarchical memory system providing short-term (volatile, Redis-based) and long-term (persistent, vector-DB-based) storage for agent context, conversation history, and project state.
+* **MCP (Multi-agent Coordination Process) Servers:** The core backend service that manages agent lifecycles, dispatches tasks, and ensures state consistency across the agent swarm.
+* **CCFlare Proxy:** A reverse proxy layer, likely built on Cloudflare, for routing CLI requests to the appropriate MCP instance, handling authentication, and providing DDoS mitigation.
 
 ### 3. Technology Stack
 * **Databases & Data Stores:**
-  * **Primary Relational/Vector:** PostgreSQL with the `pgvector` extension for hybrid metadata and vector storage.
-  * **Vector Search:** Qdrant (purpose-built for high-performance vector similarity search).
-  * **Graph Data:** Neo4j for modeling complex relationships between code entities, files, and engineering tasks.
-  * **In-Memory Cache:** Redis for session management, task queuing, and short-term agent memory.
+* **Primary Relational/Vector:** PostgreSQL with the `pgvector` extension for hybrid metadata and vector storage.
+* **Vector Search:** Qdrant (purpose-built for high-performance vector similarity search).
+* **Graph Data:** Neo4j for modeling complex relationships between code entities, files, and engineering tasks.
+* **In-Memory Cache:** Redis for session management, task queuing, and short-term agent memory.
 * **Frameworks & Libraries:**
-  * **AI/Orchestration:** DSPy (for structured language model programming and optimization).
-  * **Terminal UI (TUI):** React Ink (for building the interactive command-line interface using React components).
+* **AI/Orchestration:** DSPy (for structured language model programming and optimization).
+* **Terminal UI (TUI):** React Ink (for building the interactive command-line interface using React components).
 * **Infrastructure & Deployment:**
-  * **Containerization:** Docker.
+* **Containerization:** Docker.
 
 ### 4. Key Algorithms & Protocols
 * **State Synchronization:** Practical Byzantine Fault Tolerance (PBFT) is used for achieving consensus on agent state and task allocation across distributed MCP server instances.
@@ -1467,21 +1467,21 @@ Here is the structured extraction of the core engineering and architectural deta
 ### 6. Implementation Plan Summary
 * **Timeline:** A 16-week phased implementation plan.
 * **Phase 1 Deliverables (Weeks 1-8): Core Backend & Scaffolding**
-  * MCP Server MVP with task dispatching logic.
-  * Letta Memory schema definition and deployment (PostgreSQL/Qdrant).
-  * Basic React Ink TUI scaffold with secure auth to the CCFlare Proxy.
+* MCP Server MVP with task dispatching logic.
+* Letta Memory schema definition and deployment (PostgreSQL/Qdrant).
+* Basic React Ink TUI scaffold with secure auth to the CCFlare Proxy.
 * **Phase 2 Deliverables (Weeks 9-16): Agent & Feature Integration**
-  * Integration of the first specialized agent via Claude-flow.
-  * Implementation of the Progressive Disclosure UI pattern in the TUI.
-  * Deployment of the first-pass RSD-aware feedback model.
+* Integration of the first specialized agent via Claude-flow.
+* Implementation of the Progressive Disclosure UI pattern in the TUI.
+* Deployment of the first-pass RSD-aware feedback model.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risk:** **Agent Performance Degradation/Hallucination:** LLM-based agents may produce incorrect or non-deterministic code and analysis.
-  * **Mitigation:** Implement a multi-stage validation pipeline for all agent-generated code, including automated test generation and execution. A mandatory "human-in-the-loop" confirmation step will be required for all filesystem-modifying or git-history-altering operations.
+* **Mitigation:** Implement a multi-stage validation pipeline for all agent-generated code, including automated test generation and execution. A mandatory "human-in-the-loop" confirmation step will be required for all filesystem-modifying or git-history-altering operations.
 * **Risk:** **State Management Complexity:** Maintaining consistent state across 64 agents and a hierarchical memory system is prone to race conditions and data corruption.
-  * **Mitigation:** Strictly enforce the PBFT consensus protocol for all state-changing operations. Implement transactional guarantees at the data layer and utilize optimistic locking within Letta Memory to manage concurrent writes.
+* **Mitigation:** Strictly enforce the PBFT consensus protocol for all state-changing operations. Implement transactional guarantees at the data layer and utilize optimistic locking within Letta Memory to manage concurrent writes.
 * **Risk:** **High Inference Latency:** The <100ms latency target is aggressive for complex multi-agent chains.
-  * **Mitigation:** Pre-computation and aggressive caching of common queries and agent responses in Redis. Offload non-critical tasks to background workers. Investigate model quantization and dedicated, regionally-distributed inference endpoints managed via the CCFlare Proxy.
+* **Mitigation:** Pre-computation and aggressive caching of common queries and agent responses in Redis. Offload non-critical tasks to background workers. Investigate model quantization and dedicated, regionally-distributed inference endpoints managed via the CCFlare Proxy.
 
 ---
 
@@ -1532,31 +1532,31 @@ Based on the analysis of the technical implementation document `tmux-app-design.
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a real-time, multi-agent cognitive augmentation platform for developers, embedded directly within a `tmux` terminal session, to accelerate complex software engineering tasks.
 * **Key Performance Indicators:**
-  * **Task Completion Benchmark:** Achieve a score of ≥ 84.8% on the SWE-Bench evaluation suite.
-  * **Throughput:** The Master Control Program (MCP) must sustain an orchestration throughput of ≥ 626 QPS under simulated load.
-  * **Interaction Latency:** P99 latency for user-facing actions (code generation, file modification, command execution) must be < 100ms, excluding LLM inference time.
-  * **Context Retrieval Precision:** Maintain a Mean Reciprocal Rank (MRR) of ≥ 0.95 for RAG-based context fetching against the project's codebase.
+* **Task Completion Benchmark:** Achieve a score of ≥ 84.8% on the SWE-Bench evaluation suite.
+* **Throughput:** The Master Control Program (MCP) must sustain an orchestration throughput of ≥ 626 QPS under simulated load.
+* **Interaction Latency:** P99 latency for user-facing actions (code generation, file modification, command execution) must be < 100ms, excluding LLM inference time.
+* **Context Retrieval Precision:** Maintain a Mean Reciprocal Rank (MRR) of ≥ 0.95 for RAG-based context fetching against the project's codebase.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** A distributed, per-user, 64-agent system managed by a central orchestrator. The architecture utilizes a hierarchical memory system to manage state and context across different time horizons and abstraction levels. Communication between the client and backend is proxied for security and routing.
 * **Primary Components:**
-  * **MCP (Master Control Program) Servers:** The core orchestration engine. Responsible for task decomposition, agent assignment, state management, and execution graph generation for complex user requests.
-  * **Claude-flow:** A declarative framework for defining and executing agent workflows using a DAG-based structure. Manages LLM API calls, prompt chaining, and tool-use validation, primarily with the Claude 3 model family.
-  * **Letta Memory:** A hierarchical, multi-tiered memory system for agents.
-    * **L1 (Working Memory):** Redis-based cache for short-term conversational state and active task data. TTL of 5 minutes.
-    * **L2 (Episodic Memory):** PostgreSQL + `pgvector` store for long-term recall of entire user sessions and key decisions.
-    * **L3 (Semantic Memory):** Qdrant-based vector store containing embeddings of the entire codebase, documentation, and technical artifacts for high-performance RAG.
-  * **CCFlare Proxy:** A Cloudflare Worker-based reverse proxy that handles authentication, rate limiting, and intelligent routing of client requests to the appropriate MCP instance.
-  * **Graph Engine:** A Neo4j database instance that models the entire project codebase as an Abstract Syntax Tree (AST) and dependency graph.
-  * **`tmux-agent-client`:** The client-side application running as a `tmux` plugin. Built with a terminal UI framework, it communicates with the backend via secure WebSockets proxied by CCFlare.
+* **MCP (Master Control Program) Servers:** The core orchestration engine. Responsible for task decomposition, agent assignment, state management, and execution graph generation for complex user requests.
+* **Claude-flow:** A declarative framework for defining and executing agent workflows using a DAG-based structure. Manages LLM API calls, prompt chaining, and tool-use validation, primarily with the Claude 3 model family.
+* **Letta Memory:** A hierarchical, multi-tiered memory system for agents.
+* **L1 (Working Memory):** Redis-based cache for short-term conversational state and active task data. TTL of 5 minutes.
+* **L2 (Episodic Memory):** PostgreSQL + `pgvector` store for long-term recall of entire user sessions and key decisions.
+* **L3 (Semantic Memory):** Qdrant-based vector store containing embeddings of the entire codebase, documentation, and technical artifacts for high-performance RAG.
+* **CCFlare Proxy:** A Cloudflare Worker-based reverse proxy that handles authentication, rate limiting, and intelligent routing of client requests to the appropriate MCP instance.
+* **Graph Engine:** A Neo4j database instance that models the entire project codebase as an Abstract Syntax Tree (AST) and dependency graph.
+* **`tmux-agent-client`:** The client-side application running as a `tmux` plugin. Built with a terminal UI framework, it communicates with the backend via secure WebSockets proxied by CCFlare.
 
 ### 3. Technology Stack
 * **Backend & Orchestration:** Python, DSPy, FastAPI
 * **Databases:**
-  * **Relational/Vector (L2):** PostgreSQL with the `pgvector` extension.
-  * **Vector (L3):** Qdrant
-  * **Graph:** Neo4j
-  * **Cache/In-Memory (L1):** Redis
+* **Relational/Vector (L2):** PostgreSQL with the `pgvector` extension.
+* **Vector (L3):** Qdrant
+* **Graph:** Neo4j
+* **Cache/In-Memory (L1):** Redis
 * **Client-Side (CLI):** TypeScript, React Ink
 * **Communication:** gRPC (for internal service-to-service communication), Secure WebSockets (for client-server communication).
 * **Containerization & Deployment:** Docker, Kubernetes (K8s)
@@ -1569,32 +1569,32 @@ Based on the analysis of the technical implementation document `tmux-app-design.
 
 ### 5. Unique User-Facing Features & Implementations
 * **ADHD-Optimized `tmux` Configuration:**
-  * **Implementation:** The client dynamically manages `tmux` panes and windows. A "focus mode" is triggered via a hotkey, which minimizes all non-essential panes and uses `tmux`'s styling capabilities to dim their contents, reducing visual noise.
+* **Implementation:** The client dynamically manages `tmux` panes and windows. A "focus mode" is triggered via a hotkey, which minimizes all non-essential panes and uses `tmux`'s styling capabilities to dim their contents, reducing visual noise.
 * **RSD-Aware Feedback Loop:**
-  * **Implementation:** Error messages and code suggestions from the AI are passed through a dedicated "Critique Refinement Agent." This agent uses a specific system prompt and a fine-tuned model to rephrase feedback to be exclusively constructive, emotionally neutral, and to provide immediate, actionable steps, avoiding judgmental or ambiguous language.
+* **Implementation:** Error messages and code suggestions from the AI are passed through a dedicated "Critique Refinement Agent." This agent uses a specific system prompt and a fine-tuned model to rephrase feedback to be exclusively constructive, emotionally neutral, and to provide immediate, actionable steps, avoiding judgmental or ambiguous language.
 * **Progressive Information Disclosure:**
-  * **Implementation:** The React Ink UI renders complex outputs (e.g., a multi-file code change) as collapsed, high-level summaries by default. Users can use keybindings to incrementally expand sections, view diffs, or drill down into specific details, preventing cognitive overload.
+* **Implementation:** The React Ink UI renders complex outputs (e.g., a multi-file code change) as collapsed, high-level summaries by default. Users can use keybindings to incrementally expand sections, view diffs, or drill down into specific details, preventing cognitive overload.
 * **Real-time Filesystem-to-Graph Sync:**
-  * **Implementation:** A file system watcher daemon runs locally, detecting file changes (`inotify` on Linux, `FSEvents` on macOS). It generates ASTs for changed files and sends compact diffs to the Graph Engine, which updates the Neo4j codebase graph in near real-time.
+* **Implementation:** A file system watcher daemon runs locally, detecting file changes (`inotify` on Linux, `FSEvents` on macOS). It generates ASTs for changed files and sends compact diffs to the Graph Engine, which updates the Neo4j codebase graph in near real-time.
 
 ### 6. Implementation Plan Summary
 * **Timeline:** 16-week phased implementation plan.
 * **Phase 1 Deliverables (Weeks 1-4): Core Infrastructure & Headless API**
-  * Deployment of core database stack (Postgres, Qdrant, Redis) on K8s.
-  * Initial MCP server capable of handling a single agent workflow via a REST API.
-  * CCFlare proxy setup for basic auth and routing.
+* Deployment of core database stack (Postgres, Qdrant, Redis) on K8s.
+* Initial MCP server capable of handling a single agent workflow via a REST API.
+* CCFlare proxy setup for basic auth and routing.
 * **Phase 2 Deliverables (Weeks 5-8): Memory & RAG Implementation**
-  * Fully implemented Letta Memory system (L1, L2, L3).
-  * Hybrid Search algorithm integrated for codebase-aware RAG.
-  * Internal benchmark of context retrieval precision meeting the specified MRR KPI.
+* Fully implemented Letta Memory system (L1, L2, L3).
+* Hybrid Search algorithm integrated for codebase-aware RAG.
+* Internal benchmark of context retrieval precision meeting the specified MRR KPI.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risk:** **LLM Latency.** End-to-end latency for agent interactions may exceed the 100ms target, leading to a poor user experience.
-  * **Mitigation:** Implement speculative execution of common follow-up tasks. Utilize smaller, specialized local models for low-latency tasks like syntax correction. Stream all LLM responses token-by-token to the UI.
+* **Mitigation:** Implement speculative execution of common follow-up tasks. Utilize smaller, specialized local models for low-latency tasks like syntax correction. Stream all LLM responses token-by-token to the UI.
 * **Risk:** **Context Window Exhaustion & Hallucination.** Agents may fail on large codebases due to limited context windows, leading to incorrect or out-of-context code generation.
-  * **Mitigation:** The primary mitigation is the RAG-powered Letta Memory system. The Neo4j graph will be used to fetch only the most relevant code snippets ("context snippets") based on the dependency graph, rather than entire files.
+* **Mitigation:** The primary mitigation is the RAG-powered Letta Memory system. The Neo4j graph will be used to fetch only the most relevant code snippets ("context snippets") based on the dependency graph, rather than entire files.
 * **Risk:** **Cascading Agent Failure.** A single faulty agent in a complex workflow could corrupt the state for all dependent agents, causing the entire task to fail.
-  * **Mitigation:** Implement transactional state updates within the MCP. Workflows in Claude-flow will be designed with idempotent, retry-able steps. A "Validation Agent" will be included in critical workflows to independently verify the output of a "Worker Agent" before committing its changes.
+* **Mitigation:** Implement transactional state updates within the MCP. Workflows in Claude-flow will be designed with idempotent, retry-able steps. A "Validation Agent" will be included in critical workflows to independently verify the output of a "Worker Agent" before committing its changes.
 
 ---
 
@@ -1615,53 +1615,53 @@ This document describes an **Information Architecture**, not a software system a
 ### 1. Architectural Vision & Goals
 
 * **Primary Goals:**
-  * **Discoverability:** To create a central, easy-to-navigate repository for high-quality resources on a specific topic.
-  * **Clarity & Organization:** To categorize disparate resources (tools, papers, articles) into logical sections, making the information accessible and digestible.
-  * **Community Contribution:** To provide a living document that can be updated and expanded by the community.
+* **Discoverability:** To create a central, easy-to-navigate repository for high-quality resources on a specific topic.
+* **Clarity & Organization:** To categorize disparate resources (tools, papers, articles) into logical sections, making the information accessible and digestible.
+* **Community Contribution:** To provide a living document that can be updated and expanded by the community.
 * **Architectural Style:**
-  * **Curated List / Knowledge Base:** The structure is a simple, hierarchical list, designed for human readability and information retrieval.
+* **Curated List / Knowledge Base:** The structure is a simple, hierarchical list, designed for human readability and information retrieval.
 
 ### 2. Core Components & Services
 
 The "components" of this information architecture are the distinct categories used to structure the content.
 
 * **Tools & Applications:**
-  * **Responsibility:** To list and describe standalone software or services that leverage Claude for code analysis, review, or generation.
+* **Responsibility:** To list and describe standalone software or services that leverage Claude for code analysis, review, or generation.
 * **Libraries & SDKs:**
-  * **Responsibility:** To list programming libraries or software development kits that facilitate programmatic interaction with Claude's code analysis capabilities.
+* **Responsibility:** To list programming libraries or software development kits that facilitate programmatic interaction with Claude's code analysis capabilities.
 * **Research Papers & Articles:**
-  * **Responsibility:** To provide links to academic papers, blog posts, and technical articles that explore the theory, application, and performance of LLMs like Claude for code-related tasks.
+* **Responsibility:** To provide links to academic papers, blog posts, and technical articles that explore the theory, application, and performance of LLMs like Claude for code-related tasks.
 * **Prompts & Cookbooks:**
-  * **Responsibility:** To offer a collection of effective prompts and practical examples for users to achieve specific code analysis outcomes.
+* **Responsibility:** To offer a collection of effective prompts and practical examples for users to achieve specific code analysis outcomes.
 * **Contribution Guidelines (`CONTRIBUTING.md`):**
-  * **Responsibility:** (Typically a linked component) To define the process and standards for community members to add new resources to the list.
+* **Responsibility:** (Typically a linked component) To define the process and standards for community members to add new resources to the list.
 
 ### 3. Interactions & Data Flow
 
 In an information architecture, interactions are user-driven, not system-driven.
 
 * **Interactions:**
-  * The primary interaction is a **User -> Document** read operation. A user (developer, researcher) navigates the Markdown file to find a resource of interest.
-  * A secondary interaction is a **User -> External Link** navigation, where the user clicks a hyperlink to access an external tool, library, or article.
+* The primary interaction is a **User -> Document** read operation. A user (developer, researcher) navigates the Markdown file to find a resource of interest.
+* A secondary interaction is a **User -> External Link** navigation, where the user clicks a hyperlink to access an external tool, library, or article.
 * **Data Flow:**
-  * The data flow is unidirectional, from the document to the user. There is no automated data exchange between the "components" (i.e., the sections of the list).
+* The data flow is unidirectional, from the document to the user. There is no automated data exchange between the "components" (i.e., the sections of the list).
 
 ### 4. Technology Stack Decisions
 
 * **Core Technology:**
-  * **Markdown (.md):** Chosen for its simplicity, readability, and universal support on platforms like GitHub, GitLab, etc. It allows for easy editing, version control, and rendering into HTML.
+* **Markdown (.md):** Chosen for its simplicity, readability, and universal support on platforms like GitHub, GitLab, etc. It allows for easy editing, version control, and rendering into HTML.
 * **Hosting Platform:**
-  * **Justification:** Not specified, but implicitly a platform like **GitHub** is used. This is justified by its built-in Markdown rendering, version control (Git), and collaborative features (Pull Requests, Issues) which are essential for maintaining a community-driven awesome list.
+* **Justification:** Not specified, but implicitly a platform like **GitHub** is used. This is justified by its built-in Markdown rendering, version control (Git), and collaborative features (Pull Requests, Issues) which are essential for maintaining a community-driven awesome list.
 
 ### 5. Design Principles & Constraints
 
 * **Guiding Principles:**
-  * **Simplicity:** The structure must be intuitive and free of unnecessary complexity. Headings, bullet points, and brief descriptions are the primary tools.
-  * **High Signal-to-Noise Ratio:** The list must be curated. Only high-quality, relevant, and functional resources should be included. This is a core principle of the "awesome list" format.
-  * **Maintainability:** The document should be easy for contributors to update. Clear categorization and contribution guidelines are key.
+* **Simplicity:** The structure must be intuitive and free of unnecessary complexity. Headings, bullet points, and brief descriptions are the primary tools.
+* **High Signal-to-Noise Ratio:** The list must be curated. Only high-quality, relevant, and functional resources should be included. This is a core principle of the "awesome list" format.
+* **Maintainability:** The document should be easy for contributors to update. Clear categorization and contribution guidelines are key.
 * **Constraints:**
-  * **Static Content:** The document itself is not dynamic. Its value is in the quality and organization of its curated links, not in any runtime behavior.
-  * **Scope Limitation:** The content is strictly limited to resources relevant to "Claude" and "code analysis."
+* **Static Content:** The document itself is not dynamic. Its value is in the quality and organization of its curated links, not in any runtime behavior.
+* **Scope Limitation:** The content is strictly limited to resources relevant to "Claude" and "code analysis."
 
 ---
 
@@ -1678,27 +1678,27 @@ Of course. Here is the structured analysis of the provided research document.
 ### 2. Methodology
 * **Research Method:** Performance benchmark and code review.
 * **Sample Size / Test Environment:**
-  * A benchmark script was run making 100 sequential API calls.
-  * The test compared two scenarios: a baseline using the existing single-instance pattern and a prototype alternating between two distinct instances.
-  * **Environment:** MacBook Pro M2 (32GB RAM), Python 3.11, `anthropic` Python library v0.25.0.
+* A benchmark script was run making 100 sequential API calls.
+* The test compared two scenarios: a baseline using the existing single-instance pattern and a prototype alternating between two distinct instances.
+* **Environment:** MacBook Pro M2 (32GB RAM), Python 3.11, `anthropic` Python library v0.25.0.
 
 ### 3. Key Findings & Data
 * **Execution Time:**
-  * **Single Instance (Baseline):** 48.2 seconds (average for 100 calls).
-  * **Two Instances (Prototype):** 48.9 seconds (average for 100 calls).
-  * **Performance Overhead:** The multi-instance approach introduced a negligible overhead of approximately **1.45%** in execution time.
+* **Single Instance (Baseline):** 48.2 seconds (average for 100 calls).
+* **Two Instances (Prototype):** 48.9 seconds (average for 100 calls).
+* **Performance Overhead:** The multi-instance approach introduced a negligible overhead of approximately **1.45%** in execution time.
 * **Memory Usage:**
-  * **Single Instance (Baseline):** ~120MB peak memory usage.
-  * **Two Instances (Prototype):** ~125MB peak memory usage.
-  * The additional instance resulted in a minor (~5MB) increase in memory footprint.
+* **Single Instance (Baseline):** ~120MB peak memory usage.
+* **Two Instances (Prototype):** ~125MB peak memory usage.
+* The additional instance resulted in a minor (~5MB) increase in memory footprint.
 * **Developer Experience:** Code review concluded that the refactored, multi-instance approach was more intuitive for managing multiple configurations and an improvement over managing a single global state.
 
 ### 4. Conclusions & Implications
 * **Conclusions:** The hypothesis is supported. The multi-instance architecture is a viable solution that provides the required flexibility with a minimal and acceptable impact on performance and memory.
 * **Implications & Recommendations:**
-  * The project should proceed with merging the feature branch (`feature/multi-claude-instances`).
-  * The new functionality must be clearly documented, including examples for instantiating and using named clients.
-  * For future work, consider adding a default client setting to maintain backward compatibility for single-instance users.
+* The project should proceed with merging the feature branch (`feature/multi-claude-instances`).
+* The new functionality must be clearly documented, including examples for instantiating and using named clients.
+* For future work, consider adding a default client setting to maintain backward compatibility for single-instance users.
 
 ### 5. Cited Technologies or Concepts
 * Python 3.11
@@ -1751,47 +1751,47 @@ Of course. Here is a structured analysis of the research document provided.
 ### 2. Methodology
 * **Research Method:** The research was conducted as a **Comparative Analysis** using a set of predefined, real-world coding tasks.
 * **Sample Size or Test Environment:** The test environment consisted of five specific tasks designed to simulate common developer challenges:
-    1. Generating a Python script for data processing.
-    2. Debugging a complex React component with a state management issue.
-    3. Refactoring a legacy JavaScript function to modern ES6 syntax.
-    4. Writing a Dockerfile for a multi-stage build.
-    5. Explaining a complex algorithm (quicksort) and providing a code example.
+1. Generating a Python script for data processing.
+1. Debugging a complex React component with a state management issue.
+1. Refactoring a legacy JavaScript function to modern ES6 syntax.
+1. Writing a Dockerfile for a multi-stage build.
+1. Explaining a complex algorithm (quicksort) and providing a code example.
 
 ### 3. Key Findings & Data
 * **Overall Performance:** Claude 3 Opus slightly outperformed GPT-4 Turbo with an overall score of **8.5/10** compared to GPT-4 Turbo's **8.0/10**.
 
 * **Specific Metrics (from the Quantitative Analysis table):**
-  * **Code Generation Speed:** GPT-4 Turbo was faster, completing tasks in an average of **12 seconds**, while Claude 3 Opus took an average of **18 seconds**.
-  * **Bug Detection Accuracy:** Claude 3 Opus had a higher accuracy rate of **95%** in identifying and fixing bugs, compared to GPT-4 Turbo's **88%**.
-  * **Code Explanation Clarity:** Claude 3 Opus scored higher (**9/10**) for providing more thorough, context-rich explanations. GPT-4 Turbo scored **7.5/10**, being more concise but sometimes lacking depth.
-  * **Follow-up Question Handling:** Both models were rated equally at **8/10**.
+* **Code Generation Speed:** GPT-4 Turbo was faster, completing tasks in an average of **12 seconds**, while Claude 3 Opus took an average of **18 seconds**.
+* **Bug Detection Accuracy:** Claude 3 Opus had a higher accuracy rate of **95%** in identifying and fixing bugs, compared to GPT-4 Turbo's **88%**.
+* **Code Explanation Clarity:** Claude 3 Opus scored higher (**9/10**) for providing more thorough, context-rich explanations. GPT-4 Turbo scored **7.5/10**, being more concise but sometimes lacking depth.
+* **Follow-up Question Handling:** Both models were rated equally at **8/10**.
 
 * **Qualitative Observations:**
-  * Claude 3 Opus tends to be more "thoughtful" and verbose, providing detailed context and reasoning, which is beneficial for complex problem-solving and learning.
-  * GPT-4 Turbo is generally faster and more direct, making it highly efficient for straightforward, well-defined tasks.
+* Claude 3 Opus tends to be more "thoughtful" and verbose, providing detailed context and reasoning, which is beneficial for complex problem-solving and learning.
+* GPT-4 Turbo is generally faster and more direct, making it highly efficient for straightforward, well-defined tasks.
 
 ### 4. Conclusions & Implications
 * **Conclusions:**
-  * Neither model is universally superior; their strengths are suited to different types of tasks.
-  * Claude 3 Opus excels in tasks requiring deep reasoning, nuanced understanding, and high accuracy, such as complex debugging and explaining intricate concepts.
-  * GPT-4 Turbo is more effective for tasks where speed and conciseness are paramount, like boilerplate code generation or quick refactoring.
+* Neither model is universally superior; their strengths are suited to different types of tasks.
+* Claude 3 Opus excels in tasks requiring deep reasoning, nuanced understanding, and high accuracy, such as complex debugging and explaining intricate concepts.
+* GPT-4 Turbo is more effective for tasks where speed and conciseness are paramount, like boilerplate code generation or quick refactoring.
 
 * **Implications & Recommendations:**
-  * The project should adopt a **hybrid approach**, integrating both models into the developer workflow.
-  * **Recommendation 1:** Use **Claude 3 Opus** as the default for debugging sessions and for generating code for complex, novel problems.
-  * **Recommendation 2:** Use **GPT-4 Turbo** for rapid code generation, script creation, and tasks where developers need a quick, direct solution.
-  * A simple toggle or routing mechanism should be implemented in internal tools to allow developers to choose the appropriate model for their specific task.
+* The project should adopt a **hybrid approach**, integrating both models into the developer workflow.
+* **Recommendation 1:** Use **Claude 3 Opus** as the default for debugging sessions and for generating code for complex, novel problems.
+* **Recommendation 2:** Use **GPT-4 Turbo** for rapid code generation, script creation, and tasks where developers need a quick, direct solution.
+* A simple toggle or routing mechanism should be implemented in internal tools to allow developers to choose the appropriate model for their specific task.
 
 ### 5. Cited Technologies or Concepts
 * **Large Language Models:**
-  * Anthropic Claude 3 Opus
-  * OpenAI GPT-4 Turbo
+* Anthropic Claude 3 Opus
+* OpenAI GPT-4 Turbo
 * **Programming Languages & Frameworks:**
-  * Python
-  * React
-  * JavaScript (ES6)
+* Python
+* React
+* JavaScript (ES6)
 * **Tools & Platforms:**
-  * Docker
+* Docker
 
 ---
 
@@ -1805,42 +1805,42 @@ Of course. Here is the structured analysis of the `DOPEMUX_QUICK_REFERENCE.md` d
 
 * **Primary Technical Goal:** Deliver a development environment that functions as an extension of an engineer's working memory, using a hierarchical, multi-agent architecture to automate and assist with software development tasks.
 * **Success Metrics & Targets:**
-  * **SWE-Bench Lite (Devin Resolve):** > 80%
-  * **HumanEval+:** > 92%
-  * **MT-Bench:** > 9.5
-  * **Interaction Latency (P99):** < 150ms
-  * **System Throughput:** 500 QPS (Queries Per Second) on the agentic backend.
-  * **Internal Adoption:** 75% voluntary usage by the engineering organization.
+* **SWE-Bench Lite (Devin Resolve):** > 80%
+* **HumanEval+:** > 92%
+* **MT-Bench:** > 9.5
+* **Interaction Latency (P99):** < 150ms
+* **System Throughput:** 500 QPS (Queries Per Second) on the agentic backend.
+* **Internal Adoption:** 75% voluntary usage by the engineering organization.
 
 #### **2. Core Architecture & System Components**
 
 * **Overall Architecture:** A hierarchical, multi-agent system composed of 64 specialized sub-agents orchestrated by a central controller. The architecture is built around a multi-layered, hierarchical memory system.
 * **Primary Components:**
-  * **Master Control Program (MCP):** The central orchestrator responsible for task decomposition, agent dispatch, and running the primary self-correction loop. Runs on dedicated high-CPU instances.
-  * **Sub-agents:** 64 specialized, single-responsibility agents (e.g., linter, debugger, test writer) that execute tasks in isolated, firewalled Docker containers.
-  * **Letta Memory System:** A four-tiered memory architecture:
-    * **L1 (Cache):** Ephemeral key-value store for session context.
-    * **L2 (Working Memory):** Real-time semantic vector search.
-    * **L3 (Long-Term Memory):** Structured, persistent storage with hybrid search capabilities.
-    * **L4 (Knowledge Graph):** Persistent graph database modeling the codebase's entities and relationships.
-  * **Claude-flow:** The core state management and execution framework, modeled as a Directed Acyclic Graph (DAG) to manage agentic workflows.
-  * **CCFlare Proxy:** A custom Cloudflare Worker for request routing, authentication, rate limiting, and caching.
-  * **DopeTerm:** The client-side terminal interface built with a specific UI framework.
+* **Master Control Program (MCP):** The central orchestrator responsible for task decomposition, agent dispatch, and running the primary self-correction loop. Runs on dedicated high-CPU instances.
+* **Sub-agents:** 64 specialized, single-responsibility agents (e.g., linter, debugger, test writer) that execute tasks in isolated, firewalled Docker containers.
+* **Letta Memory System:** A four-tiered memory architecture:
+* **L1 (Cache):** Ephemeral key-value store for session context.
+* **L2 (Working Memory):** Real-time semantic vector search.
+* **L3 (Long-Term Memory):** Structured, persistent storage with hybrid search capabilities.
+* **L4 (Knowledge Graph):** Persistent graph database modeling the codebase's entities and relationships.
+* **Claude-flow:** The core state management and execution framework, modeled as a Directed Acyclic Graph (DAG) to manage agentic workflows.
+* **CCFlare Proxy:** A custom Cloudflare Worker for request routing, authentication, rate limiting, and caching.
+* **DopeTerm:** The client-side terminal interface built with a specific UI framework.
 
 #### **3. Technology Stack**
 
 * **Databases / Data Stores:**
-  * **Redis:** L1 ephemeral cache.
-  * **Qdrant:** L2 vector database for semantic search.
-  * **PostgreSQL + pgvector:** L3 persistent storage and hybrid search.
-  * **Neo4j:** L4 knowledge graph.
+* **Redis:** L1 ephemeral cache.
+* **Qdrant:** L2 vector database for semantic search.
+* **PostgreSQL + pgvector:** L3 persistent storage and hybrid search.
+* **Neo4j:** L4 knowledge graph.
 * **Frameworks & Libraries:**
-  * **React Ink:** UI framework for the `DopeTerm` client.
-  * **DSPy:** Framework for the LLM-based self-correction and prompting logic.
+* **React Ink:** UI framework for the `DopeTerm` client.
+* **DSPy:** Framework for the LLM-based self-correction and prompting logic.
 * **Infrastructure & Protocols:**
-  * **Docker:** Containerization for sub-agents.
-  * **Cloudflare Workers:** Serverless compute for the `CCFlare Proxy`.
-  * **gRPC with Protobufs:** High-performance IPC between the MCP and sub-agents.
+* **Docker:** Containerization for sub-agents.
+* **Cloudflare Workers:** Serverless compute for the `CCFlare Proxy`.
+* **gRPC with Protobufs:** High-performance IPC between the MCP and sub-agents.
 
 #### **4. Key Algorithms & Protocols**
 
@@ -1858,29 +1858,29 @@ Of course. Here is the structured analysis of the `DOPEMUX_QUICK_REFERENCE.md` d
 
 * **Timeline:** 12-week, 3-phase plan.
 * **Phase 1 (Weeks 1-4): Core Infrastructure & Memory**
-  * **Deliverables:** Deployed Letta Memory (L1-L3), a prototype MCP server, and baseline gRPC communication pathways.
+* **Deliverables:** Deployed Letta Memory (L1-L3), a prototype MCP server, and baseline gRPC communication pathways.
 * **Phase 2 (Weeks 5-8): Agentic Logic & Claude-flow**
-  * **Deliverables:** Implementation of 8 core sub-agents, initial `Claude-flow` DAGs, and integration of the DSPy self-correction loop.
+* **Deliverables:** Implementation of 8 core sub-agents, initial `Claude-flow` DAGs, and integration of the DSPy self-correction loop.
 * **Phase 3 (Weeks 9-12): Client & Integration**
-  * **Deliverables:** A functional `DopeTerm` client, a deployed `CCFlare Proxy`, and rollout to an internal alpha group (platform team).
+* **Deliverables:** A functional `DopeTerm` client, a deployed `CCFlare Proxy`, and rollout to an internal alpha group (platform team).
 
 #### **7. Critical Risks & Mitigation Strategies**
 
 * **Risk:** LLM Hallucination & Inaccuracy.
-  * **Mitigation:**
-        1. Strict RAG pipeline with strong source-grounding.
-        2. Self-correction loops featuring automated testing sub-agents.
-        3. Explicit confidence scoring displayed in the UI.
+* **Mitigation:**
+1. Strict RAG pipeline with strong source-grounding.
+1. Self-correction loops featuring automated testing sub-agents.
+1. Explicit confidence scoring displayed in the UI.
 * **Risk:** State Management Complexity at scale.
-  * **Mitigation:**
-        1. Strict adherence to the DAG model in `Claude-flow` to prevent circular state dependencies.
-        2. Enforcement of immutable state updates.
-        3. Rigorous integration testing for inter-agent communication.
+* **Mitigation:**
+1. Strict adherence to the DAG model in `Claude-flow` to prevent circular state dependencies.
+1. Enforcement of immutable state updates.
+1. Rigorous integration testing for inter-agent communication.
 * **Risk:** Scalability Bottlenecks in the Letta Memory System.
-  * **Mitigation:**
-        1. Initial vertical scaling of Qdrant and PostgreSQL instances.
-        2. A defined horizontal scaling strategy involving sharding the Neo4j knowledge graph by service boundary.
-        3. Aggressive caching at both the `CCFlare Proxy` (edge) and Redis (L1) layers.
+* **Mitigation:**
+1. Initial vertical scaling of Qdrant and PostgreSQL instances.
+1. A defined horizontal scaling strategy involving sharding the Neo4j knowledge graph by service boundary.
+1. Aggressive caching at both the `CCFlare Proxy` (edge) and Redis (L1) layers.
 
 ---
 
@@ -1890,20 +1890,20 @@ Of course. As a Principal Engineer, here is the structured technical analysis of
 
 * **Primary Technical Goal:** To integrate a local, quantized LLM-based agent (`TaskMaster`) with the Leantime project management system to provide AI-driven task decomposition and retrieval capabilities, running entirely on-premise.
 * **Success Metrics & Targets:**
-  * **Latency:** P95 initial task generation latency < 500ms.
-  * **Accuracy:** > 90% alignment with human-generated sub-tasks on a pre-defined benchmark of 100 project tickets.
-  * **Resource Consumption:** < 4GB VRAM and < 8GB RAM under normal operational load on the host machine.
-  * **Availability:** > 99.5% uptime for the integration components.
+* **Latency:** P95 initial task generation latency < 500ms.
+* **Accuracy:** > 90% alignment with human-generated sub-tasks on a pre-defined benchmark of 100 project tickets.
+* **Resource Consumption:** < 4GB VRAM and < 8GB RAM under normal operational load on the host machine.
+* **Availability:** > 99.5% uptime for the integration components.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A decoupled, event-driven architecture utilizing a message queue for asynchronous communication between the main application and the AI agent. The system is designed for containerized, on-premise deployment.
 * **Primary Components:**
-  * **Leantime Core:** The existing PHP/MySQL project management application. It emits events via webhooks.
-  * **Sidecar API Proxy:** A lightweight service written in Go that receives webhooks from Leantime, validates them, and publishes corresponding jobs to the message queue. It also exposes endpoints for synchronous queries (e.g., similar task search).
-  * **TaskMaster Agent:** A Python-based service that consumes jobs from the message queue. It contains the core LLM logic for task processing, RAG, and interaction with the vector database. It calls back to the Leantime API to post results.
-  * **VectorDB Service:** A Qdrant instance used for storing and retrieving embeddings of project tasks.
-  * **Message Queue:** RabbitMQ, used as the broker for asynchronous communication between the Sidecar Proxy and the TaskMaster Agent.
+* **Leantime Core:** The existing PHP/MySQL project management application. It emits events via webhooks.
+* **Sidecar API Proxy:** A lightweight service written in Go that receives webhooks from Leantime, validates them, and publishes corresponding jobs to the message queue. It also exposes endpoints for synchronous queries (e.g., similar task search).
+* **TaskMaster Agent:** A Python-based service that consumes jobs from the message queue. It contains the core LLM logic for task processing, RAG, and interaction with the vector database. It calls back to the Leantime API to post results.
+* **VectorDB Service:** A Qdrant instance used for storing and retrieving embeddings of project tasks.
+* **Message Queue:** RabbitMQ, used as the broker for asynchronous communication between the Sidecar Proxy and the TaskMaster Agent.
 
 ### 3. Technology Stack
 
@@ -1916,12 +1916,12 @@ Of course. As a Principal Engineer, here is the structured technical analysis of
 ### 4. Key Algorithms & Protocols
 
 * **Core AI Algorithm:** Retrieval-Augmented Generation (RAG).
-  * **Search Method:** Hybrid search combining sparse vectors (BM25) and dense vectors (from a sentence-transformer model) for retrieval from Qdrant.
-  * **Generation Method:** Chain-of-Thought (CoT) prompting to guide the LLM in decomposing tasks logically.
+* **Search Method:** Hybrid search combining sparse vectors (BM25) and dense vectors (from a sentence-transformer model) for retrieval from Qdrant.
+* **Generation Method:** Chain-of-Thought (CoT) prompting to guide the LLM in decomposing tasks logically.
 * **Communication Protocols:**
-  * **Leantime -> Sidecar:** JSON over HTTP (Webhooks).
-  * **Sidecar <-> RabbitMQ <-> Agent:** Asynchronous message passing.
-  * **Agent/Sidecar -> Leantime:** RESTful API calls (JSON over HTTP).
+* **Leantime -> Sidecar:** JSON over HTTP (Webhooks).
+* **Sidecar <-> RabbitMQ <-> Agent:** Asynchronous message passing.
+* **Agent/Sidecar -> Leantime:** RESTful API calls (JSON over HTTP).
 
 ### 5. Unique User-Facing Features & Implementations
 
@@ -1932,35 +1932,35 @@ Of course. As a Principal Engineer, here is the structured technical analysis of
 
 * **Timeline:** 10-week, three-phase plan.
 * **Phase 1 Deliverables (4 weeks): Core Infrastructure & Agent Setup**
-  * Complete Docker Compose configuration for all services.
-  * A basic TaskMaster agent capable of loading the GGUF model and performing inference.
-  * A functional Sidecar API Proxy that can receive and log webhooks.
-  * Schema and collection setup in Qdrant.
+* Complete Docker Compose configuration for all services.
+* A basic TaskMaster agent capable of loading the GGUF model and performing inference.
+* A functional Sidecar API Proxy that can receive and log webhooks.
+* Schema and collection setup in Qdrant.
 * **Phase 2 Deliverables (3 weeks): Automated Sub-Task Generation**
-  * Full RabbitMQ integration between the Sidecar and Agent.
-  * Webhook handler in Leantime for new to-do creation.
-  * Implementation of the CoT prompt for sub-task decomposition.
+* Full RabbitMQ integration between the Sidecar and Agent.
+* Webhook handler in Leantime for new to-do creation.
+* Implementation of the CoT prompt for sub-task decomposition.
 * **Phase 3 Deliverables (3 weeks): Similar Task Discovery & Tuning**
-  * UI modification in Leantime to add the "Find Similar Tasks" button.
-  * Endpoint in the Sidecar Proxy for the synchronous vector search.
-  * Performance benchmarking and prompt/model tuning against KPIs.
+* UI modification in Leantime to add the "Find Similar Tasks" button.
+* Endpoint in the Sidecar Proxy for the synchronous vector search.
+* Performance benchmarking and prompt/model tuning against KPIs.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk:** LLM Hallucination / Generation of irrelevant or low-quality sub-tasks.
-  * **Mitigation:**
-        1. Grounding the model using a strict RAG pattern with examples from the vector DB.
-        2. Employing a structured Chain-of-Thought prompt to enforce logical steps.
-        3. Setting a low temperature parameter (e.g., 0.2) for the LLM to favor more deterministic outputs.
+* **Mitigation:**
+1. Grounding the model using a strict RAG pattern with examples from the vector DB.
+1. Employing a structured Chain-of-Thought prompt to enforce logical steps.
+1. Setting a low temperature parameter (e.g., 0.2) for the LLM to favor more deterministic outputs.
 * **Risk:** Performance bottlenecks under concurrent requests, especially for the Python-based agent.
-  * **Mitigation:**
-        1. Using a high-concurrency Go-based Sidecar Proxy to handle incoming HTTP requests efficiently.
-        2. Decoupling the system with RabbitMQ to process LLM-intensive tasks asynchronously, preventing the blocking of Leantime's UI.
-        3. Implementing caching for frequently accessed similar tasks.
+* **Mitigation:**
+1. Using a high-concurrency Go-based Sidecar Proxy to handle incoming HTTP requests efficiently.
+1. Decoupling the system with RabbitMQ to process LLM-intensive tasks asynchronously, preventing the blocking of Leantime's UI.
+1. Implementing caching for frequently accessed similar tasks.
 * **Risk:** Data privacy and security, given the use of project data.
-  * **Mitigation:**
-        1. The entire architecture is designed for on-premise, local deployment within a private network via Docker Compose.
-        2. No project data is sent to any external, third-party APIs. All processing, including LLM inference, occurs locally.
+* **Mitigation:**
+1. The entire architecture is designed for on-premise, local deployment within a private network via Docker Compose.
+1. No project data is sent to any external, third-party APIs. All processing, including LLM inference, occurs locally.
 
 ---
 
@@ -1988,38 +1988,38 @@ Once you provide the content, the output will look like this:
 
 * **Primary Technical Goal:** To develop a high-performance, hierarchical memory framework for a multi-agent AI development system, enabling agents to retain and recall contextually relevant information over long durations.
 * **Success Metrics & Targets:**
-  * **SWE-Bench Lite (Pass@1):** ≥ 84.8%
-  * **Agent Uptime:** ≥ 99.9%
-  * **Core API Latency (p99):** < 100ms
-  * **Memory Retrieval Throughput (Vector Search):** ≥ 626 QPS
-  * **Cross-Agent Contamination Rate:** < 0.01%
+* **SWE-Bench Lite (Pass@1):** ≥ 84.8%
+* **Agent Uptime:** ≥ 99.9%
+* **Core API Latency (p99):** < 100ms
+* **Memory Retrieval Throughput (Vector Search):** ≥ 626 QPS
+* **Cross-Agent Contamination Rate:** < 0.01%
 
 ### **2. Core Architecture & System Components**
 
 * **Overall Architecture:** A 64-agent, distributed system featuring a three-tiered hierarchical memory architecture (Working, Episodic, Semantic). The system utilizes a central coordinator (MCP) for task orchestration and a proxy layer for secure, standardized communication with Large Language Models (LLMs).
 * **Primary Components:**
-  * **Letta Memory:** The core hierarchical memory module, composed of Working Memory (L1), Episodic Memory (L2), and Semantic Memory (L3).
-  * **Master Control Program (MCP) Servers:** The central orchestration engine responsible for agent lifecycle management, task decomposition, and state tracking.
-  * **CCFlare Proxy:** A Cloudflare-based proxy service that manages and standardizes all outbound requests to third-party LLM APIs (e.g., OpenAI, Anthropic).
-  * **Claude-flow:** A declarative framework for defining agent workflows and interactions using a YAML-based schema.
-  * **Agent Shell (ash):** A command-line interface for direct interaction with and management of the agent swarm.
+* **Letta Memory:** The core hierarchical memory module, composed of Working Memory (L1), Episodic Memory (L2), and Semantic Memory (L3).
+* **Master Control Program (MCP) Servers:** The central orchestration engine responsible for agent lifecycle management, task decomposition, and state tracking.
+* **CCFlare Proxy:** A Cloudflare-based proxy service that manages and standardizes all outbound requests to third-party LLM APIs (e.g., OpenAI, Anthropic).
+* **Claude-flow:** A declarative framework for defining agent workflows and interactions using a YAML-based schema.
+* **Agent Shell (ash):** A command-line interface for direct interaction with and management of the agent swarm.
 
 ### **3. Technology Stack**
 
 * **Databases:**
-  * **L1 (Working Memory):** Redis
-  * **L2 (Episodic Memory):** PostgreSQL with the `pgvector` extension.
-  * **L3 (Semantic Memory):** Qdrant (Vector Database) & Neo4j (Graph Database)
+* **L1 (Working Memory):** Redis
+* **L2 (Episodic Memory):** PostgreSQL with the `pgvector` extension.
+* **L3 (Semantic Memory):** Qdrant (Vector Database) & Neo4j (Graph Database)
 * **Orchestration & Frameworks:**
-  * **Agent Framework:** DSPy
-  * **Containerization:** Docker
+* **Agent Framework:** DSPy
+* **Containerization:** Docker
 * **Frontend / CLI:**
-  * **CLI Framework:** React Ink
-  * **Terminal Multiplexer:** tmux
+* **CLI Framework:** React Ink
+* **Terminal Multiplexer:** tmux
 * **Infrastructure:**
-  * **Proxy/CDN:** Cloudflare
+* **Proxy/CDN:** Cloudflare
 * **Languages:**
-  * **Primary:** Python
+* **Primary:** Python
 
 ### **4. Key Algorithms & Protocols**
 
@@ -2037,22 +2037,22 @@ Once you provide the content, the output will look like this:
 
 * **Timeline:** A 16-week phased implementation plan.
 * **Phase 1 (Weeks 1-4) Deliverables:**
-  * Core `Letta Memory` module (L1 & L2) with a functional API.
-  * Initial prototype of the `MCP Server` capable of managing a single agent's lifecycle.
-  * Basic `ash` CLI for memory interaction.
+* Core `Letta Memory` module (L1 & L2) with a functional API.
+* Initial prototype of the `MCP Server` capable of managing a single agent's lifecycle.
+* Basic `ash` CLI for memory interaction.
 * **Phase 2 (Weeks 5-8) Deliverables:**
-  * Integration of `Qdrant` and `Neo4j` for the L3 Semantic Memory layer.
-  * Development of the `CCFlare Proxy` for LLM API abstraction.
-  * Expansion of the `MCP Server` to manage up to 8 concurrent agents.
+* Integration of `Qdrant` and `Neo4j` for the L3 Semantic Memory layer.
+* Development of the `CCFlare Proxy` for LLM API abstraction.
+* Expansion of the `MCP Server` to manage up to 8 concurrent agents.
 
 ### **7. Critical Risks & Mitigation Strategies**
 
 * **Risk:** Scalability bottleneck in the PostgreSQL-based Episodic Memory (L2) under heavy concurrent write loads from 64 agents.
-  * **Mitigation:** Implement a write-ahead log (WAL) pattern using a message queue (e.g., RabbitMQ or Kafka). Agents write to the queue, and a dedicated pool of consumers performs batched writes to PostgreSQL, smoothing out load spikes.
+* **Mitigation:** Implement a write-ahead log (WAL) pattern using a message queue (e.g., RabbitMQ or Kafka). Agents write to the queue, and a dedicated pool of consumers performs batched writes to PostgreSQL, smoothing out load spikes.
 * **Risk:** High operational cost due to excessive "summary" LLM calls for memory condensation.
-  * **Mitigation:** Implement an adaptive condensation trigger. Instead of condensing based on a fixed token count, use a semantic change detection algorithm. A summary is only triggered if the semantic content of the working memory buffer has changed by a significant threshold since the last condensation.
+* **Mitigation:** Implement an adaptive condensation trigger. Instead of condensing based on a fixed token count, use a semantic change detection algorithm. A summary is only triggered if the semantic content of the working memory buffer has changed by a significant threshold since the last condensation.
 * **Risk:** Cross-agent memory contamination, where one agent incorrectly accesses or is influenced by the memory of another.
-  * **Mitigation:** Enforce strict data partitioning at the database level using row-level security (RLS) policies in PostgreSQL, keyed by a unique `agent_id`. All memory API calls will require a mandatory `agent_id` parameter, which is validated at every layer of the stack.
+* **Mitigation:** Enforce strict data partitioning at the database level using row-level security (RLS) policies in PostgreSQL, keyed by a unique `agent_id`. All memory API calls will require a mandatory `agent_id` parameter, which is validated at every layer of the stack.
 
 ---
 
@@ -2067,48 +2067,48 @@ The following is a structured analysis of the `dopemux-architecture-implementati
 ### 1. Architectural Vision & Goals
 
 * **Primary Goals:**
-  * **Scalability:** The architecture is designed to horizontally scale core components, particularly the `Worker Services`, to handle variable workloads.
-  * **Decoupling:** Services are loosely coupled through a central message bus, allowing them to be developed, deployed, and scaled independently.
-  * **Extensibility:** The worker-based model makes it simple to add new functionality (i.e., new task types) by deploying new `Worker Services` without altering the core system.
-  * **Resilience:** The asynchronous, event-driven nature ensures that the failure of a single worker does not bring down the entire system. The message bus can persist tasks for later processing.
+* **Scalability:** The architecture is designed to horizontally scale core components, particularly the `Worker Services`, to handle variable workloads.
+* **Decoupling:** Services are loosely coupled through a central message bus, allowing them to be developed, deployed, and scaled independently.
+* **Extensibility:** The worker-based model makes it simple to add new functionality (i.e., new task types) by deploying new `Worker Services` without altering the core system.
+* **Resilience:** The asynchronous, event-driven nature ensures that the failure of a single worker does not bring down the entire system. The message bus can persist tasks for later processing.
 
 * **Architectural Style:**
-  * A hybrid **Microservices** and **Event-Driven Architecture (EDA)**. Functionality is broken down into independent services that communicate primarily through asynchronous events.
+* A hybrid **Microservices** and **Event-Driven Architecture (EDA)**. Functionality is broken down into independent services that communicate primarily through asynchronous events.
 
 ### 2. Core Components & Services
 
 * **API Gateway:** The single, unified entry point for all external client requests.
-  * **Responsibility:** Handles request routing, authentication, rate limiting, and SSL termination before forwarding traffic to internal services.
+* **Responsibility:** Handles request routing, authentication, rate limiting, and SSL termination before forwarding traffic to internal services.
 
 * **Web UI (Frontend):** A React-based Single Page Application (SPA).
-  * **Responsibility:** Provides the primary user interface for submitting jobs, monitoring progress, and viewing results. Interacts exclusively with the API Gateway.
+* **Responsibility:** Provides the primary user interface for submitting jobs, monitoring progress, and viewing results. Interacts exclusively with the API Gateway.
 
 * **Orchestration Service:** The central "brain" of the system, written in Go.
-  * **Responsibility:** Receives job requests, validates them, breaks them down into individual sub-tasks, persists job state, and publishes task commands to the message bus. It also subscribes to completion events to track overall job progress.
+* **Responsibility:** Receives job requests, validates them, breaks them down into individual sub-tasks, persists job state, and publishes task commands to the message bus. It also subscribes to completion events to track overall job progress.
 
 * **Worker Services:** A fleet of independent, containerized services, written in Python.
-  * **Responsibility:** Each worker type is specialized to perform a specific kind of sub-task. They consume task messages from the message bus, execute the work, and publish result/status events back.
+* **Responsibility:** Each worker type is specialized to perform a specific kind of sub-task. They consume task messages from the message bus, execute the work, and publish result/status events back.
 
 * **Message Bus (NATS):** The central communication backbone for inter-service messaging.
-  * **Responsibility:** Facilitates asynchronous, decoupled communication between the `Orchestration Service` and the various `Worker Services` using a publish-subscribe pattern.
+* **Responsibility:** Facilitates asynchronous, decoupled communication between the `Orchestration Service` and the various `Worker Services` using a publish-subscribe pattern.
 
 * **Persistence Layer (PostgreSQL):** The authoritative data store for the system.
-  * **Responsibility:** Stores critical stateful data, including user information, job definitions, task status, and system configuration.
+* **Responsibility:** Stores critical stateful data, including user information, job definitions, task status, and system configuration.
 
 ### 3. Interactions & Data Flow
 
 * **Interaction Model:**
-  * **Asynchronous:** The primary mode of interaction between core backend services (`Orchestrator` <> `Workers`) is asynchronous, using the NATS **Message Bus**. This is a classic Pub/Sub pattern.
-  * **Synchronous:** Client-facing interactions (`Web UI` <> `API Gateway` <> `Orchestration Service`) are synchronous, using **REST APIs** for request/response communication.
+* **Asynchronous:** The primary mode of interaction between core backend services (`Orchestrator` <> `Workers`) is asynchronous, using the NATS **Message Bus**. This is a classic Pub/Sub pattern.
+* **Synchronous:** Client-facing interactions (`Web UI` <> `API Gateway` <> `Orchestration Service`) are synchronous, using **REST APIs** for request/response communication.
 
 * **High-Level Data Flow (Job Execution):**
-    1. A user submits a new job through the **Web UI**.
-    2. The request hits the **API Gateway**, which authenticates and forwards it to the **Orchestration Service**.
-    3. The **Orchestration Service** saves the job's initial state to the **PostgreSQL** database and publishes one or more `Task` messages onto the **Message Bus**.
-    4. One or more **Worker Services**, subscribed to the relevant task topics, consume the messages from the bus.
-    5. Each **Worker** executes its task and, upon completion, publishes a `Result` or `Status` event back to the message bus.
-    6. The **Orchestration Service** consumes these result events, updates the overall job status in the **PostgreSQL** database, and determines if the job is complete.
-    7. The **Web UI** periodically polls the **API Gateway** to get the latest job status for the user.
+1. A user submits a new job through the **Web UI**.
+1. The request hits the **API Gateway**, which authenticates and forwards it to the **Orchestration Service**.
+1. The **Orchestration Service** saves the job's initial state to the **PostgreSQL** database and publishes one or more `Task` messages onto the **Message Bus**.
+1. One or more **Worker Services**, subscribed to the relevant task topics, consume the messages from the bus.
+1. Each **Worker** executes its task and, upon completion, publishes a `Result` or `Status` event back to the message bus.
+1. The **Orchestration Service** consumes these result events, updates the overall job status in the **PostgreSQL** database, and determines if the job is complete.
+1. The **Web UI** periodically polls the **API Gateway** to get the latest job status for the user.
 
 ### 4. Technology Stack Decisions
 
@@ -2188,10 +2188,10 @@ Based on the document provided, here is the extracted information:
 To create a digital assistant that helps individuals, particularly those with ADHD, manage daily tasks, reduce executive dysfunction, increase productivity, and lessen the cognitive load associated with life management. The system aims to be proactive rather than a passive to-do list.
 
 * **What specific user pain points or needs are mentioned?**
-  * "Decision paralysis" and "task initiation friction."
-  * Users are overwhelmed by large to-do lists and unstructured days.
-  * Users struggle with how to start a task, when to do it, and how to break it down.
-  * Managing multiple separate apps (calendar, to-do, notes) is a burdensome task in itself.
+* "Decision paralysis" and "task initiation friction."
+* Users are overwhelmed by large to-do lists and unstructured days.
+* Users struggle with how to start a task, when to do it, and how to break it down.
+* Managing multiple separate apps (calendar, to-do, notes) is a burdensome task in itself.
 
 ### 2. Key Actors & Personas
 * **"The Overwhelmed Professional" (Primary Persona):** A working professional with ADHD needing a single, intelligent system to orchestrate their day.
@@ -2210,35 +2210,35 @@ To create a digital assistant that helps individuals, particularly those with AD
 * **Performance:** Not mentioned.
 * **Scalability:** Must be designed to handle 100,000 users initially and scale to 1 million users. This will be supported by a microservices architecture.
 * **Security:**
-  * All user data and third-party API tokens must be encrypted at rest (AES-256) and in transit (TLS 1.2+).
-  * The system must be GDPR compliant, ensuring data minimization and user consent.
+* All user data and third-party API tokens must be encrypted at rest (AES-256) and in transit (TLS 1.2+).
+* The system must be GDPR compliant, ensuring data minimization and user consent.
 * **Reliability:**
-  * The core task scheduling service must maintain 99.9% uptime.
-  * The architecture must use a resilient job queue (e.g., RabbitMQ or SQS) and idempotent workers to ensure fault tolerance.
+* The core task scheduling service must maintain 99.9% uptime.
+* The architecture must use a resilient job queue (e.g., RabbitMQ or SQS) and idempotent workers to ensure fault tolerance.
 
 ### 5. Technical Constraints & Decisions
 * **Are any specific technologies, languages, or platforms mandated?**
-  * **Backend Language:** Python (with FastAPI)
-  * **AI Model:** OpenAI's GPT-4 API
-  * **Databases:** PostgreSQL (for relational data) and a NoSQL database like MongoDB (for unstructured data).
-  * **Cloud Provider:** AWS (leveraging services like ECS/EKS, SQS, and RDS).
+* **Backend Language:** Python (with FastAPI)
+* **AI Model:** OpenAI's GPT-4 API
+* **Databases:** PostgreSQL (for relational data) and a NoSQL database like MongoDB (for unstructured data).
+* **Cloud Provider:** AWS (leveraging services like ECS/EKS, SQS, and RDS).
 * **Are there any existing systems this must integrate with?**
-  * Google Calendar API
-  * Todoist REST API
+* Google Calendar API
+* Todoist REST API
 * **Are there any architectural decisions already made?**
-  * The system will be built on a microservices architecture.
-  * Authentication with third-party services will use OAuth2.
+* The system will be built on a microservices architecture.
+* Authentication with third-party services will use OAuth2.
 
 ### 6. Data & Integration Points
 * **What are the key data entities or models described?**
-  * `User`: Contains user ID, email, and preferences (working hours, focus times).
-  * `ConnectedAccount`: Stores user's connected third-party accounts (Google, Todoist) with tokens.
-  * `Task`: Represents a task with details like title, priority, due date, and sub-tasks.
-  * `CalendarEvent`: Represents a calendar event with a title, start time, and end time.
+* `User`: Contains user ID, email, and preferences (working hours, focus times).
+* `ConnectedAccount`: Stores user's connected third-party accounts (Google, Todoist) with tokens.
+* `Task`: Represents a task with details like title, priority, due date, and sub-tasks.
+* `CalendarEvent`: Represents a calendar event with a title, start time, and end time.
 * **What are the inputs and outputs? Does it mention specific APIs?**
-  * **Inputs:** User tasks from the Todoist REST API and calendar events from the Google Calendar API.
-  * **Outputs:** New calendar events created via the Google Calendar API and push notifications sent via a notification service.
-  * **APIs Mentioned:** Google Calendar API, Todoist REST API, and OpenAI's GPT-4 API.
+* **Inputs:** User tasks from the Todoist REST API and calendar events from the Google Calendar API.
+* **Outputs:** New calendar events created via the Google Calendar API and push notifications sent via a notification service.
+* **APIs Mentioned:** Google Calendar API, Todoist REST API, and OpenAI's GPT-4 API.
 
 ---
 
@@ -2257,20 +2257,20 @@ For your convenience, here is the template I will use, which you can also use as
 #### 1. Core Project Objective & Key Performance Indicators (KPIs)
 
 * **Primary Technical Goal:**
-  * [e.g., To deliver a distributed, multi-agent platform for autonomous software engineering.]
+* [e.g., To deliver a distributed, multi-agent platform for autonomous software engineering.]
 * **Success Metrics & Targets:**
-  * [e.g., Achieve >85% pass rate on the SWE-Bench benchmark.]
-  * [e.g., Maintain P99 latency of <300ms for code-generation requests.]
-  * [e.g., Support 1,000 concurrent agent sessions per cluster.]
+* [e.g., Achieve >85% pass rate on the SWE-Bench benchmark.]
+* [e.g., Maintain P99 latency of <300ms for code-generation requests.]
+* [e.g., Support 1,000 concurrent agent sessions per cluster.]
 
 #### 2. Core Architecture & System Components
 
 * **Overall Architecture:**
-  * [e.g., A hierarchical, message-driven microservices architecture composed of a central orchestrator and specialized agent workers.]
+* [e.g., A hierarchical, message-driven microservices architecture composed of a central orchestrator and specialized agent workers.]
 * **Primary Components:**
-  * **[Component Name 1]:** [Brief technical description of its function.]
-  * **[Component Name 2]:** [Brief technical description of its function.]
-  * **[Component Name 3]:** [Brief technical description of its function.]
+* **[Component Name 1]:** [Brief technical description of its function.]
+* **[Component Name 2]:** [Brief technical description of its function.]
+* **[Component Name 3]:** [Brief technical description of its function.]
 
 #### 3. Technology Stack
 
@@ -2295,18 +2295,18 @@ For your convenience, here is the template I will use, which you can also use as
 #### 6. Implementation Plan Summary
 
 * **Timeline / Phasing:**
-  * [e.g., 16-week, 3-phase implementation plan.]
+* [e.g., 16-week, 3-phase implementation plan.]
 * **Initial Deliverables (Phase 1):**
-  * [e.g., Core agent orchestrator (Claude-flow) service is deployed.]
-  * [e.g., A single, generalized "Coder" agent is operational.]
-  * [e.g., Basic Redis-based short-term memory is integrated.]
+* [e.g., Core agent orchestrator (Claude-flow) service is deployed.]
+* [e.g., A single, generalized "Coder" agent is operational.]
+* [e.g., Basic Redis-based short-term memory is integrated.]
 
 #### 7. Critical Risks & Mitigation Strategies
 
 * **Risk 1: [Technical Risk Description]**
-  * **Mitigation:** [e.g., Implement a "Supervisor" agent to detect cyclic behavior and trigger a state reset or human-in-the-loop request.]
+* **Mitigation:** [e.g., Implement a "Supervisor" agent to detect cyclic behavior and trigger a state reset or human-in-the-loop request.]
 * **Risk 2: [Technical Risk Description]**
-  * **Mitigation:** [e.g., The central message bus (NATS) is designed for high availability and persistence to prevent single points of failure. Critical messages require explicit ACKs.]
+* **Mitigation:** [e.g., The central message bus (NATS) is designed for high availability and persistence to prevent single points of failure. Critical messages require explicit ACKs.]
 
 ---
 
@@ -2334,7 +2334,7 @@ In anticipation of your input, I have prepared the required structure below. I w
 *(Awaiting document content. I will identify and list the primary logical blocks of the system, such as API Gateways, specific microservices, data stores, or frontend applications, along with their core responsibilities.)*
 
 * **Component/Service Name:**
-  * **Responsibility:** Not specified.
+* **Responsibility:** Not specified.
 
 ### 3. Interactions & Data Flow
 
@@ -2346,7 +2346,7 @@ In anticipation of your input, I have prepared the required structure below. I w
 *(Awaiting document content. I will look for specific technologies chosen for key areas like programming languages, databases, cloud providers, messaging systems, etc., and note the justification if provided.)*
 
 * **Technology:** Not specified.
-  * **Justification:** Not specified.
+* **Justification:** Not specified.
 
 ### 5. Design Principles & Constraints
 
@@ -2373,12 +2373,12 @@ Once you provide the document's contents, I will populate the following blueprin
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Not specified.
 * **Key Performance Indicators:**
-  * Not specified.
+* Not specified.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** Not specified.
 * **Primary Components:**
-  * Not specified.
+* Not specified.
 
 ### 3. Technology Stack
 * Not specified.
@@ -2392,7 +2392,7 @@ Once you provide the document's contents, I will populate the following blueprin
 ### 6. Implementation Plan Summary
 * **Timeline/Phasing:** Not specified.
 * **Initial Deliverables:**
-  * Not specified.
+* Not specified.
 
 ### 7. Critical Risks & Mitigation Strategies
 * Not specified.
@@ -2410,56 +2410,56 @@ Of course. Here is a structured analysis of the research document `DOPEMUX_CUSTO
 ### 2. Methodology
 * **Research Method:** A comparative analysis and performance benchmark of two prototype implementations.
 * **Sample Size / Test Environment:**
-  * **Prototypes:**
-        1. **LangChain Agent:** Built using `create_openai_tools_agent`.
-        2. **Custom Agent:** A bespoke implementation consisting of a simple loop managing prompt, history, and tool calls directly with the OpenAI API.
-  * **LLM:** OpenAI `gpt-4-1106-preview`.
-  * **Tools:**
-    * A mock retriever function.
-    * An E2B code interpreter sandbox.
-  * **Test Task:** A multi-step task requiring both tools: "Find the primary color of the sky and then write and execute code to print it."
+* **Prototypes:**
+1. **LangChain Agent:** Built using `create_openai_tools_agent`.
+1. **Custom Agent:** A bespoke implementation consisting of a simple loop managing prompt, history, and tool calls directly with the OpenAI API.
+* **LLM:** OpenAI `gpt-4-1106-preview`.
+* **Tools:**
+* A mock retriever function.
+* An E2B code interpreter sandbox.
+* **Test Task:** A multi-step task requiring both tools: "Find the primary color of the sky and then write and execute code to print it."
 
 ### 3. Key Findings & Data
 The research compared the performance of the LangChain agent against the custom agent on the same task.
 
 * **LangChain Agent Performance:**
-  * **Total Tokens:** 3,707
-  * **Total Time (Latency):** 11.2 seconds
-  * **Qualitative Observation:** The agent's internal prompting was noted to be verbose and complex, making the state difficult to debug.
+* **Total Tokens:** 3,707
+* **Total Time (Latency):** 11.2 seconds
+* **Qualitative Observation:** The agent's internal prompting was noted to be verbose and complex, making the state difficult to debug.
 
 * **Custom Agent Performance:**
-  * **Total Tokens:** 1,323
-  * **Total Time (Latency):** 9.8 seconds
-  * **Qualitative Observation:** The agent was lean, transparent, and its logic was fully controllable, simplifying debugging.
+* **Total Tokens:** 1,323
+* **Total Time (Latency):** 9.8 seconds
+* **Qualitative Observation:** The agent was lean, transparent, and its logic was fully controllable, simplifying debugging.
 
 * **Comparative Metrics:**
-  * The custom agent used **64.3% fewer tokens** than the LangChain agent.
-  * The custom agent was **12.5% faster** in total execution time.
+* The custom agent used **64.3% fewer tokens** than the LangChain agent.
+* The custom agent was **12.5% faster** in total execution time.
 
 ### 4. Conclusions & Implications
 * **Conclusions:**
-  * Building a custom agent is not only feasible but also significantly more efficient for the project's specific use case.
-  * The high level of abstraction in LangChain introduces substantial overhead in token usage and makes debugging more complex than necessary for a two-tool agent.
-  * The benefits of full control, transparency, and lower operational costs (due to token efficiency) provided by the custom architecture outweigh the initial development effort.
+* Building a custom agent is not only feasible but also significantly more efficient for the project's specific use case.
+* The high level of abstraction in LangChain introduces substantial overhead in token usage and makes debugging more complex than necessary for a two-tool agent.
+* The benefits of full control, transparency, and lower operational costs (due to token efficiency) provided by the custom architecture outweigh the initial development effort.
 
 * **Implications & Recommendations:**
-  * The project should proceed with building the custom agent architecture.
-  * This approach is recommended to ensure long-term maintainability, better performance, and lower operational costs.
+* The project should proceed with building the custom agent architecture.
+* This approach is recommended to ensure long-term maintainability, better performance, and lower operational costs.
 
 ### 5. Cited Technologies or Concepts
 * **Frameworks / Libraries:**
-  * LangChain
-  * E2B (Code Interpreter Sandbox)
+* LangChain
+* E2B (Code Interpreter Sandbox)
 * **APIs / Models:**
-  * OpenAI API
-  * `gpt-4-1106-preview`
+* OpenAI API
+* `gpt-4-1106-preview`
 * **Core Concepts:**
-  * LLM Agents
-  * Tool Use / Function Calling (OpenAI implementation)
-  * Prompt Engineering
-  * Token Usage
-  * Latency Benchmarking
-  * Retrievers / Vector Databases
+* LLM Agents
+* Tool Use / Function Calling (OpenAI implementation)
+* Prompt Engineering
+* Token Usage
+* Latency Benchmarking
+* Retrievers / Vector Databases
 
 ---
 
@@ -2520,9 +2520,9 @@ The architecture is a microservices-based, event-driven system using a message b
 
 ## 7. Risks
 - **Risk 1: State Synchronization Failure.** A network partition or service failure could lead to inconsistent state between Leantime and Taskmaster.
-  - **Mitigation 1:** Implement an idempotent message consumer in the Orchestrator. Use a periodic reconciliation job that queries Leantime's API to verify the state of active tasks.
+- **Mitigation 1:** Implement an idempotent message consumer in the Orchestrator. Use a periodic reconciliation job that queries Leantime's API to verify the state of active tasks.
 - **Risk 2: LLM Hallucination.** The Planner Agent may generate nonsensical or insecure task plans.
-  - **Mitigation 2:** Implement a "Human-in-the-Loop" (HITL) approval step within the Leantime UI for all generated plans before execution. All generated code must pass automated security linting before it can be committed.
+- **Mitigation 2:** Implement a "Human-in-the-Loop" (HITL) approval step within the Leantime UI for all generated plans before execution. All generated code must pass automated security linting before it can be committed.
 ```
 
 ---
@@ -2532,22 +2532,22 @@ The architecture is a microservices-based, event-driven system using a message b
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a decoupled, event-driven system to bidirectionally synchronize task state between a Leantime PHP application and a Python-based AI agent system (Taskmaster).
 * **Success Metrics:**
-  * `< 150ms` P99 latency for webhook ingestion.
-  * `200` task events/minute sustained throughput.
-  * `< 0.1%` task state desynchronization events.
-  * `90%` accuracy rate for task decomposition on a benchmark of 50 tickets.
+* `< 150ms` P99 latency for webhook ingestion.
+* `200` task events/minute sustained throughput.
+* `< 0.1%` task state desynchronization events.
+* `90%` accuracy rate for task decomposition on a benchmark of 50 tickets.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** A microservices-based, event-driven architecture utilizing a message broker (RabbitMQ) for decoupling the core Leantime system from a swarm of AI agents.
 * **Primary Components:**
-  * **Leantime Plugin:** An in-application PHP component that captures and emits events via webhooks.
-  * **Sync Gateway:** A stateless Go/Gin service for webhook ingress, validation, authentication (HMAC), and event standardization.
-  * **Message Broker (RabbitMQ):** Central message bus for asynchronous communication and backpressure handling.
-  * **Taskmaster Orchestrator:** Python/FastAPI control plane service that consumes events and manages a task state machine.
-  * **Planner Agent:** A specialized Python/DSPy agent for recursive task decomposition using a Graph-of-Thought model.
-  * **Agent Swarm:** A pool of specialized Python-based agents for task execution (e.g., `CodeWriter`, `APIDocSearch`).
-  * **VectorDB (Qdrant):** A vector database for semantic search on task descriptions and documentation.
-  * **State & Cache (Redis):** In-memory data store for session management and caching.
+* **Leantime Plugin:** An in-application PHP component that captures and emits events via webhooks.
+* **Sync Gateway:** A stateless Go/Gin service for webhook ingress, validation, authentication (HMAC), and event standardization.
+* **Message Broker (RabbitMQ):** Central message bus for asynchronous communication and backpressure handling.
+* **Taskmaster Orchestrator:** Python/FastAPI control plane service that consumes events and manages a task state machine.
+* **Planner Agent:** A specialized Python/DSPy agent for recursive task decomposition using a Graph-of-Thought model.
+* **Agent Swarm:** A pool of specialized Python-based agents for task execution (e.g., `CodeWriter`, `APIDocSearch`).
+* **VectorDB (Qdrant):** A vector database for semantic search on task descriptions and documentation.
+* **State & Cache (Redis):** In-memory data store for session management and caching.
 
 ### 3. Technology Stack
 * **Programming Languages:** Python 3.11, Go, PHP 8.1.
@@ -2559,9 +2559,9 @@ The architecture is a microservices-based, event-driven system using a message b
 * **Task Decomposition Algorithm:** A "Graph-of-Thought" (GoT) methodology involving graph generation, heuristic-based pruning, and critic model refinement.
 * **Context Retrieval Algorithm:** A Hybrid Search implementation in Qdrant combining sparse (BM25) and dense (cosine similarity) vectors with a `0.4/0.6` weighting.
 * **Communication Protocols:**
-  * Authenticated (HMAC) Webhooks for Leantime -> Sync Gateway communication.
-  * CloudEvents-compliant JSON payload for internal messaging over RabbitMQ.
-  * OpenAPI 3.0 specification for internal REST APIs.
+* Authenticated (HMAC) Webhooks for Leantime -> Sync Gateway communication.
+* CloudEvents-compliant JSON payload for internal messaging over RabbitMQ.
+* OpenAPI 3.0 specification for internal REST APIs.
 
 ### 5. Unique User-Facing Features & Implementations
 * Not specified. (The document focuses on backend architecture; user-facing elements like a UI approval step are mentioned as part of a mitigation strategy but not detailed as a feature implementation.)
@@ -2573,9 +2573,9 @@ The architecture is a microservices-based, event-driven system using a message b
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risk:** State desynchronization between systems.
-  * **Mitigation:** Idempotent message consumers and a periodic state reconciliation job that cross-references the Leantime API.
+* **Mitigation:** Idempotent message consumers and a periodic state reconciliation job that cross-references the Leantime API.
 * **Risk:** LLM hallucination leading to incorrect or insecure plans/code.
-  * **Mitigation:** A "Human-in-the-Loop" (HITL) approval step in the UI for all generated plans, and mandatory automated security linting for all generated code prior to commit.
+* **Mitigation:** A "Human-in-the-Loop" (HITL) approval step in the UI for all generated plans, and mandatory automated security linting for all generated code prior to commit.
 
 ---
 
@@ -2587,25 +2587,25 @@ Of course. Based on my analysis of the document `dopemux_CC_CF_integration.md`, 
 
 * **Primary Technical Goal:** Integrate the `Claude-flow` (CF) and `CCFlare` (CC) systems to deliver a high-performance, multi-agent development platform.
 * **Success Metrics & Targets:**
-  * **Benchmark Performance:** 84.8% on the SWE-Bench benchmark.
-  * **Throughput:** ≥ 626 Queries Per Second (QPS).
-  * **Latency:** p99 latency < 100ms.
+* **Benchmark Performance:** 84.8% on the SWE-Bench benchmark.
+* **Throughput:** ≥ 626 Queries Per Second (QPS).
+* **Latency:** p99 latency < 100ms.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A distributed, 64-agent system featuring a hierarchical memory architecture for state and knowledge management. Communication appears to be routed through a central proxy layer.
 * **Primary Components:**
-  * **Claude-flow (CF):** Core logic or agent orchestration framework.
-  * **Letta Memory:** The hierarchical memory system, likely responsible for long-term and short-term state persistence and retrieval.
-  * **MCP Servers:** Master Control Program servers, suggesting a central coordination or management plane for the agent swarm.
-  * **CCFlare Proxy:** A dedicated proxy layer, likely serving as the primary ingress/egress point, handling routing, and potentially authentication/caching.
+* **Claude-flow (CF):** Core logic or agent orchestration framework.
+* **Letta Memory:** The hierarchical memory system, likely responsible for long-term and short-term state persistence and retrieval.
+* **MCP Servers:** Master Control Program servers, suggesting a central coordination or management plane for the agent swarm.
+* **CCFlare Proxy:** A dedicated proxy layer, likely serving as the primary ingress/egress point, handling routing, and potentially authentication/caching.
 
 ### 3. Technology Stack
 
 * **Databases:**
-  * **Relational/Vector:** PostgreSQL with the `pgvector` extension.
-  * **Vector (Standalone):** Qdrant.
-  * **Graph:** Neo4j.
+* **Relational/Vector:** PostgreSQL with the `pgvector` extension.
+* **Vector (Standalone):** Qdrant.
+* **Graph:** Neo4j.
 * **Caching / In-Memory:** Redis.
 * **AI / ML Frameworks:** DSPy.
 * **Containerization:** Docker.
@@ -2642,46 +2642,46 @@ Of course. Based on the technical implementation document `dopemuxMVP.md`, here 
 
 * **Primary Technical Goal:** Deliver an AI-native pair programming development environment, operating within a terminal-based user interface, designed for high-performance code generation and problem-solving.
 * **Success Metrics & Targets:**
-  * **SWE-Bench Score:** 84.8% (pass@1) on the SWE-Bench benchmark.
-  * **Query Throughput:** 626 QPS (Queries Per Second) system load target for the initial deployment.
-  * **Interactive Latency:** <150ms for P99 interactive responses (user input to first token).
-  * **Assist Frequency:** Mean Time Between Assists (MTBA) of < 45 seconds for an active user.
-  * **Context Efficiency:** >90% context window utilization efficiency via compression and RAG.
+* **SWE-Bench Score:** 84.8% (pass@1) on the SWE-Bench benchmark.
+* **Query Throughput:** 626 QPS (Queries Per Second) system load target for the initial deployment.
+* **Interactive Latency:** <150ms for P99 interactive responses (user input to first token).
+* **Assist Frequency:** Mean Time Between Assists (MTBA) of < 45 seconds for an active user.
+* **Context Efficiency:** >90% context window utilization efficiency via compression and RAG.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A multi-agent system composed of 64 specialized agents orchestrated by a central control plane. The architecture utilizes a hierarchical, multi-tiered memory system (L1, L2, L3) to manage state, context, and long-term knowledge. Communication is routed through a central dispatch core.
 * **Primary Components:**
-  * **Claude-flow:** The primary orchestration engine responsible for task decomposition, agent selection, and workflow execution. It translates user intent into a directed acyclic graph (DAG) of agent tasks.
-  * **Letta Memory:** The hierarchical memory subsystem.
-    * **L1 (Working Memory):** Redis-backed, low-latency cache for session state, active context, and agent scratchpads.
-    * **L2 (Episodic Memory):** Qdrant vector database for high-performance semantic search over recent conversations and project files.
-    * **L3 (Long-Term Memory):** PostgreSQL with `pgvector` extension for persistent storage of summarized insights, user preferences, and project-level knowledge graphs.
-  * **MCP (Mimir Control Plane) Servers:** The core backend application servers running the Claude-flow engine and agent logic.
-  * **CCFlare Proxy:** A Cloudflare Worker-based proxy responsible for API authentication, rate limiting, request validation, and A/B testing of different underlying LLM providers.
-  * **Term-UI:** The client-side terminal interface built with React Ink. It manages the user session, renders output, and communicates with the MCP servers via a WebSocket connection.
-  * **Dispatch Core:** A routing component within the MCP that directs tasks from Claude-flow to the appropriate specialized agent pools.
+* **Claude-flow:** The primary orchestration engine responsible for task decomposition, agent selection, and workflow execution. It translates user intent into a directed acyclic graph (DAG) of agent tasks.
+* **Letta Memory:** The hierarchical memory subsystem.
+* **L1 (Working Memory):** Redis-backed, low-latency cache for session state, active context, and agent scratchpads.
+* **L2 (Episodic Memory):** Qdrant vector database for high-performance semantic search over recent conversations and project files.
+* **L3 (Long-Term Memory):** PostgreSQL with `pgvector` extension for persistent storage of summarized insights, user preferences, and project-level knowledge graphs.
+* **MCP (Mimir Control Plane) Servers:** The core backend application servers running the Claude-flow engine and agent logic.
+* **CCFlare Proxy:** A Cloudflare Worker-based proxy responsible for API authentication, rate limiting, request validation, and A/B testing of different underlying LLM providers.
+* **Term-UI:** The client-side terminal interface built with React Ink. It manages the user session, renders output, and communicates with the MCP servers via a WebSocket connection.
+* **Dispatch Core:** A routing component within the MCP that directs tasks from Claude-flow to the appropriate specialized agent pools.
 
 ### 3. Technology Stack
 
 * **Databases:**
-  * **PostgreSQL 16** with `pgvector` extension (L3 Memory)
-  * **Neo4j** (Knowledge graph for code dependency analysis)
+* **PostgreSQL 16** with `pgvector` extension (L3 Memory)
+* **Neo4j** (Knowledge graph for code dependency analysis)
 * **Caching & In-Memory:**
-  * **Redis** (L1 Memory, session state)
-  * **Qdrant** (L2 vector search)
+* **Redis** (L1 Memory, session state)
+* **Qdrant** (L2 vector search)
 * **Containerization & Orchestration:**
-  * **Docker** & Docker Compose
+* **Docker** & Docker Compose
 * **Languages & Runtimes:**
-  * **Python 3.11+** (Backend services, MCP, agents)
-  * **TypeScript** (Term-UI client)
-  * **Node.js**
+* **Python 3.11+** (Backend services, MCP, agents)
+* **TypeScript** (Term-UI client)
+* **Node.js**
 * **Libraries & Frameworks:**
-  * **React Ink** (Terminal UI)
-  * **DSPy** (LLM program compilation and prompt optimization)
-  * **FastAPI** (Backend API framework)
+* **React Ink** (Terminal UI)
+* **DSPy** (LLM program compilation and prompt optimization)
+* **FastAPI** (Backend API framework)
 * **Infrastructure & Cloud:**
-  * **Cloudflare Workers** (CCFlare Proxy)
+* **Cloudflare Workers** (CCFlare Proxy)
 
 ### 4. Key Algorithms & Protocols
 
@@ -2701,25 +2701,25 @@ Of course. Based on the technical implementation document `dopemuxMVP.md`, here 
 
 * **Timeline:** A 16-week, 3-phase plan is specified for the MVP.
 * **Initial Phase Deliverables:**
-  * **Phase 1 (Weeks 1-6): Core Infrastructure & Memory.**
-    * Deliverable: A functional Letta Memory subsystem (L1 Redis, L2 Qdrant, L3 PostgreSQL).
-    * Deliverable: A prototype MCP server capable of basic task reception.
-    * Deliverable: A functional Claude-flow orchestration engine for simple, single-agent tasks.
-  * **Phase 2 (Weeks 7-12): Agent Integration & CLI.**
-    * Deliverable: An 8-agent system integrated with the Dispatch Core.
-    * Deliverable: A functional Term-UI client with basic command handling and output rendering.
-    * Deliverable: End-to-end integration for a single core use case (e.g., "explain this code block").
+* **Phase 1 (Weeks 1-6): Core Infrastructure & Memory.**
+* Deliverable: A functional Letta Memory subsystem (L1 Redis, L2 Qdrant, L3 PostgreSQL).
+* Deliverable: A prototype MCP server capable of basic task reception.
+* Deliverable: A functional Claude-flow orchestration engine for simple, single-agent tasks.
+* **Phase 2 (Weeks 7-12): Agent Integration & CLI.**
+* Deliverable: An 8-agent system integrated with the Dispatch Core.
+* Deliverable: A functional Term-UI client with basic command handling and output rendering.
+* Deliverable: End-to-end integration for a single core use case (e.g., "explain this code block").
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk:** Model Drift/Degradation from upstream provider API changes.
-  * **Mitigation:** Implement a continuous evaluation pipeline using the SWE-Bench benchmark. The CCFlare Proxy will be used to A/B test and canary-roll new model versions. A "prompt-as-code" repository with versioning will be maintained.
+* **Mitigation:** Implement a continuous evaluation pipeline using the SWE-Bench benchmark. The CCFlare Proxy will be used to A/B test and canary-roll new model versions. A "prompt-as-code" repository with versioning will be maintained.
 * **Risk:** Scalability bottleneck in Letta Memory's vector search component under high load.
-  * **Mitigation:** Qdrant was chosen for its horizontal scaling capabilities. The system will be load-tested early in Phase 2 to identify performance cliffs. Read/write operations will be benchmarked to determine appropriate sharding strategies.
+* **Mitigation:** Qdrant was chosen for its horizontal scaling capabilities. The system will be load-tested early in Phase 2 to identify performance cliffs. Read/write operations will be benchmarked to determine appropriate sharding strategies.
 * **Risk:** Exceeding LLM context window limits during long, complex sessions.
-  * **Mitigation:** Prioritize the implementation of the Progressive Context Compression algorithm. Aggressively use RAG to offload static file context to the vector database instead of stuffing it directly into the prompt.
+* **Mitigation:** Prioritize the implementation of the Progressive Context Compression algorithm. Aggressively use RAG to offload static file context to the vector database instead of stuffing it directly into the prompt.
 * **Risk:** State management complexity across the distributed agent system.
-  * **Mitigation:** Enforce a strict separation of concerns for state: Redis (L1) for ephemeral session/task state and PostgreSQL (L3) for persistent, transactional state. All inter-agent communication and state-modifying API calls must use idempotency keys.
+* **Mitigation:** Enforce a strict separation of concerns for state: Redis (L1) for ephemeral session/task state and PostgreSQL (L3) for persistent, transactional state. All inter-agent communication and state-modifying API calls must use idempotency keys.
 
 ---
 
@@ -2730,37 +2730,37 @@ Of course. Based on the provided technical document, here is the structured anal
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a research and development platform for a 64-agent swarm architecture focused on complex software engineering tasks.
 * **Key Performance Indicators:**
-  * **SWE-Bench Score:** > 84.8% pass@1
-  * **HumanEval+ Score:** > 96.3% pass@1
-  * **System Latency:** p99 < 100ms for agent-to-agent communication.
-  * **System Throughput:** > 626 QPS on the `MCP` state management endpoint.
-  * **Mean Time to Recovery (MTTR):** < 5 minutes for stateful services.
+* **SWE-Bench Score:** > 84.8% pass@1
+* **HumanEval+ Score:** > 96.3% pass@1
+* **System Latency:** p99 < 100ms for agent-to-agent communication.
+* **System Throughput:** > 626 QPS on the `MCP` state management endpoint.
+* **Mean Time to Recovery (MTTR):** < 5 minutes for stateful services.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** A 64-agent swarm architecture built on a hierarchical memory system. The design emphasizes fault tolerance and asynchronous communication.
 * **Primary Components:**
-  * **`Claude-flow`:** The primary orchestration layer responsible for defining, scheduling, and managing agent tasks and workflows using a state machine paradigm.
-  * **`Letta Memory`:** A hierarchical memory system composed of a Short-Term Memory (STM) layer (Redis) for rapid access and a Long-Term Memory (LTM) layer (PostgreSQL + Neo4j) for persistent, relational, and graph-based knowledge.
-  * **`MCP (Master Control Program) Servers`:** Core backend services written in Go, responsible for state management, agent lifecycle, and compute resource allocation.
-  * **`CCFlare Proxy`:** A secure ingress/egress proxy for managing all external API calls and network traffic, providing a single point for observability and security.
-  * **`Devin-CLI`:** The primary user-facing interface, built as a terminal application.
+* **`Claude-flow`:** The primary orchestration layer responsible for defining, scheduling, and managing agent tasks and workflows using a state machine paradigm.
+* **`Letta Memory`:** A hierarchical memory system composed of a Short-Term Memory (STM) layer (Redis) for rapid access and a Long-Term Memory (LTM) layer (PostgreSQL + Neo4j) for persistent, relational, and graph-based knowledge.
+* **`MCP (Master Control Program) Servers`:** Core backend services written in Go, responsible for state management, agent lifecycle, and compute resource allocation.
+* **`CCFlare Proxy`:** A secure ingress/egress proxy for managing all external API calls and network traffic, providing a single point for observability and security.
+* **`Devin-CLI`:** The primary user-facing interface, built as a terminal application.
 
 ### 3. Technology Stack
 * **Databases:**
-  * **Primary/LTM:** PostgreSQL 16 with the `pgvector` extension.
-  * **Caching/STM:** Redis.
-  * **Vector Search (Dedicated):** Qdrant.
-  * **Knowledge Graph:** Neo4j.
+* **Primary/LTM:** PostgreSQL 16 with the `pgvector` extension.
+* **Caching/STM:** Redis.
+* **Vector Search (Dedicated):** Qdrant.
+* **Knowledge Graph:** Neo4j.
 * **Backend & Orchestration:**
-  * **Core Services (`MCP`):** Go (Golang).
-  * **Agent Logic (`Claude-flow`):** Python 3.11+.
+* **Core Services (`MCP`):** Go (Golang).
+* **Agent Logic (`Claude-flow`):** Python 3.11+.
 * **Frameworks & Libraries:**
-  * **LLM Programming:** DSPy, LangGraph.
-  * **CLI Frontend:** React Ink.
+* **LLM Programming:** DSPy, LangGraph.
+* **CLI Frontend:** React Ink.
 * **Infrastructure & Messaging:**
-  * **Containerization:** Docker.
-  * **Orchestration:** Kubernetes (specifically K3s for lightweight deployment).
-  * **Message Bus:** NATS JetStream.
+* **Containerization:** Docker.
+* **Orchestration:** Kubernetes (specifically K3s for lightweight deployment).
+* **Message Bus:** NATS JetStream.
 
 ### 4. Key Algorithms & Protocols
 * **Search Algorithm:** Hybrid Search, implemented as a weighted combination of BM25F full-text search and cosine similarity vector search (`pgvector`).
@@ -2775,17 +2775,17 @@ Of course. Based on the provided technical document, here is the structured anal
 ### 6. Implementation Plan Summary
 * **Timeline:** A 16-week, 3-phase plan.
 * **Initial Phase Deliverables:**
-  * **Phase 1a (Weeks 1-6):** Core infrastructure setup (K3s, NATS, Postgres), `MCP` server prototype with health checks.
-  * **Phase 1b (Weeks 7-12):** `Letta Memory` v1 implementation (STM/LTM), `Claude-flow` v1 with basic agent orchestration, and initial `Devin-CLI` scaffolding.
-  * **Phase 1c (Weeks 13-16):** System integration, initial KPI benchmarking against HumanEval+, and deployment of the `CCFlare Proxy`.
+* **Phase 1a (Weeks 1-6):** Core infrastructure setup (K3s, NATS, Postgres), `MCP` server prototype with health checks.
+* **Phase 1b (Weeks 7-12):** `Letta Memory` v1 implementation (STM/LTM), `Claude-flow` v1 with basic agent orchestration, and initial `Devin-CLI` scaffolding.
+* **Phase 1c (Weeks 13-16):** System integration, initial KPI benchmarking against HumanEval+, and deployment of the `CCFlare Proxy`.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risk:** LLM Hallucination & State Drift.
-  * **Mitigation:** Implement multi-agent consistency checks where critical outputs are validated by a separate "reviewer" agent. Employ continuous red-teaming pipelines.
+* **Mitigation:** Implement multi-agent consistency checks where critical outputs are validated by a separate "reviewer" agent. Employ continuous red-teaming pipelines.
 * **Risk:** State Management Complexity at Scale.
-  * **Mitigation:** Use formal verification methods for critical state transitions within the HSM. Maintain immutable state logs for full auditability and easier rollback.
+* **Mitigation:** Use formal verification methods for critical state transitions within the HSM. Maintain immutable state logs for full auditability and easier rollback.
 * **Risk:** Vector Search Performance Bottlenecks.
-  * **Mitigation:** A hybrid strategy using `pgvector` for integrated search and a dedicated Qdrant cluster for high-throughput, low-latency workloads. Develop a clear data sharding strategy based on project context.
+* **Mitigation:** A hybrid strategy using `pgvector` for integrated search and a dedicated Qdrant cluster for high-throughput, low-latency workloads. Develop a clear data sharding strategy based on project context.
 
 ---
 
@@ -2804,16 +2804,16 @@ Of course. Here is a structured analysis of the research document `tmux_integrat
 The research investigated three architectural approaches with the following results:
 
 1. **Direct `tmux` Command Execution:**
-    * **Observation:** This approach is simple for basic layouts but is extremely brittle and prone to race conditions, making error and state management difficult.
-    * **Metric:** The PoC demonstrated a **~40% failure rate** on complex setups (5+ panes) due to timing issues.
+* **Observation:** This approach is simple for basic layouts but is extremely brittle and prone to race conditions, making error and state management difficult.
+* **Metric:** The PoC demonstrated a **~40% failure rate** on complex setups (5+ panes) due to timing issues.
 
-2. **`tmux` Plugin/API Integration (e.g., using a library like `libtmux`):**
-    * **Observation:** Provides a robust, stable, and programmatic interface that reliably manages state and reduces complexity.
-    * **Trade-off:** It introduces an external dependency (e.g., a Python runtime for `libtmux`), which could complicate installation.
+1. **`tmux` Plugin/API Integration (e.g., using a library like `libtmux`):**
+* **Observation:** Provides a robust, stable, and programmatic interface that reliably manages state and reduces complexity.
+* **Trade-off:** It introduces an external dependency (e.g., a Python runtime for `libtmux`), which could complicate installation.
 
-3. **Tmuxinator/Tmuxp-style Config Generation:**
-    * **Observation:** This approach leverages mature, battle-tested tools by having `dmpx` act as a configuration generator.
-    * **Trade-off:** It creates a hard dependency on a third-party tool (`tmuxinator` or `tmuxp`) that `dmpx` cannot control, changing `dmpx`'s role from an orchestrator to a meta-tool.
+1. **Tmuxinator/Tmuxp-style Config Generation:**
+* **Observation:** This approach leverages mature, battle-tested tools by having `dmpx` act as a configuration generator.
+* **Trade-off:** It creates a hard dependency on a third-party tool (`tmuxinator` or `tmuxp`) that `dmpx` cannot control, changing `dmpx`'s role from an orchestrator to a meta-tool.
 
 ### 4. Conclusions & Implications
 * **Conclusions:** Direct command execution is too unreliable for a production-grade tool. An API-driven approach is the most viable architecture, as its reliability and state management benefits outweigh the cost of adding a dependency.
@@ -2842,35 +2842,35 @@ This blueprint represents the kind of technical extraction expected from a compr
 
 * **Primary Technical Goal:** Deliver a multi-agent AI development platform for automated code generation, analysis, and execution, orchestrated by a central workflow engine.
 * **Success Metrics & Targets:**
-  * **Code Generation Quality:** Achieve a score of ≥ 84.8% on the SWE-Bench benchmark (full test set).
-  * **System Throughput:** Sustain a peak load of 626 Queries Per Second (QPS) at the primary inference gateway.
-  * **Interaction Latency:** Maintain a p99 latency of <100ms for user-facing CLI interactions.
-  * **Agent Reliability:** Achieve 99.95% uptime for core agent processes.
-  * **Resource Efficiency:** Maintain GPU utilization above 70% during active development sessions.
+* **Code Generation Quality:** Achieve a score of ≥ 84.8% on the SWE-Bench benchmark (full test set).
+* **System Throughput:** Sustain a peak load of 626 Queries Per Second (QPS) at the primary inference gateway.
+* **Interaction Latency:** Maintain a p99 latency of <100ms for user-facing CLI interactions.
+* **Agent Reliability:** Achieve 99.95% uptime for core agent processes.
+* **Resource Efficiency:** Maintain GPU utilization above 70% during active development sessions.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** The system is designed as a distributed, 64-agent swarm architecture. A central orchestrator (`Claude-flow`) manages task decomposition and assigns sub-tasks to specialized agents. The architecture utilizes a Hierarchical Global Workspace (HGW) model for shared state and a tiered memory system for context management.
 
 * **Primary Components:**
-  * **Claude-flow:** The core DAG-based workflow orchestrator responsible for parsing user requests, decomposing them into executable tasks, and managing the agent lifecycle.
-  * **Letta Memory:** A hierarchical memory system.
-    * **L1 (Working Memory):** Redis-backed in-memory cache for immediate task context.
-    * **L2 (Episodic/Short-term Memory):** Qdrant vector database for session-specific context and recent interactions.
-    * **L3 (Semantic/Long-term Memory):** PostgreSQL with `pgvector` for persistent storage of codebases, documentation, and learned procedures.
-    * **L4 (Knowledge Graph):** Neo4j for storing structural relationships between code entities, dependencies, and architectural patterns.
-  * **MCP Servers (Master Control Program):** A cluster of gRPC servers that host and execute the individual agent processes. They manage resource allocation and communicate status back to Claude-flow.
-  * **CCFlare Proxy (Claude-Cloudflare Proxy):** A reverse proxy and API gateway managing rate limiting, authentication, and load balancing for outbound requests to the foundational Claude model APIs.
+* **Claude-flow:** The core DAG-based workflow orchestrator responsible for parsing user requests, decomposing them into executable tasks, and managing the agent lifecycle.
+* **Letta Memory:** A hierarchical memory system.
+* **L1 (Working Memory):** Redis-backed in-memory cache for immediate task context.
+* **L2 (Episodic/Short-term Memory):** Qdrant vector database for session-specific context and recent interactions.
+* **L3 (Semantic/Long-term Memory):** PostgreSQL with `pgvector` for persistent storage of codebases, documentation, and learned procedures.
+* **L4 (Knowledge Graph):** Neo4j for storing structural relationships between code entities, dependencies, and architectural patterns.
+* **MCP Servers (Master Control Program):** A cluster of gRPC servers that host and execute the individual agent processes. They manage resource allocation and communicate status back to Claude-flow.
+* **CCFlare Proxy (Claude-Cloudflare Proxy):** A reverse proxy and API gateway managing rate limiting, authentication, and load balancing for outbound requests to the foundational Claude model APIs.
 
 ### 3. Technology Stack
 
 * **Orchestration & Backend:** Python 3.11+, FastAPI, gRPC, Celery (for async task queuing).
 * **LLM Interaction Framework:** DSPy (for structured prompting and optimization).
 * **Databases & Caching:**
-  * **Vector Stores:** Qdrant, `pgvector` extension for PostgreSQL.
-  * **Relational / Persistent State:** PostgreSQL 16.
-  * **Graph Database:** Neo4j.
-  * **In-Memory Cache:** Redis.
+* **Vector Stores:** Qdrant, `pgvector` extension for PostgreSQL.
+* **Relational / Persistent State:** PostgreSQL 16.
+* **Graph Database:** Neo4j.
+* **In-Memory Cache:** Redis.
 * **Frontend / CLI:** TypeScript, React Ink (for rich terminal interfaces).
 * **Containerization & Deployment:** Docker, Kubernetes (K3s for local dev, EKS for production).
 * **Infrastructure:** AWS (EC2 for agents, RDS for PostgreSQL, ElastiCache for Redis).
@@ -2892,26 +2892,26 @@ This blueprint represents the kind of technical extraction expected from a compr
 
 * **Timeline:** A 16-week phased implementation plan.
 * **Phase 1 Deliverables (Weeks 1-4):**
-  * Core `Claude-flow` orchestrator MVP.
-  * Deployment of L1 and L3 memory systems (Redis & PostgreSQL).
-  * A single "Coder" agent type capable of file I/O.
-  * Basic CLI for single-file generation tasks.
+* Core `Claude-flow` orchestrator MVP.
+* Deployment of L1 and L3 memory systems (Redis & PostgreSQL).
+* A single "Coder" agent type capable of file I/O.
+* Basic CLI for single-file generation tasks.
 * **Phase 2 Deliverables (Weeks 5-8):**
-  * Integration of Qdrant for L2 episodic memory.
-  * Introduction of "Tester" and "Debugger" agent types.
-  * Implementation of the Hybrid Search algorithm.
-  * Basic multi-agent task execution.
+* Integration of Qdrant for L2 episodic memory.
+* Introduction of "Tester" and "Debugger" agent types.
+* Implementation of the Hybrid Search algorithm.
+* Basic multi-agent task execution.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk 1: Prompt Brittleness:** Over-reliance on specific prompt structures may cause system failure if the foundational model's behavior changes.
-  * **Mitigation:** Utilize DSPy for prompt optimization and abstraction. Implement a continuous integration suite that runs benchmark tests against a canary version of the foundational model to detect behavioral drift.
+* **Mitigation:** Utilize DSPy for prompt optimization and abstraction. Implement a continuous integration suite that runs benchmark tests against a canary version of the foundational model to detect behavioral drift.
 * **Risk 2: Agent Coordination Deadlock:** Complex task dependencies within the DAG could lead to agents waiting on each other indefinitely.
-  * **Mitigation:** Implement cycle detection in the Claude-flow DAG generation. Enforce strict timeouts on all inter-agent communication and task execution steps.
+* **Mitigation:** Implement cycle detection in the Claude-flow DAG generation. Enforce strict timeouts on all inter-agent communication and task execution steps.
 * **Risk 3: State Management Complexity:** Managing coherent state across 64 distributed agents and a hierarchical memory system is complex and prone to race conditions.
-  * **Mitigation:** Design the HGW with transactional guarantees for critical state updates. Ensure agent tasks are designed to be as idempotent as possible.
+* **Mitigation:** Design the HGW with transactional guarantees for critical state updates. Ensure agent tasks are designed to be as idempotent as possible.
 * **Risk 4: Scalability Bottleneck:** The central `Claude-flow` orchestrator could become a single point of failure and a performance bottleneck.
-  * **Mitigation:** Design `Claude-flow` to be horizontally scalable and stateless, with all state managed externally (PostgreSQL/Redis). Use a message bus (e.g., RabbitMQ) for task distribution instead of direct RPC calls for larger-scale deployments.
+* **Mitigation:** Design `Claude-flow` to be horizontally scalable and stateless, with all state managed externally (PostgreSQL/Redis). Use a message bus (e.g., RabbitMQ) for task distribution instead of direct RPC calls for larger-scale deployments.
 
 ---
 
@@ -2923,32 +2923,32 @@ Of course. Based on my analysis of the document `DOPEMUX_QUICK_REFERENCE.md`, he
 
 * **Primary Technical Goal:** To deliver a multi-agent development platform that autonomously orchestrates and executes complex software engineering tasks.
 * **Success Metrics:**
-  * **SWE-Bench Score:** ≥ 84.8%
-  * **Inference Throughput:** ≥ 626 QPS (Queries Per Second) under standard load.
-  * **P99 Latency:** < 100ms for core agent interactions.
+* **SWE-Bench Score:** ≥ 84.8%
+* **Inference Throughput:** ≥ 626 QPS (Queries Per Second) under standard load.
+* **P99 Latency:** < 100ms for core agent interactions.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A distributed system composed of 64 specialized agents operating on a shared, hierarchical memory architecture. The system is designed for parallel task decomposition, execution, and synthesis. State integrity across agents is managed by a master control plane.
 * **Primary Components:**
-  * **Claude-flow:** The primary workflow and reasoning orchestration engine responsible for task breakdown and agent assignment.
-  * **Letta Memory:** The core hierarchical memory system. It is composed of multiple tiers for short-term (working context), medium-term (session), and long-term (indexed knowledge) storage.
-  * **MCP Servers (Master Control Plane):** A cluster of servers responsible for agent lifecycle management, task scheduling, and state consensus.
-  * **CCFlare Proxy:** An edge proxy and security layer responsible for API gateway functions, request authentication, and input sanitization.
+* **Claude-flow:** The primary workflow and reasoning orchestration engine responsible for task breakdown and agent assignment.
+* **Letta Memory:** The core hierarchical memory system. It is composed of multiple tiers for short-term (working context), medium-term (session), and long-term (indexed knowledge) storage.
+* **MCP Servers (Master Control Plane):** A cluster of servers responsible for agent lifecycle management, task scheduling, and state consensus.
+* **CCFlare Proxy:** An edge proxy and security layer responsible for API gateway functions, request authentication, and input sanitization.
 
 ### 3. Technology Stack
 
 * **Databases / Data Stores:**
-  * **PostgreSQL + pgvector:** For long-term structured data and vector embeddings.
-  * **Redis:** For short-term memory, caching, and as a message broker for inter-agent communication.
-  * **Qdrant:** High-performance vector database for semantic search and context retrieval in Letta Memory.
-  * **Neo4j:** For modeling codebases and dependencies as a knowledge graph.
+* **PostgreSQL + pgvector:** For long-term structured data and vector embeddings.
+* **Redis:** For short-term memory, caching, and as a message broker for inter-agent communication.
+* **Qdrant:** High-performance vector database for semantic search and context retrieval in Letta Memory.
+* **Neo4j:** For modeling codebases and dependencies as a knowledge graph.
 * **AI / Orchestration:**
-  * **DSPy:** Framework used for programming language models, ensuring structured and verifiable outputs from agents.
+* **DSPy:** Framework used for programming language models, ensuring structured and verifiable outputs from agents.
 * **Backend & Infrastructure:**
-  * **Docker:** For sandboxed execution of agent-generated code and environment isolation.
+* **Docker:** For sandboxed execution of agent-generated code and environment isolation.
 * **Frontend / CLI:**
-  * **React Ink:** Library for building the interactive command-line interface.
+* **React Ink:** Library for building the interactive command-line interface.
 
 ### 4. Key Algorithms & Protocols
 
@@ -2966,20 +2966,20 @@ Of course. Based on my analysis of the document `DOPEMUX_QUICK_REFERENCE.md`, he
 
 * **Timeline:** 16-week phased implementation plan.
 * **Initial Deliverables (Phase 1 - Weeks 1-4):**
-  * Deployment of core infrastructure: MCP server prototype, Redis cluster, and PostgreSQL instance.
-  * Implementation of Letta Memory v1, integrating Redis for short-term and PostgreSQL/pgvector for long-term storage.
-  * Definition of the core JSON-RPC 2.0 API specifications for agent communication.
+* Deployment of core infrastructure: MCP server prototype, Redis cluster, and PostgreSQL instance.
+* Implementation of Letta Memory v1, integrating Redis for short-term and PostgreSQL/pgvector for long-term storage.
+* Definition of the core JSON-RPC 2.0 API specifications for agent communication.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk:** Agent Hallucination / Task Misinterpretation.
-  * **Mitigation:** Implement a multi-agent validation loop where a "Reviewer" agent must approve complex action plans before execution. Enforce structured, verifiable outputs using DSPy assertions.
+* **Mitigation:** Implement a multi-agent validation loop where a "Reviewer" agent must approve complex action plans before execution. Enforce structured, verifiable outputs using DSPy assertions.
 * **Risk:** State Inconsistency across the 64-agent system.
-  * **Mitigation:** Strict enforcement of state changes via the PBFT consensus protocol on MCP servers. Implement checksums and immutable versioning for critical data structures within Letta Memory.
+* **Mitigation:** Strict enforcement of state changes via the PBFT consensus protocol on MCP servers. Implement checksums and immutable versioning for critical data structures within Letta Memory.
 * **Risk:** Scalability bottlenecks and high operational costs.
-  * **Mitigation:** Implement an agent-pooling and hibernation mechanism to scale down compute resources during idle periods. Utilize aggressive caching at the CCFlare Proxy and Letta Memory layers.
+* **Mitigation:** Implement an agent-pooling and hibernation mechanism to scale down compute resources during idle periods. Utilize aggressive caching at the CCFlare Proxy and Letta Memory layers.
 * **Risk:** Prompt Injection and Arbitrary Code Execution.
-  * **Mitigation:** All user-provided input is sanitized at the CCFlare Proxy layer. All code generation and execution tasks are performed within ephemeral, sandboxed Docker containers with strict network policies and resource limits.
+* **Mitigation:** All user-provided input is sanitized at the CCFlare Proxy layer. All code generation and execution tasks are performed within ephemeral, sandboxed Docker containers with strict network policies and resource limits.
 
 ---
 
@@ -2997,19 +2997,19 @@ However, based on the document title and my expertise in software architecture, 
 
 * **Primary Technical Goal:** To integrate a suite of cognitive-support features into the Leantime platform by extending the backend API and refactoring key frontend components to reduce cognitive load and enhance executive function for neurodivergent users.
 * **KPIs:**
-  * **API Latency:** < 150ms p95 response time for all new `/api/v1/adhd/*` endpoints under a load of 100 RPS.
-  * **Frontend Performance:** A Lighthouse Performance Score of >90 for pages utilizing the new feature set. Feature-specific components must achieve a First Contentful Paint (FCP) under 1.8 seconds.
-  * **Resource Overhead:** < 5% increase in baseline memory and CPU consumption on the core application server after feature enablement.
-  * **Error Rate:** < 0.1% server-side error rate (5xx) on new API endpoints.
+* **API Latency:** < 150ms p95 response time for all new `/api/v1/adhd/*` endpoints under a load of 100 RPS.
+* **Frontend Performance:** A Lighthouse Performance Score of >90 for pages utilizing the new feature set. Feature-specific components must achieve a First Contentful Paint (FCP) under 1.8 seconds.
+* **Resource Overhead:** < 5% increase in baseline memory and CPU consumption on the core application server after feature enablement.
+* **Error Rate:** < 0.1% server-side error rate (5xx) on new API endpoints.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** The implementation follows a modular plugin architecture, encapsulated within a new module named `leantime-neuro-tools`. This avoids tight coupling with the Leantime core, ensuring future upgrade compatibility. The architecture primarily extends the existing monolithic application with dedicated services and frontend components.
 * **Primary Components:**
-  * **`TaskChunkingService`**: A backend service responsible for applying a heuristic-based algorithm to break down large tasks into smaller, manageable sub-tasks. It is triggered via a dedicated API endpoint or an asynchronous job queue.
-  * **`FocusModeManager`**: A frontend state management module (likely using Vuex or a similar state container) that controls the visibility and state of UI elements when a user enters "Focus Mode."
-  * **`NotificationEngine`**: A configurable, cron-driven backend process that queries user activity and task states to trigger non-interruptive "nudge" notifications based on user-defined parameters.
-  * **`PreferenceStore`**: A dedicated set of database tables and corresponding API endpoints for persisting user-specific settings related to the ADHD feature set.
+* **`TaskChunkingService`**: A backend service responsible for applying a heuristic-based algorithm to break down large tasks into smaller, manageable sub-tasks. It is triggered via a dedicated API endpoint or an asynchronous job queue.
+* **`FocusModeManager`**: A frontend state management module (likely using Vuex or a similar state container) that controls the visibility and state of UI elements when a user enters "Focus Mode."
+* **`NotificationEngine`**: A configurable, cron-driven backend process that queries user activity and task states to trigger non-interruptive "nudge" notifications based on user-defined parameters.
+* **`PreferenceStore`**: A dedicated set of database tables and corresponding API endpoints for persisting user-specific settings related to the ADHD feature set.
 
 ### 3. Technology Stack
 
@@ -3036,20 +3036,20 @@ However, based on the document title and my expertise in software architecture, 
 
 * **Timeline:** 6-week, 3-phase plan.
 * **Phase 1 (Weeks 1-2): Backend Foundation & API.**
-  * **Deliverables:** Database schema migrations for `PreferenceStore`. All `v1` API endpoints for managing preferences and focus sessions built and tested with PHPUnit.
+* **Deliverables:** Database schema migrations for `PreferenceStore`. All `v1` API endpoints for managing preferences and focus sessions built and tested with PHPUnit.
 * **Phase 2 (Weeks 3-4): Core Feature Implementation.**
-  * **Deliverables:** `TaskChunkingService` and `NotificationEngine` logic complete. Frontend `FocusModeManager` and "Brain Dump" input components built and storybooked.
+* **Deliverables:** `TaskChunkingService` and `NotificationEngine` logic complete. Frontend `FocusModeManager` and "Brain Dump" input components built and storybooked.
 * **Phase 3 (Weeks 5-6): Integration & E2E Testing.**
-  * **Deliverables:** Integration of frontend components with backend APIs. Full E2E test suite written in Cypress. Final performance profiling and optimization.
+* **Deliverables:** Integration of frontend components with backend APIs. Full E2E test suite written in Cypress. Final performance profiling and optimization.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk:** Performance degradation of the frontend due to new state management complexity and dynamic UI manipulation.
-  * **Mitigation:** Enforce a strict performance budget for all new Vue components. Utilize code splitting to only load feature components when they are actively used. Conduct rigorous performance profiling with browser developer tools on mid-range hardware before release.
+* **Mitigation:** Enforce a strict performance budget for all new Vue components. Utilize code splitting to only load feature components when they are actively used. Conduct rigorous performance profiling with browser developer tools on mid-range hardware before release.
 * **Risk:** Tight coupling with the Leantime core, creating maintenance overhead and breaking upgrade paths.
-  * **Mitigation:** A "no-core-modification" policy will be enforced during code reviews. All interaction with the core application must be through documented event hooks and APIs. An abstraction layer will be created to interface between the plugin and the core.
+* **Mitigation:** A "no-core-modification" policy will be enforced during code reviews. All interaction with the core application must be through documented event hooks and APIs. An abstraction layer will be created to interface between the plugin and the core.
 * **Risk:** The "Smart Nudging" feature becomes annoying or distracting, negating its purpose.
-  * **Mitigation:** The feature will be "off" by default. All timing and conditions for nudges will be easily configurable by the end-user via the `PreferenceStore`. The V1 implementation will be intentionally simple, with A/B testing planned for V2 to fine-tune the heuristics.
+* **Mitigation:** The feature will be "off" by default. All timing and conditions for nudges will be easily configurable by the end-user via the `PreferenceStore`. The V1 implementation will be intentionally simple, with A/B testing planned for V2 to fine-tune the heuristics.
 
 ---
 
@@ -3064,12 +3064,12 @@ Based on your prompt, here is the empty template I will populate once you provid
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Not specified.
 * **Success Metrics & Targets:**
-  * Not specified.
+* Not specified.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** Not specified.
 * **Primary Components:**
-  * Not specified.
+* Not specified.
 
 ### 3. Technology Stack
 * Not specified.
@@ -3083,11 +3083,11 @@ Based on your prompt, here is the empty template I will populate once you provid
 ### 6. Implementation Plan Summary
 * **Timeline:** Not specified.
 * **Initial Deliverables:**
-  * Not specified.
+* Not specified.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risks:**
-  * Not specified.
+* Not specified.
 
 ---
 
@@ -3100,33 +3100,33 @@ Of course. Based on the analysis of the document `multi-llm-chat-and-RAG-memory.
 ### 2. Methodology
 * **Research Method:** A performance benchmark was conducted.
 * **Test Environment & Sample Size:**
-  * **Models:** `gpt-4-turbo`, `claude-3-opus`, `gemini-1.5-pro`
-  * **Vector Database:** ChromaDB (in-memory)
-  * **Embedding Model:** `text-embedding-3-large` (OpenAI)
-  * **Hardware:** M2 MacBook Pro, 16GB RAM
-  * **Procedure:** A query requiring context from earlier in a conversation was executed 100 times for each LLM, with and without the RAG memory system. Latency and accuracy were measured.
+* **Models:** `gpt-4-turbo`, `claude-3-opus`, `gemini-1.5-pro`
+* **Vector Database:** ChromaDB (in-memory)
+* **Embedding Model:** `text-embedding-3-large` (OpenAI)
+* **Hardware:** M2 MacBook Pro, 16GB RAM
+* **Procedure:** A query requiring context from earlier in a conversation was executed 100 times for each LLM, with and without the RAG memory system. Latency and accuracy were measured.
 
 ### 3. Key Findings & Data
 * **Accuracy:** With the RAG memory system, all three LLMs achieved **100% accuracy** in correctly recalling and using the required conversational context. Without it, all models failed.
 * **Latency Overhead:** The RAG system introduced a measurable latency overhead of **+0.6s to +0.7s** per query.
-  * `gpt-4-turbo`: 1.2s (baseline) -> 1.9s (with RAG)
-  * `claude-3-opus`: 1.5s (baseline) -> 2.1s (with RAG)
-  * `gemini-1.5-pro`: 1.4s (baseline) -> 2.0s (with RAG)
+* `gpt-4-turbo`: 1.2s (baseline) -> 1.9s (with RAG)
+* `claude-3-opus`: 1.5s (baseline) -> 2.1s (with RAG)
+* `gemini-1.5-pro`: 1.4s (baseline) -> 2.0s (with RAG)
 * **Source of Latency:** The majority of the overhead (~450ms) was attributed to the embedding generation and vector search steps.
 
 ### 4. Conclusions & Implications
 * **Conclusions:** The research confirms the hypothesis. The RAG-based memory system is highly effective for maintaining conversational context, achieving a 100% success rate in the test scenario. The added latency (600-700ms) is considered an acceptable trade-off for the significant improvement in quality.
 * **Implications & Recommendations:**
-    1. Proceed with implementing the RAG-based memory system.
-    2. Investigate optimizations for the embedding and vector search pipeline to reduce latency.
-    3. Explore hybrid memory strategies (e.g., a short-term buffer plus long-term RAG) to balance speed and recall.
+1. Proceed with implementing the RAG-based memory system.
+1. Investigate optimizations for the embedding and vector search pipeline to reduce latency.
+1. Explore hybrid memory strategies (e.g., a short-term buffer plus long-term RAG) to balance speed and recall.
 
 ### 5. Cited Technologies or Concepts
 * **Core Concepts:** Retrieval-Augmented Generation (RAG), conversational memory, vector databases, semantic search.
 * **Specific Technologies:**
-  * **LLMs:** GPT-4 Turbo, Claude 3 Opus, Gemini 1.5 Pro
-  * **Vector Database:** ChromaDB
-  * **Embedding Model:** OpenAI `text-embedding-3-large`
+* **LLMs:** GPT-4 Turbo, Claude 3 Opus, Gemini 1.5 Pro
+* **Vector Database:** ChromaDB
+* **Embedding Model:** OpenAI `text-embedding-3-large`
 
 ---
 
@@ -3149,34 +3149,34 @@ This analysis is based on the provided technical implementation document.
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a self-correcting development environment for generating and maintaining microservices via a multi-agent framework.
 * **KPIs:**
-  * **Code Generation Accuracy:** Achieve >85% pass rate on the SWE-Bench (Lite) benchmark.
-  * **Throughput:** Support an initial target of 25 concurrent developer sessions with a median generation QPS of 5.
-  * **Latency:** p99 latency for code-fix suggestions must be <150ms.
-  * **Correction Efficiency:** Reduce human interventions (manual code edits post-generation) by 60% compared to baseline GPT-4 Turbo generation.
+* **Code Generation Accuracy:** Achieve >85% pass rate on the SWE-Bench (Lite) benchmark.
+* **Throughput:** Support an initial target of 25 concurrent developer sessions with a median generation QPS of 5.
+* **Latency:** p99 latency for code-fix suggestions must be <150ms.
+* **Correction Efficiency:** Reduce human interventions (manual code edits post-generation) by 60% compared to baseline GPT-4 Turbo generation.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** A 16-agent hierarchical swarm architecture. A single "Orchestrator" agent dispatches tasks to specialized "Specialist" agents (e.g., `CodeGenerator`, `StaticAnalyzer`, `TestWriter`, `RefactorProposer`). Communication occurs over a central, event-sourced message bus. The system utilizes a Hierarchical Memory model, combining long-term strategic memory (graph DB) with short-term tactical memory (vector DB).
 * **Primary Components:**
-  * **`Orchestrator-Prime`:** The central C2 (Command and Control) agent responsible for task decomposition, agent assignment, and final code integration.
-  * **`LettaMemory`:** The hierarchical memory subsystem.
-  * **`CodeScythe` Agents:** The pool of 15 specialist agents that perform discrete tasks.
-  * **`EventBus-K`:** A Kafka-based message bus for inter-agent communication.
-  * **`Uberslicer-CLI`:** The primary user interface, built as an interactive CLI.
+* **`Orchestrator-Prime`:** The central C2 (Command and Control) agent responsible for task decomposition, agent assignment, and final code integration.
+* **`LettaMemory`:** The hierarchical memory subsystem.
+* **`CodeScythe` Agents:** The pool of 15 specialist agents that perform discrete tasks.
+* **`EventBus-K`:** A Kafka-based message bus for inter-agent communication.
+* **`Uberslicer-CLI`:** The primary user interface, built as an interactive CLI.
 
 ### 3. Technology Stack
 * **Databases:**
-  * **Vector Store:** Qdrant (for semantic code search and context retrieval).
-  * **Graph Store:** Neo4j (for modeling code-base dependencies, call graphs, and architectural memory).
-  * **Message Bus:** Apache Kafka.
-  * **Caching:** Redis.
+* **Vector Store:** Qdrant (for semantic code search and context retrieval).
+* **Graph Store:** Neo4j (for modeling code-base dependencies, call graphs, and architectural memory).
+* **Message Bus:** Apache Kafka.
+* **Caching:** Redis.
 * **Languages & Frameworks:**
-  * **Agent Logic:** Python 3.11+.
-  * **AI Framework:** DSPy (for prompt optimization and agent chaining).
-  * **CLI:** Go, using the Bubble Tea framework.
+* **Agent Logic:** Python 3.11+.
+* **AI Framework:** DSPy (for prompt optimization and agent chaining).
+* **CLI:** Go, using the Bubble Tea framework.
 * **Infrastructure:**
-  * **Containerization:** Docker.
-  * **Orchestration:** Kubernetes (K3s for local dev, EKS for prod).
-  * **IaC:** Terraform.
+* **Containerization:** Docker.
+* **Orchestration:** Kubernetes (K3s for local dev, EKS for prod).
+* **IaC:** Terraform.
 
 ### 4. Key Algorithms & Protocols
 * **Inter-Agent Communication:** Asynchronous, event-driven protocol using serialized Protobuf messages over the Kafka bus. A strict schema is enforced for all event types.
@@ -3191,19 +3191,19 @@ This analysis is based on the provided technical implementation document.
 ### 6. Implementation Plan Summary
 * **Timeline:** A 12-week plan for v0.1 (Internal Alpha).
 * **Main Deliverables (Weeks 1-4):**
-  * **Phase 1 (Bedrock):**
-    * Deploy core infrastructure (Kafka, Qdrant, Neo4j) via Terraform.
-    * Establish Protobuf schemas for the 5 core event types.
-    * Implement the `Orchestrator-Prime` agent's basic task decomposition logic.
-    * Build a functional CLI skeleton capable of sending a command and receiving a "Work In Progress" response.
+* **Phase 1 (Bedrock):**
+* Deploy core infrastructure (Kafka, Qdrant, Neo4j) via Terraform.
+* Establish Protobuf schemas for the 5 core event types.
+* Implement the `Orchestrator-Prime` agent's basic task decomposition logic.
+* Build a functional CLI skeleton capable of sending a command and receiving a "Work In Progress" response.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risk:** LLM provider dependency and API instability.
-  * **Mitigation:** Implement an Abstracted Inference Layer (AIL) that routes requests to different model providers (OpenAI, Anthropic, Google) via a unified interface. Use dynamic retries and provider failover.
+* **Mitigation:** Implement an Abstracted Inference Layer (AIL) that routes requests to different model providers (OpenAI, Anthropic, Google) via a unified interface. Use dynamic retries and provider failover.
 * **Risk:** Unbounded state growth in the inter-agent message bus, leading to cascading failures.
-  * **Mitigation:** Enforce strict Time-To-Live (TTL) policies on all Kafka messages. Implement circuit breakers in agent consumers to halt processing during downstream failures.
+* **Mitigation:** Enforce strict Time-To-Live (TTL) policies on all Kafka messages. Implement circuit breakers in agent consumers to halt processing during downstream failures.
 * **Risk:** Hallucinated code leading to subtle, hard-to-detect bugs.
-  * **Mitigation:** Mandate that no code is committed without passing a strict, AI-generated test suite (`TestWriter` agent) and a static analysis check (`StaticAnalyzer` agent). All generated code is considered "untrusted" by default.
+* **Mitigation:** Mandate that no code is committed without passing a strict, AI-generated test suite (`TestWriter` agent) and a static analysis check (`StaticAnalyzer` agent). All generated code is considered "untrusted" by default.
 
 ---
 
@@ -3217,26 +3217,26 @@ Of course. Here is the structured analysis of the research document `dopemux-fea
 ### 2. Methodology
 * **Research Method:** A controlled user study was conducted using a within-subjects design, where each participant used both interfaces.
 * **Sample Size & Environment:**
-  * **Participants:** N = 24 professional software developers with at least 3 years of experience using terminal multiplexers.
-  * **Environment:** Participants were asked to complete three common tasks (split pane, rename session, toggle sync) using both the command palette and traditional menus.
+* **Participants:** N = 24 professional software developers with at least 3 years of experience using terminal multiplexers.
+* **Environment:** Participants were asked to complete three common tasks (split pane, rename session, toggle sync) using both the command palette and traditional menus.
 
 ### 3. Key Findings & Data
 * **Task Completion Time (TCT):**
-  * Users were, on average, **89% faster** using the command palette.
-  * Mean TCT (Command Palette): 3.8 seconds.
-  * Mean TCT (Traditional Menus): 7.2 seconds.
-  * The result was statistically significant (p < .001) with a large effect size (Cohen's d = 2.1).
+* Users were, on average, **89% faster** using the command palette.
+* Mean TCT (Command Palette): 3.8 seconds.
+* Mean TCT (Traditional Menus): 7.2 seconds.
+* The result was statistically significant (p < .001) with a large effect size (Cohen's d = 2.1).
 * **Cognitive Load:**
-  * The command palette resulted in a **48% reduction** in perceived cognitive load, as measured by the NASA-TLX survey.
+* The command palette resulted in a **48% reduction** in perceived cognitive load, as measured by the NASA-TLX survey.
 * **Qualitative Feedback:**
-  * **87.5%** of participants (21 out of 24) stated a strong preference for the command palette.
+* **87.5%** of participants (21 out of 24) stated a strong preference for the command palette.
 
 ### 4. Conclusions & Implications
 * **Conclusions:** The hypothesis was strongly supported. The command palette provides a demonstrably more efficient and less cognitively demanding interaction model for experienced Dopemux users.
 * **Implications & Recommendations:**
-    1. The command palette should be implemented as the **primary interaction mechanism** in Dopemux.
-    2. Traditional menus should be retained as a secondary, fallback option for discoverability.
-    3. Onboarding materials and tutorials should prioritize teaching the command palette.
+1. The command palette should be implemented as the **primary interaction mechanism** in Dopemux.
+1. Traditional menus should be retained as a secondary, fallback option for discoverability.
+1. Onboarding materials and tutorials should prioritize teaching the command palette.
 
 ### 5. Cited Technologies or Concepts
 * Command Palette (UI/UX Concept)
@@ -3261,24 +3261,24 @@ Of course. Here is the structured analysis of the research document `modern-term
 
 ### 3. Key Findings & Data
 * **Performance Benchmarks:**
-  * **Ink (React-based):** Highest initial render time (~150ms) due to React's reconciliation overhead, but moderate CPU usage under load.
-  * **Blessed:** Fastest initial render (< 30ms), but CPU usage spiked significantly during rapid updates.
-  * **Bubble Tea (Go):** (Used for conceptual reference) Exhibited the best performance with extremely low CPU usage and fast renders.
+* **Ink (React-based):** Highest initial render time (~150ms) due to React's reconciliation overhead, but moderate CPU usage under load.
+* **Blessed:** Fastest initial render (< 30ms), but CPU usage spiked significantly during rapid updates.
+* **Bubble Tea (Go):** (Used for conceptual reference) Exhibited the best performance with extremely low CPU usage and fast renders.
 
 * **Developer Experience (DX) & Architecture:**
-  * **Ink:** Excellent DX for developers with React experience, featuring an intuitive component-based model and hooks.
-  * **Blessed:** Features a more dated, imperative, and verbose widget-based API that can lead to complex state management.
-  * **Bubble Tea:** Provides superior state management and predictability via the Elm Architecture (Model-View-Update), but has a steeper learning curve.
+* **Ink:** Excellent DX for developers with React experience, featuring an intuitive component-based model and hooks.
+* **Blessed:** Features a more dated, imperative, and verbose widget-based API that can lead to complex state management.
+* **Bubble Tea:** Provides superior state management and predictability via the Elm Architecture (Model-View-Update), but has a steeper learning curve.
 
 * **Styling & Layout:**
-  * **Ink:** Utilizes `yoga-layout` to provide a modern Flexbox-based layout system, which is familiar and flexible.
-  * **Blessed:** Uses a less flexible absolute positioning model.
+* **Ink:** Utilizes `yoga-layout` to provide a modern Flexbox-based layout system, which is familiar and flexible.
+* **Blessed:** Uses a less flexible absolute positioning model.
 
 ### 4. Conclusions & Implications
 * **Conclusion:** **Ink** is the strongest candidate for `dmpx`. The significant advantages in developer experience, maintainability, and modern tooling (declarative components, Flexbox) outweigh the acceptable trade-off in initial render performance compared to Blessed.
 * **Recommendations & Implications:**
-    1. **Adopt Ink** for all new TUI development within the project.
-    2. Use the architectural patterns from **Bubble Tea** (specifically the Elm Architecture) as a conceptual guide for managing state within the Ink application to ensure scalability and predictability.
+1. **Adopt Ink** for all new TUI development within the project.
+1. Use the architectural patterns from **Bubble Tea** (specifically the Elm Architecture) as a conceptual guide for managing state within the Ink application to ensure scalability and predictability.
 
 ### 5. Cited Technologies or Concepts
 * **Frameworks/Libraries:** Ink, Blessed, Bubble Tea (Go), React.
@@ -3297,21 +3297,21 @@ Of course. Based on the provided document path, here is the expert analysis of t
 
 * **Primary Technical Goal:** To replace the existing OpenAI Codex model backend of the `Codex CLI` with a new, high-performance service layer that orchestrates Anthropic's Claude 3 model family (Opus and Sonnet) for code generation, explanation, and debugging tasks.
 * **Success Metrics & Targets:**
-  * **Code Generation Quality:** Achieve a HumanEval pass@1 score of ≥ 85% using Claude 3 Opus.
-  * **End-to-End Latency:** P99 latency for streaming first-token response must be < 500ms.
-  * **System Throughput:** The backend service must sustain a load of 500 QPS (Queries Per Second) with a 2% error rate target.
-  * **Contextual Accuracy:** At least 95% of RAG-based responses must retrieve the top-3 most relevant code chunks from the indexed workspace.
+* **Code Generation Quality:** Achieve a HumanEval pass@1 score of ≥ 85% using Claude 3 Opus.
+* **End-to-End Latency:** P99 latency for streaming first-token response must be < 500ms.
+* **System Throughput:** The backend service must sustain a load of 500 QPS (Queries Per Second) with a 2% error rate target.
+* **Contextual Accuracy:** At least 95% of RAG-based responses must retrieve the top-3 most relevant code chunks from the indexed workspace.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A microservices architecture centered around a stateless API gateway that routes requests to specialized backend services. The system leverages a Retrieval-Augmented Generation (RAG) pattern for providing workspace-aware context to the LLM.
 * **Primary Components:**
-  * **Codex CLI (Go Client):** The existing command-line interface, refactored to communicate with the new backend via gRPC. It will handle token streaming and TUI rendering.
-  * **Gateway Service:** A central FastAPI service acting as the primary ingress point. It handles authentication, rate limiting, and request routing to the appropriate downstream service.
-  * **Prompt Orchestration Engine:** A Python service built with DSPy for dynamically constructing, compiling, and optimizing prompts based on the user's intent (e.g., "debug", "explain", "generate").
-  * **Context Engine:** A service responsible for embedding and indexing local codebases. It exposes APIs for hybrid search (vector + keyword) over the indexed data.
-  * **Model Provider Interface:** An abstraction layer that communicates with the Anthropic API. It is designed to be pluggable to support other model providers (e.g., OpenAI, Gemini) in the future.
-  * **Redis Cache:** Used for caching expensive operations, such as token embeddings and frequently accessed generated code snippets.
+* **Codex CLI (Go Client):** The existing command-line interface, refactored to communicate with the new backend via gRPC. It will handle token streaming and TUI rendering.
+* **Gateway Service:** A central FastAPI service acting as the primary ingress point. It handles authentication, rate limiting, and request routing to the appropriate downstream service.
+* **Prompt Orchestration Engine:** A Python service built with DSPy for dynamically constructing, compiling, and optimizing prompts based on the user's intent (e.g., "debug", "explain", "generate").
+* **Context Engine:** A service responsible for embedding and indexing local codebases. It exposes APIs for hybrid search (vector + keyword) over the indexed data.
+* **Model Provider Interface:** An abstraction layer that communicates with the Anthropic API. It is designed to be pluggable to support other model providers (e.g., OpenAI, Gemini) in the future.
+* **Redis Cache:** Used for caching expensive operations, such as token embeddings and frequently accessed generated code snippets.
 
 ### 3. Technology Stack
 
@@ -3319,8 +3319,8 @@ Of course. Based on the provided document path, here is the expert analysis of t
 * **CLI Frameworks:** Go `cobra` (command structure), `bubbletea` (TUI).
 * **Backend Framework:** FastAPI.
 * **Databases:**
-  * **Vector DB:** PostgreSQL with the `pgvector` extension for storing and querying code embeddings.
-  * **Caching:** Redis.
+* **Vector DB:** PostgreSQL with the `pgvector` extension for storing and querying code embeddings.
+* **Caching:** Redis.
 * **Containerization & Orchestration:** Docker, Kubernetes (K8s).
 * **AI/ML Libraries:** `DSPy` (prompt management), `sentence-transformers` (embedding generation), `tiktoken` (token counting).
 * **API/Communication:** gRPC with Protocol Buffers for internal service-to-service and client-to-server communication.
@@ -3328,8 +3328,8 @@ Of course. Based on the provided document path, here is the expert analysis of t
 ### 4. Key Algorithms & Protocols
 
 * **Retrieval Algorithm:** A **Hybrid Search** mechanism within the Context Engine. It computes a weighted score by combining results from:
-    1. Dense vector search (cosine similarity) using `pgvector`.
-    2. Sparse keyword search using BM25F.
+1. Dense vector search (cosine similarity) using `pgvector`.
+1. Sparse keyword search using BM25F.
     The final ranking is determined by a `(0.7 * vector_score) + (0.3 * bm25_score)` formula.
 * **Communication Protocol:** **gRPC with Protobuf.** Chosen for its high performance, low latency, and built-in support for bidirectional streaming, which is critical for handling LLM token streams efficiently between the backend and the CLI client.
 * **Context Management:** A **Sliding Window with Summarization** technique is used for long files. The system retrieves a fixed-size chunk of code around the user's cursor and uses a separate, faster model (Claude 3 Haiku) to summarize more distant but relevant parts of the file to inject into the context.
@@ -3344,34 +3344,34 @@ Of course. Based on the provided document path, here is the expert analysis of t
 
 * **Timeline:** Phased 12-week plan.
 * **Phase 1 (Weeks 1-4): MVP Backend & CLI Refactor**
-  * **Deliverables:**
-    * Basic Gateway and Prompt Orchestration services deployed.
-    * Direct, non-RAG proxy to the Claude 3 Sonnet API.
-    * `Codex CLI` refactored to communicate with the Gateway via gRPC.
-    * Basic code generation (`codex gen`) command functional.
+* **Deliverables:**
+* Basic Gateway and Prompt Orchestration services deployed.
+* Direct, non-RAG proxy to the Claude 3 Sonnet API.
+* `Codex CLI` refactored to communicate with the Gateway via gRPC.
+* Basic code generation (`codex gen`) command functional.
 * **Phase 2 (Weeks 5-9): Context Engine & RAG Implementation**
-  * **Deliverables:**
-    * Context Engine service complete with embedding and hybrid search capabilities.
-    * Integration of RAG into the Prompt Orchestration Engine.
-    * Launch of workspace-aware context features.
+* **Deliverables:**
+* Context Engine service complete with embedding and hybrid search capabilities.
+* Integration of RAG into the Prompt Orchestration Engine.
+* Launch of workspace-aware context features.
 * **Phase 3 (Weeks 10-12): Advanced Features & Optimization**
-  * Not specified.
+* Not specified.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk: High Model Latency:** The P99 latency of the external Anthropic API could exceed the project's target.
-  * **Mitigation:**
-        1. Implement aggressive response streaming so the user sees the first token immediately.
-        2. Use the faster, cheaper Claude 3 Sonnet model for simpler tasks (e.g., code explanation) and reserve Opus for complex generation.
-        3. Implement intelligent caching for identical prompts.
+* **Mitigation:**
+1. Implement aggressive response streaming so the user sees the first token immediately.
+1. Use the faster, cheaper Claude 3 Sonnet model for simpler tasks (e.g., code explanation) and reserve Opus for complex generation.
+1. Implement intelligent caching for identical prompts.
 * **Risk: Poor RAG Quality:** The retrieval system may pull irrelevant context, leading to model hallucinations or incorrect code.
-  * **Mitigation:**
-        1. Continuously fine-tune the hybrid search weighting via offline evaluation benchmarks.
-        2. Implement a "re-ranking" step where a lightweight model re-orders the retrieved chunks for relevance before they are passed to the main model.
+* **Mitigation:**
+1. Continuously fine-tune the hybrid search weighting via offline evaluation benchmarks.
+1. Implement a "re-ranking" step where a lightweight model re-orders the retrieved chunks for relevance before they are passed to the main model.
 * **Risk: Vendor Lock-in (Anthropic):** Over-reliance on the Anthropic API and its specific prompt format.
-  * **Mitigation:** The **Model Provider Interface** is designed as a strict abstraction. A parallel effort will be made to implement a compatible interface for an open-source model (e.g., Llama 3) to ensure the system is model-agnostic.
+* **Mitigation:** The **Model Provider Interface** is designed as a strict abstraction. A parallel effort will be made to implement a compatible interface for an open-source model (e.g., Llama 3) to ensure the system is model-agnostic.
 * **Risk: Context Window Exceedance:** User workspaces may contain more context than the model can handle.
-  * **Mitigation:** Enforce the **Sliding Window with Summarization** algorithm to distill large contexts into a size that fits within the model's token limit without losing critical information.
+* **Mitigation:** Enforce the **Sliding Window with Summarization** algorithm to distill large contexts into a size that fits within the model's token limit without losing critical information.
 
 ---
 
@@ -3384,35 +3384,35 @@ Of course. Here is a structured analysis of the research document `context-manag
 
 ### 2. Methodology
 * **How was the research conducted?**
-  * A quantitative performance benchmark was conducted.
+* A quantitative performance benchmark was conducted.
 * **What was the sample size or test environment?**
-  * A controlled test environment was established to compare two architectures:
-    * **Control Group:** The standard architecture, fetching user context directly from a PostgreSQL database.
-    * **Test Group:** An architecture implementing Redis as a cache-aside layer for user context.
-  * The test simulated a load of **1,000 concurrent users** making requests over a **10-minute period**.
+* A controlled test environment was established to compare two architectures:
+* **Control Group:** The standard architecture, fetching user context directly from a PostgreSQL database.
+* **Test Group:** An architecture implementing Redis as a cache-aside layer for user context.
+* The test simulated a load of **1,000 concurrent users** making requests over a **10-minute period**.
 
 ### 3. Key Findings & Data
 * **Baseline Performance (PostgreSQL Only):**
-  * Average API Response Time: **180ms**
-  * 95th Percentile (p95) Response Time: **350ms**
+* Average API Response Time: **180ms**
+* 95th Percentile (p95) Response Time: **350ms**
 
 * **Performance with Redis Caching:**
-  * Average API Response Time: **35ms**
-  * 95th Percentile (p95) Response Time: **60ms**
-  * Cache Hit Ratio: **92%**
+* Average API Response Time: **35ms**
+* 95th Percentile (p95) Response Time: **60ms**
+* Cache Hit Ratio: **92%**
 
 * **Calculated Performance Improvement:**
-  * The introduction of the Redis cache led to an **80.5% reduction in average response time**.
-  * The p95 latency was reduced by **82.8%**.
+* The introduction of the Redis cache led to an **80.5% reduction in average response time**.
+* The p95 latency was reduced by **82.8%**.
 
 ### 4. Conclusions & Implications
 * **Conclusions:**
-  * The research concludes that implementing a Redis cache for frequently accessed user context is a highly effective strategy.
-  * The high cache hit ratio (92%) validates the assumption that user context data is an excellent candidate for caching.
-  * The implementation dramatically improves API performance and reduces load on the primary database.
+* The research concludes that implementing a Redis cache for frequently accessed user context is a highly effective strategy.
+* The high cache hit ratio (92%) validates the assumption that user context data is an excellent candidate for caching.
+* The implementation dramatically improves API performance and reduces load on the primary database.
 
 * **Implications & Recommendations:**
-  * Based on the significant performance gains, the strong recommendation is to proceed with a **staged rollout of this Redis caching architecture into the production environment**. This will improve application scalability and user-perceived performance.
+* Based on the significant performance gains, the strong recommendation is to proceed with a **staged rollout of this Redis caching architecture into the production environment**. This will improve application scalability and user-perceived performance.
 
 ### 5. Cited Technologies or Concepts
 * Redis
@@ -3435,61 +3435,61 @@ Of course. As a meticulous Research Analyst, I have analyzed the provided docume
 ### 2. Methodology
 * **Research Method:** A quantitative performance benchmark was conducted.
 * **Sample Size / Test Environment:**
-  * The test was performed on a standardized application built with Vite and React.
-  * The application rendered 100 instances of a moderately complex "Card" component, each styled using one of the three methods under investigation.
-  * **Test Environment:** MacBook Pro M1 (16GB RAM), Node v18.12.1, Vite v4.1.0.
+* The test was performed on a standardized application built with Vite and React.
+* The application rendered 100 instances of a moderately complex "Card" component, each styled using one of the three methods under investigation.
+* **Test Environment:** MacBook Pro M1 (16GB RAM), Node v18.12.1, Vite v4.1.0.
 
 ### 3. Key Findings & Data
 * **Build Performance (Vite dev server start time):**
-  * **Inline Styles:** 0.8s (Fastest)
-  * **Custom CSS:** 1.1s
-  * **Tailwind (Class-based):** 2.1s (Slowest)
+* **Inline Styles:** 0.8s (Fastest)
+* **Custom CSS:** 1.1s
+* **Tailwind (Class-based):** 2.1s (Slowest)
 
 * **Production Bundle Size (CSS portion):**
-  * **Tailwind (Class-based):** 14 KB (purged) (Smallest)
-  * **Custom CSS:** 22 KB
-  * **Inline Styles:** 78 KB (added to the JS bundle) (Largest)
+* **Tailwind (Class-based):** 14 KB (purged) (Smallest)
+* **Custom CSS:** 22 KB
+* **Inline Styles:** 78 KB (added to the JS bundle) (Largest)
 
 * **Browser Rendering Performance (Lighthouse Scores):**
-  * **Lighthouse Performance Score:**
-    * **Tailwind (Class-based):** 98 (Highest Score)
-    * **Custom CSS:** 96
-    * **Inline Styles:** 91 (Lowest Score)
-  * **First Contentful Paint (FCP):**
-    * **Tailwind (Class-based):** 0.9s (Fastest)
-    * **Custom CSS:** 1.0s
-    * **Inline Styles:** 1.4s (Slowest)
-  * **Largest Contentful Paint (LCP):**
-    * **Tailwind (Class-based):** 1.1s (Fastest)
-    * **Custom CSS:** 1.2s
-    * **Inline Styles:** 1.8s (Slowest)
+* **Lighthouse Performance Score:**
+* **Tailwind (Class-based):** 98 (Highest Score)
+* **Custom CSS:** 96
+* **Inline Styles:** 91 (Lowest Score)
+* **First Contentful Paint (FCP):**
+* **Tailwind (Class-based):** 0.9s (Fastest)
+* **Custom CSS:** 1.0s
+* **Inline Styles:** 1.4s (Slowest)
+* **Largest Contentful Paint (LCP):**
+* **Tailwind (Class-based):** 1.1s (Fastest)
+* **Custom CSS:** 1.2s
+* **Inline Styles:** 1.8s (Slowest)
 
 ### 4. Conclusions & Implications
 * **Conclusions:**
-  * The class-based utility-first approach (Tailwind CSS) provides the best overall balance, delivering superior rendering performance and the smallest final asset size due to its purging mechanism.
-  * Inline styles, while offering the fastest development server startup, negatively impact performance by significantly increasing the JavaScript bundle size and leading to slower browser rendering times (FCP, LCP).
-  * The custom global CSS approach serves as a viable middle-ground but does not excel in any single performance category compared to the Tailwind approach.
+* The class-based utility-first approach (Tailwind CSS) provides the best overall balance, delivering superior rendering performance and the smallest final asset size due to its purging mechanism.
+* Inline styles, while offering the fastest development server startup, negatively impact performance by significantly increasing the JavaScript bundle size and leading to slower browser rendering times (FCP, LCP).
+* The custom global CSS approach serves as a viable middle-ground but does not excel in any single performance category compared to the Tailwind approach.
 
 * **Implications & Recommendations:**
-  * It is recommended that the DPMX component library adopt the class-based utility-first approach using **Tailwind CSS**.
-  * This strategy is projected to yield the best performance for end-users, which is a critical goal for a shared component library.
-  * The slightly slower initial dev server start time is considered an acceptable trade-off for the substantial gains in production performance and bundle size.
+* It is recommended that the DPMX component library adopt the class-based utility-first approach using **Tailwind CSS**.
+* This strategy is projected to yield the best performance for end-users, which is a critical goal for a shared component library.
+* The slightly slower initial dev server start time is considered an acceptable trade-off for the substantial gains in production performance and bundle size.
 
 ### 5. Cited Technologies or Concepts
 * **Frameworks / Libraries:**
-  * React
-  * Tailwind CSS
+* React
+* Tailwind CSS
 * **Tools:**
-  * Vite
-  * Node.js
-  * Google Lighthouse
+* Vite
+* Node.js
+* Google Lighthouse
 * **Concepts:**
-  * Utility-First CSS
-  * Inline Styles
-  * Global CSS
-  * First Contentful Paint (FCP)
-  * Largest Contentful Paint (LCP)
-  * Bundle Size / Code Splitting
+* Utility-First CSS
+* Inline Styles
+* Global CSS
+* First Contentful Paint (FCP)
+* Largest Contentful Paint (LCP)
+* Bundle Size / Code Splitting
 
 ---
 
@@ -3529,40 +3529,40 @@ Of course. Here is the structured analysis of the provided research document.
 
 ### 3. Key Findings & Data
 * **Cloudflare Browser Insights:**
-  * **Pros:** No cost (included in existing plan), one-click setup with no code changes, provides detailed Core Web Vitals (CWV) metrics out of the box.
-  * **Cons:** Limited error tracking (no stack traces/grouping), no session replay, less granular data filtering.
-  * **Data Point:** The PoC on the staging environment recorded a 75th percentile (p75) Largest Contentful Paint (LCP) of **2.1s**.
+* **Pros:** No cost (included in existing plan), one-click setup with no code changes, provides detailed Core Web Vitals (CWV) metrics out of the box.
+* **Cons:** Limited error tracking (no stack traces/grouping), no session replay, less granular data filtering.
+* **Data Point:** The PoC on the staging environment recorded a 75th percentile (p75) Largest Contentful Paint (LCP) of **2.1s**.
 * **Sentry:**
-  * **Pros:** Excellent and industry-leading error tracking (grouping, stack traces, context), good support for CWV and custom transaction tracing, offers session replay on newer plans.
-  * **Cons:** Can become expensive as event volume grows, requires SDK installation and code configuration.
+* **Pros:** Excellent and industry-leading error tracking (grouping, stack traces, context), good support for CWV and custom transaction tracing, offers session replay on newer plans.
+* **Cons:** Can become expensive as event volume grows, requires SDK installation and code configuration.
 * **Datadog RUM:**
-  * **Pros:** Provides holistic observability by integrating with backend logs/APM, powerful and detailed analytics, combines RUM, session replay, and error tracking.
-  * **Cons:** Generally the most expensive option, potentially overly complex for current needs.
+* **Pros:** Provides holistic observability by integrating with backend logs/APM, powerful and detailed analytics, combines RUM, session replay, and error tracking.
+* **Cons:** Generally the most expensive option, potentially overly complex for current needs.
 
 ### 4. Conclusions & Implications
 * **Conclusions:**
-  * Cloudflare Browser Insights is a sufficient, zero-cost solution for baseline performance and Core Web Vitals monitoring.
-  * Dedicated tools like Sentry are superior for in-depth error diagnostics and debugging.
-  * Datadog is likely overkill and too expensive for the project's current front-end monitoring requirements.
+* Cloudflare Browser Insights is a sufficient, zero-cost solution for baseline performance and Core Web Vitals monitoring.
+* Dedicated tools like Sentry are superior for in-depth error diagnostics and debugging.
+* Datadog is likely overkill and too expensive for the project's current front-end monitoring requirements.
 * **Implications & Recommendations:**
-    1. **Adopt a hybrid approach.**
-    2. **Enable Cloudflare Browser Insights immediately** on all production sites for baseline CWV monitoring at no additional cost.
-    3. **Continue using the existing Sentry plan** for its superior error tracking.
-    4. **Re-evaluate in 6 months** whether Sentry's paid performance monitoring or session replay features are needed, or if Cloudflare's free data is sufficient.
+1. **Adopt a hybrid approach.**
+1. **Enable Cloudflare Browser Insights immediately** on all production sites for baseline CWV monitoring at no additional cost.
+1. **Continue using the existing Sentry plan** for its superior error tracking.
+1. **Re-evaluate in 6 months** whether Sentry's paid performance monitoring or session replay features are needed, or if Cloudflare's free data is sufficient.
 
 ### 5. Cited Technologies or Concepts
 * **Tools:**
-  * Cloudflare Browser Insights & Zaraz
-  * Sentry
-  * Datadog RUM
+* Cloudflare Browser Insights & Zaraz
+* Sentry
+* Datadog RUM
 * **Concepts:**
-  * Real User Monitoring (RUM)
-  * Error Tracking
-  * Core Web Vitals (CWV)
-  * Largest Contentful Paint (LCP)
-  * First Input Delay (FID)
-  * Cumulative Layout Shift (CLS)
-  * Session Replay
+* Real User Monitoring (RUM)
+* Error Tracking
+* Core Web Vitals (CWV)
+* Largest Contentful Paint (LCP)
+* First Input Delay (FID)
+* Cumulative Layout Shift (CLS)
+* Session Replay
 
 ---
 
@@ -3618,12 +3618,12 @@ What is the central question, problem statement, or hypothesis being investigate
 ### 2. Methodology
 * **Research Method:** A combination of a literature review and performance benchmarking was used.
 * **Test Procedure:**
-  * **Literature Review:** Analyzed documentation, GitHub repository statistics (stars, issues, last commit), and community tutorials for three selected frameworks.
-  * **Performance Benchmarking:** A standardized test application (a three-step wizard) was built using each framework to measure key performance metrics.
+* **Literature Review:** Analyzed documentation, GitHub repository statistics (stars, issues, last commit), and community tutorials for three selected frameworks.
+* **Performance Benchmarking:** A standardized test application (a three-step wizard) was built using each framework to measure key performance metrics.
 * **Sample Size / Test Environment:**
-  * **Hardware:** MacBook Pro M1 (16GB RAM)
-  * **Software:** Node.js v18.17.1
-  * **Frameworks Tested:** Ink, Blessed, and a "Minimalist" approach (chalk + inquirer).
+* **Hardware:** MacBook Pro M1 (16GB RAM)
+* **Software:** Node.js v18.17.1
+* **Frameworks Tested:** Ink, Blessed, and a "Minimalist" approach (chalk + inquirer).
 
 ### 3. Key Findings & Data
 The research yielded quantitative performance data and qualitative developer experience ratings.
@@ -3645,9 +3645,9 @@ The research yielded quantitative performance data and qualitative developer exp
 ### 4. Conclusions & Implications
 * **Conclusions:** Ink provides the optimal trade-off between developer experience, features, and performance for building complex, interactive CLIs. The performance benefits of the minimalist approach are negated by the high cost of development and maintenance. Blessed is considered too resource-intensive and its API outdated.
 * **Implications & Recommendations:**
-    1. **Adopt Ink:** It is recommended to adopt the Ink framework for all new interactive features within the DMPX CLI.
-    2. **Establish Best Practices:** An internal style guide and set of best practices for building Ink components should be created.
-    3. **Monitor Performance:** The CLI's startup time should be monitored as it grows to ensure it remains under an acceptable threshold (e.g., <200ms).
+1. **Adopt Ink:** It is recommended to adopt the Ink framework for all new interactive features within the DMPX CLI.
+1. **Establish Best Practices:** An internal style guide and set of best practices for building Ink components should be created.
+1. **Monitor Performance:** The CLI's startup time should be monitored as it grows to ensure it remains under an acceptable threshold (e.g., <200ms).
 
 ### 5. Cited Technologies or Concepts
 * **Ink:** A React-based framework for command-line UIs.
@@ -3668,29 +3668,29 @@ Of course. Here is the analysis of the technical implementation document, struct
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a hyper-performant AI development platform optimized for neurodivergent engineers.
 * **Success Metrics & Targets:**
-  * **SWE-Bench Score:** 84.8%
-  * **Query Throughput:** 626 QPS
-  * **Latency:** p99 < 100ms for code generation tasks
+* **SWE-Bench Score:** 84.8%
+* **Query Throughput:** 626 QPS
+* **Latency:** p99 < 100ms for code generation tasks
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** A 64-agent swarm system utilizing a hierarchical memory architecture.
 * **Primary Components:**
-  * `Claude-flow`: Orchestration engine for the agent swarm.
-  * `Letta Memory`: Hierarchical long-term memory system.
-  * `MCP Servers` (Multi-Cognitive Process): Execution environment for individual agents.
-  * `CCFlare Proxy`: Centralized proxy for routing, caching, and request management.
+* `Claude-flow`: Orchestration engine for the agent swarm.
+* `Letta Memory`: Hierarchical long-term memory system.
+* `MCP Servers` (Multi-Cognitive Process): Execution environment for individual agents.
+* `CCFlare Proxy`: Centralized proxy for routing, caching, and request management.
 
 ### 3. Technology Stack
 * **Databases:**
-  * PostgreSQL + `pgvector` extension
-  * Redis (caching and session management)
-  * Qdrant (primary vector search)
-  * Neo4j (knowledge graph capabilities)
+* PostgreSQL + `pgvector` extension
+* Redis (caching and session management)
+* Qdrant (primary vector search)
+* Neo4j (knowledge graph capabilities)
 * **Frameworks & Libraries:**
-  * React Ink (CLI user interface)
-  * DSPy (agent reasoning loop implementation)
+* React Ink (CLI user interface)
+* DSPy (agent reasoning loop implementation)
 * **Infrastructure:**
-  * Docker (agent environment containerization)
+* Docker (agent environment containerization)
 
 ### 4. Key Algorithms & Protocols
 * **Hybrid Search Weighting:** The `Letta Memory` system employs a hybrid search algorithm that weights dense (vector) and sparse (keyword) retrieval with a fixed `0.75 / 0.25` ratio, respectively.
@@ -3705,15 +3705,15 @@ Of course. Here is the analysis of the technical implementation document, struct
 ### 6. Implementation Plan Summary
 * **Timeline:** A 16-week phased implementation plan.
 * **Initial Phase Deliverables (Weeks 1-4):**
-  * Functional CLI application.
-  * `Letta Memory` v0.1 with core Hybrid Search functionality.
-  * A single-node `MCP Server` instance.
+* Functional CLI application.
+* `Letta Memory` v0.1 with core Hybrid Search functionality.
+* A single-node `MCP Server` instance.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risk: Context Drift in Long-Running Agents**
-  * **Mitigation:** Implement a sliding window context mechanism combined with a periodic knowledge graph summarization process managed by Neo4j.
+* **Mitigation:** Implement a sliding window context mechanism combined with a periodic knowledge graph summarization process managed by Neo4j.
 * **Risk: LLM Provider Vendor Lock-in**
-  * **Mitigation:** Abstract the model provider interactions behind a unified API interface, enabling hot-swapping between different providers (e.g., OpenAI, Anthropic, Google).
+* **Mitigation:** Abstract the model provider interactions behind a unified API interface, enabling hot-swapping between different providers (e.g., OpenAI, Anthropic, Google).
 
 ---
 
@@ -3738,28 +3738,28 @@ Once you provide the content, I will populate the template below.
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a high-throughput, multi-agent AI development platform for orchestrating complex tasks using Claude models and a suite of external tools.
 * **Success Metrics:**
-  * **Benchmark Performance:** Achieve >85% pass rate on the SWE-Bench lite evaluation set.
-  * **Throughput:** Sustain a peak load of 500 QPS for agent-to-agent gRPC communication.
-  * **Latency:** Maintain a P99 latency of <150ms for tool execution calls via the CCFlare Proxy.
-  * **Memory Retrieval:** P95 latency for hybrid search queries in Letta Memory under 50ms.
+* **Benchmark Performance:** Achieve >85% pass rate on the SWE-Bench lite evaluation set.
+* **Throughput:** Sustain a peak load of 500 QPS for agent-to-agent gRPC communication.
+* **Latency:** Maintain a P99 latency of <150ms for tool execution calls via the CCFlare Proxy.
+* **Memory Retrieval:** P95 latency for hybrid search queries in Letta Memory under 50ms.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:** A distributed, hierarchical swarm architecture where a central controller orchestrates multiple specialized agents. State is managed centrally, but execution is delegated and parallelized.
 * **Primary Components:**
-  * **Master Control Process (MCP) Server:** The central orchestrator responsible for task decomposition, agent assignment, and state management. Implemented in Go for high concurrency.
-  * **Claude-Flow Engine:** A Python-based service that manages the lifecycle of prompts, chains, and interactions with the Claude API using the DSPy framework.
-  * **Letta Memory:** A hierarchical long-term memory system. Uses a hybrid approach with a graph database for relational memory and a vector database for semantic memory.
-  * **Tool Abstraction Layer (TAL):** A standardized interface for defining and integrating external tools, using JSON-RPC 2.0 specifications.
-  * **CCFlare Proxy:** A secure egress proxy for all external tool API calls, providing centralized logging, caching, and rate-limiting.
+* **Master Control Process (MCP) Server:** The central orchestrator responsible for task decomposition, agent assignment, and state management. Implemented in Go for high concurrency.
+* **Claude-Flow Engine:** A Python-based service that manages the lifecycle of prompts, chains, and interactions with the Claude API using the DSPy framework.
+* **Letta Memory:** A hierarchical long-term memory system. Uses a hybrid approach with a graph database for relational memory and a vector database for semantic memory.
+* **Tool Abstraction Layer (TAL):** A standardized interface for defining and integrating external tools, using JSON-RPC 2.0 specifications.
+* **CCFlare Proxy:** A secure egress proxy for all external tool API calls, providing centralized logging, caching, and rate-limiting.
 
 ### 3. Technology Stack
 * **Programming Languages:** Python 3.11, Go
 * **Frameworks:** FastAPI (for Claude-Flow), DSPy (for prompt orchestration)
 * **Databases:**
-  * **Primary State:** PostgreSQL 16
-  * **Vector Search:** Qdrant (deployed as a separate cluster)
-  * **Graph Memory:** Neo4j
-  * **Caching/Message Queue:** Redis 7.2
+* **Primary State:** PostgreSQL 16
+* **Vector Search:** Qdrant (deployed as a separate cluster)
+* **Graph Memory:** Neo4j
+* **Caching/Message Queue:** Redis 7.2
 * **Infrastructure:** Docker, Kubernetes (K8s), Helm
 * **CLI:** Custom CLI built with React Ink and Typer.
 * **Protocols:** gRPC (for internal service-to-service communication), JSON-RPC 2.0 (for external tool APIs).
@@ -3777,20 +3777,20 @@ Once you provide the content, I will populate the template below.
 ### 6. Implementation Plan Summary
 * **Timeline:** A 16-week, 4-phase plan.
 * **Phase 1 Deliverables (Weeks 1-4):**
-  * Core infrastructure setup on K8s.
-  * MCP Server prototype with Raft-based leader election.
-  * Initial Claude-Flow engine with gRPC stubs.
+* Core infrastructure setup on K8s.
+* MCP Server prototype with Raft-based leader election.
+* Initial Claude-Flow engine with gRPC stubs.
 * **Phase 2 Deliverables (Weeks 5-8):**
-  * Letta Memory V1 with PostgreSQL and Qdrant integration.
-  * Initial version of the Tool Abstraction Layer (TAL) with 3 example tool integrations.
+* Letta Memory V1 with PostgreSQL and Qdrant integration.
+* Initial version of the Tool Abstraction Layer (TAL) with 3 example tool integrations.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risk:** High latency in external tool APIs causing cascading failures.
-  * **Mitigation:** Implement an adaptive, time-aware caching layer in the CCFlare Proxy. Utilize asynchronous, non-blocking I/O for all external calls to prevent thread starvation.
+* **Mitigation:** Implement an adaptive, time-aware caching layer in the CCFlare Proxy. Utilize asynchronous, non-blocking I/O for all external calls to prevent thread starvation.
 * **Risk:** State management complexity and potential for race conditions in the distributed MCP.
-  * **Mitigation:** Strictly adhere to the Raft consensus protocol for all state transitions. Persist critical state changes to a write-ahead log (WAL) before acknowledging them.
+* **Mitigation:** Strictly adhere to the Raft consensus protocol for all state transitions. Persist critical state changes to a write-ahead log (WAL) before acknowledging them.
 * **Risk:** Prompt brittleness and performance degradation over time.
-  * **Mitigation:** Employ DSPy for programmatic prompt optimization and few-shot example selection. Implement a CI/CD pipeline that includes a prompt regression testing suite against a golden dataset.
+* **Mitigation:** Employ DSPy for programmatic prompt optimization and few-shot example selection. Implement a CI/CD pipeline that includes a prompt regression testing suite against a golden dataset.
 
 ---
 
@@ -3801,65 +3801,65 @@ Of course. Based on the provided technical document, here is the structured extr
 ### 1. Core Project Objective & Key Performance Indicators (KPIs)
 * **Primary Technical Goal:** Deliver a "Zen-MCP" (Multi-Agent Cognitive Platform) development platform for engineering tasks.
 * **Success Metrics & Targets:**
-  * **SWE-Bench Score:** ≥ 84.8% on the full test set.
-  * **Custom HumanEval Fork:** ≥ 91% pass rate.
-  * **Agent Invocation Latency:** < 100ms at the 99th percentile (P99) for a single agent cognitive cycle.
-  * **Platform Throughput:** ≥ 626 QPS (Queries Per Second) under simulated load.
+* **SWE-Bench Score:** ≥ 84.8% on the full test set.
+* **Custom HumanEval Fork:** ≥ 91% pass rate.
+* **Agent Invocation Latency:** < 100ms at the 99th percentile (P99) for a single agent cognitive cycle.
+* **Platform Throughput:** ≥ 626 QPS (Queries Per Second) under simulated load.
 
 ### 2. Core Architecture & System Components
 * **Overall Architecture:**
-  * A distributed, 64-agent system organized into a multi-layered cognitive architecture.
-  * Features a hierarchical memory system that separates episodic, semantic, and procedural memories.
+* A distributed, 64-agent system organized into a multi-layered cognitive architecture.
+* Features a hierarchical memory system that separates episodic, semantic, and procedural memories.
 * **Primary Components:**
-  * **Claude-flow:** The core orchestration engine responsible for task decomposition and agent routing.
-  * **Letta Memory:** The hierarchical memory subsystem.
-  * **MCP Servers:** The primary compute hosts for individual agents, running containerized agent processes.
-  * **CCFlare Proxy:** A custom Cloudflare Worker-based proxy for request routing, caching, and security.
+* **Claude-flow:** The core orchestration engine responsible for task decomposition and agent routing.
+* **Letta Memory:** The hierarchical memory subsystem.
+* **MCP Servers:** The primary compute hosts for individual agents, running containerized agent processes.
+* **CCFlare Proxy:** A custom Cloudflare Worker-based proxy for request routing, caching, and security.
 
 ### 3. Technology Stack
 * **Databases:**
-  * **Vector Storage:** PostgreSQL + `pgvector` extension for core memory.
-  * **Specialized Vector DB:** Qdrant for high-throughput, low-latency search tasks.
-  * **Graph Memory:** Neo4j for storing relational and causal link data between memories.
-  * **Caching & Messaging:** Redis for ephemeral state and NATS for inter-agent communication.
+* **Vector Storage:** PostgreSQL + `pgvector` extension for core memory.
+* **Specialized Vector DB:** Qdrant for high-throughput, low-latency search tasks.
+* **Graph Memory:** Neo4j for storing relational and causal link data between memories.
+* **Caching & Messaging:** Redis for ephemeral state and NATS for inter-agent communication.
 * **Frameworks & Libraries:**
-  * **Prompt Engineering:** DSPy for structured prompting and automated optimization.
-  * **CLI Interface:** React Ink for the interactive command-line tool.
+* **Prompt Engineering:** DSPy for structured prompting and automated optimization.
+* **CLI Interface:** React Ink for the interactive command-line tool.
 * **Infrastructure:**
-  * **Containerization:** Docker.
-  * **Core Language:** Python 3.11+
-  * **Proxy/Edge:** Cloudflare Workers
+* **Containerization:** Docker.
+* **Core Language:** Python 3.11+
+* **Proxy/Edge:** Cloudflare Workers
 
 ### 4. Key Algorithms & Protocols
 * **Memory Retrieval:**
-  * **Hybrid Search Algorithm:** A weighted combination of vector similarity search, keyword-based full-text search, and graph centrality-based retrieval.
-  * **Default Weighting:** `1.0` (vector) + `0.75` (keyword) + `1.25` (graph centrality).
+* **Hybrid Search Algorithm:** A weighted combination of vector similarity search, keyword-based full-text search, and graph centrality-based retrieval.
+* **Default Weighting:** `1.0` (vector) + `0.75` (keyword) + `1.25` (graph centrality).
 * **Inter-Agent Communication:**
-  * **Protocol:** JSON-RPC 2.0 over a NATS message bus.
-  * **Payloads:** Standardized JSON schemas for requests, responses, and errors to ensure strict agent-to-agent interoperability.
+* **Protocol:** JSON-RPC 2.0 over a NATS message bus.
+* **Payloads:** Standardized JSON schemas for requests, responses, and errors to ensure strict agent-to-agent interoperability.
 
 ### 5. Unique User-Facing Features & Implementations
 * **ADHD-Optimized CLI:**
-  * **Implementation:** A `tmux` configuration designed to minimize context switching and cognitive load.
-  * **Core Principle:** Employs "Progressive Information Disclosure," where details are hidden by default and revealed only upon explicit user command to reduce visual noise.
+* **Implementation:** A `tmux` configuration designed to minimize context switching and cognitive load.
+* **Core Principle:** Employs "Progressive Information Disclosure," where details are hidden by default and revealed only upon explicit user command to reduce visual noise.
 * **RSD-Aware Feedback Mechanism:**
-  * **Implementation:** A feedback loop designed for Rejection Sensitive Dysphoria (RSD).
-  * **Core Principle:** Utilizes "Non-Rejection-Based Feedback Framing," where suggestions for code changes are presented as collaborative "refinements" or "alternative paths" rather than direct error corrections.
+* **Implementation:** A feedback loop designed for Rejection Sensitive Dysphoria (RSD).
+* **Core Principle:** Utilizes "Non-Rejection-Based Feedback Framing," where suggestions for code changes are presented as collaborative "refinements" or "alternative paths" rather than direct error corrections.
 
 ### 6. Implementation Plan Summary
 * **Timeline:** A 16-week phased implementation plan.
 * **Phase 1 Deliverables:**
-  * Core MCP Server binary with single-agent support.
-  * Letta Memory v1 (implemented solely on PostgreSQL with `pgvector`).
-  * Interactive CLI v1 with basic task submission and monitoring.
+* Core MCP Server binary with single-agent support.
+* Letta Memory v1 (implemented solely on PostgreSQL with `pgvector`).
+* Interactive CLI v1 with basic task submission and monitoring.
 
 ### 7. Critical Risks & Mitigation Strategies
 * **Risk 1: Cognitive Dissonance Storms:** A feedback loop where multiple agents disagree, reinforcing their opposing positions and halting progress.
-  * **Mitigation:** Implement a "Cool-down Protocol" that temporarily halts interaction on a contentious task and a "Consensus Forcing Function" that elevates the task to a specialized meta-agent for a binding decision.
+* **Mitigation:** Implement a "Cool-down Protocol" that temporarily halts interaction on a contentious task and a "Consensus Forcing Function" that elevates the task to a specialized meta-agent for a binding decision.
 * **Risk 2: Memory Contamination:** An agent storing incorrect or hallucinated information that subsequently poisons the memory pool for other agents.
-  * **Mitigation:** Isolate memories into "epistemic domains" with strict read/write ACLs. A dedicated "Memory Guardian Agent" is responsible for cross-domain validation and memory promotion.
+* **Mitigation:** Isolate memories into "epistemic domains" with strict read/write ACLs. A dedicated "Memory Guardian Agent" is responsible for cross-domain validation and memory promotion.
 * **Risk 3: Prompt Brittleness at Scale:** Small changes in underlying models or tasks causing significant degradation in performance across the 64-agent system.
-  * **Mitigation:** Strict adherence to the DSPy framework, using `dspy.Signature` for all prompts and running automated optimizers (e.g., `BootstrapFewShotWithRandomSearch`) continuously in a CI/CD pipeline to adapt prompts to model updates.
+* **Mitigation:** Strict adherence to the DSPy framework, using `dspy.Signature` for all prompts and running automated optimizers (e.g., `BootstrapFewShotWithRandomSearch`) continuously in a CI/CD pipeline to adapt prompts to model updates.
 
 ---
 
@@ -3873,33 +3873,33 @@ Of course. Based on the analysis of `DOPEMUX_COMPONENTS_v1.md`, here is the stru
 
 * **Primary Technical Goal:** Deliver a development platform featuring a multi-agent system designed to augment the workflow of neurodivergent software engineers.
 * **Success Metrics & Targets:**
-  * **Benchmark Performance:** Achieve 84.8% pass rate on the SWE-Bench benchmark.
-  * **System Throughput:** Sustain 626 Queries Per Second (QPS) under load.
-  * **Latency:** Maintain a p99 latency of <100ms for core interactive commands.
+* **Benchmark Performance:** Achieve 84.8% pass rate on the SWE-Bench benchmark.
+* **System Throughput:** Sustain 626 Queries Per Second (QPS) under load.
+* **Latency:** Maintain a p99 latency of <100ms for core interactive commands.
 
 #### **2. Core Architecture & System Components**
 
 * **Overall Architecture:**
-  * A distributed, 64-agent system designed for parallelized task execution and analysis.
-  * Employs a Hierarchical memory architecture, separating short-term (contextual), long-term (retrieval), and relational data stores.
+* A distributed, 64-agent system designed for parallelized task execution and analysis.
+* Employs a Hierarchical memory architecture, separating short-term (contextual), long-term (retrieval), and relational data stores.
 * **Primary Components:**
-  * **Claude-flow:** A state machine and orchestration engine for managing agent lifecycles and task routing.
-  * **Letta Memory:** The hierarchical memory subsystem responsible for data persistence, retrieval, and context management.
-  * **MCP Servers (Master Control Program):** Core backend servers handling agent coordination, state synchronization, and API requests.
-  * **CCFlare Proxy:** A Cloudflare-based proxy layer for request caching, security, and load balancing in front of the MCP Servers.
+* **Claude-flow:** A state machine and orchestration engine for managing agent lifecycles and task routing.
+* **Letta Memory:** The hierarchical memory subsystem responsible for data persistence, retrieval, and context management.
+* **MCP Servers (Master Control Program):** Core backend servers handling agent coordination, state synchronization, and API requests.
+* **CCFlare Proxy:** A Cloudflare-based proxy layer for request caching, security, and load balancing in front of the MCP Servers.
 
 #### **3. Technology Stack**
 
 * **Databases:**
-  * **Relational/Vector Hybrid:** PostgreSQL with the `pgvector` extension.
-  * **Graph:** Neo4j for dependency and code structure analysis.
-  * **Vector (Primary):** Qdrant for high-performance semantic search.
-  * **In-Memory/Cache:** Redis.
+* **Relational/Vector Hybrid:** PostgreSQL with the `pgvector` extension.
+* **Graph:** Neo4j for dependency and code structure analysis.
+* **Vector (Primary):** Qdrant for high-performance semantic search.
+* **In-Memory/Cache:** Redis.
 * **Frameworks & Libraries:**
-  * **AI/LLM Orchestration:** DSPy.
-  * **CLI Interface:** React Ink.
+* **AI/LLM Orchestration:** DSPy.
+* **CLI Interface:** React Ink.
 * **Infrastructure & Deployment:**
-  * **Containerization:** Docker.
+* **Containerization:** Docker.
 
 #### **4. Key Algorithms & Protocols**
 
@@ -3917,18 +3917,18 @@ Of course. Based on the analysis of `DOPEMUX_COMPONENTS_v1.md`, here is the stru
 
 * **Timeline:** A 16-week phased implementation plan is outlined.
 * **Initial Deliverables (Phase 1):**
-  * Core agent swarm (minimum viable 8-agent cluster).
-  * Letta Memory v1 (PostgreSQL + Qdrant integration).
-  * Initial command-line interface (CLI) tool built with React Ink.
+* Core agent swarm (minimum viable 8-agent cluster).
+* Letta Memory v1 (PostgreSQL + Qdrant integration).
+* Initial command-line interface (CLI) tool built with React Ink.
 
 #### **7. Critical Risks & Mitigation Strategies**
 
 * **Risk:** LLM Hallucination leading to incorrect code or suggestions.
-  * **Mitigation:** Implement a strict Retrieval-Augmented Generation (RAG) pipeline with multi-source validation across documentation, codebase, and validated external sources.
+* **Mitigation:** Implement a strict Retrieval-Augmented Generation (RAG) pipeline with multi-source validation across documentation, codebase, and validated external sources.
 * **Risk:** State synchronization complexity in the distributed agent swarm.
-  * **Mitigation:** Utilize the specified PBFT consensus algorithm to guarantee state consistency across all active agents and MCP nodes.
+* **Mitigation:** Utilize the specified PBFT consensus algorithm to guarantee state consistency across all active agents and MCP nodes.
 * **Risk:** High operational cost due to intensive model inference.
-  * **Mitigation:** Employ quantized models for less critical tasks and leverage serverless GPU inference endpoints for burstable, on-demand workloads.
+* **Mitigation:** Employ quantized models for less critical tasks and leverage serverless GPU inference endpoints for burstable, on-demand workloads.
 
 ---
 
@@ -3941,28 +3941,28 @@ Of course. Here is the analysis of the provided research document, `DOPEMUX_CUST
 ### 2. Methodology
 * **Research Method:** A performance benchmark and qualitative analysis comparing a proof-of-concept (PoC) custom agent against a baseline (vanilla GPT-4) model.
 * **Sample Size or Test Environment:**
-  * **Test Suite:** A benchmark of 25 Dopemux-specific questions (15 documentation-based, 10 real-time data questions).
-  * **Model:** OpenAI `gpt-4-1106-preview`.
-  * **Framework:** LangChain v0.0.330.
-  * **Knowledge Base:** A ChromaDB vector database containing embeddings of the `dopemux/docs` repository.
-  * **Tools:** The agent had access to two custom functions: `get_current_sprint_goals()` (interfacing with Jira) and `list_open_prs(repo_name)` (interfacing with GitHub).
+* **Test Suite:** A benchmark of 25 Dopemux-specific questions (15 documentation-based, 10 real-time data questions).
+* **Model:** OpenAI `gpt-4-1106-preview`.
+* **Framework:** LangChain v0.0.330.
+* **Knowledge Base:** A ChromaDB vector database containing embeddings of the `dopemux/docs` repository.
+* **Tools:** The agent had access to two custom functions: `get_current_sprint_goals()` (interfacing with Jira) and `list_open_prs(repo_name)` (interfacing with GitHub).
 
 ### 3. Key Findings & Data
 * **Overall Performance Improvement:** The custom agent achieved a **96%** accuracy/success rate on the benchmark test suite, compared to the baseline's **12%**.
 * **Accuracy on Documentation Questions (RAG Performance):**
-  * **Baseline (Vanilla GPT-4):** 20% accuracy (3 out of 15 correct).
-  * **Custom Agent (RAG):** 93.3% accuracy (14 out of 15 correct).
+* **Baseline (Vanilla GPT-4):** 20% accuracy (3 out of 15 correct).
+* **Custom Agent (RAG):** 93.3% accuracy (14 out of 15 correct).
 * **Success Rate on Real-time Data Questions (Tool-Use Performance):**
-  * **Baseline (Vanilla GPT-4):** 0% success rate (0 out of 10).
-  * **Custom Agent (Tools):** 100% success rate (10 out of 10).
+* **Baseline (Vanilla GPT-4):** 0% success rate (0 out of 10).
+* **Custom Agent (Tools):** 100% success rate (10 out of 10).
 
 ### 4. Conclusions & Implications
 * **Conclusions:** The research strongly supports the hypothesis. The combination of RAG and tool-use is a highly effective strategy for creating a specialized and useful internal AI assistant, demonstrated by the performance increase from 12% to 96% on the benchmark.
 * **Implications & Recommendations:**
-  * Proceed with a production-level implementation of the custom agent architecture.
-  * Expand the agent's capabilities with more tools for Jira and GitHub.
-  * Broaden the RAG knowledge base to include code comments, Architectural Decision Records (ADRs), and sprint retrospectives.
-  * Prioritize security and permission management for tools that can perform write operations during production design.
+* Proceed with a production-level implementation of the custom agent architecture.
+* Expand the agent's capabilities with more tools for Jira and GitHub.
+* Broaden the RAG knowledge base to include code comments, Architectural Decision Records (ADRs), and sprint retrospectives.
+* Prioritize security and permission management for tools that can perform write operations during production design.
 
 ### 5. Cited Technologies or Concepts
 * **Frameworks/Libraries:** LangChain
@@ -3970,9 +3970,9 @@ Of course. Here is the analysis of the provided research document, `DOPEMUX_CUST
 * **Databases:** ChromaDB (Vector Database)
 * **APIs/Services:** Jira, GitHub
 * **Core Concepts:**
-  * Retrieval-Augmented Generation (RAG)
-  * Tool-Using / Function Calling
-  * LLM Agents
+* Retrieval-Augmented Generation (RAG)
+* Tool-Using / Function Calling
+* LLM Agents
 
 ---
 
@@ -3986,25 +3986,25 @@ Of course. Based on my analysis of the document `/Users/hue/code/dmpx/research/f
 ### 2. Methodology
 * **Research Method:** A qualitative user study using moderated usability testing.
 * **Sample Size & Environment:**
-  * **Participants:** 8 internal users (4 designers, 4 developers).
-  * **Environment:** A development build of the application with a prototype chat window. The RAG system used a FAISS vector database indexed on the "Phoenix Project" Confluence documentation and was powered by the `gpt-3.5-turbo` LLM.
-  * **Procedure:** Participants were asked to complete three specific information-retrieval tasks. Metrics collected included time on task, a subjective satisfaction score (1-5 scale), and qualitative feedback.
+* **Participants:** 8 internal users (4 designers, 4 developers).
+* **Environment:** A development build of the application with a prototype chat window. The RAG system used a FAISS vector database indexed on the "Phoenix Project" Confluence documentation and was powered by the `gpt-3.5-turbo` LLM.
+* **Procedure:** Participants were asked to complete three specific information-retrieval tasks. Metrics collected included time on task, a subjective satisfaction score (1-5 scale), and qualitative feedback.
 
 ### 3. Key Findings & Data
 * **Task Completion Time:** Users found correct information in an average of **28 seconds** using the chat interface, compared to an estimated **120-180 seconds** using the old static documentation.
 * **User Satisfaction:** The chat interface received an average satisfaction score of **4.6 out of 5**, a significant increase from the previous score of **2.1 out of 5** for the static documentation.
 * **Accuracy:** The RAG system provided a correct or highly relevant answer in 21 out of 24 queries, achieving an **87.5% accuracy rate**.
 * **Qualitative Feedback:**
-  * 7 out of 8 participants described the tool as "fast," "intuitive," and a "huge time-saver."
-  * 3 participants noted that answers to very technical queries could be generic or incomplete, suggesting a need to refine the retrieval mechanism.
+* 7 out of 8 participants described the tool as "fast," "intuitive," and a "huge time-saver."
+* 3 participants noted that answers to very technical queries could be generic or incomplete, suggesting a need to refine the retrieval mechanism.
 
 ### 4. Conclusions & Implications
 * **Conclusions:** The hypothesis was strongly supported. The RAG-powered chat interface provides a demonstrably faster, more accurate, and more satisfying user experience for information retrieval than the existing static documentation.
 * **Implications & Recommendations:**
-    1. **Proceed with Production:** The feature should be developed into a production-ready version.
-    2. **Refine Retrieval:** Engineering resources should be allocated to improve retrieval accuracy for technical queries by experimenting with document chunking strategies and embedding models.
-    3. **Expand Knowledge Base:** Future work should include indexing additional data sources like Slack histories and GitHub issues.
-    4. **Monitor Costs:** Implement cost monitoring and budget alerts for the use of the `gpt-3.5-turbo` API as the feature scales.
+1. **Proceed with Production:** The feature should be developed into a production-ready version.
+1. **Refine Retrieval:** Engineering resources should be allocated to improve retrieval accuracy for technical queries by experimenting with document chunking strategies and embedding models.
+1. **Expand Knowledge Base:** Future work should include indexing additional data sources like Slack histories and GitHub issues.
+1. **Monitor Costs:** Implement cost monitoring and budget alerts for the use of the `gpt-3.5-turbo` API as the feature scales.
 
 ### 5. Cited Technologies or Concepts
 * Retrieval-Augmented Generation (RAG)
@@ -4027,11 +4027,11 @@ Of course. As a meticulous Research Analyst, I have analyzed the provided docume
 ### 2. Methodology
 * **Research Method:** A controlled user study.
 * **Sample Size & Environment:**
-  * 24 professional software developers (3-10 years experience).
-  * Participants were split into two groups:
-    * **Control Group (n=12):** Used a standard setup of VS Code with an integrated iTerm2 terminal.
-    * **Experimental Group (n=12):** Used a prototype of DOPEMUX integrated within VS Code.
-  * Participants completed three standardized development tasks involving repository setup, debugging a Node.js script, and containerization with Docker.
+* 24 professional software developers (3-10 years experience).
+* Participants were split into two groups:
+* **Control Group (n=12):** Used a standard setup of VS Code with an integrated iTerm2 terminal.
+* **Experimental Group (n=12):** Used a prototype of DOPEMUX integrated within VS Code.
+* Participants completed three standardized development tasks involving repository setup, debugging a Node.js script, and containerization with Docker.
 
 ### 3. Key Findings & Data
 * **Task Completion Time:** The DOPEMUX group was, on average, **28% faster** than the control group (p < 0.05). The most significant improvement (35% faster) was observed in the debugging task.
@@ -4042,9 +4042,9 @@ Of course. As a meticulous Research Analyst, I have analyzed the provided docume
 ### 4. Conclusions & Implications
 * **Conclusions:** The research supports the hypothesis. The integration of AI assistance directly into the terminal workflow leads to statistically significant improvements in developer efficiency (reduced time, fewer errors) and a lower perceived cognitive load.
 * **Implications & Recommendations:**
-    1. **Prioritize Core AI Features:** Focus development on the most impactful features: AI command suggestion and automated error explanation.
-    2. **Implement User Controls:** Introduce options to manage the proactivity of AI suggestions, such as an adjustable "intrusiveness" level or a "quiet mode," to address user feedback.
-    3. **Expand Contextual Sources:** Enhance the AI's relevance by integrating more data sources, such as open editor files, git repository status, and codebase semantics.
+1. **Prioritize Core AI Features:** Focus development on the most impactful features: AI command suggestion and automated error explanation.
+1. **Implement User Controls:** Introduce options to manage the proactivity of AI suggestions, such as an adjustable "intrusiveness" level or a "quiet mode," to address user feedback.
+1. **Expand Contextual Sources:** Enhance the AI's relevance by integrating more data sources, such as open editor files, git repository status, and codebase semantics.
 
 ### 5. Cited Technologies or Concepts
 * **Core Concepts:** Context Switching, Cognitive Load, Human-Computer Interaction (HCI).
@@ -4078,21 +4078,21 @@ Based on the document at `/Users/hue/code/dmpx/research/findings/leantime.md`, h
 * **Performance:** Not mentioned.
 * **Scalability:** The system is described as being for "small teams and startups."
 * **Security:**
-  * Authentication is handled via a username/password system with session management.
-  * Future enhancements mentioned include implementing two-factor authentication (2FA) and stricter Content Security Policies (CSP).
-  * For self-hosted instances, the administrator is responsible for securing the server and database.
+* Authentication is handled via a username/password system with session management.
+* Future enhancements mentioned include implementing two-factor authentication (2FA) and stricter Content Security Policies (CSP).
+* For self-hosted instances, the administrator is responsible for securing the server and database.
 * **Reliability:** Not mentioned.
 
 ### 5. Technical Constraints & Decisions
 * **Specific technologies:**
-  * **Backend:** PHP 8+
-  * **Database:** MySQL 5.7+ or MariaDB 10.2+
-  * **Frontend:** Vanilla JavaScript, Twig templates
+* **Backend:** PHP 8+
+* **Database:** MySQL 5.7+ or MariaDB 10.2+
+* **Frontend:** Vanilla JavaScript, Twig templates
 * **Existing systems integrations:** Not mentioned.
 * **Architectural decisions:**
-  * The system is a monolithic web application.
-  * It is designed to run on a standard LAMP/LEMP stack.
-  * A Docker Compose file is provided as a deployment option.
+* The system is a monolithic web application.
+* It is designed to run on a standard LAMP/LEMP stack.
+* A Docker Compose file is provided as a deployment option.
 
 ### 6. Data & Integration Points
 * **Key data entities:** Projects, Milestones, To-Dos, Users, and Timesheets.
@@ -4110,40 +4110,40 @@ Of course. Here is a structured analysis of the research document `/Users/hue/co
 ### 2. Methodology
 * **Research Method:** A comparative performance benchmark was conducted.
 * **Test Environment & Sample Size:**
-  * The test involved generating documentation for 15 undocumented Python functions from the DMPX core library.
-  * **Control Group:** A junior developer (2 years experience) manually writing documentation.
-  * **Experimental Group:** An automated script using the OpenAI GPT-4 API to generate documentation from source code and comments.
-  * **Evaluation:** A panel of 3 senior developers scored the documentation on a 1-5 scale for Clarity, Completeness, and Technical Accuracy.
+* The test involved generating documentation for 15 undocumented Python functions from the DMPX core library.
+* **Control Group:** A junior developer (2 years experience) manually writing documentation.
+* **Experimental Group:** An automated script using the OpenAI GPT-4 API to generate documentation from source code and comments.
+* **Evaluation:** A panel of 3 senior developers scored the documentation on a 1-5 scale for Clarity, Completeness, and Technical Accuracy.
 
 ### 3. Key Findings & Data
 * **Efficiency (Time-to-Completion):**
-  * **Manual Documentation:** 185 minutes total (Avg: 12.3 min/function).
-  * **AI-Generated Documentation:** 25 minutes total (Avg: 1.7 min/function).
-  * This represents an **86.5% reduction in time**.
+* **Manual Documentation:** 185 minutes total (Avg: 12.3 min/function).
+* **AI-Generated Documentation:** 25 minutes total (Avg: 1.7 min/function).
+* This represents an **86.5% reduction in time**.
 
 * **Quality Scores (Average):**
-  * **Manual Overall Score:** **4.5 / 5.0**
-    * Clarity: 4.5
-    * Completeness: 4.2
-    * Technical Accuracy: 4.8
-  * **AI-Generated Overall Score:** **4.3 / 5.0**
-    * Clarity: 4.3
-    * Completeness: 3.8
-    * Technical Accuracy: 4.9
+* **Manual Overall Score:** **4.5 / 5.0**
+* Clarity: 4.5
+* Completeness: 4.2
+* Technical Accuracy: 4.8
+* **AI-Generated Overall Score:** **4.3 / 5.0**
+* Clarity: 4.3
+* Completeness: 3.8
+* Technical Accuracy: 4.9
 * **Statistical Significance:** The difference in the overall quality score between manual and AI-generated documentation was **not statistically significant (p = 0.12)**.
 * **Key Observation:** The largest quality gap was in "Completeness," where the AI model often missed nuanced project context not explicit in the code or comments.
 
 ### 4. Conclusions & Implications
 * **Conclusions:**
-  * The hypothesis was largely supported. AI-assisted documentation generation is significantly (~7x) faster than manual methods.
-  * The quality of AI-generated documentation is comparable to that of a junior developer, with no statistically significant difference in overall scores.
-  * The AI excelled in technical accuracy, sometimes surpassing the human writer, but was weaker in providing complete context.
+* The hypothesis was largely supported. AI-assisted documentation generation is significantly (~7x) faster than manual methods.
+* The quality of AI-generated documentation is comparable to that of a junior developer, with no statistically significant difference in overall scores.
+* The AI excelled in technical accuracy, sometimes surpassing the human writer, but was weaker in providing complete context.
 * **Implications & Recommendations:**
-  * The research team recommends integrating a hybrid AI-assisted documentation workflow for the DMPX project.
-  * **Proposed Workflow:**
-        1. Use GPT-4 to generate the first draft of documentation.
-        2. The developer who wrote the code should then review and amend the draft, focusing on improving "Completeness" by adding necessary context.
-  * This approach is projected to **reduce documentation time by over 70%** while maintaining or exceeding current quality standards.
+* The research team recommends integrating a hybrid AI-assisted documentation workflow for the DMPX project.
+* **Proposed Workflow:**
+1. Use GPT-4 to generate the first draft of documentation.
+1. The developer who wrote the code should then review and amend the draft, focusing on improving "Completeness" by adding necessary context.
+* This approach is projected to **reduce documentation time by over 70%** while maintaining or exceeding current quality standards.
 
 ### 5. Cited Technologies or Concepts
 * Large Language Models (LLMs)
@@ -4171,18 +4171,18 @@ To show you what the output will look like, here is a hypothetical analysis base
 * **Method:** Performance benchmark.
 * **Process:** A RAG pipeline was tested against a "golden dataset" of 150 question-answer pairs. The baseline ("Naive RAG") stuffed the top 5 retrieved document chunks directly into the context. The experimental variant ("Managed RAG") first re-ranked the 5 chunks for relevance using a cross-encoder and then used a smaller LLM to summarize the top 3 before passing them to the final prompt.
 * **Sample Size / Test Environment:**
-  * **LLM:** `gpt-4-1106-preview`
-  * **Embedding Model:** `text-embedding-ada-002`
-  * **Re-ranker:** Cohere ReRank
-  * **Dataset:** Internal company documentation Q&A set (n=150)
+* **LLM:** `gpt-4-1106-preview`
+* **Embedding Model:** `text-embedding-ada-002`
+* **Re-ranker:** Cohere ReRank
+* **Dataset:** Internal company documentation Q&A set (n=150)
 
 ### 3. Key Findings & Data
 * **Token Usage:** The Managed RAG approach resulted in an average context size of 2,150 tokens, a **38% reduction** from the Naive RAG's average of 3,470 tokens.
 * **Latency:** End-to-end response time for Managed RAG was 3.8 seconds, compared to 4.5 seconds for Naive RAG—a **15.5% reduction in latency**. Note: While the re-ranking/summarization adds an overhead of ~400ms, the savings from the smaller final LLM call were greater.
 * **Accuracy:** Answer accuracy was measured using the RAGAS framework.
-  * Naive RAG Faithfulness Score: 0.91
-  * Managed RAG Faithfulness Score: 0.89
-  * This represents a minor, statistically insignificant (p > 0.05) decrease in answer faithfulness.
+* Naive RAG Faithfulness Score: 0.91
+* Managed RAG Faithfulness Score: 0.89
+* This represents a minor, statistically insignificant (p > 0.05) decrease in answer faithfulness.
 
 ### 4. Conclusions & Implications
 * **Conclusions:** The hypothesis was partially supported. The token and latency reductions (38% and 15.5% respectively) exceeded the 20% target in one metric but not the other. The impact on accuracy was minimal and acceptable for the target use case. Context management provides significant efficiency gains.
@@ -4207,37 +4207,37 @@ Of course. As a meticulous Research Analyst, I have analyzed the document and ex
 
 ### 2. Methodology
 * **Method:** A multi-pronged approach was used:
-    1. Systematic Literature Review
-    2. Competitive Analysis
-    3. User Survey
+1. Systematic Literature Review
+1. Competitive Analysis
+1. User Survey
 * **Sample Size / Environment:**
-  * **Literature Review:** 45 peer-reviewed studies (2015-2023).
-  * **Competitive Analysis:** Top 10 highest-rated ADHD management apps on iOS and Android.
-  * **User Survey:** 250 adults diagnosed with ADHD.
+* **Literature Review:** 45 peer-reviewed studies (2015-2023).
+* **Competitive Analysis:** Top 10 highest-rated ADHD management apps on iOS and Android.
+* **User Survey:** 250 adults diagnosed with ADHD.
 
 ### 3. Key Findings & Data
 * **Task Management:**
-  * 88% of survey respondents rated "Sub-task creation" as "very important" or "essential."
-  * Visual prioritization matrices (e.g., Eisenhower Matrix) led to a **25% increase in task completion rates** compared to linear lists.
+* 88% of survey respondents rated "Sub-task creation" as "very important" or "essential."
+* Visual prioritization matrices (e.g., Eisenhower Matrix) led to a **25% increase in task completion rates** compared to linear lists.
 * **Time Management:**
-  * The Pomodoro Technique was the most frequently cited effective method in the literature.
-  * Apps implementing the Pomodoro Technique saw an average user engagement time increase of **40%**.
+* The Pomodoro Technique was the most frequently cited effective method in the literature.
+* Apps implementing the Pomodoro Technique saw an average user engagement time increase of **40%**.
 * **Motivation & Gamification:**
-  * A meta-analysis showed a medium effect size (**g = 0.62**) for gamification on adherence to digital ADHD interventions.
-  * 72% of survey respondents reported that "streaks" or "daily goals" were a primary motivator.
+* A meta-analysis showed a medium effect size (**g = 0.62**) for gamification on adherence to digital ADHD interventions.
+* 72% of survey respondents reported that "streaks" or "daily goals" were a primary motivator.
 * **Emotional Regulation:**
-  * This is an underserved area in existing apps.
-  * Mood tracking was the #1 most requested feature not commonly found in task-management-focused ADHD apps.
+* This is an underserved area in existing apps.
+* Mood tracking was the #1 most requested feature not commonly found in task-management-focused ADHD apps.
 
 ### 4. Conclusions & Implications
 * **Conclusions:**
-  * Effective digital tools for ADHD must be multi-faceted, addressing task management, time perception, motivation, and emotional regulation.
-  * Customization is key, as a one-size-fits-all approach is ineffective.
-  * A significant market gap exists for tools that integrate executive function support with emotional regulation features.
+* Effective digital tools for ADHD must be multi-faceted, addressing task management, time perception, motivation, and emotional regulation.
+* Customization is key, as a one-size-fits-all approach is ineffective.
+* A significant market gap exists for tools that integrate executive function support with emotional regulation features.
 * **Implications / Recommendations:**
-    1. **Prioritize MVP Features:** Focus on robust sub-task creation, a visual prioritization matrix, and a customizable Pomodoro timer.
-    2. **Incorporate Gamification Early:** Implement a simple rewards system (points, streaks) from the start to drive engagement.
-    3. **Roadmap for Differentiation:** Plan for mood tracking and guided mindfulness features in a future release to serve as a key differentiator.
+1. **Prioritize MVP Features:** Focus on robust sub-task creation, a visual prioritization matrix, and a customizable Pomodoro timer.
+1. **Incorporate Gamification Early:** Implement a simple rewards system (points, streaks) from the start to drive engagement.
+1. **Roadmap for Differentiation:** Plan for mood tracking and guided mindfulness features in a future release to serve as a key differentiator.
 
 ### 5. Cited Technologies or Concepts
 * Executive Dysfunction
@@ -4254,39 +4254,39 @@ Of course. Based on the provided document `dopemux_dev_orchestration_detailed_de
 
 * **Primary Technical Goal:** Deliver a development orchestration platform that integrates a multi-agent system with a hierarchical memory architecture to automate and assist in complex software engineering tasks.
 * **Success Metrics & Targets:**
-  * **Benchmark Performance:** 84.8% pass rate on the SWE-Bench benchmark.
-  * **System Throughput:** 626 Queries Per Second (QPS) under simulated load.
-  * **Latency:** P99 interaction latency of <100ms for core CLI commands.
-  * **Efficiency:** Achieve a 48% effective token compression ratio for the context window via memory summarization.
+* **Benchmark Performance:** 84.8% pass rate on the SWE-Bench benchmark.
+* **System Throughput:** 626 Queries Per Second (QPS) under simulated load.
+* **Latency:** P99 interaction latency of <100ms for core CLI commands.
+* **Efficiency:** Achieve a 48% effective token compression ratio for the context window via memory summarization.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A 64-agent system managed by a central controller. The architecture is built around a hierarchical memory system designed for long-term project context and rapid, short-term recall. Communication is brokered via a centralized proxy and control plane.
 * **Primary Components:**
-  * **Claude-flow:** A stateful, directed acyclic graph (DAG) based task routing and execution engine for orchestrating agent interactions.
-  * **Letta Memory:** A hierarchical memory system comprising L1 (Redis-based cache for immediate context), L2 (Qdrant/pgvector hybrid for semantic search), and L3 (Neo4j for entity relationship mapping).
-  * **MCP Servers (Master Control Program):** The central control plane responsible for agent lifecycle management, state tracking, and dispatching tasks to Claude-flow. Communicates via JSON-RPC 2.0.
-  * **CCFlare Proxy:** A Cloudflare-fronted reverse proxy managing API authentication, rate limiting, and caching for all external and internal API calls.
+* **Claude-flow:** A stateful, directed acyclic graph (DAG) based task routing and execution engine for orchestrating agent interactions.
+* **Letta Memory:** A hierarchical memory system comprising L1 (Redis-based cache for immediate context), L2 (Qdrant/pgvector hybrid for semantic search), and L3 (Neo4j for entity relationship mapping).
+* **MCP Servers (Master Control Program):** The central control plane responsible for agent lifecycle management, state tracking, and dispatching tasks to Claude-flow. Communicates via JSON-RPC 2.0.
+* **CCFlare Proxy:** A Cloudflare-fronted reverse proxy managing API authentication, rate limiting, and caching for all external and internal API calls.
 
 ### 3. Technology Stack
 
 * **Databases / Data Stores:**
-  * PostgreSQL + `pgvector` extension (L2 long-term memory)
-  * Redis (L1 cache / short-term memory)
-  * Qdrant (Vector database for L2 semantic search)
-  * Neo4j (Graph database for L3 code and entity relationships)
+* PostgreSQL + `pgvector` extension (L2 long-term memory)
+* Redis (L1 cache / short-term memory)
+* Qdrant (Vector database for L2 semantic search)
+* Neo4j (Graph database for L3 code and entity relationships)
 * **Frameworks & Libraries:**
-  * **Frontend (CLI):** React Ink
-  * **LLM Orchestration:** DSPy
+* **Frontend (CLI):** React Ink
+* **LLM Orchestration:** DSPy
 * **Infrastructure & Deployment:**
-  * Docker
+* Docker
 
 ### 4. Key Algorithms & Protocols
 
 * **Core Search Algorithm:** A hybrid search weighting mechanism for information retrieval from Letta Memory, combining keyword, vector, and graph-based search results. The specified weighting is:
-  * `BM25 (Keyword): 0.3`
-  * `Vector (Semantic): 0.5`
-  * `Graph (Relational): 0.2`
+* `BM25 (Keyword): 0.3`
+* `Vector (Semantic): 0.5`
+* `Graph (Relational): 0.2`
 * **Communication Protocol:** JSON-RPC 2.0 is the standard protocol for stateless communication between individual agents and the MCP Servers.
 
 ### 5. Unique User-Facing Features & Implementations
@@ -4299,24 +4299,24 @@ Of course. Based on the provided document `dopemux_dev_orchestration_detailed_de
 
 * **Timeline:** A 16-week, two-phase initial implementation plan.
 * **Main Deliverables:**
-  * **Phase 1 (Weeks 1-8):**
-    * Letta Memory Core (L1 and L2 persistence layers).
-    * MCP Server MVP for agent state tracking.
-  * **Phase 2 (Weeks 9-16):**
-    * Claude-flow integration for multi-agent task execution.
-    * React Ink-based interactive CLI.
+* **Phase 1 (Weeks 1-8):**
+* Letta Memory Core (L1 and L2 persistence layers).
+* MCP Server MVP for agent state tracking.
+* **Phase 2 (Weeks 9-16):**
+* Claude-flow integration for multi-agent task execution.
+* React Ink-based interactive CLI.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk: LLM Hallucination in Code Generation:** Generated code contains logical errors or non-existent API calls.
-  * **Mitigation:** Implement a strict Retrieval-Augmented Generation (RAG) pipeline that requires multi-source verification. All generated code must be accompanied by citations pointing to the source documentation or existing codebase snippets used as context.
+* **Mitigation:** Implement a strict Retrieval-Augmented Generation (RAG) pipeline that requires multi-source verification. All generated code must be accompanied by citations pointing to the source documentation or existing codebase snippets used as context.
 * **Risk: Prompt Injection & Agent Hijacking:** Malicious input from a file or user could compromise an agent's instruction set.
-  * **Mitigation:** A multi-layered defense strategy:
-        1. Strict input sanitization and character escaping.
-        2. Strong output parsing to ensure responses conform to the expected format.
-        3. A "canary" LLM filter that reviews prompts for meta-instructions before they are sent to the primary execution agents.
+* **Mitigation:** A multi-layered defense strategy:
+1. Strict input sanitization and character escaping.
+1. Strong output parsing to ensure responses conform to the expected format.
+1. A "canary" LLM filter that reviews prompts for meta-instructions before they are sent to the primary execution agents.
 * **Risk: State Management Complexity in the 64-Agent System:** Difficulty in tracking and synchronizing state across numerous concurrent agents.
-  * **Mitigation:** Utilize an immutable state log implemented via PostgreSQL's Write-Ahead Log (WAL). All state changes are appended as events, providing a fully auditable and reproducible history of the system's state.
+* **Mitigation:** Utilize an immutable state log implemented via PostgreSQL's Write-Ahead Log (WAL). All state changes are appended as events, providing a fully auditable and reproducible history of the system's state.
 
 ---
 
@@ -4402,16 +4402,16 @@ Of course. Here is the structured analysis of the provided research document.
 ### 2. Methodology
 * **Method:** Performance benchmark and case study.
 * **Procedure:**
-    1. A single-line requirement ("Create a Cloudflare Worker that acts as a reverse proxy to `api.example.com`") was given to MetaGPT.
-    2. The MetaGPT agent pipeline was executed to generate the code.
-    3. The output code and project structure were manually inspected.
-    4. The generated worker was deployed to Cloudflare for functional testing.
-    5. Time and cost were recorded.
+1. A single-line requirement ("Create a Cloudflare Worker that acts as a reverse proxy to `api.example.com`") was given to MetaGPT.
+1. The MetaGPT agent pipeline was executed to generate the code.
+1. The output code and project structure were manually inspected.
+1. The generated worker was deployed to Cloudflare for functional testing.
+1. Time and cost were recorded.
 * **Sample Size or Test Environment:**
-  * **Framework:** MetaGPT (v0.5.0)
-  * **LLM Provider:** OpenAI GPT-4 API
-  * **Target Platform:** Cloudflare Workers
-  * **Hardware:** MacBook Pro M2, 16GB RAM
+* **Framework:** MetaGPT (v0.5.0)
+* **LLM Provider:** OpenAI GPT-4 API
+* **Target Platform:** Cloudflare Workers
+* **Hardware:** MacBook Pro M2, 16GB RAM
 
 ### 3. Key Findings & Data
 * **Code Generation:** MetaGPT successfully generated a complete project structure, including `package.json`, `wrangler.toml`, and a source code file (`src/index.js`).
@@ -4424,9 +4424,9 @@ Of course. Here is the structured analysis of the provided research document.
 ### 4. Conclusions & Implications
 * **Conclusions:** MetaGPT can understand a high-level requirement and generate a largely functional, multi-file project. However, it is not a fully automated solution, as the output (especially configuration files) requires manual review and correction before it is deployable.
 * **Implications:**
-  * **Scaffolding Tool:** It is a powerful tool for rapidly scaffolding new microservices, saving initial developer setup time.
-  * **Human-in-the-Loop Required:** The process must be treated as "AI-assisted development" rather than full automation, as human review is essential for production readiness.
-  * **Cost-Effective:** The low cost per generation makes it a highly cost-effective method for creating boilerplate code.
+* **Scaffolding Tool:** It is a powerful tool for rapidly scaffolding new microservices, saving initial developer setup time.
+* **Human-in-the-Loop Required:** The process must be treated as "AI-assisted development" rather than full automation, as human review is essential for production readiness.
+* **Cost-Effective:** The low cost per generation makes it a highly cost-effective method for creating boilerplate code.
 
 ### 5. Cited Technologies or Concepts
 * MetaGPT
@@ -4491,30 +4491,30 @@ Here is a structured analysis based on a plausible interpretation of a document 
 
 * **Primary Technical Goal:** To deliver an LLM-augmented software development lifecycle platform that integrates directly into the IDE. The system will provide context-aware code generation, refactoring, and debugging capabilities by leveraging a Retrieval-Augmented Generation (RAG) architecture.
 * **Success Metrics & Targets:**
-  * **Code Acceptance Rate:** >75% of single-function code suggestions are accepted by developers without modification.
-  * **Latency (Interactive):** p95 latency for in-line code completion < 400ms.
-  * **Latency (Complex Generation):** p90 latency for generating a full class file or test suite < 5 seconds.
-  * **Contextual Accuracy:** Achieve an 85% pass rate on a curated internal benchmark of repository-specific coding tasks (e.g., "add a new API endpoint using our internal framework").
-  * **System Throughput:** The core `CodeGen Service` must sustain 200 requests/second per node during peak developer hours.
+* **Code Acceptance Rate:** >75% of single-function code suggestions are accepted by developers without modification.
+* **Latency (Interactive):** p95 latency for in-line code completion < 400ms.
+* **Latency (Complex Generation):** p90 latency for generating a full class file or test suite < 5 seconds.
+* **Contextual Accuracy:** Achieve an 85% pass rate on a curated internal benchmark of repository-specific coding tasks (e.g., "add a new API endpoint using our internal framework").
+* **System Throughput:** The core `CodeGen Service` must sustain 200 requests/second per node during peak developer hours.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** An event-driven microservices architecture built around a central orchestration layer. The system uses a Retrieval-Augmented Generation (RAG) pattern to provide deep repository context to the foundational model. Communication between the IDE client and the backend is handled via WebSockets for real-time interaction.
 * **Primary Components:**
-  * **IDE Plugin (VS Code & JetBrains):** The client-side extension responsible for capturing user intent, displaying suggestions, and collecting telemetry. Built on a shared TypeScript core.
-  * **Gateway Service:** A single entry point for all client requests. Handles authentication, rate limiting, and request routing.
-  * **Context Engine:** A service that asynchronously indexes Git repositories, documentation, and other specified data sources. It preprocesses text, generates embeddings, and stores them.
-  * **CodeGen Service:** The core orchestration service. It receives requests from the Gateway, queries the `RAG Service` for relevant context, constructs a final prompt, and sends it to the `Anthropic API Gateway`.
-  * **RAG Service:** A dedicated service that exposes a hybrid search API over the vector database. It combines keyword (BM25) and semantic (vector) search results.
-  * **Anthropic API Gateway:** A specialized proxy that manages all outbound requests to the Claude API. It handles credential management, request/response logging, and implements a caching layer for frequently requested completions.
+* **IDE Plugin (VS Code & JetBrains):** The client-side extension responsible for capturing user intent, displaying suggestions, and collecting telemetry. Built on a shared TypeScript core.
+* **Gateway Service:** A single entry point for all client requests. Handles authentication, rate limiting, and request routing.
+* **Context Engine:** A service that asynchronously indexes Git repositories, documentation, and other specified data sources. It preprocesses text, generates embeddings, and stores them.
+* **CodeGen Service:** The core orchestration service. It receives requests from the Gateway, queries the `RAG Service` for relevant context, constructs a final prompt, and sends it to the `Anthropic API Gateway`.
+* **RAG Service:** A dedicated service that exposes a hybrid search API over the vector database. It combines keyword (BM25) and semantic (vector) search results.
+* **Anthropic API Gateway:** A specialized proxy that manages all outbound requests to the Claude API. It handles credential management, request/response logging, and implements a caching layer for frequently requested completions.
 
 ### 3. Technology Stack
 
 * **Backend Services:** Go (for performance-critical services like the Gateway and RAG Service), Python 3.11 with FastAPI (for the `CodeGen Service` and `Context Engine`).
 * **Database & Storage:**
-  * **Vector Database:** Pinecone for managing high-dimensional embeddings.
-  * **Relational Database:** PostgreSQL for user data, project metadata, and telemetry.
-  * **Caching:** Redis for API response caching and session management.
+* **Vector Database:** Pinecone for managing high-dimensional embeddings.
+* **Relational Database:** PostgreSQL for user data, project metadata, and telemetry.
+* **Caching:** Redis for API response caching and session management.
 * **Frontend (IDE Plugin):** TypeScript, React.
 * **Infrastructure:** Docker, Kubernetes for container orchestration, gRPC with Protobufs for inter-service communication, NATS for the event bus.
 * **LLM Orchestration:** LangChain and the Anthropic Python SDK.
@@ -4535,25 +4535,25 @@ Here is a structured analysis based on a plausible interpretation of a document 
 ### 6. Implementation Plan Summary
 
 * **Timeline:** A 3-phase, 16-week plan.
-  * **Phase 1 (Weeks 1-6):** Core infrastructure and MVP.
-  * **Phase 2 (Weeks 7-12):** Context Engine and RAG implementation.
-  * **Phase 3 (Weeks 13-16):** Performance tuning, extended IDE support, and internal beta.
+* **Phase 1 (Weeks 1-6):** Core infrastructure and MVP.
+* **Phase 2 (Weeks 7-12):** Context Engine and RAG implementation.
+* **Phase 3 (Weeks 13-16):** Performance tuning, extended IDE support, and internal beta.
 * **Initial Deliverables (Phase 1):**
-  * A functional VS Code plugin capable of basic, non-contextual code completion.
-  * Deployed `Gateway Service` and `CodeGen Service`.
-  * Integration with the Anthropic Claude API.
-  * Initial Grafana dashboard for monitoring latency and error rates.
+* A functional VS Code plugin capable of basic, non-contextual code completion.
+* Deployed `Gateway Service` and `CodeGen Service`.
+* Integration with the Anthropic Claude API.
+* Initial Grafana dashboard for monitoring latency and error rates.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk:** High operational cost due to excessive Claude API calls.
-  * **Mitigation:** Implement an aggressive, multi-layered caching strategy in Redis. Batch user requests where possible. Explore using smaller, fine-tuned open-source models for simpler tasks like single-line completions.
+* **Mitigation:** Implement an aggressive, multi-layered caching strategy in Redis. Batch user requests where possible. Explore using smaller, fine-tuned open-source models for simpler tasks like single-line completions.
 * **Risk:** Foundational model performance degradation or breaking API changes (Vendor Lock-in).
-  * **Mitigation:** Develop an internal "Model Provider Interface," an abstraction layer that decouples the `CodeGen Service` from the specific Anthropic SDK. This allows for swapping in other models (e.g., from OpenAI, Google, or self-hosted) with minimal code changes.
+* **Mitigation:** Develop an internal "Model Provider Interface," an abstraction layer that decouples the `CodeGen Service` from the specific Anthropic SDK. This allows for swapping in other models (e.g., from OpenAI, Google, or self-hosted) with minimal code changes.
 * **Risk:** Poor quality of retrieved context leading to irrelevant code suggestions.
-  * **Mitigation:** Implement a continuous feedback loop where developers can rate the quality of suggestions. Use this data to fine-tune the embedding models and the RRF weighting in the `RAG Service`.
+* **Mitigation:** Implement a continuous feedback loop where developers can rate the quality of suggestions. Use this data to fine-tune the embedding models and the RRF weighting in the `RAG Service`.
 * **Risk:** Intellectual property leakage; sending sensitive source code to a third-party API.
-  * **Mitigation:** Implement a PII/secrets detection scanner in the `Context Engine` and on the client-side to strip sensitive data before it is sent to the model. Negotiate a zero-data-retention policy with the API provider (Anthropic).
+* **Mitigation:** Implement a PII/secrets detection scanner in the `Context Engine` and on the client-side to strip sensitive data before it is sent to the model. Negotiate a zero-data-retention policy with the API provider (Anthropic).
 
 ---
 
@@ -4565,23 +4565,23 @@ Based on the analysis of the provided technical implementation document, here is
 
 * **Primary Technical Goal:** Deliver a unified agentic platform, exposed via a CLI, for executing complex, multi-step tasks in development and personal workflows. The system is designed for high-context awareness and stateful, resumable operations.
 * **Success Metrics & Targets:**
-  * **Accuracy:** Achieve >45% `pass@1` on the SWE-Bench-lite evaluation benchmark.
-  * **Latency:** P99 latency for interactive agent responses must be <150ms (excluding LLM inference time).
-  * **Throughput:** Support >50 concurrent agent sessions per standard `c6a.2xlarge` compute node.
-  * **Cost Efficiency:** Average token cost per complex task (defined as a task requiring >5 tool uses) must be kept below $0.15.
-  * **Reliability:** Achieve 99.9% uptime for the core orchestration services.
+* **Accuracy:** Achieve >45% `pass@1` on the SWE-Bench-lite evaluation benchmark.
+* **Latency:** P99 latency for interactive agent responses must be <150ms (excluding LLM inference time).
+* **Throughput:** Support >50 concurrent agent sessions per standard `c6a.2xlarge` compute node.
+* **Cost Efficiency:** Average token cost per complex task (defined as a task requiring >5 tool uses) must be kept below $0.15.
+* **Reliability:** Achieve 99.9% uptime for the core orchestration services.
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A hierarchical, multi-agent system featuring a central orchestration layer and specialized, tool-augmented agents. The architecture is designed around an event-sourcing pattern for state management, ensuring task resumability and auditability.
 * **Primary Components:**
-  * **Orchestrator Core:** A central Go service responsible for task decomposition, agent selection, and managing the overall execution plan.
-  * **Agent Runtime:** A sandboxed environment (Docker-based) where individual agent instances are executed. Manages tool invocation and resource constraints for each agent.
-  * **Tooling Service:** A gRPC service that provides a secure, versioned, and discoverable registry of tools (e.g., shell access, file I/O, API clients) available to the agents.
-  * **Memory System:** Composed of two distinct parts:
-    * **Long-Term Memory (LTM) Store:** A PostgreSQL/pgvector database for persistent storage of conversation history, user preferences, and semantic memories.
-    * **Short-Term Memory (STM) Cache:** A Redis instance used for caching the immediate context window, session state, and recent tool outputs for low-latency access.
-  * **CLI Client (`acli`):** The primary user interface built with React Ink, communicating with the backend services via gRPC.
+* **Orchestrator Core:** A central Go service responsible for task decomposition, agent selection, and managing the overall execution plan.
+* **Agent Runtime:** A sandboxed environment (Docker-based) where individual agent instances are executed. Manages tool invocation and resource constraints for each agent.
+* **Tooling Service:** A gRPC service that provides a secure, versioned, and discoverable registry of tools (e.g., shell access, file I/O, API clients) available to the agents.
+* **Memory System:** Composed of two distinct parts:
+* **Long-Term Memory (LTM) Store:** A PostgreSQL/pgvector database for persistent storage of conversation history, user preferences, and semantic memories.
+* **Short-Term Memory (STM) Cache:** A Redis instance used for caching the immediate context window, session state, and recent tool outputs for low-latency access.
+* **CLI Client (`acli`):** The primary user interface built with React Ink, communicating with the backend services via gRPC.
 
 ### 3. Technology Stack
 
@@ -4589,9 +4589,9 @@ Based on the analysis of the provided technical implementation document, here is
 * **CLI Framework:** Go with Cobra library
 * **CLI UI Rendering:** TypeScript with React Ink
 * **Databases:**
-  * **Primary/Relational:** PostgreSQL (v16+) with the `pgvector` extension.
-  * **Caching/STM:** Redis
-  * **Vector Search (Alternative/Dedicated):** Qdrant is specified as an alternative for LTM if `pgvector` performance becomes a bottleneck.
+* **Primary/Relational:** PostgreSQL (v16+) with the `pgvector` extension.
+* **Caching/STM:** Redis
+* **Vector Search (Alternative/Dedicated):** Qdrant is specified as an alternative for LTM if `pgvector` performance becomes a bottleneck.
 * **Agent Logic/LLM Orchestration:** DSPy (Declarative Self-improving Language Programs) framework.
 * **Containerization & Deployment:** Docker, Kubernetes (K8s)
 * **Inter-service Communication:** gRPC with Protobuf
@@ -4613,19 +4613,19 @@ Based on the analysis of the provided technical implementation document, here is
 
 * **Timeline:** A 16-week plan is outlined for the initial MVP.
 * **Main Deliverables:**
-  * **Phase 1 (Weeks 1-4): Core Infrastructure & Scaffolding.** Deliverable: A functioning K8s cluster, CI/CD pipeline, and initial Go service skeletons with gRPC interfaces. PostgreSQL and Redis instances provisioned.
-  * **Phase 2 (Weeks 5-8): Agent Runtime & Basic Memory.** Deliverable: A single-agent execution runtime capable of running a basic tool. Redis-based STM and `pgvector` LTM are integrated for basic memory recall.
-  * **Phase 3 (Weeks 9-12): Orchestrator & CLI Client.** Deliverable: A functioning Orchestrator Core that can manage a two-step task. A basic React Ink CLI that can initiate tasks and stream outputs.
-  * **Phase 4 (Weeks 13-16): Tooling & Evaluation.** Deliverable: Integration of core tools (shell, file I/O). Begin automated evaluation against the SWE-Bench-lite benchmark.
+* **Phase 1 (Weeks 1-4): Core Infrastructure & Scaffolding.** Deliverable: A functioning K8s cluster, CI/CD pipeline, and initial Go service skeletons with gRPC interfaces. PostgreSQL and Redis instances provisioned.
+* **Phase 2 (Weeks 5-8): Agent Runtime & Basic Memory.** Deliverable: A single-agent execution runtime capable of running a basic tool. Redis-based STM and `pgvector` LTM are integrated for basic memory recall.
+* **Phase 3 (Weeks 9-12): Orchestrator & CLI Client.** Deliverable: A functioning Orchestrator Core that can manage a two-step task. A basic React Ink CLI that can initiate tasks and stream outputs.
+* **Phase 4 (Weeks 13-16): Tooling & Evaluation.** Deliverable: Integration of core tools (shell, file I/O). Begin automated evaluation against the SWE-Bench-lite benchmark.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk 1: LLM Performance & Cost:** Unpredictable latency, rate limiting, and high token costs from third-party LLM APIs.
-  * **Mitigation:** Implement a multi-provider strategy (OpenAI, Anthropic, Google) with an abstraction layer for automatic fallback and load balancing. Aggressively cache repeated prompts and completions in Redis. Plan to fine-tune a smaller, open-source model (e.g., Llama 3 8B) for specialized, high-frequency tasks like intent classification.
+* **Mitigation:** Implement a multi-provider strategy (OpenAI, Anthropic, Google) with an abstraction layer for automatic fallback and load balancing. Aggressively cache repeated prompts and completions in Redis. Plan to fine-tune a smaller, open-source model (e.g., Llama 3 8B) for specialized, high-frequency tasks like intent classification.
 * **Risk 2: Tooling Safety & Security:** Agent executing destructive or unintended commands (`rm -rf`, `git push --force`) in the user's environment.
-  * **Mitigation:** All tool execution, especially shell commands, must occur within a sandboxed Docker container with restricted permissions. Implement a "confirmation gate" where the agent must request explicit user approval for any high-risk operations identified via a regex-based filter.
+* **Mitigation:** All tool execution, especially shell commands, must occur within a sandboxed Docker container with restricted permissions. Implement a "confirmation gate" where the agent must request explicit user approval for any high-risk operations identified via a regex-based filter.
 * **Risk 3: State Management Complexity:** Maintaining coherent state across long-running, multi-step agentic tasks is prone to race conditions and data corruption.
-  * **Mitigation:** Strictly adhere to an event-sourcing pattern for all state changes. Every action taken by an agent or the orchestrator is recorded as an immutable event in PostgreSQL. The current state is a materialized view of this event log, which ensures consistency, auditability, and simplifies debugging.
+* **Mitigation:** Strictly adhere to an event-sourcing pattern for all state changes. Every action taken by an agent or the orchestrator is recorded as an immutable event in PostgreSQL. The current state is a materialized view of this event log, which ensures consistency, auditability, and simplifies debugging.
 
 ---
 
@@ -4635,41 +4635,41 @@ Based on the nature of this file, here is the structured extraction:
 
 ### 1. Core Business Goals & User Problems
 * **What is the primary business objective this document addresses?**
-  * Not mentioned.
+* Not mentioned.
 * **What specific user pain points or needs are mentioned?**
-  * Not mentioned.
+* Not mentioned.
 
 ### 2. Key Actors & Personas
 * **Who are the users or systems interacting with this component? (e.g., End-User, Administrator, Downstream Service)**
-  * Not mentioned.
+* Not mentioned.
 
 ### 3. Functional Requirements & Features
 * **List the explicit features, user stories, or functional requirements described.**
-  * Not mentioned.
+* Not mentioned.
 
 ### 4. Non-Functional Requirements (NFRs)
 * **Performance (e.g., latency, throughput).**
-  * Not mentioned.
+* Not mentioned.
 * **Scalability (e.g., number of users, data volume).**
-  * Not mentioned.
+* Not mentioned.
 * **Security (e.g., authentication, data encryption, compliance).**
-  * Not mentioned.
+* Not mentioned.
 * **Reliability (e.g., uptime, fault tolerance).**
-  * Not mentioned.
+* Not mentioned.
 
 ### 5. Technical Constraints & Decisions
 * **Are any specific technologies, languages, or platforms mandated?**
-  * Not mentioned.
+* Not mentioned.
 * **Are there any existing systems this must integrate with?**
-  * Not mentioned.
+* Not mentioned.
 * **Are there any architectural decisions already made?**
-  * Not mentioned.
+* Not mentioned.
 
 ### 6. Data & Integration Points
 * **What are the key data entities or models described?**
-  * Not mentioned.
+* Not mentioned.
 * **What are the inputs and outputs? Does it mention specific APIs?**
-  * Not mentioned.
+* Not mentioned.
 
 ---
 
@@ -4797,11 +4797,11 @@ Of course. Here is the engineering and architectural analysis of the provided te
 
 * **Overall Architecture:** A client-side, single-process application architecture. A Node.js application hosts the React Ink UI, which functions as a control plane for a locally running `tmux` server process. Communication is unidirectional from the application to the `tmux` server via shell commands. The application maintains the desired session state, and a reconciliation process translates state changes into `tmux` CLI commands.
 * **Primary Components:**
-  * **Dopemux Core:** The primary React Ink application responsible for rendering the UI and managing application logic.
-  * **`tmux` Server:** The underlying, unmodified `tmux` process that manages windows, panes, and shell sessions. It serves as the "backend" for the UI.
-  * **State Manager (`Zustand`):** A centralized state store responsible for holding the entire application state, including the desired `tmux` layout (windows, panes, splits), user configurations, and UI component states.
-  * **Command Executor:** A module responsible for translating actions from the UI into formatted `tmux` CLI commands and executing them via a child process (`child_process.exec`).
-  * **Component Library:** A set of custom, reusable UI components built with React Ink (e.g., Pane, Window, Status Bar, Command Palette).
+* **Dopemux Core:** The primary React Ink application responsible for rendering the UI and managing application logic.
+* **`tmux` Server:** The underlying, unmodified `tmux` process that manages windows, panes, and shell sessions. It serves as the "backend" for the UI.
+* **State Manager (`Zustand`):** A centralized state store responsible for holding the entire application state, including the desired `tmux` layout (windows, panes, splits), user configurations, and UI component states.
+* **Command Executor:** A module responsible for translating actions from the UI into formatted `tmux` CLI commands and executing them via a child process (`child_process.exec`).
+* **Component Library:** A set of custom, reusable UI components built with React Ink (e.g., Pane, Window, Status Bar, Command Palette).
 
 ### 3. Technology Stack
 
@@ -4820,20 +4820,20 @@ Of course. Here is the engineering and architectural analysis of the provided te
 ### 5. Unique User-Facing Features & Implementations
 
 * **Progressive Information Disclosure:**
-  * **Implementation:** UI logic that dynamically alters the `tmux` layout to show or hide panes. This is achieved by issuing `tmux` commands like `split-window`, `kill-pane`, `break-pane`, and `join-pane` in response to user events, effectively toggling pane visibility without destroying the underlying shell process.
+* **Implementation:** UI logic that dynamically alters the `tmux` layout to show or hide panes. This is achieved by issuing `tmux` commands like `split-window`, `kill-pane`, `break-pane`, and `join-pane` in response to user events, effectively toggling pane visibility without destroying the underlying shell process.
 * **Contextual State Preservation ("Workspaces"):**
-  * **Implementation:** A feature to serialize the current `tmux` session layout (including window names, pane splits, and potentially the working directory of each pane) into a structured file (e.g., JSON). A corresponding "loader" function parses this file to generate and execute a sequence of `tmux` commands to deterministically reconstruct the saved layout.
+* **Implementation:** A feature to serialize the current `tmux` session layout (including window names, pane splits, and potentially the working directory of each pane) into a structured file (e.g., JSON). A corresponding "loader" function parses this file to generate and execute a sequence of `tmux` commands to deterministically reconstruct the saved layout.
 * **Thematic Grouping:**
-  * **Implementation:** A UI-layer abstraction. The application state includes metadata that associates `tmux` windows with user-defined "themes" or "tasks." This grouping exists only within the Dopemux application's state model and is used to drive UI rendering and navigation shortcuts.
+* **Implementation:** A UI-layer abstraction. The application state includes metadata that associates `tmux` windows with user-defined "themes" or "tasks." This grouping exists only within the Dopemux application's state model and is used to drive UI rendering and navigation shortcuts.
 * **RSD-aware Feedback:**
-  * **Implementation:** Error and status notifications are rendered as non-blocking, transient UI elements within the Ink layout (e.g., a temporary message in the status bar or a brief color change) rather than using blocking pop-ups, to minimize context-switching.
+* **Implementation:** Error and status notifications are rendered as non-blocking, transient UI elements within the Ink layout (e.g., a temporary message in the status bar or a brief color change) rather than using blocking pop-ups, to minimize context-switching.
 
 ### 6. Implementation Plan Summary
 
 * **Timeline:** A phased rollout plan is specified. No absolute dates or durations are mentioned.
 * **Initial Deliverables:**
-  * **Phase 1 (MVP):** A core application that can attach to an existing `tmux` session and render its layout of windows and panes. Includes a basic command palette for navigation (`next-window`, `previous-window`).
-  * **Phase 2 (Core Features):** Implementation of the "Workspaces" feature (save/load layout) and the "Thematic Grouping" state management logic.
+* **Phase 1 (MVP):** A core application that can attach to an existing `tmux` session and render its layout of windows and panes. Includes a basic command palette for navigation (`next-window`, `previous-window`).
+* **Phase 2 (Core Features):** Implementation of the "Workspaces" feature (save/load layout) and the "Thematic Grouping" state management logic.
 
 ### 7. Critical Risks & Mitigation Strategies
 
@@ -4849,54 +4849,54 @@ Of course. Based on the provided document `Dopemux Dev Orchestration — Detaile
 
 * **Primary Technical Goal:** Deliver a local-first, multi-agent development orchestration platform designed for complex software engineering tasks, with a hybrid cloud-optional architecture for state synchronization and advanced model access.
 * **Key Performance Indicators:**
-  * **SWE-Bench Lite:** 84.8% (pass@1)
-  * **MT-Bench (Coding):** 9.1/10
-  * **End-to-End Task Latency (P99):** <100ms for local operations
-  * **Agent Throughput (MCP Server):** 626 QPS on benchmark hardware
+* **SWE-Bench Lite:** 84.8% (pass@1)
+* **MT-Bench (Coding):** 9.1/10
+* **End-to-End Task Latency (P99):** <100ms for local operations
+* **Agent Throughput (MCP Server):** 626 QPS on benchmark hardware
 
 ### 2. Core Architecture & System Components
 
 * **Overall Architecture:** A 64-agent system operating in a local-first, cloud-optional hybrid model. The architecture features a hierarchical memory system to manage context across different temporal and semantic scopes. Communication follows a structured, hierarchical agent protocol.
 * **Primary Components:**
-  * **Dopemux CLI:** The primary user interface, built with React Ink, communicating with the local MCP Server via JSON-RPC.
-  * **MCP (Master Control Program) Servers:** Local Go (Golang) daemons responsible for agent lifecycle management, task orchestration, and state management.
-  * **Letta Memory:** The hierarchical memory system. It integrates multiple databases for different memory types (semantic, episodic, procedural).
-  * **Claude-flow:** The high-level orchestration engine for agent communication and task decomposition, implemented using the DSPy framework.
-  * **SessionStore:** A Redis-backed key-value store for managing active session state and short-term episodic memory.
-  * **CCFlare Proxy:** A Cloudflare-based proxy service for secure communication, rate limiting, and intelligent caching between the local MCP and cloud-based services.
+* **Dopemux CLI:** The primary user interface, built with React Ink, communicating with the local MCP Server via JSON-RPC.
+* **MCP (Master Control Program) Servers:** Local Go (Golang) daemons responsible for agent lifecycle management, task orchestration, and state management.
+* **Letta Memory:** The hierarchical memory system. It integrates multiple databases for different memory types (semantic, episodic, procedural).
+* **Claude-flow:** The high-level orchestration engine for agent communication and task decomposition, implemented using the DSPy framework.
+* **SessionStore:** A Redis-backed key-value store for managing active session state and short-term episodic memory.
+* **CCFlare Proxy:** A Cloudflare-based proxy service for secure communication, rate limiting, and intelligent caching between the local MCP and cloud-based services.
 
 ### 3. Technology Stack
 
 * **Databases:**
-  * PostgreSQL with `pgvector` (long-term semantic memory)
-  * Redis (session state, message queueing, short-term memory cache)
-  * Qdrant (dedicated vector search for high-dimensional embeddings)
-  * Neo4j (graph-based memory for code dependency analysis)
+* PostgreSQL with `pgvector` (long-term semantic memory)
+* Redis (session state, message queueing, short-term memory cache)
+* Qdrant (dedicated vector search for high-dimensional embeddings)
+* Neo4j (graph-based memory for code dependency analysis)
 * **Backend & Orchestration:**
-  * Go (Golang) for MCP Servers
-  * Python for AI/ML services
-  * DSPy
-  * LangChain
-  * LlamaIndex
+* Go (Golang) for MCP Servers
+* Python for AI/ML services
+* DSPy
+* LangChain
+* LlamaIndex
 * **Frontend (CLI):**
-  * React Ink
-  * TypeScript
+* React Ink
+* TypeScript
 * **Infrastructure & Messaging:**
-  * Docker
-  * Kubernetes (K3s for local orchestration)
-  * NATS (for CRDT state synchronization and inter-agent messaging)
+* Docker
+* Kubernetes (K3s for local orchestration)
+* NATS (for CRDT state synchronization and inter-agent messaging)
 
 ### 4. Key Algorithms & Protocols
 
 * **Hybrid Search Algorithm:** A weighted retrieval algorithm used by Letta Memory, combining results from different search modalities:
-  * 70% vector similarity search
-  * 20% full-text keyword search (BM25)
-  * 10% graph-based pathfinding (Neo4j)
+* 70% vector similarity search
+* 20% full-text keyword search (BM25)
+* 10% graph-based pathfinding (Neo4j)
 * **Context Compression:** Utilizes `LLMLingua` to compress context provided to LLMs, reducing token count and latency.
 * **Hierarchical Agent Communication Protocol:** A custom protocol defining three layers of agent interaction:
-    1. **Strategist:** High-level planning agent (e.g., Claude 3 Opus).
-    2. **Specialist:** Domain-specific agents that execute parts of the plan (e.g., a "refactoring" agent).
-    3. **Tool-User:** Low-level agents that interface directly with tools like `git`, `docker`, or file system APIs.
+1. **Strategist:** High-level planning agent (e.g., Claude 3 Opus).
+1. **Specialist:** Domain-specific agents that execute parts of the plan (e.g., a "refactoring" agent).
+1. **Tool-User:** Low-level agents that interface directly with tools like `git`, `docker`, or file system APIs.
 * **State Synchronization:** JSON-RPC 2.0 for CLI-to-server communication. CRDTs (Conflict-free Replicated Data Types) are planned for synchronizing session state over NATS.
 
 ### 5. Unique User-Facing Features & Implementations
@@ -4909,16 +4909,16 @@ Of course. Based on the provided document `Dopemux Dev Orchestration — Detaile
 
 * **Timeline:** 16-week, 4-sprint plan.
 * **Phase 1 (Weeks 1-4) Deliverables:**
-  * MVP of the `Dopemux CLI`.
-  * Core Letta Memory implementation using PostgreSQL (`pgvector`) and Redis.
-  * A functional single-agent, single-session workflow.
-  * Establishment of the benchmark harness for automated SWE-Bench evaluation.
+* MVP of the `Dopemux CLI`.
+* Core Letta Memory implementation using PostgreSQL (`pgvector`) and Redis.
+* A functional single-agent, single-session workflow.
+* Establishment of the benchmark harness for automated SWE-Bench evaluation.
 
 ### 7. Critical Risks & Mitigation Strategies
 
 * **Risk:** LLM Hallucination & Tool-Use Failure.
-  * **Mitigation:** Implement a 3-tier validation system: 1) Static analysis of generated code/commands, 2) An LLM-as-a-judge agent to validate logic, and 3) A human-in-the-loop confirmation gate for all destructive file system or git operations.
+* **Mitigation:** Implement a 3-tier validation system: 1) Static analysis of generated code/commands, 2) An LLM-as-a-judge agent to validate logic, and 3) A human-in-the-loop confirmation gate for all destructive file system or git operations.
 * **Risk:** State Management Complexity in the hybrid local/cloud architecture.
-  * **Mitigation:** Utilize CRDTs for session state to guarantee eventual consistency between the local MCP and any cloud replicas. Initial implementation will leverage the NATS messaging system.
+* **Mitigation:** Utilize CRDTs for session state to guarantee eventual consistency between the local MCP and any cloud replicas. Initial implementation will leverage the NATS messaging system.
 * **Risk:** High Operational Cost from excessive calls to proprietary LLMs.
-  * **Mitigation:** Implement aggressive, multi-layer caching at the CCFlare Proxy. Offload low-level, repetitive tasks (e.g., syntax correction, simple code generation) to locally-hosted, quantized models (e.g., Llama 3 8B), reserving expensive models for high-level strategic planning.
+* **Mitigation:** Implement aggressive, multi-layer caching at the CCFlare Proxy. Offload low-level, repetitive tasks (e.g., syntax correction, simple code generation) to locally-hosted, quantized models (e.g., Llama 3 8B), reserving expensive models for high-level strategic planning.

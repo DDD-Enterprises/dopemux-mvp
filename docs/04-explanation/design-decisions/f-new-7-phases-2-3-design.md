@@ -163,20 +163,20 @@ Delivery
 
 **Week 4**:
 1. `services/insight-generator/correlator.py` (~400 lines)
-   - Cross-agent pattern correlation
-   - Insight generation rules
-   - ADHD-optimized ranking
+- Cross-agent pattern correlation
+- Insight generation rules
+- ADHD-optimized ranking
 
-2. `services/insight-generator/insight_types.py` (~300 lines)
-   - 4 insight type implementations
-   - Template system for new types
-   - Confidence scoring
+1. `services/insight-generator/insight_types.py` (~300 lines)
+- 4 insight type implementations
+- Template system for new types
+- Confidence scoring
 
 **Week 5**:
-3. Integration with F-NEW-6 dashboard (~200 lines)
-4. Auto-logging to ConPort (~100 lines)
-5. Testing suite (~400 lines)
-6. User preferences system (~200 lines)
+1. Integration with F-NEW-6 dashboard (~200 lines)
+1. Auto-logging to ConPort (~100 lines)
+1. Testing suite (~400 lines)
+1. User preferences system (~200 lines)
 
 ### Success Criteria
 
@@ -234,17 +234,17 @@ Delivery
 
 **Phase 2 Deployment**:
 1. Execute Migration 003 (Phase 1 complete)
-2. Deploy unified query API
-3. Test with 2-3 users × 3-5 workspaces each
-4. Performance validation
-5. Ship to production
+1. Deploy unified query API
+1. Test with 2-3 users × 3-5 workspaces each
+1. Performance validation
+1. Ship to production
 
 **Phase 3 Deployment**:
 1. Deploy insight generator (background service)
-2. Enable 1 insight type at a time
-3. Collect user feedback
-4. Iterate and add more types
-5. Full rollout
+1. Enable 1 insight type at a time
+1. Collect user feedback
+1. Iterate and add more types
+1. Full rollout
 
 ---
 

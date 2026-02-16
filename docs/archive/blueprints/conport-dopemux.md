@@ -150,9 +150,9 @@ conport.decisions_add({
 
 ### Hello-Flow Integration
 1. **Pick Work**: `conport.upcoming_next()` provides next task
-2. **Plan & Execute**: Task Orchestrator updates progress in ConPort
-3. **Validate**: Playwright attaches evidence to ConPort artifacts
-4. **Close Loop**: Final status and decisions logged in ConPort
+1. **Plan & Execute**: Task Orchestrator updates progress in ConPort
+1. **Validate**: Playwright attaches evidence to ConPort artifacts
+1. **Close Loop**: Final status and decisions logged in ConPort
 
 ### Decision Documentation Protocol
 **MANDATORY**: Every non-trivial choice logged with complete context:
@@ -325,19 +325,19 @@ CREATE INDEX CONCURRENTLY idx_work_items_status_priority ON work_items(workspace
 
 ### Service Outage Handling
 1. **Detection**: Automatic health check failures
-2. **Spooling**: Queue operations to local NDJSON files
-3. **Background Recovery**: Monitor for service restoration
-4. **Replay**: Automatically replay queued operations
+1. **Spooling**: Queue operations to local NDJSON files
+1. **Background Recovery**: Monitor for service restoration
+1. **Replay**: Automatically replay queued operations
 
 ### Data Consistency
 1. **Transaction Rollback**: Failed operations don't corrupt state
-2. **Idempotent Operations**: Safe to replay operations multiple times
-3. **Conflict Resolution**: Last-write-wins with timestamp ordering
+1. **Idempotent Operations**: Safe to replay operations multiple times
+1. **Conflict Resolution**: Last-write-wins with timestamp ordering
 
 ### Manual Recovery
 1. **Export Data**: Markdown export for backup
-2. **Service Restart**: Clean startup with data integrity checks
-3. **Import Verification**: Validate imported data against backups
+1. **Service Restart**: Clean startup with data integrity checks
+1. **Import Verification**: Validate imported data against backups
 
 ## Future Extensions
 
@@ -355,8 +355,8 @@ CREATE INDEX CONCURRENTLY idx_work_items_status_priority ON work_items(workspace
 
 ### Common Issues
 1. **Connection Failures**: Check PostgreSQL connectivity and credentials
-2. **Search Performance**: Rebuild vector indexes for improved query speed
-3. **Storage Growth**: Archive old artifacts to manage disk usage
+1. **Search Performance**: Rebuild vector indexes for improved query speed
+1. **Storage Growth**: Archive old artifacts to manage disk usage
 
 ### Debug Tools
 - **Schema Inspection**: Check table structures and index health

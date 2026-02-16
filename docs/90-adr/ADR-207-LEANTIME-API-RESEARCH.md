@@ -161,10 +161,10 @@ async def _start_background_workers(self) -> None:
 
 **5 Background Workers**:
 1. **Leantime Poller**: Fetch Leantime updates every 30s
-2. **Sync Processor**: Process bi-directional sync events
-3. **ADHD Monitor**: Enforce breaks, energy matching
-4. **Automation Engine**: Implicit workflow triggers
-5. **Progress Correlator**: Cross-system progress tracking
+1. **Sync Processor**: Process bi-directional sync events
+1. **ADHD Monitor**: Enforce breaks, energy matching
+1. **Automation Engine**: Implicit workflow triggers
+1. **Progress Correlator**: Cross-system progress tracking
 
 ---
 
@@ -289,8 +289,8 @@ ConPort task created
 
 **Tasks**:
 1. Create ConPort event subscriber
-2. Map ConPort `progress_entry` events to OrchestrationTask
-3. Validate event schema
+1. Map ConPort `progress_entry` events to OrchestrationTask
+1. Validate event schema
 
 **Code Changes**:
 ```python
@@ -312,9 +312,9 @@ async def _subscribe_to_conport_events(self):
 
 **Tasks**:
 1. Create `LeanTimeSync Adapter` class
-2. Map ConPort schema → Leantime schema
-3. Implement create/update/delete operations
-4. Handle multi-project workspace mapping
+1. Map ConPort schema → Leantime schema
+1. Implement create/update/delete operations
+1. Handle multi-project workspace mapping
 
 **Code Changes**:
 ```python
@@ -347,8 +347,8 @@ class LeantimeSyncAdapter:
 
 **Tasks**:
 1. Modify poller to publish to DopeconBridge (not direct storage)
-2. Create ConPort update handler
-3. Validate authority boundaries (Leantime → ConPort only, not direct)
+1. Create ConPort update handler
+1. Validate authority boundaries (Leantime → ConPort only, not direct)
 
 **Code Changes**:
 ```python
@@ -379,8 +379,8 @@ async def _process_leantime_task_update(self, leantime_task: Dict) -> None:
 
 **Tasks**:
 1. Create workspace → Leantime project mapping
-2. Configure project-level dashboards
-3. Test cross-project workflows
+1. Configure project-level dashboards
+1. Test cross-project workflows
 
 **Configuration**:
 ```python
@@ -400,10 +400,10 @@ workspace_mapping = {
 
 **Test Scenarios**:
 1. Create task in ConPort → appears in Leantime
-2. Update status in Leantime → updates ConPort
-3. Multi-project isolation (project 1 tasks don't leak to project 2)
-4. Sync latency < 60 seconds
-5. Error handling (Leantime down, network errors)
+1. Update status in Leantime → updates ConPort
+1. Multi-project isolation (project 1 tasks don't leak to project 2)
+1. Sync latency < 60 seconds
+1. Error handling (Leantime down, network errors)
 
 ---
 
@@ -491,9 +491,9 @@ LEANTIME_TIMEOUT=30  # seconds
 
 **Required**:
 1. Leantime instance (self-hosted or cloud)
-2. API access enabled
-3. Bearer token generated
-4. Projects created for each workspace
+1. API access enabled
+1. Bearer token generated
+1. Projects created for each workspace
 
 **Recommended**:
 - Enable webhooks (if available) to reduce polling
@@ -554,10 +554,10 @@ LEANTIME_TIMEOUT=30  # seconds
 
 ### End-to-End Tests
 1. Create task in ConPort
-2. Verify appears in Leantime (< 60s)
-3. Update status in Leantime
-4. Verify updates ConPort (< 60s)
-5. Verify Task-Orchestrator re-analyzes dependencies
+1. Verify appears in Leantime (< 60s)
+1. Update status in Leantime
+1. Verify updates ConPort (< 60s)
+1. Verify Task-Orchestrator re-analyzes dependencies
 
 ### Load Tests
 - 100 tasks created in ConPort simultaneously
@@ -593,10 +593,10 @@ LEANTIME_TIMEOUT=30  # seconds
 ## Next Steps
 
 1. ✅ **Research Complete** - Existing implementation documented
-2. **Verify Leantime API** - Confirm JSON-RPC methods match implementation
-3. **Update for Arch 3.0** - Implement 5 phases above (24 hours total)
-4. **Test End-to-End** - Validate full sync flow
-5. **Deploy Phase 2** - Leantime visualization live
+1. **Verify Leantime API** - Confirm JSON-RPC methods match implementation
+1. **Update for Arch 3.0** - Implement 5 phases above (24 hours total)
+1. **Test End-to-End** - Validate full sync flow
+1. **Deploy Phase 2** - Leantime visualization live
 
 ---
 

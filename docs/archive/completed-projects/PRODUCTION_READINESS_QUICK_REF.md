@@ -112,10 +112,10 @@ prelude: Production_Readiness_Quick_Ref (explanation) for dopemux documentation 
 
 ### If Behind Schedule
 1. **Day 1**: Skip LSP optimization, use wrapper as-is
-2. **Day 2**: Simplify ConPort to single graph + workspace field
-3. **Day 3**: Skip adhd_engine & intelligence (low priority)
-4. **Day 4**: Minimal docs, focus on critical paths
-5. **Day 5**: Manual deployment acceptable
+1. **Day 2**: Simplify ConPort to single graph + workspace field
+1. **Day 3**: Skip adhd_engine & intelligence (low priority)
+1. **Day 4**: Minimal docs, focus on critical paths
+1. **Day 5**: Manual deployment acceptable
 
 ### If Blockers Hit
 - **serena LSP**: Use wrapper without integration
@@ -130,8 +130,8 @@ prelude: Production_Readiness_Quick_Ref (explanation) for dopemux documentation 
 
 ### Daily Standup Questions
 1. What did you complete yesterday?
-2. What are you working on today?
-3. Any blockers?
+1. What are you working on today?
+1. Any blockers?
 
 ### Weekly Metrics
 - Services completed: X/10

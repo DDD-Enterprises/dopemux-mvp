@@ -31,27 +31,27 @@ Dopemux UX constraints that preserve focus, reduce decision fatigue, and checkpo
 
 **Evidence**
 - FACT ANCHORS:
-  - `src/dopemux/ux/renderer.py` (to be verified)
+- `src/dopemux/ux/renderer.py` (to be verified)
 
 **Enforcement**
 - Mechanism:
-  - Runtime: Output buffer truncation just before TTY flush.
+- Runtime: Output buffer truncation just before TTY flush.
 
 **Test**
 - Local command(s):
-  - `dmux plan --verbose=false`
+- `dmux plan --verbose=false`
 - Expected signals:
-  - Output is short. "...and 10 more items".
+- Output is short. "...and 10 more items".
 - Failure signature:
-  - Scrollback wall of text.
+- Scrollback wall of text.
 - Exit behavior:
-  - N/A.
+- N/A.
 
 **Failure modes**
 - If violated:
-  - Impact: cognitive overload, detail blindness.
-  - Severity: S2 medium.
-  - Containment: Clear screen and summarize.
+- Impact: cognitive overload, detail blindness.
+- Severity: S2 medium.
+- Containment: Clear screen and summarize.
 
 ### INV-ADHD-002: No Choice Paralysis (1 Rec + 2 Alts)
 **Statement**
@@ -66,27 +66,27 @@ Dopemux UX constraints that preserve focus, reduce decision fatigue, and checkpo
 
 **Evidence**
 - FACT ANCHORS:
-  - `src/dopemux/supervisor/policy.py` (TBD implied)
+- `src/dopemux/supervisor/policy.py` (TBD implied)
 
 **Enforcement**
 - Mechanism:
-  - Runtime: Policy engine filter forces ranking.
+- Runtime: Policy engine filter forces ranking.
 
 **Test**
 - Local command(s):
-  - Trigger ambiguous state (e.g., git conflict).
+- Trigger ambiguous state (e.g., git conflict).
 - Expected signals:
-  - "Recommended: [A]. Alternatives: [B], [C]."
+- "Recommended: [A]. Alternatives: [B], [C]."
 - Failure signature:
-  - "Please choose from A, B, C, D, E..."
+- "Please choose from A, B, C, D, E..."
 - Exit behavior:
-  - Wait for user.
+- Wait for user.
 
 **Failure modes**
 - If violated:
-  - Impact: stall, decision fatigue.
-  - Severity: S2 medium.
-  - Containment: Supervisor auto-picks "Safe" option if idle > 5m.
+- Impact: stall, decision fatigue.
+- Severity: S2 medium.
+- Containment: Supervisor auto-picks "Safe" option if idle > 5m.
 
 ### INV-ADHD-003: Checkpointing and Session Cadence
 **Statement**
@@ -101,27 +101,27 @@ Dopemux UX constraints that preserve focus, reduce decision fatigue, and checkpo
 
 **Evidence**
 - FACT ANCHORS:
-  - `src/dopemux/ux/focus_timer.py` (to be verified)
+- `src/dopemux/ux/focus_timer.py` (to be verified)
 
 **Enforcement**
 - Mechanism:
-  - Runtime: Sentinel check in main dispatch loop.
+- Runtime: Sentinel check in main dispatch loop.
 
 **Test**
 - Local command(s):
-  - `dmux run --mock-time=26m`
+- `dmux run --mock-time=26m`
 - Expected signals:
-  - "Focus Window ended. Break or Continue?"
+- "Focus Window ended. Break or Continue?"
 - Failure signature:
-  - Runs for 2 hours uninterrupted.
+- Runs for 2 hours uninterrupted.
 - Exit behavior:
-  - Pause (SIGSTOP logic or internal loop wait).
+- Pause (SIGSTOP logic or internal loop wait).
 
 **Failure modes**
 - If violated:
-  - Impact: burnout, drift.
-  - Severity: S2 medium.
-  - Containment: Force break on next turn.
+- Impact: burnout, drift.
+- Severity: S2 medium.
+- Containment: Force break on next turn.
 
 ### INV-ADHD-004: Complexity Gating Reduces Chunk Size
 **Statement**
@@ -136,27 +136,27 @@ Dopemux UX constraints that preserve focus, reduce decision fatigue, and checkpo
 
 **Evidence**
 - FACT ANCHORS:
-  - `src/dopemux/supervisor/complexity.py` (TBD check)
+- `src/dopemux/supervisor/complexity.py` (TBD check)
 
 **Enforcement**
 - Mechanism:
-  - Gate: Plan validator.
+- Gate: Plan validator.
 
 **Test**
 - Local command(s):
-  - Submit 50-step plan.
+- Submit 50-step plan.
 - Expected signals:
-  - "Plan too complex (0.8). Decomposing..."
+- "Plan too complex (0.8). Decomposing..."
 - Failure signature:
-  - Accepts massive batch job.
+- Accepts massive batch job.
 - Exit behavior:
-  - Refusal.
+- Refusal.
 
 **Failure modes**
 - If violated:
-  - Impact: context window overflow, error cascade.
-  - Severity: S1 high.
-  - Containment: Kill run, revert state.
+- Impact: context window overflow, error cascade.
+- Severity: S1 high.
+- Containment: Kill run, revert state.
 
 ### INV-ADHD-005: Fatigue Mode Prefers Safe Stops
 **Statement**
@@ -171,27 +171,27 @@ Dopemux UX constraints that preserve focus, reduce decision fatigue, and checkpo
 
 **Evidence**
 - FACT ANCHORS:
-  - `config/limits.yaml` (working hours config)
+- `config/limits.yaml` (working hours config)
 
 **Enforcement**
 - Mechanism:
-  - Runtime: Action filter removes `DELETE/OVERWRITE` verbs from options.
+- Runtime: Action filter removes `DELETE/OVERWRITE` verbs from options.
 
 **Test**
 - Local command(s):
-  - `dmux run --time "03:00"`
+- `dmux run --time "03:00"`
 - Expected signals:
-  - "Late night mode active. Refactors disabled."
+- "Late night mode active. Refactors disabled."
 - Failure signature:
-  - Allows `rm -rf` at 3 AM.
+- Allows `rm -rf` at 3 AM.
 - Exit behavior:
-  - Block action.
+- Block action.
 
 **Failure modes**
 - If violated:
-  - Impact: regretful mistakes.
-  - Severity: S2 medium.
-  - Containment: Rollback via git.
+- Impact: regretful mistakes.
+- Severity: S2 medium.
+- Containment: Rollback via git.
 
 ## FACT ANCHORS (Repo-derived)
 
@@ -203,22 +203,22 @@ Dopemux UX constraints that preserve focus, reduce decision fatigue, and checkpo
 
 ## Open questions
 - **Interruptibility**: How do we handle user interrupts during a long TaskX run?
-  - *Resolution*: TaskX runs are atomic processes; we kill the process group on Ctrl+C and mark the artifact as "INTERRUPTED".
+- *Resolution*: TaskX runs are atomic processes; we kill the process group on Ctrl+C and mark the artifact as "INTERRUPTED".
 
 ## Focus windows and checkpointing
 - **Length**: Default 25 minutes (configurable).
 - **Hard Checkpoint**: At T-0, the Supervisor MUST:
-  1. Stop non-critical work.
-  2. Save all state to ConPort/SQLite.
-  3. Emit a "Focus Window End" bell/notification.
-  4. Wait for user acknowledgement to continue or break.
+1. Stop non-critical work.
+1. Save all state to ConPort/SQLite.
+1. Emit a "Focus Window End" bell/notification.
+1. Wait for user acknowledgement to continue or break.
 - **"Pause and Checkpoint"**: Behavior available at any prompt. Commands: `wait`, `pause`, `checkpoint`.
 
 ## Progressive disclosure rules
 To prevent overwhelm:
 1. **Summaries First**: Show the high-level plan (3-5 bullets) before showing code.
-2. **Diff Caps**: Don't dump 500 lines of diffs. Show the first 3 files and a count. "and 4 more files... (use --show-all to see)".
-3. **Log Folding**: Tool outputs > 10 lines should be folded or truncated with a link to the full log file.
+1. **Diff Caps**: Don't dump 500 lines of diffs. Show the first 3 files and a count. "and 4 more files... (use --show-all to see)".
+1. **Log Folding**: Tool outputs > 10 lines should be folded or truncated with a link to the full log file.
 
 ## Complexity score gating
 **Score Range**: 0.0 (Trivial) to 1.0 (Cognitive Overload)
@@ -240,22 +240,22 @@ To prevent overwhelm:
 
 ## Supervisor behavior from ADHD signals
 - **Signal**: "I'm tired" / "Brain fog" / Late night timestamp.
-  - **Response**: Switch to **Low-Cognitive-Load Mode**:
-    - Shorter outputs.
-    - More frequent checkpoints.
-    - Suggest only "safe" actions (no major refactors).
+- **Response**: Switch to **Low-Cognitive-Load Mode**:
+- Shorter outputs.
+- More frequent checkpoints.
+- Suggest only "safe" actions (no major refactors).
 - **Signal**: Rapid-fire short queries (anxiety/confusion).
-  - **Response**: **PAUSE**. Suggest a "Breath Check". Summarize current status clearly.
+- **Response**: **PAUSE**. Suggest a "Breath Check". Summarize current status clearly.
 
 ## Failure modes
 - **Output Flood**: Supervisor dumps 5 screens of text.
-  - *Mitigation*: Output buffer hard limit in `renderer.py`.
+- *Mitigation*: Output buffer hard limit in `renderer.py`.
 - **Decision Fatigue**: Supervisor offers 5 equal options.
-  - *Correction*: Policy engine must force a ranking and present only Top 1 + "Other options".
+- *Correction*: Policy engine must force a ranking and present only Top 1 + "Other options".
 - **Context Switching**: User jumps between 3 different tasks.
-  - *Mitigation*: Supervisor detects context thrashing and prompts: "You seem to be switching tasks. Shall we park 'Task A' and officially switch to 'Task B'?"
+- *Mitigation*: Supervisor detects context thrashing and prompts: "You seem to be switching tasks. Shall we park 'Task A' and officially switch to 'Task B'?"
 
 ## Acceptance criteria
 1. **Verbosity Test**: Run a "Plan" command. Ensure output is < 25 lines.
-2. **Choice Test**: Trigger a scenario with multiple paths. Ensure UI highlights ONE primary path.
-3. **Complexity Test**: Feed a massive 50-step plan. Ensure Supervisor rejects it with a complexity warning.
+1. **Choice Test**: Trigger a scenario with multiple paths. Ensure UI highlights ONE primary path.
+1. **Complexity Test**: Feed a massive 50-step plan. Ensure Supervisor rejects it with a complexity warning.

@@ -27,11 +27,11 @@ prelude: Week4 Day2 Spec (explanation) for dopemux documentation and developer w
 class Decision(BaseModel):
     """Core decision model - ADHD-optimized"""
     # Already has:
-    - id, workspace_id, instance_id
-    - title, description, context
-    - decision_type, status, visibility
-    - created_at, updated_at
-    - tags, metadata
+- id, workspace_id, instance_id
+- title, description, context
+- decision_type, status, visibility
+- created_at, updated_at
+- tags, metadata
 ```
 
 **Existing Services** (from queries/service.py):
@@ -39,10 +39,10 @@ class Decision(BaseModel):
 class QueryService:
     """ADHD-optimized query patterns"""
     # Already has:
-    - overview() - Top-3 pattern
-    - search() - Text search
-    - get_by_id() - Single decision
-    - list_decisions() - Filtered list
+- overview() - Top-3 pattern
+- search() - Text search
+- get_by_id() - Single decision
+- list_decisions() - Filtered list
 ```
 
 **Our Task**: Extend with KG-powered relationship queries!
@@ -196,11 +196,11 @@ class SuggestionEngine:
         Context-aware task suggestions.
 
         Scoring:
-        - Dependency satisfaction (blockers resolved)
-        - Energy level match
-        - Time availability
-        - Focus state compatibility
-        - Pattern similarity
+- Dependency satisfaction (blockers resolved)
+- Energy level match
+- Time availability
+- Focus state compatibility
+- Pattern similarity
 
         Returns:
             {
@@ -312,8 +312,8 @@ class QueryService:
 **File**: `kg_integration.py` (extend DDDPGKG)
 
 1. Add `link_decision_to_task()` (7 min)
-2. Add `get_task_decisions()` (5 min)
-3. Add tests (3 min)
+1. Add `get_task_decisions()` (5 min)
+1. Add tests (3 min)
 
 **Cypher queries**:
 ```cypher
@@ -332,9 +332,9 @@ RETURN d.id
 **File**: `relationship_mapper.py` (NEW)
 
 1. Create `RelationshipMapper` class (5 min)
-2. Implement `build_dependency_chain()` (10 min)
-3. Implement `build_work_cluster()` (7 min)
-4. Add tests (3 min)
+1. Implement `build_dependency_chain()` (10 min)
+1. Implement `build_work_cluster()` (7 min)
+1. Add tests (3 min)
 
 **Cypher queries**:
 ```cypher
@@ -360,9 +360,9 @@ LIMIT $limit
 **File**: `suggestion_engine.py` (NEW)
 
 1. Create `SuggestionEngine` class (5 min)
-2. Implement `get_enhanced_suggestions()` (12 min)
-3. Implement `_score_task()` helper (8 min)
-4. Add tests (5 min)
+1. Implement `get_enhanced_suggestions()` (12 min)
+1. Implement `_score_task()` helper (8 min)
+1. Add tests (5 min)
 
 **Scoring logic**:
 ```python
@@ -390,9 +390,9 @@ def _time_score(task, context):
 **File**: `queries/service.py` (extend)
 
 1. Add `kg` parameter to `__init__()` (3 min)
-2. Add `get_task_with_context()` (7 min)
-3. Add `suggest_next_tasks()` (7 min)
-4. Add integration test (3 min)
+1. Add `get_task_with_context()` (7 min)
+1. Add `suggest_next_tasks()` (7 min)
+1. Add integration test (3 min)
 
 ---
 

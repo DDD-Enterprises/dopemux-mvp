@@ -128,21 +128,21 @@ subprocess.Popen(
 
 **Production-Ready** (8):
 1. Dope-Context ✅
-2. ADHD Engine ✅ (SECURED)
-3. Serena v2 ✅
-4. ConPort KG UI ✅
-5. GPT-Researcher ✅ (WebSocket auth recommended)
-6. ML Risk Assessment ✅
-7. Orchestrator ✅
-8. Taskmaster ✅
+1. ADHD Engine ✅ (SECURED)
+1. Serena v2 ✅
+1. ConPort KG UI ✅
+1. GPT-Researcher ✅ (WebSocket auth recommended)
+1. ML Risk Assessment ✅
+1. Orchestrator ✅
+1. Taskmaster ✅
 
 **Needs Completion** (2):
-9. DopeconBridge ⚠️ (80% done, 4-6h to finish)
-10. ConPort Orchestrator ⚠️ (bridge TODOs)
+1. DopeconBridge ⚠️ (80% done, 4-6h to finish)
+1. ConPort Orchestrator ⚠️ (bridge TODOs)
 
 **Legacy/Unknown** (2):
-11. Claude-Context (Milvus-based, unclear if active)
-12. (Accounted for in count)
+1. Claude-Context (Milvus-based, unclear if active)
+1. (Accounted for in count)
 
 **Time**: 2.5 hours (vs 10h planned = 75% faster!)
 

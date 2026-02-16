@@ -36,8 +36,8 @@ The tmux status bar now displays the currently active LLM model being used by Cl
 ### Automatic Detection
 The status bar calls `./scripts/ccr_model_tracker.sh` which:
 1. Checks the CCR config for the current default model
-2. Caches the result in `/tmp/dopemux_current_model.txt`
-3. Returns a formatted display string
+1. Caches the result in `/tmp/dopemux_current_model.txt`
+1. Returns a formatted display string
 
 ### Manual Override
 You can manually set what model is displayed:
@@ -106,8 +106,8 @@ The status bar has a fallback: if the script fails, it displays `🤖` as a gene
 ## Files Modified
 
 1. `src/dopemux/tmux/cli.py` - Added model tracker to HOUSE_THEME and NEON_THEME status_right
-2. `scripts/ccr_model_tracker.sh` - Model detection and formatting script (NEW)
-3. `scripts/set_model_display.sh` - Manual model display setter (NEW)
+1. `scripts/ccr_model_tracker.sh` - Model detection and formatting script (NEW)
+1. `scripts/set_model_display.sh` - Manual model display setter (NEW)
 
 ## Commands
 

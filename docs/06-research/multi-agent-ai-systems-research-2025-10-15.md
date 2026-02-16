@@ -330,11 +330,11 @@ aider --auto-commits
 
 **Context Management**:
 - Creates contextual prompts from:
-  - Active document code
-  - Code selection
-  - Workspace info (frameworks, languages, dependencies)
-  - Previous conversation prompts
-  - Bing search results (when enabled)
+- Active document code
+- Code selection
+- Workspace info (frameworks, languages, dependencies)
+- Previous conversation prompts
+- Bing search results (when enabled)
 - Different context assembly for IDE vs GitHub.com chat
 
 **Multi-File Coordination**:
@@ -769,25 +769,25 @@ previous_context = agent.load_context_from_memory(phase="research")
 **Phase 1: Planning**
 ```
 LeadResearcher:
-  - Thinks through research approach
-  - Saves plan to Memory (persists context)
-  - Handles 200K+ token contexts via persistence
+- Thinks through research approach
+- Saves plan to Memory (persists context)
+- Handles 200K+ token contexts via persistence
 ```
 
 **Phase 2: Parallel Information Gathering**
 ```
 ResearchAgent (multiple instances):
-  - Each agent searches specific subtopic
-  - Parallel execution for speed
-  - Results aggregated by LeadResearcher
+- Each agent searches specific subtopic
+- Parallel execution for speed
+- Results aggregated by LeadResearcher
 ```
 
 **Phase 3: Synthesis**
 ```
 LeadResearcher:
-  - Retrieves all research findings from Memory
-  - Synthesizes coherent narrative
-  - Generates final report
+- Retrieves all research findings from Memory
+- Synthesizes coherent narrative
+- Generates final report
 ```
 
 **Key Insights**:
@@ -815,11 +815,11 @@ LeadResearcher:
 **Agentic Loop**:
 ```
 1. Decompose goal into subtasks
-2. Search and read documentation
-3. Edit code
-4. Run commands and tests
-5. Analyze failures
-6. Iterate until stopping condition
+1. Search and read documentation
+1. Edit code
+1. Run commands and tests
+1. Analyze failures
+1. Iterate until stopping condition
 ```
 
 **Environment**:
@@ -861,10 +861,10 @@ LeadResearcher:
 **Workflow**:
 ```
 1. User creates GitHub issue
-2. Sweep analyzes issue + repository context
-3. Sweep searches codebase for relevant files
-4. Sweep generates code changes
-5. Sweep creates PR with changes
+1. Sweep analyzes issue + repository context
+1. Sweep searches codebase for relevant files
+1. Sweep generates code changes
+1. Sweep creates PR with changes
 ```
 
 **Autonomy Level**: Medium - focused on specific task (issue resolution)
@@ -896,19 +896,19 @@ LeadResearcher:
 **Architecture**:
 - **Prompt-based**: User writes product spec
 - **Three-step generation**:
-  1. Plan coding dependencies
-  2. Specify file paths
-  3. Generate code for each file
+1. Plan coding dependencies
+1. Specify file paths
+1. Generate code for each file
 - **Debugger**: Separate tool for error fixing
 
 **Workflow**:
 ```
 1. Human writes prompt (product spec)
-2. main.py generates codebase
-3. Human reviews, runs, tests
-4. Human identifies errors
-5. debugger.py suggests fixes
-6. Iterate until working
+1. main.py generates codebase
+1. Human reviews, runs, tests
+1. Human identifies errors
+1. debugger.py suggests fixes
+1. Iterate until working
 ```
 
 **Autonomy Level**: Low - human-in-the-loop at every stage
@@ -1904,19 +1904,19 @@ class CachedLLMClient:
    arXiv:2504.21030v1
    https://arxiv.org/html/2504.21030v1
 
-2. **Multi-Agent Collaboration Mechanisms: A Survey of LLMs**
+1. **Multi-Agent Collaboration Mechanisms: A Survey of LLMs**
    arXiv:2501.06322v1
    https://arxiv.org/html/2501.06322v1
 
-3. **AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges**
+1. **AI Agents vs. Agentic AI: A Conceptual Taxonomy, Applications and Challenges**
    arXiv:2505.10468v1
    https://arxiv.org/html/2505.10468v1
 
-4. **Distinguishing Autonomous AI Agents from Collaborative Agentic Systems**
+1. **Distinguishing Autonomous AI Agents from Collaborative Agentic Systems**
    arXiv:2506.01438v1
    https://arxiv.org/html/2506.01438v1
 
-5. **AI Agents: Evolution, Architecture, and Real-World Applications**
+1. **AI Agents: Evolution, Architecture, and Real-World Applications**
    arXiv:2503.12687v1
    https://arxiv.org/html/2503.12687v1
 
@@ -1926,15 +1926,15 @@ class CachedLLMClient:
    Medium - Agentic AI Frameworks
    https://medium.com/@datascientist.lakshmi/agentic-ai-frameworks-building-autonomous-ai-agents-with-langchain-crewai-autogen-and-more-8a697bee8bf8
 
-2. **AutoGen Framework**
+1. **AutoGen Framework**
    Medium - An objective comparison of LLM Agents
    https://ruintheextinct.medium.com/an-objective-comparison-of-llm-agents-1584acfd2682
 
-3. **MetaGPT & Multi-Agent Systems**
+1. **MetaGPT & Multi-Agent Systems**
    GitHub Gist - Multi-Agent Systems for Auto-Deployment
    https://gist.github.com/samihalawa/272f30f58c67ca8f923846470085f180
 
-4. **Google Agent Development Kit - Multi-Agent Systems**
+1. **Google Agent Development Kit - Multi-Agent Systems**
    https://google.github.io/adk-docs/agents/multi-agents/
 
 ### Chat-Driven Development Tools
@@ -1943,15 +1943,15 @@ class CachedLLMClient:
     Builder.io - Cursor vs GitHub Copilot
     https://www.builder.io/blog/cursor-vs-github-copilot
 
-2. **Aider - AI Pair Programming**
+1. **Aider - AI Pair Programming**
     Official Documentation
     https://aider.chat/docs/
 
-3. **Aider Review**
+1. **Aider Review**
     Blott Studio - Developer's Month With Aider
     https://www.blott.com/blog/post/aider-review-a-developers-month-with-this-terminal-based-code-assistant
 
-4. **GitHub Copilot Chat**
+1. **GitHub Copilot Chat**
     Official Features Page
     https://github.com/features/copilot
 
@@ -1961,15 +1961,15 @@ class CachedLLMClient:
     Official Documentation
     https://www.warp.dev/warp-ai
 
-2. **Warp Terminal Tutorial**
+1. **Warp Terminal Tutorial**
     DataCamp
     https://www.datacamp.com/tutorial/warp-terminal-tutorial
 
-3. **TmuxAI**
+1. **TmuxAI**
     Getting Started Guide
     https://tmuxai.dev/getting-started/
 
-4. **Amazon Q Developer CLI**
+1. **Amazon Q Developer CLI**
     GitHub Issue - Warp Terminal Integration
     https://github.com/aws/amazon-q-developer-cli/issues/2121
 
@@ -1979,23 +1979,23 @@ class CachedLLMClient:
     Skywork AI - Autonomous AI Software Engineer Explained
     https://skywork.ai/blog/devin-autonomous-ai-software-engineer-explained/
 
-2. **Devin AI Architecture**
+1. **Devin AI Architecture**
     DevOps.com - Cognition Labs Previews Devin
     https://devops.com/cognition-labs-previews-devin-ai-software-engineer/
 
-3. **Sweep AI**
+1. **Sweep AI**
     AI Agent Store - Cognition Devin AI vs Sweep AI
     https://aiagentstore.ai/compare-ai-agents/cognition-devin-ai-vs-sweep-ai
 
-4. **Smol AI Developer**
+1. **Smol AI Developer**
     GitHub Repository
     https://github.com/smol-ai/developer
 
-5. **Smol AI Architecture**
+1. **Smol AI Architecture**
     HackerNoon - The Fully Remote Virtual Developer
     https://hackernoon.com/smol-developer-the-fully-remote-virtual-developer
 
-6. **OpenDevin**
+1. **OpenDevin**
     AI Agent Store
     https://aiagentstore.ai/ai-agent/opendevin
 
@@ -2005,15 +2005,15 @@ class CachedLLMClient:
     GitHub Blog
     https://github.blog/ai-and-ml/github-copilot/how-to-build-reliable-ai-workflows-with-agentic-primitives-and-context-engineering/
 
-2. **How we built our multi-agent research system**
+1. **How we built our multi-agent research system**
     Anthropic Engineering Blog
     https://www.anthropic.com/engineering/multi-agent-research-system
 
-3. **AI Agentic Workflows: Tutorial & Best Practices**
+1. **AI Agentic Workflows: Tutorial & Best Practices**
     FME by Safe Software
     https://fme.safe.com/guides/ai-agent-architecture/ai-agentic-workflows/
 
-4. **AI Agent Workflow Implementation Guide**
+1. **AI Agent Workflow Implementation Guide**
     Augment Code
     https://www.augmentcode.com/guides/ai-agent-workflow-implementation-guide
 
@@ -2023,11 +2023,11 @@ class CachedLLMClient:
     Daffodil Software Insights
     https://insights.daffodilsw.com/blog/5-agentic-ai-frameworks-developers-are-using-to-build-smarter-agents
 
-2. **Top AI Agent Frameworks in 2025**
+1. **Top AI Agent Frameworks in 2025**
     Medium - Aman Raghuvanshi
     https://medium.com/@iamanraghuvanshi/agentic-ai-3-top-ai-agent-frameworks-in-2025-langchain-autogen-crewai-beyond-2fc3388e7dec
 
-3. **Evaluating the Top Agent Frameworks for AI Development**
+1. **Evaluating the Top Agent Frameworks for AI Development**
     Walturn Insights
     https://www.walturn.com/insights/evaluating-the-top-agent-frameworks-for-ai-development
 

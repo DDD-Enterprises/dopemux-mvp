@@ -404,12 +404,12 @@ ACHIEVED (Week 14):      100% (2 weeks early!)
 
 **Why So Fast**:
 1. Clear architecture (AGENT_ARCHITECTURE.md)
-2. Code reuse (70-85% wrappers)
-3. Zen tools (caught issues early)
-4. MCP tools (fast operations)
-5. Template-based generation (personas)
-6. Mock-based testing (no infrastructure delays)
-7. Focused execution (no context switching)
+1. Code reuse (70-85% wrappers)
+1. Zen tools (caught issues early)
+1. MCP tools (fast operations)
+1. Template-based generation (personas)
+1. Mock-based testing (no infrastructure delays)
+1. Focused execution (no context switching)
 
 ---
 
@@ -548,9 +548,9 @@ async def complete_dopemux_workflow(feature_description: str):
 
 **Objectives**:
 1. Wire enhanced personas into /sc: commands
-2. Integrate agents with command framework
-3. Final testing
-4. Polish and documentation
+1. Integrate agents with command framework
+1. Final testing
+1. Polish and documentation
 
 **Integration Points**:
 ```python
@@ -702,9 +702,9 @@ python services/mcp-dopecon-bridge/main.py
 
 **Week 15-16 Tasks**:
 1. Wire enhanced personas into /sc: commands (~1 hour)
-2. Test /sc:implement, /sc:brainstorm, etc. (~30 min)
-3. Final integration testing (~30 min)
-4. Polish and documentation (~30 min)
+1. Test /sc:implement, /sc:brainstorm, etc. (~30 min)
+1. Final integration testing (~30 min)
+1. Polish and documentation (~30 min)
 
 **Then**: 16-week plan 100% COMPLETE!
 

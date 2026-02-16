@@ -12,7 +12,7 @@
 |---|---|---|---|
 | ADHD API auth middleware | control | optional auth in dev if env key absent | behavior differs by env |
 | ADHD API cache layer | state/cache | serves cached responses; fallback to in-memory cache | cache-hit/fallback changes outputs over time |
-| `event_emitter` | write | publishes to `dopemux:events` with `maxlen=10000` | older events may be trimmed |
+| `event_emitter` \| write \| publishes to `dopemux:events` with `maxlen=10000` | older events may be trimmed |
 | `bridge_integration.write_custom_data` | write | persists ADHD/cognitive data via bridge/ConPort | authority mutation |
 | `engine._handle_cognitive_overload` | write | creates ConPort progress entry when load > 0.8 | threshold/time based |
 | `engine._update_adhd_state_in_conport` | write | persists user ADHD state in ConPort | policy data update |

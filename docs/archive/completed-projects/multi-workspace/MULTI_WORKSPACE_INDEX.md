@@ -290,19 +290,19 @@ SERENA_WORKSPACES="/path/ws1,/path/ws2"
 
 ### For Developers Implementing
 1. Read: `MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md`
-2. Reference: `services/shared/workspace_utils.py`
-3. Example: `services/dope-context/src/mcp/server.py`
-4. Test: Follow patterns in `services/dope-context/tests/`
+1. Reference: `services/shared/workspace_utils.py`
+1. Example: `services/dope-context/src/mcp/server.py`
+1. Test: Follow patterns in `services/dope-context/tests/`
 
 ### For Users
 1. Read: `DOPE_CONTEXT_QUICK_START.md`
-2. Set: `DOPE_WORKSPACES="/ws1,/ws2"`
-3. Use: `await search_code(workspace_paths=[...])`
+1. Set: `DOPE_WORKSPACES="/ws1,/ws2"`
+1. Use: `await search_code(workspace_paths=[...])`
 
 ### For Project Managers
 1. Read: `MULTI_WORKSPACE_ROLLOUT_PLAN.md`
-2. Track: `MULTI_WORKSPACE_ECOSYSTEM_STATUS.md`
-3. Review: `MULTI_WORKSPACE_COMPLETE_SUMMARY.md`
+1. Track: `MULTI_WORKSPACE_ECOSYSTEM_STATUS.md`
+1. Review: `MULTI_WORKSPACE_COMPLETE_SUMMARY.md`
 
 ---
 

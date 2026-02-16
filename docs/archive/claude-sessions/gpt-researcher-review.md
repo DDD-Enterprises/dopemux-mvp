@@ -49,23 +49,23 @@ prelude: Gpt Researcher Review (explanation) for dopemux documentation and devel
 
 **Research Lifecycle**:
 1. `POST /research/create` - Create research task
-2. `GET /research/{task_id}/plan` - Generate plan
-3. `POST /research/{task_id}/execute/{question_index}` - Execute step
-4. `POST /research/{task_id}/pause` - Pause with reason
-5. `POST /research/{task_id}/resume` - Resume research
-6. `POST /research/{task_id}/complete` - Finalize
-7. `GET /research/{task_id}/status` - Check status
-8. `DELETE /research/{task_id}/cancel` - Cancel task
+1. `GET /research/{task_id}/plan` - Generate plan
+1. `POST /research/{task_id}/execute/{question_index}` - Execute step
+1. `POST /research/{task_id}/pause` - Pause with reason
+1. `POST /research/{task_id}/resume` - Resume research
+1. `POST /research/{task_id}/complete` - Finalize
+1. `GET /research/{task_id}/status` - Check status
+1. `DELETE /research/{task_id}/cancel` - Cancel task
 
 **WebSocket**:
-9. `WS /ws/progress/{user_id}` - Real-time progress streaming
-10. (Optional task_id parameter for filtering)
+1. `WS /ws/progress/{user_id}` - Real-time progress streaming
+1. (Optional task_id parameter for filtering)
 
 **Session Management**:
 11-15. Session endpoints in api/main.py
 
 **Health**:
-16. `GET /health` - Health check
+1. `GET /health` - Health check
 17-19. Additional monitoring endpoints
 
 ---
@@ -195,8 +195,8 @@ async def websocket_progress_endpoint(websocket: WebSocket, user_id: str, api_ke
 
 **Recommended**:
 1. Add WebSocket auth (1h)
-2. Complete ConPort planning phase (30min)
-3. Integration testing (1h)
+1. Complete ConPort planning phase (30min)
+1. Integration testing (1h)
 
 ---
 

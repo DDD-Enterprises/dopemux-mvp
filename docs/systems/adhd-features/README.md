@@ -16,19 +16,19 @@ All 11 ADHD accommodation features with detailed technical documentation.
 ## Phase 3 Features
 
 1. **ML Energy Pattern Learning** - Predicts optimal work times using 9-factor ML model
-2. **Context Preservation** - Auto-saves mental model before breaks
-3. **Attention Calibration** - Personalizes focus detection through user feedback
-4. **Correlation Engine** - Discovers productivity patterns across services
-5. **Voice Assistant** - Hands-free status queries (macOS initially)
-6. **Mobile Push Notifications** - Break reminders on phone (Ntfy/Pushover)
+1. **Context Preservation** - Auto-saves mental model before breaks
+1. **Attention Calibration** - Personalizes focus detection through user feedback
+1. **Correlation Engine** - Discovers productivity patterns across services
+1. **Voice Assistant** - Hands-free status queries (macOS initially)
+1. **Mobile Push Notifications** - Break reminders on phone (Ntfy/Pushover)
 
 ## Quick Win Features
 
 1. **Overwhelm Circuit Breaker** - 5 signals, 4 severity levels, scaled interventions
-2. **Hyperfocus Protection** - 5 phases, auto-save, notification blocking, crash detection
-3. **End-of-Day Wind Down** - 7-step ritual for session closure
-4. **Weekly Pattern Report** - Friday analysis with insights & recommendations
-5. **Procrastination Detection** - 5 patterns, micro-tasks, gamification
+1. **Hyperfocus Protection** - 5 phases, auto-save, notification blocking, crash detection
+1. **End-of-Day Wind Down** - 7-step ritual for session closure
+1. **Weekly Pattern Report** - Friday analysis with insights & recommendations
+1. **Procrastination Detection** - 5 patterns, micro-tasks, gamification
 
 ## Documentation Links
 

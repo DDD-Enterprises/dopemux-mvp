@@ -78,13 +78,13 @@ GET http://localhost:3015/info
 ### MCP Section
 - **protocol**: MCP protocol version (`sse`)
 - **endpoints**: All available HTTP endpoints
-  - **sse**: Server-Sent Events endpoint for MCP connection
-  - **messages**: POST endpoint for MCP messages
-  - **health**: Health check endpoint
-  - **info**: This endpoint
+- **sse**: Server-Sent Events endpoint for MCP connection
+- **messages**: POST endpoint for MCP messages
+- **health**: Health check endpoint
+- **info**: This endpoint
 - **connection**: MCP client connection configuration
-  - **type**: Transport type (`sse`)
-  - **url**: Primary connection URL
+- **type**: Transport type (`sse`)
+- **url**: Primary connection URL
 - **env**: Required environment variables (with defaults)
 
 ### Metadata Section
@@ -100,8 +100,8 @@ GET http://localhost:3015/info
 The endpoint performs a **live health check** against Leantime on each request:
 
 1. **Healthy**: Successfully connected to Leantime API
-2. **Unhealthy**: Connection failed (includes truncated error message)
-3. **Unknown**: Health check not yet performed
+1. **Unhealthy**: Connection failed (includes truncated error message)
+1. **Unknown**: Health check not yet performed
 
 **Performance Note**: This adds ~1-2s latency due to rate limiting. For frequently-polled discovery, consider caching the response.
 
@@ -181,8 +181,8 @@ mcp_config = {
 This endpoint follows the Dopemux service discovery pattern:
 
 1. **Standard Port**: Port 3015 (registered in `services/registry.yaml`)
-2. **Standard Path**: `/info` (consistent across MCP servers)
-3. **Standard Fields**: `name`, `version`, `metadata`, `mcp` sections
+1. **Standard Path**: `/info` (consistent across MCP servers)
+1. **Standard Fields**: `name`, `version`, `metadata`, `mcp` sections
 
 Other MCP servers can implement similar endpoints for unified discovery.
 

@@ -30,43 +30,43 @@ prelude: Dashboard_Day2_Complete (explanation) for dopemux documentation and dev
 
 ### ✅ Infrastructure Built
 - **prometheus_client.py** - Async Prometheus API client
-  - `query_range()` for time-series data
-  - `query_instant()` for current values
-  - `health_check()` for availability
-  - Full error handling and logging
+- `query_range()` for time-series data
+- `query_instant()` for current values
+- `health_check()` for availability
+- Full error handling and logging
 
 - **sparkline_generator.py** - Unicode sparkline renderer
-  - 8-level block characters for smooth rendering
-  - Smart downsampling (averages buckets)
-  - Linear interpolation (smooth upsampling)
-  - ADHD-optimized colorization
-  - Trend detection (up/down/stable)
-  - Metric-specific coloring (cognitive_load, velocity, switches)
+- 8-level block characters for smooth rendering
+- Smart downsampling (averages buckets)
+- Linear interpolation (smooth upsampling)
+- ADHD-optimized colorization
+- Trend detection (up/down/stable)
+- Metric-specific coloring (cognitive_load, velocity, switches)
 
 ### ✅ Testing
 - **test_sparkline_generator.py** - 13 comprehensive unit tests
-  - ✅ Empty data handling
-  - ✅ Single point rendering
-  - ✅ Full range normalization
-  - ✅ Flat line detection
-  - ✅ Downsampling accuracy
-  - ✅ Upsampling interpolation
-  - ✅ Consistent scale across sparklines
-  - ✅ Trend colorization (up/down/stable)
-  - ✅ Metric-specific coloring
-  - ✅ Stats generation
-  - **All 13 tests passing ✅**
+- ✅ Empty data handling
+- ✅ Single point rendering
+- ✅ Full range normalization
+- ✅ Flat line detection
+- ✅ Downsampling accuracy
+- ✅ Upsampling interpolation
+- ✅ Consistent scale across sparklines
+- ✅ Trend colorization (up/down/stable)
+- ✅ Metric-specific coloring
+- ✅ Stats generation
+- **All 13 tests passing ✅**
 
 ### ✅ Dashboard Integration
 - **TrendsWidget** added to dashboard
-  - Cognitive Load sparkline (last 2 hours)
-  - Task Velocity sparkline (last 7 days)
-  - Context Switches sparkline (last 24 hours)
-  - Auto-refresh every 30 seconds
-  - Graceful Prometheus fallback
-  - Trend arrows (↗ ↘ →)
-  - Current values displayed
-  - Color-coded by trend/metric type
+- Cognitive Load sparkline (last 2 hours)
+- Task Velocity sparkline (last 7 days)
+- Context Switches sparkline (last 24 hours)
+- Auto-refresh every 30 seconds
+- Graceful Prometheus fallback
+- Trend arrows (↗ ↘ →)
+- Current values displayed
+- Color-coded by trend/metric type
 
 ---
 
@@ -304,21 +304,21 @@ class DopemuxDashboard(App):
 
 ### Design Insights
 1. **Sparklines are powerful** - Huge amount of info in tiny space
-2. **Color is critical** - Green/Yellow/Red immediately conveys meaning
-3. **Trends > Absolutes** - Direction more important than exact values
-4. **Consistent scale** - Visual comparison requires same min/max
+1. **Color is critical** - Green/Yellow/Red immediately conveys meaning
+1. **Trends > Absolutes** - Direction more important than exact values
+1. **Consistent scale** - Visual comparison requires same min/max
 
 ### Technical Insights
 1. **Async is essential** - Parallel Prometheus queries = 3x faster
-2. **Bucket averaging** - Better downsampling than picking every Nth
-3. **Interpolation helps** - Smooth sparklines more readable
-4. **Error handling matters** - Graceful degradation > crashes
+1. **Bucket averaging** - Better downsampling than picking every Nth
+1. **Interpolation helps** - Smooth sparklines more readable
+1. **Error handling matters** - Graceful degradation > crashes
 
 ### ADHD-Specific Insights
 1. **High contrast helps** - Bright colors on dark background
-2. **Predictable layout** - Same position every refresh
-3. **Instant feedback** - 30s updates feel responsive
-4. **No surprises** - Smooth transitions, no jumps
+1. **Predictable layout** - Same position every refresh
+1. **Instant feedback** - 30s updates feel responsive
+1. **No surprises** - Smooth transitions, no jumps
 
 ---
 
@@ -333,11 +333,11 @@ class DopemuxDashboard(App):
 
 ### Modified Files
 - `dopemux_dashboard.py`:
-  - Added TrendsWidget class
-  - Integrated sparkline rendering
-  - Updated imports
-  - Added CSS for trends panel
-  - Updated refresh action
+- Added TrendsWidget class
+- Integrated sparkline rendering
+- Updated imports
+- Added CSS for trends panel
+- Updated refresh action
 
 ---
 
@@ -409,22 +409,22 @@ class DopemuxDashboard(App):
 
 ### Day 3: Interactive Navigation (4-5 hours)
 1. **Morning:** Panel focusing system
-   - Keyboard shortcuts (1-4 for panels)
-   - Tab navigation
-   - Visual focus indicators
-   - Expand/collapse on Enter/Escape
+- Keyboard shortcuts (1-4 for panels)
+- Tab navigation
+- Visual focus indicators
+- Expand/collapse on Enter/Escape
 
-2. **Afternoon:** Drill-down popups
-   - Press 'd' on cognitive load → detailed history
-   - Press 't' on tasks → task list popup
-   - Press 'l' on service → log viewer
-   - Press 's' on sparkline → stats popup
+1. **Afternoon:** Drill-down popups
+- Press 'd' on cognitive load → detailed history
+- Press 't' on tasks → task list popup
+- Press 'l' on service → log viewer
+- Press 's' on sparkline → stats popup
 
-3. **Evening:** Testing & polish
-   - Keyboard navigation testing
-   - Popup interaction testing
-   - Performance validation
-   - Documentation updates
+1. **Evening:** Testing & polish
+- Keyboard navigation testing
+- Popup interaction testing
+- Performance validation
+- Documentation updates
 
 ---
 

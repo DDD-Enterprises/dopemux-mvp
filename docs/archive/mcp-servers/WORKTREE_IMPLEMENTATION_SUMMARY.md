@@ -82,10 +82,10 @@ class SimpleInstanceDetector:
 **Modified**: `enhanced_server.py` (5 methods)
 
 1. **log_progress**: Status-based routing on task creation
-2. **get_progress**: Instance filtering in queries
-3. **update_progress**: Status transition handling (clears instance_id on COMPLETED)
-4. **get_active_context**: Instance-aware context retrieval
-5. **update_active_context**: Instance-aware context updates
+1. **get_progress**: Instance filtering in queries
+1. **update_progress**: Status transition handling (clears instance_id on COMPLETED)
+1. **get_active_context**: Instance-aware context retrieval
+1. **update_active_context**: Instance-aware context updates
 
 **Routing Logic**:
 ```python
@@ -293,22 +293,22 @@ conport update_progress \
 ## Known Limitations (Expected for MVP)
 
 1. **Manual Environment Variables**: No automatic git detection
-2. **Limited Tool Coverage**: Only 5 of 25+ ConPort tools updated
-3. **No UI Visualization**: Terminal-only interface
-4. **No Historical Migration**: Old decisions/patterns not instance-aware
-5. **No Automatic Cleanup**: Orphaned instance_id values if worktree deleted
+1. **Limited Tool Coverage**: Only 5 of 25+ ConPort tools updated
+1. **No UI Visualization**: Terminal-only interface
+1. **No Historical Migration**: Old decisions/patterns not instance-aware
+1. **No Automatic Cleanup**: Orphaned instance_id values if worktree deleted
 
 **Note**: All limitations are documented and acceptable for Simple MVP
 
 ## Future Enhancements (Post-MVP)
 
 1. **Automatic Instance Detection**: Parse git worktree info automatically
-2. **Expand Tool Coverage**: Update remaining 20+ ConPort tools
-3. **UI Dashboard**: Visualize task isolation per worktree
-4. **Instance Cleanup**: Auto-clear instance_id for removed worktrees
-5. **Historical Migration**: Migrate old decisions to instances
-6. **Git Hook Integration**: Auto-set env vars on worktree switch
-7. **Team Collaboration**: Multi-developer instance coordination
+1. **Expand Tool Coverage**: Update remaining 20+ ConPort tools
+1. **UI Dashboard**: Visualize task isolation per worktree
+1. **Instance Cleanup**: Auto-clear instance_id for removed worktrees
+1. **Historical Migration**: Migrate old decisions to instances
+1. **Git Hook Integration**: Auto-set env vars on worktree switch
+1. **Team Collaboration**: Multi-developer instance coordination
 
 ## Metrics
 

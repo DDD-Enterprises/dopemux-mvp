@@ -56,13 +56,13 @@ If an invariant appears impossible, stop and report.
 ## Plan (Numbered)
 
 1. Create `src/dopemux/pm/` package with `__init__.py`
-2. Implement `PMTaskStatus` enum, `PMTask` Pydantic model, `PMTransitionRequest`, and `content_hash_task_id()` in `models.py`
-3. Implement `PMTaskStore` ABC, `TaskNotFoundError`, `StaleWriteError`, and `InMemoryPMTaskStore` in `store.py`
-4. Implement status dialect mapping tables in `mapping.py`
-5. Create `tests/unit/pm/` with `__init__.py`
-6. Write `test_pm_models.py`: deterministic ID, normalization, field validation
-7. Write `test_pm_store.py`: create idempotency, transition idempotency, stale write, version increment
-8. Write `test_pm_mapping.py`: mapping table completeness, lossy mapping documentation
+1. Implement `PMTaskStatus` enum, `PMTask` Pydantic model, `PMTransitionRequest`, and `content_hash_task_id()` in `models.py`
+1. Implement `PMTaskStore` ABC, `TaskNotFoundError`, `StaleWriteError`, and `InMemoryPMTaskStore` in `store.py`
+1. Implement status dialect mapping tables in `mapping.py`
+1. Create `tests/unit/pm/` with `__init__.py`
+1. Write `test_pm_models.py`: deterministic ID, normalization, field validation
+1. Write `test_pm_store.py`: create idempotency, transition idempotency, stale write, version increment
+1. Write `test_pm_mapping.py`: mapping table completeness, lossy mapping documentation
 
 ────────────────────────────────────────────────────────────
 

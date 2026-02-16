@@ -24,10 +24,10 @@ prelude: Week5 Adhd Routing (explanation) for dopemux documentation and develope
 
 **Files Modified**:
 - `enhanced_orchestrator.py` (+80 lines)
-  - Imported CognitiveGuardian
-  - Added `_initialize_adhd_agents()` method
-  - Initialized CognitiveGuardian with monitoring
-  - Uncommented ADHD readiness checks in `_assign_optimal_agent`
+- Imported CognitiveGuardian
+- Added `_initialize_adhd_agents()` method
+- Initialized CognitiveGuardian with monitoring
+- Uncommented ADHD readiness checks in `_assign_optimal_agent`
 
 **Features Added**:
 - CognitiveGuardian instance created at orchestrator initialization
@@ -56,8 +56,8 @@ if self.cognitive_guardian:
 
 **Checks**:
 1. **Energy Match**: Does task energy match user's current energy?
-2. **Complexity + Attention**: Can user handle complexity given attention state?
-3. **Break Needed**: Has user worked 90+ minutes without break?
+1. **Complexity + Attention**: Can user handle complexity given attention state?
+1. **Break Needed**: Has user worked 90+ minutes without break?
 
 **Prevents**:
 - ❌ High-energy task when user is tired
@@ -114,9 +114,9 @@ return AgentType.CONPORT
    Suggestion: This task needs focus. Try a simpler task first or take a break to recharge.
 
 🎯 Task Suggestions (Energy: low):
-   1. Fix typos in comments (complexity: 0.1)
-   2. Update README formatting (complexity: 0.2)
-   3. Run and review test suite (complexity: 0.2)
+1. Fix typos in comments (complexity: 0.1)
+1. Update README formatting (complexity: 0.2)
+1. Run and review test suite (complexity: 0.2)
 ```
 
 **ADHD Benefit**: Prevents wasted effort on complex task when tired
@@ -229,16 +229,16 @@ Time: 22:00 (tired)
 ### CognitiveGuardian Methods Used
 
 1. **`check_task_readiness()`**:
-   - Called before every task assignment
-   - Returns: `ready` (bool), `reason`, `suggestion`, `alternatives`
+- Called before every task assignment
+- Returns: `ready` (bool), `reason`, `suggestion`, `alternatives`
 
-2. **`start_monitoring()`**:
-   - Called at orchestrator initialization
-   - Starts break reminders and session tracking
+1. **`start_monitoring()`**:
+- Called at orchestrator initialization
+- Starts break reminders and session tracking
 
-3. **`get_user_state()`**:
-   - Used internally by check_task_readiness
-   - Returns: energy, attention, session_duration, etc.
+1. **`get_user_state()`**:
+- Used internally by check_task_readiness
+- Returns: energy, attention, session_duration, etc.
 
 ---
 
@@ -246,17 +246,17 @@ Time: 22:00 (tired)
 
 **Created** (1 file, 260 lines):
 1. `test_week5_adhd_routing.py` (260 lines)
-   - 4 comprehensive integration tests
-   - Energy mismatch prevention
-   - Complexity routing validation
-   - Task readiness checks
+- 4 comprehensive integration tests
+- Energy mismatch prevention
+- Complexity routing validation
+- Task readiness checks
 
 **Modified** (1 file, +80 lines):
 1. `enhanced_orchestrator.py`
-   - Import CognitiveGuardian
-   - Add `_initialize_adhd_agents()` method
-   - Uncomment ADHD readiness checks
-   - Enable intelligent task routing
+- Import CognitiveGuardian
+- Add `_initialize_adhd_agents()` method
+- Uncomment ADHD readiness checks
+- Enable intelligent task routing
 
 **Total**: 340 lines of code
 
@@ -328,10 +328,10 @@ async def get_recommended_tasks(self, max_tasks=3):
 
 **Objectives Met**:
 1. ✅ ADHD readiness checks active
-2. ✅ Energy mismatch prevention working
-3. ✅ Complexity routing operational
-4. ✅ Task deferral with alternatives
-5. ✅ Integration tests passing (4/4)
+1. ✅ Energy mismatch prevention working
+1. ✅ Complexity routing operational
+1. ✅ Task deferral with alternatives
+1. ✅ Integration tests passing (4/4)
 
 **Functionality Progress**: 50% → 60% (+10%)
 

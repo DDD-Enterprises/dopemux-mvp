@@ -69,7 +69,7 @@ docker compose logs adhd-engine | tail -20
    docker compose up -d adhd-engine
    ```
 
-2. **Redis Connection Failed**:
+1. **Redis Connection Failed**:
    ```bash
    # Verify Redis is running
    docker ps | grep redis
@@ -81,7 +81,7 @@ docker compose logs adhd-engine | tail -20
    docker compose restart redis-primary
    ```
 
-3. **Missing Environment Variables**:
+1. **Missing Environment Variables**:
    ```bash
    # Check required env vars
    echo $REDIS_URL
@@ -120,7 +120,7 @@ curl -H "Origin: http://localhost:3000" \
    docker compose up -d adhd-dashboard
    ```
 
-2. **CORS Configuration Error**:
+1. **CORS Configuration Error**:
    ```bash
    # Check ALLOWED_ORIGINS
    grep ALLOWED_ORIGINS docker/mcp-servers/docker-compose.yml
@@ -130,7 +130,7 @@ curl -H "Origin: http://localhost:3000" \
    docker compose up -d adhd-dashboard
    ```
 
-3. **API Key Authentication Failed**:
+1. **API Key Authentication Failed**:
    ```bash
    # Check dashboard API key
    curl -H "X-API-Key: test-key-456" \
@@ -168,7 +168,7 @@ docker exec -it dopemux-adhd-engine \
    docker exec -it dopemux-redis-primary redis-cli save
    ```
 
-2. **Network Connectivity Issues**:
+1. **Network Connectivity Issues**:
    ```bash
    # Check network
    docker network ls | grep dopemux
@@ -180,7 +180,7 @@ docker exec -it dopemux-adhd-engine \
    docker compose up -d
    ```
 
-3. **Memory Issues**:
+1. **Memory Issues**:
    ```bash
    # Check Redis memory usage
    docker stats dopemux-redis-primary
@@ -221,7 +221,7 @@ docker exec -it dopemux-redis-primary \
      redis-cli info memory
    ```
 
-2. **Service Resource Limits**:
+1. **Service Resource Limits**:
    ```bash
    # Update docker-compose.yml with limits
    services:
@@ -233,7 +233,7 @@ docker exec -it dopemux-redis-primary \
              cpus: '0.5'
    ```
 
-3. **Background Monitor Optimization**:
+1. **Background Monitor Optimization**:
    ```bash
    # Adjust monitor intervals in environment
    export ENERGY_MONITOR_INTERVAL=120  # 2 minutes instead of 1
@@ -267,7 +267,7 @@ docker compose logs adhd-engine | grep -i memory
    docker compose restart adhd-engine
    ```
 
-2. **Implement Memory Limits**:
+1. **Implement Memory Limits**:
    ```bash
    # Update docker-compose.yml
    services:
@@ -280,7 +280,7 @@ docker compose logs adhd-engine | grep -i memory
              memory: 512M
    ```
 
-3. **Restart Schedule**:
+1. **Restart Schedule**:
    ```bash
    # Add restart policy
    services:
@@ -324,7 +324,7 @@ docker exec -it dopemux-redis-primary \
    docker compose restart adhd-engine
    ```
 
-2. **Dashboard API Key Mismatch**:
+1. **Dashboard API Key Mismatch**:
    ```bash
    # Verify API keys match
    grep API_KEY docker/mcp-servers/docker-compose.yml
@@ -334,7 +334,7 @@ docker exec -it dopemux-redis-primary \
    docker compose restart adhd-dashboard
    ```
 
-3. **CORS Blocking API Calls**:
+1. **CORS Blocking API Calls**:
    ```bash
    # Check browser console for CORS errors
    # Update ALLOWED_ORIGINS to include frontend URL
@@ -370,7 +370,7 @@ docker exec -it dopemux-redis-primary \
    docker compose logs adhd-engine | grep -i async
    ```
 
-2. **Configuration Issues**:
+1. **Configuration Issues**:
    ```bash
    # Check monitor intervals
    grep MONITOR_INTERVAL docker/mcp-servers/docker-compose.yml
@@ -381,7 +381,7 @@ docker exec -it dopemux-redis-primary \
    docker compose restart adhd-engine
    ```
 
-3. **Redis Data Corruption**:
+1. **Redis Data Corruption**:
    ```bash
    # Clear monitor data
    docker exec -it dopemux-redis-primary \
@@ -422,7 +422,7 @@ grep API_KEY docker/mcp-servers/docker-compose.yml
    docker compose restart adhd-engine
    ```
 
-2. **JWT Secret Issues**:
+1. **JWT Secret Issues**:
    ```bash
    # Check JWT secret
    echo $JWT_SECRET_KEY
@@ -432,7 +432,7 @@ grep API_KEY docker/mcp-servers/docker-compose.yml
    docker compose restart adhd-engine
    ```
 
-3. **CORS Origin Issues**:
+1. **CORS Origin Issues**:
    ```bash
    # Add frontend origin to allowed list
    export ALLOWED_ORIGINS=http://localhost:3000,https://myapp.com
@@ -463,14 +463,14 @@ curl -I http://localhost:8080/health
    docker compose restart adhd-engine
    ```
 
-2. **IP-Based Whitelisting**:
+1. **IP-Based Whitelisting**:
    ```bash
    # Add trusted IPs to bypass rate limiting
    export TRUSTED_IPS=192.168.1.0/24,10.0.0.0/8
    docker compose restart adhd-engine
    ```
 
-3. **Rate Limit Bypass for Dashboard**:
+1. **Rate Limit Bypass for Dashboard**:
    ```bash
    # Allow dashboard higher limits
    export DASHBOARD_RATE_LIMIT=500
@@ -508,16 +508,16 @@ cat .env | grep -v "^#"
    EOF
    ```
 
-2. **Docker Compose Not Reading .env**:
+1. **Docker Compose Not Reading .env**:
    ```bash
    # Add env_file to docker-compose.yml
    services:
      adhd-engine:
        env_file:
-         - .env
+- .env
    ```
 
-3. **Environment Variable Precedence**:
+1. **Environment Variable Precedence**:
    ```bash
    # Export takes precedence over .env
    unset REDIS_URL  # Let .env value take effect
@@ -531,17 +531,17 @@ cat .env | grep -v "^#"
 # Create alert configuration
 cat > monitoring/alerts.yml << EOF
 alerts:
-  - name: adhd_engine_down
+- name: adhd_engine_down
     condition: up{job="adhd-engine"} == 0
     severity: critical
     message: "ADHD Engine service is down"
 
-  - name: dashboard_high_error_rate
+- name: dashboard_high_error_rate
     condition: rate(errors_total{job="adhd-dashboard"}[5m]) > 0.1
     severity: warning
     message: "Dashboard error rate above 10%"
 
-  - name: redis_memory_high
+- name: redis_memory_high
     condition: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
     severity: warning
     message: "Redis memory usage above 80%"

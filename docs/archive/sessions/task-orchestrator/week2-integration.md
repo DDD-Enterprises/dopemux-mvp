@@ -184,8 +184,8 @@ except Exception as e:
 
 **To Activate**:
 1. Uncomment the `await mcp__...` calls
-2. Remove the `# Would call:` comments
-3. Test with real ConPort/Serena/Zen
+1. Remove the `# Would call:` comments
+1. Test with real ConPort/Serena/Zen
 
 **Production Activation**: When 7 agents are complete and tested
 

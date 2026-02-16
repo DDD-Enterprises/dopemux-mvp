@@ -86,14 +86,14 @@ Phase 4 (Day 6):    Enable for all services (full rollout)
 - ✅ 31 unit tests for ADHDConfigService
 - ✅ 14 unit tests for Feature Flags
 - ✅ Total: 45 test cases covering:
-  - Max results adaptation (scattered → 5, focused → 15, hyperfocused → 40)
-  - Complexity threshold adaptation (very_low → 0.3, high → 0.9)
-  - Context depth adaptation (scattered → 1, focused → 3)
-  - Break suggestion logic
-  - Cache behavior (5-minute TTL)
-  - Priority hierarchy (user > service > global)
-  - Rollout scenarios (beta → service → global)
-  - Graceful degradation when ADHD Engine unavailable
+- Max results adaptation (scattered → 5, focused → 15, hyperfocused → 40)
+- Complexity threshold adaptation (very_low → 0.3, high → 0.9)
+- Context depth adaptation (scattered → 1, focused → 3)
+- Break suggestion logic
+- Cache behavior (5-minute TTL)
+- Priority hierarchy (user > service > global)
+- Rollout scenarios (beta → service → global)
+- Graceful degradation when ADHD Engine unavailable
 
 **Status**: Modules import successfully, test suite ready for execution after path adjustments
 
@@ -155,15 +155,15 @@ max_results = await adhd_config.get_max_results(user_id)
 
 ### Day 2 Tasks (Tomorrow):
 1. **Migrate Serena ADHDCodeNavigator** (1 focus block, 25min)
-   - Replace hardcoded `max_initial_results = 10`
-   - Replace hardcoded `complexity_threshold = 0.7`
-   - Replace hardcoded `max_context_depth = 3`
-   - Add ADHDConfigService queries with feature flags
+- Replace hardcoded `max_initial_results = 10`
+- Replace hardcoded `complexity_threshold = 0.7`
+- Replace hardcoded `max_context_depth = 3`
+- Add ADHDConfigService queries with feature flags
 
-2. **Migrate Serena CognitiveLoadManager** (1 focus block, 25min)
-   - Replace hardcoded `max_load_threshold = 0.8`
-   - Replace hardcoded `break_suggestion_threshold = 0.9`
-   - Integrate with ADHD Engine break suggestions
+1. **Migrate Serena CognitiveLoadManager** (1 focus block, 25min)
+- Replace hardcoded `max_load_threshold = 0.8`
+- Replace hardcoded `break_suggestion_threshold = 0.9`
+- Integrate with ADHD Engine break suggestions
 
 **Files to Modify**:
 - `services/serena/v2/adhd_features.py` (lines 92-102, 460-461)

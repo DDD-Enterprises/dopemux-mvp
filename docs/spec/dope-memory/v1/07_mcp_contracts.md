@@ -247,11 +247,11 @@ Mechanically supersedes or retracts an existing entry.
 ## Output Determinism Notes
 - memory_search ordering is deterministic per retrieval spec.
 - memory_recap uses deterministic selection:
-  - choose top 3 entries in scope by (importance_score desc, ts desc, id asc),
-  - then render:
-    - card1 = highest decision if present else highest entry
-    - card2 = highest blocker/error if present else next
-    - card3 = suggested_next derived from last entry_type:
-      - if blocker/error exists -> "Resolve blocker: {summary}"
-      - else -> "Continue: {summary}"
+- choose top 3 entries in scope by (importance_score desc, ts desc, id asc),
+- then render:
+- card1 = highest decision if present else highest entry
+- card2 = highest blocker/error if present else next
+- card3 = suggested_next derived from last entry_type:
+- if blocker/error exists -> "Resolve blocker: {summary}"
+- else -> "Continue: {summary}"
 No LLM involvement in Phase 1 recap rendering.

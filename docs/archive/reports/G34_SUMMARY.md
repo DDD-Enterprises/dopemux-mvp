@@ -18,10 +18,10 @@ prelude: G34_Summary (explanation) for dopemux documentation and developer workf
 
 ### Phase 1: Syntax Errors Fixed (5 fixes)
 1. **dopecon-bridge/orchestrator_endpoints.py:414** - Fixed malformed function name `slogger.info` → `sprint_info`
-2. **task-orchestrator/enhanced_orchestrator.py:1167** - Fixed `slogger.info` → `sprint_optimizations`
-3. **task-orchestrator/enhanced_orchestrator.py:1689** - Fixed `slogger.info` → `sprint_info`
-4. **task-orchestrator/query_server.py:153** - Fixed `slogger.info` → `sprint_info` (2 occurrences)
-5. **task-orchestrator/zen_client.py:23** - Moved misplaced imports out of return statement
+1. **task-orchestrator/enhanced_orchestrator.py:1167** - Fixed `slogger.info` → `sprint_optimizations`
+1. **task-orchestrator/enhanced_orchestrator.py:1689** - Fixed `slogger.info` → `sprint_info`
+1. **task-orchestrator/query_server.py:153** - Fixed `slogger.info` → `sprint_info` (2 occurrences)
+1. **task-orchestrator/zen_client.py:23** - Moved misplaced imports out of return statement
 
 **Verification**: `python -m compileall` shows 0 syntax errors ✅
 
@@ -48,9 +48,9 @@ prelude: G34_Summary (explanation) for dopemux documentation and developer workf
 
 **Analysis**:
 - conport's `app.py` imports:
-  - `from dopemux.logging import configure_logging`
-  - `from dopemux.runtime import lifespan_context, record_crash`
-  - `from dopemux.service_base import build_app`
+- `from dopemux.logging import configure_logging`
+- `from dopemux.runtime import lifespan_context, record_crash`
+- `from dopemux.service_base import build_app`
 - These modules exist as empty directories in `src/dopemux/` (only `__pycache__`)
 - No actual `.py` files found in these directories
 - Dockerfile line 21 installs dopemux package but these modules don't exist
@@ -110,8 +110,8 @@ Applications:
 ### Fix 1: Conport Missing Modules (Critical)
 **Options**:
 1. Remove dopemux shared library imports from conport (make it standalone)
-2. Create minimal stub modules (`dopemux/logging/__init__.py`, etc.)
-3. Fix dopemux package to actually include these modules
+1. Create minimal stub modules (`dopemux/logging/__init__.py`, etc.)
+1. Fix dopemux package to actually include these modules
 
 **Recommendation**: Option 1 (standalone) - conport should be self-contained
 

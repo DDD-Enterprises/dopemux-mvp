@@ -18,8 +18,8 @@ task-orchestrator workflow runtime.
 ## Prerequisites
 
 1. `task-orchestrator` is reachable (`GET /health` returns 200).
-2. DopeconBridge is available for workflow persistence.
-3. Optional: Leantime bridge is configured if you want promote-time sync.
+1. DopeconBridge is available for workflow persistence.
+1. Optional: Leantime bridge is configured if you want promote-time sync.
 
 Set service URL:
 
@@ -133,5 +133,5 @@ Workflow endpoints map errors as:
 
 1. If Leantime sync fails during promote, epic creation still succeeds and
    response includes a non-empty `warning`.
-2. Persistence categories are `workflow_ideas` and `workflow_epics`.
-3. Runtime defaults can be tuned with `DOPMUX_WORKFLOW_*` env variables.
+1. Persistence categories are `workflow_ideas` and `workflow_epics`.
+1. Runtime defaults can be tuned with `DOPMUX_WORKFLOW_*` env variables.

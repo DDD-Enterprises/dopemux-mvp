@@ -17,7 +17,7 @@ Operational truth: quotas reset and we want auto-switch-back behaviors. Manage c
 
 ## Non-negotiable invariants
 1. **Fail-Safe**: If limits cannot be verified (network down), assume "Safe Mode" (Lowest Cost) or Block, depending on config.
-2. **User Notification**: Never block a task silently. Always notify "Limit Reached" and offer Override.
+1. **User Notification**: Never block a task silently. Always notify "Limit Reached" and offer Override.
 
 ## FACT ANCHORS (Repo-derived)
 
@@ -29,9 +29,9 @@ Operational truth: quotas reset and we want auto-switch-back behaviors. Manage c
 
 ## Open questions
 - **Multi-Instance Aggregation**: How do we aggregate usage across concurrent instances?
-  - *Resolution*: Use file locking on `usage.json` or a dedicated Usage MCP.
+- *Resolution*: Use file locking on `usage.json` or a dedicated Usage MCP.
 - **Multi-Instance Aggregation**: How do we aggregate usage across concurrent instances?
-  - *Resolution*: Use file locking on `usage.json` or a dedicated Usage MCP.
+- *Resolution*: Use file locking on `usage.json` or a dedicated Usage MCP.
 
 ## Tracking model
 **Fields per Record**:
@@ -65,9 +65,9 @@ Operational truth: quotas reset and we want auto-switch-back behaviors. Manage c
 ## Reset behavior
 - **Trigger**: Date crosses `reset_date`.
 - **Action**:
-  - Archive `usage.json` to `usage_2024-02.json`.
-  - Reset counters in memory.
-  - **Auto-Switch-Back**: If currently forced to "Economy Mode" due to limits, switch back to "Performance Mode" defaults.
+- Archive `usage.json` to `usage_2024-02.json`.
+- Reset counters in memory.
+- **Auto-Switch-Back**: If currently forced to "Economy Mode" due to limits, switch back to "Performance Mode" defaults.
 
 ## Minimum implementation
 - **Local Store**: Single JSON file `.dopemux/usage.json`.
@@ -75,10 +75,10 @@ Operational truth: quotas reset and we want auto-switch-back behaviors. Manage c
 
 ## Failure modes
 - **Stale Pricing**: Cost estimated using old rates.
-  - *Mitigation*: Version the pricing config. Warn if > 30 days old.
+- *Mitigation*: Version the pricing config. Warn if > 30 days old.
 - **Missing Data**: Runner doesn't report tokens.
-  - *Fallback*: Estimate based on character count (approx 4 chars/token).
+- *Fallback*: Estimate based on character count (approx 4 chars/token).
 
 ## Acceptance criteria
 1. **Cap Test**: Set budget to $0.05. Run tasks. Ensure system warns/blocks once $0.05 is hit.
-2. **Reset Test**: Manually set date to transition day. Ensure stats reset and archive is created.
+1. **Reset Test**: Manually set date to transition day. Ensure stats reset and archive is created.

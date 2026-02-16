@@ -52,19 +52,19 @@ prelude: Hardcoded_Paths_Audit (explanation) for dopemux documentation and devel
 **Scripts with `/Users/hue` (30 files):**
 
 1. `scripts/mcp-wrappers/*.sh` - MCP server wrappers
-   - Fix: Use `$HOME/.dopemux` instead of `/Users/hue`
+- Fix: Use `$HOME/.dopemux` instead of `/Users/hue`
 
-2. `scripts/migration/*.py` - Database migration scripts
-   - Fix: Accept workspace path as CLI argument
+1. `scripts/migration/*.py` - Database migration scripts
+- Fix: Accept workspace path as CLI argument
 
-3. `scripts/setup-leantime-env.sh` - Leantime setup
-   - Fix: Use `DOPEMUX_HOME` env var
+1. `scripts/setup-leantime-env.sh` - Leantime setup
+- Fix: Use `DOPEMUX_HOME` env var
 
-4. `scripts/deploy_serena_complete_system.py` - Serena deployment
-   - Fix: Detect workspace via git or pass as arg
+1. `scripts/deploy_serena_complete_system.py` - Serena deployment
+- Fix: Detect workspace via git or pass as arg
 
-5. `integration/claude-code/install-dopemux-claude.sh` - Claude Code integration
-   - Fix: Template-based generation
+1. `integration/claude-code/install-dopemux-claude.sh` - Claude Code integration
+- Fix: Template-based generation
 
 ---
 
@@ -122,14 +122,14 @@ workspace_id = os.getenv("DOPEMUX_WORKSPACE_ROOT")
 ```yaml
 # Before:
 volumes:
-  - /Users/hue/code/dopemux-mvp:/app
+- /Users/hue/code/dopemux-mvp:/app
 
 # After:
 volumes:
-  - ${DOPEMUX_WORKSPACE}:/app
+- ${DOPEMUX_WORKSPACE}:/app
 
 # Or for shared data:
-  - ${DOPEMUX_HOME}/databases:/data
+- ${DOPEMUX_HOME}/databases:/data
 ```
 
 ### **Pattern 4: MCP Server Paths**
@@ -165,20 +165,20 @@ ZEN_DEV_PATH=~/code/zen-mcp-server  # If exists, use this instead of submodule
 
 ### **Phase 1: Create Template System**
 1. Create `.env.template` with `${DOPEMUX_HOME}` placeholders
-2. Create `.claude.json.template` with variable substitution
-3. Create `docker-compose.template.yml` with env var placeholders
+1. Create `.claude.json.template` with variable substitution
+1. Create `docker-compose.template.yml` with env var placeholders
 
 ### **Phase 2: Update All Scripts**
 1. Replace hardcoded paths with env vars
-2. Add workspace detection functions
-3. Use `~/.dopemux` for global resources
-4. Use detected workspace for project-specific resources
+1. Add workspace detection functions
+1. Use `~/.dopemux` for global resources
+1. Use detected workspace for project-specific resources
 
 ### **Phase 3: Generate Configs on Setup**
 1. `scripts/setup.sh` creates `~/.dopemux/`
-2. `dopemux init` generates `.dopemux/` in project
-3. Both substitute env vars into templates
-4. Validation checks all paths exist
+1. `dopemux init` generates `.dopemux/` in project
+1. Both substitute env vars into templates
+1. Validation checks all paths exist
 
 ---
 
@@ -200,19 +200,19 @@ After transformation, verify:
 
 ### **Critical (Do First):**
 1. `.claude.json` template system
-2. `docker-compose.yml` env var substitution
-3. Workspace detection in core CLI
-4. MCP wrapper scripts
+1. `docker-compose.yml` env var substitution
+1. Workspace detection in core CLI
+1. MCP wrapper scripts
 
 ### **High (Do Soon):**
 1. Migration scripts parameterization
-2. Setup automation scripts
-3. Example scripts documentation
+1. Setup automation scripts
+1. Example scripts documentation
 
 ### **Low (Can Defer):**
 1. Test fixtures (use temp dirs)
-2. Old backup scripts
-3. One-off deployment scripts
+1. Old backup scripts
+1. One-off deployment scripts
 
 ---
 

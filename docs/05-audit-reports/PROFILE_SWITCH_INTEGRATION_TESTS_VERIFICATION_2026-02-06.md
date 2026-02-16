@@ -23,16 +23,16 @@ Closure verification for execution-packet backlog item:
 Added integration-style coverage in `tests/unit/test_profile_use_command.py`:
 
 1. `test_switch_full_to_developer_to_full_flow_with_context`
-   - validates sequential switch flow:
-     - `full -> developer`
-     - `developer -> full`
-   - validates save-context and restore-context calls on each switch
-   - validates switch timing summary emission
+- validates sequential switch flow:
+- `full -> developer`
+- `developer -> full`
+- validates save-context and restore-context calls on each switch
+- validates switch timing summary emission
 
 ## Verification
 
 1. `pytest -q --no-cov tests/unit/test_profile_use_command.py` passed.
-2. `pytest -q --no-cov tests/unit/test_profile_cli_registration.py` passed.
+1. `pytest -q --no-cov tests/unit/test_profile_cli_registration.py` passed.
 
 ## Status
 

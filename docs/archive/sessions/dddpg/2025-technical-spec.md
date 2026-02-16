@@ -27,10 +27,10 @@ prelude: 2025 Technical Spec (explanation) for dopemux documentation and develop
 
 ### Core Capabilities
 1. **Decision Tracking**: Track every development decision with full context
-2. **Knowledge Graph**: Intelligent relationship mapping via PostgreSQL AGE
-3. **ADHD Optimization**: Top-3 pattern, progressive disclosure, cognitive load awareness
-4. **Multi-Instance**: Git worktree-aware workspace isolation
-5. **Agent Coordination**: Flexible metadata for multi-agent systems
+1. **Knowledge Graph**: Intelligent relationship mapping via PostgreSQL AGE
+1. **ADHD Optimization**: Top-3 pattern, progressive disclosure, cognitive load awareness
+1. **Multi-Instance**: Git worktree-aware workspace isolation
+1. **Agent Coordination**: Flexible metadata for multi-agent systems
 
 ---
 
@@ -85,37 +85,37 @@ prelude: 2025 Technical Spec (explanation) for dopemux documentation and develop
 #### QueryService
 - **Role**: Public API surface
 - **Responsibilities**:
-  - Input validation
-  - Optional KG integration
-  - Graceful fallbacks
-  - ADHD query patterns
+- Input validation
+- Optional KG integration
+- Graceful fallbacks
+- ADHD query patterns
 - **Dependencies**: StorageBackend, DDDPGKG (optional)
 
 #### SuggestionEngine
 - **Role**: Context-aware task recommendations
 - **Responsibilities**:
-  - Energy/time/focus matching
-  - Dependency satisfaction
-  - Result caching (5 min TTL)
-  - Pattern mining (future)
+- Energy/time/focus matching
+- Dependency satisfaction
+- Result caching (5 min TTL)
+- Pattern mining (future)
 - **Dependencies**: DDDPGKG, RelationshipMapper
 
 #### RelationshipMapper
 - **Role**: Aggregate KG queries into composite views
 - **Responsibilities**:
-  - Parallel query coordination
-  - Data synthesis
-  - Cluster identification
-  - Context building
+- Parallel query coordination
+- Data synthesis
+- Cluster identification
+- Context building
 - **Dependencies**: DDDPGKG
 
 #### DDDPGKG
 - **Role**: Knowledge graph primitive operations
 - **Responsibilities**:
-  - Single-purpose queries
-  - Direct AGE access
-  - Graceful degradation
-  - Security (parameterized queries)
+- Single-purpose queries
+- Direct AGE access
+- Graceful degradation
+- Security (parameterized queries)
 - **Dependencies**: AGEClient (optional)
 
 ---
@@ -235,9 +235,9 @@ async def exploration(
     Progressive disclosure - explore decision graph.
 
     Depth levels:
-    - 1: Direct relationships only
-    - 2: + Second-degree relationships
-    - 3: Full context dump
+- 1: Direct relationships only
+- 2: + Second-degree relationships
+- 3: Full context dump
     """
 ```
 
@@ -254,8 +254,8 @@ async def search(
     Search decisions.
 
     search_type:
-    - fts: SQLite FTS5 full-text search
-    - semantic: Vector similarity (requires embeddings)
+- fts: SQLite FTS5 full-text search
+- semantic: Vector similarity (requires embeddings)
     """
 ```
 
@@ -670,16 +670,16 @@ services:
   dddpg:
     image: dopemux/dddpg:latest
     environment:
-      - POSTGRES_DSN=${POSTGRES_DSN}
-      - REDIS_URL=${REDIS_URL}
-      - DDDPG_WORKSPACE_ID=${DDDPG_WORKSPACE_ID}
+- POSTGRES_DSN=${POSTGRES_DSN}
+- REDIS_URL=${REDIS_URL}
+- DDDPG_WORKSPACE_ID=${DDDPG_WORKSPACE_ID}
     depends_on:
-      - postgres
-      - redis
+- postgres
+- redis
     volumes:
-      - ./data:/data
+- ./data:/data
     ports:
-      - "8000:8000"
+- "8000:8000"
 ```
 
 ---

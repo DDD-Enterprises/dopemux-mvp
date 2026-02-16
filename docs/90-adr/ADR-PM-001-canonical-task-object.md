@@ -13,8 +13,8 @@ graph_metadata:
   node_type: ADR
   impact: high
   relates_to:
-  - PM_ARCHITECTURE
-  - ADR-207-architecture-3.0-three-layer-integration
+- PM_ARCHITECTURE
+- ADR-207-architecture-3.0-three-layer-integration
 ---
 # Context
 
@@ -36,21 +36,21 @@ PM plane adopts one canonical task object as the only authority for lifecycle st
 Invariants:
 
 1. `task_id` is immutable and globally stable for the task lifecycle.
-2. `status` uses only canonical enum: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `CANCELED`.
-3. Every transition request includes an idempotency key; duplicate keys are no-op replays.
-4. `updated_at_utc` and `version` are monotonic; stale writes are refused.
-5. Link fields to ConPort/Chronicle/Leantime/Taskmaster are references only, never alternate truth stores.
+1. `status` uses only canonical enum: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `CANCELED`.
+1. Every transition request includes an idempotency key; duplicate keys are no-op replays.
+1. `updated_at_utc` and `version` are monotonic; stale writes are refused.
+1. Link fields to ConPort/Chronicle/Leantime/Taskmaster are references only, never alternate truth stores.
 
 # Consequences
 
 - Positive:
-  - Deterministic lifecycle behavior across task-orchestrator, taskmaster, and CLI surfaces.
-  - Explicit source and provenance tracking for auditability.
-  - Simpler failure handling via one transition contract.
+- Deterministic lifecycle behavior across task-orchestrator, taskmaster, and CLI surfaces.
+- Explicit source and provenance tracking for auditability.
+- Simpler failure handling via one transition contract.
 - Tradeoffs:
-  - Existing status dialects require explicit mapping logic.
-  - Producer adapters must supply idempotency inputs.
-  - Some existing advisory states become overlays, not lifecycle states.
+- Existing status dialects require explicit mapping logic.
+- Producer adapters must supply idempotency inputs.
+- Some existing advisory states become overlays, not lifecycle states.
 
 # Alternatives Considered
 

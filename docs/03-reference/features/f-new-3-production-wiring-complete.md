@@ -113,9 +113,9 @@ unified = clamp(0.0, 1.0)
 
 **Results**: ✅ 4/4 tests passing (100%)
 1. Coordinator initialization
-2. Unified complexity calculation
-3. Convenience function wrapper
-4. User-specific ADHD adjustments
+1. Unified complexity calculation
+1. Convenience function wrapper
+1. User-specific ADHD adjustments
 
 **Validation**:
 - ✅ Weights sum to 1.0
@@ -162,33 +162,33 @@ unified = clamp(0.0, 1.0)
 
 ### ✅ Complete
 1. Framework implemented and tested
-2. AST complexity wired (dope-context chunking)
-3. LSP complexity wired (Serena analyzer)
-4. Usage complexity wired (Serena database)
-5. ADHD multiplier wired (ADHD Engine state)
-6. Serena MCP tool registered and callable
+1. AST complexity wired (dope-context chunking)
+1. LSP complexity wired (Serena analyzer)
+1. Usage complexity wired (Serena database)
+1. ADHD multiplier wired (ADHD Engine state)
+1. Serena MCP tool registered and callable
 
 ### ⏳ Optional Enhancements
 1. Redis caching layer (reduce repeat queries)
-2. Batch complexity analysis (multiple files at once)
-3. Historical complexity tracking (trend analysis)
-4. Complexity-based code organization suggestions
+1. Batch complexity analysis (multiple files at once)
+1. Historical complexity tracking (trend analysis)
+1. Complexity-based code organization suggestions
 
 ---
 
 ## Files Modified
 
 1. **services/complexity_coordinator/unified_complexity.py** (+80 lines production code)
-   - AST integration with dope-context chunks
-   - LSP integration with Serena analyzer
-   - Usage integration with Serena database
-   - ADHD integration with state-based multiplier
+- AST integration with dope-context chunks
+- LSP integration with Serena analyzer
+- Usage integration with Serena database
+- ADHD integration with state-based multiplier
 
-2. **services/serena/v2/mcp_server.py** (+70 lines)
-   - Tool schema registration
-   - Tool handler routing
-   - Tool implementation method
-   - Startup message updates (23 → 24 tools)
+1. **services/serena/v2/mcp_server.py** (+70 lines)
+- Tool schema registration
+- Tool handler routing
+- Tool implementation method
+- Startup message updates (23 → 24 tools)
 
 **Total**: +150 lines production integration code
 

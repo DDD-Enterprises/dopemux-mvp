@@ -165,11 +165,11 @@ services:
     image: qdrant/qdrant:latest
     container_name: dope-qdrant
     ports:
-      - "6333:6333"
+- "6333:6333"
     volumes:
-      - ./qdrant_storage:/qdrant/storage
+- ./qdrant_storage:/qdrant/storage
     environment:
-      - QDRANT__STORAGE__MMAP_THRESHOLD=1000000
+- QDRANT__STORAGE__MMAP_THRESHOLD=1000000
     restart: unless-stopped
 
   dope-context:
@@ -178,15 +178,15 @@ services:
       dockerfile: Dockerfile
     container_name: dope-context-mcp
     environment:
-      - VOYAGE_API_KEY=${VOYAGE_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - QDRANT_URL=qdrant
-      - QDRANT_PORT=6333
+- VOYAGE_API_KEY=${VOYAGE_API_KEY}
+- ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+- QDRANT_URL=qdrant
+- QDRANT_PORT=6333
     volumes:
-      - ${HOME}/.dope-context:/root/.dope-context
-      - ${WORKSPACE_PATH}:/workspace:ro
+- ${HOME}/.dope-context:/root/.dope-context
+- ${WORKSPACE_PATH}:/workspace:ro
     depends_on:
-      - qdrant
+- qdrant
     stdin_open: true
     tty: true
 ```
@@ -267,19 +267,19 @@ services:
   qdrant-node-1:
     image: qdrant/qdrant:latest
     environment:
-      - QDRANT__CLUSTER__ENABLED=true
-      - QDRANT__CLUSTER__NODE_ID=1
+- QDRANT__CLUSTER__ENABLED=true
+- QDRANT__CLUSTER__NODE_ID=1
     volumes:
-      - ./qdrant_storage_1:/qdrant/storage
+- ./qdrant_storage_1:/qdrant/storage
 
   qdrant-node-2:
     image: qdrant/qdrant:latest
     environment:
-      - QDRANT__CLUSTER__ENABLED=true
-      - QDRANT__CLUSTER__NODE_ID=2
-      - QDRANT__CLUSTER__BOOTSTRAP__NODE_URL=http://qdrant-node-1:6335
+- QDRANT__CLUSTER__ENABLED=true
+- QDRANT__CLUSTER__NODE_ID=2
+- QDRANT__CLUSTER__BOOTSTRAP__NODE_URL=http://qdrant-node-1:6335
     volumes:
-      - ./qdrant_storage_2:/qdrant/storage
+- ./qdrant_storage_2:/qdrant/storage
 
   # Add more nodes as needed
 ```
@@ -376,8 +376,8 @@ export VOYAGE_API_KEY=$(cat /secure/voyage.key)
 services:
   dope-context:
     secrets:
-      - voyage_api_key
-      - anthropic_api_key
+- voyage_api_key
+- anthropic_api_key
 
 secrets:
   voyage_api_key:
@@ -404,8 +404,8 @@ RUN mkdir -p /root/.dope-context/snapshots && \
 ```yaml
 qdrant:
   environment:
-    - QDRANT__SERVICE__API_KEY=secure-random-key
-    - QDRANT__SERVICE__ENABLE_TLS=true
+- QDRANT__SERVICE__API_KEY=secure-random-key
+- QDRANT__SERVICE__ENABLE_TLS=true
 ```
 
 **Access Control:**
@@ -502,21 +502,21 @@ spec:
         app: dope-context
     spec:
       containers:
-      - name: dope-context
+- name: dope-context
         image: dope-context:latest
         env:
-        - name: VOYAGE_API_KEY
+- name: VOYAGE_API_KEY
           valueFrom:
             secretKeyRef:
               name: api-keys
               key: voyage
-        - name: QDRANT_URL
+- name: QDRANT_URL
           value: "qdrant-service.default.svc.cluster.local"
         volumeMounts:
-        - name: snapshots
+- name: snapshots
           mountPath: /root/.dope-context
       volumes:
-      - name: snapshots
+- name: snapshots
         persistentVolumeClaim:
           claimName: dope-context-snapshots
 ```
@@ -593,9 +593,9 @@ python src/mcp/server.py 2>&1 | tee server.log
 **Common issues:**
 
 1. Missing API keys: Check `VOYAGE_API_KEY`
-2. Qdrant not running: `docker ps | grep qdrant`
-3. Port conflicts: Change `QDRANT_PORT`
-4. Python version: Requires 3.11+
+1. Qdrant not running: `docker ps | grep qdrant`
+1. Port conflicts: Change `QDRANT_PORT`
+1. Python version: Requires 3.11+
 
 ### Can't Connect to Qdrant
 
@@ -764,8 +764,8 @@ async def search_code(...):
 After deployment:
 
 1. **Index your workspaces**: Run `index_workspace` for each project
-2. **Set up sync**: Add to git hooks or cron
-3. **Monitor performance**: Track latencies and costs
-4. **Tune parameters**: Adjust based on usage patterns
+1. **Set up sync**: Add to git hooks or cron
+1. **Monitor performance**: Track latencies and costs
+1. **Tune parameters**: Adjust based on usage patterns
 
 For questions: See [architecture.md](architecture.md) and [api-reference.md](api-reference.md)

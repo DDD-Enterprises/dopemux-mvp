@@ -35,24 +35,24 @@ open http://localhost:8080
 ### Step 2: Complete Installation Wizard
 
 1. **Welcome Screen**: Click "Start Installation"
-2. **Database**: Already configured (skip/auto-filled)
-   - Host: `mysql_leantime`
-   - Database: `leantime`
-   - User: Auto-configured
-3. **Admin Account**: Create your admin user
-   - Username: `admin` (recommended)
-   - Email: your@email.com
-   - Password: Choose a strong password
-4. **Company Details**: Optional
+1. **Database**: Already configured (skip/auto-filled)
+- Host: `mysql_leantime`
+- Database: `leantime`
+- User: Auto-configured
+1. **Admin Account**: Create your admin user
+- Username: `admin` (recommended)
+- Email: your@email.com
+- Password: Choose a strong password
+1. **Company Details**: Optional
 
 ### Step 3: Generate API Token
 
 After installation:
 
 1. Log in as admin
-2. Go to **Settings** → **API**
-3. Click **Generate New Token**
-4. Copy the generated token
+1. Go to **Settings** → **API**
+1. Click **Generate New Token**
+1. Copy the generated token
 
 ### Step 4: Configure Bridge
 
@@ -214,21 +214,21 @@ API keys are stored in the `zp_user` table with:
 ### Step 1: Complete Leantime Installation
 
 1. Access http://localhost:8080
-2. Follow the installation wizard
-3. Create your admin account
+1. Follow the installation wizard
+1. Create your admin account
 
 ### Step 2: Generate API Key in Settings
 
 1. Log in as administrator
-2. Navigate to **Company Settings** (gear icon → Company Settings)
-3. Look for **API** or **API Keys** section
-4. Click **"Create New API Key"** or similar button
-5. Fill in:
-   - **Key Name**: "Dopemux MCP Bridge" (or descriptive name)
-   - **Role**: Admin (for full access)
-   - **Projects**: Select projects this key can access (or "All Projects")
-6. Click **Save/Create**
-7. **IMPORTANT**: Copy the full API key immediately - it's only shown once!
+1. Navigate to **Company Settings** (gear icon → Company Settings)
+1. Look for **API** or **API Keys** section
+1. Click **"Create New API Key"** or similar button
+1. Fill in:
+- **Key Name**: "Dopemux MCP Bridge" (or descriptive name)
+- **Role**: Admin (for full access)
+- **Projects**: Select projects this key can access (or "All Projects")
+1. Click **Save/Create**
+1. **IMPORTANT**: Copy the full API key immediately - it's only shown once!
 
 ### Step 3: Configure MCP Bridge
 
@@ -397,18 +397,18 @@ Common JSON-RPC methods (format: `leantime.rpc.<domain>.<method>`):
 From analysis of Leantime source code:
 
 1. **API Key Controller**: `/app/Domain/Api/Controllers/NewApiKey.php`
-   - Handles API key creation via web UI
+- Handles API key creation via web UI
 
-2. **API Service**: `/app/Domain/Api/Services/Api.php`
-   - `createAPIKey()` - Creates API keys
-   - `getAPIKeyUser()` - Validates API keys
-   - Key validation splits on `_` and verifies: `lt_<user>_<secret>`
+1. **API Service**: `/app/Domain/Api/Services/Api.php`
+- `createAPIKey()` - Creates API keys
+- `getAPIKeyUser()` - Validates API keys
+- Key validation splits on `_` and verifies: `lt_<user>_<secret>`
 
-3. **JSON-RPC Handler**: `/app/Domain/Api/Controllers/Jsonrpc.php`
-   - Routes JSON-RPC 2.0 requests to appropriate services
+1. **JSON-RPC Handler**: `/app/Domain/Api/Controllers/Jsonrpc.php`
+- Routes JSON-RPC 2.0 requests to appropriate services
 
-4. **User Repository**: `/app/Domain/Users/Repositories/Users.php`
-   - Stores API keys as users with `source='api'`
+1. **User Repository**: `/app/Domain/Users/Repositories/Users.php`
+- Stores API keys as users with `source='api'`
 
 ## Testing the Integration
 
@@ -445,15 +445,15 @@ python test_info_endpoint.py
 
 **For Development/Testing:**
 1. ✅ Complete Leantime installation via web UI (http://localhost:8080)
-2. ✅ Create API key in Company Settings
-3. ✅ Copy key to `.env` file
-4. ✅ Restart bridge
+1. ✅ Create API key in Company Settings
+1. ✅ Copy key to `.env` file
+1. ✅ Restart bridge
 
 **For Production/Automation:**
 1. Complete installation first
-2. Use the web UI to create keys with proper permissions
-3. Store keys securely (env vars, secrets manager)
-4. Monitor API usage and rotate keys periodically
+1. Use the web UI to create keys with proper permissions
+1. Store keys securely (env vars, secrets manager)
+1. Monitor API usage and rotate keys periodically
 
 ## Security Notes
 
@@ -505,28 +505,28 @@ python test_info_endpoint.py
 ### What You Have
 
 1. **Official Leantime Docker Image**: `leantime/leantime:latest`
-   - Pre-built, maintained by Leantime team
-   - Currently configured in `docker/leantime/docker-compose.yml`
-   - Running but not yet installed
+- Pre-built, maintained by Leantime team
+- Currently configured in `docker/leantime/docker-compose.yml`
+- Running but not yet installed
 
-2. **Custom Dopemux ADHD Plugin**:
-   - Located at: `docker/leantime/app/Plugins/Dopemux/`
-   - Features:
-     - Cognitive load tracking
-     - Attention state management
-     - Context preservation
-     - Break reminders
-     - ADHD-optimized notifications
-   - Mounted via volume to `/var/www/html/app/Plugins`
+1. **Custom Dopemux ADHD Plugin**:
+- Located at: `docker/leantime/app/Plugins/Dopemux/`
+- Features:
+- Cognitive load tracking
+- Attention state management
+- Context preservation
+- Break reminders
+- ADHD-optimized notifications
+- Mounted via volume to `/var/www/html/app/Plugins`
 
-3. **Volume Mounts** (Current Config):
+1. **Volume Mounts** (Current Config):
    ```yaml
    volumes:
-     - leantime_plugins:/var/www/html/app/Plugins  # ✓ Plugin support
-     - leantime_public_userfiles:/var/www/html/public/userfiles
-     - leantime_userfiles:/var/www/html/userfiles
-     - leantime_logs:/var/www/html/storage/logs
-     - leantime_config:/var/www/html/config
+- leantime_plugins:/var/www/html/app/Plugins  # ✓ Plugin support
+- leantime_public_userfiles:/var/www/html/public/userfiles
+- leantime_userfiles:/var/www/html/userfiles
+- leantime_logs:/var/www/html/storage/logs
+- leantime_config:/var/www/html/config
    ```
 
 ## 🎯 Recommendation: **Use Official Image + Plugin Mount**
@@ -536,35 +536,35 @@ python test_info_endpoint.py
 ✅ **Advantages:**
 
 1. **Maintained & Updated**
-   - Official images get security patches
-   - Compatible with new Leantime versions
-   - No custom build maintenance
+- Official images get security patches
+- Compatible with new Leantime versions
+- No custom build maintenance
 
-2. **Plugin System Works**
-   - Leantime's plugin architecture supports custom plugins
-   - Your Dopemux plugin can be mounted as a volume
-   - Changes to plugin code reflect immediately (development mode)
+1. **Plugin System Works**
+- Leantime's plugin architecture supports custom plugins
+- Your Dopemux plugin can be mounted as a volume
+- Changes to plugin code reflect immediately (development mode)
 
-3. **Simplified Operations**
-   - No custom Dockerfile to maintain
-   - Easy to update: `docker-compose pull && docker-compose up -d`
-   - Rollback is simple if needed
+1. **Simplified Operations**
+- No custom Dockerfile to maintain
+- Easy to update: `docker-compose pull && docker-compose up -d`
+- Rollback is simple if needed
 
-4. **MCP Integration Independent**
-   - API functionality is built into Leantime core
-   - MCP bridge works with standard Leantime
-   - Plugin adds ADHD features on top
+1. **MCP Integration Independent**
+- API functionality is built into Leantime core
+- MCP bridge works with standard Leantime
+- Plugin adds ADHD features on top
 
-5. **Best of Both Worlds**
-   - Standard Leantime stability
-   - Custom Dopemux ADHD features
-   - Easy to enable/disable plugin
+1. **Best of Both Worlds**
+- Standard Leantime stability
+- Custom Dopemux ADHD features
+- Easy to enable/disable plugin
 
 ❌ **Disadvantages:**
 
 1. Plugin must follow Leantime's plugin API
-2. Limited to plugin capabilities (can't modify core)
-3. Plugin updates separate from container updates
+1. Limited to plugin capabilities (can't modify core)
+1. Plugin updates separate from container updates
 
 ## Alternative: Custom Docker Image
 
@@ -619,7 +619,7 @@ leantime:
 leantime:
   image: leantime/leantime:latest  # ✓ Official image
   volumes:
-    - ./app/Plugins:/var/www/html/app/Plugins  # ✓ Mount custom plugin
+- ./app/Plugins:/var/www/html/app/Plugins  # ✓ Mount custom plugin
     # ... other volumes
 ```
 
@@ -630,9 +630,9 @@ leantime:
   image: leantime/leantime:latest
   volumes:
     # Mount only the Dopemux plugin
-    - ./app/Plugins/Dopemux:/var/www/html/app/Plugins/Dopemux:ro
+- ./app/Plugins/Dopemux:/var/www/html/app/Plugins/Dopemux:ro
     # Use named volumes for Leantime-managed plugins
-    - leantime_plugins:/var/www/html/app/Plugins
+- leantime_plugins:/var/www/html/app/Plugins
     # ... other volumes
 ```
 
@@ -645,7 +645,7 @@ leantime:
    # Volumes already configured
    ```
 
-2. **Complete Plugin Development**
+1. **Complete Plugin Development**
    ```bash
    cd docker/leantime/app/Plugins/Dopemux
 
@@ -655,7 +655,7 @@ leantime:
    # Test plugin hooks
    ```
 
-3. **Test Plugin Registration**
+1. **Test Plugin Registration**
    ```bash
    # After Leantime installation:
    # 1. Install Leantime via web UI
@@ -664,10 +664,10 @@ leantime:
    # 4. Verify ADHD features are active
    ```
 
-4. **Document Plugin Features**
-   - Create README for the plugin
-   - Document API endpoints
-   - Add usage examples
+1. **Document Plugin Features**
+- Create README for the plugin
+- Document API endpoints
+- Add usage examples
 
 ## Feature Comparison
 
@@ -852,20 +852,20 @@ curl -X POST http://localhost:8080/dopemux/api/context \
    $cognitiveLoad = filter_var($_POST['load'], FILTER_VALIDATE_INT);
    ```
 
-2. **SQL Injection Prevention**
+1. **SQL Injection Prevention**
    ```php
    // Use Leantime's query builder
    $db = app()->make(Database::class);
    $result = $db->where('id', $ticketId)->get('tickets');
    ```
 
-3. **XSS Prevention**
+1. **XSS Prevention**
    ```php
    // Escape output in templates
    <?= htmlspecialchars($data, ENT_QUOTES, 'UTF-8') ?>
    ```
 
-4. **CSRF Protection**
+1. **CSRF Protection**
    ```php
    // Use Leantime's CSRF tokens
    $csrf = session('formTokenValue');
@@ -883,7 +883,7 @@ curl -X POST http://localhost:8080/dopemux/api/context \
    }
    ```
 
-2. **Caching**
+1. **Caching**
    ```php
    // Cache expensive calculations
    $cache = app()->make(Cache::class);
@@ -892,7 +892,7 @@ curl -X POST http://localhost:8080/dopemux/api/context \
    });
    ```
 
-3. **Database Indexes**
+1. **Database Indexes**
    ```sql
    -- Add indexes for ADHD features
    CREATE INDEX idx_cognitive_load ON zp_tickets(cognitive_load);
@@ -953,18 +953,18 @@ cp docker/leantime/.env docker/leantime/.env.backup
 
 **Reasons:**
 1. ✓ Your current setup already implements this
-2. ✓ Plugin system supports all your ADHD features
-3. ✓ Easier to maintain and update
-4. ✓ MCP integration works perfectly
-5. ✓ Can switch to custom image later if needed
+1. ✓ Plugin system supports all your ADHD features
+1. ✓ Easier to maintain and update
+1. ✓ MCP integration works perfectly
+1. ✓ Can switch to custom image later if needed
 
 **Action Items:**
 1. ✓ Keep current docker-compose.yml configuration
-2. Complete Leantime installation (http://localhost:8080)
-3. Verify Dopemux plugin is recognized
-4. Enable and test ADHD features
-5. Create API key for MCP bridge
-6. Test end-to-end integration
+1. Complete Leantime installation (http://localhost:8080)
+1. Verify Dopemux plugin is recognized
+1. Enable and test ADHD features
+1. Create API key for MCP bridge
+1. Test end-to-end integration
 
 **Future Considerations:**
 - Monitor plugin performance

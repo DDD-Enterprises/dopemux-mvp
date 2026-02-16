@@ -22,11 +22,11 @@ prelude: Docker Audit Report (reference) for dopemux documentation and developer
 Your Docker setup is **complex but functional**. However, there are **critical issues preventing reliable operation**:
 
 1. **Orphan Container Problem** (IMMEDIATE) - 50+ exited containers from previous runs
-2. **Multi-stage Dockerfile Best Practices** - Not consistently applied
-3. **Image Layer Efficiency** - Several Dockerfiles have suboptimal caching patterns
-4. **Version Pinning** - Missing for some base images
-5. **Security Gaps** - Root user in some containers; missing non-root users
-6. **Health Check Inconsistencies** - Some services lack proper health checks
+1. **Multi-stage Dockerfile Best Practices** - Not consistently applied
+1. **Image Layer Efficiency** - Several Dockerfiles have suboptimal caching patterns
+1. **Version Pinning** - Missing for some base images
+1. **Security Gaps** - Root user in some containers; missing non-root users
+1. **Health Check Inconsistencies** - Some services lack proper health checks
 
 ---
 
@@ -425,7 +425,7 @@ USER www-data
 leantime:
   image: leantime/leantime:2.5.0  # PIN VERSION
   environment:
-    - LISTEN_PORT=80
+- LISTEN_PORT=80
   # OR use docker-entrypoint override
 ```
 
@@ -505,12 +505,12 @@ env_file: .env
 
 ```yaml
 volumes:
-  - ${DEFAULT_WORKSPACE_PATH:-/Users/hue/code/dopemux-mvp}:/workspace:ro
+- ${DEFAULT_WORKSPACE_PATH:-/Users/hue/code/dopemux-mvp}:/workspace:ro
 ```
 
 ```yaml
 environment:
-  - WORKSPACE_ID=/Users/hue/code/dopemux-mvp
+- WORKSPACE_ID=/Users/hue/code/dopemux-mvp
 ```
 
 **Problem**: Path is hardcoded to YOUR machine. Won't work on CI/CD or other devs' machines.
@@ -518,7 +518,7 @@ environment:
 **Fix**:
 ```yaml
 environment:
-  - WORKSPACE_ID=${WORKSPACE_ID:-.}  # Use current dir or env var
+- WORKSPACE_ID=${WORKSPACE_ID:-.}  # Use current dir or env var
 ```
 
 ```bash
@@ -664,7 +664,7 @@ USER appuser
 
 ```yaml
 environment:
-  - OPENAI_API_KEY=${OPENAI_API_KEY}
+- OPENAI_API_KEY=${OPENAI_API_KEY}
 ```
 
 **Risk**: Keys visible in `docker inspect` and compose logs.
@@ -674,7 +674,7 @@ environment:
 For development:
 ```yaml
 env_file:
-  - .env  # Add to .gitignore
+- .env  # Add to .gitignore
 ```
 
 For production:
@@ -874,15 +874,15 @@ chmod +x scripts/start.sh
 
 ### For Production Deployment
 1. Use Docker Hardened Images (DHI) for all runtime stages
-2. Implement proper secret management (don't use .env files)
-3. Add resource limits to prevent runaway containers
-4. Use health checks + orchestration (Kubernetes or Docker Swarm)
-5. Implement log aggregation (ELK, Loki, etc.)
-6. Set up monitoring (Prometheus + Grafana already present)
+1. Implement proper secret management (don't use .env files)
+1. Add resource limits to prevent runaway containers
+1. Use health checks + orchestration (Kubernetes or Docker Swarm)
+1. Implement log aggregation (ELK, Loki, etc.)
+1. Set up monitoring (Prometheus + Grafana already present)
 
 ### For Development
 1. Use docker-compose with `--remove-orphans` flag
-2. Create development-specific override compose file:
+1. Create development-specific override compose file:
 
 ```yaml
 # docker-compose.override.yml (auto-loaded by docker compose)
@@ -890,18 +890,18 @@ version: '3.8'
 services:
   dopemux-postgres-age:
     ports:
-      - "5432:5432"  # Expose for local psql access
+- "5432:5432"  # Expose for local psql access
   mcp-qdrant:
     ports:
-      - "6333:6333"  # Expose for local queries
+- "6333:6333"  # Expose for local queries
 ```
 
 ### For CI/CD
 1. Use multi-stage builds to minimize image size
-2. Pin all versions (no `latest`)
-3. Scan images with `docker scout cves`
-4. Push to private registry with tags: `latest`, `v1.0.0`, `sha-abc123`
-5. Use compose push/pull for orchestrated deployments
+1. Pin all versions (no `latest`)
+1. Scan images with `docker scout cves`
+1. Push to private registry with tags: `latest`, `v1.0.0`, `sha-abc123`
+1. Use compose push/pull for orchestrated deployments
 
 ---
 

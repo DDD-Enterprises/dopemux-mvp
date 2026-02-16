@@ -96,10 +96,10 @@ Reference docs in this section:
 
 When adding reference documentation:
 1. Be precise and accurate
-2. Use consistent formatting
-3. Include code examples where relevant
-4. Keep synced with implementation
-5. Cross-reference related topics
+1. Use consistent formatting
+1. Include code examples where relevant
+1. Keep synced with implementation
+1. Cross-reference related topics
 
 ---
 

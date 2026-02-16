@@ -86,14 +86,14 @@ The setup script automates the entire installation:
 
 **What it does**:
 1. ✅ Checks prerequisites (docker, git, python 3.11+)
-2. ✅ Creates `~/.dopemux/` directory structure
-3. ✅ Installs default profiles (python-ml, web-dev, adhd-default)
-4. ✅ Generates `.env` from template
-5. ✅ Installs dopemux package (`pip install -e .`)
-6. ✅ Initializes git submodules (Zen MCP)
-7. ✅ Creates Docker network
-8. ✅ Starts MCP services
-9. ✅ Runs health check
+1. ✅ Creates `~/.dopemux/` directory structure
+1. ✅ Installs default profiles (python-ml, web-dev, adhd-default)
+1. ✅ Generates `.env` from template
+1. ✅ Installs dopemux package (`pip install -e .`)
+1. ✅ Initializes git submodules (Zen MCP)
+1. ✅ Creates Docker network
+1. ✅ Starts MCP services
+1. ✅ Runs health check
 
 **Options**:
 ```bash
@@ -160,11 +160,11 @@ dopemux init
 
 **The wizard will**:
 1. Auto-detect project type (Python ML, web dev, etc.)
-2. Suggest appropriate profile
-3. Prompt for confirmation or selection
-4. Create `.dopemux/` directory
-5. Set active profile
-6. Display next steps
+1. Suggest appropriate profile
+1. Prompt for confirmation or selection
+1. Create `.dopemux/` directory
+1. Set active profile
+1. Display next steps
 
 **Manual profile selection**:
 ```bash
@@ -275,9 +275,9 @@ curl https://api.openai.com/v1/models \
 After installation:
 
 1. **Explore commands**: `dopemux --help`
-2. **List profiles**: `dopemux profile list`
-3. **Initialize project**: `dopemux init`
-4. **Start working**: `dopemux start`
+1. **List profiles**: `dopemux profile list`
+1. **Initialize project**: `dopemux init`
+1. **Start working**: `dopemux start`
 
 **ConPort Decision Support**:
 ```bash

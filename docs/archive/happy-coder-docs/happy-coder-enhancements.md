@@ -47,9 +47,9 @@ The current Happy Coder integration (v1.0) is **production-ready and should be s
 ### Known Limitations
 
 1. **Notification Spam**: No batching for rapid tasks (50 files = 50 notifications)
-2. **Sleep Disruption**: No quiet hours for late-night coding
-3. **No Prioritization**: All notifications treated equally
-4. **tmux Dependency**: Requires tmux environment
+1. **Sleep Disruption**: No quiet hours for late-night coding
+1. **No Prioritization**: All notifications treated equally
+1. **tmux Dependency**: Requires tmux environment
 
 **Verdict**: Limitations are **minor** and can be addressed incrementally. Ship v1.0!
 
@@ -502,9 +502,9 @@ def test_critical_always_delivered():
 ## 🎯 Recommendation
 
 1. **Ship v1.0 NOW** ✅ (already done!)
-2. **Implement enhancements incrementally** (3-week roadmap)
-3. **Collect user feedback** (validate assumptions)
-4. **Iterate based on real usage** (avoid over-engineering)
+1. **Implement enhancements incrementally** (3-week roadmap)
+1. **Collect user feedback** (validate assumptions)
+1. **Iterate based on real usage** (avoid over-engineering)
 
 **Key Principle**: All enhancements are **opt-in** and **backward compatible**. v1.0 users see no changes unless they enable features.
 
@@ -516,10 +516,10 @@ def test_critical_always_delivered():
 - **Expert Validation**: gemini-flash model
 - **Method**: ADHD-first design principles
 - **Files Analyzed**:
-  - `src/dopemux/mobile/hooks.py`
-  - `src/dopemux/mobile/runtime.py`
-  - `src/dopemux/config/manager.py`
-  - `docs/HAPPY_CODER_INTEGRATION.md`
+- `src/dopemux/mobile/hooks.py`
+- `src/dopemux/mobile/runtime.py`
+- `src/dopemux/config/manager.py`
+- `docs/HAPPY_CODER_INTEGRATION.md`
 
 ---
 

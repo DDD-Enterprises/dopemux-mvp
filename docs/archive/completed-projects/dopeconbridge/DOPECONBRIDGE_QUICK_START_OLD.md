@@ -70,33 +70,33 @@ Add DopeconBridge env vars to all service definitions:
 services:
   adhd-engine:
     environment:
-      - DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
-      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-      - WORKSPACE_ID=/workspace
+- DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ID=/workspace
 
   voice-commands:
     environment:
-      - DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
-      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-      - WORKSPACE_ID=/workspace
+- DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ID=/workspace
 
   task-orchestrator:
     environment:
-      - DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
-      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-      - WORKSPACE_ID=/workspace
+- DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ID=/workspace
 
   serena:
     environment:
-      - DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
-      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-      - WORKSPACE_ROOT=/workspace
+- DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ROOT=/workspace
 
   dopemux-gpt-researcher:
     environment:
-      - DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
-      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-      - WORKSPACE_ID=/workspace
+- DOPECON_BRIDGE_URL=http://mcp-dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- WORKSPACE_ID=/workspace
 ```
 
 **Files to update:**
@@ -248,7 +248,7 @@ export DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
 
 # Or in docker-compose.yml:
 environment:
-  - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
 ```
 
 ### Issue: "ConPort MCP client method not found"
@@ -285,31 +285,31 @@ docker-compose up mcp-dopecon-bridge
 ## 📚 Key Documentation References
 
 1. **Client Usage:** `services/shared/dopecon_bridge_client/README.md`
-2. **Migration Guide:** `DOPECON_BRIDGE_MIGRATION_COMPLETE.md`
-3. **Executive Summary:** `DOPECON_BRIDGE_EXECUTIVE_SUMMARY.md`
-4. **Environment Setup:** `.env.dopecon_bridge.example`
+1. **Migration Guide:** `DOPECON_BRIDGE_MIGRATION_COMPLETE.md`
+1. **Executive Summary:** `DOPECON_BRIDGE_EXECUTIVE_SUMMARY.md`
+1. **Environment Setup:** `.env.dopecon_bridge.example`
 
 ## 🎯 Definition of Done
 
 You'll know you're done when:
 
 1. ✅ All new DopeconBridge endpoints work with real ConPort
-2. ✅ All 5 services use their bridge adapters (not direct ConPort)
-3. ✅ Docker Compose files have bridge configuration
-4. ✅ Integration tests pass for all critical flows
-5. ✅ No direct `CONPORT_URL` usage in migrated services
-6. ✅ All services can publish events to bridge
-7. ✅ Cross-plane routing works (PM ↔ Cognitive)
+1. ✅ All 5 services use their bridge adapters (not direct ConPort)
+1. ✅ Docker Compose files have bridge configuration
+1. ✅ Integration tests pass for all critical flows
+1. ✅ No direct `CONPORT_URL` usage in migrated services
+1. ✅ All services can publish events to bridge
+1. ✅ Cross-plane routing works (PM ↔ Cognitive)
 
 ## ⏭️ After Completion
 
 Once immediate tasks are done:
 
 1. **Deploy to staging:** Test in staging environment
-2. **Monitor metrics:** Check DopeconBridge logs/metrics
-3. **Migrate remaining services:** Use same adapter pattern for agents, orchestrator
-4. **Update architecture docs:** Add DopeconBridge to diagrams
-5. **Performance testing:** Ensure no regressions from bridge layer
+1. **Monitor metrics:** Check DopeconBridge logs/metrics
+1. **Migrate remaining services:** Use same adapter pattern for agents, orchestrator
+1. **Update architecture docs:** Add DopeconBridge to diagrams
+1. **Performance testing:** Ensure no regressions from bridge layer
 
 ## 🆘 Need Help?
 

@@ -37,9 +37,9 @@ chunk_overlap = 100 chars
 
 **Issues:**
 1. **Ignores structure**: Splits mid-paragraph, mid-section
-2. **No metadata**: Loses document hierarchy (h1 > h2 > h3)
-3. **Fixed-size**: May split semantic units
-4. **No context**: Missing section headers in chunks
+1. **No metadata**: Loses document hierarchy (h1 > h2 > h3)
+1. **Fixed-size**: May split semantic units
+1. **No context**: Missing section headers in chunks
 
 **Example problem:**
 ```markdown
@@ -72,8 +72,8 @@ def chunk_markdown_by_structure(text, max_chunk_size=1500):
     Content for B...
 
     → Chunks:
-    1. "# Main Topic\n## Subtopic A\nContent for A..."
-    2. "# Main Topic\n## Subtopic B\nContent for B..."
+1. "# Main Topic\n## Subtopic A\nContent for A..."
+1. "# Main Topic\n## Subtopic B\nContent for B..."
 
     Each chunk includes parent headers for context!
     """
@@ -125,9 +125,9 @@ def chunk_pdf_by_structure(pdf_path, max_chunk_size=1500):
     Extract PDF structure and chunk by sections.
 
     Uses:
-    - Bookmark/outline structure
-    - Font size changes (detect headers)
-    - Page breaks as fallback
+- Bookmark/outline structure
+- Font size changes (detect headers)
+- Page breaks as fallback
     """
     reader = PdfReader(pdf_path)
     chunks = []
@@ -191,10 +191,10 @@ def adaptive_chunk_size(text, doc_type):
     """
     Adjust chunk size based on content type.
 
-    - Code snippets: Keep together (up to 2000 chars)
-    - Tables: Keep complete (up to 3000 chars)
-    - Lists: Chunk by items if too long
-    - Paragraphs: Semantic boundaries
+- Code snippets: Keep together (up to 2000 chars)
+- Tables: Keep complete (up to 3000 chars)
+- Lists: Chunk by items if too long
+- Paragraphs: Semantic boundaries
     """
     if has_code_block(text):
         return 2000  # Larger for code
@@ -210,27 +210,27 @@ def adaptive_chunk_size(text, doc_type):
 
 ### **High Impact** (Implement First)
 1. ✅ **Markdown structure-aware chunking**
-   - Easy to implement
-   - Huge relevance improvement
-   - Most docs are Markdown
+- Easy to implement
+- Huge relevance improvement
+- Most docs are Markdown
 
-2. **Add section hierarchy metadata**
-   - Enables better filtering
-   - Improves search precision
+1. **Add section hierarchy metadata**
+- Enables better filtering
+- Improves search precision
 
 ### **Medium Impact**
 1. **PDF bookmark/outline chunking**
-   - More complex implementation
-   - Fewer PDF files in typical projects
+- More complex implementation
+- Fewer PDF files in typical projects
 
-2. **Adaptive chunk sizing**
-   - Nice-to-have optimization
-   - Can be added incrementally
+1. **Adaptive chunk sizing**
+- Nice-to-have optimization
+- Can be added incrementally
 
 ### **Low Impact** (Nice-to-Have)
 1. **HTML structure parsing**
-   - Use article tags, h1-h6
-   - Less common in dev projects
+- Use article tags, h1-h6
+- Less common in dev projects
 
 ## Performance Impact
 
@@ -277,9 +277,9 @@ def process_markdown_document(text):
 ## Next Steps
 
 1. Implement markdown structure-aware chunking (2-3 hours)
-2. Add metadata extraction (1-2 hours)
-3. Update embeddings to include hierarchy (30 min)
-4. Test on real queries (1 hour)
-5. Measure improvement in search relevance
+1. Add metadata extraction (1-2 hours)
+1. Update embeddings to include hierarchy (30 min)
+1. Test on real queries (1 hour)
+1. Measure improvement in search relevance
 
 **Total effort**: ~1 day for 2x better doc search!

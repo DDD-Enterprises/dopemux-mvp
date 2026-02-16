@@ -23,22 +23,22 @@ The Dopemux Ultra UI provides multiple data sources for tmux dashboard integrati
 
 | Metric | Endpoint | Update Frequency | Data Type | Use Case |
 |--------|----------|------------------|-----------|----------|
-| **Attention State** | `/attention-state` | 60s | `{"state": "focused", "confidence": 0.85, "distraction_risk": "LOW"}` | Show current focus level |
-| **Energy Level** | `/energy-level` | 60s | `{"current_level": 0.72, "trend": "increasing"}` | Display energy status |
-| **Cognitive Load** | `/cognitive-load` | 30s | `{"current_load": 0.45, "capacity_remaining": 0.55}` | Monitor mental workload |
-| **Break Recommendation** | `/break-recommendation` | 60s | `{"should_break": false, "next_break_in": "15min"}` | Show break timer |
-| **Task Assessment** | `/assess-task` | On-demand | `{"complexity_score": 0.73, "estimated_duration": "90min"}` | Task planning data |
-| **User Profile** | `/user-profile` | Static | `{"attention_span": 25, "energy_patterns": {...}}` | User preferences |
+| **Attention State** | `/attention-state` \| 60s \| `{"state": "focused", "confidence": 0.85, "distraction_risk": "LOW"}` | Show current focus level |
+| **Energy Level** | `/energy-level` \| 60s \| `{"current_level": 0.72, "trend": "increasing"}` | Display energy status |
+| **Cognitive Load** | `/cognitive-load` \| 30s \| `{"current_load": 0.45, "capacity_remaining": 0.55}` | Monitor mental workload |
+| **Break Recommendation** | `/break-recommendation` \| 60s \| `{"should_break": false, "next_break_in": "15min"}` | Show break timer |
+| **Task Assessment** | `/assess-task` \| On-demand \| `{"complexity_score": 0.73, "estimated_duration": "90min"}` | Task planning data |
+| **User Profile** | `/user-profile` \| Static \| `{"attention_span": 25, "energy_patterns": {...}}` | User preferences |
 
 ### 🧠 ADHD Dashboard Metrics (Port 8097)
 **Base URL**: `http://localhost:8097/api/`
 
 | Metric | Endpoint | Update Frequency | Data Type | Use Case |
 |--------|----------|------------------|-----------|----------|
-| **Current Metrics** | `/metrics` | 30s | `{"attention": 0.85, "energy": 0.72, "load": 0.45}` | Real-time status |
-| **ADHD State** | `/adhd-state` | 30s | `{"state": "focused", "trends": [...], "alerts": []}` | State overview |
-| **Session Data** | `/sessions/today` | 5min | `{"total_sessions": 4, "avg_duration": "45min"}` | Session stats |
-| **Analytics Trends** | `/analytics/trends` | 15min | `{"energy_trend": "stable", "attention_trend": "improving"}` | Historical trends |
+| **Current Metrics** | `/metrics` \| 30s \| `{"attention": 0.85, "energy": 0.72, "load": 0.45}` | Real-time status |
+| **ADHD State** | `/adhd-state` \| 30s \| `{"state": "focused", "trends": [...], "alerts": []}` | State overview |
+| **Session Data** | `/sessions/today` \| 5min \| `{"total_sessions": 4, "avg_duration": "45min"}` | Session stats |
+| **Analytics Trends** | `/analytics/trends` \| 15min \| `{"energy_trend": "stable", "attention_trend": "improving"}` | Historical trends |
 
 ### 🔍 Dope-Context Search Metrics (MCP Server)
 **Available via MCP**: `mcp__dope-context__get_search_metrics()`

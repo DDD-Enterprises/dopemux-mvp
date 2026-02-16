@@ -21,9 +21,9 @@ prelude: Dependabot_Setup (how-to) for dopemux documentation and developer workf
 
 Dependabot automatically:
 1. Checks for dependency updates weekly
-2. Creates PRs with changelogs and compatibility notes
-3. Groups minor/patch updates to reduce noise
-4. Prioritizes security updates
+1. Creates PRs with changelogs and compatibility notes
+1. Groups minor/patch updates to reduce noise
+1. Prioritizes security updates
 
 ---
 
@@ -91,21 +91,21 @@ Dependabot automatically:
 
 ### Security Updates (High Priority)
 1. Check CVE details in PR description
-2. Review changelog for breaking changes
-3. Verify tests pass
-4. **Merge immediately** if critical
+1. Review changelog for breaking changes
+1. Verify tests pass
+1. **Merge immediately** if critical
 
 ### Grouped Updates (Normal Priority)
 1. Scan PR for breaking changes
-2. Check test results
-3. Merge if all green
-4. Rollback if issues found
+1. Check test results
+1. Merge if all green
+1. Rollback if issues found
 
 ### Major Updates (Low Priority)
 1. Review migration guide
-2. Test locally if needed
-3. Schedule for dedicated time
-4. Consider holding for batch upgrades
+1. Test locally if needed
+1. Schedule for dedicated time
+1. Consider holding for batch upgrades
 
 ---
 
@@ -150,8 +150,8 @@ Then: `gh pr merge --auto --squash` for trusted updates
 Once this PR is merged, Dependabot automatically activates. You'll see:
 
 1. **First run**: Within 24 hours
-2. **PRs created**: According to schedule
-3. **Notifications**: Via GitHub notifications
+1. **PRs created**: According to schedule
+1. **Notifications**: Via GitHub notifications
 
 No additional setup required! ✅
 
@@ -193,9 +193,9 @@ Changes take effect on next scheduled run.
 
 After merge:
 1. ✅ Configuration active automatically
-2. 📅 Wait for Monday 9am PT (first Python run)
-3. 📬 Review PRs as they arrive
-4. 🔄 Establish weekly review routine (15-30 min)
+1. 📅 Wait for Monday 9am PT (first Python run)
+1. 📬 Review PRs as they arrive
+1. 🔄 Establish weekly review routine (15-30 min)
 
 ---
 

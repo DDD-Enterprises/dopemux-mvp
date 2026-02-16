@@ -38,10 +38,10 @@ Complete specification for the Dope-Memory temporal chronicle and working-contex
 
 **Non-Negotiables:**
 1. No duplication across Trinity
-2. Top-3 default, explicit expand only
-3. Redact before persist (fail closed)
-4. SQLite canonical, Postgres mirror
-5. Deterministic outputs (stable ordering)
+1. Top-3 default, explicit expand only
+1. Redact before persist (fail closed)
+1. SQLite canonical, Postgres mirror
+1. Deterministic outputs (stable ordering)
 
 ## Version History
 - v1: Initial specification (2026-02-02)

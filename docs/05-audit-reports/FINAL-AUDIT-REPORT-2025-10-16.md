@@ -54,22 +54,22 @@ Completed comprehensive systematic audit of Dopemux codebase using Zen MCP think
 **ConPort KG - 3 Critical Issues**:
 
 1. **SQL Injection** (4 locations)
-   - **Problem**: `LIMIT {limit}` unvalidated user input
-   - **Fix**: Added `_validate_limit()` with strict validation
-   - **Time**: 2 hours
-   - **Status**: ✅ Fixed & tested (12 tests, 100% pass)
+- **Problem**: `LIMIT {limit}` unvalidated user input
+- **Fix**: Added `_validate_limit()` with strict validation
+- **Time**: 2 hours
+- **Status**: ✅ Fixed & tested (12 tests, 100% pass)
 
-2. **ReDoS Attack** (1 location)
-   - **Problem**: Unescaped regex `pattern = f'.*{search_term}.*'`
-   - **Fix**: Added `re.escape()` to prevent catastrophic backtracking
-   - **Time**: 1 hour
-   - **Status**: ✅ Fixed & tested
+1. **ReDoS Attack** (1 location)
+- **Problem**: Unescaped regex `pattern = f'.*{search_term}.*'`
+- **Fix**: Added `re.escape()` to prevent catastrophic backtracking
+- **Time**: 1 hour
+- **Status**: ✅ Fixed & tested
 
-3. **N+1 Query** (1 location)
-   - **Problem**: Loads decisions one-by-one (10x slowdown)
-   - **Fix**: Documented with comprehensive TODO
-   - **Priority**: MEDIUM (non-blocking)
-   - **Status**: ✅ Documented for Phase 2
+1. **N+1 Query** (1 location)
+- **Problem**: Loads decisions one-by-one (10x slowdown)
+- **Fix**: Documented with comprehensive TODO
+- **Priority**: MEDIUM (non-blocking)
+- **Status**: ✅ Documented for Phase 2
 
 **Impact**: ConPort security 2/10 → 9/10
 
@@ -92,10 +92,10 @@ Completed comprehensive systematic audit of Dopemux codebase using Zen MCP think
 
 **Actions Taken**:
 1. ✅ Removed DEPRECATED.md
-2. ✅ Created STATUS.md (service now ACTIVE)
-3. ✅ Extracted ML components to services/ml-risk-assessment/
-4. ✅ Logged ConPort Decision #5 (CRITICAL tag)
-5. ✅ Cancelled 2025-11-01 deletion
+1. ✅ Created STATUS.md (service now ACTIVE)
+1. ✅ Extracted ML components to services/ml-risk-assessment/
+1. ✅ Logged ConPort Decision #5 (CRITICAL tag)
+1. ✅ Cancelled 2025-11-01 deletion
 
 **Value Preserved**: ML-based predictive risk assessment with ADHD-specific risk factors
 
@@ -143,10 +143,10 @@ Completed comprehensive systematic audit of Dopemux codebase using Zen MCP think
 
 **5-Step Systematic Investigation**:
 1. Architecture Discovery
-2. Security Deep-Dive
-3. Implementation Verification
-4. Integration & Edge Cases
-5. Synthesis & Recommendations
+1. Security Deep-Dive
+1. Implementation Verification
+1. Integration & Edge Cases
+1. Synthesis & Recommendations
 
 **Quality Standards**:
 - ✅ Use Zen thinkdeep (not rush reviews)
@@ -208,10 +208,10 @@ Completed comprehensive systematic audit of Dopemux codebase using Zen MCP think
 
 **Created ADRs**:
 1. ADR-201: ConPort KG Security Hardening
-2. ADR-202: Serena v2 Production Validation
-3. ADR-203: Task-Orchestrator Un-Deprecation
-4. ADR-204: ML Risk Assessment Extraction
-5. ADR-205: Systematic Audit Methodology
+1. ADR-202: Serena v2 Production Validation
+1. ADR-203: Task-Orchestrator Un-Deprecation
+1. ADR-204: ML Risk Assessment Extraction
+1. ADR-205: Systematic Audit Methodology
 
 **Impact**: Critical decisions now documented with full context
 
@@ -238,10 +238,10 @@ Completed comprehensive systematic audit of Dopemux codebase using Zen MCP think
 
 **4 Commits Created**:
 1. `3b6da7d` - ConPort KG security fixes (SQL injection, ReDoS)
-2. `e08b969` - ConPort UI URL encoding fix
-3. `68b8a4b` - Task-Orchestrator un-deprecation + ML extraction
-4. `860abb5` - 5 ADRs documenting audit findings
-5. `49bb854` - Final audit summary + testing assessment
+1. `e08b969` - ConPort UI URL encoding fix
+1. `68b8a4b` - Task-Orchestrator un-deprecation + ML extraction
+1. `860abb5` - 5 ADRs documenting audit findings
+1. `49bb854` - Final audit summary + testing assessment
 
 **Total Changes**:
 - Security fixes: 10 files
@@ -299,10 +299,10 @@ Completed comprehensive systematic audit of Dopemux codebase using Zen MCP think
 ### ✅ Ready to Deploy
 
 1. **ConPort KG** (9/10) - After security fixes
-2. **Serena v2** (8.5/10) - Immediately
-3. **ConPort UI** (8/10) - After URL encoding fix
-4. **Dope-Context** - Pre-validated
-5. **Orchestrator** - Pre-validated
+1. **Serena v2** (8.5/10) - Immediately
+1. **ConPort UI** (8/10) - After URL encoding fix
+1. **Dope-Context** - Pre-validated
+1. **Orchestrator** - Pre-validated
 
 ### ⚠️ Deploy with Restrictions
 
@@ -311,7 +311,7 @@ Completed comprehensive systematic audit of Dopemux codebase using Zen MCP think
 ### 📦 Pending Integration
 
 1. **Task-Orchestrator** - Active, needs Week 7 integration (13h)
-2. **ML Risk Assessment** - Extracted, needs API layer (4h)
+1. **ML Risk Assessment** - Extracted, needs API layer (4h)
 
 ---
 
@@ -337,29 +337,29 @@ Completed comprehensive systematic audit of Dopemux codebase using Zen MCP think
 ### Immediate (Before Production)
 
 1. ✅ **DONE**: Fix ConPort KG security (2h)
-2. ✅ **DONE**: Fix ConPort UI URL encoding (30min)
-3. ✅ **DONE**: Create ADRs for audit decisions (2h)
-4. **TODO**: Fix testing imports (2-4h)
-5. **TODO**: Add ADHD Engine authentication OR localhost-only
+1. ✅ **DONE**: Fix ConPort UI URL encoding (30min)
+1. ✅ **DONE**: Create ADRs for audit decisions (2h)
+1. **TODO**: Fix testing imports (2-4h)
+1. **TODO**: Add ADHD Engine authentication OR localhost-only
 
 ### Short-term (Week 7)
 
 1. **Task-Orchestrator Integration** (13h)
-   - Security audit
-   - Service boundary fixes
-   - DopeconBridge wiring
+- Security audit
+- Service boundary fixes
+- DopeconBridge wiring
 
-2. **ML Risk Assessment API** (4h)
-   - FastAPI layer
-   - REST endpoints
-   - Authentication
+1. **ML Risk Assessment API** (4h)
+- FastAPI layer
+- REST endpoints
+- Authentication
 
 ### Long-term
 
 1. **Complete Remaining Phases** (16-20h)
-   - Full code quality audit
-   - Architecture validation
-   - Documentation completion
+- Full code quality audit
+- Architecture validation
+- Documentation completion
 
 ---
 

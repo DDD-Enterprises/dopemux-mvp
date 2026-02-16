@@ -71,8 +71,8 @@ dopemux switch developer --restart-claude --save-session --restore-context
 Useful switch flags:
 
 1. `--no-save-session`: skip pre-switch context save.
-2. `--no-restore-context`: skip post-switch context restore.
-3. `--target-seconds <n>`: warn if total switch duration exceeds target.
+1. `--no-restore-context`: skip post-switch context restore.
+1. `--target-seconds <n>`: warn if total switch duration exceeds target.
 
 ## 4. Auto-Detection and Suggestions
 
@@ -141,8 +141,8 @@ dopemux profile stats --days 30
 `profile stats` includes:
 
 1. Switch volume and accuracy.
-2. Average switch duration and MCP density.
-3. Time-of-day heatmap.
-4. Generated optimization recommendations.
+1. Average switch duration and MCP density.
+1. Time-of-day heatmap.
+1. Generated optimization recommendations.
 
 Recommendations are archived in ConPort category `profile_optimization_recommendations`.

@@ -56,21 +56,21 @@ prelude: Monitoring_Tmux_Session_Summary (explanation) for dopemux documentation
 ### Critical Issues Identified
 
 1. **Monitoring Fragmentation**
-   - 4 different monitoring modules
-   - No multi-workspace support
-   - Prometheus not deployed
-   - Services don't export metrics
+- 4 different monitoring modules
+- No multi-workspace support
+- Prometheus not deployed
+- Services don't export metrics
 
-2. **Tmux Design Problems**
-   - Non-functional status bar
-   - Mock data in dashboards
-   - 8 panes (too many)
-   - Poor ADHD optimization
+1. **Tmux Design Problems**
+- Non-functional status bar
+- Mock data in dashboards
+- 8 panes (too many)
+- Poor ADHD optimization
 
-3. **Integration Gaps**
-   - Broken data flow
-   - Missing workspace context
-   - No real-time updates
+1. **Integration Gaps**
+- Broken data flow
+- Missing workspace context
+- No real-time updates
 
 ### Root Causes
 
@@ -151,10 +151,10 @@ Layout:
 ### Tmux Best Practices (Web Search)
 
 1. Show only actionable information
-2. Use monitor-activity for background tasks
-3. Consistent theming (match terminal)
-4. Named sessions per project/workspace
-5. Iterative customization
+1. Use monitor-activity for background tasks
+1. Consistent theming (match terminal)
+1. Named sessions per project/workspace
+1. Iterative customization
 
 ### Prometheus Multi-Workspace Patterns (Web Search)
 
@@ -197,8 +197,8 @@ Layout:
 
 ### Immediate (Today)
 1. Review documentation
-2. Approve implementation plan
-3. Set up project tracking
+1. Approve implementation plan
+1. Set up project tracking
 
 ### Week 1 Start (Monday)
 1. Deploy monitoring stack
@@ -206,14 +206,14 @@ Layout:
    docker-compose -f docker-compose.monitoring.yml up -d
    ```
 
-2. Integrate first service (ADHD Engine)
+1. Integrate first service (ADHD Engine)
    ```python
    from shared.monitoring import DopemuxMonitoring
    monitoring = DopemuxMonitoring("adhd-engine")
    app.mount("/metrics", make_asgi_app(registry=monitoring.registry))
    ```
 
-3. Verify metrics collection
+1. Verify metrics collection
    ```bash
    curl http://localhost:8001/metrics
    curl http://localhost:9090/targets
@@ -221,13 +221,13 @@ Layout:
 
 ### Week 2 Start
 1. Implement new tmux config
-2. Test workspace sessions
-3. Validate ADHD optimization
+1. Test workspace sessions
+1. Validate ADHD optimization
 
 ### Week 3 Start
 1. Complete remaining services
-2. Create Grafana dashboards
-3. Final testing and docs
+1. Create Grafana dashboards
+1. Final testing and docs
 
 ---
 
@@ -288,10 +288,10 @@ Layout:
 ## 💡 Key Takeaways
 
 1. **Unified Base Class Critical**: Consistency prevents fragmentation
-2. **Label-Based Multi-Tenancy**: Industry best practice for multi-workspace
-3. **ADHD Optimization**: Simplify, real-time, progressive disclosure
-4. **Research-Backed**: Web search validated our architectural choices
-5. **Pragmatic Timeline**: 3 weeks is realistic for complete implementation
+1. **Label-Based Multi-Tenancy**: Industry best practice for multi-workspace
+1. **ADHD Optimization**: Simplify, real-time, progressive disclosure
+1. **Research-Backed**: Web search validated our architectural choices
+1. **Pragmatic Timeline**: 3 weeks is realistic for complete implementation
 
 ---
 

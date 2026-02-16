@@ -484,34 +484,34 @@ mode: PLAN
 description: "Project management and strategic planning layout"
 
 before_script:
-  - "source .env"
-  - "dopemux profile switch planner"
+- "source .env"
+- "dopemux profile switch planner"
 
 windows:
-  - name: "pm-dashboard"
+- name: "pm-dashboard"
     layout: "main-horizontal"
     main_pane_height: 70
     panes:
-      - focus: true
+- focus: true
         commands:
-          - "# Leantime Dashboard"
-          - "echo 'Opening Leantime at http://localhost:8080'"
-          - "open http://localhost:8080 || xdg-open http://localhost:8080"
+- "# Leantime Dashboard"
+- "echo 'Opening Leantime at http://localhost:8080'"
+- "open http://localhost:8080 || xdg-open http://localhost:8080"
 
-      - commands:
-          - "# Task-Master CLI"
-          - "dopemux task list --sprint current"
+- commands:
+- "# Task-Master CLI"
+- "dopemux task list --sprint current"
 
-  - name: "decisions"
+- name: "decisions"
     layout: "even-vertical"
     panes:
-      - commands:
-          - "# ConPort Decision Browser"
-          - "dopemux conport search --recent 10"
+- commands:
+- "# ConPort Decision Browser"
+- "dopemux conport search --recent 10"
 
-      - commands:
-          - "# Knowledge Graph Query"
-          - "dopemux conport graph --visualize"
+- commands:
+- "# Knowledge Graph Query"
+- "dopemux conport graph --visualize"
 
 theme: "nord-adhd"
 adhd_settings:
@@ -529,39 +529,39 @@ mode: ACT
 description: "Development and implementation layout"
 
 before_script:
-  - "source venv/bin/activate"
-  - "dopemux profile switch developer"
+- "source venv/bin/activate"
+- "dopemux profile switch developer"
 
 windows:
-  - name: "editor"
+- name: "editor"
     layout: "main-vertical"
     main_pane_width: 65
     panes:
-      - focus: true
+- focus: true
         commands:
-          - "vim ."  # Or: code ., nvim ., etc.
+- "vim ."  # Or: code ., nvim ., etc.
 
-      - commands:
-          - "# Test Runner"
-          - "pytest --watch --failed-first"
+- commands:
+- "# Test Runner"
+- "pytest --watch --failed-first"
 
-  - name: "serena-lsp"
+- name: "serena-lsp"
     layout: "even-horizontal"
     panes:
-      - commands:
-          - "# Serena Code Intelligence"
-          - "dopemux serena navigate --interactive"
+- commands:
+- "# Serena Code Intelligence"
+- "dopemux serena navigate --interactive"
 
-      - commands:
-          - "# Application Logs"
-          - "tail -f logs/dopemux.log | grep -v DEBUG"
+- commands:
+- "# Application Logs"
+- "tail -f logs/dopemux.log | grep -v DEBUG"
 
-  - name: "tools"
+- name: "tools"
     layout: "tiled"
     panes:
-      - commands: ["git status"]
-      - commands: ["docker-compose logs -f"]
-      - commands: ["htop"]
+- commands: ["git status"]
+- commands: ["docker-compose logs -f"]
+- commands: ["htop"]
 
 theme: "dracula-adhd"
 adhd_settings:
@@ -859,13 +859,13 @@ class F002MultiSessionWidget(Static):
 
 **Immediate (Today)**:
 1. Create directory structure: `src/dopemux/{core,themes,plugins,templates,tui}/`
-2. Implement DopemuxCore (Task 1.1)
-3. Start migrating metamcp_status.py (Task 1.2)
+1. Implement DopemuxCore (Task 1.1)
+1. Start migrating metamcp_status.py (Task 1.2)
 
 **Tomorrow**:
 1. Complete DopemuxSession with two-plane layouts
-2. Implement theme system
-3. Test end-to-end with existing scripts
+1. Implement theme system
+1. Test end-to-end with existing scripts
 
 **Week 1 Goal**: Phase 1 + Phase 2 complete (libtmux foundation + plugin system)
 

@@ -57,8 +57,8 @@ I work in controlled phases to avoid hitting chat limits while keeping engagemen
 
 ### Analysis Process (Maximum 3 Phases)
 1. **Discovery & Architecture Phase**: Map project structure, identify tech stack, understand system architecture
-2. **Component Analysis Phase**: Deep dive into key components, analyze patterns, identify issues
-3. **Documentation & Recommendations Phase**: Generate comprehensive docs and actionable improvement plans
+1. **Component Analysis Phase**: Deep dive into key components, analyze patterns, identify issues
+1. **Documentation & Recommendations Phase**: Generate comprehensive docs and actionable improvement plans
 
 **Streamlined Approach**: I'll complete one phase, update progress, then ask for confirmation to continue to the next phase. This prevents context overload while managing complex codebase analysis efficiently.
 
@@ -79,9 +79,9 @@ Before I begin executing codebase analysis, providing the following information 
 
 ### Essential Context Questions (Optional - Improves Results)
 1. **What's the full path to your project root directory?** - Required for accessing and analyzing your codebase
-2. **What's your specific goal with this analysis?** - Determines focus areas and analysis depth
-3. **What's your familiarity level with this tech stack?** - Affects documentation detail and explanation approach
-4. **Are there particular areas of concern or interest?** - Helps prioritize analysis efforts
+1. **What's your specific goal with this analysis?** - Determines focus areas and analysis depth
+1. **What's your familiarity level with this tech stack?** - Affects documentation detail and explanation approach
+1. **Are there particular areas of concern or interest?** - Helps prioritize analysis efforts
 
 ### Project Context (Optional - Customizes Output)
 - **Application purpose**: What does this system do and what problem does it solve?
@@ -256,8 +256,8 @@ Before adding complexity, I'll ask:
 
 ### Immediate Next Steps:
 1. **Review architectural findings**: Understand system design decisions and component relationships
-2. **Examine identified issues**: Prioritize technical debt and improvement opportunities
-3. **Share with team**: Use documentation for developer onboarding and knowledge sharing
+1. **Examine identified issues**: Prioritize technical debt and improvement opportunities
+1. **Share with team**: Use documentation for developer onboarding and knowledge sharing
 
 ### Ongoing Usage:
 - **Developer onboarding**: Use guides to quickly orient new team members

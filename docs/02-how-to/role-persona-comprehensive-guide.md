@@ -83,11 +83,11 @@ dopemux start --role quickfix
 
 **Example Workflow:**
 1. Notice small bug or TODO
-2. Switch to quickfix mode
-3. Use Serena to find file/function
-4. Make quick change
-5. Use ConPort to log what you fixed
-6. Done in 10-15 minutes
+1. Switch to quickfix mode
+1. Use Serena to find file/function
+1. Make quick change
+1. Use ConPort to log what you fixed
+1. Done in 10-15 minutes
 
 **Success Metrics:**
 - ✅ Task completed in < 30 min
@@ -138,11 +138,11 @@ dopemux start --role act
 
 **Example Workflow:**
 1. Check ConPort for current task context
-2. Use Zen to analyze approach
-3. Use Serena to navigate codebase
-4. Implement feature with TDD
-5. Log decisions to ConPort
-6. Complete in 30-45 minutes
+1. Use Zen to analyze approach
+1. Use Serena to navigate codebase
+1. Implement feature with TDD
+1. Log decisions to ConPort
+1. Complete in 30-45 minutes
 
 **Success Metrics:**
 - ✅ Feature implemented and tested
@@ -196,12 +196,12 @@ dopemux start --role research
 
 **Example Workflow:**
 1. Define research question clearly
-2. Use GPT-Researcher for comprehensive web search
-3. Use Exa for semantic paper/article search
-4. Use PAL apilookup for official docs
-5. Use Zen to synthesize findings
-6. Log research summary to ConPort
-7. Complete with actionable insights
+1. Use GPT-Researcher for comprehensive web search
+1. Use Exa for semantic paper/article search
+1. Use PAL apilookup for official docs
+1. Use Zen to synthesize findings
+1. Log research summary to ConPort
+1. Complete with actionable insights
 
 **Success Metrics:**
 - ✅ Clear answer to research question
@@ -259,12 +259,12 @@ dopemux start --role plan
 
 **Example Workflow:**
 1. Review current project state (ConPort)
-2. Use Zen to analyze feature complexity
-3. Break down into tasks (Task Orchestrator)
-4. Estimate effort and dependencies
-5. Create implementation timeline
-6. Log planning decisions to ConPort
-7. Export to Leantime for PM tracking
+1. Use Zen to analyze feature complexity
+1. Break down into tasks (Task Orchestrator)
+1. Estimate effort and dependencies
+1. Create implementation timeline
+1. Log planning decisions to ConPort
+1. Export to Leantime for PM tracking
 
 **Success Metrics:**
 - ✅ Clear task breakdown
@@ -322,12 +322,12 @@ dopemux start --role architect
 
 **Example Workflow:**
 1. Define problem space (ConPort context)
-2. Research patterns (PAL apilookup + Zen)
-3. Explore existing architecture (Serena)
-4. Design solution with trade-offs
-5. Create ADR documenting decision
-6. Review with Zen for validation
-7. Log to ConPort for future reference
+1. Research patterns (PAL apilookup + Zen)
+1. Explore existing architecture (Serena)
+1. Design solution with trade-offs
+1. Create ADR documenting decision
+1. Review with Zen for validation
+1. Log to ConPort for future reference
 
 **Success Metrics:**
 - ✅ Clear architecture design
@@ -384,11 +384,11 @@ dopemux start --role reviewer
 
 **Example Workflow:**
 1. Load PR context (Serena)
-2. Review code changes systematically
-3. Check against best practices (PAL apilookup)
-4. Use Zen for deeper analysis
-5. Log findings to ConPort
-6. Provide constructive feedback
+1. Review code changes systematically
+1. Check against best practices (PAL apilookup)
+1. Use Zen for deeper analysis
+1. Log findings to ConPort
+1. Provide constructive feedback
 
 **Success Metrics:**
 - ✅ Comprehensive review completed
@@ -433,12 +433,12 @@ dopemux start --role debugger
 
 **Example Workflow:**
 1. Reproduce the issue
-2. Gather symptoms and logs
-3. Form hypotheses (Zen analysis)
-4. Navigate code systematically (Serena)
-5. Test hypotheses
-6. Identify root cause
-7. Log findings and fix to ConPort
+1. Gather symptoms and logs
+1. Form hypotheses (Zen analysis)
+1. Navigate code systematically (Serena)
+1. Test hypotheses
+1. Identify root cause
+1. Log findings and fix to ConPort
 
 **Success Metrics:**
 - ✅ Root cause identified
@@ -558,19 +558,19 @@ Each role has associated **persona guidelines** that Claude Code follows automat
 ### Available Personas:
 
 1. **Backend Architect** - APIs, databases, scalability
-2. **Frontend Architect** - UI, UX, React/Vue patterns
-3. **DevOps Architect** - Infrastructure, deployment, monitoring
-4. **Performance Engineer** - Optimization, profiling, benchmarking
-5. **Quality Engineer** - Testing, test automation, quality assurance
-6. **Security Engineer** - Security review, vulnerability assessment
-7. **Refactoring Expert** - Code cleanup, technical debt
-8. **Requirements Analyst** - Feature analysis, user stories
-9. **Root Cause Analyst** - Debugging, investigation
-10. **Technical Writer** - Documentation, guides, tutorials
-11. **System Architect** - System design, architectural patterns
-12. **Socratic Mentor** - Teaching, explaining, guiding
-13. **Learning Guide** - Learning paths, skill development
-14. **Statusline Setup** - Dopemux statusline configuration
+1. **Frontend Architect** - UI, UX, React/Vue patterns
+1. **DevOps Architect** - Infrastructure, deployment, monitoring
+1. **Performance Engineer** - Optimization, profiling, benchmarking
+1. **Quality Engineer** - Testing, test automation, quality assurance
+1. **Security Engineer** - Security review, vulnerability assessment
+1. **Refactoring Expert** - Code cleanup, technical debt
+1. **Requirements Analyst** - Feature analysis, user stories
+1. **Root Cause Analyst** - Debugging, investigation
+1. **Technical Writer** - Documentation, guides, tutorials
+1. **System Architect** - System design, architectural patterns
+1. **Socratic Mentor** - Teaching, explaining, guiding
+1. **Learning Guide** - Learning paths, skill development
+1. **Statusline Setup** - Dopemux statusline configuration
 
 **How Personas Work:**
 
@@ -617,8 +617,8 @@ START: What are you doing?
 ### Low Energy (⚡↓)
 **Best Roles:**
 1. QUICKFIX (3 tools, easy wins)
-2. REVIEWER (analytical, not creative)
-3. DEVELOPER (moderate complexity)
+1. REVIEWER (analytical, not creative)
+1. DEVELOPER (moderate complexity)
 
 **Avoid:**
 - ARCHITECT (too demanding)
@@ -627,22 +627,22 @@ START: What are you doing?
 ### Medium Energy (⚡=)
 **Best Roles:**
 1. ACT (balanced implementation)
-2. DEVELOPER (general work)
-3. DEBUGGER (interesting detective work)
-4. RESEARCH (structured exploration)
+1. DEVELOPER (general work)
+1. DEBUGGER (interesting detective work)
+1. RESEARCH (structured exploration)
 
 ### High Energy (⚡↑)
 **Best Roles:**
 1. ARCHITECT (deep design work)
-2. PLAN (strategic thinking)
-3. ACT (complex implementation)
-4. OPS (critical deployment)
+1. PLAN (strategic thinking)
+1. ACT (complex implementation)
+1. OPS (critical deployment)
 
 ### Hyperfocus (⚡⚡)
 **Best Roles:**
 1. ARCHITECT (channel energy into design)
-2. ACT (flow state implementation)
-3. DEBUGGER (deep investigation)
+1. ACT (flow state implementation)
+1. DEBUGGER (deep investigation)
 
 **Protect with:**
 - Hyperfocus protection mode
@@ -652,7 +652,7 @@ START: What are you doing?
 ### Scattered Attention (👁️🌀)
 **Best Roles:**
 1. QUICKFIX (quick wins, easy resume)
-2. REVIEWER (can pause/resume)
+1. REVIEWER (can pause/resume)
 
 **Avoid:**
 - ARCHITECT (requires deep focus)
@@ -686,8 +686,8 @@ dopemux tmux agent switch-role plan --target secondary
 
 ### Method 3: Environment + Config Verification
 1. Confirm role env var: `echo "$DOPEMUX_AGENT_ROLE"`
-2. Inspect generated config: `cat ~/.claude/config/mcp_servers.json`
-3. Restart Claude Code to apply the updated tool set
+1. Inspect generated config: `cat ~/.claude/config/mcp_servers.json`
+1. Restart Claude Code to apply the updated tool set
 
 ---
 
@@ -873,10 +873,10 @@ dopemux start --role all
 
 **Best Practice:**
 1. Match role to task complexity
-2. Match role to energy level
-3. Switch roles as needed
-4. Use ConPort to preserve context
-5. Timebox high-complexity roles
+1. Match role to energy level
+1. Switch roles as needed
+1. Use ConPort to preserve context
+1. Timebox high-complexity roles
 
 **For HYPERFOCUS REVIVAL:**
 - Research phase: `research` role

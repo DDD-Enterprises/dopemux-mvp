@@ -100,11 +100,11 @@ graph_metadata:
 
 **The 37 Specialized Tools**:
 1. **Dependency Analysis** (10): analyze_dependencies, find_critical_path, identify_blockers, etc.
-2. **Multi-Team Coordination** (7): optimize_team_workload, resolve_coordination_conflicts, etc.
-3. **ML Risk Assessment** (8): predict_blockers, identify_adhd_risk_factors, etc.
-4. **Workflow Automation** (6): automate_sprint_planning, preserve_context, etc.
-5. **Performance Optimization** (4): learn_productivity_patterns, etc.
-6. **Deployment Orchestration** (2): orchestrate_deployment, monitor_deployment
+1. **Multi-Team Coordination** (7): optimize_team_workload, resolve_coordination_conflicts, etc.
+1. **ML Risk Assessment** (8): predict_blockers, identify_adhd_risk_factors, etc.
+1. **Workflow Automation** (6): automate_sprint_planning, preserve_context, etc.
+1. **Performance Optimization** (4): learn_productivity_patterns, etc.
+1. **Deployment Orchestration** (2): orchestrate_deployment, monitor_deployment
 
 **Value Quantification**: ~10.5 hours saved per sprint (97% orchestration overhead reduction)
 
@@ -278,31 +278,31 @@ a02ba0c6 docs: Add ADR-207 Architecture 3.0 - Three-Layer Integration Model
    # OR Option 2 (direct SQL) if MCP unavailable
    ```
 
-2. **Verify Import**:
-   - Check ConPort has 20 progress entries
-   - Verify dependencies are linked
-   - Confirm ADHD metadata present
+1. **Verify Import**:
+- Check ConPort has 20 progress entries
+- Verify dependencies are linked
+- Confirm ADHD metadata present
 
 ### Week 1 (Hours 1-10)
 
 1. **Start Task 1.1** (45 minutes):
-   - Inventory External Dependencies
-   - Create `task-orchestrator-dependencies.md`
-   - No dependencies - can start immediately
+- Inventory External Dependencies
+- Create `task-orchestrator-dependencies.md`
+- No dependencies - can start immediately
 
-2. **Continue Component 1** (Dependency Audit):
-   - Complete tasks 1.2, 1.3, 1.4, 1.5
-   - **Deliverable**: Complete audit with go/no-go decision
+1. **Continue Component 1** (Dependency Audit):
+- Complete tasks 1.2, 1.3, 1.4, 1.5
+- **Deliverable**: Complete audit with go/no-go decision
 
-3. **Begin Component 2** (if go):
-   - Start Task 2.1 (Design Event Schema)
-   - Start Task 3.1 in parallel (Configure Bridge)
+1. **Begin Component 2** (if go):
+- Start Task 2.1 (Design Event Schema)
+- Start Task 3.1 in parallel (Configure Bridge)
 
 ### Week 2 (Hours 11-20)
 
 1. **Complete Components 2-5**:
-   - Adapters, Bridge integration, Activation, Testing
-   - **Deliverable**: Phase 1 complete and validated
+- Adapters, Bridge integration, Activation, Testing
+- **Deliverable**: Phase 1 complete and validated
 
 ---
 
@@ -331,11 +331,11 @@ a02ba0c6 docs: Add ADR-207 Architecture 3.0 - Three-Layer Integration Model
 
 **Created This Session**:
 1. ADR-207: Architecture 3.0 (main document)
-2. ADR-207: Leantime API Research
-3. ADR-207: 37 Tools Capabilities Inventory
-4. ADR-207: Phase 1 Implementation Plan
-5. Phase 1 ConPort Import Script
-6. This session summary
+1. ADR-207: Leantime API Research
+1. ADR-207: 37 Tools Capabilities Inventory
+1. ADR-207: Phase 1 Implementation Plan
+1. Phase 1 ConPort Import Script
+1. This session summary
 
 **Total**: 6 documents, ~2,900 lines, 5 git commits
 
@@ -420,11 +420,11 @@ Architecture 3.0 restores the missing layers while preserving 2.0's simplificati
 **6 Risks Documented** (from expert analysis):
 
 1. **Data Contract Drift**: Adapters needed (Component 2)
-2. **Service Boundaries**: Event schemas defined (Task 2.1)
-3. **Operational Readiness**: Deployment audit (Task 1.4)
-4. **Security Posture**: Auth flows validated (Phase 1)
-5. **Integration Testing**: Comprehensive suite (Component 5)
-6. **Performance**: Load testing planned (Task 5.2)
+1. **Service Boundaries**: Event schemas defined (Task 2.1)
+1. **Operational Readiness**: Deployment audit (Task 1.4)
+1. **Security Posture**: Auth flows validated (Phase 1)
+1. **Integration Testing**: Comprehensive suite (Component 5)
+1. **Performance**: Load testing planned (Task 5.2)
 
 **All risks have concrete mitigation plans** in Phase 1 implementation.
 
@@ -461,9 +461,9 @@ Architecture 3.0 restores the missing layers while preserving 2.0's simplificati
 **Before Next Session**, review these documents:
 
 1. **ADR-207 Main** - Understand three-layer architecture
-2. **Leantime API Research** - Understand existing integration
-3. **37 Tools Inventory** - Know what capabilities we're enabling
-4. **Phase 1 Plan** - Understand task breakdown and dependencies
+1. **Leantime API Research** - Understand existing integration
+1. **37 Tools Inventory** - Know what capabilities we're enabling
+1. **Phase 1 Plan** - Understand task breakdown and dependencies
 
 **Total Reading**: ~30-45 minutes (progressive disclosure - skim first, deep-dive as needed)
 
@@ -498,11 +498,11 @@ Architecture 3.0 restores the missing layers while preserving 2.0's simplificati
 **Major Achievements This Session**:
 
 1. ✅ **Architectural Breakthrough**: Identified that Architecture 2.0 simplified the wrong layer
-2. ✅ **Major Discovery**: Found 8,889 lines of production code ready to use
-3. ✅ **Time Savings**: Discovered Leantime integration already built (saves 40h)
-4. ✅ **Value Quantified**: 10.5 hours saved per sprint with Task-Orchestrator
-5. ✅ **Complete Planning**: From vague idea to 20-task roadmap in one session
-6. ✅ **Production-Ready**: ADR approved, plan detailed, import script ready
+1. ✅ **Major Discovery**: Found 8,889 lines of production code ready to use
+1. ✅ **Time Savings**: Discovered Leantime integration already built (saves 40h)
+1. ✅ **Value Quantified**: 10.5 hours saved per sprint with Task-Orchestrator
+1. ✅ **Complete Planning**: From vague idea to 20-task roadmap in one session
+1. ✅ **Production-Ready**: ADR approved, plan detailed, import script ready
 
 **This was a legendary ultrathink session!** 🚀
 

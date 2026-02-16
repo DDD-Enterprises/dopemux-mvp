@@ -332,19 +332,19 @@ Legendary session focused on **foundations** (auth, RBAC, RLS, queries) but stop
 
 ```
 Day 1: Build Event Bridge (200 lines)
-  - Watch ConPort MCP SQLite
-  - Publish to Redis Streams
-  - Zero risk to existing systems
+- Watch ConPort MCP SQLite
+- Publish to Redis Streams
+- Zero risk to existing systems
 
 Day 2: Serena Integration (300 lines)
-  - Subscribe to events
-  - Show decisions in hovers
-  - Prove agent value
+- Subscribe to events
+- Show decisions in hovers
+- Prove agent value
 
 Day 3: Polish & Deploy
-  - Docker Compose
-  - Error handling
-  - Documentation
+- Docker Compose
+- Error handling
+- Documentation
 ```
 
 **Why**: Validates if agents even need decisions before bigger investment
@@ -355,14 +355,14 @@ If you want to deploy what's built:
 
 ```
 Day 1: Add query routes
-  - Create api/query_routes.py
-  - Wire up existing queries/
-  - Mount in main.py
+- Create api/query_routes.py
+- Wire up existing queries/
+- Mount in main.py
 
 Day 2: Docker deployment
-  - Create services/conport_kg/Dockerfile
-  - Add service to docker-compose.yml
-  - Deploy and test
+- Create services/conport_kg/Dockerfile
+- Add service to docker-compose.yml
+- Deploy and test
 ```
 
 **Result**: API on port 8000 with auth + queries

@@ -25,12 +25,12 @@ Implement the missing ADR-197 Stage-1 (`Idea`) and Stage-2 (`Epic`) runtime surf
 ## Locked Constraints
 
 1. No breaking changes to existing public APIs/CLI/config.
-2. Additive-only contract changes.
-3. Stage-1/Stage-2 implementation must persist to ConPort custom data categories:
-   - `workflow_ideas`
-   - `workflow_epics`
-4. Promotion (`idea -> epic`) must be idempotent and audit-friendly.
-5. Degraded-mode behavior is required when ConPort or Leantime is unavailable.
+1. Additive-only contract changes.
+1. Stage-1/Stage-2 implementation must persist to ConPort custom data categories:
+- `workflow_ideas`
+- `workflow_epics`
+1. Promotion (`idea -> epic`) must be idempotent and audit-friendly.
+1. Degraded-mode behavior is required when ConPort or Leantime is unavailable.
 
 ## Additive Public Interface Plan
 
@@ -240,12 +240,12 @@ New optional env vars (existing behavior unchanged if absent):
 ## Required Test Scenarios
 
 1. Schema validation for both models.
-2. Idea creation/list/update happy path.
-3. Idea promotion idempotency and state transitions.
-4. Promotion failure recovery when Leantime sync fails.
-5. Epic list/filter behavior.
-6. CLI regression for existing command groups.
-7. Backward compatibility: no existing API route/CLI option breakage.
+1. Idea creation/list/update happy path.
+1. Idea promotion idempotency and state transitions.
+1. Promotion failure recovery when Leantime sync fails.
+1. Epic list/filter behavior.
+1. CLI regression for existing command groups.
+1. Backward compatibility: no existing API route/CLI option breakage.
 
 ## Rollout and Guardrails
 
@@ -261,10 +261,10 @@ New optional env vars (existing behavior unchanged if absent):
 ## Exit Criteria
 
 1. Stage-1 and Stage-2 runtime endpoints live and tested.
-2. CLI supports idea/epic lifecycle commands.
-3. Idempotent promotion implemented and verified.
-4. No regressions in existing task-orchestrator API/CLI contracts.
-5. Docs updated to mark Stage-1/Stage-2 as `Implemented` where applicable.
+1. CLI supports idea/epic lifecycle commands.
+1. Idempotent promotion implemented and verified.
+1. No regressions in existing task-orchestrator API/CLI contracts.
+1. Docs updated to mark Stage-1/Stage-2 as `Implemented` where applicable.
 
 ## Assumptions and Defaults
 

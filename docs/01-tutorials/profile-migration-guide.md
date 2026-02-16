@@ -97,6 +97,6 @@ dopemux profile stats --days 30
 ## Migration Troubleshooting
 
 1. `Profile not found`: run `dopemux profile list` and check profile names.
-2. `Apply failed`: rerun with `--no-apply-config` to isolate config mapping issues.
-3. `Unexpected suggestions`: raise threshold with `profile auto-enable --threshold`.
-4. `Slow switching`: tune options (`--no-restore-context`, no restart) and inspect timing output.
+1. `Apply failed`: rerun with `--no-apply-config` to isolate config mapping issues.
+1. `Unexpected suggestions`: raise threshold with `profile auto-enable --threshold`.
+1. `Slow switching`: tune options (`--no-restore-context`, no restart) and inspect timing output.

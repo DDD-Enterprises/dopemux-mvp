@@ -111,9 +111,9 @@ prelude: 05 Orchestrator Tui (explanation) for dopemux documentation and develop
 
 **Tasks**:
 1. Create TmuxLayoutManager class
-2. Implement energy-adaptive layout switching (2/3/4 panes)
-3. Add layout persistence to ConPort
-4. Test layout transitions
+1. Implement energy-adaptive layout switching (2/3/4 panes)
+1. Add layout persistence to ConPort
+1. Test layout transitions
 
 **Code**:
 ```python
@@ -134,9 +134,9 @@ class TmuxLayoutManager:
     Manages tmux pane layouts with energy-aware adaptation.
 
     Layouts adapt to user's cognitive capacity:
-    - Low energy → 2 panes (reduce decisions)
-    - Medium energy → 3 panes (standard)
-    - High energy → 4 panes (max coordination)
+- Low energy → 2 panes (reduce decisions)
+- Medium energy → 3 panes (standard)
+- High energy → 4 panes (max coordination)
     """
 
     def __init__(self, session_name: str = "dopemux"):
@@ -323,9 +323,9 @@ def test_energy_adaptation():
 
 **Tasks**:
 1. Create CommandParser for slash commands
-2. Implement command routing logic
-3. Add command validation
-4. Test parsing
+1. Implement command routing logic
+1. Add command validation
+1. Test parsing
 
 **Code**:
 ```python
@@ -516,9 +516,9 @@ class CommandParser:
 
 **Tasks**:
 1. Create AgentSpawner class
-2. Implement AI CLI launching in tmux panes
-3. Add agent health monitoring
-4. Test multi-agent coordination
+1. Implement AI CLI launching in tmux panes
+1. Add agent health monitoring
+1. Test multi-agent coordination
 
 **Code**:
 ```python
@@ -544,9 +544,9 @@ class AgentSpawner:
     Spawn AI agents in tmux panes with health monitoring.
 
     Agents:
-    - Claude Code (Pane 0): Architecture, reasoning, systematic analysis
-    - Gemini CLI (Pane 1): Research, 1M context, analysis
-    - Grok CLI (Pane 2): Implementation, 2M context, FREE!
+- Claude Code (Pane 0): Architecture, reasoning, systematic analysis
+- Gemini CLI (Pane 1): Research, 1M context, analysis
+- Grok CLI (Pane 2): Implementation, 2M context, FREE!
     """
 
     def __init__(self, session: libtmux.Session):
@@ -716,9 +716,9 @@ class AgentSpawner:
 
 **Tasks**:
 1. Create TmuxCaptureMessageBus
-2. Implement publish/subscribe via tmux
-3. Add Redis pub/sub (optional upgrade)
-4. Test cross-pane communication
+1. Implement publish/subscribe via tmux
+1. Add Redis pub/sub (optional upgrade)
+1. Test cross-pane communication
 
 **Code**:
 ```python
@@ -888,9 +888,9 @@ class TmuxCaptureMessageBus(MessageBus):
 
 **Tasks**:
 1. Create CheckpointManager for auto-save
-2. Implement 30-second auto-checkpoint
-3. Add manual checkpoint support
-4. Test checkpoint/restore
+1. Implement 30-second auto-checkpoint
+1. Add manual checkpoint support
+1. Test checkpoint/restore
 
 **Code**:
 ```python
@@ -1070,9 +1070,9 @@ async def run_orchestrator():
 
 **Tasks**:
 1. Create CommandRouter with AI selection logic
-2. Implement complexity-based routing
-3. Add ADHD Engine integration for energy matching
-4. Test routing decisions
+1. Implement complexity-based routing
+1. Add ADHD Engine integration for energy matching
+1. Test routing decisions
 
 **Code**:
 ```python
@@ -1112,9 +1112,9 @@ class CommandRouter:
         Route command to optimal AI.
 
         Takes into account:
-        - Default routing (research→Gemini, implement→Grok, etc.)
-        - User's cognitive capacity
-        - Task complexity
+- Default routing (research→Gemini, implement→Grok, etc.)
+- User's cognitive capacity
+- Task complexity
         """
         # Get default routing
         default_target = parsed.target_ai
@@ -1249,9 +1249,9 @@ class CommandRouter:
 
 **Tasks**:
 1. Create SessionRestoration class
-2. Implement context restoration from ConPort
-3. Add visual restoration summary
-4. Test multi-day restoration
+1. Implement context restoration from ConPort
+1. Add visual restoration summary
+1. Test multi-day restoration
 
 **Code**:
 ```python
@@ -1331,8 +1331,8 @@ class SessionRestoration:
 
         ✅ Ready to continue!
         Next steps:
-        1. [step 1]
-        2. [step 2]
+1. [step 1]
+1. [step 2]
         """
         summary = "🔄 Welcome back! Restoring your context...\n\n"
 
@@ -1378,9 +1378,9 @@ class SessionRestoration:
         Create manual checkpoint before risky operations.
 
         Use before:
-        - Large refactorings
-        - Experimental changes
-        - Deploying to production
+- Large refactorings
+- Experimental changes
+- Deploying to production
         """
         checkpoint = {
             **context,
@@ -1436,9 +1436,9 @@ class SessionRestoration:
 
 **Tasks**:
 1. Create main ChatOrchestrator class
-2. Integrate all components (layout, commands, agents, message bus, checkpoints)
-3. Implement main loop
-4. Test complete workflow
+1. Integrate all components (layout, commands, agents, message bus, checkpoints)
+1. Implement main loop
+1. Test complete workflow
 
 **Code**:
 ```python
@@ -1686,7 +1686,6 @@ class ChatOrchestrator:
         print("👋 Dopemux Orchestrator shut down gracefully")
         self.running = False
 
-
 # Main entry point
 async def main():
     orchestrator = ChatOrchestrator(user_id="developer1")
@@ -1716,11 +1715,11 @@ import asyncio
 async def test_full_orchestrator_workflow():
     """
     Test complete workflow:
-    1. Start orchestrator
-    2. Parse slash command
-    3. Route to AI
-    4. Auto-checkpoint
-    5. Restore session
+1. Start orchestrator
+1. Parse slash command
+1. Route to AI
+1. Auto-checkpoint
+1. Restore session
     """
     # Initialize orchestrator
     orchestrator = ChatOrchestrator(user_id="test_user")

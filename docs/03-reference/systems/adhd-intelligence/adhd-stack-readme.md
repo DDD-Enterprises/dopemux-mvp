@@ -207,10 +207,10 @@ python backend.py &
 
 **Just work normally!**
 1. Switch to Claude Code/VS Code → Session starts
-2. Code for 10 minutes → Activity logged
-3. Receive notification → "Time for a Break" (25 min)
-4. Switch to Chrome → Session ends
-5. Statusline updates → Shows current energy/attention
+1. Code for 10 minutes → Activity logged
+1. Receive notification → "Time for a Break" (25 min)
+1. Switch to Chrome → Session ends
+1. Statusline updates → Shows current energy/attention
 
 ### Manual Commands
 

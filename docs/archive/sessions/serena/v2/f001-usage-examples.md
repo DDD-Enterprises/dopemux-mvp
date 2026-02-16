@@ -69,7 +69,7 @@ result = detect_untracked_work_enhanced(session_number=1)
 
 **Actions**:
 1. ✅ Create RFC for API design
-2. ✅ Track in ConPort after design approval
+1. ✅ Track in ConPort after design approval
 
 ---
 
@@ -125,8 +125,8 @@ result = detect_untracked_work_enhanced(session_number=1)
 
 **Actions**:
 1. ✅ Review abandoned work files
-2. ✅ Resume if context is clear
-3. ✅ Or merge ideas into new approach
+1. ✅ Resume if context is clear
+1. ✅ Or merge ideas into new approach
 
 ---
 
@@ -171,9 +171,9 @@ result = detect_untracked_work_enhanced(session_number=2)  # Second detection
 
 **Recommended Flow**:
 1. **Check abandoned work** (E3) - Can you resume instead?
-2. **Review active tasks** (E4) - Should you finish one first?
-3. **If truly new & urgent** → Create ADR (E2) before implementing
-4. **Track in ConPort** after design
+1. **Review active tasks** (E4) - Should you finish one first?
+1. **If truly new & urgent** → Create ADR (E2) before implementing
+1. **Track in ConPort** after design
 
 ---
 
@@ -283,15 +283,15 @@ echo $result | jq '.false_starts_dashboard.message'
 ```
 1. Session Start
    ↓
-2. detect_untracked_work_enhanced
+1. detect_untracked_work_enhanced
    ↓
-3. Dashboard shows 47 unfinished
+1. Dashboard shows 47 unfinished
    ↓
-4. Revival suggests "Auth refactor" (78% match)
+1. Revival suggests "Auth refactor" (78% match)
    ↓
-5. Review abandoned work → Resume it ✅
+1. Review abandoned work → Resume it ✅
    ↓
-6. Complete auth refactor (finish existing > start new)
+1. Complete auth refactor (finish existing > start new)
 ```
 
 ### Workflow 2: Design-First Enforcement
@@ -299,17 +299,17 @@ echo $result | jq '.false_starts_dashboard.message'
 ```
 1. Start new substantial feature
    ↓
-2. Write code (8 files, 4 dirs)
+1. Write code (8 files, 4 dirs)
    ↓
-3. detect_untracked_work_enhanced
+1. detect_untracked_work_enhanced
    ↓
-4. E2 triggers: "Create ADR" (0.75 confidence)
+1. E2 triggers: "Create ADR" (0.75 confidence)
    ↓
-5. Stop coding → Create ADR ✅
+1. Stop coding → Create ADR ✅
    ↓
-6. Get team feedback
+1. Get team feedback
    ↓
-7. Resume implementation with clarity
+1. Resume implementation with clarity
 ```
 
 ### Workflow 3: Overcommitment Prevention
@@ -317,17 +317,17 @@ echo $result | jq '.false_starts_dashboard.message'
 ```
 1. Excited about new idea
    ↓
-2. detect_untracked_work_enhanced
+1. detect_untracked_work_enhanced
    ↓
-3. E4 shows: 5 in-progress tasks (risk: medium)
+1. E4 shows: 5 in-progress tasks (risk: medium)
    ↓
-4. E3 suggests: 2 relevant abandoned projects
+1. E3 suggests: 2 relevant abandoned projects
    ↓
-5. Realize: Should finish existing work ✅
+1. Realize: Should finish existing work ✅
    ↓
-6. Pick one in-progress task → Complete it
+1. Pick one in-progress task → Complete it
    ↓
-7. THEN start new idea
+1. THEN start new idea
 ```
 
 ---

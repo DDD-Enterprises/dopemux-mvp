@@ -282,24 +282,24 @@ services:
   dopecon-bridge:
     build: ./services/dopecon-bridge
     ports:
-      - "3016:3016"
+- "3016:3016"
     environment:
-      - REDIS_URL=redis://redis:6379/0
-      - CONPORT_URL=http://conport:3010
+- REDIS_URL=redis://redis:6379/0
+- CONPORT_URL=http://conport:3010
     depends_on:
-      - redis
-      - conport
+- redis
+- conport
     networks:
-      - dopemux
+- dopemux
 
   my-service:
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016
+- DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
     depends_on:
-      - dopecon-bridge
+- dopecon-bridge
     networks:
-      - dopemux
+- dopemux
 ```
 
 ---
@@ -325,7 +325,7 @@ services:
        await asyncio.gather(*[bridge.publish_event(...) for _ in range(100)])
    ```
 
-2. **Batch operations when possible:**
+1. **Batch operations when possible:**
    ```python
    for item in items:
        # Process and collect
@@ -335,7 +335,7 @@ services:
        bridge.publish_event(...)
    ```
 
-3. **Cache frequently accessed data:**
+1. **Cache frequently accessed data:**
    ```python
    @lru_cache(maxsize=100)
    def get_workspace_config(workspace_id):
@@ -351,7 +351,7 @@ services:
    DOPECONBRIDGE_TOKEN=$(openssl rand -hex 32)
    ```
 
-2. **Scope operations to workspace:**
+1. **Scope operations to workspace:**
    ```python
    # ✅ Good
    bridge.save_custom_data(current_workspace_id, ...)
@@ -360,7 +360,7 @@ services:
    bridge.save_custom_data("global", ...)
    ```
 
-3. **Validate source plane:**
+1. **Validate source plane:**
    ```python
    config = DopeconBridgeConfig(
        source_plane="cognitive_plane"  # Explicit
@@ -373,10 +373,10 @@ services:
 
 | Error | Cause | Fix |
 |-------|-------|-----|
-| `Connection refused` | Bridge not running | `docker-compose up dopecon-bridge` |
-| `401 Unauthorized` | Missing/invalid token | Check `DOPECONBRIDGE_TOKEN` |
-| `ConPort unavailable` | ConPort down | `docker-compose up conport` |
-| `Event not publishing` | Redis down | `docker-compose up redis` |
+| `Connection refused` \| Bridge not running \| `docker-compose up dopecon-bridge` |
+| `401 Unauthorized` \| Missing/invalid token \| Check `DOPECONBRIDGE_TOKEN` |
+| `ConPort unavailable` \| ConPort down \| `docker-compose up conport` |
+| `Event not publishing` \| Redis down \| `docker-compose up redis` |
 | `Timeout` | Bridge overloaded | Check metrics, scale if needed |
 
 ---

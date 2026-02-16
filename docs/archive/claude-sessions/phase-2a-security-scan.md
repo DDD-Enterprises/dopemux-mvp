@@ -49,17 +49,17 @@ prelude: Phase 2A Security Scan (explanation) for dopemux documentation and deve
    allow_origins=["*"],  # Configure appropriately for production
    ```
 
-2. `services/dopemux-gpt-researcher/backend/main.py:113`
+1. `services/dopemux-gpt-researcher/backend/main.py:113`
    ```python
    allow_origins=["*"],  # Configure appropriately for production
    ```
 
-3. `services/dopemux-gpt-researcher/backend/api/main.py:236`
+1. `services/dopemux-gpt-researcher/backend/api/main.py:236`
    ```python
    allow_origins=["*"]
    ```
 
-4. `services/mcp-dopecon-bridge/main.py:1166`
+1. `services/mcp-dopecon-bridge/main.py:1166`
    ```python
    allow_origins=["*"],
    ```
@@ -90,14 +90,14 @@ prelude: Phase 2A Security Scan (explanation) for dopemux documentation and deve
    ```python
    password: str = "serena_dev_pass"
    ```
-   - **Context**: Default database password in production code
-   - **Risk**: Hardcoded credentials in version control
+- **Context**: Default database password in production code
+- **Risk**: Hardcoded credentials in version control
 
-2. `services/serena/v2/intelligence/integration_test.py:67`
+1. `services/serena/v2/intelligence/integration_test.py:67`
    ```python
    password="serena_test_pass"
    ```
-   - **Context**: Test code (lower risk but bad practice)
+- **Context**: Test code (lower risk but bad practice)
 
 **Impact**:
 - Credentials exposed in git history
@@ -231,22 +231,22 @@ self.process = subprocess.Popen(
 ### Immediate (Before Production)
 
 1. **Fix CORS Wildcards** (4 files, 10 min)
-   - Replace `["*"]` with environment-based whitelist
-   - Add `ALLOWED_ORIGINS` to `.env.example`
+- Replace `["*"]` with environment-based whitelist
+- Add `ALLOWED_ORIGINS` to `.env.example`
 
-2. **Remove Hardcoded Credentials** (2 files, 15 min)
-   - Move to environment variables
-   - Update `database.py` and test files
+1. **Remove Hardcoded Credentials** (2 files, 15 min)
+- Move to environment variables
+- Update `database.py` and test files
 
 ### Week 7 (With Integration Work)
 
 1. **Audit Subprocess Calls** (54 instances, 2h)
-   - Verify no user input in commands
-   - Ensure all use list args (not shell=True)
+- Verify no user input in commands
+- Ensure all use list args (not shell=True)
 
-2. **Verify SQL Injection** (2 instances, 30 min)
-   - Trace `graph_name` data source
-   - Add validation if from user input
+1. **Verify SQL Injection** (2 instances, 30 min)
+- Trace `graph_name` data source
+- Add validation if from user input
 
 ---
 

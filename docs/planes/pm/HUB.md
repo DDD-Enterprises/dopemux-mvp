@@ -25,9 +25,9 @@ This plane follows strict phases. Do not skip phases.
 ## How to Run
 
 1. Open Claude Code in Supervisor Mode.
-2. Paste: `docs/planes/pm/SUPERVISOR.md`
-3. Execute Phase 0 commands locally and paste outputs back verbatim.
-4. Produce deliverables into this folder.
+1. Paste: `docs/planes/pm/SUPERVISOR.md`
+1. Execute Phase 0 commands locally and paste outputs back verbatim.
+1. Produce deliverables into this folder.
 
 ## Phases and Deliverables
 

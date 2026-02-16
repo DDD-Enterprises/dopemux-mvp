@@ -58,11 +58,11 @@ Policy target:
 Required output:
 1) Constitution clauses (MUST/SHOULD/MUST NOT) with citations.
 2) Tier-0 refactor backlog with severity and sequence:
-   - Close unauthenticated emitter surfaces
-   - Remove/guard direct authority bypasses
-   - Enforce idempotent write API contract
-   - Normalize event envelope and stream topology
-   - Add deterministic mode for retrieval
+- Close unauthenticated emitter surfaces
+- Remove/guard direct authority bypasses
+- Enforce idempotent write API contract
+- Normalize event envelope and stream topology
+- Add deterministic mode for retrieval
 3) Acceptance tests and CI gates per clause.
 4) Rollback strategy.
 5) Explicit PROVISIONAL tags for clauses blocked by UNKNOWNs.

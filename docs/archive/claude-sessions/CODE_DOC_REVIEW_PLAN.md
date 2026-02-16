@@ -62,10 +62,10 @@ Systematic review and standardization of ALL code and documentation across Dopem
 **3. ConPort** ⏳ NEEDS REVIEW
 - **Estimated**: ~2000 lines
 - **Review Focus**:
-  - API consistency across all endpoints
-  - Error handling completeness
-  - Performance (query speed, graph traversal)
-  - AGE graph optimization opportunities
+- API consistency across all endpoints
+- Error handling completeness
+- Performance (query speed, graph traversal)
+- AGE graph optimization opportunities
 - **Time**: 4 hours
 - **Tools**: Zen codereview, Dope-Context search
 
@@ -73,10 +73,10 @@ Systematic review and standardization of ALL code and documentation across Dopem
 - **Estimated**: ~8000+ lines (31 components)
 - **Status**: PHASE_2E_COMPLETE claimed
 - **Review Focus**:
-  - Integration points working correctly
-  - ADHD features operational (max 10 results, complexity scoring)
-  - Performance targets met (<200ms navigation)
-  - LSP server stability
+- Integration points working correctly
+- ADHD features operational (max 10 results, complexity scoring)
+- Performance targets met (<200ms navigation)
+- LSP server stability
 - **Time**: 6 hours
 - **Tools**: Zen thinkdeep for comprehensive analysis
 
@@ -111,27 +111,27 @@ Systematic review and standardization of ALL code and documentation across Dopem
 **1. Main Documentation Audit** (4 hours)
 - **Scope**: docs/, README.md, ARCHITECTURE.md
 - **Criteria**:
-  - ✅ Accuracy (no outdated info)
-  - ✅ Completeness (all features documented)
-  - ✅ ADHD-friendly (progressive disclosure, visual hierarchy)
-  - ✅ Cross-references (links between docs work)
+- ✅ Accuracy (no outdated info)
+- ✅ Completeness (all features documented)
+- ✅ ADHD-friendly (progressive disclosure, visual hierarchy)
+- ✅ Cross-references (links between docs work)
 
 **2. Claudedocs Standardization** (6 hours)
 - **Scope**: 495 markdown files
 - **Actions**:
-  - Consolidate duplicates
-  - Archive old research (pre-2025-10-01)
-  - Tag by relevance (active/reference/archive)
-  - Create searchable index
-  - Move to appropriate directories
+- Consolidate duplicates
+- Archive old research (pre-2025-10-01)
+- Tag by relevance (active/reference/archive)
+- Create searchable index
+- Move to appropriate directories
 
 **3. Service-Level Documentation** (5 hours)
 - **Scope**: Each service's README, API docs, setup guides
 - **Criteria**:
-  - Complete installation instructions
-  - Accurate API documentation
-  - Working examples
-  - Troubleshooting sections
+- Complete installation instructions
+- Accurate API documentation
+- Working examples
+- Troubleshooting sections
 
 ---
 
@@ -180,9 +180,9 @@ pytest --cov --cov-report=html --cov-report=term-missing -v
 
 **2. Fix Failing Tests** (4 hours)
 - **Priority Order**:
-  1. Critical path tests (auth, data integrity)
-  2. Integration tests (service-to-service)
-  3. Unit tests (individual functions)
+1. Critical path tests (auth, data integrity)
+1. Integration tests (service-to-service)
+1. Unit tests (individual functions)
 - **Approach**: Fix root cause, not symptom
 
 **3. Add Missing Tests** (4 hours)
@@ -197,29 +197,29 @@ pytest --cov --cov-report=html --cov-report=term-missing -v
 
 **1. Two-Plane Architecture Compliance** (3 hours)
 - **Review**:
-  - Authority boundaries respected (PM vs Cognitive)
-  - No direct cross-plane communication
-  - DopeconBridge used correctly
-  - Authority matrix compliance
+- Authority boundaries respected (PM vs Cognitive)
+- No direct cross-plane communication
+- DopeconBridge used correctly
+- Authority matrix compliance
 - **Tool**: Zen thinkdeep for deep analysis
 - **Output**: Architecture compliance report
 
 **2. MCP Integration Audit** (2 hours)
 - **Review**:
-  - All 8 MCP servers operational
-  - Global config working across worktrees
-  - No per-project config conflicts
-  - Worktree support validated
+- All 8 MCP servers operational
+- Global config working across worktrees
+- No per-project config conflicts
+- Worktree support validated
 - **Tool**: Manual testing + Dope-Context search
 - **Output**: MCP integration health report
 
 **3. ADHD Feature Validation** (3 hours)
 - **Review**:
-  - Sub-200ms performance targets met
-  - Progressive disclosure working
-  - Complexity scoring accurate
-  - Auto-save functional (30s interval)
-  - Context preservation working
+- Sub-200ms performance targets met
+- Progressive disclosure working
+- Complexity scoring accurate
+- Auto-save functional (30s interval)
+- Context preservation working
 - **Tool**: Performance benchmarking scripts
 - **Output**: ADHD compliance scorecard
 
@@ -243,18 +243,18 @@ pytest --cov --cov-report=html --cov-report=term-missing -v
 
 ### Tools to Use
 1. **Zen codereview**: Comprehensive multi-dimensional analysis
-2. **Dope-Context**: Find patterns, similar code, anti-patterns
-3. **Serena navigation**: Navigate code, complexity scoring
-4. **pytest**: Test execution and coverage
-5. **mypy/pylint**: Static analysis
-6. **ConPort**: Log all decisions and findings
+1. **Dope-Context**: Find patterns, similar code, anti-patterns
+1. **Serena navigation**: Navigate code, complexity scoring
+1. **pytest**: Test execution and coverage
+1. **mypy/pylint**: Static analysis
+1. **ConPort**: Log all decisions and findings
 
 ### Approach
 1. **Service-by-Service**: Review one service completely before moving to next
-2. **Systematic**: Follow phases sequentially
-3. **Evidence-Based**: Use tools, not assumptions
-4. **Documented**: Log all decisions to ConPort
-5. **Validated**: Multi-model validation for critical findings
+1. **Systematic**: Follow phases sequentially
+1. **Evidence-Based**: Use tools, not assumptions
+1. **Documented**: Log all decisions to ConPort
+1. **Validated**: Multi-model validation for critical findings
 
 ---
 

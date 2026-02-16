@@ -23,33 +23,33 @@ prelude: Dope Memory Deep Dive (explanation) for dopemux documentation and devel
 Dope-Memory is the "Temporal Spine" of Dopemux, answering "What happened, when, and why?". It replaces ad-hoc memory solutions with a deterministic, local-first chronicle of events, decisions, and work logs. It sits alongside **DopeQuery** (Structural Truth) and **DopeContext** (Semantic History).
 
 **Current State**:
--   **Implementation**: Fully implemented in `services/working-memory-assistant/`.
--   **Entry Point**: `dope_memory_main.py` (Port 3020).
--   **Storage**: SQLite Canonical Ledger (`chronicle/store.py`).
--   **Confusion Point**: The directory name `working-memory-assistant` is a legacy artifact; the running service is `dope-memory`.
+- **Implementation**: Fully implemented in `services/working-memory-assistant/`.
+- **Entry Point**: `dope_memory_main.py` (Port 3020).
+- **Storage**: SQLite Canonical Ledger (`chronicle/store.py`).
+- **Confusion Point**: The directory name `working-memory-assistant` is a legacy artifact; the running service is `dope-memory`.
 
 ---
 
 ## 2. Architecture & Core Components (Validated)
 
 ### 2.1 Core Responsibilities
-1.  **Chronicle Store**: Immutable ledger managed by `ChronicleStore` class.
-    -   `raw_activity_events`: Short retention (7 days), strictly redacted.
-    -   `work_log_entries`: Durable, curated, high-signal entries.
-2.  **MCP Server**: `DopeMemoryMCPServer` (FastAPI) exposing standard tools.
-3.  **Promotion Engine**: Logic to promote raw events to work logs (seen in `promotion/`).
-4.  **Trajectory Manager**: Boosts relevance based on recent activity (`trajectory/`).
+1. **Chronicle Store**: Immutable ledger managed by `ChronicleStore` class.
+- `raw_activity_events`: Short retention (7 days), strictly redacted.
+- `work_log_entries`: Durable, curated, high-signal entries.
+1. **MCP Server**: `DopeMemoryMCPServer` (FastAPI) exposing standard tools.
+1. **Promotion Engine**: Logic to promote raw events to work logs (seen in `promotion/`).
+1. **Trajectory Manager**: Boosts relevance based on recent activity (`trajectory/`).
 
 ### 2.2 Data Stores
--   **SQLite (Canonical)**: `chronicle/schema.sql` defines `work_log_entries`, `raw_activity_events`, `issue_links`, `reflection_cards`.
--   **Redis (EventBus)**: `eventbus_consumer.py` manages ingestion.
--   **Postgres (Mirror)**: `postgres_mirror_sync.py` handles replication.
+- **SQLite (Canonical)**: `chronicle/schema.sql` defines `work_log_entries`, `raw_activity_events`, `issue_links`, `reflection_cards`.
+- **Redis (EventBus)**: `eventbus_consumer.py` manages ingestion.
+- **Postgres (Mirror)**: `postgres_mirror_sync.py` handles replication.
 
 ### 2.3 Key Contracts (MCP)
--   `memory_store`: Implemented in `dope_memory_main.py`.
--   `memory_search`: Implemented with boost re-ranking.
--   `memory_recap`: Implemented with "Top-3" logic.
--   `memory_mark_issue`: Implemented.
+- `memory_store`: Implemented in `dope_memory_main.py`.
+- `memory_search`: Implemented with boost re-ranking.
+- `memory_recap`: Implemented with "Top-3" logic.
+- `memory_mark_issue`: Implemented.
 
 ---
 
@@ -69,19 +69,19 @@ Dope-Memory is the "Temporal Spine" of Dopemux, answering "What happened, when, 
 
 ### 4.1 Runtime Absence
 The service is **NOT** present in `docker-compose.master.yml`. It is defined in `services/registry.yaml` (Port 3020) but never orchestrated.
--   **Impact**: The system has no memory continuity currently.
--   **Fix**: Add `dope-memory` service definition to `docker-compose.master.yml` pointing to `services/working-memory-assistant` Dockerfile.
+- **Impact**: The system has no memory continuity currently.
+- **Fix**: Add `dope-memory` service definition to `docker-compose.master.yml` pointing to `services/working-memory-assistant` Dockerfile.
 
 ### 4.2 Environment Mismatch (Python 3.10 vs 3.9)
 The source code uses Python 3.10+ syntax (e.g., `str | Path` union types), but the environment/tests are running on Python 3.9.6.
--   **Evidence**: `TypeError: unsupported operand type(s) for |: 'type' and 'type'` during tests.
--   **Fix**: Update Dockerfile/Runtime to Python 3.10+ or downgrade syntax to `Union[str, Path]`.
+- **Evidence**: `TypeError: unsupported operand type(s) for |: 'type' and 'type'` during tests.
+- **Fix**: Update Dockerfile/Runtime to Python 3.10+ or downgrade syntax to `Union[str, Path]`.
 
 ## 5. Next Steps
-1.  **Rename Directory**: Move `services/working-memory-assistant` back to `services/dope-memory` to match registry and intent.
-2.  **Fix Python Version**: ensure Dockerfile uses python:3.11-slim.
-3.  **Orchestrate**: Add to `docker-compose.master.yml`.
-4.  **Verify**: Run `test_dope_memory.py` in the corrected environment.
+1. **Rename Directory**: Move `services/working-memory-assistant` back to `services/dope-memory` to match registry and intent.
+1. **Fix Python Version**: ensure Dockerfile uses python:3.11-slim.
+1. **Orchestrate**: Add to `docker-compose.master.yml`.
+1. **Verify**: Run `test_dope_memory.py` in the corrected environment.
 
 ---
 
@@ -92,6 +92,6 @@ The source code uses Python 3.10+ syntax (e.g., `str | Path` union types), but t
 ---
 
 ## 5. Next Steps
-1.  **Scaffold Service**: Create `services/dope-memory` based on `docker/mcp-servers/` templates.
-2.  **Schema Migration**: Implement SQLite schema from `02_data_model_sqlite.md`.
-3.  **MCP Implementation**: Implement the tools defined in `07_mcp_contracts.md`.
+1. **Scaffold Service**: Create `services/dope-memory` based on `docker/mcp-servers/` templates.
+1. **Schema Migration**: Implement SQLite schema from `02_data_model_sqlite.md`.
+1. **MCP Implementation**: Implement the tools defined in `07_mcp_contracts.md`.

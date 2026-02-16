@@ -165,10 +165,10 @@ Comprehensive research validation reveals **Dopemux is 85% implemented but only 
 
 ### Option A: Critical Path (Fastest Value)
 1. **IP-004** (1 day) - ConPort Search Delegation → Immediate quality boost
-2. **IP-001** (7 days) - ADHD Engine Integration → Unlock personalization
-3. **IP-002** (9 days) - DopeconBridge → Enable coordination
-4. **IP-003** (6-9 days) - Infrastructure Consolidation → Optimize resources
-5. **IP-005** (14 days) - Orchestrator TUI → Beautiful interface
+1. **IP-001** (7 days) - ADHD Engine Integration → Unlock personalization
+1. **IP-002** (9 days) - DopeconBridge → Enable coordination
+1. **IP-003** (6-9 days) - Infrastructure Consolidation → Optimize resources
+1. **IP-005** (14 days) - Orchestrator TUI → Beautiful interface
 
 **Total**: 37-40 days sequential
 
@@ -196,10 +196,10 @@ Comprehensive research validation reveals **Dopemux is 85% implemented but only 
 
 ### Option C: Quick Wins First (Best for Morale)
 1. **IP-004** (1 day) - Easy win, huge quality boost → **Celebrate! 🎉**
-2. **IP-001** (7 days) - ADHD Engine Integration → **Unlock major capability! 🚀**
-3. **IP-002** (9 days) - DopeconBridge → **Enable coordination! 🔗**
-4. **IP-003** (6-9 days) - Infrastructure → **Clean house! 🧹**
-5. **IP-005** (14 days) - TUI → **Beautiful interface! ✨**
+1. **IP-001** (7 days) - ADHD Engine Integration → **Unlock major capability! 🚀**
+1. **IP-002** (9 days) - DopeconBridge → **Enable coordination! 🔗**
+1. **IP-003** (6-9 days) - Infrastructure → **Clean house! 🧹**
+1. **IP-005** (14 days) - TUI → **Beautiful interface! ✨**
 
 **Total**: 37-40 days, with early wins for momentum
 
@@ -283,10 +283,10 @@ Comprehensive research validation reveals **Dopemux is 85% implemented but only 
 ## Next Steps
 
 1. **Review Plans**: Read each implementation plan in detail
-2. **Prioritize**: Choose sequential vs parallel execution strategy
-3. **Resource Planning**: Assign team members to plans
-4. **Start Execution**: Begin with IP-004 (quick win) for momentum
-5. **Track Progress**: Use ConPort to log progress on each plan
+1. **Prioritize**: Choose sequential vs parallel execution strategy
+1. **Resource Planning**: Assign team members to plans
+1. **Start Execution**: Begin with IP-004 (quick win) for momentum
+1. **Track Progress**: Use ConPort to log progress on each plan
 
 ---
 
@@ -350,8 +350,8 @@ This planning work logged as:
 
 **Start with Quick Wins**:
 1. IP-004 (1 day) → Immediate search quality boost
-2. IP-001 (7 days) → Unlock ADHD Engine
-3. IP-002 (9 days) → Enable coordination
+1. IP-001 (7 days) → Unlock ADHD Engine
+1. IP-002 (9 days) → Enable coordination
 
 This sequence provides:
 - Early win for momentum (day 1)

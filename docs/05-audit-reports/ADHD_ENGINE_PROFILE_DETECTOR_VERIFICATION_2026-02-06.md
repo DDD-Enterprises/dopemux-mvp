@@ -21,21 +21,21 @@ Closure verification for execution-packet backlog item:
 ## Implementation
 
 1. Updated `src/dopemux/profile_detector.py`:
-   - removed direct imports of ADHD service internals
-   - added HTTP probing for:
-     - `/api/v1/energy-level/{user_id}`
-     - `/api/v1/attention-state/{user_id}`
-   - base URL priority includes `http://localhost:5448` first with fallback support
-   - returns `(None, None)` when service is unavailable or invalid
-2. Stability fix:
-   - added `get_profiles_directory` helper in `src/dopemux/profile_commands.py`
-   - switched detector profile-dir default to `ProfileManager().profiles_dir`
+- removed direct imports of ADHD service internals
+- added HTTP probing for:
+- `/api/v1/energy-level/{user_id}`
+- `/api/v1/attention-state/{user_id}`
+- base URL priority includes `http://localhost:5448` first with fallback support
+- returns `(None, None)` when service is unavailable or invalid
+1. Stability fix:
+- added `get_profiles_directory` helper in `src/dopemux/profile_commands.py`
+- switched detector profile-dir default to `ProfileManager().profiles_dir`
 
 ## Verification
 
 1. `pytest -q --no-cov tests/unit/test_profile_detector_adhd_client.py` passed.
-2. `pytest -q --no-cov tests/unit/test_profile_cli_registration.py` passed.
-3. `python -m py_compile src/dopemux/profile_detector.py src/dopemux/profile_commands.py` passed.
+1. `pytest -q --no-cov tests/unit/test_profile_cli_registration.py` passed.
+1. `python -m py_compile src/dopemux/profile_detector.py src/dopemux/profile_commands.py` passed.
 
 ## Status
 
