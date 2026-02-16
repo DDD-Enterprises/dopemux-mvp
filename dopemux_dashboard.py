@@ -39,7 +39,7 @@ except ImportError:
 try:
     from textual.app import App, ComposeResult
     from textual.containers import Container, Horizontal, Vertical
-    from textual.widgets import Header, Footer, Static, DataTable
+    from textual.widgets import Header, Footer, Static, DataTable, ListView, ListItem
     from textual.reactive import reactive
     from textual.screen import Screen
     from rich.table import Table
@@ -1420,7 +1420,7 @@ Run: docker start dopemux-prometheus
             # Show service selection menu
             self.push_screen(ServiceSelectionModal())
         
-        def action_show_pattern_detail(self) -> None:
+        async def action_show_pattern_detail(self) -> None:
             """Show detailed view of a behavioral pattern"""
             # Get the top pattern from Serena
             try:
@@ -1851,6 +1851,7 @@ Yesterday     ✓ Completed  Duration: 1h 54m  Tasks: 2/3
             super().__init__()
             self.metric_name = metric_name
             self._metric_data = metric_data
+            self.sparkline_gen = SparklineGenerator()
         
         def compose(self) -> ComposeResult:
             with Container(id="modal-container"):
@@ -1875,14 +1876,56 @@ Yesterday     ✓ Completed  Duration: 1h 54m  Tasks: 2/3
             if self._metric_data:
                 return self._metric_data
             
-            # TODO: Fetch from Prometheus
-            return {
-                "current": 0.65,
-                "avg": 0.71,
-                "min": 0.42,
-                "max": 0.95,
-                "sparkline": "▃▅▆▇▅▄▃▂▄▆▅▃"
+            # Map friendly metric names to Prometheus metrics and types
+            metric_configs = {
+                "Cognitive Load": {"query": "adhd_cognitive_load", "type": "cognitive_load", "min": 0, "max": 100},
+                "Task Velocity": {"query": "adhd_task_velocity_per_day", "type": "velocity"},
+                "Context Switches": {"query": "adhd_context_switches_total", "type": "switches"}
             }
+
+            config = metric_configs.get(self.metric_name, {"query": self.metric_name, "type": "auto"})
+            query = config["query"]
+
+            try:
+                async with PrometheusClient(PrometheusConfig()) as prom:
+                    # Fetch last 7 days (168 hours) with 1h resolution
+                    data = await prom.query_range(query, hours=168, step="1h")
+
+                    if not data:
+                        logger.warning(f"No Prometheus data for {query}, returning empty stats")
+                        return {
+                            "current": 0.0,
+                            "avg": 0.0,
+                            "min": 0.0,
+                            "max": 0.0,
+                            "sparkline": "─" * 40
+                        }
+
+                    # Generate stats and sparkline
+                    stats = self.sparkline_gen.generate_with_stats(
+                        data,
+                        width=40,
+                        min_val=config.get("min"),
+                        max_val=config.get("max")
+                    )
+
+                    # Add ADHD-optimized colorization
+                    colorized_sparkline = self.sparkline_gen.colorize(
+                        stats["sparkline"],
+                        data,
+                        metric_type=config["type"]
+                    )
+
+                    return {
+                        "current": stats["current"],
+                        "avg": stats["avg"],
+                        "min": stats["min"],
+                        "max": stats["max"],
+                        "sparkline": colorized_sparkline
+                    }
+            except Exception as e:
+                logger.error(f"Error fetching Prometheus metrics for {self.metric_name}: {e}")
+                raise
         
         def render_metric_content(self, data: Dict) -> str:
             """Render metric history graph"""
