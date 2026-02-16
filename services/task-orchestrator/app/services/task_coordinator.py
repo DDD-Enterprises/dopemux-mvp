@@ -118,6 +118,10 @@ class TaskCoordinator:
         # Update coordination state
         self.coordination_state.current_adhd_state = current_adhd_state
         self.coordination_state.active_tasks = [t.id for t in tasks if t.status == TaskStatus.IN_PROGRESS]
+        
+        # Store tasks in internal dictionary for later retrieval
+        for task in tasks:
+            self.tasks[task.id] = task
 
         # Step 1: Assess task batch based on cognitive capacity
         batch_plan = await self._assess_cognitive_batch(tasks, current_adhd_state)
@@ -132,7 +136,12 @@ class TaskCoordinator:
         await self._sync_coordination_state()
 
         # Step 5: Execute batch with monitoring
-        execution_results = await self._execute_batch(sequenced_plan)
+        # Extract task IDs from sequenced_plan (could be Dict or List)
+        if isinstance(sequenced_plan, dict):
+            task_ids = [t.id for t in sequenced_plan.get("tasks", [])]
+        else:
+            task_ids = sequenced_plan
+        execution_results = await self._execute_batch(task_ids)
 
         return {
             "coordination_id": self.coordination_state.session_id,
@@ -475,6 +484,11 @@ class TaskCoordinator:
                     # Simulate execution with monitoring
                     # We await this to maintain sequential execution order
                     await self._monitor_execution(task)
+                    
+                    # Mark task as completed after successful monitoring
+                    task.status = TaskStatus.COMPLETED
+                    results["completed"].append(task_id)
+                    results["in_progress"].remove(task_id)
 
                     # Sync to ConPort
                     await self.conport_adapter.update_task_in_conport(task)
@@ -516,10 +530,6 @@ class TaskCoordinator:
         """
         Monitor task execution with ADHD-aware breaks.
         """
-        # Ensure session start time is set
-        if not self.coordination_state.session_start_time:
-            self.coordination_state.session_start_time = datetime.now()
-
         # Simulate task duration (demo mode)
         # In a real system, this would monitor an actual agent's progress
         simulated_duration = 60  # 1 minute simulation per task
