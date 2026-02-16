@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -29,13 +30,7 @@ try:
         estimate_tokens_from_text,
         plan_chunks_for_step,
     )
-    from lib.retry import (
-        is_retryable_exception,
-        parse_retry_after_seconds,
-        retry_delay_seconds,
-        should_retry_status,
-    )
-    from lib.throttle import ProviderLimiter, ProviderRateConfig
+    from lib.retry import is_retryable_exception
 except ImportError:
     from UPGRADES.lib.chunking import (
         build_file_manifest_hash,
@@ -43,13 +38,7 @@ except ImportError:
         estimate_tokens_from_text,
         plan_chunks_for_step,
     )
-    from UPGRADES.lib.retry import (
-        is_retryable_exception,
-        parse_retry_after_seconds,
-        retry_delay_seconds,
-        should_retry_status,
-    )
-    from UPGRADES.lib.throttle import ProviderLimiter, ProviderRateConfig
+    from UPGRADES.lib.retry import is_retryable_exception
 
 # --- Configuration & Constants ---
 
@@ -146,6 +135,126 @@ PROVIDER_BASE_URL = {
     "gemini": "https://generativelanguage.googleapis.com/v1beta/openai",
     "openai": "https://api.openai.com/v1",
 }
+
+PROVIDER_POLICIES: Dict[str, Dict[str, Any]] = {
+    "gemini": {
+        "max_inflight": 2,
+        "min_interval_s": 0.35,
+        "timeout_s": 120,
+        "max_retries": 6,
+        "retry_on": [429, 500, 502, 503, 504],
+        "backoff_schedule_s": [1, 2, 4, 8, 16, 32],
+        "shrink_on": ["context_length", "payload_too_large", "request_too_large"],
+        "non_retryable_markers": [
+            "api key not found",
+            "invalid api key",
+            "permission",
+            "model not found",
+        ],
+    },
+    "xai": {
+        "max_inflight": 3,
+        "min_interval_s": 0.25,
+        "timeout_s": 120,
+        "max_retries": 5,
+        "retry_on": [429, 500, 502, 503, 504],
+        "backoff_schedule_s": [1, 2, 4, 8, 16],
+        "shrink_on": ["context_length", "payload_too_large"],
+        "non_retryable_markers": ["invalid api key", "model not found", "permission"],
+    },
+    "openai": {
+        "max_inflight": 2,
+        "min_interval_s": 0.35,
+        "timeout_s": 180,
+        "max_retries": 6,
+        "retry_on": [429, 500, 502, 503, 504],
+        "backoff_schedule_s": [1, 2, 4, 8, 16, 32],
+        "shrink_on": ["context_length", "payload_too_large"],
+        "non_retryable_markers": [
+            "invalid api key",
+            "model not found",
+            "insufficient_quota",
+            "permission",
+        ],
+    },
+}
+
+SHRINKABLE_MARKERS = [
+    "context length",
+    "maximum context length",
+    "exceeds the context window",
+    "too many tokens",
+    "token limit",
+    "prompt is too long",
+    "input is too long",
+    "request too large",
+    "payload too large",
+    "content too large",
+    "exceeded maximum request size",
+    "too many input tokens",
+    "input token limit exceeded",
+    "request payload size exceeds",
+    "reduce the length",
+]
+
+RETRYABLE_MARKERS = [
+    "rate limit",
+    "too many requests",
+    "resource exhausted",
+    "retry later",
+    "temporarily throttled",
+    "requests per minute",
+    "tokens per minute",
+    "rpm",
+    "tpm",
+    "capacity",
+    "internal error",
+    "server error",
+    "bad gateway",
+    "service unavailable",
+    "gateway timeout",
+    "timeout",
+    "temporarily unavailable",
+    "overloaded",
+    "please try again",
+]
+
+NONRETRYABLE_MARKERS = [
+    "api key not found",
+    "missing api key",
+    "invalid api key",
+    "invalid authentication",
+    "authentication failed",
+    "unauthorized",
+    "permission denied",
+    "access denied",
+    "not authorized",
+    "provided api key is invalid",
+    "invalid x-api-key",
+    "model not found",
+    "no such model",
+    "unknown model",
+    "not supported",
+    "is not available",
+    "does not exist",
+    "you do not have access to",
+    "insufficient_quota",
+    "you exceeded your current quota",
+    "billing",
+    "payment required",
+    "invalid request",
+    "invalid_request_error",
+    "unknown field",
+    "unexpected field",
+    "messages must be",
+    "cannot parse",
+    "parse error",
+    "schema invalid",
+]
+
+SHRINK_MIN_FILE_TRUNCATE_CHARS = 2000
+SHRINK_MIN_MAX_CHARS = 30000
+SHRINK_MIN_MAX_FILES = 12
 
 TEXT_SUFFIXES = {
     ".py",
@@ -386,6 +495,16 @@ class RunnerConfig:
     rpm_xai: int
     tpm_xai: int
     max_inflight: int
+    max_retries: int
+    min_interval_ms: int
+    fail_fast: bool
+    shrink_on_payload: bool
+    resume_ledger: bool
+    prefer_split_first: bool
+    min_files_per_part: int
+    max_split_depth: int
+    max_partitions_per_step: int
+    r_partial_ok: bool
 
 
 @dataclass(frozen=True)
@@ -492,6 +611,21 @@ def safe_read(path: Path) -> str:
 
 def sha256_string(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8", errors="ignore")).hexdigest()
+
+
+def compute_request_hash(system_prompt: str, user_payload: str) -> str:
+    digest_source = f"{system_prompt}\n\n{user_payload}"
+    return hashlib.sha256(digest_source.encode("utf-8", errors="ignore")).hexdigest()
+
+
+def short_error_excerpt(message: Any, limit: int = 200) -> str:
+    return str(message or "").strip().replace("\n", " ")[:limit]
+
+
+def append_jsonl(path: Path, payload: Dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(payload, sort_keys=True, ensure_ascii=True) + "\n")
 
 
 def is_text_candidate(path: Path) -> bool:
@@ -690,6 +824,16 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "rpm_xai": args.rpm_xai,
             "tpm_xai": args.tpm_xai,
             "max_inflight": args.max_inflight,
+            "max_retries": args.max_retries,
+            "min_interval_ms": args.min_interval_ms,
+            "fail_fast": args.fail_fast,
+            "shrink_on_payload": args.shrink_on_payload,
+            "resume_ledger": args.resume_ledger,
+            "prefer_split_first": args.prefer_split_first,
+            "min_files_per_part": args.min_files_per_part,
+            "max_split_depth": args.max_split_depth,
+            "max_partitions_per_step": args.max_partitions_per_step,
+            "r_partial_ok": args.r_partial_ok,
         },
     }
     write_json(dirs["root"] / "RUN_MANIFEST.json", manifest)
@@ -920,6 +1064,15 @@ def write_phase_manifest(
             "max_chars": cfg.max_chars,
             "file_truncate_chars": cfg.file_truncate_chars,
             "max_inflight": cfg.max_inflight,
+            "max_retries": cfg.max_retries,
+            "min_interval_ms": cfg.min_interval_ms,
+            "fail_fast": cfg.fail_fast,
+            "shrink_on_payload": cfg.shrink_on_payload,
+            "resume_ledger": cfg.resume_ledger,
+            "prefer_split_first": cfg.prefer_split_first,
+            "min_files_per_part": cfg.min_files_per_part,
+            "max_split_depth": cfg.max_split_depth,
+            "max_partitions_per_step": cfg.max_partitions_per_step,
             "rpm": {
                 "openai": cfg.rpm_openai,
                 "gemini": cfg.rpm_gemini,
@@ -1901,67 +2054,140 @@ def llm_base_url(provider: str) -> str:
     return PROVIDER_BASE_URL.get(provider, PROVIDER_BASE_URL["openai"])
 
 
+class LLMCallError(RuntimeError):
+    def __init__(self, message: str, meta: Optional[Dict[str, Any]] = None):
+        super().__init__(message)
+        self.meta = meta or {}
+
+
+class LLMNonRetryableError(LLMCallError):
+    pass
+
+
+class LLMShrinkRequiredError(LLMCallError):
+    pass
+
+
+class LLMRetryExhaustedError(LLMCallError):
+    pass
+
+
+def _extract_error_fields(response_text: str, response_json: Any) -> Tuple[str, str, str]:
+    err_msg = ""
+    err_type = ""
+    err_code = ""
+    if isinstance(response_json, dict):
+        error_block = response_json.get("error")
+        if isinstance(error_block, dict):
+            err_msg = str(error_block.get("message", "") or "")
+            err_type = str(error_block.get("type", "") or "")
+            err_code = str(error_block.get("code", "") or "")
+        elif isinstance(error_block, str):
+            err_msg = error_block
+        if not err_msg:
+            err_msg = str(response_json.get("message", "") or "")
+    if not err_msg:
+        err_msg = str(response_text or "")
+    return err_msg, err_type, err_code
+
+
+def _match_markers(text: str, markers: List[str]) -> List[str]:
+    lowered = text.lower()
+    return [marker for marker in markers if marker and marker.lower() in lowered]
+
+
+def classify_llm_failure(
+    provider: str,
+    status: Optional[int],
+    err_msg: str,
+    err_type: str,
+    err_code: str,
+    exception: Optional[Exception] = None,
+) -> Dict[str, Any]:
+    policy = PROVIDER_POLICIES.get(provider, PROVIDER_POLICIES["openai"])
+    combined = " ".join([str(err_msg or ""), str(err_type or ""), str(err_code or "")]).lower()
+    nonretry_markers = list(NONRETRYABLE_MARKERS) + list(policy.get("non_retryable_markers", []))
+    shrink_markers = list(SHRINKABLE_MARKERS)
+    retry_markers = list(RETRYABLE_MARKERS)
+    matched_nonretry = _match_markers(combined, nonretry_markers)
+    matched_shrink = _match_markers(combined, shrink_markers)
+    matched_retry = _match_markers(combined, retry_markers)
+
+    if status in {401, 402, 403}:
+        return {"kind": "nonretryable", "status": status, "markers": ["status_auth_or_billing"]}
+    if str(err_code or "").lower() == "insufficient_quota":
+        return {"kind": "nonretryable", "status": status, "markers": ["insufficient_quota"]}
+    if matched_nonretry:
+        return {"kind": "nonretryable", "status": status, "markers": matched_nonretry}
+
+    if status == 413:
+        return {"kind": "shrink", "status": status, "markers": ["status_413"]}
+    if matched_shrink:
+        return {"kind": "shrink", "status": status, "markers": matched_shrink}
+    if status in {400, 422} and matched_shrink:
+        return {"kind": "shrink", "status": status, "markers": matched_shrink}
+
+    retry_statuses = set(int(code) for code in policy.get("retry_on", []))
+    if status in retry_statuses:
+        return {"kind": "retryable", "status": status, "markers": [f"status_{status}"]}
+    if matched_retry:
+        return {"kind": "retryable", "status": status, "markers": matched_retry}
+
+    if exception is not None:
+        if is_retryable_exception(exception):
+            return {"kind": "retryable", "status": status, "markers": [exception.__class__.__name__]}
+        exc_text = str(exception).lower()
+        if "connection reset" in exc_text or "ssl" in exc_text or "tls" in exc_text:
+            return {"kind": "retryable", "status": status, "markers": ["network_transient"]}
+
+    if status is not None and 400 <= status < 500:
+        return {"kind": "nonretryable", "status": status, "markers": [f"status_{status}"]}
+    return {"kind": "retryable", "status": status, "markers": ["default_retryable"]}
+
+
 @dataclass
 class RequestController:
     run_id: str
     cfg: RunnerConfig
-    provider_limits: Dict[str, ProviderLimiter] = field(default_factory=dict)
+    ledger_path: Optional[Path] = None
+    provider_last_call_ts: Dict[str, float] = field(default_factory=dict)
+    provider_inflight: Dict[str, int] = field(default_factory=dict)
     missing_api_env_emitted: set = field(default_factory=set)
+    successful_request_hashes: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     rate_limit_stats: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     last_successful_call: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        self.provider_limits = {
-            "openai": ProviderLimiter(
-                ProviderRateConfig(
-                    rpm=max(self.cfg.rpm_openai, 0),
-                    tpm=max(self.cfg.tpm_openai, 0),
-                    max_inflight=max(self.cfg.max_inflight, 1),
-                )
-            ),
-            "gemini": ProviderLimiter(
-                ProviderRateConfig(
-                    rpm=max(self.cfg.rpm_gemini, 0),
-                    tpm=max(self.cfg.tpm_gemini, 0),
-                    max_inflight=max(self.cfg.max_inflight, 1),
-                )
-            ),
-            "xai": ProviderLimiter(
-                ProviderRateConfig(
-                    rpm=max(self.cfg.rpm_xai, 0),
-                    tpm=max(self.cfg.tpm_xai, 0),
-                    max_inflight=max(self.cfg.max_inflight, 1),
-                )
-            ),
-        }
         self.rate_limit_stats = {
             provider: {
                 "provider": provider,
                 "total_calls": 0,
+                "total_attempts": 0,
                 "successful_calls": 0,
                 "failed_calls": 0,
                 "retry_events": 0,
                 "status_429": 0,
                 "status_503": 0,
-                "retry_after_obeyed": 0,
                 "total_backoff_seconds": 0.0,
                 "max_backoff_seconds": 0.0,
                 "request_ids": [],
             }
             for provider in ("openai", "gemini", "xai")
         }
+        if self.cfg.resume and self.cfg.resume_ledger and self.ledger_path and self.ledger_path.exists():
+            self._load_successful_request_hashes()
 
     def _stats_for(self, provider: str) -> Dict[str, Any]:
         if provider not in self.rate_limit_stats:
             self.rate_limit_stats[provider] = {
                 "provider": provider,
                 "total_calls": 0,
+                "total_attempts": 0,
                 "successful_calls": 0,
                 "failed_calls": 0,
                 "retry_events": 0,
                 "status_429": 0,
                 "status_503": 0,
-                "retry_after_obeyed": 0,
                 "total_backoff_seconds": 0.0,
                 "max_backoff_seconds": 0.0,
                 "request_ids": [],
@@ -1981,54 +2207,134 @@ class RequestController:
                 return value
         return ""
 
-    def _provider_retry_policy(self, provider: str) -> Dict[str, Any]:
-        if provider == "gemini":
-            return {
-                "max_attempts": 7,
-                "max_retry_seconds": 900.0,
-                "obey_retry_after": True,
-            }
-        if provider == "xai":
-            return {
-                "max_attempts": 7,
-                "max_retry_seconds": 900.0,
-                "obey_retry_after": True,
-            }
-        return {
-            "max_attempts": 6,
-            "max_retry_seconds": 600.0,
-            "obey_retry_after": True,
-        }
+    def _load_successful_request_hashes(self) -> None:
+        if not self.ledger_path or not self.ledger_path.exists():
+            return
+        for line in self.ledger_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except Exception:
+                continue
+            request_hash = str(row.get("request_hash", "")).strip()
+            outcome = str(row.get("outcome", "")).strip()
+            if request_hash and outcome == "success":
+                self.successful_request_hashes[request_hash] = row
 
-    def _provider_retry_delay_seconds(
+    def has_successful_request_hash(self, request_hash: str) -> bool:
+        return bool(self.successful_request_hashes.get(request_hash))
+
+    def get_successful_request_entry(self, request_hash: str) -> Optional[Dict[str, Any]]:
+        row = self.successful_request_hashes.get(request_hash)
+        if not row:
+            return None
+        return dict(row)
+
+    def _provider_policy(self, provider: str) -> Dict[str, Any]:
+        base = dict(PROVIDER_POLICIES.get(provider, PROVIDER_POLICIES["openai"]))
+        backoff = [float(value) for value in list(base.get("backoff_schedule_s", []))]
+        max_retries = int(base.get("max_retries", 6))
+        if self.cfg.max_retries >= 0:
+            max_retries = int(self.cfg.max_retries)
+        max_retries = max(max_retries, 0)
+        while len(backoff) < max_retries:
+            next_value = backoff[-1] * 2 if backoff else 1.0
+            backoff.append(float(min(next_value, 300.0)))
+        if len(backoff) > max_retries:
+            backoff = backoff[:max_retries]
+        min_interval_s = float(base.get("min_interval_s", 0.0))
+        if self.cfg.min_interval_ms >= 0:
+            min_interval_s = max(float(self.cfg.min_interval_ms) / 1000.0, 0.0)
+        base["max_retries"] = max_retries
+        base["backoff_schedule_s"] = backoff
+        base["min_interval_s"] = min_interval_s
+        base["timeout_s"] = float(base.get("timeout_s", 120.0))
+        provider_max_inflight = max(int(base.get("max_inflight", 1)), 1)
+        if int(self.cfg.max_inflight) > 0:
+            provider_max_inflight = max(1, min(provider_max_inflight, int(self.cfg.max_inflight)))
+        base["max_inflight"] = provider_max_inflight
+        return base
+
+    def _enforce_provider_pacing(self, provider: str, policy: Dict[str, Any]) -> float:
+        min_interval_s = float(policy.get("min_interval_s", 0.0))
+        if min_interval_s <= 0:
+            self.provider_last_call_ts[provider] = time.time()
+            return 0.0
+        now_ts = time.time()
+        last_ts = float(self.provider_last_call_ts.get(provider, 0.0) or 0.0)
+        elapsed = max(now_ts - last_ts, 0.0) if last_ts > 0 else min_interval_s
+        sleep_for = max(min_interval_s - elapsed, 0.0)
+        if sleep_for > 0:
+            time.sleep(sleep_for)
+        self.provider_last_call_ts[provider] = time.time()
+        return sleep_for
+
+    def _acquire_provider_slot(self, provider: str, policy: Dict[str, Any]) -> float:
+        max_inflight = max(int(policy.get("max_inflight", 1)), 1)
+        min_interval_s = float(policy.get("min_interval_s", 0.0))
+        waited = 0.0
+        while int(self.provider_inflight.get(provider, 0) or 0) >= max_inflight:
+            sleep_for = min_interval_s if min_interval_s > 0 else 0.05
+            time.sleep(sleep_for)
+            waited += sleep_for
+        self.provider_inflight[provider] = int(self.provider_inflight.get(provider, 0) or 0) + 1
+        return waited
+
+    def _release_provider_slot(self, provider: str) -> None:
+        current = int(self.provider_inflight.get(provider, 0) or 0)
+        self.provider_inflight[provider] = max(current - 1, 0)
+
+    def _append_ledger_row(self, row: Dict[str, Any]) -> None:
+        if not self.ledger_path:
+            return
+        append_jsonl(self.ledger_path, row)
+        request_hash = str(row.get("request_hash", "")).strip()
+        if request_hash and str(row.get("outcome", "")) == "success":
+            self.successful_request_hashes[request_hash] = dict(row)
+
+    def record_shrink_decision(
         self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        chunk_id: str,
         provider: str,
-        attempt: int,
-        status_code: Optional[int],
-        retry_after: Optional[float],
-        retry_seed: str,
-    ) -> Tuple[float, bool]:
-        if provider == "gemini":
-            if retry_after is not None:
-                return max(float(retry_after), 0.0), True
-            delay = min(float(2 ** max(attempt - 1, 0)), 60.0)
-            return delay, False
-
-        if provider == "xai":
-            if retry_after is not None:
-                return max(float(retry_after), 0.0), True
-            if status_code == 429:
-                return min(float(6 * (2 ** max(attempt - 1, 0))), 120.0), False
-            if status_code == 503:
-                return min(float(3 * (2 ** max(attempt - 1, 0))), 90.0), False
-            return min(float(2 * (2 ** max(attempt - 1, 0))), 60.0), False
-
-        delay = retry_delay_seconds(
-            attempt=attempt,
-            retry_after=retry_after,
-            seed_material=f"{retry_seed}|provider={provider}",
-        )
-        return delay, retry_after is not None
+        model_id: str,
+        request_hash: str,
+        attempt_index: int,
+        shrink_action: str,
+        error_excerpt: str,
+        old_budget: Dict[str, Any],
+        new_budget: Dict[str, Any],
+        parent_partition_id: str = "",
+        child_partition_ids: Optional[List[str]] = None,
+    ) -> None:
+        child_ids = child_partition_ids or []
+        row = {
+            "ts": now_iso(),
+            "event_type": "shrink_decision",
+            "run_id": self.run_id,
+            "phase": phase,
+            "step_id": step_id,
+            "partition_id": partition_id,
+            "chunk_id": chunk_id,
+            "provider": provider,
+            "model": model_id,
+            "request_hash": request_hash,
+            "attempt_index": attempt_index,
+            "http_status": "n/a",
+            "outcome": "retryable_fail",
+            "classification": "shrink",
+            "response_bytes": 0,
+            "shrink_action": shrink_action,
+            "error_excerpt": short_error_excerpt(error_excerpt),
+            "old_budget": old_budget,
+            "new_budget": new_budget,
+            "parent_partition_id": parent_partition_id,
+            "child_partition_ids": child_ids,
+        }
+        self._append_ledger_row(row)
 
     def export_rate_limit_report(self) -> Dict[str, Any]:
         per_provider = []
@@ -2038,12 +2344,12 @@ class RequestController:
                 {
                     "provider": provider,
                     "total_calls": int(stats.get("total_calls", 0) or 0),
+                    "total_attempts": int(stats.get("total_attempts", 0) or 0),
                     "successful_calls": int(stats.get("successful_calls", 0) or 0),
                     "failed_calls": int(stats.get("failed_calls", 0) or 0),
                     "retry_events": int(stats.get("retry_events", 0) or 0),
                     "status_429": int(stats.get("status_429", 0) or 0),
                     "status_503": int(stats.get("status_503", 0) or 0),
-                    "retry_after_obeyed": int(stats.get("retry_after_obeyed", 0) or 0),
                     "total_backoff_seconds": round(float(stats.get("total_backoff_seconds", 0.0) or 0.0), 6),
                     "max_backoff_seconds": round(float(stats.get("max_backoff_seconds", 0.0) or 0.0), 6),
                     "request_ids": list(stats.get("request_ids", []))[:100],
@@ -2061,28 +2367,33 @@ class RequestController:
             return api_key
         if api_key_env not in self.missing_api_env_emitted:
             self.missing_api_env_emitted.add(api_key_env)
-            raise RuntimeError(
+            raise LLMNonRetryableError(
                 f"Missing API key env var for provider '{provider}': {api_key_env}. "
                 "Set it and rerun with --resume."
             )
-        raise RuntimeError(f"Missing API key env var: {api_key_env}")
+        raise LLMNonRetryableError(f"Missing API key env var: {api_key_env}")
 
     def execute_chat_completion(
         self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        chunk_id: str,
         provider: str,
         model_id: str,
         api_key_env: str,
         system_prompt: str,
         user_content: str,
-        retry_seed: str,
+        request_hash: str,
+        output_path: Path,
+        payload_chars: int,
+        payload_files: int,
+        truncate_chars: int,
+        max_chars_total: int,
+        max_files_total: int,
         est_tokens: int,
     ) -> Tuple[str, Dict[str, Any]]:
         api_key = self._require_api_key(provider, api_key_env)
-        limiter = self.provider_limits.get(provider)
-        if limiter is None:
-            limiter = ProviderLimiter(ProviderRateConfig(rpm=0, tpm=0))
-            self.provider_limits[provider] = limiter
-
         provider_stats = self._stats_for(provider)
         provider_stats["total_calls"] = int(provider_stats.get("total_calls", 0) or 0) + 1
 
@@ -2099,46 +2410,127 @@ class RequestController:
             "Content-Type": "application/json",
         }
         url = f"{llm_base_url(provider)}/chat/completions"
-        policy = self._provider_retry_policy(provider)
-        max_attempts = int(policy.get("max_attempts", 6))
-        max_retry_seconds = float(policy.get("max_retry_seconds", 600.0))
-        start_ts = time.time()
+        policy = self._provider_policy(provider)
+        max_retries = int(policy.get("max_retries", 0))
+        max_attempts = max_retries + 1
+        retry_on = set(int(code) for code in policy.get("retry_on", []))
+        backoff_schedule = [float(value) for value in policy.get("backoff_schedule_s", [])]
+        timeout_s = float(policy.get("timeout_s", 120.0))
+
+        total_backoff_seconds = 0.0
         retry_trace: List[Dict[str, Any]] = []
 
         for attempt in range(1, max_attempts + 1):
-            scheduled_sleep = limiter.acquire(est_tokens)
+            provider_stats["total_attempts"] = int(provider_stats.get("total_attempts", 0) or 0) + 1
+            pacing_sleep = self._enforce_provider_pacing(provider, policy)
+            slot_wait = self._acquire_provider_slot(provider, policy)
+            started_at = now_iso()
+            started_ts = time.time()
             status_code: Optional[int] = None
             headers_snapshot: Dict[str, str] = {}
-            retry_after_seconds: Optional[float] = None
             response_body = ""
-            body_excerpt = ""
+            response_json: Any = None
+            response_bytes = 0
+            request_id = ""
+            err_msg = ""
+            err_type = ""
+            err_code = ""
+            classification: Dict[str, Any] = {"kind": "retryable", "status": None, "markers": []}
+            content: Optional[str] = None
+            exc_obj: Optional[Exception] = None
 
             try:
-                response = requests.post(url, headers=headers, json=payload, timeout=180)
+                response = requests.post(url, headers=headers, json=payload, timeout=timeout_s)
                 status_code = response.status_code
                 headers_snapshot = normalized_headers(response.headers)
-                request_id = self._request_id_from_headers(headers_snapshot)
+                request_id = str(self._request_id_from_headers(headers_snapshot))
                 if request_id:
                     request_ids = provider_stats.setdefault("request_ids", [])
                     if request_id not in request_ids:
                         request_ids.append(request_id)
-                retry_after_seconds = parse_retry_after_seconds(
-                    headers_snapshot.get("retry-after", "")
+                response_body = response.text or ""
+                response_bytes = len(response_body.encode("utf-8", errors="ignore"))
+                try:
+                    response_json = response.json()
+                except Exception:
+                    response_json = None
+
+                embedded_error = (
+                    status_code is not None
+                    and 200 <= status_code < 300
+                    and isinstance(response_json, dict)
+                    and response_json.get("error") not in (None, "", {})
                 )
-                limiter.apply_server_feedback(provider, headers_snapshot)
-                response.raise_for_status()
-                data = response.json()
-                content = str(data["choices"][0]["message"]["content"])
-                meta = {
-                    "attempts": attempt,
-                    "status_code": status_code,
-                    "headers": headers_snapshot,
-                    "scheduled_sleep_seconds": scheduled_sleep,
-                    "retry_trace": retry_trace,
-                    "total_retry_seconds": max(time.time() - start_ts, 0.0),
-                    "limiter_state": limiter.export_state(),
+                if status_code is not None and 200 <= status_code < 300 and not embedded_error:
+                    try:
+                        content = str(response_json["choices"][0]["message"]["content"])
+                    except Exception:
+                        err_msg = "response schema invalid: missing choices[0].message.content"
+                        classification = {"kind": "nonretryable", "status": status_code, "markers": ["schema_invalid"]}
+                    else:
+                        classification = {"kind": "success", "status": status_code, "markers": []}
+                else:
+                    err_msg, err_type, err_code = _extract_error_fields(response_body, response_json)
+                    classification = classify_llm_failure(
+                        provider=provider,
+                        status=status_code,
+                        err_msg=err_msg,
+                        err_type=err_type,
+                        err_code=err_code,
+                        exception=None,
+                    )
+            except Exception as exc:
+                exc_obj = exc
+                err_msg = str(exc)
+                classification = classify_llm_failure(
+                    provider=provider,
+                    status=status_code,
+                    err_msg=err_msg,
+                    err_type="",
+                    err_code="",
+                    exception=exc,
+                )
+            finally:
+                self._release_provider_slot(provider)
+
+            duration_ms = int(max((time.time() - started_ts) * 1000.0, 0.0))
+            kind = str(classification.get("kind", "retryable"))
+            markers = list(classification.get("markers", []))
+            error_excerpt = short_error_excerpt(err_msg or response_body or exc_obj)
+
+            if kind == "success" and content is not None:
+                row = {
+                    "ts": now_iso(),
+                    "event_type": "attempt",
+                    "run_id": self.run_id,
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "chunk_id": chunk_id,
+                    "provider": provider,
+                    "model": model_id,
+                    "request_hash": request_hash,
+                    "attempt_index": attempt,
+                    "started_at": started_at,
+                    "duration_ms": duration_ms,
+                    "http_status": status_code,
+                    "outcome": "success",
+                    "classification": "success",
+                    "response_bytes": response_bytes,
+                    "shrink_action": "none",
+                    "output_path": str(output_path.resolve()),
+                    "error_excerpt": "",
+                    "payload_chars": payload_chars,
+                    "payload_files": payload_files,
+                    "truncate_chars": truncate_chars,
+                    "max_chars": max_chars_total,
+                    "max_files": max_files_total,
+                    "scheduled_pacing_sleep_s": pacing_sleep,
+                    "slot_wait_s": slot_wait,
+                    "backoff_sleep_s": 0.0,
                     "request_id": request_id,
                 }
+                self._append_ledger_row(row)
                 provider_stats["successful_calls"] = int(provider_stats.get("successful_calls", 0) or 0) + 1
                 self.last_successful_call = {
                     "provider": provider,
@@ -2148,89 +2540,140 @@ class RequestController:
                     "request_id": request_id,
                     "timestamp": now_iso(),
                 }
-                return content, meta
-            except Exception as exc:
-                if "response" in locals():
-                    try:
-                        response_body = response.text
-                    except Exception:
-                        response_body = ""
-                if response_body:
-                    body_excerpt = response_body[:1200]
+                return content, {
+                    "attempts": attempt,
+                    "status_code": status_code,
+                    "headers": headers_snapshot,
+                    "retry_trace": retry_trace,
+                    "total_retry_seconds": total_backoff_seconds,
+                    "request_id": request_id,
+                    "classification": "success",
+                }
 
-                if status_code is None and isinstance(exc, requests.HTTPError):
-                    try:
-                        status_code = exc.response.status_code if exc.response is not None else None
-                    except Exception:
-                        status_code = None
-                should_retry_flag = should_retry_status(status_code) or (
-                    status_code is None and is_retryable_exception(exc)
-                )
-                if status_code == 429:
-                    limiter.adapt_on_429()
+            if status_code == 429:
+                provider_stats["status_429"] = int(provider_stats.get("status_429", 0) or 0) + 1
+            if status_code == 503:
+                provider_stats["status_503"] = int(provider_stats.get("status_503", 0) or 0) + 1
 
-                retry_event = {
+            should_retry = (
+                kind == "retryable"
+                and attempt <= max_retries
+                and (status_code is None or status_code in retry_on or bool(markers))
+            )
+            backoff_sleep = float(backoff_schedule[attempt - 1]) if should_retry and attempt - 1 < len(backoff_schedule) else 0.0
+            outcome = "nonretryable_fail" if kind == "nonretryable" else "retryable_fail"
+            row = {
+                "ts": now_iso(),
+                "event_type": "attempt",
+                "run_id": self.run_id,
+                "phase": phase,
+                "step_id": step_id,
+                "partition_id": partition_id,
+                "chunk_id": chunk_id,
+                "provider": provider,
+                "model": model_id,
+                "request_hash": request_hash,
+                "attempt_index": attempt,
+                "started_at": started_at,
+                "duration_ms": duration_ms,
+                "http_status": status_code if status_code is not None else "network_error",
+                "outcome": outcome,
+                "classification": kind,
+                "markers": markers,
+                "response_bytes": response_bytes,
+                "shrink_action": "none",
+                "output_path": str(output_path.resolve()),
+                "error_excerpt": error_excerpt,
+                "payload_chars": payload_chars,
+                "payload_files": payload_files,
+                "truncate_chars": truncate_chars,
+                "max_chars": max_chars_total,
+                "max_files": max_files_total,
+                "scheduled_pacing_sleep_s": pacing_sleep,
+                "slot_wait_s": slot_wait,
+                "backoff_sleep_s": backoff_sleep,
+                "request_id": request_id,
+            }
+            self._append_ledger_row(row)
+            retry_trace.append(
+                {
                     "attempt": attempt,
                     "status_code": status_code,
-                    "error": str(exc),
-                    "scheduled_sleep_seconds": scheduled_sleep,
-                    "retry_after_seconds": retry_after_seconds,
-                    "limiter_state": limiter.export_state(),
+                    "classification": kind,
+                    "markers": markers,
+                    "error_excerpt": error_excerpt,
+                    "backoff_sleep_seconds": backoff_sleep,
                 }
-                retry_trace.append(retry_event)
-                provider_stats["retry_events"] = int(provider_stats.get("retry_events", 0) or 0) + 1
-                if status_code == 429:
-                    provider_stats["status_429"] = int(provider_stats.get("status_429", 0) or 0) + 1
-                if status_code == 503:
-                    provider_stats["status_503"] = int(provider_stats.get("status_503", 0) or 0) + 1
+            )
 
-                if not should_retry_flag or attempt >= max_attempts:
-                    provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
-                    extra = f" | body={body_excerpt}" if body_excerpt else ""
-                    raise RuntimeError(
-                        f"LLM call failed provider={provider} model={model_id} "
-                        f"attempt={attempt}/{max_attempts} status={status_code} error={exc}{extra}"
-                    ) from exc
+            if kind == "shrink":
+                raise LLMShrinkRequiredError(
+                    f"Payload/context exceeds limit for {provider}/{model_id}: {error_excerpt}",
+                    meta={
+                        "attempts": attempt,
+                        "status_code": status_code,
+                        "classification": kind,
+                        "markers": markers,
+                        "error_excerpt": error_excerpt,
+                        "retry_trace": retry_trace,
+                    },
+                )
+            if kind == "nonretryable":
+                provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
+                raise LLMNonRetryableError(
+                    f"Non-retryable LLM failure provider={provider} model={model_id} "
+                    f"status={status_code} error={error_excerpt}",
+                    meta={
+                        "attempts": attempt,
+                        "status_code": status_code,
+                        "classification": kind,
+                        "markers": markers,
+                        "error_excerpt": error_excerpt,
+                        "retry_trace": retry_trace,
+                    },
+                )
+            if not should_retry:
+                provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
+                raise LLMRetryExhaustedError(
+                    f"Retry budget exhausted provider={provider} model={model_id} "
+                    f"after attempt={attempt}/{max_attempts} status={status_code} error={error_excerpt}",
+                    meta={
+                        "attempts": attempt,
+                        "status_code": status_code,
+                        "classification": kind,
+                        "markers": markers,
+                        "error_excerpt": error_excerpt,
+                        "retry_trace": retry_trace,
+                    },
+                )
 
-                sleep_seconds, obeyed_retry_after = self._provider_retry_delay_seconds(
-                    provider=provider,
-                    attempt=attempt,
-                    status_code=status_code,
-                    retry_after=retry_after_seconds,
-                    retry_seed=f"{retry_seed}|attempt={attempt}",
-                )
-                if obeyed_retry_after:
-                    provider_stats["retry_after_obeyed"] = (
-                        int(provider_stats.get("retry_after_obeyed", 0) or 0) + 1
-                    )
-                elapsed = time.time() - start_ts
-                if elapsed + sleep_seconds > max_retry_seconds:
-                    provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
-                    raise RuntimeError(
-                        f"Retry time budget exceeded provider={provider} model={model_id} "
-                        f"elapsed={elapsed:.2f}s budget={max_retry_seconds:.2f}s "
-                        f"status={status_code} last_error={exc}"
-                    ) from exc
-                retry_event["backoff_sleep_seconds"] = sleep_seconds
-                provider_stats["total_backoff_seconds"] = float(
-                    provider_stats.get("total_backoff_seconds", 0.0) or 0.0
-                ) + float(sleep_seconds)
-                provider_stats["max_backoff_seconds"] = max(
-                    float(provider_stats.get("max_backoff_seconds", 0.0) or 0.0),
-                    float(sleep_seconds),
-                )
-                logger.warning(
-                    "LLM retry provider=%s model=%s attempt=%s/%s status=%s sleep=%.3fs",
-                    provider,
-                    model_id,
-                    attempt,
-                    max_attempts,
-                    status_code,
-                    sleep_seconds,
-                )
-                time.sleep(sleep_seconds)
+            provider_stats["retry_events"] = int(provider_stats.get("retry_events", 0) or 0) + 1
+            provider_stats["total_backoff_seconds"] = float(
+                provider_stats.get("total_backoff_seconds", 0.0) or 0.0
+            ) + backoff_sleep
+            provider_stats["max_backoff_seconds"] = max(
+                float(provider_stats.get("max_backoff_seconds", 0.0) or 0.0),
+                backoff_sleep,
+            )
+            total_backoff_seconds += backoff_sleep
+            logger.warning(
+                "LLM retry provider=%s model=%s attempt=%s/%s status=%s sleep=%.3fs markers=%s",
+                provider,
+                model_id,
+                attempt,
+                max_attempts,
+                status_code,
+                backoff_sleep,
+                ",".join(markers[:3]),
+            )
+            if backoff_sleep > 0:
+                time.sleep(backoff_sleep)
 
-        raise RuntimeError(f"Unreachable retry exit provider={provider} model={model_id}")
+        provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
+        raise LLMRetryExhaustedError(
+            f"Retry budget exhausted provider={provider} model={model_id}",
+            meta={"retry_trace": retry_trace},
+        )
 
 
 def parse_json_from_response(text: str) -> Optional[Any]:
@@ -2312,6 +2755,64 @@ def coerce_artifacts_from_response(
     return []
 
 
+def split_partition_ids(parent_partition_id: str, split_depth: int) -> Tuple[str, str]:
+    if split_depth <= 0:
+        return f"{parent_partition_id}a", f"{parent_partition_id}b"
+    return f"{parent_partition_id}1", f"{parent_partition_id}2"
+
+
+def next_shrink_action(
+    shrink_stage: int,
+    budget: Dict[str, int],
+    files_count: int,
+    split_depth: int,
+    prefer_split_first: bool,
+    min_files_per_part: int,
+    max_split_depth: int,
+    active_partition_count: int,
+    max_partitions_per_step: int,
+) -> Tuple[str, Dict[str, int], int]:
+    stage = max(int(shrink_stage), 0)
+    if stage <= 0:
+        if (
+            prefer_split_first
+            and files_count > max(int(min_files_per_part), 1)
+            and split_depth < max(int(max_split_depth), 0)
+            and active_partition_count < max(int(max_partitions_per_step), 1)
+        ):
+            return "split_partition", dict(budget), 1
+        stage = 1
+
+    if stage <= 1:
+        new_max_files = max(SHRINK_MIN_MAX_FILES, int(int(budget.get("max_files", 0)) * 0.7))
+        if new_max_files < int(budget.get("max_files", 0)):
+            updated = dict(budget)
+            updated["max_files"] = new_max_files
+            return "reduce_files", updated, 2
+        stage = 2
+
+    if stage <= 2:
+        new_truncate = max(
+            SHRINK_MIN_FILE_TRUNCATE_CHARS,
+            int(int(budget.get("file_truncate_chars", 0)) * 0.7),
+        )
+        if new_truncate < int(budget.get("file_truncate_chars", 0)):
+            updated = dict(budget)
+            updated["file_truncate_chars"] = new_truncate
+            return "truncate_files", updated, 3
+        stage = 3
+
+    if stage <= 3:
+        new_max_chars = max(SHRINK_MIN_MAX_CHARS, int(int(budget.get("max_chars", 0)) * 0.8))
+        if new_max_chars < int(budget.get("max_chars", 0)):
+            updated = dict(budget)
+            updated["max_chars"] = new_max_chars
+            return "reduce_chars", updated, 4
+        stage = 4
+
+    return "fail", dict(budget), stage
+
+
 def execute_step_for_partitions(
     phase: str,
     prompt_spec: PromptSpec,
@@ -2338,6 +2839,7 @@ def execute_step_for_partitions(
         }
 
     raw_dir = phase_dir / "raw"
+    qa_dir = phase_dir / "qa"
     inputs_dir = phase_dir / "inputs"
     payload_cache_dir = inputs_dir / "payload_cache"
     payload_cache_dir.mkdir(parents=True, exist_ok=True)
@@ -2345,7 +2847,14 @@ def execute_step_for_partitions(
         phase, ("xai", "grok-code-fast-1", "XAI_API_KEY")
     )
     if not cfg.dry_run:
-        request_controller._require_api_key(provider, api_key_env)
+        try:
+            request_controller._require_api_key(provider, api_key_env)
+        except LLMNonRetryableError as exc:
+            (raw_dir / f"{step_id}__STEP.FAILED.txt").write_text(
+                f"{short_error_excerpt(exc)}\n",
+                encoding="utf-8",
+            )
+            raise
     max_files = max_files_for_phase(phase, cfg)
     prompt_hash = hashlib.sha256(prompt_text.encode("utf-8", errors="ignore")).hexdigest()
     prompt_version = sha256_text(prompt_path)
@@ -2361,18 +2870,48 @@ def execute_step_for_partitions(
     failed_chunk_ids: List[str] = []
     hash_mismatch_chunk_ids: List[str] = []
     chunk_ids: List[str] = []
+    effective_partitions: List[Dict[str, Any]] = []
+    partition_lineage_events: List[Dict[str, Any]] = []
+    shrink_events: List[Dict[str, Any]] = []
+    retry_error_counts: Counter[str] = Counter()
+    failed_file_sizes: Dict[str, int] = {}
+    last_shrink_stage_by_partition: Dict[str, int] = {}
+    active_partition_count = len(partitions)
 
     chunk_manifest_rows: List[Dict[str, Any]] = []
     truncated_only_chunks = 0
     chunks_with_tail_snippets = 0
     home_root = Path.home()
     tail_chars = min(max(int(cfg.file_truncate_chars * 0.1), 256), 2048)
+    base_budget = {
+        "max_chars": int(cfg.max_chars),
+        "file_truncate_chars": int(cfg.file_truncate_chars),
+        "max_files": int(max_files),
+    }
 
-    for partition in partitions:
+    def _record_failed_file_sizes(paths: List[str]) -> None:
+        for path_str in paths:
+            size = int(inventory_by_path.get(path_str, {}).get("size", 0) or 0)
+            if size > int(failed_file_sizes.get(path_str, 0) or 0):
+                failed_file_sizes[path_str] = size
+
+    def _write_attempt_log(partition_id: str, payload: Dict[str, Any]) -> None:
+        write_json(raw_dir / f"{step_id}__{partition_id}__ATTEMPTS.json", payload)
+
+    def _process_partition(
+        partition: Dict[str, Any],
+        split_depth: int,
+        shrink_stage: int,
+        budget: Dict[str, int],
+    ) -> None:
+        nonlocal resume_skipped, completed_chunks, failed_chunks
+        nonlocal truncated_only_chunks, chunks_with_tail_snippets
+        nonlocal active_partition_count
         partition_id = partition["id"]
         chunk_ids.append(partition_id)
         out_json = raw_dir / f"{step_id}__{partition_id}.json"
         out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+        out_failed_txt = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
         out_trace = raw_dir / f"{step_id}__{partition_id}.TRACE.md"
         out_meta = raw_dir / f"{step_id}__{partition_id}.request_meta.json"
         payload_cache = payload_cache_dir / f"{step_id}__{partition_id}.prompt.txt"
@@ -2386,140 +2925,981 @@ def execute_step_for_partitions(
             f"{output_instructions}\n"
             "\nFILES:\n"
         )
-        reserved_bytes = len(prompt_prefix.encode("utf-8"))
-        context_budget = max(cfg.max_chars - reserved_bytes, 2048)
-        filtered_paths: List[str] = []
-        safe_mode_blocked = 0
-        for path_str in partition.get("paths", []):
-            path = Path(path_str)
-            enforce_home_allowlist = phase == "H" and cfg.home_scan_mode == "safe"
-            if enforce_home_allowlist:
-                violation = home_safe_violation_reason(path, home_root)
-                if violation:
-                    safe_mode_blocked += 1
-                    logger.warning("Blocked unsafe home file in SAFE mode: %s (%s)", path, violation)
-                    continue
-            filtered_paths.append(path_str)
+        current_budget = dict(budget)
+        current_stage = int(shrink_stage)
 
-        redaction_hits_total = 0
+        while True:
+            reserved_bytes = len(prompt_prefix.encode("utf-8"))
+            context_budget = max(int(current_budget["max_chars"]) - reserved_bytes, 2048)
+            filtered_paths: List[str] = []
+            safe_mode_blocked = 0
+            for path_str in partition.get("paths", []):
+                path = Path(path_str)
+                enforce_home_allowlist = phase == "H" and cfg.home_scan_mode == "safe"
+                if enforce_home_allowlist:
+                    violation = home_safe_violation_reason(path, home_root)
+                    if violation:
+                        safe_mode_blocked += 1
+                        logger.warning("Blocked unsafe home file in SAFE mode: %s (%s)", path, violation)
+                        continue
+                filtered_paths.append(path_str)
 
-        def _read_for_chunk(path_str: str) -> str:
-            nonlocal redaction_hits_total
-            content_local = safe_read(Path(path_str))
-            safe_redaction_active = phase == "M" or (phase == "H" and cfg.home_scan_mode == "safe")
-            if safe_redaction_active:
-                content_local, hits = redact_sensitive_lines(content_local)
-                redaction_hits_total += hits
-            return content_local
+            redaction_hits_total = 0
 
-        context, context_stats, file_entries = build_partition_context(
-            partition_paths=filtered_paths,
-            read_text_fn=_read_for_chunk,
-            file_truncate_chars=cfg.file_truncate_chars,
-            max_files=max_files,
-            max_chars=context_budget,
-            tail_chars=tail_chars,
-        )
-        context_stats["redaction_hits"] = redaction_hits_total
-        context_stats["safe_mode_blocked"] = safe_mode_blocked
-        if context_stats.get("files_included", 0) > 0 and context_stats.get("truncated_files", 0) == context_stats.get(
-            "files_included", 0
-        ):
-            truncated_only_chunks += 1
-        if context_stats.get("tail_snippet_files", 0) > 0:
-            chunks_with_tail_snippets += 1
+            def _read_for_chunk(path_str: str) -> str:
+                nonlocal redaction_hits_total
+                content_local = safe_read(Path(path_str))
+                safe_redaction_active = phase == "M" or (phase == "H" and cfg.home_scan_mode == "safe")
+                if safe_redaction_active:
+                    content_local, hits = redact_sensitive_lines(content_local)
+                    redaction_hits_total += hits
+                return content_local
 
-        if payload_cache.exists():
-            cached_prompt = safe_read(payload_cache)
-            user_prompt = cached_prompt if cached_prompt else f"{prompt_prefix}{context}"
-        else:
+            context, context_stats, file_entries = build_partition_context(
+                partition_paths=filtered_paths,
+                read_text_fn=_read_for_chunk,
+                file_truncate_chars=int(current_budget["file_truncate_chars"]),
+                max_files=int(current_budget["max_files"]),
+                max_chars=context_budget,
+                tail_chars=tail_chars,
+            )
+            context_stats["redaction_hits"] = redaction_hits_total
+            context_stats["safe_mode_blocked"] = safe_mode_blocked
+            if context_stats.get("files_included", 0) > 0 and context_stats.get("truncated_files", 0) == context_stats.get(
+                "files_included", 0
+            ):
+                truncated_only_chunks += 1
+            if context_stats.get("tail_snippet_files", 0) > 0:
+                chunks_with_tail_snippets += 1
+
             user_prompt = f"{prompt_prefix}{context}"
             payload_cache.write_text(user_prompt, encoding="utf-8")
-        injected_text_sha256 = hashlib.sha256(
-            user_prompt.encode("utf-8", errors="ignore")
-        ).hexdigest()
+            injected_text_sha256 = hashlib.sha256(
+                user_prompt.encode("utf-8", errors="ignore")
+            ).hexdigest()
+            request_hash = compute_request_hash(prompt_text, user_prompt)
 
-        chunk_contract = {
-            "prompt_version": prompt_version,
-            "provider": provider,
-            "model": model_id,
-            "system_prompt_hash": prompt_hash,
-            "file_manifest_hash": file_manifest_hash,
-            "caps": {
-                "max_chars": cfg.max_chars,
-                "file_truncate_chars": cfg.file_truncate_chars,
-                "max_files_phase_effective": max_files,
-            },
-            "home_scan_mode": cfg.home_scan_mode,
-            "safe_redaction_active": phase_uses_safe_redaction(phase, cfg),
-            "redaction_version": "safe-redaction-v1",
-            "injected_text_sha256": injected_text_sha256,
-        }
-        chunk_key = hashlib.sha256(
-            json.dumps(chunk_contract, sort_keys=True, ensure_ascii=True).encode("utf-8", errors="ignore")
-        ).hexdigest()
+            chunk_contract = {
+                "prompt_version": prompt_version,
+                "provider": provider,
+                "model": model_id,
+                "system_prompt_hash": prompt_hash,
+                "file_manifest_hash": file_manifest_hash,
+                "caps": {
+                    "max_chars": int(current_budget["max_chars"]),
+                    "file_truncate_chars": int(current_budget["file_truncate_chars"]),
+                    "max_files_phase_effective": int(current_budget["max_files"]),
+                },
+                "home_scan_mode": cfg.home_scan_mode,
+                "safe_redaction_active": phase_uses_safe_redaction(phase, cfg),
+                "redaction_version": "safe-redaction-v1",
+                "injected_text_sha256": injected_text_sha256,
+                "request_hash": request_hash,
+            }
+            chunk_key = hashlib.sha256(
+                json.dumps(chunk_contract, sort_keys=True, ensure_ascii=True).encode("utf-8", errors="ignore")
+            ).hexdigest()
 
-        if cfg.resume and out_json.exists() and out_meta.exists():
-            if is_valid_json_file(out_json):
-                meta_payload = parse_json_from_response(safe_read(out_meta))
-                if isinstance(meta_payload, dict) and str(meta_payload.get("chunk_key", "")) == chunk_key:
-                    prior_hash = str(meta_payload.get("output_sha256", "")).strip()
-                    current_hash = sha256_text(out_json)
-                    if prior_hash and prior_hash == current_hash:
-                        resume_skipped += 1
-                        chunk_manifest_rows.append(
-                            {
-                                "chunk_id": partition_id,
-                                "base_partition_id": str(partition.get("base_partition_id", "")),
-                                "file_manifest_hash": file_manifest_hash,
-                                "chunk_key": chunk_key,
-                                "injected_text_sha256": injected_text_sha256,
-                                "request_payload_bytes": len(user_prompt.encode("utf-8")),
-                                "file_entries": file_entries,
-                                "context_stats": context_stats,
-                                "status": "resume_skipped",
-                                "resume_output_sha256": current_hash,
-                            }
-                        )
-                        continue
-                    hash_mismatch_chunk_ids.append(partition_id)
+            if cfg.resume and out_json.exists() and out_meta.exists():
+                if is_valid_json_file(out_json):
+                    meta_payload = parse_json_from_response(safe_read(out_meta))
+                    if isinstance(meta_payload, dict) and str(meta_payload.get("chunk_key", "")) == chunk_key:
+                        prior_hash = str(meta_payload.get("output_sha256", "")).strip()
+                        current_hash = sha256_text(out_json)
+                        if prior_hash and prior_hash == current_hash:
+                            resume_skipped += 1
+                            chunk_manifest_rows.append(
+                                {
+                                    "chunk_id": partition_id,
+                                    "base_partition_id": str(partition.get("base_partition_id", "")),
+                                    "file_manifest_hash": file_manifest_hash,
+                                    "chunk_key": chunk_key,
+                                    "request_hash": request_hash,
+                                    "injected_text_sha256": injected_text_sha256,
+                                    "request_payload_bytes": len(user_prompt.encode("utf-8")),
+                                    "file_entries": file_entries,
+                                    "context_stats": context_stats,
+                                    "status": "resume_skipped",
+                                    "resume_output_sha256": current_hash,
+                                }
+                            )
+                            effective_partitions.append(
+                                {
+                                    "id": partition_id,
+                                    "partition_id": partition_id,
+                                    "paths": list(filtered_paths),
+                                    "ordered_paths": list(filtered_paths),
+                                }
+                            )
+                            return
+                        hash_mismatch_chunk_ids.append(partition_id)
 
-        payload_bytes = len(user_prompt.encode("utf-8"))
-        chunk_manifest_rows.append(
-            {
+            if cfg.resume and cfg.resume_ledger and request_controller.has_successful_request_hash(request_hash):
+                ledger_entry = request_controller.get_successful_request_entry(request_hash)
+                source_path_value = str((ledger_entry or {}).get("output_path", "")).strip() if ledger_entry else ""
+                source_path = Path(source_path_value) if source_path_value else out_json
+                if source_path.exists() and is_valid_json_file(source_path):
+                    if source_path.resolve() != out_json.resolve():
+                        shutil.copyfile(source_path, out_json)
+                    write_json(
+                        out_meta,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "provider": provider,
+                            "model_id": model_id,
+                            "chunk_key": chunk_key,
+                            "request_hash": request_hash,
+                            "file_manifest_hash": file_manifest_hash,
+                            "request_payload_bytes": len(user_prompt.encode("utf-8")),
+                            "context_stats": context_stats,
+                            "injected_text_sha256": injected_text_sha256,
+                            "output_sha256": sha256_text(out_json),
+                            "status": "resume_ledger_skipped",
+                            "generated_at": now_iso(),
+                            "ledger_source_path": str(source_path),
+                        },
+                    )
+                    if out_failed.exists():
+                        out_failed.unlink()
+                    if out_failed_txt.exists():
+                        out_failed_txt.unlink()
+                    resume_skipped += 1
+                    chunk_manifest_rows.append(
+                        {
+                            "chunk_id": partition_id,
+                            "base_partition_id": str(partition.get("base_partition_id", "")),
+                            "file_manifest_hash": file_manifest_hash,
+                            "chunk_key": chunk_key,
+                            "request_hash": request_hash,
+                            "injected_text_sha256": injected_text_sha256,
+                            "request_payload_bytes": len(user_prompt.encode("utf-8")),
+                            "file_entries": file_entries,
+                            "context_stats": context_stats,
+                            "status": "resume_ledger_skipped",
+                            "ledger_source_path": str(source_path),
+                        }
+                    )
+                    effective_partitions.append(
+                        {
+                            "id": partition_id,
+                            "partition_id": partition_id,
+                            "paths": list(filtered_paths),
+                            "ordered_paths": list(filtered_paths),
+                        }
+                    )
+                    return
+
+            payload_bytes = len(user_prompt.encode("utf-8"))
+            if payload_bytes > int(current_budget["max_chars"]):
+                synth_err = (
+                    f"payload too large before request: bytes={payload_bytes} "
+                    f"limit={int(current_budget['max_chars'])}"
+                )
+                classification = "shrink"
+                action, next_budget, next_stage = next_shrink_action(
+                    shrink_stage=current_stage,
+                    budget=current_budget,
+                    files_count=len(filtered_paths),
+                    split_depth=split_depth,
+                    prefer_split_first=cfg.prefer_split_first,
+                    min_files_per_part=cfg.min_files_per_part,
+                    max_split_depth=cfg.max_split_depth,
+                    active_partition_count=active_partition_count,
+                    max_partitions_per_step=cfg.max_partitions_per_step,
+                )
+                if action == "split_partition":
+                    active_partition_count += 1
+                    child_a_id, child_b_id = split_partition_ids(partition_id, split_depth)
+                    mid = max(len(filtered_paths) // 2, 1)
+                    child_a_paths = list(filtered_paths[:mid])
+                    child_b_paths = list(filtered_paths[mid:])
+                    split_event = {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "classification": classification,
+                        "shrink_action": action,
+                        "parent_partition_id": partition_id,
+                        "child_partition_ids": [child_a_id, child_b_id],
+                        "files_before": len(filtered_paths),
+                        "files_after": [len(child_a_paths), len(child_b_paths)],
+                        "budget_before": dict(current_budget),
+                        "budget_after": dict(next_budget),
+                        "error_excerpt": short_error_excerpt(synth_err),
+                        "generated_at": now_iso(),
+                    }
+                    shrink_events.append(split_event)
+                    partition_lineage_events.append(split_event)
+                    request_controller.record_shrink_decision(
+                        phase=phase,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        chunk_id=partition_id,
+                        provider=provider,
+                        model_id=model_id,
+                        request_hash=request_hash,
+                        attempt_index=0,
+                        shrink_action=action,
+                        error_excerpt=synth_err,
+                        old_budget=dict(current_budget),
+                        new_budget=dict(next_budget),
+                        parent_partition_id=partition_id,
+                        child_partition_ids=[child_a_id, child_b_id],
+                    )
+                    write_json(
+                        out_failed,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "superseded_by_split",
+                            "reason": synth_err,
+                            "child_partition_ids": [child_a_id, child_b_id],
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    out_failed_txt.write_text(
+                        f"{synth_err}\nchild_partitions={child_a_id},{child_b_id}\n",
+                        encoding="utf-8",
+                    )
+                    chunk_manifest_rows.append(
+                        {
+                            "chunk_id": partition_id,
+                            "base_partition_id": str(partition.get("base_partition_id", "")),
+                            "file_manifest_hash": file_manifest_hash,
+                            "request_hash": request_hash,
+                            "status": "superseded_by_split",
+                            "child_partition_ids": [child_a_id, child_b_id],
+                        }
+                    )
+                    _write_attempt_log(
+                        partition_id,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "superseded_by_split",
+                            "reason": synth_err,
+                            "shrink_action": action,
+                            "child_partition_ids": [child_a_id, child_b_id],
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    _process_partition(
+                        {
+                            "id": child_a_id,
+                            "partition_id": child_a_id,
+                            "base_partition_id": str(partition.get("base_partition_id", partition_id)),
+                            "paths": child_a_paths,
+                            "ordered_paths": list(child_a_paths),
+                            "file_manifest_hash": build_file_manifest_hash(child_a_paths, inventory_by_path),
+                        },
+                        split_depth=split_depth + 1,
+                        shrink_stage=0,
+                        budget=dict(current_budget),
+                    )
+                    _process_partition(
+                        {
+                            "id": child_b_id,
+                            "partition_id": child_b_id,
+                            "base_partition_id": str(partition.get("base_partition_id", partition_id)),
+                            "paths": child_b_paths,
+                            "ordered_paths": list(child_b_paths),
+                            "file_manifest_hash": build_file_manifest_hash(child_b_paths, inventory_by_path),
+                        },
+                        split_depth=split_depth + 1,
+                        shrink_stage=0,
+                        budget=dict(current_budget),
+                    )
+                    return
+                if action == "fail":
+                    error_text = "payload_unshrinkable"
+                    retry_error_counts[error_text] += 1
+                    failed_chunks += 1
+                    failed_chunk_ids.append(partition_id)
+                    last_shrink_stage_by_partition[partition_id] = current_stage
+                    _record_failed_file_sizes(filtered_paths)
+                    write_json(
+                        out_failed,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "failed",
+                            "classification": "nonretryable",
+                            "error": error_text,
+                            "reason": synth_err,
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    out_failed_txt.write_text(f"{error_text}\n{synth_err}\n", encoding="utf-8")
+                    chunk_manifest_rows.append(
+                        {
+                            "chunk_id": partition_id,
+                            "base_partition_id": str(partition.get("base_partition_id", "")),
+                            "file_manifest_hash": file_manifest_hash,
+                            "request_hash": request_hash,
+                            "status": "failed",
+                            "classification": "nonretryable",
+                            "error": error_text,
+                        }
+                    )
+                    _write_attempt_log(
+                        partition_id,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "failed",
+                            "classification": "nonretryable",
+                            "error": error_text,
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    effective_partitions.append(
+                        {
+                            "id": partition_id,
+                            "partition_id": partition_id,
+                            "paths": list(filtered_paths),
+                            "ordered_paths": list(filtered_paths),
+                        }
+                    )
+                    if cfg.fail_fast:
+                        raise RuntimeError(f"Fail-fast enabled for nonretryable error: {error_text}")
+                    return
+
+                shrink_event = {
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "classification": classification,
+                    "shrink_action": action,
+                    "budget_before": dict(current_budget),
+                    "budget_after": dict(next_budget),
+                    "error_excerpt": short_error_excerpt(synth_err),
+                    "generated_at": now_iso(),
+                }
+                shrink_events.append(shrink_event)
+                request_controller.record_shrink_decision(
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    chunk_id=partition_id,
+                    provider=provider,
+                    model_id=model_id,
+                    request_hash=request_hash,
+                    attempt_index=0,
+                    shrink_action=action,
+                    error_excerpt=synth_err,
+                    old_budget=dict(current_budget),
+                    new_budget=dict(next_budget),
+                )
+                current_budget = dict(next_budget)
+                current_stage = int(next_stage)
+                last_shrink_stage_by_partition[partition_id] = current_stage
+                continue
+
+            chunk_manifest_row = {
                 "chunk_id": partition_id,
                 "base_partition_id": str(partition.get("base_partition_id", "")),
                 "file_manifest_hash": file_manifest_hash,
                 "chunk_key": chunk_key,
+                "request_hash": request_hash,
                 "injected_text_sha256": injected_text_sha256,
                 "request_payload_bytes": payload_bytes,
                 "file_entries": file_entries,
                 "context_stats": context_stats,
+                "budget": dict(current_budget),
             }
-        )
-        if payload_bytes > cfg.max_chars:
-            raise RuntimeError(
-                f"Payload limit exceeded for {step_id} {partition_id}: "
-                f"{payload_bytes} > {cfg.max_chars} bytes."
-            )
 
-        if cfg.dry_run:
+            if cfg.dry_run:
+                logger.info(
+                    "Dry-run %s %s files=%s payload_bytes=%s redaction_hits=%s safe_mode_blocked=%s",
+                    step_id,
+                    partition_id,
+                    context_stats["files_included"],
+                    payload_bytes,
+                    context_stats["redaction_hits"],
+                    context_stats["safe_mode_blocked"],
+                )
+                trace_text = (
+                    f"# PROMPT_FILE\n{prompt_path}\n\n# SYSTEM_PROMPT\n{prompt_text}\n\n"
+                    f"# PARTITION_ID\n{partition_id}\n\n# USER_CONTEXT_PREVIEW\n{context[:2000]}"
+                )
+                out_trace.write_text(trace_text, encoding="utf-8")
+                write_json(
+                    out_json,
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "generated_at": now_iso(),
+                        "artifacts": [
+                            {
+                                "artifact_name": artifact_name,
+                                "payload": ([] if artifact_name.endswith(".json") else ""),
+                            }
+                            for artifact_name in output_artifacts
+                        ],
+                        "dry_run": True,
+                    },
+                )
+                write_json(
+                    out_meta,
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "provider": provider,
+                        "model_id": model_id,
+                        "chunk_key": chunk_key,
+                        "request_hash": request_hash,
+                        "file_manifest_hash": file_manifest_hash,
+                        "request_payload_bytes": payload_bytes,
+                        "context_stats": context_stats,
+                        "injected_text_sha256": injected_text_sha256,
+                        "output_sha256": sha256_text(out_json),
+                        "status": "dry_run",
+                        "generated_at": now_iso(),
+                        "budget": dict(current_budget),
+                    },
+                )
+                if out_failed.exists():
+                    out_failed.unlink()
+                if out_failed_txt.exists():
+                    out_failed_txt.unlink()
+                completed_chunks += 1
+                chunk_manifest_row["status"] = "dry_run"
+                chunk_manifest_rows.append(chunk_manifest_row)
+                _write_attempt_log(
+                    partition_id,
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "status": "dry_run",
+                        "generated_at": now_iso(),
+                        "budget": dict(current_budget),
+                    },
+                )
+                effective_partitions.append(
+                    {
+                        "id": partition_id,
+                        "partition_id": partition_id,
+                        "paths": list(filtered_paths),
+                        "ordered_paths": list(filtered_paths),
+                    }
+                )
+                return
+
             logger.info(
-                "Dry-run %s %s files=%s payload_bytes=%s redaction_hits=%s safe_mode_blocked=%s",
+                "Executing %s partition %s using provider=%s model=%s files=%s skipped=%s context_bytes=%s",
                 step_id,
                 partition_id,
+                provider,
+                model_id,
                 context_stats["files_included"],
-                payload_bytes,
-                context_stats["redaction_hits"],
-                context_stats["safe_mode_blocked"],
+                context_stats["files_skipped"],
+                context_stats["context_bytes"],
             )
 
-        if cfg.dry_run:
-            trace_text = (
-                f"# PROMPT_FILE\n{prompt_path}\n\n# SYSTEM_PROMPT\n{prompt_text}\n\n"
-                f"# PARTITION_ID\n{partition_id}\n\n# USER_CONTEXT_PREVIEW\n{context[:2000]}"
+            request_meta: Dict[str, Any] = {
+                "phase": phase,
+                "step_id": step_id,
+                "partition_id": partition_id,
+                "provider": provider,
+                "model_id": model_id,
+                "api_key_env": api_key_env,
+                "chunk_key": chunk_key,
+                "request_hash": request_hash,
+                "file_manifest_hash": file_manifest_hash,
+                "request_payload_bytes": payload_bytes,
+                "context_stats": context_stats,
+                "started_at": now_iso(),
+                "status": "in_progress",
+                "budget": dict(current_budget),
+            }
+            write_json(out_meta, request_meta)
+            try:
+                response, call_meta = request_controller.execute_chat_completion(
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    chunk_id=partition_id,
+                    provider=provider,
+                    model_id=model_id,
+                    api_key_env=api_key_env,
+                    system_prompt=prompt_text,
+                    user_content=user_prompt,
+                    request_hash=request_hash,
+                    output_path=out_json,
+                    payload_chars=payload_bytes,
+                    payload_files=int(context_stats.get("files_included", 0) or 0),
+                    truncate_chars=int(current_budget["file_truncate_chars"]),
+                    max_chars_total=int(current_budget["max_chars"]),
+                    max_files_total=int(current_budget["max_files"]),
+                    est_tokens=estimate_tokens_from_text(user_prompt),
+                )
+                request_meta.update(call_meta)
+            except LLMShrinkRequiredError as exc:
+                request_meta.update(exc.meta)
+                classification = str(exc.meta.get("classification", "shrink"))
+                retry_error_counts[classification] += 1
+                if not cfg.shrink_on_payload:
+                    failed_chunks += 1
+                    failed_chunk_ids.append(partition_id)
+                    _record_failed_file_sizes(filtered_paths)
+                    error_text = short_error_excerpt(exc)
+                    write_json(
+                        out_failed,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "failed",
+                            "classification": classification,
+                            "error": error_text,
+                            "retry_trace": request_meta.get("retry_trace", []),
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    out_failed_txt.write_text(f"{error_text}\n", encoding="utf-8")
+                    request_meta.update(
+                        {
+                            "status": "failed",
+                            "finished_at": now_iso(),
+                            "error": error_text,
+                        }
+                    )
+                    write_json(out_meta, request_meta)
+                    chunk_manifest_row["status"] = "failed"
+                    chunk_manifest_row["classification"] = classification
+                    chunk_manifest_row["error"] = error_text
+                    chunk_manifest_rows.append(chunk_manifest_row)
+                    _write_attempt_log(
+                        partition_id,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "failed",
+                            "classification": classification,
+                            "error": error_text,
+                            "retry_trace": request_meta.get("retry_trace", []),
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    effective_partitions.append(
+                        {
+                            "id": partition_id,
+                            "partition_id": partition_id,
+                            "paths": list(filtered_paths),
+                            "ordered_paths": list(filtered_paths),
+                        }
+                    )
+                    return
+
+                action, next_budget, next_stage = next_shrink_action(
+                    shrink_stage=current_stage,
+                    budget=current_budget,
+                    files_count=len(filtered_paths),
+                    split_depth=split_depth,
+                    prefer_split_first=cfg.prefer_split_first,
+                    min_files_per_part=cfg.min_files_per_part,
+                    max_split_depth=cfg.max_split_depth,
+                    active_partition_count=active_partition_count,
+                    max_partitions_per_step=cfg.max_partitions_per_step,
+                )
+                error_excerpt = short_error_excerpt(exc.meta.get("error_excerpt", str(exc)))
+                if action == "split_partition":
+                    active_partition_count += 1
+                    child_a_id, child_b_id = split_partition_ids(partition_id, split_depth)
+                    mid = max(len(filtered_paths) // 2, 1)
+                    child_a_paths = list(filtered_paths[:mid])
+                    child_b_paths = list(filtered_paths[mid:])
+                    split_event = {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "classification": classification,
+                        "shrink_action": action,
+                        "parent_partition_id": partition_id,
+                        "child_partition_ids": [child_a_id, child_b_id],
+                        "files_before": len(filtered_paths),
+                        "files_after": [len(child_a_paths), len(child_b_paths)],
+                        "budget_before": dict(current_budget),
+                        "budget_after": dict(next_budget),
+                        "error_excerpt": error_excerpt,
+                        "generated_at": now_iso(),
+                    }
+                    shrink_events.append(split_event)
+                    partition_lineage_events.append(split_event)
+                    last_shrink_stage_by_partition[partition_id] = int(next_stage)
+                    request_controller.record_shrink_decision(
+                        phase=phase,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        chunk_id=partition_id,
+                        provider=provider,
+                        model_id=model_id,
+                        request_hash=request_hash,
+                        attempt_index=int(exc.meta.get("attempts", 0) or 0),
+                        shrink_action=action,
+                        error_excerpt=error_excerpt,
+                        old_budget=dict(current_budget),
+                        new_budget=dict(next_budget),
+                        parent_partition_id=partition_id,
+                        child_partition_ids=[child_a_id, child_b_id],
+                    )
+                    write_json(
+                        out_failed,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "superseded_by_split",
+                            "classification": classification,
+                            "reason": error_excerpt,
+                            "child_partition_ids": [child_a_id, child_b_id],
+                            "retry_trace": request_meta.get("retry_trace", []),
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    out_failed_txt.write_text(
+                        f"{error_excerpt}\nchild_partitions={child_a_id},{child_b_id}\n",
+                        encoding="utf-8",
+                    )
+                    request_meta.update(
+                        {
+                            "status": "superseded_by_split",
+                            "finished_at": now_iso(),
+                            "error": error_excerpt,
+                            "child_partition_ids": [child_a_id, child_b_id],
+                        }
+                    )
+                    write_json(out_meta, request_meta)
+                    chunk_manifest_row["status"] = "superseded_by_split"
+                    chunk_manifest_row["classification"] = classification
+                    chunk_manifest_row["child_partition_ids"] = [child_a_id, child_b_id]
+                    chunk_manifest_rows.append(chunk_manifest_row)
+                    _write_attempt_log(
+                        partition_id,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "superseded_by_split",
+                            "classification": classification,
+                            "error": error_excerpt,
+                            "child_partition_ids": [child_a_id, child_b_id],
+                            "retry_trace": request_meta.get("retry_trace", []),
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    _process_partition(
+                        {
+                            "id": child_a_id,
+                            "partition_id": child_a_id,
+                            "base_partition_id": str(partition.get("base_partition_id", partition_id)),
+                            "paths": child_a_paths,
+                            "ordered_paths": list(child_a_paths),
+                            "file_manifest_hash": build_file_manifest_hash(child_a_paths, inventory_by_path),
+                        },
+                        split_depth=split_depth + 1,
+                        shrink_stage=0,
+                        budget=dict(current_budget),
+                    )
+                    _process_partition(
+                        {
+                            "id": child_b_id,
+                            "partition_id": child_b_id,
+                            "base_partition_id": str(partition.get("base_partition_id", partition_id)),
+                            "paths": child_b_paths,
+                            "ordered_paths": list(child_b_paths),
+                            "file_manifest_hash": build_file_manifest_hash(child_b_paths, inventory_by_path),
+                        },
+                        split_depth=split_depth + 1,
+                        shrink_stage=0,
+                        budget=dict(current_budget),
+                    )
+                    return
+
+                if action == "fail":
+                    failed_chunks += 1
+                    failed_chunk_ids.append(partition_id)
+                    retry_error_counts["payload_unshrinkable"] += 1
+                    last_shrink_stage_by_partition[partition_id] = int(current_stage)
+                    _record_failed_file_sizes(filtered_paths)
+                    error_text = "payload_unshrinkable"
+                    write_json(
+                        out_failed,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "failed",
+                            "classification": "nonretryable",
+                            "error": error_text,
+                            "reason": error_excerpt,
+                            "retry_trace": request_meta.get("retry_trace", []),
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    out_failed_txt.write_text(f"{error_text}\n{error_excerpt}\n", encoding="utf-8")
+                    request_meta.update(
+                        {
+                            "status": "failed",
+                            "finished_at": now_iso(),
+                            "error": error_text,
+                        }
+                    )
+                    write_json(out_meta, request_meta)
+                    chunk_manifest_row["status"] = "failed"
+                    chunk_manifest_row["classification"] = "nonretryable"
+                    chunk_manifest_row["error"] = error_text
+                    chunk_manifest_rows.append(chunk_manifest_row)
+                    _write_attempt_log(
+                        partition_id,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "failed",
+                            "classification": "nonretryable",
+                            "error": error_text,
+                            "retry_trace": request_meta.get("retry_trace", []),
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    effective_partitions.append(
+                        {
+                            "id": partition_id,
+                            "partition_id": partition_id,
+                            "paths": list(filtered_paths),
+                            "ordered_paths": list(filtered_paths),
+                        }
+                    )
+                    if cfg.fail_fast:
+                        raise RuntimeError(f"Fail-fast enabled for nonretryable error: {error_text}")
+                    return
+
+                shrink_event = {
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "classification": classification,
+                    "shrink_action": action,
+                    "budget_before": dict(current_budget),
+                    "budget_after": dict(next_budget),
+                    "error_excerpt": error_excerpt,
+                    "generated_at": now_iso(),
+                }
+                shrink_events.append(shrink_event)
+                request_controller.record_shrink_decision(
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    chunk_id=partition_id,
+                    provider=provider,
+                    model_id=model_id,
+                    request_hash=request_hash,
+                    attempt_index=int(exc.meta.get("attempts", 0) or 0),
+                    shrink_action=action,
+                    error_excerpt=error_excerpt,
+                    old_budget=dict(current_budget),
+                    new_budget=dict(next_budget),
+                )
+                request_meta.update(
+                    {
+                        "status": "shrink_retrying",
+                        "last_shrink_action": action,
+                        "last_error": error_excerpt,
+                        "budget": dict(next_budget),
+                        "updated_at": now_iso(),
+                    }
+                )
+                write_json(out_meta, request_meta)
+                current_budget = dict(next_budget)
+                current_stage = int(next_stage)
+                last_shrink_stage_by_partition[partition_id] = current_stage
+                continue
+            except (LLMNonRetryableError, LLMRetryExhaustedError) as exc:
+                meta = exc.meta if isinstance(exc, LLMCallError) else {}
+                request_meta.update(meta)
+                classification = str(meta.get("classification", "nonretryable"))
+                retry_error_counts[classification] += 1
+                failed_chunks += 1
+                failed_chunk_ids.append(partition_id)
+                _record_failed_file_sizes(filtered_paths)
+                error_text = short_error_excerpt(meta.get("error_excerpt", str(exc)))
+                write_json(
+                    out_failed,
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "status": "failed",
+                        "classification": classification,
+                        "error": error_text,
+                        "retry_trace": request_meta.get("retry_trace", []),
+                        "generated_at": now_iso(),
+                    },
+                )
+                out_failed_txt.write_text(f"{error_text}\n", encoding="utf-8")
+                request_meta.update(
+                    {
+                        "status": "failed",
+                        "finished_at": now_iso(),
+                        "error": error_text,
+                    }
+                )
+                write_json(out_meta, request_meta)
+                logger.error("LLM execution failed for %s %s: %s", step_id, partition_id, error_text)
+                chunk_manifest_row["status"] = "failed"
+                chunk_manifest_row["classification"] = classification
+                chunk_manifest_row["error"] = error_text
+                chunk_manifest_rows.append(chunk_manifest_row)
+                _write_attempt_log(
+                    partition_id,
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "status": "failed",
+                        "classification": classification,
+                        "error": error_text,
+                        "retry_trace": request_meta.get("retry_trace", []),
+                        "generated_at": now_iso(),
+                    },
+                )
+                effective_partitions.append(
+                    {
+                        "id": partition_id,
+                        "partition_id": partition_id,
+                        "paths": list(filtered_paths),
+                        "ordered_paths": list(filtered_paths),
+                    }
+                )
+                if classification == "nonretryable" and cfg.fail_fast:
+                    raise RuntimeError(f"Fail-fast enabled for nonretryable error: {error_text}")
+                return
+            except Exception as exc:
+                failed_chunks += 1
+                failed_chunk_ids.append(partition_id)
+                retry_error_counts["unexpected_exception"] += 1
+                _record_failed_file_sizes(filtered_paths)
+                error_text = short_error_excerpt(exc)
+                write_json(
+                    out_failed,
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "status": "failed",
+                        "classification": "unexpected_exception",
+                        "error": error_text,
+                        "generated_at": now_iso(),
+                    },
+                )
+                out_failed_txt.write_text(f"{error_text}\n", encoding="utf-8")
+                request_meta.update(
+                    {
+                        "status": "failed",
+                        "finished_at": now_iso(),
+                        "error": error_text,
+                    }
+                )
+                write_json(out_meta, request_meta)
+                chunk_manifest_row["status"] = "failed"
+                chunk_manifest_row["classification"] = "unexpected_exception"
+                chunk_manifest_row["error"] = error_text
+                chunk_manifest_rows.append(chunk_manifest_row)
+                _write_attempt_log(
+                    partition_id,
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "status": "failed",
+                        "classification": "unexpected_exception",
+                        "error": error_text,
+                        "generated_at": now_iso(),
+                    },
+                )
+                effective_partitions.append(
+                    {
+                        "id": partition_id,
+                        "partition_id": partition_id,
+                        "paths": list(filtered_paths),
+                        "ordered_paths": list(filtered_paths),
+                    }
+                )
+                return
+
+            parsed = parse_json_from_response(response)
+            artifacts = coerce_artifacts_from_response(
+                parsed=parsed,
+                raw_text=response,
+                expected_artifacts=output_artifacts,
             )
-            out_trace.write_text(trace_text, encoding="utf-8")
+            if not artifacts:
+                retry_error_counts["artifact_parse_failed"] += 1
+                write_json(
+                    out_failed,
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "status": "failed",
+                        "classification": "artifact_parse_failed",
+                        "error": "artifact_parse_failed",
+                        "raw_response_excerpt": response[:4000],
+                        "retry_trace": request_meta.get("retry_trace", []),
+                        "generated_at": now_iso(),
+                    },
+                )
+                out_failed_txt.write_text("artifact_parse_failed\n", encoding="utf-8")
+                logger.error("Artifact parse failed for %s %s", step_id, partition_id)
+                failed_chunks += 1
+                failed_chunk_ids.append(partition_id)
+                _record_failed_file_sizes(filtered_paths)
+                request_meta.update(
+                    {
+                        "status": "failed",
+                        "finished_at": now_iso(),
+                        "error": "artifact_parse_failed",
+                    }
+                )
+                write_json(out_meta, request_meta)
+                chunk_manifest_row["status"] = "failed"
+                chunk_manifest_row["classification"] = "artifact_parse_failed"
+                chunk_manifest_row["error"] = "artifact_parse_failed"
+                chunk_manifest_rows.append(chunk_manifest_row)
+                _write_attempt_log(
+                    partition_id,
+                    {
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "status": "failed",
+                        "classification": "artifact_parse_failed",
+                        "error": "artifact_parse_failed",
+                        "retry_trace": request_meta.get("retry_trace", []),
+                        "generated_at": now_iso(),
+                    },
+                )
+                effective_partitions.append(
+                    {
+                        "id": partition_id,
+                        "partition_id": partition_id,
+                        "paths": list(filtered_paths),
+                        "ordered_paths": list(filtered_paths),
+                    }
+                )
+                return
+
             write_json(
                 out_json,
                 {
@@ -2527,171 +3907,120 @@ def execute_step_for_partitions(
                     "step_id": step_id,
                     "partition_id": partition_id,
                     "generated_at": now_iso(),
-                    "artifacts": [
-                        {
-                            "artifact_name": artifact_name,
-                            "payload": ([] if artifact_name.endswith(".json") else ""),
-                        }
-                        for artifact_name in output_artifacts
-                    ],
-                    "dry_run": True,
+                    "artifacts": artifacts,
                 },
             )
-            write_json(
-                out_meta,
+            request_meta.update(
                 {
-                    "phase": phase,
-                    "step_id": step_id,
-                    "partition_id": partition_id,
-                    "provider": provider,
-                    "model_id": model_id,
-                    "chunk_key": chunk_key,
-                    "file_manifest_hash": file_manifest_hash,
-                    "request_payload_bytes": payload_bytes,
-                    "context_stats": context_stats,
-                    "injected_text_sha256": injected_text_sha256,
+                    "status": "ok",
+                    "finished_at": now_iso(),
                     "output_sha256": sha256_text(out_json),
-                    "status": "dry_run",
-                    "generated_at": now_iso(),
-                },
+                }
             )
+            write_json(out_meta, request_meta)
             if out_failed.exists():
                 out_failed.unlink()
+            if out_failed_txt.exists():
+                out_failed_txt.unlink()
             completed_chunks += 1
-            continue
-
-        logger.info(
-            "Executing %s partition %s using provider=%s model=%s files=%s skipped=%s context_bytes=%s",
-            step_id,
-            partition_id,
-            provider,
-            model_id,
-            context_stats["files_included"],
-            context_stats["files_skipped"],
-            context_stats["context_bytes"],
-        )
-        request_meta: Dict[str, Any] = {
-            "phase": phase,
-            "step_id": step_id,
-            "partition_id": partition_id,
-            "provider": provider,
-            "model_id": model_id,
-            "api_key_env": api_key_env,
-            "chunk_key": chunk_key,
-            "file_manifest_hash": file_manifest_hash,
-            "request_payload_bytes": payload_bytes,
-            "context_stats": context_stats,
-            "started_at": now_iso(),
-            "status": "in_progress",
-        }
-        write_json(out_meta, request_meta)
-        try:
-            response, call_meta = request_controller.execute_chat_completion(
-                provider=provider,
-                model_id=model_id,
-                api_key_env=api_key_env,
-                system_prompt=prompt_text,
-                user_content=user_prompt,
-                retry_seed=f"{request_controller.run_id}|{phase}|{step_id}|{partition_id}",
-                est_tokens=estimate_tokens_from_text(user_prompt),
-            )
-            request_meta.update(call_meta)
-        except Exception as exc:
-            failed_chunks += 1
-            failed_chunk_ids.append(partition_id)
-            error_text = str(exc)
-            write_json(
-                out_failed,
+            chunk_manifest_row["status"] = "ok"
+            chunk_manifest_rows.append(chunk_manifest_row)
+            _write_attempt_log(
+                partition_id,
                 {
                     "phase": phase,
                     "step_id": step_id,
                     "partition_id": partition_id,
-                    "status": "failed",
-                    "error": error_text,
+                    "status": "ok",
+                    "attempts": int(request_meta.get("attempts", 1) or 1),
                     "retry_trace": request_meta.get("retry_trace", []),
                     "generated_at": now_iso(),
                 },
             )
-            request_meta.update(
+            effective_partitions.append(
                 {
-                    "status": "failed",
-                    "finished_at": now_iso(),
-                    "error": error_text,
-                }
-            )
-            write_json(out_meta, request_meta)
-            logger.error("LLM execution failed for %s %s: %s", step_id, partition_id, error_text)
-            continue
-
-        parsed = parse_json_from_response(response)
-        artifacts = coerce_artifacts_from_response(
-            parsed=parsed,
-            raw_text=response,
-            expected_artifacts=output_artifacts,
-        )
-        if not artifacts:
-            write_json(
-                out_failed,
-                {
-                    "phase": phase,
-                    "step_id": step_id,
+                    "id": partition_id,
                     "partition_id": partition_id,
-                    "status": "failed",
-                    "error": "artifact_parse_failed",
-                    "raw_response_excerpt": response[:4000],
-                    "retry_trace": request_meta.get("retry_trace", []),
-                    "generated_at": now_iso(),
-                },
-            )
-            logger.error("Artifact parse failed for %s %s", step_id, partition_id)
-            failed_chunks += 1
-            failed_chunk_ids.append(partition_id)
-            request_meta.update(
-                {
-                    "status": "failed",
-                    "finished_at": now_iso(),
-                    "error": "artifact_parse_failed",
+                    "paths": list(filtered_paths),
+                    "ordered_paths": list(filtered_paths),
                 }
             )
-            write_json(out_meta, request_meta)
-            continue
+            return
 
-        write_json(
-            out_json,
-            {
-                "phase": phase,
-                "step_id": step_id,
-                "partition_id": partition_id,
-                "generated_at": now_iso(),
-                "artifacts": artifacts,
-            },
-        )
-        request_meta.update(
-            {
-                "status": "ok",
-                "finished_at": now_iso(),
-                "output_sha256": sha256_text(out_json),
-            }
-        )
-        write_json(out_meta, request_meta)
-        if out_failed.exists():
-            out_failed.unlink()
-        completed_chunks += 1
+    for partition in partitions:
+        _process_partition(partition=partition, split_depth=0, shrink_stage=0, budget=dict(base_budget))
 
     if resume_skipped:
         logger.info("Resume: skipped %s existing outputs for step %s", resume_skipped, step_id)
+
+    sorted_failed_files = sorted(failed_file_sizes.items(), key=lambda pair: (-int(pair[1]), pair[0]))
+    worst_files = [
+        {"path": path, "size": size}
+        for path, size in sorted_failed_files[:20]
+    ]
+    retry_report = {
+        "phase": phase,
+        "step_id": step_id,
+        "generated_at": now_iso(),
+        "counts_by_error_class": dict(sorted(retry_error_counts.items())),
+        "failed_chunk_ids": sorted(set(failed_chunk_ids)),
+        "shrink_events_total": len(shrink_events),
+        "shrink_events": shrink_events,
+        "last_shrink_stage_by_partition": dict(sorted(last_shrink_stage_by_partition.items())),
+        "worst_offending_files": worst_files,
+    }
+    write_json(qa_dir / f"{step_id}_RETRY_REPORT.json", retry_report)
+    summary_lines = [
+        f"# {step_id} Failures Summary",
+        "",
+        f"- phase: {phase}",
+        f"- failed_chunks: {failed_chunks}",
+        f"- shrink_events: {len(shrink_events)}",
+        f"- error_classes: {json.dumps(dict(sorted(retry_error_counts.items())), sort_keys=True)}",
+        "",
+        "## Worst Offending Files",
+    ]
+    if worst_files:
+        for row in worst_files[:10]:
+            summary_lines.append(f"- {row['path']} ({row['size']} bytes)")
+    else:
+        summary_lines.append("- none")
+    (qa_dir / f"{step_id}_FAILURES_SUMMARY.md").write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
+
+    effective_partition_ids = sorted(
+        {str(partition.get("id", "")) for partition in effective_partitions if str(partition.get("id", "")).strip()}
+    )
+    write_json(
+        inputs_dir / f"{step_id}_PARTITION_LINEAGE.json",
+        {
+            "phase": phase,
+            "step_id": step_id,
+            "generated_at": now_iso(),
+            "initial_partition_ids": [str(partition.get("id", "")) for partition in partitions],
+            "effective_partition_ids": effective_partition_ids,
+            "lineage_events": partition_lineage_events,
+        },
+    )
+
     return {
         "step_id": step_id,
-        "planned_chunks": len(partitions),
+        "planned_chunks": len(effective_partition_ids),
         "completed_chunks": completed_chunks,
         "skipped_chunks": resume_skipped,
         "failed_chunks": failed_chunks,
         "failed_chunk_ids": sorted(set(failed_chunk_ids)),
         "hash_mismatch_chunk_ids": sorted(set(hash_mismatch_chunk_ids)),
         "chunk_ids": chunk_ids,
+        "effective_partition_ids": effective_partition_ids,
+        "effective_partitions": sorted(
+            effective_partitions,
+            key=lambda row: str(row.get("id", "")),
+        ),
         "truncated_only_chunks": truncated_only_chunks,
         "chunks_with_tail_snippets": chunks_with_tail_snippets,
         "chunk_manifest_rows": chunk_manifest_rows,
+        "shrink_events": shrink_events,
+        "retry_report": retry_report,
     }
 
 
@@ -2826,10 +4155,30 @@ def _run_phase_inner(
         cfg.max_chars,
     )
 
-    request_controller = RequestController(run_id=dirs["root"].name, cfg=cfg)
+    request_controller = RequestController(
+        run_id=dirs["root"].name,
+        cfg=cfg,
+        ledger_path=dirs["inputs"] / "CALL_LEDGER.jsonl",
+    )
+    write_json(
+        phase_dir / "inputs" / f"{phase}_CONTEXT_BUDGET.json",
+        {
+            "phase": phase,
+            "generated_at": now_iso(),
+            "max_chars": cfg.max_chars,
+            "file_truncate_chars": cfg.file_truncate_chars,
+            "max_files": max_files,
+            "min_files_per_part": cfg.min_files_per_part,
+            "max_split_depth": cfg.max_split_depth,
+            "max_partitions_per_step": cfg.max_partitions_per_step,
+            "prefer_split_first": cfg.prefer_split_first,
+            "shrink_on_payload": cfg.shrink_on_payload,
+        },
+    )
     step_qas: List[Dict[str, Any]] = []
     step_coverages: List[Dict[str, Any]] = []
     step_chunk_manifests: Dict[str, List[Dict[str, Any]]] = {}
+    phase_shrink_events: List[Dict[str, Any]] = []
     for prompt_spec in prompts:
         chunk_plan = plan_chunks_for_step(
             partitions=partitions,
@@ -2846,8 +4195,10 @@ def _run_phase_inner(
             cfg=cfg,
             request_controller=request_controller,
         )
+        effective_partitions = list(coverage.get("effective_partitions", chunk_plan))
         step_chunk_rows = list(coverage.get("chunk_manifest_rows", []))
         step_chunk_manifests[prompt_spec.step_id] = step_chunk_rows
+        phase_shrink_events.extend(list(coverage.get("shrink_events", [])))
         write_json(
             phase_dir / "inputs" / f"CHUNK_MANIFEST_{prompt_spec.step_id}.json",
             {
@@ -2857,6 +4208,10 @@ def _run_phase_inner(
                 "max_files": max_files,
                 "max_chars": cfg.max_chars,
                 "soft_target_chars": max(int(cfg.max_chars * 0.7), 2048),
+                "effective_partition_ids": [
+                    str(partition.get("id", ""))
+                    for partition in sorted(effective_partitions, key=lambda row: str(row.get("id", "")))
+                ],
                 "chunks": step_chunk_rows,
             },
         )
@@ -2869,7 +4224,22 @@ def _run_phase_inner(
             phase=phase,
             prompt_spec=prompt_spec,
             phase_dir=phase_dir,
-            partitions=chunk_plan,
+            partitions=effective_partitions,
+        )
+        write_json(
+            phase_dir / "qa" / f"{prompt_spec.step_id}_MERGE_REPORT.json",
+            {
+                "phase": phase,
+                "step_id": prompt_spec.step_id,
+                "generated_at": now_iso(),
+                "partition_ids": [
+                    str(partition.get("id", ""))
+                    for partition in sorted(effective_partitions, key=lambda row: str(row.get("id", "")))
+                ],
+                "merge_order": sorted(
+                    [str(partition.get("id", "")) for partition in effective_partitions]
+                ),
+            },
         )
         step_qas.append(qa_payload)
 
@@ -2889,6 +4259,15 @@ def _run_phase_inner(
         phase_dir=phase_dir,
         partitions=partitions,
         step_qas=step_qas,
+    )
+    write_json(
+        phase_dir / "qa" / f"{phase}_SHRINK_EVENTS.json",
+        {
+            "phase": phase,
+            "generated_at": now_iso(),
+            "events": phase_shrink_events,
+            "count": len(phase_shrink_events),
+        },
     )
     write_json(phase_dir / "qa" / "RATE_LIMIT_REPORT.json", request_controller.export_rate_limit_report())
     write_resume_proof(
@@ -3665,15 +5044,37 @@ def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
                 2, f"{python_cmd} UPGRADES/run_extraction_v3.py --phase M --resume"
             )
         required_phases_desc = "/".join(required_input_phases)
-        raise RuntimeError(
-            f"Phase R requires normalized inputs for profile '{cfg.r_profile}' from {required_phases_desc}.\n"
-            + "Missing norm artifacts:\n- "
-            + "\n- ".join(missing_sorted)
-            + "\nRecovery order:\n- "
-            + "\n- ".join(recovery_commands)
+        write_json(
+            dirs["R"] / "qa" / "R_MISSING_INPUTS_REPORT.json",
+            {
+                "phase": "R",
+                "generated_at": now_iso(),
+                "r_profile": cfg.r_profile,
+                "r_partial_ok": cfg.r_partial_ok,
+                "required_input_phases": required_input_phases,
+                "missing": missing_sorted,
+                "recovery_commands": recovery_commands,
+            },
         )
+        if cfg.r_partial_ok:
+            logger.warning(
+                "Phase R continuing in partial mode (--r-partial-ok) with missing prerequisites: %s",
+                missing_sorted,
+            )
+        else:
+            raise RuntimeError(
+                f"Phase R requires normalized inputs for profile '{cfg.r_profile}' from {required_phases_desc}.\n"
+                + "Missing norm artifacts:\n- "
+                + "\n- ".join(missing_sorted)
+                + "\nRecovery order:\n- "
+                + "\n- ".join(recovery_commands)
+            )
 
     deduped_inputs = sorted(set(input_files), key=lambda path: str(path))
+    if not deduped_inputs:
+        raise RuntimeError(
+            f"Phase R has no normalized inputs available for profile '{cfg.r_profile}'."
+        )
     _run_phase_inner("R", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs))
 
 
@@ -3715,6 +5116,8 @@ def main() -> None:
     parser.add_argument("--file-truncate-chars", type=int, default=70000)
     parser.add_argument("--home-scan-mode", choices=["safe", "full"], default="safe")
     parser.add_argument("--r-profile", choices=["base", "full"], default="base")
+    parser.add_argument("--r-full", action="store_true")
+    parser.add_argument("--r-partial-ok", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--rpm-openai", type=int, default=60)
     parser.add_argument("--tpm-openai", type=int, default=120000)
@@ -3722,8 +5125,23 @@ def main() -> None:
     parser.add_argument("--tpm-gemini", type=int, default=64000)
     parser.add_argument("--rpm-xai", type=int, default=30)
     parser.add_argument("--tpm-xai", type=int, default=90000)
-    parser.add_argument("--max-inflight", type=int, default=1)
+    parser.add_argument("--max-inflight", type=int, default=0)
+    parser.add_argument("--max-retries", type=int, default=-1)
+    parser.add_argument("--min-interval-ms", type=int, default=-1)
+    parser.add_argument("--fail-fast", action="store_true")
+    parser.add_argument("--shrink-on-payload", dest="shrink_on_payload", action="store_true")
+    parser.add_argument("--no-shrink-on-payload", dest="shrink_on_payload", action="store_false")
+    parser.add_argument("--resume-ledger", dest="resume_ledger", action="store_true")
+    parser.add_argument("--no-resume-ledger", dest="resume_ledger", action="store_false")
+    parser.add_argument("--prefer-split-first", dest="prefer_split_first", action="store_true")
+    parser.add_argument("--no-prefer-split-first", dest="prefer_split_first", action="store_false")
+    parser.add_argument("--min-files-per-part", type=int, default=12)
+    parser.add_argument("--max-split-depth", type=int, default=4)
+    parser.add_argument("--max-partitions-per-step", type=int, default=64)
+    parser.set_defaults(shrink_on_payload=True, resume_ledger=True, prefer_split_first=True)
     args = parser.parse_args()
+    if args.r_full:
+        args.r_profile = "full"
 
     root = Path.cwd()
     try:
@@ -3748,7 +5166,17 @@ def main() -> None:
         tpm_gemini=args.tpm_gemini,
         rpm_xai=args.rpm_xai,
         tpm_xai=args.tpm_xai,
-        max_inflight=max(args.max_inflight, 1),
+        max_inflight=max(args.max_inflight, 0),
+        max_retries=args.max_retries,
+        min_interval_ms=args.min_interval_ms,
+        fail_fast=bool(args.fail_fast),
+        shrink_on_payload=bool(args.shrink_on_payload),
+        resume_ledger=bool(args.resume_ledger),
+        prefer_split_first=bool(args.prefer_split_first),
+        min_files_per_part=max(int(args.min_files_per_part), 1),
+        max_split_depth=max(int(args.max_split_depth), 0),
+        max_partitions_per_step=max(int(args.max_partitions_per_step), 1),
+        r_partial_ok=bool(args.r_partial_ok),
     )
 
     write_run_manifest(root, dirs, run_id, args)
