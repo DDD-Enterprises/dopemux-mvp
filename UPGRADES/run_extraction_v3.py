@@ -284,12 +284,80 @@ DEFAULT_OUTPUT_BY_STEP = {
 }
 
 PRIORITY_TIERS = {
-    1: "instruction_magic",
-    2: "workflow_launchers",
-    3: "docs_specs_adr",
-    4: "code",
-    5: "archives",
+    0: "magic_surfaces",
+    1: "active_docs",
+    2: "code_surfaces",
+    3: "archives",
 }
+
+MAGIC_SUBTYPE_ORDER = {
+    "instructions": 0,
+    "mcp_router_provider": 1,
+    "compose_bootstrap": 2,
+    "hooks": 3,
+    "ci": 4,
+    "workflow_launchers": 5,
+    "other_magic": 6,
+    "instruction_docs": 7,
+    "other": 99,
+}
+
+TIER0_RESERVE_RATIO = 0.40
+
+REPO_MAGIC_SUBDIRS = [
+    ".claude",
+    ".dopemux",
+    ".taskx",
+    ".githooks",
+    ".github/workflows",
+    "compose",
+    "scripts",
+    "tools",
+]
+
+REPO_MAGIC_EXPLICIT_FILES = [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "claude.md",
+    ".claude.json",
+    ".taskx-pin",
+    ".taskxroot",
+    "Makefile",
+    "Justfile",
+    ".tmux.conf",
+]
+
+REPO_MAGIC_GLOBS = [
+    ".claude.json*",
+    "dopemux.toml*",
+    "mcp-proxy-config*.json",
+    "mcp-proxy-config*.yaml",
+    "mcp-proxy-config*.yml",
+    "compose*.yml",
+    "docker-compose*.yml",
+    "litellm.config*",
+    "start-*.sh",
+    "tmux-*.yaml",
+    "tmux-*.sh",
+]
+
+HOME_MAGIC_SUBDIRS = [
+    ".dopemux",
+    ".config/dopemux",
+    ".config/taskx",
+    ".config/litellm",
+    ".config/mcp",
+]
+
+DOC_INSTRUCTION_GLOBS = [
+    "docs/**/custom-instructions/**",
+    "docs/**/prompts/**",
+    "docs/**/llm/**",
+    "docs/**/*AGENTS*",
+    "docs/**/*agents*",
+    "docs/**/*CLAUDE*",
+    "docs/**/*claude*",
+]
 
 
 # --- Setup Logging ---
@@ -465,6 +533,122 @@ def is_within(path: Path, root: Path) -> bool:
         return False
 
 
+def normalized_rel_path(path: Path, repo_root: Optional[Path] = None) -> str:
+    resolved = path.resolve()
+    root = (repo_root or Path.cwd()).resolve()
+    if is_within(resolved, root):
+        return str(resolved.relative_to(root)).replace("\\", "/")
+    home = Path.home().resolve()
+    if is_within(resolved, home):
+        return f"~/{str(resolved.relative_to(home)).replace('\\', '/')}"
+    return str(resolved).replace("\\", "/")
+
+
+def classify_surface(path_str: str) -> Dict[str, Any]:
+    path = Path(path_str).resolve()
+    rel = normalized_rel_path(path)
+    lower_rel = rel.lower()
+    lower_abs = str(path).replace("\\", "/").lower()
+    lower = lower_rel if lower_rel.startswith("~/") else lower_abs
+    name = path.name.lower()
+
+    def _result(tier: int, subtype: str, reason: str) -> Dict[str, Any]:
+        return {
+            "tier": tier,
+            "subtype": subtype,
+            "subtype_rank": MAGIC_SUBTYPE_ORDER.get(subtype, 99),
+            "reason": reason,
+            "rel_path": rel,
+        }
+
+    if (
+        "/docs/archive/" in lower
+        or "/system_archive/" in lower
+        or name.endswith(".zip")
+        or name.endswith(".log")
+    ):
+        return _result(3, "other", "archive_surface")
+
+    if (
+        "/.claude/" in lower
+        or name in {"agents.md", "claude.md"}
+        or name.startswith(".claude.json")
+    ):
+        return _result(0, "instructions", "instruction_surface")
+
+    if (
+        "/.dopemux/" in lower
+        or name.startswith("dopemux.toml")
+        or name.startswith("mcp-proxy-config")
+        or name.startswith("litellm.config")
+        or lower.endswith(".taskxroot")
+        or lower.endswith("/.taskx-pin")
+        or "/.taskx/" in lower
+        or lower.startswith("~/.dopemux/")
+        or lower.startswith("~/.config/dopemux/")
+        or lower.startswith("~/.config/taskx/")
+        or lower.startswith("~/.config/litellm/")
+        or lower.startswith("~/.config/mcp/")
+    ):
+        return _result(0, "mcp_router_provider", "config_ladder_surface")
+
+    if (
+        name.startswith("compose")
+        or name.startswith("docker-compose")
+        or "/compose/" in lower
+    ):
+        return _result(0, "compose_bootstrap", "compose_bootstrap_surface")
+
+    if "/.githooks/" in lower:
+        return _result(0, "hooks", "hooks_surface")
+
+    if "/.github/workflows/" in lower:
+        return _result(0, "ci", "ci_surface")
+
+    if (
+        name in {"makefile", "justfile", ".tmux.conf"}
+        or "/scripts/" in lower
+        or "/tools/" in lower
+        or name.startswith("start-")
+        or name.startswith("tmux-")
+    ):
+        return _result(0, "workflow_launchers", "launcher_surface")
+
+    if (
+        "/docs/" in lower
+        and (
+            "/custom-instructions/" in lower
+            or "/prompts/" in lower
+            or "/llm/" in lower
+            or "agents" in name
+            or "claude" in name
+        )
+    ):
+        return _result(1, "instruction_docs", "instruction_docs_surface")
+
+    if (
+        "/docs/" in lower
+        and (
+            "/spec" in lower
+            or "/architecture/" in lower
+            or "/planes/" in lower
+            or "/systems/" in lower
+            or "/90-adr/" in lower
+            or "/91-rfc/" in lower
+        )
+    ):
+        return _result(1, "other", "active_docs_surface")
+
+    if "/docs/" in lower or name.endswith(".md"):
+        return _result(1, "other", "docs_surface")
+
+    return _result(2, "other", "code_or_runtime_surface")
+
+
+def classify_tier(path_str: str) -> int:
+    return int(classify_surface(path_str).get("tier", 2))
+
+
 def sha256_text(path: Path) -> str:
     content = safe_read(path)
     return hashlib.sha256(content.encode("utf-8", errors="ignore")).hexdigest()
@@ -508,6 +692,82 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
         },
     }
     write_json(dirs["root"] / "RUN_MANIFEST.json", manifest)
+
+
+def _load_magic_surface_index(index_path: Path) -> Dict[str, Any]:
+    if not index_path.exists():
+        return {"generated_at": now_iso(), "file_count": 0, "files": []}
+    try:
+        payload = json.loads(index_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {"generated_at": now_iso(), "file_count": 0, "files": []}
+    if not isinstance(payload, dict):
+        return {"generated_at": now_iso(), "file_count": 0, "files": []}
+    files = payload.get("files")
+    if not isinstance(files, list):
+        payload["files"] = []
+    return payload
+
+
+def update_magic_surface_index(
+    dirs: Dict[str, Path],
+    phase: str,
+    inventory: List[Dict[str, Any]],
+    file_truncate_chars: int,
+) -> None:
+    index_path = dirs["inputs"] / "MAGIC_SURFACE_INDEX.json"
+    payload = _load_magic_surface_index(index_path)
+    existing_rows: Dict[str, Dict[str, Any]] = {}
+    for row in payload.get("files", []):
+        if not isinstance(row, dict):
+            continue
+        path = str(row.get("path", "")).strip()
+        if not path:
+            continue
+        existing_rows[path] = row
+
+    for item in inventory:
+        if int(item.get("priority_tier", 2)) != 0:
+            continue
+        path = str(item.get("path", "")).strip()
+        if not path:
+            continue
+        char_count = int(item.get("char_count", 0) or 0)
+        row = existing_rows.get(path, {})
+        phases = sorted(set(list(row.get("phases_seen", [])) + [phase]))
+        reasons = sorted(set(list(row.get("inclusion_reasons", [])) + [str(item.get("inclusion_reason", "unclassified"))]))
+        entry = {
+            "path": path,
+            "relative_path": str(item.get("relative_path", normalized_rel_path(Path(path)))),
+            "tier": int(item.get("priority_tier", 0)),
+            "subtype": str(item.get("magic_subtype", "other")),
+            "size": int(item.get("size", 0) or 0),
+            "mtime": float(item.get("mtime", 0.0) or 0.0),
+            "inclusion_reason": reasons[0] if reasons else str(item.get("inclusion_reason", "unclassified")),
+            "inclusion_reasons": reasons,
+            "phases_seen": phases,
+            "truncated": char_count > max(int(file_truncate_chars), 0),
+            "truncate_limit_chars": int(file_truncate_chars),
+            "char_count": char_count,
+        }
+        existing_rows[path] = entry
+
+    files = sorted(
+        existing_rows.values(),
+        key=lambda row: (
+            int(row.get("tier", 0)),
+            int(MAGIC_SUBTYPE_ORDER.get(str(row.get("subtype", "other")), 99)),
+            str(row.get("relative_path", row.get("path", ""))),
+            -float(row.get("mtime", 0.0)),
+        ),
+    )
+    payload = {
+        "run_id": dirs["root"].name,
+        "generated_at": now_iso(),
+        "file_count": len(files),
+        "files": files,
+    }
+    write_json(index_path, payload)
 
 
 def clone_required_artifact_groups(
@@ -715,7 +975,7 @@ def write_partition_manifest(
             _partition_file_row(path, inventory_by_path, file_truncate_chars)
             for path in ordered_paths
         ]
-        tier_counts = Counter(int(row.get("priority_tier", 4)) for row in files)
+        tier_counts = Counter(int(row.get("priority_tier", 2)) for row in files)
         payload_hash = build_partition_payload_hash(
             ordered_paths=ordered_paths,
             inventory_by_path=inventory_by_path,
@@ -731,6 +991,8 @@ def write_partition_manifest(
                 "byte_count_estimate": int(partition.get("byte_count_estimate", 0) or 0),
                 "token_count_estimate": int(partition.get("token_count_estimate", 0) or 0),
                 "tier_counts": dict(sorted(tier_counts.items())),
+                "tier0_reserved_chars": int(partition.get("tier0_reserved_chars", int(max_chars * TIER0_RESERVE_RATIO))),
+                "tier0_reserved_tokens": int(partition.get("tier0_reserved_tokens", max(int(max_chars * TIER0_RESERVE_RATIO / 4), 1))),
                 "partition_payload_hash": payload_hash,
                 "files": files,
             }
@@ -1101,6 +1363,9 @@ def build_inventory(items: List[Dict[str, Any]], file_truncate_chars: int) -> Li
             size = 0
             mtime = 0.0
 
+        surface = classify_surface(str(path))
+        tier = int(surface.get("tier", 2))
+        subtype = str(surface.get("subtype", "other"))
         inventory.append(
             {
                 "path": str(path),
@@ -1111,68 +1376,28 @@ def build_inventory(items: List[Dict[str, Any]], file_truncate_chars: int) -> Li
                 "char_count": char_count,
                 "char_count_estimate": est_chars,
                 "token_count_estimate": max(int(est_chars / 4), 1),
-                "priority_tier": classify_priority_tier(str(path)),
+                "priority_tier": tier,
+                "priority_label": PRIORITY_TIERS.get(tier, "unknown"),
+                "magic_subtype": subtype,
+                "magic_subtype_rank": int(surface.get("subtype_rank", 99)),
+                "inclusion_reason": str(surface.get("reason", "unclassified")),
+                "relative_path": str(surface.get("rel_path", normalized_rel_path(path))),
             }
         )
 
     inventory.sort(
         key=lambda item: (
-            int(item.get("priority_tier", 4)),
-            str(item.get("path", "")),
+            int(item.get("priority_tier", 2)),
+            int(item.get("magic_subtype_rank", 99)),
+            str(item.get("relative_path", item.get("path", ""))),
+            -float(item.get("mtime", 0.0)),
         )
     )
     return inventory
 
 
 def classify_priority_tier(path_str: str) -> int:
-    path = path_str.replace("\\", "/")
-    lower = path.lower()
-    name = Path(path).name.lower()
-
-    if (
-        lower.endswith("agents.md")
-        or "/.claude/" in lower
-        or name.startswith("prompt_")
-        or "project_instructions" in lower
-        or "primer" in lower
-        or ".claude.json" in lower
-        or ".taskxroot" in lower
-        or ".taskx/project.json" in lower
-        or "mcp" in lower
-        or "litellm.config" in lower
-        or "root_hygiene_policy.json" in lower
-    ):
-        return 1
-
-    if (
-        "docker-compose" in name
-        or name in {"compose.yml", "makefile", ".tmux.conf", "tmux-dopemux-orchestrator.yaml"}
-        or "/scripts/" in lower
-        or "/tools/" in lower
-        or "start" in name
-        or "run_" in name
-        or "launcher" in name
-    ):
-        return 2
-
-    if (
-        "/archive/" in lower
-        or "/system_archive/" in lower
-        or name.endswith(".zip")
-        or "archive" in name
-    ):
-        return 5
-
-    if (
-        "/docs/" in lower
-        or "/90-adr/" in lower
-        or "/91-rfc/" in lower
-        or "/94-architecture/" in lower
-        or name.endswith(".md")
-    ):
-        return 3
-
-    return 4
+    return classify_tier(path_str)
 
 
 def _partition_file_row(
@@ -1184,9 +1409,20 @@ def _partition_file_row(
     char_count = int(info.get("char_count", 0) or 0)
     est_chars = int(info.get("char_count_estimate", 0) or 0)
     est_tokens = int(info.get("token_count_estimate", max(int(est_chars / 4), 1)))
-    priority_tier = int(info.get("priority_tier", classify_priority_tier(path)) or 4)
+    priority_tier = int(info.get("priority_tier", classify_priority_tier(path)) or 2)
+    magic_subtype = str(info.get("magic_subtype", classify_surface(path).get("subtype", "other")))
+    magic_subtype_rank = int(
+        info.get(
+            "magic_subtype_rank",
+            classify_surface(path).get("subtype_rank", MAGIC_SUBTYPE_ORDER.get("other", 99)),
+        )
+        or MAGIC_SUBTYPE_ORDER.get("other", 99)
+    )
+    inclusion_reason = str(info.get("inclusion_reason", classify_surface(path).get("reason", "unclassified")))
+    relative_path = str(info.get("relative_path", classify_surface(path).get("rel_path", normalized_rel_path(Path(path)))))
     return {
         "path": path,
+        "relative_path": relative_path,
         "size": int(info.get("size", 0) or 0),
         "mtime": float(info.get("mtime", 0.0) or 0.0),
         "sha256": str(info.get("sha256", "")),
@@ -1196,6 +1432,9 @@ def _partition_file_row(
         "truncation_planned": char_count > max(int(file_truncate_chars), 0),
         "priority_tier": priority_tier,
         "priority_label": PRIORITY_TIERS.get(priority_tier, "unknown"),
+        "magic_subtype": magic_subtype,
+        "magic_subtype_rank": magic_subtype_rank,
+        "inclusion_reason": inclusion_reason,
     }
 
 
@@ -1230,11 +1469,17 @@ def build_partitions(
     current_chars = 0
     current_bytes = 0
     current_tokens = 0
+    current_tier0_chars = 0
+    current_tier0_tokens = 0
     inventory_by_path = {str(item.get("path", "")): item for item in inventory}
     max_tokens = max(int(max_chars / 4), 1024)
+    tier0_reserved_chars = int(max_chars * TIER0_RESERVE_RATIO)
+    tier0_reserved_tokens = max(int(tier0_reserved_chars / 4), 1)
+    tier0_remaining = sum(1 for item in inventory if int(item.get("priority_tier", 2)) == 0)
 
     def flush_partition(reason: str) -> None:
         nonlocal current_paths, current_chars, current_bytes, current_tokens
+        nonlocal current_tier0_chars, current_tier0_tokens
         if not current_paths:
             return
         partition_id = f"{phase}_P{len(partitions) + 1:04d}"
@@ -1259,11 +1504,13 @@ def build_partitions(
                 "tier_counts": dict(
                     sorted(
                         Counter(
-                            int(inventory_by_path.get(path, {}).get("priority_tier", 4))
+                            int(inventory_by_path.get(path, {}).get("priority_tier", 2))
                             for path in current_paths
                         ).items()
                     )
                 ),
+                "tier0_reserved_chars": tier0_reserved_chars,
+                "tier0_reserved_tokens": tier0_reserved_tokens,
                 "partition_payload_hash": build_partition_payload_hash(
                     current_paths, inventory_by_path, file_truncate_chars
                 ),
@@ -1273,20 +1520,40 @@ def build_partitions(
         current_chars = 0
         current_bytes = 0
         current_tokens = 0
+        current_tier0_chars = 0
+        current_tier0_tokens = 0
 
     for item in sorted(
         inventory,
         key=lambda candidate: (
-            int(candidate.get("priority_tier", 4)),
-            str(candidate.get("path", "")),
+            int(candidate.get("priority_tier", 2)),
+            int(candidate.get("magic_subtype_rank", 99)),
+            str(candidate.get("relative_path", candidate.get("path", ""))),
+            -float(candidate.get("mtime", 0.0)),
         ),
     ):
         path = item["path"]
+        tier = int(item.get("priority_tier", 2))
         base_chars = int(item.get("char_count_estimate", 0))
         # Account for per-file headers in context payload construction.
         est_chars = base_chars + min(len(path) + 80, 2000)
         est_bytes = len(path.encode("utf-8")) + int(item.get("size", 0))
         est_tokens = max(int(est_chars / 4), 1)
+
+        if (
+            current_paths
+            and tier != 0
+            and tier0_remaining > 0
+            and (
+                current_tier0_chars < tier0_reserved_chars
+                or current_tier0_tokens < tier0_reserved_tokens
+            )
+        ):
+            flush_partition("tier0_reserved_budget")
+
+        if current_paths and tier in {2, 3} and tier0_remaining > 0:
+            flush_partition("tier0_exhaustion_guard")
+
         would_exceed_files = len(current_paths) >= max_files
         would_exceed_chars = current_paths and (current_chars + est_chars > max_chars)
         would_exceed_tokens = current_paths and (current_tokens + est_tokens > max_tokens)
@@ -1302,6 +1569,10 @@ def build_partitions(
         current_chars += est_chars
         current_bytes += est_bytes
         current_tokens += est_tokens
+        if tier == 0:
+            current_tier0_chars += est_chars
+            current_tier0_tokens += est_tokens
+            tier0_remaining = max(tier0_remaining - 1, 0)
 
     flush_partition("final")
     if not partitions:
@@ -1318,6 +1589,8 @@ def build_partitions(
                 "category": "empty",
                 "reason": "empty",
                 "tier_counts": {},
+                "tier0_reserved_chars": tier0_reserved_chars,
+                "tier0_reserved_tokens": tier0_reserved_tokens,
                 "partition_payload_hash": build_partition_payload_hash(
                     [], inventory_by_path, file_truncate_chars
                 ),
@@ -2470,6 +2743,7 @@ def _run_phase_inner(
     collector: Optional[Collector],
     targets: Optional[List[str]],
     precollected_items: Optional[List[Dict[str, Any]]] = None,
+    forced_items: Optional[List[Dict[str, Any]]] = None,
 ) -> None:
     logger.info("--- Phase %s ---", phase)
     phase_dir = dirs[phase]
@@ -2489,7 +2763,12 @@ def _run_phase_inner(
             context_items = collector.collect(subdirs=targets)
             logger.info("Collected %s context files.", len(context_items))
 
+    if forced_items:
+        context_items = merge_items(context_items, forced_items)
+        logger.info("Phase %s merged %s forced tier-0 items.", phase, len(forced_items))
+
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
+    update_magic_surface_index(dirs, phase, inventory, cfg.file_truncate_chars)
     inventory_by_path = {str(item.get("path", "")): item for item in inventory}
     max_files = max_files_for_phase(phase, cfg)
     partitions = build_partitions(
@@ -3117,6 +3396,61 @@ def to_items(paths: Iterable[Path]) -> List[Dict[str, Any]]:
     return items
 
 
+def merge_items(*groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    dedup: Dict[str, Dict[str, Any]] = {}
+    for group in groups:
+        for item in group:
+            path = str(item.get("path", "")).strip()
+            if not path:
+                continue
+            dedup[path] = item
+    return sorted(dedup.values(), key=lambda item: str(item.get("path", "")))
+
+
+def collect_repo_magic_items(repo_root: Path) -> List[Dict[str, Any]]:
+    collector = Collector(repo_root, [".git", "node_modules", "venv", ".venv", "extraction"])
+    collected = collector.collect(subdirs=REPO_MAGIC_SUBDIRS + REPO_MAGIC_EXPLICIT_FILES)
+    glob_paths: List[Path] = []
+    for pattern in REPO_MAGIC_GLOBS:
+        glob_paths.extend(sorted(repo_root.glob(pattern)))
+    return merge_items(collected, to_items(glob_paths))
+
+
+def collect_home_magic_items(home_root: Path) -> List[Dict[str, Any]]:
+    collector = Collector(home_root, ["Downloads", "Library", ".cache", ".npm", ".pip"])
+    return collector.collect(subdirs=HOME_MAGIC_SUBDIRS)
+
+
+def collect_docs_instruction_items(repo_root: Path) -> List[Dict[str, Any]]:
+    paths: List[Path] = []
+    for pattern in DOC_INSTRUCTION_GLOBS:
+        for path in sorted(repo_root.glob(pattern)):
+            if path.is_file() and is_text_candidate(path):
+                paths.append(path.resolve())
+    return to_items(paths)
+
+
+def collect_phase_c_magic_callers(repo_root: Path) -> List[Dict[str, Any]]:
+    caller_paths: List[Path] = []
+    patterns = [
+        "scripts/**/*call*.py",
+        "scripts/**/*call*.sh",
+        "scripts/**/*mcp*.py",
+        "scripts/**/*mcp*.sh",
+        "tools/**/*call*.py",
+        "tools/**/*call*.sh",
+        "tools/**/*mcp*.py",
+        "tools/**/*mcp*.sh",
+        "src/**/cli.py",
+        "src/**/main.py",
+    ]
+    for pattern in patterns:
+        for path in sorted(repo_root.glob(pattern)):
+            if path.is_file() and is_text_candidate(path):
+                caller_paths.append(path.resolve())
+    return to_items(caller_paths)
+
+
 def collect_phase_artifacts(dirs: Dict[str, Path], phases: List[str], buckets: List[str]) -> List[Dict[str, Any]]:
     files: List[Path] = []
     for phase in phases:
@@ -3211,7 +3545,8 @@ def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
         ".claude.json",
         ".taskxroot",
     ]
-    _run_phase_inner("A", dirs, cfg, collector, targets)
+    forced_items = collect_repo_magic_items(Path.cwd())
+    _run_phase_inner("A", dirs, cfg, collector, targets, forced_items=forced_items)
 
 
 def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
@@ -3230,6 +3565,7 @@ def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     ]
     collector = Collector(home, excludes)
     items = collector.collect(subdirs=HOME_SAFE_ROOTS)
+    items = merge_items(items, collect_home_magic_items(home))
     if cfg.home_scan_mode == "safe":
         items = home_safe_filter(items, home)
     _run_phase_inner("H", dirs, cfg, None, None, precollected_items=items)
@@ -3243,12 +3579,17 @@ def run_phase_M(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
 def run_phase_C(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules", "venv", ".venv", "docs", "test-results"])
     targets = ["src", "services", "shared", "plugins", "tools", "scripts", "tests"]
-    _run_phase_inner("C", dirs, cfg, collector, targets)
+    forced_items = collect_phase_c_magic_callers(Path.cwd())
+    _run_phase_inner("C", dirs, cfg, collector, targets, forced_items=forced_items)
 
 
 def run_phase_D(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git"])
-    _run_phase_inner("D", dirs, cfg, collector, ["docs"])
+    forced_items = merge_items(
+        collect_repo_magic_items(Path.cwd()),
+        collect_docs_instruction_items(Path.cwd()),
+    )
+    _run_phase_inner("D", dirs, cfg, collector, ["docs"], forced_items=forced_items)
 
 
 def run_phase_E(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
@@ -3259,17 +3600,20 @@ def run_phase_E(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
 
 def run_phase_W(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules"])
-    _run_phase_inner("W", dirs, cfg, collector, ["docs", "scripts", "src", "services"])
+    forced_items = collect_repo_magic_items(Path.cwd())
+    _run_phase_inner("W", dirs, cfg, collector, ["docs", "scripts", "src", "services"], forced_items=forced_items)
 
 
 def run_phase_B(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules"])
-    _run_phase_inner("B", dirs, cfg, collector, ["src", "services", "docs"])
+    forced_items = collect_repo_magic_items(Path.cwd())
+    _run_phase_inner("B", dirs, cfg, collector, ["src", "services", "docs"], forced_items=forced_items)
 
 
 def run_phase_G(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules"])
-    _run_phase_inner("G", dirs, cfg, collector, [".github", "docs", ".claude", "AGENTS.md"])
+    forced_items = collect_repo_magic_items(Path.cwd())
+    _run_phase_inner("G", dirs, cfg, collector, [".github", "docs", ".claude", "AGENTS.md"], forced_items=forced_items)
 
 
 def run_phase_Q(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
