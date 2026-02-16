@@ -19,8 +19,8 @@ prelude: ConPort Technical Deep Dive (explanation) for dopemux documentation and
 
 ConPort is not a monolithic service. It consists of two distinct runtime components with divergent codebases:
 
-1.  **ConPort MCP Server** (`docker/mcp-servers/conport`): The core intelligence engine. Implements the "V2 Architecture" with Async Postgres, Qdrant (?) and MCP protocol.
-2.  **ConPort HTTP API** (`services/conport`): A lightweight FastAPI service providing read-only access for the ADHD Dashboard.
+1. **ConPort MCP Server** (`docker/mcp-servers/conport`): The core intelligence engine. Implements the "V2 Architecture" with Async Postgres, Qdrant (?) and MCP protocol.
+2. **ConPort HTTP API** (`services/conport`): A lightweight FastAPI service providing read-only access for the ADHD Dashboard.
 
 **Critical Finding**: The "V2 Architecture" described in `v2-architecture.md` (Async Embedding Pipeline, Qdrant, Redis) appears to be partially implemented in the MCP Server, but the HTTP API is a simple Postgres client.
 
