@@ -1,3 +1,15 @@
+---
+id: 02_TOPOLOGY_AND_STORES
+title: 02 Topology And Stores
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 02 Topology And Stores (explanation) for dopemux documentation and developer
+  workflows.
+---
 # 02 Topology And Stores
 
 ## Store topology summary

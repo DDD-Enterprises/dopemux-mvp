@@ -1,10 +1,18 @@
 ---
-title: "ADHD Execution Model"
-plane: "pm"
-component: "dopemux"
-status: "proposed"
+title: ADHD Execution Model
+plane: pm
+component: dopemux
+status: proposed
+id: 05_ADHD_EXECUTION_MODEL
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: ADHD Execution Model (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # ADHD Cognitive Loop and UX Contracts
 
 ## Purpose

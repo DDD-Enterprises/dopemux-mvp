@@ -1,10 +1,18 @@
 ---
-title: "Routing Policy and Cost"
-plane: "pm"
-component: "dopemux"
-status: "proposed"
+title: Routing Policy and Cost
+plane: pm
+component: dopemux
+status: proposed
+id: 04_ROUTING_POLICY_AND_COST
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Routing Policy and Cost (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # Routing Policy, Plans, and Cost Optimization
 
 ## Purpose
