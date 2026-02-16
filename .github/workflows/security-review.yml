@@ -15,7 +15,6 @@ jobs:
   security-review:
     name: "🤖 Claude Code Security Analysis"
     runs-on: ubuntu-latest
-    if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
     timeout-minutes: 25  # ADHD-optimized: 25-minute chunks
 
     steps:
@@ -26,11 +25,12 @@ jobs:
           fetch-depth: 2  # Get enough history for diff analysis
 
       - name: 🔐 ADHD-Optimized Security Review
-        if: ${{ secrets.ANTHROPIC_API_KEY != '' || secrets.CLAUDE_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
         with:
           comment-pr: true
-          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY || secrets.CLAUDE_API_KEY }}
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
           upload-results: true
 
           # ADHD-optimized timeout (25-minute focus sessions)
