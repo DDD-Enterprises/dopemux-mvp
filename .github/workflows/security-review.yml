@@ -25,6 +25,7 @@ jobs:
           fetch-depth: 2  # Get enough history for diff analysis
 
       - name: 🔐 ADHD-Optimized Security Review
+        if: secrets.ANTHROPIC_API_KEY != ''
         uses: anthropics/claude-code-security-review@main
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
