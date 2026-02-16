@@ -71,7 +71,7 @@ ENDPOINTS = {
     "adhd_breaks": "http://localhost:8095/api/v1/breaks/default_user",  # Day 2: NEW
     "tasks": "http://localhost:8001/api/v1/tasks",  # TODO: Add endpoint
     "decisions": "http://localhost:8005/api/adhd/decisions/recent",  # ConPort (Day 2)
-    "services": "http://localhost:8002/health",  # TODO: Bridge
+    "services": "http://localhost:3016/health",
     "patterns": "http://localhost:8003/api/patterns/top",  # Serena (Day 2: NEW)
 }
 
@@ -606,6 +606,7 @@ class MetricsManager:
             ("ADHD Engine", "http://localhost:8000/health"),
             ("ConPort", "http://localhost:8005/health"),
             ("Serena", "http://localhost:8003/health"),
+            ("MCP Bridge", "http://localhost:3016/health"),
         ]:
             try:
                 resp = await self.http_client.get(url)
@@ -728,7 +729,7 @@ class MetricsFetcher:
             "ConPort": "http://localhost:8005/health",
             "ADHD Engine": "http://localhost:8001/health",
             "Serena": "http://localhost:8003/health",
-            "MCP Bridge": "http://localhost:8002/health",
+            "MCP Bridge": "http://localhost:3016/health",
         }
         
         health = {}
@@ -1420,7 +1421,7 @@ Run: docker start dopemux-prometheus
             # Show service selection menu
             self.push_screen(ServiceSelectionModal())
         
-        def action_show_pattern_detail(self) -> None:
+        async def action_show_pattern_detail(self) -> None:
             """Show detailed view of a behavioral pattern"""
             # Get the top pattern from Serena
             try:
