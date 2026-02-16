@@ -1,10 +1,18 @@
 ---
-title: "Instance and Worktree Isolation"
-plane: "pm"
-component: "dopemux"
-status: "proposed"
+title: Instance and Worktree Isolation
+plane: pm
+component: dopemux
+status: proposed
+id: 06_INSTANCE_AND_WORKTREE_ISOLATION
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Instance and Worktree Isolation (explanation) for dopemux documentation and
+  developer workflows.
 ---
-
 # Instance Isolation and Workspace Identity
 
 ## Purpose
