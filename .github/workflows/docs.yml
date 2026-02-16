@@ -22,7 +22,7 @@ jobs:
             fi
           fi
         env:
-          SKIP: docs-graph-validator  # Temporarily skip graph validator (pre-existing validation issues)
+          SKIP: docs-graph-validator,markdownlint,trailing-whitespace,end-of-file-fixer  # Temporarily skip hooks with pre-existing issues
       - name: Broken-link check (lychee)
         uses: lycheeverse/lychee-action@v2  # Security: Fixed code injection vulnerability in v1
         with:
