@@ -30,7 +30,8 @@
     "tmp",
     "tools",
     "ui-dashboard",
-    "ui-dashboard-backend"
+    "ui-dashboard-backend",
+    "UPGRADES"
   ],
   "allowed_root_files": [
     ".taskxroot",
