@@ -219,6 +219,34 @@ RETRYABLE_MARKERS = [
     "please try again",
 ]
 
+RATE_LIMIT_MARKERS = [
+    "rate limit",
+    "too many requests",
+    "resource exhausted",
+    "requests per minute",
+    "tokens per minute",
+    "rpm",
+    "tpm",
+    "temporarily throttled",
+]
+
+AUTH_MARKERS = [
+    "api key not found",
+    "missing api key",
+    "invalid api key",
+    "invalid authentication",
+    "authentication failed",
+    "unauthorized",
+    "permission denied",
+    "access denied",
+    "not authorized",
+    "provided api key is invalid",
+    "invalid x-api-key",
+    "insufficient_quota",
+    "billing",
+    "payment required",
+]
+
 NONRETRYABLE_MARKERS = [
     "api key not found",
     "missing api key",
@@ -504,6 +532,9 @@ class RunnerConfig:
     min_files_per_part: int
     max_split_depth: int
     max_partitions_per_step: int
+    shrink_files_mult: float
+    shrink_trunc_mult: float
+    shrink_maxchars_mult: float
     r_partial_ok: bool
 
 
@@ -833,6 +864,9 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "min_files_per_part": args.min_files_per_part,
             "max_split_depth": args.max_split_depth,
             "max_partitions_per_step": args.max_partitions_per_step,
+            "shrink_files_mult": args.shrink_files_mult,
+            "shrink_trunc_mult": args.shrink_trunc_mult,
+            "shrink_maxchars_mult": args.shrink_maxchars_mult,
             "r_partial_ok": args.r_partial_ok,
         },
     }
@@ -1073,6 +1107,9 @@ def write_phase_manifest(
             "min_files_per_part": cfg.min_files_per_part,
             "max_split_depth": cfg.max_split_depth,
             "max_partitions_per_step": cfg.max_partitions_per_step,
+            "shrink_files_mult": cfg.shrink_files_mult,
+            "shrink_trunc_mult": cfg.shrink_trunc_mult,
+            "shrink_maxchars_mult": cfg.shrink_maxchars_mult,
             "rpm": {
                 "openai": cfg.rpm_openai,
                 "gemini": cfg.rpm_gemini,
@@ -2048,6 +2085,84 @@ def normalize_step(
     return qa_payload
 
 
+def build_step_merge_report(
+    phase: str,
+    step_id: str,
+    phase_dir: Path,
+    qa_payload: Dict[str, Any],
+    chunk_manifest_rows: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    raw_dir = phase_dir / "raw"
+    norm_dir = phase_dir / "norm"
+    status_by_partition: Dict[str, str] = {}
+    for row in chunk_manifest_rows:
+        partition_id = str(row.get("chunk_id", "")).strip()
+        if not partition_id:
+            continue
+        status_by_partition[partition_id] = str(row.get("status", "")).strip()
+
+    partition_ids = sorted(
+        set(status_by_partition.keys())
+        | {str(value) for value in qa_payload.get("successful_partitions", [])}
+        | {str(value) for value in qa_payload.get("missing_partitions", [])}
+    )
+    source_raw_files: List[Dict[str, Any]] = []
+    for partition_id in partition_ids:
+        raw_json = raw_dir / f"{step_id}__{partition_id}.json"
+        fail_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+        fail_txt = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+        source_path = raw_json
+        if not raw_json.exists():
+            if fail_json.exists():
+                source_path = fail_json
+            elif fail_txt.exists():
+                source_path = fail_txt
+        source_raw_files.append(
+            {
+                "partition_id": partition_id,
+                "status": status_by_partition.get(partition_id, "unknown"),
+                "path": str(source_path),
+                "exists": source_path.exists(),
+                "sha256": sha256_text(source_path) if source_path.exists() else "",
+            }
+        )
+
+    merged_outputs: List[Dict[str, Any]] = []
+    for output_name in sorted(set(str(item) for item in qa_payload.get("written_files", []))):
+        output_path = norm_dir / output_name
+        merged_outputs.append(
+            {
+                "artifact": output_name,
+                "path": str(output_path),
+                "exists": output_path.exists(),
+                "sha256": sha256_text(output_path) if output_path.exists() else "",
+            }
+        )
+
+    superseded_partitions = sorted(
+        partition_id
+        for partition_id, status in status_by_partition.items()
+        if status.startswith("superseded")
+    )
+    successful_partitions = sorted(
+        str(value)
+        for value in qa_payload.get("successful_partitions", [])
+        if str(value).strip()
+    )
+    return {
+        "phase": phase,
+        "step_id": step_id,
+        "generated_at": now_iso(),
+        "partitions_total": int(qa_payload.get("partitions_total", len(partition_ids)) or len(partition_ids)),
+        "partitions_merged": successful_partitions,
+        "merge_order": successful_partitions,
+        "source_raw_files": source_raw_files,
+        "merged_outputs": merged_outputs,
+        "superseded_partitions": superseded_partitions,
+        "missing_partitions": sorted(str(value) for value in qa_payload.get("missing_partitions", [])),
+    }
+
+
 # --- LLM Execution ---
 
 def llm_base_url(provider: str) -> str:
@@ -2096,6 +2211,205 @@ def _match_markers(text: str, markers: List[str]) -> List[str]:
     return [marker for marker in markers if marker and marker.lower() in lowered]
 
 
+def classify_failure(
+    error_text: str,
+    http_status: Optional[int],
+    provider_hint: str,
+) -> Dict[str, Any]:
+    provider_key = str(provider_hint or "openai").strip().lower()
+    policy = PROVIDER_POLICIES.get(provider_key, PROVIDER_POLICIES["openai"])
+    combined = str(error_text or "").lower()
+
+    auth_markers = _match_markers(
+        combined,
+        list(AUTH_MARKERS) + list(policy.get("non_retryable_markers", [])),
+    )
+    rate_markers = _match_markers(combined, RATE_LIMIT_MARKERS)
+    shrink_markers = _match_markers(combined, SHRINKABLE_MARKERS)
+    retry_markers = _match_markers(combined, RETRYABLE_MARKERS)
+
+    if http_status in {401, 402, 403}:
+        return {
+            "type": "auth",
+            "reason": f"http_status_{http_status}",
+            "status": http_status,
+            "markers": [f"status_{http_status}"],
+        }
+    if auth_markers:
+        return {
+            "type": "auth",
+            "reason": auth_markers[0],
+            "status": http_status,
+            "markers": auth_markers,
+        }
+
+    if http_status == 429:
+        return {
+            "type": "rate",
+            "reason": "http_status_429",
+            "status": http_status,
+            "markers": ["status_429"],
+        }
+    if rate_markers:
+        return {
+            "type": "rate",
+            "reason": rate_markers[0],
+            "status": http_status,
+            "markers": rate_markers,
+        }
+
+    if http_status == 413:
+        return {
+            "type": "shrink",
+            "reason": "http_status_413",
+            "status": http_status,
+            "markers": ["status_413"],
+        }
+    if shrink_markers:
+        return {
+            "type": "shrink",
+            "reason": shrink_markers[0],
+            "status": http_status,
+            "markers": shrink_markers,
+        }
+
+    retry_statuses = set(int(code) for code in policy.get("retry_on", []))
+    if http_status == 408:
+        retry_statuses.add(408)
+    if http_status is not None and 500 <= int(http_status) <= 599:
+        retry_statuses.add(int(http_status))
+    if http_status in retry_statuses:
+        return {
+            "type": "retry",
+            "reason": f"http_status_{http_status}",
+            "status": http_status,
+            "markers": [f"status_{http_status}"],
+        }
+    if retry_markers:
+        return {
+            "type": "retry",
+            "reason": retry_markers[0],
+            "status": http_status,
+            "markers": retry_markers,
+        }
+
+    if http_status is not None and 400 <= int(http_status) < 500:
+        return {
+            "type": "fatal",
+            "reason": f"http_status_{http_status}",
+            "status": http_status,
+            "markers": [f"status_{http_status}"],
+        }
+    return {
+        "type": "retry",
+        "reason": "default_retryable",
+        "status": http_status,
+        "markers": ["default_retryable"],
+    }
+
+
+def _scaled_reduction(current_value: int, multiplier: float, minimum: int) -> int:
+    current = int(current_value)
+    scaled = int(float(current) * float(multiplier))
+    reduced = max(int(minimum), scaled)
+    return reduced
+
+
+def choose_recovery_action(
+    classification: Dict[str, Any],
+    partition_state: Dict[str, Any],
+) -> str:
+    failure_type = str(classification.get("type", "fatal"))
+    if failure_type in {"auth", "fatal", "retry", "rate"}:
+        return "fail"
+    if failure_type != "shrink":
+        return "fail"
+
+    stage = max(int(partition_state.get("shrink_stage", 0) or 0), 0)
+    files_count = int(partition_state.get("files_count", 0) or 0)
+    split_depth = int(partition_state.get("split_depth", 0) or 0)
+    prefer_split_first = bool(partition_state.get("prefer_split_first", True))
+    min_files_per_part = max(int(partition_state.get("min_files_per_part", 1) or 1), 1)
+    max_split_depth = max(int(partition_state.get("max_split_depth", 0) or 0), 0)
+    active_partition_count = max(int(partition_state.get("active_partition_count", 1) or 1), 1)
+    max_partitions_per_step = max(int(partition_state.get("max_partitions_per_step", 1) or 1), 1)
+    budget = dict(partition_state.get("budget", {}))
+    files_mult = float(partition_state.get("shrink_files_mult", 0.7) or 0.7)
+    trunc_mult = float(partition_state.get("shrink_trunc_mult", 0.7) or 0.7)
+    maxchars_mult = float(partition_state.get("shrink_maxchars_mult", 0.8) or 0.8)
+
+    can_split = (
+        prefer_split_first
+        and files_count > min_files_per_part
+        and split_depth < max_split_depth
+        and active_partition_count < max_partitions_per_step
+    )
+    can_reduce_files = (
+        _scaled_reduction(int(budget.get("max_files", 0) or 0), files_mult, SHRINK_MIN_MAX_FILES)
+        < int(budget.get("max_files", 0) or 0)
+    )
+    can_reduce_trunc = (
+        _scaled_reduction(
+            int(budget.get("file_truncate_chars", 0) or 0),
+            trunc_mult,
+            SHRINK_MIN_FILE_TRUNCATE_CHARS,
+        )
+        < int(budget.get("file_truncate_chars", 0) or 0)
+    )
+    can_reduce_maxchars = (
+        _scaled_reduction(int(budget.get("max_chars", 0) or 0), maxchars_mult, SHRINK_MIN_MAX_CHARS)
+        < int(budget.get("max_chars", 0) or 0)
+    )
+
+    if stage <= 0 and can_split:
+        return "split"
+    if stage <= 1 and can_reduce_files:
+        return "reduce_files"
+    if stage <= 2 and can_reduce_trunc:
+        return "reduce_trunc"
+    if stage <= 3 and can_reduce_maxchars:
+        return "reduce_maxchars"
+    return "fail"
+
+
+def apply_recovery_action(
+    action: str,
+    budget: Dict[str, int],
+    stage: int,
+    partition_state: Dict[str, Any],
+) -> Tuple[Dict[str, int], int]:
+    updated = dict(budget)
+    current_stage = max(int(stage), 0)
+    files_mult = float(partition_state.get("shrink_files_mult", 0.7) or 0.7)
+    trunc_mult = float(partition_state.get("shrink_trunc_mult", 0.7) or 0.7)
+    maxchars_mult = float(partition_state.get("shrink_maxchars_mult", 0.8) or 0.8)
+
+    if action == "split":
+        return updated, 1
+    if action == "reduce_files":
+        updated["max_files"] = _scaled_reduction(
+            int(updated.get("max_files", 0) or 0),
+            files_mult,
+            SHRINK_MIN_MAX_FILES,
+        )
+        return updated, 2
+    if action == "reduce_trunc":
+        updated["file_truncate_chars"] = _scaled_reduction(
+            int(updated.get("file_truncate_chars", 0) or 0),
+            trunc_mult,
+            SHRINK_MIN_FILE_TRUNCATE_CHARS,
+        )
+        return updated, 3
+    if action == "reduce_maxchars":
+        updated["max_chars"] = _scaled_reduction(
+            int(updated.get("max_chars", 0) or 0),
+            maxchars_mult,
+            SHRINK_MIN_MAX_CHARS,
+        )
+        return updated, 4
+    return updated, current_stage
+
+
 def classify_llm_failure(
     provider: str,
     status: Optional[int],
@@ -2104,45 +2418,39 @@ def classify_llm_failure(
     err_code: str,
     exception: Optional[Exception] = None,
 ) -> Dict[str, Any]:
-    policy = PROVIDER_POLICIES.get(provider, PROVIDER_POLICIES["openai"])
-    combined = " ".join([str(err_msg or ""), str(err_type or ""), str(err_code or "")]).lower()
-    nonretry_markers = list(NONRETRYABLE_MARKERS) + list(policy.get("non_retryable_markers", []))
-    shrink_markers = list(SHRINKABLE_MARKERS)
-    retry_markers = list(RETRYABLE_MARKERS)
-    matched_nonretry = _match_markers(combined, nonretry_markers)
-    matched_shrink = _match_markers(combined, shrink_markers)
-    matched_retry = _match_markers(combined, retry_markers)
-
-    if status in {401, 402, 403}:
-        return {"kind": "nonretryable", "status": status, "markers": ["status_auth_or_billing"]}
-    if str(err_code or "").lower() == "insufficient_quota":
-        return {"kind": "nonretryable", "status": status, "markers": ["insufficient_quota"]}
-    if matched_nonretry:
-        return {"kind": "nonretryable", "status": status, "markers": matched_nonretry}
-
-    if status == 413:
-        return {"kind": "shrink", "status": status, "markers": ["status_413"]}
-    if matched_shrink:
-        return {"kind": "shrink", "status": status, "markers": matched_shrink}
-    if status in {400, 422} and matched_shrink:
-        return {"kind": "shrink", "status": status, "markers": matched_shrink}
-
-    retry_statuses = set(int(code) for code in policy.get("retry_on", []))
-    if status in retry_statuses:
-        return {"kind": "retryable", "status": status, "markers": [f"status_{status}"]}
-    if matched_retry:
-        return {"kind": "retryable", "status": status, "markers": matched_retry}
+    combined = " ".join([str(err_msg or ""), str(err_type or ""), str(err_code or "")]).strip()
+    classification = classify_failure(
+        error_text=combined,
+        http_status=status,
+        provider_hint=provider,
+    )
+    mapped_kind = {
+        "shrink": "shrink",
+        "retry": "retryable",
+        "rate": "retryable",
+        "auth": "nonretryable",
+        "fatal": "nonretryable",
+    }.get(str(classification.get("type", "")), "retryable")
 
     if exception is not None:
         if is_retryable_exception(exception):
-            return {"kind": "retryable", "status": status, "markers": [exception.__class__.__name__]}
-        exc_text = str(exception).lower()
-        if "connection reset" in exc_text or "ssl" in exc_text or "tls" in exc_text:
-            return {"kind": "retryable", "status": status, "markers": ["network_transient"]}
+            mapped_kind = "retryable"
+            markers = list(classification.get("markers", [])) + [exception.__class__.__name__]
+            classification = {**classification, "markers": markers}
+        else:
+            exc_text = str(exception).lower()
+            if "connection reset" in exc_text or "ssl" in exc_text or "tls" in exc_text:
+                mapped_kind = "retryable"
+                markers = list(classification.get("markers", [])) + ["network_transient"]
+                classification = {**classification, "markers": markers}
 
-    if status is not None and 400 <= status < 500:
-        return {"kind": "nonretryable", "status": status, "markers": [f"status_{status}"]}
-    return {"kind": "retryable", "status": status, "markers": ["default_retryable"]}
+    return {
+        "kind": mapped_kind,
+        "status": classification.get("status"),
+        "markers": list(classification.get("markers", [])),
+        "reason": classification.get("reason", ""),
+        "type": classification.get("type", ""),
+    }
 
 
 @dataclass
@@ -2219,7 +2527,8 @@ class RequestController:
                 continue
             request_hash = str(row.get("request_hash", "")).strip()
             outcome = str(row.get("outcome", "")).strip()
-            if request_hash and outcome == "success":
+            result = str(row.get("result", "")).strip()
+            if request_hash and (outcome == "success" or result == "ok"):
                 self.successful_request_hashes[request_hash] = row
 
     def has_successful_request_hash(self, request_hash: str) -> bool:
@@ -2288,10 +2597,37 @@ class RequestController:
     def _append_ledger_row(self, row: Dict[str, Any]) -> None:
         if not self.ledger_path:
             return
-        append_jsonl(self.ledger_path, row)
-        request_hash = str(row.get("request_hash", "")).strip()
-        if request_hash and str(row.get("outcome", "")) == "success":
-            self.successful_request_hashes[request_hash] = dict(row)
+        normalized = dict(row)
+        attempt_no = normalized.get("attempt_no")
+        if attempt_no is None:
+            attempt_no = normalized.get("attempt_index")
+        if attempt_no is None:
+            attempt_no = 0
+        normalized["attempt_no"] = int(attempt_no)
+
+        if "input_chars" not in normalized:
+            normalized["input_chars"] = int(normalized.get("payload_chars", 0) or 0)
+        if "file_count" not in normalized:
+            normalized["file_count"] = int(normalized.get("payload_files", 0) or 0)
+        if "recovery_action" not in normalized:
+            normalized["recovery_action"] = str(normalized.get("shrink_action", "none") or "none")
+        if "classification" not in normalized:
+            normalized["classification"] = "unknown"
+
+        if "result" not in normalized:
+            outcome = str(normalized.get("outcome", "")).strip().lower()
+            status = str(normalized.get("status", "")).strip().lower()
+            if status.startswith("superseded") or outcome.startswith("superseded"):
+                normalized["result"] = "superseded"
+            elif outcome == "success" or status in {"ok", "dry_run"}:
+                normalized["result"] = "ok"
+            else:
+                normalized["result"] = "failed"
+
+        append_jsonl(self.ledger_path, normalized)
+        request_hash = str(normalized.get("request_hash", "")).strip()
+        if request_hash and str(normalized.get("result", "")) == "ok":
+            self.successful_request_hashes[request_hash] = dict(normalized)
 
     def record_shrink_decision(
         self,
@@ -2303,7 +2639,7 @@ class RequestController:
         model_id: str,
         request_hash: str,
         attempt_index: int,
-        shrink_action: str,
+        recovery_action: str,
         error_excerpt: str,
         old_budget: Dict[str, Any],
         new_budget: Dict[str, Any],
@@ -2327,12 +2663,47 @@ class RequestController:
             "outcome": "retryable_fail",
             "classification": "shrink",
             "response_bytes": 0,
-            "shrink_action": shrink_action,
+            "recovery_action": recovery_action,
+            "shrink_action": recovery_action,
             "error_excerpt": short_error_excerpt(error_excerpt),
             "old_budget": old_budget,
             "new_budget": new_budget,
             "parent_partition_id": parent_partition_id,
             "child_partition_ids": child_ids,
+            "result": "superseded" if recovery_action == "split" else "failed",
+        }
+        self._append_ledger_row(row)
+
+    def record_partition_superseded(
+        self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        provider: str,
+        model_id: str,
+        request_hash: str,
+        child_partition_ids: List[str],
+        reason: str,
+    ) -> None:
+        row = {
+            "ts": now_iso(),
+            "event_type": "partition_superseded",
+            "run_id": self.run_id,
+            "phase": phase,
+            "step_id": step_id,
+            "partition_id": partition_id,
+            "chunk_id": partition_id,
+            "provider": provider,
+            "model": model_id,
+            "request_hash": request_hash,
+            "attempt_index": 0,
+            "classification": "shrink",
+            "recovery_action": "split",
+            "shrink_action": "split",
+            "child_partition_ids": list(child_partition_ids),
+            "error_excerpt": short_error_excerpt(reason),
+            "status": "superseded_by_split",
+            "result": "superseded",
         }
         self._append_ledger_row(row)
 
@@ -2517,6 +2888,7 @@ class RequestController:
                     "outcome": "success",
                     "classification": "success",
                     "response_bytes": response_bytes,
+                    "recovery_action": "none",
                     "shrink_action": "none",
                     "output_path": str(output_path.resolve()),
                     "error_excerpt": "",
@@ -2529,6 +2901,7 @@ class RequestController:
                     "slot_wait_s": slot_wait,
                     "backoff_sleep_s": 0.0,
                     "request_id": request_id,
+                    "result": "ok",
                 }
                 self._append_ledger_row(row)
                 provider_stats["successful_calls"] = int(provider_stats.get("successful_calls", 0) or 0) + 1
@@ -2581,6 +2954,7 @@ class RequestController:
                 "classification": kind,
                 "markers": markers,
                 "response_bytes": response_bytes,
+                "recovery_action": "none",
                 "shrink_action": "none",
                 "output_path": str(output_path.resolve()),
                 "error_excerpt": error_excerpt,
@@ -2593,6 +2967,7 @@ class RequestController:
                 "slot_wait_s": slot_wait,
                 "backoff_sleep_s": backoff_sleep,
                 "request_id": request_id,
+                "result": "failed",
             }
             self._append_ledger_row(row)
             retry_trace.append(
@@ -2761,6 +3136,14 @@ def split_partition_ids(parent_partition_id: str, split_depth: int) -> Tuple[str
     return f"{parent_partition_id}1", f"{parent_partition_id}2"
 
 
+def split_partition(partition_files: List[str]) -> Tuple[List[str], List[str]]:
+    ordered = list(partition_files)
+    if len(ordered) <= 1:
+        return ordered, []
+    split_at = max(min(len(ordered) // 2, len(ordered) - 1), 1)
+    return ordered[:split_at], ordered[split_at:]
+
+
 def next_shrink_action(
     shrink_stage: int,
     budget: Dict[str, int],
@@ -2771,46 +3154,33 @@ def next_shrink_action(
     max_split_depth: int,
     active_partition_count: int,
     max_partitions_per_step: int,
+    shrink_files_mult: float = 0.7,
+    shrink_trunc_mult: float = 0.7,
+    shrink_maxchars_mult: float = 0.8,
 ) -> Tuple[str, Dict[str, int], int]:
-    stage = max(int(shrink_stage), 0)
-    if stage <= 0:
-        if (
-            prefer_split_first
-            and files_count > max(int(min_files_per_part), 1)
-            and split_depth < max(int(max_split_depth), 0)
-            and active_partition_count < max(int(max_partitions_per_step), 1)
-        ):
-            return "split_partition", dict(budget), 1
-        stage = 1
-
-    if stage <= 1:
-        new_max_files = max(SHRINK_MIN_MAX_FILES, int(int(budget.get("max_files", 0)) * 0.7))
-        if new_max_files < int(budget.get("max_files", 0)):
-            updated = dict(budget)
-            updated["max_files"] = new_max_files
-            return "reduce_files", updated, 2
-        stage = 2
-
-    if stage <= 2:
-        new_truncate = max(
-            SHRINK_MIN_FILE_TRUNCATE_CHARS,
-            int(int(budget.get("file_truncate_chars", 0)) * 0.7),
-        )
-        if new_truncate < int(budget.get("file_truncate_chars", 0)):
-            updated = dict(budget)
-            updated["file_truncate_chars"] = new_truncate
-            return "truncate_files", updated, 3
-        stage = 3
-
-    if stage <= 3:
-        new_max_chars = max(SHRINK_MIN_MAX_CHARS, int(int(budget.get("max_chars", 0)) * 0.8))
-        if new_max_chars < int(budget.get("max_chars", 0)):
-            updated = dict(budget)
-            updated["max_chars"] = new_max_chars
-            return "reduce_chars", updated, 4
-        stage = 4
-
-    return "fail", dict(budget), stage
+    partition_state = {
+        "shrink_stage": int(shrink_stage),
+        "budget": dict(budget),
+        "files_count": int(files_count),
+        "split_depth": int(split_depth),
+        "prefer_split_first": bool(prefer_split_first),
+        "min_files_per_part": int(min_files_per_part),
+        "max_split_depth": int(max_split_depth),
+        "active_partition_count": int(active_partition_count),
+        "max_partitions_per_step": int(max_partitions_per_step),
+        "shrink_files_mult": float(shrink_files_mult),
+        "shrink_trunc_mult": float(shrink_trunc_mult),
+        "shrink_maxchars_mult": float(shrink_maxchars_mult),
+    }
+    classification = {"type": "shrink", "reason": "payload_or_context_limit"}
+    action = choose_recovery_action(classification=classification, partition_state=partition_state)
+    updated_budget, next_stage = apply_recovery_action(
+        action=action,
+        budget=dict(budget),
+        stage=int(shrink_stage),
+        partition_state=partition_state,
+    )
+    return action, updated_budget, next_stage
 
 
 def execute_step_for_partitions(
@@ -3091,6 +3461,81 @@ def execute_step_for_partitions(
                     )
                     return
 
+            if cfg.resume and out_failed.exists():
+                failed_payload = parse_json_from_response(safe_read(out_failed))
+                if isinstance(failed_payload, dict) and str(failed_payload.get("status", "")) == "superseded_by_split":
+                    existing_child_ids = failed_payload.get("child_partition_ids", [])
+                    child_a_id, child_b_id = split_partition_ids(partition_id, split_depth)
+                    if isinstance(existing_child_ids, list) and len(existing_child_ids) >= 2:
+                        child_a_id = str(existing_child_ids[0] or child_a_id)
+                        child_b_id = str(existing_child_ids[1] or child_b_id)
+                    child_a_paths, child_b_paths = split_partition(filtered_paths)
+                    reason_text = str(failed_payload.get("reason", "superseded_by_split")).strip()
+                    request_controller.record_partition_superseded(
+                        phase=phase,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=provider,
+                        model_id=model_id,
+                        request_hash=request_hash,
+                        child_partition_ids=[child_a_id, child_b_id],
+                        reason=reason_text,
+                    )
+                    chunk_manifest_rows.append(
+                        {
+                            "chunk_id": partition_id,
+                            "base_partition_id": str(partition.get("base_partition_id", "")),
+                            "file_manifest_hash": file_manifest_hash,
+                            "request_hash": request_hash,
+                            "status": "superseded_by_split",
+                            "reason": reason_text,
+                            "child_partition_ids": [child_a_id, child_b_id],
+                        }
+                    )
+                    _write_attempt_log(
+                        partition_id,
+                        {
+                            "phase": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "status": "superseded_by_split",
+                            "reason": reason_text,
+                            "recovery_action": "split",
+                            "shrink_action": "split",
+                            "child_partition_ids": [child_a_id, child_b_id],
+                            "generated_at": now_iso(),
+                        },
+                    )
+                    if child_a_paths:
+                        _process_partition(
+                            {
+                                "id": child_a_id,
+                                "partition_id": child_a_id,
+                                "base_partition_id": str(partition.get("base_partition_id", partition_id)),
+                                "paths": child_a_paths,
+                                "ordered_paths": list(child_a_paths),
+                                "file_manifest_hash": build_file_manifest_hash(child_a_paths, inventory_by_path),
+                            },
+                            split_depth=split_depth + 1,
+                            shrink_stage=0,
+                            budget=dict(current_budget),
+                        )
+                    if child_b_paths:
+                        _process_partition(
+                            {
+                                "id": child_b_id,
+                                "partition_id": child_b_id,
+                                "base_partition_id": str(partition.get("base_partition_id", partition_id)),
+                                "paths": child_b_paths,
+                                "ordered_paths": list(child_b_paths),
+                                "file_manifest_hash": build_file_manifest_hash(child_b_paths, inventory_by_path),
+                            },
+                            split_depth=split_depth + 1,
+                            shrink_stage=0,
+                            budget=dict(current_budget),
+                        )
+                    return
+
             payload_bytes = len(user_prompt.encode("utf-8"))
             if payload_bytes > int(current_budget["max_chars"]):
                 synth_err = (
@@ -3108,18 +3553,20 @@ def execute_step_for_partitions(
                     max_split_depth=cfg.max_split_depth,
                     active_partition_count=active_partition_count,
                     max_partitions_per_step=cfg.max_partitions_per_step,
+                    shrink_files_mult=cfg.shrink_files_mult,
+                    shrink_trunc_mult=cfg.shrink_trunc_mult,
+                    shrink_maxchars_mult=cfg.shrink_maxchars_mult,
                 )
-                if action == "split_partition":
+                if action == "split":
                     active_partition_count += 1
                     child_a_id, child_b_id = split_partition_ids(partition_id, split_depth)
-                    mid = max(len(filtered_paths) // 2, 1)
-                    child_a_paths = list(filtered_paths[:mid])
-                    child_b_paths = list(filtered_paths[mid:])
+                    child_a_paths, child_b_paths = split_partition(filtered_paths)
                     split_event = {
                         "phase": phase,
                         "step_id": step_id,
                         "partition_id": partition_id,
                         "classification": classification,
+                        "recovery_action": action,
                         "shrink_action": action,
                         "parent_partition_id": partition_id,
                         "child_partition_ids": [child_a_id, child_b_id],
@@ -3141,7 +3588,7 @@ def execute_step_for_partitions(
                         model_id=model_id,
                         request_hash=request_hash,
                         attempt_index=0,
-                        shrink_action=action,
+                        recovery_action=action,
                         error_excerpt=synth_err,
                         old_budget=dict(current_budget),
                         new_budget=dict(next_budget),
@@ -3156,6 +3603,8 @@ def execute_step_for_partitions(
                             "partition_id": partition_id,
                             "status": "superseded_by_split",
                             "reason": synth_err,
+                            "recovery_action": action,
+                            "shrink_action": action,
                             "child_partition_ids": [child_a_id, child_b_id],
                             "generated_at": now_iso(),
                         },
@@ -3171,6 +3620,8 @@ def execute_step_for_partitions(
                             "file_manifest_hash": file_manifest_hash,
                             "request_hash": request_hash,
                             "status": "superseded_by_split",
+                            "recovery_action": action,
+                            "shrink_action": action,
                             "child_partition_ids": [child_a_id, child_b_id],
                         }
                     )
@@ -3182,6 +3633,7 @@ def execute_step_for_partitions(
                             "partition_id": partition_id,
                             "status": "superseded_by_split",
                             "reason": synth_err,
+                            "recovery_action": action,
                             "shrink_action": action,
                             "child_partition_ids": [child_a_id, child_b_id],
                             "generated_at": now_iso(),
@@ -3275,6 +3727,7 @@ def execute_step_for_partitions(
                     "step_id": step_id,
                     "partition_id": partition_id,
                     "classification": classification,
+                    "recovery_action": action,
                     "shrink_action": action,
                     "budget_before": dict(current_budget),
                     "budget_after": dict(next_budget),
@@ -3291,7 +3744,7 @@ def execute_step_for_partitions(
                     model_id=model_id,
                     request_hash=request_hash,
                     attempt_index=0,
-                    shrink_action=action,
+                    recovery_action=action,
                     error_excerpt=synth_err,
                     old_budget=dict(current_budget),
                     new_budget=dict(next_budget),
@@ -3511,19 +3964,21 @@ def execute_step_for_partitions(
                     max_split_depth=cfg.max_split_depth,
                     active_partition_count=active_partition_count,
                     max_partitions_per_step=cfg.max_partitions_per_step,
+                    shrink_files_mult=cfg.shrink_files_mult,
+                    shrink_trunc_mult=cfg.shrink_trunc_mult,
+                    shrink_maxchars_mult=cfg.shrink_maxchars_mult,
                 )
                 error_excerpt = short_error_excerpt(exc.meta.get("error_excerpt", str(exc)))
-                if action == "split_partition":
+                if action == "split":
                     active_partition_count += 1
                     child_a_id, child_b_id = split_partition_ids(partition_id, split_depth)
-                    mid = max(len(filtered_paths) // 2, 1)
-                    child_a_paths = list(filtered_paths[:mid])
-                    child_b_paths = list(filtered_paths[mid:])
+                    child_a_paths, child_b_paths = split_partition(filtered_paths)
                     split_event = {
                         "phase": phase,
                         "step_id": step_id,
                         "partition_id": partition_id,
                         "classification": classification,
+                        "recovery_action": action,
                         "shrink_action": action,
                         "parent_partition_id": partition_id,
                         "child_partition_ids": [child_a_id, child_b_id],
@@ -3546,7 +4001,7 @@ def execute_step_for_partitions(
                         model_id=model_id,
                         request_hash=request_hash,
                         attempt_index=int(exc.meta.get("attempts", 0) or 0),
-                        shrink_action=action,
+                        recovery_action=action,
                         error_excerpt=error_excerpt,
                         old_budget=dict(current_budget),
                         new_budget=dict(next_budget),
@@ -3562,6 +4017,8 @@ def execute_step_for_partitions(
                             "status": "superseded_by_split",
                             "classification": classification,
                             "reason": error_excerpt,
+                            "recovery_action": action,
+                            "shrink_action": action,
                             "child_partition_ids": [child_a_id, child_b_id],
                             "retry_trace": request_meta.get("retry_trace", []),
                             "generated_at": now_iso(),
@@ -3582,6 +4039,8 @@ def execute_step_for_partitions(
                     write_json(out_meta, request_meta)
                     chunk_manifest_row["status"] = "superseded_by_split"
                     chunk_manifest_row["classification"] = classification
+                    chunk_manifest_row["recovery_action"] = action
+                    chunk_manifest_row["shrink_action"] = action
                     chunk_manifest_row["child_partition_ids"] = [child_a_id, child_b_id]
                     chunk_manifest_rows.append(chunk_manifest_row)
                     _write_attempt_log(
@@ -3593,6 +4052,8 @@ def execute_step_for_partitions(
                             "status": "superseded_by_split",
                             "classification": classification,
                             "error": error_excerpt,
+                            "recovery_action": action,
+                            "shrink_action": action,
                             "child_partition_ids": [child_a_id, child_b_id],
                             "retry_trace": request_meta.get("retry_trace", []),
                             "generated_at": now_iso(),
@@ -3690,6 +4151,7 @@ def execute_step_for_partitions(
                     "step_id": step_id,
                     "partition_id": partition_id,
                     "classification": classification,
+                    "recovery_action": action,
                     "shrink_action": action,
                     "budget_before": dict(current_budget),
                     "budget_after": dict(next_budget),
@@ -3706,7 +4168,7 @@ def execute_step_for_partitions(
                     model_id=model_id,
                     request_hash=request_hash,
                     attempt_index=int(exc.meta.get("attempts", 0) or 0),
-                    shrink_action=action,
+                    recovery_action=action,
                     error_excerpt=error_excerpt,
                     old_budget=dict(current_budget),
                     new_budget=dict(next_budget),
@@ -4171,6 +4633,9 @@ def _run_phase_inner(
             "min_files_per_part": cfg.min_files_per_part,
             "max_split_depth": cfg.max_split_depth,
             "max_partitions_per_step": cfg.max_partitions_per_step,
+            "shrink_files_mult": cfg.shrink_files_mult,
+            "shrink_trunc_mult": cfg.shrink_trunc_mult,
+            "shrink_maxchars_mult": cfg.shrink_maxchars_mult,
             "prefer_split_first": cfg.prefer_split_first,
             "shrink_on_payload": cfg.shrink_on_payload,
         },
@@ -4226,21 +4691,14 @@ def _run_phase_inner(
             phase_dir=phase_dir,
             partitions=effective_partitions,
         )
-        write_json(
-            phase_dir / "qa" / f"{prompt_spec.step_id}_MERGE_REPORT.json",
-            {
-                "phase": phase,
-                "step_id": prompt_spec.step_id,
-                "generated_at": now_iso(),
-                "partition_ids": [
-                    str(partition.get("id", ""))
-                    for partition in sorted(effective_partitions, key=lambda row: str(row.get("id", "")))
-                ],
-                "merge_order": sorted(
-                    [str(partition.get("id", "")) for partition in effective_partitions]
-                ),
-            },
+        merge_report = build_step_merge_report(
+            phase=phase,
+            step_id=prompt_spec.step_id,
+            phase_dir=phase_dir,
+            qa_payload=qa_payload,
+            chunk_manifest_rows=step_chunk_rows,
         )
+        write_json(phase_dir / "qa" / f"{prompt_spec.step_id}_MERGE_REPORT.json", merge_report)
         step_qas.append(qa_payload)
 
     write_partition_manifest(
@@ -5138,6 +5596,9 @@ def main() -> None:
     parser.add_argument("--min-files-per-part", type=int, default=12)
     parser.add_argument("--max-split-depth", type=int, default=4)
     parser.add_argument("--max-partitions-per-step", type=int, default=64)
+    parser.add_argument("--shrink-files-mult", type=float, default=0.7)
+    parser.add_argument("--shrink-trunc-mult", type=float, default=0.7)
+    parser.add_argument("--shrink-maxchars-mult", type=float, default=0.8)
     parser.set_defaults(shrink_on_payload=True, resume_ledger=True, prefer_split_first=True)
     args = parser.parse_args()
     if args.r_full:
@@ -5176,6 +5637,9 @@ def main() -> None:
         min_files_per_part=max(int(args.min_files_per_part), 1),
         max_split_depth=max(int(args.max_split_depth), 0),
         max_partitions_per_step=max(int(args.max_partitions_per_step), 1),
+        shrink_files_mult=max(min(float(args.shrink_files_mult), 0.99), 0.1),
+        shrink_trunc_mult=max(min(float(args.shrink_trunc_mult), 0.99), 0.1),
+        shrink_maxchars_mult=max(min(float(args.shrink_maxchars_mult), 0.99), 0.1),
         r_partial_ok=bool(args.r_partial_ok),
     )
 
