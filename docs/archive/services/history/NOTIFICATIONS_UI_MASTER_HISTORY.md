@@ -15,8 +15,8 @@ prelude: Notifications Ui Master History (explanation) for dopemux documentation
 **Services**: `adhd-notifier`, `adhd-dashboard`
 **Role**: User Interface & Interruption Management
 **Status**:
-* Notifier: Production
-* Dashboard: Production (Port 8097)
+*   Notifier: Production
+*   Dashboard: Production (Port 8097)
 
 ---
 
@@ -31,17 +31,17 @@ The **Notifications & UI Services** are the "Face" and "Voice" of the system. Th
 ## 2. Feature Catalog
 
 ### 🔔 ADHD Notifier (`services/adhd-notifier`)
-* **Smart Delivery**: Checks `attention_state` before notifying.
-* **Multi-Channel**:
-    * **Terminal**: In-band notifications for users living in CLI.
-    * **Voice**: "It's time for a break" (TTS).
-    * **System**: Native OS notifications.
-* **Break Logic**: Enforces Pomodoro-style breaks (25/5) but adapts to flow.
+*   **Smart Delivery**: Checks `attention_state` before notifying.
+*   **Multi-Channel**:
+  * **Terminal**: In-band notifications for users living in CLI.
+  * **Voice**: "It's time for a break" (TTS).
+  * **System**: Native OS notifications.
+*   **Break Logic**: Enforces Pomodoro-style breaks (25/5) but adapts to flow.
 
 ### 📊 ADHD Dashboard (`services/adhd-dashboard`)
-* **Visualizer**: Real-time graphs of Energy, Attention, and Cognitive Load.
-* **Recommendations**: "Your energy is low. Switch to Documentation tasks."
-* **Tech Stack**: FastAPI backend + React frontend (Port 8097).
+*   **Visualizer**: Real-time graphs of Energy, Attention, and Cognitive Load.
+*   **Recommendations**: "Your energy is low. Switch to Documentation tasks."
+*   **Tech Stack**: FastAPI backend + React frontend (Port 8097).
 
 ---
 
@@ -56,19 +56,19 @@ else:
 ```
 
 ### Integration Points
-* **ADHD Engine**: The source of truth for "Can I interrupt?"
-* **DopeconBridge**: The transport layer for all notification events (`notification.sent`).
+*   **ADHD Engine**: The source of truth for "Can I interrupt?"
+*   **DopeconBridge**: The transport layer for all notification events (`notification.sent`).
 
 ---
 
 ## 4. Validated Status (Audit Results)
 
 **✅ Operational:**
-* **Notifier**: Health check passing on port 8098.
-* **Dashboard**: Validated on port 8097.
+*   **Notifier**: Health check passing on port 8098.
+*   **Dashboard**: Validated on port 8097.
 
 **🚧 Future Work:**
-* **Wearable Integration**: Sending haptic feedback to watches (planned).
+*   **Wearable Integration**: Sending haptic feedback to watches (planned).
 
 ---
 

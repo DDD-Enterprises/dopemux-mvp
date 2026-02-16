@@ -84,7 +84,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     networks:
-      - dopemux-unified-network
+      - dopemux-network
     depends_on:
       - conport
       - redis

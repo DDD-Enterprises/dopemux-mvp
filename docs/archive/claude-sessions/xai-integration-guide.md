@@ -36,9 +36,9 @@ export XAI_API_KEY="xai-abc123...your-actual-key"
 ### 3. Verify Configuration
 
 Your LiteLLM config at `litellm.config.yaml` already includes:
-- **xai-grok-4**: General purpose Grok model
-- **Fallback routing**: Claude → GPT-5 → Grok
-- **Rate limiting**: 60 RPM, 1M TPM for xAI
+* **xai-grok-4**: General purpose Grok model
+* **Fallback routing**: Claude → GPT-5 → Grok
+* **Rate limiting**: 60 RPM, 1M TPM for xAI
 
 ## How It Works
 
@@ -57,10 +57,10 @@ Claude Pro Max (Primary)
 1. **Claude Code**: Uses your Claude Pro Max subscription directly
 2. **LiteLLM Proxy**: Provides unified access to all models
 3. **Dopemux**: Orchestrates model selection based on:
-   - Availability
-   - Rate limits
-   - Task requirements
-   - Cost optimization
+   * Availability
+   * Rate limits
+   * Task requirements
+   * Cost optimization
 
 ## Using xAI with Claude Code
 
@@ -135,16 +135,16 @@ curl -X POST http://localhost:4100/v1/chat/completions \
 ### Common Issues
 
 1. **"XAI_API_KEY not found"**
-   - Ensure you've sourced `.env` or exported the variable
-   - Check: `echo $XAI_API_KEY`
+   * Ensure you've sourced `.env` or exported the variable
+   * Check: `echo $XAI_API_KEY`
 
 2. **Rate limiting errors**
-   - xAI has 60 RPM limit (lower than Claude/OpenAI)
-   - System automatically falls back to other models
+   * xAI has 60 RPM limit (lower than Claude/OpenAI)
+   * System automatically falls back to other models
 
 3. **Connection errors**
-   - Verify API endpoint: `https://api.x.ai/v1`
-   - Check network/firewall settings
+   * Verify API endpoint: `https://api.x.ai/v1`
+   * Check network/firewall settings
 
 ### Debug Mode
 
@@ -165,9 +165,9 @@ Edit `litellm.config.yaml` to adjust:
 ```yaml
 # Adjust fallback order
 fallbacks:
-  - claude-sonnet-4.5:
-    - xai-grok-4  # Prefer Grok over GPT-5
-    - openai-gpt-5
+  * claude-sonnet-4.5:
+  * xai-grok-4  # Prefer Grok over GPT-5
+  * openai-gpt-5
 ```
 
 ### ADHD-Optimized Settings
