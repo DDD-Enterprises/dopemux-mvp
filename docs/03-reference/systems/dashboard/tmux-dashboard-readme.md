@@ -18,7 +18,7 @@ prelude: Tmux_Dashboard_Readme (reference) for dopemux documentation and develop
 
 - **[Metrics Inventory](./tmux-metrics-inventory.md)** - Complete list of available data sources
 - **[Design Document](./tmux-dashboard-design.md)** - Research-backed layout and implementation guide
-- **[Dashboard Script](../../../../scripts/orchestrator_dashboard.py)** - Ready-to-run Python implementation
+- **[Dashboard Script](../../../../scripts/dopemux_dashboard.py)** - Ready-to-run Python implementation
 
 ## 🚀 Quick Start
 
@@ -36,13 +36,13 @@ brew install tmux jq curl
 
 ```bash
 # Full Textual dashboard
-python scripts/orchestrator_dashboard.py
+python scripts/dopemux_dashboard.py
 
 # In a tmux pane
-tmux split-window -h "python scripts/orchestrator_dashboard.py"
+tmux split-window -h "python scripts/dopemux_dashboard.py"
 
 # Simple fallback (no Textual)
-python scripts/orchestrator_dashboard.py --view=simple
+python scripts/dopemux_dashboard.py --view=simple
 ```
 
 ### 3. Configure Tmux Status Bar
