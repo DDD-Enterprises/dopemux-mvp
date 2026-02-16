@@ -11,8 +11,8 @@ from dopemux.litellm_proxy import LiteLLMProxyInfo
 @patch("shutil.which")
 def test_altp_skips_openrouter_gate(mock_which, mock_start_proxy, mock_router_cls, mock_litellm_cls):
     """
-    Verify that using --altp with provider-based API keys (OPENROUTER_API_KEY, XAI_API_KEY) works correctly.
-    ALTP now uses shared provider keys instead of tier-specific keys.
+    Verify that ALTP routing works correctly when provider-based API keys
+    (OPENROUTER_API_KEY and XAI_API_KEY) are configured.
     """
     mock_which.return_value = "/bin/claude"
     mock_start_proxy.return_value = (4000, "sk-test")
