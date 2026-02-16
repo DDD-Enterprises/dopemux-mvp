@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Master extraction runner (A/H/D/C/E/W/B/G/Q/R/X/T/Z) with deterministic:
+Master extraction runner (A/H/M/D/C/E/W/B/G/Q/R/X/T/Z) with deterministic:
 inventory -> partitioning -> per-partition raw outputs -> norm merge -> QA.
 """
 
@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+import sqlite3
 import subprocess
 import sys
 import time
@@ -24,11 +25,15 @@ import requests
 
 # --- Configuration & Constants ---
 
-PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
+PHASES = ["A", "H", "M", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
-R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
+R_BASE_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
 R_FULL_STEP_IDS = tuple(f"R{i}" for i in range(9))
-R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
+R_PROFILE_MANIFEST_FILES = {
+    "base": Path("UPGRADES/R_REQUIRED_ARTIFACT_GROUPS_BASE.json"),
+    "full": Path("UPGRADES/R_REQUIRED_ARTIFACT_GROUPS_FULL.json"),
+}
+DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_BASE: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
         ("REPO_INSTRUCTION_REFERENCES.json",),
@@ -79,10 +84,22 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
         ("CONCURRENCY_RISK_LOCATIONS.json",),
     ],
 }
+DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_FULL_ADDITIONAL: Dict[str, List[Tuple[str, ...]]] = {
+    "M": [
+        ("M0_RUNTIME_EXPORT_INVENTORY.json",),
+        ("M1_SQLITE_SCHEMA_SNAPSHOTS.json",),
+        ("M2_SQLITE_TABLE_COUNTS.json",),
+        ("M3_CONPORT_EXPORT_SAFE.json",),
+        ("M4_DOPE_CONTEXT_EXPORT_SAFE.json",),
+        ("M5_MCP_HEALTH_EXPORT_SAFE.json",),
+        ("M6_RUNTIME_EXPORT_INDEX.json",),
+    ]
+}
 
 MODEL_ROUTING = {
     "A": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "H": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
+    "M": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "D": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "W": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "B": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
@@ -208,6 +225,7 @@ ENV_SECRET_NAME_RE = re.compile(r"\b[A-Z0-9_]*(?:SECRET|TOKEN|KEY)\b")
 BEARER_TOKEN_RE = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}")
 PRIVATE_KEY_BEGIN_RE = re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----")
 PRIVATE_KEY_END_RE = re.compile(r"-----END [A-Z0-9 ]*PRIVATE KEY-----")
+CONFIG_KEY_RE = re.compile(r'^\s*["\']?([A-Za-z0-9_.-]{2,})["\']?\s*[:=]')
 OUTPUT_FILENAME_RE = re.compile(r"\b[A-Z][A-Z0-9_]+(?:\.partX)?\.(?:json|md)\b")
 OUTPUT_SECTION_START_RE = re.compile(
     r"(?i)^(goal(?:s)?|output(?:s)?(?:\s+files?)?|phase\s+[A-Z0-9]+\s+deliverables?)\b"
@@ -255,6 +273,7 @@ class RunnerConfig:
     max_chars: int
     file_truncate_chars: int
     home_scan_mode: str
+    r_profile: str
     resume: bool
 
 
@@ -295,6 +314,7 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
         "inputs": base / "00_inputs",
         "A": base / "A_repo_control_plane",
         "H": base / "H_home_control_plane",
+        "M": base / "M_runtime_exports",
         "D": base / "D_docs_pipeline",
         "C": base / "C_code_surfaces",
         "E": base / "E_execution_plane",
@@ -405,9 +425,186 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "max_chars": args.max_chars,
             "file_truncate_chars": args.file_truncate_chars,
             "home_scan_mode": args.home_scan_mode,
+            "r_profile": args.r_profile,
         },
     }
     write_json(dirs["root"] / "RUN_MANIFEST.json", manifest)
+
+
+def clone_required_artifact_groups(
+    groups: Dict[str, List[Tuple[str, ...]]]
+) -> Dict[str, List[Tuple[str, ...]]]:
+    return {phase: [tuple(group) for group in phase_groups] for phase, phase_groups in groups.items()}
+
+
+def normalize_required_artifact_groups(raw: Any) -> Dict[str, List[Tuple[str, ...]]]:
+    normalized: Dict[str, List[Tuple[str, ...]]] = {}
+    if not isinstance(raw, dict):
+        return normalized
+
+    for phase, groups in raw.items():
+        if not isinstance(phase, str):
+            continue
+        phase_key = phase.strip().upper()
+        if not phase_key:
+            continue
+        if not isinstance(groups, list):
+            continue
+
+        normalized_groups: List[Tuple[str, ...]] = []
+        for group in groups:
+            if isinstance(group, str):
+                pattern = group.strip()
+                if pattern:
+                    normalized_groups.append((pattern,))
+                continue
+            if isinstance(group, (list, tuple)):
+                patterns = tuple(
+                    str(pattern).strip()
+                    for pattern in group
+                    if isinstance(pattern, str) and str(pattern).strip()
+                )
+                if patterns:
+                    normalized_groups.append(patterns)
+        if normalized_groups:
+            normalized[phase_key] = normalized_groups
+    return normalized
+
+
+def load_r_required_artifact_groups_by_profile() -> Dict[str, Dict[str, List[Tuple[str, ...]]]]:
+    base_groups = clone_required_artifact_groups(DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_BASE)
+    full_additional = clone_required_artifact_groups(DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_FULL_ADDITIONAL)
+
+    base_file = R_PROFILE_MANIFEST_FILES["base"]
+    if base_file.exists():
+        try:
+            base_payload = json.loads(safe_read(base_file))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Invalid JSON in {base_file}: {exc}") from exc
+        parsed = normalize_required_artifact_groups(base_payload.get("requires"))
+        if parsed:
+            base_groups = parsed
+
+    full_file = R_PROFILE_MANIFEST_FILES["full"]
+    if full_file.exists():
+        try:
+            full_payload = json.loads(safe_read(full_file))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Invalid JSON in {full_file}: {exc}") from exc
+        parsed = normalize_required_artifact_groups(full_payload.get("requires_additional"))
+        if parsed:
+            full_additional = parsed
+
+    full_groups = clone_required_artifact_groups(base_groups)
+    for phase, groups in full_additional.items():
+        full_groups.setdefault(phase, [])
+        full_groups[phase].extend(groups)
+
+    return {"base": base_groups, "full": full_groups}
+
+
+def required_input_phases_for_r_profile(profile: str) -> List[str]:
+    phases = list(R_BASE_REQUIRED_INPUT_PHASES)
+    if profile == "full":
+        phases.append("M")
+    return phases
+
+
+def phase_home_scan_mode(phase: str, cfg: RunnerConfig) -> str:
+    if phase == "M":
+        return "safe"
+    if phase == "H":
+        return cfg.home_scan_mode
+    return "n/a"
+
+
+def phase_uses_safe_redaction(phase: str, cfg: RunnerConfig) -> bool:
+    return phase == "M" or (phase == "H" and cfg.home_scan_mode == "safe")
+
+
+def phase_output_files(phase_dir: Path) -> List[str]:
+    output_files: List[str] = []
+    for bucket in ("raw", "norm", "qa"):
+        bucket_dir = phase_dir / bucket
+        if not bucket_dir.exists():
+            continue
+        for path in sorted(bucket_dir.rglob("*")):
+            if path.is_file():
+                output_files.append(str(path.resolve()))
+    return output_files
+
+
+def serialize_manifest_inputs(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    serialized: List[Dict[str, Any]] = []
+    for item in sorted(items, key=lambda candidate: str(candidate.get("path", ""))):
+        path = str(item.get("path", "")).strip()
+        if not path:
+            continue
+        try:
+            size = int(item.get("size", 0))
+        except Exception:
+            size = 0
+        try:
+            mtime = float(item.get("mtime", 0.0))
+        except Exception:
+            mtime = 0.0
+        serialized.append({"path": path, "size": size, "mtime": mtime})
+    return serialized
+
+
+def write_phase_manifest(
+    phase: str,
+    dirs: Dict[str, Path],
+    cfg: RunnerConfig,
+    prompts: List[PromptSpec],
+    context_items: List[Dict[str, Any]],
+    max_files: int,
+    outputs_before: List[str],
+    outputs_after: List[str],
+) -> None:
+    created_outputs = sorted(set(outputs_after) - set(outputs_before))
+    manifest = {
+        "phase": phase,
+        "run_id": dirs["root"].name,
+        "created_at": now_iso(),
+        "home_scan_mode": phase_home_scan_mode(phase, cfg),
+        "prompt_files": [str(prompt.prompt_path.resolve()) for prompt in prompts],
+        "step_ids": [prompt.step_id for prompt in prompts],
+        "input_files": serialize_manifest_inputs(context_items),
+        "output_files": outputs_after,
+        "new_output_files": created_outputs,
+        "caps": {
+            "max_files_docs": cfg.max_files_docs,
+            "max_files_code": cfg.max_files_code,
+            "max_files_phase_effective": max_files,
+            "max_chars": cfg.max_chars,
+            "file_truncate_chars": cfg.file_truncate_chars,
+            "truncate_markers": [
+                "...[TRUNCATED]...",
+                "...[CONTEXT_TRUNCATED_FOR_LIMIT]...",
+            ],
+        },
+        "redactions": {
+            "safe_mode_active": phase_uses_safe_redaction(phase, cfg),
+            "line_patterns": [
+                "api_key/token/secret/password/private_key/cookie",
+                "Bearer <token>",
+                "long_token_33_plus_chars",
+            ],
+            "field_patterns": [
+                "content",
+                "message",
+                "prompt",
+                "response",
+                "body",
+                "text",
+                "log",
+            ],
+            "hash_policy": "sha256(value)[:12]",
+        },
+        "resume_mode": cfg.resume,
+    }
+    write_json(dirs[phase] / "qa" / f"PHASE_{phase}_MANIFEST.json", manifest)
 
 
 # --- Collector Logic ---
@@ -1185,7 +1382,9 @@ def build_partition_context(
             continue
 
         path = Path(path_str)
-        if phase == "H" and home_scan_mode == "safe":
+        enforce_home_allowlist = phase == "H" and home_scan_mode == "safe"
+        safe_redaction_active = phase == "M" or enforce_home_allowlist
+        if enforce_home_allowlist:
             violation = home_safe_violation_reason(path, home_root)
             if violation:
                 skipped_files += 1
@@ -1196,7 +1395,7 @@ def build_partition_context(
         content = safe_read(path)
         if len(content) > file_truncate_chars:
             content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
-        if phase == "H" and home_scan_mode == "safe":
+        if safe_redaction_active:
             content, hits = redact_sensitive_lines(content)
             redaction_hits += hits
         chunk_text = f"--- FILE: {path} ---\n{content}\n"
@@ -1476,6 +1675,7 @@ def _run_phase_inner(
 ) -> None:
     logger.info("--- Phase %s ---", phase)
     phase_dir = dirs[phase]
+    outputs_before = phase_output_files(phase_dir)
     prompts = get_phase_prompts(phase)
     if not prompts:
         raise RuntimeError(f"No prompts found for phase {phase} in UPGRADES/")
@@ -1562,6 +1762,485 @@ def _run_phase_inner(
         partitions=partitions,
         step_qas=step_qas,
     )
+    outputs_after = phase_output_files(phase_dir)
+    write_phase_manifest(
+        phase=phase,
+        dirs=dirs,
+        cfg=cfg,
+        prompts=prompts,
+        context_items=context_items,
+        max_files=max_files,
+        outputs_before=outputs_before,
+        outputs_after=outputs_after,
+    )
+
+
+# --- Phase M Runtime Export Helpers ---
+
+SQLITE_SUFFIXES = {".db", ".sqlite", ".sqlite3"}
+PHASE_M_MAX_DISCOVERED_FILES = 5000
+PHASE_M_MAX_CONFIG_KEYS = 40
+
+
+def hash_identifier(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8", errors="ignore")).hexdigest()[:12]
+
+
+def classify_runtime_store(path: Path) -> str:
+    suffix = path.suffix.lower()
+    lower = str(path).lower()
+    if suffix in SQLITE_SUFFIXES:
+        return "sqlite_db"
+    if "/cache/" in lower or lower.endswith(".cache") or lower.endswith(".log") or lower.endswith(".tmp"):
+        return "cache"
+    if suffix in HOME_SAFE_ALLOW_SUFFIXES:
+        return "config"
+    return "unknown"
+
+
+def runtime_exportability(path: Path, classification: str) -> str:
+    if not path.exists():
+        return "missing"
+    if not os.access(path, os.R_OK):
+        return "permission_denied"
+    if classification in {"sqlite_db", "config"}:
+        return "ok"
+    if classification == "cache":
+        return "unsafe"
+    return "unsafe"
+
+
+def collect_runtime_inventory(
+    home_root: Path, max_files: int = PHASE_M_MAX_DISCOVERED_FILES
+) -> Tuple[List[Dict[str, Any]], List[str], bool]:
+    discovered: List[Dict[str, Any]] = []
+    missing_roots: List[str] = []
+    truncated = False
+
+    for allow_root in home_safe_allow_roots(home_root):
+        if not allow_root.exists():
+            missing_roots.append(str(allow_root))
+            continue
+
+        for walk_root, dirs, files in os.walk(allow_root):
+            dirs.sort()
+            files.sort()
+            for filename in files:
+                path = Path(walk_root) / filename
+                if len(discovered) >= max_files:
+                    truncated = True
+                    break
+                try:
+                    st = path.stat()
+                    size = st.st_size
+                    mtime = st.st_mtime
+                except Exception:
+                    size = 0
+                    mtime = 0.0
+                classification = classify_runtime_store(path)
+                discovered.append(
+                    {
+                        "path": str(path.resolve()),
+                        "path_id": hash_identifier(str(path.resolve())),
+                        "size": size,
+                        "mtime": mtime,
+                        "classification": classification,
+                        "exportability": runtime_exportability(path, classification),
+                    }
+                )
+            if truncated:
+                break
+        if truncated:
+            break
+
+    discovered.sort(key=lambda item: item["path"])
+    return discovered, missing_roots, truncated
+
+
+def extract_config_key_names(path: Path, max_keys: int = PHASE_M_MAX_CONFIG_KEYS) -> List[str]:
+    keys: List[str] = []
+    seen = set()
+    text = safe_read(path)
+    for line in text.splitlines():
+        if len(line) > 256:
+            continue
+        match = CONFIG_KEY_RE.match(line)
+        if not match:
+            continue
+        key = match.group(1).strip()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        keys.append(key)
+        if len(keys) >= max_keys:
+            break
+    return keys
+
+
+def collect_env_keys(value: Any, env_keys: set) -> None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            key_text = str(key)
+            if key_text.lower() == "env" and isinstance(item, dict):
+                for env_key in item.keys():
+                    env_keys.add(str(env_key))
+            collect_env_keys(item, env_keys)
+    elif isinstance(value, list):
+        for item in value:
+            collect_env_keys(item, env_keys)
+
+
+def collect_mcp_server_summaries(path: Path) -> List[Dict[str, Any]]:
+    summaries: List[Dict[str, Any]] = []
+    if path.suffix.lower() not in {".json", ".yaml", ".yml", ".toml"}:
+        return summaries
+
+    text = safe_read(path)
+    if not text.strip():
+        return summaries
+
+    try:
+        payload = json.loads(text)
+    except Exception:
+        return summaries
+
+    server_blocks: List[Tuple[str, Dict[str, Any]]] = []
+    if isinstance(payload, dict):
+        for key in ("mcpServers", "mcp_servers", "servers"):
+            candidate = payload.get(key)
+            if isinstance(candidate, dict):
+                for name, definition in candidate.items():
+                    if isinstance(definition, dict):
+                        server_blocks.append((str(name), definition))
+
+    for name, definition in server_blocks:
+        env_keys = set()
+        collect_env_keys(definition, env_keys)
+        command = definition.get("command")
+        args = definition.get("args")
+        summaries.append(
+            {
+                "name": name,
+                "name_id": hash_identifier(name),
+                "config_path": str(path.resolve()),
+                "command": str(command) if isinstance(command, str) else "",
+                "args_count": len(args) if isinstance(args, list) else 0,
+                "env_keys": sorted(env_keys),
+            }
+        )
+    return summaries
+
+
+def sqlite_identifier(name: str) -> str:
+    return '"' + name.replace('"', '""') + '"'
+
+
+def collect_sqlite_schema_snapshot(db_path: Path) -> Dict[str, Any]:
+    snapshot: Dict[str, Any] = {
+        "db_path": str(db_path.resolve()),
+        "db_path_id": hash_identifier(str(db_path.resolve())),
+        "status": "ok",
+        "tables": [],
+        "indexes": [],
+        "triggers": [],
+        "pragma": {
+            "user_version": None,
+            "foreign_keys": None,
+            "sqlite_version": None,
+        },
+    }
+    try:
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+    except Exception as exc:
+        snapshot["status"] = "error"
+        snapshot["error"] = str(exc)
+        return snapshot
+
+    try:
+        cur = conn.cursor()
+        try:
+            cur.execute("PRAGMA user_version;")
+            row = cur.fetchone()
+            snapshot["pragma"]["user_version"] = int(row[0]) if row else None
+        except Exception as exc:
+            snapshot["pragma"]["user_version_error"] = str(exc)
+        try:
+            cur.execute("PRAGMA foreign_keys;")
+            row = cur.fetchone()
+            snapshot["pragma"]["foreign_keys"] = int(row[0]) if row else None
+        except Exception as exc:
+            snapshot["pragma"]["foreign_keys_error"] = str(exc)
+        try:
+            cur.execute("SELECT sqlite_version();")
+            row = cur.fetchone()
+            snapshot["pragma"]["sqlite_version"] = str(row[0]) if row else None
+        except Exception as exc:
+            snapshot["pragma"]["sqlite_version_error"] = str(exc)
+
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
+        table_names = [str(row[0]) for row in cur.fetchall() if row and row[0]]
+        for table_name in table_names:
+            table_payload: Dict[str, Any] = {
+                "name": table_name,
+                "name_id": hash_identifier(table_name),
+                "columns": [],
+            }
+            try:
+                cur.execute(f"PRAGMA table_info({sqlite_identifier(table_name)});")
+                table_payload["columns"] = [
+                    {
+                        "name": str(column_row["name"]),
+                        "type": str(column_row["type"]),
+                        "notnull": int(column_row["notnull"]),
+                    }
+                    for column_row in cur.fetchall()
+                ]
+            except Exception as exc:
+                table_payload["error"] = str(exc)
+            snapshot["tables"].append(table_payload)
+
+        cur.execute("SELECT name FROM sqlite_master WHERE type='index' ORDER BY name;")
+        snapshot["indexes"] = [str(row[0]) for row in cur.fetchall() if row and row[0]]
+        cur.execute("SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name;")
+        snapshot["triggers"] = [str(row[0]) for row in cur.fetchall() if row and row[0]]
+    except Exception as exc:
+        snapshot["status"] = "error"
+        snapshot["error"] = str(exc)
+    finally:
+        conn.close()
+    return snapshot
+
+
+def collect_sqlite_table_counts(db_path: Path) -> Dict[str, Any]:
+    counts_payload: Dict[str, Any] = {
+        "db_path": str(db_path.resolve()),
+        "db_path_id": hash_identifier(str(db_path.resolve())),
+        "status": "ok",
+        "table_counts": [],
+    }
+    try:
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    except Exception as exc:
+        counts_payload["status"] = "error"
+        counts_payload["error"] = str(exc)
+        return counts_payload
+
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
+        table_names = [str(row[0]) for row in cur.fetchall() if row and row[0]]
+        for table_name in table_names:
+            table_count: Dict[str, Any] = {"name": table_name, "name_id": hash_identifier(table_name)}
+            try:
+                cur.execute(f"SELECT COUNT(*) FROM {sqlite_identifier(table_name)};")
+                row = cur.fetchone()
+                table_count["row_count"] = int(row[0]) if row else 0
+            except Exception as exc:
+                table_count["row_count"] = None
+                table_count["error"] = str(exc)
+            counts_payload["table_counts"].append(table_count)
+    except Exception as exc:
+        counts_payload["status"] = "error"
+        counts_payload["error"] = str(exc)
+    finally:
+        conn.close()
+    return counts_payload
+
+
+def build_phase_m_seed_inputs(phase_dir: Path) -> List[Path]:
+    seed_dir = phase_dir / "inputs" / "runtime_seed"
+    seed_dir.mkdir(parents=True, exist_ok=True)
+
+    home_root = Path.home()
+    allow_roots = [str(path) for path in home_safe_allow_roots(home_root)]
+    discovered, missing_roots, truncated = collect_runtime_inventory(home_root)
+    sqlite_paths = [
+        Path(item["path"])
+        for item in discovered
+        if item.get("classification") == "sqlite_db" and item.get("exportability") == "ok"
+    ]
+    config_paths = [
+        Path(item["path"])
+        for item in discovered
+        if item.get("classification") == "config" and item.get("exportability") == "ok"
+    ]
+
+    schema_snapshots = [collect_sqlite_schema_snapshot(path) for path in sqlite_paths]
+    table_counts = [collect_sqlite_table_counts(path) for path in sqlite_paths]
+
+    config_summaries: List[Dict[str, Any]] = []
+    mcp_server_summaries: List[Dict[str, Any]] = []
+    for path in config_paths:
+        key_sample = extract_config_key_names(path)
+        config_summaries.append(
+            {
+                "path": str(path.resolve()),
+                "path_id": hash_identifier(str(path.resolve())),
+                "key_names_sample": key_sample,
+                "keys_total_sampled": len(key_sample),
+                "values": "REDACTED",
+            }
+        )
+        mcp_server_summaries.extend(collect_mcp_server_summaries(path))
+
+    mcp_server_unique = sorted(
+        {
+            (
+                server["name"],
+                server["name_id"],
+                server["config_path"],
+                server["command"],
+                server["args_count"],
+                tuple(server["env_keys"]),
+            )
+            for server in mcp_server_summaries
+        }
+    )
+    mcp_servers = [
+        {
+            "name": name,
+            "name_id": name_id,
+            "config_path": config_path,
+            "command": command,
+            "args_count": args_count,
+            "env_keys": list(env_keys),
+        }
+        for (name, name_id, config_path, command, args_count, env_keys) in mcp_server_unique
+    ]
+
+    m0_inventory = {
+        "generated_at": now_iso(),
+        "allow_roots": allow_roots,
+        "missing_roots": missing_roots,
+        "detected_paths": discovered,
+        "caps": {
+            "max_detected_files": PHASE_M_MAX_DISCOVERED_FILES,
+            "detected_files": len(discovered),
+        },
+        "markers": ["TRUNCATED"] if truncated else [],
+    }
+
+    m1_schema = {
+        "generated_at": now_iso(),
+        "sqlite_databases_discovered": len(sqlite_paths),
+        "snapshots": schema_snapshots,
+        "no_row_data_exported": True,
+    }
+
+    m2_counts = {
+        "generated_at": now_iso(),
+        "sqlite_databases_discovered": len(sqlite_paths),
+        "table_counts": table_counts,
+        "no_row_data_exported": True,
+    }
+
+    conport_keywords = ("conport", "context_portal")
+    dope_context_keywords = ("dope", "context.db", "global_index.sqlite")
+
+    def filter_refs(keywords: Tuple[str, ...]) -> Dict[str, Any]:
+        keyword_set = tuple(keyword.lower() for keyword in keywords)
+        db_refs = [
+            item
+            for item in discovered
+            if item.get("classification") == "sqlite_db"
+            and any(keyword in str(item.get("path", "")).lower() for keyword in keyword_set)
+        ]
+        config_refs = [
+            item
+            for item in config_summaries
+            if any(keyword in str(item.get("path", "")).lower() for keyword in keyword_set)
+        ]
+        schema_refs = [
+            snapshot
+            for snapshot in schema_snapshots
+            if any(keyword in str(snapshot.get("db_path", "")).lower() for keyword in keyword_set)
+        ]
+        counts_refs = [
+            count_payload
+            for count_payload in table_counts
+            if any(keyword in str(count_payload.get("db_path", "")).lower() for keyword in keyword_set)
+        ]
+        return {
+            "db_refs": db_refs,
+            "config_refs": config_refs,
+            "schema_refs": schema_refs,
+            "table_count_refs": counts_refs,
+        }
+
+    m3_conport = {
+        "generated_at": now_iso(),
+        "service": "conport",
+        "summary": filter_refs(conport_keywords),
+        "redaction": {"values": "REDACTED", "identifier_hash": "sha256(value)[:12]"},
+    }
+
+    m4_dope_context = {
+        "generated_at": now_iso(),
+        "service": "dope_context",
+        "summary": filter_refs(dope_context_keywords),
+        "redaction": {"values": "REDACTED", "identifier_hash": "sha256(value)[:12]"},
+    }
+
+    m5_mcp_health = {
+        "generated_at": now_iso(),
+        "sqlite3_available": True,
+        "mcp_config_files": [
+            summary for summary in config_summaries if "/mcp/" in summary["path"] or "mcp" in summary["path"]
+        ],
+        "mcp_servers": mcp_servers,
+        "network_calls_attempted": False,
+    }
+
+    seed_outputs = [
+        seed_dir / "M0_RUNTIME_EXPORT_INVENTORY.seed.json",
+        seed_dir / "M1_SQLITE_SCHEMA_SNAPSHOTS.seed.json",
+        seed_dir / "M2_SQLITE_TABLE_COUNTS.seed.json",
+        seed_dir / "M3_CONPORT_EXPORT_SAFE.seed.json",
+        seed_dir / "M4_DOPE_CONTEXT_EXPORT_SAFE.seed.json",
+        seed_dir / "M5_MCP_HEALTH_EXPORT_SAFE.seed.json",
+        seed_dir / "M6_RUNTIME_EXPORT_INDEX.seed.json",
+    ]
+
+    m6_index = {
+        "generated_at": now_iso(),
+        "attempted_exports": [
+            "inventory_allowlisted_home_paths",
+            "sqlite_schema_snapshots",
+            "sqlite_table_counts",
+            "conport_safe_summary",
+            "dope_context_safe_summary",
+            "mcp_health_safe_summary",
+        ],
+        "suggested_sqlite_verification_commands": [
+            'sqlite3 <db> ".schema"',
+            'sqlite3 <db> "select name from sqlite_master where type=\'table\';"',
+            'sqlite3 <db> "select count(*) from <table>;"',
+            'sqlite3 <db> "pragma user_version;"',
+        ],
+        "outputs_produced": [str(path.resolve()) for path in seed_outputs[:-1]],
+        "redaction_rules_applied": [
+            "REDACTED values for config content",
+            "sha256(value)[:12] for stable identifiers",
+            "no sqlite row exports",
+        ],
+        "missing_prerequisites": missing_roots,
+        "caps_hit": {"runtime_inventory_truncated": truncated},
+    }
+
+    payloads = [
+        m0_inventory,
+        m1_schema,
+        m2_counts,
+        m3_conport,
+        m4_dope_context,
+        m5_mcp_health,
+        m6_index,
+    ]
+    for path, payload in zip(seed_outputs, payloads):
+        write_json(path, payload)
+
+    return seed_outputs
 
 
 # --- Phase Wrappers ---
@@ -1595,9 +2274,11 @@ def _has_matching_file(directory: Path, pattern: str) -> bool:
     return any(True for _ in directory.glob(pattern))
 
 
-def _ensure_required_norm_artifact_groups(dirs: Dict[str, Path]) -> List[str]:
+def _ensure_required_norm_artifact_groups(
+    dirs: Dict[str, Path], required_groups: Dict[str, List[Tuple[str, ...]]]
+) -> List[str]:
     missing: List[str] = []
-    for phase, groups in R_REQUIRED_ARTIFACT_GROUPS.items():
+    for phase, groups in required_groups.items():
         norm_dir = dirs[phase] / "norm"
         if not norm_dir.exists():
             missing.append(f"{phase}: missing norm directory {norm_dir}")
@@ -1696,6 +2377,11 @@ def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     _run_phase_inner("H", dirs, cfg, None, None, precollected_items=items)
 
 
+def run_phase_M(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+    seed_files = build_phase_m_seed_inputs(dirs["M"])
+    _run_phase_inner("M", dirs, cfg, None, None, precollected_items=to_items(seed_files))
+
+
 def run_phase_C(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules", "venv", ".venv", "docs", "test-results"])
     targets = ["src", "services", "shared", "plugins", "tools", "scripts", "tests"]
@@ -1729,16 +2415,25 @@ def run_phase_G(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
 
 
 def run_phase_Q(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
-    items = collect_phase_artifacts(dirs, ["A", "H", "D", "C", "E", "W", "B", "G"], ["raw", "norm", "qa"])
+    items = collect_phase_artifacts(
+        dirs,
+        ["A", "H", "M", "D", "C", "E", "W", "B", "G"],
+        ["raw", "norm", "qa"],
+    )
     _run_phase_inner("Q", dirs, cfg, None, None, precollected_items=items)
 
 
 def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     _ensure_r_full_prompt_set()
+    required_groups_by_profile = load_r_required_artifact_groups_by_profile()
+    required_groups = required_groups_by_profile.get(cfg.r_profile)
+    if required_groups is None:
+        raise RuntimeError(f"Unsupported r-profile '{cfg.r_profile}'. Expected base or full.")
+    required_input_phases = required_input_phases_for_r_profile(cfg.r_profile)
 
     missing: List[str] = []
     input_files: List[Path] = []
-    for phase in R_REQUIRED_INPUT_PHASES:
+    for phase in required_input_phases:
         phase_norm = dirs[phase] / "norm"
         if phase_norm.exists():
             phase_files: List[Path] = []
@@ -1750,7 +2445,7 @@ def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
         else:
             missing.append(f"{phase}: missing norm directory {phase_norm}")
 
-    missing.extend(_ensure_required_norm_artifact_groups(dirs))
+    missing.extend(_ensure_required_norm_artifact_groups(dirs, required_groups))
 
     if missing:
         python_cmd = Path(sys.executable).name or "python3"
@@ -1760,10 +2455,15 @@ def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
             f"{python_cmd} UPGRADES/run_extraction_v3.py --phase H --resume --home-scan-mode safe",
             f"{python_cmd} UPGRADES/run_extraction_v3.py --phase D --resume",
             f"{python_cmd} UPGRADES/run_extraction_v3.py --phase C --resume",
-            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase R --resume",
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase R --resume --r-profile {cfg.r_profile}",
         ]
+        if cfg.r_profile == "full":
+            recovery_commands.insert(
+                2, f"{python_cmd} UPGRADES/run_extraction_v3.py --phase M --resume"
+            )
+        required_phases_desc = "/".join(required_input_phases)
         raise RuntimeError(
-            "Phase R requires normalized inputs from A/H/D/C.\n"
+            f"Phase R requires normalized inputs for profile '{cfg.r_profile}' from {required_phases_desc}.\n"
             + "Missing norm artifacts:\n- "
             + "\n- ".join(missing_sorted)
             + "\nRecovery order:\n- "
@@ -1811,6 +2511,7 @@ def main() -> None:
     parser.add_argument("--max-chars", type=int, default=650000)
     parser.add_argument("--file-truncate-chars", type=int, default=70000)
     parser.add_argument("--home-scan-mode", choices=["safe", "full"], default="safe")
+    parser.add_argument("--r-profile", choices=["base", "full"], default="base")
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
 
@@ -1829,21 +2530,24 @@ def main() -> None:
         max_chars=args.max_chars,
         file_truncate_chars=args.file_truncate_chars,
         home_scan_mode=args.home_scan_mode,
+        r_profile=args.r_profile,
         resume=args.resume,
     )
 
     write_run_manifest(root, dirs, run_id, args)
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
+    logger.info("Phase R profile: %s", cfg.r_profile)
 
     if args.phase == "ALL":
-        phases = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
+        phases = ["A", "H", "M", "D", "E", "C", "W", "B", "G", "Q", "R", "X", "T", "Z"]
     else:
         phases = [args.phase]
 
     runners = {
         "A": run_phase_A,
         "H": run_phase_H,
+        "M": run_phase_M,
         "D": run_phase_D,
         "C": run_phase_C,
         "E": run_phase_E,
