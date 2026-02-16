@@ -1599,6 +1599,79 @@ Format: {{
         except Exception as e:
             logger.warning(f"Failed to store notification in Redis: {e}")
 
+    async def _calculate_cognitive_load(self, user_id: str) -> float:
+        """Calculate real-time cognitive load for a specific user."""
+        try:
+            # Use real-time calculation
+            energy_level = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+            attention_state = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+
+            # Map state to base load
+            energy_load_map = {
+                EnergyLevel.VERY_LOW: 0.9,
+                EnergyLevel.LOW: 0.7,
+                EnergyLevel.MEDIUM: 0.5,
+                EnergyLevel.HIGH: 0.3,
+                EnergyLevel.HYPERFOCUS: 0.8
+            }
+            attention_load_map = {
+                AttentionState.OVERWHELMED: 1.0,
+                AttentionState.SCATTERED: 0.8,
+                AttentionState.TRANSITIONING: 0.6,
+                AttentionState.FOCUSED: 0.4,
+                AttentionState.HYPERFOCUSED: 0.7
+            }
+
+            base_load = (energy_load_map.get(energy_level, 0.5) + attention_load_map.get(attention_state, 0.4)) / 2.0
+
+            # Add dynamic factors if available (e.g. context switches)
+            activity_data = await self._get_recent_activity(user_id)
+            context_switches = activity_data.get("context_switches", 0)
+            switch_penalty = min(context_switches * 0.05, 0.2)
+
+            return min(1.0, base_load + switch_penalty)
+        except Exception as e:
+            logger.error(f"Error calculating cognitive load for {user_id}: {e}")
+            return 0.5
+
+    async def _get_session_duration(self, user_id: str) -> int:
+        """Get current session duration in minutes."""
+        try:
+            # Check if we have a session start time in Redis
+            session_start_str = await self.redis_client.get(f"adhd:session_start:{user_id}")
+            if session_start_str:
+                session_start = datetime.fromisoformat(session_start_str)
+                delta = datetime.now(timezone.utc) - session_start
+                return int(delta.total_seconds() / 60)
+
+            # Fallback: if user is in profiles, they are technically active
+            return 0
+        except Exception as e:
+            logger.error(f"Error getting session duration for {user_id}: {e}")
+            return 0
+
+    async def _get_tasks_completed(self, user_id: str) -> int:
+        """Get number of tasks completed today."""
+        try:
+            if self.activity_tracker:
+                stats = await self.activity_tracker.get_daily_stats(user_id)
+                return stats.get("completed", 0)
+            return 0
+        except Exception as e:
+            logger.error(f"Error getting completed tasks for {user_id}: {e}")
+            return 0
+
+    async def _get_total_tasks(self, user_id: str) -> int:
+        """Get total number of tasks assigned/tracked for today."""
+        try:
+            if self.activity_tracker:
+                stats = await self.activity_tracker.get_daily_stats(user_id)
+                return stats.get("total", 0)
+            return 0
+        except Exception as e:
+            logger.error(f"Error getting total tasks for {user_id}: {e}")
+            return 0
+
     async def _broadcast_state_update(self, user_id: str, change_type: str = "state_update"):
         """
         Broadcast state update to WebSocket clients.

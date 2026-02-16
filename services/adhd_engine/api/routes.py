@@ -15,7 +15,7 @@ All endpoints secured with X-API-Key authentication (configurable via ADHD_ENGIN
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Security, WebSocket, WebSocketDisconnect
-from typing import Any
+from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 from dataclasses import asdict
 import logging
@@ -790,6 +790,39 @@ async def get_breaks_info(
     except Exception as e:
         logger.error(f"Breaks info retrieval failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/tasks/{user_id}", response_model=schemas.TasksResponse)
+async def get_tasks_for_user(
+    user_id: str,
+    engine = Depends(get_engine),
+    api_key: str = Security(verify_api_key)
+):
+    """Get aggregated task completion metrics for user."""
+    try:
+        completed = await engine._get_tasks_completed(user_id)
+        total = await engine._get_total_tasks(user_id)
+        rate = completed / total if total > 0 else 0.0
+
+        return {
+            "completed": completed,
+            "total": total,
+            "rate": round(rate, 2),
+            "user_id": user_id,
+            "timestamp": datetime.now(timezone.utc)
+        }
+    except Exception as e:
+        logger.error(f"Tasks metrics retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/tasks", response_model=schemas.TasksResponse)
+async def get_tasks_default(
+    engine = Depends(get_engine),
+    api_key: str = Security(verify_api_key)
+):
+    """Get aggregated task completion metrics for default user."""
+    return await get_tasks_for_user("default_user", engine, api_key)
 
 
 # ML Pattern & Prediction Endpoints (IP-005 Days 11-12)
