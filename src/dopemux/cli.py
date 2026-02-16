@@ -88,8 +88,6 @@ from .tmux import tmux as tmux_commands
 # Import genetic agent CLI
 try:
     # Ensure services directory is in Python path for production environments
-    import sys
-    from pathlib import Path
     services_path = Path(__file__).resolve().parent.parent / 'services'
     if str(services_path) not in sys.path:
         sys.path.insert(0, str(services_path))
@@ -579,7 +577,6 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
             src = Path(__file__).resolve().parents[2] / "scripts" / "git_post_worktree_hook.sh"
             dst = hooks_dir / "post-checkout"
             if not dst.exists():
-                import shutil
                 shutil.copy2(src, dst)
                 dst.chmod(0o755)
                 click.echo("🔗 Installed git post-checkout hook for ConPort wiring")
