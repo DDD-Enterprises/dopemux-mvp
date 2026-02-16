@@ -105,6 +105,7 @@ from .roles.catalog import (
     RoleNotFoundError,
 )
 from .memory.capture_client import CaptureError, emit_capture_event
+from .upgrades.runner import PipelineRunner
 
 
 if "-litellm" in sys.argv:
@@ -7307,6 +7308,54 @@ def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_s
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
+
+
+@cli.group()
+def upgrades():
+    """
+    🔄 Full Context & Upgrade Pipeline (Phases A-S)
+
+    Orchestrates the full pipeline for capturing repository context,
+    scanning home configuration, extracting documentation,
+    arbitrating truth, and synthesizing architectural vision.
+    """
+    pass
+
+
+@upgrades.command("run")
+@click.option("--dry-run", is_flag=True, default=True, help="Simulate execution by generating trace files only (default)")
+@click.option("--execute", is_flag=True, help="Actually call LLM providers (if configured)")
+@click.option("--phase", help="Run only a specific phase (A, H, D, C, R, S)")
+@click.pass_context
+def upgrades_run(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
+    """
+    Run the pipeline (or specific phase).
+
+    Generates trace files in _audit_out/pipeline_trace/ combining
+    the phase prompt with the gathered context.
+    """
+    project_path = Path.cwd()
+
+    # If execute is set, dry_run is False unless explicitly set
+    if execute:
+        dry_run = False
+
+    runner = PipelineRunner(project_path)
+
+    if phase:
+        runner.run_phase(phase, dry_run=dry_run)
+    else:
+        runner.run_all(dry_run=dry_run)
+
+
+@upgrades.command("list")
+@click.pass_context
+def upgrades_list(ctx):
+    """List available pipeline phases and status."""
+    project_path = Path.cwd()
+    runner = PipelineRunner(project_path)
+    runner.list_phases()
+
 
 if __name__ == "__main__":
     main()
