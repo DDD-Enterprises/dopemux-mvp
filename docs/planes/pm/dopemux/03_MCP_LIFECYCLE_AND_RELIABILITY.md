@@ -135,7 +135,7 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 **Classification (derived from compose.yml evidence)**:
 
 | Server | Port | Classification | Rationale |
-|--------|------|----------------|-----------|
+|---|---|---|---|
 | postgres (AGE) | 5432 | REQUIRED | Backing store for ConPort, LiteLLM. Everything depends on it. |
 | redis-events | 6379 | REQUIRED | EventBus streaming. DopeconBridge depends on it (healthy). |
 | redis-primary | — | REQUIRED | Caching. ConPort, task-orchestrator, adhd-engine depend on it (healthy). |
