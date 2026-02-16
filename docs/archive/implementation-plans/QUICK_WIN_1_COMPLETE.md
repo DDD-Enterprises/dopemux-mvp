@@ -218,20 +218,20 @@ async def send_notification(title: str, message: str, sound: str = "Glass"):
       BINDINGS = [
           ("q", "quit", "Quit"),
           ("r", "refresh", "Refresh"),
-+ ("b", "force_break", "Take Break"),
-+ ("f", "toggle_focus", "Focus Mode"),
-+ ("?", "show_help", "Help"),
++         ("b", "force_break", "Take Break"),
++         ("f", "toggle_focus", "Focus Mode"),
++         ("?", "show_help", "Help"),
       ]
 
-+ def __init__(self):
-+ self.focus_mode = False
++     def __init__(self):
++         self.focus_mode = False
 
-+ def action_force_break(self):
-+ def action_toggle_focus(self):
-+ def action_show_help(self):
++     def action_force_break(self):
++     def action_toggle_focus(self):
++     def action_show_help(self):
 
 + class HelpScreen(Screen):
-+ """Modal help screen"""
++     """Modal help screen"""
 ```
 
 **Lines Changed:** ~150 new lines

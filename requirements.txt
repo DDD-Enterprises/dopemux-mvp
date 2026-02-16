@@ -11,9 +11,9 @@ aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, CVE-2024-27306, di
 redis>=4.5.0  # Task-Orchestrator event bus integration (Fix C1-001)
 
 # Environment & Configuration
+pyyaml>=6.0
 python-dotenv>=1.0.0
 typer>=0.9.0
-pyyaml>=6.0
 
 # Utilities
 rich>=13.0.0
