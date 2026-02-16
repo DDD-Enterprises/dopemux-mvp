@@ -34,8 +34,8 @@ Dope-Memory is the "Temporal Spine" of Dopemux, answering "What happened, when, 
 
 ### 2.1 Core Responsibilities
 1. **Chronicle Store**: Immutable ledger managed by `ChronicleStore` class.
-  * `raw_activity_events`: Short retention (7 days), strictly redacted.
-  * `work_log_entries`: Durable, curated, high-signal entries.
+* `raw_activity_events`: Short retention (7 days), strictly redacted.
+* `work_log_entries`: Durable, curated, high-signal entries.
 1. **MCP Server**: `DopeMemoryMCPServer` (FastAPI) exposing standard tools.
 1. **Promotion Engine**: Logic to promote raw events to work logs (seen in `promotion/`).
 1. **Trajectory Manager**: Boosts relevance based on recent activity (`trajectory/`).

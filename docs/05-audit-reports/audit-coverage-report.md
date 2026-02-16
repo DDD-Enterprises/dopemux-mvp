@@ -61,12 +61,12 @@ The following paths are fully covered by the Master History artifacts:
 The following directories exist but were not explicitly deep-dived in a dedicated chapter. They are mostly support libraries or deprecated code.
 
 1. **`src/dopemux/`**: This is the *original* Python source root.
-  * Status: Historical. Contains the CLI entry point (`cli.py`) and legacy orchestrator logic.
-  * Action: Covered by "Phase 1: The Script Era" in `DESIGN_EVOLUTION_2026.md`. No separate deep dive needed as it is being strangled by the new services.
+* Status: Historical. Contains the CLI entry point (`cli.py`) and legacy orchestrator logic.
+* Action: Covered by "Phase 1: The Script Era" in `DESIGN_EVOLUTION_2026.md`. No separate deep dive needed as it is being strangled by the new services.
 1. **`services/redis`**: Likely just configuration.
-  * Status: Infrastructure.
+* Status: Infrastructure.
 1. **`services/postgres`**: Likely just configuration.
-  * Status: Infrastructure.
+* Status: Infrastructure.
 
 ## 3. Conclusion
 

@@ -1,3 +1,14 @@
+---
+id: 00_BUNDLE_INDEX
+title: 00 Bundle Index
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 00 Bundle Index (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Opus Preflight Evidence Bundle Index
 
 Generated: 2026-02-13
