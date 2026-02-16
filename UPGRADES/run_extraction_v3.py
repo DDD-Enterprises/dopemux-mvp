@@ -1436,6 +1436,24 @@ def collect_phase_artifacts(dirs: Dict[str, Path], phases: List[str], buckets: L
     return to_items(files)
 
 
+def _has_matching_file(directory: Path, pattern: str) -> bool:
+    return any(True for _ in directory.glob(pattern))
+
+
+def _ensure_required_norm_artifact_groups(dirs: Dict[str, Path]) -> List[str]:
+    missing: List[str] = []
+    for phase, groups in R_REQUIRED_ARTIFACT_GROUPS.items():
+        norm_dir = dirs[phase] / "norm"
+        if not norm_dir.exists():
+            missing.append(f"{phase}: missing norm directory {norm_dir}")
+            continue
+        for group in groups:
+            if not any(_has_matching_file(norm_dir, pattern) for pattern in group):
+                pattern_desc = " or ".join(group)
+                missing.append(f"{phase}: no artifact matching {pattern_desc} under {norm_dir}")
+    return missing
+
+
 def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     excludes = [
         ".git",
@@ -1546,19 +1564,23 @@ def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     input_files: List[Path] = []
     for phase in R_REQUIRED_INPUT_PHASES:
         phase_norm = dirs[phase] / "norm"
-        phase_files: List[Path] = []
         if phase_norm.exists():
+            phase_files: List[Path] = []
             phase_files.extend(sorted(phase_norm.glob("*.json")))
             phase_files.extend(sorted(phase_norm.glob("*.md")))
-        if not phase_files:
-            missing.append(str(phase_norm))
-            continue
-        input_files.extend(phase_files)
+            if not phase_files:
+                missing.append(f"{phase}: no json/md artifacts under {phase_norm}")
+            else:
+                input_files.extend(phase_files)
+        else:
+            missing.append(f"{phase}: missing norm directory {phase_norm}")
+
+    missing.extend(_ensure_required_norm_artifact_groups(dirs))
 
     if missing:
         raise RuntimeError(
-            "Phase R requires normalized inputs from A/H/D/C. Missing norm artifacts at: "
-            + ", ".join(missing)
+            "Phase R requires normalized inputs from A/H/D/C. Missing norm artifacts: "
+            + "; ".join(sorted(set(missing)))
         )
 
     deduped_inputs = sorted(set(input_files), key=lambda path: str(path))

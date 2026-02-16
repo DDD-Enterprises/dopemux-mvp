@@ -105,6 +105,7 @@ from .roles.catalog import (
     RoleNotFoundError,
 )
 from .memory.capture_client import CaptureError, emit_capture_event
+from .upgrades.runner import PipelineRunner
 
 
 if "-litellm" in sys.argv:
@@ -7311,30 +7312,48 @@ def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, inst
 
 @cli.group()
 def upgrades():
-    """Orchestrate the Full Pipeline (Phases A-S)."""
+    """
+    🔄 Full Context & Upgrade Pipeline (Phases A-S)
+
+    Orchestrates the full pipeline for capturing repository context,
+    scanning home configuration, extracting documentation,
+    arbitrating truth, and synthesizing architectural vision.
+    """
     pass
 
-@upgrades.command()
-@click.option("--dry-run", is_flag=True, default=True, help="Preview phase execution without LLM calls.")
-@click.option("--execute", is_flag=True, help="Execute the pipeline with LLM calls.")
-@click.option("--phase", help="Run a specific phase (e.g., A, H, D, C, R, S).")
+
+@upgrades.command("run")
+@click.option("--dry-run", is_flag=True, default=True, help="Simulate execution by generating trace files only (default)")
+@click.option("--execute", is_flag=True, help="Actually call LLM providers (if configured)")
+@click.option("--phase", help="Run only a specific phase (A, H, D, C, R, S)")
 @click.pass_context
-def run(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
-    """Run the pipeline."""
-    from dopemux.upgrades.runner import PipelineRunner
-    runner = PipelineRunner(project_root=Path.cwd())
+def upgrades_run(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
+    """
+    Run the pipeline (or specific phase).
+
+    Generates trace files in _audit_out/pipeline_trace/ combining
+    the phase prompt with the gathered context.
+    """
+    project_path = Path.cwd()
+
+    # If execute is set, dry_run is False unless explicitly set
+    if execute:
+        dry_run = False
+
+    runner = PipelineRunner(project_path)
+
     if phase:
-        runner.run_phase(phase=phase, dry_run=not execute)
+        runner.run_phase(phase, dry_run=dry_run)
     else:
-        runner.run_all(dry_run=not execute)
+        runner.run_all(dry_run=dry_run)
 
-@upgrades.command()
+
+@upgrades.command("list")
 @click.pass_context
-def list(ctx):
-    """List available pipeline phases."""
-    from dopemux.upgrades.runner import PipelineRunner
-    runner = PipelineRunner(project_root=Path.cwd())
+def upgrades_list(ctx):
+    """List available pipeline phases and status."""
+    project_path = Path.cwd()
+    runner = PipelineRunner(project_path)
     runner.list_phases()
-
 if __name__ == "__main__":
     main()

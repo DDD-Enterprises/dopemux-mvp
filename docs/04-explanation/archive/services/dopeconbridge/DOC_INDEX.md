@@ -41,7 +41,7 @@ prelude: Explanation of Doc_Index.
    - Troubleshooting guide
 
 ### Comprehensive Reference (15-30 minutes)
-3. **[DOPECONBRIDGE_COMPLETE_INTEGRATION.md](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)**
+1. **[DOPECONBRIDGE_COMPLETE_INTEGRATION.md](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)**
    - Full architectural reference
    - Migration status (20+ components)
    - Shared client library docs
@@ -54,7 +54,7 @@ prelude: Explanation of Doc_Index.
    - Future roadmap
 
 ### Execution Report (Technical Deep Dive)
-4. **[DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md)**
+1. **[DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md)**
    - Complete session execution report
    - Detailed deliverables breakdown
    - Architectural validation
