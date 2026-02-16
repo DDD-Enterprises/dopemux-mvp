@@ -19,6 +19,7 @@ Usage:
 import asyncio
 import httpx
 import sys
+import shutil
 import subprocess
 import json
 import logging
@@ -1420,7 +1421,7 @@ Run: docker start dopemux-prometheus
             # Show service selection menu
             self.push_screen(ServiceSelectionModal())
         
-        def action_show_pattern_detail(self) -> None:
+        async def action_show_pattern_detail(self) -> None:
             """Show detailed view of a behavioral pattern"""
             # Get the top pattern from Serena
             try:
@@ -1659,11 +1660,24 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
     class ServiceLogsModal(ModalView):
         """Live log viewer for services"""
         
+        # Map display names to docker compose service names
+        SERVICE_MAP = {
+            "ADHD Engine": "adhd-engine",
+            "ConPort": "conport",
+            "Serena": "serena",
+            "Zen MCP": "pal",
+            "Task Orchestrator": "task-orchestrator",
+            "Integration Bridge": "dopecon-bridge",
+            "Dope Context": "dope-context",
+            "Desktop Commander": "desktop-commander"
+        }
+
         def __init__(self, service_name: str):
             super().__init__()
             self.service_name = service_name
             self.auto_scroll = True
             self.filter_level = "ALL"
+            self.compose_service = self.SERVICE_MAP.get(service_name)
         
         def compose(self) -> ComposeResult:
             with Container(id="modal-container"):
@@ -1684,34 +1698,82 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
                 self.app.notify(f"❌ Error loading logs: {e}", severity="error")
         
         async def fetch_logs(self, lines: int = 50) -> List[Dict]:
-            """Fetch recent logs from service"""
-            # TODO: Fetch from real API
-            # For now, return mock logs
-            from datetime import datetime, timedelta
+            """Fetch recent logs from service via Docker"""
+            if not self.compose_service:
+                return [{"timestamp": "", "level": "ERROR", "message": f"Unknown service: {self.service_name}"}]
             
-            mock_logs = []
-            base_time = datetime.now()
+            # Determine project root (assuming script is in scripts/ or root)
+            script_path = Path(__file__).resolve()
+            if script_path.parent.name == "scripts":
+                project_root = script_path.parent.parent
+            else:
+                project_root = script_path.parent
             
-            levels = ["INFO", "DEBUG", "INFO", "INFO", "WARN", "INFO", "ERROR", "INFO"]
-            messages = [
-                "Starting session intelligence update",
-                "Fetching patterns from database",
-                "Found 23 active patterns",
-                "Pattern #15 has low confidence (0.45)",
-                "Session analysis complete (127ms)",
-                "Failed to connect to Redis: Connection timeout",
-                "Retrying Redis connection (attempt 1/3)",
-                "Redis connection restored",
-            ]
-            
-            for i in range(min(lines, len(levels))):
-                mock_logs.append({
-                    "timestamp": (base_time - timedelta(seconds=i*5)).strftime("%H:%M:%S"),
-                    "level": levels[i],
-                    "message": messages[i]
-                })
-            
-            return mock_logs
+            try:
+                # Check for docker
+                if not shutil.which("docker"):
+                     return [{"timestamp": "", "level": "ERROR", "message": "Docker executable not found"}]
+
+                # Run docker compose logs
+                cmd = [
+                    "docker", "compose", "logs",
+                    "--tail", str(lines),
+                    "--timestamps",
+                    "--no-log-prefix",
+                    "--no-color",
+                    self.compose_service
+                ]
+
+                process = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=str(project_root)
+                )
+
+                stdout, stderr = await process.communicate()
+
+                if process.returncode != 0:
+                     error_msg = stderr.decode().strip() or "Unknown error"
+                     return [{"timestamp": "", "level": "ERROR", "message": f"Docker error: {error_msg}"}]
+
+                logs = []
+                # Parse logs
+                # Format: 2023-10-27T10:00:00.123456789Z <content>
+                log_lines = stdout.decode().splitlines()
+
+                for line in log_lines:
+                    parts = line.split(" ", 1)
+                    if len(parts) < 2:
+                        continue
+
+                    timestamp_str, content = parts
+
+                    # Clean timestamp (remove Z and sub-seconds for display)
+                    # 2023-10-27T10:00:00.123456789Z -> 10:00:00
+                    try:
+                        timestamp = timestamp_str.split("T")[-1].replace("Z", "").split(".")[0]
+                    except:
+                        timestamp = timestamp_str
+
+                    # Detect level
+                    level = "INFO"
+                    content_upper = content.upper()
+                    if "ERROR" in content_upper: level = "ERROR"
+                    elif "WARN" in content_upper: level = "WARN"
+                    elif "DEBUG" in content_upper: level = "DEBUG"
+                    elif "CRITICAL" in content_upper: level = "ERROR"
+
+                    logs.append({
+                        "timestamp": timestamp,
+                        "level": level,
+                        "message": content.strip()
+                    })
+
+                return logs or [{"timestamp": "", "level": "INFO", "message": "No logs found"}]
+
+            except Exception as e:
+                return [{"timestamp": "", "level": "ERROR", "message": f"Failed to fetch logs: {e}"}]
         
         def render_logs(self, logs: List[Dict]) -> None:
             """Render logs in table"""
