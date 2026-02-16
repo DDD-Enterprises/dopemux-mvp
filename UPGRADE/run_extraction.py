@@ -614,9 +614,10 @@ class ExtractionRunner:
                          "output": usage.get("completion_tokens", 0)}
 
     def _call_gemini(self, prompt, max_tokens, model, api_key):
-        url = f"{self.GEMINI_URL.format(model=model)}?key={api_key}"
+        url = self.GEMINI_URL.format(model=model)
         resp = requests.post(
             url,
+            params={"key": api_key},
             headers={"Content-Type": "application/json"},
             json={
                 "contents": [{"parts": [{"text": prompt}]}],
@@ -800,6 +801,15 @@ class ExtractionRunner:
             json_content = self.extract_json(content)
             self._save_phase_output(phase_id, config, json_content, tokens, api_type)
             return True
+
+        except APIError as e:
+            print(f"  FAILED {phase_id}: {e}")
+            if "API_KEY_INVALID" in str(e) or "API Key not found" in str(e):
+                print("    -> HINT: Your API key appears invalid. Check your .env or environment variables.")
+            self.failed_phases.add(phase_id)
+            if self.checkpoint:
+                self.checkpoint.mark_failed(phase_id, str(e))
+            return False
 
         except Exception as exc:
             print(f"  FAILED {phase_id}: {exc}")
