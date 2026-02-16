@@ -22,9 +22,9 @@ services:
     container_name: dopemux-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: dopemux_age
-      POSTGRES_PASSWORD: dopemux_age_dev_password
-      POSTGRES_DB: dopemux_knowledge_graph
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AGE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pg_age_data:/var/lib/postgresql/data
       - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
@@ -33,7 +33,7 @@ services:
     networks:
       - dopemux-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} || exit 1"]
       timeout: 5s
       retries: 10
       interval: 10s
@@ -86,7 +86,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://dopemux_age:dopemux_age_dev_password@postgres:5432/dopemux_knowledge_graph
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${AGE_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
       QDRANT_URL: http://qdrant:6333
       OPENAI_API_KEY: ${OPENAI_API_KEY}
