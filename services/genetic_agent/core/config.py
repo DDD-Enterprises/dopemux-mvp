@@ -61,6 +61,12 @@ class AgentConfig(BaseSettings):
     redis_url: str = Field(default="redis://localhost:6379", description="Redis URL for EventBus")
     user_id: str = Field(default="default_user", description="User ID for event filtering")
 
+    # Security and CORS
+    allowed_origins: List[str] = Field(
+        default=["http://localhost:3000", "http://localhost:8097", "http://adhd-dashboard:8097"],
+        description="Allowed origins for CORS"
+    )
+
     class Config:
         env_prefix = "GENETIC_AGENT_"
         case_sensitive = False
