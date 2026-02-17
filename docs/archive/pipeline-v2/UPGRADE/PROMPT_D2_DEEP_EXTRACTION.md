@@ -1,3 +1,15 @@
+---
+id: PROMPT_D2_DEEP_EXTRACTION
+title: Prompt D2 Deep Extraction
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Prompt D2 Deep Extraction (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Prompt D2 (v2): Deep Extraction (CAP_NOTICES Only)
 
 **Outputs:** `DOC_INTERFACES.partNN.json`, `DOC_WORKFLOWS.partNN.json`, `DOC_DECISIONS.partNN.json`, `DOC_GLOSSARY.partNN.json`
