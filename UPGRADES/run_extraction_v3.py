@@ -3918,6 +3918,169 @@ def coerce_artifacts_from_response(
     return []
 
 
+def validate_success_partition_output(
+    success_json_path: Path,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    expected_artifact_names: Tuple[str, ...],
+) -> Tuple[bool, str]:
+    if not success_json_path.exists():
+        return False, "missing_success_json"
+    try:
+        if success_json_path.stat().st_size <= 0:
+            return False, "empty_success_json"
+    except Exception as exc:
+        return False, f"success_stat_error:{type(exc).__name__}"
+
+    raw_text = safe_read(success_json_path)
+    if not raw_text.strip():
+        return False, "empty_success_json"
+
+    try:
+        payload = json.loads(raw_text)
+    except Exception:
+        return False, "invalid_success_json"
+
+    if not isinstance(payload, dict):
+        return False, "success_not_object"
+
+    def _identity_mismatch(obj: Dict[str, Any], prefix: str) -> Optional[str]:
+        expected_identity = {
+            "phase": phase,
+            "step_id": step_id,
+            "partition_id": partition_id,
+        }
+        for key, expected_value in expected_identity.items():
+            if key not in obj:
+                continue
+            actual = obj.get(key)
+            if actual in (None, "", []):
+                continue
+            if str(actual) != str(expected_value):
+                return f"{prefix}_{key}_mismatch"
+        return None
+
+    if payload.get("failure_type"):
+        return False, "failure_type_top_level"
+    request_meta = payload.get("request_meta")
+    if isinstance(request_meta, dict) and request_meta.get("failure_type"):
+        return False, "failure_type_request_meta"
+
+    top_level_mismatch = _identity_mismatch(payload, "top_level")
+    if top_level_mismatch:
+        return False, top_level_mismatch
+
+    artifacts = payload.get("artifacts")
+    if not isinstance(artifacts, list):
+        return False, "artifacts_missing_or_not_list"
+
+    expected_set = set(expected_artifact_names)
+    has_expected_artifact = False
+    for idx, artifact in enumerate(artifacts):
+        if not isinstance(artifact, dict):
+            return False, f"artifact_{idx}_not_object"
+        artifact_name = str(artifact.get("artifact_name", "")).strip()
+        if not artifact_name:
+            return False, f"artifact_{idx}_artifact_name_missing"
+        if "payload" not in artifact:
+            return False, f"artifact_{idx}_payload_missing"
+        if artifact_name in expected_set:
+            has_expected_artifact = True
+        artifact_payload = artifact.get("payload")
+        if isinstance(artifact_payload, dict):
+            payload_mismatch = _identity_mismatch(artifact_payload, f"artifact_{idx}_payload")
+            if payload_mismatch:
+                return False, payload_mismatch
+
+    if not has_expected_artifact:
+        return False, "no_expected_artifacts"
+
+    return True, "valid_success"
+
+
+def compute_resume_decision(
+    success_json_path: Path,
+    failed_txt_path: Path,
+    failed_json_path: Path,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    expected_artifact_names: Tuple[str, ...],
+) -> Dict[str, Any]:
+    failed_paths = [path for path in (failed_txt_path, failed_json_path) if path.exists()]
+    failed_mtimes: List[float] = []
+    for path in failed_paths:
+        try:
+            failed_mtimes.append(float(path.stat().st_mtime))
+        except Exception:
+            continue
+    newest_failed_mtime = max(failed_mtimes) if failed_mtimes else None
+
+    is_valid_success, validation_reason = validate_success_partition_output(
+        success_json_path=success_json_path,
+        phase=phase,
+        step_id=step_id,
+        partition_id=partition_id,
+        expected_artifact_names=expected_artifact_names,
+    )
+    if not is_valid_success:
+        return {
+            "action": "RERUN",
+            "prune_failed": False,
+            "reason": "missing_or_invalid_success",
+            "validation_reason": validation_reason,
+            "failed_paths": failed_paths,
+            "success_mtime": None,
+            "failed_mtime": newest_failed_mtime,
+        }
+
+    try:
+        success_mtime = float(success_json_path.stat().st_mtime)
+    except Exception as exc:
+        return {
+            "action": "RERUN",
+            "prune_failed": False,
+            "reason": "missing_or_invalid_success",
+            "validation_reason": f"success_mtime_error:{type(exc).__name__}",
+            "failed_paths": failed_paths,
+            "success_mtime": None,
+            "failed_mtime": newest_failed_mtime,
+        }
+
+    if newest_failed_mtime is None:
+        return {
+            "action": "SKIP",
+            "prune_failed": False,
+            "reason": "valid_success",
+            "validation_reason": validation_reason,
+            "failed_paths": failed_paths,
+            "success_mtime": success_mtime,
+            "failed_mtime": None,
+        }
+
+    if success_mtime >= newest_failed_mtime:
+        return {
+            "action": "SKIP",
+            "prune_failed": True,
+            "reason": "valid_success_stale_failed",
+            "validation_reason": validation_reason,
+            "failed_paths": failed_paths,
+            "success_mtime": success_mtime,
+            "failed_mtime": newest_failed_mtime,
+        }
+
+    return {
+        "action": "RERUN",
+        "prune_failed": False,
+        "reason": "failed_newer_than_success",
+        "validation_reason": validation_reason,
+        "failed_paths": failed_paths,
+        "success_mtime": success_mtime,
+        "failed_mtime": newest_failed_mtime,
+    }
+
+
 def execute_step_for_partitions(
     phase: str,
     prompt_spec: PromptSpec,
@@ -4068,21 +4231,52 @@ def execute_step_for_partitions(
         logs: List[Tuple[str, str]] = []
         write_ops: List[Dict[str, Any]] = []
 
-        if cfg.resume and out_json.exists():
-            return PartitionExecResult(
+        if cfg.resume:
+            decision = compute_resume_decision(
+                success_json_path=out_json,
+                failed_txt_path=out_failed,
+                failed_json_path=out_failed_json,
+                phase=phase,
+                step_id=step_id,
                 partition_id=partition_id,
-                write_ops=[],
-                logs=[],
-                request_meta={},
-                artifacts=[],
-                success=False,
-                resume_skipped=True,
-                auth_failure=False,
-                auth_expired=False,
-                recomputed_delta=0,
-                dry_run_delta=0,
-                failed_delta=0,
+                expected_artifact_names=output_artifacts,
             )
+            if decision["action"] == "SKIP":
+                _append_log(logs, "info", f"Resume: skip valid success for {step_id} {partition_id}")
+                if decision.get("prune_failed"):
+                    _append_log(logs, "info", f"Resume: prune stale FAILED for {step_id} {partition_id}")
+                    for failed_path in decision.get("failed_paths", []):
+                        if isinstance(failed_path, Path):
+                            _op_unlink_if_exists(write_ops, failed_path)
+                return PartitionExecResult(
+                    partition_id=partition_id,
+                    write_ops=write_ops,
+                    logs=logs,
+                    request_meta={},
+                    artifacts=[],
+                    success=False,
+                    resume_skipped=True,
+                    auth_failure=False,
+                    auth_expired=False,
+                    recomputed_delta=0,
+                    dry_run_delta=0,
+                    failed_delta=0,
+                )
+            if decision["reason"] == "failed_newer_than_success":
+                _append_log(
+                    logs,
+                    "info",
+                    f"Resume: rerun failed_newer_than_success for {step_id} {partition_id}",
+                )
+            else:
+                _append_log(
+                    logs,
+                    "info",
+                    (
+                        f"Resume: rerun missing_or_invalid_success for {step_id} {partition_id} "
+                        f"reason={decision.get('validation_reason')}"
+                    ),
+                )
 
         output_instructions = build_output_envelope_instructions(output_artifacts)
         prompt_prefix = (
@@ -4486,6 +4680,12 @@ def execute_step_for_partitions(
             )
 
         if result.resume_skipped:
+            _apply_write_ops(result.write_ops)
+            for level, message in result.logs:
+                if level == "error":
+                    logger.error("%s", message)
+                else:
+                    logger.info("%s", message)
             resume_skipped += 1
             continue
 
