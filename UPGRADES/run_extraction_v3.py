@@ -11,20 +11,40 @@ import json
 import logging
 import os
 import re
+import platform
 import subprocess
 import sys
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 import requests
 
 # --- Configuration & Constants ---
 
 PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
+VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
+PROOF_PACK_FILENAME = "PROOF_PACK.json"
+RUNNER_SCRIPT = Path(__file__).resolve()
+# mapping from phase code to directory suffix
+PHASE_DIR_NAMES: Dict[str, str] = {
+    "A": "A_repo_control_plane",
+    "H": "H_home_control_plane",
+    "D": "D_docs_pipeline",
+    "C": "C_code_surfaces",
+    "E": "E_execution_plane",
+    "W": "W_workflow_plane",
+    "B": "B_boundary_plane",
+    "G": "G_governance_plane",
+    "Q": "Q_quality_assurance",
+    "R": "R_arbitration",
+    "X": "X_feature_index",
+    "T": "T_task_packets",
+    "Z": "Z_handoff_freeze",
+}
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
 R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
@@ -273,29 +293,27 @@ def load_run_id(root: Path) -> str:
     return run_id
 
 
+def determine_run_id(root: Path, override: Optional[str]) -> str:
+    """Return the run_id from override or latest file, validating existence."""
+    if override:
+        candidate = root / "extraction" / "runs" / override
+        if not candidate.exists():
+            raise FileNotFoundError(f"Run directory {candidate} does not exist.")
+        if not candidate.is_dir():
+            raise NotADirectoryError(f"Path {candidate} is not a directory.")
+        return override
+    return load_run_id(root)
+
+
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     """Return dict of run paths and ensure required folders exist."""
     base = root / "extraction/runs" / run_id
     if not base.exists():
         raise FileNotFoundError(f"Run directory {base} does not exist.")
 
-    dirs = {
-        "root": base,
-        "inputs": base / "00_inputs",
-        "A": base / "A_repo_control_plane",
-        "H": base / "H_home_control_plane",
-        "D": base / "D_docs_pipeline",
-        "C": base / "C_code_surfaces",
-        "E": base / "E_execution_plane",
-        "W": base / "W_workflow_plane",
-        "B": base / "B_boundary_plane",
-        "G": base / "G_governance_plane",
-        "Q": base / "Q_quality_assurance",
-        "R": base / "R_arbitration",
-        "X": base / "X_feature_index",
-        "T": base / "T_task_packets",
-        "Z": base / "Z_handoff_freeze",
-    }
+    dirs: Dict[str, Path] = {"root": base, "inputs": base / "00_inputs"}
+    for phase, suffix in PHASE_DIR_NAMES.items():
+        dirs[phase] = base / suffix
 
     (dirs["inputs"]).mkdir(parents=True, exist_ok=True)
     for phase in PHASES:
@@ -501,7 +519,7 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
         "repo_root": str(root.resolve()),
         "git_sha": get_git_sha(root),
         "cli": {
-            "phase": args.phase,
+            "phase": args.phase if args.phase else args.verify_phase_output,
             "dry_run": args.dry_run,
             "resume": args.resume,
             "max_files_docs": args.max_files_docs,
@@ -509,6 +527,10 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "max_chars": args.max_chars,
             "file_truncate_chars": args.file_truncate_chars,
             "home_scan_mode": args.home_scan_mode,
+            "run_id_override": args.run_id,
+            "doctor": args.doctor,
+            "verify_phase_output": args.verify_phase_output,
+            "print_config": args.print_config,
         },
     }
     write_json(dirs["root"] / "RUN_MANIFEST.json", manifest)
@@ -684,6 +706,37 @@ def get_phase_prompts(phase: str) -> List[PromptSpec]:
     return specs
 
 
+def resolve_phase_list(phase_arg: Optional[str]) -> List[str]:
+    if not phase_arg:
+        return []
+    if phase_arg == "ALL":
+        return PHASES
+    return [phase_arg]
+
+
+def collect_prompt_index() -> Tuple[Dict[str, Dict[str, List[Path]]], Dict[str, List[str]]]:
+    step_map: Dict[str, List[Path]] = defaultdict(list)
+    prompt_paths = sorted(Path("UPGRADES").glob("PROMPT_*.md"))
+    for prompt_path in prompt_paths:
+        match = re.match(r"PROMPT_([A-Z][0-9]+)_", prompt_path.name)
+        if not match:
+            continue
+        step_id = match.group(1)
+        step_map[step_id].append(prompt_path)
+
+    phase_map: Dict[str, Dict[str, List[Path]]] = defaultdict(dict)
+    duplicates: Dict[str, List[str]] = {}
+    for step_id in sorted(step_map.keys()):
+        paths = sorted(step_map[step_id], key=lambda p: p.name)
+        phase = step_id[0]
+        phase_map.setdefault(phase, {})
+        phase_map[phase][step_id] = paths
+        if len(paths) > 1:
+            duplicates[step_id] = [p.name for p in paths]
+
+    return phase_map, duplicates
+
+
 # --- Home Safe Mode ---
 
 def home_safe_filter(items: List[Dict[str, Any]], home_root: Path) -> List[Dict[str, Any]]:
@@ -721,6 +774,54 @@ def home_safe_filter(items: List[Dict[str, Any]], home_root: Path) -> List[Dict[
         dict(skipped_counts),
     )
     return filtered
+
+
+def run_doctor_checks(root: Path, dirs: Dict[str, Path], run_id: str, phase_arg: Optional[str]) -> bool:
+    phase_list = resolve_phase_list(phase_arg)
+    if not phase_list:
+        logger.error("Doctor mode requires --phase to specify which pipelines to check.")
+        return False
+
+    prompt_index, duplicates = collect_prompt_index()
+    errors: List[str] = []
+    warnings: List[str] = []
+
+    if duplicates:
+        for step_id, names in duplicates.items():
+            errors.append(f"Duplicate prompt step {step_id}: {names}")
+
+    for phase in phase_list:
+        prompts = prompt_index.get(phase, {})
+        if not prompts:
+            errors.append(f"No prompts found for phase {phase} (UPGRADES/PROMPT_{phase}*).")
+
+    run_root = dirs["root"]
+    if not run_root.exists():
+        errors.append(f"Run root missing: {run_root}")
+    for phase in phase_list:
+        phase_dir = dirs.get(phase)
+        if not phase_dir or not phase_dir.exists():
+            warnings.append(
+                f"Phase directory missing (can be created by runner): {phase} -> {run_root / PHASE_DIR_NAMES.get(phase, phase)}"
+            )
+
+    print("DOCTOR PRECHECK REPORT")
+    status = "PASS" if not errors else "FAIL"
+    print(f"DOCTOR STATUS: {status}")
+    if warnings:
+        print("  WARNINGS:")
+        for warning in warnings:
+            print(f"    {warning}")
+    if errors:
+        print("  ERRORS:")
+        for error in errors:
+            print(f"    {error}")
+        return False
+
+    print(f"  Run ID: {run_id}")
+    print(f"  Phases scanned: {', '.join(phase_list)}")
+    print("  Prompt steps are unique and present for selected phases.")
+    return True
 
 
 def redact_sensitive_lines(text: str) -> Tuple[str, int]:
@@ -1117,17 +1218,45 @@ def llm_base_url(provider: str) -> str:
     return PROVIDER_BASE_URL.get(provider, PROVIDER_BASE_URL["openai"])
 
 
+def classify_failure_type(status_code: Optional[int], response_body: str, error_text: str) -> str:
+    body = (response_body or "").lower()
+    err = (error_text or "").lower()
+    joined = f"{body}\n{err}"
+    if status_code in {401, 403} or "missing authorization header" in joined or "unauthorized" in joined:
+        return "auth"
+    if status_code == 429 or "rate limit" in joined or "too many requests" in joined:
+        return "rate_limit"
+    if status_code is not None and 400 <= status_code < 500:
+        return "payload"
+    if status_code is not None and status_code >= 500:
+        return "provider"
+    if "timeout" in joined or "connection" in joined or "network" in joined:
+        return "network"
+    return "unknown"
+
+
 def call_llm(
     provider: str,
     model_id: str,
     api_key_env: str,
     system_prompt: str,
     user_content: str,
-) -> str:
+) -> Dict[str, Any]:
     api_key = os.getenv(api_key_env)
     if not api_key:
         logger.error("Missing API key env var: %s", api_key_env)
-        return ""
+        return {
+            "ok": False,
+            "text": "",
+            "meta": {
+                "provider": provider,
+                "model_id": model_id,
+                "endpoint_base_url": llm_base_url(provider),
+                "status_code": None,
+                "failure_type": "auth",
+                "sent_header_keys": ["Authorization", "Content-Type"],
+            },
+        }
 
     payload = {
         "model": model_id,
@@ -1141,41 +1270,82 @@ def call_llm(
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
+    if provider == "gemini":
+        headers["x-goog-api-key"] = api_key
     url = f"{llm_base_url(provider)}/chat/completions"
+    last_failure_meta: Dict[str, Any] = {
+        "provider": provider,
+        "model_id": model_id,
+        "endpoint_base_url": llm_base_url(provider),
+        "status_code": None,
+        "failure_type": "unknown",
+        "sent_header_keys": sorted(list(headers.keys())),
+    }
 
     for attempt in range(1, 4):
+        response = None
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=180)
             response.raise_for_status()
             data = response.json()
-            return data["choices"][0]["message"]["content"]
+            return {
+                "ok": True,
+                "text": data["choices"][0]["message"]["content"],
+                "meta": {
+                    "provider": provider,
+                    "model_id": model_id,
+                    "endpoint_base_url": llm_base_url(provider),
+                    "status_code": response.status_code,
+                    "failure_type": None,
+                    "sent_header_keys": sorted(list(headers.keys())),
+                },
+            }
         except Exception as exc:
             response_body = ""
-            if "response" in locals():
+            status_code: Optional[int] = None
+            if response is not None:
                 try:
                     response_body = response.text[:1200]
+                    status_code = response.status_code
                 except Exception:
                     response_body = ""
+            failure_type = classify_failure_type(status_code, response_body, str(exc))
+            last_failure_meta = {
+                "provider": provider,
+                "model_id": model_id,
+                "endpoint_base_url": llm_base_url(provider),
+                "status_code": status_code,
+                "failure_type": failure_type,
+                "sent_header_keys": sorted(list(headers.keys())),
+            }
             if response_body:
                 logger.warning(
-                    "LLM call failed attempt %s/3 provider=%s model=%s: %s | body=%s",
+                    "LLM call failed attempt %s/3 provider=%s model=%s status=%s failure_type=%s: %s | body=%s",
                     attempt,
                     provider,
                     model_id,
+                    status_code,
+                    failure_type,
                     exc,
                     response_body,
                 )
             else:
                 logger.warning(
-                    "LLM call failed attempt %s/3 provider=%s model=%s: %s",
+                    "LLM call failed attempt %s/3 provider=%s model=%s status=%s failure_type=%s: %s",
                     attempt,
                     provider,
                     model_id,
+                    status_code,
+                    failure_type,
                     exc,
                 )
             time.sleep(2 * attempt)
     logger.error("LLM call failed after retries provider=%s model=%s.", provider, model_id)
-    return ""
+    return {
+        "ok": False,
+        "text": "",
+        "meta": last_failure_meta,
+    }
 
 
 def parse_json_from_response(text: str) -> Optional[Any]:
@@ -1401,6 +1571,17 @@ def execute_step_for_partitions(
                         for artifact_name in output_artifacts
                     ],
                     "dry_run": True,
+                    "request_meta": {
+                        "provider": provider,
+                        "model_id": model_id,
+                        "endpoint_base_url": llm_base_url(provider),
+                        "status_code": None,
+                        "failure_type": None,
+                        "sent_header_keys": sorted(
+                            ["Authorization", "Content-Type"]
+                            + (["x-goog-api-key"] if provider == "gemini" else [])
+                        ),
+                    },
                 },
             )
             if out_failed.exists():
@@ -1417,22 +1598,38 @@ def execute_step_for_partitions(
             context_stats["files_skipped"],
             context_stats["context_bytes"],
         )
-        response = call_llm(
+        llm_result = call_llm(
             provider=provider,
             model_id=model_id,
             api_key_env=api_key_env,
             system_prompt=prompt_text,
             user_content=user_prompt,
         )
-        parsed = parse_json_from_response(response)
+        response_text = str(llm_result.get("text", ""))
+        request_meta = llm_result.get("meta", {})
+        parsed = parse_json_from_response(response_text)
         artifacts = coerce_artifacts_from_response(
             parsed=parsed,
-            raw_text=response,
+            raw_text=response_text,
             expected_artifacts=output_artifacts,
         )
         if not artifacts:
-            out_failed.write_text(response, encoding="utf-8")
+            out_failed.write_text(response_text, encoding="utf-8")
             logger.error("Artifact parse failed for %s %s", step_id, partition_id)
+            write_json(
+                out_json,
+                {
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "generated_at": now_iso(),
+                    "artifacts": [],
+                    "request_meta": {
+                        **request_meta,
+                        "failure_type": request_meta.get("failure_type") or "parse",
+                    },
+                },
+            )
             continue
 
         write_json(
@@ -1443,6 +1640,7 @@ def execute_step_for_partitions(
                 "partition_id": partition_id,
                 "generated_at": now_iso(),
                 "artifacts": artifacts,
+                "request_meta": request_meta,
             },
         )
         if out_failed.exists():
@@ -1522,6 +1720,167 @@ def _run_phase_inner(
             phase_dir=phase_dir,
             partitions=partitions,
         )
+
+
+def _count_files(directory: Path, suffixes: Optional[Set[str]] = None) -> int:
+    if not directory.exists():
+        return 0
+    count = 0
+    for entry in sorted(directory.iterdir()):
+        if not entry.is_file():
+            continue
+        if suffixes and entry.suffix.lower() not in suffixes:
+            continue
+        count += 1
+    return count
+
+
+def gather_phase_counts(phase_dir: Path) -> Dict[str, Any]:
+    inputs_dir = phase_dir / "inputs"
+    raw_dir = phase_dir / "raw"
+    norm_dir = phase_dir / "norm"
+    qa_dir = phase_dir / "qa"
+
+    inputs_count = _count_files(inputs_dir)
+
+    raw_ok = 0
+    raw_failed = 0
+    raw_total = 0
+    if raw_dir.exists():
+        for entry in sorted(raw_dir.iterdir()):
+            if not entry.is_file():
+                continue
+            raw_total += 1
+            if ".FAILED" in entry.name:
+                raw_failed += 1
+            elif entry.suffix.lower() == ".json":
+                raw_ok += 1
+
+    norm_count = _count_files(norm_dir, suffixes={".json"})
+    qa_count = _count_files(qa_dir, suffixes={".json", ".md", ".txt"})
+
+    return {
+        "inputs": inputs_count,
+        "raw": {"total": raw_total, "ok": raw_ok, "failed": raw_failed},
+        "norm": norm_count,
+        "qa": qa_count,
+    }
+
+
+def _verify_single_phase(phase: str, dirs: Dict[str, Path]) -> Tuple[int, Dict[str, Any], List[str]]:
+    phase_dir = dirs.get(phase)
+    if not phase_dir or not phase_dir.exists():
+        print(f"VERIFY PHASE {phase}: MISSING DIRECTORY")
+        return 3, {}, [f"Phase directory {phase} is missing."]
+
+    counts = gather_phase_counts(phase_dir)
+    reasons: List[str] = []
+    if counts["inputs"] == 0:
+        reasons.append("inputs directory is empty.")
+    if counts["raw"]["total"] == 0:
+        reasons.append("raw directory has no artifacts.")
+    if counts["norm"] == 0:
+        reasons.append("norm directory has no json artifacts.")
+    if counts["qa"] == 0:
+        reasons.append("qa directory has no artifacts.")
+
+    status = "PASS" if not reasons else "FAIL"
+    print(f"VERIFY PHASE {phase}: {status}")
+    print(f"  inputs: {counts['inputs']} files")
+    raw_stats = counts["raw"]
+    print(f"  raw: {raw_stats['total']} files (ok={raw_stats['ok']} failed={raw_stats['failed']})")
+    print(f"  norm: {counts['norm']} files")
+    print(f"  qa: {counts['qa']} files")
+    if reasons:
+        print("  ISSUES:")
+        for reason in reasons:
+            print(f"    {reason}")
+
+    return (0 if status == "PASS" else 2), counts, reasons
+
+
+def verify_phase_output(dirs: Dict[str, Path], phases: List[str]) -> int:
+    return_code = 0
+    for phase in phases:
+        code, _, _ = _verify_single_phase(phase, dirs)
+        return_code = max(return_code, code)
+    return return_code
+
+
+def print_config(
+    args: argparse.Namespace,
+    root: Path,
+    run_id: str,
+    dirs: Dict[str, Path],
+    cfg: RunnerConfig,
+    phases: List[str],
+) -> None:
+    config_payload = {
+        "run_id": run_id,
+        "run_root": str(root.resolve()),
+        "git_sha": get_git_sha(root),
+        "runner_sha256": sha256_text(RUNNER_SCRIPT),
+        "python_version": platform.python_version(),
+        "cwd": str(Path.cwd().resolve()),
+        "phases": phases,
+        "cli": {
+            "phase_argument": args.phase,
+            "verify_phase_output": args.verify_phase_output,
+            "doctor": args.doctor,
+            "print_config": args.print_config,
+            "run_id_override": args.run_id,
+            "dry_run": args.dry_run,
+            "resume": args.resume,
+            "home_scan_mode": args.home_scan_mode,
+            "max_files_docs": args.max_files_docs,
+            "max_files_code": args.max_files_code,
+            "max_chars": args.max_chars,
+            "file_truncate_chars": args.file_truncate_chars,
+        },
+        "limits": {
+            "max_files_docs": cfg.max_files_docs,
+            "max_files_code": cfg.max_files_code,
+            "max_chars": cfg.max_chars,
+            "file_truncate_chars": cfg.file_truncate_chars,
+        },
+        "dirs": {phase: str(dirs[phase]) for phase in phases},
+    }
+    print(json.dumps(config_payload, indent=2))
+
+
+def update_proof_pack(
+    root: Path,
+    dirs: Dict[str, Path],
+    run_id: str,
+    run_started_at: str,
+    phase: str,
+    phase_counts: Dict[str, Any],
+    phase_started_at: str,
+    phase_finished_at: str,
+) -> None:
+    proof_path = dirs["root"] / PROOF_PACK_FILENAME
+    proof: Dict[str, Any] = {}
+    if proof_path.exists():
+        try:
+            proof = json.loads(proof_path.read_text(encoding="utf-8") or "{}")
+        except Exception:
+            proof = {}
+
+    proof["run_id"] = run_id
+    proof["git_sha"] = get_git_sha(root)
+    proof["runner_sha256"] = sha256_text(RUNNER_SCRIPT)
+    proof["argv"] = sys.argv
+    proof["python_version"] = platform.python_version()
+    proof["cwd"] = str(root.resolve())
+    proof["started_at"] = run_started_at
+    proof.setdefault("phases", {})[phase] = {
+        "started_at": phase_started_at,
+        "finished_at": phase_finished_at,
+        "counts": phase_counts,
+    }
+    proof["finished_at"] = phase_finished_at
+    proof["updated_at"] = now_iso()
+    write_json(proof_path, proof)
 
 
 # --- Phase Wrappers ---
@@ -1723,7 +2082,7 @@ def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser("Master Extraction Runner")
-    parser.add_argument("--phase", choices=PHASES + ["ALL"], required=True)
+    parser.add_argument("--phase", choices=PHASES + ["ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-files-docs", type=int, default=35)
     parser.add_argument("--max-files-code", type=int, default=20)
@@ -1731,11 +2090,20 @@ def main() -> None:
     parser.add_argument("--file-truncate-chars", type=int, default=70000)
     parser.add_argument("--home-scan-mode", choices=["safe", "full"], default="safe")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--run-id", type=str)
+    parser.add_argument("--doctor", action="store_true")
+    parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
+    parser.add_argument("--print-config", action="store_true")
     args = parser.parse_args()
+
+    if args.doctor and not args.phase:
+        parser.error("--phase is required when running in --doctor mode.")
+    if not args.phase and not args.verify_phase_output and not args.print_config:
+        parser.error("--phase is required unless --verify-phase-output or --print-config are used.")
 
     root = Path.cwd()
     try:
-        run_id = load_run_id(root)
+        run_id = determine_run_id(root, args.run_id)
         dirs = get_run_dirs(root, run_id)
     except Exception as exc:
         logger.error("Setup failed: %s", exc)
@@ -1752,13 +2120,25 @@ def main() -> None:
     )
 
     write_run_manifest(root, dirs, run_id, args)
+    phase_sequence = resolve_phase_list(args.phase)
+    if args.print_config:
+        print_config(args, root, run_id, dirs, cfg, phase_sequence)
+        sys.exit(0)
+
+    if args.verify_phase_output:
+        verify_targets = PHASES if args.verify_phase_output == "ALL" else [args.verify_phase_output]
+        sys.exit(verify_phase_output(dirs, verify_targets))
+
+    if args.doctor:
+        success = run_doctor_checks(root, dirs, run_id, args.phase)
+        sys.exit(0 if success else 1)
+
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
 
-    if args.phase == "ALL":
-        phases = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
-    else:
-        phases = [args.phase]
+    if not phase_sequence:
+        parser.error("--phase is required when running extraction phases.")
+    phases = phase_sequence
 
     runners = {
         "A": run_phase_A,
@@ -1776,7 +2156,9 @@ def main() -> None:
         "Z": run_phase_Z,
     }
 
+    run_started_at = now_iso()
     for phase in phases:
+        phase_started_at = now_iso()
         run_phase = runners.get(phase)
         if run_phase is None:
             logger.warning("Unknown phase: %s", phase)
@@ -1786,6 +2168,9 @@ def main() -> None:
         except Exception as exc:
             logger.error("Phase %s failed: %s", phase, exc)
             sys.exit(1)
+        phase_finished_at = now_iso()
+        counts = gather_phase_counts(dirs[phase])
+        update_proof_pack(root, dirs, run_id, run_started_at, phase, counts, phase_started_at, phase_finished_at)
 
 
 if __name__ == "__main__":
