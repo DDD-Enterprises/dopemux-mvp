@@ -25,6 +25,7 @@ jobs:
           fetch-depth: 2  # Get enough history for diff analysis
 
       - name: 🔐 ADHD-Optimized Security Review
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -69,6 +70,8 @@ jobs:
             echo "- No high-severity security issues detected" >> $GITHUB_STEP_SUMMARY
             echo "- Memory system components are safe" >> $GITHUB_STEP_SUMMARY
             echo "- Ready for merge when tests pass!" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.security-review.result }}" == "skipped" ]; then
+            echo "⏭️ **Security review skipped** (API key missing or not required)" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ **Security items need attention**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
