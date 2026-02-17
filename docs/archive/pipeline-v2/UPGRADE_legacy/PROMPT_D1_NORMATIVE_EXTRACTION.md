@@ -1,3 +1,15 @@
+---
+id: PROMPT_D1_NORMATIVE_EXTRACTION
+title: Prompt D1 Normative Extraction
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Prompt D1 Normative Extraction (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Prompt D1 (v2): Normative Extraction (Per Partition)
 
 **Outputs:** `DOC_INDEX.partNN.json`, `DOC_CLAIMS.partNN.json`, `DOC_BOUNDARIES.partNN.json`, `DOC_SUPERSESSION.partNN.json`, `CAP_NOTICES.partNN.json`
