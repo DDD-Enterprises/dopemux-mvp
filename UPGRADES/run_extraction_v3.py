@@ -3999,16 +3999,32 @@ def validate_success_partition_output(
     return True, "valid_success"
 
 
+def list_failed_sidecars(raw_dir: Path, step_id: str, partition_id: str) -> List[Path]:
+    pattern = f"{step_id}__{partition_id}.FAILED.*"
+    failed_paths = [path for path in raw_dir.glob(pattern) if path.is_file()]
+    return sorted(failed_paths, key=lambda path: path.name)
+
+
+def schedule_prune_failed_sidecars(
+    write_ops: List[Dict[str, Any]],
+    paths: List[Path],
+    reason: str,
+) -> int:
+    unique_paths = sorted({str(path) for path in paths})
+    for path in unique_paths:
+        write_ops.append({"kind": "unlink_if_exists", "path": path, "reason": reason})
+    return len(unique_paths)
+
+
 def compute_resume_decision(
     success_json_path: Path,
-    failed_txt_path: Path,
-    failed_json_path: Path,
+    raw_dir: Path,
     phase: str,
     step_id: str,
     partition_id: str,
     expected_artifact_names: Tuple[str, ...],
 ) -> Dict[str, Any]:
-    failed_paths = [path for path in (failed_txt_path, failed_json_path) if path.exists()]
+    failed_paths = list_failed_sidecars(raw_dir, step_id, partition_id)
     failed_mtimes: List[float] = []
     for path in failed_paths:
         try:
@@ -4234,8 +4250,7 @@ def execute_step_for_partitions(
         if cfg.resume:
             decision = compute_resume_decision(
                 success_json_path=out_json,
-                failed_txt_path=out_failed,
-                failed_json_path=out_failed_json,
+                raw_dir=raw_dir,
                 phase=phase,
                 step_id=step_id,
                 partition_id=partition_id,
@@ -4244,10 +4259,20 @@ def execute_step_for_partitions(
             if decision["action"] == "SKIP":
                 _append_log(logs, "info", f"Resume: skip valid success for {step_id} {partition_id}")
                 if decision.get("prune_failed"):
-                    _append_log(logs, "info", f"Resume: prune stale FAILED for {step_id} {partition_id}")
-                    for failed_path in decision.get("failed_paths", []):
-                        if isinstance(failed_path, Path):
-                            _op_unlink_if_exists(write_ops, failed_path)
+                    prune_count = schedule_prune_failed_sidecars(
+                        write_ops=write_ops,
+                        paths=[path for path in decision.get("failed_paths", []) if isinstance(path, Path)],
+                        reason="skip",
+                    )
+                    if prune_count > 0:
+                        _append_log(
+                            logs,
+                            "info",
+                            (
+                                f"Resume: prune stale FAILED on skip for {step_id} "
+                                f"{partition_id} count={prune_count}"
+                            ),
+                        )
                 return PartitionExecResult(
                     partition_id=partition_id,
                     write_ops=write_ops,
@@ -4609,8 +4634,6 @@ def execute_step_for_partitions(
                 "request_meta": request_meta,
             },
         )
-        _op_unlink_if_exists(write_ops, out_failed)
-        _op_unlink_if_exists(write_ops, out_failed_json)
         return PartitionExecResult(
             partition_id=partition_id,
             write_ops=write_ops,
@@ -4666,11 +4689,11 @@ def execute_step_for_partitions(
 
     for partition in ordered_partitions:
         partition_id = str(partition["id"])
+        out_json = raw_dir / f"{step_id}__{partition_id}.json"
+        out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+        out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
         result = results_by_partition.get(partition_id)
         if result is None:
-            out_json = raw_dir / f"{step_id}__{partition_id}.json"
-            out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
-            out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
             result = _worker_exception_result(
                 partition_id=partition_id,
                 out_json=out_json,
@@ -4711,6 +4734,30 @@ def execute_step_for_partitions(
                 logger.error("%s", message)
             else:
                 logger.info("%s", message)
+
+        if result.success:
+            valid_success, _validation_reason = validate_success_partition_output(
+                success_json_path=out_json,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                expected_artifact_names=output_artifacts,
+            )
+            if valid_success:
+                prune_ops: List[Dict[str, Any]] = []
+                prune_count = schedule_prune_failed_sidecars(
+                    write_ops=prune_ops,
+                    paths=list_failed_sidecars(raw_dir, step_id, partition_id),
+                    reason="after_success",
+                )
+                if prune_count > 0:
+                    logger.info(
+                        "Resume: prune stale FAILED after success for %s %s count=%s",
+                        step_id,
+                        partition_id,
+                        prune_count,
+                    )
+                    _apply_write_ops(prune_ops)
 
         step_recomputed_count += result.recomputed_delta
         step_dry_run_count += result.dry_run_delta
