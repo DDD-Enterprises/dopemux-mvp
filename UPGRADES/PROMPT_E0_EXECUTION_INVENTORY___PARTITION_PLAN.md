@@ -1,30 +1,43 @@
-MODE: Mechanical extractions unless explicitly marked ARBITRATION (GPT-5.2).
-NO INTERPRETATION: No "purpose", "likely", "should", "means".
-EVIDENCE REQUIRED: Every extracted item must include path + line_range.
-OUTPUT: JSON only for scan phases. Markdown only for arbitration phases.
-STABLE ORDER: Sort lists by path, then line_range[0], then id.
-CHUNKING: If output would exceed context, emit PART files and a CAP_NOTICES file.
-RECENCY: For docs/config duplicates, include mtime and source_scope metadata. Do not choose "winner" in scan phases.
+GOAL: inventory execution-relevant files + produce a partition plan sized for API caps.
 
-# Phase E0: Execution Inventory + Partition Plan
+SCOPE TARGETS (repo):
+	•	Root: Makefile, justfile, package.json, pyproject.toml, dopemux.toml, compose*.yml, docker-compose*.yml, Dockerfile*, .env*, README*, INSTALL*, QUICK_START*
+	•	Dirs: scripts/, tools/, compose/, docker/, .github/, .githooks/, .taskx/, .claude/, config/
+	•	Also include any bin/, cmd/, infra/ if present.
 
-Outputs:
-- EXEC_INVENTORY.json
-- EXEC_PARTITIONS.json
-- EXEC_TODO_QUEUE.json
+INPUT: file list + file contents for in-scope files only.
 
-Prompt:
-Enumerate all execution/control surfaces:
-- scripts: scripts/**, tools/**, install.sh, start-*.sh, verify_*.sh, run_*.sh
-- orchestration: compose*.yml, compose/**, tmux-*.yaml, .tmux.conf
-- Make/NPM: Makefile, package.json, package-lock.json, node scripts
-- CI: .github/workflows/**
+OUTPUTS (JSON):
+	•	EXEC_INVENTORY.json
+	•	EXEC_PARTITIONS.json
 
-For each file:
-- path, ext, size, mtime, sha256 (if feasible), first_40_nonempty_lines
+REQUIRED JSON SHAPE:
 
-Partition into buckets:
-- EXEC_SHELL_SCRIPTS, EXEC_MAKE, EXEC_TMUX, EXEC_COMPOSE, EXEC_CI, EXEC_NODE, EXEC_PY_RUNNERS
+{
+  "artifact_type": "EXEC_INVENTORY",
+  "generated_at": "...",
+  "root": "...",
+  "items": [
+    {"path":"...", "kind":"make|compose|script|ci|docker|config|doc|other", "size":123, "mtime":123, "notes":"..."}
+  ]
+}
 
-Produce EXEC_TODO_QUEUE.json with recommended order by dependency likelihood:
-(compose first, then start scripts, then verify scripts, then tmux).
+{
+  "artifact_type": "EXEC_PARTITIONS",
+  "generated_at": "...",
+  "partitions": [
+    {
+      "partition_id":"E_P0001",
+      "label":"compose-core",
+      "match_rules":["compose.yml","docker-compose*.yml","compose/*.yml"],
+      "max_files_hint":30,
+      "reason":"..."
+    }
+  ]
+}
+
+RULES:
+	•	No invention. If file does not exist, do not mention it.
+	•	Partition rules must be reproducible and non-overlapping where possible.
+	•	Prefer partitions by function (compose, docker, make/scripts, CI, config/env).
+	•	If repo is huge, cap partitions at ~20.
