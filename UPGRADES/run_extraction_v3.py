@@ -29,6 +29,8 @@ import requests
 PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
+COVERAGE_ROLLUP_FILENAME = "COVERAGE_ROLLUP.json"
+RESUME_PROOF_FILENAME = "RESUME_PROOF.json"
 RUNNER_SCRIPT = Path(__file__).resolve()
 # mapping from phase code to directory suffix
 PHASE_DIR_NAMES: Dict[str, str] = {
@@ -322,6 +324,16 @@ def determine_run_id(root: Path, override: Optional[str]) -> str:
     return load_run_id(root)
 
 
+def latest_run_id_path(root: Path) -> Path:
+    return root / "extraction/latest_run_id.txt"
+
+
+def persist_latest_run_id(root: Path, run_id: str) -> None:
+    id_file = latest_run_id_path(root)
+    id_file.parent.mkdir(parents=True, exist_ok=True)
+    id_file.write_text(run_id + "\n", encoding="utf-8")
+
+
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     """Return dict of run paths and ensure required folders exist."""
     base = root / "extraction/runs" / run_id
@@ -613,6 +625,9 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "run_id_override": args.run_id,
+            "run_id_source": "override" if args.run_id else "latest_run_id",
+            "no_write_latest": args.no_write_latest,
+            "latest_run_id_file": str(latest_run_id_path(root).resolve()),
             "doctor": args.doctor,
             "doctor_auth": args.doctor_auth,
             "preflight_providers": args.preflight_providers,
@@ -626,8 +641,9 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
     refresh_run_manifest_artifacts(dirs["root"], dirs)
 
 
-def write_runner_identity(root: Path, run_root: Path) -> None:
+def write_runner_identity(root: Path, run_root: Path, run_id: str) -> None:
     payload = {
+        "run_id": run_id,
         "generated_at": now_iso(),
         "git_sha": get_git_sha(root),
         "runner_script_path": str(RUNNER_SCRIPT.resolve()),
@@ -1454,6 +1470,7 @@ def normalize_step(
     prompt_spec: PromptSpec,
     phase_dir: Path,
     partitions: List[Dict[str, Any]],
+    step_exec_stats: Optional[Dict[str, Any]] = None,
 ) -> None:
     step_id = prompt_spec.step_id
     expected_artifacts = prompt_spec.output_artifacts
@@ -1594,6 +1611,10 @@ def normalize_step(
         "duplicate_ids": duplicate_ids[:200],
         "parse_failures": parse_failures,
         "required_item_keys": REQUIRED_ITEM_KEYS,
+        "resume_skipped_partitions": int((step_exec_stats or {}).get("resume_skipped", 0)),
+        "recomputed_partitions": int((step_exec_stats or {}).get("recomputed", 0)),
+        "dry_run_partitions": int((step_exec_stats or {}).get("dry_run", 0)),
+        "execution_failed_partitions": int((step_exec_stats or {}).get("failed", 0)),
     }
 
     write_json(qa_dir / f"{step_id}_QA.json", qa_payload)
@@ -2768,14 +2789,22 @@ def execute_step_for_partitions(
     partitions: List[Dict[str, Any]],
     phase_dir: Path,
     cfg: RunnerConfig,
-) -> int:
+) -> Dict[str, int]:
     step_id = prompt_spec.step_id
     prompt_path = prompt_spec.prompt_path
     output_artifacts = prompt_spec.output_artifacts
     prompt_text = safe_read(prompt_path)
     if not prompt_text:
         logger.error("Could not read prompt: %s", prompt_path)
-        return
+        return {
+            "partitions_total": len(partitions),
+            "resume_skipped": 0,
+            "recomputed": 0,
+            "dry_run": 0,
+            "ok": 0,
+            "failed": len(partitions),
+            "auth_failures": 0,
+        }
 
     raw_dir = phase_dir / "raw"
     provider, model_id, api_key_env = MODEL_ROUTING.get(
@@ -2794,6 +2823,9 @@ def execute_step_for_partitions(
     resume_skipped = 0
     step_success_count = 0
     step_auth_failures = 0
+    step_failed_count = 0
+    step_recomputed_count = 0
+    step_dry_run_count = 0
 
     for partition in partitions:
         partition_id = partition["id"]
@@ -2845,6 +2877,8 @@ def execute_step_for_partitions(
             current_budget = max(next_budget, 1024)
 
         if payload_bytes > cfg.max_request_bytes:
+            step_recomputed_count += 1
+            step_failed_count += 1
             over_by = payload_bytes - cfg.max_request_bytes
             gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
             endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", gemini_sequence[0])
@@ -2926,6 +2960,8 @@ def execute_step_for_partitions(
             )
 
         if cfg.dry_run:
+            step_recomputed_count += 1
+            step_dry_run_count += 1
             gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
             dry_mode = gemini_sequence[0] if provider == "gemini" else None
             endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", dry_mode)
@@ -3048,6 +3084,8 @@ def execute_step_for_partitions(
             expected_artifacts=output_artifacts,
         )
         if not artifacts:
+            step_recomputed_count += 1
+            step_failed_count += 1
             out_failed.write_text(response_text, encoding="utf-8")
             write_json(
                 out_failed_json,
@@ -3079,6 +3117,7 @@ def execute_step_for_partitions(
             continue
 
         step_success_count += 1
+        step_recomputed_count += 1
         write_json(
             out_json,
             {
@@ -3097,7 +3136,15 @@ def execute_step_for_partitions(
 
     if resume_skipped:
         logger.info("Resume: skipped %s existing outputs for step %s", resume_skipped, step_id)
-    return step_auth_failures
+    return {
+        "partitions_total": len(partitions),
+        "resume_skipped": resume_skipped,
+        "recomputed": step_recomputed_count,
+        "dry_run": step_dry_run_count,
+        "ok": step_success_count,
+        "failed": step_failed_count,
+        "auth_failures": step_auth_failures,
+    }
 
 
 def _run_phase_inner(
@@ -3182,14 +3229,14 @@ def _run_phase_inner(
                         f"endpoint={probe.get('endpoint_effective')} "
                         f"mode={probe.get('gemini_auth_mode_effective')}."
                     )
-        step_auth_failures = execute_step_for_partitions(
+        step_stats = execute_step_for_partitions(
             phase=phase,
             prompt_spec=prompt_spec,
             partitions=partitions,
             phase_dir=phase_dir,
             cfg=cfg,
         )
-        phase_auth_failures += step_auth_failures
+        phase_auth_failures += int(step_stats.get("auth_failures", 0))
         if phase_auth_failures >= cfg.phase_auth_fail_threshold:
             raise RuntimeError(
                 f"Phase {phase} auth circuit breaker triggered: auth_failures={phase_auth_failures} "
@@ -3201,6 +3248,7 @@ def _run_phase_inner(
             prompt_spec=prompt_spec,
             phase_dir=phase_dir,
             partitions=partitions,
+            step_exec_stats=step_stats,
         )
 
 
@@ -3387,9 +3435,152 @@ def generate_coverage_report(root: Path, dirs: Dict[str, Path], run_id: str, pha
         "phases": {row["phase"]: row for row in phase_rows},
         "required_artifact_coverage": required_status,
     }
-    write_json(dirs["root"] / PROOF_PACK_FILENAME, payload)
+    write_json(dirs["root"] / "COVERAGE_REPORT.json", payload)
+    proof_path = dirs["root"] / PROOF_PACK_FILENAME
+    proof = _load_json(proof_path)
+    proof["coverage_report"] = payload
+    proof["updated_at"] = now_iso()
+    write_json(proof_path, proof)
     print(json.dumps(payload, indent=2))
     return 0
+
+
+def _read_step_qa_payloads(phase_dir: Path) -> List[Dict[str, Any]]:
+    qa_dir = phase_dir / "qa"
+    rows: List[Dict[str, Any]] = []
+    if not qa_dir.exists():
+        return rows
+    for path in sorted(qa_dir.glob("*_QA.json")):
+        row = _load_json(path)
+        if row:
+            rows.append(row)
+    return rows
+
+
+def _expected_artifact_present(norm_dir: Path, artifact_name: str) -> bool:
+    if ".partX." in artifact_name:
+        pattern = artifact_name.replace(".partX.", ".part*.")
+        return any(entry.is_file() for entry in norm_dir.glob(pattern))
+    return (norm_dir / artifact_name).is_file()
+
+
+def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]:
+    prompts = get_phase_prompts(phase)
+    expected_outputs = {
+        spec.step_id: list(spec.output_artifacts)
+        for spec in prompts
+    }
+    raw_dir = phase_dir / "raw"
+    norm_dir = phase_dir / "norm"
+    qa_rows = _read_step_qa_payloads(phase_dir)
+
+    observed_raw = sorted(entry.name for entry in raw_dir.iterdir() if entry.is_file()) if raw_dir.exists() else []
+    observed_norm = sorted(entry.name for entry in norm_dir.iterdir() if entry.is_file()) if norm_dir.exists() else []
+
+    counts = {
+        "ok": 0,
+        "failed": 0,
+        "skipped": 0,
+        "dry_run": 0,
+    }
+    for row in qa_rows:
+        row_recomputed = int(row.get("recomputed_partitions", 0))
+        row_failed = int(row.get("execution_failed_partitions", row.get("raw_failed", 0)))
+        row_skipped = int(row.get("resume_skipped_partitions", 0))
+        row_dry_run = int(row.get("dry_run_partitions", 0))
+        row_ok = max(0, row_recomputed - row_failed - row_dry_run)
+
+        counts["ok"] += row_ok
+        counts["failed"] += row_failed
+        counts["skipped"] += row_skipped
+        counts["dry_run"] += row_dry_run
+
+    missing_required: List[Dict[str, str]] = []
+    for step_id, artifacts in expected_outputs.items():
+        for artifact_name in artifacts:
+            if not _expected_artifact_present(norm_dir, artifact_name):
+                missing_required.append({"step_id": step_id, "artifact": artifact_name})
+
+    payload = {
+        "generated_at": now_iso(),
+        "phase": phase,
+        "expected_outputs": expected_outputs,
+        "observed_outputs": {
+            "raw": observed_raw,
+            "norm": observed_norm,
+        },
+        "counts": counts,
+        "missing_required_artifacts": missing_required,
+        "status": "PASS" if not missing_required else "FAIL",
+    }
+    write_json(phase_dir / "qa" / f"PHASE_{phase}_COVERAGE.json", payload)
+    return payload
+
+
+def write_coverage_rollup(root: Path, dirs: Dict[str, Path], run_id: str) -> Dict[str, Any]:
+    phase_rollup: Dict[str, Any] = {}
+    missing_total = 0
+    for phase in PHASES:
+        coverage_path = dirs[phase] / "qa" / f"PHASE_{phase}_COVERAGE.json"
+        if not coverage_path.exists():
+            continue
+        payload = _load_json(coverage_path)
+        missing = payload.get("missing_required_artifacts")
+        missing_count = len(missing) if isinstance(missing, list) else 0
+        missing_total += missing_count
+        phase_rollup[phase] = {
+            "status": payload.get("status", "UNKNOWN"),
+            "missing_required_artifacts_count": missing_count,
+            "missing_required_artifacts": missing if isinstance(missing, list) else [],
+            "counts": payload.get("counts", {}),
+            "coverage_file": str(coverage_path.resolve()),
+        }
+
+    payload = {
+        "generated_at": now_iso(),
+        "run_id": run_id,
+        "phases": phase_rollup,
+        "missing_required_artifacts_total": missing_total,
+    }
+    write_json(dirs["root"] / COVERAGE_ROLLUP_FILENAME, payload)
+    return payload
+
+
+def write_resume_proof(dirs: Dict[str, Path], run_id: str) -> Dict[str, Any]:
+    per_phase: Dict[str, Any] = {}
+    total_skipped = 0
+    total_recomputed = 0
+    for phase in PHASES:
+        phase_dir = dirs[phase]
+        inventory_path = phase_dir / "inputs" / "INVENTORY.json"
+        partitions_path = phase_dir / "inputs" / "PARTITIONS.json"
+        qa_rows = _read_step_qa_payloads(phase_dir)
+        skipped = sum(int(row.get("resume_skipped_partitions", 0)) for row in qa_rows)
+        recomputed = sum(int(row.get("recomputed_partitions", 0)) for row in qa_rows)
+        if not qa_rows and not inventory_path.exists() and not partitions_path.exists():
+            continue
+        total_skipped += skipped
+        total_recomputed += recomputed
+        per_phase[phase] = {
+            "resume_skipped_partitions": skipped,
+            "recomputed_partitions": recomputed,
+            "inventory_sha256": sha256_text(inventory_path) if inventory_path.exists() else None,
+            "partitions_sha256": sha256_text(partitions_path) if partitions_path.exists() else None,
+            "inventory_file": str(inventory_path.resolve()) if inventory_path.exists() else None,
+            "partitions_file": str(partitions_path.resolve()) if partitions_path.exists() else None,
+        }
+
+    payload = {
+        "generated_at": now_iso(),
+        "run_id": run_id,
+        "totals": {
+            "resume_skipped_partitions": total_skipped,
+            "recomputed_partitions": total_recomputed,
+        },
+        "phases": per_phase,
+    }
+    write_json(dirs["root"] / RESUME_PROOF_FILENAME, payload)
+    return payload
 
 
 def print_config(
@@ -3436,6 +3627,7 @@ def print_config(
             "retry_base_seconds": args.retry_base_seconds,
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
+            "no_write_latest": args.no_write_latest,
         },
         "limits": {
             "max_files_docs": cfg.max_files_docs,
@@ -3482,6 +3674,19 @@ def update_proof_pack(
     }
     proof["finished_at"] = phase_finished_at
     proof["updated_at"] = now_iso()
+    doctor_dir = root / "extraction" / "doctor"
+    auth_doctor = doctor_dir / "AUTH_DOCTOR.json"
+    full_doctor = doctor_dir / "DOCTOR_FULL.json"
+    routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
+    coverage_rollup = dirs["root"] / COVERAGE_ROLLUP_FILENAME
+    resume_proof = dirs["root"] / RESUME_PROOF_FILENAME
+    proof["linked_artifacts"] = {
+        "coverage_rollup": str(coverage_rollup.resolve()) if coverage_rollup.exists() else None,
+        "resume_proof": str(resume_proof.resolve()) if resume_proof.exists() else None,
+        "run_routing_fingerprint": str(routing_fp.resolve()) if routing_fp.exists() else None,
+        "doctor_auth": str(auth_doctor.resolve()) if auth_doctor.exists() else None,
+        "doctor_full": str(full_doctor.resolve()) if full_doctor.exists() else None,
+    }
     write_json(proof_path, proof)
 
 
@@ -3721,6 +3926,7 @@ def main() -> None:
     parser.add_argument("--retry-max-seconds", type=float, default=30.0)
     parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
     parser.add_argument("--run-id", type=str)
+    parser.add_argument("--no-write-latest", action="store_true")
     parser.add_argument("--doctor", action="store_true")
     parser.add_argument("--doctor-auth", action="store_true")
     parser.add_argument("--preflight-providers", action="store_true")
@@ -3745,6 +3951,8 @@ def main() -> None:
     root = Path.cwd()
     try:
         run_id = determine_run_id(root, args.run_id)
+        if not args.no_write_latest:
+            persist_latest_run_id(root, run_id)
         dirs = get_run_dirs(root, run_id)
     except Exception as exc:
         logger.error("Setup failed: %s", exc)
@@ -3772,7 +3980,7 @@ def main() -> None:
     )
 
     write_run_manifest(root, dirs, run_id, args)
-    write_runner_identity(root, dirs["root"])
+    write_runner_identity(root, dirs["root"], run_id)
     phase_sequence = resolve_phase_list(args.phase)
     if phase_sequence:
         write_run_routing_fingerprint(dirs["root"], run_id, cfg, phase_sequence)
@@ -3791,6 +3999,10 @@ def main() -> None:
         sys.exit(print_promptpack(targets))
     if args.coverage_report:
         targets = phase_sequence if phase_sequence else PHASES
+        for phase in targets:
+            write_phase_coverage_manifest(phase, dirs[phase])
+        write_coverage_rollup(root, dirs, run_id)
+        write_resume_proof(dirs, run_id)
         sys.exit(generate_coverage_report(root, dirs, run_id, targets))
 
     if args.verify_phase_output:
@@ -3846,6 +4058,9 @@ def main() -> None:
             sys.exit(1)
         phase_finished_at = now_iso()
         counts = gather_phase_counts(dirs[phase])
+        write_phase_coverage_manifest(phase, dirs[phase])
+        write_coverage_rollup(root, dirs, run_id)
+        write_resume_proof(dirs, run_id)
         update_proof_pack(root, dirs, run_id, run_started_at, phase, counts, phase_started_at, phase_finished_at)
 
 
