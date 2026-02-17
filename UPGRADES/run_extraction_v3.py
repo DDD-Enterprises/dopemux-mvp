@@ -32,6 +32,8 @@ VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
 COVERAGE_ROLLUP_FILENAME = "COVERAGE_ROLLUP.json"
 RESUME_PROOF_FILENAME = "RESUME_PROOF.json"
+PROMPTSET_BLOCKED_REASON = "PROMPTSET_INVALID"
+PROMPTSET_BLOCKED_EXIT_CODE = 2
 RUNNER_SCRIPT = Path(__file__).resolve()
 # mapping from phase code to directory suffix
 PHASE_DIR_NAMES: Dict[str, str] = {
@@ -697,8 +699,9 @@ def write_run_manifest(
     args: argparse.Namespace,
     run_context: RunContext,
     phases: List[str],
-) -> None:
+) -> Dict[str, Any]:
     prompt_report = promptset_fingerprint(phases)
+    run_blocked = bool(prompt_report.get("blocked_promptset"))
     manifest = {
         "run_id": run_id,
         "generated_at": now_iso(),
@@ -748,11 +751,19 @@ def write_run_manifest(
         "prompt_missing": prompt_report["prompt_missing"],
         "prompt_unreadable": prompt_report["prompt_unreadable"],
         "prompt_hash_errors": prompt_report["prompt_hash_errors"],
+        "prompt_failures": prompt_report.get("prompt_failures", []),
+        "prompt_failures_count": int(prompt_report.get("prompt_failures_count", 0)),
         "promptset_sha256": prompt_report["promptset_sha256"],
-        "phase_status": "ready",
+        "run_status": "BLOCKED" if run_blocked else "OK",
+        "phase_status": "blocked_promptset" if run_blocked else "ready",
+        "blocked_promptset": run_blocked,
     }
+    if run_blocked:
+        manifest["blocked_reason"] = PROMPTSET_BLOCKED_REASON
+        manifest["blocked"] = _blocked_promptset_payload(prompt_report, at="preflight")
     write_json(dirs["root"] / "RUN_MANIFEST.json", manifest)
     refresh_run_manifest_artifacts(dirs["root"], dirs)
+    return prompt_report
 
 
 def write_runner_identity(root: Path, run_root: Path, run_id: str) -> None:
@@ -799,12 +810,17 @@ def update_run_manifest_promptset_block(
             payload = json.loads(manifest_path.read_text(encoding="utf-8"))
         except Exception:
             payload = {}
+    payload["run_status"] = "BLOCKED"
     payload["phase_status"] = "blocked_promptset"
-    payload["blocked_reason"] = "prompt_missing_or_unreadable"
+    payload["blocked_promptset"] = True
+    payload["blocked_reason"] = PROMPTSET_BLOCKED_REASON
     payload["blocked_phase"] = phase
     payload["blocked_prompts_missing"] = prompt_report.get("prompt_missing", [])
     payload["blocked_prompts_unreadable"] = prompt_report.get("prompt_unreadable", [])
     payload["blocked_prompt_hash_errors"] = prompt_report.get("prompt_hash_errors", [])
+    payload["prompt_failures"] = prompt_report.get("prompt_failures", [])
+    payload["prompt_failures_count"] = int(prompt_report.get("prompt_failures_count", 0))
+    payload["blocked"] = _blocked_promptset_payload(prompt_report, at="phase_execution")
     payload["prompt_hash_mode"] = PROMPT_HASH_MODE
     payload["promptset_sha256"] = None
     payload["updated_at"] = now_iso()
@@ -820,15 +836,17 @@ def write_promptset_blocked_marker(
         "generated_at": now_iso(),
         "phase": phase,
         "status": "blocked_promptset",
-        "blocked_reason": "prompt_missing_or_unreadable",
+        "blocked_reason": PROMPTSET_BLOCKED_REASON,
         "prompt_hash_mode": PROMPT_HASH_MODE,
         "promptset_sha256": None,
         "prompt_hashes": prompt_report.get("prompt_hashes", []),
         "prompt_missing": prompt_report.get("prompt_missing", []),
         "prompt_unreadable": prompt_report.get("prompt_unreadable", []),
         "prompt_hash_errors": prompt_report.get("prompt_hash_errors", []),
+        "prompt_failures": prompt_report.get("prompt_failures", []),
         "missing_prompts_count": int(prompt_report.get("missing_prompts_count", 0)),
         "unreadable_prompts_count": int(prompt_report.get("unreadable_prompts_count", 0)),
+        "prompt_failures_count": int(prompt_report.get("prompt_failures_count", 0)),
     }
     write_json(phase_dir / "qa" / f"PHASE_{phase}_BLOCKED_PROMPTSET.json", payload)
 
@@ -1007,11 +1025,53 @@ def _missing_prompt_glob(step_id: str) -> str:
     return str((Path("UPGRADES") / f"PROMPT_{step_id}_*.md").resolve())
 
 
+def _truncate_exception_message(message: str, limit: int = 500) -> str:
+    return message[:limit]
+
+
+def _prompt_failure_entry(
+    *,
+    kind: str,
+    prompt_id: str,
+    path: Path,
+    exception_type: str,
+    exception_message: str,
+) -> Dict[str, str]:
+    return {
+        "kind": kind,
+        "prompt_id": prompt_id,
+        "path": str(path.resolve()),
+        "exception_type": exception_type,
+        "exception_message": _truncate_exception_message(exception_message),
+    }
+
+
+def _blocked_promptset_payload(prompt_report: Dict[str, Any], at: str) -> Dict[str, Any]:
+    return {
+        "reason": PROMPTSET_BLOCKED_REASON,
+        "at": at,
+        "promptset": {
+            "status": "blocked",
+            "failures": prompt_report.get("prompt_failures", []),
+        },
+    }
+
+
+def _resume_blocked_payload(prompt_report: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "reason": PROMPTSET_BLOCKED_REASON,
+        "promptset_hash": None,
+        "promptset_status": "blocked",
+        "prompt_failures": prompt_report.get("prompt_failures", []),
+    }
+
+
 def _prompt_hash_report_for_phase(phase: str, specs: List[PromptSpec]) -> Dict[str, Any]:
     prompt_hashes: List[Dict[str, str]] = []
     prompt_missing: List[str] = []
     prompt_unreadable: List[Dict[str, str]] = []
     prompt_hash_errors: List[str] = []
+    prompt_failures: List[Dict[str, str]] = []
 
     expected_steps = REQUIRED_PROMPT_STEP_IDS.get(phase, set())
     observed_steps = {spec.step_id for spec in specs}
@@ -1019,22 +1079,62 @@ def _prompt_hash_report_for_phase(phase: str, specs: List[PromptSpec]) -> Dict[s
         missing_pattern = _missing_prompt_glob(step_id)
         prompt_missing.append(missing_pattern)
         prompt_hash_errors.append(f"prompt_missing: {missing_pattern}")
+        prompt_failures.append(
+            _prompt_failure_entry(
+                kind="MISSING_PROMPT",
+                prompt_id=step_id,
+                path=Path(missing_pattern),
+                exception_type="FileNotFoundError",
+                exception_message=f"No prompt file found for required step '{step_id}'.",
+            )
+        )
 
     for spec in sorted(specs, key=lambda row: (row.step_id, str(row.prompt_path))):
         path = spec.prompt_path.resolve()
         if not path.exists():
             prompt_missing.append(str(path))
             prompt_hash_errors.append(f"prompt_missing: {path}")
+            prompt_failures.append(
+                _prompt_failure_entry(
+                    kind="MISSING_PROMPT",
+                    prompt_id=spec.step_id,
+                    path=path,
+                    exception_type="FileNotFoundError",
+                    exception_message=f"Prompt file does not exist: {path}",
+                )
+            )
             continue
         try:
-            digest = sha256_file_strict(path)
-        except RuntimeError as exc:
-            prompt_unreadable.append({"path": str(path), "error": str(exc)})
-            prompt_hash_errors.append(str(exc))
+            digest = sha256_bytes(path.read_bytes())
+        except Exception as exc:
+            error_message = _truncate_exception_message(str(exc))
+            prompt_unreadable.append(
+                {
+                    "prompt_id": spec.step_id,
+                    "path": str(path),
+                    "error": f"{type(exc).__name__}: {error_message}",
+                }
+            )
+            prompt_hash_errors.append(
+                f"prompt_unreadable: {path} :: {type(exc).__name__}: {error_message}"
+            )
+            prompt_failures.append(
+                _prompt_failure_entry(
+                    kind="UNREADABLE_PROMPT",
+                    prompt_id=spec.step_id,
+                    path=path,
+                    exception_type=type(exc).__name__,
+                    exception_message=error_message,
+                )
+            )
             continue
-        prompt_hashes.append({"path": str(path), "sha256": digest})
+        prompt_hashes.append({"prompt_id": spec.step_id, "path": str(path), "sha256": digest})
 
-    blocked = bool(prompt_missing or prompt_unreadable)
+    prompt_failures = sorted(
+        prompt_failures,
+        key=lambda row: (row["prompt_id"], row["path"], row["kind"]),
+    )
+    blocked = bool(prompt_failures)
     promptset_sha256: Optional[str] = None
     if not blocked:
         normalized = json.dumps(
@@ -1053,9 +1153,11 @@ def _prompt_hash_report_for_phase(phase: str, specs: List[PromptSpec]) -> Dict[s
         "prompt_missing": sorted(set(prompt_missing)),
         "prompt_unreadable": sorted(prompt_unreadable, key=lambda row: row["path"]),
         "prompt_hash_errors": prompt_hash_errors,
+        "prompt_failures": prompt_failures,
         "blocked_promptset": blocked,
         "missing_prompts_count": len(set(prompt_missing)),
         "unreadable_prompts_count": len(prompt_unreadable),
+        "prompt_failures_count": len(prompt_failures),
     }
 
 
@@ -1065,6 +1167,7 @@ def promptset_fingerprint(phases: Iterable[str]) -> Dict[str, Any]:
     prompt_missing: List[str] = []
     prompt_unreadable: List[Dict[str, str]] = []
     prompt_hash_errors: List[str] = []
+    prompt_failures: List[Dict[str, str]] = []
 
     for phase in active_phases:
         report = _prompt_hash_report_for_phase(phase, get_phase_prompts(phase))
@@ -1072,8 +1175,13 @@ def promptset_fingerprint(phases: Iterable[str]) -> Dict[str, Any]:
         prompt_missing.extend(report["prompt_missing"])
         prompt_unreadable.extend(report["prompt_unreadable"])
         prompt_hash_errors.extend(report["prompt_hash_errors"])
+        prompt_failures.extend(report.get("prompt_failures", []))
 
-    blocked = bool(prompt_missing or prompt_unreadable)
+    prompt_failures = sorted(
+        prompt_failures,
+        key=lambda row: (row["prompt_id"], row["path"], row["kind"]),
+    )
+    blocked = bool(prompt_failures)
     promptset_sha256: Optional[str] = None
     if not blocked:
         normalized = json.dumps(
@@ -1092,9 +1200,11 @@ def promptset_fingerprint(phases: Iterable[str]) -> Dict[str, Any]:
         "prompt_missing": sorted(set(prompt_missing)),
         "prompt_unreadable": sorted(prompt_unreadable, key=lambda row: row["path"]),
         "prompt_hash_errors": prompt_hash_errors,
+        "prompt_failures": prompt_failures,
         "blocked_promptset": blocked,
         "missing_prompts_count": len(set(prompt_missing)),
         "unreadable_prompts_count": len(prompt_unreadable),
+        "prompt_failures_count": len(prompt_failures),
     }
 
 
@@ -3426,7 +3536,7 @@ def _run_phase_inner(
         if len(bad_paths) > 3:
             preview += ", ..."
         raise PromptsetBlockedError(
-            f"Promptset blocked for phase {phase}: missing/unreadable prompts ({preview})"
+            f"Promptset blocked for phase {phase}: invalid promptset ({preview})"
         )
 
     if precollected_items is not None:
@@ -3846,7 +3956,29 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
     return payload
 
 
-def write_coverage_rollup(root: Path, dirs: Dict[str, Path], run_id: str) -> Dict[str, Any]:
+def write_coverage_rollup(
+    root: Path,
+    dirs: Dict[str, Path],
+    run_id: str,
+    promptset_report: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    del root
+    blocked_promptset = bool((promptset_report or {}).get("blocked_promptset"))
+    if blocked_promptset:
+        payload = {
+            "generated_at": now_iso(),
+            "run_id": run_id,
+            "phases": {},
+            "missing_required_artifacts_total": 0,
+            "run_status": "BLOCKED",
+            "blocked_reason": PROMPTSET_BLOCKED_REASON,
+            "blocked_promptset": True,
+            "prompt_failures_count": int((promptset_report or {}).get("prompt_failures_count", 0)),
+            "phases_executed_count": 0,
+        }
+        write_json(dirs["root"] / COVERAGE_ROLLUP_FILENAME, payload)
+        return payload
+
     phase_rollup: Dict[str, Any] = {}
     missing_total = 0
     for phase in PHASES:
@@ -3871,12 +4003,22 @@ def write_coverage_rollup(root: Path, dirs: Dict[str, Path], run_id: str) -> Dic
         "run_id": run_id,
         "phases": phase_rollup,
         "missing_required_artifacts_total": missing_total,
+        "run_status": "BLOCKED" if blocked_promptset else "OK",
+        "blocked_reason": PROMPTSET_BLOCKED_REASON if blocked_promptset else None,
+        "blocked_promptset": blocked_promptset,
+        "prompt_failures_count": int((promptset_report or {}).get("prompt_failures_count", 0)),
+        "phases_executed_count": 0 if blocked_promptset else len(phase_rollup),
     }
     write_json(dirs["root"] / COVERAGE_ROLLUP_FILENAME, payload)
     return payload
 
 
-def write_resume_proof(dirs: Dict[str, Path], run_id: str, phases: Iterable[str]) -> Dict[str, Any]:
+def write_resume_proof(
+    dirs: Dict[str, Path],
+    run_id: str,
+    phases: Iterable[str],
+    promptset_report: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     active_phases = sorted(set(phases))
     per_phase: Dict[str, Any] = {}
     total_skipped = 0
@@ -3901,7 +4043,8 @@ def write_resume_proof(dirs: Dict[str, Path], run_id: str, phases: Iterable[str]
             "partitions_file": str(partitions_path.resolve()) if partitions_path.exists() else None,
         }
 
-    promptset = promptset_fingerprint(active_phases)
+    promptset = promptset_report if promptset_report is not None else promptset_fingerprint(active_phases)
+    blocked_promptset = bool(promptset.get("blocked_promptset"))
     payload = {
         "generated_at": now_iso(),
         "run_id": run_id,
@@ -3917,12 +4060,35 @@ def write_resume_proof(dirs: Dict[str, Path], run_id: str, phases: Iterable[str]
         "prompt_missing": promptset["prompt_missing"],
         "prompt_unreadable": promptset["prompt_unreadable"],
         "prompt_hash_errors": promptset["prompt_hash_errors"],
+        "prompt_failures": promptset.get("prompt_failures", []),
         "blocked_promptset": promptset["blocked_promptset"],
         "missing_prompts_count": promptset["missing_prompts_count"],
         "unreadable_prompts_count": promptset["unreadable_prompts_count"],
+        "prompt_failures_count": promptset.get("prompt_failures_count", 0),
+        "resume_status": "blocked" if blocked_promptset else "ready",
     }
+    if blocked_promptset:
+        payload["blocked_reason"] = PROMPTSET_BLOCKED_REASON
+        payload["blocked"] = _resume_blocked_payload(promptset)
     write_json(dirs["root"] / RESUME_PROOF_FILENAME, payload)
     return payload
+
+
+def apply_promptset_preflight_block(
+    root: Path,
+    dirs: Dict[str, Path],
+    run_id: str,
+    phases: List[str],
+    prompt_report: Dict[str, Any],
+    run_started_at: str,
+) -> None:
+    for phase in phases:
+        phase_report = _prompt_hash_report_for_phase(phase, get_phase_prompts(phase))
+        if phase_report.get("blocked_promptset"):
+            write_promptset_blocked_marker(phase, dirs[phase], phase_report)
+    write_coverage_rollup(root, dirs, run_id, prompt_report)
+    write_resume_proof(dirs, run_id, phases, promptset_report=prompt_report)
+    write_blocked_promptset_proof_pack(root, dirs, run_id, run_started_at, phases, prompt_report)
 
 
 def print_config(
@@ -4039,6 +4205,48 @@ def update_proof_pack(
         "run_routing_fingerprint": str(routing_fp.resolve()) if routing_fp.exists() else None,
         "doctor_auth": str(auth_doctor.resolve()) if auth_doctor.exists() else None,
         "doctor_full": str(full_doctor.resolve()) if full_doctor.exists() else None,
+    }
+    write_json(proof_path, proof)
+
+
+def write_blocked_promptset_proof_pack(
+    root: Path,
+    dirs: Dict[str, Path],
+    run_id: str,
+    run_started_at: str,
+    phases: List[str],
+    prompt_report: Dict[str, Any],
+) -> None:
+    refresh_run_manifest_artifacts(dirs["root"], dirs)
+    proof_path = dirs["root"] / PROOF_PACK_FILENAME
+    proof: Dict[str, Any] = {}
+    if proof_path.exists():
+        try:
+            proof = json.loads(proof_path.read_text(encoding="utf-8") or "{}")
+        except Exception:
+            proof = {}
+
+    blocked_at = now_iso()
+    coverage_rollup = dirs["root"] / COVERAGE_ROLLUP_FILENAME
+    resume_proof = dirs["root"] / RESUME_PROOF_FILENAME
+    routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
+    proof["run_id"] = run_id
+    proof["git_sha"] = get_git_sha(root)
+    proof["runner_sha256"] = sha256_text(RUNNER_SCRIPT)
+    proof["argv"] = sys.argv
+    proof["python_version"] = platform.python_version()
+    proof["cwd"] = str(root.resolve())
+    proof["started_at"] = run_started_at
+    proof["finished_at"] = blocked_at
+    proof["updated_at"] = blocked_at
+    proof["run_status"] = "BLOCKED"
+    proof["blocked_reason"] = PROMPTSET_BLOCKED_REASON
+    proof["blocked"] = _blocked_promptset_payload(prompt_report, at="preflight")
+    proof["phases"] = {phase: {"status": "NOT_EXECUTED"} for phase in phases}
+    proof["linked_artifacts"] = {
+        "coverage_rollup": str(coverage_rollup.resolve()) if coverage_rollup.exists() else None,
+        "resume_proof": str(resume_proof.resolve()) if resume_proof.exists() else None,
+        "run_routing_fingerprint": str(routing_fp.resolve()) if routing_fp.exists() else None,
     }
     write_json(proof_path, proof)
 
@@ -4333,13 +4541,39 @@ def main() -> None:
     )
 
     phase_sequence = resolve_phase_list(args.phase)
-    write_run_manifest(root, dirs, run_id, args, run_context, phase_sequence or PHASES)
+    prompt_report = write_run_manifest(root, dirs, run_id, args, run_context, phase_sequence or PHASES)
     write_runner_identity(root, dirs["root"], run_id)
     if phase_sequence:
         write_run_routing_fingerprint(dirs["root"], run_id, cfg, phase_sequence)
+    run_started_at = now_iso()
     if args.print_config:
         print_config(args, root, run_id, dirs, cfg, phase_sequence, run_context)
         sys.exit(0)
+    should_gate_promptset = bool(phase_sequence) and (
+        args.preflight_providers
+        or args.doctor
+        or not (
+            args.doctor_auth
+            or args.print_promptpack
+            or args.coverage_report
+            or args.verify_phase_output
+        )
+    )
+    if should_gate_promptset and prompt_report.get("blocked_promptset"):
+        apply_promptset_preflight_block(
+            root=root,
+            dirs=dirs,
+            run_id=run_id,
+            phases=phase_sequence,
+            prompt_report=prompt_report,
+            run_started_at=run_started_at,
+        )
+        logger.error(
+            "Run blocked before execution: reason=%s prompt_failures=%s",
+            PROMPTSET_BLOCKED_REASON,
+            int(prompt_report.get("prompt_failures_count", 0)),
+        )
+        sys.exit(PROMPTSET_BLOCKED_EXIT_CODE)
     if args.doctor_auth:
         sys.exit(run_auth_doctor(root, args, cfg))
     if args.preflight_providers:
@@ -4397,7 +4631,6 @@ def main() -> None:
         "Z": run_phase_Z,
     }
 
-    run_started_at = now_iso()
     for phase in phases:
         phase_started_at = now_iso()
         run_phase = runners.get(phase)
