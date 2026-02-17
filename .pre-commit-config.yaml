@@ -102,11 +102,12 @@ repos:
 
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
-              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|extraction/|out/) ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
 
               # Config/state and tooling docs
               if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi
+              if [[ "$normalized" =~ /\.taskx/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.conport/|conport_export/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.github/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(examples/) ]]; then continue; fi
