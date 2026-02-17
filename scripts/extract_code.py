@@ -3,8 +3,8 @@ import json
 import hashlib
 import re
 
-REPO_DIR = "/Users/hue/code/dopemux-mvp"
-MEGA_DIR = "/Users/hue/code/dopemux-mvp/MEGA"
+REPO_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+MEGA_DIR = os.path.join(REPO_DIR, "reports")
 
 def get_sha256(path):
     hash_sha256 = hashlib.sha256()
