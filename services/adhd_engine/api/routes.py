@@ -126,55 +126,62 @@ async def get_cache_instance():
     return _cache_instance
 
 # Prometheus metrics (only if available)
+# Guard against duplicate registration during testing
+API_REQUESTS_TOTAL = None
+CACHE_HITS_TOTAL = None
+CACHE_MISSES_TOTAL = None
+API_REQUEST_DURATION = None
+ML_PREDICTIONS_TOTAL = None
+ML_PREDICTION_CONFIDENCE = None
+CACHE_SIZE = None
+
 if PROMETHEUS_AVAILABLE:
-    # API call counters
-    API_REQUESTS_TOTAL = Counter(
-        'adhd_api_requests_total',
-        'Total number of API requests',
-        ['endpoint', 'method', 'status']
-    )
+    try:
+        # API call counters
+        API_REQUESTS_TOTAL = Counter(
+            'adhd_api_requests_total',
+            'Total number of API requests',
+            ['endpoint', 'method', 'status']
+        )
 
-    # Cache performance metrics
-    CACHE_HITS_TOTAL = Counter(
-        'adhd_cache_hits_total',
-        'Total number of cache hits',
-        ['endpoint']
-    )
+        # Cache performance metrics
+        CACHE_HITS_TOTAL = Counter(
+            'adhd_cache_hits_total',
+            'Total number of cache hits',
+            ['endpoint']
+        )
 
-    CACHE_MISSES_TOTAL = Counter(
-        'adhd_cache_misses_total',
-        'Total number of cache misses',
-        ['endpoint']
-    )
+        CACHE_MISSES_TOTAL = Counter(
+            'adhd_cache_misses_total',
+            'Total number of cache misses',
+            ['endpoint']
+        )
 
-    # Response time histograms
-    API_REQUEST_DURATION = Histogram(
-        'adhd_api_request_duration_seconds',
-        'API request duration in seconds',
-        ['endpoint'],
-        buckets=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0]
-    )
+        # Response time histograms
+        API_REQUEST_DURATION = Histogram(
+            'adhd_api_request_duration_seconds',
+            'API request duration in seconds',
+            ['endpoint'],
+            buckets=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0]
+        )
 
-    # ML prediction metrics
-    ML_PREDICTIONS_TOTAL = Counter(
-        'adhd_ml_predictions_total',
-        'Total number of ML predictions made',
-        ['endpoint', 'prediction_type']
-    )
+        # ML prediction metrics
+        ML_PREDICTIONS_TOTAL = Counter(
+            'adhd_ml_predictions_total',
+            'Total number of ML predictions made',
+            ['endpoint', 'prediction_type']
+        )
 
-    ML_PREDICTION_CONFIDENCE = Histogram(
+        ML_PREDICTION_CONFIDENCE = Histogram(
         'adhd_ml_prediction_confidence',
         'ML prediction confidence scores',
         ['endpoint'],
         buckets=[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     )
-
-    # Cache size gauge
-    CACHE_SIZE = Gauge(
-        'adhd_cache_entries',
-        'Current number of cache entries',
-        ['cache_type']
-    )
+    except ValueError as e:
+        # Metrics already registered (common in testing)
+        logger.warning(f"Prometheus metrics already registered: {e}")
+        PROMETHEUS_AVAILABLE = False
 
 else:
     # Dummy metrics if Prometheus not available
@@ -184,6 +191,7 @@ else:
     API_REQUEST_DURATION = None
     ML_PREDICTIONS_TOTAL = None
     ML_PREDICTION_CONFIDENCE = None
+    CACHE_SIZE = None
     CACHE_SIZE = None
 
 def _make_cache_key(endpoint: str, user_id: str, **params) -> str:
