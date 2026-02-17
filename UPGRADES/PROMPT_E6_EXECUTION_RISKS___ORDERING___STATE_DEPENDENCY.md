@@ -1,24 +1,11 @@
-GOAL: identify execution risks from evidence (not speculation).
+# PROMPT_E6 — Execution risks + ordering/state dependencies
 
-OUTPUT (JSON):
-	•	EXEC_EXECUTION_RISKS.json
+ROLE: Execution plane extractor.
+GOAL: record determinism/portability risks related to ordering, state files, env, time, or non-determinism.
 
-MUST FLAG:
-	•	Ordering sensitivity (must run A before R, etc.) if enforced by code/scripts/docs
-	•	“Hidden state” requirements (needs ~/.dopemux, needs docker volume, needs running service)
-	•	Network assumptions (ports, hostnames) if present
-	•	“Retry needed” surfaces (LLM calls, rate limit notes) if present
-	•	Any failure modes that are explicitly described
-
-FORMAT:
-
-{
-  "artifact_type":"EXEC_EXECUTION_RISKS",
-  "generated_at":"...",
-  "risks":[
-    {"id":"RISK_E_0001","severity":"high|med|low","statement":"Phase R refuses without norm artifacts","evidence":["run_extraction_v3.py#..."],"mitigation_hint":"Run A/H/D/C first"}
-  ]
-}
+OUTPUTS:
+  • EXEC_RISK_LOCATIONS.json (risks[]: {kind(ordering/state/env/time/non-determinism), evidence_refs[], severity, mitigation_hint})
 
 RULES:
-	•	No guessed mitigations. “Mitigation_hint” must be mechanical and directly supported.
+  • Only note risks supported by textual evidence (no guessing).
+  • Mitigation hints must be actionable and evident in sources.

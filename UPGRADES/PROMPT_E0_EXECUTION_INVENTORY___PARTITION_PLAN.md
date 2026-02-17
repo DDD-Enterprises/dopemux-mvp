@@ -1,43 +1,15 @@
-GOAL: inventory execution-relevant files + produce a partition plan sized for API caps.
+# PROMPT_E0 — EXECUTION inventory + partition plan
 
-SCOPE TARGETS (repo):
-	•	Root: Makefile, justfile, package.json, pyproject.toml, dopemux.toml, compose*.yml, docker-compose*.yml, Dockerfile*, .env*, README*, INSTALL*, QUICK_START*
-	•	Dirs: scripts/, tools/, compose/, docker/, .github/, .githooks/, .taskx/, .claude/, config/
-	•	Also include any bin/, cmd/, infra/ if present.
+ROLE: Execution plane recon.
+GOAL: find every "thing that starts things" and chunk sources into tractable partitions.
 
-INPUT: file list + file contents for in-scope files only.
+SCOPE TARGETS:
+  • Makefile, justfile, package.json, pyproject.toml, scripts/, tools/, compose/, .github/, docker*, *.sh, *.ps1, *.zsh, tmux-layout.sh
 
-OUTPUTS (JSON):
-	•	EXEC_INVENTORY.json
-	•	EXEC_PARTITIONS.json
-
-REQUIRED JSON SHAPE:
-
-{
-  "artifact_type": "EXEC_INVENTORY",
-  "generated_at": "...",
-  "root": "...",
-  "items": [
-    {"path":"...", "kind":"make|compose|script|ci|docker|config|doc|other", "size":123, "mtime":123, "notes":"..."}
-  ]
-}
-
-{
-  "artifact_type": "EXEC_PARTITIONS",
-  "generated_at": "...",
-  "partitions": [
-    {
-      "partition_id":"E_P0001",
-      "label":"compose-core",
-      "match_rules":["compose.yml","docker-compose*.yml","compose/*.yml"],
-      "max_files_hint":30,
-      "reason":"..."
-    }
-  ]
-}
+OUTPUTS:
+  • EXEC_INVENTORY.json (items[]: {path, kind, toolchain, invokes[], writes_outputs[]})
+  • EXEC_PARTITIONS.json (partitions[]: {id, label, include_globs[], exclude_globs[], max_files_hint})
 
 RULES:
-	•	No invention. If file does not exist, do not mention it.
-	•	Partition rules must be reproducible and non-overlapping where possible.
-	•	Prefer partitions by function (compose, docker, make/scripts, CI, config/env).
-	•	If repo is huge, cap partitions at ~20.
+  • No invention. Only enumerate files that exist inside scope.
+  • Keep partition rules deterministic and minimize overlap.
