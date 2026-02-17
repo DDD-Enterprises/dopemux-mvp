@@ -1,3 +1,14 @@
+---
+id: RUN_ORDER
+title: Run Order
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Run Order (explanation) for dopemux documentation and developer workflows.
+---
 # Quick Reference: Run Order & Output Mapping
 
 ## Sequential Run Order
