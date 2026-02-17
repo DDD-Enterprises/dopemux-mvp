@@ -1,3 +1,15 @@
+---
+id: EXEC_H3_DIFF_HINTS
+title: Exec H3 Diff Hints
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-17'
+last_review: '2026-02-17'
+next_review: '2026-05-18'
+prelude: Exec H3 Diff Hints (explanation) for dopemux documentation and developer
+  workflows.
+---
 # EXECUTABLE PROMPT: H3 - Home vs Repo Diff Hints
 
 ---
