@@ -1,64 +1,63 @@
-# PROMPT_H0 — HOME inventory + partition plan (SAFE MODE)
+# Phase H0: Home Control Plane Inventory + Partition Plan
 
-ROLE: Forensic extractor. Safety-first. Evidence-only. No invention.
-MODEL: Gemini Flash (fast scanner).
+You are running inside the Dopemux extraction pipeline.
 
-GOAL:
-Build HOME_INDEX.json and HOME_PARTITIONS.json for safe home control-plane scanning.
-Home scope must be restricted to:
-- ~/.dopemux/**
-- ~/.config/dopemux/**
-- ~/.config/taskx/**
-- ~/.config/litellm/**
-- ~/.config/mcp/**
+Goal:
+- Inventory only the HOME control-plane relevant files found in the provided context.
+- Produce a deterministic partition plan for subsequent Phase H steps.
 
-HARD RULES (SAFE MODE):
-1) Never output secrets. Redact any values that look like:
-   - API keys, bearer tokens, private keys, session cookies
-   - OAuth tokens, JWTs, passwords, DSNs with credentials
-   Replace value with: "__REDACTED__"
-2) Do not traverse outside the allowlist roots above.
-3) Ignore noise + heavy dirs:
-   - ~/.cache, ~/Library, ~/Downloads, ~/Documents, ~/Desktop, ~/Pictures, ~/Music
-   - node_modules, .git, dist, build, tmp, logs (unless within allowlist and clearly relevant)
-4) Prefer metadata over full contents. For each file, capture:
-   - path, size, mtime, extension, and a small SAFE excerpt (max 40 lines) ONLY if it contains config keys (not secrets).
-5) If a file is SQLite: do not dump raw rows. Only identify it as sqlite and list filename/size/mtime.
+Hard rules:
+- Do NOT invent paths or contents not present in the provided context.
+- If something is commonly expected (~/.config/mcp, ~/.dopemux) but not present in context, record it as MISSING (not guessed).
+- Output valid JSON only, no markdown fences.
 
-OUTPUTS (write valid JSON, no markdown fences):
-A) HOME_INDEX.json
+Inputs:
+- The runner provides a set of home-control-plane candidate files (safe mode filtering may already have excluded sensitive areas).
+
+Outputs:
+- HOME_INVENTORY.json
+- HOME_PARTITIONS.json
+
+HOME_INVENTORY.json format:
 {
-  "artifact": "HOME_INDEX",
+  "inventory_version": "H0.v1",
   "generated_at": "<iso8601>",
-  "roots": ["~/.dopemux", "~/.config/dopemux", "~/.config/taskx", "~/.config/litellm", "~/.config/mcp"],
-  "files": [
+  "root_hint": "<string or empty>",
+  "items": [
     {
-      "path": "<absolute>",
-      "rel_root": "<which root>",
-      "kind": "config|script|sqlite|cache|unknown",
-      "ext": ".json|.yaml|.toml|.sh|.db|...",
-      "size": <int>,
-      "mtime": <epoch_seconds>,
-      "signals": ["router","mcp","litellm","taskx","profiles","tmux","hooks","env","sqlite","unknown"],
-      "safe_excerpt": "<optional short excerpt with sensitive values redacted>"
+      "path": "<string>",
+      "ext": "<string>",
+      "bytes": <int>,
+      "mtime_epoch": <int>,
+      "category_hint": "<one of: mcp|router|litellm|profiles|tmux|sqlite|shell|other|unknown>",
+      "notes": "<string>"
     }
   ],
-  "stats": { "file_count": <int>, "total_bytes": <int> }
+  "missing_expected_roots": [
+    {"path": "<string>", "reason": "<string>"}
+  ]
 }
 
-B) HOME_PARTITIONS.json
+HOME_PARTITIONS.json format:
 {
-  "artifact": "HOME_PARTITIONS",
+  "partition_version": "H0.v1",
   "generated_at": "<iso8601>",
+  "max_files_per_partition": <int>,
   "partitions": [
-    { "id": "H_P1_MCP", "include_globs": ["**/mcp*.json","**/mcp/**/*.json","**/mcp/**/*.yaml","**/mcp/**/*.yml"], "notes": "MCP client/server configs" },
-    { "id": "H_P2_ROUTER", "include_globs": ["**/*router*.*","**/*provider*.*","**/*ladder*.*"], "notes": "routing/provider ladder hints" },
-    { "id": "H_P3_LITELLM", "include_globs": ["**/litellm*.*","**/*proxy*.*","**/*spend*.*"], "notes": "litellm configs + spend/log hints" },
-    { "id": "H_P4_PROFILES", "include_globs": ["**/profiles/**/*.*","**/*profile*.*","**/*persona*.*"], "notes": "profiles + operator configs" },
-    { "id": "H_P5_TMUX_WORKFLOWS", "include_globs": ["**/*.tmux*","**/*tmux*.*","**/*layout*.*"], "notes": "tmux helpers/workflows" },
-    { "id": "H_P6_SQLITE_STATE", "include_globs": ["**/*.sqlite","**/*.db","**/*.sqlite3"], "notes": "state DBs (metadata only)" },
-    { "id": "H_P9_MISC", "include_globs": ["**/*.*"], "notes": "catchall, only if not matched above" }
+    {
+      "partition_id": "H_P0001",
+      "focus": "<mcp|router|litellm|profiles|tmux|sqlite|mixed>",
+      "paths": ["<path1>", "<path2>"],
+      "notes": "<string>"
+    }
   ],
-  "exclusions": ["**/Library/**","**/Downloads/**","**/.cache/**","**/node_modules/**","**/.git/**"],
-  "redaction_policy": { "redact_patterns": ["api_key","token","secret","password","Authorization","Bearer","OPENAI","ANTHROPIC","GEMINI","XAI"], "replacement": "__REDACTED__" }
+  "determinism_notes": [
+    "Paths sorted ascending before partitioning",
+    "Stable partition_ids"
+  ]
 }
+
+Partitioning requirements:
+- Sort all paths ascending (bytewise).
+- Group by category_hint when possible.
+- Keep partitions small enough that downstream prompts won’t overflow context windows.

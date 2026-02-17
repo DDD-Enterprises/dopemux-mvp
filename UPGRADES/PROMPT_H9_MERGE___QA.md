@@ -1,22 +1,25 @@
-# PROMPT_H9 — Merge + normalize + QA (HOME)
+# Phase H9: Merge + QA (Home Control Plane)
 
-ROLE: Deterministic normalizer + QA bot.
-GOAL:
-Produce normalized merged artifacts and QA report for Phase H.
+Goal:
+- Merge all Phase H raw outputs into deterministic normalized artifacts.
+- Emit a QA report: missing expected artifacts, empty artifacts, and evidence quality warnings.
 
-INPUTS:
-All raw outputs from H0–H7.
+Hard rules:
+- Deterministic ordering: sort keys where applicable; sort arrays by stable keys (path/name) when possible.
+- No invention.
 
-OUTPUTS:
-A) HOME_NORM_MANIFEST.json
+Outputs:
+- HOMECTRL_NORM_MANIFEST.json
+- HOMECTRL_QA.json
+
+HOMECTRL_NORM_MANIFEST.json:
 {
-  "artifact": "HOME_NORM_MANIFEST",
+  "manifest_version": "H9.v1",
   "generated_at": "<iso8601>",
-  "inputs": ["<raw file names>"],
+  "inputs": ["<raw json file names>"],
   "outputs": [
-    "HOME_INDEX.json",
-    "HOME_PARTITIONS.json",
-    "HOME_KEY_INDEX.json",
+    "HOME_KEYS_SURFACE.json",
+    "HOME_REFERENCES.json",
     "HOME_MCP_SURFACE.json",
     "HOME_ROUTER_SURFACE.json",
     "HOME_PROVIDER_LADDER_HINTS.json",
@@ -25,27 +28,15 @@ A) HOME_NORM_MANIFEST.json
     "HOME_TMUX_WORKFLOW_SURFACE.json",
     "HOME_SQLITE_SCHEMA.json"
   ],
-  "normalization_rules": [
-    "stable sort arrays by path then name",
-    "strip duplicates by exact match",
-    "redact secrets consistently: __REDACTED__"
-  ]
+  "notes":[]
 }
 
-B) HOME_QA_REPORT.json
+HOMECTRL_QA.json:
 {
-  "artifact": "HOME_QA_REPORT",
+  "qa_version": "H9.v1",
   "generated_at": "<iso8601>",
-  "checks": [
-    { "name": "allowlist_only", "pass": true|false, "details": "<...>" },
-    { "name": "redaction_present", "pass": true|false, "details": "<...>" },
-    { "name": "nonempty_core_outputs", "pass": true|false, "details": "<...>" },
-    { "name": "model_strings_only", "pass": true|false, "details": "<...>" }
-  ],
-  "coverage": { "mcp": "ok|missing", "router": "ok|missing", "litellm": "ok|missing", "profiles": "ok|missing", "tmux": "ok|missing", "sqlite": "ok|missing" }
+  "missing_expected_raw_steps": ["<string>"],
+  "empty_outputs": ["<string>"],
+  "evidence_warnings": ["<string>"],
+  "safe_mode_observations": ["<string>"]
 }
-
-RULES:
-- If any core artifact is missing: set QA pass=false and list missing.
-- Never “fill in” missing fields.
-- Keep deterministic ordering everywhere.

@@ -1,137 +1,75 @@
-# Upgrade Pipeline Run Order
+# Upgrade Pipeline Run Order (v3)
 
-This document defines the strict execution order for the Dopemux upgrade extraction pipeline.
+This runbook is authoritative for `UPGRADES/run_extraction_v3.py`.
 
-## 1. Environment Setup
+## Canonical phase folders
 
-Ensure you are in the repository root.
-The extraction runner is located at `UPGRADES/run_extraction.py`.
+Use only canonical phase folder names under `extraction/runs/<run_id>/`.
 
-## 2. Priority Control Plane (Phase A + Phase H)
+- `R_arbitration` is canonical.
+- `R2_synthesis` is legacy and forbidden.
+- The runner now fails fast if a legacy folder is present.
 
-Run this first to capture the "truth" of the repository and home configuration.
+## Provider gate (required before ALL)
 
-```bash
-python UPGRADES/run_extraction.py priority --dry-run
-```
-
-- **Phase A (Repo Control Plane)**: Scans repository configuration files (`config/`, `.github/`, `.claude/`, etc.) to understand the intended architecture.
-- **Phase H (Home Control Plane)**: Scans local user configuration (`~/.dopemux`, `~/.config/dopemux`, `~/.config/taskx`, etc.) to understand local overrides and enablement.
-  - **Safety Note**: All home configuration files are subject to strict redaction rules. Secrets (API keys, tokens, passwords) are replaced with `REDACTED_SECRET` before processing.
-  - **Exclusions**: Caches, logs, and temporary files are automatically excluded.
-
-## 3. Docs Pipeline (Phase D)
-
-Run this after the Priority Control Plane to extract knowledge from documentation.
-
-The docs pipeline follows a strict sequence: **D0 → D1/D2 (Partitioned) → D3 → M1 → QA → CL**.
-
-### Step 3.1: Inventory & Partitioning (D0)
-
-First, generate the document inventory and partition plan.
+Run provider/auth checks before a full sweep.
 
 ```bash
-python UPGRADES/run_extraction.py docs --dry-run
+python UPGRADES/run_extraction_v3.py --preflight-providers
+python UPGRADES/run_extraction_v3.py --doctor-auth --gemini-transport openai_compat_http --gemini-auth-mode auto
 ```
 
-This produces `DOC_INVENTORY.json` and `PARTITION_PLAN.json`.
+- `--preflight-providers` writes `extraction/doctor/PROVIDER_PREFLIGHT.json` and blocks `--phase ALL` when providers are not healthy.
+- `--doctor-auth` writes `extraction/doctor/AUTH_DOCTOR.json` and `AUTH_DOCTOR.txt` with per-mode results.
 
-### Step 3.2: Deep Extraction (D1/D2)
-
-Run deep extraction on specific partitions defined in `PARTITION_PLAN.json`.
+## Canonical phase order
 
 ```bash
-# Example: Run partition P1
-python UPGRADES/run_extraction.py docs --doc-partition P1 --dry-run
+python UPGRADES/run_extraction_v3.py --phase A --resume
+python UPGRADES/run_extraction_v3.py --phase H --resume
+python UPGRADES/run_extraction_v3.py --phase D --resume
+python UPGRADES/run_extraction_v3.py --phase C --resume
+python UPGRADES/run_extraction_v3.py --phase E --resume
+python UPGRADES/run_extraction_v3.py --phase W --resume
+python UPGRADES/run_extraction_v3.py --phase B --resume
+python UPGRADES/run_extraction_v3.py --phase G --resume
+python UPGRADES/run_extraction_v3.py --phase Q --resume
+python UPGRADES/run_extraction_v3.py --phase R --resume
+python UPGRADES/run_extraction_v3.py --phase X --resume
+python UPGRADES/run_extraction_v3.py --phase T --resume
+python UPGRADES/run_extraction_v3.py --phase Z --resume
 ```
 
-- **D1**: Claims & Boundaries extraction.
-- **D2**: Deep interface & workflow extraction.
+`--phase ALL` executes the same order and now runs provider preflight first.
 
-### Step 3.3: Synthesis (M1, QA, CL)
+## Prompt-corpus phase contracts
 
-Once partitions are processed, run the synthesis phases.
+The table below is the required checklist mapping phase to step flow and expected capstone outputs.
+
+| Phase | Step flow | Required capstone outputs |
+|---|---|---|
+| A | `A0` inventory/partition -> `A1..A8` surfaces -> `A99` merge/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged repo norm outputs |
+| H | `H0` inventory/partition -> `H1..H7` surfaces -> `H9` merge/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged home norm outputs |
+| D | `D0` inventory/partition -> `D1..D3` extraction -> `D4` merge/normalize/coverage | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged docs norm outputs |
+| C | `C0` inventory/partition -> `C1..C8` surfaces -> `C9` merge/normalize/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged code norm outputs |
+| E | `E0` inventory/partition -> `E1..E6` surfaces -> `E9` merge/normalize/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged execution norm outputs |
+| W | `W0` inventory/partition -> `W1..W5` surfaces -> `W9` merge/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged workflow norm outputs |
+| B | `B0` inventory/partition -> `B1..B3` surfaces -> `B9` merge/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged boundary norm outputs |
+| G | `G0` inventory/partition -> `G1..G4` surfaces -> `G9` merge/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged governance norm outputs |
+| Q | `Q0` completeness -> `Q1..Q3` drift checks -> `Q9` merge/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged pipeline QA outputs |
+| R | `R0..R8` arbitration steps | truth-map and risk artifacts consumed by `X`/`T` |
+| X | `X0` inventory/partition -> `X1..X4` feature extraction -> `X9` merge/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged feature index outputs |
+| T | `T0..T5` packet generation -> `T9` merge/qa | phase-level `*_NORM_MANIFEST.json`, `*_QA.json`, merged task packet outputs |
+| Z | `Z0..Z2` freeze inputs -> `Z9` freeze manifest/checksums | freeze manifest/checksum proof outputs |
+
+## Phase R gate contract
+
+Before Phase R runs, A/H/D/C must provide all required normalized artifacts declared in `R_REQUIRED_ARTIFACT_GROUPS` in `UPGRADES/run_extraction_v3.py`.
+
+Use:
 
 ```bash
-python UPGRADES/run_extraction.py docs --dry-run
+python UPGRADES/run_extraction_v3.py --coverage-report --phase ALL
 ```
 
-(The runner will automatically detect if D1/D2 outputs exist and proceed to M1).
-
-- **M1**: Merge partition outputs.
-- **QA**: Quality Assurance check.
-- **CL**: Cluster analysis.
-
-## 4. Arbitration (Phase R) & Synthesis (Phase S)
-
-These phases are run after extraction is complete.
-
-- **Phase R**: GPT-5.2 arbitration to resolve conflicts between Repo, Home, and Docs.
-- **Phase S**: Manual Opus synthesis (not executed by `run_extraction_v3.py`) to generate decision-grade outputs from the Phase R Truth Pack.
-  - Prompt pack:
-    - `UPGRADES/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md`
-    - `UPGRADES/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md`
-  - Required Phase R inputs:
-    - `R0 CONTROL_PLANE_TRUTH_MAP.md`
-    - `R1 DOPE_MEMORY_IMPLEMENTATION_TRUTH.md`
-    - `R2 EVENTBUS_WIRING_TRUTH.md`
-    - `R3 TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md`
-    - `R4 TASKX_INTEGRATION_TRUTH.md`
-    - `R5 WORKFLOWS_TRUTH_GRAPH.md`
-    - `R6 PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
-    - `R7 CONFLICT_LEDGER.md`
-    - `R8 RISK_REGISTER_TOP20.md`
-  - Optional supporting inputs: normalized Phase X feature-index outputs and Phase D doc cluster/supersession outputs.
-
-## 5. Canonical v3 Execution Order
-
-When running the v3 extraction runner (`UPGRADES/run_extraction_v3.py`), follow this exact sequence for deterministic outputs:
-
-1. `python UPGRADES/run_extraction_v3.py --phase A --resume`
-2. `python UPGRADES/run_extraction_v3.py --phase H --resume`
-3. `python UPGRADES/run_extraction_v3.py --phase M --resume`
-4. `python UPGRADES/run_extraction_v3.py --phase D --resume`
-5. `python UPGRADES/run_extraction_v3.py --phase E --resume`
-6. `python UPGRADES/run_extraction_v3.py --phase C --resume`
-7. For the arbitration gate:
-   - Base gate: `python UPGRADES/run_extraction_v3.py --phase R --dry-run --r-profile base`
-   - Full gate: `python UPGRADES/run_extraction_v3.py --phase R --dry-run --r-profile full`
-
-### Default Phase Order (when running `--phase ALL`)
-1. `A` – Repo Control Plane
-2. `H` – Home Control Plane
-3. `M` – Runtime Exports Plane
-4. `D` – Docs Pipeline
-5. `E` – Execution Plane
-6. `C` – Code Surfaces
-7. `W` – Workflow Plane
-8. `B` – Boundary Plane
-9. `G` – Governance Plane
-10. `Q` – Pipeline Doctor
-11. `R` – Arbitration
-12. `X` – Feature Index
-13. `T` – Task Packets
-14. `Z` – Handoff Freeze
-
-## 6. Guardrails
-
-- Prompt files must match `UPGRADES/PROMPT_{phase}{step}_*.md` and no duplicate step IDs are allowed (duplicates fail closed).
-- Phase R supports two deterministic profiles:
-  - `--r-profile base` requires A/H/D/C norm artifacts.
-  - `--r-profile full` requires A/H/D/C norm artifacts plus normalized artifacts from M/E/W/B/G/Q.
-- Phase R fails closed unless required norm directories contain at least one JSON:
-  - `extraction/runs/<run_id>/A_repo_control_plane/norm`
-  - `extraction/runs/<run_id>/H_home_control_plane/norm`
-  - `extraction/runs/<run_id>/D_docs_pipeline/norm`
-  - `extraction/runs/<run_id>/C_code_surfaces/norm`
-  - `extraction/runs/<run_id>/M_runtime_exports/norm` (full profile only)
-  - `extraction/runs/<run_id>/E_execution_plane/norm` (full profile only)
-  - `extraction/runs/<run_id>/W_workflow_plane/norm` (full profile only)
-  - `extraction/runs/<run_id>/B_boundary_plane/norm` (full profile only)
-  - `extraction/runs/<run_id>/G_governance_plane/norm` (full profile only)
-  - `extraction/runs/<run_id>/Q_pipeline_doctor/norm` (full profile only)
-- Phase R only ingests norm artifacts—no raw rescans or unsanctioned directories.
-- Every phase writes `qa/PHASE_<phase>_MANIFEST.json` with prompts executed, inputs, outputs, caps, redaction policy, and resume metadata.
-- When troubleshooting empty `norm/` buckets, check:
-  - Raw outputs in `extraction/runs/<run_id>/<phase>/raw` to see if normalization steps failed.
-  - Presence of merge/normalize prompts (`A9`, `H9`, `D4`, `C9`, `E9`, `W9`, `B9`, `G5`, `Q9`) and runtime prompts (`M0..M6`) in `UPGRADES/`.
+and review `PROOF_PACK.json` plus `RUN_MANIFEST.json` for missing groups before Phase R.
