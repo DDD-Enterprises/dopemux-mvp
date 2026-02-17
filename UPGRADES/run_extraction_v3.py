@@ -114,10 +114,10 @@ DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_FULL_ADDITIONAL: Dict[str, List[Tuple[str, ..
 }
 
 MODEL_ROUTING = {
-    "A": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "H": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
+    "A": ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
+    "H": ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     "M": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "D": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
+    "D": ("gemini", "gemini-3-flash-preview", "GEMINI_API_KEY"),
     "W": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "B": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "G": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
@@ -242,6 +242,7 @@ AUTH_MARKERS = [
     "not authorized",
     "provided api key is invalid",
     "invalid x-api-key",
+    "missing authorization header",
     "insufficient_quota",
     "billing",
     "payment required",
@@ -516,6 +517,7 @@ class RunnerConfig:
     max_files_docs: int
     max_files_code: int
     max_chars: int
+    max_request_bytes: int
     file_truncate_chars: int
     home_scan_mode: str
     r_profile: str
@@ -530,6 +532,7 @@ class RunnerConfig:
     max_retries: int
     min_interval_ms: int
     fail_fast: bool
+    fail_fast_auth: bool
     shrink_on_payload: bool
     resume_ledger: bool
     prefer_split_first: bool
@@ -568,6 +571,21 @@ def normalized_headers(headers: Any) -> Dict[str, str]:
         except Exception:
             snapshot[key_str] = ""
     return snapshot
+
+
+def build_chat_payload(model_id: str, system_prompt: str, user_content: str) -> Dict[str, Any]:
+    return {
+        "model": model_id,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content},
+        ],
+        "temperature": 0.1,
+    }
+
+
+def measure_payload_bytes(payload_dict: Dict[str, Any]) -> int:
+    return len(json.dumps(payload_dict).encode("utf-8"))
 
 
 def is_valid_json_file(path: Path) -> bool:
@@ -2435,6 +2453,17 @@ def apply_recovery_action(
     return updated, current_stage
 
 
+def enforce_budget_floors(budget: Dict[str, int]) -> Dict[str, int]:
+    updated = dict(budget)
+    updated["max_chars"] = max(int(updated.get("max_chars", 0) or 0), SHRINK_MIN_MAX_CHARS)
+    updated["file_truncate_chars"] = max(
+        int(updated.get("file_truncate_chars", 0) or 0),
+        SHRINK_MIN_FILE_TRUNCATE_CHARS,
+    )
+    updated["max_files"] = max(int(updated.get("max_files", 0) or 0), SHRINK_MIN_MAX_FILES)
+    return updated
+
+
 def classify_llm_failure(
     provider: str,
     status: Optional[int],
@@ -2793,18 +2822,18 @@ class RequestController:
         provider_stats = self._stats_for(provider)
         provider_stats["total_calls"] = int(provider_stats.get("total_calls", 0) or 0) + 1
 
-        payload = {
-            "model": model_id,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_content},
-            ],
-            "temperature": 0.1,
-        }
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        }
+        payload = build_chat_payload(model_id=model_id, system_prompt=system_prompt, user_content=user_content)
+        if provider == "gemini":
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "x-goog-api-key": api_key,
+                "Content-Type": "application/json",
+            }
+        else:
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
         url = f"{llm_base_url(provider)}/chat/completions"
         policy = self._provider_policy(provider)
         max_retries = int(policy.get("max_retries", 0))
@@ -2946,6 +2975,7 @@ class RequestController:
                     "total_retry_seconds": total_backoff_seconds,
                     "request_id": request_id,
                     "classification": "success",
+                    "failure_type": "",
                 }
 
             if status_code == 429:
@@ -3013,6 +3043,7 @@ class RequestController:
                         "attempts": attempt,
                         "status_code": status_code,
                         "classification": kind,
+                        "failure_type": str(classification.get("type", "")),
                         "markers": markers,
                         "error_excerpt": error_excerpt,
                         "retry_trace": retry_trace,
@@ -3027,6 +3058,7 @@ class RequestController:
                         "attempts": attempt,
                         "status_code": status_code,
                         "classification": kind,
+                        "failure_type": str(classification.get("type", "")),
                         "markers": markers,
                         "error_excerpt": error_excerpt,
                         "retry_trace": retry_trace,
@@ -3041,6 +3073,7 @@ class RequestController:
                         "attempts": attempt,
                         "status_code": status_code,
                         "classification": kind,
+                        "failure_type": str(classification.get("type", "")),
                         "markers": markers,
                         "error_excerpt": error_excerpt,
                         "retry_trace": retry_trace,
@@ -3320,7 +3353,7 @@ def execute_step_for_partitions(
             f"{output_instructions}\n"
             "\nFILES:\n"
         )
-        current_budget = dict(budget)
+        current_budget = enforce_budget_floors(dict(budget))
         current_stage = int(shrink_stage)
 
         while True:
@@ -3374,6 +3407,23 @@ def execute_step_for_partitions(
 
             user_prompt = f"{prompt_prefix}{context}"
             payload_cache.write_text(user_prompt, encoding="utf-8")
+            request_payload = build_chat_payload(
+                model_id=model_id,
+                system_prompt=prompt_text,
+                user_content=user_prompt,
+            )
+            payload_bytes = measure_payload_bytes(request_payload)
+            system_prompt_bytes = len(prompt_text.encode("utf-8"))
+            context_bytes = len(context.encode("utf-8"))
+            user_content_bytes = len(user_prompt.encode("utf-8"))
+            user_wrapper_bytes = max(user_content_bytes - context_bytes, 0)
+            minimal_payload = build_chat_payload(
+                model_id=model_id,
+                system_prompt=prompt_text,
+                user_content=prompt_prefix,
+            )
+            minimal_payload_bytes = measure_payload_bytes(minimal_payload)
+            over_by_bytes = max(payload_bytes - int(cfg.max_request_bytes), 0)
             injected_text_sha256 = hashlib.sha256(
                 user_prompt.encode("utf-8", errors="ignore")
             ).hexdigest()
@@ -3416,7 +3466,7 @@ def execute_step_for_partitions(
                                     "chunk_key": chunk_key,
                                     "request_hash": request_hash,
                                     "injected_text_sha256": injected_text_sha256,
-                                    "request_payload_bytes": len(user_prompt.encode("utf-8")),
+                                    "request_payload_bytes": payload_bytes,
                                     "file_entries": file_entries,
                                     "context_stats": context_stats,
                                     "status": "resume_skipped",
@@ -3452,7 +3502,7 @@ def execute_step_for_partitions(
                             "chunk_key": chunk_key,
                             "request_hash": request_hash,
                             "file_manifest_hash": file_manifest_hash,
-                            "request_payload_bytes": len(user_prompt.encode("utf-8")),
+                            "request_payload_bytes": payload_bytes,
                             "context_stats": context_stats,
                             "injected_text_sha256": injected_text_sha256,
                             "output_sha256": sha256_text(out_json),
@@ -3474,7 +3524,7 @@ def execute_step_for_partitions(
                             "chunk_key": chunk_key,
                             "request_hash": request_hash,
                             "injected_text_sha256": injected_text_sha256,
-                            "request_payload_bytes": len(user_prompt.encode("utf-8")),
+                            "request_payload_bytes": payload_bytes,
                             "file_entries": file_entries,
                             "context_stats": context_stats,
                             "status": "resume_ledger_skipped",
@@ -3566,11 +3616,10 @@ def execute_step_for_partitions(
                         )
                     return
 
-            payload_bytes = len(user_prompt.encode("utf-8"))
-            if payload_bytes > int(current_budget["max_chars"]):
+            if payload_bytes > int(cfg.max_request_bytes):
                 synth_err = (
                     f"payload too large before request: bytes={payload_bytes} "
-                    f"limit={int(current_budget['max_chars'])}"
+                    f"limit={int(cfg.max_request_bytes)}"
                 )
                 classification = "shrink"
                 action, next_budget, next_stage = next_shrink_action(
@@ -3587,6 +3636,7 @@ def execute_step_for_partitions(
                     shrink_trunc_mult=cfg.shrink_trunc_mult,
                     shrink_maxchars_mult=cfg.shrink_maxchars_mult,
                 )
+                next_budget = enforce_budget_floors(next_budget)
                 if action == "split":
                     active_partition_count += 1
                     child_a_id, child_b_id = split_partition_ids(partition_id, split_depth)
@@ -3697,7 +3747,8 @@ def execute_step_for_partitions(
                     )
                     return
                 if action == "fail":
-                    error_text = "payload_unshrinkable"
+                    is_unshrinkable = minimal_payload_bytes > int(cfg.max_request_bytes)
+                    error_text = "payload_unshrinkable" if is_unshrinkable else "payload_shrink_exhausted"
                     retry_error_counts[error_text] += 1
                     failed_chunks += 1
                     failed_chunk_ids.append(partition_id)
@@ -3713,6 +3764,12 @@ def execute_step_for_partitions(
                             "classification": "nonretryable",
                             "error": error_text,
                             "reason": synth_err,
+                            "system_prompt_bytes": system_prompt_bytes,
+                            "user_wrapper_bytes": user_wrapper_bytes,
+                            "context_bytes": context_bytes,
+                            "over_by_bytes": over_by_bytes,
+                            "max_request_bytes": int(cfg.max_request_bytes),
+                            "minimal_payload_bytes": minimal_payload_bytes,
                             "generated_at": now_iso(),
                         },
                     )
@@ -3998,6 +4055,7 @@ def execute_step_for_partitions(
                     shrink_trunc_mult=cfg.shrink_trunc_mult,
                     shrink_maxchars_mult=cfg.shrink_maxchars_mult,
                 )
+                next_budget = enforce_budget_floors(next_budget)
                 error_excerpt = short_error_excerpt(exc.meta.get("error_excerpt", str(exc)))
                 if action == "split":
                     active_partition_count += 1
@@ -4120,10 +4178,11 @@ def execute_step_for_partitions(
                 if action == "fail":
                     failed_chunks += 1
                     failed_chunk_ids.append(partition_id)
-                    retry_error_counts["payload_unshrinkable"] += 1
+                    is_unshrinkable = minimal_payload_bytes > int(cfg.max_request_bytes)
+                    error_text = "payload_unshrinkable" if is_unshrinkable else "payload_shrink_exhausted"
+                    retry_error_counts[error_text] += 1
                     last_shrink_stage_by_partition[partition_id] = int(current_stage)
                     _record_failed_file_sizes(filtered_paths)
-                    error_text = "payload_unshrinkable"
                     write_json(
                         out_failed,
                         {
@@ -4134,6 +4193,12 @@ def execute_step_for_partitions(
                             "classification": "nonretryable",
                             "error": error_text,
                             "reason": error_excerpt,
+                            "system_prompt_bytes": system_prompt_bytes,
+                            "user_wrapper_bytes": user_wrapper_bytes,
+                            "context_bytes": context_bytes,
+                            "over_by_bytes": over_by_bytes,
+                            "max_request_bytes": int(cfg.max_request_bytes),
+                            "minimal_payload_bytes": minimal_payload_bytes,
                             "retry_trace": request_meta.get("retry_trace", []),
                             "generated_at": now_iso(),
                         },
@@ -4221,6 +4286,7 @@ def execute_step_for_partitions(
                 meta = exc.meta if isinstance(exc, LLMCallError) else {}
                 request_meta.update(meta)
                 classification = str(meta.get("classification", "nonretryable"))
+                failure_type = str(meta.get("failure_type", ""))
                 retry_error_counts[classification] += 1
                 failed_chunks += 1
                 failed_chunk_ids.append(partition_id)
@@ -4276,6 +4342,8 @@ def execute_step_for_partitions(
                 )
                 if classification == "nonretryable" and cfg.fail_fast:
                     raise RuntimeError(f"Fail-fast enabled for nonretryable error: {error_text}")
+                if cfg.fail_fast_auth and failure_type == "auth":
+                    raise RuntimeError(f"Auth failure circuit breaker: {error_text}")
                 return
             except Exception as exc:
                 failed_chunks += 1
@@ -5706,6 +5774,7 @@ def main() -> None:
     parser.add_argument("--max-files-docs", type=int, default=35)
     parser.add_argument("--max-files-code", type=int, default=20)
     parser.add_argument("--max-chars", type=int, default=650000)
+    parser.add_argument("--max-request-bytes", type=int, default=200000)
     parser.add_argument("--file-truncate-chars", type=int, default=70000)
     parser.add_argument("--home-scan-mode", choices=["safe", "full"], default="safe")
     parser.add_argument("--r-profile", choices=["base", "full"], default="base")
@@ -5722,6 +5791,8 @@ def main() -> None:
     parser.add_argument("--max-retries", type=int, default=-1)
     parser.add_argument("--min-interval-ms", type=int, default=-1)
     parser.add_argument("--fail-fast", action="store_true")
+    parser.add_argument("--fail-fast-auth", dest="fail_fast_auth", action="store_true")
+    parser.add_argument("--no-fail-fast-auth", dest="fail_fast_auth", action="store_false")
     parser.add_argument("--shrink-on-payload", dest="shrink_on_payload", action="store_true")
     parser.add_argument("--no-shrink-on-payload", dest="shrink_on_payload", action="store_false")
     parser.add_argument("--resume-ledger", dest="resume_ledger", action="store_true")
@@ -5734,7 +5805,12 @@ def main() -> None:
     parser.add_argument("--shrink-files-mult", type=float, default=0.7)
     parser.add_argument("--shrink-trunc-mult", type=float, default=0.7)
     parser.add_argument("--shrink-maxchars-mult", type=float, default=0.8)
-    parser.set_defaults(shrink_on_payload=True, resume_ledger=True, prefer_split_first=True)
+    parser.set_defaults(
+        shrink_on_payload=True,
+        resume_ledger=True,
+        prefer_split_first=True,
+        fail_fast_auth=True,
+    )
     args = parser.parse_args()
     if args.r_full:
         args.r_profile = "full"
@@ -5752,6 +5828,7 @@ def main() -> None:
         max_files_docs=args.max_files_docs,
         max_files_code=args.max_files_code,
         max_chars=args.max_chars,
+        max_request_bytes=max(int(args.max_request_bytes), 1024),
         file_truncate_chars=args.file_truncate_chars,
         home_scan_mode=args.home_scan_mode,
         r_profile=args.r_profile,
@@ -5766,6 +5843,7 @@ def main() -> None:
         max_retries=args.max_retries,
         min_interval_ms=args.min_interval_ms,
         fail_fast=bool(args.fail_fast),
+        fail_fast_auth=bool(args.fail_fast_auth),
         shrink_on_payload=bool(args.shrink_on_payload),
         resume_ledger=bool(args.resume_ledger),
         prefer_split_first=bool(args.prefer_split_first),
