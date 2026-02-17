@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
+from urllib.parse import urlencode, urlparse, urlunparse
 
 import requests
 
@@ -262,9 +263,17 @@ class RunnerConfig:
     max_files_docs: int
     max_files_code: int
     max_chars: int
+    max_request_bytes: int
     file_truncate_chars: int
     home_scan_mode: str
     resume: bool
+    fail_fast_auth: bool
+    gemini_auth_mode: str
+    retry_policy: str
+    retry_max_attempts: int
+    retry_base_seconds: float
+    retry_max_seconds: float
+    phase_auth_fail_threshold: int
 
 
 @dataclass(frozen=True)
@@ -525,8 +534,16 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "max_files_docs": args.max_files_docs,
             "max_files_code": args.max_files_code,
             "max_chars": args.max_chars,
+            "max_request_bytes": args.max_request_bytes,
             "file_truncate_chars": args.file_truncate_chars,
             "home_scan_mode": args.home_scan_mode,
+            "fail_fast_auth": args.fail_fast_auth,
+            "gemini_auth_mode": args.gemini_auth_mode,
+            "retry_policy": args.retry_policy,
+            "retry_max_attempts": args.retry_max_attempts,
+            "retry_base_seconds": args.retry_base_seconds,
+            "retry_max_seconds": args.retry_max_seconds,
+            "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "run_id_override": args.run_id,
             "doctor": args.doctor,
             "verify_phase_output": args.verify_phase_output,
@@ -1218,12 +1235,120 @@ def llm_base_url(provider: str) -> str:
     return PROVIDER_BASE_URL.get(provider, PROVIDER_BASE_URL["openai"])
 
 
+def build_chat_payload(
+    provider: str,
+    model_id: str,
+    system_prompt: str,
+    user_content: str,
+) -> Dict[str, Any]:
+    _ = provider
+    return {
+        "model": model_id,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content},
+        ],
+        "temperature": 0.1,
+    }
+
+
+def serialize_payload_body(payload: Dict[str, Any]) -> bytes:
+    return json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+
+
+def measure_payload_bytes_from_body(body: bytes) -> int:
+    return len(body)
+
+
+def endpoint_effective(url: str) -> str:
+    parsed = urlparse(url)
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", "", ""))
+
+
+def endpoint_fingerprint(url: str) -> Dict[str, str]:
+    parsed = urlparse(url)
+    return {
+        "endpoint_host": parsed.netloc,
+        "endpoint_path": parsed.path,
+    }
+
+
+def provider_signature(
+    provider: str,
+    model_id: str,
+    endpoint_url: str,
+    gemini_auth_mode_effective: Optional[str],
+) -> str:
+    fp = endpoint_fingerprint(endpoint_url)
+    auth_mode = gemini_auth_mode_effective if provider == "gemini" else "bearer"
+    return (
+        f"provider={provider};model={model_id};host={fp['endpoint_host']};"
+        f"path={fp['endpoint_path']};auth_mode={auth_mode}"
+    )
+
+
+def build_auth_present_flags(headers: Dict[str, str], used_query_key: bool) -> Dict[str, bool]:
+    return {
+        "has_auth": "Authorization" in headers,
+        "has_xgoog": "x-goog-api-key" in headers,
+        "used_query_key": used_query_key,
+    }
+
+
+def make_headers(provider: str, api_key: str, cfg: RunnerConfig, auth_mode: Optional[str] = None) -> Dict[str, str]:
+    mode = auth_mode or cfg.gemini_auth_mode
+    headers: Dict[str, str] = {"Content-Type": "application/json"}
+    if provider != "gemini":
+        headers["Authorization"] = f"Bearer {api_key}"
+        return headers
+    if mode == "api_key":
+        headers["x-goog-api-key"] = api_key
+    elif mode == "bearer":
+        headers["Authorization"] = f"Bearer {api_key}"
+    elif mode == "both" or mode == "auto":
+        headers["Authorization"] = f"Bearer {api_key}"
+        headers["x-goog-api-key"] = api_key
+    elif mode == "query_key":
+        pass
+    else:
+        headers["Authorization"] = f"Bearer {api_key}"
+        headers["x-goog-api-key"] = api_key
+    return headers
+
+
+def make_url(
+    provider: str,
+    base_url: str,
+    cfg: RunnerConfig,
+    api_key: str,
+    auth_mode_override: Optional[str] = None,
+) -> str:
+    mode = auth_mode_override or cfg.gemini_auth_mode
+    url = f"{base_url}/chat/completions"
+    if provider == "gemini" and mode == "query_key":
+        return f"{url}?{urlencode({'key': api_key})}"
+    return url
+
+
 def classify_failure_type(status_code: Optional[int], response_body: str, error_text: str) -> str:
     body = (response_body or "").lower()
     err = (error_text or "").lower()
     joined = f"{body}\n{err}"
-    if status_code in {401, 403} or "missing authorization header" in joined or "unauthorized" in joined:
-        return "auth"
+    if "missing authorization header" in joined:
+        return "auth_missing"
+    if (
+        "api key not valid" in joined
+        or "api key not found" in joined
+        or "api_key_invalid" in joined
+        or status_code in {401, 403}
+        or "unauthorized" in joined
+        or "permission" in joined
+    ):
+        return "auth_rejected"
+    if "billing" in joined or "quota" in joined:
+        return "quota_or_billing"
+    if status_code == 408:
+        return "network"
     if status_code == 429 or "rate limit" in joined or "too many requests" in joined:
         return "rate_limit"
     if status_code is not None and 400 <= status_code < 500:
@@ -1235,72 +1360,151 @@ def classify_failure_type(status_code: Optional[int], response_body: str, error_
     return "unknown"
 
 
+def is_retryable_exception(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return isinstance(exc, requests.exceptions.Timeout) or "timeout" in text or "connection reset" in text
+
+
+def should_retry(
+    status_code: Optional[int],
+    failure_type: str,
+    exc: Optional[Exception],
+    retry_policy: str,
+) -> bool:
+    if retry_policy == "none":
+        return False
+    if failure_type.startswith("auth_") or failure_type == "quota_or_billing":
+        return False
+    if status_code in {408, 429, 500, 502, 503, 504}:
+        return True
+    if exc is not None and is_retryable_exception(exc):
+        return True
+    return False
+
+
+def backoff_seconds(attempt: int, base_seconds: float, max_seconds: float) -> float:
+    if attempt <= 1:
+        return 0.0
+    delay = base_seconds * (2 ** (attempt - 2))
+    return min(delay, max_seconds)
+
+
 def call_llm(
     provider: str,
     model_id: str,
     api_key_env: str,
     system_prompt: str,
     user_content: str,
+    cfg: RunnerConfig,
 ) -> Dict[str, Any]:
+    base_url = llm_base_url(provider)
     api_key = os.getenv(api_key_env)
     if not api_key:
         logger.error("Missing API key env var: %s", api_key_env)
+        sent_headers = make_headers(provider, "", cfg, "auto" if provider == "gemini" else None)
         return {
             "ok": False,
             "text": "",
             "meta": {
                 "provider": provider,
                 "model_id": model_id,
-                "endpoint_base_url": llm_base_url(provider),
+                "endpoint_base_url": base_url,
+                "endpoint_effective": endpoint_effective(f"{base_url}/chat/completions"),
+                **endpoint_fingerprint(f"{base_url}/chat/completions"),
                 "status_code": None,
-                "failure_type": "auth",
-                "sent_header_keys": ["Authorization", "Content-Type"],
+                "failure_type": "auth_missing",
+                "sent_header_keys": sorted(list(sent_headers.keys())),
+                "auth_present_flags": build_auth_present_flags(sent_headers, False),
+                "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
+                "gemini_auth_mode_effective": None,
+                "provider_signature": provider_signature(
+                    provider,
+                    model_id,
+                    f"{base_url}/chat/completions",
+                    None,
+                ),
+                "request_payload_bytes": None,
+                "retry_trace": [],
             },
         }
 
-    payload = {
-        "model": model_id,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content},
-        ],
-        "temperature": 0.1,
-    }
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    if provider == "gemini":
-        headers["x-goog-api-key"] = api_key
-    url = f"{llm_base_url(provider)}/chat/completions"
+    payload = build_chat_payload(provider, model_id, system_prompt, user_content)
+    body = serialize_payload_body(payload)
+    request_payload_bytes = measure_payload_bytes_from_body(body)
+    gemini_mode_requested = cfg.gemini_auth_mode if provider == "gemini" else None
+    effective_mode = cfg.gemini_auth_mode if provider == "gemini" else "bearer"
+    if provider == "gemini" and effective_mode == "auto":
+        effective_mode = "both"
+    url = make_url(provider, base_url, cfg, api_key, effective_mode)
+    headers = make_headers(provider, api_key, cfg, effective_mode)
+
     last_failure_meta: Dict[str, Any] = {
         "provider": provider,
         "model_id": model_id,
-        "endpoint_base_url": llm_base_url(provider),
+        "endpoint_base_url": base_url,
+        "endpoint_effective": endpoint_effective(url),
+        **endpoint_fingerprint(url),
         "status_code": None,
         "failure_type": "unknown",
+        "request_payload_bytes": request_payload_bytes,
         "sent_header_keys": sorted(list(headers.keys())),
+        "auth_present_flags": build_auth_present_flags(headers, "key=" in url),
+        "gemini_auth_mode_requested": gemini_mode_requested,
+        "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
+        "provider_signature": provider_signature(
+            provider,
+            model_id,
+            url,
+            effective_mode if provider == "gemini" else None,
+        ),
+        "retry_trace": [],
     }
+    pivot_used = False
+    retry_trace: List[Dict[str, Any]] = []
 
-    for attempt in range(1, 4):
+    for attempt in range(1, cfg.retry_max_attempts + 1):
         response = None
+        exc_obj: Optional[Exception] = None
         try:
-            response = requests.post(url, headers=headers, json=payload, timeout=180)
+            response = requests.post(url, headers=headers, data=body, timeout=180)
             response.raise_for_status()
             data = response.json()
+            retry_trace.append(
+                {
+                    "attempt": attempt,
+                    "status_code": response.status_code,
+                    "failure_type": None,
+                    "delay_seconds": 0.0,
+                    "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
+                }
+            )
             return {
                 "ok": True,
                 "text": data["choices"][0]["message"]["content"],
                 "meta": {
                     "provider": provider,
                     "model_id": model_id,
-                    "endpoint_base_url": llm_base_url(provider),
+                    "endpoint_base_url": base_url,
+                    "endpoint_effective": endpoint_effective(url),
+                    **endpoint_fingerprint(url),
                     "status_code": response.status_code,
                     "failure_type": None,
+                    "request_payload_bytes": request_payload_bytes,
                     "sent_header_keys": sorted(list(headers.keys())),
+                    "auth_present_flags": build_auth_present_flags(headers, "key=" in url),
+                    "gemini_auth_mode_requested": gemini_mode_requested,
+                    "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
+                    "provider_signature": provider_signature(
+                        provider,
+                        model_id,
+                        url,
+                        effective_mode if provider == "gemini" else None,
+                    ),
+                    "retry_trace": retry_trace,
                 },
             }
         except Exception as exc:
+            exc_obj = exc
             response_body = ""
             status_code: Optional[int] = None
             if response is not None:
@@ -1310,18 +1514,41 @@ def call_llm(
                 except Exception:
                     response_body = ""
             failure_type = classify_failure_type(status_code, response_body, str(exc))
+            retry_trace.append(
+                {
+                    "attempt": attempt,
+                    "status_code": status_code,
+                    "failure_type": failure_type,
+                    "delay_seconds": 0.0,
+                    "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
+                }
+            )
             last_failure_meta = {
                 "provider": provider,
                 "model_id": model_id,
-                "endpoint_base_url": llm_base_url(provider),
+                "endpoint_base_url": base_url,
+                "endpoint_effective": endpoint_effective(url),
+                **endpoint_fingerprint(url),
                 "status_code": status_code,
                 "failure_type": failure_type,
+                "request_payload_bytes": request_payload_bytes,
                 "sent_header_keys": sorted(list(headers.keys())),
+                "auth_present_flags": build_auth_present_flags(headers, "key=" in url),
+                "gemini_auth_mode_requested": gemini_mode_requested,
+                "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
+                "provider_signature": provider_signature(
+                    provider,
+                    model_id,
+                    url,
+                    effective_mode if provider == "gemini" else None,
+                ),
+                "retry_trace": retry_trace,
             }
             if response_body:
                 logger.warning(
-                    "LLM call failed attempt %s/3 provider=%s model=%s status=%s failure_type=%s: %s | body=%s",
+                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s: %s | body=%s",
                     attempt,
+                    cfg.retry_max_attempts,
                     provider,
                     model_id,
                     status_code,
@@ -1331,15 +1558,39 @@ def call_llm(
                 )
             else:
                 logger.warning(
-                    "LLM call failed attempt %s/3 provider=%s model=%s status=%s failure_type=%s: %s",
+                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s: %s",
                     attempt,
+                    cfg.retry_max_attempts,
                     provider,
                     model_id,
                     status_code,
                     failure_type,
                     exc,
                 )
-            time.sleep(2 * attempt)
+
+            if (
+                provider == "gemini"
+                and cfg.gemini_auth_mode == "auto"
+                and not pivot_used
+                and failure_type == "auth_missing"
+                and effective_mode != "query_key"
+            ):
+                pivot_used = True
+                effective_mode = "query_key"
+                url = make_url(provider, base_url, cfg, api_key, effective_mode)
+                headers = make_headers(provider, api_key, cfg, effective_mode)
+                logger.warning("Gemini auto auth pivot to query_key after auth_missing.")
+                continue
+
+            if not should_retry(status_code, failure_type, exc_obj, cfg.retry_policy):
+                break
+            if attempt >= cfg.retry_max_attempts:
+                break
+
+            delay_seconds = backoff_seconds(attempt + 1, cfg.retry_base_seconds, cfg.retry_max_seconds)
+            retry_trace[-1]["delay_seconds"] = delay_seconds
+            if delay_seconds > 0:
+                time.sleep(delay_seconds)
     logger.error("LLM call failed after retries provider=%s model=%s.", provider, model_id)
     return {
         "ok": False,
@@ -1484,7 +1735,7 @@ def execute_step_for_partitions(
     partitions: List[Dict[str, Any]],
     phase_dir: Path,
     cfg: RunnerConfig,
-) -> None:
+) -> int:
     step_id = prompt_spec.step_id
     prompt_path = prompt_spec.prompt_path
     output_artifacts = prompt_spec.output_artifacts
@@ -1505,11 +1756,14 @@ def execute_step_for_partitions(
         list(output_artifacts),
     )
     resume_skipped = 0
+    step_success_count = 0
+    step_auth_failures = 0
 
     for partition in partitions:
         partition_id = partition["id"]
         out_json = raw_dir / f"{step_id}__{partition_id}.json"
         out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+        out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
         out_trace = raw_dir / f"{step_id}__{partition_id}.TRACE.md"
 
         if cfg.resume and out_json.exists():
@@ -1522,32 +1776,99 @@ def execute_step_for_partitions(
             f"{output_instructions}\n"
             "\nFILES:\n"
         )
-        reserved_bytes = len(prompt_prefix.encode("utf-8"))
-        context_budget = max(cfg.max_chars - reserved_bytes, 2048)
-        context, context_stats = build_partition_context(
-            phase=phase,
-            partition_paths=partition["paths"],
-            file_truncate_chars=cfg.file_truncate_chars,
-            home_scan_mode=cfg.home_scan_mode,
-            max_files=max_files,
-            max_chars=context_budget,
-        )
-        user_prompt = f"{prompt_prefix}{context}"
-        payload_bytes = len(user_prompt.encode("utf-8"))
-        if payload_bytes > cfg.max_chars:
-            raise RuntimeError(
-                f"Payload limit exceeded for {step_id} {partition_id}: "
-                f"{payload_bytes} > {cfg.max_chars} bytes."
+        reserved_chars = len(prompt_prefix)
+        context_budget = max(cfg.max_chars - reserved_chars, 2048)
+        current_budget = context_budget
+        payload_body = b""
+        payload_bytes = 0
+        user_prompt = ""
+        context = ""
+        context_stats: Dict[str, int] = {}
+        system_prompt_bytes = len(prompt_text.encode("utf-8"))
+
+        while True:
+            context, context_stats = build_partition_context(
+                phase=phase,
+                partition_paths=partition["paths"],
+                file_truncate_chars=cfg.file_truncate_chars,
+                home_scan_mode=cfg.home_scan_mode,
+                max_files=max_files,
+                max_chars=current_budget,
             )
+            user_prompt = f"{prompt_prefix}{context}"
+            payload = build_chat_payload(provider, model_id, prompt_text, user_prompt)
+            payload_body = serialize_payload_body(payload)
+            payload_bytes = measure_payload_bytes_from_body(payload_body)
+            if payload_bytes <= cfg.max_request_bytes:
+                break
+            if current_budget <= 1024:
+                break
+            next_budget = max(1024, int(current_budget * 0.7))
+            if next_budget == current_budget:
+                next_budget = current_budget - 1
+            current_budget = max(next_budget, 1024)
+
+        if payload_bytes > cfg.max_request_bytes:
+            over_by = payload_bytes - cfg.max_request_bytes
+            failure_meta = {
+                "provider": provider,
+                "model_id": model_id,
+                "endpoint_base_url": llm_base_url(provider),
+                "endpoint_effective": endpoint_effective(f"{llm_base_url(provider)}/chat/completions"),
+                **endpoint_fingerprint(f"{llm_base_url(provider)}/chat/completions"),
+                "status_code": None,
+                "failure_type": "payload_unshrinkable",
+                "request_payload_bytes": payload_bytes,
+                "max_request_bytes": cfg.max_request_bytes,
+                "over_by_bytes": over_by,
+                "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
+                "gemini_auth_mode_effective": "both"
+                if provider == "gemini" and cfg.gemini_auth_mode == "auto"
+                else (cfg.gemini_auth_mode if provider == "gemini" else None),
+                "provider_signature": provider_signature(
+                    provider,
+                    model_id,
+                    f"{llm_base_url(provider)}/chat/completions",
+                    "both" if provider == "gemini" and cfg.gemini_auth_mode == "auto" else cfg.gemini_auth_mode,
+                ),
+                "system_prompt_bytes": system_prompt_bytes,
+                "user_content_bytes": len(user_prompt.encode("utf-8")),
+                "context_bytes_estimate": context_stats.get("context_bytes", 0),
+            }
+            out_failed.write_text(
+                f"payload_unshrinkable: payload_bytes={payload_bytes} max_request_bytes={cfg.max_request_bytes}\n",
+                encoding="utf-8",
+            )
+            write_json(out_failed_json, failure_meta)
+            write_json(
+                out_json,
+                {
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "generated_at": now_iso(),
+                    "artifacts": [],
+                    "request_meta": failure_meta,
+                },
+            )
+            logger.error(
+                "Payload over hard cap for %s %s: payload_bytes=%s max_request_bytes=%s",
+                step_id,
+                partition_id,
+                payload_bytes,
+                cfg.max_request_bytes,
+            )
+            continue
 
         if cfg.dry_run:
             logger.info(
-                "Dry-run %s %s files=%s payload_bytes=%s redaction_hits=%s",
+                "Dry-run %s %s files=%s request_payload_bytes=%s redaction_hits=%s max_request_bytes=%s",
                 step_id,
                 partition_id,
                 context_stats["files_included"],
                 payload_bytes,
                 context_stats["redaction_hits"],
+                cfg.max_request_bytes,
             )
 
         if cfg.dry_run:
@@ -1575,17 +1896,51 @@ def execute_step_for_partitions(
                         "provider": provider,
                         "model_id": model_id,
                         "endpoint_base_url": llm_base_url(provider),
+                        "endpoint_effective": endpoint_effective(f"{llm_base_url(provider)}/chat/completions"),
+                        **endpoint_fingerprint(f"{llm_base_url(provider)}/chat/completions"),
                         "status_code": None,
                         "failure_type": None,
+                        "request_payload_bytes": payload_bytes,
+                        "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
+                        "gemini_auth_mode_effective": "both"
+                        if provider == "gemini" and cfg.gemini_auth_mode == "auto"
+                        else (cfg.gemini_auth_mode if provider == "gemini" else None),
+                        "provider_signature": provider_signature(
+                            provider,
+                            model_id,
+                            f"{llm_base_url(provider)}/chat/completions",
+                            "both" if provider == "gemini" and cfg.gemini_auth_mode == "auto" else cfg.gemini_auth_mode,
+                        ),
                         "sent_header_keys": sorted(
-                            ["Authorization", "Content-Type"]
-                            + (["x-goog-api-key"] if provider == "gemini" else [])
+                            list(
+                                make_headers(
+                                    provider,
+                                    "REDACTED",
+                                    cfg,
+                                    "both"
+                                    if provider == "gemini" and cfg.gemini_auth_mode == "auto"
+                                    else cfg.gemini_auth_mode,
+                                ).keys()
+                            )
+                        ),
+                        "auth_present_flags": build_auth_present_flags(
+                            make_headers(
+                                provider,
+                                "REDACTED",
+                                cfg,
+                                "both"
+                                if provider == "gemini" and cfg.gemini_auth_mode == "auto"
+                                else cfg.gemini_auth_mode,
+                            ),
+                            provider == "gemini" and cfg.gemini_auth_mode == "query_key",
                         ),
                     },
                 },
             )
             if out_failed.exists():
                 out_failed.unlink()
+            if out_failed_json.exists():
+                out_failed_json.unlink()
             continue
 
         logger.info(
@@ -1604,9 +1959,22 @@ def execute_step_for_partitions(
             api_key_env=api_key_env,
             system_prompt=prompt_text,
             user_content=user_prompt,
+            cfg=cfg,
         )
         response_text = str(llm_result.get("text", ""))
         request_meta = llm_result.get("meta", {})
+        request_meta.setdefault("request_payload_bytes", payload_bytes)
+
+        if request_meta.get("failure_type", "").startswith("auth_"):
+            step_auth_failures += 1
+            if cfg.fail_fast_auth and step_success_count == 0:
+                raise RuntimeError(
+                    f"Fail-fast auth triggered for step {step_id} partition {partition_id}. "
+                    f"failure_type={request_meta.get('failure_type')} provider={provider} "
+                    f"model={model_id} auth_mode={cfg.gemini_auth_mode}. "
+                    "Check credentials, endpoint mode, and gemini auth strategy."
+                )
+
         parsed = parse_json_from_response(response_text)
         artifacts = coerce_artifacts_from_response(
             parsed=parsed,
@@ -1615,6 +1983,18 @@ def execute_step_for_partitions(
         )
         if not artifacts:
             out_failed.write_text(response_text, encoding="utf-8")
+            write_json(
+                out_failed_json,
+                {
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "generated_at": now_iso(),
+                    "failure_type": request_meta.get("failure_type") or "parse",
+                    "status_code": request_meta.get("status_code"),
+                    "request_meta": request_meta,
+                },
+            )
             logger.error("Artifact parse failed for %s %s", step_id, partition_id)
             write_json(
                 out_json,
@@ -1632,6 +2012,7 @@ def execute_step_for_partitions(
             )
             continue
 
+        step_success_count += 1
         write_json(
             out_json,
             {
@@ -1645,9 +2026,12 @@ def execute_step_for_partitions(
         )
         if out_failed.exists():
             out_failed.unlink()
+        if out_failed_json.exists():
+            out_failed_json.unlink()
 
     if resume_skipped:
         logger.info("Resume: skipped %s existing outputs for step %s", resume_skipped, step_id)
+    return step_auth_failures
 
 
 def _run_phase_inner(
@@ -1706,14 +2090,22 @@ def _run_phase_inner(
         cfg.max_chars,
     )
 
+    phase_auth_failures = 0
     for prompt_spec in prompts:
-        execute_step_for_partitions(
+        step_auth_failures = execute_step_for_partitions(
             phase=phase,
             prompt_spec=prompt_spec,
             partitions=partitions,
             phase_dir=phase_dir,
             cfg=cfg,
         )
+        phase_auth_failures += step_auth_failures
+        if phase_auth_failures >= cfg.phase_auth_fail_threshold:
+            raise RuntimeError(
+                f"Phase {phase} auth circuit breaker triggered: auth_failures={phase_auth_failures} "
+                f"threshold={cfg.phase_auth_fail_threshold}. "
+                "Check auth config, provider routing, and endpoint mode."
+            )
         normalize_step(
             phase=phase,
             prompt_spec=prompt_spec,
@@ -1835,12 +2227,21 @@ def print_config(
             "max_files_docs": args.max_files_docs,
             "max_files_code": args.max_files_code,
             "max_chars": args.max_chars,
+            "max_request_bytes": args.max_request_bytes,
             "file_truncate_chars": args.file_truncate_chars,
+            "fail_fast_auth": args.fail_fast_auth,
+            "gemini_auth_mode": args.gemini_auth_mode,
+            "retry_policy": args.retry_policy,
+            "retry_max_attempts": args.retry_max_attempts,
+            "retry_base_seconds": args.retry_base_seconds,
+            "retry_max_seconds": args.retry_max_seconds,
+            "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
         },
         "limits": {
             "max_files_docs": cfg.max_files_docs,
             "max_files_code": cfg.max_files_code,
             "max_chars": cfg.max_chars,
+            "max_request_bytes": cfg.max_request_bytes,
             "file_truncate_chars": cfg.file_truncate_chars,
         },
         "dirs": {phase: str(dirs[phase]) for phase in phases},
@@ -2087,9 +2488,22 @@ def main() -> None:
     parser.add_argument("--max-files-docs", type=int, default=35)
     parser.add_argument("--max-files-code", type=int, default=20)
     parser.add_argument("--max-chars", type=int, default=650000)
+    parser.add_argument("--max-request-bytes", type=int, default=200000)
     parser.add_argument("--file-truncate-chars", type=int, default=70000)
     parser.add_argument("--home-scan-mode", choices=["safe", "full"], default="safe")
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--fail-fast-auth", dest="fail_fast_auth", action="store_true", default=True)
+    parser.add_argument("--no-fail-fast-auth", dest="fail_fast_auth", action="store_false")
+    parser.add_argument(
+        "--gemini-auth-mode",
+        choices=["api_key", "bearer", "both", "query_key", "auto"],
+        default="auto",
+    )
+    parser.add_argument("--retry-policy", choices=["none", "default"], default="default")
+    parser.add_argument("--retry-max-attempts", type=int, default=4)
+    parser.add_argument("--retry-base-seconds", type=float, default=2.0)
+    parser.add_argument("--retry-max-seconds", type=float, default=30.0)
+    parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
     parser.add_argument("--run-id", type=str)
     parser.add_argument("--doctor", action="store_true")
     parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
@@ -2114,9 +2528,17 @@ def main() -> None:
         max_files_docs=args.max_files_docs,
         max_files_code=args.max_files_code,
         max_chars=args.max_chars,
+        max_request_bytes=args.max_request_bytes,
         file_truncate_chars=args.file_truncate_chars,
         home_scan_mode=args.home_scan_mode,
         resume=args.resume,
+        fail_fast_auth=args.fail_fast_auth,
+        gemini_auth_mode=args.gemini_auth_mode,
+        retry_policy=args.retry_policy,
+        retry_max_attempts=max(1, args.retry_max_attempts),
+        retry_base_seconds=max(0.0, args.retry_base_seconds),
+        retry_max_seconds=max(0.0, args.retry_max_seconds),
+        phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
     )
 
     write_run_manifest(root, dirs, run_id, args)
