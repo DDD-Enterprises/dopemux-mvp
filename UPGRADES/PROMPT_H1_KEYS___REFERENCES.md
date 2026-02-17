@@ -1,33 +1,47 @@
-# PROMPT_H1 — Key index + cross-references (SAFE MODE)
+# Phase H1: Home Keys + References Surface (Safe)
 
-ROLE: Forensic extractor. Evidence-only.
-INPUT: HOME_INDEX.json from H0 + the scanned home config files in allowlist roots.
+Goal:
+- Extract references to environment variables, API keys, token paths, credential file paths, and configuration include-chains that appear in the provided home control-plane files.
+- Do NOT output secrets. Only output key NAMES, referenced FILE PATHS, and reference locations.
 
-GOAL:
-Create a key map of config knobs and where they appear, WITHOUT leaking values.
+Hard rules:
+- Never print actual secret values.
+- Prefer explicit evidence: show (path, line_range, snippet_redacted) for each reference.
+- Output valid JSON only.
 
-HARD RULES:
-- Never emit secret values. Always redact.
-- Emit key names, file paths, and small context snippets with redaction.
+Outputs:
+- HOME_KEYS_SURFACE.json
+- HOME_REFERENCES.json
 
-OUTPUT: HOME_KEY_INDEX.json
+HOME_KEYS_SURFACE.json:
 {
-  "artifact": "HOME_KEY_INDEX",
+  "surface_version": "H1.v1",
   "generated_at": "<iso8601>",
-  "keys": [
+  "env_vars_referenced": [
     {
-      "key": "<normalized_key_name>",
-      "raw_keys": ["<as seen>"],
-      "category": "mcp|router|litellm|taskx|profiles|tmux|sqlite|unknown",
-      "occurrences": [
-        { "path": "<absolute>", "line_hint": "<best effort line/section>", "context": "<redacted snippet>" }
-      ]
+      "name": "<ENV_VAR_NAME>",
+      "refs": [{"path":"<path>","line_range":"Lx-Ly","snippet":"<redacted snippet>"}]
     }
   ],
-  "stats": { "key_count": <int>, "occurrence_count": <int> }
+  "credential_paths_referenced": [
+    {
+      "path": "<string>",
+      "refs": [{"path":"<path>","line_range":"Lx-Ly","snippet":"<redacted snippet>"}]
+    }
+  ],
+  "notes": []
 }
 
-NORMALIZATION RULES:
-- Convert to lowercase, replace spaces with underscores.
-- Collapse prefixes (e.g. OPENAI_API_KEY -> openai_api_key).
-- Keep file+section hints stable.
+HOME_REFERENCES.json:
+{
+  "refs_version": "H1.v1",
+  "generated_at": "<iso8601>",
+  "includes_and_imports": [
+    {
+      "source_path": "<path>",
+      "kind": "<include|import|source|extends|loads>",
+      "target": "<string>",
+      "evidence": {"line_range":"Lx-Ly","snippet":"<redacted snippet>"}
+    }
+  ]
+}

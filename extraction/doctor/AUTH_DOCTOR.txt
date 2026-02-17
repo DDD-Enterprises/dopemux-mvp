@@ -1,16 +1,14 @@
-generated_at=2026-02-17T09:30:55.531117+00:00
+PASS provider=gemini transport=sdk endpoint=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent response_received=True succeeded_modes=sdk_api_key failed_modes=-
+generated_at=2026-02-17T19:50:52.126090+00:00
 phase=A
 provider=gemini
 model_id=gemini-2.0-flash-001
 api_key_env_name=GEMINI_API_KEY
+api_key_env_resolved=GEMINI_API_KEY
 api_key_present=true
-api_key_length=7
+api_key_length=39
+transport=sdk
 gemini_auth_mode_requested=auto
-gemini_auth_mode_effective=both
-endpoint_effective=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions
-sent_header_keys=Authorization,Content-Type,x-goog-api-key
-used_query_key=false
-status_code=400
-failure_type=api_key_missing_or_invalid
-provider_error_reason=API_KEY_INVALID
-provider_signature=provider=gemini;model=gemini-2.0-flash-001;host=generativelanguage.googleapis.com;path=/v1beta/openai/chat/completions;auth_mode=both
+modes_tested=sdk_api_key
+succeeded_modes=sdk_api_key
+failed_modes=
