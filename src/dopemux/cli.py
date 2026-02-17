@@ -120,12 +120,10 @@ ROLE_SERVER_SERVICE_MAP = {
     "conport": "conport",
     "serena": "serena",
     "serena-lsp": "serena",
-    "context7": "context7",
     "zen": "zen",
     "exa": "exa",
     "gptr-mcp": "gptr-mcp",
     "dopemux-gpt-researcher": "dopemux-gpt-researcher",
-    "mas-sequential-thinking": "mas-sequential-thinking",
     "desktop-commander": "desktop-commander",
     "leantime": "leantime-bridge",
     "leantime-bridge": "leantime-bridge",
@@ -3675,7 +3673,7 @@ def mcp_start_all_cmd(verify: bool):
     🚀 Start complete Dopemux stack (MCP servers + application services)
 
     Starts all services including:
-    - 12 MCP servers (ConPort, Zen, Serena, Context7, etc.)
+    - MCP servers (ConPort, Zen, Serena, etc.)
     - Integration Bridge (event processing, pattern detection)
     - Task Orchestrator (ADHD task coordination)
     - All infrastructure (PostgreSQL, Redis, Qdrant)
@@ -4145,8 +4143,8 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
 
     # Critical servers to health check
     critical_servers = [
-        ("Context7", "http://localhost:3002/health"),
-        ("Zen", "http://localhost:3003/health"),
+        ("ConPort", "http://localhost:3004/health"),
+        ("PAL", "http://localhost:3003/health"),
         ("LiteLLM", "http://localhost:4000/health/readiness"),
     ]
 
