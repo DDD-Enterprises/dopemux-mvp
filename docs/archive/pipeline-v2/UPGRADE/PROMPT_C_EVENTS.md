@@ -1,14 +1,3 @@
----
-id: PROMPT_C_EVENTS
-title: Prompt C Events
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-16'
-last_review: '2026-02-16'
-next_review: '2026-05-17'
-prelude: Prompt C Events (explanation) for dopemux documentation and developer workflows.
----
 # Prompt C (v2): Events (emitters + consumers + envelope fields)
 
 **Outputs:** `EVENT_EMITTERS.json`, `EVENT_CONSUMERS.json`, `EVENT_ENVELOPE_FIELDS.json`
