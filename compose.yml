@@ -475,8 +475,8 @@ services:
       - WMA_ENCRYPTION_KEY=${WMA_ENCRYPTION_KEY:-dev-only-change-me}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=dopemux_knowledge_graph
+      - POSTGRES_USER=dopemux_age
       - POSTGRES_PASSWORD=${AGE_PASSWORD}
       - REDIS_URL=redis://redis-events:6379
       - ENABLE_EVENTBUS=true
