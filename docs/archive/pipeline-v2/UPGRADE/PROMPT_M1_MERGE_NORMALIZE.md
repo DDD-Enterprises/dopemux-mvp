@@ -1,15 +1,3 @@
----
-id: PROMPT_M1_MERGE_NORMALIZE
-title: Prompt M1 Merge Normalize
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-16'
-last_review: '2026-02-16'
-next_review: '2026-05-17'
-prelude: Prompt M1 Merge Normalize (explanation) for dopemux documentation and developer
-  workflows.
----
 # Prompt M1 (v2): Merge & Normalize
 
 **Outputs:** Merged `DOC_INDEX.json`, `DOC_CLAIMS.json`, `DOC_BOUNDARIES.json`, `DOC_SUPERSESSION.json`, `DOC_INTERFACES.json`, `DOC_WORKFLOWS.json`, `DOC_DECISIONS.json`, `DOC_GLOSSARY.json`

@@ -1,15 +1,3 @@
----
-id: DOC_CORPUS_SUMMARY
-title: Doc Corpus Summary
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-16'
-last_review: '2026-02-16'
-next_review: '2026-05-17'
-prelude: Doc Corpus Summary (explanation) for dopemux documentation and developer
-  workflows.
----
 # Dopemux Documentation Corpus Summary
 
 **Generated:** 2026-02-15  
