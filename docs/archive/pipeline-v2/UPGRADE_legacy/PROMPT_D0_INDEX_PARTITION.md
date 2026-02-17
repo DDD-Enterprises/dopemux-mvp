@@ -1,3 +1,15 @@
+---
+id: PROMPT_D0_INDEX_PARTITION
+title: Prompt D0 Index Partition
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Prompt D0 Index Partition (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Prompt D0 (v2): Index & Partition
 
 **Outputs:** `DOC_INVENTORY.json`, `DOC_PARTITIONS.json`, `DOC_TODO_QUEUE.json`

@@ -1,3 +1,15 @@
+---
+id: EXEC_H_HOME_CONFIG
+title: Exec H Home Config
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Exec H Home Config (explanation) for dopemux documentation and developer
+  workflows.
+---
 # EXECUTABLE PROMPT: H - Home Config Pass (with Redaction)
 
 ---

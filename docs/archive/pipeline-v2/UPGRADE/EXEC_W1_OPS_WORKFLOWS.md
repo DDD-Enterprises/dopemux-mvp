@@ -1,3 +1,15 @@
+---
+id: EXEC_W1_OPS_WORKFLOWS
+title: Exec W1 Ops Workflows
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Exec W1 Ops Workflows (explanation) for dopemux documentation and developer
+  workflows.
+---
 # EXECUTABLE PROMPT: W1 - Ops Workflow Surface
 
 ---
