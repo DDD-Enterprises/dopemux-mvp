@@ -5043,7 +5043,8 @@ def main() -> None:
 
     root = Path.cwd()
     try:
-        run_context = resolve_run_context(root, args, allow_create_if_missing=args.promptgen_scan)
+        allow_create_if_missing = bool(args.promptgen_scan or args.run_id)
+        run_context = resolve_run_context(root, args, allow_create_if_missing=allow_create_if_missing)
         run_id = run_context.run_id
         dirs = get_run_dirs(root, run_id)
     except Exception as exc:
