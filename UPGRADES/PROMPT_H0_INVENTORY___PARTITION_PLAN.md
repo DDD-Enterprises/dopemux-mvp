@@ -1,164 +1,64 @@
-# PROMPT_H0_INVENTORY___PARTITION_PLAN
-Goal: home control plane inventory + deterministic partitions (SAFE MODE)
-Model: Gemini Flash (preferred)
+# PROMPT_H0 — HOME inventory + partition plan (SAFE MODE)
 
-## Mission
-Inventory ONLY the following allowlisted home roots:
-- ~/.dopemux/
-- ~/.config/dopemux/
-- ~/.config/taskx/
-- ~/.config/litellm/
-- ~/.config/mcp/
+ROLE: Forensic extractor. Safety-first. Evidence-only. No invention.
+MODEL: Gemini Flash (fast scanner).
 
-Then produce:
-1) HOME_INDEX.json (inventory)
-2) HOME_PARTITIONS.json (partition plan for Phase H)
+GOAL:
+Build HOME_INDEX.json and HOME_PARTITIONS.json for safe home control-plane scanning.
+Home scope must be restricted to:
+- ~/.dopemux/**
+- ~/.config/dopemux/**
+- ~/.config/taskx/**
+- ~/.config/litellm/**
+- ~/.config/mcp/**
 
-## Hard rules
-- Do not read outside allowlisted roots.
-- Do not include file contents in outputs; inventory metadata only.
-- Redact obvious secrets in filenames if present (rare). Do NOT print full paths to key files if they contain secrets in name; replace token-like segments with "[REDACTED]".
-- Evidence required: HOMECTRL: <path> (for inventory items, evidence is the file path itself)
-- Determinism: stable sorting.
+HARD RULES (SAFE MODE):
+1) Never output secrets. Redact any values that look like:
+   - API keys, bearer tokens, private keys, session cookies
+   - OAuth tokens, JWTs, passwords, DSNs with credentials
+   Replace value with: "__REDACTED__"
+2) Do not traverse outside the allowlist roots above.
+3) Ignore noise + heavy dirs:
+   - ~/.cache, ~/Library, ~/Downloads, ~/Documents, ~/Desktop, ~/Pictures, ~/Music
+   - node_modules, .git, dist, build, tmp, logs (unless within allowlist and clearly relevant)
+4) Prefer metadata over full contents. For each file, capture:
+   - path, size, mtime, extension, and a small SAFE excerpt (max 40 lines) ONLY if it contains config keys (not secrets).
+5) If a file is SQLite: do not dump raw rows. Only identify it as sqlite and list filename/size/mtime.
 
-## What counts as "control plane" in home
-Priority include:
-- dopemux configs, router configs, profile configs
-- mcp server configs / tool configs
-- litellm configs, spend db configs
-- taskx user config, pins, profiles
-- tmux helpers/layouts, workflow scripts
-- sqlite db metadata (do NOT dump entire DBs; only filename + size + modified time)
-
-Exclude:
-- caches unless they are clearly used as state (e.g., *.sqlite, *.db, *.json caches referenced by config)
-- logs unless referenced by config
-- large binary blobs
-
-## Output 1: HOME_INDEX.json
+OUTPUTS (write valid JSON, no markdown fences):
+A) HOME_INDEX.json
 {
   "artifact": "HOME_INDEX",
   "generated_at": "<iso8601>",
-  "roots": [
-    {"root": "~/.dopemux", "scanned": true},
-    {"root": "~/.config/dopemux", "scanned": true},
-    {"root": "~/.config/taskx", "scanned": true},
-    {"root": "~/.config/litellm", "scanned": true},
-    {"root": "~/.config/mcp", "scanned": true}
-  ],
+  "roots": ["~/.dopemux", "~/.config/dopemux", "~/.config/taskx", "~/.config/litellm", "~/.config/mcp"],
   "files": [
     {
-      "path": "<literal_path>",
-      "rel_root": "~/.dopemux|~/.config/dopemux|~/.config/taskx|~/.config/litellm|~/.config/mcp",
-      "ext": ".json|.yaml|.yml|.toml|.md|.sh|.sqlite|.db|.txt|unknown",
-      "size": <int_bytes>,
-      "mtime": "<iso8601>",
-      "category_hint": "mcp|router|profiles|litellm|taskx|tmux|workflow|sqlite|other",
-      "risk_hint": "HIGH|MED|LOW",
-      "notes": ["..."]
+      "path": "<absolute>",
+      "rel_root": "<which root>",
+      "kind": "config|script|sqlite|cache|unknown",
+      "ext": ".json|.yaml|.toml|.sh|.db|...",
+      "size": <int>,
+      "mtime": <epoch_seconds>,
+      "signals": ["router","mcp","litellm","taskx","profiles","tmux","hooks","env","sqlite","unknown"],
+      "safe_excerpt": "<optional short excerpt with sensitive values redacted>"
     }
   ],
-  "summary": {
-    "file_count": <int>,
-    "by_category": {"mcp": 0, "router": 0, "...": 0},
-    "largest_files": [{"path": "...", "size": 0}]
-  }
+  "stats": { "file_count": <int>, "total_bytes": <int> }
 }
 
-Risk hints:
-- HIGH: keys/tokens likely (auth config, env dumps)
-- MED: db files, sqlite, router configs
-- LOW: docs, readmes, templates
-
-## Output 2: HOME_PARTITIONS.json
-Goal: chunk Phase H safely by topic to avoid context overflow.
+B) HOME_PARTITIONS.json
 {
   "artifact": "HOME_PARTITIONS",
   "generated_at": "<iso8601>",
-  "rules": {
-    "max_files_per_partition": 30,
-    "max_total_chars_per_partition": 180000,
-    "truncate_file_chars": 12000
-  },
   "partitions": [
-    {
-      "id": "H_P1_MCP",
-      "topic": "mcp servers/tools config",
-      "include_globs": [
-        "~/.dopemux/mcp_config.json",
-        "~/.dopemux/mcp-tools/**",
-        "~/.config/mcp/**"
-      ],
-      "include_paths": ["<resolved literals from HOME_INDEX>"],
-      "exclude_globs": ["**/node_modules/**", "**/.cache/**"],
-      "priority": 100,
-      "rationale": "Needed for MCP->hooks migration and runtime behavior."
-    },
-    {
-      "id": "H_P2_ROUTER",
-      "topic": "router/provider ladders/profile routing",
-      "include_globs": [
-        "~/.dopemux/**router**",
-        "~/.dopemux/**ladders**",
-        "~/.config/dopemux/config.yaml",
-        "~/.config/dopemux/dopemux.toml"
-      ],
-      "include_paths": [],
-      "exclude_globs": [],
-      "priority": 95,
-      "rationale": "Local overrides of repo routing."
-    },
-    {
-      "id": "H_P3_LITELLM",
-      "topic": "litellm configs/spend db hints",
-      "include_globs": [
-        "~/.dopemux/litellm/**",
-        "~/.config/litellm/**"
-      ],
-      "include_paths": [],
-      "exclude_globs": [],
-      "priority": 85,
-      "rationale": "Provider routing + cost telemetry."
-    },
-    {
-      "id": "H_P4_TASKX",
-      "topic": "taskx user config/pins/profiles",
-      "include_globs": ["~/.config/taskx/**"],
-      "include_paths": [],
-      "exclude_globs": [],
-      "priority": 80,
-      "rationale": "TaskX integration truth and portability."
-    },
-    {
-      "id": "H_P5_TMUX_WORKFLOWS",
-      "topic": "tmux/layout/workflow helpers",
-      "include_globs": [
-        "~/.dopemux/tmux-layout.sh",
-        "~/.dopemux/**tmux**/**",
-        "~/.dopemux/**workflow**/**",
-        "~/.config/dopemux/**dashboard**"
-      ],
-      "include_paths": [],
-      "exclude_globs": [],
-      "priority": 70,
-      "rationale": "Implicit workflows and startup flows."
-    },
-    {
-      "id": "H_P6_SQLITE_STATE",
-      "topic": "sqlite state db metadata",
-      "include_globs": ["~/.dopemux/*.sqlite", "~/.dopemux/*.db", "~/.dopemux/**.sqlite", "~/.dopemux/**.db"],
-      "include_paths": [],
-      "exclude_globs": [],
-      "priority": 65,
-      "rationale": "Local state dependencies; do not dump contents."
-    }
+    { "id": "H_P1_MCP", "include_globs": ["**/mcp*.json","**/mcp/**/*.json","**/mcp/**/*.yaml","**/mcp/**/*.yml"], "notes": "MCP client/server configs" },
+    { "id": "H_P2_ROUTER", "include_globs": ["**/*router*.*","**/*provider*.*","**/*ladder*.*"], "notes": "routing/provider ladder hints" },
+    { "id": "H_P3_LITELLM", "include_globs": ["**/litellm*.*","**/*proxy*.*","**/*spend*.*"], "notes": "litellm configs + spend/log hints" },
+    { "id": "H_P4_PROFILES", "include_globs": ["**/profiles/**/*.*","**/*profile*.*","**/*persona*.*"], "notes": "profiles + operator configs" },
+    { "id": "H_P5_TMUX_WORKFLOWS", "include_globs": ["**/*.tmux*","**/*tmux*.*","**/*layout*.*"], "notes": "tmux helpers/workflows" },
+    { "id": "H_P6_SQLITE_STATE", "include_globs": ["**/*.sqlite","**/*.db","**/*.sqlite3"], "notes": "state DBs (metadata only)" },
+    { "id": "H_P9_MISC", "include_globs": ["**/*.*"], "notes": "catchall, only if not matched above" }
   ],
-  "unknowns": [
-    {"area": "home roots", "reason": "Some roots missing from input bundle"}
-  ]
+  "exclusions": ["**/Library/**","**/Downloads/**","**/.cache/**","**/node_modules/**","**/.git/**"],
+  "redaction_policy": { "redact_patterns": ["api_key","token","secret","password","Authorization","Bearer","OPENAI","ANTHROPIC","GEMINI","XAI"], "replacement": "__REDACTED__" }
 }
-
-## Finish
-Emit ONLY the two JSON artifacts.
-No prose.
-No markdown fences.
