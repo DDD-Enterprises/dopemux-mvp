@@ -21,9 +21,9 @@ services:
     container_name: staging-dopemux-postgres-age
     image: apache/age:latest
     environment:
-      POSTGRES_USER: dopemux_age
-      POSTGRES_PASSWORD: dopemux_age_staging_password
-      POSTGRES_DB: dopemux_knowledge_graph
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AGE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "15432:5432"  # Staging port (completely different range)
     volumes:

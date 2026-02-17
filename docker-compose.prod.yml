@@ -20,16 +20,16 @@ services:
     image: apache/age:release_PG16_1.6.0
     restart: always
     environment:
-      POSTGRES_USER: dopemux_age
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${AGE_PASSWORD}
-      POSTGRES_DB: dopemux_knowledge_graph
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pg_age_data:/var/lib/postgresql/data
       - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
     networks:
       - dopemux-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} || exit 1"]
       timeout: 5s
       retries: 10
       interval: 10s
@@ -78,7 +78,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://dopemux_age:${AGE_PASSWORD}@postgres:5432/dopemux_knowledge_graph
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${AGE_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       QDRANT_URL: http://qdrant:6333
       QDRANT_API_KEY: ${QDRANT_API_KEY}
