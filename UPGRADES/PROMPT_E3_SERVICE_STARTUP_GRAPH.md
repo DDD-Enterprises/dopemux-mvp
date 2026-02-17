@@ -1,13 +1,6 @@
-# PROMPT_E3 — Service startup graph
+# PROMPT_E3 — SERVICE STARTUP GRAPH
 
-ROLE: Execution plane extractor.
-GOAL: derive the startup graph from compose files, scripts, tmux layouts, and CLI entrypoints that start services.
+TASK: Produce a service start graph from compose/scripts.
 
 OUTPUTS:
-  • EXEC_STARTUP_GRAPH.json
-    - nodes[]: {id, kind(service/script/command), ref, starts[]}
-    - edges[]: {from, to, type(start/depends/healthcheck/waits_for)}
-
-RULES:
-  • Only include relations that are explicitly documented.
-  • Leave ports/volumes out unless they appear alongside the service definition.
+	•	EXEC_STARTUP_GRAPH.json

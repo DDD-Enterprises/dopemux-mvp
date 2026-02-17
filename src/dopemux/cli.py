@@ -4061,6 +4061,39 @@ def _configure_openrouter_litellm():
 
 
 
+def _resolve_mcp_dir(project_path: Path) -> Optional[Path]:
+    """
+    Resolve MCP stack location deterministically.
+
+    Resolution order:
+    1. DOPEMUX_MCP_DIR (explicit override)
+    2. project_path/docker/mcp-servers (local project assets)
+    3. dopemux repo root (fallback for editable installs)
+    """
+    # 1. Explicit override
+    if env_dir := os.getenv("DOPEMUX_MCP_DIR"):
+        path = Path(env_dir).resolve()
+        if (path / "start-all-mcp-servers.sh").exists():
+            return path
+
+    # 2. Local project
+    local_path = project_path / "docker" / "mcp-servers"
+    if (local_path / "start-all-mcp-servers.sh").exists():
+        return local_path
+
+    # 3. Inferred package root (editable install)
+    # cli.py is at src/dopemux/cli.py -> parents[2] is repo root
+    try:
+        source_root = Path(__file__).resolve().parents[2]
+        pkg_path = source_root / "docker" / "mcp-servers"
+        if (pkg_path / "start-all-mcp-servers.sh").exists():
+            return pkg_path
+    except Exception:
+        pass
+
+    return None
+
+
 def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[dict] = None):
     """
     Start MCP servers with real-time output streaming and health check waiting.
@@ -4083,20 +4116,26 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
 
     import requests
 
-    mcp_dir = project_path / "docker" / "mcp-servers"
-
-    # Preflight check: Fail soft if MCP assets are missing
-    script_path = mcp_dir / "start-all-mcp-servers.sh"
-    if not mcp_dir.exists() or not script_path.exists():
+    # Resolve MCP stack location
+    mcp_dir = _resolve_mcp_dir(project_path)
+    
+    if not mcp_dir:
         console.print()
-        console.logger.warning(f"[yellow]⚠️  MCP startup assets missing in {project_path}[/yellow]")
-        console.print("[dim]   Running in reduced functionality mode (no local MCP stack).[/dim]")
+        console.logger.error("[red]❌ Required MCP startup assets not found.[/red]")
+        console.print("[dim]   (Checked: DOPEMUX_MCP_DIR, local project, and dopemux package root)[/dim]")
         
         console.print("\n[bold]Remedies:[/bold]")
-        console.print("  1. Skip MCP start explicitly: [green]dopemux start --no-mcp[/green]")
-        console.print("  2. Run from the repo with the stack: [green]cd dopemux-mvp && dopemux start[/green]")
-        console.print("  3. Symlink the docker stack: [green]ln -s .../dopemux-mvp/docker/mcp-servers ./docker/[/green]\n")
-        return
+        console.print("  1. Set DOPEMUX_MCP_DIR to the location of 'docker/mcp-servers'")
+        console.print("     [green]export DOPEMUX_MCP_DIR=/path/to/dopemux/docker/mcp-servers[/green]")
+        console.print("  2. Symlink the docker stack to your project:")
+        console.print(f"     [green]cd {project_path} && mkdir -p docker && ln -s .../dopemux/docker/mcp-servers docker/mcp-servers[/green]")
+        console.print("  3. Skip MCP requirement (functionality will be reduced):")
+        console.print("     [green]dopemux start --no-mcp[/green]")
+        
+        raise click.ClickException("MCP stack required but not found. See remedies above.")
+    
+    # We found it - ensure script exists (double-check, though resolver checks it)
+    script_path = mcp_dir / "start-all-mcp-servers.sh"
 
     # CRITICAL FIX: Merge instance env with current environment
     # This ensures MCP servers get DOPEMUX_WORKSPACE_ID and other instance vars

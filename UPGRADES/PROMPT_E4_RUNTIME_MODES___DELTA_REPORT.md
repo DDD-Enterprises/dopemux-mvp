@@ -1,12 +1,7 @@
-# PROMPT_E4 — Runtime modes + delta report
+# PROMPT_E4 — RUNTIME MODES / DELTA REPORT
 
-ROLE: Execution plane extractor.
-GOAL: compare runtime modes (dev/prod/smoke/test) and highlight configuration deltas.
+TASK: Identify runtime “modes” (dev/prod/smoke/local) + deltas.
 
 OUTPUTS:
-  • EXEC_RUNTIME_MODES.json (modes[]: {name, toggles[], changed_services[], changed_env[], changed_ports[]})
-  • EXEC_MODE_DELTA_REPORT.json (deltas[]: {from_mode, to_mode, differences[]})
-
-RULES:
-  • Report each mode only if referenced in docs/configs.
-  • Capture environment/service differences verbatim where possible.
+	•	EXEC_RUNTIME_MODES.json
+	•	EXEC_MODE_DELTA_REPORT.json
