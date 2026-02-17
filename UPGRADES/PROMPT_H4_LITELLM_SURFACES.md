@@ -1,25 +1,23 @@
-# PROMPT_H4 — HOME LiteLLM surface (SAFE MODE)
+# Phase H4: Home LiteLLM Surface
 
-ROLE: Forensic extractor.
-GOAL:
-Extract home-level LiteLLM proxy configs, spend/log DB settings, routing, adapters.
+Goal:
+- Extract LiteLLM config references, proxy configs, spend/log DB hints, and provider entries from home control-plane.
 
-HARD RULES:
-- Redact API keys and headers.
-- Keep only: file paths, config keys, model names, DB paths (paths ok), and ports (ok).
+Outputs:
+- HOME_LITELLM_SURFACE.json
 
-OUTPUT: HOME_LITELLM_SURFACE.json
+HOME_LITELLM_SURFACE.json:
 {
-  "artifact": "HOME_LITELLM_SURFACE",
+  "surface_version": "H4.v1",
   "generated_at": "<iso8601>",
   "configs": [
     {
-      "path": "<absolute>",
-      "proxy": { "host": "<string>", "port": "<int or string>", "mode": "<if present>" },
-      "models": ["<literal model strings>"],
-      "logging": { "db_paths": ["<paths>"], "keys": ["<key names>"] },
-      "routing": { "keys": ["<key names>"], "notes": "<short>" },
-      "env_keys": ["<keys only>"]
+      "path": "<path>",
+      "providers": ["<string>"],
+      "models": ["<string>"],
+      "db_or_logs": ["<string>"],
+      "evidence": {"line_range":"Lx-Ly","snippet":"<redacted snippet>"}
     }
-  ]
+  ],
+  "notes":[]
 }

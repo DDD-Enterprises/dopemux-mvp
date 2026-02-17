@@ -1,24 +1,31 @@
-# PROMPT_H7 — HOME sqlite/state DB metadata (SAFE MODE)
+# Phase H7: Home SQLite + State DB Metadata
 
-ROLE: Forensic extractor.
-GOAL:
-Identify sqlite DB files in allowlist roots and extract ONLY metadata signals.
-No row dumps.
+Goal:
+- Detect references to sqlite DB files, schema files, migrations, or state directories in home control plane configs.
+- If you have actual sqlite schema text in context, extract table/index names as metadata only (no secret contents).
 
-OUTPUT: HOME_SQLITE_SCHEMA.json
+Outputs:
+- HOME_SQLITE_SCHEMA.json
+
+HOME_SQLITE_SCHEMA.json:
 {
-  "artifact": "HOME_SQLITE_SCHEMA",
+  "surface_version": "H7.v1",
   "generated_at": "<iso8601>",
-  "dbs": [
+  "db_files": [
     {
-      "path": "<absolute>",
-      "size": <int>,
-      "mtime": <epoch_seconds>,
-      "role_guess": "context|index|cache|spend|unknown",
-      "schema_excerpt": "<if schema is present in nearby .md/.sql files, cite that instead of introspecting>"
+      "path": "<path>",
+      "evidence": {"path":"<path>","line_range":"Lx-Ly","snippet":"<redacted snippet>"},
+      "notes":"<string>"
     }
   ],
-  "notes": [
-    "If schema cannot be derived safely without opening DB: mark UNKNOWN and list what tool/step would be needed."
-  ]
+  "schema_hints": [
+    {
+      "source_path": "<path>",
+      "tables": ["<string>"],
+      "indexes": ["<string>"],
+      "triggers": ["<string>"],
+      "evidence": {"line_range":"Lx-Ly","snippet":"<redacted snippet>"}
+    }
+  ],
+  "notes":[]
 }

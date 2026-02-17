@@ -1,34 +1,37 @@
-# PROMPT_H2 — HOME MCP surface (SAFE MODE)
+# Phase H2: Home MCP Surface
 
-ROLE: Forensic extractor.
-GOAL:
-Extract *home-side* MCP configuration surfaces: client configs, server registries, tool defs, endpoints, env wiring.
+Goal:
+- Extract MCP server definitions, client configs, and any local MCP wiring present in home control-plane files.
 
-HARD RULES:
-- Redact credentials, tokens, URLs containing credentials.
-- Do not invent server names or capabilities. Only what is evidenced.
+Hard rules:
+- Evidence-only.
+- If MCP appears only as a hint (string mention) but no structured config is present, record as "hint_only".
 
-OUTPUT: HOME_MCP_SURFACE.json
+Outputs:
+- HOME_MCP_SURFACE.json
+
+HOME_MCP_SURFACE.json:
 {
-  "artifact": "HOME_MCP_SURFACE",
+  "surface_version": "H2.v1",
   "generated_at": "<iso8601>",
-  "configs": [
+  "servers": [
     {
-      "path": "<absolute>",
-      "format": "json|yaml|toml|other",
-      "mcp_servers": [
-        {
-          "name": "<server id>",
-          "command": "<string redacted if contains secret>",
-          "args": ["<...>"],
-          "env_keys": ["<ENV_KEY_ONLY>"],
-          "notes": "<short>"
-        }
-      ],
-      "client_settings": { "keys": ["<key names only>"] }
+      "name": "<string>",
+      "command": "<string or empty>",
+      "args": ["<string>"],
+      "env_keys": ["<ENV_VAR_NAME>"],
+      "config_path": "<path>",
+      "evidence": {"line_range":"Lx-Ly","snippet":"<redacted snippet>"},
+      "confidence": "<high|medium|low|hint_only>"
     }
   ],
-  "inferred_graph": [
-    { "client": "dopemux|taskx|other", "server": "<name>", "evidence": "<path/section>" }
-  ]
+  "clients": [
+    {
+      "name": "<string>",
+      "config_path": "<path>",
+      "evidence": {"line_range":"Lx-Ly","snippet":"<redacted snippet>"},
+      "notes": "<string>"
+    }
+  ],
+  "notes": []
 }

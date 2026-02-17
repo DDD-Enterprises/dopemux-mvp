@@ -4,6 +4,16 @@ Phase: A
 Step: A99
 
 Outputs:
+- REPO_INSTRUCTION_SURFACE.json
+- REPO_INSTRUCTION_REFERENCES.json
+- REPO_MCP_SERVER_DEFS.json
+- REPO_MCP_PROXY_SURFACE.json
+- REPO_ROUTER_SURFACE.json
+- REPO_HOOKS_SURFACE.json
+- REPO_IMPLICIT_BEHAVIOR_HINTS.json
+- REPO_COMPOSE_SERVICE_GRAPH.json
+- REPO_LITELLM_SURFACE.json
+- REPO_TASKX_SURFACE.json
 - REPOCTRL_NORM_MANIFEST.json
 - REPOCTRL_QA.json
 
@@ -17,7 +27,8 @@ Hard rules:
 3) Emit ONLY valid JSON. No commentary.
 
 Input:
-You will receive raw outputs from steps A0-A99. Summarize only what is present.
+You will receive raw outputs from steps A0-A99. Merge and normalize into the exact output artifact names above.
+Summarize only what is present.
 
 Required JSON shape:
 {
