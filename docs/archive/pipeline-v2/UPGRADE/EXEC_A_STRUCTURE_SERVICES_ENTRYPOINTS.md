@@ -1,15 +1,3 @@
----
-id: EXEC_A_STRUCTURE_SERVICES_ENTRYPOINTS
-title: Exec A Structure Services Entrypoints
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-16'
-last_review: '2026-02-16'
-next_review: '2026-05-17'
-prelude: Exec A Structure Services Entrypoints (explanation) for dopemux documentation
-  and developer workflows.
----
 # EXECUTABLE PROMPT: A - Structure + Services + Entrypoints
 
 ---
