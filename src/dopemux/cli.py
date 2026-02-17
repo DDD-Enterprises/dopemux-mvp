@@ -2820,8 +2820,6 @@ def _run_extract_docs(
     extensions: Optional[str],
     adhd_profile: bool,
 ) -> None:
-    from pathlib import Path
-    import sys
     import json
     import csv
     from io import StringIO
@@ -3116,8 +3114,6 @@ def _run_extract_pipeline(
     synthesis_types: tuple,
     synthesis_format: str,
 ) -> None:
-    from pathlib import Path
-    import sys
 
     try:
         from .extraction import UnifiedDocumentPipeline, PipelineConfig
@@ -3300,8 +3296,6 @@ def _run_extract_cleanup(
     report_format: str,
     report_file: Optional[str],
 ) -> None:
-    from pathlib import Path
-    import sys
     import json
     from datetime import datetime
 
@@ -4542,8 +4536,6 @@ def _run_extract_chatlog(
     archive: Optional[str],
     workspace_id: Optional[str],
 ) -> None:
-    import sys
-    from pathlib import Path
 
     backend_path = Path(__file__).parent.parent.parent / "services" / "dopemux-gpt-researcher" / "backend"
     sys.path.insert(0, str(backend_path))
@@ -4726,8 +4718,6 @@ def _run_extract_pro(
     workspace_id: Optional[str],
     max_documents: int,
 ) -> None:
-    import sys
-    from pathlib import Path
 
     # Add the gpt-researcher backend to the path
     backend_path = Path(__file__).parent.parent.parent / "services" / "dopemux-gpt-researcher" / "backend"
@@ -6124,8 +6114,6 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
     # Import here to avoid circular dependencies
     try:
         # Add services to Python path if needed
-        import sys
-        from pathlib import Path
         services_path = Path(__file__).resolve().parent.parent / 'services'
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))
@@ -6192,8 +6180,6 @@ def analyze(ctx, bug_description, file_path, line, verbose):
     Provides insights, complexity assessment, and repair strategy recommendations.
     """
     try:
-        import sys
-        from pathlib import Path
         services_path = Path(__file__).resolve().parent.parent / 'services'
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))
@@ -6236,8 +6222,6 @@ def code_agent_status_cmd(ctx, verbose):
     Show code agent status and configuration.
     """
     try:
-        import sys
-        from pathlib import Path
         services_path = Path(__file__).resolve().parent.parent / 'services'
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))
