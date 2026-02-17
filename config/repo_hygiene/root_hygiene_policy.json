@@ -55,6 +55,8 @@
     "README.md",
     "compose.yml",
     "docker-compose*.yml",
+    "Dockerfile",
+    "Dockerfile.*",
     "litellm.config",
     "litellm.config.yaml",
     "mcp-proxy-config*.yaml",

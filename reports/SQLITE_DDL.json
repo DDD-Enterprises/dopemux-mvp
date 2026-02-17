@@ -1,0 +1,261 @@
+[
+    {
+        "sql_object_name": "decisions",
+        "type": "table",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "5-41",
+        "full_statement": "CREATE TABLE IF NOT EXISTS decisions (\n    id INTEGER PRIMARY KEY,\n    summary TEXT NOT NULL,\n    rationale TEXT,\n    implementation_details TEXT,\n    \n    -- Multi-instance support\n    workspace_id TEXT NOT NULL,\n    instance_id TEXT NOT NULL,\n    visibility TEXT NOT NULL DEFAULT 'shared',  -- private, shared, global\n    \n    -- Classification\n    status TEXT NOT NULL DEFAULT 'active',\n    decision_type TEXT,\n    tags TEXT,  -- JSON array\n    \n    -- User (optional - for auth mode)\n    user_id TEXT,\n    \n    -- ADHD metadata\n    cognitive_load INTEGER,\n    \n    -- Agent extensions\n    agent_metadata TEXT,  -- JSON object\n    code_references TEXT,  -- JSON array\n    \n    -- Graph relationships (stored as JSON array of IDs)\n    related_decisions TEXT,  -- JSON array\n    \n    -- Timestamps\n    created_at TEXT NOT NULL,\n    updated_at TEXT,\n    \n    -- Cache metadata\n    cached_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    cache_ttl INTEGER DEFAULT 3600  -- 1 hour TTL\n);"
+    },
+    {
+        "sql_object_name": "decisions_fts",
+        "type": "table",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "44-51",
+        "full_statement": "CREATE VIRTUAL TABLE IF NOT EXISTS decisions_fts USING fts5(\n    summary, \n    rationale, \n    implementation_details,\n    tags,\n    content='decisions',\n    content_rowid='id'\n);"
+    },
+    {
+        "sql_object_name": "decisions_ai",
+        "type": "trigger",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "54-57",
+        "full_statement": "CREATE TRIGGER IF NOT EXISTS decisions_ai AFTER INSERT ON decisions BEGIN\n    INSERT INTO decisions_fts(rowid, summary, rationale, implementation_details, tags)\n    VALUES (new.id, new.summary, new.rationale, new.implementation_details, new.tags);\nEND;"
+    },
+    {
+        "sql_object_name": "decisions_ad",
+        "type": "trigger",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "59-61",
+        "full_statement": "CREATE TRIGGER IF NOT EXISTS decisions_ad AFTER DELETE ON decisions BEGIN\n    DELETE FROM decisions_fts WHERE rowid = old.id;\nEND;"
+    },
+    {
+        "sql_object_name": "decisions_au",
+        "type": "trigger",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "63-67",
+        "full_statement": "CREATE TRIGGER IF NOT EXISTS decisions_au AFTER UPDATE ON decisions BEGIN\n    DELETE FROM decisions_fts WHERE rowid = old.id;\n    INSERT INTO decisions_fts(rowid, summary, rationale, implementation_details, tags)\n    VALUES (new.id, new.summary, new.rationale, new.implementation_details, new.tags);\nEND;"
+    },
+    {
+        "sql_object_name": "idx_workspace_instance",
+        "type": "index",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "70",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_workspace_instance ON decisions(workspace_id, instance_id);"
+    },
+    {
+        "sql_object_name": "idx_visibility",
+        "type": "index",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "71",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_visibility ON decisions(visibility);"
+    },
+    {
+        "sql_object_name": "idx_status",
+        "type": "index",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "72",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_status ON decisions(status);"
+    },
+    {
+        "sql_object_name": "idx_created",
+        "type": "index",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "73",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_created ON decisions(created_at DESC);"
+    },
+    {
+        "sql_object_name": "idx_cached",
+        "type": "index",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "74",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_cached ON decisions(cached_at);"
+    },
+    {
+        "sql_object_name": "work_sessions",
+        "type": "table",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "77-95",
+        "full_statement": "CREATE TABLE IF NOT EXISTS work_sessions (\n    session_id TEXT PRIMARY KEY,\n    workspace_id TEXT NOT NULL,\n    instance_id TEXT NOT NULL DEFAULT 'A',\n    \n    started_at TEXT NOT NULL,\n    last_activity TEXT NOT NULL,\n    ended_at TEXT,\n    \n    focus_level INTEGER,\n    break_needed INTEGER DEFAULT 0,  -- Boolean\n    context_preserved INTEGER DEFAULT 1,  -- Boolean\n    \n    current_file TEXT,\n    current_decisions TEXT,  -- JSON array\n    \n    total_decisions_created INTEGER DEFAULT 0,\n    total_decisions_viewed INTEGER DEFAULT 0\n);"
+    },
+    {
+        "sql_object_name": "idx_session_workspace",
+        "type": "index",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "97",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_session_workspace ON work_sessions(workspace_id, instance_id);"
+    },
+    {
+        "sql_object_name": "idx_session_active",
+        "type": "index",
+        "path": "services/dddpg/storage/migrations/sqlite/001_init_schema.sql",
+        "line_range": "98",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_session_active ON work_sessions(ended_at) WHERE ended_at IS NULL;"
+    },
+    {
+        "sql_object_name": "raw_activity_events",
+        "type": "table",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "5-20",
+        "full_statement": "CREATE TABLE IF NOT EXISTS raw_activity_events (\n  id TEXT PRIMARY KEY,\n  workspace_id TEXT NOT NULL,\n  instance_id TEXT NOT NULL,\n  session_id TEXT,\n\n  ts_utc TEXT NOT NULL,\n  event_type TEXT NOT NULL,\n  source TEXT NOT NULL,\n\n  payload_json TEXT NOT NULL,\n  redaction_level TEXT NOT NULL DEFAULT 'strict',\n\n  ttl_days INTEGER NOT NULL DEFAULT 7,\n  created_at_utc TEXT NOT NULL\n);"
+    },
+    {
+        "sql_object_name": "idx_raw_events_ws_ts",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "22-23",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_raw_events_ws_ts\n  ON raw_activity_events(workspace_id, instance_id, ts_utc DESC);"
+    },
+    {
+        "sql_object_name": "idx_raw_events_type_ts",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "25-26",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_raw_events_type_ts\n  ON raw_activity_events(event_type, ts_utc DESC);"
+    },
+    {
+        "sql_object_name": "work_log_entries",
+        "type": "table",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "29-81",
+        "full_statement": "CREATE TABLE IF NOT EXISTS work_log_entries (\n  id TEXT PRIMARY KEY,\n  workspace_id TEXT NOT NULL,\n  instance_id TEXT NOT NULL,\n  session_id TEXT,\n\n  ts_utc TEXT NOT NULL,\n  duration_sec INTEGER,\n\n  category TEXT NOT NULL CHECK (category IN (\n    'planning', 'implementation', 'review', 'debugging',\n    'research', 'deployment', 'architecture', 'documentation'\n  )),\n  entry_type TEXT NOT NULL CHECK (entry_type IN (\n    'decision', 'blocker', 'resolution', 'milestone', 'error',\n    'workflow_transition', 'manual_note', 'task_event'\n  )),\n  workflow_phase TEXT CHECK (workflow_phase IN (\n    'planning', 'implementation', 'review', 'audit', 'deployment', 'maintenance'\n  ) OR workflow_phase IS NULL),\n\n  summary TEXT NOT NULL,\n  details_json TEXT,\n  reasoning TEXT,\n\n  outcome TEXT NOT NULL DEFAULT 'in_progress' CHECK (outcome IN (\n    'success', 'partial', 'blocked', 'abandoned', 'in_progress', 'failed'\n  )),\n  importance_score INTEGER NOT NULL DEFAULT 5 CHECK (importance_score BETWEEN 1 AND 10),\n\n  tags_json TEXT NOT NULL DEFAULT '[]',\n\n  linked_decisions_json TEXT,\n  linked_files_json TEXT,\n  linked_commits_json TEXT,\n  linked_chat_range_json TEXT,\n\n  parent_entry_id TEXT,\n\n  -- Provenance fields (Packet D \u00a74.3 - Mandatory for all post-migration promotions)\n  source_event_id TEXT NOT NULL,\n  source_event_type TEXT NOT NULL,\n  source_adapter TEXT NOT NULL,\n  source_event_ts_utc TEXT NOT NULL,\n  promotion_rule TEXT NOT NULL,\n  promotion_ts_utc TEXT NOT NULL,\n\n  -- Supersession support (Packet D \u00a76.2)\n  supersedes_entry_id TEXT,\n\n  created_at_utc TEXT NOT NULL,\n  updated_at_utc TEXT NOT NULL\n);"
+    },
+    {
+        "sql_object_name": "idx_worklog_ws_ts",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "83-84",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_worklog_ws_ts\n  ON work_log_entries(workspace_id, instance_id, ts_utc DESC);"
+    },
+    {
+        "sql_object_name": "idx_worklog_cat_type",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "86-87",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_worklog_cat_type\n  ON work_log_entries(category, entry_type);"
+    },
+    {
+        "sql_object_name": "idx_worklog_phase",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "89-90",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_worklog_phase\n  ON work_log_entries(workflow_phase);"
+    },
+    {
+        "sql_object_name": "idx_worklog_importance",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "92-93",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_worklog_importance\n  ON work_log_entries(importance_score DESC, ts_utc DESC);"
+    },
+    {
+        "sql_object_name": "idx_worklog_supersedes_unique_scoped",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "96-98",
+        "full_statement": "CREATE UNIQUE INDEX IF NOT EXISTS idx_worklog_supersedes_unique_scoped\n  ON work_log_entries(workspace_id, instance_id, supersedes_entry_id)\n  WHERE supersedes_entry_id IS NOT NULL;"
+    },
+    {
+        "sql_object_name": "issue_links",
+        "type": "table",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "101-116",
+        "full_statement": "CREATE TABLE IF NOT EXISTS issue_links (\n  id TEXT PRIMARY KEY,\n  workspace_id TEXT NOT NULL,\n  instance_id TEXT NOT NULL,\n\n  issue_entry_id TEXT NOT NULL,\n  resolution_entry_id TEXT NOT NULL,\n\n  confidence REAL NOT NULL DEFAULT 0.7,\n  evidence_window_min INTEGER NOT NULL DEFAULT 30,\n\n  created_at_utc TEXT NOT NULL,\n\n  FOREIGN KEY (issue_entry_id) REFERENCES work_log_entries(id),\n  FOREIGN KEY (resolution_entry_id) REFERENCES work_log_entries(id)\n);"
+    },
+    {
+        "sql_object_name": "idx_issue_links_issue",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "118-119",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_issue_links_issue\n  ON issue_links(issue_entry_id);"
+    },
+    {
+        "sql_object_name": "idx_issue_links_resolution",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "121-122",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_issue_links_resolution\n  ON issue_links(resolution_entry_id);"
+    },
+    {
+        "sql_object_name": "reflection_cards",
+        "type": "table",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "125-147",
+        "full_statement": "CREATE TABLE IF NOT EXISTS reflection_cards (\n  id TEXT PRIMARY KEY,\n  workspace_id TEXT NOT NULL,\n  instance_id TEXT NOT NULL,\n  session_id TEXT,\n\n  ts_utc TEXT NOT NULL,\n\n  window_start_utc TEXT NOT NULL,\n  window_end_utc TEXT NOT NULL,\n\n  trajectory TEXT NOT NULL,\n  top_decisions_json TEXT NOT NULL DEFAULT '[]',\n  top_blockers_json TEXT NOT NULL DEFAULT '[]',\n  progress_json TEXT NOT NULL DEFAULT '{}',\n  next_suggested_json TEXT NOT NULL DEFAULT '[]',\n\n  -- Provenance: which work_log_entries were used to generate this reflection\n  source_entry_ids_json TEXT NOT NULL DEFAULT '[]',\n\n  promotion_candidates_json TEXT NOT NULL DEFAULT '[]',\n  created_at_utc TEXT NOT NULL\n);"
+    },
+    {
+        "sql_object_name": "idx_reflection_ws_ts",
+        "type": "index",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "149-150",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_reflection_ws_ts\n  ON reflection_cards(workspace_id, instance_id, ts_utc DESC);"
+    },
+    {
+        "sql_object_name": "trajectory_state",
+        "type": "table",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "153-165",
+        "full_statement": "CREATE TABLE IF NOT EXISTS trajectory_state (\n  workspace_id TEXT NOT NULL,\n  instance_id TEXT NOT NULL,\n  session_id TEXT,\n\n  updated_at_utc TEXT NOT NULL,\n\n  current_stream TEXT NOT NULL DEFAULT '',\n  current_goal_json TEXT NOT NULL DEFAULT '{}',\n  last_steps_json TEXT NOT NULL DEFAULT '[]',\n\n  PRIMARY KEY (workspace_id, instance_id)\n);"
+    },
+    {
+        "sql_object_name": "schema_migrations",
+        "type": "table",
+        "path": "services/working-memory-assistant/chronicle/schema.sql",
+        "line_range": "168-171",
+        "full_statement": "CREATE TABLE IF NOT EXISTS schema_migrations (\n  version TEXT PRIMARY KEY,\n  applied_at_utc TEXT NOT NULL\n);"
+    },
+    {
+        "sql_object_name": "context_snapshots",
+        "type": "table",
+        "path": "src/dopemux/adhd/context_manager.py",
+        "line_range": "194-204",
+        "full_statement": "CREATE TABLE IF NOT EXISTS context_snapshots (\n                    session_id TEXT PRIMARY KEY,\n                    timestamp TEXT NOT NULL,\n                    working_directory TEXT NOT NULL,\n                    data TEXT NOT NULL,\n                    hash TEXT NOT NULL,\n                    size INTEGER NOT NULL,\n                    created_at TEXT DEFAULT CURRENT_TIMESTAMP\n                )"
+    },
+    {
+        "sql_object_name": "session_metadata",
+        "type": "table",
+        "path": "src/dopemux/adhd/context_manager.py",
+        "line_range": "208-221",
+        "full_statement": "CREATE TABLE IF NOT EXISTS session_metadata (\n                    session_id TEXT PRIMARY KEY,\n                    project_path TEXT NOT NULL,\n                    started_at TEXT NOT NULL,\n                    last_active TEXT NOT NULL,\n                    total_duration INTEGER DEFAULT 0,\n                    context_switches INTEGER DEFAULT 0,\n                    focus_score REAL DEFAULT 0.0,\n                    tags TEXT DEFAULT '[]',\n                    auto_description TEXT DEFAULT '',\n                    session_type TEXT DEFAULT 'general'\n                )"
+    },
+    {
+        "sql_object_name": "session_tags",
+        "type": "table",
+        "path": "src/dopemux/adhd/context_manager.py",
+        "line_range": "226-234",
+        "full_statement": "CREATE TABLE IF NOT EXISTS session_tags (\n                    session_id TEXT NOT NULL,\n                    tag TEXT NOT NULL,\n                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,\n                    PRIMARY KEY (session_id, tag),\n                    FOREIGN KEY (session_id) REFERENCES context_snapshots(session_id) ON DELETE CASCADE\n                )"
+    },
+    {
+        "sql_object_name": "idx_timestamp",
+        "type": "index",
+        "path": "src/dopemux/adhd/context_manager.py",
+        "line_range": "237-241",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_timestamp\n                ON context_snapshots(timestamp DESC)"
+    },
+    {
+        "sql_object_name": "token_usage",
+        "type": "table",
+        "path": "src/dopemux/mcp/token_manager.py",
+        "line_range": "183-196",
+        "full_statement": "CREATE TABLE IF NOT EXISTS token_usage (\n                        id INTEGER PRIMARY KEY AUTOINCREMENT,\n                        timestamp TEXT NOT NULL,\n                        session_id TEXT NOT NULL,\n                        role TEXT NOT NULL,\n                        tool_name TEXT NOT NULL,\n                        method TEXT NOT NULL,\n                        tokens_used INTEGER NOT NULL,\n                        estimated_tokens INTEGER NOT NULL,\n                        optimization_applied INTEGER NOT NULL,\n                        tokens_saved INTEGER DEFAULT 0\n                    )"
+    },
+    {
+        "sql_object_name": "budget_states",
+        "type": "table",
+        "path": "src/dopemux/mcp/token_manager.py",
+        "line_range": "200-208",
+        "full_statement": "CREATE TABLE IF NOT EXISTS budget_states (\n                        session_id TEXT PRIMARY KEY,\n                        role TEXT,\n                        total_budget INTEGER NOT NULL,\n                        used_tokens INTEGER NOT NULL,\n                        reserved_tokens INTEGER DEFAULT 0,\n                        last_updated TEXT NOT NULL\n                    )"
+    },
+    {
+        "sql_object_name": "idx_usage_session_time",
+        "type": "index",
+        "path": "src/dopemux/mcp/token_manager.py",
+        "line_range": "212-215",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_usage_session_time\n                    ON token_usage(session_id, timestamp)"
+    },
+    {
+        "sql_object_name": "idx_usage_role_tool",
+        "type": "index",
+        "path": "src/dopemux/mcp/token_manager.py",
+        "line_range": "220-223",
+        "full_statement": "CREATE INDEX IF NOT EXISTS idx_usage_role_tool\n                    ON token_usage(role, tool_name)"
+    }
+]
