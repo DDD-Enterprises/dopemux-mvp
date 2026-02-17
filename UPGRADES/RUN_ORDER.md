@@ -104,15 +104,20 @@ When running the v3 extraction runner (`UPGRADES/run_extraction_v3.py`), follow 
 - Prompt files must match `UPGRADES/PROMPT_{phase}{step}_*.md` and no duplicate step IDs are allowed (duplicates fail closed).
 - Phase R supports two deterministic profiles:
   - `--r-profile base` requires A/H/D/C norm artifacts.
-  - `--r-profile full` requires A/H/D/C norm artifacts plus M runtime-export norm artifacts.
+  - `--r-profile full` requires A/H/D/C norm artifacts plus normalized artifacts from M/E/W/B/G/Q.
 - Phase R fails closed unless required norm directories contain at least one JSON:
   - `extraction/runs/<run_id>/A_repo_control_plane/norm`
   - `extraction/runs/<run_id>/H_home_control_plane/norm`
-  - `extraction/runs/<run_id>/M_runtime_exports/norm` (full profile only)
   - `extraction/runs/<run_id>/D_docs_pipeline/norm`
   - `extraction/runs/<run_id>/C_code_surfaces/norm`
+  - `extraction/runs/<run_id>/M_runtime_exports/norm` (full profile only)
+  - `extraction/runs/<run_id>/E_execution_plane/norm` (full profile only)
+  - `extraction/runs/<run_id>/W_workflow_plane/norm` (full profile only)
+  - `extraction/runs/<run_id>/B_boundary_plane/norm` (full profile only)
+  - `extraction/runs/<run_id>/G_governance_plane/norm` (full profile only)
+  - `extraction/runs/<run_id>/Q_pipeline_doctor/norm` (full profile only)
 - Phase R only ingests norm artifacts—no raw rescans or unsanctioned directories.
 - Every phase writes `qa/PHASE_<phase>_MANIFEST.json` with prompts executed, inputs, outputs, caps, redaction policy, and resume metadata.
 - When troubleshooting empty `norm/` buckets, check:
   - Raw outputs in `extraction/runs/<run_id>/<phase>/raw` to see if normalization steps failed.
-  - Presence of merge/normalize prompts (`A9`, `H9`, `D4`, `C9`) and runtime prompts (`M0..M6`) in `UPGRADES/`.
+  - Presence of merge/normalize prompts (`A9`, `H9`, `D4`, `C9`, `E9`, `W9`, `B9`, `G5`, `Q9`) and runtime prompts (`M0..M6`) in `UPGRADES/`.

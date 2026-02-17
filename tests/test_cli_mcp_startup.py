@@ -1,64 +1,102 @@
-
+import os
 import pytest
-from unittest.mock import Mock, patch
 from pathlib import Path
-from dopemux.cli import _start_mcp_servers_with_progress
+from unittest.mock import patch, Mock
+import click
+from dopemux.cli import _resolve_mcp_dir, _start_mcp_servers_with_progress
 
-def test_start_mcp_servers_missing_assets():
+# Fixture for creating a mock MCP stack
+@pytest.fixture
+def mock_mcp_stack(tmp_path):
+    docker_dir = tmp_path / "docker" / "mcp-servers"
+    docker_dir.mkdir(parents=True)
+    (docker_dir / "start-all-mcp-servers.sh").touch()
+    return docker_dir
+
+def test_resolve_mcp_dir_env_override(mock_mcp_stack):
+    """Strategy 1: DOPEMUX_MCP_DIR takes precedence."""
+    with patch.dict(os.environ, {"DOPEMUX_MCP_DIR": str(mock_mcp_stack)}):
+        # Project path doesn't matter
+        resolved = _resolve_mcp_dir(Path("/tmp/whatever"))
+        assert resolved == mock_mcp_stack
+        assert resolved.exists()
+
+def test_resolve_mcp_dir_project_local(mock_mcp_stack, tmp_path):
+    """Strategy 2: Resolves from project_path/docker/mcp-servers."""
+    # Ensure no env var
+    with patch.dict(os.environ, {}, clear=True):
+        # tmp_path has the 'docker/mcp-servers' created by fixture
+        resolved = _resolve_mcp_dir(tmp_path)
+        assert resolved == mock_mcp_stack
+
+def test_resolve_mcp_dir_from_package_root_editable(tmp_path):
+    """Strategy 3: Fallback to package root (simulated for running in this repo)."""
+    # This test verifies that we can find the stack in the current repo
+    # assuming we are running tests within the repo structure.
+    
+    project_path = tmp_path / "empty_project"
+    project_path.mkdir()
+    
+    with patch.dict(os.environ, {}, clear=True):
+        resolved = _resolve_mcp_dir(project_path)
+        
+        # Should find the real one in the repo we are currently working in
+        assert resolved is not None
+        assert resolved.name == "mcp-servers"
+        assert (resolved / "start-all-mcp-servers.sh").exists()
+        
+        # Verify it points to the real location (crudely)
+        # We expect it to be .../dopemux-mvp/docker/mcp-servers
+        assert "docker/mcp-servers" in str(resolved)
+
+def test_start_requires_mcp_raises_when_missing():
+    """Verify hard failure when resolution returns None."""
     project_path = Path("/tmp/mock_project")
     
-    # Mock Path properties
-    # We need to handle mcp_dir.exists() and script_path.exists()
-    # Since we are mocking Path objects created inside the function, 
-    # it is easier to patch pathlib.Path.exists
-    
-    with patch("pathlib.Path.exists", return_value=False):
-        with patch("dopemux.cli.console") as mock_console:
-            # We also need to mock os.getenv to ensure we don't skip
-            with patch("os.getenv", return_value="0"):
-                _start_mcp_servers_with_progress(project_path)
+    # Mock resolution to fail
+    with patch("dopemux.cli._resolve_mcp_dir", return_value=None):
+        # Ensure we don't have the skip flag set
+        with patch.dict(os.environ, {"DOPEMUX_SKIP_MCP_START": "0"}):
+            with pytest.raises(click.ClickException) as exc:
+                 _start_mcp_servers_with_progress(project_path)
             
-            # Verify warning was printed
-            mock_console.logger.warning.assert_called_with(
-                f"[yellow]⚠️  MCP startup assets missing in {project_path}[/yellow]"
-            )
-            
-            # Verify remedies were printed
-            # console.print is called multiple times
-            args_list = mock_console.print.call_args_list
-            # Check for key phrases
-            output_text = " ".join([str(call.args[0]) for call in args_list if call.args])
-            assert "Running in reduced functionality mode" in output_text
-            assert "Remedies:" in output_text
-            assert "dopemux start --no-mcp" in output_text
-            assert "cd dopemux-mvp && dopemux start" in output_text
+            msg = str(exc.value)
+            assert "MCP stack required but not found" in msg
 
-def test_start_mcp_servers_existing_assets():
-    # Verify that if assets exist, we proceed (until further mocking is needed or exception hits)
+def test_start_skips_when_flag_set():
+    """Verify we can skip the check explicitly."""
     project_path = Path("/tmp/mock_project")
     
-    with patch("pathlib.Path.exists", return_value=True):
-        with patch("dopemux.cli.console") as mock_console:
-            with patch("os.getenv", return_value="0"):
-                # We expect it to try to run subprocess or something further,
-                # which might fail if not mocked.
-                # The function imports requests and uses subprocess.
-                # We stop strictly at the preflight check.
-                
-                # To avoid running the rest of the function, we can mock subprocess
-                with patch("subprocess.Popen") as mock_popen:
-                    mock_popen.return_value.stdout = []
-                    mock_popen.return_value.poll.return_value = 0
-                    
-                    # We also need to mock requests for health check or connection
-                    # But the function uses 'socket' and 'requests' later.
-                    
-                    try:
-                        _start_mcp_servers_with_progress(project_path)
-                    except Exception:
-                        # We don't care about failures later in the function,
-                        # just that it didn't return early due to missing assets.
-                        pass
-                    
-                    # If it passed the check, it didn't print the warning
-                    assert mock_console.logger.warning.call_count == 0
+    with patch.dict(os.environ, {"DOPEMUX_SKIP_MCP_START": "1"}):
+        # Should not raise
+        _start_mcp_servers_with_progress(project_path)
+
+def test_start_uses_resolved_dir():
+    """Verify that the start script execution uses the resolved directory."""
+    project_path = Path("/tmp/mock_project")
+    resolved_path = Path("/tmp/resolved/docker/mcp-servers")
+    script_path = resolved_path / "start-all-mcp-servers.sh"
+    
+    with patch("dopemux.cli._resolve_mcp_dir", return_value=resolved_path):
+        with patch("subprocess.Popen") as mock_popen:
+            # Mock process behavior
+            process_mock = Mock()
+            process_mock.stdout.readline.side_effect = ["Starting...", ""]
+            process_mock.poll.return_value = 0
+            process_mock.wait.return_value = 0
+            mock_popen.return_value = process_mock
+            
+            try:
+                # We expect other parts (like requests) to fail, so just catch generic exception
+                # or mock them too.
+                # Just mock requests to be safe
+                 with patch("dopemux.cli.requests.get") as mock_get:
+                    mock_get.return_value.status_code = 200
+                    _start_mcp_servers_with_progress(project_path)
+            except Exception:
+                pass # Ignore subsequent errors
+            
+            # Verify subprocess called with correct script path
+            args, _ = mock_popen.call_args
+            cmd = args[0]
+            assert str(script_path) in cmd or str(script_path) == cmd[1]
