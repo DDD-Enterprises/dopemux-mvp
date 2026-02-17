@@ -31,9 +31,6 @@ def test_resolve_mcp_dir_project_local(mock_mcp_stack, tmp_path):
 
 def test_resolve_mcp_dir_from_package_root_editable(tmp_path):
     """Strategy 3: Fallback to package root (simulated for running in this repo)."""
-    # This test verifies that we can find the stack in the current repo
-    # assuming we are running tests within the repo structure.
-    
     project_path = tmp_path / "empty_project"
     project_path.mkdir()
     
@@ -44,9 +41,6 @@ def test_resolve_mcp_dir_from_package_root_editable(tmp_path):
         assert resolved is not None
         assert resolved.name == "mcp-servers"
         assert (resolved / "start-all-mcp-servers.sh").exists()
-        
-        # Verify it points to the real location (crudely)
-        # We expect it to be .../dopemux-mvp/docker/mcp-servers
         assert "docker/mcp-servers" in str(resolved)
 
 def test_start_requires_mcp_raises_when_missing():
@@ -71,32 +65,36 @@ def test_start_skips_when_flag_set():
         # Should not raise
         _start_mcp_servers_with_progress(project_path)
 
-def test_start_uses_resolved_dir():
+def test_start_uses_resolved_dir(mock_mcp_stack):
     """Verify that the start script execution uses the resolved directory."""
-    project_path = Path("/tmp/mock_project")
-    resolved_path = Path("/tmp/resolved/docker/mcp-servers")
+    resolved_path = mock_mcp_stack
     script_path = resolved_path / "start-all-mcp-servers.sh"
+    project_path = Path("/tmp/mock_project")
     
     with patch("dopemux.cli._resolve_mcp_dir", return_value=resolved_path):
-        with patch("subprocess.Popen") as mock_popen:
+        # Patch BOTH locations to be safe
+        with patch("dopemux.cli.subprocess.Popen") as mock_popen, \
+             patch("subprocess.Popen") as mock_popen_global:
+            
             # Mock process behavior
             process_mock = Mock()
             process_mock.stdout.readline.side_effect = ["Starting...", ""]
             process_mock.poll.return_value = 0
             process_mock.wait.return_value = 0
             mock_popen.return_value = process_mock
+            mock_popen_global.return_value = process_mock
             
             try:
-                # We expect other parts (like requests) to fail, so just catch generic exception
-                # or mock them too.
-                # Just mock requests to be safe
-                 with patch("dopemux.cli.requests.get") as mock_get:
+                # Mock requests to avoid real network calls during health checks
+                with patch("dopemux.cli.requests.get") as mock_get:
                     mock_get.return_value.status_code = 200
                     _start_mcp_servers_with_progress(project_path)
             except Exception:
                 pass # Ignore subsequent errors
             
-            # Verify subprocess called with correct script path
-            args, _ = mock_popen.call_args
+            # Use whichever mock was called
+            called_mock = mock_popen if mock_popen.called else mock_popen_global
+            assert called_mock.called, "subprocess.Popen was not called"
+            args, _ = called_mock.call_args
             cmd = args[0]
-            assert str(script_path) in cmd or str(script_path) == cmd[1]
+            assert str(script_path) == cmd[1]
