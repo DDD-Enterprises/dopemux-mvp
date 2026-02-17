@@ -1,3 +1,15 @@
+---
+id: COMPACT-DASHBOARD-COMPLETE
+title: Compact Dashboard Complete
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-17'
+last_review: '2026-02-17'
+next_review: '2026-05-18'
+prelude: Compact Dashboard Complete (explanation) for dopemux documentation and developer
+  workflows.
+---
 # ✅ Compact ADHD Dashboard with Full Integration - COMPLETE
 
 ## 🎯 What Was Built

@@ -1,3 +1,15 @@
+---
+id: MONITORING-DESIGN-SPRINT-SUMMARY
+title: Monitoring Design Sprint Summary
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-17'
+last_review: '2026-02-17'
+next_review: '2026-05-18'
+prelude: Monitoring Design Sprint Summary (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 🎯 Monitoring Code Design Sprint - Quick Reference
 
 **Created:** 2025-10-28  

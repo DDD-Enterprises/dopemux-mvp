@@ -1,3 +1,15 @@
+---
+id: ORCHESTRATOR-INTEGRATION-COMPLETE
+title: Orchestrator Integration Complete
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-17'
+last_review: '2026-02-17'
+next_review: '2026-05-18'
+prelude: Orchestrator Integration Complete (explanation) for dopemux documentation
+  and developer workflows.
+---
 # ✅ Dopemux Orchestrator + ADHD Dashboard Integration - COMPLETE
 
 ## 🎯 What Was Built

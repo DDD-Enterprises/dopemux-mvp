@@ -1,3 +1,14 @@
+---
+id: DOCKER_SETUP
+title: Docker Setup
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-17'
+last_review: '2026-02-17'
+next_review: '2026-05-18'
+prelude: Docker Setup (explanation) for dopemux documentation and developer workflows.
+---
 # Docker Setup for Dopemux
 
 This directory contains optimized Dockerfiles and docker-compose configurations for containerizing Dopemux.
