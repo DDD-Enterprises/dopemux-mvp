@@ -54,16 +54,16 @@ services:
       - dopemux-network
       
     environment:
-      - POSTGRES_USER=dopemux_age
-      - POSTGRES_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
-      - POSTGRES_DB=dopemux_knowledge_graph
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${AGE_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - pg_age_data:/var/lib/postgresql/data
       - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
     ports:
       - "5432:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1" ]
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} || exit 1" ]
       timeout: 5s
       retries: 10
       interval: 10s
@@ -106,10 +106,10 @@ services:
     networks:
       - dopemux-network
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-leantime_root_dev}
-      - MYSQL_DATABASE=${MYSQL_DATABASE:-leantime}
-      - MYSQL_USER=${MYSQL_USER:-leantime}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     command: >
       --character-set-server=UTF8MB4
       --collation-server=UTF8MB4_unicode_ci
@@ -117,7 +117,7 @@ services:
     volumes:
       - leantime_mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD:-leantime_root_dev} || exit 1"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
       timeout: 5s
       retries: 10
       interval: 10s
@@ -164,12 +164,12 @@ services:
         condition: service_started
     environment:
       - LEAN_DB_HOST=mysql_leantime
-      - LEAN_DB_USER=${MYSQL_USER:-leantime}
-      - LEAN_DB_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
-      - LEAN_DB_DATABASE=${MYSQL_DATABASE:-leantime}
+      - LEAN_DB_USER=${MYSQL_USER}
+      - LEAN_DB_PASSWORD=${MYSQL_PASSWORD}
+      - LEAN_DB_DATABASE=${MYSQL_DATABASE}
       - LEAN_DB_PORT=3306
       - LEAN_SITENAME=${LEAN_SITENAME:-Dopemux Leantime}
-      - LEAN_SESSION_PASSWORD=${LEAN_SESSION_PASSWORD:-dopemux_session_password_minimum_32_chars}
+      - LEAN_SESSION_PASSWORD=${LEAN_SESSION_PASSWORD}
       - LEAN_APP_URL=${LEAN_APP_URL:-http://localhost:8080}
       - LEAN_SESSION_EXPIRATION=${LEAN_SESSION_EXPIRATION:-28800}
       - LEAN_DEBUG=${LEAN_DEBUG:-0}
@@ -235,11 +235,11 @@ services:
     environment:
       - MCP_SERVER_PORT=3004
       - DOPECON_BRIDGE_URL=http://dope-decision-graph-bridge:3016
-      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
-      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${AGE_PASSWORD}@dopemux-postgres-age:5432/${POSTGRES_DB}
+      - POSTGRES_URL=postgresql+asyncpg://${POSTGRES_USER}:${AGE_PASSWORD}@dopemux-postgres-age:5432/${POSTGRES_DB}
       - AGE_HOST=dopemux-postgres-age
       - AGE_PORT=5432
-      - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - AGE_PASSWORD=${AGE_PASSWORD}
       - REDIS_URL=redis://redis-primary:6379
       - QDRANT_URL=http://mcp-qdrant:6333
     ports:
@@ -295,7 +295,7 @@ services:
       - XAI_API_KEY=${XAI_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm}
+      - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://${POSTGRES_USER}:${AGE_PASSWORD}@dopemux-postgres-age:5432/litellm}
     ports:
       - "4000:4000"
     depends_on:
@@ -355,10 +355,10 @@ services:
       - "3016:3016"
     environment:
       - PORT_BASE=3000
-      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - POSTGRES_URL=postgresql+asyncpg://${POSTGRES_USER}:${AGE_PASSWORD}@dopemux-postgres-age:5432/${POSTGRES_DB}
       - AGE_HOST=dopemux-postgres-age
       - AGE_PORT=5432
-      - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - AGE_PASSWORD=${AGE_PASSWORD}
       - QDRANT_URL=http://mcp-qdrant:6333
       - REDIS_URL=redis://redis-events:6379
     depends_on:
@@ -396,7 +396,7 @@ services:
       - CONPORT_URL=http://conport:3004
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-      - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY:-dev-key-456}
+      - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY}
       - DOPECON_BRIDGE_REDIS_URL=redis://redis-primary:6379
     depends_on:
       - redis-primary
@@ -433,7 +433,7 @@ services:
     environment:
       - API_PORT=8095
       - HOST=0.0.0.0
-      - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
+      - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY}
       - REDIS_URL=redis://redis-primary:6379
       - CONPORT_URL=http://conport:3004
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
@@ -475,15 +475,15 @@ services:
       - WMA_ENCRYPTION_KEY=${WMA_ENCRYPTION_KEY:-dev-only-change-me}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=dopemux_knowledge_graph
-      - POSTGRES_USER=dopemux_age
-      - POSTGRES_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${AGE_PASSWORD}
       - REDIS_URL=redis://redis-events:6379
       - ENABLE_EVENTBUS=true
       - ENABLE_MIRROR_SYNC=${ENABLE_MIRROR_SYNC:-false}
       - MIRROR_SCHEMA_RESET=${MIRROR_SCHEMA_RESET:-false}
       - DOPE_MEMORY_WORKSPACE_ID=${DOPE_MEMORY_WORKSPACE_ID:-default}
-      - POSTGRES_URL=postgresql://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@postgres:5432/dopemux_knowledge_graph
+      - POSTGRES_URL=postgresql://${POSTGRES_USER}:${AGE_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - DOPEMUX_CAPTURE_LEDGER_PATH=/data/chronicle.sqlite
       - DOPEMUX_SQLITE_JOURNAL_MODE=DELETE
     volumes:
