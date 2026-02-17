@@ -71,30 +71,31 @@ def test_start_uses_resolved_dir(mock_mcp_stack):
     script_path = resolved_path / "start-all-mcp-servers.sh"
     project_path = Path("/tmp/mock_project")
     
-    with patch("dopemux.cli._resolve_mcp_dir", return_value=resolved_path):
-        # Patch BOTH locations to be safe
-        with patch("dopemux.cli.subprocess.Popen") as mock_popen, \
-             patch("subprocess.Popen") as mock_popen_global:
-            
-            # Mock process behavior
-            process_mock = Mock()
-            process_mock.stdout.readline.side_effect = ["Starting...", ""]
-            process_mock.poll.return_value = 0
-            process_mock.wait.return_value = 0
-            mock_popen.return_value = process_mock
-            mock_popen_global.return_value = process_mock
-            
-            try:
-                # Mock requests to avoid real network calls during health checks
+    # Ensure environment is clean
+    with patch.dict(os.environ, {"DOPEMUX_SKIP_MCP_START": "0"}):
+        with patch("dopemux.cli._resolve_mcp_dir", return_value=resolved_path):
+            with patch("dopemux.cli.subprocess.Popen") as mock_popen:
+                # Mock process behavior
+                process_mock = Mock()
+                process_mock.stdout.readline.side_effect = ["Starting...", ""]
+                process_mock.poll.return_value = 0
+                process_mock.wait.return_value = 0
+                mock_popen.return_value = process_mock
+                
+                # Mock requests to avoid real network calls
                 with patch("dopemux.cli.requests.get") as mock_get:
                     mock_get.return_value.status_code = 200
-                    _start_mcp_servers_with_progress(project_path)
-            except Exception:
-                pass # Ignore subsequent errors
-            
-            # Use whichever mock was called
-            called_mock = mock_popen if mock_popen.called else mock_popen_global
-            assert called_mock.called, "subprocess.Popen was not called"
-            args, _ = called_mock.call_args
-            cmd = args[0]
-            assert str(script_path) == cmd[1]
+                    
+                    # Call the function. If it fails, we want to SEE why.
+                    try:
+                        _start_mcp_servers_with_progress(project_path)
+                    except Exception as e:
+                        import traceback
+                        traceback.print_exc()
+                        raise e
+                
+                # Verify subprocess called with correct script path
+                assert mock_popen.called, "subprocess.Popen was not called"
+                args, _ = mock_popen.call_args
+                cmd = args[0]
+                assert str(script_path) == cmd[1]
