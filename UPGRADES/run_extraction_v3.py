@@ -5,6 +5,7 @@ inventory -> partitioning -> per-partition raw outputs -> norm merge -> QA.
 """
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import fnmatch
 import hashlib
 import json
@@ -354,6 +355,7 @@ class RunnerConfig:
     retry_base_seconds: float
     retry_max_seconds: float
     phase_auth_fail_threshold: int
+    partition_workers: int
 
 
 @dataclass(frozen=True)
@@ -369,6 +371,22 @@ class RunContext:
     source: str
     latest_file: Path
     latest_written: bool
+
+
+@dataclass
+class PartitionExecResult:
+    partition_id: str
+    write_ops: List[Dict[str, Any]]
+    logs: List[Tuple[str, str]]
+    request_meta: Dict[str, Any]
+    artifacts: List[Dict[str, Any]]
+    success: bool
+    resume_skipped: bool
+    auth_failure: bool
+    auth_expired: bool
+    recomputed_delta: int
+    dry_run_delta: int
+    failed_delta: int
 
 
 class PromptsetBlockedError(RuntimeError):
@@ -1280,6 +1298,7 @@ def write_run_manifest(
             "retry_base_seconds": args.retry_base_seconds,
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
+            "partition_workers": args.partition_workers,
             "run_id_override": args.run_id,
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
@@ -3943,17 +3962,127 @@ def execute_step_for_partitions(
     step_failed_count = 0
     step_recomputed_count = 0
     step_dry_run_count = 0
+    started_at = time.time()
+    workers = max(1, min(16, int(cfg.partition_workers)))
 
-    for partition in partitions:
-        partition_id = partition["id"]
+    def _append_log(logs: List[Tuple[str, str]], level: str, message: str) -> None:
+        logs.append((level, message))
+
+    def _op_write_text(write_ops: List[Dict[str, Any]], path: Path, text: str) -> None:
+        write_ops.append({"kind": "write_text", "path": str(path), "text": text})
+
+    def _op_write_json(write_ops: List[Dict[str, Any]], path: Path, payload: Dict[str, Any]) -> None:
+        write_ops.append({"kind": "write_json", "path": str(path), "payload": payload})
+
+    def _op_unlink_if_exists(write_ops: List[Dict[str, Any]], path: Path) -> None:
+        write_ops.append({"kind": "unlink_if_exists", "path": str(path)})
+
+    def _apply_write_ops(write_ops: List[Dict[str, Any]]) -> None:
+        for op in write_ops:
+            op_path = Path(str(op["path"]))
+            if op["kind"] == "write_text":
+                op_path.write_text(str(op["text"]), encoding="utf-8")
+            elif op["kind"] == "write_json":
+                payload = op["payload"] if isinstance(op["payload"], dict) else {}
+                write_json(op_path, payload)
+            elif op["kind"] == "unlink_if_exists":
+                if op_path.exists():
+                    op_path.unlink()
+
+    def _worker_exception_result(
+        partition_id: str,
+        out_json: Path,
+        out_failed: Path,
+        out_failed_json: Path,
+        exc: Exception,
+    ) -> PartitionExecResult:
+        logs: List[Tuple[str, str]] = []
+        write_ops: List[Dict[str, Any]] = []
+        error_message = sanitize_error_text(str(exc)) or type(exc).__name__
+        failure_meta = enrich_request_meta(
+            {
+                "provider": provider,
+                "model_id": model_id,
+                "endpoint_base_url": endpoint_base,
+                "status_code": None,
+                "failure_type": "worker_exception",
+                "provider_error_reason": error_message[:300],
+                "transport": transport,
+                **capture_exception_metadata(exc),
+            },
+            run_id=run_id,
+            phase=phase,
+            step_id=step_id,
+            partition_id=partition_id,
+            provider=provider,
+            model_id=model_id,
+        )
+        _append_log(logs, "error", f"Worker exception for {step_id} {partition_id}: {error_message[:300]}")
+        _op_write_text(write_ops, out_failed, f"worker_exception: {error_message}\n")
+        _op_write_json(
+            write_ops,
+            out_failed_json,
+            {
+                "phase": phase,
+                "step_id": step_id,
+                "partition_id": partition_id,
+                "generated_at": now_iso(),
+                "failure_type": "worker_exception",
+                "status_code": None,
+                "request_meta": failure_meta,
+            },
+        )
+        _op_write_json(
+            write_ops,
+            out_json,
+            {
+                "phase": phase,
+                "step_id": step_id,
+                "partition_id": partition_id,
+                "generated_at": now_iso(),
+                "artifacts": [],
+                "request_meta": failure_meta,
+            },
+        )
+        return PartitionExecResult(
+            partition_id=partition_id,
+            write_ops=write_ops,
+            logs=logs,
+            request_meta=failure_meta,
+            artifacts=[],
+            success=False,
+            resume_skipped=False,
+            auth_failure=is_auth_classified_failure(failure_meta.get("failure_type")),
+            auth_expired=is_auth_expired_failure(failure_meta.get("failure_type")),
+            recomputed_delta=1,
+            dry_run_delta=0,
+            failed_delta=1,
+        )
+
+    def _run_one_partition(partition: Dict[str, Any]) -> PartitionExecResult:
+        partition_id = str(partition["id"])
         out_json = raw_dir / f"{step_id}__{partition_id}.json"
         out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
         out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
         out_trace = raw_dir / f"{step_id}__{partition_id}.TRACE.md"
+        logs: List[Tuple[str, str]] = []
+        write_ops: List[Dict[str, Any]] = []
 
         if cfg.resume and out_json.exists():
-            resume_skipped += 1
-            continue
+            return PartitionExecResult(
+                partition_id=partition_id,
+                write_ops=[],
+                logs=[],
+                request_meta={},
+                artifacts=[],
+                success=False,
+                resume_skipped=True,
+                auth_failure=False,
+                auth_expired=False,
+                recomputed_delta=0,
+                dry_run_delta=0,
+                failed_delta=0,
+            )
 
         output_instructions = build_output_envelope_instructions(output_artifacts)
         prompt_prefix = (
@@ -3964,7 +4093,6 @@ def execute_step_for_partitions(
         reserved_chars = len(prompt_prefix)
         context_budget = max(cfg.max_chars - reserved_chars, 2048)
         current_budget = context_budget
-        payload_body = b""
         payload_bytes = 0
         user_prompt = ""
         context = ""
@@ -4000,8 +4128,6 @@ def execute_step_for_partitions(
             current_budget = max(next_budget, 1024)
 
         if payload_bytes > cfg.max_request_bytes:
-            step_recomputed_count += 1
-            step_failed_count += 1
             over_by = payload_bytes - cfg.max_request_bytes
             gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
             endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", gemini_sequence[0])
@@ -4051,12 +4177,22 @@ def execute_step_for_partitions(
                 provider=provider,
                 model_id=model_id,
             )
-            out_failed.write_text(
-                f"payload_unshrinkable: payload_bytes={payload_bytes} max_request_bytes={cfg.max_request_bytes}\n",
-                encoding="utf-8",
+            _append_log(
+                logs,
+                "error",
+                (
+                    f"Payload over hard cap for {step_id} {partition_id}: "
+                    f"payload_bytes={payload_bytes} max_request_bytes={cfg.max_request_bytes}"
+                ),
             )
-            write_json(out_failed_json, failure_meta)
-            write_json(
+            _op_write_text(
+                write_ops,
+                out_failed,
+                f"payload_unshrinkable: payload_bytes={payload_bytes} max_request_bytes={cfg.max_request_bytes}\n",
+            )
+            _op_write_json(write_ops, out_failed_json, failure_meta)
+            _op_write_json(
+                write_ops,
                 out_json,
                 {
                     "phase": phase,
@@ -4067,29 +4203,31 @@ def execute_step_for_partitions(
                     "request_meta": failure_meta,
                 },
             )
-            logger.error(
-                "Payload over hard cap for %s %s: payload_bytes=%s max_request_bytes=%s",
-                step_id,
-                partition_id,
-                payload_bytes,
-                cfg.max_request_bytes,
-            )
-            continue
-
-        if cfg.dry_run:
-            logger.info(
-                "Dry-run %s %s files=%s request_payload_bytes=%s redaction_hits=%s max_request_bytes=%s",
-                step_id,
-                partition_id,
-                context_stats["files_included"],
-                payload_bytes,
-                context_stats["redaction_hits"],
-                cfg.max_request_bytes,
+            return PartitionExecResult(
+                partition_id=partition_id,
+                write_ops=write_ops,
+                logs=logs,
+                request_meta=failure_meta,
+                artifacts=[],
+                success=False,
+                resume_skipped=False,
+                auth_failure=False,
+                auth_expired=False,
+                recomputed_delta=1,
+                dry_run_delta=0,
+                failed_delta=1,
             )
 
         if cfg.dry_run:
-            step_recomputed_count += 1
-            step_dry_run_count += 1
+            _append_log(
+                logs,
+                "info",
+                (
+                    f"Dry-run {step_id} {partition_id} files={context_stats['files_included']} "
+                    f"request_payload_bytes={payload_bytes} redaction_hits={context_stats['redaction_hits']} "
+                    f"max_request_bytes={cfg.max_request_bytes}"
+                ),
+            )
             gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
             dry_mode = gemini_sequence[0] if provider == "gemini" else None
             endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", dry_mode)
@@ -4103,7 +4241,6 @@ def execute_step_for_partitions(
                 f"# PROMPT_FILE\n{prompt_path}\n\n# SYSTEM_PROMPT\n{prompt_text}\n\n"
                 f"# PARTITION_ID\n{partition_id}\n\n# USER_CONTEXT_PREVIEW\n{context[:2000]}"
             )
-            out_trace.write_text(trace_text, encoding="utf-8")
             dry_meta = {
                 "provider": provider,
                 "model_id": model_id,
@@ -4145,7 +4282,9 @@ def execute_step_for_partitions(
                 provider=provider,
                 model_id=model_id,
             )
-            write_json(
+            _op_write_text(write_ops, out_trace, trace_text)
+            _op_write_json(
+                write_ops,
                 out_json,
                 {
                     "phase": phase,
@@ -4163,21 +4302,31 @@ def execute_step_for_partitions(
                     "request_meta": dry_meta,
                 },
             )
-            if out_failed.exists():
-                out_failed.unlink()
-            if out_failed_json.exists():
-                out_failed_json.unlink()
-            continue
+            _op_unlink_if_exists(write_ops, out_failed)
+            _op_unlink_if_exists(write_ops, out_failed_json)
+            return PartitionExecResult(
+                partition_id=partition_id,
+                write_ops=write_ops,
+                logs=logs,
+                request_meta=dry_meta,
+                artifacts=[],
+                success=False,
+                resume_skipped=False,
+                auth_failure=False,
+                auth_expired=False,
+                recomputed_delta=1,
+                dry_run_delta=1,
+                failed_delta=0,
+            )
 
-        logger.info(
-            "Executing %s partition %s using provider=%s model=%s files=%s skipped=%s context_bytes=%s",
-            step_id,
-            partition_id,
-            provider,
-            model_id,
-            context_stats["files_included"],
-            context_stats["files_skipped"],
-            context_stats["context_bytes"],
+        _append_log(
+            logs,
+            "info",
+            (
+                f"Executing {step_id} partition {partition_id} using provider={provider} model={model_id} "
+                f"files={context_stats['files_included']} skipped={context_stats['files_skipped']} "
+                f"context_bytes={context_stats['context_bytes']}"
+            ),
         )
         llm_result = call_llm(
             provider=provider,
@@ -4199,17 +4348,8 @@ def execute_step_for_partitions(
             model_id=model_id,
         )
         request_meta.setdefault("request_payload_bytes", payload_bytes)
-
-        if is_auth_classified_failure(request_meta.get("failure_type")):
-            step_auth_failures += 1
-            must_fail_fast = cfg.fail_fast_auth or is_auth_expired_failure(request_meta.get("failure_type"))
-            if must_fail_fast and step_success_count == 0:
-                raise RuntimeError(
-                    f"Fail-fast auth triggered for step {step_id} partition {partition_id}. "
-                    f"failure_type={request_meta.get('failure_type')} provider={provider} "
-                    f"model={model_id} auth_mode={cfg.gemini_auth_mode}. "
-                    "Check credentials, endpoint mode, and gemini auth strategy."
-                )
+        auth_failure = is_auth_classified_failure(request_meta.get("failure_type"))
+        auth_expired = is_auth_expired_failure(request_meta.get("failure_type"))
 
         parsed = parse_json_from_response(response_text)
         artifacts = coerce_artifacts_from_response(
@@ -4218,10 +4358,10 @@ def execute_step_for_partitions(
             expected_artifacts=output_artifacts,
         )
         if not artifacts:
-            step_recomputed_count += 1
-            step_failed_count += 1
-            out_failed.write_text(response_text, encoding="utf-8")
-            write_json(
+            _append_log(logs, "error", f"Artifact parse failed for {step_id} {partition_id}")
+            _op_write_text(write_ops, out_failed, response_text)
+            _op_write_json(
+                write_ops,
                 out_failed_json,
                 {
                     "phase": phase,
@@ -4233,8 +4373,8 @@ def execute_step_for_partitions(
                     "request_meta": request_meta,
                 },
             )
-            logger.error("Artifact parse failed for %s %s", step_id, partition_id)
-            write_json(
+            _op_write_json(
+                write_ops,
                 out_json,
                 {
                     "phase": phase,
@@ -4248,11 +4388,23 @@ def execute_step_for_partitions(
                     },
                 },
             )
-            continue
+            return PartitionExecResult(
+                partition_id=partition_id,
+                write_ops=write_ops,
+                logs=logs,
+                request_meta=request_meta,
+                artifacts=[],
+                success=False,
+                resume_skipped=False,
+                auth_failure=auth_failure,
+                auth_expired=auth_expired,
+                recomputed_delta=1,
+                dry_run_delta=0,
+                failed_delta=1,
+            )
 
-        step_success_count += 1
-        step_recomputed_count += 1
-        write_json(
+        _op_write_json(
+            write_ops,
             out_json,
             {
                 "phase": phase,
@@ -4263,15 +4415,123 @@ def execute_step_for_partitions(
                 "request_meta": request_meta,
             },
         )
-        if out_failed.exists():
-            out_failed.unlink()
-        if out_failed_json.exists():
-            out_failed_json.unlink()
+        _op_unlink_if_exists(write_ops, out_failed)
+        _op_unlink_if_exists(write_ops, out_failed_json)
+        return PartitionExecResult(
+            partition_id=partition_id,
+            write_ops=write_ops,
+            logs=logs,
+            request_meta=request_meta,
+            artifacts=artifacts,
+            success=True,
+            resume_skipped=False,
+            auth_failure=auth_failure,
+            auth_expired=auth_expired,
+            recomputed_delta=1,
+            dry_run_delta=0,
+            failed_delta=0,
+        )
+
+    ordered_partitions = sorted(partitions, key=lambda row: str(row["id"]))
+    results_by_partition: Dict[str, PartitionExecResult] = {}
+    if workers == 1:
+        for partition in ordered_partitions:
+            partition_id = str(partition["id"])
+            out_json = raw_dir / f"{step_id}__{partition_id}.json"
+            out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+            out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+            try:
+                results_by_partition[partition_id] = _run_one_partition(partition)
+            except Exception as exc:  # defensive: keep per-partition fail-open
+                results_by_partition[partition_id] = _worker_exception_result(
+                    partition_id=partition_id,
+                    out_json=out_json,
+                    out_failed=out_failed,
+                    out_failed_json=out_failed_json,
+                    exc=exc,
+                )
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_map = {executor.submit(_run_one_partition, partition): partition for partition in ordered_partitions}
+            for future in as_completed(future_map):
+                partition = future_map[future]
+                partition_id = str(partition["id"])
+                out_json = raw_dir / f"{step_id}__{partition_id}.json"
+                out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+                out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+                try:
+                    results_by_partition[partition_id] = future.result()
+                except Exception as exc:
+                    results_by_partition[partition_id] = _worker_exception_result(
+                        partition_id=partition_id,
+                        out_json=out_json,
+                        out_failed=out_failed,
+                        out_failed_json=out_failed_json,
+                        exc=exc,
+                    )
+
+    for partition in ordered_partitions:
+        partition_id = str(partition["id"])
+        result = results_by_partition.get(partition_id)
+        if result is None:
+            out_json = raw_dir / f"{step_id}__{partition_id}.json"
+            out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+            out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+            result = _worker_exception_result(
+                partition_id=partition_id,
+                out_json=out_json,
+                out_failed=out_failed,
+                out_failed_json=out_failed_json,
+                exc=RuntimeError("missing partition result"),
+            )
+
+        if result.resume_skipped:
+            resume_skipped += 1
+            continue
+
+        if result.auth_failure:
+            step_auth_failures += 1
+            must_fail_fast = cfg.fail_fast_auth or result.auth_expired
+            if must_fail_fast and step_success_count == 0:
+                for level, message in result.logs:
+                    if level == "error":
+                        logger.error("%s", message)
+                    else:
+                        logger.info("%s", message)
+                raise RuntimeError(
+                    f"Fail-fast auth triggered for step {step_id} partition {partition_id}. "
+                    f"failure_type={result.request_meta.get('failure_type')} provider={provider} "
+                    f"model={model_id} auth_mode={cfg.gemini_auth_mode}. "
+                    "Check credentials, endpoint mode, and gemini auth strategy."
+                )
+
+        _apply_write_ops(result.write_ops)
+        for level, message in result.logs:
+            if level == "error":
+                logger.error("%s", message)
+            else:
+                logger.info("%s", message)
+
+        step_recomputed_count += result.recomputed_delta
+        step_dry_run_count += result.dry_run_delta
+        step_failed_count += result.failed_delta
+        if result.success:
+            step_success_count += 1
 
     if resume_skipped:
         logger.info("Resume: skipped %s existing outputs for step %s", resume_skipped, step_id)
+    elapsed_ms = int((time.time() - started_at) * 1000)
+    logger.info(
+        "Step summary %s partitions_total=%s ok=%s failed=%s elapsed_ms=%s workers=%s",
+        step_id,
+        len(ordered_partitions),
+        step_success_count,
+        step_failed_count,
+        elapsed_ms,
+        workers,
+    )
     return {
-        "partitions_total": len(partitions),
+        "partitions_total": len(ordered_partitions),
         "resume_skipped": resume_skipped,
         "recomputed": step_recomputed_count,
         "dry_run": step_dry_run_count,
@@ -4916,6 +5176,7 @@ def print_config(
             "retry_base_seconds": args.retry_base_seconds,
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
+            "partition_workers": args.partition_workers,
             "no_write_latest": args.no_write_latest,
         },
         "limits": {
@@ -5263,6 +5524,7 @@ def main() -> None:
     parser.add_argument("--retry-base-seconds", type=float, default=2.0)
     parser.add_argument("--retry-max-seconds", type=float, default=30.0)
     parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
+    parser.add_argument("--partition-workers", type=int, default=1)
     parser.add_argument("--run-id", type=str)
     parser.add_argument("--no-write-latest", action="store_true")
     parser.add_argument("--write-latest-even-on-dry-run", action="store_true")
@@ -5283,6 +5545,7 @@ def main() -> None:
     promptgen_group.add_argument("--promptgen-exclude-globs", action="append")
     promptgen_group.add_argument("--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()
+    args.partition_workers = max(1, min(16, int(args.partition_workers)))
     apply_model_overrides(args.gemini_model_id)
 
     if not (
@@ -5371,6 +5634,7 @@ def main() -> None:
         retry_base_seconds=max(0.0, args.retry_base_seconds),
         retry_max_seconds=max(0.0, args.retry_max_seconds),
         phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
+        partition_workers=args.partition_workers,
     )
 
     phase_sequence = resolve_phase_list(args.phase)
