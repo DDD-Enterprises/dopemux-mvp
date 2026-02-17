@@ -1,10 +1,6 @@
-# PROMPT_E5 — Artifact outputs, logs, and state
+# PROMPT_E5 — ARTIFACT OUTPUTS / LOGS / STATE
 
-ROLE: Execution plane extractor.
-GOAL: map where runtime artifacts land (logs, sqlite DBs, caches, run dirs, out/ folders).
+TASK: List artifact outputs: logs, db files, cache dirs, out dirs.
 
 OUTPUTS:
-  • EXEC_ARTIFACT_SURFACE.json (artifacts[]: {path, type(log/db/cache/report), writer, reader, retention_hint})
-
-RULES:
-  • Only include artifact locations explicitly mentioned in config/scripts/docs.
+	•	EXEC_ARTIFACT_SURFACE.json

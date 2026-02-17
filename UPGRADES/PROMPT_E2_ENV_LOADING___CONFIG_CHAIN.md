@@ -1,13 +1,11 @@
-# PROMPT_E2 — Environment loading + config chain
+# PROMPT_E2 — ENV LOADING / CONFIG CHAIN
 
-ROLE: Execution plane extractor.
-GOAL: document env vars, where they originate, and the precedence chain they follow (dotenv, shell, config, CLI).
+TASK: Map env var sources and config precedence chain.
+
+MUST EXTRACT:
+	•	.env loading behavior and where it occurs
+	•	config file resolution order
+	•	env var names and their consumers (by reference only, no guessing)
 
 OUTPUTS:
-  • EXEC_ENV_CHAIN.json
-    - env_vars[]: {name, required, default, where_set[], where_used[]}
-    - config_chain[]: {layer, files[], precedence_rule, notes}
-
-RULES:
-  • Mark precedence UNKNOWN unless explicitly stated.
-  • Do not guess whether an env var is required unless annotated.
+	•	EXEC_ENV_CHAIN.json
