@@ -271,6 +271,9 @@ def test_resume_reruns_when_failed_is_newer_than_success(
     assert call_counter["count"] == 1
     assert stats["resume_skipped"] == 0
     assert any("Resume: rerun failed_newer_than_success for A0 A_P0001" in line for line in info_logs)
+    assert not failed_txt_path.exists()
+    assert not failed_json_path.exists()
+    assert any("Resume: prune stale FAILED after success for A0 A_P0001 count=2" in line for line in info_logs)
 
 
 @pytest.mark.parametrize("workers", [1, 2])
@@ -337,8 +340,8 @@ def test_resume_prune_and_decision_logs_are_in_stable_order(
     resume_logs = [line for line in info_logs if line.startswith("Resume:")]
     assert resume_logs == [
         "Resume: skip valid success for A0 A_P0001",
-        "Resume: prune stale FAILED for A0 A_P0001",
+        "Resume: prune stale FAILED on skip for A0 A_P0001 count=2",
         "Resume: skip valid success for A0 A_P0002",
-        "Resume: prune stale FAILED for A0 A_P0002",
+        "Resume: prune stale FAILED on skip for A0 A_P0002 count=2",
         "Resume: skipped 2 existing outputs for step A0",
     ]
