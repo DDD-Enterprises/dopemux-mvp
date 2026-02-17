@@ -1,3 +1,15 @@
+---
+id: PIPELINE_RELIABILITY
+title: Pipeline Reliability
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-17'
+last_review: '2026-02-17'
+next_review: '2026-05-18'
+prelude: Pipeline Reliability (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Pipeline Reliability (v1)
 
 This document defines reliability controls added to `UPGRADES/run_extraction_v3.py`.
