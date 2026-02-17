@@ -1,23 +1,12 @@
-GOAL: enumerate runtime modes and what changes between them.
+# PROMPT_E4 — Runtime modes + delta report
 
-OUTPUT (JSON):
-	•	EXEC_RUNTIME_MODES.json
-	•	EXEC_MODE_DELTAS.json
+ROLE: Execution plane extractor.
+GOAL: compare runtime modes (dev/prod/smoke/test) and highlight configuration deltas.
 
-MUST INCLUDE:
-	•	Mode names (dev/prod/smoke/test) if present
-	•	Per mode: which compose files, which make targets, which scripts
-	•	Deltas: env vars, service set changes, feature flags, profiles
-
-FORMAT (delta):
-
-{
-  "artifact_type":"EXEC_MODE_DELTAS",
-  "generated_at":"...",
-  "deltas":[
-    {"from":"dev","to":"prod","changes":[{"kind":"service_added","value":"...","evidence":["..."]}]}
-  ]
-}
+OUTPUTS:
+  • EXEC_RUNTIME_MODES.json (modes[]: {name, toggles[], changed_services[], changed_env[], changed_ports[]})
+  • EXEC_MODE_DELTA_REPORT.json (deltas[]: {from_mode, to_mode, differences[]})
 
 RULES:
-	•	If there’s only one mode, still emit with modes:[...] and deltas:[].
+  • Report each mode only if referenced in docs/configs.
+  • Capture environment/service differences verbatim where possible.
