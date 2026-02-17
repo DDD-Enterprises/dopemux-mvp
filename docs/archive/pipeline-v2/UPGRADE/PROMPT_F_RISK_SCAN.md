@@ -1,3 +1,15 @@
+---
+id: PROMPT_F_RISK_SCAN
+title: Prompt F Risk Scan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Prompt F Risk Scan (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Prompt F (v2): Determinism + concurrency + idempotency risk scan
 
 **Outputs:** `DETERMINISM_RISKS.json`

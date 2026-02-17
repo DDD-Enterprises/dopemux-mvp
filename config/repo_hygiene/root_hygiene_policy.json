@@ -31,9 +31,12 @@
     "tools",
     "ui-dashboard",
     "ui-dashboard-backend",
-    "UPGRADES"
+    "UPGRADES",
+    "_audit_out"
   ],
   "allowed_root_files": [
+    "Dockerfile",
+    "Dockerfile.frontend",
     ".taskxroot",
     ".taskx-pin",
     ".repo_id",
