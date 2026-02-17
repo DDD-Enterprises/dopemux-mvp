@@ -1,3 +1,0 @@
-Cloning into './_audit_out/_sources/claude-mem-repo'...
-fatal: unable to access 'https://github.com/thedotmack/claude-mem/': Could not resolve host: github.com
-Command: git clone --depth 1 https://github.com/thedotmack/claude-mem ./_audit_out/_sources/claude-mem-repo

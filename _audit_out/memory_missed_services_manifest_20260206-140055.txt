@@ -1,7 +1,0 @@
-_audit_out/MEMORY_RELATED_SERVICES_MISSED.md
-services/claude_brain
-services/dope-context
-services/intelligence
-services/registry.yaml
-services/session-intelligence
-services/session_intelligence
