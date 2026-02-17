@@ -293,35 +293,51 @@ class PromptSpec:
     output_artifacts: Tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class RunContext:
+    run_id: str
+    source: str
+    latest_file: Path
+    latest_written: bool
+
+
 # --- Helpers ---
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def load_run_id(root: Path) -> str:
-    """Load latest run_id from file or fail."""
+def load_run_id(root: Path) -> Optional[str]:
+    """Load latest run_id from file; return None if unavailable."""
     id_file = root / "extraction/latest_run_id.txt"
     if not id_file.exists():
-        raise FileNotFoundError(
-            f"Run ID file not found at {id_file}. Run 'make x-run-init' first."
-        )
+        return None
     run_id = id_file.read_text(encoding="utf-8").strip()
     if not run_id:
-        raise RuntimeError(f"Run ID file {id_file} is empty.")
+        return None
     return run_id
 
 
-def determine_run_id(root: Path, override: Optional[str]) -> str:
-    """Return the run_id from override or latest file, validating existence."""
-    if override:
-        candidate = root / "extraction" / "runs" / override
-        if not candidate.exists():
-            raise FileNotFoundError(f"Run directory {candidate} does not exist.")
-        if not candidate.is_dir():
-            raise NotADirectoryError(f"Path {candidate} is not a directory.")
-        return override
-    return load_run_id(root)
+def _validate_existing_run_dir(root: Path, run_id: str) -> None:
+    candidate = root / "extraction" / "runs" / run_id
+    if not candidate.exists():
+        raise FileNotFoundError(f"Run directory {candidate} does not exist.")
+    if not candidate.is_dir():
+        raise NotADirectoryError(f"Path {candidate} is not a directory.")
+
+
+def _generate_run_id(root: Path) -> str:
+    base = datetime.now(timezone.utc).strftime("run_%Y%m%dT%H%M%SZ")
+    runs_root = root / "extraction" / "runs"
+    runs_root.mkdir(parents=True, exist_ok=True)
+
+    candidate = runs_root / base
+    suffix = 1
+    while candidate.exists():
+        candidate = runs_root / f"{base}_{suffix:02d}"
+        suffix += 1
+    candidate.mkdir(parents=True, exist_ok=False)
+    return candidate.name
 
 
 def latest_run_id_path(root: Path) -> Path:
@@ -332,6 +348,45 @@ def persist_latest_run_id(root: Path, run_id: str) -> None:
     id_file = latest_run_id_path(root)
     id_file.parent.mkdir(parents=True, exist_ok=True)
     id_file.write_text(run_id + "\n", encoding="utf-8")
+
+
+def resolve_run_context(root: Path, args: argparse.Namespace) -> RunContext:
+    latest_file = latest_run_id_path(root)
+    run_id_source = "generated"
+
+    if args.run_id:
+        run_id = args.run_id
+        _validate_existing_run_dir(root, run_id)
+        run_id_source = "explicit"
+    else:
+        latest = load_run_id(root)
+        if latest:
+            latest_dir = root / "extraction" / "runs" / latest
+            if latest_dir.exists() and latest_dir.is_dir():
+                run_id = latest
+                run_id_source = "latest_run_id"
+            else:
+                logger.warning(
+                    "latest_run_id.txt points to missing run directory %s; generating new run_id.",
+                    latest_dir,
+                )
+                run_id = _generate_run_id(root)
+        else:
+            run_id = _generate_run_id(root)
+
+    write_latest = (
+        not args.no_write_latest
+        and (not args.dry_run or args.write_latest_even_on_dry_run)
+    )
+    if write_latest:
+        persist_latest_run_id(root, run_id)
+
+    return RunContext(
+        run_id=run_id,
+        source=run_id_source,
+        latest_file=latest_file,
+        latest_written=write_latest,
+    )
 
 
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
@@ -598,7 +653,13 @@ def refresh_run_manifest_artifacts(run_root: Path, dirs: Dict[str, Path]) -> Non
     write_json(manifest_path, payload)
 
 
-def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: argparse.Namespace) -> None:
+def write_run_manifest(
+    root: Path,
+    dirs: Dict[str, Path],
+    run_id: str,
+    args: argparse.Namespace,
+    run_context: RunContext,
+) -> None:
     manifest = {
         "run_id": run_id,
         "generated_at": now_iso(),
@@ -625,9 +686,16 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "run_id_override": args.run_id,
-            "run_id_source": "override" if args.run_id else "latest_run_id",
+            "run_id_source": run_context.source,
+            "run_id_resolution_precedence": [
+                "explicit(--run-id)",
+                "implicit(extraction/latest_run_id.txt)",
+                "generated(new timestamp run id)",
+            ],
             "no_write_latest": args.no_write_latest,
-            "latest_run_id_file": str(latest_run_id_path(root).resolve()),
+            "write_latest_even_on_dry_run": args.write_latest_even_on_dry_run,
+            "latest_run_id_written": run_context.latest_written,
+            "latest_run_id_file": str(run_context.latest_file.resolve()),
             "doctor": args.doctor,
             "doctor_auth": args.doctor_auth,
             "preflight_providers": args.preflight_providers,
@@ -841,6 +909,31 @@ def get_phase_prompts(phase: str) -> List[PromptSpec]:
         )
 
     return specs
+
+
+def promptset_fingerprint(phases: Iterable[str]) -> Dict[str, Any]:
+    prompt_files: List[Dict[str, str]] = []
+    for phase in sorted(set(phases)):
+        for spec in get_phase_prompts(phase):
+            prompt_files.append(
+                {
+                    "phase": phase,
+                    "step_id": spec.step_id,
+                    "path": str(spec.prompt_path.resolve()),
+                    "sha256": sha256_text(spec.prompt_path),
+                }
+            )
+    prompt_files.sort(key=lambda row: (row["phase"], row["step_id"], row["path"]))
+    fingerprint_payload = json.dumps(
+        prompt_files,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return {
+        "prompt_files": prompt_files,
+        "promptset_sha256": hashlib.sha256(fingerprint_payload.encode("utf-8")).hexdigest(),
+    }
 
 
 def write_run_routing_fingerprint(
@@ -3470,12 +3563,23 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
         spec.step_id: list(spec.output_artifacts)
         for spec in prompts
     }
+    prompt_declared_outputs = sorted(
+        {artifact for artifacts in expected_outputs.values() for artifact in artifacts}
+    )
     raw_dir = phase_dir / "raw"
     norm_dir = phase_dir / "norm"
     qa_rows = _read_step_qa_payloads(phase_dir)
+    qa_by_step: Dict[str, Dict[str, Any]] = {
+        str(row.get("step_id")): row
+        for row in qa_rows
+        if isinstance(row, dict) and row.get("step_id")
+    }
 
     observed_raw = sorted(entry.name for entry in raw_dir.iterdir() if entry.is_file()) if raw_dir.exists() else []
     observed_norm = sorted(entry.name for entry in norm_dir.iterdir() if entry.is_file()) if norm_dir.exists() else []
+    undeclared_observed_outputs = sorted(
+        [name for name in observed_norm if name not in prompt_declared_outputs]
+    )
 
     counts = {
         "ok": 0,
@@ -3496,21 +3600,51 @@ def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]
         counts["dry_run"] += row_dry_run
 
     missing_required: List[Dict[str, str]] = []
+    missing_reason_counts = {
+        "failed": 0,
+        "skipped_resume": 0,
+        "dry_run": 0,
+        "prompt_does_not_declare_it": 0,
+        "unknown": 0,
+    }
     for step_id, artifacts in expected_outputs.items():
+        step_row = qa_by_step.get(step_id, {})
+        step_expected = set(step_row.get("expected_artifacts", [])) if isinstance(step_row, dict) else set()
+        step_failed = (
+            int(step_row.get("execution_failed_partitions", step_row.get("raw_failed", 0)))
+            if isinstance(step_row, dict)
+            else 0
+        )
+        step_skipped = int(step_row.get("resume_skipped_partitions", 0)) if isinstance(step_row, dict) else 0
+        step_dry_run = int(step_row.get("dry_run_partitions", 0)) if isinstance(step_row, dict) else 0
+
         for artifact_name in artifacts:
             if not _expected_artifact_present(norm_dir, artifact_name):
-                missing_required.append({"step_id": step_id, "artifact": artifact_name})
+                reason = "unknown"
+                if artifact_name not in step_expected and step_row:
+                    reason = "prompt_does_not_declare_it"
+                elif step_dry_run > 0:
+                    reason = "dry_run"
+                elif step_failed > 0:
+                    reason = "failed"
+                elif step_skipped > 0:
+                    reason = "skipped_resume"
+                missing_required.append({"step_id": step_id, "artifact": artifact_name, "reason": reason})
+                missing_reason_counts[reason] += 1
 
     payload = {
         "generated_at": now_iso(),
         "phase": phase,
         "expected_outputs": expected_outputs,
+        "prompt_declared_outputs": prompt_declared_outputs,
         "observed_outputs": {
             "raw": observed_raw,
             "norm": observed_norm,
+            "undeclared_norm": undeclared_observed_outputs,
         },
         "counts": counts,
         "missing_required_artifacts": missing_required,
+        "missing_required_artifacts_by_reason": missing_reason_counts,
         "status": "PASS" if not missing_required else "FAIL",
     }
     write_json(phase_dir / "qa" / f"PHASE_{phase}_COVERAGE.json", payload)
@@ -3546,7 +3680,8 @@ def write_coverage_rollup(root: Path, dirs: Dict[str, Path], run_id: str) -> Dic
     return payload
 
 
-def write_resume_proof(dirs: Dict[str, Path], run_id: str) -> Dict[str, Any]:
+def write_resume_proof(dirs: Dict[str, Path], run_id: str, phases: Iterable[str]) -> Dict[str, Any]:
+    active_phases = sorted(set(phases))
     per_phase: Dict[str, Any] = {}
     total_skipped = 0
     total_recomputed = 0
@@ -3570,14 +3705,18 @@ def write_resume_proof(dirs: Dict[str, Path], run_id: str) -> Dict[str, Any]:
             "partitions_file": str(partitions_path.resolve()) if partitions_path.exists() else None,
         }
 
+    promptset = promptset_fingerprint(active_phases)
     payload = {
         "generated_at": now_iso(),
         "run_id": run_id,
+        "active_phases": active_phases,
         "totals": {
             "resume_skipped_partitions": total_skipped,
             "recomputed_partitions": total_recomputed,
         },
         "phases": per_phase,
+        "promptset_sha256": promptset["promptset_sha256"],
+        "prompt_files": promptset["prompt_files"],
     }
     write_json(dirs["root"] / RESUME_PROOF_FILENAME, payload)
     return payload
@@ -3590,6 +3729,7 @@ def print_config(
     dirs: Dict[str, Path],
     cfg: RunnerConfig,
     phases: List[str],
+    run_context: RunContext,
 ) -> None:
     config_payload = {
         "run_id": run_id,
@@ -3609,8 +3749,18 @@ def print_config(
             "print_promptpack": args.print_promptpack,
             "print_config": args.print_config,
             "run_id_override": args.run_id,
+            "run_id_source": run_context.source,
+            "run_id_resolution_precedence": [
+                "explicit(--run-id)",
+                "implicit(extraction/latest_run_id.txt)",
+                "generated(new timestamp run id)",
+            ],
             "dry_run": args.dry_run,
             "resume": args.resume,
+            "no_write_latest": args.no_write_latest,
+            "write_latest_even_on_dry_run": args.write_latest_even_on_dry_run,
+            "latest_run_id_written": run_context.latest_written,
+            "latest_run_id_file": str(run_context.latest_file.resolve()),
             "home_scan_mode": args.home_scan_mode,
             "max_files_docs": args.max_files_docs,
             "max_files_code": args.max_files_code,
@@ -3927,6 +4077,7 @@ def main() -> None:
     parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
     parser.add_argument("--run-id", type=str)
     parser.add_argument("--no-write-latest", action="store_true")
+    parser.add_argument("--write-latest-even-on-dry-run", action="store_true")
     parser.add_argument("--doctor", action="store_true")
     parser.add_argument("--doctor-auth", action="store_true")
     parser.add_argument("--preflight-providers", action="store_true")
@@ -3950,9 +4101,8 @@ def main() -> None:
 
     root = Path.cwd()
     try:
-        run_id = determine_run_id(root, args.run_id)
-        if not args.no_write_latest:
-            persist_latest_run_id(root, run_id)
+        run_context = resolve_run_context(root, args)
+        run_id = run_context.run_id
         dirs = get_run_dirs(root, run_id)
     except Exception as exc:
         logger.error("Setup failed: %s", exc)
@@ -3979,13 +4129,13 @@ def main() -> None:
         phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
     )
 
-    write_run_manifest(root, dirs, run_id, args)
+    write_run_manifest(root, dirs, run_id, args, run_context)
     write_runner_identity(root, dirs["root"], run_id)
     phase_sequence = resolve_phase_list(args.phase)
     if phase_sequence:
         write_run_routing_fingerprint(dirs["root"], run_id, cfg, phase_sequence)
     if args.print_config:
-        print_config(args, root, run_id, dirs, cfg, phase_sequence)
+        print_config(args, root, run_id, dirs, cfg, phase_sequence, run_context)
         sys.exit(0)
     if args.doctor_auth:
         sys.exit(run_auth_doctor(root, args, cfg))
@@ -4002,7 +4152,7 @@ def main() -> None:
         for phase in targets:
             write_phase_coverage_manifest(phase, dirs[phase])
         write_coverage_rollup(root, dirs, run_id)
-        write_resume_proof(dirs, run_id)
+        write_resume_proof(dirs, run_id, targets)
         sys.exit(generate_coverage_report(root, dirs, run_id, targets))
 
     if args.verify_phase_output:
@@ -4060,7 +4210,7 @@ def main() -> None:
         counts = gather_phase_counts(dirs[phase])
         write_phase_coverage_manifest(phase, dirs[phase])
         write_coverage_rollup(root, dirs, run_id)
-        write_resume_proof(dirs, run_id)
+        write_resume_proof(dirs, run_id, phases)
         update_proof_pack(root, dirs, run_id, run_started_at, phase, counts, phase_started_at, phase_finished_at)
 
 
