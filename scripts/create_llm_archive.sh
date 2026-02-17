@@ -102,6 +102,8 @@ services/**/*.py
 scripts/**/*.py
 scripts/**/*.sh
 tests/**/*.py
+UPGRADES/**
+UPGRADES/**
 
 # Configuration
 pyproject.toml

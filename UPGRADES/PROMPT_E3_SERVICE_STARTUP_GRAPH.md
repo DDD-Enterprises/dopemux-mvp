@@ -1,30 +1,13 @@
-GOAL: derive the actual service startup graph from compose/scripts/Make.
+# PROMPT_E3 — Service startup graph
 
-OUTPUT (JSON):
-	•	EXEC_SERVICE_STARTUP_GRAPH.json
+ROLE: Execution plane extractor.
+GOAL: derive the startup graph from compose files, scripts, tmux layouts, and CLI entrypoints that start services.
 
-MUST EXTRACT:
-	•	Services and their names (compose service keys)
-	•	Dependency edges (depends_on, “start X before Y” comments, sequencing scripts)
-	•	Ports, volumes, env_files only if explicitly shown
-	•	Profiles/modes (dev/prod/smoke) if present
-
-FORMAT:
-
-{
-  "artifact_type":"EXEC_SERVICE_STARTUP_GRAPH",
-  "generated_at":"...",
-  "services":[
-    {"name":"conport","defined_in":"docker-compose.dev.yml","depends_on":["postgres"],"ports":["..."],"env_files":["..."],"evidence":["..."]}
-  ],
-  "edges":[
-    {"from":"conport","to":"postgres","type":"depends_on","evidence":["..."]}
-  ],
-  "modes":[
-    {"mode":"dev","compose_files":["..."],"evidence":["..."]}
-  ]
-}
+OUTPUTS:
+  • EXEC_STARTUP_GRAPH.json
+    - nodes[]: {id, kind(service/script/command), ref, starts[]}
+    - edges[]: {from, to, type(start/depends/healthcheck/waits_for)}
 
 RULES:
-	•	Only include a field if seen.
-	•	Don’t deduce hidden dependencies.
+  • Only include relations that are explicitly documented.
+  • Leave ports/volumes out unless they appear alongside the service definition.

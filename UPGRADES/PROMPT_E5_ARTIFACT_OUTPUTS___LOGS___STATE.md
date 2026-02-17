@@ -1,20 +1,10 @@
-GOAL: map where runtime artifacts go (logs, DBs, caches, run dirs).
+# PROMPT_E5 — Artifact outputs, logs, and state
 
-OUTPUT (JSON):
-	•	EXEC_ARTIFACT_OUTPUTS.json
+ROLE: Execution plane extractor.
+GOAL: map where runtime artifacts land (logs, sqlite DBs, caches, run dirs, out/ folders).
 
-MUST INCLUDE:
-	•	Output directories (extraction/runs/..., /tmp/..., ~/.dopemux/...) if referenced
-	•	DB files (sqlite paths) if referenced
-	•	Log locations and naming patterns
-	•	“Proof pack” outputs if mentioned
+OUTPUTS:
+  • EXEC_ARTIFACT_SURFACE.json (artifacts[]: {path, type(log/db/cache/report), writer, reader, retention_hint})
 
-FORMAT:
-
-{
-  "artifact_type":"EXEC_ARTIFACT_OUTPUTS",
-  "generated_at":"...",
-  "outputs":[
-    {"path":"extraction/runs/<run_id>/A_repo_control_plane/raw","kind":"pipeline_output","producer":"run_extraction_v3.py","evidence":["..."]}
-  ]
-}
+RULES:
+  • Only include artifact locations explicitly mentioned in config/scripts/docs.
