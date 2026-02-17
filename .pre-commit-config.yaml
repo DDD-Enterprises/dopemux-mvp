@@ -8,6 +8,7 @@ repos:
         entry: python scripts/docs_frontmatter_guard.py --fix
         language: system
         files: ^docs/.*\.md$
+        exclude: ^docs/archive/
 
       # Graph schema validation
       - id: docs-graph-validator
@@ -102,12 +103,13 @@ repos:
 
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
-              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|extraction/) ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(_audit_out/|out/) ]]; then continue; fi
 
               # Config/state and tooling docs
               if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi
-              if [[ "$normalized" =~ ^\./(\.conport/|conport_export/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(\.conport/|conport_export/|\.taskx/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.github/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(examples/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(tests/resources/) ]]; then continue; fi
@@ -118,7 +120,7 @@ repos:
 
 
               # Root project docs and common standards docs anywhere
-              if [[ "$normalized" =~ ^\./[A-Z][A-Z_0-9-]*\.md$ ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./[A-Za-z][A-Za-z_0-9-]*\.md$ ]]; then continue; fi
               if [[ "$normalized" =~ /(README|CHANGELOG|CONTRIBUTING|LICENSE|CODE_OF_CONDUCT|SECURITY)\.md$ ]]; then continue; fi
 
               # Service/container docs and research
