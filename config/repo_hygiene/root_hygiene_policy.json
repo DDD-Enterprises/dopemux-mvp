@@ -54,6 +54,8 @@
     "QUICK_START.md",
     "README.md",
     "compose.yml",
+    "Dockerfile",
+    "Dockerfile.frontend",
     "docker-compose*.yml",
     "litellm.config",
     "litellm.config.yaml",
