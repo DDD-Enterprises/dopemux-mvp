@@ -1,15 +1,3 @@
----
-id: PROMPT_QA_COVERAGE_REPORT
-title: Prompt Qa Coverage Report
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-17'
-last_review: '2026-02-17'
-next_review: '2026-05-18'
-prelude: Prompt Qa Coverage Report (explanation) for dopemux documentation and developer
-  workflows.
----
 # Prompt QA (v2): Coverage Report
 
 **Outputs:** `DOC_COVERAGE_REPORT.json`

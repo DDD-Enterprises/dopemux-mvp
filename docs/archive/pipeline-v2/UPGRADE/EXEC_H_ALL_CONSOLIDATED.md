@@ -1,15 +1,3 @@
----
-id: EXEC_H_ALL_CONSOLIDATED
-title: Exec H All Consolidated
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-17'
-last_review: '2026-02-17'
-next_review: '2026-05-18'
-prelude: Exec H All Consolidated (explanation) for dopemux documentation and developer
-  workflows.
----
 # EXECUTABLE PROMPT: H-ALL - Complete Home Config Extraction (Consolidated)
 
 **Use this to run ALL home config phases (H1-H4) in a single API call.**

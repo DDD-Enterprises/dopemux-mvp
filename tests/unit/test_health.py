@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 import json
 from datetime import datetime
 
@@ -13,8 +13,7 @@ sys.modules["psutil"] = mock_psutil
 mock_docker = MagicMock()
 sys.modules["docker"] = mock_docker
 
-# Also mock rich submodules if needed, but conftest.py should handle rich.console
-# We might need rich.panel and rich.table
+# Mock rich submodules if needed
 mock_rich_panel = MagicMock()
 sys.modules["rich.panel"] = mock_rich_panel
 mock_rich_table = MagicMock()
@@ -71,7 +70,7 @@ class TestHealthChecker:
 
             status = health_checker.quick_status()
             assert "core" in status
-            assert "healthy" in status["core"]  # healthy is part of the emoji/status value tuple
+            assert "healthy" in status["core"]
 
     def test_check_dopemux_core_not_initialized(self, health_checker, temp_project_dir):
         result = health_checker._check_dopemux_core()
@@ -92,7 +91,6 @@ class TestHealthChecker:
     def test_check_dopemux_core_missing_files(self, health_checker, temp_project_dir):
         (temp_project_dir / ".dopemux").mkdir()
         (temp_project_dir / ".claude").mkdir()
-        # Missing config files
 
         result = health_checker._check_dopemux_core()
         assert result.status == HealthStatus.WARNING
@@ -210,7 +208,6 @@ class TestHealthChecker:
         results = {
             "core": ServiceHealth(name="core", status=HealthStatus.HEALTHY, message="OK", details={"detail": "value"})
         }
-        # This just tests it doesn't crash, as rich is mocked
         health_checker.display_health_report(results, detailed=True)
 
     def test_format_for_slash_command(self, health_checker):
@@ -222,7 +219,6 @@ class TestHealthChecker:
         assert "OK" in formatted
 
     def test_restart_unhealthy_services(self, health_checker):
-        # Currently a no-op but we can test it returns an empty list
         with patch.object(health_checker, "check_all") as mock_check_all:
             mock_check_all.return_value = {
                 "core": ServiceHealth(name="core", status=HealthStatus.CRITICAL, message="FAIL", details={})
