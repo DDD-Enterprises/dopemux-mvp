@@ -67,7 +67,21 @@ python UPGRADES/run_extraction.py docs --dry-run
 These phases are run after extraction is complete.
 
 - **Phase R**: GPT-5.2 arbitration to resolve conflicts between Repo, Home, and Docs.
-- **Phase S**: Opus synthesis to generate the final upgrade plan.
+- **Phase S**: Manual Opus synthesis (not executed by `run_extraction_v3.py`) to generate decision-grade outputs from the Phase R Truth Pack.
+  - Prompt pack:
+    - `UPGRADES/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md`
+    - `UPGRADES/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md`
+  - Required Phase R inputs:
+    - `R0 CONTROL_PLANE_TRUTH_MAP.md`
+    - `R1 DOPE_MEMORY_IMPLEMENTATION_TRUTH.md`
+    - `R2 EVENTBUS_WIRING_TRUTH.md`
+    - `R3 TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md`
+    - `R4 TASKX_INTEGRATION_TRUTH.md`
+    - `R5 WORKFLOWS_TRUTH_GRAPH.md`
+    - `R6 PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
+    - `R7 CONFLICT_LEDGER.md`
+    - `R8 RISK_REGISTER_TOP20.md`
+  - Optional supporting inputs: normalized Phase X feature-index outputs and Phase D doc cluster/supersession outputs.
 
 ## 5. Canonical v3 Execution Order
 
