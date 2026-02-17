@@ -83,7 +83,7 @@ def test_start_uses_resolved_dir(mock_mcp_stack):
                 mock_popen.return_value = process_mock
                 
                 # Mock requests to avoid real network calls
-                with patch("dopemux.cli.requests.get") as mock_get:
+                with patch("requests.get") as mock_get:
                     mock_get.return_value.status_code = 200
                     
                     # Call the function. If it fails, we want to SEE why.
