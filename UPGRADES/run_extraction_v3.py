@@ -540,8 +540,8 @@ def normalized_rel_path(path: Path, repo_root: Optional[Path] = None) -> str:
         return str(resolved.relative_to(root)).replace("\\", "/")
     home = Path.home().resolve()
     if is_within(resolved, home):
-        rel_path = str(resolved.relative_to(home)).replace("\\", "/")
-        return f"~/{rel_path}"
+        rel_home = str(resolved.relative_to(home)).replace('\\', '/')
+        return f"~/{rel_home}"
     return str(resolved).replace("\\", "/")
 
 
