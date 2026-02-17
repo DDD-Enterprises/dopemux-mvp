@@ -1,46 +1,20 @@
-# Phase T (GPT-5.2): Task Packet factory (implementation-ready, but still separate from Opus)
+# Phase T (GPT-5.2): Task Packet factory
 
 ## Purpose
-Turn R/R2/X outputs into bounded Task Packets you can hand to Codex/Claude Code implementers.
+Turn R and X norm artifacts into deterministic, implementation-ready Task Packets for Codex execution.
 
-## Output artifacts
-TASK_PACKET_QUEUE.md (ordered)
-TP_* stubs in markdown format (no code changes automatically)
+## Canonical prompt sequence
+- `PROMPT_T0_TASK_PACKET_FACTORY.md`
+- `PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md`
+- `PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md`
+- `PROMPT_T3_PACKET_GENERATION___BATCHED.md`
+- `PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md`
+- `PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md`
+- `PROMPT_T9_MERGE___QA.md`
 
-## Prompt
-ROLE: Task Packet author (Supervisor).
-INPUTS:
-- BACKLOG_FROM_GAPS.md
-- INVARIANTS_AND_BREAKPOINTS.md
-- DEV_CHANGE_GUIDE.md
-- FEATURE_PHASE_MATRIX.md
-- PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
-
-GOAL:
-Generate a sequence of minimal Task Packets that:
-- resolve UNKNOWNs first
-- enforce boundaries (Trinity, determinism, append-only)
-- isolate control plane dependencies (repo vs home)
-- support MCP->hooks migration safely
-- strengthen workflow tests
-
-OUTPUT:
-1) TASK_PACKET_QUEUE.md
-   - prioritized list with rationale
-
-2) For the top N=10 packets: output each as TP markdown:
-   - Objective
-   - Scope (in/out)
-   - Invariants
-   - Plan (numbered)
-   - Exact commands to run
-   - Output capture rules
-   - Acceptance criteria
-   - Rollback steps
-   - Stop conditions
-   - Files likely touched (from breakpoints), but mark UNKNOWN if not evidenced
-
-RULES:
-- No refactors unless required.
-- Prefer mechanical changes.
-- Every TP references evidence from earlier phases.
+## Canonical outputs
+- `TP_INDEX.json`
+- `TP_MERGED.json`
+- `TP_QA.json`
+- `TP_SUMMARY.md`
+- `TP_BACKLOG_TOPN.json`
