@@ -1,15 +1,3 @@
----
-id: PROMPT_I1_INSTRUCTION_INDEX
-title: Prompt I1 Instruction Index
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-17'
-last_review: '2026-02-17'
-next_review: '2026-05-18'
-prelude: Prompt I1 Instruction Index (explanation) for dopemux documentation and developer
-  workflows.
----
 # Prompt I1 (v2): LLM Instruction Plane Index
 
 **Outputs:** `LLM_INSTRUCTION_INDEX.json`

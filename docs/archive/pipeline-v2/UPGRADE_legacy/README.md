@@ -1,14 +1,3 @@
----
-id: README
-title: Readme
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-17'
-last_review: '2026-02-17'
-next_review: '2026-05-18'
-prelude: Readme (explanation) for dopemux documentation and developer workflows.
----
 # Gemini Flash v2 Prompt Pack - Dopemux Comprehensive Extraction
 
 This directory contains upgraded prompts for Gemini Flash 2.0 that enforce:

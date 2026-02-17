@@ -1,15 +1,3 @@
----
-id: EXEC_H4_SQLITE_SCHEMA
-title: Exec H4 Sqlite Schema
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-17'
-last_review: '2026-02-17'
-next_review: '2026-05-18'
-prelude: Exec H4 Sqlite Schema (explanation) for dopemux documentation and developer
-  workflows.
----
 # EXECUTABLE PROMPT: H4 - SQLite Schema Extraction
 
 ---
