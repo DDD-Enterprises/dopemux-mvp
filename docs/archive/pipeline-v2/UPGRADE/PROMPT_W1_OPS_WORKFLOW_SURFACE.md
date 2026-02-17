@@ -1,15 +1,3 @@
----
-id: PROMPT_W1_OPS_WORKFLOW_SURFACE
-title: Prompt W1 Ops Workflow Surface
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-17'
-last_review: '2026-02-17'
-next_review: '2026-05-18'
-prelude: Prompt W1 Ops Workflow Surface (explanation) for dopemux documentation and
-  developer workflows.
----
 # Prompt W1 (v2): Ops Workflow Surface (Compose + Scripts)
 
 **Outputs:** `WORKFLOW_SURFACE_OPS.json`
