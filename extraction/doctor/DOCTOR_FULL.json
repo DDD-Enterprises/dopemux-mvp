@@ -1,0 +1,1219 @@
+{
+  "generated_at": "2026-02-17T10:57:14.580469+00:00",
+  "phases": [
+    "A",
+    "H",
+    "D",
+    "C",
+    "E",
+    "W",
+    "B",
+    "G",
+    "Q",
+    "R",
+    "X",
+    "T",
+    "Z"
+  ],
+  "prompt_set_integrity": {
+    "duplicate_step_ids": {},
+    "missing_steps_by_phase": {},
+    "promptpack": {
+      "A": [
+        {
+          "declared_outputs": [
+            "REPOCTRL_INVENTORY.json",
+            "REPOCTRL_PARTITIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+          "sha256": "9c44c34613faee40d30356f509ea6a61c56d26384a428da2da6636d9c69b20ce",
+          "step_id": "A0"
+        },
+        {
+          "declared_outputs": [
+            "REPO_INSTRUCTION_SURFACE.json",
+            "REPO_INSTRUCTION_REFERENCES.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A1_INSTRUCTION_SURFACES.md",
+          "sha256": "a03ced9a902eb158244d799240d90d9d76fa1f1877228aa858cf1ece29e0e0a2",
+          "step_id": "A1"
+        },
+        {
+          "declared_outputs": [
+            "REPO_MCP_SERVER_DEFS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A2_MCP_SERVER_DEFS.md",
+          "sha256": "be7b9cd11a3987de5b52467177f7b709f9902a013f5feed2214dfdf52ddf2421",
+          "step_id": "A2"
+        },
+        {
+          "declared_outputs": [
+            "REPO_MCP_PROXY_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A3_MCP_PROXY_SURFACE.md",
+          "sha256": "e3ab5b17580043a887d816577b6dd1014646c74f8d0c5d6b1e23b3a1e67a7d20",
+          "step_id": "A3"
+        },
+        {
+          "declared_outputs": [
+            "REPO_ROUTER_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A4_ROUTER_SURFACE.md",
+          "sha256": "4339889c53dcfa2f9dcba66ceb251378d0fe82f1dccaefed7caa580de9462628",
+          "step_id": "A4"
+        },
+        {
+          "declared_outputs": [
+            "REPO_HOOKS_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A5_HOOKS_SURFACE.md",
+          "sha256": "40b2c9b1e30879d8fbae766e9a99b2d622bb9da3c4411f2b20363d54ec178044",
+          "step_id": "A5"
+        },
+        {
+          "declared_outputs": [
+            "REPO_COMPOSE_SERVICE_GRAPH.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+          "sha256": "8a586081cad555fba6e7172a69ce488aeba60d6f91b5ab592d3a4bdfd7ebaac2",
+          "step_id": "A6"
+        },
+        {
+          "declared_outputs": [
+            "REPO_LITELLM_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A7_LITELLM_SURFACE.md",
+          "sha256": "2fbab057400ac2737a7e9eaa414048337cc953a0294416dd860fc0da5f8e29af",
+          "step_id": "A7"
+        },
+        {
+          "declared_outputs": [
+            "REPO_TASKX_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A8_TASKX_SURFACE.md",
+          "sha256": "50cdc9f12a6035225ac0128516cc7480d7f74da7b243e3eb21e05548fbbebb4e",
+          "step_id": "A8"
+        },
+        {
+          "declared_outputs": [
+            "REPO_IMPLICIT_BEHAVIOR_HINTS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+          "sha256": "676afeacd1eb9edff9056856ef6d765c535e77257ac1fdc46bb8fa70ed533a3b",
+          "step_id": "A9"
+        },
+        {
+          "declared_outputs": [
+            "REPOCTRL_NORM_MANIFEST.json",
+            "REPOCTRL_QA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_A99_MERGE___QA.md",
+          "sha256": "cad655f16e7e1c7cc25e7b08851e1be39301e27175975d63138021179a34a172",
+          "step_id": "A99"
+        }
+      ],
+      "B": [
+        {
+          "declared_outputs": [
+            "BOUNDARY_INVENTORY.json",
+            "BOUNDARY_PARTITIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md",
+          "sha256": "d0199c851383b5a8eb545a79700b611c31eb72edd3588460aba5a635b8b23d58",
+          "step_id": "B0"
+        },
+        {
+          "declared_outputs": [
+            "BOUNDARY_ENFORCEMENT_POINTS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md",
+          "sha256": "70cf25aeca53bf7a00164f1efe65ae79c03a6c20a5daa608ba6999e8266c1e8b",
+          "step_id": "B1"
+        },
+        {
+          "declared_outputs": [
+            "REFUSAL_GUARDRAILS_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md",
+          "sha256": "84f4e9b34e8d076b4e49d39b9c392b59123c42f1092353eea90f22453aac487e",
+          "step_id": "B2"
+        },
+        {
+          "declared_outputs": [
+            "BOUNDARY_BYPASS_RISKS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md",
+          "sha256": "09f22aacce0dd370b46b3a8d188cf7fc66e2d2d215a57ad2baa2c2946d1c861a",
+          "step_id": "B3"
+        },
+        {
+          "declared_outputs": [
+            "BOUNDARY_MERGED.json",
+            "BOUNDARY_QA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_B9_MERGE___QA.md",
+          "sha256": "89e61ffff1da5834371fbca68a9108d3311346686e0a8b8d88cdb93a029e107a",
+          "step_id": "B9"
+        }
+      ],
+      "C": [
+        {
+          "declared_outputs": [
+            "CODE_INVENTORY.json",
+            "CODE_PARTITIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md",
+          "sha256": "e7c9cab9f8c293e984353e66d5fd293f500c2acb1d0ead2a13746e0c239ef182",
+          "step_id": "C0"
+        },
+        {
+          "declared_outputs": [
+            "SERVICE_ENTRYPOINTS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C1_SERVICE_ENTRYPOINTS.md",
+          "sha256": "03c5d248ed2803439a3343a5b960fd0cbf66dd151150fa32dd8658cdd30b8ba3",
+          "step_id": "C1"
+        },
+        {
+          "declared_outputs": [
+            "EVENTBUS_SURFACE.json",
+            "EVENT_PRODUCERS.json",
+            "EVENT_CONSUMERS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md",
+          "sha256": "320c36689032b86a840fbc2410d93bfd848253059effb3825b946e3f7334809a",
+          "step_id": "C2"
+        },
+        {
+          "declared_outputs": [
+            "DOPE_MEMORY_CODE_SURFACE.json",
+            "DOPE_MEMORY_SCHEMAS.json",
+            "DOPE_MEMORY_DB_WRITES.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C3_DOPE_MEMORY_SURFACES.md",
+          "sha256": "b5d66a699a642be7cb2d694a87a5039bc44063fac2d69a9e027898aef6712167",
+          "step_id": "C3"
+        },
+        {
+          "declared_outputs": [
+            "TRINITY_ENFORCEMENT_SURFACE.json",
+            "REFUSAL_AND_GUARDRAILS_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md",
+          "sha256": "183dcf6ed6c1697f0d3907ffdbfde7ddf6b0321287cc435c2f2e71494f72c129",
+          "step_id": "C4"
+        },
+        {
+          "declared_outputs": [
+            "TASKX_INTEGRATION_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
+          "sha256": "9d2500cf88b3cbbe69dfc4b00d0f57c58367892a10898a9f102de6d58e5b5991",
+          "step_id": "C5"
+        },
+        {
+          "declared_outputs": [
+            "WORKFLOW_RUNNER_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md",
+          "sha256": "7e7de97f177c562ee01a153956d5de4fef8b0ede167557d277c5f86f3c549daf",
+          "step_id": "C6"
+        },
+        {
+          "declared_outputs": [
+            "API_DASHBOARD_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C7_API___DASHBOARDS.md",
+          "sha256": "79741a16e029873311b465dfb07cb888988e4742a5a5b9eac8fc0821db3d2b52",
+          "step_id": "C7"
+        },
+        {
+          "declared_outputs": [
+            "DETERMINISM_RISK_LOCATIONS.json",
+            "IDEMPOTENCY_RISK_LOCATIONS.json",
+            "CONCURRENCY_RISK_LOCATIONS.json",
+            "SECRETS_RISK_LOCATIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md",
+          "sha256": "8690cb3dd19a243f369f730ebd1ec3efd2a6acfb72c244777e4818952f7426e6",
+          "step_id": "C8"
+        },
+        {
+          "declared_outputs": [
+            "CODE_SURFACES_MERGED.json",
+            "CODE_SURFACES_QA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_C9_MERGE___NORMALIZE___QA.md",
+          "sha256": "f108c90a6f6961228a5d9e70404a2ea7e10284e2cbbd0adb289eba4b737cd7c5",
+          "step_id": "C9"
+        }
+      ],
+      "D": [
+        {
+          "declared_outputs": [
+            "DOC_INVENTORY.json",
+            "DOC_PARTITIONS.json",
+            "DOC_TODO_QUEUE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_D0_INVENTORY___PARTITION_PLAN.md",
+          "sha256": "fe0e5041b03964e59d0686c20b138bf68bd39bd9a601271ad87047de01a1ea9a",
+          "step_id": "D0"
+        },
+        {
+          "declared_outputs": [
+            "DOC_INDEX.partX.json",
+            "DOC_CONTRACT_CLAIMS.partX.json",
+            "DOC_BOUNDARIES.partX.json",
+            "DOC_SUPERSESSION.partX.json",
+            "CAP_NOTICES.partX.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md",
+          "sha256": "6d6af6e60af6df0b24eb69e5b3a79c1ebf4dc88d05b5076d7afd9f1214bd6826",
+          "step_id": "D1"
+        },
+        {
+          "declared_outputs": [
+            "DOC_INTERFACES.partX.json",
+            "DOC_WORKFLOWS.partX.json",
+            "DOC_DECISIONS.partX.json",
+            "DOC_GLOSSARY.partX.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_D2_DEEP_EXTRACTION.md",
+          "sha256": "6e2bd3a2c4bee92dfaed29601d2b32d5822ce9a08886fa9537dd4f5bb8c0c6df",
+          "step_id": "D2"
+        },
+        {
+          "declared_outputs": [
+            "DOC_CITATION_GRAPH.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_D3_CITATION___REFERENCE_GRAPH.md",
+          "sha256": "5351878f7fe93725c674c43858516562f61c0e76dc0e4de296874d9507ddae99",
+          "step_id": "D3"
+        },
+        {
+          "declared_outputs": [
+            "DOC_INDEX.json",
+            "DOC_CONTRACT_CLAIMS.json",
+            "DOC_BOUNDARIES.json",
+            "DOC_SUPERSESSION.json",
+            "DOC_INTERFACES.json",
+            "DOC_WORKFLOWS.json",
+            "DOC_DECISIONS.json",
+            "DOC_GLOSSARY.json",
+            "DOC_COVERAGE_REPORT.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md",
+          "sha256": "3fb45fc5c212f162ba1ce2fc007f39de607def8cdec027bada9546147b6b3874",
+          "step_id": "D4"
+        },
+        {
+          "declared_outputs": [
+            "DOC_TOPIC_CLUSTERS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md",
+          "sha256": "226e583e8d29157345cca051a2e25127e6bfb07aabdab8435756b7ac07071c2f",
+          "step_id": "D5"
+        }
+      ],
+      "E": [
+        {
+          "declared_outputs": [
+            "EXEC_INVENTORY.json",
+            "EXEC_PARTITIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md",
+          "sha256": "0d9ec8d4adeaea7a18f536bb66afb3be5be8472f781f64fb66f387f8fc743aae",
+          "step_id": "E0"
+        },
+        {
+          "declared_outputs": [
+            "EXEC_BOOTSTRAP_COMMANDS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md",
+          "sha256": "4403006e865b2d7e1968b2ec8f5e9d42d555cafc4c3a139830722546ac97c809",
+          "step_id": "E1"
+        },
+        {
+          "declared_outputs": [
+            "EXEC_ENV_CHAIN.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md",
+          "sha256": "e348f57cf6d56e704ff64406083b6c10de4546a05114cb66aaeb0432880b9548",
+          "step_id": "E2"
+        },
+        {
+          "declared_outputs": [
+            "EXEC_STARTUP_GRAPH.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_E3_SERVICE_STARTUP_GRAPH.md",
+          "sha256": "5371915a6764d0fe1cf580224d3bb02e45a3a4b2c92f80be3b0488a434f2d259",
+          "step_id": "E3"
+        },
+        {
+          "declared_outputs": [
+            "EXEC_RUNTIME_MODES.json",
+            "EXEC_MODE_DELTA_REPORT.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md",
+          "sha256": "2929669ba9cd25cdd2a01e0ed78e78f4e7e414600b74233b013afbc724538f98",
+          "step_id": "E4"
+        },
+        {
+          "declared_outputs": [
+            "EXEC_ARTIFACT_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md",
+          "sha256": "353b609344c3415b1392178946e5d5154cc6192169f69765be4a62801f53e026",
+          "step_id": "E5"
+        },
+        {
+          "declared_outputs": [
+            "EXEC_RISK_FACTS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md",
+          "sha256": "dea7da108d52e46cd4476b8f2a5be796bc6d3a4f4c833a88eb0bcf6e0ff3feeb",
+          "step_id": "E6"
+        },
+        {
+          "declared_outputs": [
+            "EXEC_MERGED.json",
+            "EXEC_QA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_E9_MERGE___NORMALIZE___QA.md",
+          "sha256": "96fdbdbb9e13c48f955a60437c53cef6c011e885cdc2a8dfa18d306889df879c",
+          "step_id": "E9"
+        }
+      ],
+      "G": [
+        {
+          "declared_outputs": [
+            "GOV_INVENTORY.json",
+            "GOV_PARTITIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md",
+          "sha256": "be685aa258dc4ddddd4277b14387035a5e45ddfc753eec53788e8f555bf19b7f",
+          "step_id": "G0"
+        },
+        {
+          "declared_outputs": [
+            "GOV_CI_GATES.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_G1_CI_GATES___QUALITY_BARS.md",
+          "sha256": "79ab737e251bf6e3750a22f9fa245a8f89a0474ca735b7a2ba0c4b13853f0e15",
+          "step_id": "G1"
+        },
+        {
+          "declared_outputs": [
+            "GOV_HYGIENE_POLICIES.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md",
+          "sha256": "52407baa8232125b55e65c0e7cb12670425f51c171f5bbe557d3c52bc56695ba",
+          "step_id": "G2"
+        },
+        {
+          "declared_outputs": [
+            "GOV_POLICIES.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md",
+          "sha256": "dea459356c59c233ef71a8a86307b87e0b0b603e6b3de58f6c3437cb8e16fb73",
+          "step_id": "G3"
+        },
+        {
+          "declared_outputs": [
+            "GOV_SECRETS_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md",
+          "sha256": "717514ed0ca9e796aa5b41439e73c4aa3abbd16866ccd8e063a35883387ffc0c",
+          "step_id": "G4"
+        },
+        {
+          "declared_outputs": [
+            "GOV_MERGED.json",
+            "GOV_QA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_G9_MERGE___QA.md",
+          "sha256": "05a6617bb58e5820467607d08b8ba8ff3b59626b9585ef11c2d4200a4ae10db0",
+          "step_id": "G9"
+        }
+      ],
+      "H": [
+        {
+          "declared_outputs": [
+            "HOME_INVENTORY.json",
+            "HOME_PARTITIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_H0_INVENTORY___PARTITION_PLAN.md",
+          "sha256": "f9dd0fd27b953df0bc48a6940a278a3434049415ef8ccd2511d5f887fe071d70",
+          "step_id": "H0"
+        },
+        {
+          "declared_outputs": [
+            "HOME_KEYS_SURFACE.json",
+            "HOME_REFERENCES.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_H1_KEYS___REFERENCES.md",
+          "sha256": "29e09486d04206f7a8a3c4b8dbad5570bf356437894cd6319368251fdcc40616",
+          "step_id": "H1"
+        },
+        {
+          "declared_outputs": [
+            "HOME_MCP_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_H2_MCP_SURFACE.md",
+          "sha256": "77a645b762d809a027a786407cf4a4bcca47cf208d97959208ee5dfe37e9c16f",
+          "step_id": "H2"
+        },
+        {
+          "declared_outputs": [
+            "HOME_ROUTER_SURFACE.json",
+            "HOME_PROVIDER_LADDER_HINTS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md",
+          "sha256": "dee0b3fa87672656551ecf77d12a49ed7593e3d4d081d981b119187eef81c45f",
+          "step_id": "H3"
+        },
+        {
+          "declared_outputs": [
+            "HOME_LITELLM_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_H4_LITELLM_SURFACES.md",
+          "sha256": "a415f394cb9ca42a25c1a606e1ecfa5007504304264961b68e92d1d8939f39ed",
+          "step_id": "H4"
+        },
+        {
+          "declared_outputs": [
+            "HOME_PROFILES_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_H5_PROFILES___SESSIONS.md",
+          "sha256": "6e071e92fbb32a582dc7fbe385891ed26070a255054612f0716db99310e4933f",
+          "step_id": "H5"
+        },
+        {
+          "declared_outputs": [
+            "HOME_TMUX_WORKFLOW_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md",
+          "sha256": "c9a6941c9fa99702ba0a0fe12cd287866e2f493d8496b6675b21c11f61ddc2da",
+          "step_id": "H6"
+        },
+        {
+          "declared_outputs": [
+            "HOME_SQLITE_SCHEMA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_H7_SQLITE___STATE_DB_METADATA.md",
+          "sha256": "887e4eb5502f560701688d7281bc51c1ff09f5b05cf9c78a4d64300a3b1568bc",
+          "step_id": "H7"
+        },
+        {
+          "declared_outputs": [
+            "HOMECTRL_NORM_MANIFEST.json",
+            "HOMECTRL_QA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_H9_MERGE___QA.md",
+          "sha256": "9b698cbb0ed307f9faaf50184907220936181adcf2ede7982d09205df119e119",
+          "step_id": "H9"
+        }
+      ],
+      "Q": [
+        {
+          "declared_outputs": [
+            "QA_RUN_MANIFEST.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md",
+          "sha256": "b93d437b905d4c4122a5af6fc909f90ca224ebd2256df1a1fd48b60e1553d446",
+          "step_id": "Q0"
+        },
+        {
+          "declared_outputs": [
+            "QA_MISSING_ARTIFACTS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md",
+          "sha256": "1251aa03b446bb04f16731eb46a67afcf766433703ec16c1e781630be87c77cc",
+          "step_id": "Q1"
+        },
+        {
+          "declared_outputs": [
+            "QA_PROMPT_COLLISIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md",
+          "sha256": "eee984d9b4cee4a849964e8de2e19ab9d462c15a223ba3d5786791e2f204fd2a",
+          "step_id": "Q2"
+        },
+        {
+          "declared_outputs": [
+            "QA_NORM_DRIFT_REPORT.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md",
+          "sha256": "2e0622c7439b04337220c9783ddf4dbda7a5a1c7efaaf6aad7eb674a239a52d2",
+          "step_id": "Q3"
+        },
+        {
+          "declared_outputs": [
+            "PIPELINE_DOCTOR_REPORT.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_Q9_MERGE___QA.md",
+          "sha256": "5ef60a58e57e74b6e79700460f259a479974bb7a909f1f31b01ecc2fa3a7cc52",
+          "step_id": "Q9"
+        }
+      ],
+      "R": [
+        {
+          "declared_outputs": [
+            "CONTROL_PLANE_TRUTH_MAP.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md",
+          "sha256": "96eb9f0cfc11588234e641c153b1db0b84262a2577fced679cb14524789dcae6",
+          "step_id": "R0"
+        },
+        {
+          "declared_outputs": [
+            "DOPE_MEMORY_IMPLEMENTATION_TRUTH.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+          "sha256": "c75cd652a1ad6ba3b4548f4f057d9e8fd9a54e640e451d633e675277ec1dfbb9",
+          "step_id": "R1"
+        },
+        {
+          "declared_outputs": [
+            "EVENTBUS_WIRING_TRUTH.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md",
+          "sha256": "92095733e495064a66f4b8796f1ff40ba9f99b9851b3b3543127325b3ea2025a",
+          "step_id": "R2"
+        },
+        {
+          "declared_outputs": [
+            "TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
+          "sha256": "9f14e48051a858526b94cfaed35ccd7d7bf17254fd40d4c647b4346f67e0ff1f",
+          "step_id": "R3"
+        },
+        {
+          "declared_outputs": [
+            "TASKX_INTEGRATION_TRUTH.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md",
+          "sha256": "376ff6dc83d05a15bc6d4733541053a7d6dc9d52108ace29ee1eeb0484f8e2cd",
+          "step_id": "R4"
+        },
+        {
+          "declared_outputs": [
+            "WORKFLOWS_TRUTH_GRAPH.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md",
+          "sha256": "e5e3c8114fa1100f003ce3907c87bcebd9a4c05fb9a9288a9b5b34411523342a",
+          "step_id": "R5"
+        },
+        {
+          "declared_outputs": [
+            "PORTABILITY_AND_MIGRATION_RISK_LEDGER.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
+          "sha256": "914788e15f1cf1785abef3085a251010efcaf3d8c5c9a86a3fbbef11dd6f5d85",
+          "step_id": "R6"
+        },
+        {
+          "declared_outputs": [
+            "CONFLICT_LEDGER.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_R7_CONFLICT_LEDGER.md",
+          "sha256": "bf0011fc62d3af94ec46d491315bb52c24db1d7d9d5699f58af1abe6feec2507",
+          "step_id": "R7"
+        },
+        {
+          "declared_outputs": [
+            "RISK_REGISTER_TOP20.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_R8_RISK_REGISTER_TOP20.md",
+          "sha256": "00641484c05b7e3c4aa5cbfaccaf4fa30df531987bd5628078d53acb55324125",
+          "step_id": "R8"
+        }
+      ],
+      "T": [
+        {
+          "declared_outputs": [
+            "TP_BACKLOG_TOPN.json",
+            "TP_INDEX.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_T0_TASK_PACKET_FACTORY.md",
+          "sha256": "2e6fac51f3acb1ac515eed1cc98d6a1cc2a92648ed122dc9f477779aeb9d0573",
+          "step_id": "T0"
+        },
+        {
+          "declared_outputs": [
+            "TP_PACKETS_TOP10.partX.md",
+            "TP_PACKET_IMPLEMENTATION_INDEX.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md",
+          "sha256": "0e17b8098b5b5de0c8aa2598d4e14187c73dc896a271a50bcb67b82fa6a3e5e2",
+          "step_id": "T1"
+        },
+        {
+          "declared_outputs": [
+            "TP_SCHEMA.json",
+            "TP_AUTHORITY_RULES.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md",
+          "sha256": "72cdbb5a014a7c755cc441313f7f3e302f23cbfac8a71465c83a1fd921aac10d",
+          "step_id": "T2"
+        },
+        {
+          "declared_outputs": [
+            "TP_BATCHED_PACKETS.partX.md",
+            "TP_BATCH_INDEX.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_T3_PACKET_GENERATION___BATCHED.md",
+          "sha256": "c8d603882f8fd28f4f71c36f8e34540adb5efc1383bcc9ada015761ba1c94528",
+          "step_id": "T3"
+        },
+        {
+          "declared_outputs": [
+            "TP_DEDUPED.json",
+            "TP_COLLISIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md",
+          "sha256": "a33b6df2a415f2c10bcc1ab2084f1a54009ef9e1fbf912d42be0a302e1842d81",
+          "step_id": "T4"
+        },
+        {
+          "declared_outputs": [
+            "TP_RUN_PLAN.json",
+            "TP_BACKLOG_TOPN.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md",
+          "sha256": "9a22d9d7db52e5b3cc8aee390fe53a61c4c5ad92bf534b261b6070d757cba6a0",
+          "step_id": "T5"
+        },
+        {
+          "declared_outputs": [
+            "TP_INDEX.json",
+            "TP_MERGED.json",
+            "TP_QA.json",
+            "TP_SUMMARY.md",
+            "TP_BACKLOG_TOPN.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_T9_MERGE___QA.md",
+          "sha256": "1ff8c199e2f099c5d6b788d8086658b1238b3254cf688c9807322156b73dc46a",
+          "step_id": "T9"
+        }
+      ],
+      "W": [
+        {
+          "declared_outputs": [
+            "WORKFLOW_INVENTORY.json",
+            "WORKFLOW_PARTITIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md",
+          "sha256": "5685d00627299f8df112e31fc098869e8ff6a7e21ab5a69ab81a47de07032633",
+          "step_id": "W0"
+        },
+        {
+          "declared_outputs": [
+            "WORKFLOW_CATALOG.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md",
+          "sha256": "caa56b365db66d4666e5c76f9f99234402654b186066af63336d44a8ecc4684c",
+          "step_id": "W1"
+        },
+        {
+          "declared_outputs": [
+            "WORKFLOW_IO_MAP.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md",
+          "sha256": "7a6f8ba95fdf7064822d21bbd7a94eecd175f54918f6cd6c341c35c9a8029592",
+          "step_id": "W2"
+        },
+        {
+          "declared_outputs": [
+            "WORKFLOW_COORDINATION_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md",
+          "sha256": "c303d974418b091ef625c598ee7d7d4e2a2e1b9ae28531cde3c90e89080feea4",
+          "step_id": "W3"
+        },
+        {
+          "declared_outputs": [
+            "WORKFLOW_FAILURE_RECOVERY.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md",
+          "sha256": "c03a9c60499d7e66301b001a0d0e2c0246822a41a3e7c2925c365e914c9df871",
+          "step_id": "W4"
+        },
+        {
+          "declared_outputs": [
+            "WORKFLOW_STATE_COUPLING.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md",
+          "sha256": "5be99e6bb0989074c7b1d9a3171c543898014dff5299b046fa74a79cb20f74eb",
+          "step_id": "W5"
+        },
+        {
+          "declared_outputs": [
+            "WORKFLOW_MERGED.json",
+            "WORKFLOW_QA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_W9_MERGE___QA.md",
+          "sha256": "930b0cd122a8ded20a8cdd41a404bdcceddd3b5c1ec9311d036a5ca9bdd5160c",
+          "step_id": "W9"
+        }
+      ],
+      "X": [
+        {
+          "declared_outputs": [
+            "FEATURE_INDEX_INVENTORY.json",
+            "FEATURE_INDEX_PARTITIONS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md",
+          "sha256": "8796e1ec1792883715cc076fa1e3f81ad3409cbeca319fccbf2934f6143422c4",
+          "step_id": "X0"
+        },
+        {
+          "declared_outputs": [
+            "FEATURE_SURFACE.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md",
+          "sha256": "b8c2f42e6bea71ade4dfdc8d16e514323881f25ce0e49c3a88619ae5d424e357",
+          "step_id": "X1"
+        },
+        {
+          "declared_outputs": [
+            "FEATURE_CODE_MAP.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_X2_FEATURE_TO_CODE_MAP.md",
+          "sha256": "09b4a9b6c9969c77303e8aba7be0434bdeea7a005d00d85ca843144a165bdc6b",
+          "step_id": "X2"
+        },
+        {
+          "declared_outputs": [
+            "FEATURE_DOC_MAP.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_X3_FEATURE_TO_DOC_MAP.md",
+          "sha256": "5e363b43e9e40e50257c7bf960dfc21b5b94528e0d37fed47a7ca73658b373d7",
+          "step_id": "X3"
+        },
+        {
+          "declared_outputs": [
+            "FEATURE_DEP_GRAPH.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md",
+          "sha256": "a7e835aa1f1fe4f14a5b936e1e79d7fe0a1c56ea436616360292cb597b76a044",
+          "step_id": "X4"
+        },
+        {
+          "declared_outputs": [
+            "FEATURE_INDEX_MERGED.json",
+            "FEATURE_INDEX_QA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_X9_MERGE___QA.md",
+          "sha256": "e88def5d261df9f8c2aad762d5bb460f972b9d09592166b76ea1c506bc4c9e20",
+          "step_id": "X9"
+        }
+      ],
+      "Z": [
+        {
+          "declared_outputs": [
+            "FREEZE_FILE_INDEX.json",
+            "FREEZE_CHECKSUMS.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md",
+          "sha256": "ee3aa23b99e246e4bea16cc64c683704a92a8bcee3d29c64d6ffc8c29773a922",
+          "step_id": "Z0"
+        },
+        {
+          "declared_outputs": [
+            "PROOF_PACK.md"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_Z1_PROOF_PACK___RUNBOOK.md",
+          "sha256": "b0e8a7f9433246995ba9764f8351b9bb250432d0a05c5efbb47f0fa9810567fd",
+          "step_id": "Z1"
+        },
+        {
+          "declared_outputs": [
+            "OPUS_INPUT_MANIFEST.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md",
+          "sha256": "bef544c0bf9a071c491f0bee03c50f67998a7d4a0b6bb76af46b29761f53627a",
+          "step_id": "Z2"
+        },
+        {
+          "declared_outputs": [
+            "FREEZE_MANIFEST.json",
+            "FREEZE_README.md",
+            "FREEZE_QA.json"
+          ],
+          "path": "/Users/hue/code/dopemux-mvp/UPGRADES/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md",
+          "sha256": "5e10edd36b25691782199007c864e1104e7196e90e8fe6841f7163b31f3198cc",
+          "step_id": "Z9"
+        }
+      ]
+    }
+  },
+  "provider_reachability": {
+    "probes": [
+      {
+        "api_key_env_name": "GEMINI_API_KEY",
+        "api_key_env_resolved": "GEMINI_API_KEY",
+        "api_key_present": true,
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "failure_type": "unknown",
+        "gemini_auth_attempt_sequence": [
+          "sdk_api_key"
+        ],
+        "gemini_auth_mode_effective": "sdk_api_key",
+        "gemini_auth_mode_requested": "auto",
+        "model_id": "gemini-2.0-flash-001",
+        "provider": "gemini",
+        "provider_error_reason": null,
+        "provider_signature": "provider=gemini;model=gemini-2.0-flash-001;host=generativelanguage.googleapis.com;path=/v1beta/models/gemini-2.0-flash-001:generateContent;auth_mode=sdk_api_key",
+        "status_code": null,
+        "transport": "sdk"
+      },
+      {
+        "api_key_env_name": "XAI_API_KEY",
+        "api_key_env_resolved": "XAI_API_KEY",
+        "api_key_present": true,
+        "endpoint_effective": "https://api.x.ai/v1/chat/completions",
+        "failure_type": "auth_rejected",
+        "gemini_auth_attempt_sequence": null,
+        "gemini_auth_mode_effective": null,
+        "gemini_auth_mode_requested": null,
+        "model_id": "grok-code-fast-1",
+        "provider": "xai",
+        "provider_error_reason": null,
+        "provider_signature": "provider=xai;model=grok-code-fast-1;host=api.x.ai;path=/v1/chat/completions;auth_mode=bearer",
+        "status_code": 403,
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env_name": "OPENAI_API_KEY",
+        "api_key_env_resolved": "OPENAI_API_KEY",
+        "api_key_present": true,
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "failure_type": "auth_rejected",
+        "gemini_auth_attempt_sequence": null,
+        "gemini_auth_mode_effective": null,
+        "gemini_auth_mode_requested": null,
+        "model_id": "gpt-5.2-extended",
+        "provider": "openai",
+        "provider_error_reason": null,
+        "provider_signature": "provider=openai;model=gpt-5.2-extended;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+        "status_code": 401,
+        "transport": "openai_sdk"
+      }
+    ],
+    "routes": {
+      "gemini": {
+        "api_key_env": "GEMINI_API_KEY",
+        "model_id": "gemini-2.0-flash-001",
+        "provider": "gemini"
+      },
+      "openai": {
+        "api_key_env": "OPENAI_API_KEY",
+        "model_id": "gpt-5.2-extended",
+        "provider": "openai"
+      },
+      "xai": {
+        "api_key_env": "XAI_API_KEY",
+        "model_id": "grok-code-fast-1",
+        "provider": "xai"
+      }
+    }
+  },
+  "required_artifact_groups": {
+    "phases": {
+      "A": {
+        "norm_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/20260216_025404_PST_305a48d69/A_repo_control_plane/norm",
+        "required_groups": [
+          {
+            "group": [
+              "REPO_INSTRUCTION_SURFACE.json"
+            ],
+            "matched_file": "REPO_INSTRUCTION_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REPO_INSTRUCTION_REFERENCES.json"
+            ],
+            "matched_file": "REPO_INSTRUCTION_REFERENCES.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REPO_MCP_SERVER_DEFS.json"
+            ],
+            "matched_file": "REPO_MCP_SERVER_DEFS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REPO_MCP_PROXY_SURFACE.json"
+            ],
+            "matched_file": "REPO_MCP_PROXY_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REPO_ROUTER_SURFACE.json"
+            ],
+            "matched_file": "REPO_ROUTER_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REPO_HOOKS_SURFACE.json"
+            ],
+            "matched_file": "REPO_HOOKS_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REPO_IMPLICIT_BEHAVIOR_HINTS.json"
+            ],
+            "matched_file": "REPO_IMPLICIT_BEHAVIOR_HINTS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REPO_COMPOSE_SERVICE_GRAPH.json"
+            ],
+            "matched_file": "REPO_COMPOSE_SERVICE_GRAPH.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REPO_LITELLM_SURFACE.json"
+            ],
+            "matched_file": "REPO_LITELLM_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REPO_TASKX_SURFACE.json"
+            ],
+            "matched_file": "REPO_TASKX_SURFACE.json",
+            "present": true
+          }
+        ],
+        "required_groups_present": 10,
+        "required_groups_total": 10
+      },
+      "C": {
+        "norm_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/20260216_025404_PST_305a48d69/C_code_surfaces/norm",
+        "required_groups": [
+          {
+            "group": [
+              "SERVICE_ENTRYPOINTS.json"
+            ],
+            "matched_file": "SERVICE_ENTRYPOINTS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "EVENTBUS_SURFACE.json"
+            ],
+            "matched_file": "EVENTBUS_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "EVENT_PRODUCERS.json"
+            ],
+            "matched_file": "EVENT_PRODUCERS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "EVENT_CONSUMERS.json"
+            ],
+            "matched_file": "EVENT_CONSUMERS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "DOPE_MEMORY_CODE_SURFACE.json"
+            ],
+            "matched_file": "DOPE_MEMORY_CODE_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "DOPE_MEMORY_SCHEMAS.json"
+            ],
+            "matched_file": "DOPE_MEMORY_SCHEMAS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "DOPE_MEMORY_DB_WRITES.json"
+            ],
+            "matched_file": "DOPE_MEMORY_DB_WRITES.json",
+            "present": true
+          },
+          {
+            "group": [
+              "TRINITY_ENFORCEMENT_SURFACE.json"
+            ],
+            "matched_file": "TRINITY_ENFORCEMENT_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "REFUSAL_AND_GUARDRAILS_SURFACE.json"
+            ],
+            "matched_file": "REFUSAL_AND_GUARDRAILS_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "TASKX_INTEGRATION_SURFACE.json"
+            ],
+            "matched_file": "TASKX_INTEGRATION_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "WORKFLOW_RUNNER_SURFACE.json"
+            ],
+            "matched_file": "WORKFLOW_RUNNER_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "DETERMINISM_RISK_LOCATIONS.json"
+            ],
+            "matched_file": "DETERMINISM_RISK_LOCATIONS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "IDEMPOTENCY_RISK_LOCATIONS.json"
+            ],
+            "matched_file": "IDEMPOTENCY_RISK_LOCATIONS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "CONCURRENCY_RISK_LOCATIONS.json"
+            ],
+            "matched_file": "CONCURRENCY_RISK_LOCATIONS.json",
+            "present": true
+          }
+        ],
+        "required_groups_present": 14,
+        "required_groups_total": 14
+      },
+      "D": {
+        "norm_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/20260216_025404_PST_305a48d69/D_docs_pipeline/norm",
+        "required_groups": [
+          {
+            "group": [
+              "DOC_TOPIC_CLUSTERS.json"
+            ],
+            "matched_file": "DOC_TOPIC_CLUSTERS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "DOC_SUPERSESSION.json"
+            ],
+            "matched_file": "DOC_SUPERSESSION.json",
+            "present": true
+          },
+          {
+            "group": [
+              "DOC_CONTRACT_CLAIMS.json"
+            ],
+            "matched_file": "DOC_CONTRACT_CLAIMS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "DUPLICATE_DRIFT_REPORT.json",
+              "DOC_RECENCY_DUPLICATE_REPORT.json"
+            ],
+            "matched_file": null,
+            "present": false
+          },
+          {
+            "group": [
+              "DOC_INDEX.json"
+            ],
+            "matched_file": "DOC_INDEX.json",
+            "present": true
+          }
+        ],
+        "required_groups_present": 4,
+        "required_groups_total": 5
+      },
+      "H": {
+        "norm_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/20260216_025404_PST_305a48d69/H_home_control_plane/norm",
+        "required_groups": [
+          {
+            "group": [
+              "HOME_MCP_SURFACE.json"
+            ],
+            "matched_file": "HOME_MCP_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "HOME_ROUTER_SURFACE.json"
+            ],
+            "matched_file": "HOME_ROUTER_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "HOME_PROVIDER_LADDER_HINTS.json"
+            ],
+            "matched_file": "HOME_PROVIDER_LADDER_HINTS.json",
+            "present": true
+          },
+          {
+            "group": [
+              "HOME_LITELLM_SURFACE.json"
+            ],
+            "matched_file": "HOME_LITELLM_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "HOME_PROFILES_SURFACE.json"
+            ],
+            "matched_file": "HOME_PROFILES_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "HOME_TMUX_WORKFLOW_SURFACE.json"
+            ],
+            "matched_file": "HOME_TMUX_WORKFLOW_SURFACE.json",
+            "present": true
+          },
+          {
+            "group": [
+              "HOME_SQLITE_SCHEMA.json"
+            ],
+            "matched_file": "HOME_SQLITE_SCHEMA.json",
+            "present": true
+          }
+        ],
+        "required_groups_present": 7,
+        "required_groups_total": 7
+      }
+    },
+    "present_required_groups": 35,
+    "required_groups_present_pct": 97.22,
+    "total_required_groups": 36
+  },
+  "run_id": "20260216_025404_PST_305a48d69",
+  "runner": {
+    "git_sha": "3817f281a146c6aad7c23bffe32a51e4832904b9",
+    "python_executable": "/Users/hue/.pyenv/versions/3.13.6/bin/python3",
+    "python_version": "3.13.6",
+    "runner_sha256": "b2346f54f613f57b85d1117aaf3f14352b39c39c82199b0215344b60a5908a35",
+    "script_path": "/Users/hue/code/dopemux-mvp/UPGRADES/run_extraction_v3.py"
+  }
+}

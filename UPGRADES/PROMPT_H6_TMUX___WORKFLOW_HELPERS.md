@@ -1,24 +1,24 @@
-# PROMPT_H6 — HOME tmux + workflow helpers (SAFE MODE)
+# Phase H6: Home TMUX + Workflow Helpers Surface
 
-ROLE: Forensic extractor.
-GOAL:
-Extract home-level tmux scripts/layouts and any helper scripts that encode workflows.
+Goal:
+- Extract tmux session definitions, scripts, aliases, and helper commands that appear to bootstrap Dopemux/TaskX workflows.
 
-HARD RULES:
-- Only capture literal commands if they are not secrets.
-- Redact env exports that contain secret-looking values.
+Outputs:
+- HOME_TMUX_WORKFLOW_SURFACE.json
 
-OUTPUT: HOME_TMUX_WORKFLOW_SURFACE.json
+HOME_TMUX_WORKFLOW_SURFACE.json:
 {
-  "artifact": "HOME_TMUX_WORKFLOW_SURFACE",
+  "surface_version": "H6.v1",
   "generated_at": "<iso8601>",
-  "artifacts": [
+  "workflows": [
     {
-      "path": "<absolute>",
-      "type": "tmux_conf|layout_script|helper_script|other",
-      "commands": ["<literal commands redacted as needed>"],
-      "services_referenced": ["conport","serena","dope-context","litellm","taskx","other"],
-      "evidence": "<path/section>"
+      "name": "<string>",
+      "kind": "<tmux|shell|alias|script>",
+      "entrypoint": "<string>",
+      "paths_involved": ["<path>"],
+      "commands": ["<command string>"],
+      "evidence": {"path":"<path>","line_range":"Lx-Ly","snippet":"<redacted snippet>"}
     }
-  ]
+  ],
+  "notes":[]
 }

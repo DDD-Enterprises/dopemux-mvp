@@ -1,40 +1,37 @@
-# PROMPT_H3 — HOME router/provider ladders (SAFE MODE)
+# Phase H3: Home Router + Provider Ladder Hints
 
-ROLE: Forensic extractor.
-GOAL:
-Find home-level routing config, provider ladders, default models, fallbacks, cost/quality toggles.
+Goal:
+- Extract any router configuration, model/provider selection ladders, fallback chains, or policy-like directives found in home control plane configs.
 
-HARD RULES:
-- No values for keys/tokens. Redact.
-- Only output models/providers if explicitly present (strings).
+Outputs:
+- HOME_ROUTER_SURFACE.json
+- HOME_PROVIDER_LADDER_HINTS.json
 
-OUTPUTS:
-A) HOME_ROUTER_SURFACE.json
+HOME_ROUTER_SURFACE.json:
 {
-  "artifact": "HOME_ROUTER_SURFACE",
+  "surface_version": "H3.v1",
   "generated_at": "<iso8601>",
-  "router_files": [
+  "router_configs": [
     {
-      "path": "<absolute>",
-      "router_kind": "litellm|claude-code-router|dopemux-router|unknown",
-      "providers": ["openai","anthropic","gemini","xai","other"],
-      "models": ["<literal model strings>"],
-      "routing_rules": ["<short redacted rules>"],
-      "env_keys": ["<keys only>"]
+      "path": "<path>",
+      "router_type_hint": "<string>",
+      "model_selection_rules": ["<string>"],
+      "evidence": {"line_range":"Lx-Ly","snippet":"<redacted snippet>"}
     }
-  ]
+  ],
+  "notes":[]
 }
 
-B) HOME_PROVIDER_LADDER_HINTS.json
+HOME_PROVIDER_LADDER_HINTS.json:
 {
-  "artifact": "HOME_PROVIDER_LADDER_HINTS",
+  "hints_version": "H3.v1",
   "generated_at": "<iso8601>",
   "ladders": [
     {
-      "name": "<ladder name>",
-      "order": ["<provider/model strings in order>"],
-      "conditions": ["cheap|fast|xhigh|fallback|offline|unknown"],
-      "evidence": "<path/section>"
+      "name": "<string>",
+      "providers_or_models": ["<string>"],
+      "evidence": {"path":"<path>","line_range":"Lx-Ly","snippet":"<redacted snippet>"},
+      "confidence": "<high|medium|low|hint_only>"
     }
   ]
 }

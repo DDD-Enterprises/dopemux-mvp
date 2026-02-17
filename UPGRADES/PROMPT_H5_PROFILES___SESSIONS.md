@@ -1,34 +1,23 @@
-# PROMPT_H5 — HOME profiles + sessions surfaces (SAFE MODE)
+# Phase H5: Home Profiles + Sessions Surface
 
-ROLE: Forensic extractor.
-GOAL:
-Extract home profiles (dopemux profiles, router profiles, model presets), plus session state files that influence behavior.
+Goal:
+- Extract any operator profiles, session presets, persona configs, or “profile selection” hints from home control-plane.
 
-HARD RULES:
-- Do not dump chat logs.
-- Do not dump large session contents.
-- Only list: file paths, profile names, toggles, and relevant keys.
+Outputs:
+- HOME_PROFILES_SURFACE.json
 
-OUTPUT: HOME_PROFILES_SURFACE.json
+HOME_PROFILES_SURFACE.json:
 {
-  "artifact": "HOME_PROFILES_SURFACE",
+  "surface_version": "H5.v1",
   "generated_at": "<iso8601>",
   "profiles": [
     {
-      "path": "<absolute>",
-      "profile_name": "<name>",
-      "kind": "dopemux|router|taskx|other",
-      "settings_keys": ["<keys only>"],
-      "models": ["<literal model strings>"],
-      "notes": "<short>"
+      "name": "<string>",
+      "path": "<path>",
+      "fields": ["<string>"],
+      "evidence": {"line_range":"Lx-Ly","snippet":"<redacted snippet>"},
+      "notes": "<string>"
     }
   ],
-  "sessions": [
-    {
-      "path": "<absolute>",
-      "kind": "cache|state|history|unknown",
-      "signals": ["affects_routing","affects_tools","affects_tmux","unknown"],
-      "notes": "<short>"
-    }
-  ]
+  "notes":[]
 }
