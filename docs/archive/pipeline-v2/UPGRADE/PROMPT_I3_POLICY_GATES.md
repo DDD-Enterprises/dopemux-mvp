@@ -1,15 +1,3 @@
----
-id: PROMPT_I3_POLICY_GATES
-title: Prompt I3 Policy Gates
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-16'
-last_review: '2026-02-16'
-next_review: '2026-05-17'
-prelude: Prompt I3 Policy Gates (explanation) for dopemux documentation and developer
-  workflows.
----
 # Prompt I3 (v2): LLM Policy Gates & Boundaries
 
 **Outputs:** `LLM_POLICY_GATES.json`

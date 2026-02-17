@@ -1,15 +1,3 @@
----
-id: PROMPT_E_ENV_CONFIG_SECRETS
-title: Prompt E Env Config Secrets
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-16'
-last_review: '2026-02-16'
-next_review: '2026-05-17'
-prelude: Prompt E Env Config Secrets (explanation) for dopemux documentation and developer
-  workflows.
----
 # Prompt E (v2): Env + config loaders + secrets-risk locations
 
 **Outputs:** `ENV_VARS.json`, `CONFIG_LOADERS.json`, `SECRETS_RISK_LOCATIONS.json`
