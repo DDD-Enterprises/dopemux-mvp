@@ -16,7 +16,7 @@ import subprocess
 import sys
 import time
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
@@ -45,6 +45,9 @@ PHASE_DIR_NAMES: Dict[str, str] = {
     "X": "X_feature_index",
     "T": "T_task_packets",
     "Z": "Z_handoff_freeze",
+}
+LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
+    "R2_synthesis": "R_arbitration",
 }
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
 R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
@@ -113,9 +116,11 @@ MODEL_ROUTING = {
 
 PROVIDER_BASE_URL = {
     "xai": "https://api.x.ai/v1",
-    "gemini": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "gemini": "https://generativelanguage.googleapis.com",
     "openai": "https://api.openai.com/v1",
 }
+
+GEMINI_OPENAI_COMPAT_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
 
 TEXT_SUFFIXES = {
     ".py",
@@ -269,6 +274,9 @@ class RunnerConfig:
     resume: bool
     fail_fast_auth: bool
     gemini_auth_mode: str
+    gemini_transport: str
+    openai_transport: str
+    xai_transport: str
     retry_policy: str
     retry_max_attempts: int
     retry_base_seconds: float
@@ -319,6 +327,18 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     base = root / "extraction/runs" / run_id
     if not base.exists():
         raise FileNotFoundError(f"Run directory {base} does not exist.")
+    for legacy_name, canonical_name in LEGACY_PHASE_DIR_ALIASES.items():
+        legacy_path = base / legacy_name
+        canonical_path = base / canonical_name
+        if legacy_path.exists():
+            if canonical_path.exists():
+                raise RuntimeError(
+                    f"Run directory has both canonical and legacy phase folders: {canonical_path} and {legacy_path}. "
+                    f"Keep only canonical {canonical_name}."
+                )
+            raise RuntimeError(
+                f"Legacy phase folder detected: {legacy_path}. Rename it to canonical {canonical_path} before running."
+            )
 
     dirs: Dict[str, Path] = {"root": base, "inputs": base / "00_inputs"}
     for phase, suffix in PHASE_DIR_NAMES.items():
@@ -521,6 +541,51 @@ def get_git_sha(root: Path) -> str:
         return "UNKNOWN"
 
 
+def collect_manifest_artifacts(dirs: Dict[str, Path]) -> List[Dict[str, Any]]:
+    artifacts: List[Dict[str, Any]] = []
+    for phase in PHASES:
+        phase_dir = dirs.get(phase)
+        if not phase_dir:
+            continue
+        for bucket in ("inputs", "raw", "norm", "qa"):
+            bucket_dir = phase_dir / bucket
+            if not bucket_dir.exists():
+                continue
+            for entry in sorted(bucket_dir.iterdir()):
+                if not entry.is_file():
+                    continue
+                try:
+                    st = entry.stat()
+                    size = st.st_size
+                except Exception:
+                    size = 0
+                artifacts.append(
+                    {
+                        "name": entry.name,
+                        "phase": phase,
+                        "phase_dir": PHASE_DIR_NAMES.get(phase, phase),
+                        "bucket": bucket,
+                        "path": str(entry.resolve()),
+                        "size_bytes": size,
+                    }
+                )
+    artifacts.sort(key=lambda row: (row["phase"], row["bucket"], row["name"]))
+    return artifacts
+
+
+def refresh_run_manifest_artifacts(run_root: Path, dirs: Dict[str, Path]) -> None:
+    manifest_path = run_root / "RUN_MANIFEST.json"
+    payload: Dict[str, Any] = {}
+    if manifest_path.exists():
+        try:
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except Exception:
+            payload = {}
+    payload["artifacts"] = collect_manifest_artifacts(dirs)
+    payload["artifacts_updated_at"] = now_iso()
+    write_json(manifest_path, payload)
+
+
 def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: argparse.Namespace) -> None:
     manifest = {
         "run_id": run_id,
@@ -539,6 +604,9 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "home_scan_mode": args.home_scan_mode,
             "fail_fast_auth": args.fail_fast_auth,
             "gemini_auth_mode": args.gemini_auth_mode,
+            "gemini_transport": args.gemini_transport,
+            "openai_transport": args.openai_transport,
+            "xai_transport": args.xai_transport,
             "retry_policy": args.retry_policy,
             "retry_max_attempts": args.retry_max_attempts,
             "retry_base_seconds": args.retry_base_seconds,
@@ -547,11 +615,15 @@ def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: arg
             "run_id_override": args.run_id,
             "doctor": args.doctor,
             "doctor_auth": args.doctor_auth,
+            "preflight_providers": args.preflight_providers,
+            "coverage_report": args.coverage_report,
+            "print_promptpack": args.print_promptpack,
             "verify_phase_output": args.verify_phase_output,
             "print_config": args.print_config,
         },
     }
     write_json(dirs["root"] / "RUN_MANIFEST.json", manifest)
+    refresh_run_manifest_artifacts(dirs["root"], dirs)
 
 
 def write_runner_identity(root: Path, run_root: Path) -> None:
@@ -766,13 +838,14 @@ def write_run_routing_fingerprint(
         prompts = get_phase_prompts(phase)
         entries: List[Dict[str, Any]] = []
         provider, model_id, _ = MODEL_ROUTING.get(phase, ("xai", "grok-code-fast-1", "XAI_API_KEY"))
-        endpoint_base = llm_base_url(provider)
+        endpoint_base = llm_base_url(provider, cfg)
         default_sequence = (
             _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
             if provider == "gemini"
-            else ["bearer"]
+            else ["sdk_bearer"]
         )
         for prompt in prompts:
+            endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", default_sequence[0])
             entries.append(
                 {
                     "step_id": prompt.step_id,
@@ -780,7 +853,9 @@ def write_run_routing_fingerprint(
                     "declared_outputs": list(prompt.output_artifacts),
                     "provider": provider,
                     "model_id": model_id,
+                    "transport": transport_for_provider(provider, cfg),
                     "endpoint_base_url": endpoint_base,
+                    "endpoint_effective": endpoint_effective(endpoint_url),
                     "gemini_endpoint_family": "openai_compat"
                     if provider == "gemini" and _is_gemini_openai_compat_endpoint(endpoint_base)
                     else ("native" if provider == "gemini" else None),
@@ -802,6 +877,9 @@ def write_run_routing_fingerprint(
         "created_at": now_iso(),
         "config": {
             "gemini_auth_mode_requested": cfg.gemini_auth_mode,
+            "gemini_transport": cfg.gemini_transport,
+            "openai_transport": cfg.openai_transport,
+            "xai_transport": cfg.xai_transport,
             "fail_fast_auth": cfg.fail_fast_auth,
         },
         "phases": phase_entries,
@@ -925,6 +1003,212 @@ def run_doctor_checks(root: Path, dirs: Dict[str, Path], run_id: str, phase_arg:
     print(f"  Phases scanned: {', '.join(phase_list)}")
     print("  Prompt steps are unique and present for selected phases.")
     return True
+
+
+def _required_artifact_groups_for_phase(phase: str) -> List[Tuple[str, ...]]:
+    return R_REQUIRED_ARTIFACT_GROUPS.get(phase, [])
+
+
+def _match_required_group(norm_dir: Path, group: Tuple[str, ...]) -> Tuple[bool, Optional[str]]:
+    for pattern in group:
+        for matched in sorted(norm_dir.glob(pattern)):
+            if matched.is_file():
+                return True, matched.name
+    return False, None
+
+
+def get_required_artifact_status(dirs: Dict[str, Path], phases: List[str]) -> Dict[str, Any]:
+    per_phase: Dict[str, Any] = {}
+    total_groups = 0
+    present_groups = 0
+    for phase in phases:
+        groups = _required_artifact_groups_for_phase(phase)
+        norm_dir = dirs[phase] / "norm"
+        phase_rows: List[Dict[str, Any]] = []
+        for group in groups:
+            total_groups += 1
+            ok = False
+            matched = None
+            if norm_dir.exists():
+                ok, matched = _match_required_group(norm_dir, group)
+            if ok:
+                present_groups += 1
+            phase_rows.append(
+                {
+                    "group": list(group),
+                    "present": ok,
+                    "matched_file": matched,
+                }
+            )
+        per_phase[phase] = {
+            "norm_dir": str(norm_dir),
+            "required_groups_total": len(groups),
+            "required_groups_present": sum(1 for row in phase_rows if row["present"]),
+            "required_groups": phase_rows,
+        }
+    pct = (100.0 * present_groups / total_groups) if total_groups else 100.0
+    return {
+        "total_required_groups": total_groups,
+        "present_required_groups": present_groups,
+        "required_groups_present_pct": round(pct, 2),
+        "phases": per_phase,
+    }
+
+
+def collect_provider_routes() -> Dict[str, Dict[str, str]]:
+    routes: Dict[str, Dict[str, str]] = {}
+    for _, (provider, model_id, api_key_env) in MODEL_ROUTING.items():
+        if provider in routes:
+            continue
+        routes[provider] = {
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env": api_key_env,
+        }
+    return routes
+
+
+def run_provider_doctor_probe(provider: str, model_id: str, api_key_env: str, cfg: RunnerConfig) -> Dict[str, Any]:
+    endpoint_base = llm_base_url(provider, cfg)
+    transport = transport_for_provider(provider, cfg)
+    api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
+    effective_mode = None
+    auth_sequence = None
+    if provider == "gemini":
+        auth_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
+        effective_mode = auth_sequence[0]
+    endpoint_url = transport_endpoint_url(provider, model_id, cfg, api_key, effective_mode)
+    result = call_llm(
+        provider=provider,
+        model_id=model_id,
+        api_key_env=api_key_env,
+        system_prompt="Return exactly OK.",
+        user_content="Return the single token OK.",
+        cfg=cfg,
+    )
+    meta = result.get("meta", {})
+    return {
+        "provider": provider,
+        "model_id": model_id,
+        "api_key_env_name": api_key_env,
+        "api_key_env_resolved": resolved_api_key_env,
+        "api_key_present": bool(api_key),
+        "transport": transport,
+        "endpoint_effective": meta.get("endpoint_effective") or _sanitize_url(endpoint_url),
+        "status_code": meta.get("status_code"),
+        "failure_type": meta.get("failure_type"),
+        "provider_error_reason": meta.get("provider_error_reason"),
+        "provider_signature": meta.get("provider_signature")
+        or provider_signature(provider, model_id, _sanitize_url(endpoint_url), effective_mode),
+        "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
+        "gemini_auth_mode_effective": meta.get("gemini_auth_mode_effective") if provider == "gemini" else None,
+        "gemini_auth_attempt_sequence": auth_sequence if provider == "gemini" else None,
+    }
+
+
+def run_provider_preflight(root: Path, run_id: str, cfg: RunnerConfig, phases: List[str]) -> Tuple[bool, Dict[str, Any]]:
+    del phases
+    provider_routes = collect_provider_routes()
+    provider_probes = [
+        run_provider_doctor_probe(
+            provider=route["provider"],
+            model_id=route["model_id"],
+            api_key_env=route["api_key_env"],
+            cfg=cfg,
+        )
+        for route in provider_routes.values()
+    ]
+    failures = [
+        probe for probe in provider_probes
+        if probe.get("status_code") != 200 or is_auth_classified_failure(probe.get("failure_type"))
+    ]
+    payload = {
+        "generated_at": now_iso(),
+        "run_id": run_id,
+        "status": "PASS" if not failures else "FAIL",
+        "routes": provider_routes,
+        "probes": provider_probes,
+        "failed_providers": [probe.get("provider") for probe in failures],
+    }
+    doctor_dir = root / "extraction" / "doctor"
+    doctor_dir.mkdir(parents=True, exist_ok=True)
+    write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
+    return (not failures), payload
+
+
+def run_doctor_full(
+    root: Path,
+    dirs: Dict[str, Path],
+    run_id: str,
+    phases: List[str],
+    cfg: RunnerConfig,
+) -> int:
+    prompt_index, duplicates = collect_prompt_index()
+    missing_steps: Dict[str, List[str]] = {}
+    promptpack: Dict[str, List[Dict[str, Any]]] = {}
+    for phase in phases:
+        specs = get_phase_prompts(phase)
+        if not specs:
+            missing_steps[phase] = [f"No prompts found for phase {phase}."]
+            promptpack[phase] = []
+            continue
+        promptpack[phase] = [
+            {
+                "step_id": spec.step_id,
+                "path": str(spec.prompt_path.resolve()),
+                "sha256": sha256_text(spec.prompt_path),
+                "declared_outputs": list(spec.output_artifacts),
+            }
+            for spec in specs
+        ]
+
+    required_status = get_required_artifact_status(dirs, R_REQUIRED_INPUT_PHASES)
+    provider_routes = collect_provider_routes()
+    provider_probes = [
+        run_provider_doctor_probe(
+            provider=route["provider"],
+            model_id=route["model_id"],
+            api_key_env=route["api_key_env"],
+            cfg=cfg,
+        )
+        for route in provider_routes.values()
+    ]
+
+    payload = {
+        "generated_at": now_iso(),
+        "run_id": run_id,
+        "runner": {
+            "script_path": str(RUNNER_SCRIPT.resolve()),
+            "runner_sha256": sha256_text(RUNNER_SCRIPT),
+            "git_sha": get_git_sha(root),
+            "python_executable": sys.executable,
+            "python_version": platform.python_version(),
+        },
+        "phases": phases,
+        "prompt_set_integrity": {
+            "duplicate_step_ids": duplicates,
+            "missing_steps_by_phase": missing_steps,
+            "promptpack": promptpack,
+        },
+        "required_artifact_groups": required_status,
+        "provider_reachability": {
+            "routes": provider_routes,
+            "probes": provider_probes,
+        },
+    }
+
+    doctor_dir = root / "extraction" / "doctor"
+    doctor_dir.mkdir(parents=True, exist_ok=True)
+    write_json(doctor_dir / "DOCTOR_FULL.json", payload)
+    print(json.dumps(payload, indent=2))
+
+    has_missing = any(missing_steps.values())
+    has_duplicates = bool(duplicates)
+    has_provider_fail = any(
+        probe.get("status_code") not in {200}
+        for probe in provider_probes
+    )
+    return 0 if not (has_missing or has_duplicates or has_provider_fail) else 1
 
 
 def redact_sensitive_lines(text: str) -> Tuple[str, int]:
@@ -1317,7 +1601,17 @@ def normalize_step(
 
 # --- LLM Execution ---
 
-def llm_base_url(provider: str) -> str:
+def transport_for_provider(provider: str, cfg: RunnerConfig) -> str:
+    if provider == "gemini":
+        return cfg.gemini_transport
+    if provider == "xai":
+        return cfg.xai_transport
+    return cfg.openai_transport
+
+
+def llm_base_url(provider: str, cfg: Optional[RunnerConfig] = None) -> str:
+    if provider == "gemini" and cfg is not None and transport_for_provider(provider, cfg) == "openai_compat_http":
+        return GEMINI_OPENAI_COMPAT_BASE_URL
     return PROVIDER_BASE_URL.get(provider, PROVIDER_BASE_URL["openai"])
 
 
@@ -1368,6 +1662,8 @@ def _is_gemini_openai_compat_endpoint(endpoint_base_url: str) -> bool:
 
 
 def _gemini_auth_mode_sequence(cfg_mode: str, endpoint_base_url: str) -> List[str]:
+    if not _is_gemini_openai_compat_endpoint(endpoint_base_url):
+        return ["sdk_api_key"]
     if cfg_mode != "auto":
         return [cfg_mode]
     if _is_gemini_openai_compat_endpoint(endpoint_base_url):
@@ -1448,6 +1744,8 @@ def build_auth_present_flags(headers: Dict[str, str], used_query_key: bool) -> D
 
 
 def make_headers(provider: str, api_key: str, cfg: RunnerConfig, auth_mode: Optional[str] = None) -> Dict[str, str]:
+    if transport_for_provider(provider, cfg) != "openai_compat_http":
+        return {}
     mode = auth_mode or cfg.gemini_auth_mode
     headers: Dict[str, str] = {"Content-Type": "application/json"}
     if provider != "gemini":
@@ -1482,10 +1780,193 @@ def make_url(
     return url
 
 
+def transport_endpoint_url(
+    provider: str,
+    model_id: str,
+    cfg: RunnerConfig,
+    api_key: str = "",
+    gemini_auth_mode: Optional[str] = None,
+) -> str:
+    base_url = llm_base_url(provider, cfg)
+    if transport_for_provider(provider, cfg) == "openai_compat_http":
+        return make_url(provider, base_url, cfg, api_key, gemini_auth_mode)
+    if provider == "gemini":
+        return f"{base_url}/v1beta/models/{model_id}:generateContent"
+    return f"{base_url}/chat/completions"
+
+
+def resolve_api_key(
+    provider: str,
+    api_key_env: str,
+) -> Tuple[str, str]:
+    if provider == "gemini":
+        key_value = os.getenv(api_key_env, "")
+        legacy_google_key = os.getenv("GOOGLE_API_KEY", "")
+        if key_value and legacy_google_key and key_value != legacy_google_key:
+            logger.error(
+                "Conflicting Gemini API keys detected. "
+                "Use only GEMINI_API_KEY in repo-root .env and remove GOOGLE_API_KEY."
+            )
+            return "", api_key_env
+        return key_value, api_key_env
+    value = os.getenv(api_key_env, "")
+    return value, api_key_env
+
+
+def sdk_auth_present_flags(provider: str, api_key_present: bool) -> Dict[str, bool]:
+    flags = {
+        "has_auth": False,
+        "has_xgoog": False,
+        "used_query_key": False,
+        "sdk_api_key_present": api_key_present,
+    }
+    if provider == "openai" and api_key_present:
+        flags["has_auth"] = True
+    if provider == "xai" and api_key_present:
+        flags["has_auth"] = True
+    if provider == "gemini" and api_key_present:
+        flags["has_xgoog"] = True
+    return flags
+
+
+def get_gemini_client(api_key: str) -> Any:
+    try:
+        from google import genai
+    except ImportError as exc:
+        raise RuntimeError("google-genai is required for Gemini SDK transport.") from exc
+    # Canonical key source is GEMINI_API_KEY. Clear GOOGLE_API_KEY to prevent
+    # google-genai from preferring the legacy env var when both are present.
+    os.environ.pop("GOOGLE_API_KEY", None)
+    return genai.Client(api_key=api_key)
+
+
+def get_openai_client(base_url: Optional[str], api_key: str) -> Any:
+    try:
+        from openai import OpenAI
+    except ImportError as exc:
+        raise RuntimeError("openai package is required for OpenAI/xAI SDK transport.") from exc
+    kwargs: Dict[str, Any] = {"api_key": api_key}
+    if base_url:
+        kwargs["base_url"] = base_url
+    return OpenAI(**kwargs)
+
+
+def get_xai_client(api_key: str) -> Any:
+    return get_openai_client(base_url=PROVIDER_BASE_URL["xai"], api_key=api_key)
+
+
+def extract_text_from_chat_completion(response_obj: Any) -> str:
+    choices = getattr(response_obj, "choices", None)
+    if not choices:
+        return ""
+    message = getattr(choices[0], "message", None)
+    if message is None:
+        return ""
+    content = getattr(message, "content", "")
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        chunks: List[str] = []
+        for item in content:
+            text_value = getattr(item, "text", None)
+            if isinstance(text_value, str):
+                chunks.append(text_value)
+            elif isinstance(item, dict) and isinstance(item.get("text"), str):
+                chunks.append(item["text"])
+        return "".join(chunks)
+    return str(content or "")
+
+
+def extract_text_from_gemini_response(response_obj: Any) -> str:
+    text_attr = getattr(response_obj, "text", None)
+    if isinstance(text_attr, str) and text_attr:
+        return text_attr
+    candidates = getattr(response_obj, "candidates", None) or []
+    for candidate in candidates:
+        content = getattr(candidate, "content", None)
+        parts = getattr(content, "parts", None) or []
+        chunks: List[str] = []
+        for part in parts:
+            text_piece = getattr(part, "text", None)
+            if isinstance(text_piece, str):
+                chunks.append(text_piece)
+        if chunks:
+            return "".join(chunks)
+    return ""
+
+
+def summarize_llm_response(
+    provider: str,
+    transport: str,
+    response_obj: Any,
+    response_json: Optional[Dict[str, Any]],
+    response_text: str,
+) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {"text_length": len(response_text)}
+    finish_reason = None
+    candidate_count: Optional[int] = None
+
+    if provider == "gemini":
+        candidates = getattr(response_obj, "candidates", None) or []
+        candidate_count = len(candidates)
+        if candidates:
+            finish_reason = getattr(candidates[0], "finish_reason", None)
+    else:
+        choices = None
+        if isinstance(response_json, dict):
+            choices = response_json.get("choices")
+        else:
+            choices = getattr(response_obj, "choices", None)
+        if isinstance(choices, list):
+            candidate_count = len(choices)
+            if choices:
+                finish_reason = getattr(choices[0], "finish_reason", None)
+
+    if candidate_count is not None:
+        summary["candidate_count"] = candidate_count
+    if finish_reason:
+        summary["finish_reason"] = finish_reason
+    return summary
+
+
+def capture_exception_metadata(exc: Exception) -> Dict[str, str]:
+    message = sanitize_error_text(str(exc))
+    return {
+        "exception_type": type(exc).__name__,
+        "exception_message_excerpt": message[:800],
+    }
+
+
+def exception_status_code(exc: Exception) -> Optional[int]:
+    status = getattr(exc, "status_code", None)
+    if isinstance(status, int):
+        return status
+    response = getattr(exc, "response", None)
+    status = getattr(response, "status_code", None)
+    if isinstance(status, int):
+        return status
+    return None
+
+
+def exception_response_text(exc: Exception) -> str:
+    body = getattr(exc, "body", None)
+    if isinstance(body, str):
+        return body
+    if isinstance(body, dict):
+        return json.dumps(body, ensure_ascii=True)
+    response = getattr(exc, "response", None)
+    text_attr = getattr(response, "text", None)
+    if isinstance(text_attr, str):
+        return text_attr
+    return ""
+
+
 def classify_failure_type(status_code: Optional[int], response_body: str, error_text: str) -> str:
     body = (response_body or "").lower()
     err = (error_text or "").lower()
     joined = f"{body}\n{err}"
+    if "api key expired" in joined:
+        return "auth_expired"
     if "api key not found" in joined or "api_key_invalid" in joined:
         return "api_key_missing_or_invalid"
     if "missing authorization header" in joined:
@@ -1493,7 +1974,7 @@ def classify_failure_type(status_code: Optional[int], response_body: str, error_
     if "permission_denied" in joined:
         return "permission_denied"
     if "resource_exhausted" in joined or "billing" in joined or "quota" in joined:
-        return "billing_or_quota"
+        return "quota_or_billing"
     if (
         "api key not valid" in joined
         or status_code in {401, 403}
@@ -1562,7 +2043,7 @@ def should_retry(
         return False
     if (
         failure_type.startswith("auth_")
-        or failure_type in {"quota_or_billing", "billing_or_quota", "api_key_missing_or_invalid", "permission_denied"}
+        or failure_type in {"quota_or_billing", "api_key_missing_or_invalid", "permission_denied"}
     ):
         return False
     if status_code in {408, 429, 500, 502, 503, 504}:
@@ -1570,6 +2051,10 @@ def should_retry(
     if exc is not None and is_retryable_exception(exc):
         return True
     return False
+
+
+def is_auth_expired_failure(failure_type: Optional[str]) -> bool:
+    return str(failure_type or "") == "auth_expired"
 
 
 def backoff_seconds(attempt: int, base_seconds: float, max_seconds: float) -> float:
@@ -1587,11 +2072,40 @@ def call_llm(
     user_content: str,
     cfg: RunnerConfig,
 ) -> Dict[str, Any]:
-    base_url = llm_base_url(provider)
-    api_key = os.getenv(api_key_env)
+    base_url = llm_base_url(provider, cfg)
+    transport = transport_for_provider(provider, cfg)
+    api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
+    payload = build_chat_payload(provider, model_id, system_prompt, user_content)
+    body = serialize_payload_body(payload)
+    request_payload_bytes = measure_payload_bytes_from_body(body)
+    request_payload_bytes_mode = "exact_http" if transport == "openai_compat_http" else "sdk_estimate"
+    gemini_mode_requested = cfg.gemini_auth_mode if provider == "gemini" else None
+    gemini_family = (
+        "openai_compat" if provider == "gemini" and transport == "openai_compat_http" else "native"
+    ) if provider == "gemini" else None
+    auth_mode_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, base_url) if provider == "gemini" else ["sdk_bearer"]
+    mode_index = 0
+    effective_mode = auth_mode_sequence[mode_index]
+    endpoint_url = (
+        f"{base_url}/v1beta/models/{model_id}:generateContent"
+        if provider == "gemini" and transport != "openai_compat_http"
+        else f"{base_url}/chat/completions"
+    )
+    sent_header_keys: List[str] = []
+    auth_flags = sdk_auth_present_flags(provider, bool(api_key))
+    if transport == "openai_compat_http":
+        endpoint_url = make_url(provider, base_url, cfg, api_key, effective_mode)
+        headers = make_headers(provider, api_key, cfg, effective_mode)
+        sent_header_keys = sorted(list(headers.keys()))
+        auth_flags = build_auth_present_flags(headers, provider == "gemini" and effective_mode == "query_key")
+
     if not api_key:
         logger.error("Missing API key env var: %s", api_key_env)
-        sent_headers = make_headers(provider, "", cfg, cfg.gemini_auth_mode if provider == "gemini" else None)
+        if provider == "gemini":
+            logger.error(
+                "Gemini requires GEMINI_API_KEY in repo-root .env (canonical). "
+                "GOOGLE_API_KEY is deprecated for this runner."
+            )
         return {
             "ok": False,
             "text": "",
@@ -1599,137 +2113,156 @@ def call_llm(
                 "provider": provider,
                 "model_id": model_id,
                 "endpoint_base_url": base_url,
-                "endpoint_effective": endpoint_effective(f"{base_url}/chat/completions"),
-                **endpoint_fingerprint(f"{base_url}/chat/completions"),
+                "endpoint_effective": endpoint_effective(endpoint_url),
+                **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
                 "failure_type": "auth_missing",
-                "sent_header_keys": sorted(list(sent_headers.keys())),
-                "auth_present_flags": build_auth_present_flags(sent_headers, False),
-                "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
+                "sent_header_keys": sent_header_keys,
+                "auth_present_flags": auth_flags,
+                "gemini_auth_mode_requested": gemini_mode_requested,
                 "gemini_auth_mode_effective": None,
-                "provider_signature": provider_signature(
-                    provider,
-                    model_id,
-                    f"{base_url}/chat/completions",
-                    None,
-                ),
+                "provider_signature": provider_signature(provider, model_id, endpoint_url, None),
                 "provider_error_reason": "MISSING_API_KEY_ENV",
-                "gemini_endpoint_family": "openai_compat"
-                if provider == "gemini" and _is_gemini_openai_compat_endpoint(base_url)
-                else ("native" if provider == "gemini" else None),
-                "gemini_auth_attempt_sequence": _gemini_auth_mode_sequence(cfg.gemini_auth_mode, base_url)
-                if provider == "gemini"
-                else None,
-                "request_payload_bytes": None,
+                "api_key_env_requested": api_key_env,
+                "api_key_env_resolved": resolved_api_key_env,
+                "gemini_endpoint_family": gemini_family,
+                "gemini_auth_attempt_sequence": auth_mode_sequence if provider == "gemini" else None,
+                "request_payload_bytes": request_payload_bytes,
+                "request_payload_bytes_mode": request_payload_bytes_mode,
+                "transport": transport,
                 "retry_trace": [],
             },
         }
-
-    payload = build_chat_payload(provider, model_id, system_prompt, user_content)
-    body = serialize_payload_body(payload)
-    request_payload_bytes = measure_payload_bytes_from_body(body)
-    gemini_mode_requested = cfg.gemini_auth_mode if provider == "gemini" else None
-    gemini_family = (
-        "openai_compat" if provider == "gemini" and _is_gemini_openai_compat_endpoint(base_url) else "native"
-    ) if provider == "gemini" else None
-    auth_mode_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, base_url) if provider == "gemini" else ["bearer"]
-    effective_mode = auth_mode_sequence[0]
-    if provider == "gemini":
-        url, headers, auth_flags = _gemini_build_endpoint_and_headers(base_url, api_key, effective_mode)
-    else:
-        url = make_url(provider, base_url, cfg, api_key, effective_mode)
-        headers = make_headers(provider, api_key, cfg, effective_mode)
-        auth_flags = build_auth_present_flags(headers, False)
 
     last_failure_meta: Dict[str, Any] = {
         "provider": provider,
         "model_id": model_id,
         "endpoint_base_url": base_url,
-        "endpoint_effective": endpoint_effective(url),
-        **endpoint_fingerprint(url),
+        "endpoint_effective": endpoint_effective(endpoint_url),
+        **endpoint_fingerprint(endpoint_url),
         "status_code": None,
         "failure_type": "unknown",
         "request_payload_bytes": request_payload_bytes,
-        "sent_header_keys": sorted(list(headers.keys())),
+        "request_payload_bytes_mode": request_payload_bytes_mode,
+        "sent_header_keys": sent_header_keys,
         "auth_present_flags": auth_flags,
         "gemini_auth_mode_requested": gemini_mode_requested,
         "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
         "provider_signature": provider_signature(
             provider,
             model_id,
-            url,
+            endpoint_url,
             effective_mode if provider == "gemini" else None,
         ),
         "provider_error_reason": None,
+        "api_key_env_requested": api_key_env,
+        "api_key_env_resolved": resolved_api_key_env,
         "gemini_endpoint_family": gemini_family,
         "gemini_auth_attempt_sequence": auth_mode_sequence if provider == "gemini" else None,
+        "transport": transport,
         "retry_trace": [],
     }
     retry_trace: List[Dict[str, Any]] = []
-    mode_index = 0
 
     attempt = 0
     while attempt < cfg.retry_max_attempts:
         attempt += 1
-        response = None
-        exc_obj: Optional[Exception] = None
+        status_code: Optional[int] = None
+        response_body = ""
+        failure_type = "unknown"
         provider_error_reason = None
         try:
-            response = requests.post(url, headers=headers, data=body, timeout=180)
-            response.raise_for_status()
-            data = response.json()
+            response_json: Optional[Dict[str, Any]] = None
+            if transport == "openai_compat_http":
+                headers = make_headers(provider, api_key, cfg, effective_mode)
+                endpoint_url = make_url(provider, base_url, cfg, api_key, effective_mode)
+                auth_flags = build_auth_present_flags(headers, provider == "gemini" and effective_mode == "query_key")
+                sent_header_keys = sorted(list(headers.keys()))
+                response = requests.post(endpoint_url, headers=headers, data=body, timeout=180)
+                response.raise_for_status()
+                status_code = response.status_code
+                response_json = response.json()
+                response_text = response_json["choices"][0]["message"]["content"]
+            elif provider == "gemini":
+                client = get_gemini_client(api_key)
+                response = client.models.generate_content(
+                    model=model_id,
+                    contents=user_content,
+                    config={"temperature": 0.1, "system_instruction": system_prompt},
+                )
+                status_code = 200
+                response_text = extract_text_from_gemini_response(response)
+            else:
+                client = get_xai_client(api_key) if provider == "xai" else get_openai_client(None, api_key)
+                response = client.chat.completions.create(
+                    model=model_id,
+                    messages=payload["messages"],
+                    temperature=payload["temperature"],
+                )
+                status_code = 200
+                response_text = extract_text_from_chat_completion(response)
+
+            response_summary = summarize_llm_response(
+                provider=provider,
+                transport=transport,
+                response_obj=response,
+                response_json=response_json,
+                response_text=response_text,
+            )
             retry_trace.append(
                 {
                     "attempt": attempt,
-                    "status_code": response.status_code,
+                    "status_code": status_code,
                     "failure_type": None,
                     "delay_seconds": 0.0,
                     "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
                     "provider_error_reason": None,
+                    "response_received": True,
+                    "response_summary": response_summary,
                 }
             )
             return {
                 "ok": True,
-                "text": data["choices"][0]["message"]["content"],
+                "text": response_text,
                 "meta": {
                     "provider": provider,
                     "model_id": model_id,
                     "endpoint_base_url": base_url,
-                    "endpoint_effective": endpoint_effective(url),
-                    **endpoint_fingerprint(url),
-                    "status_code": response.status_code,
+                    "endpoint_effective": endpoint_effective(endpoint_url),
+                    **endpoint_fingerprint(endpoint_url),
+                    "status_code": status_code,
                     "failure_type": None,
                     "request_payload_bytes": request_payload_bytes,
-                    "sent_header_keys": sorted(list(headers.keys())),
+                    "request_payload_bytes_mode": request_payload_bytes_mode,
+                    "sent_header_keys": sent_header_keys,
                     "auth_present_flags": auth_flags,
                     "gemini_auth_mode_requested": gemini_mode_requested,
                     "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
                     "provider_signature": provider_signature(
                         provider,
                         model_id,
-                        url,
+                        endpoint_url,
                         effective_mode if provider == "gemini" else None,
                     ),
                     "provider_error_reason": None,
+                    "api_key_env_requested": api_key_env,
+                    "api_key_env_resolved": resolved_api_key_env,
                     "gemini_endpoint_family": gemini_family,
                     "gemini_auth_attempt_sequence": auth_mode_sequence if provider == "gemini" else None,
+                    "transport": transport,
                     "retry_trace": retry_trace,
+                    "response_received": True,
+                    "response_summary": response_summary,
                 },
             }
         except Exception as exc:
-            exc_obj = exc
-            response_body = ""
-            status_code: Optional[int] = None
-            if response is not None:
-                try:
-                    response_body = response.text[:1200]
-                    status_code = response.status_code
-                except Exception:
-                    response_body = ""
+            status_code = exception_status_code(exc)
+            response_body = exception_response_text(exc)[:1200]
             failure_type = classify_failure_type(status_code, response_body, str(exc))
             provider_error_reason = extract_provider_error_reason(response_body)
             safe_exc = sanitize_error_text(str(exc))
             safe_body = sanitize_error_text(response_body)
+            exception_info = capture_exception_metadata(exc)
             retry_trace.append(
                 {
                     "attempt": attempt,
@@ -1738,31 +2271,39 @@ def call_llm(
                     "delay_seconds": 0.0,
                     "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
                     "provider_error_reason": provider_error_reason,
+                    "response_received": False,
+                    **exception_info,
                 }
             )
             last_failure_meta = {
                 "provider": provider,
                 "model_id": model_id,
                 "endpoint_base_url": base_url,
-                "endpoint_effective": endpoint_effective(url),
-                **endpoint_fingerprint(url),
+                "endpoint_effective": endpoint_effective(endpoint_url),
+                **endpoint_fingerprint(endpoint_url),
                 "status_code": status_code,
                 "failure_type": failure_type,
                 "request_payload_bytes": request_payload_bytes,
-                "sent_header_keys": sorted(list(headers.keys())),
+                "request_payload_bytes_mode": request_payload_bytes_mode,
+                "sent_header_keys": sent_header_keys,
                 "auth_present_flags": auth_flags,
                 "gemini_auth_mode_requested": gemini_mode_requested,
                 "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
                 "provider_signature": provider_signature(
                     provider,
                     model_id,
-                    url,
+                    endpoint_url,
                     effective_mode if provider == "gemini" else None,
                 ),
                 "provider_error_reason": provider_error_reason,
+                **exception_info,
+                "api_key_env_requested": api_key_env,
+                "api_key_env_resolved": resolved_api_key_env,
                 "gemini_endpoint_family": gemini_family,
                 "gemini_auth_attempt_sequence": auth_mode_sequence if provider == "gemini" else None,
+                "transport": transport,
                 "retry_trace": retry_trace,
+                "response_received": False,
             }
             if response_body:
                 logger.warning(
@@ -1789,22 +2330,22 @@ def call_llm(
                 )
 
             if (
-                provider == "gemini"
+                transport == "openai_compat_http"
+                and provider == "gemini"
                 and cfg.gemini_auth_mode == "auto"
                 and is_auth_classified_failure(failure_type)
                 and mode_index + 1 < len(auth_mode_sequence)
             ):
                 mode_index += 1
                 effective_mode = auth_mode_sequence[mode_index]
-                url, headers, auth_flags = _gemini_build_endpoint_and_headers(base_url, api_key, effective_mode)
                 logger.warning(
-                    "Gemini auto auth pivot after auth_missing: next_mode=%s endpoint=%s",
+                    "Gemini openai_compat auth pivot after auth failure: next_mode=%s endpoint=%s",
                     effective_mode,
-                    _sanitize_url(url),
+                    _sanitize_url(endpoint_url),
                 )
                 continue
 
-            if not should_retry(status_code, failure_type, exc_obj, cfg.retry_policy):
+            if not should_retry(status_code, failure_type, exc, cfg.retry_policy):
                 break
 
             delay_seconds = backoff_seconds(attempt + 1, cfg.retry_base_seconds, cfg.retry_max_seconds)
@@ -1825,7 +2366,7 @@ def is_auth_classified_failure(failure_type: Optional[str]) -> bool:
     return failure_type.startswith("auth_") or failure_type in {
         "api_key_missing_or_invalid",
         "permission_denied",
-        "billing_or_quota",
+        "quota_or_billing",
         "auth_rejected",
     }
 
@@ -1864,6 +2405,17 @@ def enrich_request_meta(
         endpoint_base,
         str(auth_effective) if provider == "gemini" and auth_effective is not None else None,
     )
+    enriched["runner_script_sha256"] = sha256_text(RUNNER_SCRIPT)
+    enriched["runner_script_path"] = str(RUNNER_SCRIPT.resolve())
+    endpoint_sig_src = {
+        "endpoint_effective": enriched.get("endpoint_effective"),
+        "transport": enriched.get("transport"),
+        "provider": enriched.get("provider"),
+        "model_id": enriched.get("model_id"),
+        "gemini_auth_mode_effective": enriched.get("gemini_auth_mode_effective"),
+    }
+    endpoint_sig = json.dumps(endpoint_sig_src, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
+    enriched["endpoint_transport_signature"] = hashlib.sha256(endpoint_sig.encode("utf-8")).hexdigest()
     return enriched
 
 
@@ -1939,25 +2491,102 @@ def run_gemini_auth_probe(
     return payload
 
 
+def _auth_failure_bucket(failure_type: Optional[str], provider_error_reason: Optional[str]) -> str:
+    if not failure_type:
+        return "none"
+    if failure_type == "auth_expired":
+        return "expired"
+    if failure_type in {"auth_missing", "api_key_missing_or_invalid"}:
+        return "missing_or_invalid"
+    if failure_type in {"auth_rejected", "permission_denied"}:
+        return "rejected"
+    if "expired" in str(provider_error_reason or "").lower():
+        return "expired"
+    return "other"
+
+
 def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> int:
     phase = args.phase if args.phase in PHASES else "A"
     provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"))
     if provider != "gemini":
         provider, model_id, api_key_env = ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY")
-    endpoint_base = llm_base_url(provider)
-    auth_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
-    effective_mode = auth_sequence[0]
-    api_key = os.getenv(api_key_env, "")
-    endpoint_url, headers, auth_flags = _gemini_build_endpoint_and_headers(endpoint_base, api_key, effective_mode)
-    result = call_llm(
-        provider=provider,
-        model_id=model_id,
-        api_key_env=api_key_env,
-        system_prompt="Return exactly OK.",
-        user_content="Return the single token OK.",
-        cfg=cfg,
+    endpoint_base = llm_base_url(provider, cfg)
+    transport = transport_for_provider(provider, cfg)
+    api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
+    if provider == "gemini" and transport == "openai_compat_http":
+        modes = ["query_key", "api_key", "bearer", "both"]
+    elif provider == "gemini":
+        modes = ["sdk_api_key"]
+    else:
+        modes = ["sdk_bearer"]
+
+    checks: List[Dict[str, Any]] = []
+    for mode in modes:
+        probe_cfg = cfg
+        if provider == "gemini" and transport == "openai_compat_http":
+            probe_cfg = replace(cfg, gemini_auth_mode=mode)
+        endpoint_url = transport_endpoint_url(
+            provider, model_id, probe_cfg, api_key, mode if provider == "gemini" else None
+        )
+        headers = make_headers(provider, api_key, probe_cfg, mode if provider == "gemini" else None)
+        auth_flags = (
+            build_auth_present_flags(headers, provider == "gemini" and mode == "query_key")
+            if transport == "openai_compat_http"
+            else sdk_auth_present_flags(provider, bool(api_key))
+        )
+        result = call_llm(
+            provider=provider,
+            model_id=model_id,
+            api_key_env=api_key_env,
+            system_prompt="Return exactly OK.",
+            user_content="Return the single token OK.",
+            cfg=probe_cfg,
+        )
+        meta = result.get("meta", {})
+        failure_type = meta.get("failure_type")
+        checks.append(
+            {
+                "mode": mode,
+                "ok": bool(result.get("ok")),
+                "transport": transport,
+                "endpoint_effective": meta.get("endpoint_effective") or _sanitize_url(endpoint_url),
+                "sent_header_keys": meta.get("sent_header_keys") or sorted(list(headers.keys())),
+                "auth_present_flags": meta.get("auth_present_flags") or auth_flags,
+                "status_code": meta.get("status_code"),
+                "failure_type": failure_type,
+                "provider_error_reason": meta.get("provider_error_reason"),
+                "failure_bucket": _auth_failure_bucket(failure_type, meta.get("provider_error_reason")),
+                "provider_signature": meta.get("provider_signature")
+                or provider_signature(
+                    provider,
+                    model_id,
+                    _sanitize_url(endpoint_url),
+                    mode if provider == "gemini" else None,
+                ),
+                "response_received": bool(meta.get("response_received") or result.get("ok")),
+                "sdk_response_summary": meta.get("response_summary"),
+                "exception_type": meta.get("exception_type"),
+                "exception_message_excerpt": meta.get("exception_message_excerpt"),
+            }
+        )
+
+    succeeded_modes = [row["mode"] for row in checks if row["ok"]]
+    failed_modes = [row["mode"] for row in checks if not row["ok"]]
+    responses_received = any(row.get("response_received") for row in checks)
+    canonical_endpoint = transport_endpoint_url(
+        provider,
+        model_id,
+        cfg,
+        api_key,
+        cfg.gemini_auth_mode if provider == "gemini" else None,
     )
-    meta = result.get("meta", {})
+    summary = (
+        f"{'PASS' if succeeded_modes else 'FAIL'} "
+        f"provider={provider} transport={transport} endpoint={endpoint_effective(canonical_endpoint)} "
+        f"response_received={responses_received} "
+        f"succeeded_modes={','.join(succeeded_modes) if succeeded_modes else '-'} "
+        f"failed_modes={','.join(failed_modes) if failed_modes else '-'}"
+    )
     doctor_dir = root / "extraction" / "doctor"
     doctor_dir.mkdir(parents=True, exist_ok=True)
     doctor_json = doctor_dir / "AUTH_DOCTOR.json"
@@ -1968,42 +2597,39 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
         "provider": provider,
         "model_id": model_id,
         "api_key_env_name": api_key_env,
+        "api_key_env_resolved": resolved_api_key_env,
         "api_key_present": bool(api_key),
         "api_key_length": len(api_key),
-        "gemini_auth_mode_requested": cfg.gemini_auth_mode,
-        "gemini_auth_mode_effective": meta.get("gemini_auth_mode_effective") or effective_mode,
-        "gemini_auth_attempt_sequence": auth_sequence,
-        "endpoint_effective": meta.get("endpoint_effective") or _sanitize_url(endpoint_url),
-        "sent_header_keys": meta.get("sent_header_keys") or sorted(list(headers.keys())),
-        "used_query_key": bool((meta.get("auth_present_flags") or {}).get("used_query_key", auth_flags["used_query_key"])),
-        "status_code": meta.get("status_code"),
-        "failure_type": meta.get("failure_type"),
-        "provider_error_reason": meta.get("provider_error_reason"),
-        "provider_signature": meta.get("provider_signature")
-        or provider_signature(provider, model_id, _sanitize_url(endpoint_url), effective_mode),
+        "transport": transport,
+        "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
+        "modes_tested": modes,
+        "checks": checks,
+        "succeeded_modes": succeeded_modes,
+        "failed_modes": failed_modes,
+        "summary": summary,
     }
     write_json(doctor_json, payload)
-    lines = [
-        f"generated_at={payload['generated_at']}",
-        f"phase={payload['phase']}",
-        f"provider={payload['provider']}",
-        f"model_id={payload['model_id']}",
-        f"api_key_env_name={payload['api_key_env_name']}",
-        f"api_key_present={str(payload['api_key_present']).lower()}",
-        f"api_key_length={payload['api_key_length']}",
-        f"gemini_auth_mode_requested={payload['gemini_auth_mode_requested']}",
-        f"gemini_auth_mode_effective={payload['gemini_auth_mode_effective']}",
-        f"endpoint_effective={payload['endpoint_effective']}",
-        f"sent_header_keys={','.join(payload['sent_header_keys'] or [])}",
-        f"used_query_key={str(payload['used_query_key']).lower()}",
-        f"status_code={payload['status_code']}",
-        f"failure_type={payload['failure_type']}",
-        f"provider_error_reason={payload['provider_error_reason']}",
-        f"provider_signature={payload['provider_signature']}",
-    ]
+    lines = [summary]
+    lines.extend(
+        [
+            f"generated_at={payload['generated_at']}",
+            f"phase={payload['phase']}",
+            f"provider={payload['provider']}",
+            f"model_id={payload['model_id']}",
+            f"api_key_env_name={payload['api_key_env_name']}",
+            f"api_key_env_resolved={payload['api_key_env_resolved']}",
+            f"api_key_present={str(payload['api_key_present']).lower()}",
+            f"api_key_length={payload['api_key_length']}",
+            f"transport={payload['transport']}",
+            f"gemini_auth_mode_requested={payload['gemini_auth_mode_requested']}",
+            f"modes_tested={','.join(payload['modes_tested'])}",
+            f"succeeded_modes={','.join(payload['succeeded_modes'])}",
+            f"failed_modes={','.join(payload['failed_modes'])}",
+        ]
+    )
     doctor_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(json.dumps(payload, indent=2))
-    return 0
+    return 0 if succeeded_modes else 1
 
 
 def parse_json_from_response(text: str) -> Optional[Any]:
@@ -2155,6 +2781,8 @@ def execute_step_for_partitions(
     provider, model_id, api_key_env = MODEL_ROUTING.get(
         phase, ("xai", "grok-code-fast-1", "XAI_API_KEY")
     )
+    endpoint_base = llm_base_url(provider, cfg)
+    transport = transport_for_provider(provider, cfg)
     max_files = max_files_for_phase(phase, cfg)
     run_id = phase_dir.parent.name
     logger.info(
@@ -2218,16 +2846,18 @@ def execute_step_for_partitions(
 
         if payload_bytes > cfg.max_request_bytes:
             over_by = payload_bytes - cfg.max_request_bytes
-            gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, llm_base_url(provider))
+            gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
+            endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", gemini_sequence[0])
             failure_meta = {
                 "provider": provider,
                 "model_id": model_id,
-                "endpoint_base_url": llm_base_url(provider),
-                "endpoint_effective": endpoint_effective(f"{llm_base_url(provider)}/chat/completions"),
-                **endpoint_fingerprint(f"{llm_base_url(provider)}/chat/completions"),
+                "endpoint_base_url": endpoint_base,
+                "endpoint_effective": endpoint_effective(endpoint_url),
+                **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
                 "failure_type": "payload_unshrinkable",
                 "request_payload_bytes": payload_bytes,
+                "request_payload_bytes_mode": "sdk_estimate" if transport != "openai_compat_http" else "exact_http",
                 "max_request_bytes": cfg.max_request_bytes,
                 "over_by_bytes": over_by,
                 "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
@@ -2235,16 +2865,17 @@ def execute_step_for_partitions(
                 "provider_signature": provider_signature(
                     provider,
                     model_id,
-                    f"{llm_base_url(provider)}/chat/completions",
+                    endpoint_url,
                     gemini_sequence[0] if provider == "gemini" else None,
                 ),
                 "provider_error_reason": None,
                 "gemini_endpoint_family": "openai_compat"
-                if provider == "gemini" and _is_gemini_openai_compat_endpoint(llm_base_url(provider))
+                if provider == "gemini" and _is_gemini_openai_compat_endpoint(endpoint_base)
                 else ("native" if provider == "gemini" else None),
-                "gemini_auth_attempt_sequence": _gemini_auth_mode_sequence(cfg.gemini_auth_mode, llm_base_url(provider))
+                "gemini_auth_attempt_sequence": _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
                 if provider == "gemini"
                 else None,
+                "transport": transport,
                 "system_prompt_bytes": system_prompt_bytes,
                 "user_content_bytes": len(user_prompt.encode("utf-8")),
                 "context_bytes_estimate": context_stats.get("context_bytes", 0),
@@ -2295,11 +2926,14 @@ def execute_step_for_partitions(
             )
 
         if cfg.dry_run:
-            gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, llm_base_url(provider))
+            gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
             dry_mode = gemini_sequence[0] if provider == "gemini" else None
-            dry_headers = (
-                make_headers(provider, "REDACTED", cfg, dry_mode) if provider != "gemini"
-                else _gemini_build_endpoint_and_headers(llm_base_url(provider), "REDACTED", dry_mode or "api_key")[1]
+            endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", dry_mode)
+            dry_headers = make_headers(provider, "REDACTED", cfg, dry_mode) if transport == "openai_compat_http" else {}
+            dry_auth_flags = (
+                build_auth_present_flags(dry_headers, provider == "gemini" and dry_mode == "query_key")
+                if transport == "openai_compat_http"
+                else sdk_auth_present_flags(provider, True)
             )
             trace_text = (
                 f"# PROMPT_FILE\n{prompt_path}\n\n# SYSTEM_PROMPT\n{prompt_text}\n\n"
@@ -2309,27 +2943,29 @@ def execute_step_for_partitions(
             dry_meta = {
                 "provider": provider,
                 "model_id": model_id,
-                "endpoint_base_url": llm_base_url(provider),
-                "endpoint_effective": endpoint_effective(f"{llm_base_url(provider)}/chat/completions"),
-                **endpoint_fingerprint(f"{llm_base_url(provider)}/chat/completions"),
+                "endpoint_base_url": endpoint_base,
+                "endpoint_effective": endpoint_effective(endpoint_url),
+                **endpoint_fingerprint(endpoint_url),
                 "status_code": None,
                 "failure_type": None,
                 "request_payload_bytes": payload_bytes,
+                "request_payload_bytes_mode": "sdk_estimate" if transport != "openai_compat_http" else "exact_http",
                 "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
                 "gemini_auth_mode_effective": dry_mode,
                 "gemini_auth_attempt_sequence": gemini_sequence if provider == "gemini" else None,
                 "provider_signature": provider_signature(
                     provider,
                     model_id,
-                    f"{llm_base_url(provider)}/chat/completions",
+                    endpoint_url,
                     dry_mode if provider == "gemini" else None,
                 ),
                 "provider_error_reason": None,
                 "gemini_endpoint_family": "openai_compat"
-                if provider == "gemini" and _is_gemini_openai_compat_endpoint(llm_base_url(provider))
+                if provider == "gemini" and _is_gemini_openai_compat_endpoint(endpoint_base)
                 else ("native" if provider == "gemini" else None),
                 "sent_header_keys": sorted(list(dry_headers.keys())),
-                "auth_present_flags": build_auth_present_flags(dry_headers, provider == "gemini" and dry_mode == "query_key"),
+                "auth_present_flags": dry_auth_flags,
+                "transport": transport,
             }
             dry_meta = enrich_request_meta(
                 dry_meta,
@@ -2396,7 +3032,8 @@ def execute_step_for_partitions(
 
         if is_auth_classified_failure(request_meta.get("failure_type")):
             step_auth_failures += 1
-            if cfg.fail_fast_auth and step_success_count == 0:
+            must_fail_fast = cfg.fail_fast_auth or is_auth_expired_failure(request_meta.get("failure_type"))
+            if must_fail_fast and step_success_count == 0:
                 raise RuntimeError(
                     f"Fail-fast auth triggered for step {step_id} partition {partition_id}. "
                     f"failure_type={request_meta.get('failure_type')} provider={provider} "
@@ -2538,7 +3175,7 @@ def _run_phase_inner(
             probe_failure = str(probe.get("failure_type") or "")
             if is_auth_classified_failure(probe_failure):
                 phase_auth_failures += 1
-                if cfg.fail_fast_auth:
+                if cfg.fail_fast_auth or is_auth_expired_failure(probe_failure):
                     raise RuntimeError(
                         f"Gemini auth probe failed for phase={phase} step={prompt_spec.step_id} "
                         f"failure_type={probe_failure} env=GEMINI_API_KEY "
@@ -2652,6 +3289,109 @@ def verify_phase_output(dirs: Dict[str, Path], phases: List[str]) -> int:
     return return_code
 
 
+def print_promptpack(phases: List[str]) -> int:
+    payload: Dict[str, Any] = {
+        "generated_at": now_iso(),
+        "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "phases": {},
+    }
+    for phase in phases:
+        specs = get_phase_prompts(phase)
+        payload["phases"][phase] = [
+            {
+                "step_id": spec.step_id,
+                "path": str(spec.prompt_path.resolve()),
+                "sha256": sha256_text(spec.prompt_path),
+                "declared_outputs": list(spec.output_artifacts),
+            }
+            for spec in specs
+        ]
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _load_json(path: Path) -> Dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return payload if isinstance(payload, dict) else {}
+    except Exception:
+        return {}
+
+
+def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
+    partitions_payload = _load_json(phase_dir / "inputs" / "PARTITIONS.json")
+    partitions = partitions_payload.get("partitions") if isinstance(partitions_payload.get("partitions"), list) else []
+    partition_ids = [str(partition.get("id")) for partition in partitions if isinstance(partition, dict) and partition.get("id")]
+
+    raw_dir = phase_dir / "raw"
+    attempted: Set[str] = set()
+    ok: Set[str] = set()
+    failed: Set[str] = set()
+    failure_hist = Counter()
+
+    if raw_dir.exists():
+        for raw_json in sorted(raw_dir.glob("*.json")):
+            payload = _load_json(raw_json)
+            partition_id = str(payload.get("partition_id") or "")
+            if not partition_id:
+                match = re.search(r"__([A-Z]_P\d+)\.json$", raw_json.name)
+                partition_id = match.group(1) if match else ""
+            if partition_id:
+                attempted.add(partition_id)
+            artifacts = payload.get("artifacts")
+            if isinstance(artifacts, list) and artifacts:
+                if partition_id:
+                    ok.add(partition_id)
+            else:
+                if partition_id:
+                    failed.add(partition_id)
+                request_meta = payload.get("request_meta")
+                failure_type = None
+                if isinstance(request_meta, dict):
+                    failure_type = request_meta.get("failure_type")
+                if not failure_type:
+                    failure_type = "parse_or_empty"
+                failure_hist[str(failure_type)] += 1
+
+        for failed_json in sorted(raw_dir.glob("*.FAILED.json")):
+            payload = _load_json(failed_json)
+            failure_type = payload.get("failure_type") or "failed_sidecar"
+            failure_hist[str(failure_type)] += 1
+            partition_id = str(payload.get("partition_id") or "")
+            if partition_id:
+                attempted.add(partition_id)
+                failed.add(partition_id)
+
+    attempted_count = len(attempted) if attempted else len(partition_ids)
+    total_partitions = len(partition_ids)
+    return {
+        "phase": phase,
+        "partitions_total": total_partitions,
+        "partitions_attempted": attempted_count,
+        "partitions_ok": len(ok),
+        "partitions_failed": len(failed),
+        "failure_type_histogram": dict(sorted(failure_hist.items())),
+    }
+
+
+def generate_coverage_report(root: Path, dirs: Dict[str, Path], run_id: str, phases: List[str]) -> int:
+    phase_rows = [_coverage_for_phase(phase, dirs[phase]) for phase in phases]
+    required_status = get_required_artifact_status(dirs, R_REQUIRED_INPUT_PHASES)
+    payload = {
+        "generated_at": now_iso(),
+        "run_id": run_id,
+        "runner_sha256": sha256_text(RUNNER_SCRIPT),
+        "git_sha": get_git_sha(root),
+        "phases": {row["phase"]: row for row in phase_rows},
+        "required_artifact_coverage": required_status,
+    }
+    write_json(dirs["root"] / PROOF_PACK_FILENAME, payload)
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
 def print_config(
     args: argparse.Namespace,
     root: Path,
@@ -2673,6 +3413,9 @@ def print_config(
             "verify_phase_output": args.verify_phase_output,
             "doctor": args.doctor,
             "doctor_auth": args.doctor_auth,
+            "preflight_providers": args.preflight_providers,
+            "coverage_report": args.coverage_report,
+            "print_promptpack": args.print_promptpack,
             "print_config": args.print_config,
             "run_id_override": args.run_id,
             "dry_run": args.dry_run,
@@ -2685,6 +3428,9 @@ def print_config(
             "file_truncate_chars": args.file_truncate_chars,
             "fail_fast_auth": args.fail_fast_auth,
             "gemini_auth_mode": args.gemini_auth_mode,
+            "gemini_transport": args.gemini_transport,
+            "openai_transport": args.openai_transport,
+            "xai_transport": args.xai_transport,
             "retry_policy": args.retry_policy,
             "retry_max_attempts": args.retry_max_attempts,
             "retry_base_seconds": args.retry_base_seconds,
@@ -2713,6 +3459,7 @@ def update_proof_pack(
     phase_started_at: str,
     phase_finished_at: str,
 ) -> None:
+    refresh_run_manifest_artifacts(dirs["root"], dirs)
     proof_path = dirs["root"] / PROOF_PACK_FILENAME
     proof: Dict[str, Any] = {}
     if proof_path.exists():
@@ -2953,6 +3700,21 @@ def main() -> None:
         choices=["api_key", "bearer", "both", "query_key", "auto"],
         default="auto",
     )
+    parser.add_argument(
+        "--gemini-transport",
+        choices=["sdk", "openai_compat_http"],
+        default="sdk",
+    )
+    parser.add_argument(
+        "--openai-transport",
+        choices=["openai_sdk"],
+        default="openai_sdk",
+    )
+    parser.add_argument(
+        "--xai-transport",
+        choices=["openai_sdk"],
+        default="openai_sdk",
+    )
     parser.add_argument("--retry-policy", choices=["none", "default"], default="default")
     parser.add_argument("--retry-max-attempts", type=int, default=4)
     parser.add_argument("--retry-base-seconds", type=float, default=2.0)
@@ -2961,13 +3723,23 @@ def main() -> None:
     parser.add_argument("--run-id", type=str)
     parser.add_argument("--doctor", action="store_true")
     parser.add_argument("--doctor-auth", action="store_true")
+    parser.add_argument("--preflight-providers", action="store_true")
+    parser.add_argument("--coverage-report", action="store_true")
+    parser.add_argument("--print-promptpack", action="store_true")
     parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
     parser.add_argument("--print-config", action="store_true")
     args = parser.parse_args()
 
-    if args.doctor and not args.phase:
-        parser.error("--phase is required when running in --doctor mode.")
-    if not args.phase and not args.verify_phase_output and not args.print_config and not args.doctor_auth:
+    if not (
+        args.phase
+        or args.verify_phase_output
+        or args.print_config
+        or args.doctor_auth
+        or args.preflight_providers
+        or args.doctor
+        or args.coverage_report
+        or args.print_promptpack
+    ):
         parser.error("--phase is required unless --verify-phase-output or --print-config are used.")
 
     root = Path.cwd()
@@ -2989,6 +3761,9 @@ def main() -> None:
         resume=args.resume,
         fail_fast_auth=args.fail_fast_auth,
         gemini_auth_mode=args.gemini_auth_mode,
+        gemini_transport=args.gemini_transport,
+        openai_transport=args.openai_transport,
+        xai_transport=args.xai_transport,
         retry_policy=args.retry_policy,
         retry_max_attempts=max(1, args.retry_max_attempts),
         retry_base_seconds=max(0.0, args.retry_base_seconds),
@@ -3006,14 +3781,25 @@ def main() -> None:
         sys.exit(0)
     if args.doctor_auth:
         sys.exit(run_auth_doctor(root, args, cfg))
+    if args.preflight_providers:
+        targets = phase_sequence if phase_sequence else PHASES
+        ok, payload = run_provider_preflight(root, run_id, cfg, targets)
+        print(json.dumps(payload, indent=2))
+        sys.exit(0 if ok else 1)
+    if args.print_promptpack:
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(print_promptpack(targets))
+    if args.coverage_report:
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(generate_coverage_report(root, dirs, run_id, targets))
 
     if args.verify_phase_output:
         verify_targets = PHASES if args.verify_phase_output == "ALL" else [args.verify_phase_output]
         sys.exit(verify_phase_output(dirs, verify_targets))
 
     if args.doctor:
-        success = run_doctor_checks(root, dirs, run_id, args.phase)
-        sys.exit(0 if success else 1)
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg))
 
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
@@ -3021,6 +3807,14 @@ def main() -> None:
     if not phase_sequence:
         parser.error("--phase is required when running extraction phases.")
     phases = phase_sequence
+    if args.phase == "ALL":
+        ok, payload = run_provider_preflight(root, run_id, cfg, phases)
+        if not ok:
+            logger.error(
+                "Provider preflight failed before phase ALL. failed_providers=%s. See extraction/doctor/PROVIDER_PREFLIGHT.json",
+                ",".join(payload.get("failed_providers", [])),
+            )
+            sys.exit(1)
 
     runners = {
         "A": run_phase_A,
