@@ -35,6 +35,50 @@ RESUME_PROOF_FILENAME = "RESUME_PROOF.json"
 PROMPTSET_BLOCKED_REASON = "PROMPTSET_INVALID"
 PROMPTSET_BLOCKED_EXIT_CODE = 2
 RUNNER_SCRIPT = Path(__file__).resolve()
+PROMPTGEN_SCANNER_VERSION = "GX0_SCANNER_V1"
+PROMPTGEN_INPUTS_FILENAME = "PROMPTGEN_INPUTS.json"
+PROMPTGEN_FINGERPRINT_FILENAME = "PROJECT_FINGERPRINT.json"
+PROMPTGEN_FAILED_FILENAME = "GX0_PROMPTGEN_SCAN.FAILED.json"
+PROMPTGEN_DEFAULT_MAX_FILES = 600
+PROMPTGEN_DEFAULT_MAX_BYTES = 300000
+PROMPTGEN_DEFAULT_EXCERPT_BYTES = 4000
+PROMPTGEN_DEFAULT_OUTPUT_DIR = "00_inputs"
+PROMPTGEN_DEFAULT_INCLUDE_GLOBS = [
+    "pyproject.toml",
+    "dopemux.toml",
+    "compose.yml",
+    "docker-compose*.yml",
+    ".claude/**",
+    ".dopemux/**",
+    ".taskx/**",
+    ".github/**",
+    "config/**",
+    "scripts/**",
+    "tools/**",
+    "compose/**",
+    "docker/**",
+    "AGENTS.md",
+    "README.md",
+    "QUICK_START.md",
+    "INSTALL.md",
+    "CHANGELOG.md",
+]
+PROMPTGEN_DEFAULT_EXCLUDE_GLOBS = [
+    "**/.git/**",
+    "**/.venv/**",
+    "**/__pycache__/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.DS_Store",
+    "**/*.png",
+    "**/*.jpg",
+    "**/*.jpeg",
+    "**/*.webp",
+    "**/*.gif",
+    "**/*.pdf",
+    "**/*.zip",
+]
 # mapping from phase code to directory suffix
 PHASE_DIR_NAMES: Dict[str, str] = {
     "A": "A_repo_control_plane",
@@ -340,9 +384,12 @@ def load_run_id(root: Path) -> Optional[str]:
     return run_id
 
 
-def _validate_existing_run_dir(root: Path, run_id: str) -> None:
+def _validate_existing_run_dir(root: Path, run_id: str, allow_create_if_missing: bool = False) -> None:
     candidate = root / "extraction" / "runs" / run_id
     if not candidate.exists():
+        if allow_create_if_missing:
+            candidate.mkdir(parents=True, exist_ok=True)
+            return
         raise FileNotFoundError(f"Run directory {candidate} does not exist.")
     if not candidate.is_dir():
         raise NotADirectoryError(f"Path {candidate} is not a directory.")
@@ -372,13 +419,17 @@ def persist_latest_run_id(root: Path, run_id: str) -> None:
     id_file.write_text(run_id + "\n", encoding="utf-8")
 
 
-def resolve_run_context(root: Path, args: argparse.Namespace) -> RunContext:
+def resolve_run_context(
+    root: Path,
+    args: argparse.Namespace,
+    allow_create_if_missing: bool = False,
+) -> RunContext:
     latest_file = latest_run_id_path(root)
     run_id_source = "generated"
 
     if args.run_id:
         run_id = args.run_id
-        _validate_existing_run_dir(root, run_id)
+        _validate_existing_run_dir(root, run_id, allow_create_if_missing=allow_create_if_missing)
         run_id_source = "explicit"
     else:
         latest = load_run_id(root)
@@ -450,6 +501,477 @@ def write_json(path: Path, payload: Any) -> None:
         json.dumps(payload, indent=2, ensure_ascii=True, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+
+
+def _write_json_with_sha256(path: Path, payload: Any) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    raw = (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    path.write_bytes(raw)
+    digest = sha256_bytes(raw)
+    sidecar = path.with_suffix(".sha256")
+    sidecar.write_text(f"{digest}  {path.name}\n", encoding="utf-8")
+    return digest
+
+
+def _promptgen_relpath(path: Path, root: Path) -> str:
+    return path.resolve().relative_to(root.resolve()).as_posix()
+
+
+def _promptgen_generated_at(run_id: str) -> str:
+    seed = int(hashlib.sha256(run_id.encode("utf-8")).hexdigest()[:8], 16)
+    return datetime.fromtimestamp(seed, timezone.utc).replace(microsecond=0).isoformat()
+
+
+def _matches_promptgen_exclude(relpath: str, name: str, excludes: List[str]) -> bool:
+    for pattern in excludes:
+        if fnmatch.fnmatch(relpath, pattern) or fnmatch.fnmatch(name, pattern):
+            return True
+    return False
+
+
+def _select_promptgen_files(
+    root: Path,
+    include_globs: List[str],
+    exclude_globs: List[str],
+    max_files: int,
+) -> List[Dict[str, Any]]:
+    selected: Dict[str, Dict[str, Any]] = {}
+    max_allowed = max(0, int(max_files))
+    for include_glob in include_globs:
+        for candidate in sorted(root.glob(include_glob), key=lambda p: p.as_posix()):
+            if not candidate.is_file():
+                continue
+            if not is_within(candidate, root):
+                continue
+            relpath = _promptgen_relpath(candidate, root)
+            if _matches_promptgen_exclude(relpath, candidate.name, exclude_globs):
+                continue
+            if relpath not in selected:
+                selected[relpath] = {
+                    "path": candidate.resolve(),
+                    "relpath": relpath,
+                    "reason": f"include:{include_glob}",
+                }
+
+    ordered = [selected[key] for key in sorted(selected)]
+    if max_allowed and len(ordered) > max_allowed:
+        ordered = ordered[:max_allowed]
+    elif max_allowed == 0:
+        ordered = []
+    return ordered
+
+
+def _read_excerpt_bytes(content: bytes, excerpt_limit: int) -> bytes:
+    return content[: max(0, int(excerpt_limit))]
+
+
+def _promptgen_excerpt_priority(relpath: str) -> int:
+    root_name = relpath.split("/", 1)[0]
+    if (
+        relpath in {"pyproject.toml", "dopemux.toml", "AGENTS.md"}
+        or relpath.startswith(".claude/")
+        or relpath.startswith(".taskx/")
+        or relpath.startswith(".github/")
+        or relpath.startswith("config/")
+        or relpath == "compose.yml"
+        or relpath.startswith("docker-compose")
+    ):
+        return 0
+    if relpath in {"README.md", "QUICK_START.md", "INSTALL.md", "CHANGELOG.md"} or relpath.startswith("docs/"):
+        return 1
+    if root_name in {"scripts", "tools", "docker", "compose"}:
+        return 2
+    return 3
+
+
+def _apply_excerpt_pack_policy(
+    rows: List[Dict[str, Any]],
+    max_total_bytes: int,
+) -> Dict[str, Any]:
+    cap = max(0, int(max_total_bytes))
+    working = sorted(
+        [
+            {
+                "relpath": row["relpath"],
+                "priority": _promptgen_excerpt_priority(row["relpath"]),
+                "raw_excerpt": row["raw_excerpt"],
+                "raw_excerpt_len": len(row["raw_excerpt"]),
+            }
+            for row in rows
+        ],
+        key=lambda item: item["relpath"],
+    )
+    assigned: Dict[str, bytes] = {item["relpath"]: b"" for item in working}
+    policy = "full"
+    dropped_count = 0
+    reduced = False
+
+    if cap <= 0:
+        return {
+            "policy": "omitted_due_to_limits",
+            "assigned": assigned,
+            "dropped_count": len(working),
+            "reduced_per_file": False,
+        }
+
+    keep = list(working)
+    total = sum(item["raw_excerpt_len"] for item in keep)
+    if total > cap:
+        drop_order = sorted(keep, key=lambda item: (-item["priority"], item["relpath"]))
+        keep_set = {item["relpath"] for item in keep}
+        for item in drop_order:
+            if total <= cap:
+                break
+            if item["relpath"] not in keep_set:
+                continue
+            keep_set.remove(item["relpath"])
+            dropped_count += 1
+            total -= item["raw_excerpt_len"]
+        keep = [item for item in keep if item["relpath"] in keep_set]
+        policy = "dropped_low_priority_files"
+
+    if not keep:
+        return {
+            "policy": "omitted_due_to_limits",
+            "assigned": assigned,
+            "dropped_count": dropped_count,
+            "reduced_per_file": False,
+        }
+
+    if total > cap:
+        reduced = True
+        per_file = cap // len(keep)
+        remainder = cap % len(keep)
+        for index, item in enumerate(sorted(keep, key=lambda row: row["relpath"])):
+            allowed = per_file + (1 if index < remainder else 0)
+            assigned[item["relpath"]] = item["raw_excerpt"][:allowed]
+        if sum(len(blob) for blob in assigned.values()) <= 0:
+            return {
+                "policy": "omitted_due_to_limits",
+                "assigned": {key: b"" for key in assigned},
+                "dropped_count": dropped_count,
+                "reduced_per_file": True,
+            }
+        policy = "dropped_and_reduced_per_file" if dropped_count else "reduced_per_file"
+    else:
+        for item in keep:
+            assigned[item["relpath"]] = item["raw_excerpt"]
+
+    return {
+        "policy": policy,
+        "assigned": assigned,
+        "dropped_count": dropped_count,
+        "reduced_per_file": reduced,
+    }
+
+
+def _detect_tooling_from_pyproject(pyproject_bytes: Optional[bytes]) -> Dict[str, Any]:
+    if not pyproject_bytes:
+        return {"present": False, "build_backend": None, "tooling": []}
+
+    text = pyproject_bytes.decode("utf-8", errors="ignore")
+    build_backend: Optional[str] = None
+    tooling: Set[str] = set()
+
+    try:
+        import tomllib
+
+        parsed = tomllib.loads(text)
+        if isinstance(parsed, dict):
+            build_system = parsed.get("build-system")
+            if isinstance(build_system, dict):
+                backend = build_system.get("build-backend")
+                if isinstance(backend, str):
+                    build_backend = backend
+            tool_section = parsed.get("tool")
+            if isinstance(tool_section, dict):
+                for key in tool_section:
+                    if isinstance(key, str):
+                        tooling.add(key)
+    except Exception:
+        backend_match = re.search(r'(?m)^\s*build-backend\s*=\s*"([^"]+)"\s*$', text)
+        if backend_match:
+            build_backend = backend_match.group(1).strip()
+        for match in re.finditer(r"(?m)^\s*\[tool\.([A-Za-z0-9_.-]+)\]\s*$", text):
+            tooling.add(match.group(1))
+
+    return {
+        "present": True,
+        "build_backend": build_backend,
+        "tooling": sorted(tooling),
+    }
+
+
+def _parse_compose_services(
+    selected_files: List[Dict[str, Any]],
+    file_bytes_map: Dict[str, bytes],
+) -> Dict[str, Any]:
+    compose_rows = [
+        row
+        for row in selected_files
+        if row["relpath"] == "compose.yml"
+        or row["relpath"].startswith("docker-compose")
+        or (row["relpath"].startswith("compose/") and row["relpath"].endswith((".yml", ".yaml")))
+    ]
+    compose_rows = sorted(compose_rows, key=lambda row: row["relpath"])
+
+    services: Set[str] = set()
+    ports: Set[str] = set()
+    volumes: Set[str] = set()
+    parser = "regex"
+    yaml_available = False
+    yaml_mod = None
+    try:
+        import yaml as yaml_mod  # type: ignore
+
+        yaml_available = True
+    except Exception:
+        yaml_available = False
+
+    for row in compose_rows:
+        raw = file_bytes_map.get(row["relpath"], b"")
+        text = raw.decode("utf-8", errors="ignore")
+        parsed_with_yaml = False
+        if yaml_available and yaml_mod is not None:
+            try:
+                loaded = yaml_mod.safe_load(text)
+                if isinstance(loaded, dict):
+                    parser = "yaml"
+                    svc = loaded.get("services")
+                    if isinstance(svc, dict):
+                        for svc_name, svc_cfg in svc.items():
+                            if isinstance(svc_name, str):
+                                services.add(svc_name)
+                            if isinstance(svc_cfg, dict):
+                                svc_ports = svc_cfg.get("ports")
+                                if isinstance(svc_ports, list):
+                                    for item in svc_ports:
+                                        if isinstance(item, (str, int, float)):
+                                            ports.add(str(item))
+                                svc_volumes = svc_cfg.get("volumes")
+                                if isinstance(svc_volumes, list):
+                                    for item in svc_volumes:
+                                        if isinstance(item, (str, int, float)):
+                                            volumes.add(str(item))
+                parsed_with_yaml = True
+            except Exception:
+                parsed_with_yaml = False
+        if parsed_with_yaml:
+            continue
+
+        in_services = False
+        for line in text.splitlines():
+            if re.match(r"^\s*services\s*:\s*$", line):
+                in_services = True
+                continue
+            if in_services and re.match(r"^[A-Za-z0-9_.-]+\s*:\s*$", line):
+                in_services = False
+            if in_services:
+                svc_match = re.match(r"^\s{2}([A-Za-z0-9_.-]+)\s*:\s*$", line)
+                if svc_match:
+                    services.add(svc_match.group(1))
+            port_match = re.search(r'"?(\d{2,5}:\d{2,5}(?:/\w+)?)"?', line)
+            if port_match:
+                ports.add(port_match.group(1))
+            vol_match = re.search(r"([./A-Za-z0-9_-]+:[./A-Za-z0-9_-]+)", line)
+            if vol_match and "/" in vol_match.group(1):
+                volumes.add(vol_match.group(1))
+
+    return {
+        "compose_files": [row["relpath"] for row in compose_rows],
+        "service_count": len(services),
+        "services": sorted(services),
+        "ports": sorted(ports),
+        "volumes": sorted(volumes),
+        "parser": parser,
+    }
+
+
+def scan_promptgen_inputs(
+    root: Path,
+    run_id: str,
+    args: argparse.Namespace,
+) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    generated_at = _promptgen_generated_at(run_id)
+    include_globs = list(args.promptgen_include_globs or PROMPTGEN_DEFAULT_INCLUDE_GLOBS)
+    exclude_globs = list(args.promptgen_exclude_globs or PROMPTGEN_DEFAULT_EXCLUDE_GLOBS)
+    selected = _select_promptgen_files(
+        root=root,
+        include_globs=include_globs,
+        exclude_globs=exclude_globs,
+        max_files=args.promptgen_max_files,
+    )
+
+    rows: List[Dict[str, Any]] = []
+    file_bytes_map: Dict[str, bytes] = {}
+    for item in selected:
+        raw = read_bytes_strict(item["path"])
+        file_bytes_map[item["relpath"]] = raw
+        raw_excerpt = _read_excerpt_bytes(raw, args.promptgen_excerpt_bytes)
+        rows.append(
+            {
+                "path": item["path"],
+                "relpath": item["relpath"],
+                "reason": item["reason"],
+                "size": len(raw),
+                "sha256": sha256_bytes(raw),
+                "raw_excerpt": raw_excerpt,
+                "raw_excerpt_len": len(raw_excerpt),
+            }
+        )
+
+    excerpt_policy = _apply_excerpt_pack_policy(rows, args.promptgen_max_bytes)
+    excerpt_assigned: Dict[str, bytes] = excerpt_policy["assigned"]
+
+    files_payload: List[Dict[str, Any]] = []
+    total_size = 0
+    total_excerpt = 0
+    excerpt_pack_files: List[Dict[str, Any]] = []
+    for row in sorted(rows, key=lambda item: item["relpath"]):
+        assigned_excerpt = excerpt_assigned.get(row["relpath"], b"")
+        total_size += int(row["size"])
+        total_excerpt += len(assigned_excerpt)
+        files_payload.append(
+            {
+                "relpath": row["relpath"],
+                "sha256": row["sha256"],
+                "size": row["size"],
+                "reason": row["reason"],
+                "excerpt_sha256": sha256_bytes(assigned_excerpt),
+                "excerpt_bytes": len(assigned_excerpt),
+            }
+        )
+        if len(assigned_excerpt) > 0:
+            excerpt_pack_files.append(
+                {
+                    "relpath": row["relpath"],
+                    "excerpt_text": assigned_excerpt.decode("utf-8", errors="ignore"),
+                    "excerpt_truncated": bool(
+                        row["raw_excerpt_len"] > len(assigned_excerpt) or row["size"] > len(assigned_excerpt)
+                    ),
+                    "excerpt_bytes": len(assigned_excerpt),
+                    "excerpt_sha256": sha256_bytes(assigned_excerpt),
+                }
+            )
+
+    relpaths = [row["relpath"] for row in files_payload]
+    extensions = Counter(Path(rel).suffix.lower() for rel in relpaths if Path(rel).suffix)
+    language_map = {
+        ".py": "python",
+        ".js": "javascript",
+        ".ts": "typescript",
+        ".tsx": "typescript",
+        ".jsx": "javascript",
+        ".go": "go",
+        ".rs": "rust",
+        ".java": "java",
+        ".kt": "kotlin",
+        ".rb": "ruby",
+        ".php": "php",
+        ".sh": "shell",
+        ".md": "markdown",
+        ".yaml": "yaml",
+        ".yml": "yaml",
+        ".toml": "toml",
+        ".json": "json",
+        ".sql": "sql",
+    }
+    language_counts: Counter = Counter()
+    for ext, count in extensions.items():
+        language = language_map.get(ext)
+        if language:
+            language_counts[language] += count
+
+    present = set(relpaths)
+    package_managers: Set[str] = set()
+    if "package-lock.json" in present:
+        package_managers.add("npm")
+    if "pnpm-lock.yaml" in present:
+        package_managers.add("pnpm")
+    if "yarn.lock" in present:
+        package_managers.add("yarn")
+    if "poetry.lock" in present:
+        package_managers.add("poetry")
+    if "Pipfile.lock" in present:
+        package_managers.add("pipenv")
+    if "requirements.txt" in present:
+        package_managers.add("pip")
+
+    pyproject_bytes = file_bytes_map.get("pyproject.toml")
+    python_detection = _detect_tooling_from_pyproject(pyproject_bytes)
+    compose_detection = _parse_compose_services(files_payload, file_bytes_map)
+
+    control_surfaces = {
+        "taskx": any(rel == ".taskxroot" or rel.startswith(".taskx/") for rel in relpaths),
+        "litellm": any("litellm" in rel.lower() for rel in relpaths),
+        "mcp": any("mcp" in rel.lower() for rel in relpaths),
+        "conport": any("conport" in rel.lower() for rel in relpaths),
+        "github_actions": any(rel.startswith(".github/workflows/") for rel in relpaths),
+        "claude": any(rel == ".claude.json" or rel.startswith(".claude/") for rel in relpaths),
+    }
+    top_paths = sorted({rel.split("/", 1)[0] for rel in relpaths})
+    file_hash_lines = "\n".join(f"{row['relpath']}:{row['sha256']}" for row in files_payload).encode("utf-8")
+    selected_set_sha256 = sha256_bytes(file_hash_lines)
+
+    promptgen_inputs = {
+        "generated_at": generated_at,
+        "generated_at_mode": "deterministic_from_run_id",
+        "run_id": run_id,
+        "repo_root": str(root.resolve()),
+        "scanner_version": PROMPTGEN_SCANNER_VERSION,
+        "limits": {
+            "max_files": int(args.promptgen_max_files),
+            "max_bytes": int(args.promptgen_max_bytes),
+            "excerpt_bytes": int(args.promptgen_excerpt_bytes),
+        },
+        "include_globs": include_globs,
+        "exclude_globs": exclude_globs,
+        "files": files_payload,
+        "totals": {
+            "selected_files": len(files_payload),
+            "total_file_bytes": total_size,
+            "total_excerpt_bytes": total_excerpt,
+        },
+    }
+
+    project_fingerprint = {
+        "generated_at": generated_at,
+        "generated_at_mode": "deterministic_from_run_id",
+        "run_id": run_id,
+        "repo_root": str(root.resolve()),
+        "scanner_version": PROMPTGEN_SCANNER_VERSION,
+        "detected": {
+            "languages": dict(sorted(language_counts.items(), key=lambda item: item[0])),
+            "package_managers": sorted(package_managers),
+            "python": python_detection,
+            "containers": compose_detection,
+            "control_surfaces": control_surfaces,
+            "paths": {
+                "top_level": top_paths,
+                "selected_files_count": len(files_payload),
+            },
+            "excerpt_pack": {
+                "policy": excerpt_policy["policy"],
+                "max_total_bytes": int(args.promptgen_max_bytes),
+                "max_per_file_bytes": int(args.promptgen_excerpt_bytes),
+                "files_considered": len(files_payload),
+                "files_included": len(excerpt_pack_files),
+                "dropped_count": int(excerpt_policy["dropped_count"]),
+                "reduced_per_file": bool(excerpt_policy["reduced_per_file"]),
+                "total_bytes": total_excerpt,
+                "files": excerpt_pack_files,
+            },
+            "hashes": {
+                "selected_files_set_sha256": selected_set_sha256,
+            },
+        },
+    }
+
+    return promptgen_inputs, project_fingerprint, {
+        "selected_files": len(files_payload),
+        "total_excerpt_bytes": total_excerpt,
+        "excerpt_policy": excerpt_policy["policy"],
+    }
 
 
 def safe_read(path: Path) -> str:
@@ -4496,6 +5018,14 @@ def main() -> None:
     parser.add_argument("--print-promptpack", action="store_true")
     parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
     parser.add_argument("--print-config", action="store_true")
+    promptgen_group = parser.add_argument_group("promptgen")
+    promptgen_group.add_argument("--promptgen-scan", action="store_true")
+    promptgen_group.add_argument("--promptgen-max-files", type=int, default=PROMPTGEN_DEFAULT_MAX_FILES)
+    promptgen_group.add_argument("--promptgen-max-bytes", type=int, default=PROMPTGEN_DEFAULT_MAX_BYTES)
+    promptgen_group.add_argument("--promptgen-excerpt-bytes", type=int, default=PROMPTGEN_DEFAULT_EXCERPT_BYTES)
+    promptgen_group.add_argument("--promptgen-include-globs", action="append")
+    promptgen_group.add_argument("--promptgen-exclude-globs", action="append")
+    promptgen_group.add_argument("--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()
 
     if not (
@@ -4507,17 +5037,55 @@ def main() -> None:
         or args.doctor
         or args.coverage_report
         or args.print_promptpack
+        or args.promptgen_scan
     ):
         parser.error("--phase is required unless --verify-phase-output or --print-config are used.")
 
     root = Path.cwd()
     try:
-        run_context = resolve_run_context(root, args)
+        run_context = resolve_run_context(root, args, allow_create_if_missing=args.promptgen_scan)
         run_id = run_context.run_id
         dirs = get_run_dirs(root, run_id)
     except Exception as exc:
         logger.error("Setup failed: %s", exc)
         sys.exit(1)
+
+    if args.promptgen_scan:
+        started = time.time()
+        out_dir = dirs["root"] / args.promptgen_output_dir
+        try:
+            promptgen_inputs, project_fingerprint, stats = scan_promptgen_inputs(root, run_id, args)
+            promptgen_inputs_path = out_dir / PROMPTGEN_INPUTS_FILENAME
+            fingerprint_path = out_dir / PROMPTGEN_FINGERPRINT_FILENAME
+            promptgen_inputs_sha = _write_json_with_sha256(promptgen_inputs_path, promptgen_inputs)
+            fingerprint_sha = _write_json_with_sha256(fingerprint_path, project_fingerprint)
+            elapsed_ms = int((time.time() - started) * 1000)
+            logger.info(
+                "GX0 promptgen scan complete selected=%s excerpt_bytes=%s excerpt_policy=%s promptgen_inputs_sha=%s fingerprint_sha=%s elapsed_ms=%s",
+                stats["selected_files"],
+                stats["total_excerpt_bytes"],
+                stats["excerpt_policy"],
+                promptgen_inputs_sha,
+                fingerprint_sha,
+                elapsed_ms,
+            )
+            sys.exit(0)
+        except Exception as exc:
+            out_dir.mkdir(parents=True, exist_ok=True)
+            write_json(
+                out_dir / PROMPTGEN_FAILED_FILENAME,
+                {
+                    "generated_at": now_iso(),
+                    "run_id": run_id,
+                    "repo_root": str(root.resolve()),
+                    "status": "failed",
+                    "stage": "promptgen_scan",
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                },
+            )
+            logger.error("GX0 promptgen scan failed: %s", exc)
+            sys.exit(1)
 
     cfg = RunnerConfig(
         dry_run=args.dry_run,
