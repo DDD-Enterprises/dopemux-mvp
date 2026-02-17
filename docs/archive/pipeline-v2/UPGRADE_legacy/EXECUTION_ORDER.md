@@ -1,3 +1,14 @@
+---
+id: EXECUTION_ORDER
+title: Execution Order
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Execution Order (explanation) for dopemux documentation and developer workflows.
+---
 # Optimized Execution Order: Flash → 5.2 → Opus
 
 **Cost-optimized execution plan with model assignments.**

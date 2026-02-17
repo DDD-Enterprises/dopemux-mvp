@@ -1,3 +1,14 @@
+---
+id: EXEC_C_EVENTS
+title: Exec C Events
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Exec C Events (explanation) for dopemux documentation and developer workflows.
+---
 # EXECUTABLE PROMPT: C - Events (Emitters + Consumers + Envelope)
 
 ---

@@ -1,3 +1,15 @@
+---
+id: PROMPT_H_HOME_CONFIG
+title: Prompt H Home Config
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Prompt H Home Config (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Prompt H (v2): Home Config Pass
 
 **Outputs:** `HOME_CONFIG_INVENTORY.json`, `HOME_CONFIG_KEYS.json`, `HOME_CONFIG_MCP_REFERENCES.json`, `HOME_CONFIG_DIFF_HINTS.json`
