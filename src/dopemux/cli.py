@@ -4085,6 +4085,19 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
 
     mcp_dir = project_path / "docker" / "mcp-servers"
 
+    # Preflight check: Fail soft if MCP assets are missing
+    script_path = mcp_dir / "start-all-mcp-servers.sh"
+    if not mcp_dir.exists() or not script_path.exists():
+        console.print()
+        console.logger.warning(f"[yellow]⚠️  MCP startup assets missing in {project_path}[/yellow]")
+        console.print("[dim]   Running in reduced functionality mode (no local MCP stack).[/dim]")
+        
+        console.print("\n[bold]Remedies:[/bold]")
+        console.print("  1. Skip MCP start explicitly: [green]dopemux start --no-mcp[/green]")
+        console.print("  2. Run from the repo with the stack: [green]cd dopemux-mvp && dopemux start[/green]")
+        console.print("  3. Symlink the docker stack: [green]ln -s .../dopemux-mvp/docker/mcp-servers ./docker/[/green]\n")
+        return
+
     # CRITICAL FIX: Merge instance env with current environment
     # This ensures MCP servers get DOPEMUX_WORKSPACE_ID and other instance vars
     env_for_subprocess = os.environ.copy()
