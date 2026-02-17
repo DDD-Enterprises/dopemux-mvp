@@ -215,16 +215,16 @@ def test_schema_bootstrap_runs_once_per_ledger(tmp_path, monkeypatch):
     monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
 
     init_calls = {"count": 0}
-    real_ensure_schema_initialized = capture_client_module._ensure_schema_initialized
+    real_initialize_schema = capture_client_module._initialize_schema
 
-    def _counting_ensure_schema_initialized(*args, **kwargs):
+    def _counting_initialize_schema(conn, schema_path):
         init_calls["count"] += 1
-        return real_ensure_schema_initialized(*args, **kwargs)
+        return real_initialize_schema(conn, schema_path)
 
     monkeypatch.setattr(
         capture_client_module,
-        "_ensure_schema_initialized",
-        _counting_ensure_schema_initialized,
+        "_initialize_schema",
+        _counting_initialize_schema,
     )
 
     emit_capture_event(
@@ -244,43 +244,47 @@ def test_schema_bootstrap_runs_once_per_ledger(tmp_path, monkeypatch):
         repo_root=REPO_ROOT,
     )
 
-    # Since we use a module-level cache _SCHEMA_READY_LEDGER_PATHS, it should only call the init logic once.
-    assert init_calls["count"] == 2  # _ensure_schema_initialized is called for every event
+    assert init_calls["count"] == 1
 
 
-def test_schema_bootstrap_caching(tmp_path, monkeypatch):
-    # More robust test for the new architecture
-    ledger_path = tmp_path / "chronicle_cache.sqlite"
-    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
+def test_schema_bootstrap_runs_for_each_distinct_ledger(tmp_path, monkeypatch):
+    first_ledger = tmp_path / "a.sqlite"
+    second_ledger = tmp_path / "b.sqlite"
 
-    load_calls = {"count": 0}
-    real_load = capture_client_module._load_wma_sqlite_migration_applier
+    init_calls = {"count": 0}
+    real_initialize_schema = capture_client_module._initialize_schema
 
-    def _counting_load(repo_root):
-        load_calls["count"] += 1
-        return real_load(repo_root)
+    def _counting_initialize_schema(conn, schema_path):
+        init_calls["count"] += 1
+        return real_initialize_schema(conn, schema_path)
 
     monkeypatch.setattr(
         capture_client_module,
-        "_load_wma_sqlite_migration_applier",
-        _counting_load,
+        "_initialize_schema",
+        _counting_initialize_schema,
     )
 
-    # First event
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(first_ledger))
     emit_capture_event(
-        {"event_type": "test", "payload": {}},
-        mode="cli",
-        repo_root=REPO_ROOT,
-    )
-    # Second event
-    emit_capture_event(
-        {"event_type": "test", "payload": {}},
+        {
+            "event_type": "shell.command",
+            "payload": {"command": "echo one"},
+        },
         mode="cli",
         repo_root=REPO_ROOT,
     )
 
-    # Migration applier should be loaded only once because of _SCHEMA_READY_LEDGER_PATHS
-    assert load_calls["count"] == 1
+    monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(second_ledger))
+    emit_capture_event(
+        {
+            "event_type": "shell.command",
+            "payload": {"command": "echo two"},
+        },
+        mode="cli",
+        repo_root=REPO_ROOT,
+    )
+
+    assert init_calls["count"] == 2
 
 
 def test_repo_root_resolution_is_stable(tmp_path):

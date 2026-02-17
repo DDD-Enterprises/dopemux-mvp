@@ -8,6 +8,7 @@ repos:
         entry: python scripts/docs_frontmatter_guard.py --fix
         language: system
         files: ^docs/.*\.md$
+        exclude: ^docs/archive/
 
       # Graph schema validation
       - id: docs-graph-validator
