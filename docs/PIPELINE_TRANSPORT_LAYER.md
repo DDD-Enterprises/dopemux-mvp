@@ -1,3 +1,15 @@
+---
+id: PIPELINE_TRANSPORT_LAYER
+title: Pipeline Transport Layer
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-17'
+last_review: '2026-02-17'
+next_review: '2026-05-18'
+prelude: Pipeline Transport Layer (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Pipeline Transport Layer
 
 This file describes the transport reliability layer in
