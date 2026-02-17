@@ -1,0 +1,27 @@
+{
+  "api_key_env_name": "GEMINI_API_KEY",
+  "api_key_length": 7,
+  "api_key_present": true,
+  "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+  "failure_type": "api_key_missing_or_invalid",
+  "gemini_auth_attempt_sequence": [
+    "query_key",
+    "api_key",
+    "both"
+  ],
+  "gemini_auth_mode_effective": "both",
+  "gemini_auth_mode_requested": "auto",
+  "generated_at": "2026-02-17T09:30:55.531117+00:00",
+  "model_id": "gemini-2.0-flash-001",
+  "phase": "A",
+  "provider": "gemini",
+  "provider_error_reason": "API_KEY_INVALID",
+  "provider_signature": "provider=gemini;model=gemini-2.0-flash-001;host=generativelanguage.googleapis.com;path=/v1beta/openai/chat/completions;auth_mode=both",
+  "sent_header_keys": [
+    "Authorization",
+    "Content-Type",
+    "x-goog-api-key"
+  ],
+  "status_code": 400,
+  "used_query_key": false
+}
