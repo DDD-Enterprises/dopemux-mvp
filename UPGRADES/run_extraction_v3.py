@@ -39,6 +39,10 @@ PROMPTGEN_SCANNER_VERSION = "GX0_SCANNER_V1"
 PROMPTGEN_INPUTS_FILENAME = "PROMPTGEN_INPUTS.json"
 PROMPTGEN_FINGERPRINT_FILENAME = "PROJECT_FINGERPRINT.json"
 PROMPTGEN_FAILED_FILENAME = "GX0_PROMPTGEN_SCAN.FAILED.json"
+GEMINI_MODELS_FILENAME = "GEMINI_MODELS.json"
+GEMINI_MODELS_FAILED_FILENAME = "GEMINI_MODELS.FAILED.json"
+GEMINI_MODELS_SCHEMA_VERSION = "GEMINI_MODELS_V1"
+GEMINI_MODELS_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models"
 PROMPTGEN_DEFAULT_MAX_FILES = 600
 PROMPTGEN_DEFAULT_MAX_BYTES = 300000
 PROMPTGEN_DEFAULT_EXCERPT_BYTES = 4000
@@ -162,6 +166,10 @@ MODEL_ROUTING = {
     "X": ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
     "T": ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
 }
+
+DEFAULT_GEMINI_MODEL_ID = "gemini-2.0-flash-001"
+DEFAULT_MODEL_ROUTING = dict(MODEL_ROUTING)
+MODEL_ROUTING = dict(DEFAULT_MODEL_ROUTING)
 
 PROVIDER_BASE_URL = {
     "xai": "https://api.x.ai/v1",
@@ -1214,6 +1222,28 @@ def refresh_run_manifest_artifacts(run_root: Path, dirs: Dict[str, Path]) -> Non
     write_json(manifest_path, payload)
 
 
+def apply_model_overrides(gemini_model_id: str) -> None:
+    global MODEL_ROUTING
+    MODEL_ROUTING = dict(DEFAULT_MODEL_ROUTING)
+    if not gemini_model_id:
+        return
+    for phase, (provider, _, api_key_env) in list(MODEL_ROUTING.items()):
+        if provider == "gemini":
+            MODEL_ROUTING[phase] = (provider, gemini_model_id, api_key_env)
+
+
+def effective_model_routing_payload() -> Dict[str, Dict[str, str]]:
+    payload: Dict[str, Dict[str, str]] = {}
+    for phase in PHASES:
+        provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
+        payload[phase] = {
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env": api_key_env,
+        }
+    return payload
+
+
 def write_run_manifest(
     root: Path,
     dirs: Dict[str, Path],
@@ -1241,6 +1271,7 @@ def write_run_manifest(
             "home_scan_mode": args.home_scan_mode,
             "fail_fast_auth": args.fail_fast_auth,
             "gemini_auth_mode": args.gemini_auth_mode,
+            "gemini_model_id": args.gemini_model_id,
             "gemini_transport": args.gemini_transport,
             "openai_transport": args.openai_transport,
             "xai_transport": args.xai_transport,
@@ -1279,6 +1310,7 @@ def write_run_manifest(
         "run_status": "BLOCKED" if run_blocked else "OK",
         "phase_status": "blocked_promptset" if run_blocked else "ready",
         "blocked_promptset": run_blocked,
+        "effective_model_routing": effective_model_routing_payload(),
     }
     if run_blocked:
         manifest["blocked_reason"] = PROMPTSET_BLOCKED_REASON
@@ -1780,11 +1812,20 @@ def write_run_routing_fingerprint(
         "created_at": now_iso(),
         "config": {
             "gemini_auth_mode_requested": cfg.gemini_auth_mode,
+            "gemini_model_id_requested": next(
+                (
+                    model_id
+                    for provider, model_id, _ in MODEL_ROUTING.values()
+                    if provider == "gemini"
+                ),
+                DEFAULT_GEMINI_MODEL_ID,
+            ),
             "gemini_transport": cfg.gemini_transport,
             "openai_transport": cfg.openai_transport,
             "xai_transport": cfg.xai_transport,
             "fail_fast_auth": cfg.fail_fast_auth,
         },
+        "effective_model_routing": effective_model_routing_payload(),
         "phases": phase_entries,
     }
     write_json(run_root / "RUN_ROUTING_FINGERPRINT.json", payload)
@@ -2037,6 +2078,166 @@ def run_provider_preflight(root: Path, run_id: str, cfg: RunnerConfig, phases: L
     doctor_dir.mkdir(parents=True, exist_ok=True)
     write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
     return (not failures), payload
+
+
+def _normalize_gemini_model(row: Dict[str, Any]) -> Dict[str, Any]:
+    methods = row.get("supportedGenerationMethods")
+    methods_list = sorted(set(str(item) for item in methods)) if isinstance(methods, list) else []
+    return {
+        "model_id": str(row.get("name") or ""),
+        "display_name": row.get("displayName"),
+        "input_token_limit": row.get("inputTokenLimit"),
+        "output_token_limit": row.get("outputTokenLimit"),
+        "supported_generation_methods": methods_list,
+        "lifecycle": row.get("lifecycle"),
+    }
+
+
+def run_gemini_list_models(root: Path, run_id: str, dirs: Dict[str, Path]) -> int:
+    del root
+    out_dir = dirs["root"] / "00_inputs"
+    output_path = out_dir / GEMINI_MODELS_FILENAME
+    failed_path = out_dir / GEMINI_MODELS_FAILED_FILENAME
+    started = time.time()
+
+    api_key, resolved_api_key_env = resolve_api_key("gemini", "GEMINI_API_KEY")
+    if not api_key:
+        payload = {
+            "generated_at": now_iso(),
+            "run_id": run_id,
+            "status": "failed",
+            "stage": "gemini_list_models",
+            "error_type": "auth_missing",
+            "error": "Missing API key env var: GEMINI_API_KEY",
+            "api_key_env_name": "GEMINI_API_KEY",
+            "api_key_env_resolved": resolved_api_key_env,
+            "endpoint": GEMINI_MODELS_ENDPOINT,
+        }
+        write_json(failed_path, payload)
+        logger.error("Gemini models listing failed: missing GEMINI_API_KEY.")
+        return 1
+
+    page_token = ""
+    raw_pages: List[bytes] = []
+    raw_page_hashes: List[str] = []
+    raw_models: List[Dict[str, Any]] = []
+    page_count = 0
+
+    try:
+        while True:
+            params: Dict[str, str] = {"key": api_key}
+            if page_token:
+                params["pageToken"] = page_token
+            response = requests.get(GEMINI_MODELS_ENDPOINT, params=params, timeout=60)
+            response.raise_for_status()
+            body = response.content
+            parsed = response.json()
+            if not isinstance(parsed, dict):
+                raise RuntimeError("Gemini models endpoint returned non-object JSON.")
+            models = parsed.get("models")
+            if isinstance(models, list):
+                for model in models:
+                    if isinstance(model, dict):
+                        raw_models.append(model)
+            raw_pages.append(body)
+            raw_page_hashes.append(sha256_bytes(body))
+            page_count += 1
+            next_token = parsed.get("nextPageToken")
+            if not isinstance(next_token, str) or not next_token:
+                break
+            page_token = next_token
+
+        raw_response_bytes = b"".join(raw_pages)
+        raw_response_sha = sha256_bytes(raw_response_bytes)
+        normalized = [_normalize_gemini_model(row) for row in raw_models]
+        generation_capable = [
+            row for row in normalized
+            if "generateContent" in row.get("supported_generation_methods", [])
+            and row.get("model_id")
+        ]
+        generation_capable.sort(key=lambda row: str(row.get("model_id")))
+        payload = {
+            "version": GEMINI_MODELS_SCHEMA_VERSION,
+            "generated_at": _promptgen_generated_at(run_id),
+            "generated_at_mode": "deterministic_from_run_id",
+            "run_id": run_id,
+            "provider": "gemini",
+            "filters": {
+                "generation_capable_only": True,
+            },
+            "provenance": {
+                "endpoint": GEMINI_MODELS_ENDPOINT,
+                "api_version": "v1beta",
+                "raw_response_sha256": raw_response_sha,
+                "raw_models_count": len(raw_models),
+                "pages_fetched": page_count,
+                "raw_page_sha256": raw_page_hashes,
+            },
+            "models": generation_capable,
+        }
+
+        previous_payload: Optional[Dict[str, Any]] = None
+        if output_path.exists():
+            try:
+                previous_payload = json.loads(output_path.read_text(encoding="utf-8"))
+            except Exception:
+                previous_payload = None
+
+        digest = _write_json_with_sha256(output_path, payload)
+        if failed_path.exists():
+            failed_path.unlink()
+
+        prev_raw_sha = (
+            ((previous_payload or {}).get("provenance") or {}).get("raw_response_sha256")
+            if isinstance(previous_payload, dict)
+            else None
+        )
+        if isinstance(prev_raw_sha, str) and prev_raw_sha and prev_raw_sha != raw_response_sha:
+            old_ids = {
+                str(row.get("model_id"))
+                for row in ((previous_payload or {}).get("models") or [])
+                if isinstance(row, dict) and row.get("model_id")
+            }
+            new_ids = {str(row.get("model_id")) for row in generation_capable if row.get("model_id")}
+            logger.warning(
+                "Gemini model list changed for run_id=%s: previous_raw_sha=%s new_raw_sha=%s added=%s removed=%s",
+                run_id,
+                prev_raw_sha,
+                raw_response_sha,
+                len(new_ids - old_ids),
+                len(old_ids - new_ids),
+            )
+
+        elapsed_ms = int((time.time() - started) * 1000)
+        logger.info(
+            "Gemini models listing complete run_id=%s models=%s raw_models=%s raw_response_sha=%s output_sha=%s elapsed_ms=%s path=%s",
+            run_id,
+            len(generation_capable),
+            len(raw_models),
+            raw_response_sha,
+            digest,
+            elapsed_ms,
+            output_path,
+        )
+        return 0
+    except Exception as exc:
+        error_body = sanitize_error_text(str(exc))
+        payload = {
+            "generated_at": now_iso(),
+            "run_id": run_id,
+            "status": "failed",
+            "stage": "gemini_list_models",
+            "error_type": type(exc).__name__,
+            "error": error_body[:1600],
+            "api_key_env_name": "GEMINI_API_KEY",
+            "api_key_env_resolved": resolved_api_key_env,
+            "endpoint": GEMINI_MODELS_ENDPOINT,
+            "pages_fetched": page_count,
+            "raw_page_sha256": raw_page_hashes,
+        }
+        write_json(failed_path, payload)
+        logger.error("Gemini models listing failed: %s", error_body)
+        return 1
 
 
 def run_doctor_full(
@@ -2528,9 +2729,9 @@ def build_chat_payload(
     model_id: str,
     system_prompt: str,
     user_content: str,
+    force_json_output: bool = False,
 ) -> Dict[str, Any]:
-    _ = provider
-    return {
+    payload: Dict[str, Any] = {
         "model": model_id,
         "messages": [
             {"role": "system", "content": system_prompt},
@@ -2538,6 +2739,9 @@ def build_chat_payload(
         ],
         "temperature": 0.1,
     }
+    if provider == "gemini" and force_json_output:
+        payload["response_format"] = {"type": "json_object"}
+    return payload
 
 
 def serialize_payload_body(payload: Dict[str, Any]) -> bytes:
@@ -2979,11 +3183,18 @@ def call_llm(
     system_prompt: str,
     user_content: str,
     cfg: RunnerConfig,
+    force_json_output: bool = False,
 ) -> Dict[str, Any]:
     base_url = llm_base_url(provider, cfg)
     transport = transport_for_provider(provider, cfg)
     api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
-    payload = build_chat_payload(provider, model_id, system_prompt, user_content)
+    payload = build_chat_payload(
+        provider,
+        model_id,
+        system_prompt,
+        user_content,
+        force_json_output=force_json_output,
+    )
     body = serialize_payload_body(payload)
     request_payload_bytes = measure_payload_bytes_from_body(body)
     request_payload_bytes_mode = "exact_http" if transport == "openai_compat_http" else "sdk_estimate"
@@ -2991,6 +3202,16 @@ def call_llm(
     gemini_family = (
         "openai_compat" if provider == "gemini" and transport == "openai_compat_http" else "native"
     ) if provider == "gemini" else None
+    structured_output: Dict[str, Any] = {
+        "enabled": bool(provider == "gemini" and force_json_output),
+        "mime_type": "application/json" if provider == "gemini" and force_json_output else None,
+        "schema": None,
+        "transport_mode": (
+            "response_format_json_object"
+            if provider == "gemini" and transport == "openai_compat_http" and force_json_output
+            else ("response_mime_type" if provider == "gemini" and force_json_output else None)
+        ),
+    }
     auth_mode_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, base_url) if provider == "gemini" else ["sdk_bearer"]
     mode_index = 0
     effective_mode = auth_mode_sequence[mode_index]
@@ -3039,6 +3260,7 @@ def call_llm(
                 "request_payload_bytes_mode": request_payload_bytes_mode,
                 "transport": transport,
                 "retry_trace": [],
+                "structured_output": structured_output,
             },
         }
 
@@ -3069,6 +3291,7 @@ def call_llm(
         "gemini_auth_attempt_sequence": auth_mode_sequence if provider == "gemini" else None,
         "transport": transport,
         "retry_trace": [],
+        "structured_output": structured_output,
     }
     retry_trace: List[Dict[str, Any]] = []
 
@@ -3096,7 +3319,11 @@ def call_llm(
                 response = client.models.generate_content(
                     model=model_id,
                     contents=user_content,
-                    config={"temperature": 0.1, "system_instruction": system_prompt},
+                    config={
+                        "temperature": 0.1,
+                        "system_instruction": system_prompt,
+                        **({"response_mime_type": "application/json"} if force_json_output else {}),
+                    },
                 )
                 status_code = 200
                 response_text = extract_text_from_gemini_response(response)
@@ -3161,6 +3388,7 @@ def call_llm(
                     "retry_trace": retry_trace,
                     "response_received": True,
                     "response_summary": response_summary,
+                    "structured_output": structured_output,
                 },
             }
         except Exception as exc:
@@ -3212,6 +3440,7 @@ def call_llm(
                 "transport": transport,
                 "retry_trace": retry_trace,
                 "response_received": False,
+                "structured_output": structured_output,
             }
             if response_body:
                 logger.warning(
@@ -3699,6 +3928,7 @@ def execute_step_for_partitions(
     )
     endpoint_base = llm_base_url(provider, cfg)
     transport = transport_for_provider(provider, cfg)
+    force_json_output = provider == "gemini"
     max_files = max_files_for_phase(phase, cfg)
     run_id = phase_dir.parent.name
     logger.info(
@@ -3751,7 +3981,13 @@ def execute_step_for_partitions(
                 max_chars=current_budget,
             )
             user_prompt = f"{prompt_prefix}{context}"
-            payload = build_chat_payload(provider, model_id, prompt_text, user_prompt)
+            payload = build_chat_payload(
+                provider,
+                model_id,
+                prompt_text,
+                user_prompt,
+                force_json_output=force_json_output,
+            )
             payload_body = serialize_payload_body(payload)
             payload_bytes = measure_payload_bytes_from_body(payload_body)
             if payload_bytes <= cfg.max_request_bytes:
@@ -3797,6 +4033,11 @@ def execute_step_for_partitions(
                 if provider == "gemini"
                 else None,
                 "transport": transport,
+                "structured_output": {
+                    "enabled": bool(force_json_output),
+                    "mime_type": "application/json" if force_json_output else None,
+                    "schema": None,
+                },
                 "system_prompt_bytes": system_prompt_bytes,
                 "user_content_bytes": len(user_prompt.encode("utf-8")),
                 "context_bytes_estimate": context_stats.get("context_bytes", 0),
@@ -3889,6 +4130,11 @@ def execute_step_for_partitions(
                 "sent_header_keys": sorted(list(dry_headers.keys())),
                 "auth_present_flags": dry_auth_flags,
                 "transport": transport,
+                "structured_output": {
+                    "enabled": bool(force_json_output),
+                    "mime_type": "application/json" if force_json_output else None,
+                    "schema": None,
+                },
             }
             dry_meta = enrich_request_meta(
                 dry_meta,
@@ -3940,6 +4186,7 @@ def execute_step_for_partitions(
             system_prompt=prompt_text,
             user_content=user_prompt,
             cfg=cfg,
+            force_json_output=force_json_output,
         )
         response_text = str(llm_result.get("text", ""))
         request_meta = enrich_request_meta(
@@ -4660,6 +4907,7 @@ def print_config(
             "file_truncate_chars": args.file_truncate_chars,
             "fail_fast_auth": args.fail_fast_auth,
             "gemini_auth_mode": args.gemini_auth_mode,
+            "gemini_model_id": args.gemini_model_id,
             "gemini_transport": args.gemini_transport,
             "openai_transport": args.openai_transport,
             "xai_transport": args.xai_transport,
@@ -4678,6 +4926,7 @@ def print_config(
             "file_truncate_chars": cfg.file_truncate_chars,
         },
         "dirs": {phase: str(dirs[phase]) for phase in phases},
+        "effective_model_routing": effective_model_routing_payload(),
     }
     print(json.dumps(config_payload, indent=2))
 
@@ -4989,6 +5238,12 @@ def main() -> None:
         default="auto",
     )
     parser.add_argument(
+        "--gemini-model-id",
+        type=str,
+        default=DEFAULT_GEMINI_MODEL_ID,
+        help="Override Gemini model ID for all Gemini-routed phases.",
+    )
+    parser.add_argument(
         "--gemini-transport",
         choices=["sdk", "openai_compat_http"],
         default="sdk",
@@ -5018,6 +5273,7 @@ def main() -> None:
     parser.add_argument("--print-promptpack", action="store_true")
     parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
     parser.add_argument("--print-config", action="store_true")
+    parser.add_argument("--gemini-list-models", action="store_true")
     promptgen_group = parser.add_argument_group("promptgen")
     promptgen_group.add_argument("--promptgen-scan", action="store_true")
     promptgen_group.add_argument("--promptgen-max-files", type=int, default=PROMPTGEN_DEFAULT_MAX_FILES)
@@ -5027,6 +5283,7 @@ def main() -> None:
     promptgen_group.add_argument("--promptgen-exclude-globs", action="append")
     promptgen_group.add_argument("--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()
+    apply_model_overrides(args.gemini_model_id)
 
     if not (
         args.phase
@@ -5038,12 +5295,17 @@ def main() -> None:
         or args.coverage_report
         or args.print_promptpack
         or args.promptgen_scan
+        or args.gemini_list_models
     ):
-        parser.error("--phase is required unless --verify-phase-output or --print-config are used.")
+        parser.error(
+            "--phase is required unless using --verify-phase-output, --print-config, "
+            "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
+            "--print-promptpack, or --gemini-list-models."
+        )
 
     root = Path.cwd()
     try:
-        allow_create_if_missing = bool(args.promptgen_scan or args.run_id)
+        allow_create_if_missing = bool(args.promptgen_scan or args.run_id or args.gemini_list_models)
         run_context = resolve_run_context(root, args, allow_create_if_missing=allow_create_if_missing)
         run_id = run_context.run_id
         dirs = get_run_dirs(root, run_id)
@@ -5087,6 +5349,8 @@ def main() -> None:
             )
             logger.error("GX0 promptgen scan failed: %s", exc)
             sys.exit(1)
+    if args.gemini_list_models:
+        sys.exit(run_gemini_list_models(root, run_id, dirs))
 
     cfg = RunnerConfig(
         dry_run=args.dry_run,
