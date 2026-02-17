@@ -53,6 +53,8 @@
     "Makefile",
     "QUICK_START.md",
     "README.md",
+    "Dockerfile",
+    "Dockerfile.frontend",
     "compose.yml",
     "docker-compose*.yml",
     "litellm.config",
