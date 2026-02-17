@@ -110,7 +110,26 @@ DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_FULL_ADDITIONAL: Dict[str, List[Tuple[str, ..
         ("M4_DOPE_CONTEXT_EXPORT_SAFE.json",),
         ("M5_MCP_HEALTH_EXPORT_SAFE.json",),
         ("M6_RUNTIME_EXPORT_INDEX.json",),
-    ]
+    ],
+    "E": [
+        ("EXEC_MERGED.json",),
+        ("EXEC_QA.json",),
+    ],
+    "W": [
+        ("WORKFLOW_MERGED.json",),
+        ("WORKFLOW_QA.json",),
+    ],
+    "B": [
+        ("BOUNDARY_MERGED.json",),
+        ("BOUNDARY_QA.json",),
+    ],
+    "G": [
+        ("GOV_MERGED.json",),
+        ("GOV_QA.json",),
+    ],
+    "Q": [
+        ("PIPELINE_DOCTOR_REPORT.json",),
+    ],
 }
 
 MODEL_ROUTING = {
@@ -122,12 +141,12 @@ MODEL_ROUTING = {
     "B": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "G": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "Z": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "C": ("xai", "grok-code-fast-1", "XAI_API_KEY"),
-    "E": ("xai", "grok-code-fast-1", "XAI_API_KEY"),
-    "Q": ("xai", "grok-code-fast-1", "XAI_API_KEY"),
-    "R": ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
-    "X": ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
-    "T": ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+    "C": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
+    "E": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
+    "Q": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
+    "R": ("openai", "gpt-4o", "OPENAI_API_KEY"),
+    "X": ("openai", "gpt-4o", "OPENAI_API_KEY"),
+    "T": ("openai", "gpt-4o", "OPENAI_API_KEY"),
 }
 
 PROVIDER_BASE_URL = {
@@ -571,6 +590,22 @@ def normalized_headers(headers: Any) -> Dict[str, str]:
         except Exception:
             snapshot[key_str] = ""
     return snapshot
+
+
+def sent_header_keys(headers: Dict[str, str]) -> List[str]:
+    return sorted((str(key).strip() for key in headers.keys() if str(key).strip()), key=str.lower)
+
+
+def infer_auth_mode(headers: Dict[str, str]) -> str:
+    has_auth = "Authorization" in headers
+    has_x_goog = "x-goog-api-key" in headers
+    if has_auth and has_x_goog:
+        return "both"
+    if has_auth:
+        return "bearer"
+    if has_x_goog:
+        return "x-goog-api-key"
+    return "none"
 
 
 def build_chat_payload(model_id: str, system_prompt: str, user_content: str) -> Dict[str, Any]:
@@ -2835,6 +2870,8 @@ class RequestController:
                 "Content-Type": "application/json",
             }
         url = f"{llm_base_url(provider)}/chat/completions"
+        request_header_keys = sent_header_keys(headers)
+        auth_mode = infer_auth_mode(headers)
         policy = self._provider_policy(provider)
         max_retries = int(policy.get("max_retries", 0))
         max_attempts = max_retries + 1
@@ -2971,6 +3008,9 @@ class RequestController:
                     "attempts": attempt,
                     "status_code": status_code,
                     "headers": headers_snapshot,
+                    "sent_header_keys": request_header_keys,
+                    "auth_mode": auth_mode,
+                    "endpoint_url": url,
                     "retry_trace": retry_trace,
                     "total_retry_seconds": total_backoff_seconds,
                     "request_id": request_id,
@@ -3046,6 +3086,9 @@ class RequestController:
                         "failure_type": str(classification.get("type", "")),
                         "markers": markers,
                         "error_excerpt": error_excerpt,
+                        "sent_header_keys": request_header_keys,
+                        "auth_mode": auth_mode,
+                        "endpoint_url": url,
                         "retry_trace": retry_trace,
                     },
                 )
@@ -3061,6 +3104,9 @@ class RequestController:
                         "failure_type": str(classification.get("type", "")),
                         "markers": markers,
                         "error_excerpt": error_excerpt,
+                        "sent_header_keys": request_header_keys,
+                        "auth_mode": auth_mode,
+                        "endpoint_url": url,
                         "retry_trace": retry_trace,
                     },
                 )
@@ -3076,6 +3122,9 @@ class RequestController:
                         "failure_type": str(classification.get("type", "")),
                         "markers": markers,
                         "error_excerpt": error_excerpt,
+                        "sent_header_keys": request_header_keys,
+                        "auth_mode": auth_mode,
+                        "endpoint_url": url,
                         "retry_trace": retry_trace,
                     },
                 )
@@ -3105,7 +3154,12 @@ class RequestController:
         provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
         raise LLMRetryExhaustedError(
             f"Retry budget exhausted provider={provider} model={model_id}",
-            meta={"retry_trace": retry_trace},
+            meta={
+                "retry_trace": retry_trace,
+                "sent_header_keys": request_header_keys,
+                "auth_mode": auth_mode,
+                "endpoint_url": url,
+            },
         )
 
 

@@ -1,15 +1,13 @@
-# PROMPT_E0 — EXECUTION inventory + partition plan
+# PROMPT_E0 — EXECUTION INVENTORY + PARTITION PLAN
 
-ROLE: Execution plane recon.
-GOAL: find every "thing that starts things" and chunk sources into tractable partitions.
-
-SCOPE TARGETS:
-  • Makefile, justfile, package.json, pyproject.toml, scripts/, tools/, compose/, .github/, docker*, *.sh, *.ps1, *.zsh, tmux-layout.sh
+TASK: Build inventory + partitions for execution plane.
+SCAN TARGETS: Makefile, package.json, pyproject.toml, scripts/, tools/, compose/, .github/, docker*/, *.sh, *.zsh, justfile*, *.mk.
 
 OUTPUTS:
-  • EXEC_INVENTORY.json (items[]: {path, kind, toolchain, invokes[], writes_outputs[]})
-  • EXEC_PARTITIONS.json (partitions[]: {id, label, include_globs[], exclude_globs[], max_files_hint})
+	•	EXEC_INVENTORY.json
+	•	EXEC_PARTITIONS.json
 
 RULES:
-  • No invention. Only enumerate files that exist inside scope.
-  • Keep partition rules deterministic and minimize overlap.
+	•	Identify every file in the scan targets.
+	•	Chunk sources into tractable partitions for the following prompts.
+	•	Ensure partitions are deterministic.

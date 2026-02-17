@@ -1,13 +1,13 @@
-# PROMPT_E1 — Bootstrap commands surface
+# PROMPT_E1 — BOOTSTRAP COMMANDS SURFACE
 
-ROLE: Execution plane extractor.
-GOAL: enumerate bootstrap and "first 10 minutes" commands plus their ordering constraints.
+TASK: Enumerate canonical “what starts what” commands.
+
+MUST EXTRACT (literal strings):
+	•	make targets and recipes
+	•	npm scripts
+	•	python entrypoints / CLI invocations
+	•	compose up/down targets
+	•	tmux wrappers invoked from repo side
 
 OUTPUTS:
-  • EXEC_BOOTSTRAP_COMMANDS.json
-    - commands[]: {name, command, cwd, env_vars[], depends_on[], produces[]}
-    - entrypoints[]: {human_name, canonical_command_ref}
-
-RULES:
-  • Only record literal commands present in scanned files.
-  • Capture dependency hints (depends_on) only when explicitly stated.
+	•	EXEC_BOOTSTRAP_COMMANDS.json
