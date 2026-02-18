@@ -44,6 +44,14 @@ GEMINI_MODELS_FILENAME = "GEMINI_MODELS.json"
 GEMINI_MODELS_FAILED_FILENAME = "GEMINI_MODELS.FAILED.json"
 GEMINI_MODELS_SCHEMA_VERSION = "GEMINI_MODELS_V1"
 GEMINI_MODELS_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models"
+EOF_THRESHOLD_CHARS = 256
+REPAIRABLE_JSON_ERROR_SUBSTRINGS = (
+    "Expecting ',' delimiter",
+    "Expecting value",
+    "Unterminated string",
+    "Expecting property name enclosed in double quotes",
+    "Extra data",
+)
 PROMPTGEN_DEFAULT_MAX_FILES = 600
 PROMPTGEN_DEFAULT_MAX_BYTES = 300000
 PROMPTGEN_DEFAULT_EXCERPT_BYTES = 4000
@@ -356,6 +364,8 @@ class RunnerConfig:
     retry_max_seconds: float
     phase_auth_fail_threshold: int
     partition_workers: int
+    debug_phase_inputs: bool
+    fail_fast_missing_inputs: bool
 
 
 @dataclass(frozen=True)
@@ -397,6 +407,24 @@ class PromptsetBlockedError(RuntimeError):
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _phase_input_stat(path: Path) -> Dict[str, Any]:
+    resolved = path.resolve()
+    if not resolved.exists():
+        return {
+            "exists": False,
+            "size": 0,
+            "mtime": None,
+            "path": str(resolved),
+        }
+    stats = resolved.stat()
+    return {
+        "exists": True,
+        "size": int(stats.st_size),
+        "mtime": datetime.fromtimestamp(stats.st_mtime, timezone.utc).isoformat().replace("+00:00", "Z"),
+        "path": str(resolved),
+    }
 
 
 def load_run_id(root: Path) -> Optional[str]:
@@ -1299,6 +1327,8 @@ def write_run_manifest(
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "partition_workers": args.partition_workers,
+            "debug_phase_inputs": args.debug_phase_inputs,
+            "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
             "run_id_override": args.run_id,
             "run_id_source": run_context.source,
             "run_id_resolution_precedence": [
@@ -1843,6 +1873,8 @@ def write_run_routing_fingerprint(
             "openai_transport": cfg.openai_transport,
             "xai_transport": cfg.xai_transport,
             "fail_fast_auth": cfg.fail_fast_auth,
+            "debug_phase_inputs": cfg.debug_phase_inputs,
+            "fail_fast_missing_inputs": cfg.fail_fast_missing_inputs,
         },
         "effective_model_routing": effective_model_routing_payload(),
         "phases": phase_entries,
@@ -3788,29 +3820,181 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
     return 0 if succeeded_modes else 1
 
 
+def _strip_outer_json_fence(text: str) -> str:
+    no_fence = re.sub(r"^\s*```(?:json)?\s*", "", text, flags=re.IGNORECASE)
+    no_fence = re.sub(r"\s*```\s*$", "", no_fence)
+    return no_fence.strip()
+
+
+def _extract_first_fenced_json_block(text: str) -> Optional[str]:
+    # Deterministic: first fenced block wins when multiple are present.
+    match = re.search(r"```(?:json)?\s*(.*?)```", text, flags=re.IGNORECASE | re.DOTALL)
+    if not match:
+        return None
+    block = str(match.group(1)).strip()
+    return block or None
+
+
+def _contains_json_anchor(text: str) -> bool:
+    return ("{" in text) or ("[" in text)
+
+
+def _starts_with_json_token(text: str) -> bool:
+    stripped = text.lstrip()
+    if not stripped:
+        return False
+    return stripped[0] in {"{", "["}
+
+
+def _last_non_whitespace_char(text: str) -> Optional[str]:
+    stripped = text.rstrip()
+    if not stripped:
+        return None
+    return stripped[-1]
+
+
+def _is_incomplete_json_tail(text: str) -> bool:
+    tail = _last_non_whitespace_char(text)
+    if tail is None:
+        return True
+    return tail not in {"]", "}", '"'}
+
+
+def _is_near_eof_error(exc: json.JSONDecodeError, text: str) -> bool:
+    return int(exc.pos) >= max(0, len(text) - EOF_THRESHOLD_CHARS)
+
+
+def _is_repairable_decode_error(exc: json.JSONDecodeError, near_eof: bool) -> bool:
+    message = str(exc)
+    if "Extra data" in message:
+        return near_eof
+    return any(token in message for token in REPAIRABLE_JSON_ERROR_SUBSTRINGS)
+
+
+def try_repair_json_truncation(text: str, exc: Optional[json.JSONDecodeError]) -> Optional[str]:
+    if not text or exc is None:
+        return None
+    if not _contains_json_anchor(text):
+        return None
+    if not _starts_with_json_token(text):
+        return None
+
+    near_eof = _is_near_eof_error(exc, text)
+    if not (near_eof or _is_repairable_decode_error(exc, near_eof)):
+        return None
+    if not (near_eof or _is_incomplete_json_tail(text)):
+        return None
+
+    opener_for_closer = {"}": "{", "]": "["}
+    closer_for_opener = {"{": "}", "[": "]"}
+    stack: List[str] = []
+    repaired_chars: List[str] = []
+    unmatched_closer_indices: List[int] = []
+    in_string = False
+    escape = False
+
+    for char in text:
+        if in_string:
+            repaired_chars.append(char)
+            if escape:
+                escape = False
+            elif char == "\\":
+                escape = True
+            elif char == '"':
+                in_string = False
+            continue
+
+        if char == '"':
+            in_string = True
+            repaired_chars.append(char)
+            continue
+
+        if char in {"{", "["}:
+            stack.append(char)
+            repaired_chars.append(char)
+            continue
+
+        if char in {"}", "]"}:
+            if stack and stack[-1] == opener_for_closer[char]:
+                stack.pop()
+                repaired_chars.append(char)
+            else:
+                repaired_chars.append(char)
+                unmatched_closer_indices.append(len(repaired_chars) - 1)
+            continue
+
+        repaired_chars.append(char)
+
+    suffix_start = len(repaired_chars)
+    while suffix_start > 0 and (
+        repaired_chars[suffix_start - 1].isspace() or repaired_chars[suffix_start - 1] in {"]", "}"}
+    ):
+        suffix_start -= 1
+
+    if any(index < suffix_start for index in unmatched_closer_indices):
+        return None
+
+    drop_indices = set(unmatched_closer_indices)
+    balanced_chars = [char for idx, char in enumerate(repaired_chars) if idx not in drop_indices]
+
+    while stack:
+        opener = stack.pop()
+        balanced_chars.append(closer_for_opener[opener])
+
+    repaired = "".join(balanced_chars)
+    if repaired == text:
+        return None
+    return repaired
+
+
 def parse_json_from_response(text: str) -> Optional[Any]:
     if not text:
         return None
+
     stripped = text.strip()
+    if not stripped:
+        return None
 
-    candidates = [stripped]
-    no_fence = re.sub(r"^\s*```(?:json)?\s*", "", stripped, flags=re.IGNORECASE)
-    no_fence = re.sub(r"\s*```\s*$", "", no_fence)
-    candidates.append(no_fence.strip())
+    repair_candidates: List[Tuple[str, json.JSONDecodeError]] = []
+    seen_candidates: Set[str] = set()
 
-    for candidate in candidates:
+    try:
+        return json.loads(stripped)
+    except json.JSONDecodeError as exc:
+        repair_candidates.append((stripped, exc))
+        seen_candidates.add(stripped)
+    except Exception:
+        pass
+
+    defenced = _strip_outer_json_fence(stripped)
+    if defenced and defenced not in seen_candidates:
         try:
-            return json.loads(candidate)
+            return json.loads(defenced)
+        except json.JSONDecodeError as exc:
+            repair_candidates.append((defenced, exc))
+            seen_candidates.add(defenced)
+        except Exception:
+            pass
+
+    fenced_block = _extract_first_fenced_json_block(stripped)
+    if fenced_block and fenced_block not in seen_candidates:
+        try:
+            return json.loads(fenced_block)
+        except json.JSONDecodeError as exc:
+            repair_candidates.append((fenced_block, exc))
+            seen_candidates.add(fenced_block)
+        except Exception:
+            pass
+
+    for candidate, decode_error in repair_candidates:
+        repaired = try_repair_json_truncation(candidate, decode_error)
+        if not repaired:
+            continue
+        try:
+            return json.loads(repaired)
         except Exception:
             continue
 
-    match = re.search(r"(\{.*\}|\[.*\])", no_fence, flags=re.DOTALL)
-    if match:
-        snippet = match.group(1)
-        try:
-            return json.loads(snippet)
-        except Exception:
-            return None
     return None
 
 
@@ -3868,6 +4052,16 @@ def build_partition_context(
 def build_output_envelope_instructions(output_artifacts: Tuple[str, ...]) -> str:
     expected = "\n".join(f"- {artifact}" for artifact in output_artifacts)
     return (
+        "Hard rules:\n"
+        "- Output MUST be a single JSON value (object or array) and nothing else.\n"
+        "- No markdown, prose, code fences, comments, or trailing commentary.\n"
+        "- The first non-whitespace character MUST be { or [.\n"
+        "- The last non-whitespace character MUST be } or ].\n"
+        "- Do not emit multiple JSON objects.\n"
+        "- Do not emit trailing commas.\n"
+        "- Keep output UTF-8 plain text; no null bytes and no emoji.\n"
+        "- Escape internal string quotes and avoid unescaped control characters.\n"
+        "- Do not include unescaped newlines inside string values.\n"
         "Return JSON only with this exact envelope:\n"
         '{"artifacts":[{"artifact_name":"<exact artifact name>","payload":<json object|json array|markdown string>}]}'
         "\nConstraints:\n"
@@ -3876,6 +4070,10 @@ def build_output_envelope_instructions(output_artifacts: Tuple[str, ...]) -> str
         "- For *.md artifacts, payload must be markdown text.\n"
         "- For *.partX.json artifacts, keep .partX in artifact_name exactly.\n"
         "- Do not emit any extra artifact names.\n"
+        "Self-validation before finishing:\n"
+        "- Ensure output is valid JSON.\n"
+        "- If unsure, shorten values but keep structure valid.\n"
+        "- Never emit invalid JSON.\n"
         "Expected artifacts:\n"
         f"{expected}\n"
     )
@@ -3887,6 +4085,23 @@ def coerce_artifacts_from_response(
     expected_artifacts: Tuple[str, ...],
 ) -> List[Dict[str, Any]]:
     expected_set = set(expected_artifacts)
+
+    if isinstance(parsed, list):
+        list_artifacts: List[Dict[str, Any]] = []
+        for entry in parsed:
+            if not isinstance(entry, dict):
+                continue
+            artifact_name_value = entry.get("artifact_name")
+            if not isinstance(artifact_name_value, str):
+                continue
+            artifact_name = artifact_name_value.strip()
+            if artifact_name not in expected_set:
+                continue
+            if "payload" not in entry:
+                continue
+            list_artifacts.append({"artifact_name": artifact_name, "payload": entry.get("payload")})
+        if list_artifacts:
+            return list_artifacts
 
     if isinstance(parsed, dict) and isinstance(parsed.get("artifacts"), list):
         artifacts: List[Dict[str, Any]] = []
@@ -4847,6 +5062,27 @@ def _run_phase_inner(
             "partitions": partitions,
         },
     )
+    if cfg.debug_phase_inputs or cfg.fail_fast_missing_inputs:
+        inventory_path = phase_dir / "inputs" / "INVENTORY.json"
+        partitions_path = phase_dir / "inputs" / "PARTITIONS.json"
+        inventory_meta = _phase_input_stat(inventory_path)
+        partitions_meta = _phase_input_stat(partitions_path)
+        if cfg.debug_phase_inputs:
+            logger.info(
+                "PHASE_INPUTS_PROVENANCE phase=%s phase_dir=%s INVENTORY=%s PARTITIONS=%s",
+                phase,
+                str(phase_dir.resolve()),
+                json.dumps(inventory_meta, sort_keys=True, separators=(",", ":")),
+                json.dumps(partitions_meta, sort_keys=True, separators=(",", ":")),
+            )
+        if cfg.fail_fast_missing_inputs and (
+            not inventory_meta["exists"] or not partitions_meta["exists"]
+        ):
+            raise RuntimeError(
+                "Phase inputs missing after write. "
+                f"phase={phase} run_id={phase_dir.parent.name} phase_dir={phase_dir.resolve()} "
+                f"inventory={inventory_meta} partitions={partitions_meta}"
+            )
 
     logger.info(
         "Phase %s inventory=%s partitions=%s max_files=%s max_chars=%s",
@@ -5424,6 +5660,8 @@ def print_config(
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "partition_workers": args.partition_workers,
+            "debug_phase_inputs": args.debug_phase_inputs,
+            "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
             "no_write_latest": args.no_write_latest,
         },
         "limits": {
@@ -5772,6 +6010,8 @@ def main() -> None:
     parser.add_argument("--retry-max-seconds", type=float, default=30.0)
     parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
     parser.add_argument("--partition-workers", type=int, default=1)
+    parser.add_argument("--debug-phase-inputs", action="store_true")
+    parser.add_argument("--fail-fast-missing-inputs", action="store_true")
     parser.add_argument("--run-id", type=str)
     parser.add_argument("--no-write-latest", action="store_true")
     parser.add_argument("--write-latest-even-on-dry-run", action="store_true")
@@ -5882,6 +6122,8 @@ def main() -> None:
         retry_max_seconds=max(0.0, args.retry_max_seconds),
         phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
         partition_workers=args.partition_workers,
+        debug_phase_inputs=args.debug_phase_inputs,
+        fail_fast_missing_inputs=args.fail_fast_missing_inputs,
     )
 
     phase_sequence = resolve_phase_list(args.phase)
