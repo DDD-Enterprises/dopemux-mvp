@@ -70,13 +70,6 @@ GEMINI_MODELS_FAILED_FILENAME = "GEMINI_MODELS.FAILED.json"
 GEMINI_MODELS_SCHEMA_VERSION = "GEMINI_MODELS_V1"
 GEMINI_MODELS_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models"
 EOF_THRESHOLD_CHARS = 256
-REPAIRABLE_JSON_ERROR_SUBSTRINGS = (
-    "Expecting ',' delimiter",
-    "Expecting value",
-    "Unterminated string",
-    "Expecting property name enclosed in double quotes",
-    "Extra data",
-)
 PROMPTGEN_DEFAULT_MAX_FILES = 600
 PROMPTGEN_DEFAULT_MAX_BYTES = 300000
 PROMPTGEN_DEFAULT_EXCERPT_BYTES = 4000
@@ -4250,29 +4243,17 @@ def _starts_with_json_token(text: str) -> bool:
     return stripped[0] in {"{", "["}
 
 
-def _last_non_whitespace_char(text: str) -> Optional[str]:
-    stripped = text.rstrip()
-    if not stripped:
-        return None
-    return stripped[-1]
+def _is_unterminated_string_error(exc: json.JSONDecodeError) -> bool:
+    return "unterminated string" in str(exc).lower()
 
 
-def _is_incomplete_json_tail(text: str) -> bool:
-    tail = _last_non_whitespace_char(text)
-    if tail is None:
-        return True
-    return tail not in {"]", "}", '"'}
-
-
-def _is_near_eof_error(exc: json.JSONDecodeError, text: str) -> bool:
-    return int(exc.pos) >= max(0, len(text) - EOF_THRESHOLD_CHARS)
-
-
-def _is_repairable_decode_error(exc: json.JSONDecodeError, near_eof: bool) -> bool:
-    message = str(exc)
-    if "Extra data" in message:
-        return near_eof
-    return any(token in message for token in REPAIRABLE_JSON_ERROR_SUBSTRINGS)
+def _is_semantic_eof_eligible(exc: json.JSONDecodeError, text: str) -> bool:
+    trimmed = text.rstrip()
+    if not trimmed:
+        return False
+    pos = int(exc.pos)
+    eof_index = len(trimmed)
+    return (pos >= eof_index or pos == eof_index - 1) and not _is_unterminated_string_error(exc)
 
 
 def try_repair_json_truncation(text: str, exc: Optional[json.JSONDecodeError]) -> Optional[str]:
@@ -4283,12 +4264,8 @@ def try_repair_json_truncation(text: str, exc: Optional[json.JSONDecodeError]) -
     if not _starts_with_json_token(text):
         return None
 
-    near_eof = _is_near_eof_error(exc, text)
-    if not (near_eof or _is_repairable_decode_error(exc, near_eof)):
+    if not _is_semantic_eof_eligible(exc, text):
         return None
-    if not (near_eof or _is_incomplete_json_tail(text)):
-        return None
-
     opener_for_closer = {"}": "{", "]": "["}
     closer_for_opener = {"{": "}", "[": "]"}
     stack: List[str] = []
@@ -4362,6 +4339,7 @@ def parse_json_from_response(text: str) -> Optional[Any]:
     repair_candidates: List[Tuple[str, json.JSONDecodeError]] = []
     seen_candidates: Set[str] = set()
 
+    # 1) strict parse
     try:
         return json.loads(stripped)
     except json.JSONDecodeError as exc:
@@ -4370,6 +4348,7 @@ def parse_json_from_response(text: str) -> Optional[Any]:
     except Exception:
         pass
 
+    # 2) defenced parse
     defenced = _strip_outer_json_fence(stripped)
     if defenced and defenced not in seen_candidates:
         try:
@@ -4380,6 +4359,7 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         except Exception:
             pass
 
+    # 3) first fenced block only
     fenced_block = _extract_first_fenced_json_block(stripped)
     if fenced_block and fenced_block not in seen_candidates:
         try:
@@ -4390,7 +4370,10 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         except Exception:
             pass
 
+    # 4) balanced repair parse (semantic EOF eligible only)
     for candidate, decode_error in repair_candidates:
+        if not _is_semantic_eof_eligible(decode_error, candidate):
+            continue
         repaired = try_repair_json_truncation(candidate, decode_error)
         if not repaired:
             continue
@@ -4399,6 +4382,7 @@ def parse_json_from_response(text: str) -> Optional[Any]:
         except Exception:
             continue
 
+    # 5) fail closed
     return None
 
 
