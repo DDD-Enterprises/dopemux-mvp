@@ -61,3 +61,20 @@ def test_semantic_eof_gate_blocks_unterminated_string_errors() -> None:
 
     assert runner._is_semantic_eof_eligible(exc, raw_text) is False
     assert runner.try_repair_json_truncation(raw_text, exc) is None
+
+
+@pytest.mark.parametrize(
+    "raw_text",
+    [
+        '{"a":"x',
+        '{"a":"\\q"}',
+        '{"a":"\\u12"}',
+        "{\"a\":\"x\ny\"}",
+    ],
+)
+def test_semantic_eof_gate_blocks_string_literal_decode_class(raw_text: str) -> None:
+    exc = _decode_error(raw_text)
+
+    assert runner._is_string_literal_decode_error(exc) is True
+    assert runner._is_semantic_eof_eligible(exc, raw_text) is False
+    assert runner.try_repair_json_truncation(raw_text, exc) is None

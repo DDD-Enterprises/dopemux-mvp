@@ -69,7 +69,13 @@ GEMINI_MODELS_FILENAME = "GEMINI_MODELS.json"
 GEMINI_MODELS_FAILED_FILENAME = "GEMINI_MODELS.FAILED.json"
 GEMINI_MODELS_SCHEMA_VERSION = "GEMINI_MODELS_V1"
 GEMINI_MODELS_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models"
-EOF_THRESHOLD_CHARS = 256
+PARSE_RETRY_MAX_EXTRA_ATTEMPTS = 1
+STRING_LITERAL_ERROR_SNIPPETS = (
+    "unterminated string",
+    "invalid \\escape",
+    "invalid \\u",
+    "invalid control character",
+)
 PROMPTGEN_DEFAULT_MAX_FILES = 600
 PROMPTGEN_DEFAULT_MAX_BYTES = 300000
 PROMPTGEN_DEFAULT_EXCERPT_BYTES = 4000
@@ -4243,8 +4249,9 @@ def _starts_with_json_token(text: str) -> bool:
     return stripped[0] in {"{", "["}
 
 
-def _is_unterminated_string_error(exc: json.JSONDecodeError) -> bool:
-    return "unterminated string" in str(exc).lower()
+def _is_string_literal_decode_error(exc: json.JSONDecodeError) -> bool:
+    message = str(exc).lower()
+    return any(snippet in message for snippet in STRING_LITERAL_ERROR_SNIPPETS)
 
 
 def _is_semantic_eof_eligible(exc: json.JSONDecodeError, text: str) -> bool:
@@ -4253,7 +4260,56 @@ def _is_semantic_eof_eligible(exc: json.JSONDecodeError, text: str) -> bool:
         return False
     pos = int(exc.pos)
     eof_index = len(trimmed)
-    return (pos >= eof_index or pos == eof_index - 1) and not _is_unterminated_string_error(exc)
+    return (pos >= eof_index or pos == eof_index - 1) and not _is_string_literal_decode_error(exc)
+
+
+def _strict_decode_error(candidate: str) -> Optional[json.JSONDecodeError]:
+    try:
+        json.loads(candidate)
+    except json.JSONDecodeError as exc:
+        return exc
+    except Exception:
+        return None
+    return None
+
+
+def _parse_retry_reason(
+    response_text: str,
+    request_meta: Dict[str, Any],
+    strict_decode_error: Optional[json.JSONDecodeError],
+) -> Optional[str]:
+    if strict_decode_error is None:
+        return None
+    if not _is_string_literal_decode_error(strict_decode_error):
+        return None
+
+    failure_type = str(request_meta.get("failure_type") or "").strip()
+    if failure_type:
+        return None
+    status_code = request_meta.get("status_code")
+    if isinstance(status_code, int) and status_code >= 400:
+        return None
+    if request_meta.get("response_received") is False:
+        return None
+
+    response_summary = request_meta.get("response_summary")
+    finish_reason = ""
+    if isinstance(response_summary, dict):
+        finish_reason = str(response_summary.get("finish_reason") or "").upper()
+    if finish_reason != "MAX_TOKENS":
+        return None
+
+    strict_candidate = response_text.strip()
+    if not strict_candidate:
+        return None
+    trimmed = strict_candidate.rstrip()
+    if not trimmed:
+        return None
+    pos = int(strict_decode_error.pos)
+    eof_index = len(trimmed)
+    if not (pos >= eof_index or pos == eof_index - 1):
+        return None
+    return "max_tokens_string_eof_parse_failure"
 
 
 def try_repair_json_truncation(text: str, exc: Optional[json.JSONDecodeError]) -> Optional[str]:
@@ -5191,36 +5247,106 @@ def execute_step_for_partitions(
                 f"context_bytes={context_stats['context_bytes']}"
             ),
         )
-        llm_result = call_llm(
-            provider=provider,
-            model_id=model_id,
-            api_key_env=api_key_env,
-            system_prompt=prompt_text,
-            user_content=user_prompt,
-            cfg=cfg,
-            force_json_output=force_json_output,
-        )
-        response_text = str(llm_result.get("text", ""))
-        request_meta = enrich_request_meta(
-            llm_result.get("meta", {}),
-            run_id=run_id,
-            phase=phase,
-            step_id=step_id,
-            partition_id=partition_id,
-            provider=provider,
-            model_id=model_id,
-        )
-        request_meta.setdefault("request_payload_bytes", payload_bytes)
+        def _execute_llm_call() -> Tuple[str, Dict[str, Any]]:
+            llm_result = call_llm(
+                provider=provider,
+                model_id=model_id,
+                api_key_env=api_key_env,
+                system_prompt=prompt_text,
+                user_content=user_prompt,
+                cfg=cfg,
+                force_json_output=force_json_output,
+            )
+            response_text_local = str(llm_result.get("text", ""))
+            request_meta_local = enrich_request_meta(
+                llm_result.get("meta", {}),
+                run_id=run_id,
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                provider=provider,
+                model_id=model_id,
+            )
+            request_meta_local.setdefault("request_payload_bytes", payload_bytes)
+            return response_text_local, request_meta_local
+
+        parse_retry_attempted = False
+        parse_retry_attempts = 0
+        parse_retry_reason: Optional[str] = None
+        parse_retry_trace: List[Dict[str, Any]] = []
+        response_text, request_meta = _execute_llm_call()
+        artifacts: List[Dict[str, Any]] = []
+
+        while True:
+            strict_candidate = response_text.strip()
+            strict_error = _strict_decode_error(strict_candidate) if strict_candidate else None
+            strict_string_literal_error = bool(
+                strict_error is not None and _is_string_literal_decode_error(strict_error)
+            )
+            strict_semantic_eof_eligible = bool(
+                strict_error is not None and _is_semantic_eof_eligible(strict_error, strict_candidate)
+            )
+            parsed = parse_json_from_response(response_text)
+            artifacts = coerce_artifacts_from_response(
+                parsed=parsed,
+                raw_text=response_text,
+                expected_artifacts=output_artifacts,
+            )
+            parse_retry_trace.append(
+                {
+                    "attempt": len(parse_retry_trace) + 1,
+                    "failure_type": request_meta.get("failure_type"),
+                    "finish_reason": (request_meta.get("response_summary") or {}).get("finish_reason")
+                    if isinstance(request_meta.get("response_summary"), dict)
+                    else None,
+                    "strict_decode_error": str(strict_error) if strict_error else None,
+                    "strict_decode_error_message": strict_error.msg if strict_error else None,
+                    "strict_decode_error_pos": int(strict_error.pos) if strict_error else None,
+                    "strict_string_literal_error": strict_string_literal_error,
+                    "strict_semantic_eof_eligible": strict_semantic_eof_eligible,
+                    "parsed_json": parsed is not None,
+                    "artifacts_ok": bool(artifacts),
+                    "response_text_length": len(response_text),
+                }
+            )
+            if artifacts:
+                break
+
+            eligible_reason = _parse_retry_reason(response_text, request_meta, strict_error)
+            if parse_retry_attempts >= PARSE_RETRY_MAX_EXTRA_ATTEMPTS or not eligible_reason:
+                break
+
+            parse_retry_attempted = True
+            parse_retry_attempts += 1
+            parse_retry_reason = eligible_reason
+            _append_log(
+                logs,
+                "info",
+                f"Artifact parse retry eligible for {step_id} {partition_id}: reason={eligible_reason}",
+            )
+            _append_log(
+                logs,
+                "info",
+                (
+                    f"Artifact parse retry attempt {parse_retry_attempts}/"
+                    f"{PARSE_RETRY_MAX_EXTRA_ATTEMPTS} for {step_id} {partition_id}"
+                ),
+            )
+            response_text, request_meta = _execute_llm_call()
+
+        request_meta = {
+            **request_meta,
+            "parse_retry_attempted": parse_retry_attempted,
+            "parse_retry_attempts": parse_retry_attempts,
+            "parse_retry_reason": parse_retry_reason,
+            "parse_retry_trace": parse_retry_trace,
+        }
         auth_failure = is_auth_classified_failure(request_meta.get("failure_type"))
         auth_expired = is_auth_expired_failure(request_meta.get("failure_type"))
 
-        parsed = parse_json_from_response(response_text)
-        artifacts = coerce_artifacts_from_response(
-            parsed=parsed,
-            raw_text=response_text,
-            expected_artifacts=output_artifacts,
-        )
         if not artifacts:
+            if parse_retry_attempted:
+                _append_log(logs, "info", f"Artifact parse retry exhausted for {step_id} {partition_id}")
             _append_log(logs, "error", f"Artifact parse failed for {step_id} {partition_id}")
             _op_write_text(write_ops, out_failed, response_text)
             _op_write_json(
