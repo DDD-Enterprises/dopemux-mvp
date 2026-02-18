@@ -42,6 +42,17 @@ python UPGRADES/run_extraction_v3.py --phase Z --resume
 
 `--phase ALL` executes the same order and now runs provider preflight first.
 
+## Artifact parse fallback order
+
+Artifact payload parsing in `UPGRADES/run_extraction_v3.py` is deterministic and fail-closed:
+
+1. Strict JSON parse of full text.
+2. De-fenced parse (` ```json ... ``` ` wrapper stripped).
+3. First fenced block only (when multiple fenced blocks are present).
+4. Balanced-repair parse only when the decode error is semantic EOF-eligible:
+   `trimmed = text.rstrip()`, `error.pos >= len(trimmed)` or `error.pos == len(trimmed) - 1`, and error class is not unterminated string.
+5. Return `None` (no fallback beyond these steps).
+
 ## Prompt-corpus phase contracts
 
 The table below is the required checklist mapping phase to step flow and expected capstone outputs.
