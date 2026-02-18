@@ -78,6 +78,10 @@ check_env_var "VOYAGEAI_API_KEY" "Required for vector embeddings" || ((env_error
 # XAI Grok (optional but recommended)
 check_env_var "XAI_API_KEY" "Optional: Required for xAI Grok models" || echo "⚠️  XAI_API_KEY not set (xAI Grok will not be available)"
 
+if [ -n "${GOOGLE_API_KEY:-}" ]; then
+    echo "⚠️  GOOGLE_API_KEY is set. Canonical Dopemux Gemini key is GEMINI_API_KEY."
+fi
+
 # Check Docker containers
 echo ""
 echo "🐳 Checking Docker containers..."
