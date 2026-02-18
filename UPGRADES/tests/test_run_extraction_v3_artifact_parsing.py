@@ -28,10 +28,6 @@ def _read_fixture(name: str) -> str:
     return (FIXTURES_DIR / name).read_text(encoding="utf-8")
 
 
-def test_eof_threshold_constant_is_256() -> None:
-    assert runner.EOF_THRESHOLD_CHARS == 256
-
-
 def test_parse_and_coerce_accepts_list_form_artifacts() -> None:
     raw_text = _read_fixture("A99__A_P0006.FAILED.txt")
     parsed = runner.parse_json_from_response(raw_text)
@@ -57,18 +53,21 @@ def test_parse_and_coerce_accepts_list_form_artifacts() -> None:
     assert {row["artifact_name"] for row in artifacts} == set(expected)
 
 
-def test_parse_and_coerce_repairs_truncated_eof_fixture() -> None:
-    raw_text = _read_fixture("A9__A_P0011.FAILED.txt")
+def test_parse_and_coerce_repairs_real_truncated_eof_fixture() -> None:
+    raw_text = _read_fixture("A1__A_P0005.FAILED.txt")
     parsed = runner.parse_json_from_response(raw_text)
     assert isinstance(parsed, dict)
 
     artifacts = runner.coerce_artifacts_from_response(
         parsed,
         raw_text,
-        ("REPO_IMPLICIT_BEHAVIOR_HINTS.json",),
+        ("REPO_INSTRUCTION_SURFACE.json", "REPO_INSTRUCTION_REFERENCES.json"),
     )
-    assert len(artifacts) == 1
-    assert artifacts[0]["artifact_name"] == "REPO_IMPLICIT_BEHAVIOR_HINTS.json"
+    assert len(artifacts) == 2
+    assert {row["artifact_name"] for row in artifacts} == {
+        "REPO_INSTRUCTION_SURFACE.json",
+        "REPO_INSTRUCTION_REFERENCES.json",
+    }
 
 
 def test_extra_data_far_from_eof_does_not_trigger_repair() -> None:
@@ -92,6 +91,32 @@ def test_mid_body_unmatched_closer_is_not_deleted() -> None:
     assert repaired is None
 
 
+def test_real_mid_body_invalid_escape_fixture_is_fail_closed() -> None:
+    raw_text = _read_fixture("A0__A_P0004.FAILED.txt")
+    stripped = raw_text.strip()
+    assert runner.parse_json_from_response(raw_text) is None
+
+    with pytest.raises(json.JSONDecodeError) as exc_info:
+        json.loads(stripped)
+    exc = exc_info.value
+    assert runner._is_string_literal_decode_error(exc) is True
+    assert runner._is_semantic_eof_eligible(exc, stripped) is False
+    assert runner.try_repair_json_truncation(stripped, exc) is None
+
+
+def test_real_unterminated_string_fixture_is_fail_closed() -> None:
+    raw_text = _read_fixture("A1__A_P0001.FAILED.txt")
+    stripped = raw_text.strip()
+    assert runner.parse_json_from_response(raw_text) is None
+
+    with pytest.raises(json.JSONDecodeError) as exc_info:
+        json.loads(stripped)
+    exc = exc_info.value
+    assert runner._is_string_literal_decode_error(exc) is True
+    assert runner._is_semantic_eof_eligible(exc, stripped) is False
+    assert runner.try_repair_json_truncation(stripped, exc) is None
+
+
 def test_first_fenced_block_is_deterministic() -> None:
     raw_text = (
         "```json\n"
@@ -112,6 +137,36 @@ def test_existing_dict_envelope_behavior_remains_unchanged() -> None:
 
     artifacts = runner.coerce_artifacts_from_response(parsed, raw_text, ("A.json",))
     assert artifacts == [{"artifact_name": "A.json", "payload": {"k": 1}}]
+
+
+def test_balanced_repair_is_deterministic_for_same_input() -> None:
+    raw_text = _read_fixture("A9__A_P0011.FAILED.txt")
+    stripped = raw_text.strip()
+
+    with pytest.raises(json.JSONDecodeError) as exc_info:
+        json.loads(stripped)
+    exc = exc_info.value
+    repaired_one = runner.try_repair_json_truncation(stripped, exc)
+    repaired_two = runner.try_repair_json_truncation(stripped, exc)
+
+    assert repaired_one is not None
+    assert repaired_one == repaired_two
+    assert isinstance(json.loads(repaired_one), dict)
+
+
+@pytest.mark.parametrize(
+    "raw_text",
+    [
+        '{"a":"x',
+        '{"a":"\\q"}',
+        '{"a":"\\u12"}',
+        "{\"a\":\"x\ny\"}",
+    ],
+)
+def test_string_literal_decode_error_classifier(raw_text: str) -> None:
+    with pytest.raises(json.JSONDecodeError) as exc_info:
+        json.loads(raw_text)
+    assert runner._is_string_literal_decode_error(exc_info.value) is True
 
 
 def test_output_contract_instructions_include_hard_rules() -> None:
