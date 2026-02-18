@@ -1,0 +1,85 @@
+{
+  "artifact": "REPOCTRL_QA_REPORT",
+  "checks": {
+    "deterministic_sorting_applied": true,
+    "duplicate_prompt_ids_detected": false,
+    "json_valid": true,
+    "missing_required_outputs": [],
+    "secret_redaction_applied": true,
+    "suspicious_large_fields": []
+  },
+  "generated_at": "2026-02-16T23:34:26+00:00",
+  "required_outputs": [
+    {
+      "item_count": 4,
+      "name": "REPO_CI_AND_GATES_SURFACE",
+      "path": "reports/A_repo_control_plane/norm/REPO_CI_AND_GATES_SURFACE.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 43,
+      "name": "REPO_COMPOSE_SERVICE_GRAPH",
+      "path": "reports/A_repo_control_plane/norm/REPO_COMPOSE_SERVICE_GRAPH.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 86,
+      "name": "REPO_HOOKS_SURFACE",
+      "path": "reports/A_repo_control_plane/norm/REPO_HOOKS_SURFACE.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 648,
+      "name": "REPO_IMPLICIT_BEHAVIOR_HINTS",
+      "path": "reports/A_repo_control_plane/norm/REPO_IMPLICIT_BEHAVIOR_HINTS.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 136,
+      "name": "REPO_INSTRUCTION_REFERENCES",
+      "path": "reports/A_repo_control_plane/norm/REPO_INSTRUCTION_REFERENCES.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 48,
+      "name": "REPO_INSTRUCTION_SURFACE",
+      "path": "reports/A_repo_control_plane/norm/REPO_INSTRUCTION_SURFACE.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 0,
+      "name": "REPO_LITELLM_SURFACE",
+      "path": "reports/A_repo_control_plane/norm/REPO_LITELLM_SURFACE.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 8,
+      "name": "REPO_MCP_PROXY_SURFACE",
+      "path": "reports/A_repo_control_plane/norm/REPO_MCP_PROXY_SURFACE.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 38,
+      "name": "REPO_MCP_SERVER_DEFS",
+      "path": "reports/A_repo_control_plane/norm/REPO_MCP_SERVER_DEFS.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 63,
+      "name": "REPO_ROUTER_SURFACE",
+      "path": "reports/A_repo_control_plane/norm/REPO_ROUTER_SURFACE.json",
+      "status": "OK"
+    },
+    {
+      "item_count": 0,
+      "name": "REPO_TASKX_SURFACE",
+      "path": "reports/A_repo_control_plane/norm/REPO_TASKX_SURFACE.json",
+      "status": "OK"
+    }
+  ],
+  "stats": {
+    "norm_total_bytes": 5519780,
+    "raw_files": 11,
+    "raw_total_bytes": 5519780
+  }
+}

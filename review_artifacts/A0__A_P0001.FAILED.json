@@ -1,0 +1,38 @@
+{
+  "failure_type": "auth_rejected",
+  "generated_at": "2026-02-17T05:32:25.970364+00:00",
+  "partition_id": "A_P0001",
+  "phase": "A",
+  "request_meta": {
+    "auth_present_flags": {
+      "has_auth": true,
+      "has_xgoog": true,
+      "used_query_key": false
+    },
+    "endpoint_base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+    "failure_type": "auth_rejected",
+    "gemini_auth_mode_effective": "both",
+    "gemini_auth_mode_requested": "auto",
+    "model_id": "gemini-2.0-flash-001",
+    "provider": "gemini",
+    "request_payload_bytes": 161768,
+    "retry_trace": [
+      {
+        "attempt": 1,
+        "delay_seconds": 0.0,
+        "failure_type": "auth_rejected",
+        "gemini_auth_mode_effective": "both",
+        "status_code": 400
+      }
+    ],
+    "sent_header_keys": [
+      "Authorization",
+      "Content-Type",
+      "x-goog-api-key"
+    ],
+    "status_code": 400
+  },
+  "status_code": 400,
+  "step_id": "A0"
+}
