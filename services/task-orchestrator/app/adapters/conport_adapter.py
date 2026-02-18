@@ -94,7 +94,7 @@ def orchestration_task_to_conport_progress(
 
     Args:
         task: OrchestrationTask to transform
-        workspace_id: Absolute path to workspace (e.g., "/Users/hue/code/dopemux-mvp")
+        workspace_id: Absolute path to workspace (e.g., "/path/to/workspace")
 
     Returns:
         Dict ready for mcp__conport__log_progress() call

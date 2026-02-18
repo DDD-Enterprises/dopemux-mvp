@@ -1,0 +1,489 @@
+{
+  "artifact": "REPO_INSTRUCTION_SURFACE",
+  "files_seen": 305,
+  "generated_at": "2026-02-16T23:34:26+00:00",
+  "items": [
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "9913291abe921e69880efae7a1d8187e2ba7b507224f2b6b42f2d3f54b77b9fb",
+        "excerpt_snippet": "# Dopemux Agent Architecture (Revised) **Version**: 2.0.0",
+        "path": ".claude/AGENT_ARCHITECTURE.md"
+      },
+      "path": ".claude/AGENT_ARCHITECTURE.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "9a3774a69f2a2d89bfd2262839682321e9a8a9c233e0f023df7b605d8466692f",
+        "excerpt_snippet": "# Dopemux Multi-Language Support Architecture **Version**: 1.0.0",
+        "path": ".claude/MULTI_LANGUAGE_SUPPORT.md"
+      },
+      "path": ".claude/MULTI_LANGUAGE_SUPPORT.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "be7441c6b4c6a89bbf5e5dced5234a652344f3d6839f5deb5f8a1f73251b8c06",
+        "excerpt_snippet": "# \ud83e\udded Dopemux Development Primer ### Investigations \u00b7 ADRs \u00b7 Task Packets \u00b7 Audits",
+        "path": ".claude/PRIMER.md"
+      },
+      "path": ".claude/PRIMER.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "261fda0875dd9062cfd01f90ea22435d592687c34feef689139628de21b4041d",
+        "excerpt_snippet": "\ud83e\udded Dopemux Supervisor Task Packets \u00b7 Audits \u00b7 Deterministic Change Control \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        "path": ".claude/PROJECT_INSTRUCTIONS.md"
+      },
+      "path": ".claude/PROJECT_INSTRUCTIONS.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "d44e40ca636c585b5672743702c7dfce301d5d95306d7774a01134ea19290619",
+        "excerpt_snippet": "# \ud83e\udde0 Dopemux \u00b7 LLM Development Protocol \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+        "path": ".claude/README.md"
+      },
+      "path": ".claude/README.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "627e68514028536b6a3b6cf75fd1707c0c1b2876ff8336b376996b58fb49145e",
+        "excerpt_snippet": "# Synergistic MCP Workflow Examples **Purpose**: Real-world workflows showing how Serena-v2, Dope-Context, PAL apilookup, ConPort, and Zen MCPs work together sy",
+        "path": ".claude/SYNERGISTIC_WORKFLOWS.md"
+      },
+      "path": ".claude/SYNERGISTIC_WORKFLOWS.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "2ef8fd70bff694ae0bb99c6355c6e74038076a643adca541db49f96ea11107d0",
+        "excerpt_snippet": "# Git Worktree MCP Setup Guide **Purpose**: Enable full MCP server functionality across all git worktrees with automatic workspace detection",
+        "path": ".claude/WORKTREE_MCP_SETUP.md"
+      },
+      "path": ".claude/WORKTREE_MCP_SETUP.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "ed30ea62886a78164f2f4d80e7ae7c053681f0aa25b99019de9afc84a0117cb6",
+        "excerpt_snippet": "# Python Project - Dopemux Configuration Project-specific Claude Code instructions for python development with ADHD accommodations.",
+        "path": ".claude/claude.md"
+      },
+      "path": ".claude/claude.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "44941be59994d8d7ca206b750ed24be1fa0fa63c7a4dddbc17bcbf75213d9135",
+        "excerpt_snippet": "{ \"mcpServers\": { \"conport\": {",
+        "path": ".claude/claude_config.json"
+      },
+      "path": ".claude/claude_config.json",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "891836d59b4bb03655fc6b9367a5df7f8d63654733bde8c415449991afce3b15",
+        "excerpt_snippet": "# /doc:pull Given a query like a ticket ID, file path, or feature name:",
+        "path": ".claude/commands/doc-pull.md"
+      },
+      "path": ".claude/commands/doc-pull.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "38c24a04239e022dad757e7033df9187c7dda5b98f64e893d9bbfe1aa06abc1f",
+        "excerpt_snippet": "--- description: \"ADHD-optimized 25-minute implementation session with task assessment\" arguments: \"[task_id]\"",
+        "path": ".claude/commands/dx/implement.md"
+      },
+      "path": ".claude/commands/dx/implement.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "47ba2db8068b9bb9041f708375f5c4e35314f3ff9948554f0fcac7e526918067",
+        "excerpt_snippet": "# Context Management - Python Project ADHD-optimized context preservation and restoration for python development.",
+        "path": ".claude/context.md"
+      },
+      "path": ".claude/context.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "4c5843060866f23c95b38d9a2d33626171d5b9f417c02ec0d2f4d3a6319255fd",
+        "excerpt_snippet": "# Global MCP Configuration for Dopemux Platform **Date**: 2025-10-16",
+        "path": ".claude/docs/GLOBAL_MCP_CONFIGURATION.md"
+      },
+      "path": ".claude/docs/GLOBAL_MCP_CONFIGURATION.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "b17d88df7ea89354430417609d4179a07d6a723b7e092de059e31cfba5b83725",
+        "excerpt_snippet": "# Desktop-Commander MCP - Desktop Automation & Window Management **Provider**: Dopemux",
+        "path": ".claude/docs/MCP_DesktopCommander.md"
+      },
+      "path": ".claude/docs/MCP_DesktopCommander.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "428df2015f4eb4caa0368cc778997660068bca92eca6345ee9bb3254659271fd",
+        "excerpt_snippet": "This repository is governed by .claude/PROJECT_INSTRUCTIONS.md. Investigations and redesigns must follow .claude/PRIMER.md",
+        "path": ".claude/llm.md"
+      },
+      "path": ".claude/llm.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "49d36e540c43255fef9efcccccf5c0a37c28f7b23b9d98b046297a973bbc3888",
+        "excerpt_snippet": "# LLM Configuration - Python Project Multi-model AI configuration optimized for python development with ADHD accommodations.",
+        "path": ".claude/llms.md"
+      },
+      "path": ".claude/llms.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "3ffc654d3476794ab2dbe90ea911381beb806c0760595f443bb601899aa33b46",
+        "excerpt_snippet": "# MCP System Reference for Claude Code **Status**: \u2705 Fully Operational - 9 servers, 50+ tools",
+        "path": ".claude/mcp-system.md"
+      },
+      "path": ".claude/mcp-system.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "6c98feea66fe9423ea9a9e09b9a846c6e6021fb9ad31af4497fc7c9ffb7258c4",
+        "excerpt_snippet": "# CLAUDE.md Module Directory Index **Structure Version**: 2.0.0 (Plane-Aligned Architecture)",
+        "path": ".claude/modules/_index.md"
+      },
+      "path": ".claude/modules/_index.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "667a2ac2b77d00612c8e77dc34e326e7d90d3c1e71695756250ec315e54a4716",
+        "excerpt_snippet": "# Serena LSP Server Module **Module Version**: 1.0.0",
+        "path": ".claude/modules/cognitive-plane/serena-lsp.md"
+      },
+      "path": ".claude/modules/cognitive-plane/serena-lsp.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "b3df12b1d012d268c04ee06b8788eacaaa04fdfd33124ae7ad8e0344180b5d8c",
+        "excerpt_snippet": "# Authority Matrix Module **Module Version**: 2.0.0 (Simplified Architecture)",
+        "path": ".claude/modules/coordination/authority-matrix.md"
+      },
+      "path": ".claude/modules/coordination/authority-matrix.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "a5a16dd4472c247d79f1b53cfebf6eceda42c6dfd3d9df7115b4ed5e21271ba8",
+        "excerpt_snippet": "# DopeconBridge Module **Module Version**: 2.0.0 (Simplified Architecture)",
+        "path": ".claude/modules/coordination/integration-bridge.md"
+      },
+      "path": ".claude/modules/coordination/integration-bridge.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "e86f2e925f365d97ea464a5d48ffbac94ae7524828e2fe23cc431efc37c21bb9",
+        "excerpt_snippet": "# Event Patterns Module **Module Version**: 1.0.0",
+        "path": ".claude/modules/shared/event-patterns.md"
+      },
+      "path": ".claude/modules/shared/event-patterns.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "d86fc351d641145c1dbdf2aece51e79a81989a41028245c452f978882fd36511",
+        "excerpt_snippet": "# Backend Architect Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/backend-architect-dopemux.md"
+      },
+      "path": ".claude/personas/backend-architect-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "d034a8f6e8b2e07bac399688c21ec8a193c0039bf4087b6260c57fdd1a5a9e37",
+        "excerpt_snippet": "# Devops Architect Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/devops-architect-dopemux.md"
+      },
+      "path": ".claude/personas/devops-architect-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "40a362088b32522ab4d819770b0ef818bfe11d9a9fc9d0ddc33292073f8dd8b9",
+        "excerpt_snippet": "# Frontend Architect Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/frontend-architect-dopemux.md"
+      },
+      "path": ".claude/personas/frontend-architect-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "0b0a30d816fd469ba763cc1735e437a201f9489b7e3caac3e07c4ad429d4398d",
+        "excerpt_snippet": "# General Purpose Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/general-purpose-dopemux.md"
+      },
+      "path": ".claude/personas/general-purpose-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "602ff5313a5cba879484ea31ee1625a07916b0b47dd8da7e27c2fc07d75750d0",
+        "excerpt_snippet": "# Learning Guide Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/learning-guide-dopemux.md"
+      },
+      "path": ".claude/personas/learning-guide-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "f60a9c3b0b37a3c290e97bf8398b6ae8c4ae91b05789d9c47492cccee2fe8f7e",
+        "excerpt_snippet": "# Performance Engineer Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/performance-engineer-dopemux.md"
+      },
+      "path": ".claude/personas/performance-engineer-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "e1cbeea10e73ce5ab9b2ffdbfab9f343040f59a3a6e4e1b09685b2a36a988bba",
+        "excerpt_snippet": "# Python Expert Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/python-expert-dopemux.md"
+      },
+      "path": ".claude/personas/python-expert-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "a464dc6be4afa93716a3dadf41c0c0c2ed57d2ad52764490bd4fdc932889683f",
+        "excerpt_snippet": "# Quality Engineer Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/quality-engineer-dopemux.md"
+      },
+      "path": ".claude/personas/quality-engineer-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "e6656e2d47aaee2b1ab42a1d3f147cca4623396f66061715ea2ba671079630ec",
+        "excerpt_snippet": "# Security Engineer Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/security-engineer-dopemux.md"
+      },
+      "path": ".claude/personas/security-engineer-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "18d9d82701a84987f65a1d40d9f8cfc509a6271e206ce9f75c2564e77bb5d69d",
+        "excerpt_snippet": "# Socratic Mentor Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/socratic-mentor-dopemux.md"
+      },
+      "path": ".claude/personas/socratic-mentor-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "ec3356b76a28860024a387c7472b7ed35f4fe0978bd6c00c8ae60a3a2d950623",
+        "excerpt_snippet": "# Statusline Setup Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/statusline-setup-dopemux.md"
+      },
+      "path": ".claude/personas/statusline-setup-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "099005f7f3695f68b060c45c82f2e076e3dfd682881f2dcf0e19b85acab99f83",
+        "excerpt_snippet": "# System Architect Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/system-architect-dopemux.md"
+      },
+      "path": ".claude/personas/system-architect-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "805df4ff7c668b40abd7eb8903cf7056507456cab20976dd8631e74e00d3c94b",
+        "excerpt_snippet": "# Technical Writer Persona (Dopemux-Enhanced) **Version**: 2.0.0-dopemux",
+        "path": ".claude/personas/technical-writer-dopemux.md"
+      },
+      "path": ".claude/personas/technical-writer-dopemux.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "685f5522d0e9ee408d7bde87fabbc5fc6a29bbba004d5e8b83a14b7fb689dfa7",
+        "excerpt_snippet": "# Fix LiteLLM OpenRouter Configuration Issue ## Context",
+        "path": ".claude/plans/silly-riding-curry.md"
+      },
+      "path": ".claude/plans/silly-riding-curry.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "28deb07bab57ad6feac15c5d451afe64563efb756eb4e0b1f46139aafc7ee81b",
+        "excerpt_snippet": "# Enhanced Prompt: Deep Component Research & Documentation **Purpose**: Generate comprehensive, source-validated technical analysis of Dopemux components for in",
+        "path": ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md"
+      },
+      "path": ".claude/prompts/DEEP_COMPONENT_RESEARCH_PROMPT.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "5cc5e68e60eba285acef7f339c76a130780b9d76a92118275d33c560c8363795",
+        "excerpt_snippet": "# Session Management - Python Project Session persistence patterns optimized for python development with ADHD considerations.",
+        "path": ".claude/session.md"
+      },
+      "path": ".claude/session.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "dbe85f23b6692fb032abf83c742a84ebbc16052c5212dfbda2ac2f285bbc789a",
+        "excerpt_snippet": "# Session: GPT Researcher Integration **Date**: 2025-09-26",
+        "path": ".claude/sessions/2025-09-26-gpt-researcher-integration.md"
+      },
+      "path": ".claude/sessions/2025-09-26-gpt-researcher-integration.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "546a705ffb0064432f9ba1a96c999278b87ccbcce97485f2edd15aee77d6aa13",
+        "excerpt_snippet": "# Current Development Status **Last Updated**: 2025-09-26",
+        "path": ".claude/sessions/current-status.md"
+      },
+      "path": ".claude/sessions/current-status.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "cd2b61bb8c41a7c4feb757cfa9714a0b436d340ee1645e7baa7c7612e2ca5a02",
+        "excerpt_snippet": "{ \"statusLine\": { \"type\": \"command\",",
+        "path": ".claude/settings.json"
+      },
+      "path": ".claude/settings.json",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "f1a0ff138e652e2eba1dd9d7d5d28b77d96d13ac282cf44fef074f3d4758c668",
+        "excerpt_snippet": "{ \"permissions\": { \"allow\": [",
+        "path": ".claude/settings.local.json"
+      },
+      "path": ".claude/settings.local.json",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "9a33a2b5bb4184cb06236aac7f37d549d62c24da81243597531c01939018330d",
+        "excerpt_snippet": "{ \"mcpServers\": { \"task-master-ai\": {",
+        "path": ".claude/task-master-mcp-config.json"
+      },
+      "path": ".claude/task-master-mcp-config.json",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "abe069de2eb76d75aaca15ec7c6f0e41186b7127c9504e048a20d87d9cc32d11",
+        "excerpt_snippet": "# MCP Workflow Quick Reference **Purpose**: Fast lookup for which MCP server to use in any situation",
+        "path": ".claude/workflows/QUICK_REFERENCE.md"
+      },
+      "path": ".claude/workflows/QUICK_REFERENCE.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "cfd08039087e63874f97a095c0113a80d1764a25aef78365f9d894ddab2105de",
+        "excerpt_snippet": "# MCP Workflow Automation Rules **Purpose**: Automatic MCP server selection based on workflow context **Status**: Active - Used by Claude Code for intelligent t",
+        "path": ".claude/workflows/WORKFLOW_AUTOMATION.md"
+      },
+      "path": ".claude/workflows/WORKFLOW_AUTOMATION.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "3df54c9118edc00d6bfd5f49e0d2b0d800c7a410a5856894c1ce07a3c48fce67",
+        "excerpt_snippet": "# Bug Fix Workflow Template **Use this template when**: Fixing bugs, resolving errors, troubleshooting issues",
+        "path": ".claude/workflows/templates/bug-fix.md"
+      },
+      "path": ".claude/workflows/templates/bug-fix.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "e25df03c2bea666c972faa6c4f198e92311e6954a9e5381f207b881521526353",
+        "excerpt_snippet": "# Feature Implementation Workflow Template **Use this template when**: Adding new features or significant functionality",
+        "path": ".claude/workflows/templates/feature-implementation.md"
+      },
+      "path": ".claude/workflows/templates/feature-implementation.md",
+      "type": "instruction_file"
+    },
+    {
+      "evidence": {
+        "anchor": "L1",
+        "excerpt_hash": "428df2015f4eb4caa0368cc778997660068bca92eca6345ee9bb3254659271fd",
+        "excerpt_snippet": "This repository is governed by .claude/PROJECT_INSTRUCTIONS.md. Investigations and redesigns must follow .claude/PRIMER.md",
+        "path": "AGENTS.md"
+      },
+      "path": "AGENTS.md",
+      "type": "instruction_file"
+    }
+  ],
+  "unknowns": [],
+  "warnings": []
+}
