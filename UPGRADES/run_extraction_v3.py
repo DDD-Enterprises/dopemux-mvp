@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import re
+import signal
 import platform
 import subprocess
 import sys
@@ -24,6 +25,12 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 import requests
+try:
+    from rich.console import Console
+    from rich.table import Table
+except Exception:  # pragma: no cover - optional rich rendering
+    Console = None  # type: ignore[assignment]
+    Table = None  # type: ignore[assignment]
 
 # --- Configuration & Constants ---
 
@@ -2610,7 +2617,7 @@ def normalize_step(
     phase_dir: Path,
     partitions: List[Dict[str, Any]],
     step_exec_stats: Optional[Dict[str, Any]] = None,
-) -> None:
+) -> Dict[str, Any]:
     step_id = prompt_spec.step_id
     expected_artifacts = prompt_spec.output_artifacts
     raw_dir = phase_dir / "raw"
@@ -2757,6 +2764,7 @@ def normalize_step(
     }
 
     write_json(qa_dir / f"{step_id}_QA.json", qa_payload)
+    return qa_payload
 
 
 # --- LLM Execution ---
@@ -4356,6 +4364,7 @@ def execute_step_for_partitions(
     step_failed_count = 0
     step_recomputed_count = 0
     step_dry_run_count = 0
+    step_retry_count = 0
     started_at = time.time()
     workers = max(1, min(16, int(cfg.partition_workers)))
 
@@ -4927,6 +4936,10 @@ def execute_step_for_partitions(
             resume_skipped += 1
             continue
 
+        retry_trace = result.request_meta.get("retry_trace")
+        if isinstance(retry_trace, list):
+            step_retry_count += max(0, len(retry_trace) - 1)
+
         if result.auth_failure:
             step_auth_failures += 1
             must_fail_fast = cfg.fail_fast_auth or result.auth_expired
@@ -4984,11 +4997,12 @@ def execute_step_for_partitions(
         logger.info("Resume: skipped %s existing outputs for step %s", resume_skipped, step_id)
     elapsed_ms = int((time.time() - started_at) * 1000)
     logger.info(
-        "Step summary %s partitions_total=%s ok=%s failed=%s elapsed_ms=%s workers=%s",
+        "Step summary %s partitions_total=%s ok=%s failed=%s retries=%s elapsed_ms=%s workers=%s",
         step_id,
         len(ordered_partitions),
         step_success_count,
         step_failed_count,
+        step_retry_count,
         elapsed_ms,
         workers,
     )
@@ -4999,6 +5013,8 @@ def execute_step_for_partitions(
         "dry_run": step_dry_run_count,
         "ok": step_success_count,
         "failed": step_failed_count,
+        "retries": step_retry_count,
+        "elapsed_ms": elapsed_ms,
         "auth_failures": step_auth_failures,
     }
 
@@ -5011,6 +5027,7 @@ def _run_phase_inner(
     targets: Optional[List[str]],
     precollected_items: Optional[List[Dict[str, Any]]] = None,
 ) -> None:
+    phase_started_epoch = time.time()
     logger.info("--- Phase %s ---", phase)
     phase_dir = dirs[phase]
     prompts = get_phase_prompts(phase)
@@ -5092,6 +5109,25 @@ def _run_phase_inner(
         max_files,
         cfg.max_chars,
     )
+    provider, model_id, _ = MODEL_ROUTING.get(phase, ("xai", "grok-code-fast-1", "XAI_API_KEY"))
+    logger.info(
+        "PHASE_HEADER phase=%s run_id=%s phase_dir=%s inventory=%s partitions=%s max_files=%s "
+        "max_chars=%s max_request_bytes=%s provider=%s model=%s flags=resume:%s,dry_run:%s,debug_phase_inputs:%s,fail_fast_auth:%s",
+        phase,
+        phase_dir.parent.name,
+        str(phase_dir.resolve()),
+        len(inventory),
+        len(partitions),
+        max_files,
+        cfg.max_chars,
+        cfg.max_request_bytes,
+        provider,
+        model_id,
+        cfg.resume,
+        cfg.dry_run,
+        cfg.debug_phase_inputs,
+        cfg.fail_fast_auth,
+    )
 
     phase_auth_failures = 0
     for prompt_spec in prompts:
@@ -5133,13 +5169,31 @@ def _run_phase_inner(
                 f"threshold={cfg.phase_auth_fail_threshold}. "
                 "Check auth config, provider routing, and endpoint mode."
             )
-        normalize_step(
+        qa_payload = normalize_step(
             phase=phase,
             prompt_spec=prompt_spec,
             phase_dir=phase_dir,
             partitions=partitions,
             step_exec_stats=step_stats,
         )
+        logger.info(
+            "STEP_DONE phase=%s step=%s partitions_total=%s ok=%s failed=%s retries=%s elapsed_ms=%s norm_written=%s qa_file=%s",
+            phase,
+            prompt_spec.step_id,
+            int(step_stats.get("partitions_total", 0)),
+            int(step_stats.get("ok", 0)),
+            int(step_stats.get("failed", 0)),
+            int(step_stats.get("retries", 0)),
+            int(step_stats.get("elapsed_ms", 0)),
+            len(qa_payload.get("written_files", [])) if isinstance(qa_payload.get("written_files"), list) else 0,
+            f"{prompt_spec.step_id}_QA.json",
+        )
+    logger.info(
+        "PHASE_EXECUTION_DONE phase=%s elapsed_ms=%s auth_failures=%s",
+        phase,
+        int((time.time() - phase_started_epoch) * 1000),
+        phase_auth_failures,
+    )
 
 
 def _count_files(directory: Path, suffixes: Optional[Set[str]] = None) -> int:
@@ -5225,6 +5279,190 @@ def verify_phase_output(dirs: Dict[str, Path], phases: List[str]) -> int:
         code, _, _ = _verify_single_phase(phase, dirs)
         return_code = max(return_code, code)
     return return_code
+
+
+def _phase_last_modified_iso(phase_dir: Path) -> Optional[str]:
+    latest_mtime: Optional[float] = None
+    for bucket in ("inputs", "raw", "norm", "qa"):
+        bucket_dir = phase_dir / bucket
+        if not bucket_dir.exists():
+            continue
+        for entry in bucket_dir.iterdir():
+            if not entry.is_file():
+                continue
+            mtime = float(entry.stat().st_mtime)
+            if latest_mtime is None or mtime > latest_mtime:
+                latest_mtime = mtime
+    if latest_mtime is None:
+        return None
+    return datetime.fromtimestamp(latest_mtime, timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _phase_status_badge(
+    counts: Dict[str, Any],
+    reasons: List[str],
+    coverage_status: str,
+    has_any_files: bool,
+) -> str:
+    if not has_any_files:
+        return "NOT_STARTED"
+    if coverage_status == "FAIL":
+        return "FAIL"
+    if reasons:
+        return "IN_PROGRESS"
+    if int(counts.get("raw", {}).get("failed", 0)) > 0:
+        return "FAIL"
+    return "PASS"
+
+
+def phase_status_snapshot(run_id: str, dirs: Dict[str, Path], phases: List[str]) -> Dict[str, Any]:
+    rollup_path = dirs["root"] / COVERAGE_ROLLUP_FILENAME
+    rollup_payload = _load_json(rollup_path)
+    rollup_phases = rollup_payload.get("phases", {}) if isinstance(rollup_payload.get("phases"), dict) else {}
+
+    per_phase: Dict[str, Any] = {}
+    summary = {"NOT_STARTED": 0, "IN_PROGRESS": 0, "PASS": 0, "FAIL": 0}
+    for phase in phases:
+        phase_dir = dirs[phase]
+        phase_dir_exists = phase_dir.exists()
+        counts = gather_phase_counts(phase_dir) if phase_dir_exists else {"inputs": 0, "raw": {"total": 0, "ok": 0, "failed": 0}, "norm": 0, "qa": 0}
+        reasons: List[str] = []
+        if counts["inputs"] == 0:
+            reasons.append("inputs directory is empty.")
+        if counts["raw"]["total"] == 0:
+            reasons.append("raw directory has no artifacts.")
+        if counts["norm"] == 0:
+            reasons.append("norm directory has no json artifacts.")
+        if counts["qa"] == 0:
+            reasons.append("qa directory has no artifacts.")
+
+        has_any_files = (
+            counts["inputs"] > 0
+            or counts["raw"]["total"] > 0
+            or counts["norm"] > 0
+            or counts["qa"] > 0
+        )
+        rollup_row = rollup_phases.get(phase, {}) if isinstance(rollup_phases, dict) else {}
+        coverage_status = str(rollup_row.get("status", "UNKNOWN")) if isinstance(rollup_row, dict) else "UNKNOWN"
+        badge = _phase_status_badge(counts, reasons, coverage_status, has_any_files)
+        summary[badge] += 1
+
+        per_phase[phase] = {
+            "phase": phase,
+            "phase_dir": str(phase_dir.resolve()),
+            "phase_dir_exists": phase_dir_exists,
+            "inputs_count": counts["inputs"],
+            "raw_total": counts["raw"]["total"],
+            "raw_ok": counts["raw"]["ok"],
+            "raw_failed_sidecars": counts["raw"]["failed"],
+            "norm_count": counts["norm"],
+            "qa_count": counts["qa"],
+            "last_modified": _phase_last_modified_iso(phase_dir),
+            "coverage_status": coverage_status,
+            "status": badge,
+            "issues": reasons,
+        }
+
+    return {
+        "generated_at": now_iso(),
+        "run_id": run_id,
+        "run_dir": str(dirs["root"].resolve()),
+        "phases": per_phase,
+        "summary": summary,
+        "coverage_rollup": str(rollup_path.resolve()) if rollup_path.exists() else None,
+    }
+
+
+def _status_console(use_rich: bool) -> Optional[Any]:
+    if not use_rich or Console is None:
+        return None
+    return Console()
+
+
+def print_status_human(payload: Dict[str, Any], use_rich: bool, clear: bool = False) -> None:
+    if use_rich and Table is not None:
+        console = _status_console(use_rich)
+        if console is None:
+            print_status_human(payload, use_rich=False, clear=clear)
+            return
+        if clear:
+            console.clear()
+        summary = payload.get("summary", {})
+        console.print(
+            (
+                f"Run {payload.get('run_id')}  "
+                f"PASS={summary.get('PASS', 0)} FAIL={summary.get('FAIL', 0)} "
+                f"IN_PROGRESS={summary.get('IN_PROGRESS', 0)} NOT_STARTED={summary.get('NOT_STARTED', 0)}"
+            )
+        )
+        table = Table(show_header=True, header_style="bold")
+        table.add_column("Phase")
+        table.add_column("Status")
+        table.add_column("Inputs")
+        table.add_column("Raw (ok/failed/total)")
+        table.add_column("Norm")
+        table.add_column("QA")
+        table.add_column("Last Modified (UTC)")
+        for phase in PHASES:
+            row = payload.get("phases", {}).get(phase, {})
+            table.add_row(
+                phase,
+                str(row.get("status", "UNKNOWN")),
+                str(row.get("inputs_count", 0)),
+                f"{row.get('raw_ok', 0)}/{row.get('raw_failed_sidecars', 0)}/{row.get('raw_total', 0)}",
+                str(row.get("norm_count", 0)),
+                str(row.get("qa_count", 0)),
+                str(row.get("last_modified") or "-"),
+            )
+        console.print(table)
+        return
+
+    if clear and sys.stdout.isatty():
+        print("\033[2J\033[H", end="")
+    summary = payload.get("summary", {})
+    print(
+        f"Run {payload.get('run_id')} PASS={summary.get('PASS', 0)} FAIL={summary.get('FAIL', 0)} "
+        f"IN_PROGRESS={summary.get('IN_PROGRESS', 0)} NOT_STARTED={summary.get('NOT_STARTED', 0)}"
+    )
+    print("phase status inputs raw_ok raw_failed raw_total norm qa last_modified_utc")
+    for phase in PHASES:
+        row = payload.get("phases", {}).get(phase, {})
+        print(
+            f"{phase} {row.get('status', 'UNKNOWN')} {row.get('inputs_count', 0)} "
+            f"{row.get('raw_ok', 0)} {row.get('raw_failed_sidecars', 0)} {row.get('raw_total', 0)} "
+            f"{row.get('norm_count', 0)} {row.get('qa_count', 0)} {row.get('last_modified') or '-'}"
+        )
+
+
+def run_status_loop(run_id: str, dirs: Dict[str, Path], args: argparse.Namespace) -> int:
+    interval = float(args.watch) if args.watch is not None else 0.0
+    use_rich = bool((args.pretty or sys.stdout.isatty()) and not args.status_json)
+
+    def _emit_once(clear: bool = False) -> None:
+        payload = phase_status_snapshot(run_id, dirs, PHASES)
+        try:
+            if args.status_json:
+                print(json.dumps(payload, indent=2, ensure_ascii=True))
+            else:
+                print_status_human(payload, use_rich=use_rich, clear=clear)
+        except BrokenPipeError:
+            raise
+
+    if interval > 0:
+        try:
+            while True:
+                _emit_once(clear=True)
+                time.sleep(interval)
+        except BrokenPipeError:
+            return 0
+        except KeyboardInterrupt:
+            return 130
+    else:
+        try:
+            _emit_once(clear=False)
+        except BrokenPipeError:
+            return 0
+    return 0
 
 
 def print_promptpack(phases: List[str]) -> int:
@@ -5966,6 +6204,10 @@ def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
 # --- Master Orchestrator ---
 
 def main() -> None:
+    try:
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    except (AttributeError, ValueError):
+        pass
     parser = argparse.ArgumentParser("Master Extraction Runner")
     parser.add_argument("--phase", choices=PHASES + ["ALL"], required=False)
     parser.add_argument("--dry-run", action="store_true")
@@ -6019,6 +6261,10 @@ def main() -> None:
     parser.add_argument("--doctor-auth", action="store_true")
     parser.add_argument("--preflight-providers", action="store_true")
     parser.add_argument("--coverage-report", action="store_true")
+    parser.add_argument("--status", action="store_true")
+    parser.add_argument("--status-json", action="store_true")
+    parser.add_argument("--watch", type=float)
+    parser.add_argument("--pretty", action="store_true")
     parser.add_argument("--print-promptpack", action="store_true")
     parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
     parser.add_argument("--print-config", action="store_true")
@@ -6043,6 +6289,8 @@ def main() -> None:
         or args.preflight_providers
         or args.doctor
         or args.coverage_report
+        or args.status
+        or args.status_json
         or args.print_promptpack
         or args.promptgen_scan
         or args.gemini_list_models
@@ -6050,8 +6298,12 @@ def main() -> None:
         parser.error(
             "--phase is required unless using --verify-phase-output, --print-config, "
             "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
-            "--print-promptpack, or --gemini-list-models."
+            "--status, --status-json, --print-promptpack, or --gemini-list-models."
         )
+    if args.watch is not None and args.watch <= 0:
+        parser.error("--watch must be > 0 when provided.")
+    if args.watch is not None and not (args.status or args.status_json):
+        parser.error("--watch requires --status or --status-json.")
 
     root = Path.cwd()
     try:
@@ -6101,6 +6353,8 @@ def main() -> None:
             sys.exit(1)
     if args.gemini_list_models:
         sys.exit(run_gemini_list_models(root, run_id, dirs))
+    if args.status or args.status_json:
+        sys.exit(run_status_loop(run_id, dirs, args))
 
     cfg = RunnerConfig(
         dry_run=args.dry_run,
@@ -6227,12 +6481,50 @@ def main() -> None:
             run_phase(dirs, cfg)
         except Exception as exc:
             logger.error("Phase %s failed: %s", phase, exc)
+            failed_counts = gather_phase_counts(dirs[phase])
+            failed_raw = failed_counts.get("raw", {})
+            logger.info(
+                "PHASE_DONE phase=%s status=FAIL raw_ok=%s raw_failed=%s raw_total=%s norm=%s qa=%s",
+                phase,
+                int(failed_raw.get("ok", 0)),
+                int(failed_raw.get("failed", 0)),
+                int(failed_raw.get("total", 0)),
+                int(failed_counts.get("norm", 0)),
+                int(failed_counts.get("qa", 0)),
+            )
             write_phase_coverage_manifest(phase, dirs[phase])
             write_coverage_rollup(root, dirs, run_id)
             write_resume_proof(dirs, run_id, phases)
             sys.exit(1)
         phase_finished_at = now_iso()
         counts = gather_phase_counts(dirs[phase])
+        raw_stats = counts.get("raw", {})
+        phase_reasons: List[str] = []
+        if counts["inputs"] == 0:
+            phase_reasons.append("inputs directory is empty.")
+        if counts["raw"]["total"] == 0:
+            phase_reasons.append("raw directory has no artifacts.")
+        if counts["norm"] == 0:
+            phase_reasons.append("norm directory has no json artifacts.")
+        if counts["qa"] == 0:
+            phase_reasons.append("qa directory has no artifacts.")
+        phase_has_any = (
+            counts["inputs"] > 0
+            or counts["raw"]["total"] > 0
+            or counts["norm"] > 0
+            or counts["qa"] > 0
+        )
+        phase_status = _phase_status_badge(counts, phase_reasons, "UNKNOWN", phase_has_any)
+        logger.info(
+            "PHASE_DONE phase=%s status=%s raw_ok=%s raw_failed=%s raw_total=%s norm=%s qa=%s",
+            phase,
+            phase_status,
+            int(raw_stats.get("ok", 0)),
+            int(raw_stats.get("failed", 0)),
+            int(raw_stats.get("total", 0)),
+            int(counts.get("norm", 0)),
+            int(counts.get("qa", 0)),
+        )
         write_phase_coverage_manifest(phase, dirs[phase])
         write_coverage_rollup(root, dirs, run_id)
         write_resume_proof(dirs, run_id, phases)
