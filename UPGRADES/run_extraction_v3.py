@@ -27,10 +27,28 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 import requests
 try:
     from rich.console import Console
+    from rich.panel import Panel
+    from rich.progress import (
+        BarColumn,
+        MofNCompleteColumn,
+        Progress,
+        SpinnerColumn,
+        TextColumn,
+        TimeElapsedColumn,
+    )
     from rich.table import Table
+    from rich.text import Text
 except Exception:  # pragma: no cover - optional rich rendering
     Console = None  # type: ignore[assignment]
+    Panel = None  # type: ignore[assignment]
+    Progress = None  # type: ignore[assignment]
+    SpinnerColumn = None  # type: ignore[assignment]
+    BarColumn = None  # type: ignore[assignment]
+    MofNCompleteColumn = None  # type: ignore[assignment]
+    TimeElapsedColumn = None  # type: ignore[assignment]
+    TextColumn = None  # type: ignore[assignment]
     Table = None  # type: ignore[assignment]
+    Text = None  # type: ignore[assignment]
 
 # --- Configuration & Constants ---
 
@@ -388,6 +406,380 @@ class RunContext:
     source: str
     latest_file: Path
     latest_written: bool
+
+
+@dataclass(frozen=True)
+class UiConfig:
+    mode: str = "auto"  # auto|rich|plain
+    quiet: bool = False
+    jsonl_events: bool = False
+
+
+class UI:
+    def __init__(self, cfg: UiConfig, run_root: Path, run_id: str):
+        self.cfg = cfg
+        self.run_root = run_root
+        self.run_id = run_id
+        self._stdout_is_tty = sys.stdout.isatty()
+        self._console: Optional[Any] = None
+        self._progress: Optional[Any] = None
+        self._task_id: Optional[int] = None
+        self._progress_total = 0
+        self._rich = False
+
+        requested = cfg.mode
+        want_rich = requested == "rich" or (requested == "auto" and self._stdout_is_tty)
+        if want_rich and Console is not None and Progress is not None:
+            self._console = Console(force_terminal=(requested == "rich"))
+            self._rich = True
+
+        self._events_path: Optional[Path] = None
+        if cfg.jsonl_events:
+            self._events_path = run_root / "events.jsonl"
+
+    def _emit_event(self, payload: Dict[str, Any]) -> None:
+        if self._events_path is None:
+            return
+        row = dict(payload)
+        row.setdefault("ts", now_iso())
+        row.setdefault("run_id", self.run_id)
+        row.setdefault("run_root", str(self.run_root.resolve()))
+        try:
+            self._events_path.parent.mkdir(parents=True, exist_ok=True)
+            with self._events_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(row, sort_keys=True, ensure_ascii=True) + "\n")
+        except Exception:
+            # UI event persistence must never alter execution flow.
+            return
+
+    def _print_plain(self, line: str) -> None:
+        print(line, flush=True)
+
+    def _summary_line(self, line: str) -> None:
+        if self._rich and self._console is not None:
+            self._console.print(line)
+        else:
+            self._print_plain(line)
+
+    def step_progress_stop(self) -> None:
+        if self._progress is not None:
+            self._progress.stop()
+            self._progress = None
+            self._task_id = None
+            self._progress_total = 0
+
+    def phase_start(
+        self,
+        phase: str,
+        phase_dir: Path,
+        inventory: int,
+        partitions: int,
+        provider: str,
+        model_id: str,
+        workers: int,
+        flags: str,
+    ) -> None:
+        self._emit_event(
+            {
+                "type": "phase_start",
+                "phase": phase,
+                "phase_dir": str(phase_dir.resolve()),
+                "inventory": inventory,
+                "partitions": partitions,
+                "provider": provider,
+                "model_id": model_id,
+                "workers": workers,
+                "flags": flags,
+            }
+        )
+        if self.cfg.quiet:
+            return
+        if self._rich and self._console is not None and Panel is not None and Text is not None:
+            body = Text()
+            body.append(f"run={self.run_id}\n")
+            body.append(f"phase={phase}\n")
+            body.append(f"phase_dir={phase_dir.resolve()}\n")
+            body.append(f"inventory={inventory} partitions={partitions}\n")
+            body.append(f"provider={provider} model={model_id} workers={workers}\n")
+            body.append(f"flags={flags}")
+            self._console.print(Panel(body, title=f"Phase {phase}", expand=False))
+            return
+        self._print_plain(
+            (
+                f"PHASE_START phase={phase} run_id={self.run_id} phase_dir={phase_dir.resolve()} "
+                f"inventory={inventory} partitions={partitions} provider={provider} model={model_id} "
+                f"workers={workers} flags={flags}"
+            )
+        )
+
+    def phase_inputs_provenance(
+        self,
+        phase: str,
+        inventory_meta: Dict[str, Any],
+        partitions_meta: Dict[str, Any],
+    ) -> None:
+        self._emit_event(
+            {
+                "type": "phase_inputs_provenance",
+                "phase": phase,
+                "inventory": inventory_meta,
+                "partitions": partitions_meta,
+            }
+        )
+        if self.cfg.quiet:
+            return
+        inv_size = int(inventory_meta.get("size", 0))
+        part_size = int(partitions_meta.get("size", 0))
+        if self._rich and self._console is not None:
+            self._console.print(
+                f"inputs_written phase={phase} inventory_bytes={inv_size} partitions_bytes={part_size}"
+            )
+            return
+        self._print_plain(
+            f"PHASE_INPUTS phase={phase} inventory_bytes={inv_size} partitions_bytes={part_size}"
+        )
+
+    def step_start(
+        self,
+        phase: str,
+        step_id: str,
+        prompt_path: Path,
+        outputs: Tuple[str, ...],
+        partitions_total: int,
+        provider: str,
+        model_id: str,
+    ) -> None:
+        self._emit_event(
+            {
+                "type": "step_start",
+                "phase": phase,
+                "step": step_id,
+                "prompt": str(prompt_path.resolve()),
+                "outputs": list(outputs),
+                "partitions_total": partitions_total,
+                "provider": provider,
+                "model_id": model_id,
+            }
+        )
+        if self.cfg.quiet:
+            return
+        if self._rich and self._console is not None and TextColumn is not None:
+            self.step_progress_stop()
+            self._progress = Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                MofNCompleteColumn(),
+                TimeElapsedColumn(),
+                TextColumn("ok={task.fields[ok]} fail={task.fields[failed]} skip={task.fields[skipped]} retry={task.fields[retried]}"),
+                console=self._console,
+                transient=True,
+            )
+            self._progress.start()
+            self._progress_total = max(0, int(partitions_total))
+            total = max(1, self._progress_total)
+            self._task_id = self._progress.add_task(
+                f"{phase}:{step_id}",
+                total=total,
+                ok=0,
+                failed=0,
+                skipped=0,
+                retried=0,
+            )
+            return
+        self._print_plain(
+            (
+                f"STEP_START phase={phase} step={step_id} partitions={partitions_total} "
+                f"prompt={prompt_path.name} outputs={list(outputs)} provider={provider} model={model_id}"
+            )
+        )
+
+    def partition_result(
+        self,
+        phase: str,
+        step_id: str,
+        completed: int,
+        total: int,
+        ok: int,
+        failed: int,
+        skipped: int,
+        retried: int,
+    ) -> None:
+        self._emit_event(
+            {
+                "type": "partition_result",
+                "phase": phase,
+                "step": step_id,
+                "completed": completed,
+                "total": total,
+                "ok": ok,
+                "failed": failed,
+                "skipped": skipped,
+                "retried": retried,
+            }
+        )
+        if self.cfg.quiet:
+            return
+        if self._rich and self._progress is not None and self._task_id is not None:
+            bounded_total = max(1, total)
+            self._progress.update(self._task_id, total=bounded_total)
+            self._progress.update(
+                self._task_id,
+                completed=min(completed, bounded_total),
+                ok=ok,
+                failed=failed,
+                skipped=skipped,
+                retried=retried,
+            )
+
+    def step_done(
+        self,
+        phase: str,
+        step_id: str,
+        partitions_total: int,
+        ok: int,
+        failed: int,
+        retries: int,
+        skipped: int,
+        elapsed_ms: int,
+        norm_written: int,
+        qa_file: str,
+    ) -> None:
+        self.step_progress_stop()
+        self._emit_event(
+            {
+                "type": "step_done",
+                "phase": phase,
+                "step": step_id,
+                "partitions_total": partitions_total,
+                "ok": ok,
+                "failed": failed,
+                "retries": retries,
+                "skipped": skipped,
+                "elapsed_ms": elapsed_ms,
+                "norm_written": norm_written,
+                "qa_file": qa_file,
+            }
+        )
+        self._summary_line(
+            (
+                f"STEP_DONE phase={phase} step={step_id} ok={ok} failed={failed} "
+                f"retries={retries} skipped={skipped} elapsed_ms={elapsed_ms} "
+                f"norm_written={norm_written} qa_file={qa_file}"
+            )
+        )
+
+    def phase_done(
+        self,
+        phase: str,
+        status: str,
+        raw_ok: int,
+        raw_failed: int,
+        raw_total: int,
+        norm_count: int,
+        qa_count: int,
+        phase_dir: Path,
+    ) -> None:
+        self.step_progress_stop()
+        self._emit_event(
+            {
+                "type": "phase_done",
+                "phase": phase,
+                "status": status,
+                "raw_ok": raw_ok,
+                "raw_failed": raw_failed,
+                "raw_total": raw_total,
+                "norm_count": norm_count,
+                "qa_count": qa_count,
+                "phase_dir": str(phase_dir.resolve()),
+            }
+        )
+        self._summary_line(
+            (
+                f"PHASE_DONE phase={phase} status={status} raw_ok={raw_ok} raw_failed={raw_failed} "
+                f"raw_total={raw_total} norm={norm_count} qa={qa_count} phase_dir={phase_dir.resolve()}"
+            )
+        )
+
+    def verify_result(
+        self,
+        phase: str,
+        status: str,
+        counts: Dict[str, Any],
+        reasons: List[str],
+        phase_dir: Path,
+    ) -> None:
+        self._emit_event(
+            {
+                "type": "verify_result",
+                "phase": phase,
+                "status": status,
+                "counts": counts,
+                "reasons": reasons,
+                "phase_dir": str(phase_dir.resolve()),
+            }
+        )
+
+    def status_table(self, payload: Dict[str, Any], clear: bool = False) -> None:
+        self._emit_event({"type": "status_snapshot", "payload": payload})
+        if self._rich and Table is not None and self._console is not None:
+            if clear:
+                self._console.clear()
+            summary = payload.get("summary", {})
+            self._console.print(
+                (
+                    f"run={payload.get('run_id')} run_dir={payload.get('run_dir')} "
+                    f"PASS={summary.get('PASS', 0)} FAIL={summary.get('FAIL', 0)} "
+                    f"IN_PROGRESS={summary.get('IN_PROGRESS', 0)} NOT_STARTED={summary.get('NOT_STARTED', 0)}"
+                )
+            )
+            table = Table(show_header=True, header_style="bold")
+            table.add_column("Phase")
+            table.add_column("Status")
+            table.add_column("Inputs")
+            table.add_column("Raw (ok/failed/total)")
+            table.add_column("Norm")
+            table.add_column("QA")
+            table.add_column("Last Modified (UTC)")
+            table.add_column("Phase Dir")
+            for phase in PHASES:
+                row = payload.get("phases", {}).get(phase, {})
+                table.add_row(
+                    phase,
+                    str(row.get("status", "UNKNOWN")),
+                    str(row.get("inputs_count", 0)),
+                    f"{row.get('raw_ok', 0)}/{row.get('raw_failed_sidecars', 0)}/{row.get('raw_total', 0)}",
+                    str(row.get("norm_count", 0)),
+                    str(row.get("qa_count", 0)),
+                    str(row.get("last_modified") or "-"),
+                    str(row.get("phase_dir") or "-"),
+                )
+            self._console.print(table)
+            return
+
+        if clear and self._stdout_is_tty:
+            self._print_plain("\033[2J\033[H")
+        summary = payload.get("summary", {})
+        self._print_plain(
+            (
+                f"run={payload.get('run_id')} run_dir={payload.get('run_dir')} "
+                f"PASS={summary.get('PASS', 0)} FAIL={summary.get('FAIL', 0)} "
+                f"IN_PROGRESS={summary.get('IN_PROGRESS', 0)} NOT_STARTED={summary.get('NOT_STARTED', 0)}"
+            )
+        )
+        self._print_plain(
+            "phase status inputs raw_ok raw_failed raw_total norm qa last_modified_utc phase_dir"
+        )
+        for phase in PHASES:
+            row = payload.get("phases", {}).get(phase, {})
+            self._print_plain(
+                (
+                    f"{phase} {row.get('status', 'UNKNOWN')} {row.get('inputs_count', 0)} "
+                    f"{row.get('raw_ok', 0)} {row.get('raw_failed_sidecars', 0)} {row.get('raw_total', 0)} "
+                    f"{row.get('norm_count', 0)} {row.get('qa_count', 0)} {row.get('last_modified') or '-'} "
+                    f"{row.get('phase_dir') or '-'}"
+                )
+            )
 
 
 @dataclass
@@ -1351,6 +1743,10 @@ def write_run_manifest(
             "doctor_auth": args.doctor_auth,
             "preflight_providers": args.preflight_providers,
             "coverage_report": args.coverage_report,
+            "ui": args.ui,
+            "quiet": args.quiet,
+            "jsonl_events": args.jsonl_events,
+            "pretty": args.pretty,
             "print_promptpack": args.print_promptpack,
             "verify_phase_output": args.verify_phase_output,
             "print_config": args.print_config,
@@ -4326,6 +4722,7 @@ def execute_step_for_partitions(
     partitions: List[Dict[str, Any]],
     phase_dir: Path,
     cfg: RunnerConfig,
+    ui: Optional[UI] = None,
 ) -> Dict[str, int]:
     step_id = prompt_spec.step_id
     prompt_path = prompt_spec.prompt_path
@@ -4358,6 +4755,16 @@ def execute_step_for_partitions(
         prompt_path.name,
         list(output_artifacts),
     )
+    if ui is not None:
+        ui.step_start(
+            phase=phase,
+            step_id=step_id,
+            prompt_path=prompt_path,
+            outputs=output_artifacts,
+            partitions_total=len(partitions),
+            provider=provider,
+            model_id=model_id,
+        )
     resume_skipped = 0
     step_success_count = 0
     step_auth_failures = 0
@@ -4367,6 +4774,11 @@ def execute_step_for_partitions(
     step_retry_count = 0
     started_at = time.time()
     workers = max(1, min(16, int(cfg.partition_workers)))
+    ui_completed = 0
+    ui_ok = 0
+    ui_failed = 0
+    ui_skipped = 0
+    ui_retried = 0
 
     def _append_log(logs: List[Tuple[str, str]], level: str, message: str) -> None:
         logs.append((level, message))
@@ -4391,6 +4803,30 @@ def execute_step_for_partitions(
             elif op["kind"] == "unlink_if_exists":
                 if op_path.exists():
                     op_path.unlink()
+
+    def _ui_record_result(result: PartitionExecResult) -> None:
+        nonlocal ui_completed, ui_ok, ui_failed, ui_skipped, ui_retried
+        if ui is None:
+            return
+        ui_completed += 1
+        if result.success:
+            ui_ok += 1
+        ui_failed += int(result.failed_delta)
+        if result.resume_skipped:
+            ui_skipped += 1
+        retry_trace = result.request_meta.get("retry_trace")
+        if isinstance(retry_trace, list):
+            ui_retried += max(0, len(retry_trace) - 1)
+        ui.partition_result(
+            phase=phase,
+            step_id=step_id,
+            completed=ui_completed,
+            total=len(partitions),
+            ok=ui_ok,
+            failed=ui_failed,
+            skipped=ui_skipped,
+            retried=ui_retried,
+        )
 
     def _worker_exception_result(
         partition_id: str,
@@ -4891,6 +5327,7 @@ def execute_step_for_partitions(
                     out_failed_json=out_failed_json,
                     exc=exc,
                 )
+            _ui_record_result(results_by_partition[partition_id])
     else:
         with ThreadPoolExecutor(max_workers=workers) as executor:
             future_map = {executor.submit(_run_one_partition, partition): partition for partition in ordered_partitions}
@@ -4910,6 +5347,7 @@ def execute_step_for_partitions(
                         out_failed_json=out_failed_json,
                         exc=exc,
                     )
+                _ui_record_result(results_by_partition[partition_id])
 
     for partition in ordered_partitions:
         partition_id = str(partition["id"])
@@ -4925,6 +5363,7 @@ def execute_step_for_partitions(
                 out_failed_json=out_failed_json,
                 exc=RuntimeError("missing partition result"),
             )
+            _ui_record_result(result)
 
         if result.resume_skipped:
             _apply_write_ops(result.write_ops)
@@ -4949,6 +5388,8 @@ def execute_step_for_partitions(
                         logger.error("%s", message)
                     else:
                         logger.info("%s", message)
+                if ui is not None:
+                    ui.step_progress_stop()
                 raise RuntimeError(
                     f"Fail-fast auth triggered for step {step_id} partition {partition_id}. "
                     f"failure_type={result.request_meta.get('failure_type')} provider={provider} "
@@ -5006,6 +5447,8 @@ def execute_step_for_partitions(
         elapsed_ms,
         workers,
     )
+    if ui is not None:
+        ui.step_progress_stop()
     return {
         "partitions_total": len(ordered_partitions),
         "resume_skipped": resume_skipped,
@@ -5026,6 +5469,7 @@ def _run_phase_inner(
     collector: Optional[Collector],
     targets: Optional[List[str]],
     precollected_items: Optional[List[Dict[str, Any]]] = None,
+    ui: Optional[UI] = None,
 ) -> None:
     phase_started_epoch = time.time()
     logger.info("--- Phase %s ---", phase)
@@ -5079,27 +5523,28 @@ def _run_phase_inner(
             "partitions": partitions,
         },
     )
-    if cfg.debug_phase_inputs or cfg.fail_fast_missing_inputs:
-        inventory_path = phase_dir / "inputs" / "INVENTORY.json"
-        partitions_path = phase_dir / "inputs" / "PARTITIONS.json"
-        inventory_meta = _phase_input_stat(inventory_path)
-        partitions_meta = _phase_input_stat(partitions_path)
-        if cfg.debug_phase_inputs:
-            logger.info(
-                "PHASE_INPUTS_PROVENANCE phase=%s phase_dir=%s INVENTORY=%s PARTITIONS=%s",
-                phase,
-                str(phase_dir.resolve()),
-                json.dumps(inventory_meta, sort_keys=True, separators=(",", ":")),
-                json.dumps(partitions_meta, sort_keys=True, separators=(",", ":")),
-            )
-        if cfg.fail_fast_missing_inputs and (
-            not inventory_meta["exists"] or not partitions_meta["exists"]
-        ):
-            raise RuntimeError(
-                "Phase inputs missing after write. "
-                f"phase={phase} run_id={phase_dir.parent.name} phase_dir={phase_dir.resolve()} "
-                f"inventory={inventory_meta} partitions={partitions_meta}"
-            )
+    inventory_path = phase_dir / "inputs" / "INVENTORY.json"
+    partitions_path = phase_dir / "inputs" / "PARTITIONS.json"
+    inventory_meta = _phase_input_stat(inventory_path)
+    partitions_meta = _phase_input_stat(partitions_path)
+    if cfg.debug_phase_inputs:
+        logger.info(
+            "PHASE_INPUTS_PROVENANCE phase=%s phase_dir=%s INVENTORY=%s PARTITIONS=%s",
+            phase,
+            str(phase_dir.resolve()),
+            json.dumps(inventory_meta, sort_keys=True, separators=(",", ":")),
+            json.dumps(partitions_meta, sort_keys=True, separators=(",", ":")),
+        )
+    if ui is not None:
+        ui.phase_inputs_provenance(phase, inventory_meta, partitions_meta)
+    if cfg.fail_fast_missing_inputs and (
+        not inventory_meta["exists"] or not partitions_meta["exists"]
+    ):
+        raise RuntimeError(
+            "Phase inputs missing after write. "
+            f"phase={phase} run_id={phase_dir.parent.name} phase_dir={phase_dir.resolve()} "
+            f"inventory={inventory_meta} partitions={partitions_meta}"
+        )
 
     logger.info(
         "Phase %s inventory=%s partitions=%s max_files=%s max_chars=%s",
@@ -5110,6 +5555,10 @@ def _run_phase_inner(
         cfg.max_chars,
     )
     provider, model_id, _ = MODEL_ROUTING.get(phase, ("xai", "grok-code-fast-1", "XAI_API_KEY"))
+    ui_flags = (
+        f"resume:{cfg.resume},dry_run:{cfg.dry_run},debug_phase_inputs:{cfg.debug_phase_inputs},"
+        f"fail_fast_auth:{cfg.fail_fast_auth}"
+    )
     logger.info(
         "PHASE_HEADER phase=%s run_id=%s phase_dir=%s inventory=%s partitions=%s max_files=%s "
         "max_chars=%s max_request_bytes=%s provider=%s model=%s flags=resume:%s,dry_run:%s,debug_phase_inputs:%s,fail_fast_auth:%s",
@@ -5128,6 +5577,17 @@ def _run_phase_inner(
         cfg.debug_phase_inputs,
         cfg.fail_fast_auth,
     )
+    if ui is not None:
+        ui.phase_start(
+            phase=phase,
+            phase_dir=phase_dir,
+            inventory=len(inventory),
+            partitions=len(partitions),
+            provider=provider,
+            model_id=model_id,
+            workers=cfg.partition_workers,
+            flags=ui_flags,
+        )
 
     phase_auth_failures = 0
     for prompt_spec in prompts:
@@ -5161,6 +5621,7 @@ def _run_phase_inner(
             partitions=partitions,
             phase_dir=phase_dir,
             cfg=cfg,
+            ui=ui,
         )
         phase_auth_failures += int(step_stats.get("auth_failures", 0))
         if phase_auth_failures >= cfg.phase_auth_fail_threshold:
@@ -5188,6 +5649,23 @@ def _run_phase_inner(
             len(qa_payload.get("written_files", [])) if isinstance(qa_payload.get("written_files"), list) else 0,
             f"{prompt_spec.step_id}_QA.json",
         )
+        if ui is not None:
+            ui.step_done(
+                phase=phase,
+                step_id=prompt_spec.step_id,
+                partitions_total=int(step_stats.get("partitions_total", 0)),
+                ok=int(step_stats.get("ok", 0)),
+                failed=int(step_stats.get("failed", 0)),
+                retries=int(step_stats.get("retries", 0)),
+                skipped=int(step_stats.get("resume_skipped", 0)),
+                elapsed_ms=int(step_stats.get("elapsed_ms", 0)),
+                norm_written=(
+                    len(qa_payload.get("written_files", []))
+                    if isinstance(qa_payload.get("written_files"), list)
+                    else 0
+                ),
+                qa_file=f"{prompt_spec.step_id}_QA.json",
+            )
     logger.info(
         "PHASE_EXECUTION_DONE phase=%s elapsed_ms=%s auth_failures=%s",
         phase,
@@ -5241,10 +5719,22 @@ def gather_phase_counts(phase_dir: Path) -> Dict[str, Any]:
     }
 
 
-def _verify_single_phase(phase: str, dirs: Dict[str, Path]) -> Tuple[int, Dict[str, Any], List[str]]:
+def _verify_single_phase(
+    phase: str,
+    dirs: Dict[str, Path],
+    ui: Optional[UI] = None,
+) -> Tuple[int, Dict[str, Any], List[str]]:
     phase_dir = dirs.get(phase)
     if not phase_dir or not phase_dir.exists():
         print(f"VERIFY PHASE {phase}: MISSING DIRECTORY")
+        if ui is not None:
+            ui.verify_result(
+                phase=phase,
+                status="MISSING",
+                counts={},
+                reasons=[f"Phase directory {phase} is missing."],
+                phase_dir=dirs.get(phase, Path(".")),
+            )
         return 3, {}, [f"Phase directory {phase} is missing."]
 
     counts = gather_phase_counts(phase_dir)
@@ -5270,13 +5760,22 @@ def _verify_single_phase(phase: str, dirs: Dict[str, Path]) -> Tuple[int, Dict[s
         for reason in reasons:
             print(f"    {reason}")
 
+    if ui is not None:
+        ui.verify_result(
+            phase=phase,
+            status=status,
+            counts=counts,
+            reasons=reasons,
+            phase_dir=phase_dir,
+        )
+
     return (0 if status == "PASS" else 2), counts, reasons
 
 
-def verify_phase_output(dirs: Dict[str, Path], phases: List[str]) -> int:
+def verify_phase_output(dirs: Dict[str, Path], phases: List[str], ui: Optional[UI] = None) -> int:
     return_code = 0
     for phase in phases:
-        code, _, _ = _verify_single_phase(phase, dirs)
+        code, _, _ = _verify_single_phase(phase, dirs, ui=ui)
         return_code = max(return_code, code)
     return return_code
 
@@ -5434,9 +5933,14 @@ def print_status_human(payload: Dict[str, Any], use_rich: bool, clear: bool = Fa
         )
 
 
-def run_status_loop(run_id: str, dirs: Dict[str, Path], args: argparse.Namespace) -> int:
+def run_status_loop(
+    run_id: str,
+    dirs: Dict[str, Path],
+    args: argparse.Namespace,
+    ui: Optional[UI] = None,
+) -> int:
     interval = float(args.watch) if args.watch is not None else 0.0
-    use_rich = bool((args.pretty or sys.stdout.isatty()) and not args.status_json)
+    status_ui = ui if ui is not None else UI(UiConfig(mode="auto"), dirs["root"], run_id)
 
     def _emit_once(clear: bool = False) -> None:
         payload = phase_status_snapshot(run_id, dirs, PHASES)
@@ -5444,7 +5948,7 @@ def run_status_loop(run_id: str, dirs: Dict[str, Path], args: argparse.Namespace
             if args.status_json:
                 print(json.dumps(payload, indent=2, ensure_ascii=True))
             else:
-                print_status_human(payload, use_rich=use_rich, clear=clear)
+                status_ui.status_table(payload, clear=clear)
         except BrokenPipeError:
             raise
 
@@ -5865,6 +6369,10 @@ def print_config(
             "doctor_auth": args.doctor_auth,
             "preflight_providers": args.preflight_providers,
             "coverage_report": args.coverage_report,
+            "ui": args.ui,
+            "quiet": args.quiet,
+            "jsonl_events": args.jsonl_events,
+            "pretty": args.pretty,
             "print_promptpack": args.print_promptpack,
             "print_config": args.print_config,
             "run_id_override": args.run_id,
@@ -6051,7 +6559,7 @@ def _ensure_required_norm_artifact_groups(dirs: Dict[str, Path]) -> List[str]:
     return missing
 
 
-def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     excludes = [
         ".git",
         "node_modules",
@@ -6095,10 +6603,10 @@ def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
         ".claude.json",
         ".taskxroot",
     ]
-    _run_phase_inner("A", dirs, cfg, collector, targets)
+    _run_phase_inner("A", dirs, cfg, collector, targets, ui=ui)
 
 
-def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     home = Path.home()
     excludes = [
         "Downloads",
@@ -6116,47 +6624,47 @@ def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     items = collector.collect(subdirs=HOME_SAFE_ROOTS)
     if cfg.home_scan_mode == "safe":
         items = home_safe_filter(items, home)
-    _run_phase_inner("H", dirs, cfg, None, None, precollected_items=items)
+    _run_phase_inner("H", dirs, cfg, None, None, precollected_items=items, ui=ui)
 
 
-def run_phase_C(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_C(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules", "venv", ".venv", "docs", "test-results"])
     targets = ["src", "services", "shared", "plugins", "tools", "scripts", "tests"]
-    _run_phase_inner("C", dirs, cfg, collector, targets)
+    _run_phase_inner("C", dirs, cfg, collector, targets, ui=ui)
 
 
-def run_phase_D(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_D(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     collector = Collector(Path.cwd(), [".git"])
-    _run_phase_inner("D", dirs, cfg, collector, ["docs"])
+    _run_phase_inner("D", dirs, cfg, collector, ["docs"], ui=ui)
 
 
-def run_phase_E(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_E(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules", "docs"])
     targets = ["scripts", "tools", "compose", ".github", "Makefile", "package.json"]
-    _run_phase_inner("E", dirs, cfg, collector, targets)
+    _run_phase_inner("E", dirs, cfg, collector, targets, ui=ui)
 
 
-def run_phase_W(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_W(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules"])
-    _run_phase_inner("W", dirs, cfg, collector, ["docs", "scripts", "src", "services"])
+    _run_phase_inner("W", dirs, cfg, collector, ["docs", "scripts", "src", "services"], ui=ui)
 
 
-def run_phase_B(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_B(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules"])
-    _run_phase_inner("B", dirs, cfg, collector, ["src", "services", "docs"])
+    _run_phase_inner("B", dirs, cfg, collector, ["src", "services", "docs"], ui=ui)
 
 
-def run_phase_G(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_G(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules"])
-    _run_phase_inner("G", dirs, cfg, collector, [".github", "docs", ".claude", "AGENTS.md"])
+    _run_phase_inner("G", dirs, cfg, collector, [".github", "docs", ".claude", "AGENTS.md"], ui=ui)
 
 
-def run_phase_Q(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_Q(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     items = collect_phase_artifacts(dirs, ["A", "H", "D", "C", "E", "W", "B", "G"], ["raw", "norm", "qa"])
-    _run_phase_inner("Q", dirs, cfg, None, None, precollected_items=items)
+    _run_phase_inner("Q", dirs, cfg, None, None, precollected_items=items, ui=ui)
 
 
-def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     missing = _ensure_required_norm_artifact_groups(dirs)
     if missing:
         raise RuntimeError(
@@ -6172,10 +6680,10 @@ def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
             input_files.extend(sorted(phase_norm.glob("*.md")))
 
     deduped_inputs = sorted(set(input_files), key=lambda path: str(path))
-    _run_phase_inner("R", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs))
+    _run_phase_inner("R", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs), ui=ui)
 
 
-def run_phase_X(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_X(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     r_norm = dirs["R"] / "norm"
     r_inputs: List[Path] = []
     if r_norm.exists():
@@ -6183,22 +6691,22 @@ def run_phase_X(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
         r_inputs.extend(sorted(r_norm.glob("*.md")))
     if not r_inputs:
         raise RuntimeError(f"Phase X requires R norm outputs at {r_norm}")
-    _run_phase_inner("X", dirs, cfg, None, None, precollected_items=to_items(r_inputs))
+    _run_phase_inner("X", dirs, cfg, None, None, precollected_items=to_items(r_inputs), ui=ui)
 
 
-def run_phase_T(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_T(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     input_files: List[Path] = []
     for phase in ["R", "X"]:
         norm_dir = dirs[phase] / "norm"
         if norm_dir.exists():
             input_files.extend(sorted(norm_dir.glob("*.json")))
             input_files.extend(sorted(norm_dir.glob("*.md")))
-    _run_phase_inner("T", dirs, cfg, None, None, precollected_items=to_items(input_files))
+    _run_phase_inner("T", dirs, cfg, None, None, precollected_items=to_items(input_files), ui=ui)
 
 
-def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     final_items = collect_phase_artifacts(dirs, ["R", "X", "T"], ["raw", "norm", "qa"])
-    _run_phase_inner("Z", dirs, cfg, None, None, precollected_items=final_items)
+    _run_phase_inner("Z", dirs, cfg, None, None, precollected_items=final_items, ui=ui)
 
 
 # --- Master Orchestrator ---
@@ -6261,9 +6769,12 @@ def main() -> None:
     parser.add_argument("--doctor-auth", action="store_true")
     parser.add_argument("--preflight-providers", action="store_true")
     parser.add_argument("--coverage-report", action="store_true")
+    parser.add_argument("--ui", choices=["auto", "rich", "plain"], default="auto")
     parser.add_argument("--status", action="store_true")
     parser.add_argument("--status-json", action="store_true")
     parser.add_argument("--watch", type=float)
+    parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--jsonl-events", action="store_true")
     parser.add_argument("--pretty", action="store_true")
     parser.add_argument("--print-promptpack", action="store_true")
     parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
@@ -6279,6 +6790,8 @@ def main() -> None:
     promptgen_group.add_argument("--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR)
     args = parser.parse_args()
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
+    if args.pretty and args.ui == "auto":
+        args.ui = "rich"
     apply_model_overrides(args.gemini_model_id)
 
     if not (
@@ -6314,6 +6827,16 @@ def main() -> None:
     except Exception as exc:
         logger.error("Setup failed: %s", exc)
         sys.exit(1)
+
+    ui = UI(
+        UiConfig(
+            mode=str(args.ui),
+            quiet=bool(args.quiet),
+            jsonl_events=bool(args.jsonl_events),
+        ),
+        dirs["root"],
+        run_id,
+    )
 
     if args.promptgen_scan:
         started = time.time()
@@ -6354,7 +6877,7 @@ def main() -> None:
     if args.gemini_list_models:
         sys.exit(run_gemini_list_models(root, run_id, dirs))
     if args.status or args.status_json:
-        sys.exit(run_status_loop(run_id, dirs, args))
+        sys.exit(run_status_loop(run_id, dirs, args, ui=ui))
 
     cfg = RunnerConfig(
         dry_run=args.dry_run,
@@ -6434,7 +6957,7 @@ def main() -> None:
 
     if args.verify_phase_output:
         verify_targets = PHASES if args.verify_phase_output == "ALL" else [args.verify_phase_output]
-        sys.exit(verify_phase_output(dirs, verify_targets))
+        sys.exit(verify_phase_output(dirs, verify_targets, ui=ui))
 
     if args.doctor:
         targets = phase_sequence if phase_sequence else PHASES
@@ -6478,7 +7001,7 @@ def main() -> None:
             logger.warning("Unknown phase: %s", phase)
             continue
         try:
-            run_phase(dirs, cfg)
+            run_phase(dirs, cfg, ui=ui)
         except Exception as exc:
             logger.error("Phase %s failed: %s", phase, exc)
             failed_counts = gather_phase_counts(dirs[phase])
@@ -6491,6 +7014,16 @@ def main() -> None:
                 int(failed_raw.get("total", 0)),
                 int(failed_counts.get("norm", 0)),
                 int(failed_counts.get("qa", 0)),
+            )
+            ui.phase_done(
+                phase=phase,
+                status="FAIL",
+                raw_ok=int(failed_raw.get("ok", 0)),
+                raw_failed=int(failed_raw.get("failed", 0)),
+                raw_total=int(failed_raw.get("total", 0)),
+                norm_count=int(failed_counts.get("norm", 0)),
+                qa_count=int(failed_counts.get("qa", 0)),
+                phase_dir=dirs[phase],
             )
             write_phase_coverage_manifest(phase, dirs[phase])
             write_coverage_rollup(root, dirs, run_id)
@@ -6524,6 +7057,16 @@ def main() -> None:
             int(raw_stats.get("total", 0)),
             int(counts.get("norm", 0)),
             int(counts.get("qa", 0)),
+        )
+        ui.phase_done(
+            phase=phase,
+            status=phase_status,
+            raw_ok=int(raw_stats.get("ok", 0)),
+            raw_failed=int(raw_stats.get("failed", 0)),
+            raw_total=int(raw_stats.get("total", 0)),
+            norm_count=int(counts.get("norm", 0)),
+            qa_count=int(counts.get("qa", 0)),
+            phase_dir=dirs[phase],
         )
         write_phase_coverage_manifest(phase, dirs[phase])
         write_coverage_rollup(root, dirs, run_id)
