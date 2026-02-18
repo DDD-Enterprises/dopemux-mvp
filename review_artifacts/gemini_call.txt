@@ -1,7 +1,0 @@
-{
-  "provider_signature": "provider=gemini;model=gemini-3-flash-preview;host=generativelanguage.googleapis.com;path=/v1beta/openai/chat/completions;auth_mode=bearer",
-  "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-  "model_id": "gemini-3-flash-preview",
-  "status_code": 400,
-  "error_excerpt": "[{\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"API Key not found. Please pass a valid API key.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"API_KEY_INVALID\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"service\": \"generativelanguage.googleapis.com\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.LocalizedMessage\",\n        \"locale\": \"en-US\",\n        \"message\": \"API Key not found. Please pass a valid API key.\"\n      }\n    ]\n  }\n}\n]"
-}
