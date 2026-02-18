@@ -64,23 +64,7 @@ ALLOWED_ORIGINS = [
     ).split(",") if o.strip()
 ]
 
-# CORS configuration
-ALLOWED_ORIGINS = [
-    o.strip() for o in os.getenv(
-        "ALLOWED_ORIGINS",
-        "http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097"
-    ).split(",") if o.strip()
-]
 
-# CORS configuration
-ALLOWED_ORIGINS = [
-    o.strip() for o in os.getenv(
-        "ALLOWED_ORIGINS",
-        "http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097"
-    ).split(",") if o.strip()
-]
-
-# CORS configuration
 # ═══════════════════════════════════════════════════════════════════════════════
 # MCP Server (Inline to avoid import issues)
 # ═══════════════════════════════════════════════════════════════════════════════
