@@ -38,7 +38,12 @@ class Settings:
     conport_url: str = field(default_factory=lambda: os.getenv("CONPORT_URL", "http://conport:8005"))
     
     # Workspace
-    workspace_id: str = field(default_factory=lambda: os.getenv("WORKSPACE_ID", "/Users/hue/code/dopemux-mvp"))
+    workspace_id: str = field(
+        default_factory=lambda: os.getenv(
+            "WORKSPACE_ID",
+            os.getenv("DOPEMUX_WORKSPACE_ROOT", os.getcwd())
+        )
+    )
     
     # ADHD configuration
     adhd_config: Dict[str, Any] = field(default_factory=lambda: {
