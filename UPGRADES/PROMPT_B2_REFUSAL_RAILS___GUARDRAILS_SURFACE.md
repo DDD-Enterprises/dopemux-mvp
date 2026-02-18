@@ -1,6 +1,0 @@
-# PROMPT_B2 — REFUSAL RAILS / GUARDRAILS SURFACE
-
-TASK: Extract refusal rails and guardrails.
-
-OUTPUTS:
-	•	REFUSAL_GUARDRAILS_SURFACE.json
