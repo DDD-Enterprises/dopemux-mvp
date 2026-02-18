@@ -81,16 +81,6 @@ Full installs prompt for the secrets listed below and store them in a git-ignore
 - `TASK_ORCHESTRATOR_API_KEY` / `ADHD_ENGINE_API_KEY`
 - `LITELLM_DATABASE_URL` (defaults to the bundled Postgres DSN)
 
-Canonical key policy:
-- Set provider keys in repo-root `.env` only.
-- For Gemini, use `GEMINI_API_KEY` only as the source of truth.
-- Do not set `GOOGLE_API_KEY` in `.env`; Dopemux compatibility layers map from `GEMINI_API_KEY` when needed.
-
-Run a repo-wide key sweep at any time:
-```bash
-python3 scripts/env_key_sweep.py
-```
-
 Running `./install.sh --full --yes` expects these values to be present ahead of time either in `.env` or exported in your shell. The [API Key Setup Guide](#-api-key-setup-guide) below walks through generating each credential.
 
 ## 🔧 Complete Installation Tools & Services

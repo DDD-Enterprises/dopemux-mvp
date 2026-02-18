@@ -30,7 +30,6 @@ from enum import Enum
 
 import asyncio
 import logging
-import os
 
 import sys
 from pathlib import Path
@@ -616,8 +615,7 @@ class TaskCoordinator:
 
 # Example usage
 async def main():
-    workspace_id = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", str(Path.cwd())))
-    coordinator = TaskCoordinator(workspace_id=workspace_id)
+    coordinator = TaskCoordinator(workspace_id="/Users/hue/code/dopemux-mvp")
 
     # Sample tasks
     tasks = [

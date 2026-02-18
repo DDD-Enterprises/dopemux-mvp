@@ -27,8 +27,8 @@ fallback: "Only use Exa if PAL apilookup lacks information"
 optimization: "max_results: 10, focus_on_examples: true"
 ```
 
-### PAL - Multi-Model Orchestration
-- **Container**: `mcp-pal`
+### Zen - Multi-Model Orchestration
+- **Container**: `mcp-zen`
 - **Port**: `3003`
 - **Role**: `critical_path`
 - **Source**: `/Users/hue/code/zen-mcp-server`
