@@ -222,14 +222,14 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
             ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
             ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
-            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
         ],
     },
     "balanced": {
@@ -244,7 +244,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
@@ -261,18 +261,18 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "extract": [
-            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2-pro", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2-pro", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
             ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
-            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2-pro", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
         ],
     },
@@ -3558,6 +3558,12 @@ def transport_for_provider(provider: str, cfg: RunnerConfig) -> str:
     return cfg.openai_transport
 
 
+def resolve_temperature(provider: str, model_id: str, default_temp: float) -> Optional[float]:
+    if provider == "openai" and model_id.startswith("gpt-5"):
+        return None
+    return default_temp
+
+
 def llm_base_url(provider: str, cfg: Optional[RunnerConfig] = None) -> str:
     if provider == "gemini" and cfg is not None and transport_for_provider(provider, cfg) == "openai_compat_http":
         return GEMINI_OPENAI_COMPAT_BASE_URL
@@ -3571,14 +3577,16 @@ def build_chat_payload(
     user_content: str,
     force_json_output: bool = False,
 ) -> Dict[str, Any]:
+    temperature = resolve_temperature(provider, model_id, 0.1)
     payload: Dict[str, Any] = {
         "model": model_id,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content},
         ],
-        "temperature": 0.1,
     }
+    if temperature is not None:
+        payload["temperature"] = temperature
     if provider == "gemini" and force_json_output:
         payload["response_format"] = {"type": "json_object"}
     return payload
@@ -4169,11 +4177,13 @@ def call_llm(
                 response_text = extract_text_from_gemini_response(response)
             else:
                 client = get_xai_client(api_key) if provider == "xai" else get_openai_client(None, api_key)
-                response = client.chat.completions.create(
-                    model=model_id,
-                    messages=payload["messages"],
-                    temperature=payload["temperature"],
-                )
+                chat_kwargs: Dict[str, Any] = {
+                    "model": model_id,
+                    "messages": payload["messages"],
+                }
+                if "temperature" in payload:
+                    chat_kwargs["temperature"] = payload["temperature"]
+                response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = extract_text_from_chat_completion(response)
 
