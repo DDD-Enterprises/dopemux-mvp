@@ -51,7 +51,8 @@ class DopeBrainzRouterManager:
         self.host = "127.0.0.1"
         self.port = self.ROUTER_PORT_BASE + offset
 
-        self.base_dir = self.project_root / ".dopemux" / "dope-brainz-router"
+        # Keep on-disk home layout compatible with existing CCR tooling/tests.
+        self.base_dir = self.project_root / ".dopemux" / "claude-code-router"
         self.instance_home = self.base_dir / instance_id
         self.router_home = self.instance_home / ".dope-brainz-router"
         self.router_home = self.instance_home / ".dope-brainz-router"
@@ -116,7 +117,7 @@ class DopeBrainzRouterManager:
         router_config["background"] = (
             overrides.get("background")
             or router_config.get("background")
-            or default_route
+            or f"{provider_name},openrouter-xai-grok-code-fast"
         )
         router_config["think"] = (
             overrides.get("think")
@@ -392,8 +393,17 @@ class DopeBrainzRouterManager:
         )
 
 
+# Backward compatibility aliases for older call-sites/tests.
+ClaudeCodeRouterInfo = DopeBrainzRouterInfo
+ClaudeCodeRouterManager = DopeBrainzRouterManager
+ClaudeCodeRouterError = DopeBrainzRouterError
+
+
 __all__ = [
     "DopeBrainzRouterError",
     "DopeBrainzRouterInfo",
+    "DopeBrainzRouterManager",
+    "ClaudeCodeRouterError",
+    "ClaudeCodeRouterInfo",
     "ClaudeCodeRouterManager",
 ]
