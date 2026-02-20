@@ -1,3 +1,15 @@
+---
+id: PROMPT_W2_LLM_WORKFLOW_CUES
+title: Prompt W2 Llm Workflow Cues
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Prompt W2 Llm Workflow Cues (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Prompt W2 (v2): LLM Workflow Cues
 
 **Outputs:** `WORKFLOW_SURFACE_LLM.json`

@@ -1,3 +1,15 @@
+---
+id: PHASED_PIPELINE_GUIDE
+title: Phased Pipeline Guide
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Phased Pipeline Guide (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Phased Documentation Extraction Pipeline Guide
 
 **Run this pipeline to extract all documentation with zero silent loss.**

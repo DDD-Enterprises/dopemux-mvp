@@ -38,6 +38,15 @@ def test_enrich_request_meta_adds_required_routing_keys() -> None:
     assert meta["provider"] == "gemini"
     assert "routing_signature" in meta
     assert "provider_signature" in meta
+    assert "routing_tier" in meta
+    assert "routing_policy" in meta
+    assert "route_hop_index" in meta
+    assert "route_hop_total" in meta
+    assert "route_attempts" in meta
+    assert "escalation_trigger" in meta
+    assert "execution_mode" in meta
+    assert "batch_provider" in meta
+    assert "batch_job_id" in meta
 
 
 def test_classify_failure_type_handles_provider_reasons() -> None:
