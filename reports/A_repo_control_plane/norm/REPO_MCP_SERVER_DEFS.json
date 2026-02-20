@@ -1,0 +1,1920 @@
+{
+  "artifact": "REPO_MCP_SERVER_DEFS",
+  "files_seen": 305,
+  "generated_at": "2026-02-16T23:34:25+00:00",
+  "servers": [
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L59",
+        "excerpt_hash": "0c323e4c9541f9ddcd88a544e170f34a6fd66da3c30497fc165ea05a5cf3be9d",
+        "excerpt_snippet": "env: {} pal: type: stdio command: uvx",
+        "path": "mcp-proxy-config.copilot.yaml"
+      },
+      "env": {
+        "keys": [
+          "DEFAULT_MODEL",
+          "DISABLED_TOOLS",
+          "GEMINI_API_KEY",
+          "OPENAI_API_KEY",
+          "OPENROUTER_API_KEY",
+          "PAL_DEFAULT_PROVIDER",
+          "XAI_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--from",
+          "git+https://github.com/BeehiveInnovations/pal-mcp-server.git",
+          "pal-mcp-server"
+        ],
+        "command": "uvx",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "http"
+      },
+      "name": "pal",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_011f25078ee7",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L63",
+        "excerpt_hash": "236a11a95407f3716c05164556960c9c9e0498afdc881ca3ca912a3f4f596eb4",
+        "excerpt_snippet": "}, \"mas-sequential-thinking\": { \"command\": \"docker\", \"args\": [",
+        "path": ".claude/claude_config.json"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "exec",
+          "mcp-mas-sequential-thinking",
+          "mcp-server-mas-sequential-thinking"
+        ],
+        "command": "docker",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "mas-sequential-thinking",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_0688ca03b4af",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L19",
+        "excerpt_hash": "f8e5bd2270bce4aef184ca7c09b98f3af3b8d1bdb6c46c6146f0606aaa366c67",
+        "excerpt_snippet": "port: 3001 pal: enabled: true priority: highest",
+        "path": "docker/mcp-servers/.dopemux/config.yaml"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "pal",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "00",
+          "30"
+        ],
+        "mentioned_services": []
+      },
+      "server_id": "MCP_07c11dbbe7f6",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L2",
+        "excerpt_hash": "2e1241cc0e8277eff41f567845471a94643b79928708a9e3ab3829a1f8cf9b81",
+        "excerpt_snippet": "mcpServers: conport: type: stdio command: docker",
+        "path": "mcp-proxy-config.copilot.yaml"
+      },
+      "env": {
+        "keys": [
+          "DOPEMUX_INSTANCE_ID",
+          "DOPEMUX_WORKSPACE_ID"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--from",
+          "-i",
+          "conport-mcp",
+          "context-portal-mcp",
+          "exec",
+          "mcp-conport_main",
+          "uvx"
+        ],
+        "command": "docker",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "conport",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_0a52c4a700de",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L20",
+        "excerpt_hash": "7b27d8518c3d7aed2e98a5bbfc586d4e5d9bb4e7133071c1b7d8c54fd7e7dc8a",
+        "excerpt_snippet": "}, \"gpt-researcher_wrapped\": { \"command\": \"python\", \"args\": [",
+        "path": ".claude/claude_config.json"
+      },
+      "env": {
+        "keys": [
+          "CONTEXT7_API_KEY",
+          "DEBUG",
+          "DOPEMUX_INSTANCE_ID",
+          "EXA_API_KEY",
+          "PERPLEXITY_API_KEY",
+          "TAVILY_API_KEY",
+          "WORKSPACE_PATH"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "${DOPEMUX_INSTANCE_ID:-A}",
+          "--instance",
+          "--redis-host",
+          "--redis-port",
+          "--server",
+          "/Users/hue/code/dopemux-mvp/scripts/mcp_event_wrapper.py",
+          "6379",
+          "gpt-researcher",
+          "localhost"
+        ],
+        "command": "python",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "gpt-researcher_wrapped",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_10d2b335a588",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L27",
+        "excerpt_hash": "2d4e1e0962ae73d3958a4bbacf8cd26c86f1e38cc12064232b941ce8a7315c0c",
+        "excerpt_snippet": "leantime-bridge: command: [\"docker\", \"exec\", \"-i\", \"mcp-leantime-bridge\", \"python\", \"-m\", \"leantime_bridge.http_server\"] port: 3015",
+        "path": "mcp-proxy-config.yaml"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "leantime-bridge",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [],
+        "mentioned_services": [
+          "serena"
+        ]
+      },
+      "server_id": "MCP_2470dc9fc7e9",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L24",
+        "excerpt_hash": "7c8c7ebaf61237a3fe5fe17e6b2e24109af762337342d9641563bf66ce9348a0",
+        "excerpt_snippet": "}, \"leantime-mcp\": { \"command\": \"node\", \"args\": [",
+        "path": ".claude/task-master-mcp-config.json"
+      },
+      "env": {
+        "keys": [
+          "DOPEMUX_INTEGRATION_KEY",
+          "LEANTIME_API_TOKEN",
+          "LEANTIME_API_URL"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "src/integrations/leantime_mcp_server.js"
+        ],
+        "command": "node",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "leantime-mcp",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "8080"
+        ],
+        "mentioned_services": []
+      },
+      "server_id": "MCP_26fca4055357",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L5",
+        "excerpt_hash": "381619add6eecbd9ef85d7cd01037db3bbd7b7e16751027cc3f9744e4335277c",
+        "excerpt_snippet": "mcp_servers: mas-sequential-thinking: command: [\"docker\", \"exec\", \"-i\", \"mcp-mas-sequential-thinking\", \"mcp-server-mas-sequential-thinking\"] port: 8001",
+        "path": "mcp-proxy-config.yaml"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "mas-sequential-thinking",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [],
+        "mentioned_services": [
+          "serena"
+        ]
+      },
+      "server_id": "MCP_3ddbc9c9b3e0",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L3",
+        "excerpt_hash": "d6139f46eda05b3b852b29d455543cf5c7656d3ad94ec6924ce5af52f355e6e0",
+        "excerpt_snippet": "\"mcpServers\": { \"task-orchestrator\": { \"command\": \"python\", \"args\": [",
+        "path": "mcp-proxy-config.json"
+      },
+      "env": {
+        "keys": [
+          "DOPEMUX_INSTANCE_ID",
+          "DOPEMUX_WORKSPACE_ID"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "services/task-orchestrator/server.py"
+        ],
+        "command": "python",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "task-orchestrator",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007",
+          "3009",
+          "5432"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_409221c98d07",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L15",
+        "excerpt_hash": "07b07c432402cd053ddd509e4450fdb5a8b4500c07464cc84edb74f58f3a298f",
+        "excerpt_snippet": "pal: command: [\"docker\", \"exec\", \"-i\", \"mcp-pal\", \"python\", \"-m\", \"pal_mcp_server\"] port: 8004",
+        "path": "mcp-proxy-config.yaml"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "pal",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [],
+        "mentioned_services": [
+          "serena"
+        ]
+      },
+      "server_id": "MCP_453236123b10",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L33",
+        "excerpt_hash": "726918216f73ce61e38edd82458ea546124c8ee934cca2f41defc14cf2ef9e99",
+        "excerpt_snippet": "}, \"serena-v2\": { \"type\": \"sse\", \"url\": \"http://localhost:3006/sse\",",
+        "path": ".claude.json"
+      },
+      "env": {
+        "keys": [
+          "WORKSPACE_ID"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "serena-v2",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3010",
+          "3015"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_49322ddf57cc",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L40",
+        "excerpt_hash": "7b5ff870dd3443b4a3d0699f6a776e34833bff2568f431d61f5bcc93b2244ce7",
+        "excerpt_snippet": "}, \"gpt-researcher\": { \"type\": \"stdio\", \"command\": \"docker\",",
+        "path": ".claude.json"
+      },
+      "env": {
+        "keys": [
+          "ANTHROPIC_API_KEY",
+          "EXA_API_KEY",
+          "OPENAI_API_KEY",
+          "PERPLEXITY_API_KEY",
+          "TAVILY_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "-i",
+          "/app/server.py",
+          "exec",
+          "mcp-gptr-mcp",
+          "python"
+        ],
+        "command": "docker",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "gpt-researcher",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3010",
+          "3015"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_51073a975423",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L23",
+        "excerpt_hash": "b9a71f6feaa6a3b47ffc732742013d9dc51381f453aad6e9c6f90f59636174d7",
+        "excerpt_snippet": "}, \"conport\": { \"type\": \"sse\", \"url\": \"http://localhost:3004/sse\",",
+        "path": ".claude.json"
+      },
+      "env": {
+        "keys": [
+          "GEMINI_API_KEY",
+          "OPENAI_API_KEY",
+          "VOYAGEAI_API_KEY",
+          "WORKSPACE_ID"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "conport",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3010",
+          "3015"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_513b73678dac",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L36",
+        "excerpt_hash": "b1f0916e4935f7c31bc9814c11885e758281da2c67c4cd3488e5181fd06c6439",
+        "excerpt_snippet": "}, \"mas-sequential-thinking\": { \"command\": \"uv\", \"args\": [",
+        "path": ".claude/task-master-mcp-config.json"
+      },
+      "env": {
+        "keys": [
+          "ENABLE_CONTEXT_PRESERVATION",
+          "ENABLE_GENTLE_GUIDANCE",
+          "EXA_API_KEY",
+          "GITHUB_AGENT_MODEL_ID",
+          "GITHUB_TEAM_MODEL_ID",
+          "GITHUB_TOKEN",
+          "LLM_PROVIDER",
+          "MAX_THINKING_STEPS"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--directory",
+          "docker/mcp-servers/mcp-server-mas-sequential-thinking",
+          "mcp-server-mas-sequential-thinking",
+          "run"
+        ],
+        "command": "uv",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "mas-sequential-thinking",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "8080"
+        ],
+        "mentioned_services": []
+      },
+      "server_id": "MCP_5ddd90d365a6",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L32",
+        "excerpt_hash": "7b27d8518c3d7aed2e98a5bbfc586d4e5d9bb4e7133071c1b7d8c54fd7e7dc8a",
+        "excerpt_snippet": "}, \"gpt-researcher_wrapped\": { \"command\": \"python\", \"args\": [",
+        "path": "mcp-proxy-config.json"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--transport",
+          "http://127.0.0.1:3009/sse",
+          "mcp-proxy",
+          "sse"
+        ],
+        "command": "uvx",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "http"
+      },
+      "name": "gpt-researcher",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007",
+          "3009",
+          "5432"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_6aa1f029e140",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L44",
+        "excerpt_hash": "cd018b47b4749ae9e2752f4762e559ea9645a1b9bf9a939c687ba7cfbee6b889",
+        "excerpt_snippet": "}, \"serena\": { \"command\": \"uvx\", \"args\": [",
+        "path": ".claude/claude_config.json"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--transport",
+          "http://127.0.0.1:3006/sse",
+          "mcp-proxy",
+          "streamablehttp"
+        ],
+        "command": "uvx",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "http"
+      },
+      "name": "serena",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_6b8012a87621",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L82",
+        "excerpt_hash": "93d1be0ebc6cfecdfbd3d38994681a80cbb7a92e0d387f7df622e9c77e415caf",
+        "excerpt_snippet": "}, \"dope-context\": { \"type\": \"sse\", \"url\": \"http://localhost:3010/mcp\",",
+        "path": ".claude.json"
+      },
+      "env": {
+        "keys": [
+          "ANTHROPIC_API_KEY",
+          "OPENAI_API_KEY",
+          "VOYAGE_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "dope-context",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3010",
+          "3015"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_6c6f3ba24e52",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L3",
+        "excerpt_hash": "50da872be8926ac7868168d1d57854970ed617781edc56e661b29e3878a1aabd",
+        "excerpt_snippet": "\"mcpServers\": { \"task-master-ai\": { \"command\": \"npx\", \"args\": [",
+        "path": ".claude/task-master-mcp-config.json"
+      },
+      "env": {
+        "keys": [
+          "ANTHROPIC_API_KEY",
+          "AZURE_OPENAI_API_KEY",
+          "GOOGLE_API_KEY",
+          "GROQ_API_KEY",
+          "MISTRAL_API_KEY",
+          "OLLAMA_API_KEY",
+          "OPENAI_API_KEY",
+          "OPENROUTER_API_KEY",
+          "PERPLEXITY_API_KEY",
+          "XAI_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--package=task-master-ai",
+          "-y",
+          "task-master-ai"
+        ],
+        "command": "npx",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "task-master-ai",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "8080"
+        ],
+        "mentioned_services": []
+      },
+      "server_id": "MCP_6d23cd8b5462",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L73",
+        "excerpt_hash": "e18a43d8807ea282cdc98222b946eb988a045d49d15cee450b53d57ad1ae1be2",
+        "excerpt_snippet": "}, \"zen\": { \"command\": \"uvx\", \"args\": [",
+        "path": ".claude/claude_config.json"
+      },
+      "env": {
+        "keys": [
+          "ANTHROPIC_API_KEY",
+          "GOOGLE_API_KEY",
+          "GROQ_API_KEY",
+          "OPENAI_API_KEY",
+          "PERPLEXITY_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--from",
+          "git+https://github.com/BeehiveInnovations/zen-mcp-server.git",
+          "zen-mcp-server"
+        ],
+        "command": "uvx",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "http"
+      },
+      "name": "zen",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_6dd9d2f0d7ba",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L55",
+        "excerpt_hash": "2fb96da6ae8c12d717f163670a55c0c13ec712c720bc42a935e808080c92f58f",
+        "excerpt_snippet": "}, \"dope-context\": { \"command\": \"bash\", \"args\": [",
+        "path": ".claude/claude_config.json"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "services/dope-context/run_mcp.sh"
+        ],
+        "command": "bash",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "dope-context",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_6ec34f588789",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L10",
+        "excerpt_hash": "d3425d3dd91cadd5c8bf9eb8859bdc74cd7628d15dfd2b348d52895fe2b53cfd",
+        "excerpt_snippet": "exa: command: [\"docker\", \"exec\", \"-i\", \"mcp-exa\", \"python\", \"server.py\"] port: 8003",
+        "path": "mcp-proxy-config.yaml"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "exa",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [],
+        "mentioned_services": [
+          "serena"
+        ]
+      },
+      "server_id": "MCP_6f490e7eb420",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L14",
+        "excerpt_hash": "f3895737140100abe70958db6daa2d6e8a10b590c1672e2716351659be4789a4",
+        "excerpt_snippet": "}, \"conport\": { \"command\": \"docker\", \"args\": [",
+        "path": "mcp-proxy-config.json"
+      },
+      "env": {
+        "keys": [
+          "CONPORT_DB_URL",
+          "CONPORT_GRAPH_DIR",
+          "CONPORT_URL",
+          "DOPEMUX_INSTANCE_ID",
+          "DOPEMUX_WORKSPACE_ID"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "-i",
+          "/app/conport_mcp_stdio.py",
+          "exec",
+          "mcp-conport_main",
+          "python"
+        ],
+        "command": "docker",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "conport",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007",
+          "3009",
+          "5432"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_71f7bcc04736",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L126",
+        "excerpt_hash": "9fc5c601b0764381710a8112036157a4077f741350d6f8db4d3f0fc51bf9ba44",
+        "excerpt_snippet": "}, \"exa\": { \"command\": \"uvx\", \"args\": [",
+        "path": ".claude/claude_config.json"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--transport",
+          "http://127.0.0.1:3007/sse",
+          "mcp-proxy",
+          "streamablehttp"
+        ],
+        "command": "uvx",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "http"
+      },
+      "name": "exa",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_74a5bc6ccb89",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L89",
+        "excerpt_hash": "210e778c135d9a95ba782818ee56277f0ce09330927410d553b9bd31fb4345f6",
+        "excerpt_snippet": "}, \"context7\": { \"command\": \"npx\", \"args\": [",
+        "path": ".claude/claude_config.json"
+      },
+      "env": {
+        "keys": [
+          "CONTEXT7_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "@upstash/context7-mcp"
+        ],
+        "command": "npx",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "context7",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [
+          "@upstash/context7-mcp"
+        ],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_8449ce335b10",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L15",
+        "excerpt_hash": "42a72ac2145388f3c8edca69b536a9aa77a7aa3b83f04bf6618c63c280517c2f",
+        "excerpt_snippet": "mcp_servers: mas-sequential-thinking: enabled: true priority: high",
+        "path": "docker/mcp-servers/.dopemux/config.yaml"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "mas-sequential-thinking",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "00",
+          "30"
+        ],
+        "mentioned_services": []
+      },
+      "server_id": "MCP_8937298ce374",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L3",
+        "excerpt_hash": "7e1b534a76d15d165d52d0d9967b219d446268a1c988da830347f58873c47db1",
+        "excerpt_snippet": "\"mcpServers\": { \"pal\": { \"type\": \"stdio\", \"command\": \"uv\",",
+        "path": ".claude.json"
+      },
+      "env": {
+        "keys": [
+          "DEFAULT_MODEL",
+          "DISABLED_TOOLS",
+          "GEMINI_API_KEY",
+          "OPENAI_API_KEY",
+          "OPENROUTER_API_KEY",
+          "PAL_DEFAULT_PROVIDER",
+          "XAI_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--directory",
+          "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server",
+          "python",
+          "run",
+          "server.py"
+        ],
+        "command": "uv",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "pal",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3010",
+          "3015"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_8c89c7c40175",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L137",
+        "excerpt_hash": "91641608116e8a25125927adc2d9ca5c90d83623dfd364520459c4c7bdca3f62",
+        "excerpt_snippet": "}, \"morph\": { \"command\": \"npx\", \"args\": [\"@morph-llm/morph-fast-apply@latest\"],",
+        "path": "mcp-proxy-config.json"
+      },
+      "env": {
+        "keys": [
+          "ALL_TOOLS",
+          "MORPH_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "@morph-llm/morph-fast-apply@latest"
+        ],
+        "command": "npx",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "morph",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [
+          "@latest",
+          "@morph-llm/morph-fast-apply"
+        ],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007",
+          "3009",
+          "5432"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_93bcb0f66df5",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L106",
+        "excerpt_hash": "5396cd9726582bd864eccdcf1836402aff58b6889f1eb68f79f062430f06da25",
+        "excerpt_snippet": "}, \"task-orchestrator\": { \"type\": \"stdio\", \"command\": \"python3\",",
+        "path": ".claude.json"
+      },
+      "env": {
+        "keys": [
+          "PYTHONPATH",
+          "WORKSPACE_ID"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "/Users/hue/code/dopemux-mvp/services/task-orchestrator/task_orchestrator/app.py"
+        ],
+        "command": "python3",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "task-orchestrator",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3010",
+          "3015"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_97d469cea9f5",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L106",
+        "excerpt_hash": "f6e11b317dba08119e3664ca4703a4ad763b2f8f6f49778329539ae882e15b0c",
+        "excerpt_snippet": "}, \"leantime\": { \"command\": \"leantime-mcp\", \"args\": [\"https://leantime.local/mcp\", \"--token\", \"${LEAN_MCP_TOKEN}\"],",
+        "path": "mcp-proxy-config.json"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "${LEAN_MCP_TOKEN}",
+          "--token",
+          "https://leantime.local/mcp"
+        ],
+        "command": "leantime-mcp",
+        "cwd": null,
+        "disabled": true,
+        "notes": null,
+        "transport": "http"
+      },
+      "name": "leantime",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007",
+          "3009",
+          "5432"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_9a60e8fdb0fa",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L20",
+        "excerpt_hash": "7b27d8518c3d7aed2e98a5bbfc586d4e5d9bb4e7133071c1b7d8c54fd7e7dc8a",
+        "excerpt_snippet": "}, \"gpt-researcher_wrapped\": { \"command\": \"python\", \"args\": [",
+        "path": ".claude/claude_config.json"
+      },
+      "env": {
+        "keys": [
+          "EXA_API_KEY",
+          "OPENAI_API_KEY",
+          "TAVILY_API_KEY",
+          "VOYAGEAI_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "/Users/hue/code/dopemux-mvp/scripts/gpt-researcher/mcp_server.py"
+        ],
+        "command": "python",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "gpt-researcher",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_b2d8256daee4",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L91",
+        "excerpt_hash": "86bfdcfcba3c7aea2f79df98c2792fb42312e6777680c3ea2bd847ff44b0652f",
+        "excerpt_snippet": "}, \"desktop-commander\": { \"type\": \"stdio\", \"command\": \"docker\",",
+        "path": ".claude.json"
+      },
+      "env": {
+        "keys": [
+          "DISPLAY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "-i",
+          "/app/mcp_server.py",
+          "exec",
+          "mcp-desktop-commander",
+          "python"
+        ],
+        "command": "docker",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "desktop-commander",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3010",
+          "3015"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_c0df48477192",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L21",
+        "excerpt_hash": "13a441e42c16b38b27602d3a77d634255557a9e757908b72d9b9a0c18d687c4c",
+        "excerpt_snippet": "serena: command: [\"docker\", \"exec\", \"-i\", \"mcp-serena\", \"python\", \"server.py\"] port: 8005",
+        "path": "mcp-proxy-config.yaml"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "serena",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [],
+        "mentioned_services": [
+          "serena"
+        ]
+      },
+      "server_id": "MCP_c386a6023107",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L59",
+        "excerpt_hash": "8e8c150b5751b63c9bd428700ec40b2327abeddfbbdd29eee997c5a600cff57d",
+        "excerpt_snippet": "}, \"leantime-bridge\": { \"type\": \"sse\", \"url\": \"http://localhost:3015/sse\",",
+        "path": ".claude.json"
+      },
+      "env": {
+        "keys": [
+          "LEANTIME_API_TOKEN"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "leantime-bridge",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3010",
+          "3015"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_ca15bb22c8f6",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L32",
+        "excerpt_hash": "7b27d8518c3d7aed2e98a5bbfc586d4e5d9bb4e7133071c1b7d8c54fd7e7dc8a",
+        "excerpt_snippet": "}, \"gpt-researcher_wrapped\": { \"command\": \"python\", \"args\": [",
+        "path": "mcp-proxy-config.json"
+      },
+      "env": {
+        "keys": [
+          "DEBUG",
+          "DOPEMUX_INSTANCE_ID",
+          "EXA_API_KEY",
+          "PERPLEXITY_API_KEY",
+          "TAVILY_API_KEY",
+          "WORKSPACE_PATH"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "${DOPEMUX_INSTANCE_ID:-A}",
+          "--instance",
+          "--redis-host",
+          "--redis-port",
+          "--server",
+          "6379",
+          "__WORKSPACE_ROOT__/scripts/mcp_event_wrapper.py",
+          "gpt-researcher",
+          "localhost"
+        ],
+        "command": "python",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "gpt-researcher_wrapped",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007",
+          "3009",
+          "5432"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_d03ccb6c9f53",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L23",
+        "excerpt_hash": "7bc6a0ae9bac231eb647fbca1e8f645eebcf4c8588c3bf3e78d642c2b907c155",
+        "excerpt_snippet": "port: 3003 claude-context: enabled: true priority: medium",
+        "path": "docker/mcp-servers/.dopemux/config.yaml"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [],
+        "command": null,
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "unknown"
+      },
+      "name": "claude-context",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "00",
+          "30"
+        ],
+        "mentioned_services": []
+      },
+      "server_id": "MCP_d3332c75d5c7",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L67",
+        "excerpt_hash": "e23a74687edcda5656fb8c9094eeca335a4ddd225df6ec406e16369932bdf064",
+        "excerpt_snippet": "}, \"exa\": { \"type\": \"stdio\", \"command\": \"docker\",",
+        "path": ".claude.json"
+      },
+      "env": {
+        "keys": [
+          "EXA_API_KEY"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "-i",
+          "/app/exa_server.py",
+          "exec",
+          "mcp-exa",
+          "python"
+        ],
+        "command": "docker",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "exa",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3010",
+          "3015"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_ddf5d8e8e229",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L3",
+        "excerpt_hash": "15ebac972d3fc2bd88a3f3ec2746555d84d6d3d0e4e6038502c2f5689b422bf5",
+        "excerpt_snippet": "\"mcpServers\": { \"conport\": { \"type\": \"stdio\", \"command\": \"docker\",",
+        "path": ".claude/claude_config.json"
+      },
+      "env": {
+        "keys": [
+          "DOPEMUX_INSTANCE_ID",
+          "DOPEMUX_WORKSPACE_ID"
+        ],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "--from",
+          "-i",
+          "conport-mcp",
+          "context-portal-mcp",
+          "exec",
+          "mcp-conport",
+          "uvx"
+        ],
+        "command": "docker",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "conport",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_f027091b050a",
+      "status": "ACTIVE"
+    },
+    {
+      "capabilities": {
+        "described_capabilities": [],
+        "tools_or_namespaces": []
+      },
+      "defined_in": {
+        "anchor": "L131",
+        "excerpt_hash": "4aba29b13177faa3bda4d70413ae050f798a16f6ca6d5bab6c5845900ee824e8",
+        "excerpt_snippet": "}, \"playwright\": { \"command\": \"npx\", \"args\": [\"@playwright/mcp@latest\"],",
+        "path": "mcp-proxy-config.json"
+      },
+      "env": {
+        "keys": [],
+        "values_redacted": true
+      },
+      "launch": {
+        "args": [
+          "@playwright/mcp@latest"
+        ],
+        "command": "npx",
+        "cwd": null,
+        "disabled": null,
+        "notes": null,
+        "transport": "stdio"
+      },
+      "name": "playwright",
+      "permissions": {
+        "allow_paths": [],
+        "deny_paths": [],
+        "trust_level": null
+      },
+      "references": {
+        "mentioned_packages": [
+          "@latest",
+          "@playwright/mcp"
+        ],
+        "mentioned_ports": [
+          "3004",
+          "3006",
+          "3007",
+          "3009",
+          "5432"
+        ],
+        "mentioned_services": [
+          "conport",
+          "dope-context",
+          "serena"
+        ]
+      },
+      "server_id": "MCP_ffff403e0654",
+      "status": "ACTIVE"
+    }
+  ],
+  "warnings": []
+}
