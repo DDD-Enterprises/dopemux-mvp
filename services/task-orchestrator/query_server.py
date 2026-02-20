@@ -24,7 +24,7 @@ QUERY_PORT = PORT_BASE + 17  # 3017, 3047, 3077, etc.
 LEANTIME_URL = os.getenv("LEANTIME_URL", "http://leantime:80")
 LEANTIME_TOKEN = os.getenv("LEANTIME_TOKEN", "")
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
-WORKSPACE_ID = os.getenv("DOPEMUX_WORKSPACE_ROOT", "/Users/hue/code/dopemux-mvp")
+WORKSPACE_ID = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", os.getcwd()))
 
 # Create FastAPI app
 app = FastAPI(
