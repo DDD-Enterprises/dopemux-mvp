@@ -1,0 +1,49 @@
+{
+  "archetypes": {
+    "db_heavy": {
+      "score": 0.2,
+      "value": false
+    },
+    "docs_first_spec_driven": {
+      "score": 110.0,
+      "value": false
+    },
+    "event_driven_likely": {
+      "score": 0.4,
+      "value": false
+    },
+    "microservices": {
+      "score": 8.0,
+      "value": true
+    },
+    "monorepo": {
+      "score": 3.0,
+      "value": true
+    },
+    "node_typescript_monorepo": {
+      "score": 0.0,
+      "value": false
+    },
+    "plugin_system_likely": {
+      "score": 0.0,
+      "value": false
+    },
+    "single_service_app": {
+      "score": 0.0,
+      "value": false
+    }
+  },
+  "contracts_present": {
+    "adrs": true,
+    "api_specs": true,
+    "db_schema": false,
+    "event_taxonomy": false
+  },
+  "surface_areas": {
+    "code_file_count": 980,
+    "dockerfile_count": 6,
+    "docs_file_count": 320,
+    "services_root_count": 8
+  }
+}
+

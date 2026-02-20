@@ -43,37 +43,52 @@ def _make_cfg(runner):
         partition_workers=1,
         debug_phase_inputs=False,
         fail_fast_missing_inputs=False,
+        routing_policy="cost",
     )
 
 
 def _reset_routing(runner) -> None:
-    runner.apply_model_overrides(runner.DEFAULT_GEMINI_MODEL_ID)
+    runner.apply_model_overrides(runner.DEFAULT_GEMINI_MODEL_ID, "cost")
 
 
-def test_gemini_override_updates_gemini_phases_only() -> None:
+def test_step_tier_classifier_is_deterministic() -> None:
+    runner = _load_runner_module()
+    assert runner.resolve_step_tier("A", "A0") == "bulk"
+    assert runner.resolve_step_tier("A", "A1") == "extract"
+    assert runner.resolve_step_tier("Q", "Q1") == "qa"
+    assert runner.resolve_step_tier("C", "C9") == "qa"
+    assert runner.resolve_step_tier("R", "R1") == "synthesis"
+    assert runner.resolve_step_tier("Z", "Z2") == "synthesis"
+
+
+def test_cost_policy_ladders_map_expected_defaults() -> None:
     runner = _load_runner_module()
     _reset_routing(runner)
-    runner.apply_model_overrides("models/gemini-2.5-flash")
-    payload = runner.effective_model_routing_payload()
-
-    gemini_phases = [phase for phase, route in payload.items() if route["provider"] == "gemini"]
-    assert gemini_phases
-    for phase in gemini_phases:
-        assert payload[phase]["model_id"] == "models/gemini-2.5-flash"
-
-    openai_phases = [phase for phase, route in payload.items() if route["provider"] == "openai"]
-    assert openai_phases
-    for phase in openai_phases:
-        assert payload[phase]["model_id"] != "models/gemini-2.5-flash"
+    assert runner.resolve_step_ladder("cost", "A", "A0")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
+    assert runner.resolve_step_ladder("cost", "A", "A1")[0] == ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+    assert runner.resolve_step_ladder("cost", "R", "R1")[0] == ("openai", "gpt-5.2-extended", "OPENAI_API_KEY")
+    assert runner.resolve_step_ladder("cost", "Q", "Q9")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
 
 
-def test_collect_provider_routes_returns_unique_provider_rows() -> None:
+def test_gemini_override_rewrites_all_gemini_rungs() -> None:
+    runner = _load_runner_module()
+    runner.apply_model_overrides("models/gemini-2.5-flash", "cost")
+    ladders = runner.routing_ladders_payload()
+    for policy_rows in ladders.values():
+        for routes in policy_rows.values():
+            for route in routes:
+                if route["provider"] == "gemini":
+                    assert route["model_id"] == "models/gemini-2.5-flash"
+
+
+def test_collect_provider_routes_returns_unique_route_rows() -> None:
     runner = _load_runner_module()
     _reset_routing(runner)
-    routes = runner.collect_provider_routes()
-    assert set(routes.keys()) >= {"gemini", "openai", "xai"}
-    assert routes["gemini"]["provider"] == "gemini"
-    assert routes["openai"]["api_key_env"] == "OPENAI_API_KEY"
+    routes = runner.collect_provider_routes(phases=["A", "R"], routing_policy="cost")
+    providers = {row["provider"] for row in routes.values()}
+    assert "openai" in providers
+    assert "gemini" in providers
+    assert "xai" in providers
 
 
 def test_provider_preflight_fails_when_probe_fails(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -108,7 +123,7 @@ def test_provider_preflight_fails_when_probe_fails(monkeypatch: pytest.MonkeyPat
     assert "gemini" in payload["failed_providers"]
 
 
-def test_print_config_reports_effective_model_routing(tmp_path: Path) -> None:
+def test_print_config_reports_effective_model_routing_and_policy(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[3]
     script = root / "services" / "repo-truth-extractor" / "run_extraction_v3.py"
     run_id = "test_model_routing_print_config"
@@ -122,6 +137,8 @@ def test_print_config_reports_effective_model_routing(tmp_path: Path) -> None:
             "--no-write-latest",
             "--gemini-model-id",
             "models/gemini-2.5-flash",
+            "--routing-policy",
+            "cost",
             "--phase",
             "A",
         ],
@@ -132,11 +149,12 @@ def test_print_config_reports_effective_model_routing(tmp_path: Path) -> None:
     )
     payload = json.loads(result.stdout)
     assert payload["cli"]["gemini_model_id"] == "models/gemini-2.5-flash"
-    assert payload["effective_model_routing"]["A"]["provider"] == "gemini"
-    assert payload["effective_model_routing"]["A"]["model_id"] == "models/gemini-2.5-flash"
+    assert payload["cli"]["routing_policy"] == "cost"
+    assert payload["effective_model_routing"]["A"]["provider"] == "openai"
+    assert payload["effective_model_routing"]["A"]["model_id"] == "gpt-5-nano"
 
 
-def test_run_manifest_records_effective_model_routing(tmp_path: Path) -> None:
+def test_run_manifest_records_routing_policy(tmp_path: Path) -> None:
     root = Path(__file__).resolve().parents[3]
     script = root / "services" / "repo-truth-extractor" / "run_extraction_v3.py"
     run_id = "test_model_routing_manifest"
@@ -150,8 +168,8 @@ def test_run_manifest_records_effective_model_routing(tmp_path: Path) -> None:
             "--no-write-latest",
             "--phase",
             "A",
-            "--gemini-model-id",
-            "models/gemini-2.5-flash",
+            "--routing-policy",
+            "cost",
         ],
         cwd=str(tmp_path),
         check=True,
@@ -161,5 +179,6 @@ def test_run_manifest_records_effective_model_routing(tmp_path: Path) -> None:
 
     manifest_path = tmp_path / "extraction" / "repo-truth-extractor" / "v3" / "runs" / run_id / "RUN_MANIFEST.json"
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert payload["effective_model_routing"]["A"]["provider"] == "gemini"
-    assert payload["effective_model_routing"]["A"]["model_id"] == "models/gemini-2.5-flash"
+    assert payload["routing_policy"] == "cost"
+    assert payload["routing_policy_version"] == "RTE_ROUTING_V1"
+    assert "routing_ladders" in payload

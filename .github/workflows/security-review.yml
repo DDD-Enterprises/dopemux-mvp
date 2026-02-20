@@ -75,6 +75,8 @@ jobs:
             echo "- No high-severity security issues detected" >> $GITHUB_STEP_SUMMARY
             echo "- Memory system components are safe" >> $GITHUB_STEP_SUMMARY
             echo "- Ready for merge when tests pass!" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.security-review.result }}" == "skipped" ]; then
+            echo "⏭️ **Security review skipped** (API key missing or not required)" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ **Security items need attention**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY

@@ -21,10 +21,24 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
+# Ensure local service modules are importable when loaded via importlib in tests.
+RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
+if str(RUNNER_SERVICE_DIR) not in sys.path:
+    sys.path.insert(0, str(RUNNER_SERVICE_DIR))
+
 import requests
+from lib.batch_clients import (
+    BatchClient,
+    BatchRequest,
+    BatchResult,
+    BatchRoute,
+    GeminiBatchClient,
+    OpenAIBatchClient,
+    XAIBatchClient,
+)
 try:
     from rich.console import Console
     from rich.panel import Panel
@@ -189,25 +203,90 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
     ],
 }
 
-MODEL_ROUTING = {
-    "A": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "H": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "D": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "W": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "B": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "G": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "Z": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
-    "C": ("xai", "grok-code-fast-1", "XAI_API_KEY"),
-    "E": ("xai", "grok-code-fast-1", "XAI_API_KEY"),
-    "Q": ("xai", "grok-code-fast-1", "XAI_API_KEY"),
-    "R": ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
-    "X": ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
-    "T": ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
+DEFAULT_ROUTING_POLICY = "cost"
+DEFAULT_GEMINI_MODEL_ID = "gemini-2.5-flash"
+STEP_TIERS = ("bulk", "extract", "synthesis", "qa")
+
+# Route tuple: provider, model_id, api_key_env
+ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
+    "cost": {
+        "bulk": [
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "extract": [
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "synthesis": [
+            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "qa": [
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+        ],
+    },
+    "balanced": {
+        "bulk": [
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+        ],
+        "extract": [
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "synthesis": [
+            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "qa": [
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+        ],
+    },
+    "quality": {
+        "bulk": [
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "extract": [
+            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "synthesis": [
+            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+        ],
+        "qa": [
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+        ],
+    },
 }
 
-DEFAULT_GEMINI_MODEL_ID = "gemini-2.0-flash-001"
-DEFAULT_MODEL_ROUTING = dict(MODEL_ROUTING)
-MODEL_ROUTING = dict(DEFAULT_MODEL_ROUTING)
+ACTIVE_ROUTING_POLICY = DEFAULT_ROUTING_POLICY
+ACTIVE_ROUTING_LADDERS = {
+    policy: {tier: list(routes) for tier, routes in tiers.items()}
+    for policy, tiers in ROUTING_LADDERS.items()
+}
+
+# Phase-level summary route is retained for compatibility surfaces and manifests.
+MODEL_ROUTING: Dict[str, Tuple[str, str, str]] = {}
+DEFAULT_MODEL_ROUTING: Dict[str, Tuple[str, str, str]] = {}
 
 PROVIDER_BASE_URL = {
     "xai": "https://api.x.ai/v1",
@@ -321,7 +400,7 @@ SECRET_ASSIGN_RE = re.compile(
 LONG_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9+/=_-])[A-Za-z0-9+/=_-]{33,}(?![A-Za-z0-9+/=_-])")
 OUTPUT_FILENAME_RE = re.compile(r"\b[A-Z][A-Z0-9_]+(?:\.partX)?\.(?:json|md)\b")
 OUTPUT_SECTION_START_RE = re.compile(
-    r"(?i)^(goal(?:s)?|output(?:s)?(?:\s+files?)?|phase\s+[A-Z0-9]+\s+deliverables?)\b"
+    r"(?i)^(?:#+\s*)?(goal(?:s)?|output(?:s)?(?:\s+files?)?|phase\s+[A-Z0-9]+\s+deliverables?)\b[:\-]?\s*$"
 )
 OUTPUT_SECTION_STOP_PREFIXES = (
     "prompt",
@@ -395,6 +474,14 @@ class RunnerConfig:
     partition_workers: int
     debug_phase_inputs: bool
     fail_fast_missing_inputs: bool
+    routing_policy: str = DEFAULT_ROUTING_POLICY
+    disable_escalation: bool = False
+    escalation_max_hops: int = 2
+    batch_mode: bool = False
+    batch_provider: str = "auto"
+    batch_poll_seconds: int = 30
+    batch_wait_timeout_seconds: int = 86400
+    batch_max_requests_per_job: int = 2000
 
 
 @dataclass(frozen=True)
@@ -482,6 +569,8 @@ class UI:
         model_id: str,
         workers: int,
         flags: str,
+        routing_policy: str = DEFAULT_ROUTING_POLICY,
+        tier_defaults: Optional[Dict[str, str]] = None,
     ) -> None:
         self._emit_event(
             {
@@ -494,6 +583,8 @@ class UI:
                 "model_id": model_id,
                 "workers": workers,
                 "flags": flags,
+                "routing_policy": routing_policy,
+                "tier_defaults": dict(tier_defaults or {}),
             }
         )
         if self.cfg.quiet:
@@ -505,6 +596,9 @@ class UI:
             body.append(f"phase_dir={phase_dir.resolve()}\n")
             body.append(f"inventory={inventory} partitions={partitions}\n")
             body.append(f"provider={provider} model={model_id} workers={workers}\n")
+            body.append(f"routing_policy={routing_policy}\n")
+            if tier_defaults:
+                body.append(f"tier_defaults={json.dumps(tier_defaults, sort_keys=True)}\n")
             body.append(f"flags={flags}")
             self._console.print(Panel(body, title=f"Phase {phase}", expand=False))
             return
@@ -512,7 +606,8 @@ class UI:
             (
                 f"PHASE_START phase={phase} run_id={self.run_id} phase_dir={phase_dir.resolve()} "
                 f"inventory={inventory} partitions={partitions} provider={provider} model={model_id} "
-                f"workers={workers} flags={flags}"
+                f"workers={workers} routing_policy={routing_policy} "
+                f"tier_defaults={json.dumps(tier_defaults or {}, sort_keys=True)} flags={flags}"
             )
         )
 
@@ -552,6 +647,8 @@ class UI:
         partitions_total: int,
         provider: str,
         model_id: str,
+        step_tier: str = "extract",
+        routing_policy: str = DEFAULT_ROUTING_POLICY,
     ) -> None:
         self._emit_event(
             {
@@ -563,6 +660,8 @@ class UI:
                 "partitions_total": partitions_total,
                 "provider": provider,
                 "model_id": model_id,
+                "step_tier": step_tier,
+                "routing_policy": routing_policy,
             }
         )
         if self.cfg.quiet:
@@ -594,8 +693,65 @@ class UI:
         self._print_plain(
             (
                 f"STEP_START phase={phase} step={step_id} partitions={partitions_total} "
-                f"prompt={prompt_path.name} outputs={list(outputs)} provider={provider} model={model_id}"
+                f"prompt={prompt_path.name} outputs={list(outputs)} tier={step_tier} "
+                f"provider={provider} model={model_id} routing_policy={routing_policy}"
             )
+        )
+
+    def escalation_event(
+        self,
+        phase: str,
+        step_id: str,
+        partition_id: str,
+        reason: str,
+        from_route: str,
+        to_route: str,
+        hop: int,
+    ) -> None:
+        self._emit_event(
+            {
+                "type": "escalation",
+                "phase": phase,
+                "step": step_id,
+                "partition_id": partition_id,
+                "reason": reason,
+                "from_route": from_route,
+                "to_route": to_route,
+                "hop": hop,
+            }
+        )
+        if self.cfg.quiet:
+            return
+        self._summary_line(
+            (
+                f"ESCALATE phase={phase} step={step_id} partition={partition_id} "
+                f"reason={reason} from={from_route} to={to_route} hop={hop}"
+            )
+        )
+
+    def batch_event(
+        self,
+        phase: str,
+        step_id: str,
+        status: str,
+        provider: str,
+        details: str = "",
+    ) -> None:
+        self._emit_event(
+            {
+                "type": "batch",
+                "phase": phase,
+                "step": step_id,
+                "status": status,
+                "provider": provider,
+                "details": details,
+            }
+        )
+        if self.cfg.quiet:
+            return
+        suffix = f" {details}" if details else ""
+        self._summary_line(
+            f"BATCH phase={phase} step={step_id} status={status} provider={provider}{suffix}"
         )
 
     def partition_result(
@@ -648,6 +804,10 @@ class UI:
         elapsed_ms: int,
         norm_written: int,
         qa_file: str,
+        hop_distribution: Optional[Dict[str, int]] = None,
+        escalated_partitions: int = 0,
+        execution_mode_counts: Optional[Dict[str, int]] = None,
+        final_route_counts: Optional[Dict[str, int]] = None,
     ) -> None:
         self.step_progress_stop()
         self._emit_event(
@@ -663,13 +823,21 @@ class UI:
                 "elapsed_ms": elapsed_ms,
                 "norm_written": norm_written,
                 "qa_file": qa_file,
+                "hop_distribution": dict(hop_distribution or {}),
+                "escalated_partitions": int(escalated_partitions),
+                "execution_mode_counts": dict(execution_mode_counts or {}),
+                "final_route_counts": dict(final_route_counts or {}),
             }
         )
         self._summary_line(
             (
                 f"STEP_DONE phase={phase} step={step_id} ok={ok} failed={failed} "
                 f"retries={retries} skipped={skipped} elapsed_ms={elapsed_ms} "
-                f"norm_written={norm_written} qa_file={qa_file}"
+                f"norm_written={norm_written} qa_file={qa_file} "
+                f"hops={json.dumps(hop_distribution or {}, sort_keys=True)} "
+                f"escalated={escalated_partitions} "
+                f"exec_mode={json.dumps(execution_mode_counts or {}, sort_keys=True)} "
+                f"routes={json.dumps(final_route_counts or {}, sort_keys=True)}"
             )
         )
 
@@ -1671,14 +1839,111 @@ def refresh_run_manifest_artifacts(run_root: Path, dirs: Dict[str, Path]) -> Non
     write_json(manifest_path, payload)
 
 
-def apply_model_overrides(gemini_model_id: str) -> None:
+def resolve_step_tier(phase: str, step_id: str) -> str:
+    phase_code = str(phase or "").upper()
+    token = str(step_id or "").upper()
+    if phase_code in {"R", "X", "T"} or (phase_code == "Z" and token in {"Z1", "Z2"}):
+        return "synthesis"
+    if phase_code == "Q" or token.endswith("9") or token.endswith("99"):
+        return "qa"
+    if token.endswith("0"):
+        return "bulk"
+    return "extract"
+
+
+def _normalize_routing_policy(policy: str) -> str:
+    if policy in ROUTING_LADDERS:
+        return policy
+    return DEFAULT_ROUTING_POLICY
+
+
+def _phase_default_tier(phase: str) -> str:
+    if phase in {"R", "X", "T"}:
+        return "synthesis"
+    if phase == "Q":
+        return "qa"
+    if phase in {"A", "H", "D", "W", "B", "G"}:
+        return "bulk"
+    return "extract"
+
+
+def _clone_ladders(policy: str) -> Dict[str, List[Tuple[str, str, str]]]:
+    selected = ROUTING_LADDERS[_normalize_routing_policy(policy)]
+    return {tier: [tuple(route) for route in routes] for tier, routes in selected.items()}
+
+
+def _refresh_phase_default_model_routing(policy: str) -> Dict[str, Tuple[str, str, str]]:
+    ladders = _clone_ladders(policy)
+    phase_routes: Dict[str, Tuple[str, str, str]] = {}
+    for phase in PHASES:
+        tier = _phase_default_tier(phase)
+        candidates = ladders.get(tier, [])
+        if not candidates:
+            candidates = ladders.get("extract", [])
+        if not candidates:
+            phase_routes[phase] = ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+            continue
+        phase_routes[phase] = tuple(candidates[0])
+    return phase_routes
+
+
+def apply_model_overrides(
+    gemini_model_id: str,
+    routing_policy: str = DEFAULT_ROUTING_POLICY,
+) -> None:
     global MODEL_ROUTING
-    MODEL_ROUTING = dict(DEFAULT_MODEL_ROUTING)
-    if not gemini_model_id:
-        return
-    for phase, (provider, _, api_key_env) in list(MODEL_ROUTING.items()):
-        if provider == "gemini":
-            MODEL_ROUTING[phase] = (provider, gemini_model_id, api_key_env)
+    global DEFAULT_MODEL_ROUTING
+    global ACTIVE_ROUTING_POLICY
+    global ACTIVE_ROUTING_LADDERS
+    selected_policy = _normalize_routing_policy(routing_policy)
+    ACTIVE_ROUTING_POLICY = selected_policy
+    ACTIVE_ROUTING_LADDERS = {
+        policy: _clone_ladders(policy)
+        for policy in ROUTING_LADDERS.keys()
+    }
+    gemini_override = str(gemini_model_id or "").strip()
+    if gemini_override:
+        for policy_name, tiers in ACTIVE_ROUTING_LADDERS.items():
+            for tier_name, routes in tiers.items():
+                rewritten: List[Tuple[str, str, str]] = []
+                for provider, model_id, api_key_env in routes:
+                    if provider == "gemini":
+                        rewritten.append((provider, gemini_override, api_key_env))
+                    else:
+                        rewritten.append((provider, model_id, api_key_env))
+                ACTIVE_ROUTING_LADDERS[policy_name][tier_name] = rewritten
+    MODEL_ROUTING = _refresh_phase_default_model_routing(selected_policy)
+    DEFAULT_MODEL_ROUTING = dict(MODEL_ROUTING)
+
+
+def resolve_step_ladder(
+    routing_policy: str,
+    phase: str,
+    step_id: str,
+) -> List[Tuple[str, str, str]]:
+    selected_policy = _normalize_routing_policy(routing_policy)
+    tiers = ACTIVE_ROUTING_LADDERS.get(selected_policy) or _clone_ladders(selected_policy)
+    step_tier = resolve_step_tier(phase, step_id)
+    routes = tiers.get(step_tier, [])
+    if not routes:
+        routes = tiers.get("extract", [])
+    return [tuple(route) for route in routes]
+
+
+def routing_ladders_payload() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
+    payload: Dict[str, Dict[str, List[Dict[str, str]]]] = {}
+    for policy, tiers in ACTIVE_ROUTING_LADDERS.items():
+        payload[policy] = {}
+        for tier, routes in tiers.items():
+            payload[policy][tier] = [
+                {
+                    "provider": provider,
+                    "model_id": model_id,
+                    "api_key_env": api_key_env,
+                }
+                for provider, model_id, api_key_env in routes
+            ]
+    return payload
 
 
 def effective_model_routing_payload() -> Dict[str, Dict[str, str]]:
@@ -1691,6 +1956,10 @@ def effective_model_routing_payload() -> Dict[str, Dict[str, str]]:
             "api_key_env": api_key_env,
         }
     return payload
+
+
+# Initialize routing state on module load.
+apply_model_overrides(DEFAULT_GEMINI_MODEL_ID, DEFAULT_ROUTING_POLICY)
 
 
 def write_run_manifest(
@@ -1730,6 +1999,14 @@ def write_run_manifest(
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "partition_workers": args.partition_workers,
+            "routing_policy": args.routing_policy,
+            "disable_escalation": args.disable_escalation,
+            "escalation_max_hops": args.escalation_max_hops,
+            "batch_mode": args.batch_mode,
+            "batch_provider": args.batch_provider,
+            "batch_poll_seconds": args.batch_poll_seconds,
+            "batch_wait_timeout_seconds": args.batch_wait_timeout_seconds,
+            "batch_max_requests_per_job": args.batch_max_requests_per_job,
             "debug_phase_inputs": args.debug_phase_inputs,
             "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
             "run_id_override": args.run_id,
@@ -1766,6 +2043,23 @@ def write_run_manifest(
         "run_status": "BLOCKED" if run_blocked else "OK",
         "phase_status": "blocked_promptset" if run_blocked else "ready",
         "blocked_promptset": run_blocked,
+        "routing_policy": args.routing_policy,
+        "routing_policy_version": ROUTING_POLICY_VERSION,
+        "routing_step_tiers": {
+            phase: {
+                spec.step_id: resolve_step_tier(phase, spec.step_id)
+                for spec in get_phase_prompts(phase)
+            }
+            for phase in phases
+        },
+        "routing_ladders": routing_ladders_payload(),
+        "batch_config": {
+            "enabled": bool(args.batch_mode),
+            "provider": args.batch_provider,
+            "poll_seconds": int(args.batch_poll_seconds),
+            "wait_timeout_seconds": int(args.batch_wait_timeout_seconds),
+            "max_requests_per_job": int(args.batch_max_requests_per_job),
+        },
         "effective_model_routing": effective_model_routing_payload(),
     }
     if run_blocked:
@@ -2233,25 +2527,40 @@ def write_run_routing_fingerprint(
     phases: List[str],
 ) -> None:
     phase_entries: Dict[str, List[Dict[str, Any]]] = {}
+    step_tier_map: Dict[str, Dict[str, str]] = {}
     for phase in phases:
         prompts = get_phase_prompts(phase)
         entries: List[Dict[str, Any]] = []
-        provider, model_id, _ = MODEL_ROUTING.get(phase, ("xai", "grok-code-fast-1", "XAI_API_KEY"))
-        endpoint_base = llm_base_url(provider, cfg)
-        default_sequence = (
-            _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
-            if provider == "gemini"
-            else ["sdk_bearer"]
-        )
+        step_tier_map[phase] = {}
         for prompt in prompts:
+            tier = resolve_step_tier(phase, prompt.step_id)
+            step_tier_map[phase][prompt.step_id] = tier
+            ladder = resolve_step_ladder(cfg.routing_policy, phase, prompt.step_id)
+            provider, model_id, api_key_env = ladder[0] if ladder else ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+            endpoint_base = llm_base_url(provider, cfg)
+            default_sequence = (
+                _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
+                if provider == "gemini"
+                else ["sdk_bearer"]
+            )
             endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", default_sequence[0])
             entries.append(
                 {
                     "step_id": prompt.step_id,
                     "prompt_file": prompt.prompt_path.name,
                     "declared_outputs": list(prompt.output_artifacts),
+                    "step_tier": tier,
                     "provider": provider,
                     "model_id": model_id,
+                    "api_key_env": api_key_env,
+                    "ladder": [
+                        {
+                            "provider": route_provider,
+                            "model_id": route_model,
+                            "api_key_env": route_key_env,
+                        }
+                        for route_provider, route_model, route_key_env in ladder
+                    ],
                     "transport": transport_for_provider(provider, cfg),
                     "endpoint_base_url": endpoint_base,
                     "endpoint_effective": endpoint_effective(endpoint_url),
@@ -2275,6 +2584,8 @@ def write_run_routing_fingerprint(
         "run_id": run_id,
         "created_at": now_iso(),
         "config": {
+            "routing_policy": cfg.routing_policy,
+            "routing_policy_version": ROUTING_POLICY_VERSION,
             "gemini_auth_mode_requested": cfg.gemini_auth_mode,
             "gemini_model_id_requested": next(
                 (
@@ -2290,6 +2601,23 @@ def write_run_routing_fingerprint(
             "fail_fast_auth": cfg.fail_fast_auth,
             "debug_phase_inputs": cfg.debug_phase_inputs,
             "fail_fast_missing_inputs": cfg.fail_fast_missing_inputs,
+            "disable_escalation": cfg.disable_escalation,
+            "escalation_max_hops": cfg.escalation_max_hops,
+            "batch_mode": cfg.batch_mode,
+            "batch_provider": cfg.batch_provider,
+            "batch_poll_seconds": cfg.batch_poll_seconds,
+            "batch_wait_timeout_seconds": cfg.batch_wait_timeout_seconds,
+            "batch_max_requests_per_job": cfg.batch_max_requests_per_job,
+        },
+        "selected_policy": cfg.routing_policy,
+        "step_tier_map": step_tier_map,
+        "routing_ladders": routing_ladders_payload(),
+        "batch_settings": {
+            "enabled": cfg.batch_mode,
+            "provider": cfg.batch_provider,
+            "poll_seconds": cfg.batch_poll_seconds,
+            "wait_timeout_seconds": cfg.batch_wait_timeout_seconds,
+            "max_requests_per_job": cfg.batch_max_requests_per_job,
         },
         "effective_model_routing": effective_model_routing_payload(),
         "phases": phase_entries,
@@ -2468,16 +2796,23 @@ def get_required_artifact_status(dirs: Dict[str, Path], phases: List[str]) -> Di
     }
 
 
-def collect_provider_routes() -> Dict[str, Dict[str, str]]:
+def collect_provider_routes(
+    phases: List[str],
+    routing_policy: str,
+) -> Dict[str, Dict[str, str]]:
     routes: Dict[str, Dict[str, str]] = {}
-    for _, (provider, model_id, api_key_env) in MODEL_ROUTING.items():
-        if provider in routes:
-            continue
-        routes[provider] = {
-            "provider": provider,
-            "model_id": model_id,
-            "api_key_env": api_key_env,
-        }
+    for phase in phases:
+        for prompt in get_phase_prompts(phase):
+            ladder = resolve_step_ladder(routing_policy, phase, prompt.step_id)
+            for provider, model_id, api_key_env in ladder:
+                key = f"{provider}:{model_id}:{api_key_env}"
+                if key in routes:
+                    continue
+                routes[key] = {
+                    "provider": provider,
+                    "model_id": model_id,
+                    "api_key_env": api_key_env,
+                }
     return routes
 
 
@@ -2520,8 +2855,7 @@ def run_provider_doctor_probe(provider: str, model_id: str, api_key_env: str, cf
 
 
 def run_provider_preflight(root: Path, run_id: str, cfg: RunnerConfig, phases: List[str]) -> Tuple[bool, Dict[str, Any]]:
-    del phases
-    provider_routes = collect_provider_routes()
+    provider_routes = collect_provider_routes(phases=phases, routing_policy=cfg.routing_policy)
     provider_probes = [
         run_provider_doctor_probe(
             provider=route["provider"],
@@ -2531,6 +2865,39 @@ def run_provider_preflight(root: Path, run_id: str, cfg: RunnerConfig, phases: L
         )
         for route in provider_routes.values()
     ]
+    batch_capability: Dict[str, Any] = {
+        "enabled": bool(cfg.batch_mode),
+        "provider": cfg.batch_provider,
+        "status": "SKIPPED",
+        "checks": [],
+    }
+    if cfg.batch_mode:
+        checks: List[Dict[str, Any]] = []
+        providers_to_check: Set[str] = set()
+        if cfg.batch_provider == "auto":
+            providers_to_check = {str(route["provider"]) for route in provider_routes.values()}
+        else:
+            providers_to_check = {cfg.batch_provider}
+        for provider in sorted(providers_to_check):
+            api_key_env = "OPENAI_API_KEY"
+            if provider == "gemini":
+                api_key_env = "GEMINI_API_KEY"
+            elif provider == "xai":
+                api_key_env = "XAI_API_KEY"
+            api_key, _ = resolve_api_key(provider, api_key_env)
+            checks.append(
+                {
+                    "provider": provider,
+                    "api_key_env": api_key_env,
+                    "api_key_present": bool(api_key),
+                }
+            )
+        batch_capability = {
+            "enabled": True,
+            "provider": cfg.batch_provider,
+            "status": "PASS" if all(row["api_key_present"] for row in checks) else "FAIL",
+            "checks": checks,
+        }
     failures = [
         probe for probe in provider_probes
         if probe.get("status_code") != 200 or is_auth_classified_failure(probe.get("failure_type"))
@@ -2542,6 +2909,9 @@ def run_provider_preflight(root: Path, run_id: str, cfg: RunnerConfig, phases: L
         "routes": provider_routes,
         "probes": provider_probes,
         "failed_providers": [probe.get("provider") for probe in failures],
+        "routing_policy": cfg.routing_policy,
+        "routing_policy_version": ROUTING_POLICY_VERSION,
+        "batch_capability": batch_capability,
     }
     doctor_dir = root / V3_DOCTOR_ROOT
     doctor_dir.mkdir(parents=True, exist_ok=True)
@@ -4023,7 +4393,106 @@ def enrich_request_meta(
     }
     endpoint_sig = json.dumps(endpoint_sig_src, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
     enriched["endpoint_transport_signature"] = hashlib.sha256(endpoint_sig.encode("utf-8")).hexdigest()
+    enriched.setdefault("routing_tier", None)
+    enriched.setdefault("routing_policy", None)
+    enriched.setdefault("route_hop_index", None)
+    enriched.setdefault("route_hop_total", None)
+    enriched.setdefault("route_attempts", [])
+    enriched.setdefault("escalation_trigger", None)
+    enriched.setdefault("execution_mode", "sync")
+    enriched.setdefault("batch_provider", None)
+    enriched.setdefault("batch_job_id", None)
     return enriched
+
+
+def call_llm_with_ladder(
+    *,
+    phase: str,
+    step_id: str,
+    partition_id: str,
+    routing_policy: str,
+    routing_tier: str,
+    ladder: Sequence[Tuple[str, str, str]],
+    cfg: RunnerConfig,
+    execute_attempt: Callable[[Tuple[str, str, str], int], Dict[str, Any]],
+    ui: Optional[UI] = None,
+) -> Dict[str, Any]:
+    if not ladder:
+        return {
+            "response_text": "",
+            "request_meta": {
+                "failure_type": "routing_empty_ladder",
+                "provider_error_reason": "No routes configured for tier.",
+            },
+            "artifacts": [],
+            "route": ("", "", ""),
+            "escalation_trigger": "routing_empty_ladder",
+            "route_attempts": [],
+        }
+
+    max_hops = 1 if cfg.disable_escalation else max(1, int(cfg.escalation_max_hops) + 1)
+    max_hops = min(max_hops, len(ladder))
+    attempts: List[Dict[str, Any]] = []
+    final_payload: Optional[Dict[str, Any]] = None
+    for hop_index in range(max_hops):
+        route = tuple(ladder[hop_index])
+        provider, model_id, api_key_env = route
+        payload = execute_attempt(route, hop_index)
+        request_meta = payload.get("request_meta") if isinstance(payload.get("request_meta"), dict) else {}
+        escalation_trigger = str(payload.get("escalation_trigger") or "").strip() or None
+        attempts.append(
+            {
+                "hop_index": hop_index + 1,
+                "provider": provider,
+                "model_id": model_id,
+                "api_key_env": api_key_env,
+                "failure_type": request_meta.get("failure_type"),
+                "status_code": request_meta.get("status_code"),
+                "escalation_trigger": escalation_trigger,
+                "ok": bool(payload.get("artifacts_ok", False)),
+            }
+        )
+        final_payload = dict(payload)
+        if not escalation_trigger or hop_index + 1 >= max_hops:
+            break
+        if ui is not None:
+            next_provider, next_model, _ = tuple(ladder[hop_index + 1])
+            ui.escalation_event(
+                phase=phase,
+                step_id=step_id,
+                partition_id=partition_id,
+                reason=escalation_trigger,
+                from_route=f"{provider}/{model_id}",
+                to_route=f"{next_provider}/{next_model}",
+                hop=hop_index + 1,
+            )
+
+    if final_payload is None:
+        final_payload = {
+            "response_text": "",
+            "request_meta": {"failure_type": "routing_unresolved"},
+            "artifacts": [],
+            "route": tuple(ladder[0]),
+            "escalation_trigger": "routing_unresolved",
+        }
+    final_request_meta = (
+        dict(final_payload.get("request_meta"))
+        if isinstance(final_payload.get("request_meta"), dict)
+        else {}
+    )
+    final_request_meta["routing_tier"] = routing_tier
+    final_request_meta["routing_policy"] = routing_policy
+    final_request_meta["route_hop_total"] = len(attempts)
+    final_request_meta["route_attempts"] = attempts
+    final_request_meta["route_hop_index"] = int(attempts[-1]["hop_index"]) if attempts else 1
+    final_request_meta["escalation_trigger"] = final_payload.get("escalation_trigger")
+    final_route = tuple(final_payload.get("route") or ("", "", ""))
+    final_request_meta["provider"] = final_route[0] if len(final_route) > 0 else final_request_meta.get("provider")
+    final_request_meta["model_id"] = final_route[1] if len(final_route) > 1 else final_request_meta.get("model_id")
+    return {
+        **final_payload,
+        "request_meta": final_request_meta,
+    }
 
 
 def run_gemini_auth_probe(
@@ -4114,9 +4583,9 @@ def _auth_failure_bucket(failure_type: Optional[str], provider_error_reason: Opt
 
 def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> int:
     phase = args.phase if args.phase in PHASES else "A"
-    provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"))
+    provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("gemini", DEFAULT_GEMINI_MODEL_ID, "GEMINI_API_KEY"))
     if provider != "gemini":
-        provider, model_id, api_key_env = ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY")
+        provider, model_id, api_key_env = ("gemini", DEFAULT_GEMINI_MODEL_ID, "GEMINI_API_KEY")
     endpoint_base = llm_base_url(provider, cfg)
     transport = transport_for_provider(provider, cfg)
     api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
@@ -4593,6 +5062,70 @@ def coerce_artifacts_from_response(
     return []
 
 
+def artifacts_pass_schema_gate(
+    artifacts: List[Dict[str, Any]],
+    expected_artifact_names: Tuple[str, ...],
+) -> Tuple[bool, Optional[str]]:
+    expected = set(expected_artifact_names)
+    observed = {
+        str(row.get("artifact_name", "")).strip()
+        for row in artifacts
+        if isinstance(row, dict) and str(row.get("artifact_name", "")).strip()
+    }
+    missing = sorted(expected - observed)
+    if missing:
+        return False, f"missing_expected_artifacts:{','.join(missing)}"
+
+    for row in artifacts:
+        if not isinstance(row, dict):
+            continue
+        payload = row.get("payload")
+        if isinstance(payload, dict):
+            items = payload.get("items")
+            if isinstance(items, list):
+                for item in items:
+                    if not isinstance(item, dict):
+                        return False, "schema_item_not_object"
+                    for key in ("id", "path", "line_range"):
+                        if key not in item:
+                            return False, f"schema_missing_key:{key}"
+                        value = item.get(key)
+                        if value in (None, "", []):
+                            return False, f"schema_empty_key:{key}"
+    return True, None
+
+
+def should_escalate_for_failure_type(failure_type: Optional[str]) -> bool:
+    token = str(failure_type or "").strip()
+    if not token:
+        return False
+    if token.startswith("auth_"):
+        return True
+    return token in {
+        "api_key_missing_or_invalid",
+        "permission_denied",
+        "quota_or_billing",
+        "provider",
+        "network",
+        "timeout",
+        "payload_unshrinkable",
+    }
+
+
+def build_batch_client(
+    provider: str,
+    api_key: str,
+    cfg: RunnerConfig,
+) -> BatchClient:
+    if provider == "openai":
+        return OpenAIBatchClient(api_key=api_key)
+    if provider == "gemini":
+        return GeminiBatchClient(api_key=api_key)
+    if provider == "xai":
+        return XAIBatchClient(api_key=api_key, base_url=llm_base_url(provider, cfg))
+    raise RuntimeError(f"Unsupported batch provider: {provider}")
+
+
 def validate_success_partition_output(
     success_json_path: Path,
     phase: str,
@@ -4797,12 +5330,15 @@ def execute_step_for_partitions(
         }
 
     raw_dir = phase_dir / "raw"
-    provider, model_id, api_key_env = MODEL_ROUTING.get(
-        phase, ("xai", "grok-code-fast-1", "XAI_API_KEY")
-    )
-    endpoint_base = llm_base_url(provider, cfg)
-    transport = transport_for_provider(provider, cfg)
-    force_json_output = provider == "gemini"
+    step_tier = resolve_step_tier(phase, step_id)
+    step_ladder = resolve_step_ladder(cfg.routing_policy, phase, step_id)
+    if not step_ladder:
+        step_ladder = [("openai", "gpt-5-mini", "OPENAI_API_KEY")]
+    initial_provider, initial_model_id, initial_api_key_env = step_ladder[0]
+    provider, model_id, api_key_env = initial_provider, initial_model_id, initial_api_key_env
+    endpoint_base = llm_base_url(initial_provider, cfg)
+    transport = transport_for_provider(initial_provider, cfg)
+    force_json_output = initial_provider == "gemini"
     max_files = max_files_for_phase(phase, cfg)
     run_id = phase_dir.parent.name
     logger.info(
@@ -4818,8 +5354,10 @@ def execute_step_for_partitions(
             prompt_path=prompt_path,
             outputs=output_artifacts,
             partitions_total=len(partitions),
-            provider=provider,
-            model_id=model_id,
+            provider=initial_provider,
+            model_id=initial_model_id,
+            step_tier=step_tier,
+            routing_policy=cfg.routing_policy,
         )
     resume_skipped = 0
     step_success_count = 0
@@ -4828,6 +5366,13 @@ def execute_step_for_partitions(
     step_recomputed_count = 0
     step_dry_run_count = 0
     step_retry_count = 0
+    step_escalated_partitions = 0
+    step_hop_distribution: Counter[str] = Counter()
+    step_execution_mode_counts: Counter[str] = Counter()
+    step_final_route_counts: Counter[str] = Counter()
+    batch_request_rows: List[Dict[str, Any]] = []
+    batch_job_rows: List[Dict[str, Any]] = []
+    batch_result_rows: List[Dict[str, Any]] = []
     started_at = time.time()
     workers = max(1, min(16, int(cfg.partition_workers)))
     ui_completed = 0
@@ -4912,6 +5457,13 @@ def execute_step_for_partitions(
             provider=provider,
             model_id=model_id,
         )
+        failure_meta["routing_tier"] = step_tier
+        failure_meta["routing_policy"] = cfg.routing_policy
+        failure_meta["route_hop_index"] = 1
+        failure_meta["route_hop_total"] = 1
+        failure_meta["route_attempts"] = []
+        failure_meta["escalation_trigger"] = None
+        failure_meta["execution_mode"] = "sync"
         _append_log(logs, "error", f"Worker exception for {step_id} {partition_id}: {error_message[:300]}")
         _op_write_text(write_ops, out_failed, f"worker_exception: {error_message}\n")
         _op_write_json(
@@ -5112,6 +5664,15 @@ def execute_step_for_partitions(
                 provider=provider,
                 model_id=model_id,
             )
+            failure_meta["routing_tier"] = step_tier
+            failure_meta["routing_policy"] = cfg.routing_policy
+            failure_meta["route_hop_index"] = 1
+            failure_meta["route_hop_total"] = 1
+            failure_meta["route_attempts"] = []
+            failure_meta["escalation_trigger"] = "payload_unshrinkable"
+            failure_meta["execution_mode"] = "batch" if cfg.batch_mode else "sync"
+            failure_meta["batch_provider"] = cfg.batch_provider if cfg.batch_mode else None
+            failure_meta["batch_job_id"] = None
             _append_log(
                 logs,
                 "error",
@@ -5217,6 +5778,15 @@ def execute_step_for_partitions(
                 provider=provider,
                 model_id=model_id,
             )
+            dry_meta["routing_tier"] = step_tier
+            dry_meta["routing_policy"] = cfg.routing_policy
+            dry_meta["route_hop_index"] = 1
+            dry_meta["route_hop_total"] = 1
+            dry_meta["route_attempts"] = []
+            dry_meta["escalation_trigger"] = None
+            dry_meta["execution_mode"] = "sync"
+            dry_meta["batch_provider"] = None
+            dry_meta["batch_job_id"] = None
             _op_write_text(write_ops, out_trace, trace_text)
             _op_write_json(
                 write_ops,
@@ -5263,100 +5833,349 @@ def execute_step_for_partitions(
                 f"context_bytes={context_stats['context_bytes']}"
             ),
         )
-        def _execute_llm_call() -> Tuple[str, Dict[str, Any]]:
-            llm_result = call_llm(
-                provider=provider,
-                model_id=model_id,
-                api_key_env=api_key_env,
-                system_prompt=prompt_text,
-                user_content=user_prompt,
-                cfg=cfg,
-                force_json_output=force_json_output,
-            )
-            response_text_local = str(llm_result.get("text", ""))
-            request_meta_local = enrich_request_meta(
-                llm_result.get("meta", {}),
-                run_id=run_id,
-                phase=phase,
-                step_id=step_id,
-                partition_id=partition_id,
-                provider=provider,
-                model_id=model_id,
-            )
-            request_meta_local.setdefault("request_payload_bytes", payload_bytes)
-            return response_text_local, request_meta_local
+        def _route_attempt(route: Tuple[str, str, str], hop_index: int) -> Dict[str, Any]:
+            route_provider, route_model_id, route_api_key_env = route
+            route_force_json = route_provider == "gemini"
 
-        parse_retry_attempted = False
-        parse_retry_attempts = 0
-        parse_retry_reason: Optional[str] = None
-        parse_retry_trace: List[Dict[str, Any]] = []
-        response_text, request_meta = _execute_llm_call()
-        artifacts: List[Dict[str, Any]] = []
+            def _execute_llm_call() -> Tuple[str, Dict[str, Any]]:
+                if cfg.batch_mode:
+                    batch_provider = cfg.batch_provider if cfg.batch_provider != "auto" else route_provider
+                    selected_route = (route_provider, route_model_id, route_api_key_env)
+                    if batch_provider != route_provider:
+                        for candidate in step_ladder:
+                            if candidate[0] == batch_provider:
+                                selected_route = candidate
+                                break
+                    batch_provider, batch_model_id, batch_api_key_env = selected_route
+                    batch_api_key, _ = resolve_api_key(batch_provider, batch_api_key_env)
+                    if not batch_api_key:
+                        failed_meta = {
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "failure_type": "auth_missing",
+                            "provider_error_reason": f"missing_api_key:{batch_api_key_env}",
+                            "execution_mode": "batch",
+                            "batch_provider": batch_provider,
+                            "batch_job_id": None,
+                        }
+                        return "", enrich_request_meta(
+                            failed_meta,
+                            run_id=run_id,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                        )
+                    batch_client = build_batch_client(batch_provider, batch_api_key, cfg)
+                    batch_requests = [
+                        BatchRequest(
+                            custom_id=partition_id,
+                            model_id=batch_model_id,
+                            system_prompt=prompt_text,
+                            user_content=user_prompt,
+                            force_json_output=(batch_provider == "gemini"),
+                            metadata={
+                                "phase": phase,
+                                "step_id": step_id,
+                                "partition_id": partition_id,
+                            },
+                        )
+                    ]
+                    batch_request_rows.append(
+                        {
+                            "partition_id": partition_id,
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "routing_policy": cfg.routing_policy,
+                            "routing_tier": step_tier,
+                        }
+                    )
+                    step_context = {
+                        "run_id": run_id,
+                        "phase": phase,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                    }
+                    if ui is not None:
+                        ui.batch_event(
+                            phase=phase,
+                            step_id=step_id,
+                            status="submit",
+                            provider=batch_provider,
+                            details=f"partition={partition_id} requests=1",
+                        )
+                    try:
+                        batch_job_id = batch_client.submit(batch_requests, BatchRoute(*selected_route), step_context)
+                        batch_job_rows.append(
+                            {
+                                "partition_id": partition_id,
+                                "provider": batch_provider,
+                                "model_id": batch_model_id,
+                                "job_id": batch_job_id,
+                                "submitted_at": now_iso(),
+                            }
+                        )
+                    except Exception as exc:
+                        failed_meta = {
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "failure_type": "provider",
+                            "provider_error_reason": f"batch_submit_error:{type(exc).__name__}",
+                            "execution_mode": "batch",
+                            "batch_provider": batch_provider,
+                            "batch_job_id": None,
+                            **capture_exception_metadata(exc),
+                        }
+                        return "", enrich_request_meta(
+                            failed_meta,
+                            run_id=run_id,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                        )
+                    started_poll = time.time()
+                    terminal_states = {"completed", "succeeded", "done", "failed", "cancelled", "canceled"}
+                    status = ""
+                    while True:
+                        status = str(batch_client.poll(batch_job_id) or "").lower()
+                        if status in terminal_states:
+                            break
+                        if time.time() - started_poll >= float(cfg.batch_wait_timeout_seconds):
+                            try:
+                                batch_client.cancel(batch_job_id)
+                            except Exception:
+                                pass
+                            failed_meta = {
+                                "provider": batch_provider,
+                                "model_id": batch_model_id,
+                                "failure_type": "timeout",
+                                "provider_error_reason": f"batch_timeout:{cfg.batch_wait_timeout_seconds}s",
+                                "execution_mode": "batch",
+                                "batch_provider": batch_provider,
+                                "batch_job_id": batch_job_id,
+                            }
+                            return "", enrich_request_meta(
+                                failed_meta,
+                                run_id=run_id,
+                                phase=phase,
+                                step_id=step_id,
+                                partition_id=partition_id,
+                                provider=batch_provider,
+                                model_id=batch_model_id,
+                            )
+                        if ui is not None:
+                            ui.batch_event(
+                                phase=phase,
+                                step_id=step_id,
+                                status="poll",
+                                provider=batch_provider,
+                                details=f"partition={partition_id} state={status}",
+                            )
+                        time.sleep(max(1, int(cfg.batch_poll_seconds)))
+                    results = batch_client.fetch_results(batch_job_id)
+                    result_map: Dict[str, BatchResult] = {
+                        str(row.custom_id): row for row in results
+                    }
+                    row = result_map.get(partition_id)
+                    if ui is not None:
+                        ui.batch_event(
+                            phase=phase,
+                            step_id=step_id,
+                            status="complete",
+                            provider=batch_provider,
+                            details=f"partition={partition_id} state={status} results={len(results)}",
+                        )
+                    if row is None:
+                        failed_meta = {
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "failure_type": "provider",
+                            "provider_error_reason": "batch_missing_result_for_partition",
+                            "execution_mode": "batch",
+                            "batch_provider": batch_provider,
+                            "batch_job_id": batch_job_id,
+                        }
+                        return "", enrich_request_meta(
+                            failed_meta,
+                            run_id=run_id,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                        )
+                    meta = {
+                        "provider": batch_provider,
+                        "model_id": batch_model_id,
+                        "status_code": 200 if not row.error else None,
+                        "failure_type": None if not row.error else "provider",
+                        "provider_error_reason": row.error,
+                        "execution_mode": "batch",
+                        "batch_provider": batch_provider,
+                        "batch_job_id": batch_job_id,
+                        "response_summary": {"batch_status": status},
+                    }
+                    batch_result_rows.append(
+                        {
+                            "partition_id": partition_id,
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "job_id": batch_job_id,
+                            "status": status,
+                            "error": row.error,
+                        }
+                    )
+                    return str(row.output_text or ""), enrich_request_meta(
+                        meta,
+                        run_id=run_id,
+                        phase=phase,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=batch_provider,
+                        model_id=batch_model_id,
+                    )
+                llm_result = call_llm(
+                    provider=route_provider,
+                    model_id=route_model_id,
+                    api_key_env=route_api_key_env,
+                    system_prompt=prompt_text,
+                    user_content=user_prompt,
+                    cfg=cfg,
+                    force_json_output=route_force_json,
+                )
+                response_text_local = str(llm_result.get("text", ""))
+                request_meta_local = enrich_request_meta(
+                    llm_result.get("meta", {}),
+                    run_id=run_id,
+                    phase=phase,
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider=route_provider,
+                    model_id=route_model_id,
+                )
+                request_meta_local.setdefault("request_payload_bytes", payload_bytes)
+                return response_text_local, request_meta_local
 
-        while True:
-            strict_candidate = response_text.strip()
-            strict_error = _strict_decode_error(strict_candidate) if strict_candidate else None
-            strict_string_literal_error = bool(
-                strict_error is not None and _is_string_literal_decode_error(strict_error)
-            )
-            strict_semantic_eof_eligible = bool(
-                strict_error is not None and _is_semantic_eof_eligible(strict_error, strict_candidate)
-            )
-            parsed = parse_json_from_response(response_text)
-            artifacts = coerce_artifacts_from_response(
-                parsed=parsed,
-                raw_text=response_text,
-                expected_artifacts=output_artifacts,
-            )
-            parse_retry_trace.append(
-                {
-                    "attempt": len(parse_retry_trace) + 1,
-                    "failure_type": request_meta.get("failure_type"),
-                    "finish_reason": (request_meta.get("response_summary") or {}).get("finish_reason")
-                    if isinstance(request_meta.get("response_summary"), dict)
-                    else None,
-                    "strict_decode_error": str(strict_error) if strict_error else None,
-                    "strict_decode_error_message": strict_error.msg if strict_error else None,
-                    "strict_decode_error_pos": int(strict_error.pos) if strict_error else None,
-                    "strict_string_literal_error": strict_string_literal_error,
-                    "strict_semantic_eof_eligible": strict_semantic_eof_eligible,
-                    "parsed_json": parsed is not None,
-                    "artifacts_ok": bool(artifacts),
-                    "response_text_length": len(response_text),
-                }
-            )
-            if artifacts:
-                break
+            parse_retry_attempted = False
+            parse_retry_attempts = 0
+            parse_retry_reason: Optional[str] = None
+            parse_retry_trace: List[Dict[str, Any]] = []
+            response_text_local, request_meta_local = _execute_llm_call()
+            artifacts_local: List[Dict[str, Any]] = []
+            while True:
+                strict_candidate = response_text_local.strip()
+                strict_error = _strict_decode_error(strict_candidate) if strict_candidate else None
+                strict_string_literal_error = bool(
+                    strict_error is not None and _is_string_literal_decode_error(strict_error)
+                )
+                strict_semantic_eof_eligible = bool(
+                    strict_error is not None and _is_semantic_eof_eligible(strict_error, strict_candidate)
+                )
+                parsed = parse_json_from_response(response_text_local)
+                artifacts_local = coerce_artifacts_from_response(
+                    parsed=parsed,
+                    raw_text=response_text_local,
+                    expected_artifacts=output_artifacts,
+                )
+                parse_retry_trace.append(
+                    {
+                        "attempt": len(parse_retry_trace) + 1,
+                        "failure_type": request_meta_local.get("failure_type"),
+                        "finish_reason": (request_meta_local.get("response_summary") or {}).get("finish_reason")
+                        if isinstance(request_meta_local.get("response_summary"), dict)
+                        else None,
+                        "strict_decode_error": str(strict_error) if strict_error else None,
+                        "strict_decode_error_message": strict_error.msg if strict_error else None,
+                        "strict_decode_error_pos": int(strict_error.pos) if strict_error else None,
+                        "strict_string_literal_error": strict_string_literal_error,
+                        "strict_semantic_eof_eligible": strict_semantic_eof_eligible,
+                        "parsed_json": parsed is not None,
+                        "artifacts_ok": bool(artifacts_local),
+                        "response_text_length": len(response_text_local),
+                    }
+                )
+                if artifacts_local:
+                    break
+                eligible_reason = _parse_retry_reason(response_text_local, request_meta_local, strict_error)
+                if parse_retry_attempts >= PARSE_RETRY_MAX_EXTRA_ATTEMPTS or not eligible_reason:
+                    break
+                parse_retry_attempted = True
+                parse_retry_attempts += 1
+                parse_retry_reason = eligible_reason
+                response_text_local, request_meta_local = _execute_llm_call()
 
-            eligible_reason = _parse_retry_reason(response_text, request_meta, strict_error)
-            if parse_retry_attempts >= PARSE_RETRY_MAX_EXTRA_ATTEMPTS or not eligible_reason:
-                break
+            schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts_local, output_artifacts)
+            escalation_trigger: Optional[str] = None
+            if not artifacts_local:
+                escalation_trigger = "parse_failure" if parse_retry_attempts > 0 else "parse_failure_no_retry"
+            elif not schema_ok:
+                escalation_trigger = schema_reason or "schema_gate_failure"
+            elif should_escalate_for_failure_type(request_meta_local.get("failure_type")):
+                escalation_trigger = "provider_failure"
+            if escalation_trigger and cfg.disable_escalation:
+                escalation_trigger = None
+            request_meta_local = {
+                **request_meta_local,
+                "parse_retry_attempted": parse_retry_attempted,
+                "parse_retry_attempts": parse_retry_attempts,
+                "parse_retry_reason": parse_retry_reason,
+                "parse_retry_trace": parse_retry_trace,
+                "schema_gate_passed": bool(schema_ok),
+                "schema_gate_reason": schema_reason,
+                "route_hop_index": hop_index + 1,
+                "routing_tier": step_tier,
+                "routing_policy": cfg.routing_policy,
+                "execution_mode": str(request_meta_local.get("execution_mode") or "sync"),
+                "batch_provider": request_meta_local.get("batch_provider"),
+                "batch_job_id": request_meta_local.get("batch_job_id"),
+            }
+            return {
+                "response_text": response_text_local,
+                "request_meta": request_meta_local,
+                "artifacts": artifacts_local,
+                "route": route,
+                "artifacts_ok": bool(artifacts_local and schema_ok),
+                "escalation_trigger": escalation_trigger,
+            }
 
-            parse_retry_attempted = True
-            parse_retry_attempts += 1
-            parse_retry_reason = eligible_reason
-            _append_log(
-                logs,
-                "info",
-                f"Artifact parse retry eligible for {step_id} {partition_id}: reason={eligible_reason}",
-            )
-            _append_log(
-                logs,
-                "info",
-                (
-                    f"Artifact parse retry attempt {parse_retry_attempts}/"
-                    f"{PARSE_RETRY_MAX_EXTRA_ATTEMPTS} for {step_id} {partition_id}"
-                ),
-            )
-            response_text, request_meta = _execute_llm_call()
-
-        request_meta = {
-            **request_meta,
-            "parse_retry_attempted": parse_retry_attempted,
-            "parse_retry_attempts": parse_retry_attempts,
-            "parse_retry_reason": parse_retry_reason,
-            "parse_retry_trace": parse_retry_trace,
-        }
+        ladder_result = call_llm_with_ladder(
+            phase=phase,
+            step_id=step_id,
+            partition_id=partition_id,
+            routing_policy=cfg.routing_policy,
+            routing_tier=step_tier,
+            ladder=step_ladder,
+            cfg=cfg,
+            execute_attempt=_route_attempt,
+            ui=ui,
+        )
+        response_text = str(ladder_result.get("response_text", ""))
+        request_meta = (
+            dict(ladder_result.get("request_meta"))
+            if isinstance(ladder_result.get("request_meta"), dict)
+            else {}
+        )
+        artifacts = (
+            list(ladder_result.get("artifacts"))
+            if isinstance(ladder_result.get("artifacts"), list)
+            else []
+        )
+        final_route = tuple(ladder_result.get("route") or (initial_provider, initial_model_id, initial_api_key_env))
+        final_provider = final_route[0] if len(final_route) > 0 else initial_provider
+        final_model_id = final_route[1] if len(final_route) > 1 else initial_model_id
+        request_meta["execution_mode"] = request_meta.get("execution_mode") or "sync"
+        request_meta["batch_provider"] = request_meta.get("batch_provider") or None
+        request_meta["batch_job_id"] = request_meta.get("batch_job_id") or None
+        request_meta["route_attempts"] = request_meta.get("route_attempts") or []
+        if len(request_meta.get("route_attempts", [])) > 1:
+            request_meta["escalation_trigger"] = request_meta.get("escalation_trigger") or "gated_retry"
+        else:
+            request_meta["escalation_trigger"] = request_meta.get("escalation_trigger")
+        request_meta["provider"] = request_meta.get("provider") or final_provider
+        request_meta["model_id"] = request_meta.get("model_id") or final_model_id
         auth_failure = is_auth_classified_failure(request_meta.get("failure_type"))
         auth_expired = is_auth_expired_failure(request_meta.get("failure_type"))
 
@@ -5504,6 +6323,15 @@ def execute_step_for_partitions(
         retry_trace = result.request_meta.get("retry_trace")
         if isinstance(retry_trace, list):
             step_retry_count += max(0, len(retry_trace) - 1)
+        hop_total = int(result.request_meta.get("route_hop_total", 1) or 1)
+        step_hop_distribution[str(hop_total)] += 1
+        if hop_total > 1:
+            step_escalated_partitions += 1
+        execution_mode = str(result.request_meta.get("execution_mode") or "sync")
+        step_execution_mode_counts[execution_mode] += 1
+        final_provider = str(result.request_meta.get("provider") or provider)
+        final_model = str(result.request_meta.get("model_id") or model_id)
+        step_final_route_counts[f"{final_provider}/{final_model}"] += 1
 
         if result.auth_failure:
             step_auth_failures += 1
@@ -5518,8 +6346,9 @@ def execute_step_for_partitions(
                     ui.step_progress_stop()
                 raise RuntimeError(
                     f"Fail-fast auth triggered for step {step_id} partition {partition_id}. "
-                    f"failure_type={result.request_meta.get('failure_type')} provider={provider} "
-                    f"model={model_id} auth_mode={cfg.gemini_auth_mode}. "
+                    f"failure_type={result.request_meta.get('failure_type')} "
+                    f"provider={result.request_meta.get('provider') or provider} "
+                    f"model={result.request_meta.get('model_id') or model_id} auth_mode={cfg.gemini_auth_mode}. "
                     "Check credentials, endpoint mode, and gemini auth strategy."
                 )
 
@@ -5562,6 +6391,39 @@ def execute_step_for_partitions(
 
     if resume_skipped:
         logger.info("Resume: skipped %s existing outputs for step %s", resume_skipped, step_id)
+    if cfg.batch_mode:
+        batch_dir = phase_dir / "batch"
+        batch_dir.mkdir(parents=True, exist_ok=True)
+        requests_path = batch_dir / f"{step_id}.requests.jsonl"
+        job_path = batch_dir / f"{step_id}.job.json"
+        results_path = batch_dir / f"{step_id}.results.jsonl"
+        summary_path = batch_dir / f"{step_id}.summary.json"
+        requests_text = "\n".join(json.dumps(row, sort_keys=True, ensure_ascii=True) for row in batch_request_rows)
+        results_text = "\n".join(json.dumps(row, sort_keys=True, ensure_ascii=True) for row in batch_result_rows)
+        requests_path.write_text((requests_text + "\n") if requests_text else "", encoding="utf-8")
+        results_path.write_text((results_text + "\n") if results_text else "", encoding="utf-8")
+        write_json(
+            job_path,
+            {
+                "generated_at": now_iso(),
+                "phase": phase,
+                "step_id": step_id,
+                "routing_policy": cfg.routing_policy,
+                "routing_tier": step_tier,
+                "jobs": batch_job_rows,
+            },
+        )
+        write_json(
+            summary_path,
+            {
+                "generated_at": now_iso(),
+                "phase": phase,
+                "step_id": step_id,
+                "request_count": len(batch_request_rows),
+                "result_count": len(batch_result_rows),
+                "job_count": len(batch_job_rows),
+            },
+        )
     elapsed_ms = int((time.time() - started_at) * 1000)
     logger.info(
         "Step summary %s partitions_total=%s ok=%s failed=%s retries=%s elapsed_ms=%s workers=%s",
@@ -5585,6 +6447,10 @@ def execute_step_for_partitions(
         "retries": step_retry_count,
         "elapsed_ms": elapsed_ms,
         "auth_failures": step_auth_failures,
+        "hop_distribution": dict(step_hop_distribution),
+        "escalated_partitions": step_escalated_partitions,
+        "execution_mode_counts": dict(step_execution_mode_counts),
+        "final_route_counts": dict(step_final_route_counts),
     }
 
 
@@ -5682,14 +6548,26 @@ def _run_phase_inner(
         max_files,
         cfg.max_chars,
     )
-    provider, model_id, _ = MODEL_ROUTING.get(phase, ("xai", "grok-code-fast-1", "XAI_API_KEY"))
+    phase_tier_defaults: Dict[str, str] = {}
+    for tier_name in STEP_TIERS:
+        routes = (ACTIVE_ROUTING_LADDERS.get(cfg.routing_policy, {}) or {}).get(tier_name, [])
+        if routes:
+            phase_tier_defaults[tier_name] = f"{routes[0][0]}/{routes[0][1]}"
+    first_step = prompts[0] if prompts else None
+    if first_step is not None:
+        first_ladder = resolve_step_ladder(cfg.routing_policy, phase, first_step.step_id)
+    else:
+        first_ladder = []
+    provider, model_id, _ = first_ladder[0] if first_ladder else MODEL_ROUTING.get(phase, ("openai", "gpt-5-mini", "OPENAI_API_KEY"))
     ui_flags = (
         f"resume:{cfg.resume},dry_run:{cfg.dry_run},debug_phase_inputs:{cfg.debug_phase_inputs},"
-        f"fail_fast_auth:{cfg.fail_fast_auth}"
+        f"fail_fast_auth:{cfg.fail_fast_auth},routing_policy:{cfg.routing_policy},"
+        f"disable_escalation:{cfg.disable_escalation},batch_mode:{cfg.batch_mode}"
     )
     logger.info(
         "PHASE_HEADER phase=%s run_id=%s phase_dir=%s inventory=%s partitions=%s max_files=%s "
-        "max_chars=%s max_request_bytes=%s provider=%s model=%s flags=resume:%s,dry_run:%s,debug_phase_inputs:%s,fail_fast_auth:%s",
+        "max_chars=%s max_request_bytes=%s provider=%s model=%s routing_policy=%s tier_defaults=%s "
+        "flags=resume:%s,dry_run:%s,debug_phase_inputs:%s,fail_fast_auth:%s",
         phase,
         phase_dir.parent.name,
         str(phase_dir.resolve()),
@@ -5700,6 +6578,8 @@ def _run_phase_inner(
         cfg.max_request_bytes,
         provider,
         model_id,
+        cfg.routing_policy,
+        json.dumps(phase_tier_defaults, sort_keys=True),
         cfg.resume,
         cfg.dry_run,
         cfg.debug_phase_inputs,
@@ -5715,12 +6595,15 @@ def _run_phase_inner(
             model_id=model_id,
             workers=cfg.partition_workers,
             flags=ui_flags,
+            routing_policy=cfg.routing_policy,
+            tier_defaults=phase_tier_defaults,
         )
 
     phase_auth_failures = 0
     for prompt_spec in prompts:
-        provider, model_id, api_key_env = MODEL_ROUTING.get(
-            phase, ("xai", "grok-code-fast-1", "XAI_API_KEY")
+        step_ladder = resolve_step_ladder(cfg.routing_policy, phase, prompt_spec.step_id)
+        provider, model_id, api_key_env = (
+            step_ladder[0] if step_ladder else ("openai", "gpt-5-mini", "OPENAI_API_KEY")
         )
         if provider == "gemini" and not cfg.dry_run:
             probe = run_gemini_auth_probe(
@@ -5793,6 +6676,22 @@ def _run_phase_inner(
                     else 0
                 ),
                 qa_file=f"{prompt_spec.step_id}_QA.json",
+                hop_distribution=(
+                    step_stats.get("hop_distribution")
+                    if isinstance(step_stats.get("hop_distribution"), dict)
+                    else {}
+                ),
+                escalated_partitions=int(step_stats.get("escalated_partitions", 0)),
+                execution_mode_counts=(
+                    step_stats.get("execution_mode_counts")
+                    if isinstance(step_stats.get("execution_mode_counts"), dict)
+                    else {}
+                ),
+                final_route_counts=(
+                    step_stats.get("final_route_counts")
+                    if isinstance(step_stats.get("final_route_counts"), dict)
+                    else {}
+                ),
             )
     logger.info(
         "PHASE_EXECUTION_DONE phase=%s elapsed_ms=%s auth_failures=%s",
@@ -6534,6 +7433,14 @@ def print_config(
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "partition_workers": args.partition_workers,
+            "routing_policy": args.routing_policy,
+            "disable_escalation": args.disable_escalation,
+            "escalation_max_hops": args.escalation_max_hops,
+            "batch_mode": args.batch_mode,
+            "batch_provider": args.batch_provider,
+            "batch_poll_seconds": args.batch_poll_seconds,
+            "batch_wait_timeout_seconds": args.batch_wait_timeout_seconds,
+            "batch_max_requests_per_job": args.batch_max_requests_per_job,
             "debug_phase_inputs": args.debug_phase_inputs,
             "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
             "no_write_latest": args.no_write_latest,
@@ -6546,6 +7453,8 @@ def print_config(
             "file_truncate_chars": cfg.file_truncate_chars,
         },
         "dirs": {phase: str(dirs[phase]) for phase in phases},
+        "routing_policy_version": ROUTING_POLICY_VERSION,
+        "routing_ladders": routing_ladders_payload(),
         "effective_model_routing": effective_model_routing_payload(),
     }
     print(json.dumps(config_payload, indent=2))
@@ -6868,6 +7777,22 @@ def main() -> None:
         help="Override Gemini model ID for all Gemini-routed phases.",
     )
     parser.add_argument(
+        "--routing-policy",
+        choices=["cost", "balanced", "quality"],
+        default=DEFAULT_ROUTING_POLICY,
+    )
+    parser.add_argument("--disable-escalation", action="store_true")
+    parser.add_argument("--escalation-max-hops", type=int, default=2)
+    parser.add_argument("--batch-mode", action="store_true")
+    parser.add_argument(
+        "--batch-provider",
+        choices=["auto", "openai", "gemini", "xai"],
+        default="auto",
+    )
+    parser.add_argument("--batch-poll-seconds", type=int, default=30)
+    parser.add_argument("--batch-wait-timeout-seconds", type=int, default=86400)
+    parser.add_argument("--batch-max-requests-per-job", type=int, default=2000)
+    parser.add_argument(
         "--gemini-transport",
         choices=["sdk", "openai_compat_http"],
         default="sdk",
@@ -6920,7 +7845,11 @@ def main() -> None:
     args.partition_workers = max(1, min(16, int(args.partition_workers)))
     if args.pretty and args.ui == "auto":
         args.ui = "rich"
-    apply_model_overrides(args.gemini_model_id)
+    args.escalation_max_hops = max(0, int(args.escalation_max_hops))
+    args.batch_poll_seconds = max(1, int(args.batch_poll_seconds))
+    args.batch_wait_timeout_seconds = max(60, int(args.batch_wait_timeout_seconds))
+    args.batch_max_requests_per_job = max(1, int(args.batch_max_requests_per_job))
+    apply_model_overrides(args.gemini_model_id, args.routing_policy)
 
     if not (
         args.phase
@@ -7029,6 +7958,14 @@ def main() -> None:
         partition_workers=args.partition_workers,
         debug_phase_inputs=args.debug_phase_inputs,
         fail_fast_missing_inputs=args.fail_fast_missing_inputs,
+        routing_policy=args.routing_policy,
+        disable_escalation=bool(args.disable_escalation),
+        escalation_max_hops=args.escalation_max_hops,
+        batch_mode=bool(args.batch_mode),
+        batch_provider=args.batch_provider,
+        batch_poll_seconds=args.batch_poll_seconds,
+        batch_wait_timeout_seconds=args.batch_wait_timeout_seconds,
+        batch_max_requests_per_job=args.batch_max_requests_per_job,
     )
 
     phase_sequence = resolve_phase_list(args.phase)

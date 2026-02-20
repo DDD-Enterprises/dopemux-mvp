@@ -8,6 +8,7 @@ cognitive load management, and seamless workflow optimization.
 import asyncio
 import json
 import logging
+import os
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set, Callable, Tuple
 from dataclasses import dataclass, asdict
@@ -109,7 +110,7 @@ class ADHDAccommodationEngine:
     def __init__(
         self,
         redis_url: str = "redis://localhost:6379",
-        workspace_id: str = "/Users/hue/code/dopemux-mvp"
+        workspace_id: str = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", os.getcwd()))
     ):
         self.redis_url = redis_url
         self.workspace_id = workspace_id

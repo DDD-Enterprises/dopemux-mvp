@@ -117,3 +117,40 @@ def test_build_v4_status_payload_uses_v4_run_root() -> None:
     parsed = json.loads(json.dumps(payload))
     assert parsed["pipeline_version"] == "v4"
     assert "/extraction/repo-truth-extractor/v4/runs/" in parsed["run_dir"]
+
+
+def test_build_v3_cmd_passes_routing_and_batch_flags() -> None:
+    runner = _load_runner_module()
+    cmd = runner.build_v3_cmd(
+        phase="A",
+        run_id="rid",
+        dry_run=True,
+        resume=True,
+        partition_workers=2,
+        doctor=False,
+        doctor_auto_reprocess=False,
+        doctor_reprocess_dry_run=False,
+        doctor_reprocess_phases="",
+        status=False,
+        status_json=False,
+        doctor_auth=False,
+        preflight_providers=False,
+        coverage_report=False,
+        routing_policy="cost",
+        disable_escalation=True,
+        escalation_max_hops=3,
+        batch_mode=True,
+        batch_provider="openai",
+        batch_poll_seconds=15,
+        batch_wait_timeout_seconds=120,
+        batch_max_requests_per_job=99,
+    )
+    cmd_text = " ".join(cmd)
+    assert "--routing-policy cost" in cmd_text
+    assert "--disable-escalation" in cmd_text
+    assert "--escalation-max-hops 3" in cmd_text
+    assert "--batch-mode" in cmd_text
+    assert "--batch-provider openai" in cmd_text
+    assert "--batch-poll-seconds 15" in cmd_text
+    assert "--batch-wait-timeout-seconds 120" in cmd_text
+    assert "--batch-max-requests-per-job 99" in cmd_text
