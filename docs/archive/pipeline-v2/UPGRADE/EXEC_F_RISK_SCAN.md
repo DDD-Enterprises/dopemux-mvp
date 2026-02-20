@@ -1,3 +1,14 @@
+---
+id: EXEC_F_RISK_SCAN
+title: Exec F Risk Scan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Exec F Risk Scan (explanation) for dopemux documentation and developer workflows.
+---
 # EXECUTABLE PROMPT: F - Determinism + Concurrency + Idempotency Risk Scan
 
 ---

@@ -1,0 +1,36 @@
+{
+  "filetype_counts": {
+    ".md": 320,
+    ".py": 980,
+    ".toml": 12,
+    ".yaml": 40
+  },
+  "language_counts": {
+    "markdown": 320,
+    "python": 980,
+    "toml": 12,
+    "yaml": 40
+  },
+  "path_clusters": [
+    {
+      "file_count": 900,
+      "path": "services",
+      "total_bytes": 18000000
+    },
+    {
+      "file_count": 260,
+      "path": "shared",
+      "total_bytes": 4000000
+    },
+    {
+      "file_count": 180,
+      "path": "docs",
+      "total_bytes": 3000000
+    }
+  ],
+  "totals": {
+    "total_bytes": 28000000,
+    "total_files": 1450
+  }
+}
+

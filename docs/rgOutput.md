@@ -1,3 +1,14 @@
+---
+id: rgOutput
+title: Rgoutput
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Rgoutput (explanation) for dopemux documentation and developer workflows.
+---
 ./start-mcp-servers.sh:61:start_service "dope-context" "3010"
 ./profiles/architect.yaml:12:  - dope-context     # Semantic code search
 ./AGENTS.md:146:2. **MCP Layer**: conport, zen, dope-context
