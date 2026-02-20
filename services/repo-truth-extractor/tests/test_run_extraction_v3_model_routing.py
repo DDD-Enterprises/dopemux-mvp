@@ -66,7 +66,7 @@ def test_cost_policy_ladders_map_expected_defaults() -> None:
     _reset_routing(runner)
     assert runner.resolve_step_ladder("cost", "A", "A0")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
     assert runner.resolve_step_ladder("cost", "A", "A1")[0] == ("openai", "gpt-5-mini", "OPENAI_API_KEY")
-    assert runner.resolve_step_ladder("cost", "R", "R1")[0] == ("openai", "gpt-5.2-extended", "OPENAI_API_KEY")
+    assert runner.resolve_step_ladder("cost", "R", "R1")[0] == ("openai", "gpt-5.2", "OPENAI_API_KEY")
     assert runner.resolve_step_ladder("cost", "Q", "Q9")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
 
 

@@ -70,6 +70,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - user guide and batch quickstart
   - CLI runbook cross-links
 
+### Fixed
+- Repo Truth Extractor routing defaults now use `gpt-5.2` / `gpt-5.2-pro` model IDs for OpenAI ladders.
+- OpenAI GPT-5 requests omit custom temperature to avoid unsupported parameter errors.
+
 ### Planned
 - Windows support (chocolatey package)
 - GitHub Actions CI/CD pipeline
