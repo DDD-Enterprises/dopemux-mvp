@@ -1,3 +1,14 @@
+---
+id: EXEC_H1_INVENTORY
+title: Exec H1 Inventory
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Exec H1 Inventory (explanation) for dopemux documentation and developer workflows.
+---
 # EXECUTABLE PROMPT: H1 - Home Config Inventory + Keys
 
 ---

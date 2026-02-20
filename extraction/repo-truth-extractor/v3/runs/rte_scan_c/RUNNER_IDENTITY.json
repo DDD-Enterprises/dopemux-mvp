@@ -1,0 +1,9 @@
+{
+  "generated_at": "2026-02-20T14:04:49.633264+00:00",
+  "git_sha": "3a5a5b0657f09da33e6d29b8d51b366d7246eeb8",
+  "python_executable": "/Users/hue/.pyenv/versions/3.13.6/bin/python3",
+  "python_version": "3.13.6",
+  "run_id": "rte_scan_c",
+  "runner_script_path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/run_extraction_v3.py",
+  "runner_sha256": "ad1055ce0416fed1387b87292686afa56698ff620c3646ea5f940a453ebed197"
+}

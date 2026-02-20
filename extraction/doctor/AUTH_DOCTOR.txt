@@ -1,0 +1,14 @@
+PASS provider=gemini transport=sdk endpoint=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent response_received=True succeeded_modes=sdk_api_key failed_modes=-
+generated_at=2026-02-17T19:50:52.126090+00:00
+phase=A
+provider=gemini
+model_id=gemini-2.0-flash-001
+api_key_env_name=GEMINI_API_KEY
+api_key_env_resolved=GEMINI_API_KEY
+api_key_present=true
+api_key_length=39
+transport=sdk
+gemini_auth_mode_requested=auto
+modes_tested=sdk_api_key
+succeeded_modes=sdk_api_key
+failed_modes=
