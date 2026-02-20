@@ -124,7 +124,7 @@ class ContextSwitchRecovery:
 
     Usage:
         recovery = ContextSwitchRecovery(
-            workspace_id="/path/to/workspace",
+            workspace_id="/Users/hue/code/dopemux-mvp",
             conport_client=conport,
             desktop_commander=desktop,
             task_orchestrator=orchestrator

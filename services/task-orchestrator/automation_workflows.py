@@ -8,7 +8,6 @@ and retrospectives without developer cognitive overhead.
 import asyncio
 import json
 import logging
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set, Callable
 from dataclasses import dataclass, asdict
@@ -71,7 +70,7 @@ class ImplicitAutomationEngine:
 
     def __init__(
         self,
-        workspace_id: str = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", os.getcwd())),
+        workspace_id: str = "/Users/hue/code/dopemux-mvp",
         leantime_client: Any = None,
         conport_client: Any = None,
         serena_client: Any = None
