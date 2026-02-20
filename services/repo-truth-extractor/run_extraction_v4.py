@@ -68,6 +68,7 @@ SUPPORTED_V3_PHASES = {"A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T
 STEP_ID_RE = re.compile(r"^([A-Z])(\d+)$")
 RAW_STEP_FILE_RE = re.compile(r"^(?P<step>[A-Z]\d+)__(?P<partition>.+)\.json$")
 ARTIFACT_NAME_RE = re.compile(r"\b[A-Z][A-Z0-9_]+(?:\.partX)?\.(?:json|md)\b")
+DEFAULT_ROUTING_POLICY = "cost"
 ENV_TOKEN_RE = re.compile(r"\$\{([^}]+)\}")
 
 
@@ -186,6 +187,14 @@ def build_v3_cmd(
     doctor_auth: bool,
     preflight_providers: bool,
     coverage_report: bool,
+    routing_policy: str,
+    disable_escalation: bool,
+    escalation_max_hops: int,
+    batch_mode: bool,
+    batch_provider: str,
+    batch_poll_seconds: int,
+    batch_wait_timeout_seconds: int,
+    batch_max_requests_per_job: int,
 ) -> List[str]:
     cmd = [sys.executable, str(V3_RUNNER)]
     if phase:
@@ -198,6 +207,16 @@ def build_v3_cmd(
         cmd.append("--resume")
     if partition_workers > 0:
         cmd.extend(["--partition-workers", str(partition_workers)])
+    cmd.extend(["--routing-policy", routing_policy])
+    if disable_escalation:
+        cmd.append("--disable-escalation")
+    cmd.extend(["--escalation-max-hops", str(max(0, int(escalation_max_hops)))])
+    if batch_mode:
+        cmd.append("--batch-mode")
+    cmd.extend(["--batch-provider", batch_provider])
+    cmd.extend(["--batch-poll-seconds", str(max(1, int(batch_poll_seconds)))])
+    cmd.extend(["--batch-wait-timeout-seconds", str(max(60, int(batch_wait_timeout_seconds)))])
+    cmd.extend(["--batch-max-requests-per-job", str(max(1, int(batch_max_requests_per_job)))])
     if doctor:
         cmd.append("--doctor")
     if doctor_auto_reprocess:
@@ -1140,6 +1159,14 @@ def run_pipeline(
     preflight_providers: bool,
     coverage_report: bool,
     sync: bool,
+    routing_policy: str,
+    disable_escalation: bool,
+    escalation_max_hops: int,
+    batch_mode: bool,
+    batch_provider: str,
+    batch_poll_seconds: int,
+    batch_wait_timeout_seconds: int,
+    batch_max_requests_per_job: int,
 ) -> int:
     promptset = load_promptset()
     all_phases = expected_phase_order(promptset)
@@ -1175,6 +1202,14 @@ def run_pipeline(
             doctor_auth=doctor_auth,
             preflight_providers=preflight_providers,
             coverage_report=coverage_report,
+            routing_policy=routing_policy,
+            disable_escalation=disable_escalation,
+            escalation_max_hops=escalation_max_hops,
+            batch_mode=batch_mode,
+            batch_provider=batch_provider,
+            batch_poll_seconds=batch_poll_seconds,
+            batch_wait_timeout_seconds=batch_wait_timeout_seconds,
+            batch_max_requests_per_job=batch_max_requests_per_job,
         )
         rc = call_v3_runner(cmd, prompt_root=SERVICE_ROOT / "promptsets" / "v4" / "prompts")
         if rc != 0:
@@ -1207,6 +1242,14 @@ def cli(
     coverage_report: bool = typer.Option(False, "--coverage-report"),
     promptset_audit: bool = typer.Option(False, "--promptset-audit"),
     strict_audit: bool = typer.Option(True, "--strict-audit/--no-strict-audit"),
+    routing_policy: str = typer.Option(DEFAULT_ROUTING_POLICY, "--routing-policy"),
+    disable_escalation: bool = typer.Option(False, "--disable-escalation"),
+    escalation_max_hops: int = typer.Option(2, "--escalation-max-hops"),
+    batch_mode: bool = typer.Option(False, "--batch-mode"),
+    batch_provider: str = typer.Option("auto", "--batch-provider"),
+    batch_poll_seconds: int = typer.Option(30, "--batch-poll-seconds"),
+    batch_wait_timeout_seconds: int = typer.Option(86400, "--batch-wait-timeout-seconds"),
+    batch_max_requests_per_job: int = typer.Option(2000, "--batch-max-requests-per-job"),
     sync: bool = typer.Option(
         True,
         "--sync/--no-sync",
@@ -1250,6 +1293,14 @@ def cli(
         preflight_providers=preflight_providers,
         coverage_report=coverage_report,
         sync=sync,
+        routing_policy=routing_policy,
+        disable_escalation=disable_escalation,
+        escalation_max_hops=escalation_max_hops,
+        batch_mode=batch_mode,
+        batch_provider=batch_provider,
+        batch_poll_seconds=batch_poll_seconds,
+        batch_wait_timeout_seconds=batch_wait_timeout_seconds,
+        batch_max_requests_per_job=batch_max_requests_per_job,
     )
     raise typer.Exit(code=rc)
 
