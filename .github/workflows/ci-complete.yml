@@ -41,7 +41,9 @@ jobs:
           else
             BEFORE="${{ github.event.before }}"
             if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-              CHANGED_FILES="$(git ls-files)"
+              # Fallback to main if it's a new branch push
+              git fetch origin main --depth=1
+              CHANGED_FILES="$(git diff --name-only origin/main...HEAD)"
             else
               CHANGED_FILES="$(git diff --name-only "$BEFORE" "${{ github.sha }}")"
             fi
@@ -62,7 +64,9 @@ jobs:
           else
             BEFORE="${{ github.event.before }}"
             if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-              pre-commit run --all-files
+              # Fallback to main if it's a new branch push
+              git fetch origin main --depth=1
+              pre-commit run --from-ref origin/main --to-ref HEAD
             else
               pre-commit run --from-ref "$BEFORE" --to-ref "${{ github.sha }}"
             fi
@@ -217,6 +221,8 @@ jobs:
           # Security Status
           if [ "${{ needs.security.result }}" == "success" ]; then
             echo "✅ **Security:** Clear - Memory systems are secure!" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.security.result }}" == "skipped" ]; then
+            echo "⏭️ **Security:** Skipped - API key missing or not required" >> $GITHUB_STEP_SUMMARY
           else
             echo "🔒 **Security:** Review needed - Check findings above" >> $GITHUB_STEP_SUMMARY
           fi
