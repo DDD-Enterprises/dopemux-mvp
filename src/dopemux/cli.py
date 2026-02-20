@@ -23,6 +23,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
 import warnings
+import logging
 
 import click
 try:
@@ -87,6 +88,8 @@ from .tmux import tmux as tmux_commands
 # Import genetic agent CLI
 try:
     # Ensure services directory is in Python path for production environments
+    import sys
+    from pathlib import Path
     services_path = Path(__file__).resolve().parent.parent / 'services'
     if str(services_path) not in sys.path:
         sys.path.insert(0, str(services_path))
@@ -120,10 +123,12 @@ ROLE_SERVER_SERVICE_MAP = {
     "conport": "conport",
     "serena": "serena",
     "serena-lsp": "serena",
+    "context7": "context7",
     "zen": "zen",
     "exa": "exa",
     "gptr-mcp": "gptr-mcp",
     "dopemux-gpt-researcher": "dopemux-gpt-researcher",
+    "mas-sequential-thinking": "mas-sequential-thinking",
     "desktop-commander": "desktop-commander",
     "leantime": "leantime-bridge",
     "leantime-bridge": "leantime-bridge",
@@ -574,6 +579,7 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
             src = Path(__file__).resolve().parents[2] / "scripts" / "git_post_worktree_hook.sh"
             dst = hooks_dir / "post-checkout"
             if not dst.exists():
+                import shutil
                 shutil.copy2(src, dst)
                 dst.chmod(0o755)
                 click.echo("🔗 Installed git post-checkout hook for ConPort wiring")
@@ -2817,6 +2823,8 @@ def _run_extract_docs(
     extensions: Optional[str],
     adhd_profile: bool,
 ) -> None:
+    from pathlib import Path
+    import sys
     import json
     import csv
     from io import StringIO
@@ -3111,6 +3119,8 @@ def _run_extract_pipeline(
     synthesis_types: tuple,
     synthesis_format: str,
 ) -> None:
+    from pathlib import Path
+    import sys
 
     try:
         from .extraction import UnifiedDocumentPipeline, PipelineConfig
@@ -3293,6 +3303,8 @@ def _run_extract_cleanup(
     report_format: str,
     report_file: Optional[str],
 ) -> None:
+    from pathlib import Path
+    import sys
     import json
     from datetime import datetime
 
@@ -3673,7 +3685,7 @@ def mcp_start_all_cmd(verify: bool):
     🚀 Start complete Dopemux stack (MCP servers + application services)
 
     Starts all services including:
-    - MCP servers (ConPort, Zen, Serena, etc.)
+    - 12 MCP servers (ConPort, Zen, Serena, Context7, etc.)
     - Integration Bridge (event processing, pattern detection)
     - Task Orchestrator (ADHD task coordination)
     - All infrastructure (PostgreSQL, Redis, Qdrant)
@@ -4059,39 +4071,6 @@ def _configure_openrouter_litellm():
 
 
 
-def _resolve_mcp_dir(project_path: Path) -> Optional[Path]:
-    """
-    Resolve MCP stack location deterministically.
-
-    Resolution order:
-    1. DOPEMUX_MCP_DIR (explicit override)
-    2. project_path/docker/mcp-servers (local project assets)
-    3. dopemux repo root (fallback for editable installs)
-    """
-    # 1. Explicit override
-    if env_dir := os.getenv("DOPEMUX_MCP_DIR"):
-        path = Path(env_dir).resolve()
-        if (path / "start-all-mcp-servers.sh").exists():
-            return path
-
-    # 2. Local project
-    local_path = project_path / "docker" / "mcp-servers"
-    if (local_path / "start-all-mcp-servers.sh").exists():
-        return local_path
-
-    # 3. Inferred package root (editable install)
-    # cli.py is at src/dopemux/cli.py -> parents[2] is repo root
-    try:
-        source_root = Path(__file__).resolve().parents[2]
-        pkg_path = source_root / "docker" / "mcp-servers"
-        if (pkg_path / "start-all-mcp-servers.sh").exists():
-            return pkg_path
-    except Exception:
-        pass
-
-    return None
-
-
 def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[dict] = None):
     """
     Start MCP servers with real-time output streaming and health check waiting.
@@ -4114,26 +4093,7 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
 
     import requests
 
-    # Resolve MCP stack location
-    mcp_dir = _resolve_mcp_dir(project_path)
-    
-    if not mcp_dir:
-        console.print()
-        console.logger.error("[red]❌ Required MCP startup assets not found.[/red]")
-        console.print("[dim]   (Checked: DOPEMUX_MCP_DIR, local project, and dopemux package root)[/dim]")
-        
-        console.print("\n[bold]Remedies:[/bold]")
-        console.print("  1. Set DOPEMUX_MCP_DIR to the location of 'docker/mcp-servers'")
-        console.print("     [green]export DOPEMUX_MCP_DIR=/path/to/dopemux/docker/mcp-servers[/green]")
-        console.print("  2. Symlink the docker stack to your project:")
-        console.print(f"     [green]cd {project_path} && mkdir -p docker && ln -s .../dopemux/docker/mcp-servers docker/mcp-servers[/green]")
-        console.print("  3. Skip MCP requirement (functionality will be reduced):")
-        console.print("     [green]dopemux start --no-mcp[/green]")
-        
-        raise click.ClickException("MCP stack required but not found. See remedies above.")
-    
-    # We found it - ensure script exists (double-check, though resolver checks it)
-    script_path = mcp_dir / "start-all-mcp-servers.sh"
+    mcp_dir = project_path / "docker" / "mcp-servers"
 
     # CRITICAL FIX: Merge instance env with current environment
     # This ensures MCP servers get DOPEMUX_WORKSPACE_ID and other instance vars
@@ -4143,8 +4103,8 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
 
     # Critical servers to health check
     critical_servers = [
-        ("ConPort", "http://localhost:3004/health"),
-        ("PAL", "http://localhost:3003/health"),
+        ("Context7", "http://localhost:3002/health"),
+        ("Zen", "http://localhost:3003/health"),
         ("LiteLLM", "http://localhost:4000/health/readiness"),
     ]
 
@@ -4585,6 +4545,8 @@ def _run_extract_chatlog(
     archive: Optional[str],
     workspace_id: Optional[str],
 ) -> None:
+    import sys
+    from pathlib import Path
 
     backend_path = Path(__file__).parent.parent.parent / "services" / "dopemux-gpt-researcher" / "backend"
     sys.path.insert(0, str(backend_path))
@@ -4767,6 +4729,8 @@ def _run_extract_pro(
     workspace_id: Optional[str],
     max_documents: int,
 ) -> None:
+    import sys
+    from pathlib import Path
 
     # Add the gpt-researcher backend to the path
     backend_path = Path(__file__).parent.parent.parent / "services" / "dopemux-gpt-researcher" / "backend"
@@ -6163,6 +6127,8 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
     # Import here to avoid circular dependencies
     try:
         # Add services to Python path if needed
+        import sys
+        from pathlib import Path
         services_path = Path(__file__).resolve().parent.parent / 'services'
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))
@@ -6229,6 +6195,8 @@ def analyze(ctx, bug_description, file_path, line, verbose):
     Provides insights, complexity assessment, and repair strategy recommendations.
     """
     try:
+        import sys
+        from pathlib import Path
         services_path = Path(__file__).resolve().parent.parent / 'services'
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))
@@ -6271,6 +6239,8 @@ def code_agent_status_cmd(ctx, verbose):
     Show code agent status and configuration.
     """
     try:
+        import sys
+        from pathlib import Path
         services_path = Path(__file__).resolve().parent.parent / 'services'
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))

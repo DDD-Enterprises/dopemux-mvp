@@ -1,3 +1,15 @@
+---
+id: PROMPT_W3_WORKFLOW_GRAPH
+title: Prompt W3 Workflow Graph
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-17'
+last_review: '2026-02-17'
+next_review: '2026-05-18'
+prelude: Prompt W3 Workflow Graph (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Prompt W3 (v2): Global Workflow Graph Builder
 
 **Outputs:** `WORKFLOW_GRAPH_GLOBAL.json`

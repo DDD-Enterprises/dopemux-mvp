@@ -8,7 +8,6 @@ Handles coordination between Leantime, AI agents, and local systems.
 import asyncio
 import json
 import logging
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set, Callable
 from dataclasses import dataclass, asdict, field
@@ -1000,7 +999,7 @@ class EventCoordinator:
 # Factory function for easy initialization
 async def create_event_coordinator(
     redis_url: str = "redis://localhost:6379",
-    workspace_id: str = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", os.getcwd()))
+    workspace_id: str = "/Users/hue/code/dopemux-mvp"
 ) -> EventCoordinator:
     """Create and initialize event coordinator."""
     coordinator = EventCoordinator(redis_url)

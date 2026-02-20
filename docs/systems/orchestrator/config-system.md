@@ -79,7 +79,7 @@ agents:
     args: ["--output-format", "json"]
     default_model: gemini-2.5-pro
     env:
-      GOOGLE_API_KEY: ${GEMINI_API_KEY}  # Required (canonical source: GEMINI_API_KEY)
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}  # Required
     auto_restart: true
 
   grok:

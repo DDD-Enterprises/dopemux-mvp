@@ -139,7 +139,7 @@ class CognitiveLoadBalancer:
 
     Usage:
         balancer = CognitiveLoadBalancer(
-            workspace_id="/path/to/workspace",
+            workspace_id="/Users/hue/code/dopemux-mvp",
             conport_client=conport,
             serena_client=serena
         )
@@ -602,7 +602,7 @@ async def get_current_cognitive_load(
 
     Example:
         load = await get_current_cognitive_load(
-            workspace_id="/path/to/workspace",
+            workspace_id="/Users/hue/code/dopemux-mvp",
             conport_client=conport
         )
 
