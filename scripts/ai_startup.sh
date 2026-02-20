@@ -63,13 +63,8 @@ check_key() {
 check_key "ANTHROPIC_API_KEY"
 check_key "OPENAI_API_KEY"
 check_key "OPENROUTER_API_KEY"
-check_key "GEMINI_API_KEY"
+check_key "GOOGLE_API_KEY"
 check_key "XAI_API_KEY"
-
-if grep -q "^GOOGLE_API_KEY=" .env || [ -n "${GOOGLE_API_KEY:-}" ]; then
-    echo "⚠️  GOOGLE_API_KEY detected. Canonical Dopemux key is GEMINI_API_KEY in repo-root .env."
-    echo "   Keep one source of truth: set GEMINI_API_KEY and remove GOOGLE_API_KEY."
-fi
 
 # 3. Check Dopemux Installation
 if ! command -v dopemux &> /dev/null; then

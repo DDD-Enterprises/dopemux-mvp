@@ -20,10 +20,11 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
     return (
       <Paper sx={{ p: 3, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="dopemux-panel">
         <Box sx={{ textAlign: 'center' }}>
-          <Clock size={48} style={{ color: brandTokens.colors.aftercareViolet, marginBottom: 16 }} />
+          <Clock size={48} style={{ color: brandTokens.colors.aftercareViolet, marginBottom: 16 }} aria-hidden="true" />
           <Typography variant="h6" color="text.secondary">
             Prediction Loading...
           </Typography>
+          <LinearProgress sx={{ mt: 2, mb: 2, width: '80%', mx: 'auto', borderRadius: 4 }} aria-label="Loading prediction data" />
           <Typography variant="body2" color="text.secondary">
             LSTM daemon is teasing the future. Hold still.
           </Typography>
@@ -58,7 +59,7 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-        <TrendingUp size={24} />
+        <TrendingUp size={24} aria-hidden="true" />
         <Typography variant="h6" sx={{ letterSpacing: '0.12em' }}>15-Minute Prediction</Typography>
         <Chip
           size="small"
@@ -98,6 +99,8 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
         <LinearProgress
           variant="determinate"
           value={prediction * 100}
+          aria-label="15-Minute Load Prediction Percentage"
+          aria-valuetext={`${(prediction * 100).toFixed(0)}%`}
           sx={{
             height: 16,
             borderRadius: 8,
@@ -132,7 +135,7 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
       {/* Model Confidence (simulated) */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <AlertCircle size={14} />
+          <AlertCircle size={14} aria-hidden="true" />
           Model Confidence: 82% (based on 30-day training data)
         </Typography>
       </Box>
@@ -140,7 +143,7 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
       {/* ADHD-Friendly Features */}
       <Alert severity="info" sx={{ mt: 2, bgcolor: 'rgba(4,22,40,0.6)', color: brandTokens.colors.serumMint }}>
         <Typography variant="caption">
-          <Sparkles size={12} style={{ marginRight: 6 }} />
+          <Sparkles size={12} style={{ marginRight: 6 }} aria-hidden="true" />
           <strong>ADHD Optimization:</strong> Predictions update every 5 minutes. Critical load alerts trigger ritual breaks + hydration orders.
         </Typography>
       </Alert>
