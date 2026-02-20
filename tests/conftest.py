@@ -6,10 +6,25 @@ import shutil
 import sys
 import tempfile
 import types
+import importlib
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+# Ensure `utils.*` resolves to repo-local package rather than third-party modules.
+if "utils" in sys.modules and not hasattr(sys.modules["utils"], "__path__"):
+    del sys.modules["utils"]
+if "utils" not in sys.modules:
+    try:
+        sys.modules["utils"] = importlib.import_module("src.utils")
+    except Exception:
+        pass
 
 # Provide a lightweight pydantic stub when the library is unavailable.
 try:
