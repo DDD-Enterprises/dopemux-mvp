@@ -1,0 +1,89 @@
+{
+  "active_phases": [
+    "A"
+  ],
+  "blocked_promptset": false,
+  "generated_at": "2026-02-20T12:54:47.015074+00:00",
+  "missing_prompts_count": 0,
+  "phases": {
+    "A": {
+      "inventory_file": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_v3_smoke/A_repo_control_plane/inputs/INVENTORY.json",
+      "inventory_sha256": "318e982b24cf5cd16c51bf90eb87aa8f880a8173c47b282d9bcc77a271e570fd",
+      "partitions_file": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_v3_smoke/A_repo_control_plane/inputs/PARTITIONS.json",
+      "partitions_sha256": "6d35cc00b5567d6119192d125615830e3f8162a2c2b4f8f3b1c62c51a247a62c",
+      "recomputed_partitions": 187,
+      "resume_skipped_partitions": 0
+    }
+  },
+  "prompt_failures": [],
+  "prompt_failures_count": 0,
+  "prompt_hash_errors": [],
+  "prompt_hash_mode": "strict",
+  "prompt_hashes": [
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+      "prompt_id": "A0",
+      "sha256": "9c44c34613faee40d30356f509ea6a61c56d26384a428da2da6636d9c69b20ce"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A1_INSTRUCTION_SURFACES.md",
+      "prompt_id": "A1",
+      "sha256": "a03ced9a902eb158244d799240d90d9d76fa1f1877228aa858cf1ece29e0e0a2"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A2_MCP_SERVER_DEFS.md",
+      "prompt_id": "A2",
+      "sha256": "be7b9cd11a3987de5b52467177f7b709f9902a013f5feed2214dfdf52ddf2421"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A3_MCP_PROXY_SURFACE.md",
+      "prompt_id": "A3",
+      "sha256": "e3ab5b17580043a887d816577b6dd1014646c74f8d0c5d6b1e23b3a1e67a7d20"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A4_ROUTER_SURFACE.md",
+      "prompt_id": "A4",
+      "sha256": "4339889c53dcfa2f9dcba66ceb251378d0fe82f1dccaefed7caa580de9462628"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A5_HOOKS_SURFACE.md",
+      "prompt_id": "A5",
+      "sha256": "40b2c9b1e30879d8fbae766e9a99b2d622bb9da3c4411f2b20363d54ec178044"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+      "prompt_id": "A6",
+      "sha256": "8a586081cad555fba6e7172a69ce488aeba60d6f91b5ab592d3a4bdfd7ebaac2"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A7_LITELLM_SURFACE.md",
+      "prompt_id": "A7",
+      "sha256": "2fbab057400ac2737a7e9eaa414048337cc953a0294416dd860fc0da5f8e29af"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A8_TASKX_SURFACE.md",
+      "prompt_id": "A8",
+      "sha256": "50cdc9f12a6035225ac0128516cc7480d7f74da7b243e3eb21e05548fbbebb4e"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A99_MERGE___QA.md",
+      "prompt_id": "A99",
+      "sha256": "72fb78cee2c5c4ffba13149a5d632383b4f7f3dc9aa009b19ad53e20e943c0fa"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+      "prompt_id": "A9",
+      "sha256": "676afeacd1eb9edff9056856ef6d765c535e77257ac1fdc46bb8fa70ed533a3b"
+    }
+  ],
+  "prompt_missing": [],
+  "prompt_unreadable": [],
+  "promptset_sha256": "8852aff72c9d23616fc9811e888dd418e2ba71489cd74053f0df5de44ec53278",
+  "resume_status": "ready",
+  "run_id": "rte_v3_smoke",
+  "totals": {
+    "recomputed_partitions": 187,
+    "resume_skipped_partitions": 0
+  },
+  "unreadable_prompts_count": 0
+}
