@@ -95,7 +95,7 @@ const TeamDashboard: React.FC = () => {
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 1.5 }}>
-        <Users size={24} />
+        <Users size={24} aria-hidden="true" />
         <Typography variant="h6" sx={{ letterSpacing: '0.15em' }}>
           Team Cognitive Status
         </Typography>
@@ -121,6 +121,8 @@ const TeamDashboard: React.FC = () => {
         <LinearProgress
           variant="determinate"
           value={teamLoadAvg * 100}
+          aria-label="Team Average Cognitive Load Percentage"
+          aria-valuetext={`${(teamLoadAvg * 100).toFixed(0)}%`}
           sx={{
             height: 12,
             borderRadius: 6,
@@ -174,6 +176,8 @@ const TeamDashboard: React.FC = () => {
               <LinearProgress
                 variant="determinate"
                 value={member.load * 100}
+                aria-label={`${member.name}'s Cognitive Load Percentage`}
+                aria-valuetext={`${(member.load * 100).toFixed(0)}%`}
                 sx={{
                   height: 8,
                   borderRadius: 4,
