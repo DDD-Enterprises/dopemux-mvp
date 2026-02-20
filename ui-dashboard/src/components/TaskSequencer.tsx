@@ -150,7 +150,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-        <Timer size={24} />
+        <Timer size={24} aria-hidden="true" />
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
@@ -190,6 +190,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               variant="contained"
               startIcon={isTimerRunning ? <Pause /> : <Play />}
               onClick={() => setIsTimerRunning(!isTimerRunning)}
+              aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}
             >
               {isTimerRunning ? 'Pause' : 'Start'}
             </Button>
@@ -198,6 +199,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               variant="outlined"
               startIcon={<CheckCircle />}
               onClick={() => completeTask(currentTask.id)}
+              aria-label={`Complete task: ${currentTask.title}`}
             >
               Complete
             </Button>
@@ -207,6 +209,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               startIcon={<SkipForward />}
               onClick={() => skipTask(currentTask.id)}
               sx={{ color: brandTokens.colors.gremlinPink }}
+              aria-label={`Skip task: ${currentTask.title}`}
             >
               Skip
             </Button>
@@ -219,7 +222,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
         <Tooltip title="Consent → Calibration → Chaos → Care">
-          <Flame size={16} color={brandTokens.colors.gremlinPink} />
+          <Box component="span">
+            <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
+          </Box>
         </Tooltip>
       </Box>
 
@@ -241,11 +246,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               >
                 <ListItemIcon>
                   {isCompleted ? (
-                    <CheckCircle color={brandTokens.colors.serumMint} size={20} />
+                    <CheckCircle color={brandTokens.colors.serumMint} size={20} aria-hidden="true" />
                   ) : isCurrent ? (
-                    <Play color={brandTokens.colors.ritualCyan} size={20} />
+                    <Play color={brandTokens.colors.ritualCyan} size={20} aria-hidden="true" />
                   ) : (
-                    <Circle color="rgba(255, 255, 255, 0.3)" size={18} />
+                    <Circle color="rgba(255, 255, 255, 0.3)" size={18} aria-hidden="true" />
                   )}
                 </ListItemIcon>
                 <ListItemText
@@ -275,7 +280,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   }
                 />
                 {!isCompleted && !isCurrent && (
-                  <Button size="small" variant="outlined" onClick={() => startTask(task.id)}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => startTask(task.id)}
+                    aria-label={`Start task: ${task.title}`}
+                  >
                     Start
                   </Button>
                 )}
@@ -301,7 +311,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           Sequencer calibrated for {cognitiveState.status.toUpperCase()} load.
         </Typography>
         <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
-          <Swords size={12} style={{ marginRight: 6 }} />
+          <Swords size={12} style={{ marginRight: 6 }} aria-hidden="true" />
           I reorder your chaos so you can stay feral on purpose.
         </Typography>
         <Typography className="dopemux-aftercare" sx={{ mt: 0.5 }}>

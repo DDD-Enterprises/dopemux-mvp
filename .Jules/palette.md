@@ -1,0 +1,7 @@
+## 2025-05-14 - [Accessible Progress Indicators]
+**Learning:** MUI LinearProgress components are often used to display critical metrics (like cognitive load or team progress) but are invisible to screen readers without explicit ARIA attributes. Providing both an `aria-label` (to name the metric) and `aria-valuetext` (to provide a rounded percentage) significantly improves accessibility.
+**Action:** Always include `aria-label` and `aria-valuetext` when using progress components to ensure metrics are accessible.
+
+## 2025-05-14 - [Indeterminate Loading Feedback]
+**Learning:** When a dashboard panel depends on asynchronous data (like AI predictions), a static "Loading..." text is less reassuring than an indeterminate progress bar. The visual movement signals active background work.
+**Action:** Prefer indeterminate progress bars or skeletons over static text for panels with unpredictable loading times.
