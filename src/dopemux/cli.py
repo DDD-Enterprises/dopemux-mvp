@@ -7378,6 +7378,67 @@ def _run_extractor_runner(
         )
 
 
+def _repscan_runner_path(repo_root: Path) -> Path:
+    return repo_root / "services" / "repo-truth-extractor" / "run_repscan.py"
+
+
+def _run_repscan_runner(
+    *,
+    args: List[str],
+    repo_root: Optional[Path] = None,
+) -> None:
+    resolved_root = _resolve_extractor_repo_root(repo_root or Path.cwd())
+    runner = _repscan_runner_path(resolved_root)
+    if not runner.exists():
+        raise click.ClickException(f"RepoScan runner not found: {runner}")
+    cmd = [sys.executable, str(runner), *args]
+    proc = subprocess.run(cmd, cwd=resolved_root)
+    if proc.returncode != 0:
+        raise click.ClickException(f"RepoScan runner failed with exit code {proc.returncode}")
+
+
+@cli.command("repscan", context_settings={"ignore_unknown_options": True, "allow_extra_args": True})
+@click.option("--phase", type=click.Choice(["ALL", "A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]))
+@click.option("--run-id", type=str)
+@click.option("--promptgen", type=click.Choice(["off", "v1", "v2", "auto"]))
+@click.option("--promptpack", type=str)
+@click.option("--promptgen-only", is_flag=True)
+@click.option("--prompt-root", type=str)
+@click.option("--profiles-dir", type=str)
+@click.option("--legacy-runner", type=str)
+@click.argument("args", nargs=-1, type=click.UNPROCESSED)
+def repscan_passthrough(
+    phase: Optional[str],
+    run_id: Optional[str],
+    promptgen: Optional[str],
+    promptpack: Optional[str],
+    promptgen_only: bool,
+    prompt_root: Optional[str],
+    profiles_dir: Optional[str],
+    legacy_runner: Optional[str],
+    args: tuple[str, ...],
+) -> None:
+    """Run deterministic repo scan/promptgen wrapper over v3 extraction."""
+    forwarded: List[str] = [*args]
+    if phase:
+        forwarded.extend(["--phase", phase])
+    if run_id:
+        forwarded.extend(["--run-id", run_id])
+    if promptgen:
+        forwarded.extend(["--promptgen", promptgen])
+    if promptpack:
+        forwarded.extend(["--promptpack", promptpack])
+    if promptgen_only:
+        forwarded.append("--promptgen-only")
+    if prompt_root:
+        forwarded.extend(["--prompt-root", prompt_root])
+    if profiles_dir:
+        forwarded.extend(["--profiles-dir", profiles_dir])
+    if legacy_runner:
+        forwarded.extend(["--legacy-runner", legacy_runner])
+    _run_repscan_runner(args=forwarded)
+
+
 @extractor.command("list")
 @click.option(
     "--engine-version",
@@ -7422,6 +7483,24 @@ def extractor_list(ctx, engine_version: str):
 @click.option("--resume/--no-resume", default=True, show_default=True)
 @click.option("--partition-workers", type=int, default=1, show_default=True)
 @click.option(
+    "--routing-policy",
+    type=click.Choice(["cost", "balanced", "quality"]),
+    default="cost",
+    show_default=True,
+)
+@click.option("--disable-escalation", is_flag=True, default=False, show_default=True)
+@click.option("--escalation-max-hops", type=int, default=2, show_default=True)
+@click.option("--batch-mode", is_flag=True, default=False, show_default=True)
+@click.option(
+    "--batch-provider",
+    type=click.Choice(["auto", "openai", "gemini", "xai"]),
+    default="auto",
+    show_default=True,
+)
+@click.option("--batch-poll-seconds", type=int, default=30, show_default=True)
+@click.option("--batch-wait-timeout-seconds", type=int, default=86400, show_default=True)
+@click.option("--batch-max-requests-per-job", type=int, default=2000, show_default=True)
+@click.option(
     "--sync/--no-sync",
     default=True,
     show_default=True,
@@ -7436,6 +7515,14 @@ def extractor_run(
     dry_run: bool,
     resume: bool,
     partition_workers: int,
+    routing_policy: str,
+    disable_escalation: bool,
+    escalation_max_hops: int,
+    batch_mode: bool,
+    batch_provider: str,
+    batch_poll_seconds: int,
+    batch_wait_timeout_seconds: int,
+    batch_max_requests_per_job: int,
     sync: bool,
 ):
     """Run Repo Truth Extractor pipeline."""
@@ -7449,6 +7536,16 @@ def extractor_run(
     if resume:
         args.append("--resume")
     args.extend(["--partition-workers", str(partition_workers)])
+    args.extend(["--routing-policy", routing_policy])
+    if disable_escalation:
+        args.append("--disable-escalation")
+    args.extend(["--escalation-max-hops", str(max(0, int(escalation_max_hops)))])
+    if batch_mode:
+        args.append("--batch-mode")
+    args.extend(["--batch-provider", batch_provider])
+    args.extend(["--batch-poll-seconds", str(max(1, int(batch_poll_seconds)))])
+    args.extend(["--batch-wait-timeout-seconds", str(max(60, int(batch_wait_timeout_seconds)))])
+    args.extend(["--batch-max-requests-per-job", str(max(1, int(batch_max_requests_per_job)))])
     if engine_version == "v4":
         args.extend(["--sync" if sync else "--no-sync"])
     _run_extractor_runner(engine_version=engine_version, args=args)

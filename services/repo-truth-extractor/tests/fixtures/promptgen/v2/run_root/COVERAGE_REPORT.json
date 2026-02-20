@@ -1,0 +1,13 @@
+{
+  "phases": {
+    "C": {
+      "failure_type_histogram": {
+        "parse_or_empty": 3,
+        "payload_unshrinkable": 2
+      },
+      "partitions_attempted": 10,
+      "partitions_ok": 4
+    }
+  }
+}
+

@@ -1,3 +1,15 @@
+---
+id: PROMPT_B_INTERFACES
+title: Prompt B Interfaces
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Prompt B Interfaces (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Prompt B (v2): Interfaces (CLI + API + MCP + Hooks)
 
 **Outputs:** `CLI_SURFACE.json`, `API_SURFACE.json`, `MCP_SURFACE.json`, `HOOKS_SURFACE.json`

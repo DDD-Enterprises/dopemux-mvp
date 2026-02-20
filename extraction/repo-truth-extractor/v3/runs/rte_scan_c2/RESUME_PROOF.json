@@ -1,0 +1,89 @@
+{
+  "active_phases": [
+    "C"
+  ],
+  "blocked_promptset": false,
+  "generated_at": "2026-02-20T14:06:22.094550+00:00",
+  "missing_prompts_count": 0,
+  "phases": {
+    "C": {
+      "inventory_file": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_scan_c2/C_code_surfaces/inputs/INVENTORY.json",
+      "inventory_sha256": "242767e0ceb787976905a4989b34d4d3c015e02929f91d27b8f55ce19a470c0f",
+      "partitions_file": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_scan_c2/C_code_surfaces/inputs/PARTITIONS.json",
+      "partitions_sha256": "fc990120f678a6504ecc606cf01641dc942893964b3781f910248179f4fc01e7",
+      "recomputed_partitions": 924,
+      "resume_skipped_partitions": 0
+    }
+  },
+  "prompt_failures": [],
+  "prompt_failures_count": 0,
+  "prompt_hash_errors": [],
+  "prompt_hash_mode": "strict",
+  "prompt_hashes": [
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md",
+      "prompt_id": "C0",
+      "sha256": "8b6520540e337960ab72a721c88cdac05516b7ea111d112087f38d20c1e1a285"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md",
+      "prompt_id": "C10",
+      "sha256": "1a4d8c5f23b7898a556b9796da73a91d3f36df82a86d8a7f8f76488052f92321"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md",
+      "prompt_id": "C1",
+      "sha256": "b90d74712158a4fd24b9ffaf4d064c8e6c0c3a894ba1da32945660f48bdae9fd"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md",
+      "prompt_id": "C2",
+      "sha256": "b098f453b5c207ccb65c1aabf79e3d26ae6a46597a55e4f1dc096b6d01bd95c5"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md",
+      "prompt_id": "C3",
+      "sha256": "202bfc84e3c5a81ee40169c6dfa4da23ecd531950e56c9770ba7cec39f441e7d"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md",
+      "prompt_id": "C4",
+      "sha256": "0bca51cbaa3422e28d4408ced84440a10c869008d023117b6983c4d376b40fcc"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
+      "prompt_id": "C5",
+      "sha256": "a19634b39418e4687a351c77e33ab6962b630323e1a02fe550484cc426fde0e6"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md",
+      "prompt_id": "C6",
+      "sha256": "9f498f72a787076b09718d57cf1027ee061619fc419d6e93ba59e370892b8a35"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md",
+      "prompt_id": "C7",
+      "sha256": "ceb746f3ec0816fed412f7858ba3c96e7536fa0b81862899584895c5084cbb00"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md",
+      "prompt_id": "C8",
+      "sha256": "56ed633931e065f1ec0908d284d3cac23d2ca6428ba55f8b14016a0aee160832"
+    },
+    {
+      "path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md",
+      "prompt_id": "C9",
+      "sha256": "8c156e92534767f0adfb7e375e8bb18743cf0fe166da7f9da93d1aa9bfd92b76"
+    }
+  ],
+  "prompt_missing": [],
+  "prompt_unreadable": [],
+  "promptset_sha256": "f47dbb70970f8521799512eb89d6bdf908c3289a2c49c39535cbf13c7afcd51d",
+  "resume_status": "ready",
+  "run_id": "rte_scan_c2",
+  "totals": {
+    "recomputed_partitions": 924,
+    "resume_skipped_partitions": 0
+  },
+  "unreadable_prompts_count": 0
+}

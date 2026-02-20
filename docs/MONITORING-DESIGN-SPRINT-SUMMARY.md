@@ -1,7 +1,19 @@
+---
+id: MONITORING-DESIGN-SPRINT-SUMMARY
+title: Monitoring Design Sprint Summary
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Monitoring Design Sprint Summary (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 🎯 Monitoring Code Design Sprint - Quick Reference
 
-**Created:** 2025-10-28  
-**Purpose:** Design sprint documentation for ADHD monitoring dashboard  
+**Created:** 2025-10-28
+**Purpose:** Design sprint documentation for ADHD monitoring dashboard
 **Full Doc:** See MONITORING-DESIGN-SPRINT-GUIDE.md (1,500+ lines)
 
 ---

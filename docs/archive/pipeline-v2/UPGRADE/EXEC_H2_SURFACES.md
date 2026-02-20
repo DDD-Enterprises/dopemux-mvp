@@ -1,3 +1,14 @@
+---
+id: EXEC_H2_SURFACES
+title: Exec H2 Surfaces
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Exec H2 Surfaces (explanation) for dopemux documentation and developer workflows.
+---
 # EXECUTABLE PROMPT: H2 - Home MCP/Router/Hooks/LiteLLM Surface
 
 ---
