@@ -187,6 +187,17 @@ CREATE TABLE IF NOT EXISTS raw_activity_events (
 """,
         encoding="utf-8",
     )
+    schema_dir.joinpath("sqlite_migrations.py").write_text(
+        """
+import sqlite3
+def apply_chronicle_migrations(conn, **kwargs):
+    schema_path = kwargs.get('schema_path')
+    if schema_path and schema_path.exists():
+        conn.executescript(schema_path.read_text(encoding='utf-8'))
+    return []
+""",
+        encoding="utf-8",
+    )
 
     result = emit_capture_event(
         {
@@ -206,15 +217,17 @@ def test_schema_bootstrap_runs_once_per_ledger(tmp_path, monkeypatch):
     monkeypatch.setenv("DOPEMUX_CAPTURE_LEDGER_PATH", str(ledger_path))
 
     init_calls = {"count": 0}
-    real_initialize_schema = capture_client_module._initialize_schema
+    real_initialize_schema = capture_client_module._ensure_schema_initialized
 
-    def _counting_initialize_schema(conn, schema_path):
-        init_calls["count"] += 1
-        return real_initialize_schema(conn, schema_path)
+    def _counting_initialize_schema(conn, repo_root, schema_path, migrations_dir, ledger_path):
+        ledger_key = str(ledger_path.resolve())
+        if ledger_key not in capture_client_module._SCHEMA_READY_LEDGER_PATHS:
+            init_calls["count"] += 1
+        return real_initialize_schema(conn, repo_root, schema_path, migrations_dir, ledger_path)
 
     monkeypatch.setattr(
         capture_client_module,
-        "_initialize_schema",
+        "_ensure_schema_initialized",
         _counting_initialize_schema,
     )
 
@@ -243,15 +256,17 @@ def test_schema_bootstrap_runs_for_each_distinct_ledger(tmp_path, monkeypatch):
     second_ledger = tmp_path / "b.sqlite"
 
     init_calls = {"count": 0}
-    real_initialize_schema = capture_client_module._initialize_schema
+    real_initialize_schema = capture_client_module._ensure_schema_initialized
 
-    def _counting_initialize_schema(conn, schema_path):
-        init_calls["count"] += 1
-        return real_initialize_schema(conn, schema_path)
+    def _counting_initialize_schema(conn, repo_root, schema_path, migrations_dir, ledger_path):
+        ledger_key = str(ledger_path.resolve())
+        if ledger_key not in capture_client_module._SCHEMA_READY_LEDGER_PATHS:
+            init_calls["count"] += 1
+        return real_initialize_schema(conn, repo_root, schema_path, migrations_dir, ledger_path)
 
     monkeypatch.setattr(
         capture_client_module,
-        "_initialize_schema",
+        "_ensure_schema_initialized",
         _counting_initialize_schema,
     )
 
