@@ -4,9 +4,9 @@ title: Prompt C Events
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-02-17'
-last_review: '2026-02-17'
-next_review: '2026-05-18'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
 prelude: Prompt C Events (explanation) for dopemux documentation and developer workflows.
 ---
 # Prompt C (v2): Events (emitters + consumers + envelope fields)

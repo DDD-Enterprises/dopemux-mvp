@@ -49,6 +49,8 @@ help:
 	@echo "  x-status                                     Print file counts per phase"
 	@echo "  x-manifest                                   Update/generate MANIFEST.json for run"
 	@echo "  x-doctor                                     Run pipeline doctor on latest run"
+	@echo "  probe                                        Deterministic run/phase/step debug bundle"
+	@echo "  probe-c                                      Convenience probe for Phase C (default STEP=C0)"
 
 # Installation targets
 install:

@@ -1,0 +1,43 @@
+{
+  "argv": [
+    "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/run_extraction_v3.py",
+    "--phase",
+    "A",
+    "--run-id",
+    "rte_v4_smoke",
+    "--dry-run",
+    "--partition-workers",
+    "1"
+  ],
+  "cwd": "/Users/hue/code/dopemux-mvp",
+  "finished_at": "2026-02-20T12:54:47.150186+00:00",
+  "git_sha": "749d375fa5283b389cec012386aa8eaeb505540d",
+  "linked_artifacts": {
+    "coverage_rollup": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_v4_smoke/COVERAGE_ROLLUP.json",
+    "doctor_auth": null,
+    "doctor_full": null,
+    "resume_proof": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_v4_smoke/RESUME_PROOF.json",
+    "run_routing_fingerprint": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_v4_smoke/RUN_ROUTING_FINGERPRINT.json"
+  },
+  "phases": {
+    "A": {
+      "counts": {
+        "inputs": 2,
+        "norm": 14,
+        "qa": 11,
+        "raw": {
+          "failed": 0,
+          "ok": 187,
+          "total": 374
+        }
+      },
+      "finished_at": "2026-02-20T12:54:47.150186+00:00",
+      "started_at": "2026-02-20T12:54:44.758163+00:00"
+    }
+  },
+  "python_version": "3.13.6",
+  "run_id": "rte_v4_smoke",
+  "runner_sha256": "421463d099e4fc74cf791f70b34ed4bd37ff0640c194f2d96d5b5ec37453cf7b",
+  "started_at": "2026-02-20T12:54:44.757887+00:00",
+  "updated_at": "2026-02-20T12:54:47.198042+00:00"
+}

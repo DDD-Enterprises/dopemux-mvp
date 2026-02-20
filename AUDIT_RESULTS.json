@@ -1,0 +1,788 @@
+{
+  "counts": {
+    "complete": 16,
+    "partial": 0,
+    "stub": 87,
+    "missing_file": 0
+  },
+  "issues": [
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md\n  Stubs: [('Outputs', 3)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md\n  Stubs: [('Outputs', 5)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md\n  Stubs: [('Outputs', 4)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md\n  Stubs: [('Outputs', 2)]"
+  ],
+  "results": [
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H9_MERGE___QA.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T0_TASK_PACKET_FACTORY.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md",
+      "missing": [],
+      "stubs": []
+    },
+    {
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md",
+      "missing": [],
+      "stubs": [
+        "Outputs"
+      ]
+    }
+  ]
+}
