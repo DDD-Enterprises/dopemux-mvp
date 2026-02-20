@@ -17,7 +17,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY services/task-orchestrator/app /app/app
 COPY services/task-orchestrator/intelligence /app/intelligence
 COPY services/task-orchestrator/task_orchestrator /app/task_orchestrator
-COPY services/task-orchestrator/task_decomposition_endpoint.py /app/task_decomposition_endpoint.py
 COPY services/task-orchestrator/pal_client.py /app/pal_client.py
 COPY services/shared /app/services/shared
 COPY src/dopemux /app/dopemux
@@ -25,16 +24,16 @@ COPY src/dopemux /app/dopemux
 # Set up environment
 ENV PYTHONPATH=/app \
   PYTHONUNBUFFERED=1 \
-  COORDINATION_API_PORT=8000 \
-  PORT=8000 \
+  COORDINATION_API_PORT=3014 \
+  PORT=3014 \
   WORKSPACE_ID=/workspace
 
 # Expose service port
-EXPOSE 8000
+EXPOSE 3014
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+  CMD curl -f http://localhost:3014/health || exit 1
 
 # Run the task orchestrator service
-CMD ["uvicorn", "task_orchestrator.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "app.main"]

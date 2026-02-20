@@ -30,7 +30,6 @@ from enum import Enum
 
 import asyncio
 import logging
-import os
 
 import sys
 from pathlib import Path
@@ -122,6 +121,10 @@ class TaskCoordinator:
         for task in tasks:
             self.tasks[task.id] = task
 
+        # Store tasks in internal dictionary for later retrieval during execution
+        for task in tasks:
+            self.tasks[task.id] = task
+
         # Step 1: Assess task batch based on cognitive capacity
         batch_plan = await self._assess_cognitive_batch(tasks, current_adhd_state)
 
@@ -135,7 +138,14 @@ class TaskCoordinator:
         await self._sync_coordination_state()
 
         # Step 5: Execute batch with monitoring
-        execution_results = await self._execute_batch(sequenced_plan)
+        # Extract task IDs from sequenced_plan (handles both dict and list formats)
+        if isinstance(sequenced_plan, dict) and "tasks" in sequenced_plan:
+            task_ids = [task.id for task in sequenced_plan["tasks"]]
+        else:
+            # Fall back to list format from _sequence_tasks
+            task_ids = sequenced_plan if isinstance(sequenced_plan, list) else []
+        
+        execution_results = await self._execute_batch(task_ids)
 
         return {
             "coordination_id": self.coordination_state.session_id,
@@ -616,8 +626,7 @@ class TaskCoordinator:
 
 # Example usage
 async def main():
-    workspace_id = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", str(Path.cwd())))
-    coordinator = TaskCoordinator(workspace_id=workspace_id)
+    coordinator = TaskCoordinator(workspace_id="/Users/hue/code/dopemux-mvp")
 
     # Sample tasks
     tasks = [
