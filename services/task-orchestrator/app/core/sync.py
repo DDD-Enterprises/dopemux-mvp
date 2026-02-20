@@ -8,7 +8,6 @@ and AI agents with conflict resolution and ADHD-optimized batching.
 import asyncio
 import json
 import logging
-import os
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, asdict
@@ -121,7 +120,7 @@ class MultiDirectionalSyncEngine:
     def __init__(
         self,
         redis_url: str = "redis://localhost:6379",
-        workspace_id: str = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", os.getcwd()))
+        workspace_id: str = "/Users/hue/code/dopemux-mvp"
     ):
         self.redis_url = redis_url
         self.workspace_id = workspace_id

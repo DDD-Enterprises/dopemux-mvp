@@ -1,6 +1,0 @@
-# PROMPT_W5 — WORKFLOW STATE DEPENDENCIES / HOME VS REPO
-
-TASK: Extract workflow state coupling points.
-
-OUTPUTS:
-	•	WORKFLOW_STATE_COUPLING.json
