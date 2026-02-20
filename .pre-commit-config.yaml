@@ -145,6 +145,34 @@ repos:
         files: \.md$
         pass_filenames: true
 
+      # Legacy UPGRADES tree is docs-only.
+      - id: upgrades-docs-only-guard
+        name: Reject executable/config code under UPGRADES (docs-only legacy tree)
+        entry: bash -c
+        args:
+          - |
+            set -e
+            violations_found=false
+            for file in "$@"; do
+              normalized="./${file#./}"
+              if [[ ! "$normalized" =~ ^\./UPGRADES/ ]]; then
+                continue
+              fi
+              if [[ "$normalized" =~ \.md$ ]]; then
+                continue
+              fi
+              echo "❌ $file (UPGRADES is docs-only; move executable/config assets under services/repo-truth-extractor)"
+              violations_found=true
+            done
+            if [ "$violations_found" = true ]; then
+              exit 1
+            fi
+            echo "✅ UPGRADES docs-only guard passed"
+          - --
+        language: system
+        files: ^UPGRADES/
+        pass_filenames: true
+
       # Repo root hygiene enforcement
       - id: root-hygiene
         name: Enforce repository root hygiene (no random root files)
