@@ -1,3 +1,15 @@
+---
+id: PROMPT_D3_CITATION_GRAPH
+title: Prompt D3 Citation Graph
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-17'
+last_review: '2026-02-17'
+next_review: '2026-05-18'
+prelude: Prompt D3 Citation Graph (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Prompt D3 (v2): Citation Graph Extraction
 
 **Outputs:** `DOC_CITATION_GRAPH.json`
