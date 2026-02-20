@@ -66,6 +66,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `search` - Search promoted work log entries across projects
 - Comprehensive memory capture CLI reference documentation
 - CLI interface section in Derived Memory Pipeline specification
+- Repo Truth Extractor operator documentation
+  - user guide and batch quickstart
+  - CLI runbook cross-links
 
 ### Planned
 - Windows support (chocolatey package)

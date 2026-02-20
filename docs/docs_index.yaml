@@ -79,6 +79,8 @@ how_to:
   orchestrator_dashboard: "docs/02-how-to/orchestrator-dashboard.md"
   workflow_idea_epic_lifecycle: "docs/02-how-to/operations/workflow-idea-epic-lifecycle.md"
   repo_truth_extractor_cli: "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md"
+  repo_truth_extractor_user_guide: "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md"
+  repo_truth_extractor_batch_quickstart: "docs/02-how-to/extraction/batch-quickstart.md"
 
 # Tutorials
 tutorials:
