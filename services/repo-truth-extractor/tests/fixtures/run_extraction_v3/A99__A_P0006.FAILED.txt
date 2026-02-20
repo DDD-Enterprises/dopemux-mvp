@@ -1,0 +1,89 @@
+[
+  {
+    "artifact_name": "REPO_INSTRUCTION_SURFACE.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPO_INSTRUCTION_REFERENCES.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPO_MCP_SERVER_DEFS.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPO_MCP_PROXY_SURFACE.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPO_ROUTER_SURFACE.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPO_HOOKS_SURFACE.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPO_IMPLICIT_BEHAVIOR_HINTS.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPO_COMPOSE_SERVICE_GRAPH.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPO_LITELLM_SURFACE.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPO_TASKX_SURFACE.json",
+    "payload": "UNKNOWN"
+  },
+  {
+    "artifact_name": "REPOCTRL_NORM_MANIFEST.json",
+    "payload": {
+      "artifact": "REPOCTRL_NORM_MANIFEST.json",
+      "phase": "A",
+      "step": "A99",
+      "generated_at": "2024-07-01T22:34:39",
+      "items": [],
+      "unknowns": [
+        "REPO_INSTRUCTION_SURFACE.json",
+        "REPO_INSTRUCTION_REFERENCES.json",
+        "REPO_MCP_SERVER_DEFS.json",
+        "REPO_MCP_PROXY_SURFACE.json",
+        "REPO_ROUTER_SURFACE.json",
+        "REPO_HOOKS_SURFACE.json",
+        "REPO_IMPLICIT_BEHAVIOR_HINTS.json",
+        "REPO_COMPOSE_SERVICE_GRAPH.json",
+        "REPO_LITELLM_SURFACE.json",
+        "REPO_TASKX_SURFACE.json",
+        "REPOCTRL_NORM_MANIFEST.json",
+        "REPOCTRL_QA.json"
+      ]
+    }
+  },
+  {
+    "artifact_name": "REPOCTRL_QA.json",
+    "payload": {
+      "expected_artifacts": {
+        "REPO_INSTRUCTION_SURFACE.json": "missing",
+        "REPO_INSTRUCTION_REFERENCES.json": "missing",
+        "REPO_MCP_SERVER_DEFS.json": "missing",
+        "REPO_MCP_PROXY_SURFACE.json": "missing",
+        "REPO_ROUTER_SURFACE.json": "missing",
+        "REPO_HOOKS_SURFACE.json": "missing",
+        "REPO_IMPLICIT_BEHAVIOR_HINTS.json": "missing",
+        "REPO_COMPOSE_SERVICE_GRAPH.json": "missing",
+        "REPO_LITELLM_SURFACE.json": "missing",
+        "REPO_TASKX_SURFACE.json": "missing",
+        "REPOCTRL_NORM_MANIFEST.json": "present",
+        "REPOCTRL_QA.json": "present"
+      },
+      "empty_artifact_detection": [],
+      "duplicate_evidence_detection": [],
+      "partition_coverage_counts": {},
+      "parse_failures": []
+    }
+  }
+]
