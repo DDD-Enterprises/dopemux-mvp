@@ -1640,7 +1640,7 @@ Format: {{
             logger.error(f"Error getting session duration for {user_id}: {e}")
             return 0
 
-    async def _get_tasks_completed(self, user_id: str) -> int:
+    async def get_tasks_completed(self, user_id: str) -> int:
         """Get number of tasks completed today."""
         try:
             if self.activity_tracker:
@@ -1651,7 +1651,7 @@ Format: {{
             logger.error(f"Error getting completed tasks for {user_id}: {e}")
             return 0
 
-    async def _get_total_tasks(self, user_id: str) -> int:
+    async def get_total_tasks(self, user_id: str) -> int:
         """Get total number of tasks assigned/tracked for today."""
         try:
             if self.activity_tracker:
@@ -1681,7 +1681,7 @@ Format: {{
             
             cognitive_load = await self._calculate_cognitive_load(user_id)
             session_duration = await self._get_session_duration(user_id)
-            tasks_completed = await self._get_tasks_completed(user_id)
+            tasks_completed = await self.get_tasks_completed(user_id)
             
             # Broadcast to all connected clients for this user
             message = {
