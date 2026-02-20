@@ -1,143 +1,67 @@
 #!/usr/bin/env python3
 """
-Master extraction runner (A/H/D/C/E/W/B/G/Q/R/X/T/Z) with deterministic:
+Master extraction runner (A/H/M/D/C/E/W/B/G/Q/R/X/T/Z) with deterministic:
 inventory -> partitioning -> per-partition raw outputs -> norm merge -> QA.
 """
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import fnmatch
 import hashlib
 import json
 import logging
 import os
 import re
-import signal
-import platform
+import sqlite3
 import subprocess
 import sys
 import time
-from collections import Counter, defaultdict
-from dataclasses import dataclass, replace
+from collections import Counter
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
-from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
 try:
-    from rich.console import Console
-    from rich.panel import Panel
-    from rich.progress import (
-        BarColumn,
-        MofNCompleteColumn,
-        Progress,
-        SpinnerColumn,
-        TextColumn,
-        TimeElapsedColumn,
+    from lib.chunking import (
+        build_file_manifest_hash,
+        build_partition_context,
+        estimate_tokens_from_text,
+        plan_chunks_for_step,
     )
-    from rich.table import Table
-    from rich.text import Text
-except Exception:  # pragma: no cover - optional rich rendering
-    Console = None  # type: ignore[assignment]
-    Panel = None  # type: ignore[assignment]
-    Progress = None  # type: ignore[assignment]
-    SpinnerColumn = None  # type: ignore[assignment]
-    BarColumn = None  # type: ignore[assignment]
-    MofNCompleteColumn = None  # type: ignore[assignment]
-    TimeElapsedColumn = None  # type: ignore[assignment]
-    TextColumn = None  # type: ignore[assignment]
-    Table = None  # type: ignore[assignment]
-    Text = None  # type: ignore[assignment]
+    from lib.retry import (
+        is_retryable_exception,
+        parse_retry_after_seconds,
+        retry_delay_seconds,
+        should_retry_status,
+    )
+    from lib.throttle import ProviderLimiter, ProviderRateConfig
+except ImportError:
+    from UPGRADES.lib.chunking import (
+        build_file_manifest_hash,
+        build_partition_context,
+        estimate_tokens_from_text,
+        plan_chunks_for_step,
+    )
+    from UPGRADES.lib.retry import (
+        is_retryable_exception,
+        parse_retry_after_seconds,
+        retry_delay_seconds,
+        should_retry_status,
+    )
+    from UPGRADES.lib.throttle import ProviderLimiter, ProviderRateConfig
 
 # --- Configuration & Constants ---
 
-PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
-PROMPT_HASH_MODE = "strict"
-VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
-PROOF_PACK_FILENAME = "PROOF_PACK.json"
-COVERAGE_ROLLUP_FILENAME = "COVERAGE_ROLLUP.json"
-RESUME_PROOF_FILENAME = "RESUME_PROOF.json"
-PROMPTSET_BLOCKED_REASON = "PROMPTSET_INVALID"
-PROMPTSET_BLOCKED_EXIT_CODE = 2
-RUNNER_SCRIPT = Path(__file__).resolve()
-PROMPTGEN_SCANNER_VERSION = "GX0_SCANNER_V1"
-PROMPTGEN_INPUTS_FILENAME = "PROMPTGEN_INPUTS.json"
-PROMPTGEN_FINGERPRINT_FILENAME = "PROJECT_FINGERPRINT.json"
-PROMPTGEN_FAILED_FILENAME = "GX0_PROMPTGEN_SCAN.FAILED.json"
-GEMINI_MODELS_FILENAME = "GEMINI_MODELS.json"
-GEMINI_MODELS_FAILED_FILENAME = "GEMINI_MODELS.FAILED.json"
-GEMINI_MODELS_SCHEMA_VERSION = "GEMINI_MODELS_V1"
-GEMINI_MODELS_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models"
-PARSE_RETRY_MAX_EXTRA_ATTEMPTS = 1
-STRING_LITERAL_ERROR_SNIPPETS = (
-    "unterminated string",
-    "invalid \\escape",
-    "invalid \\u",
-    "invalid control character",
-)
-PROMPTGEN_DEFAULT_MAX_FILES = 600
-PROMPTGEN_DEFAULT_MAX_BYTES = 300000
-PROMPTGEN_DEFAULT_EXCERPT_BYTES = 4000
-PROMPTGEN_DEFAULT_OUTPUT_DIR = "00_inputs"
-PROMPTGEN_DEFAULT_INCLUDE_GLOBS = [
-    "pyproject.toml",
-    "dopemux.toml",
-    "compose.yml",
-    "docker-compose*.yml",
-    ".claude/**",
-    ".dopemux/**",
-    ".taskx/**",
-    ".github/**",
-    "config/**",
-    "scripts/**",
-    "tools/**",
-    "compose/**",
-    "docker/**",
-    "AGENTS.md",
-    "README.md",
-    "QUICK_START.md",
-    "INSTALL.md",
-    "CHANGELOG.md",
-]
-PROMPTGEN_DEFAULT_EXCLUDE_GLOBS = [
-    "**/.git/**",
-    "**/.venv/**",
-    "**/__pycache__/**",
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/build/**",
-    "**/.DS_Store",
-    "**/*.png",
-    "**/*.jpg",
-    "**/*.jpeg",
-    "**/*.webp",
-    "**/*.gif",
-    "**/*.pdf",
-    "**/*.zip",
-]
-# mapping from phase code to directory suffix
-PHASE_DIR_NAMES: Dict[str, str] = {
-    "A": "A_repo_control_plane",
-    "H": "H_home_control_plane",
-    "D": "D_docs_pipeline",
-    "C": "C_code_surfaces",
-    "E": "E_execution_plane",
-    "W": "W_workflow_plane",
-    "B": "B_boundary_plane",
-    "G": "G_governance_plane",
-    "Q": "Q_quality_assurance",
-    "R": "R_arbitration",
-    "X": "X_feature_index",
-    "T": "T_task_packets",
-    "Z": "Z_handoff_freeze",
-}
-LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
-    "R2_synthesis": "R_arbitration",
-}
+PHASES = ["A", "H", "M", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
 CODE_HEAVY_PHASES = {"C", "E", "Q"}
-R_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
-R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
+R_BASE_REQUIRED_INPUT_PHASES = ["A", "H", "D", "C"]
+R_FULL_STEP_IDS = tuple(f"R{i}" for i in range(9))
+R_PROFILE_MANIFEST_FILES = {
+    "base": Path("UPGRADES/R_REQUIRED_ARTIFACT_GROUPS_BASE.json"),
+    "full": Path("UPGRADES/R_REQUIRED_ARTIFACT_GROUPS_FULL.json"),
+}
+DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_BASE: Dict[str, List[Tuple[str, ...]]] = {
     "A": [
         ("REPO_INSTRUCTION_SURFACE.json",),
         ("REPO_INSTRUCTION_REFERENCES.json",),
@@ -163,8 +87,13 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
         ("DOC_TOPIC_CLUSTERS.json",),
         ("DOC_SUPERSESSION.json",),
         ("DOC_CONTRACT_CLAIMS.json",),
-        ("DUPLICATE_DRIFT_REPORT.json", "DOC_RECENCY_DUPLICATE_REPORT.json"),
         ("DOC_INDEX.json",),
+        ("DOC_BOUNDARIES.json",),
+        ("DOC_INTERFACES.json",),
+        ("DOC_WORKFLOWS.json",),
+        ("DOC_DECISIONS.json",),
+        ("DOC_CITATION_GRAPH.json",),
+        ("DOC_COVERAGE_REPORT.json",),
     ],
     "C": [
         ("SERVICE_ENTRYPOINTS.json",),
@@ -183,10 +112,22 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
         ("CONCURRENCY_RISK_LOCATIONS.json",),
     ],
 }
+DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_FULL_ADDITIONAL: Dict[str, List[Tuple[str, ...]]] = {
+    "M": [
+        ("M0_RUNTIME_EXPORT_INVENTORY.json",),
+        ("M1_SQLITE_SCHEMA_SNAPSHOTS.json",),
+        ("M2_SQLITE_TABLE_COUNTS.json",),
+        ("M3_CONPORT_EXPORT_SAFE.json",),
+        ("M4_DOPE_CONTEXT_EXPORT_SAFE.json",),
+        ("M5_MCP_HEALTH_EXPORT_SAFE.json",),
+        ("M6_RUNTIME_EXPORT_INDEX.json",),
+    ]
+}
 
 MODEL_ROUTING = {
     "A": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "H": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
+    "M": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "D": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "W": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
     "B": ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"),
@@ -200,17 +141,11 @@ MODEL_ROUTING = {
     "T": ("openai", "gpt-5.2-extended", "OPENAI_API_KEY"),
 }
 
-DEFAULT_GEMINI_MODEL_ID = "gemini-2.0-flash-001"
-DEFAULT_MODEL_ROUTING = dict(MODEL_ROUTING)
-MODEL_ROUTING = dict(DEFAULT_MODEL_ROUTING)
-
 PROVIDER_BASE_URL = {
     "xai": "https://api.x.ai/v1",
-    "gemini": "https://generativelanguage.googleapis.com",
+    "gemini": "https://generativelanguage.googleapis.com/v1beta/openai",
     "openai": "https://api.openai.com/v1",
 }
-
-GEMINI_OPENAI_COMPAT_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
 
 TEXT_SUFFIXES = {
     ".py",
@@ -307,13 +242,18 @@ HOME_SAFE_DENY_GLOBS = [
 
 REQUIRED_ITEM_KEYS = ["path", "line_range", "id"]
 SECRET_LINE_RE = re.compile(
-    r"(?i)\b(api[_-]?key|authorization|bearer|token|secret|password|private[_-]?key)\b"
+    r"(?i)\b(api[_-]?key|authorization|bearer|token|secret|password|private[_-]?key|cookie|set-cookie)\b"
 )
 SECRET_ASSIGN_RE = re.compile(
-    r"(?i)^(\s*['\"]?[^:=\n]*?(?:api[_-]?key|authorization|bearer|token|secret|password|private[_-]?key)"
+    r"(?i)^(\s*['\"]?[^:=\n]*?(?:api[_-]?key|authorization|bearer|token|secret|password|private[_-]?key|cookie|set-cookie)"
     r"[^:=\n]*?['\"]?\s*[:=]\s*).*$"
 )
 LONG_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9+/=_-])[A-Za-z0-9+/=_-]{33,}(?![A-Za-z0-9+/=_-])")
+ENV_SECRET_NAME_RE = re.compile(r"\b[A-Z0-9_]*(?:SECRET|TOKEN|KEY)\b")
+BEARER_TOKEN_RE = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]{8,}")
+PRIVATE_KEY_BEGIN_RE = re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----")
+PRIVATE_KEY_END_RE = re.compile(r"-----END [A-Z0-9 ]*PRIVATE KEY-----")
+CONFIG_KEY_RE = re.compile(r'^\s*["\']?([A-Za-z0-9_.-]{2,})["\']?\s*[:=]')
 OUTPUT_FILENAME_RE = re.compile(r"\b[A-Z][A-Z0-9_]+(?:\.partX)?\.(?:json|md)\b")
 OUTPUT_SECTION_START_RE = re.compile(
     r"(?i)^(goal(?:s)?|output(?:s)?(?:\s+files?)?|phase\s+[A-Z0-9]+\s+deliverables?)\b"
@@ -339,23 +279,85 @@ OUTPUT_SECTION_STOP_PREFIXES = (
     "arbitration procedure",
 )
 DEFAULT_OUTPUT_BY_STEP = {
-    "T1": ("TP_BACKLOG_TOPN.json",),
+    "T0": ("TP_BACKLOG_TOPN.json", "TP_INDEX.json"),
+    "T1": ("TP_PACKETS_TOP10.partX.md", "TP_PACKET_IMPLEMENTATION_INDEX.json"),
 }
-REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
-    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A99"},
-    "H": {"H0", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H9"},
-    "D": {"D0", "D1", "D2", "D3", "D4", "D5"},
-    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"},
-    "E": {"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E9"},
-    "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
-    "B": {"B0", "B1", "B2", "B3", "B9"},
-    "G": {"G0", "G1", "G2", "G3", "G4", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9"},
-    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"},
-    "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
-    "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
-    "Z": {"Z0", "Z1", "Z2", "Z9"},
+
+PRIORITY_TIERS = {
+    0: "magic_surfaces",
+    1: "active_docs",
+    2: "code_surfaces",
+    3: "archives",
 }
+
+MAGIC_SUBTYPE_ORDER = {
+    "instructions": 0,
+    "mcp_router_provider": 1,
+    "compose_bootstrap": 2,
+    "hooks": 3,
+    "ci": 4,
+    "workflow_launchers": 5,
+    "other_magic": 6,
+    "instruction_docs": 7,
+    "other": 99,
+}
+
+TIER0_RESERVE_RATIO = 0.40
+
+REPO_MAGIC_SUBDIRS = [
+    ".claude",
+    ".dopemux",
+    ".taskx",
+    ".githooks",
+    ".github/workflows",
+    "compose",
+    "scripts",
+    "tools",
+]
+
+REPO_MAGIC_EXPLICIT_FILES = [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "claude.md",
+    ".claude.json",
+    ".taskx-pin",
+    ".taskxroot",
+    "Makefile",
+    "Justfile",
+    ".tmux.conf",
+]
+
+REPO_MAGIC_GLOBS = [
+    ".claude.json*",
+    "dopemux.toml*",
+    "mcp-proxy-config*.json",
+    "mcp-proxy-config*.yaml",
+    "mcp-proxy-config*.yml",
+    "compose*.yml",
+    "docker-compose*.yml",
+    "litellm.config*",
+    "start-*.sh",
+    "tmux-*.yaml",
+    "tmux-*.sh",
+]
+
+HOME_MAGIC_SUBDIRS = [
+    ".dopemux",
+    ".config/dopemux",
+    ".config/taskx",
+    ".config/litellm",
+    ".config/mcp",
+]
+
+DOC_INSTRUCTION_GLOBS = [
+    "docs/**/custom-instructions/**",
+    "docs/**/prompts/**",
+    "docs/**/llm/**",
+    "docs/**/*AGENTS*",
+    "docs/**/*agents*",
+    "docs/**/*CLAUDE*",
+    "docs/**/*claude*",
+]
 
 
 # --- Setup Logging ---
@@ -373,23 +375,17 @@ class RunnerConfig:
     max_files_docs: int
     max_files_code: int
     max_chars: int
-    max_request_bytes: int
     file_truncate_chars: int
     home_scan_mode: str
+    r_profile: str
     resume: bool
-    fail_fast_auth: bool
-    gemini_auth_mode: str
-    gemini_transport: str
-    openai_transport: str
-    xai_transport: str
-    retry_policy: str
-    retry_max_attempts: int
-    retry_base_seconds: float
-    retry_max_seconds: float
-    phase_auth_fail_threshold: int
-    partition_workers: int
-    debug_phase_inputs: bool
-    fail_fast_missing_inputs: bool
+    rpm_openai: int
+    tpm_openai: int
+    rpm_gemini: int
+    tpm_gemini: int
+    rpm_xai: int
+    tpm_xai: int
+    max_inflight: int
 
 
 @dataclass(frozen=True)
@@ -399,519 +395,48 @@ class PromptSpec:
     output_artifacts: Tuple[str, ...]
 
 
-@dataclass(frozen=True)
-class RunContext:
-    run_id: str
-    source: str
-    latest_file: Path
-    latest_written: bool
-
-
-@dataclass(frozen=True)
-class UiConfig:
-    mode: str = "auto"  # auto|rich|plain
-    quiet: bool = False
-    jsonl_events: bool = False
-
-
-class UI:
-    def __init__(self, cfg: UiConfig, run_root: Path, run_id: str):
-        self.cfg = cfg
-        self.run_root = run_root
-        self.run_id = run_id
-        self._stdout_is_tty = sys.stdout.isatty()
-        self._console: Optional[Any] = None
-        self._progress: Optional[Any] = None
-        self._task_id: Optional[int] = None
-        self._progress_total = 0
-        self._rich = False
-
-        requested = cfg.mode
-        want_rich = requested == "rich" or (requested == "auto" and self._stdout_is_tty)
-        if want_rich and Console is not None and Progress is not None:
-            self._console = Console(force_terminal=(requested == "rich"))
-            self._rich = True
-
-        self._events_path: Optional[Path] = None
-        if cfg.jsonl_events:
-            self._events_path = run_root / "events.jsonl"
-
-    def _emit_event(self, payload: Dict[str, Any]) -> None:
-        if self._events_path is None:
-            return
-        row = dict(payload)
-        row.setdefault("ts", now_iso())
-        row.setdefault("run_id", self.run_id)
-        row.setdefault("run_root", str(self.run_root.resolve()))
-        try:
-            self._events_path.parent.mkdir(parents=True, exist_ok=True)
-            with self._events_path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(row, sort_keys=True, ensure_ascii=True) + "\n")
-        except Exception:
-            # UI event persistence must never alter execution flow.
-            return
-
-    def _print_plain(self, line: str) -> None:
-        print(line, flush=True)
-
-    def _summary_line(self, line: str) -> None:
-        if self._rich and self._console is not None:
-            self._console.print(line)
-        else:
-            self._print_plain(line)
-
-    def step_progress_stop(self) -> None:
-        if self._progress is not None:
-            self._progress.stop()
-            self._progress = None
-            self._task_id = None
-            self._progress_total = 0
-
-    def phase_start(
-        self,
-        phase: str,
-        phase_dir: Path,
-        inventory: int,
-        partitions: int,
-        provider: str,
-        model_id: str,
-        workers: int,
-        flags: str,
-    ) -> None:
-        self._emit_event(
-            {
-                "type": "phase_start",
-                "phase": phase,
-                "phase_dir": str(phase_dir.resolve()),
-                "inventory": inventory,
-                "partitions": partitions,
-                "provider": provider,
-                "model_id": model_id,
-                "workers": workers,
-                "flags": flags,
-            }
-        )
-        if self.cfg.quiet:
-            return
-        if self._rich and self._console is not None and Panel is not None and Text is not None:
-            body = Text()
-            body.append(f"run={self.run_id}\n")
-            body.append(f"phase={phase}\n")
-            body.append(f"phase_dir={phase_dir.resolve()}\n")
-            body.append(f"inventory={inventory} partitions={partitions}\n")
-            body.append(f"provider={provider} model={model_id} workers={workers}\n")
-            body.append(f"flags={flags}")
-            self._console.print(Panel(body, title=f"Phase {phase}", expand=False))
-            return
-        self._print_plain(
-            (
-                f"PHASE_START phase={phase} run_id={self.run_id} phase_dir={phase_dir.resolve()} "
-                f"inventory={inventory} partitions={partitions} provider={provider} model={model_id} "
-                f"workers={workers} flags={flags}"
-            )
-        )
-
-    def phase_inputs_provenance(
-        self,
-        phase: str,
-        inventory_meta: Dict[str, Any],
-        partitions_meta: Dict[str, Any],
-    ) -> None:
-        self._emit_event(
-            {
-                "type": "phase_inputs_provenance",
-                "phase": phase,
-                "inventory": inventory_meta,
-                "partitions": partitions_meta,
-            }
-        )
-        if self.cfg.quiet:
-            return
-        inv_size = int(inventory_meta.get("size", 0))
-        part_size = int(partitions_meta.get("size", 0))
-        if self._rich and self._console is not None:
-            self._console.print(
-                f"inputs_written phase={phase} inventory_bytes={inv_size} partitions_bytes={part_size}"
-            )
-            return
-        self._print_plain(
-            f"PHASE_INPUTS phase={phase} inventory_bytes={inv_size} partitions_bytes={part_size}"
-        )
-
-    def step_start(
-        self,
-        phase: str,
-        step_id: str,
-        prompt_path: Path,
-        outputs: Tuple[str, ...],
-        partitions_total: int,
-        provider: str,
-        model_id: str,
-    ) -> None:
-        self._emit_event(
-            {
-                "type": "step_start",
-                "phase": phase,
-                "step": step_id,
-                "prompt": str(prompt_path.resolve()),
-                "outputs": list(outputs),
-                "partitions_total": partitions_total,
-                "provider": provider,
-                "model_id": model_id,
-            }
-        )
-        if self.cfg.quiet:
-            return
-        if self._rich and self._console is not None and TextColumn is not None:
-            self.step_progress_stop()
-            self._progress = Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                BarColumn(),
-                MofNCompleteColumn(),
-                TimeElapsedColumn(),
-                TextColumn("ok={task.fields[ok]} fail={task.fields[failed]} skip={task.fields[skipped]} retry={task.fields[retried]}"),
-                console=self._console,
-                transient=True,
-            )
-            self._progress.start()
-            self._progress_total = max(0, int(partitions_total))
-            total = max(1, self._progress_total)
-            self._task_id = self._progress.add_task(
-                f"{phase}:{step_id}",
-                total=total,
-                ok=0,
-                failed=0,
-                skipped=0,
-                retried=0,
-            )
-            return
-        self._print_plain(
-            (
-                f"STEP_START phase={phase} step={step_id} partitions={partitions_total} "
-                f"prompt={prompt_path.name} outputs={list(outputs)} provider={provider} model={model_id}"
-            )
-        )
-
-    def partition_result(
-        self,
-        phase: str,
-        step_id: str,
-        completed: int,
-        total: int,
-        ok: int,
-        failed: int,
-        skipped: int,
-        retried: int,
-    ) -> None:
-        self._emit_event(
-            {
-                "type": "partition_result",
-                "phase": phase,
-                "step": step_id,
-                "completed": completed,
-                "total": total,
-                "ok": ok,
-                "failed": failed,
-                "skipped": skipped,
-                "retried": retried,
-            }
-        )
-        if self.cfg.quiet:
-            return
-        if self._rich and self._progress is not None and self._task_id is not None:
-            bounded_total = max(1, total)
-            self._progress.update(self._task_id, total=bounded_total)
-            self._progress.update(
-                self._task_id,
-                completed=min(completed, bounded_total),
-                ok=ok,
-                failed=failed,
-                skipped=skipped,
-                retried=retried,
-            )
-
-    def step_done(
-        self,
-        phase: str,
-        step_id: str,
-        partitions_total: int,
-        ok: int,
-        failed: int,
-        retries: int,
-        skipped: int,
-        elapsed_ms: int,
-        norm_written: int,
-        qa_file: str,
-    ) -> None:
-        self.step_progress_stop()
-        self._emit_event(
-            {
-                "type": "step_done",
-                "phase": phase,
-                "step": step_id,
-                "partitions_total": partitions_total,
-                "ok": ok,
-                "failed": failed,
-                "retries": retries,
-                "skipped": skipped,
-                "elapsed_ms": elapsed_ms,
-                "norm_written": norm_written,
-                "qa_file": qa_file,
-            }
-        )
-        self._summary_line(
-            (
-                f"STEP_DONE phase={phase} step={step_id} ok={ok} failed={failed} "
-                f"retries={retries} skipped={skipped} elapsed_ms={elapsed_ms} "
-                f"norm_written={norm_written} qa_file={qa_file}"
-            )
-        )
-
-    def phase_done(
-        self,
-        phase: str,
-        status: str,
-        raw_ok: int,
-        raw_failed: int,
-        raw_total: int,
-        norm_count: int,
-        qa_count: int,
-        phase_dir: Path,
-    ) -> None:
-        self.step_progress_stop()
-        self._emit_event(
-            {
-                "type": "phase_done",
-                "phase": phase,
-                "status": status,
-                "raw_ok": raw_ok,
-                "raw_failed": raw_failed,
-                "raw_total": raw_total,
-                "norm_count": norm_count,
-                "qa_count": qa_count,
-                "phase_dir": str(phase_dir.resolve()),
-            }
-        )
-        self._summary_line(
-            (
-                f"PHASE_DONE phase={phase} status={status} raw_ok={raw_ok} raw_failed={raw_failed} "
-                f"raw_total={raw_total} norm={norm_count} qa={qa_count} phase_dir={phase_dir.resolve()}"
-            )
-        )
-
-    def verify_result(
-        self,
-        phase: str,
-        status: str,
-        counts: Dict[str, Any],
-        reasons: List[str],
-        phase_dir: Path,
-    ) -> None:
-        self._emit_event(
-            {
-                "type": "verify_result",
-                "phase": phase,
-                "status": status,
-                "counts": counts,
-                "reasons": reasons,
-                "phase_dir": str(phase_dir.resolve()),
-            }
-        )
-
-    def status_table(self, payload: Dict[str, Any], clear: bool = False) -> None:
-        self._emit_event({"type": "status_snapshot", "payload": payload})
-        if self._rich and Table is not None and self._console is not None:
-            if clear:
-                self._console.clear()
-            summary = payload.get("summary", {})
-            self._console.print(
-                (
-                    f"run={payload.get('run_id')} run_dir={payload.get('run_dir')} "
-                    f"PASS={summary.get('PASS', 0)} FAIL={summary.get('FAIL', 0)} "
-                    f"IN_PROGRESS={summary.get('IN_PROGRESS', 0)} NOT_STARTED={summary.get('NOT_STARTED', 0)}"
-                )
-            )
-            table = Table(show_header=True, header_style="bold")
-            table.add_column("Phase")
-            table.add_column("Status")
-            table.add_column("Inputs")
-            table.add_column("Raw (ok/failed/total)")
-            table.add_column("Norm")
-            table.add_column("QA")
-            table.add_column("Last Modified (UTC)")
-            table.add_column("Phase Dir")
-            for phase in PHASES:
-                row = payload.get("phases", {}).get(phase, {})
-                table.add_row(
-                    phase,
-                    str(row.get("status", "UNKNOWN")),
-                    str(row.get("inputs_count", 0)),
-                    f"{row.get('raw_ok', 0)}/{row.get('raw_failed_sidecars', 0)}/{row.get('raw_total', 0)}",
-                    str(row.get("norm_count", 0)),
-                    str(row.get("qa_count", 0)),
-                    str(row.get("last_modified") or "-"),
-                    str(row.get("phase_dir") or "-"),
-                )
-            self._console.print(table)
-            return
-
-        if clear and self._stdout_is_tty:
-            self._print_plain("\033[2J\033[H")
-        summary = payload.get("summary", {})
-        self._print_plain(
-            (
-                f"run={payload.get('run_id')} run_dir={payload.get('run_dir')} "
-                f"PASS={summary.get('PASS', 0)} FAIL={summary.get('FAIL', 0)} "
-                f"IN_PROGRESS={summary.get('IN_PROGRESS', 0)} NOT_STARTED={summary.get('NOT_STARTED', 0)}"
-            )
-        )
-        self._print_plain(
-            "phase status inputs raw_ok raw_failed raw_total norm qa last_modified_utc phase_dir"
-        )
-        for phase in PHASES:
-            row = payload.get("phases", {}).get(phase, {})
-            self._print_plain(
-                (
-                    f"{phase} {row.get('status', 'UNKNOWN')} {row.get('inputs_count', 0)} "
-                    f"{row.get('raw_ok', 0)} {row.get('raw_failed_sidecars', 0)} {row.get('raw_total', 0)} "
-                    f"{row.get('norm_count', 0)} {row.get('qa_count', 0)} {row.get('last_modified') or '-'} "
-                    f"{row.get('phase_dir') or '-'}"
-                )
-            )
-
-
-@dataclass
-class PartitionExecResult:
-    partition_id: str
-    write_ops: List[Dict[str, Any]]
-    logs: List[Tuple[str, str]]
-    request_meta: Dict[str, Any]
-    artifacts: List[Dict[str, Any]]
-    success: bool
-    resume_skipped: bool
-    auth_failure: bool
-    auth_expired: bool
-    recomputed_delta: int
-    dry_run_delta: int
-    failed_delta: int
-
-
-class PromptsetBlockedError(RuntimeError):
-    """Raised when promptset validation fails in strict mode."""
-
-
 # --- Helpers ---
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _phase_input_stat(path: Path) -> Dict[str, Any]:
-    resolved = path.resolve()
-    if not resolved.exists():
-        return {
-            "exists": False,
-            "size": 0,
-            "mtime": None,
-            "path": str(resolved),
-        }
-    stats = resolved.stat()
-    return {
-        "exists": True,
-        "size": int(stats.st_size),
-        "mtime": datetime.fromtimestamp(stats.st_mtime, timezone.utc).isoformat().replace("+00:00", "Z"),
-        "path": str(resolved),
-    }
+def normalized_headers(headers: Any) -> Dict[str, str]:
+    snapshot: Dict[str, str] = {}
+    if headers is None:
+        return snapshot
+    for key in headers.keys():
+        key_str = str(key).strip().lower()
+        if not key_str:
+            continue
+        try:
+            snapshot[key_str] = str(headers.get(key, "")).strip()
+        except Exception:
+            snapshot[key_str] = ""
+    return snapshot
 
 
-def load_run_id(root: Path) -> Optional[str]:
-    """Load latest run_id from file; return None if unavailable."""
+def is_valid_json_file(path: Path) -> bool:
+    if not path.exists() or not path.is_file():
+        return False
+    try:
+        json.loads(safe_read(path))
+        return True
+    except Exception:
+        return False
+
+
+def load_run_id(root: Path) -> str:
+    """Load latest run_id from file or fail."""
     id_file = root / "extraction/latest_run_id.txt"
     if not id_file.exists():
-        return None
+        raise FileNotFoundError(
+            f"Run ID file not found at {id_file}. Run 'make x-run-init' first."
+        )
     run_id = id_file.read_text(encoding="utf-8").strip()
     if not run_id:
-        return None
+        raise RuntimeError(f"Run ID file {id_file} is empty.")
     return run_id
-
-
-def _validate_existing_run_dir(root: Path, run_id: str, allow_create_if_missing: bool = False) -> None:
-    candidate = root / "extraction" / "runs" / run_id
-    if not candidate.exists():
-        if allow_create_if_missing:
-            candidate.mkdir(parents=True, exist_ok=True)
-            return
-        raise FileNotFoundError(f"Run directory {candidate} does not exist.")
-    if not candidate.is_dir():
-        raise NotADirectoryError(f"Path {candidate} is not a directory.")
-
-
-def _generate_run_id(root: Path) -> str:
-    base = datetime.now(timezone.utc).strftime("run_%Y%m%dT%H%M%SZ")
-    runs_root = root / "extraction" / "runs"
-    runs_root.mkdir(parents=True, exist_ok=True)
-
-    candidate = runs_root / base
-    suffix = 1
-    while candidate.exists():
-        candidate = runs_root / f"{base}_{suffix:02d}"
-        suffix += 1
-    candidate.mkdir(parents=True, exist_ok=False)
-    return candidate.name
-
-
-def latest_run_id_path(root: Path) -> Path:
-    return root / "extraction/latest_run_id.txt"
-
-
-def persist_latest_run_id(root: Path, run_id: str) -> None:
-    id_file = latest_run_id_path(root)
-    id_file.parent.mkdir(parents=True, exist_ok=True)
-    id_file.write_text(run_id + "\n", encoding="utf-8")
-
-
-def resolve_run_context(
-    root: Path,
-    args: argparse.Namespace,
-    allow_create_if_missing: bool = False,
-) -> RunContext:
-    latest_file = latest_run_id_path(root)
-    run_id_source = "generated"
-
-    if args.run_id:
-        run_id = args.run_id
-        _validate_existing_run_dir(root, run_id, allow_create_if_missing=allow_create_if_missing)
-        run_id_source = "explicit"
-    else:
-        latest = load_run_id(root)
-        if latest:
-            latest_dir = root / "extraction" / "runs" / latest
-            if latest_dir.exists() and latest_dir.is_dir():
-                run_id = latest
-                run_id_source = "latest_run_id"
-            else:
-                logger.warning(
-                    "latest_run_id.txt points to missing run directory %s; generating new run_id.",
-                    latest_dir,
-                )
-                run_id = _generate_run_id(root)
-        else:
-            run_id = _generate_run_id(root)
-
-    write_latest = (
-        not args.no_write_latest
-        and (not args.dry_run or args.write_latest_even_on_dry_run)
-    )
-    if write_latest:
-        persist_latest_run_id(root, run_id)
-
-    return RunContext(
-        run_id=run_id,
-        source=run_id_source,
-        latest_file=latest_file,
-        latest_written=write_latest,
-    )
 
 
 def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
@@ -919,22 +444,25 @@ def get_run_dirs(root: Path, run_id: str) -> Dict[str, Path]:
     base = root / "extraction/runs" / run_id
     if not base.exists():
         raise FileNotFoundError(f"Run directory {base} does not exist.")
-    for legacy_name, canonical_name in LEGACY_PHASE_DIR_ALIASES.items():
-        legacy_path = base / legacy_name
-        canonical_path = base / canonical_name
-        if legacy_path.exists():
-            if canonical_path.exists():
-                raise RuntimeError(
-                    f"Run directory has both canonical and legacy phase folders: {canonical_path} and {legacy_path}. "
-                    f"Keep only canonical {canonical_name}."
-                )
-            raise RuntimeError(
-                f"Legacy phase folder detected: {legacy_path}. Rename it to canonical {canonical_path} before running."
-            )
 
-    dirs: Dict[str, Path] = {"root": base, "inputs": base / "00_inputs"}
-    for phase, suffix in PHASE_DIR_NAMES.items():
-        dirs[phase] = base / suffix
+    dirs = {
+        "root": base,
+        "inputs": base / "00_inputs",
+        "A": base / "A_repo_control_plane",
+        "H": base / "H_home_control_plane",
+        "M": base / "M_runtime_exports",
+        "D": base / "D_docs_pipeline",
+        "C": base / "C_code_surfaces",
+        "E": base / "E_execution_plane",
+        "W": base / "W_workflow_plane",
+        "B": base / "B_boundary_plane",
+        "G": base / "G_governance_plane",
+        "Q": base / "Q_quality_assurance",
+        "R": base / "R_arbitration",
+        "X": base / "X_feature_index",
+        "T": base / "T_task_packets",
+        "Z": base / "Z_handoff_freeze",
+    }
 
     (dirs["inputs"]).mkdir(parents=True, exist_ok=True)
     for phase in PHASES:
@@ -955,482 +483,15 @@ def write_json(path: Path, payload: Any) -> None:
     )
 
 
-def _write_json_with_sha256(path: Path, payload: Any) -> str:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    raw = (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
-    path.write_bytes(raw)
-    digest = sha256_bytes(raw)
-    sidecar = path.with_suffix(".sha256")
-    sidecar.write_text(f"{digest}  {path.name}\n", encoding="utf-8")
-    return digest
-
-
-def _promptgen_relpath(path: Path, root: Path) -> str:
-    return path.resolve().relative_to(root.resolve()).as_posix()
-
-
-def _promptgen_generated_at(run_id: str) -> str:
-    seed = int(hashlib.sha256(run_id.encode("utf-8")).hexdigest()[:8], 16)
-    return datetime.fromtimestamp(seed, timezone.utc).replace(microsecond=0).isoformat()
-
-
-def _matches_promptgen_exclude(relpath: str, name: str, excludes: List[str]) -> bool:
-    for pattern in excludes:
-        if fnmatch.fnmatch(relpath, pattern) or fnmatch.fnmatch(name, pattern):
-            return True
-    return False
-
-
-def _select_promptgen_files(
-    root: Path,
-    include_globs: List[str],
-    exclude_globs: List[str],
-    max_files: int,
-) -> List[Dict[str, Any]]:
-    selected: Dict[str, Dict[str, Any]] = {}
-    max_allowed = max(0, int(max_files))
-    for include_glob in include_globs:
-        for candidate in sorted(root.glob(include_glob), key=lambda p: p.as_posix()):
-            if not candidate.is_file():
-                continue
-            if not is_within(candidate, root):
-                continue
-            relpath = _promptgen_relpath(candidate, root)
-            if _matches_promptgen_exclude(relpath, candidate.name, exclude_globs):
-                continue
-            if relpath not in selected:
-                selected[relpath] = {
-                    "path": candidate.resolve(),
-                    "relpath": relpath,
-                    "reason": f"include:{include_glob}",
-                }
-
-    ordered = [selected[key] for key in sorted(selected)]
-    if max_allowed and len(ordered) > max_allowed:
-        ordered = ordered[:max_allowed]
-    elif max_allowed == 0:
-        ordered = []
-    return ordered
-
-
-def _read_excerpt_bytes(content: bytes, excerpt_limit: int) -> bytes:
-    return content[: max(0, int(excerpt_limit))]
-
-
-def _promptgen_excerpt_priority(relpath: str) -> int:
-    root_name = relpath.split("/", 1)[0]
-    if (
-        relpath in {"pyproject.toml", "dopemux.toml", "AGENTS.md"}
-        or relpath.startswith(".claude/")
-        or relpath.startswith(".taskx/")
-        or relpath.startswith(".github/")
-        or relpath.startswith("config/")
-        or relpath == "compose.yml"
-        or relpath.startswith("docker-compose")
-    ):
-        return 0
-    if relpath in {"README.md", "QUICK_START.md", "INSTALL.md", "CHANGELOG.md"} or relpath.startswith("docs/"):
-        return 1
-    if root_name in {"scripts", "tools", "docker", "compose"}:
-        return 2
-    return 3
-
-
-def _apply_excerpt_pack_policy(
-    rows: List[Dict[str, Any]],
-    max_total_bytes: int,
-) -> Dict[str, Any]:
-    cap = max(0, int(max_total_bytes))
-    working = sorted(
-        [
-            {
-                "relpath": row["relpath"],
-                "priority": _promptgen_excerpt_priority(row["relpath"]),
-                "raw_excerpt": row["raw_excerpt"],
-                "raw_excerpt_len": len(row["raw_excerpt"]),
-            }
-            for row in rows
-        ],
-        key=lambda item: item["relpath"],
-    )
-    assigned: Dict[str, bytes] = {item["relpath"]: b"" for item in working}
-    policy = "full"
-    dropped_count = 0
-    reduced = False
-
-    if cap <= 0:
-        return {
-            "policy": "omitted_due_to_limits",
-            "assigned": assigned,
-            "dropped_count": len(working),
-            "reduced_per_file": False,
-        }
-
-    keep = list(working)
-    total = sum(item["raw_excerpt_len"] for item in keep)
-    if total > cap:
-        drop_order = sorted(keep, key=lambda item: (-item["priority"], item["relpath"]))
-        keep_set = {item["relpath"] for item in keep}
-        for item in drop_order:
-            if total <= cap:
-                break
-            if item["relpath"] not in keep_set:
-                continue
-            keep_set.remove(item["relpath"])
-            dropped_count += 1
-            total -= item["raw_excerpt_len"]
-        keep = [item for item in keep if item["relpath"] in keep_set]
-        policy = "dropped_low_priority_files"
-
-    if not keep:
-        return {
-            "policy": "omitted_due_to_limits",
-            "assigned": assigned,
-            "dropped_count": dropped_count,
-            "reduced_per_file": False,
-        }
-
-    if total > cap:
-        reduced = True
-        per_file = cap // len(keep)
-        remainder = cap % len(keep)
-        for index, item in enumerate(sorted(keep, key=lambda row: row["relpath"])):
-            allowed = per_file + (1 if index < remainder else 0)
-            assigned[item["relpath"]] = item["raw_excerpt"][:allowed]
-        if sum(len(blob) for blob in assigned.values()) <= 0:
-            return {
-                "policy": "omitted_due_to_limits",
-                "assigned": {key: b"" for key in assigned},
-                "dropped_count": dropped_count,
-                "reduced_per_file": True,
-            }
-        policy = "dropped_and_reduced_per_file" if dropped_count else "reduced_per_file"
-    else:
-        for item in keep:
-            assigned[item["relpath"]] = item["raw_excerpt"]
-
-    return {
-        "policy": policy,
-        "assigned": assigned,
-        "dropped_count": dropped_count,
-        "reduced_per_file": reduced,
-    }
-
-
-def _detect_tooling_from_pyproject(pyproject_bytes: Optional[bytes]) -> Dict[str, Any]:
-    if not pyproject_bytes:
-        return {"present": False, "build_backend": None, "tooling": []}
-
-    text = pyproject_bytes.decode("utf-8", errors="ignore")
-    build_backend: Optional[str] = None
-    tooling: Set[str] = set()
-
-    try:
-        import tomllib
-
-        parsed = tomllib.loads(text)
-        if isinstance(parsed, dict):
-            build_system = parsed.get("build-system")
-            if isinstance(build_system, dict):
-                backend = build_system.get("build-backend")
-                if isinstance(backend, str):
-                    build_backend = backend
-            tool_section = parsed.get("tool")
-            if isinstance(tool_section, dict):
-                for key in tool_section:
-                    if isinstance(key, str):
-                        tooling.add(key)
-    except Exception:
-        backend_match = re.search(r'(?m)^\s*build-backend\s*=\s*"([^"]+)"\s*$', text)
-        if backend_match:
-            build_backend = backend_match.group(1).strip()
-        for match in re.finditer(r"(?m)^\s*\[tool\.([A-Za-z0-9_.-]+)\]\s*$", text):
-            tooling.add(match.group(1))
-
-    return {
-        "present": True,
-        "build_backend": build_backend,
-        "tooling": sorted(tooling),
-    }
-
-
-def _parse_compose_services(
-    selected_files: List[Dict[str, Any]],
-    file_bytes_map: Dict[str, bytes],
-) -> Dict[str, Any]:
-    compose_rows = [
-        row
-        for row in selected_files
-        if row["relpath"] == "compose.yml"
-        or row["relpath"].startswith("docker-compose")
-        or (row["relpath"].startswith("compose/") and row["relpath"].endswith((".yml", ".yaml")))
-    ]
-    compose_rows = sorted(compose_rows, key=lambda row: row["relpath"])
-
-    services: Set[str] = set()
-    ports: Set[str] = set()
-    volumes: Set[str] = set()
-    parser = "regex"
-    yaml_available = False
-    yaml_mod = None
-    try:
-        import yaml as yaml_mod  # type: ignore
-
-        yaml_available = True
-    except Exception:
-        yaml_available = False
-
-    for row in compose_rows:
-        raw = file_bytes_map.get(row["relpath"], b"")
-        text = raw.decode("utf-8", errors="ignore")
-        parsed_with_yaml = False
-        if yaml_available and yaml_mod is not None:
-            try:
-                loaded = yaml_mod.safe_load(text)
-                if isinstance(loaded, dict):
-                    parser = "yaml"
-                    svc = loaded.get("services")
-                    if isinstance(svc, dict):
-                        for svc_name, svc_cfg in svc.items():
-                            if isinstance(svc_name, str):
-                                services.add(svc_name)
-                            if isinstance(svc_cfg, dict):
-                                svc_ports = svc_cfg.get("ports")
-                                if isinstance(svc_ports, list):
-                                    for item in svc_ports:
-                                        if isinstance(item, (str, int, float)):
-                                            ports.add(str(item))
-                                svc_volumes = svc_cfg.get("volumes")
-                                if isinstance(svc_volumes, list):
-                                    for item in svc_volumes:
-                                        if isinstance(item, (str, int, float)):
-                                            volumes.add(str(item))
-                parsed_with_yaml = True
-            except Exception:
-                parsed_with_yaml = False
-        if parsed_with_yaml:
-            continue
-
-        in_services = False
-        for line in text.splitlines():
-            if re.match(r"^\s*services\s*:\s*$", line):
-                in_services = True
-                continue
-            if in_services and re.match(r"^[A-Za-z0-9_.-]+\s*:\s*$", line):
-                in_services = False
-            if in_services:
-                svc_match = re.match(r"^\s{2}([A-Za-z0-9_.-]+)\s*:\s*$", line)
-                if svc_match:
-                    services.add(svc_match.group(1))
-            port_match = re.search(r'"?(\d{2,5}:\d{2,5}(?:/\w+)?)"?', line)
-            if port_match:
-                ports.add(port_match.group(1))
-            vol_match = re.search(r"([./A-Za-z0-9_-]+:[./A-Za-z0-9_-]+)", line)
-            if vol_match and "/" in vol_match.group(1):
-                volumes.add(vol_match.group(1))
-
-    return {
-        "compose_files": [row["relpath"] for row in compose_rows],
-        "service_count": len(services),
-        "services": sorted(services),
-        "ports": sorted(ports),
-        "volumes": sorted(volumes),
-        "parser": parser,
-    }
-
-
-def scan_promptgen_inputs(
-    root: Path,
-    run_id: str,
-    args: argparse.Namespace,
-) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
-    generated_at = _promptgen_generated_at(run_id)
-    include_globs = list(args.promptgen_include_globs or PROMPTGEN_DEFAULT_INCLUDE_GLOBS)
-    exclude_globs = list(args.promptgen_exclude_globs or PROMPTGEN_DEFAULT_EXCLUDE_GLOBS)
-    selected = _select_promptgen_files(
-        root=root,
-        include_globs=include_globs,
-        exclude_globs=exclude_globs,
-        max_files=args.promptgen_max_files,
-    )
-
-    rows: List[Dict[str, Any]] = []
-    file_bytes_map: Dict[str, bytes] = {}
-    for item in selected:
-        raw = read_bytes_strict(item["path"])
-        file_bytes_map[item["relpath"]] = raw
-        raw_excerpt = _read_excerpt_bytes(raw, args.promptgen_excerpt_bytes)
-        rows.append(
-            {
-                "path": item["path"],
-                "relpath": item["relpath"],
-                "reason": item["reason"],
-                "size": len(raw),
-                "sha256": sha256_bytes(raw),
-                "raw_excerpt": raw_excerpt,
-                "raw_excerpt_len": len(raw_excerpt),
-            }
-        )
-
-    excerpt_policy = _apply_excerpt_pack_policy(rows, args.promptgen_max_bytes)
-    excerpt_assigned: Dict[str, bytes] = excerpt_policy["assigned"]
-
-    files_payload: List[Dict[str, Any]] = []
-    total_size = 0
-    total_excerpt = 0
-    excerpt_pack_files: List[Dict[str, Any]] = []
-    for row in sorted(rows, key=lambda item: item["relpath"]):
-        assigned_excerpt = excerpt_assigned.get(row["relpath"], b"")
-        total_size += int(row["size"])
-        total_excerpt += len(assigned_excerpt)
-        files_payload.append(
-            {
-                "relpath": row["relpath"],
-                "sha256": row["sha256"],
-                "size": row["size"],
-                "reason": row["reason"],
-                "excerpt_sha256": sha256_bytes(assigned_excerpt),
-                "excerpt_bytes": len(assigned_excerpt),
-            }
-        )
-        if len(assigned_excerpt) > 0:
-            excerpt_pack_files.append(
-                {
-                    "relpath": row["relpath"],
-                    "excerpt_text": assigned_excerpt.decode("utf-8", errors="ignore"),
-                    "excerpt_truncated": bool(
-                        row["raw_excerpt_len"] > len(assigned_excerpt) or row["size"] > len(assigned_excerpt)
-                    ),
-                    "excerpt_bytes": len(assigned_excerpt),
-                    "excerpt_sha256": sha256_bytes(assigned_excerpt),
-                }
-            )
-
-    relpaths = [row["relpath"] for row in files_payload]
-    extensions = Counter(Path(rel).suffix.lower() for rel in relpaths if Path(rel).suffix)
-    language_map = {
-        ".py": "python",
-        ".js": "javascript",
-        ".ts": "typescript",
-        ".tsx": "typescript",
-        ".jsx": "javascript",
-        ".go": "go",
-        ".rs": "rust",
-        ".java": "java",
-        ".kt": "kotlin",
-        ".rb": "ruby",
-        ".php": "php",
-        ".sh": "shell",
-        ".md": "markdown",
-        ".yaml": "yaml",
-        ".yml": "yaml",
-        ".toml": "toml",
-        ".json": "json",
-        ".sql": "sql",
-    }
-    language_counts: Counter = Counter()
-    for ext, count in extensions.items():
-        language = language_map.get(ext)
-        if language:
-            language_counts[language] += count
-
-    present = set(relpaths)
-    package_managers: Set[str] = set()
-    if "package-lock.json" in present:
-        package_managers.add("npm")
-    if "pnpm-lock.yaml" in present:
-        package_managers.add("pnpm")
-    if "yarn.lock" in present:
-        package_managers.add("yarn")
-    if "poetry.lock" in present:
-        package_managers.add("poetry")
-    if "Pipfile.lock" in present:
-        package_managers.add("pipenv")
-    if "requirements.txt" in present:
-        package_managers.add("pip")
-
-    pyproject_bytes = file_bytes_map.get("pyproject.toml")
-    python_detection = _detect_tooling_from_pyproject(pyproject_bytes)
-    compose_detection = _parse_compose_services(files_payload, file_bytes_map)
-
-    control_surfaces = {
-        "taskx": any(rel == ".taskxroot" or rel.startswith(".taskx/") for rel in relpaths),
-        "litellm": any("litellm" in rel.lower() for rel in relpaths),
-        "mcp": any("mcp" in rel.lower() for rel in relpaths),
-        "conport": any("conport" in rel.lower() for rel in relpaths),
-        "github_actions": any(rel.startswith(".github/workflows/") for rel in relpaths),
-        "claude": any(rel == ".claude.json" or rel.startswith(".claude/") for rel in relpaths),
-    }
-    top_paths = sorted({rel.split("/", 1)[0] for rel in relpaths})
-    file_hash_lines = "\n".join(f"{row['relpath']}:{row['sha256']}" for row in files_payload).encode("utf-8")
-    selected_set_sha256 = sha256_bytes(file_hash_lines)
-
-    promptgen_inputs = {
-        "generated_at": generated_at,
-        "generated_at_mode": "deterministic_from_run_id",
-        "run_id": run_id,
-        "repo_root": str(root.resolve()),
-        "scanner_version": PROMPTGEN_SCANNER_VERSION,
-        "limits": {
-            "max_files": int(args.promptgen_max_files),
-            "max_bytes": int(args.promptgen_max_bytes),
-            "excerpt_bytes": int(args.promptgen_excerpt_bytes),
-        },
-        "include_globs": include_globs,
-        "exclude_globs": exclude_globs,
-        "files": files_payload,
-        "totals": {
-            "selected_files": len(files_payload),
-            "total_file_bytes": total_size,
-            "total_excerpt_bytes": total_excerpt,
-        },
-    }
-
-    project_fingerprint = {
-        "generated_at": generated_at,
-        "generated_at_mode": "deterministic_from_run_id",
-        "run_id": run_id,
-        "repo_root": str(root.resolve()),
-        "scanner_version": PROMPTGEN_SCANNER_VERSION,
-        "detected": {
-            "languages": dict(sorted(language_counts.items(), key=lambda item: item[0])),
-            "package_managers": sorted(package_managers),
-            "python": python_detection,
-            "containers": compose_detection,
-            "control_surfaces": control_surfaces,
-            "paths": {
-                "top_level": top_paths,
-                "selected_files_count": len(files_payload),
-            },
-            "excerpt_pack": {
-                "policy": excerpt_policy["policy"],
-                "max_total_bytes": int(args.promptgen_max_bytes),
-                "max_per_file_bytes": int(args.promptgen_excerpt_bytes),
-                "files_considered": len(files_payload),
-                "files_included": len(excerpt_pack_files),
-                "dropped_count": int(excerpt_policy["dropped_count"]),
-                "reduced_per_file": bool(excerpt_policy["reduced_per_file"]),
-                "total_bytes": total_excerpt,
-                "files": excerpt_pack_files,
-            },
-            "hashes": {
-                "selected_files_set_sha256": selected_set_sha256,
-            },
-        },
-    }
-
-    return promptgen_inputs, project_fingerprint, {
-        "selected_files": len(files_payload),
-        "total_excerpt_bytes": total_excerpt,
-        "excerpt_policy": excerpt_policy["policy"],
-    }
-
-
 def safe_read(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8", errors="ignore")
     except Exception:
         return ""
+
+
+def sha256_string(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8", errors="ignore")).hexdigest()
 
 
 def is_text_candidate(path: Path) -> bool:
@@ -1479,8 +540,8 @@ def normalized_rel_path(path: Path, repo_root: Optional[Path] = None) -> str:
         return str(resolved.relative_to(root)).replace("\\", "/")
     home = Path.home().resolve()
     if is_within(resolved, home):
-        rel_home = str(resolved.relative_to(home)).replace("\\", "/")
-        return f"~/{rel_home}"
+        rel_path_str = str(resolved.relative_to(home)).replace("\\", "/")
+        return f"~/{rel_path_str}"
     return str(resolved).replace("\\", "/")
 
 
@@ -1587,26 +648,11 @@ def classify_surface(path_str: str) -> Dict[str, Any]:
 
 def classify_tier(path_str: str) -> int:
     return int(classify_surface(path_str).get("tier", 2))
+
+
 def sha256_text(path: Path) -> str:
     content = safe_read(path)
     return hashlib.sha256(content.encode("utf-8", errors="ignore")).hexdigest()
-
-
-def read_bytes_strict(path: Path) -> bytes:
-    try:
-        return path.read_bytes()
-    except Exception as exc:  # pragma: no cover - exercised via integration paths
-        raise RuntimeError(
-            f"prompt_unreadable: {path} :: {type(exc).__name__}: {exc}"
-        ) from exc
-
-
-def sha256_bytes(content: bytes) -> str:
-    return hashlib.sha256(content).hexdigest()
-
-
-def sha256_file_strict(path: Path) -> str:
-    return sha256_bytes(read_bytes_strict(path))
 
 
 def get_git_sha(root: Path) -> str:
@@ -1621,239 +667,422 @@ def get_git_sha(root: Path) -> str:
         return "UNKNOWN"
 
 
-def collect_manifest_artifacts(dirs: Dict[str, Path]) -> List[Dict[str, Any]]:
-    artifacts: List[Dict[str, Any]] = []
-    for phase in PHASES:
-        phase_dir = dirs.get(phase)
-        if not phase_dir:
-            continue
-        for bucket in ("inputs", "raw", "norm", "qa"):
-            bucket_dir = phase_dir / bucket
-            if not bucket_dir.exists():
-                continue
-            for entry in sorted(bucket_dir.iterdir()):
-                if not entry.is_file():
-                    continue
-                try:
-                    st = entry.stat()
-                    size = st.st_size
-                except Exception:
-                    size = 0
-                artifacts.append(
-                    {
-                        "name": entry.name,
-                        "phase": phase,
-                        "phase_dir": PHASE_DIR_NAMES.get(phase, phase),
-                        "bucket": bucket,
-                        "path": str(entry.resolve()),
-                        "size_bytes": size,
-                    }
-                )
-    artifacts.sort(key=lambda row: (row["phase"], row["bucket"], row["name"]))
-    return artifacts
-
-
-def refresh_run_manifest_artifacts(run_root: Path, dirs: Dict[str, Path]) -> None:
-    manifest_path = run_root / "RUN_MANIFEST.json"
-    payload: Dict[str, Any] = {}
-    if manifest_path.exists():
-        try:
-            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-        except Exception:
-            payload = {}
-    payload["artifacts"] = collect_manifest_artifacts(dirs)
-    payload["artifacts_updated_at"] = now_iso()
-    write_json(manifest_path, payload)
-
-
-def apply_model_overrides(gemini_model_id: str) -> None:
-    global MODEL_ROUTING
-    MODEL_ROUTING = dict(DEFAULT_MODEL_ROUTING)
-    if not gemini_model_id:
-        return
-    for phase, (provider, _, api_key_env) in list(MODEL_ROUTING.items()):
-        if provider == "gemini":
-            MODEL_ROUTING[phase] = (provider, gemini_model_id, api_key_env)
-
-
-def effective_model_routing_payload() -> Dict[str, Dict[str, str]]:
-    payload: Dict[str, Dict[str, str]] = {}
-    for phase in PHASES:
-        provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
-        payload[phase] = {
-            "provider": provider,
-            "model_id": model_id,
-            "api_key_env": api_key_env,
-        }
-    return payload
-
-
-def write_run_manifest(
-    root: Path,
-    dirs: Dict[str, Path],
-    run_id: str,
-    args: argparse.Namespace,
-    run_context: RunContext,
-    phases: List[str],
-) -> Dict[str, Any]:
-    prompt_report = promptset_fingerprint(phases)
-    run_blocked = bool(prompt_report.get("blocked_promptset"))
+def write_run_manifest(root: Path, dirs: Dict[str, Path], run_id: str, args: argparse.Namespace) -> None:
     manifest = {
         "run_id": run_id,
         "generated_at": now_iso(),
         "repo_root": str(root.resolve()),
         "git_sha": get_git_sha(root),
         "cli": {
-            "phase": args.phase if args.phase else args.verify_phase_output,
+            "phase": args.phase,
             "dry_run": args.dry_run,
             "resume": args.resume,
             "max_files_docs": args.max_files_docs,
             "max_files_code": args.max_files_code,
             "max_chars": args.max_chars,
-            "max_request_bytes": args.max_request_bytes,
             "file_truncate_chars": args.file_truncate_chars,
             "home_scan_mode": args.home_scan_mode,
-            "fail_fast_auth": args.fail_fast_auth,
-            "gemini_auth_mode": args.gemini_auth_mode,
-            "gemini_model_id": args.gemini_model_id,
-            "gemini_transport": args.gemini_transport,
-            "openai_transport": args.openai_transport,
-            "xai_transport": args.xai_transport,
-            "retry_policy": args.retry_policy,
-            "retry_max_attempts": args.retry_max_attempts,
-            "retry_base_seconds": args.retry_base_seconds,
-            "retry_max_seconds": args.retry_max_seconds,
-            "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
-            "partition_workers": args.partition_workers,
-            "debug_phase_inputs": args.debug_phase_inputs,
-            "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
-            "run_id_override": args.run_id,
-            "run_id_source": run_context.source,
-            "run_id_resolution_precedence": [
-                "explicit(--run-id)",
-                "implicit(extraction/latest_run_id.txt)",
-                "generated(new timestamp run id)",
-            ],
-            "no_write_latest": args.no_write_latest,
-            "write_latest_even_on_dry_run": args.write_latest_even_on_dry_run,
-            "latest_run_id_written": run_context.latest_written,
-            "latest_run_id_file": str(run_context.latest_file.resolve()),
-            "doctor": args.doctor,
-            "doctor_auth": args.doctor_auth,
-            "preflight_providers": args.preflight_providers,
-            "coverage_report": args.coverage_report,
-            "ui": args.ui,
-            "quiet": args.quiet,
-            "jsonl_events": args.jsonl_events,
-            "pretty": args.pretty,
-            "print_promptpack": args.print_promptpack,
-            "verify_phase_output": args.verify_phase_output,
-            "print_config": args.print_config,
+            "r_profile": args.r_profile,
+            "rpm_openai": args.rpm_openai,
+            "tpm_openai": args.tpm_openai,
+            "rpm_gemini": args.rpm_gemini,
+            "tpm_gemini": args.tpm_gemini,
+            "rpm_xai": args.rpm_xai,
+            "tpm_xai": args.tpm_xai,
+            "max_inflight": args.max_inflight,
         },
-        "prompt_hash_mode": PROMPT_HASH_MODE,
-        "prompt_files": [row["path"] for row in prompt_report["prompt_hashes"]],
-        "prompt_missing": prompt_report["prompt_missing"],
-        "prompt_unreadable": prompt_report["prompt_unreadable"],
-        "prompt_hash_errors": prompt_report["prompt_hash_errors"],
-        "prompt_failures": prompt_report.get("prompt_failures", []),
-        "prompt_failures_count": int(prompt_report.get("prompt_failures_count", 0)),
-        "promptset_sha256": prompt_report["promptset_sha256"],
-        "run_status": "BLOCKED" if run_blocked else "OK",
-        "phase_status": "blocked_promptset" if run_blocked else "ready",
-        "blocked_promptset": run_blocked,
-        "effective_model_routing": effective_model_routing_payload(),
     }
-    if run_blocked:
-        manifest["blocked_reason"] = PROMPTSET_BLOCKED_REASON
-        manifest["blocked"] = _blocked_promptset_payload(prompt_report, at="preflight")
     write_json(dirs["root"] / "RUN_MANIFEST.json", manifest)
-    refresh_run_manifest_artifacts(dirs["root"], dirs)
-    return prompt_report
 
 
-def write_runner_identity(root: Path, run_root: Path, run_id: str) -> None:
+def _load_magic_surface_index(index_path: Path) -> Dict[str, Any]:
+    if not index_path.exists():
+        return {"generated_at": now_iso(), "file_count": 0, "files": []}
+    try:
+        payload = json.loads(index_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {"generated_at": now_iso(), "file_count": 0, "files": []}
+    if not isinstance(payload, dict):
+        return {"generated_at": now_iso(), "file_count": 0, "files": []}
+    files = payload.get("files")
+    if not isinstance(files, list):
+        payload["files"] = []
+    return payload
+
+
+def update_magic_surface_index(
+    dirs: Dict[str, Path],
+    phase: str,
+    inventory: List[Dict[str, Any]],
+    file_truncate_chars: int,
+) -> None:
+    index_path = dirs["inputs"] / "MAGIC_SURFACE_INDEX.json"
+    payload = _load_magic_surface_index(index_path)
+    existing_rows: Dict[str, Dict[str, Any]] = {}
+    for row in payload.get("files", []):
+        if not isinstance(row, dict):
+            continue
+        path = str(row.get("path", "")).strip()
+        if not path:
+            continue
+        existing_rows[path] = row
+
+    for item in inventory:
+        if int(item.get("priority_tier", 2)) != 0:
+            continue
+        path = str(item.get("path", "")).strip()
+        if not path:
+            continue
+        char_count = int(item.get("char_count", 0) or 0)
+        row = existing_rows.get(path, {})
+        phases = sorted(set(list(row.get("phases_seen", [])) + [phase]))
+        reasons = sorted(set(list(row.get("inclusion_reasons", [])) + [str(item.get("inclusion_reason", "unclassified"))]))
+        entry = {
+            "path": path,
+            "relative_path": str(item.get("relative_path", normalized_rel_path(Path(path)))),
+            "tier": int(item.get("priority_tier", 0)),
+            "subtype": str(item.get("magic_subtype", "other")),
+            "size": int(item.get("size", 0) or 0),
+            "mtime": float(item.get("mtime", 0.0) or 0.0),
+            "inclusion_reason": reasons[0] if reasons else str(item.get("inclusion_reason", "unclassified")),
+            "inclusion_reasons": reasons,
+            "phases_seen": phases,
+            "truncated": char_count > max(int(file_truncate_chars), 0),
+            "truncate_limit_chars": int(file_truncate_chars),
+            "char_count": char_count,
+        }
+        existing_rows[path] = entry
+
+    files = sorted(
+        existing_rows.values(),
+        key=lambda row: (
+            int(row.get("tier", 0)),
+            int(MAGIC_SUBTYPE_ORDER.get(str(row.get("subtype", "other")), 99)),
+            str(row.get("relative_path", row.get("path", ""))),
+            -float(row.get("mtime", 0.0)),
+        ),
+    )
     payload = {
-        "run_id": run_id,
+        "run_id": dirs["root"].name,
         "generated_at": now_iso(),
-        "git_sha": get_git_sha(root),
-        "runner_script_path": str(RUNNER_SCRIPT.resolve()),
-        "runner_sha256": sha256_text(RUNNER_SCRIPT),
-        "python_executable": sys.executable,
-        "python_version": platform.python_version(),
+        "file_count": len(files),
+        "files": files,
     }
-    write_json(run_root / "RUNNER_IDENTITY.json", payload)
+    write_json(index_path, payload)
 
 
-def update_run_manifest_probe(
-    run_root: Path,
-    phase: str,
-    step_id: str,
-    probe_payload: Dict[str, Any],
-) -> None:
-    manifest_path = run_root / "RUN_MANIFEST.json"
-    payload: Dict[str, Any] = {}
-    if manifest_path.exists():
+def clone_required_artifact_groups(
+    groups: Dict[str, List[Tuple[str, ...]]]
+) -> Dict[str, List[Tuple[str, ...]]]:
+    return {phase: [tuple(group) for group in phase_groups] for phase, phase_groups in groups.items()}
+
+
+def normalize_required_artifact_groups(raw: Any) -> Dict[str, List[Tuple[str, ...]]]:
+    normalized: Dict[str, List[Tuple[str, ...]]] = {}
+    if not isinstance(raw, dict):
+        return normalized
+
+    for phase, groups in raw.items():
+        if not isinstance(phase, str):
+            continue
+        phase_key = phase.strip().upper()
+        if not phase_key:
+            continue
+        if not isinstance(groups, list):
+            continue
+
+        normalized_groups: List[Tuple[str, ...]] = []
+        for group in groups:
+            if isinstance(group, str):
+                pattern = group.strip()
+                if pattern:
+                    normalized_groups.append((pattern,))
+                continue
+            if isinstance(group, (list, tuple)):
+                patterns = tuple(
+                    str(pattern).strip()
+                    for pattern in group
+                    if isinstance(pattern, str) and str(pattern).strip()
+                )
+                if patterns:
+                    normalized_groups.append(patterns)
+        if normalized_groups:
+            normalized[phase_key] = normalized_groups
+    return normalized
+
+
+def load_r_required_artifact_groups_by_profile() -> Dict[str, Dict[str, List[Tuple[str, ...]]]]:
+    base_groups = clone_required_artifact_groups(DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_BASE)
+    full_additional = clone_required_artifact_groups(DEFAULT_R_REQUIRED_ARTIFACT_GROUPS_FULL_ADDITIONAL)
+
+    base_file = R_PROFILE_MANIFEST_FILES["base"]
+    if base_file.exists():
         try:
-            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-        except Exception:
-            payload = {}
-    probes = payload.setdefault("auth_probes", {})
-    phase_probes = probes.setdefault(phase, {})
-    phase_probes[step_id] = probe_payload
-    write_json(manifest_path, payload)
+            base_payload = json.loads(safe_read(base_file))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Invalid JSON in {base_file}: {exc}") from exc
+        parsed = normalize_required_artifact_groups(base_payload.get("requires"))
+        if parsed:
+            base_groups = parsed
 
-
-def update_run_manifest_promptset_block(
-    run_root: Path,
-    phase: str,
-    prompt_report: Dict[str, Any],
-) -> None:
-    manifest_path = run_root / "RUN_MANIFEST.json"
-    payload: Dict[str, Any] = {}
-    if manifest_path.exists():
+    full_file = R_PROFILE_MANIFEST_FILES["full"]
+    if full_file.exists():
         try:
-            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            full_payload = json.loads(safe_read(full_file))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Invalid JSON in {full_file}: {exc}") from exc
+        parsed = normalize_required_artifact_groups(full_payload.get("requires_additional"))
+        if parsed:
+            full_additional = parsed
+
+    full_groups = clone_required_artifact_groups(base_groups)
+    for phase, groups in full_additional.items():
+        full_groups.setdefault(phase, [])
+        full_groups[phase].extend(groups)
+
+    return {"base": base_groups, "full": full_groups}
+
+
+def required_input_phases_for_r_profile(profile: str) -> List[str]:
+    phases = list(R_BASE_REQUIRED_INPUT_PHASES)
+    if profile == "full":
+        phases.append("M")
+    return phases
+
+
+def phase_home_scan_mode(phase: str, cfg: RunnerConfig) -> str:
+    if phase == "M":
+        return "safe"
+    if phase == "H":
+        return cfg.home_scan_mode
+    return "n/a"
+
+
+def phase_uses_safe_redaction(phase: str, cfg: RunnerConfig) -> bool:
+    return phase == "M" or (phase == "H" and cfg.home_scan_mode == "safe")
+
+
+def phase_output_files(phase_dir: Path) -> List[str]:
+    output_files: List[str] = []
+    for bucket in ("raw", "norm", "qa"):
+        bucket_dir = phase_dir / bucket
+        if not bucket_dir.exists():
+            continue
+        for path in sorted(bucket_dir.rglob("*")):
+            if path.is_file():
+                output_files.append(str(path.resolve()))
+    return output_files
+
+
+def serialize_manifest_inputs(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    serialized: List[Dict[str, Any]] = []
+    for item in sorted(items, key=lambda candidate: str(candidate.get("path", ""))):
+        path = str(item.get("path", "")).strip()
+        if not path:
+            continue
+        try:
+            size = int(item.get("size", 0))
         except Exception:
-            payload = {}
-    payload["run_status"] = "BLOCKED"
-    payload["phase_status"] = "blocked_promptset"
-    payload["blocked_promptset"] = True
-    payload["blocked_reason"] = PROMPTSET_BLOCKED_REASON
-    payload["blocked_phase"] = phase
-    payload["blocked_prompts_missing"] = prompt_report.get("prompt_missing", [])
-    payload["blocked_prompts_unreadable"] = prompt_report.get("prompt_unreadable", [])
-    payload["blocked_prompt_hash_errors"] = prompt_report.get("prompt_hash_errors", [])
-    payload["prompt_failures"] = prompt_report.get("prompt_failures", [])
-    payload["prompt_failures_count"] = int(prompt_report.get("prompt_failures_count", 0))
-    payload["blocked"] = _blocked_promptset_payload(prompt_report, at="phase_execution")
-    payload["prompt_hash_mode"] = PROMPT_HASH_MODE
-    payload["promptset_sha256"] = None
-    payload["updated_at"] = now_iso()
-    write_json(manifest_path, payload)
+            size = 0
+        try:
+            mtime = float(item.get("mtime", 0.0))
+        except Exception:
+            mtime = 0.0
+        serialized.append({"path": path, "size": size, "mtime": mtime})
+    return serialized
 
 
-def write_promptset_blocked_marker(
+def write_phase_manifest(
+    phase: str,
+    dirs: Dict[str, Path],
+    cfg: RunnerConfig,
+    prompts: List[PromptSpec],
+    context_items: List[Dict[str, Any]],
+    max_files: int,
+    outputs_before: List[str],
+    outputs_after: List[str],
+) -> None:
+    created_outputs = sorted(set(outputs_after) - set(outputs_before))
+    manifest = {
+        "phase": phase,
+        "run_id": dirs["root"].name,
+        "created_at": now_iso(),
+        "home_scan_mode": phase_home_scan_mode(phase, cfg),
+        "prompt_files": [str(prompt.prompt_path.resolve()) for prompt in prompts],
+        "step_ids": [prompt.step_id for prompt in prompts],
+        "input_files": serialize_manifest_inputs(context_items),
+        "output_files": outputs_after,
+        "new_output_files": created_outputs,
+        "caps": {
+            "max_files_docs": cfg.max_files_docs,
+            "max_files_code": cfg.max_files_code,
+            "max_files_phase_effective": max_files,
+            "max_chars": cfg.max_chars,
+            "file_truncate_chars": cfg.file_truncate_chars,
+            "max_inflight": cfg.max_inflight,
+            "rpm": {
+                "openai": cfg.rpm_openai,
+                "gemini": cfg.rpm_gemini,
+                "xai": cfg.rpm_xai,
+            },
+            "tpm": {
+                "openai": cfg.tpm_openai,
+                "gemini": cfg.tpm_gemini,
+                "xai": cfg.tpm_xai,
+            },
+            "truncate_markers": [
+                "...[TRUNCATED]...",
+                "...[CONTEXT_TRUNCATED_FOR_LIMIT]...",
+            ],
+        },
+        "redactions": {
+            "safe_mode_active": phase_uses_safe_redaction(phase, cfg),
+            "line_patterns": [
+                "api_key/token/secret/password/private_key/cookie",
+                "Bearer <token>",
+                "long_token_33_plus_chars",
+            ],
+            "field_patterns": [
+                "content",
+                "message",
+                "prompt",
+                "response",
+                "body",
+                "text",
+                "log",
+            ],
+            "hash_policy": "sha256(value)[:12]",
+        },
+        "resume_mode": cfg.resume,
+    }
+    write_json(dirs[phase] / "qa" / f"PHASE_{phase}_MANIFEST.json", manifest)
+
+
+def write_partition_manifest(
     phase: str,
     phase_dir: Path,
-    prompt_report: Dict[str, Any],
+    run_id: str,
+    partitions: List[Dict[str, Any]],
+    inventory_by_path: Dict[str, Dict[str, Any]],
+    file_truncate_chars: int,
+    max_files: int,
+    max_chars: int,
+    step_chunk_manifests: Dict[str, List[Dict[str, Any]]],
 ) -> None:
+    partition_rows: List[Dict[str, Any]] = []
+    for partition in sorted(partitions, key=lambda item: str(item.get("id", ""))):
+        ordered_paths = [str(path) for path in partition.get("ordered_paths", partition.get("paths", []))]
+        files = [
+            _partition_file_row(path, inventory_by_path, file_truncate_chars)
+            for path in ordered_paths
+        ]
+        tier_counts = Counter(int(row.get("priority_tier", 2)) for row in files)
+        payload_hash = build_partition_payload_hash(
+            ordered_paths=ordered_paths,
+            inventory_by_path=inventory_by_path,
+            file_truncate_chars=file_truncate_chars,
+        )
+        partition_rows.append(
+            {
+                "partition_id": str(partition.get("id", "")),
+                "reason": str(partition.get("reason", "")),
+                "ordered_paths": ordered_paths,
+                "file_count": len(ordered_paths),
+                "char_count_estimate": int(partition.get("char_count_estimate", 0) or 0),
+                "byte_count_estimate": int(partition.get("byte_count_estimate", 0) or 0),
+                "token_count_estimate": int(partition.get("token_count_estimate", 0) or 0),
+                "tier_counts": dict(sorted(tier_counts.items())),
+                "tier0_reserved_chars": int(partition.get("tier0_reserved_chars", int(max_chars * TIER0_RESERVE_RATIO))),
+                "tier0_reserved_tokens": int(partition.get("tier0_reserved_tokens", max(int(max_chars * TIER0_RESERVE_RATIO / 4), 1))),
+                "partition_payload_hash": payload_hash,
+                "files": files,
+            }
+        )
+
     payload = {
-        "generated_at": now_iso(),
         "phase": phase,
-        "status": "blocked_promptset",
-        "blocked_reason": PROMPTSET_BLOCKED_REASON,
-        "prompt_hash_mode": PROMPT_HASH_MODE,
-        "promptset_sha256": None,
-        "prompt_hashes": prompt_report.get("prompt_hashes", []),
-        "prompt_missing": prompt_report.get("prompt_missing", []),
-        "prompt_unreadable": prompt_report.get("prompt_unreadable", []),
-        "prompt_hash_errors": prompt_report.get("prompt_hash_errors", []),
-        "prompt_failures": prompt_report.get("prompt_failures", []),
-        "missing_prompts_count": int(prompt_report.get("missing_prompts_count", 0)),
-        "unreadable_prompts_count": int(prompt_report.get("unreadable_prompts_count", 0)),
-        "prompt_failures_count": int(prompt_report.get("prompt_failures_count", 0)),
+        "run_id": run_id,
+        "generated_at": now_iso(),
+        "limits": {
+            "max_files": max_files,
+            "max_chars": max_chars,
+            "max_tokens": max(int(max_chars / 4), 1024),
+            "file_truncate_chars": file_truncate_chars,
+        },
+        "partition_order": [row["partition_id"] for row in partition_rows],
+        "partitions": partition_rows,
+        "step_chunk_manifests": {
+            step_id: sorted(
+                rows,
+                key=lambda row: (
+                    str(row.get("chunk_id", "")),
+                    str(row.get("chunk_key", "")),
+                ),
+            )
+            for step_id, rows in sorted(step_chunk_manifests.items())
+        },
     }
-    write_json(phase_dir / "qa" / f"PHASE_{phase}_BLOCKED_PROMPTSET.json", payload)
+    write_json(phase_dir / "inputs" / "PARTITION_MANIFEST.json", payload)
+
+
+def write_resume_proof(
+    phase: str,
+    phase_dir: Path,
+    run_id: str,
+    prompts: List[PromptSpec],
+    step_coverages: List[Dict[str, Any]],
+    step_qas: List[Dict[str, Any]],
+    request_controller: "RequestController",
+) -> None:
+    qa_by_step = {str(item.get("step_id", "")): item for item in step_qas}
+    coverage_by_step = {str(item.get("step_id", "")): item for item in step_coverages}
+
+    steps: List[Dict[str, Any]] = []
+    for prompt in sorted(prompts, key=lambda item: item.step_id):
+        step_id = prompt.step_id
+        coverage = coverage_by_step.get(step_id, {})
+        qa = qa_by_step.get(step_id, {})
+        chunk_ids = [str(value) for value in coverage.get("chunk_ids", [])]
+        failed_chunk_ids = sorted(set(str(value) for value in coverage.get("failed_chunk_ids", [])))
+        skipped = int(coverage.get("skipped_chunks", 0) or 0)
+        completed = int(coverage.get("completed_chunks", 0) or 0)
+        total_done = completed + skipped
+        hash_mismatch = sorted(set(str(value) for value in coverage.get("hash_mismatch_chunk_ids", [])))
+        parse_failures = qa.get("parse_failures", []) if isinstance(qa.get("parse_failures"), list) else []
+        missing_partitions = qa.get("missing_partitions", []) if isinstance(qa.get("missing_partitions"), list) else []
+        missing_expected = qa.get("missing_expected_artifacts", []) if isinstance(qa.get("missing_expected_artifacts"), list) else []
+        written_files = qa.get("written_files", []) if isinstance(qa.get("written_files"), list) else []
+        output_presence = {
+            str(filename): (phase_dir / "norm" / str(filename)).exists()
+            for filename in written_files
+        }
+        steps.append(
+            {
+                "step_id": step_id,
+                "chunk_ids": chunk_ids,
+                "planned_chunks": int(coverage.get("planned_chunks", len(chunk_ids)) or len(chunk_ids)),
+                "completed_chunks": completed,
+                "skipped_chunks": skipped,
+                "failed_chunks": int(coverage.get("failed_chunks", len(failed_chunk_ids)) or len(failed_chunk_ids)),
+                "completed_or_skipped_chunks": total_done,
+                "failed_chunk_ids": failed_chunk_ids,
+                "hash_mismatch_chunk_ids": hash_mismatch,
+                "missing_partitions": sorted(set(str(value) for value in missing_partitions)),
+                "missing_expected_artifacts": sorted(set(str(value) for value in missing_expected)),
+                "parse_failures": parse_failures,
+                "written_files": [str(filename) for filename in written_files],
+                "written_files_exist": output_presence,
+            }
+        )
+
+    payload = {
+        "phase": phase,
+        "run_id": run_id,
+        "generated_at": now_iso(),
+        "steps": steps,
+        "last_successful_provider_call": request_controller.last_successful_call,
+    }
+    write_json(phase_dir / "qa" / "RESUME_PROOF.json", payload)
 
 
 # --- Collector Logic ---
@@ -2026,320 +1255,42 @@ def get_phase_prompts(phase: str) -> List[PromptSpec]:
     return specs
 
 
-def _missing_prompt_glob(step_id: str) -> str:
-    return str((Path("UPGRADES") / f"PROMPT_{step_id}_*.md").resolve())
-
-
-def _truncate_exception_message(message: str, limit: int = 500) -> str:
-    return message[:limit]
-
-
-def _prompt_failure_entry(
-    *,
-    kind: str,
-    prompt_id: str,
-    path: Path,
-    exception_type: str,
-    exception_message: str,
-) -> Dict[str, str]:
-    return {
-        "kind": kind,
-        "prompt_id": prompt_id,
-        "path": str(path.resolve()),
-        "exception_type": exception_type,
-        "exception_message": _truncate_exception_message(exception_message),
-    }
-
-
-def _blocked_promptset_payload(prompt_report: Dict[str, Any], at: str) -> Dict[str, Any]:
-    return {
-        "reason": PROMPTSET_BLOCKED_REASON,
-        "at": at,
-        "promptset": {
-            "status": "blocked",
-            "failures": prompt_report.get("prompt_failures", []),
-        },
-    }
-
-
-def _resume_blocked_payload(prompt_report: Dict[str, Any]) -> Dict[str, Any]:
-    return {
-        "reason": PROMPTSET_BLOCKED_REASON,
-        "promptset_hash": None,
-        "promptset_status": "blocked",
-        "prompt_failures": prompt_report.get("prompt_failures", []),
-    }
-
-
-def _prompt_hash_report_for_phase(phase: str, specs: List[PromptSpec]) -> Dict[str, Any]:
-    prompt_hashes: List[Dict[str, str]] = []
-    prompt_missing: List[str] = []
-    prompt_unreadable: List[Dict[str, str]] = []
-    prompt_hash_errors: List[str] = []
-    prompt_failures: List[Dict[str, str]] = []
-
-    expected_steps = REQUIRED_PROMPT_STEP_IDS.get(phase, set())
-    observed_steps = {spec.step_id for spec in specs}
-    for step_id in sorted(expected_steps - observed_steps):
-        missing_pattern = _missing_prompt_glob(step_id)
-        prompt_missing.append(missing_pattern)
-        prompt_hash_errors.append(f"prompt_missing: {missing_pattern}")
-        prompt_failures.append(
-            _prompt_failure_entry(
-                kind="MISSING_PROMPT",
-                prompt_id=step_id,
-                path=Path(missing_pattern),
-                exception_type="FileNotFoundError",
-                exception_message=f"No prompt file found for required step '{step_id}'.",
-            )
-        )
-
-    for spec in sorted(specs, key=lambda row: (row.step_id, str(row.prompt_path))):
-        path = spec.prompt_path.resolve()
-        if not path.exists():
-            prompt_missing.append(str(path))
-            prompt_hash_errors.append(f"prompt_missing: {path}")
-            prompt_failures.append(
-                _prompt_failure_entry(
-                    kind="MISSING_PROMPT",
-                    prompt_id=spec.step_id,
-                    path=path,
-                    exception_type="FileNotFoundError",
-                    exception_message=f"Prompt file does not exist: {path}",
-                )
-            )
-            continue
-        try:
-            digest = sha256_bytes(path.read_bytes())
-        except Exception as exc:
-            error_message = _truncate_exception_message(str(exc))
-            prompt_unreadable.append(
-                {
-                    "prompt_id": spec.step_id,
-                    "path": str(path),
-                    "error": f"{type(exc).__name__}: {error_message}",
-                }
-            )
-            prompt_hash_errors.append(
-                f"prompt_unreadable: {path} :: {type(exc).__name__}: {error_message}"
-            )
-            prompt_failures.append(
-                _prompt_failure_entry(
-                    kind="UNREADABLE_PROMPT",
-                    prompt_id=spec.step_id,
-                    path=path,
-                    exception_type=type(exc).__name__,
-                    exception_message=error_message,
-                )
-            )
-            continue
-        prompt_hashes.append({"prompt_id": spec.step_id, "path": str(path), "sha256": digest})
-
-    prompt_failures = sorted(
-        prompt_failures,
-        key=lambda row: (row["prompt_id"], row["path"], row["kind"]),
-    )
-    blocked = bool(prompt_failures)
-    promptset_sha256: Optional[str] = None
-    if not blocked:
-        normalized = json.dumps(
-            sorted(prompt_hashes, key=lambda row: row["path"]),
-            ensure_ascii=True,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-        promptset_sha256 = sha256_bytes(normalized)
-
-    return {
-        "phase": phase,
-        "prompt_hash_mode": PROMPT_HASH_MODE,
-        "promptset_sha256": promptset_sha256,
-        "prompt_hashes": sorted(prompt_hashes, key=lambda row: row["path"]),
-        "prompt_missing": sorted(set(prompt_missing)),
-        "prompt_unreadable": sorted(prompt_unreadable, key=lambda row: row["path"]),
-        "prompt_hash_errors": prompt_hash_errors,
-        "prompt_failures": prompt_failures,
-        "blocked_promptset": blocked,
-        "missing_prompts_count": len(set(prompt_missing)),
-        "unreadable_prompts_count": len(prompt_unreadable),
-        "prompt_failures_count": len(prompt_failures),
-    }
-
-
-def promptset_fingerprint(phases: Iterable[str]) -> Dict[str, Any]:
-    active_phases = sorted(set(phases))
-    prompt_hashes: List[Dict[str, str]] = []
-    prompt_missing: List[str] = []
-    prompt_unreadable: List[Dict[str, str]] = []
-    prompt_hash_errors: List[str] = []
-    prompt_failures: List[Dict[str, str]] = []
-
-    for phase in active_phases:
-        report = _prompt_hash_report_for_phase(phase, get_phase_prompts(phase))
-        prompt_hashes.extend(report["prompt_hashes"])
-        prompt_missing.extend(report["prompt_missing"])
-        prompt_unreadable.extend(report["prompt_unreadable"])
-        prompt_hash_errors.extend(report["prompt_hash_errors"])
-        prompt_failures.extend(report.get("prompt_failures", []))
-
-    prompt_failures = sorted(
-        prompt_failures,
-        key=lambda row: (row["prompt_id"], row["path"], row["kind"]),
-    )
-    blocked = bool(prompt_failures)
-    promptset_sha256: Optional[str] = None
-    if not blocked:
-        normalized = json.dumps(
-            sorted(prompt_hashes, key=lambda row: row["path"]),
-            ensure_ascii=True,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-        promptset_sha256 = sha256_bytes(normalized)
-
-    return {
-        "active_phases": active_phases,
-        "prompt_hash_mode": PROMPT_HASH_MODE,
-        "promptset_sha256": promptset_sha256,
-        "prompt_hashes": sorted(prompt_hashes, key=lambda row: row["path"]),
-        "prompt_missing": sorted(set(prompt_missing)),
-        "prompt_unreadable": sorted(prompt_unreadable, key=lambda row: row["path"]),
-        "prompt_hash_errors": prompt_hash_errors,
-        "prompt_failures": prompt_failures,
-        "blocked_promptset": blocked,
-        "missing_prompts_count": len(set(prompt_missing)),
-        "unreadable_prompts_count": len(prompt_unreadable),
-        "prompt_failures_count": len(prompt_failures),
-    }
-
-
-def write_run_routing_fingerprint(
-    run_root: Path,
-    run_id: str,
-    cfg: RunnerConfig,
-    phases: List[str],
-) -> None:
-    phase_entries: Dict[str, List[Dict[str, Any]]] = {}
-    for phase in phases:
-        prompts = get_phase_prompts(phase)
-        entries: List[Dict[str, Any]] = []
-        provider, model_id, _ = MODEL_ROUTING.get(phase, ("xai", "grok-code-fast-1", "XAI_API_KEY"))
-        endpoint_base = llm_base_url(provider, cfg)
-        default_sequence = (
-            _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
-            if provider == "gemini"
-            else ["sdk_bearer"]
-        )
-        for prompt in prompts:
-            endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", default_sequence[0])
-            entries.append(
-                {
-                    "step_id": prompt.step_id,
-                    "prompt_file": prompt.prompt_path.name,
-                    "declared_outputs": list(prompt.output_artifacts),
-                    "provider": provider,
-                    "model_id": model_id,
-                    "transport": transport_for_provider(provider, cfg),
-                    "endpoint_base_url": endpoint_base,
-                    "endpoint_effective": endpoint_effective(endpoint_url),
-                    "gemini_endpoint_family": "openai_compat"
-                    if provider == "gemini" and _is_gemini_openai_compat_endpoint(endpoint_base)
-                    else ("native" if provider == "gemini" else None),
-                    "default_auth_sequence": default_sequence,
-                    "routing_signature": routing_signature(
-                        phase,
-                        prompt.step_id,
-                        provider,
-                        model_id,
-                        endpoint_base,
-                        default_sequence[0] if provider == "gemini" else None,
-                    ),
-                }
-            )
-        phase_entries[phase] = entries
-
-    payload = {
-        "run_id": run_id,
-        "created_at": now_iso(),
-        "config": {
-            "gemini_auth_mode_requested": cfg.gemini_auth_mode,
-            "gemini_model_id_requested": next(
-                (
-                    model_id
-                    for provider, model_id, _ in MODEL_ROUTING.values()
-                    if provider == "gemini"
-                ),
-                DEFAULT_GEMINI_MODEL_ID,
-            ),
-            "gemini_transport": cfg.gemini_transport,
-            "openai_transport": cfg.openai_transport,
-            "xai_transport": cfg.xai_transport,
-            "fail_fast_auth": cfg.fail_fast_auth,
-            "debug_phase_inputs": cfg.debug_phase_inputs,
-            "fail_fast_missing_inputs": cfg.fail_fast_missing_inputs,
-        },
-        "effective_model_routing": effective_model_routing_payload(),
-        "phases": phase_entries,
-    }
-    write_json(run_root / "RUN_ROUTING_FINGERPRINT.json", payload)
-
-
-def resolve_phase_list(phase_arg: Optional[str]) -> List[str]:
-    if not phase_arg:
-        return []
-    if phase_arg == "ALL":
-        return PHASES
-    return [phase_arg]
-
-
-def collect_prompt_index() -> Tuple[Dict[str, Dict[str, List[Path]]], Dict[str, List[str]]]:
-    step_map: Dict[str, List[Path]] = defaultdict(list)
-    prompt_paths = sorted(Path("UPGRADES").glob("PROMPT_*.md"))
-    for prompt_path in prompt_paths:
-        match = re.match(r"PROMPT_([A-Z][0-9]+)_", prompt_path.name)
-        if not match:
-            continue
-        step_id = match.group(1)
-        step_map[step_id].append(prompt_path)
-
-    phase_map: Dict[str, Dict[str, List[Path]]] = defaultdict(dict)
-    duplicates: Dict[str, List[str]] = {}
-    for step_id in sorted(step_map.keys()):
-        paths = sorted(step_map[step_id], key=lambda p: p.name)
-        phase = step_id[0]
-        phase_map.setdefault(phase, {})
-        phase_map[phase][step_id] = paths
-        if len(paths) > 1:
-            duplicates[step_id] = [p.name for p in paths]
-
-    return phase_map, duplicates
-
-
 # --- Home Safe Mode ---
 
+def home_safe_allow_roots(home_root: Path) -> List[Path]:
+    return [(home_root / rel).resolve() for rel in HOME_SAFE_ROOTS]
+
+
+def home_safe_violation_reason(path: Path, home_root: Path) -> Optional[str]:
+    allow_roots = home_safe_allow_roots(home_root)
+    resolved = path.resolve()
+    if not any(is_within(resolved, allow_root) or resolved == allow_root for allow_root in allow_roots):
+        return "outside_allow_roots"
+
+    suffix = resolved.suffix.lower()
+    if suffix not in HOME_SAFE_ALLOW_SUFFIXES:
+        return "disallowed_extension"
+
+    lower_path = str(resolved).lower()
+    lower_name = resolved.name.lower()
+    if any(
+        fnmatch.fnmatch(lower_name, pat) or fnmatch.fnmatch(lower_path, pat)
+        for pat in HOME_SAFE_DENY_GLOBS
+    ):
+        return "denylist_match"
+
+    return None
+
+
 def home_safe_filter(items: List[Dict[str, Any]], home_root: Path) -> List[Dict[str, Any]]:
-    allow_roots = [(home_root / rel).resolve() for rel in HOME_SAFE_ROOTS]
     filtered: List[Dict[str, Any]] = []
     skipped_counts = Counter()
 
     for item in items:
         path = Path(item["path"]).resolve()
-        if not any(is_within(path, allow_root) or path == allow_root for allow_root in allow_roots):
-            skipped_counts["outside_allow_roots"] += 1
-            continue
-
-        suffix = path.suffix.lower()
-        if suffix not in HOME_SAFE_ALLOW_SUFFIXES:
-            skipped_counts["disallowed_extension"] += 1
-            continue
-
-        lower_path = str(path).lower()
-        lower_name = path.name.lower()
-        if any(
-            fnmatch.fnmatch(lower_name, pat) or fnmatch.fnmatch(lower_path, pat)
-            for pat in HOME_SAFE_DENY_GLOBS
-        ):
-            skipped_counts["denylist_match"] += 1
+        violation = home_safe_violation_reason(path, home_root)
+        if violation:
+            skipped_counts[violation] += 1
             continue
 
         filtered.append(item)
@@ -2354,431 +1305,33 @@ def home_safe_filter(items: List[Dict[str, Any]], home_root: Path) -> List[Dict[
     return filtered
 
 
-def run_doctor_checks(root: Path, dirs: Dict[str, Path], run_id: str, phase_arg: Optional[str]) -> bool:
-    phase_list = resolve_phase_list(phase_arg)
-    if not phase_list:
-        logger.error("Doctor mode requires --phase to specify which pipelines to check.")
-        return False
-
-    prompt_index, duplicates = collect_prompt_index()
-    errors: List[str] = []
-    warnings: List[str] = []
-
-    if duplicates:
-        for step_id, names in duplicates.items():
-            errors.append(f"Duplicate prompt step {step_id}: {names}")
-
-    for phase in phase_list:
-        prompts = prompt_index.get(phase, {})
-        if not prompts:
-            errors.append(f"No prompts found for phase {phase} (UPGRADES/PROMPT_{phase}*).")
-
-    run_root = dirs["root"]
-    if not run_root.exists():
-        errors.append(f"Run root missing: {run_root}")
-    for phase in phase_list:
-        phase_dir = dirs.get(phase)
-        if not phase_dir or not phase_dir.exists():
-            warnings.append(
-                f"Phase directory missing (can be created by runner): {phase} -> {run_root / PHASE_DIR_NAMES.get(phase, phase)}"
-            )
-
-    print("DOCTOR PRECHECK REPORT")
-    status = "PASS" if not errors else "FAIL"
-    print(f"DOCTOR STATUS: {status}")
-    if warnings:
-        print("  WARNINGS:")
-        for warning in warnings:
-            print(f"    {warning}")
-    if errors:
-        print("  ERRORS:")
-        for error in errors:
-            print(f"    {error}")
-        return False
-
-    print(f"  Run ID: {run_id}")
-    print(f"  Phases scanned: {', '.join(phase_list)}")
-    print("  Prompt steps are unique and present for selected phases.")
-    return True
-
-
-def _required_artifact_groups_for_phase(phase: str) -> List[Tuple[str, ...]]:
-    return R_REQUIRED_ARTIFACT_GROUPS.get(phase, [])
-
-
-def _match_required_group(norm_dir: Path, group: Tuple[str, ...]) -> Tuple[bool, Optional[str]]:
-    for pattern in group:
-        for matched in sorted(norm_dir.glob(pattern)):
-            if matched.is_file():
-                return True, matched.name
-    return False, None
-
-
-def get_required_artifact_status(dirs: Dict[str, Path], phases: List[str]) -> Dict[str, Any]:
-    per_phase: Dict[str, Any] = {}
-    total_groups = 0
-    present_groups = 0
-    for phase in phases:
-        groups = _required_artifact_groups_for_phase(phase)
-        norm_dir = dirs[phase] / "norm"
-        phase_rows: List[Dict[str, Any]] = []
-        for group in groups:
-            total_groups += 1
-            ok = False
-            matched = None
-            if norm_dir.exists():
-                ok, matched = _match_required_group(norm_dir, group)
-            if ok:
-                present_groups += 1
-            phase_rows.append(
-                {
-                    "group": list(group),
-                    "present": ok,
-                    "matched_file": matched,
-                }
-            )
-        per_phase[phase] = {
-            "norm_dir": str(norm_dir),
-            "required_groups_total": len(groups),
-            "required_groups_present": sum(1 for row in phase_rows if row["present"]),
-            "required_groups": phase_rows,
-        }
-    pct = (100.0 * present_groups / total_groups) if total_groups else 100.0
-    return {
-        "total_required_groups": total_groups,
-        "present_required_groups": present_groups,
-        "required_groups_present_pct": round(pct, 2),
-        "phases": per_phase,
-    }
-
-
-def collect_provider_routes() -> Dict[str, Dict[str, str]]:
-    routes: Dict[str, Dict[str, str]] = {}
-    for _, (provider, model_id, api_key_env) in MODEL_ROUTING.items():
-        if provider in routes:
-            continue
-        routes[provider] = {
-            "provider": provider,
-            "model_id": model_id,
-            "api_key_env": api_key_env,
-        }
-    return routes
-
-
-def run_provider_doctor_probe(provider: str, model_id: str, api_key_env: str, cfg: RunnerConfig) -> Dict[str, Any]:
-    endpoint_base = llm_base_url(provider, cfg)
-    transport = transport_for_provider(provider, cfg)
-    api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
-    effective_mode = None
-    auth_sequence = None
-    if provider == "gemini":
-        auth_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
-        effective_mode = auth_sequence[0]
-    endpoint_url = transport_endpoint_url(provider, model_id, cfg, api_key, effective_mode)
-    result = call_llm(
-        provider=provider,
-        model_id=model_id,
-        api_key_env=api_key_env,
-        system_prompt="Return exactly OK.",
-        user_content="Return the single token OK.",
-        cfg=cfg,
-    )
-    meta = result.get("meta", {})
-    return {
-        "provider": provider,
-        "model_id": model_id,
-        "api_key_env_name": api_key_env,
-        "api_key_env_resolved": resolved_api_key_env,
-        "api_key_present": bool(api_key),
-        "transport": transport,
-        "endpoint_effective": meta.get("endpoint_effective") or _sanitize_url(endpoint_url),
-        "status_code": meta.get("status_code"),
-        "failure_type": meta.get("failure_type"),
-        "provider_error_reason": meta.get("provider_error_reason"),
-        "provider_signature": meta.get("provider_signature")
-        or provider_signature(provider, model_id, _sanitize_url(endpoint_url), effective_mode),
-        "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
-        "gemini_auth_mode_effective": meta.get("gemini_auth_mode_effective") if provider == "gemini" else None,
-        "gemini_auth_attempt_sequence": auth_sequence if provider == "gemini" else None,
-    }
-
-
-def run_provider_preflight(root: Path, run_id: str, cfg: RunnerConfig, phases: List[str]) -> Tuple[bool, Dict[str, Any]]:
-    del phases
-    provider_routes = collect_provider_routes()
-    provider_probes = [
-        run_provider_doctor_probe(
-            provider=route["provider"],
-            model_id=route["model_id"],
-            api_key_env=route["api_key_env"],
-            cfg=cfg,
-        )
-        for route in provider_routes.values()
-    ]
-    failures = [
-        probe for probe in provider_probes
-        if probe.get("status_code") != 200 or is_auth_classified_failure(probe.get("failure_type"))
-    ]
-    payload = {
-        "generated_at": now_iso(),
-        "run_id": run_id,
-        "status": "PASS" if not failures else "FAIL",
-        "routes": provider_routes,
-        "probes": provider_probes,
-        "failed_providers": [probe.get("provider") for probe in failures],
-    }
-    doctor_dir = root / "extraction" / "doctor"
-    doctor_dir.mkdir(parents=True, exist_ok=True)
-    write_json(doctor_dir / "PROVIDER_PREFLIGHT.json", payload)
-    return (not failures), payload
-
-
-def _normalize_gemini_model(row: Dict[str, Any]) -> Dict[str, Any]:
-    methods = row.get("supportedGenerationMethods")
-    methods_list = sorted(set(str(item) for item in methods)) if isinstance(methods, list) else []
-    return {
-        "model_id": str(row.get("name") or ""),
-        "display_name": row.get("displayName"),
-        "input_token_limit": row.get("inputTokenLimit"),
-        "output_token_limit": row.get("outputTokenLimit"),
-        "supported_generation_methods": methods_list,
-        "lifecycle": row.get("lifecycle"),
-    }
-
-
-def run_gemini_list_models(root: Path, run_id: str, dirs: Dict[str, Path]) -> int:
-    del root
-    out_dir = dirs["root"] / "00_inputs"
-    output_path = out_dir / GEMINI_MODELS_FILENAME
-    failed_path = out_dir / GEMINI_MODELS_FAILED_FILENAME
-    started = time.time()
-
-    api_key, resolved_api_key_env = resolve_api_key("gemini", "GEMINI_API_KEY")
-    if not api_key:
-        payload = {
-            "generated_at": now_iso(),
-            "run_id": run_id,
-            "status": "failed",
-            "stage": "gemini_list_models",
-            "error_type": "auth_missing",
-            "error": "Missing API key env var: GEMINI_API_KEY",
-            "api_key_env_name": "GEMINI_API_KEY",
-            "api_key_env_resolved": resolved_api_key_env,
-            "endpoint": GEMINI_MODELS_ENDPOINT,
-        }
-        write_json(failed_path, payload)
-        logger.error("Gemini models listing failed: missing GEMINI_API_KEY.")
-        return 1
-
-    page_token = ""
-    raw_pages: List[bytes] = []
-    raw_page_hashes: List[str] = []
-    raw_models: List[Dict[str, Any]] = []
-    page_count = 0
-
-    try:
-        while True:
-            params: Dict[str, str] = {"key": api_key}
-            if page_token:
-                params["pageToken"] = page_token
-            response = requests.get(GEMINI_MODELS_ENDPOINT, params=params, timeout=60)
-            response.raise_for_status()
-            body = response.content
-            parsed = response.json()
-            if not isinstance(parsed, dict):
-                raise RuntimeError("Gemini models endpoint returned non-object JSON.")
-            models = parsed.get("models")
-            if isinstance(models, list):
-                for model in models:
-                    if isinstance(model, dict):
-                        raw_models.append(model)
-            raw_pages.append(body)
-            raw_page_hashes.append(sha256_bytes(body))
-            page_count += 1
-            next_token = parsed.get("nextPageToken")
-            if not isinstance(next_token, str) or not next_token:
-                break
-            page_token = next_token
-
-        raw_response_bytes = b"".join(raw_pages)
-        raw_response_sha = sha256_bytes(raw_response_bytes)
-        normalized = [_normalize_gemini_model(row) for row in raw_models]
-        generation_capable = [
-            row for row in normalized
-            if "generateContent" in row.get("supported_generation_methods", [])
-            and row.get("model_id")
-        ]
-        generation_capable.sort(key=lambda row: str(row.get("model_id")))
-        payload = {
-            "version": GEMINI_MODELS_SCHEMA_VERSION,
-            "generated_at": _promptgen_generated_at(run_id),
-            "generated_at_mode": "deterministic_from_run_id",
-            "run_id": run_id,
-            "provider": "gemini",
-            "filters": {
-                "generation_capable_only": True,
-            },
-            "provenance": {
-                "endpoint": GEMINI_MODELS_ENDPOINT,
-                "api_version": "v1beta",
-                "raw_response_sha256": raw_response_sha,
-                "raw_models_count": len(raw_models),
-                "pages_fetched": page_count,
-                "raw_page_sha256": raw_page_hashes,
-            },
-            "models": generation_capable,
-        }
-
-        previous_payload: Optional[Dict[str, Any]] = None
-        if output_path.exists():
-            try:
-                previous_payload = json.loads(output_path.read_text(encoding="utf-8"))
-            except Exception:
-                previous_payload = None
-
-        digest = _write_json_with_sha256(output_path, payload)
-        if failed_path.exists():
-            failed_path.unlink()
-
-        prev_raw_sha = (
-            ((previous_payload or {}).get("provenance") or {}).get("raw_response_sha256")
-            if isinstance(previous_payload, dict)
-            else None
-        )
-        if isinstance(prev_raw_sha, str) and prev_raw_sha and prev_raw_sha != raw_response_sha:
-            old_ids = {
-                str(row.get("model_id"))
-                for row in ((previous_payload or {}).get("models") or [])
-                if isinstance(row, dict) and row.get("model_id")
-            }
-            new_ids = {str(row.get("model_id")) for row in generation_capable if row.get("model_id")}
-            logger.warning(
-                "Gemini model list changed for run_id=%s: previous_raw_sha=%s new_raw_sha=%s added=%s removed=%s",
-                run_id,
-                prev_raw_sha,
-                raw_response_sha,
-                len(new_ids - old_ids),
-                len(old_ids - new_ids),
-            )
-
-        elapsed_ms = int((time.time() - started) * 1000)
-        logger.info(
-            "Gemini models listing complete run_id=%s models=%s raw_models=%s raw_response_sha=%s output_sha=%s elapsed_ms=%s path=%s",
-            run_id,
-            len(generation_capable),
-            len(raw_models),
-            raw_response_sha,
-            digest,
-            elapsed_ms,
-            output_path,
-        )
-        return 0
-    except Exception as exc:
-        error_body = sanitize_error_text(str(exc))
-        payload = {
-            "generated_at": now_iso(),
-            "run_id": run_id,
-            "status": "failed",
-            "stage": "gemini_list_models",
-            "error_type": type(exc).__name__,
-            "error": error_body[:1600],
-            "api_key_env_name": "GEMINI_API_KEY",
-            "api_key_env_resolved": resolved_api_key_env,
-            "endpoint": GEMINI_MODELS_ENDPOINT,
-            "pages_fetched": page_count,
-            "raw_page_sha256": raw_page_hashes,
-        }
-        write_json(failed_path, payload)
-        logger.error("Gemini models listing failed: %s", error_body)
-        return 1
-
-
-def run_doctor_full(
-    root: Path,
-    dirs: Dict[str, Path],
-    run_id: str,
-    phases: List[str],
-    cfg: RunnerConfig,
-) -> int:
-    prompt_index, duplicates = collect_prompt_index()
-    missing_steps: Dict[str, List[str]] = {}
-    promptpack: Dict[str, List[Dict[str, Any]]] = {}
-    for phase in phases:
-        specs = get_phase_prompts(phase)
-        if not specs:
-            missing_steps[phase] = [f"No prompts found for phase {phase}."]
-            promptpack[phase] = []
-            continue
-        promptpack[phase] = [
-            {
-                "step_id": spec.step_id,
-                "path": str(spec.prompt_path.resolve()),
-                "sha256": sha256_file_strict(spec.prompt_path),
-                "declared_outputs": list(spec.output_artifacts),
-            }
-            for spec in specs
-        ]
-
-    required_status = get_required_artifact_status(dirs, R_REQUIRED_INPUT_PHASES)
-    provider_routes = collect_provider_routes()
-    provider_probes = [
-        run_provider_doctor_probe(
-            provider=route["provider"],
-            model_id=route["model_id"],
-            api_key_env=route["api_key_env"],
-            cfg=cfg,
-        )
-        for route in provider_routes.values()
-    ]
-
-    payload = {
-        "generated_at": now_iso(),
-        "run_id": run_id,
-        "runner": {
-            "script_path": str(RUNNER_SCRIPT.resolve()),
-            "runner_sha256": sha256_text(RUNNER_SCRIPT),
-            "git_sha": get_git_sha(root),
-            "python_executable": sys.executable,
-            "python_version": platform.python_version(),
-        },
-        "phases": phases,
-        "prompt_set_integrity": {
-            "duplicate_step_ids": duplicates,
-            "missing_steps_by_phase": missing_steps,
-            "promptpack": promptpack,
-        },
-        "required_artifact_groups": required_status,
-        "provider_reachability": {
-            "routes": provider_routes,
-            "probes": provider_probes,
-        },
-    }
-
-    doctor_dir = root / "extraction" / "doctor"
-    doctor_dir.mkdir(parents=True, exist_ok=True)
-    write_json(doctor_dir / "DOCTOR_FULL.json", payload)
-    print(json.dumps(payload, indent=2))
-
-    has_missing = any(missing_steps.values())
-    has_duplicates = bool(duplicates)
-    has_provider_fail = any(
-        probe.get("status_code") not in {200}
-        for probe in provider_probes
-    )
-    return 0 if not (has_missing or has_duplicates or has_provider_fail) else 1
-
-
 def redact_sensitive_lines(text: str) -> Tuple[str, int]:
     output_lines: List[str] = []
     had_trailing_newline = text.endswith("\n")
     redaction_hits = 0
+    in_private_key_block = False
 
     for line in text.splitlines():
+        if in_private_key_block:
+            redaction_hits += 1
+            if PRIVATE_KEY_END_RE.search(line):
+                in_private_key_block = False
+            continue
+
+        if PRIVATE_KEY_BEGIN_RE.search(line):
+            output_lines.append("[REDACTED_PRIVATE_KEY_BLOCK]")
+            redaction_hits += 1
+            if not PRIVATE_KEY_END_RE.search(line):
+                in_private_key_block = True
+            continue
+
         redacted = line
-        if SECRET_LINE_RE.search(redacted):
+        if SECRET_LINE_RE.search(redacted) or ENV_SECRET_NAME_RE.search(redacted):
             replaced = SECRET_ASSIGN_RE.sub(r"\1[REDACTED]", redacted)
             redacted = replaced if replaced != redacted else "[REDACTED_LINE]"
             redaction_hits += 1
+        redacted, bearer_hits = BEARER_TOKEN_RE.subn("Bearer [REDACTED_TOKEN]", redacted)
+        redaction_hits += bearer_hits
         redacted, token_hits = LONG_TOKEN_RE.subn("[REDACTED_LONG_TOKEN]", redacted)
         redaction_hits += token_hits
         output_lines.append(redacted)
@@ -2811,6 +1364,9 @@ def build_inventory(items: List[Dict[str, Any]], file_truncate_chars: int) -> Li
             size = 0
             mtime = 0.0
 
+        surface = classify_surface(str(path))
+        tier = int(surface.get("tier", 2))
+        subtype = str(surface.get("subtype", "other"))
         inventory.append(
             {
                 "path": str(path),
@@ -2820,11 +1376,80 @@ def build_inventory(items: List[Dict[str, Any]], file_truncate_chars: int) -> Li
                 "kind": classify_kind(path),
                 "char_count": char_count,
                 "char_count_estimate": est_chars,
+                "token_count_estimate": max(int(est_chars / 4), 1),
+                "priority_tier": tier,
+                "priority_label": PRIORITY_TIERS.get(tier, "unknown"),
+                "magic_subtype": subtype,
+                "magic_subtype_rank": int(surface.get("subtype_rank", 99)),
+                "inclusion_reason": str(surface.get("reason", "unclassified")),
+                "relative_path": str(surface.get("rel_path", normalized_rel_path(path))),
             }
         )
 
-    inventory.sort(key=lambda item: item["path"])
+    inventory.sort(
+        key=lambda item: (
+            int(item.get("priority_tier", 2)),
+            int(item.get("magic_subtype_rank", 99)),
+            str(item.get("relative_path", item.get("path", ""))),
+            -float(item.get("mtime", 0.0)),
+        )
+    )
     return inventory
+
+
+def classify_priority_tier(path_str: str) -> int:
+    return classify_tier(path_str)
+
+
+def _partition_file_row(
+    path: str,
+    inventory_by_path: Dict[str, Dict[str, Any]],
+    file_truncate_chars: int,
+) -> Dict[str, Any]:
+    info = inventory_by_path.get(path, {})
+    char_count = int(info.get("char_count", 0) or 0)
+    est_chars = int(info.get("char_count_estimate", 0) or 0)
+    est_tokens = int(info.get("token_count_estimate", max(int(est_chars / 4), 1)))
+    priority_tier = int(info.get("priority_tier", classify_priority_tier(path)) or 2)
+    magic_subtype = str(info.get("magic_subtype", classify_surface(path).get("subtype", "other")))
+    magic_subtype_rank = int(
+        info.get(
+            "magic_subtype_rank",
+            classify_surface(path).get("subtype_rank", MAGIC_SUBTYPE_ORDER.get("other", 99)),
+        )
+        or MAGIC_SUBTYPE_ORDER.get("other", 99)
+    )
+    inclusion_reason = str(info.get("inclusion_reason", classify_surface(path).get("reason", "unclassified")))
+    relative_path = str(info.get("relative_path", classify_surface(path).get("rel_path", normalized_rel_path(Path(path)))))
+    return {
+        "path": path,
+        "relative_path": relative_path,
+        "size": int(info.get("size", 0) or 0),
+        "mtime": float(info.get("mtime", 0.0) or 0.0),
+        "sha256": str(info.get("sha256", "")),
+        "char_count": char_count,
+        "char_count_estimate": est_chars,
+        "token_count_estimate": max(est_tokens, 1),
+        "truncation_planned": char_count > max(int(file_truncate_chars), 0),
+        "priority_tier": priority_tier,
+        "priority_label": PRIORITY_TIERS.get(priority_tier, "unknown"),
+        "magic_subtype": magic_subtype,
+        "magic_subtype_rank": magic_subtype_rank,
+        "inclusion_reason": inclusion_reason,
+    }
+
+
+def build_partition_payload_hash(
+    ordered_paths: List[str],
+    inventory_by_path: Dict[str, Dict[str, Any]],
+    file_truncate_chars: int,
+) -> str:
+    rows = [
+        _partition_file_row(path, inventory_by_path, file_truncate_chars)
+        for path in ordered_paths
+    ]
+    digest_source = json.dumps(rows, sort_keys=True, ensure_ascii=True)
+    return sha256_string(digest_source)
 
 
 def max_files_for_phase(phase: str, cfg: RunnerConfig) -> int:
@@ -2834,48 +1459,142 @@ def max_files_for_phase(phase: str, cfg: RunnerConfig) -> int:
 
 
 def build_partitions(
-    phase: str, inventory: List[Dict[str, Any]], max_files: int, max_chars: int
+    phase: str,
+    inventory: List[Dict[str, Any]],
+    max_files: int,
+    max_chars: int,
+    file_truncate_chars: int,
 ) -> List[Dict[str, Any]]:
     partitions: List[Dict[str, Any]] = []
     current_paths: List[str] = []
     current_chars = 0
+    current_bytes = 0
+    current_tokens = 0
+    current_tier0_chars = 0
+    current_tier0_tokens = 0
+    inventory_by_path = {str(item.get("path", "")): item for item in inventory}
+    max_tokens = max(int(max_chars / 4), 1024)
+    tier0_reserved_chars = int(max_chars * TIER0_RESERVE_RATIO)
+    tier0_reserved_tokens = max(int(tier0_reserved_chars / 4), 1)
+    tier0_remaining = sum(1 for item in inventory if int(item.get("priority_tier", 2)) == 0)
 
-    def flush_partition() -> None:
-        nonlocal current_paths, current_chars
+    def flush_partition(reason: str) -> None:
+        nonlocal current_paths, current_chars, current_bytes, current_tokens
+        nonlocal current_tier0_chars, current_tier0_tokens
         if not current_paths:
             return
         partition_id = f"{phase}_P{len(partitions) + 1:04d}"
+        kinds = sorted(
+            {
+                str(inventory_by_path.get(path, {}).get("kind", "unknown"))
+                for path in current_paths
+            }
+        )
         partitions.append(
             {
                 "id": partition_id,
+                "partition_id": partition_id,
                 "paths": list(current_paths),
+                "ordered_paths": list(current_paths),
                 "file_count": len(current_paths),
                 "char_count_estimate": current_chars,
+                "byte_count_estimate": current_bytes,
+                "token_count_estimate": current_tokens,
+                "category": kinds[0] if len(kinds) == 1 else "mixed",
+                "reason": reason,
+                "tier_counts": dict(
+                    sorted(
+                        Counter(
+                            int(inventory_by_path.get(path, {}).get("priority_tier", 2))
+                            for path in current_paths
+                        ).items()
+                    )
+                ),
+                "tier0_reserved_chars": tier0_reserved_chars,
+                "tier0_reserved_tokens": tier0_reserved_tokens,
+                "partition_payload_hash": build_partition_payload_hash(
+                    current_paths, inventory_by_path, file_truncate_chars
+                ),
             }
         )
         current_paths = []
         current_chars = 0
+        current_bytes = 0
+        current_tokens = 0
+        current_tier0_chars = 0
+        current_tier0_tokens = 0
 
-    for item in inventory:
+    for item in sorted(
+        inventory,
+        key=lambda candidate: (
+            int(candidate.get("priority_tier", 2)),
+            int(candidate.get("magic_subtype_rank", 99)),
+            str(candidate.get("relative_path", candidate.get("path", ""))),
+            -float(candidate.get("mtime", 0.0)),
+        ),
+    ):
         path = item["path"]
+        tier = int(item.get("priority_tier", 2))
         base_chars = int(item.get("char_count_estimate", 0))
         # Account for per-file headers in context payload construction.
         est_chars = base_chars + min(len(path) + 80, 2000)
+        est_bytes = len(path.encode("utf-8")) + int(item.get("size", 0))
+        est_tokens = max(int(est_chars / 4), 1)
+
+        if (
+            current_paths
+            and tier != 0
+            and tier0_remaining > 0
+            and (
+                current_tier0_chars < tier0_reserved_chars
+                or current_tier0_tokens < tier0_reserved_tokens
+            )
+        ):
+            flush_partition("tier0_reserved_budget")
+
+        if current_paths and tier in {2, 3} and tier0_remaining > 0:
+            flush_partition("tier0_exhaustion_guard")
+
         would_exceed_files = len(current_paths) >= max_files
         would_exceed_chars = current_paths and (current_chars + est_chars > max_chars)
-        if would_exceed_files or would_exceed_chars:
-            flush_partition()
+        would_exceed_tokens = current_paths and (current_tokens + est_tokens > max_tokens)
+        if would_exceed_files or would_exceed_chars or would_exceed_tokens:
+            if would_exceed_files:
+                reason = "max_files"
+            elif would_exceed_chars:
+                reason = "max_chars"
+            else:
+                reason = "max_tokens"
+            flush_partition(reason)
         current_paths.append(path)
         current_chars += est_chars
+        current_bytes += est_bytes
+        current_tokens += est_tokens
+        if tier == 0:
+            current_tier0_chars += est_chars
+            current_tier0_tokens += est_tokens
+            tier0_remaining = max(tier0_remaining - 1, 0)
 
-    flush_partition()
+    flush_partition("final")
     if not partitions:
         partitions.append(
             {
                 "id": f"{phase}_P0001",
+                "partition_id": f"{phase}_P0001",
                 "paths": [],
+                "ordered_paths": [],
                 "file_count": 0,
                 "char_count_estimate": 0,
+                "byte_count_estimate": 0,
+                "token_count_estimate": 0,
+                "category": "empty",
+                "reason": "empty",
+                "tier_counts": {},
+                "tier0_reserved_chars": tier0_reserved_chars,
+                "tier0_reserved_tokens": tier0_reserved_tokens,
+                "partition_payload_hash": build_partition_payload_hash(
+                    [], inventory_by_path, file_truncate_chars
+                ),
             }
         )
     return partitions
@@ -3011,7 +1730,6 @@ def normalize_step(
     prompt_spec: PromptSpec,
     phase_dir: Path,
     partitions: List[Dict[str, Any]],
-    step_exec_stats: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     step_id = prompt_spec.step_id
     expected_artifacts = prompt_spec.output_artifacts
@@ -3026,10 +1744,12 @@ def normalize_step(
     raw_ok = 0
     raw_failed = 0
     unexpected_artifacts: Counter[str] = Counter()
+    successful_partition_ids = set()
 
     for partition_id in partition_ids:
         raw_file = raw_dir / f"{step_id}__{partition_id}.json"
-        fail_file = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+        fail_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+        fail_txt = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
         if raw_file.exists():
             payload_text = safe_read(raw_file)
             try:
@@ -3057,21 +1777,36 @@ def normalize_step(
                 )
                 continue
 
+            expected_artifact_seen = False
             for artifact in artifacts:
                 artifact_name = artifact["artifact_name"]
                 if artifact_name not in artifacts_by_name:
                     unexpected_artifacts[artifact_name] += 1
                     continue
+                expected_artifact_seen = True
                 artifacts_by_name[artifact_name].append(
                     {"partition_id": partition_id, "payload": artifact["payload"]}
+                )
+            if expected_artifact_seen:
+                successful_partition_ids.add(partition_id)
+            else:
+                parse_failures.append(
+                    {
+                        "partition_id": partition_id,
+                        "reason": "unexpected_artifacts_only",
+                        "file": str(raw_file),
+                    }
                 )
         else:
             raw_failed += 1
             reason = "missing_output"
             file_path = str(raw_file)
-            if fail_file.exists():
+            if fail_json.exists():
                 reason = "llm_output_parse_failed"
-                file_path = str(fail_file)
+                file_path = str(fail_json)
+            elif fail_txt.exists():
+                reason = "llm_output_parse_failed"
+                file_path = str(fail_txt)
             parse_failures.append(
                 {"partition_id": partition_id, "reason": reason, "file": file_path}
             )
@@ -3083,7 +1818,7 @@ def normalize_step(
 
     for artifact_name in expected_artifacts:
         chunks = artifacts_by_name.get(artifact_name, [])
-        if not chunks:
+        if not chunks or len(chunks) != len(partition_ids):
             missing_expected_artifacts.append(artifact_name)
             continue
 
@@ -3147,15 +1882,13 @@ def normalize_step(
         "expected_artifacts": list(expected_artifacts),
         "written_files": written_files,
         "missing_expected_artifacts": missing_expected_artifacts,
+        "successful_partitions": sorted(successful_partition_ids),
+        "missing_partitions": sorted(set(partition_ids) - successful_partition_ids),
         "unexpected_artifacts": dict(sorted(unexpected_artifacts.items())),
         "missing_required_keys_counts": dict(sorted(missing_counts.items())),
         "duplicate_ids": duplicate_ids[:200],
         "parse_failures": parse_failures,
         "required_item_keys": REQUIRED_ITEM_KEYS,
-        "resume_skipped_partitions": int((step_exec_stats or {}).get("resume_skipped", 0)),
-        "recomputed_partitions": int((step_exec_stats or {}).get("recomputed", 0)),
-        "dry_run_partitions": int((step_exec_stats or {}).get("dry_run", 0)),
-        "execution_failed_partitions": int((step_exec_stats or {}).get("failed", 0)),
     }
 
     write_json(qa_dir / f"{step_id}_QA.json", qa_payload)
@@ -3164,1348 +1897,371 @@ def normalize_step(
 
 # --- LLM Execution ---
 
-def transport_for_provider(provider: str, cfg: RunnerConfig) -> str:
-    if provider == "gemini":
-        return cfg.gemini_transport
-    if provider == "xai":
-        return cfg.xai_transport
-    return cfg.openai_transport
-
-
-def llm_base_url(provider: str, cfg: Optional[RunnerConfig] = None) -> str:
-    if provider == "gemini" and cfg is not None and transport_for_provider(provider, cfg) == "openai_compat_http":
-        return GEMINI_OPENAI_COMPAT_BASE_URL
+def llm_base_url(provider: str) -> str:
     return PROVIDER_BASE_URL.get(provider, PROVIDER_BASE_URL["openai"])
 
 
-def build_chat_payload(
-    provider: str,
-    model_id: str,
-    system_prompt: str,
-    user_content: str,
-    force_json_output: bool = False,
-) -> Dict[str, Any]:
-    payload: Dict[str, Any] = {
-        "model": model_id,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content},
-        ],
-        "temperature": 0.1,
-    }
-    if provider == "gemini" and force_json_output:
-        payload["response_format"] = {"type": "json_object"}
-    return payload
-
-
-def serialize_payload_body(payload: Dict[str, Any]) -> bytes:
-    return json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-
-
-def measure_payload_bytes_from_body(body: bytes) -> int:
-    return len(body)
-
-
-def endpoint_effective(url: str) -> str:
-    return _sanitize_url(url)
-
-
-def _sanitize_url(url: str) -> str:
-    parsed = urlparse(url)
-    if not parsed.query:
-        return urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", "", ""))
-    redacted = []
-    for key, value in parse_qsl(parsed.query, keep_blank_values=True):
-        if key.lower() == "key":
-            redacted.append((key, "REDACTED"))
-        else:
-            redacted.append((key, value))
-    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", urlencode(redacted), ""))
-
-
-def _is_gemini_openai_compat_endpoint(endpoint_base_url: str) -> bool:
-    return "/v1beta/openai" in (endpoint_base_url or "")
-
-
-def _gemini_auth_mode_sequence(cfg_mode: str, endpoint_base_url: str) -> List[str]:
-    if not _is_gemini_openai_compat_endpoint(endpoint_base_url):
-        return ["sdk_api_key"]
-    if cfg_mode != "auto":
-        return [cfg_mode]
-    if _is_gemini_openai_compat_endpoint(endpoint_base_url):
-        return ["query_key", "api_key", "both"]
-    return ["api_key", "query_key", "both"]
-
-
-def _gemini_build_endpoint_and_headers(
-    endpoint_base_url: str,
-    api_key: str,
-    mode: str,
-) -> Tuple[str, Dict[str, str], Dict[str, bool]]:
-    endpoint = f"{endpoint_base_url}/chat/completions"
-    headers: Dict[str, str] = {"Content-Type": "application/json"}
-    if mode == "query_key":
-        effective_url = f"{endpoint}?{urlencode({'key': api_key})}"
-    else:
-        effective_url = endpoint
-    if mode == "api_key":
-        headers["x-goog-api-key"] = api_key
-    elif mode == "bearer":
-        headers["Authorization"] = f"Bearer {api_key}"
-    elif mode == "both":
-        headers["Authorization"] = f"Bearer {api_key}"
-        headers["x-goog-api-key"] = api_key
-    auth_flags = build_auth_present_flags(headers, mode == "query_key")
-    return effective_url, headers, auth_flags
-
-
-def endpoint_fingerprint(url: str) -> Dict[str, str]:
-    parsed = urlparse(url)
-    return {
-        "endpoint_host": parsed.netloc,
-        "endpoint_path": parsed.path,
-    }
-
-
-def provider_signature(
-    provider: str,
-    model_id: str,
-    endpoint_url: str,
-    gemini_auth_mode_effective: Optional[str],
-) -> str:
-    fp = endpoint_fingerprint(endpoint_url)
-    auth_mode = gemini_auth_mode_effective if provider == "gemini" else "bearer"
-    return (
-        f"provider={provider};model={model_id};host={fp['endpoint_host']};"
-        f"path={fp['endpoint_path']};auth_mode={auth_mode}"
-    )
-
-
-def routing_signature(
-    phase: str,
-    step_id: str,
-    provider: str,
-    model_id: str,
-    endpoint_base_url: str,
-    gemini_auth_mode_effective: Optional[str],
-) -> str:
-    canonical = {
-        "endpoint_base_url": endpoint_base_url,
-        "gemini_auth_mode_effective": gemini_auth_mode_effective,
-        "model_id": model_id,
-        "phase": phase,
-        "provider": provider,
-        "step_id": step_id,
-    }
-    encoded = json.dumps(canonical, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-
-
-def build_auth_present_flags(headers: Dict[str, str], used_query_key: bool) -> Dict[str, bool]:
-    return {
-        "has_auth": "Authorization" in headers,
-        "has_xgoog": "x-goog-api-key" in headers,
-        "used_query_key": used_query_key,
-    }
-
-
-def make_headers(provider: str, api_key: str, cfg: RunnerConfig, auth_mode: Optional[str] = None) -> Dict[str, str]:
-    if transport_for_provider(provider, cfg) != "openai_compat_http":
-        return {}
-    mode = auth_mode or cfg.gemini_auth_mode
-    headers: Dict[str, str] = {"Content-Type": "application/json"}
-    if provider != "gemini":
-        headers["Authorization"] = f"Bearer {api_key}"
-        return headers
-    if mode == "api_key":
-        headers["x-goog-api-key"] = api_key
-    elif mode == "bearer":
-        headers["Authorization"] = f"Bearer {api_key}"
-    elif mode == "both" or mode == "auto":
-        headers["Authorization"] = f"Bearer {api_key}"
-        headers["x-goog-api-key"] = api_key
-    elif mode == "query_key":
-        pass
-    else:
-        headers["Authorization"] = f"Bearer {api_key}"
-        headers["x-goog-api-key"] = api_key
-    return headers
-
-
-def make_url(
-    provider: str,
-    base_url: str,
-    cfg: RunnerConfig,
-    api_key: str,
-    auth_mode_override: Optional[str] = None,
-) -> str:
-    mode = auth_mode_override or cfg.gemini_auth_mode
-    url = f"{base_url}/chat/completions"
-    if provider == "gemini" and mode == "query_key":
-        return f"{url}?{urlencode({'key': api_key})}"
-    return url
-
-
-def transport_endpoint_url(
-    provider: str,
-    model_id: str,
-    cfg: RunnerConfig,
-    api_key: str = "",
-    gemini_auth_mode: Optional[str] = None,
-) -> str:
-    base_url = llm_base_url(provider, cfg)
-    if transport_for_provider(provider, cfg) == "openai_compat_http":
-        return make_url(provider, base_url, cfg, api_key, gemini_auth_mode)
-    if provider == "gemini":
-        return f"{base_url}/v1beta/models/{model_id}:generateContent"
-    return f"{base_url}/chat/completions"
-
-
-def resolve_api_key(
-    provider: str,
-    api_key_env: str,
-) -> Tuple[str, str]:
-    if provider == "gemini":
-        key_value = os.getenv(api_key_env, "")
-        legacy_google_key = os.getenv("GOOGLE_API_KEY", "")
-        if key_value and legacy_google_key and key_value != legacy_google_key:
-            logger.error(
-                "Conflicting Gemini API keys detected. "
-                "Use only GEMINI_API_KEY in repo-root .env and remove GOOGLE_API_KEY."
-            )
-            return "", api_key_env
-        return key_value, api_key_env
-    value = os.getenv(api_key_env, "")
-    return value, api_key_env
-
-
-def sdk_auth_present_flags(provider: str, api_key_present: bool) -> Dict[str, bool]:
-    flags = {
-        "has_auth": False,
-        "has_xgoog": False,
-        "used_query_key": False,
-        "sdk_api_key_present": api_key_present,
-    }
-    if provider == "openai" and api_key_present:
-        flags["has_auth"] = True
-    if provider == "xai" and api_key_present:
-        flags["has_auth"] = True
-    if provider == "gemini" and api_key_present:
-        flags["has_xgoog"] = True
-    return flags
-
-
-def get_gemini_client(api_key: str) -> Any:
-    try:
-        from google import genai
-    except ImportError as exc:
-        raise RuntimeError("google-genai is required for Gemini SDK transport.") from exc
-    # Canonical key source is GEMINI_API_KEY. Clear GOOGLE_API_KEY to prevent
-    # google-genai from preferring the legacy env var when both are present.
-    os.environ.pop("GOOGLE_API_KEY", None)
-    return genai.Client(api_key=api_key)
-
-
-def get_openai_client(base_url: Optional[str], api_key: str) -> Any:
-    try:
-        from openai import OpenAI
-    except ImportError as exc:
-        raise RuntimeError("openai package is required for OpenAI/xAI SDK transport.") from exc
-    kwargs: Dict[str, Any] = {"api_key": api_key}
-    if base_url:
-        kwargs["base_url"] = base_url
-    return OpenAI(**kwargs)
-
-
-def get_xai_client(api_key: str) -> Any:
-    return get_openai_client(base_url=PROVIDER_BASE_URL["xai"], api_key=api_key)
-
-
-def extract_text_from_chat_completion(response_obj: Any) -> str:
-    choices = getattr(response_obj, "choices", None)
-    if not choices:
-        return ""
-    message = getattr(choices[0], "message", None)
-    if message is None:
-        return ""
-    content = getattr(message, "content", "")
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        chunks: List[str] = []
-        for item in content:
-            text_value = getattr(item, "text", None)
-            if isinstance(text_value, str):
-                chunks.append(text_value)
-            elif isinstance(item, dict) and isinstance(item.get("text"), str):
-                chunks.append(item["text"])
-        return "".join(chunks)
-    return str(content or "")
-
-
-def extract_text_from_gemini_response(response_obj: Any) -> str:
-    text_attr = getattr(response_obj, "text", None)
-    if isinstance(text_attr, str) and text_attr:
-        return text_attr
-    candidates = getattr(response_obj, "candidates", None) or []
-    for candidate in candidates:
-        content = getattr(candidate, "content", None)
-        parts = getattr(content, "parts", None) or []
-        chunks: List[str] = []
-        for part in parts:
-            text_piece = getattr(part, "text", None)
-            if isinstance(text_piece, str):
-                chunks.append(text_piece)
-        if chunks:
-            return "".join(chunks)
-    return ""
-
-
-def summarize_llm_response(
-    provider: str,
-    transport: str,
-    response_obj: Any,
-    response_json: Optional[Dict[str, Any]],
-    response_text: str,
-) -> Dict[str, Any]:
-    summary: Dict[str, Any] = {"text_length": len(response_text)}
-    finish_reason = None
-    candidate_count: Optional[int] = None
-
-    if provider == "gemini":
-        candidates = getattr(response_obj, "candidates", None) or []
-        candidate_count = len(candidates)
-        if candidates:
-            finish_reason = getattr(candidates[0], "finish_reason", None)
-    else:
-        choices = None
-        if isinstance(response_json, dict):
-            choices = response_json.get("choices")
-        else:
-            choices = getattr(response_obj, "choices", None)
-        if isinstance(choices, list):
-            candidate_count = len(choices)
-            if choices:
-                finish_reason = getattr(choices[0], "finish_reason", None)
-
-    if candidate_count is not None:
-        summary["candidate_count"] = candidate_count
-    if finish_reason:
-        summary["finish_reason"] = finish_reason
-    return summary
-
-
-def capture_exception_metadata(exc: Exception) -> Dict[str, str]:
-    message = sanitize_error_text(str(exc))
-    return {
-        "exception_type": type(exc).__name__,
-        "exception_message_excerpt": message[:800],
-    }
-
-
-def exception_status_code(exc: Exception) -> Optional[int]:
-    status = getattr(exc, "status_code", None)
-    if isinstance(status, int):
-        return status
-    response = getattr(exc, "response", None)
-    status = getattr(response, "status_code", None)
-    if isinstance(status, int):
-        return status
-    return None
-
-
-def exception_response_text(exc: Exception) -> str:
-    body = getattr(exc, "body", None)
-    if isinstance(body, str):
-        return body
-    if isinstance(body, dict):
-        return json.dumps(body, ensure_ascii=True)
-    response = getattr(exc, "response", None)
-    text_attr = getattr(response, "text", None)
-    if isinstance(text_attr, str):
-        return text_attr
-    return ""
-
-
-def classify_failure_type(status_code: Optional[int], response_body: str, error_text: str) -> str:
-    body = (response_body or "").lower()
-    err = (error_text or "").lower()
-    joined = f"{body}\n{err}"
-    if "api key expired" in joined:
-        return "auth_expired"
-    if "api key not found" in joined or "api_key_invalid" in joined:
-        return "api_key_missing_or_invalid"
-    if "missing authorization header" in joined:
-        return "auth_missing"
-    if "permission_denied" in joined:
-        return "permission_denied"
-    if "resource_exhausted" in joined or "billing" in joined or "quota" in joined:
-        return "quota_or_billing"
-    if (
-        "api key not valid" in joined
-        or status_code in {401, 403}
-        or "unauthorized" in joined
-        or "permission" in joined
-    ):
-        return "auth_rejected"
-    if status_code == 408:
-        return "network"
-    if status_code == 429 or "rate limit" in joined or "too many requests" in joined:
-        return "rate_limit"
-    if status_code is not None and 400 <= status_code < 500:
-        return "payload"
-    if status_code is not None and status_code >= 500:
-        return "provider"
-    if "timeout" in joined or "connection" in joined or "network" in joined:
-        return "network"
-    return "unknown"
-
-
-def extract_provider_error_reason(response_body: str) -> Optional[str]:
-    if not response_body:
-        return None
-    try:
-        parsed = json.loads(response_body)
-        if isinstance(parsed, list) and parsed:
-            parsed = parsed[0]
-        if not isinstance(parsed, dict):
-            return None
-        error_obj = parsed.get("error")
-        if not isinstance(error_obj, dict):
-            return None
-        details = error_obj.get("details")
-        if isinstance(details, list):
-            for detail in details:
-                if isinstance(detail, dict):
-                    reason = detail.get("reason")
-                    if isinstance(reason, str) and reason.strip():
-                        return reason.strip()
-        reason = error_obj.get("status")
-        if isinstance(reason, str) and reason.strip():
-            return reason.strip()
-    except Exception:
-        return None
-    return None
-
-
-def sanitize_error_text(text: str) -> str:
-    if not text:
-        return ""
-    return re.sub(r"([?&]key=)[^&\\s]+", r"\1REDACTED", text)
-
-
-def is_retryable_exception(exc: Exception) -> bool:
-    text = str(exc).lower()
-    return isinstance(exc, requests.exceptions.Timeout) or "timeout" in text or "connection reset" in text
-
-
-def should_retry(
-    status_code: Optional[int],
-    failure_type: str,
-    exc: Optional[Exception],
-    retry_policy: str,
-) -> bool:
-    if retry_policy == "none":
-        return False
-    if (
-        failure_type.startswith("auth_")
-        or failure_type in {"quota_or_billing", "api_key_missing_or_invalid", "permission_denied"}
-    ):
-        return False
-    if status_code in {408, 429, 500, 502, 503, 504}:
-        return True
-    if exc is not None and is_retryable_exception(exc):
-        return True
-    return False
-
-
-def is_auth_expired_failure(failure_type: Optional[str]) -> bool:
-    return str(failure_type or "") == "auth_expired"
-
-
-def backoff_seconds(attempt: int, base_seconds: float, max_seconds: float) -> float:
-    if attempt <= 1:
-        return 0.0
-    delay = base_seconds * (2 ** (attempt - 2))
-    return min(delay, max_seconds)
-
-
-def call_llm(
-    provider: str,
-    model_id: str,
-    api_key_env: str,
-    system_prompt: str,
-    user_content: str,
-    cfg: RunnerConfig,
-    force_json_output: bool = False,
-) -> Dict[str, Any]:
-    base_url = llm_base_url(provider, cfg)
-    transport = transport_for_provider(provider, cfg)
-    api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
-    payload = build_chat_payload(
-        provider,
-        model_id,
-        system_prompt,
-        user_content,
-        force_json_output=force_json_output,
-    )
-    body = serialize_payload_body(payload)
-    request_payload_bytes = measure_payload_bytes_from_body(body)
-    request_payload_bytes_mode = "exact_http" if transport == "openai_compat_http" else "sdk_estimate"
-    gemini_mode_requested = cfg.gemini_auth_mode if provider == "gemini" else None
-    gemini_family = (
-        "openai_compat" if provider == "gemini" and transport == "openai_compat_http" else "native"
-    ) if provider == "gemini" else None
-    structured_output: Dict[str, Any] = {
-        "enabled": bool(provider == "gemini" and force_json_output),
-        "mime_type": "application/json" if provider == "gemini" and force_json_output else None,
-        "schema": None,
-        "transport_mode": (
-            "response_format_json_object"
-            if provider == "gemini" and transport == "openai_compat_http" and force_json_output
-            else ("response_mime_type" if provider == "gemini" and force_json_output else None)
-        ),
-    }
-    auth_mode_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, base_url) if provider == "gemini" else ["sdk_bearer"]
-    mode_index = 0
-    effective_mode = auth_mode_sequence[mode_index]
-    endpoint_url = (
-        f"{base_url}/v1beta/models/{model_id}:generateContent"
-        if provider == "gemini" and transport != "openai_compat_http"
-        else f"{base_url}/chat/completions"
-    )
-    sent_header_keys: List[str] = []
-    auth_flags = sdk_auth_present_flags(provider, bool(api_key))
-    if transport == "openai_compat_http":
-        endpoint_url = make_url(provider, base_url, cfg, api_key, effective_mode)
-        headers = make_headers(provider, api_key, cfg, effective_mode)
-        sent_header_keys = sorted(list(headers.keys()))
-        auth_flags = build_auth_present_flags(headers, provider == "gemini" and effective_mode == "query_key")
-
-    if not api_key:
-        logger.error("Missing API key env var: %s", api_key_env)
-        if provider == "gemini":
-            logger.error(
-                "Gemini requires GEMINI_API_KEY in repo-root .env (canonical). "
-                "GOOGLE_API_KEY is deprecated for this runner."
-            )
-        return {
-            "ok": False,
-            "text": "",
-            "meta": {
+@dataclass
+class RequestController:
+    run_id: str
+    cfg: RunnerConfig
+    provider_limits: Dict[str, ProviderLimiter] = field(default_factory=dict)
+    missing_api_env_emitted: set = field(default_factory=set)
+    rate_limit_stats: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    last_successful_call: Dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        self.provider_limits = {
+            "openai": ProviderLimiter(
+                ProviderRateConfig(
+                    rpm=max(self.cfg.rpm_openai, 0),
+                    tpm=max(self.cfg.tpm_openai, 0),
+                    max_inflight=max(self.cfg.max_inflight, 1),
+                )
+            ),
+            "gemini": ProviderLimiter(
+                ProviderRateConfig(
+                    rpm=max(self.cfg.rpm_gemini, 0),
+                    tpm=max(self.cfg.tpm_gemini, 0),
+                    max_inflight=max(self.cfg.max_inflight, 1),
+                )
+            ),
+            "xai": ProviderLimiter(
+                ProviderRateConfig(
+                    rpm=max(self.cfg.rpm_xai, 0),
+                    tpm=max(self.cfg.tpm_xai, 0),
+                    max_inflight=max(self.cfg.max_inflight, 1),
+                )
+            ),
+        }
+        self.rate_limit_stats = {
+            provider: {
                 "provider": provider,
-                "model_id": model_id,
-                "endpoint_base_url": base_url,
-                "endpoint_effective": endpoint_effective(endpoint_url),
-                **endpoint_fingerprint(endpoint_url),
-                "status_code": None,
-                "failure_type": "auth_missing",
-                "sent_header_keys": sent_header_keys,
-                "auth_present_flags": auth_flags,
-                "gemini_auth_mode_requested": gemini_mode_requested,
-                "gemini_auth_mode_effective": None,
-                "provider_signature": provider_signature(provider, model_id, endpoint_url, None),
-                "provider_error_reason": "MISSING_API_KEY_ENV",
-                "api_key_env_requested": api_key_env,
-                "api_key_env_resolved": resolved_api_key_env,
-                "gemini_endpoint_family": gemini_family,
-                "gemini_auth_attempt_sequence": auth_mode_sequence if provider == "gemini" else None,
-                "request_payload_bytes": request_payload_bytes,
-                "request_payload_bytes_mode": request_payload_bytes_mode,
-                "transport": transport,
-                "retry_trace": [],
-                "structured_output": structured_output,
-            },
+                "total_calls": 0,
+                "successful_calls": 0,
+                "failed_calls": 0,
+                "retry_events": 0,
+                "status_429": 0,
+                "status_503": 0,
+                "retry_after_obeyed": 0,
+                "total_backoff_seconds": 0.0,
+                "max_backoff_seconds": 0.0,
+                "request_ids": [],
+            }
+            for provider in ("openai", "gemini", "xai")
         }
 
-    last_failure_meta: Dict[str, Any] = {
-        "provider": provider,
-        "model_id": model_id,
-        "endpoint_base_url": base_url,
-        "endpoint_effective": endpoint_effective(endpoint_url),
-        **endpoint_fingerprint(endpoint_url),
-        "status_code": None,
-        "failure_type": "unknown",
-        "request_payload_bytes": request_payload_bytes,
-        "request_payload_bytes_mode": request_payload_bytes_mode,
-        "sent_header_keys": sent_header_keys,
-        "auth_present_flags": auth_flags,
-        "gemini_auth_mode_requested": gemini_mode_requested,
-        "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
-        "provider_signature": provider_signature(
-            provider,
-            model_id,
-            endpoint_url,
-            effective_mode if provider == "gemini" else None,
-        ),
-        "provider_error_reason": None,
-        "api_key_env_requested": api_key_env,
-        "api_key_env_resolved": resolved_api_key_env,
-        "gemini_endpoint_family": gemini_family,
-        "gemini_auth_attempt_sequence": auth_mode_sequence if provider == "gemini" else None,
-        "transport": transport,
-        "retry_trace": [],
-        "structured_output": structured_output,
-    }
-    retry_trace: List[Dict[str, Any]] = []
+    def _stats_for(self, provider: str) -> Dict[str, Any]:
+        if provider not in self.rate_limit_stats:
+            self.rate_limit_stats[provider] = {
+                "provider": provider,
+                "total_calls": 0,
+                "successful_calls": 0,
+                "failed_calls": 0,
+                "retry_events": 0,
+                "status_429": 0,
+                "status_503": 0,
+                "retry_after_obeyed": 0,
+                "total_backoff_seconds": 0.0,
+                "max_backoff_seconds": 0.0,
+                "request_ids": [],
+            }
+        return self.rate_limit_stats[provider]
 
-    attempt = 0
-    while attempt < cfg.retry_max_attempts:
-        attempt += 1
-        status_code: Optional[int] = None
-        response_body = ""
-        failure_type = "unknown"
-        provider_error_reason = None
-        try:
-            response_json: Optional[Dict[str, Any]] = None
-            if transport == "openai_compat_http":
-                headers = make_headers(provider, api_key, cfg, effective_mode)
-                endpoint_url = make_url(provider, base_url, cfg, api_key, effective_mode)
-                auth_flags = build_auth_present_flags(headers, provider == "gemini" and effective_mode == "query_key")
-                sent_header_keys = sorted(list(headers.keys()))
-                response = requests.post(endpoint_url, headers=headers, data=body, timeout=180)
-                response.raise_for_status()
-                status_code = response.status_code
-                response_json = response.json()
-                response_text = response_json["choices"][0]["message"]["content"]
-            elif provider == "gemini":
-                client = get_gemini_client(api_key)
-                response = client.models.generate_content(
-                    model=model_id,
-                    contents=user_content,
-                    config={
-                        "temperature": 0.1,
-                        "system_instruction": system_prompt,
-                        **({"response_mime_type": "application/json"} if force_json_output else {}),
-                    },
-                )
-                status_code = 200
-                response_text = extract_text_from_gemini_response(response)
-            else:
-                client = get_xai_client(api_key) if provider == "xai" else get_openai_client(None, api_key)
-                response = client.chat.completions.create(
-                    model=model_id,
-                    messages=payload["messages"],
-                    temperature=payload["temperature"],
-                )
-                status_code = 200
-                response_text = extract_text_from_chat_completion(response)
+    @staticmethod
+    def _request_id_from_headers(headers: Dict[str, str]) -> str:
+        for key in (
+            "x-request-id",
+            "request-id",
+            "openai-request-id",
+            "x-openai-request-id",
+        ):
+            value = str(headers.get(key, "")).strip()
+            if value:
+                return value
+        return ""
 
-            response_summary = summarize_llm_response(
-                provider=provider,
-                transport=transport,
-                response_obj=response,
-                response_json=response_json,
-                response_text=response_text,
-            )
-            retry_trace.append(
+    def _provider_retry_policy(self, provider: str) -> Dict[str, Any]:
+        if provider == "gemini":
+            return {
+                "max_attempts": 7,
+                "max_retry_seconds": 900.0,
+                "obey_retry_after": True,
+            }
+        if provider == "xai":
+            return {
+                "max_attempts": 7,
+                "max_retry_seconds": 900.0,
+                "obey_retry_after": True,
+            }
+        return {
+            "max_attempts": 6,
+            "max_retry_seconds": 600.0,
+            "obey_retry_after": True,
+        }
+
+    def _provider_retry_delay_seconds(
+        self,
+        provider: str,
+        attempt: int,
+        status_code: Optional[int],
+        retry_after: Optional[float],
+        retry_seed: str,
+    ) -> Tuple[float, bool]:
+        if provider == "gemini":
+            if retry_after is not None:
+                return max(float(retry_after), 0.0), True
+            delay = min(float(2 ** max(attempt - 1, 0)), 60.0)
+            return delay, False
+
+        if provider == "xai":
+            if retry_after is not None:
+                return max(float(retry_after), 0.0), True
+            if status_code == 429:
+                return min(float(6 * (2 ** max(attempt - 1, 0))), 120.0), False
+            if status_code == 503:
+                return min(float(3 * (2 ** max(attempt - 1, 0))), 90.0), False
+            return min(float(2 * (2 ** max(attempt - 1, 0))), 60.0), False
+
+        delay = retry_delay_seconds(
+            attempt=attempt,
+            retry_after=retry_after,
+            seed_material=f"{retry_seed}|provider={provider}",
+        )
+        return delay, retry_after is not None
+
+    def export_rate_limit_report(self) -> Dict[str, Any]:
+        per_provider = []
+        for provider in sorted(self.rate_limit_stats.keys()):
+            stats = self.rate_limit_stats[provider]
+            per_provider.append(
                 {
-                    "attempt": attempt,
-                    "status_code": status_code,
-                    "failure_type": None,
-                    "delay_seconds": 0.0,
-                    "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
-                    "provider_error_reason": None,
-                    "response_received": True,
-                    "response_summary": response_summary,
+                    "provider": provider,
+                    "total_calls": int(stats.get("total_calls", 0) or 0),
+                    "successful_calls": int(stats.get("successful_calls", 0) or 0),
+                    "failed_calls": int(stats.get("failed_calls", 0) or 0),
+                    "retry_events": int(stats.get("retry_events", 0) or 0),
+                    "status_429": int(stats.get("status_429", 0) or 0),
+                    "status_503": int(stats.get("status_503", 0) or 0),
+                    "retry_after_obeyed": int(stats.get("retry_after_obeyed", 0) or 0),
+                    "total_backoff_seconds": round(float(stats.get("total_backoff_seconds", 0.0) or 0.0), 6),
+                    "max_backoff_seconds": round(float(stats.get("max_backoff_seconds", 0.0) or 0.0), 6),
+                    "request_ids": list(stats.get("request_ids", []))[:100],
                 }
             )
-            return {
-                "ok": True,
-                "text": response_text,
-                "meta": {
+        return {
+            "run_id": self.run_id,
+            "generated_at": now_iso(),
+            "providers": per_provider,
+        }
+
+    def _require_api_key(self, provider: str, api_key_env: str) -> str:
+        api_key = os.getenv(api_key_env, "").strip()
+        if api_key:
+            return api_key
+        if api_key_env not in self.missing_api_env_emitted:
+            self.missing_api_env_emitted.add(api_key_env)
+            raise RuntimeError(
+                f"Missing API key env var for provider '{provider}': {api_key_env}. "
+                "Set it and rerun with --resume."
+            )
+        raise RuntimeError(f"Missing API key env var: {api_key_env}")
+
+    def execute_chat_completion(
+        self,
+        provider: str,
+        model_id: str,
+        api_key_env: str,
+        system_prompt: str,
+        user_content: str,
+        retry_seed: str,
+        est_tokens: int,
+    ) -> Tuple[str, Dict[str, Any]]:
+        api_key = self._require_api_key(provider, api_key_env)
+        limiter = self.provider_limits.get(provider)
+        if limiter is None:
+            limiter = ProviderLimiter(ProviderRateConfig(rpm=0, tpm=0))
+            self.provider_limits[provider] = limiter
+
+        provider_stats = self._stats_for(provider)
+        provider_stats["total_calls"] = int(provider_stats.get("total_calls", 0) or 0) + 1
+
+        payload = {
+            "model": model_id,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            "temperature": 0.1,
+        }
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        url = f"{llm_base_url(provider)}/chat/completions"
+        policy = self._provider_retry_policy(provider)
+        max_attempts = int(policy.get("max_attempts", 6))
+        max_retry_seconds = float(policy.get("max_retry_seconds", 600.0))
+        start_ts = time.time()
+        retry_trace: List[Dict[str, Any]] = []
+
+        for attempt in range(1, max_attempts + 1):
+            scheduled_sleep = limiter.acquire(est_tokens)
+            status_code: Optional[int] = None
+            headers_snapshot: Dict[str, str] = {}
+            retry_after_seconds: Optional[float] = None
+            response_body = ""
+            body_excerpt = ""
+
+            try:
+                response = requests.post(url, headers=headers, json=payload, timeout=180)
+                status_code = response.status_code
+                headers_snapshot = normalized_headers(response.headers)
+                request_id = self._request_id_from_headers(headers_snapshot)
+                if request_id:
+                    request_ids = provider_stats.setdefault("request_ids", [])
+                    if request_id not in request_ids:
+                        request_ids.append(request_id)
+                retry_after_seconds = parse_retry_after_seconds(
+                    headers_snapshot.get("retry-after", "")
+                )
+                limiter.apply_server_feedback(provider, headers_snapshot)
+                response.raise_for_status()
+                data = response.json()
+                content = str(data["choices"][0]["message"]["content"])
+                meta = {
+                    "attempts": attempt,
+                    "status_code": status_code,
+                    "headers": headers_snapshot,
+                    "scheduled_sleep_seconds": scheduled_sleep,
+                    "retry_trace": retry_trace,
+                    "total_retry_seconds": max(time.time() - start_ts, 0.0),
+                    "limiter_state": limiter.export_state(),
+                    "request_id": request_id,
+                }
+                provider_stats["successful_calls"] = int(provider_stats.get("successful_calls", 0) or 0) + 1
+                self.last_successful_call = {
                     "provider": provider,
                     "model_id": model_id,
-                    "endpoint_base_url": base_url,
-                    "endpoint_effective": endpoint_effective(endpoint_url),
-                    **endpoint_fingerprint(endpoint_url),
+                    "attempts": attempt,
                     "status_code": status_code,
-                    "failure_type": None,
-                    "request_payload_bytes": request_payload_bytes,
-                    "request_payload_bytes_mode": request_payload_bytes_mode,
-                    "sent_header_keys": sent_header_keys,
-                    "auth_present_flags": auth_flags,
-                    "gemini_auth_mode_requested": gemini_mode_requested,
-                    "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
-                    "provider_signature": provider_signature(
-                        provider,
-                        model_id,
-                        endpoint_url,
-                        effective_mode if provider == "gemini" else None,
-                    ),
-                    "provider_error_reason": None,
-                    "api_key_env_requested": api_key_env,
-                    "api_key_env_resolved": resolved_api_key_env,
-                    "gemini_endpoint_family": gemini_family,
-                    "gemini_auth_attempt_sequence": auth_mode_sequence if provider == "gemini" else None,
-                    "transport": transport,
-                    "retry_trace": retry_trace,
-                    "response_received": True,
-                    "response_summary": response_summary,
-                    "structured_output": structured_output,
-                },
-            }
-        except Exception as exc:
-            status_code = exception_status_code(exc)
-            response_body = exception_response_text(exc)[:1200]
-            failure_type = classify_failure_type(status_code, response_body, str(exc))
-            provider_error_reason = extract_provider_error_reason(response_body)
-            safe_exc = sanitize_error_text(str(exc))
-            safe_body = sanitize_error_text(response_body)
-            exception_info = capture_exception_metadata(exc)
-            retry_trace.append(
-                {
+                    "request_id": request_id,
+                    "timestamp": now_iso(),
+                }
+                return content, meta
+            except Exception as exc:
+                if "response" in locals():
+                    try:
+                        response_body = response.text
+                    except Exception:
+                        response_body = ""
+                if response_body:
+                    body_excerpt = response_body[:1200]
+
+                if status_code is None and isinstance(exc, requests.HTTPError):
+                    try:
+                        status_code = exc.response.status_code if exc.response is not None else None
+                    except Exception:
+                        status_code = None
+                should_retry_flag = should_retry_status(status_code) or (
+                    status_code is None and is_retryable_exception(exc)
+                )
+                if status_code == 429:
+                    limiter.adapt_on_429()
+
+                retry_event = {
                     "attempt": attempt,
                     "status_code": status_code,
-                    "failure_type": failure_type,
-                    "delay_seconds": 0.0,
-                    "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
-                    "provider_error_reason": provider_error_reason,
-                    "response_received": False,
-                    **exception_info,
+                    "error": str(exc),
+                    "scheduled_sleep_seconds": scheduled_sleep,
+                    "retry_after_seconds": retry_after_seconds,
+                    "limiter_state": limiter.export_state(),
                 }
-            )
-            last_failure_meta = {
-                "provider": provider,
-                "model_id": model_id,
-                "endpoint_base_url": base_url,
-                "endpoint_effective": endpoint_effective(endpoint_url),
-                **endpoint_fingerprint(endpoint_url),
-                "status_code": status_code,
-                "failure_type": failure_type,
-                "request_payload_bytes": request_payload_bytes,
-                "request_payload_bytes_mode": request_payload_bytes_mode,
-                "sent_header_keys": sent_header_keys,
-                "auth_present_flags": auth_flags,
-                "gemini_auth_mode_requested": gemini_mode_requested,
-                "gemini_auth_mode_effective": effective_mode if provider == "gemini" else None,
-                "provider_signature": provider_signature(
+                retry_trace.append(retry_event)
+                provider_stats["retry_events"] = int(provider_stats.get("retry_events", 0) or 0) + 1
+                if status_code == 429:
+                    provider_stats["status_429"] = int(provider_stats.get("status_429", 0) or 0) + 1
+                if status_code == 503:
+                    provider_stats["status_503"] = int(provider_stats.get("status_503", 0) or 0) + 1
+
+                if not should_retry_flag or attempt >= max_attempts:
+                    provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
+                    extra = f" | body={body_excerpt}" if body_excerpt else ""
+                    raise RuntimeError(
+                        f"LLM call failed provider={provider} model={model_id} "
+                        f"attempt={attempt}/{max_attempts} status={status_code} error={exc}{extra}"
+                    ) from exc
+
+                sleep_seconds, obeyed_retry_after = self._provider_retry_delay_seconds(
+                    provider=provider,
+                    attempt=attempt,
+                    status_code=status_code,
+                    retry_after=retry_after_seconds,
+                    retry_seed=f"{retry_seed}|attempt={attempt}",
+                )
+                if obeyed_retry_after:
+                    provider_stats["retry_after_obeyed"] = (
+                        int(provider_stats.get("retry_after_obeyed", 0) or 0) + 1
+                    )
+                elapsed = time.time() - start_ts
+                if elapsed + sleep_seconds > max_retry_seconds:
+                    provider_stats["failed_calls"] = int(provider_stats.get("failed_calls", 0) or 0) + 1
+                    raise RuntimeError(
+                        f"Retry time budget exceeded provider={provider} model={model_id} "
+                        f"elapsed={elapsed:.2f}s budget={max_retry_seconds:.2f}s "
+                        f"status={status_code} last_error={exc}"
+                    ) from exc
+                retry_event["backoff_sleep_seconds"] = sleep_seconds
+                provider_stats["total_backoff_seconds"] = float(
+                    provider_stats.get("total_backoff_seconds", 0.0) or 0.0
+                ) + float(sleep_seconds)
+                provider_stats["max_backoff_seconds"] = max(
+                    float(provider_stats.get("max_backoff_seconds", 0.0) or 0.0),
+                    float(sleep_seconds),
+                )
+                logger.warning(
+                    "LLM retry provider=%s model=%s attempt=%s/%s status=%s sleep=%.3fs",
                     provider,
                     model_id,
-                    endpoint_url,
-                    effective_mode if provider == "gemini" else None,
-                ),
-                "provider_error_reason": provider_error_reason,
-                **exception_info,
-                "api_key_env_requested": api_key_env,
-                "api_key_env_resolved": resolved_api_key_env,
-                "gemini_endpoint_family": gemini_family,
-                "gemini_auth_attempt_sequence": auth_mode_sequence if provider == "gemini" else None,
-                "transport": transport,
-                "retry_trace": retry_trace,
-                "response_received": False,
-                "structured_output": structured_output,
-            }
-            if response_body:
-                logger.warning(
-                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s: %s | body=%s",
                     attempt,
-                    cfg.retry_max_attempts,
-                    provider,
-                    model_id,
+                    max_attempts,
                     status_code,
-                    failure_type,
-                    safe_exc,
-                    safe_body,
+                    sleep_seconds,
                 )
-            else:
-                logger.warning(
-                    "LLM call failed attempt %s/%s provider=%s model=%s status=%s failure_type=%s: %s",
-                    attempt,
-                    cfg.retry_max_attempts,
-                    provider,
-                    model_id,
-                    status_code,
-                    failure_type,
-                    safe_exc,
-                )
+                time.sleep(sleep_seconds)
 
-            if (
-                transport == "openai_compat_http"
-                and provider == "gemini"
-                and cfg.gemini_auth_mode == "auto"
-                and is_auth_classified_failure(failure_type)
-                and mode_index + 1 < len(auth_mode_sequence)
-            ):
-                mode_index += 1
-                effective_mode = auth_mode_sequence[mode_index]
-                logger.warning(
-                    "Gemini openai_compat auth pivot after auth failure: next_mode=%s endpoint=%s",
-                    effective_mode,
-                    _sanitize_url(endpoint_url),
-                )
-                continue
-
-            if not should_retry(status_code, failure_type, exc, cfg.retry_policy):
-                break
-
-            delay_seconds = backoff_seconds(attempt + 1, cfg.retry_base_seconds, cfg.retry_max_seconds)
-            retry_trace[-1]["delay_seconds"] = delay_seconds
-            if delay_seconds > 0:
-                time.sleep(delay_seconds)
-    logger.error("LLM call failed after retries provider=%s model=%s.", provider, model_id)
-    return {
-        "ok": False,
-        "text": "",
-        "meta": last_failure_meta,
-    }
-
-
-def is_auth_classified_failure(failure_type: Optional[str]) -> bool:
-    if not failure_type:
-        return False
-    return failure_type.startswith("auth_") or failure_type in {
-        "api_key_missing_or_invalid",
-        "permission_denied",
-        "quota_or_billing",
-        "auth_rejected",
-    }
-
-
-def enrich_request_meta(
-    meta: Dict[str, Any],
-    run_id: str,
-    phase: str,
-    step_id: str,
-    partition_id: str,
-    provider: str,
-    model_id: str,
-) -> Dict[str, Any]:
-    enriched = dict(meta or {})
-    endpoint_base = str(enriched.get("endpoint_base_url") or llm_base_url(provider))
-    auth_effective = enriched.get("gemini_auth_mode_effective")
-    enriched["run_id"] = run_id
-    enriched["phase"] = phase
-    enriched["step_id"] = step_id
-    enriched["partition_id"] = partition_id
-    enriched.setdefault("provider", provider)
-    enriched.setdefault("model_id", model_id)
-    enriched.setdefault("endpoint_base_url", endpoint_base)
-    if "provider_signature" not in enriched:
-        enriched["provider_signature"] = provider_signature(
-            provider,
-            model_id,
-            str(enriched.get("endpoint_effective") or f"{endpoint_base}/chat/completions"),
-            auth_effective if provider == "gemini" else None,
-        )
-    enriched["routing_signature"] = routing_signature(
-        phase,
-        step_id,
-        provider,
-        model_id,
-        endpoint_base,
-        str(auth_effective) if provider == "gemini" and auth_effective is not None else None,
-    )
-    enriched["runner_script_sha256"] = sha256_text(RUNNER_SCRIPT)
-    enriched["runner_script_path"] = str(RUNNER_SCRIPT.resolve())
-    endpoint_sig_src = {
-        "endpoint_effective": enriched.get("endpoint_effective"),
-        "transport": enriched.get("transport"),
-        "provider": enriched.get("provider"),
-        "model_id": enriched.get("model_id"),
-        "gemini_auth_mode_effective": enriched.get("gemini_auth_mode_effective"),
-    }
-    endpoint_sig = json.dumps(endpoint_sig_src, ensure_ascii=True, separators=(",", ":"), sort_keys=True)
-    enriched["endpoint_transport_signature"] = hashlib.sha256(endpoint_sig.encode("utf-8")).hexdigest()
-    return enriched
-
-
-def run_gemini_auth_probe(
-    run_id: str,
-    phase: str,
-    step_id: str,
-    phase_dir: Path,
-    provider: str,
-    model_id: str,
-    api_key_env: str,
-    cfg: RunnerConfig,
-) -> Dict[str, Any]:
-    raw_dir = phase_dir / "raw"
-    probe_path = raw_dir / f"AUTH_PROBE__gemini__{step_id}.json"
-    system_prompt = "Return exactly OK."
-    user_content = "Return the single token OK."
-    result = call_llm(
-        provider=provider,
-        model_id=model_id,
-        api_key_env=api_key_env,
-        system_prompt=system_prompt,
-        user_content=user_content,
-        cfg=cfg,
-    )
-    meta = enrich_request_meta(
-        result.get("meta", {}),
-        run_id=run_id,
-        phase=phase,
-        step_id=step_id,
-        partition_id="AUTH_PROBE",
-        provider=provider,
-        model_id=model_id,
-    )
-    payload = {
-        "run_id": run_id,
-        "phase": phase,
-        "step_id": step_id,
-        "provider": provider,
-        "model_id": model_id,
-        "endpoint_base_url": meta.get("endpoint_base_url"),
-        "endpoint_effective": meta.get("endpoint_effective"),
-        "gemini_endpoint_family": meta.get("gemini_endpoint_family"),
-        "gemini_auth_mode_requested": meta.get("gemini_auth_mode_requested"),
-        "gemini_auth_mode_effective": meta.get("gemini_auth_mode_effective"),
-        "gemini_auth_attempt_sequence": meta.get("gemini_auth_attempt_sequence"),
-        "sent_header_keys": meta.get("sent_header_keys"),
-        "auth_present_flags": meta.get("auth_present_flags"),
-        "provider_signature": meta.get("provider_signature"),
-        "routing_signature": meta.get("routing_signature"),
-        "status_code": meta.get("status_code"),
-        "failure_type": meta.get("failure_type"),
-        "provider_error_reason": meta.get("provider_error_reason"),
-        "ok": bool(result.get("ok")),
-        "generated_at": now_iso(),
-    }
-    write_json(probe_path, payload)
-    update_run_manifest_probe(
-        phase_dir.parent,
-        phase,
-        step_id,
-        {
-            "ok": payload["ok"],
-            "status_code": payload["status_code"],
-            "failure_type": payload["failure_type"],
-            "provider_error_reason": payload["provider_error_reason"],
-            "endpoint_effective": payload["endpoint_effective"],
-            "gemini_auth_mode_effective": payload["gemini_auth_mode_effective"],
-            "probe_artifact": str(probe_path),
-            "updated_at": now_iso(),
-        },
-    )
-    return payload
-
-
-def _auth_failure_bucket(failure_type: Optional[str], provider_error_reason: Optional[str]) -> str:
-    if not failure_type:
-        return "none"
-    if failure_type == "auth_expired":
-        return "expired"
-    if failure_type in {"auth_missing", "api_key_missing_or_invalid"}:
-        return "missing_or_invalid"
-    if failure_type in {"auth_rejected", "permission_denied"}:
-        return "rejected"
-    if "expired" in str(provider_error_reason or "").lower():
-        return "expired"
-    return "other"
-
-
-def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> int:
-    phase = args.phase if args.phase in PHASES else "A"
-    provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY"))
-    if provider != "gemini":
-        provider, model_id, api_key_env = ("gemini", "gemini-2.0-flash-001", "GEMINI_API_KEY")
-    endpoint_base = llm_base_url(provider, cfg)
-    transport = transport_for_provider(provider, cfg)
-    api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
-    if provider == "gemini" and transport == "openai_compat_http":
-        modes = ["query_key", "api_key", "bearer", "both"]
-    elif provider == "gemini":
-        modes = ["sdk_api_key"]
-    else:
-        modes = ["sdk_bearer"]
-
-    checks: List[Dict[str, Any]] = []
-    for mode in modes:
-        probe_cfg = cfg
-        if provider == "gemini" and transport == "openai_compat_http":
-            probe_cfg = replace(cfg, gemini_auth_mode=mode)
-        endpoint_url = transport_endpoint_url(
-            provider, model_id, probe_cfg, api_key, mode if provider == "gemini" else None
-        )
-        headers = make_headers(provider, api_key, probe_cfg, mode if provider == "gemini" else None)
-        auth_flags = (
-            build_auth_present_flags(headers, provider == "gemini" and mode == "query_key")
-            if transport == "openai_compat_http"
-            else sdk_auth_present_flags(provider, bool(api_key))
-        )
-        result = call_llm(
-            provider=provider,
-            model_id=model_id,
-            api_key_env=api_key_env,
-            system_prompt="Return exactly OK.",
-            user_content="Return the single token OK.",
-            cfg=probe_cfg,
-        )
-        meta = result.get("meta", {})
-        failure_type = meta.get("failure_type")
-        checks.append(
-            {
-                "mode": mode,
-                "ok": bool(result.get("ok")),
-                "transport": transport,
-                "endpoint_effective": meta.get("endpoint_effective") or _sanitize_url(endpoint_url),
-                "sent_header_keys": meta.get("sent_header_keys") or sorted(list(headers.keys())),
-                "auth_present_flags": meta.get("auth_present_flags") or auth_flags,
-                "status_code": meta.get("status_code"),
-                "failure_type": failure_type,
-                "provider_error_reason": meta.get("provider_error_reason"),
-                "failure_bucket": _auth_failure_bucket(failure_type, meta.get("provider_error_reason")),
-                "provider_signature": meta.get("provider_signature")
-                or provider_signature(
-                    provider,
-                    model_id,
-                    _sanitize_url(endpoint_url),
-                    mode if provider == "gemini" else None,
-                ),
-                "response_received": bool(meta.get("response_received") or result.get("ok")),
-                "sdk_response_summary": meta.get("response_summary"),
-                "exception_type": meta.get("exception_type"),
-                "exception_message_excerpt": meta.get("exception_message_excerpt"),
-            }
-        )
-
-    succeeded_modes = [row["mode"] for row in checks if row["ok"]]
-    failed_modes = [row["mode"] for row in checks if not row["ok"]]
-    responses_received = any(row.get("response_received") for row in checks)
-    canonical_endpoint = transport_endpoint_url(
-        provider,
-        model_id,
-        cfg,
-        api_key,
-        cfg.gemini_auth_mode if provider == "gemini" else None,
-    )
-    summary = (
-        f"{'PASS' if succeeded_modes else 'FAIL'} "
-        f"provider={provider} transport={transport} endpoint={endpoint_effective(canonical_endpoint)} "
-        f"response_received={responses_received} "
-        f"succeeded_modes={','.join(succeeded_modes) if succeeded_modes else '-'} "
-        f"failed_modes={','.join(failed_modes) if failed_modes else '-'}"
-    )
-    doctor_dir = root / "extraction" / "doctor"
-    doctor_dir.mkdir(parents=True, exist_ok=True)
-    doctor_json = doctor_dir / "AUTH_DOCTOR.json"
-    doctor_txt = doctor_dir / "AUTH_DOCTOR.txt"
-    payload = {
-        "generated_at": now_iso(),
-        "phase": phase,
-        "provider": provider,
-        "model_id": model_id,
-        "api_key_env_name": api_key_env,
-        "api_key_env_resolved": resolved_api_key_env,
-        "api_key_present": bool(api_key),
-        "api_key_length": len(api_key),
-        "transport": transport,
-        "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
-        "modes_tested": modes,
-        "checks": checks,
-        "succeeded_modes": succeeded_modes,
-        "failed_modes": failed_modes,
-        "summary": summary,
-    }
-    write_json(doctor_json, payload)
-    lines = [summary]
-    lines.extend(
-        [
-            f"generated_at={payload['generated_at']}",
-            f"phase={payload['phase']}",
-            f"provider={payload['provider']}",
-            f"model_id={payload['model_id']}",
-            f"api_key_env_name={payload['api_key_env_name']}",
-            f"api_key_env_resolved={payload['api_key_env_resolved']}",
-            f"api_key_present={str(payload['api_key_present']).lower()}",
-            f"api_key_length={payload['api_key_length']}",
-            f"transport={payload['transport']}",
-            f"gemini_auth_mode_requested={payload['gemini_auth_mode_requested']}",
-            f"modes_tested={','.join(payload['modes_tested'])}",
-            f"succeeded_modes={','.join(payload['succeeded_modes'])}",
-            f"failed_modes={','.join(payload['failed_modes'])}",
-        ]
-    )
-    doctor_txt.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(json.dumps(payload, indent=2))
-    return 0 if succeeded_modes else 1
-
-
-def _strip_outer_json_fence(text: str) -> str:
-    no_fence = re.sub(r"^\s*```(?:json)?\s*", "", text, flags=re.IGNORECASE)
-    no_fence = re.sub(r"\s*```\s*$", "", no_fence)
-    return no_fence.strip()
-
-
-def _extract_first_fenced_json_block(text: str) -> Optional[str]:
-    # Deterministic: first fenced block wins when multiple are present.
-    match = re.search(r"```(?:json)?\s*(.*?)```", text, flags=re.IGNORECASE | re.DOTALL)
-    if not match:
-        return None
-    block = str(match.group(1)).strip()
-    return block or None
-
-
-def _contains_json_anchor(text: str) -> bool:
-    return ("{" in text) or ("[" in text)
-
-
-def _starts_with_json_token(text: str) -> bool:
-    stripped = text.lstrip()
-    if not stripped:
-        return False
-    return stripped[0] in {"{", "["}
-
-
-def _is_string_literal_decode_error(exc: json.JSONDecodeError) -> bool:
-    message = str(exc).lower()
-    return any(snippet in message for snippet in STRING_LITERAL_ERROR_SNIPPETS)
-
-
-def _is_semantic_eof_eligible(exc: json.JSONDecodeError, text: str) -> bool:
-    trimmed = text.rstrip()
-    if not trimmed:
-        return False
-    pos = int(exc.pos)
-    eof_index = len(trimmed)
-    return (pos >= eof_index or pos == eof_index - 1) and not _is_string_literal_decode_error(exc)
-
-
-def _strict_decode_error(candidate: str) -> Optional[json.JSONDecodeError]:
-    try:
-        json.loads(candidate)
-    except json.JSONDecodeError as exc:
-        return exc
-    except Exception:
-        return None
-    return None
-
-
-def _parse_retry_reason(
-    response_text: str,
-    request_meta: Dict[str, Any],
-    strict_decode_error: Optional[json.JSONDecodeError],
-) -> Optional[str]:
-    if strict_decode_error is None:
-        return None
-    if not _is_string_literal_decode_error(strict_decode_error):
-        return None
-
-    failure_type = str(request_meta.get("failure_type") or "").strip()
-    if failure_type:
-        return None
-    status_code = request_meta.get("status_code")
-    if isinstance(status_code, int) and status_code >= 400:
-        return None
-    if request_meta.get("response_received") is False:
-        return None
-
-    response_summary = request_meta.get("response_summary")
-    finish_reason = ""
-    if isinstance(response_summary, dict):
-        finish_reason = str(response_summary.get("finish_reason") or "").upper()
-    if finish_reason != "MAX_TOKENS":
-        return None
-
-    strict_candidate = response_text.strip()
-    if not strict_candidate:
-        return None
-    trimmed = strict_candidate.rstrip()
-    if not trimmed:
-        return None
-    pos = int(strict_decode_error.pos)
-    eof_index = len(trimmed)
-    if not (pos >= eof_index or pos == eof_index - 1):
-        return None
-    return "max_tokens_string_eof_parse_failure"
-
-
-def try_repair_json_truncation(text: str, exc: Optional[json.JSONDecodeError]) -> Optional[str]:
-    if not text or exc is None:
-        return None
-    if not _contains_json_anchor(text):
-        return None
-    if not _starts_with_json_token(text):
-        return None
-
-    if not _is_semantic_eof_eligible(exc, text):
-        return None
-    opener_for_closer = {"}": "{", "]": "["}
-    closer_for_opener = {"{": "}", "[": "]"}
-    stack: List[str] = []
-    repaired_chars: List[str] = []
-    unmatched_closer_indices: List[int] = []
-    in_string = False
-    escape = False
-
-    for char in text:
-        if in_string:
-            repaired_chars.append(char)
-            if escape:
-                escape = False
-            elif char == "\\":
-                escape = True
-            elif char == '"':
-                in_string = False
-            continue
-
-        if char == '"':
-            in_string = True
-            repaired_chars.append(char)
-            continue
-
-        if char in {"{", "["}:
-            stack.append(char)
-            repaired_chars.append(char)
-            continue
-
-        if char in {"}", "]"}:
-            if stack and stack[-1] == opener_for_closer[char]:
-                stack.pop()
-                repaired_chars.append(char)
-            else:
-                repaired_chars.append(char)
-                unmatched_closer_indices.append(len(repaired_chars) - 1)
-            continue
-
-        repaired_chars.append(char)
-
-    suffix_start = len(repaired_chars)
-    while suffix_start > 0 and (
-        repaired_chars[suffix_start - 1].isspace() or repaired_chars[suffix_start - 1] in {"]", "}"}
-    ):
-        suffix_start -= 1
-
-    if any(index < suffix_start for index in unmatched_closer_indices):
-        return None
-
-    drop_indices = set(unmatched_closer_indices)
-    balanced_chars = [char for idx, char in enumerate(repaired_chars) if idx not in drop_indices]
-
-    while stack:
-        opener = stack.pop()
-        balanced_chars.append(closer_for_opener[opener])
-
-    repaired = "".join(balanced_chars)
-    if repaired == text:
-        return None
-    return repaired
+        raise RuntimeError(f"Unreachable retry exit provider={provider} model={model_id}")
 
 
 def parse_json_from_response(text: str) -> Optional[Any]:
     if not text:
         return None
-
     stripped = text.strip()
-    if not stripped:
-        return None
 
-    repair_candidates: List[Tuple[str, json.JSONDecodeError]] = []
-    seen_candidates: Set[str] = set()
+    candidates = [stripped]
+    no_fence = re.sub(r"^\s*```(?:json)?\s*", "", stripped, flags=re.IGNORECASE)
+    no_fence = re.sub(r"\s*```\s*$", "", no_fence)
+    candidates.append(no_fence.strip())
 
-    # 1) strict parse
-    try:
-        return json.loads(stripped)
-    except json.JSONDecodeError as exc:
-        repair_candidates.append((stripped, exc))
-        seen_candidates.add(stripped)
-    except Exception:
-        pass
-
-    # 2) defenced parse
-    defenced = _strip_outer_json_fence(stripped)
-    if defenced and defenced not in seen_candidates:
+    for candidate in candidates:
         try:
-            return json.loads(defenced)
-        except json.JSONDecodeError as exc:
-            repair_candidates.append((defenced, exc))
-            seen_candidates.add(defenced)
-        except Exception:
-            pass
-
-    # 3) first fenced block only
-    fenced_block = _extract_first_fenced_json_block(stripped)
-    if fenced_block and fenced_block not in seen_candidates:
-        try:
-            return json.loads(fenced_block)
-        except json.JSONDecodeError as exc:
-            repair_candidates.append((fenced_block, exc))
-            seen_candidates.add(fenced_block)
-        except Exception:
-            pass
-
-    # 4) balanced repair parse (semantic EOF eligible only)
-    for candidate, decode_error in repair_candidates:
-        if not _is_semantic_eof_eligible(decode_error, candidate):
-            continue
-        repaired = try_repair_json_truncation(candidate, decode_error)
-        if not repaired:
-            continue
-        try:
-            return json.loads(repaired)
+            return json.loads(candidate)
         except Exception:
             continue
 
-    # 5) fail closed
+    match = re.search(r"(\{.*\}|\[.*\])", no_fence, flags=re.DOTALL)
+    if match:
+        snippet = match.group(1)
+        try:
+            return json.loads(snippet)
+        except Exception:
+            return None
     return None
-
-
-def build_partition_context(
-    phase: str,
-    partition_paths: List[str],
-    file_truncate_chars: int,
-    home_scan_mode: str,
-    max_files: int,
-    max_chars: int,
-) -> Tuple[str, Dict[str, int]]:
-    chunks: List[str] = []
-    redaction_hits = 0
-    skipped_files = 0
-    context_bytes = 0
-
-    for path_str in partition_paths:
-        if len(chunks) >= max_files:
-            skipped_files += 1
-            continue
-
-        path = Path(path_str)
-        content = safe_read(path)
-        if len(content) > file_truncate_chars:
-            content = content[:file_truncate_chars] + "\n...[TRUNCATED]..."
-        if phase == "H" and home_scan_mode == "safe":
-            content, hits = redact_sensitive_lines(content)
-            redaction_hits += hits
-        chunk_text = f"--- FILE: {path} ---\n{content}\n"
-        chunk_bytes = len(chunk_text.encode("utf-8"))
-
-        if chunks and (context_bytes + chunk_bytes > max_chars):
-            skipped_files += 1
-            continue
-
-        if not chunks and chunk_bytes > max_chars:
-            chunk_text = chunk_text.encode("utf-8")[:max_chars].decode("utf-8", errors="ignore")
-            chunk_text += "\n...[CONTEXT_TRUNCATED_FOR_LIMIT]...\n"
-            chunk_bytes = len(chunk_text.encode("utf-8"))
-
-        chunks.append(chunk_text)
-        context_bytes += chunk_bytes
-
-    context = "\n".join(chunks)
-    stats = {
-        "files_total": len(partition_paths),
-        "files_included": len(chunks),
-        "files_skipped": skipped_files,
-        "context_bytes": len(context.encode("utf-8")),
-        "redaction_hits": redaction_hits,
-    }
-    return context, stats
 
 
 def build_output_envelope_instructions(output_artifacts: Tuple[str, ...]) -> str:
     expected = "\n".join(f"- {artifact}" for artifact in output_artifacts)
     return (
-        "Hard rules:\n"
-        "- Output MUST be a single JSON value (object or array) and nothing else.\n"
-        "- No markdown, prose, code fences, comments, or trailing commentary.\n"
-        "- The first non-whitespace character MUST be { or [.\n"
-        "- The last non-whitespace character MUST be } or ].\n"
-        "- Do not emit multiple JSON objects.\n"
-        "- Do not emit trailing commas.\n"
-        "- Keep output UTF-8 plain text; no null bytes and no emoji.\n"
-        "- Escape internal string quotes and avoid unescaped control characters.\n"
-        "- Do not include unescaped newlines inside string values.\n"
         "Return JSON only with this exact envelope:\n"
         '{"artifacts":[{"artifact_name":"<exact artifact name>","payload":<json object|json array|markdown string>}]}'
         "\nConstraints:\n"
@@ -4514,10 +2270,6 @@ def build_output_envelope_instructions(output_artifacts: Tuple[str, ...]) -> str
         "- For *.md artifacts, payload must be markdown text.\n"
         "- For *.partX.json artifacts, keep .partX in artifact_name exactly.\n"
         "- Do not emit any extra artifact names.\n"
-        "Self-validation before finishing:\n"
-        "- Ensure output is valid JSON.\n"
-        "- If unsure, shorten values but keep structure valid.\n"
-        "- Never emit invalid JSON.\n"
         "Expected artifacts:\n"
         f"{expected}\n"
     )
@@ -4529,23 +2281,6 @@ def coerce_artifacts_from_response(
     expected_artifacts: Tuple[str, ...],
 ) -> List[Dict[str, Any]]:
     expected_set = set(expected_artifacts)
-
-    if isinstance(parsed, list):
-        list_artifacts: List[Dict[str, Any]] = []
-        for entry in parsed:
-            if not isinstance(entry, dict):
-                continue
-            artifact_name_value = entry.get("artifact_name")
-            if not isinstance(artifact_name_value, str):
-                continue
-            artifact_name = artifact_name_value.strip()
-            if artifact_name not in expected_set:
-                continue
-            if "payload" not in entry:
-                continue
-            list_artifacts.append({"artifact_name": artifact_name, "payload": entry.get("payload")})
-        if list_artifacts:
-            return list_artifacts
 
     if isinstance(parsed, dict) and isinstance(parsed.get("artifacts"), list):
         artifacts: List[Dict[str, Any]] = []
@@ -4577,193 +2312,15 @@ def coerce_artifacts_from_response(
     return []
 
 
-def validate_success_partition_output(
-    success_json_path: Path,
-    phase: str,
-    step_id: str,
-    partition_id: str,
-    expected_artifact_names: Tuple[str, ...],
-) -> Tuple[bool, str]:
-    if not success_json_path.exists():
-        return False, "missing_success_json"
-    try:
-        if success_json_path.stat().st_size <= 0:
-            return False, "empty_success_json"
-    except Exception as exc:
-        return False, f"success_stat_error:{type(exc).__name__}"
-
-    raw_text = safe_read(success_json_path)
-    if not raw_text.strip():
-        return False, "empty_success_json"
-
-    try:
-        payload = json.loads(raw_text)
-    except Exception:
-        return False, "invalid_success_json"
-
-    if not isinstance(payload, dict):
-        return False, "success_not_object"
-
-    def _identity_mismatch(obj: Dict[str, Any], prefix: str) -> Optional[str]:
-        expected_identity = {
-            "phase": phase,
-            "step_id": step_id,
-            "partition_id": partition_id,
-        }
-        for key, expected_value in expected_identity.items():
-            if key not in obj:
-                continue
-            actual = obj.get(key)
-            if actual in (None, "", []):
-                continue
-            if str(actual) != str(expected_value):
-                return f"{prefix}_{key}_mismatch"
-        return None
-
-    if payload.get("failure_type"):
-        return False, "failure_type_top_level"
-    request_meta = payload.get("request_meta")
-    if isinstance(request_meta, dict) and request_meta.get("failure_type"):
-        return False, "failure_type_request_meta"
-
-    top_level_mismatch = _identity_mismatch(payload, "top_level")
-    if top_level_mismatch:
-        return False, top_level_mismatch
-
-    artifacts = payload.get("artifacts")
-    if not isinstance(artifacts, list):
-        return False, "artifacts_missing_or_not_list"
-
-    expected_set = set(expected_artifact_names)
-    has_expected_artifact = False
-    for idx, artifact in enumerate(artifacts):
-        if not isinstance(artifact, dict):
-            return False, f"artifact_{idx}_not_object"
-        artifact_name = str(artifact.get("artifact_name", "")).strip()
-        if not artifact_name:
-            return False, f"artifact_{idx}_artifact_name_missing"
-        if "payload" not in artifact:
-            return False, f"artifact_{idx}_payload_missing"
-        if artifact_name in expected_set:
-            has_expected_artifact = True
-        artifact_payload = artifact.get("payload")
-        if isinstance(artifact_payload, dict):
-            payload_mismatch = _identity_mismatch(artifact_payload, f"artifact_{idx}_payload")
-            if payload_mismatch:
-                return False, payload_mismatch
-
-    if not has_expected_artifact:
-        return False, "no_expected_artifacts"
-
-    return True, "valid_success"
-
-
-def list_failed_sidecars(raw_dir: Path, step_id: str, partition_id: str) -> List[Path]:
-    pattern = f"{step_id}__{partition_id}.FAILED.*"
-    failed_paths = [path for path in raw_dir.glob(pattern) if path.is_file()]
-    return sorted(failed_paths, key=lambda path: path.name)
-
-
-def schedule_prune_failed_sidecars(
-    write_ops: List[Dict[str, Any]],
-    paths: List[Path],
-    reason: str,
-) -> int:
-    unique_paths = sorted({str(path) for path in paths})
-    for path in unique_paths:
-        write_ops.append({"kind": "unlink_if_exists", "path": path, "reason": reason})
-    return len(unique_paths)
-
-
-def compute_resume_decision(
-    success_json_path: Path,
-    raw_dir: Path,
-    phase: str,
-    step_id: str,
-    partition_id: str,
-    expected_artifact_names: Tuple[str, ...],
-) -> Dict[str, Any]:
-    failed_paths = list_failed_sidecars(raw_dir, step_id, partition_id)
-    failed_mtimes: List[float] = []
-    for path in failed_paths:
-        try:
-            failed_mtimes.append(float(path.stat().st_mtime))
-        except Exception:
-            continue
-    newest_failed_mtime = max(failed_mtimes) if failed_mtimes else None
-
-    is_valid_success, validation_reason = validate_success_partition_output(
-        success_json_path=success_json_path,
-        phase=phase,
-        step_id=step_id,
-        partition_id=partition_id,
-        expected_artifact_names=expected_artifact_names,
-    )
-    if not is_valid_success:
-        return {
-            "action": "RERUN",
-            "prune_failed": False,
-            "reason": "missing_or_invalid_success",
-            "validation_reason": validation_reason,
-            "failed_paths": failed_paths,
-            "success_mtime": None,
-            "failed_mtime": newest_failed_mtime,
-        }
-
-    try:
-        success_mtime = float(success_json_path.stat().st_mtime)
-    except Exception as exc:
-        return {
-            "action": "RERUN",
-            "prune_failed": False,
-            "reason": "missing_or_invalid_success",
-            "validation_reason": f"success_mtime_error:{type(exc).__name__}",
-            "failed_paths": failed_paths,
-            "success_mtime": None,
-            "failed_mtime": newest_failed_mtime,
-        }
-
-    if newest_failed_mtime is None:
-        return {
-            "action": "SKIP",
-            "prune_failed": False,
-            "reason": "valid_success",
-            "validation_reason": validation_reason,
-            "failed_paths": failed_paths,
-            "success_mtime": success_mtime,
-            "failed_mtime": None,
-        }
-
-    if success_mtime >= newest_failed_mtime:
-        return {
-            "action": "SKIP",
-            "prune_failed": True,
-            "reason": "valid_success_stale_failed",
-            "validation_reason": validation_reason,
-            "failed_paths": failed_paths,
-            "success_mtime": success_mtime,
-            "failed_mtime": newest_failed_mtime,
-        }
-
-    return {
-        "action": "RERUN",
-        "prune_failed": False,
-        "reason": "failed_newer_than_success",
-        "validation_reason": validation_reason,
-        "failed_paths": failed_paths,
-        "success_mtime": success_mtime,
-        "failed_mtime": newest_failed_mtime,
-    }
-
-
 def execute_step_for_partitions(
     phase: str,
     prompt_spec: PromptSpec,
     partitions: List[Dict[str, Any]],
+    inventory_by_path: Dict[str, Dict[str, Any]],
     phase_dir: Path,
     cfg: RunnerConfig,
-    ui: Optional[UI] = None,
-) -> Dict[str, int]:
+    request_controller: RequestController,
+) -> Dict[str, Any]:
     step_id = prompt_spec.step_id
     prompt_path = prompt_spec.prompt_path
     output_artifacts = prompt_spec.output_artifacts
@@ -4771,439 +2328,199 @@ def execute_step_for_partitions(
     if not prompt_text:
         logger.error("Could not read prompt: %s", prompt_path)
         return {
-            "partitions_total": len(partitions),
-            "resume_skipped": 0,
-            "recomputed": 0,
-            "dry_run": 0,
-            "ok": 0,
-            "failed": len(partitions),
-            "auth_failures": 0,
+            "step_id": step_id,
+            "planned_chunks": len(partitions),
+            "completed_chunks": 0,
+            "skipped_chunks": 0,
+            "failed_chunks": len(partitions),
+            "failed_chunk_ids": [str(partition.get("id", "")) for partition in partitions],
+            "chunk_ids": [str(partition.get("id", "")) for partition in partitions],
         }
 
     raw_dir = phase_dir / "raw"
+    inputs_dir = phase_dir / "inputs"
+    payload_cache_dir = inputs_dir / "payload_cache"
+    payload_cache_dir.mkdir(parents=True, exist_ok=True)
     provider, model_id, api_key_env = MODEL_ROUTING.get(
         phase, ("xai", "grok-code-fast-1", "XAI_API_KEY")
     )
-    endpoint_base = llm_base_url(provider, cfg)
-    transport = transport_for_provider(provider, cfg)
-    force_json_output = provider == "gemini"
+    if not cfg.dry_run:
+        request_controller._require_api_key(provider, api_key_env)
     max_files = max_files_for_phase(phase, cfg)
-    run_id = phase_dir.parent.name
+    prompt_hash = hashlib.sha256(prompt_text.encode("utf-8", errors="ignore")).hexdigest()
+    prompt_version = sha256_text(prompt_path)
     logger.info(
         "Step %s using prompt %s outputs=%s",
         step_id,
         prompt_path.name,
         list(output_artifacts),
     )
-    if ui is not None:
-        ui.step_start(
-            phase=phase,
-            step_id=step_id,
-            prompt_path=prompt_path,
-            outputs=output_artifacts,
-            partitions_total=len(partitions),
-            provider=provider,
-            model_id=model_id,
-        )
     resume_skipped = 0
-    step_success_count = 0
-    step_auth_failures = 0
-    step_failed_count = 0
-    step_recomputed_count = 0
-    step_dry_run_count = 0
-    step_retry_count = 0
-    started_at = time.time()
-    workers = max(1, min(16, int(cfg.partition_workers)))
-    ui_completed = 0
-    ui_ok = 0
-    ui_failed = 0
-    ui_skipped = 0
-    ui_retried = 0
+    completed_chunks = 0
+    failed_chunks = 0
+    failed_chunk_ids: List[str] = []
+    hash_mismatch_chunk_ids: List[str] = []
+    chunk_ids: List[str] = []
 
-    def _append_log(logs: List[Tuple[str, str]], level: str, message: str) -> None:
-        logs.append((level, message))
+    chunk_manifest_rows: List[Dict[str, Any]] = []
+    truncated_only_chunks = 0
+    chunks_with_tail_snippets = 0
+    home_root = Path.home()
+    tail_chars = min(max(int(cfg.file_truncate_chars * 0.1), 256), 2048)
 
-    def _op_write_text(write_ops: List[Dict[str, Any]], path: Path, text: str) -> None:
-        write_ops.append({"kind": "write_text", "path": str(path), "text": text})
-
-    def _op_write_json(write_ops: List[Dict[str, Any]], path: Path, payload: Dict[str, Any]) -> None:
-        write_ops.append({"kind": "write_json", "path": str(path), "payload": payload})
-
-    def _op_unlink_if_exists(write_ops: List[Dict[str, Any]], path: Path) -> None:
-        write_ops.append({"kind": "unlink_if_exists", "path": str(path)})
-
-    def _apply_write_ops(write_ops: List[Dict[str, Any]]) -> None:
-        for op in write_ops:
-            op_path = Path(str(op["path"]))
-            if op["kind"] == "write_text":
-                op_path.write_text(str(op["text"]), encoding="utf-8")
-            elif op["kind"] == "write_json":
-                payload = op["payload"] if isinstance(op["payload"], dict) else {}
-                write_json(op_path, payload)
-            elif op["kind"] == "unlink_if_exists":
-                if op_path.exists():
-                    op_path.unlink()
-
-    def _ui_record_result(result: PartitionExecResult) -> None:
-        nonlocal ui_completed, ui_ok, ui_failed, ui_skipped, ui_retried
-        if ui is None:
-            return
-        ui_completed += 1
-        if result.success:
-            ui_ok += 1
-        ui_failed += int(result.failed_delta)
-        if result.resume_skipped:
-            ui_skipped += 1
-        retry_trace = result.request_meta.get("retry_trace")
-        if isinstance(retry_trace, list):
-            ui_retried += max(0, len(retry_trace) - 1)
-        ui.partition_result(
-            phase=phase,
-            step_id=step_id,
-            completed=ui_completed,
-            total=len(partitions),
-            ok=ui_ok,
-            failed=ui_failed,
-            skipped=ui_skipped,
-            retried=ui_retried,
-        )
-
-    def _worker_exception_result(
-        partition_id: str,
-        out_json: Path,
-        out_failed: Path,
-        out_failed_json: Path,
-        exc: Exception,
-    ) -> PartitionExecResult:
-        logs: List[Tuple[str, str]] = []
-        write_ops: List[Dict[str, Any]] = []
-        error_message = sanitize_error_text(str(exc)) or type(exc).__name__
-        failure_meta = enrich_request_meta(
-            {
-                "provider": provider,
-                "model_id": model_id,
-                "endpoint_base_url": endpoint_base,
-                "status_code": None,
-                "failure_type": "worker_exception",
-                "provider_error_reason": error_message[:300],
-                "transport": transport,
-                **capture_exception_metadata(exc),
-            },
-            run_id=run_id,
-            phase=phase,
-            step_id=step_id,
-            partition_id=partition_id,
-            provider=provider,
-            model_id=model_id,
-        )
-        _append_log(logs, "error", f"Worker exception for {step_id} {partition_id}: {error_message[:300]}")
-        _op_write_text(write_ops, out_failed, f"worker_exception: {error_message}\n")
-        _op_write_json(
-            write_ops,
-            out_failed_json,
-            {
-                "phase": phase,
-                "step_id": step_id,
-                "partition_id": partition_id,
-                "generated_at": now_iso(),
-                "failure_type": "worker_exception",
-                "status_code": None,
-                "request_meta": failure_meta,
-            },
-        )
-        _op_write_json(
-            write_ops,
-            out_json,
-            {
-                "phase": phase,
-                "step_id": step_id,
-                "partition_id": partition_id,
-                "generated_at": now_iso(),
-                "artifacts": [],
-                "request_meta": failure_meta,
-            },
-        )
-        return PartitionExecResult(
-            partition_id=partition_id,
-            write_ops=write_ops,
-            logs=logs,
-            request_meta=failure_meta,
-            artifacts=[],
-            success=False,
-            resume_skipped=False,
-            auth_failure=is_auth_classified_failure(failure_meta.get("failure_type")),
-            auth_expired=is_auth_expired_failure(failure_meta.get("failure_type")),
-            recomputed_delta=1,
-            dry_run_delta=0,
-            failed_delta=1,
-        )
-
-    def _run_one_partition(partition: Dict[str, Any]) -> PartitionExecResult:
-        partition_id = str(partition["id"])
+    for partition in partitions:
+        partition_id = partition["id"]
+        chunk_ids.append(partition_id)
         out_json = raw_dir / f"{step_id}__{partition_id}.json"
-        out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
-        out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+        out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
         out_trace = raw_dir / f"{step_id}__{partition_id}.TRACE.md"
-        logs: List[Tuple[str, str]] = []
-        write_ops: List[Dict[str, Any]] = []
+        out_meta = raw_dir / f"{step_id}__{partition_id}.request_meta.json"
+        payload_cache = payload_cache_dir / f"{step_id}__{partition_id}.prompt.txt"
 
-        if cfg.resume:
-            decision = compute_resume_decision(
-                success_json_path=out_json,
-                raw_dir=raw_dir,
-                phase=phase,
-                step_id=step_id,
-                partition_id=partition_id,
-                expected_artifact_names=output_artifacts,
-            )
-            if decision["action"] == "SKIP":
-                _append_log(logs, "info", f"Resume: skip valid success for {step_id} {partition_id}")
-                if decision.get("prune_failed"):
-                    prune_count = schedule_prune_failed_sidecars(
-                        write_ops=write_ops,
-                        paths=[path for path in decision.get("failed_paths", []) if isinstance(path, Path)],
-                        reason="skip",
-                    )
-                    if prune_count > 0:
-                        _append_log(
-                            logs,
-                            "info",
-                            (
-                                f"Resume: prune stale FAILED on skip for {step_id} "
-                                f"{partition_id} count={prune_count}"
-                            ),
-                        )
-                return PartitionExecResult(
-                    partition_id=partition_id,
-                    write_ops=write_ops,
-                    logs=logs,
-                    request_meta={},
-                    artifacts=[],
-                    success=False,
-                    resume_skipped=True,
-                    auth_failure=False,
-                    auth_expired=False,
-                    recomputed_delta=0,
-                    dry_run_delta=0,
-                    failed_delta=0,
-                )
-            if decision["reason"] == "failed_newer_than_success":
-                _append_log(
-                    logs,
-                    "info",
-                    f"Resume: rerun failed_newer_than_success for {step_id} {partition_id}",
-                )
-            else:
-                _append_log(
-                    logs,
-                    "info",
-                    (
-                        f"Resume: rerun missing_or_invalid_success for {step_id} {partition_id} "
-                        f"reason={decision.get('validation_reason')}"
-                    ),
-                )
-
+        file_manifest_hash = str(partition.get("file_manifest_hash", ""))
+        if not file_manifest_hash:
+            file_manifest_hash = build_file_manifest_hash(partition.get("paths", []), inventory_by_path)
         output_instructions = build_output_envelope_instructions(output_artifacts)
         prompt_prefix = (
             "Extract from the files below.\n"
             f"{output_instructions}\n"
             "\nFILES:\n"
         )
-        reserved_chars = len(prompt_prefix)
-        context_budget = max(cfg.max_chars - reserved_chars, 2048)
-        current_budget = context_budget
-        payload_bytes = 0
-        user_prompt = ""
-        context = ""
-        context_stats: Dict[str, int] = {}
-        system_prompt_bytes = len(prompt_text.encode("utf-8"))
+        reserved_bytes = len(prompt_prefix.encode("utf-8"))
+        context_budget = max(cfg.max_chars - reserved_bytes, 2048)
+        filtered_paths: List[str] = []
+        safe_mode_blocked = 0
+        for path_str in partition.get("paths", []):
+            path = Path(path_str)
+            enforce_home_allowlist = phase == "H" and cfg.home_scan_mode == "safe"
+            if enforce_home_allowlist:
+                violation = home_safe_violation_reason(path, home_root)
+                if violation:
+                    safe_mode_blocked += 1
+                    logger.warning("Blocked unsafe home file in SAFE mode: %s (%s)", path, violation)
+                    continue
+            filtered_paths.append(path_str)
 
-        while True:
-            context, context_stats = build_partition_context(
-                phase=phase,
-                partition_paths=partition["paths"],
-                file_truncate_chars=cfg.file_truncate_chars,
-                home_scan_mode=cfg.home_scan_mode,
-                max_files=max_files,
-                max_chars=current_budget,
-            )
+        redaction_hits_total = 0
+
+        def _read_for_chunk(path_str: str) -> str:
+            nonlocal redaction_hits_total
+            content_local = safe_read(Path(path_str))
+            safe_redaction_active = phase == "M" or (phase == "H" and cfg.home_scan_mode == "safe")
+            if safe_redaction_active:
+                content_local, hits = redact_sensitive_lines(content_local)
+                redaction_hits_total += hits
+            return content_local
+
+        context, context_stats, file_entries = build_partition_context(
+            partition_paths=filtered_paths,
+            read_text_fn=_read_for_chunk,
+            file_truncate_chars=cfg.file_truncate_chars,
+            max_files=max_files,
+            max_chars=context_budget,
+            tail_chars=tail_chars,
+        )
+        context_stats["redaction_hits"] = redaction_hits_total
+        context_stats["safe_mode_blocked"] = safe_mode_blocked
+        if context_stats.get("files_included", 0) > 0 and context_stats.get("truncated_files", 0) == context_stats.get(
+            "files_included", 0
+        ):
+            truncated_only_chunks += 1
+        if context_stats.get("tail_snippet_files", 0) > 0:
+            chunks_with_tail_snippets += 1
+
+        if payload_cache.exists():
+            cached_prompt = safe_read(payload_cache)
+            user_prompt = cached_prompt if cached_prompt else f"{prompt_prefix}{context}"
+        else:
             user_prompt = f"{prompt_prefix}{context}"
-            payload = build_chat_payload(
-                provider,
-                model_id,
-                prompt_text,
-                user_prompt,
-                force_json_output=force_json_output,
-            )
-            payload_body = serialize_payload_body(payload)
-            payload_bytes = measure_payload_bytes_from_body(payload_body)
-            if payload_bytes <= cfg.max_request_bytes:
-                break
-            if current_budget <= 1024:
-                break
-            next_budget = max(1024, int(current_budget * 0.7))
-            if next_budget == current_budget:
-                next_budget = current_budget - 1
-            current_budget = max(next_budget, 1024)
+            payload_cache.write_text(user_prompt, encoding="utf-8")
+        injected_text_sha256 = hashlib.sha256(
+            user_prompt.encode("utf-8", errors="ignore")
+        ).hexdigest()
 
-        if payload_bytes > cfg.max_request_bytes:
-            over_by = payload_bytes - cfg.max_request_bytes
-            gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
-            endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", gemini_sequence[0])
-            failure_meta = {
-                "provider": provider,
-                "model_id": model_id,
-                "endpoint_base_url": endpoint_base,
-                "endpoint_effective": endpoint_effective(endpoint_url),
-                **endpoint_fingerprint(endpoint_url),
-                "status_code": None,
-                "failure_type": "payload_unshrinkable",
+        chunk_contract = {
+            "prompt_version": prompt_version,
+            "provider": provider,
+            "model": model_id,
+            "system_prompt_hash": prompt_hash,
+            "file_manifest_hash": file_manifest_hash,
+            "caps": {
+                "max_chars": cfg.max_chars,
+                "file_truncate_chars": cfg.file_truncate_chars,
+                "max_files_phase_effective": max_files,
+            },
+            "home_scan_mode": cfg.home_scan_mode,
+            "safe_redaction_active": phase_uses_safe_redaction(phase, cfg),
+            "redaction_version": "safe-redaction-v1",
+            "injected_text_sha256": injected_text_sha256,
+        }
+        chunk_key = hashlib.sha256(
+            json.dumps(chunk_contract, sort_keys=True, ensure_ascii=True).encode("utf-8", errors="ignore")
+        ).hexdigest()
+
+        if cfg.resume and out_json.exists() and out_meta.exists():
+            if is_valid_json_file(out_json):
+                meta_payload = parse_json_from_response(safe_read(out_meta))
+                if isinstance(meta_payload, dict) and str(meta_payload.get("chunk_key", "")) == chunk_key:
+                    prior_hash = str(meta_payload.get("output_sha256", "")).strip()
+                    current_hash = sha256_text(out_json)
+                    if prior_hash and prior_hash == current_hash:
+                        resume_skipped += 1
+                        chunk_manifest_rows.append(
+                            {
+                                "chunk_id": partition_id,
+                                "base_partition_id": str(partition.get("base_partition_id", "")),
+                                "file_manifest_hash": file_manifest_hash,
+                                "chunk_key": chunk_key,
+                                "injected_text_sha256": injected_text_sha256,
+                                "request_payload_bytes": len(user_prompt.encode("utf-8")),
+                                "file_entries": file_entries,
+                                "context_stats": context_stats,
+                                "status": "resume_skipped",
+                                "resume_output_sha256": current_hash,
+                            }
+                        )
+                        continue
+                    hash_mismatch_chunk_ids.append(partition_id)
+
+        payload_bytes = len(user_prompt.encode("utf-8"))
+        chunk_manifest_rows.append(
+            {
+                "chunk_id": partition_id,
+                "base_partition_id": str(partition.get("base_partition_id", "")),
+                "file_manifest_hash": file_manifest_hash,
+                "chunk_key": chunk_key,
+                "injected_text_sha256": injected_text_sha256,
                 "request_payload_bytes": payload_bytes,
-                "request_payload_bytes_mode": "sdk_estimate" if transport != "openai_compat_http" else "exact_http",
-                "max_request_bytes": cfg.max_request_bytes,
-                "over_by_bytes": over_by,
-                "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
-                "gemini_auth_mode_effective": gemini_sequence[0] if provider == "gemini" else None,
-                "provider_signature": provider_signature(
-                    provider,
-                    model_id,
-                    endpoint_url,
-                    gemini_sequence[0] if provider == "gemini" else None,
-                ),
-                "provider_error_reason": None,
-                "gemini_endpoint_family": "openai_compat"
-                if provider == "gemini" and _is_gemini_openai_compat_endpoint(endpoint_base)
-                else ("native" if provider == "gemini" else None),
-                "gemini_auth_attempt_sequence": _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
-                if provider == "gemini"
-                else None,
-                "transport": transport,
-                "structured_output": {
-                    "enabled": bool(force_json_output),
-                    "mime_type": "application/json" if force_json_output else None,
-                    "schema": None,
-                },
-                "system_prompt_bytes": system_prompt_bytes,
-                "user_content_bytes": len(user_prompt.encode("utf-8")),
-                "context_bytes_estimate": context_stats.get("context_bytes", 0),
+                "file_entries": file_entries,
+                "context_stats": context_stats,
             }
-            failure_meta = enrich_request_meta(
-                failure_meta,
-                run_id=run_id,
-                phase=phase,
-                step_id=step_id,
-                partition_id=partition_id,
-                provider=provider,
-                model_id=model_id,
-            )
-            _append_log(
-                logs,
-                "error",
-                (
-                    f"Payload over hard cap for {step_id} {partition_id}: "
-                    f"payload_bytes={payload_bytes} max_request_bytes={cfg.max_request_bytes}"
-                ),
-            )
-            _op_write_text(
-                write_ops,
-                out_failed,
-                f"payload_unshrinkable: payload_bytes={payload_bytes} max_request_bytes={cfg.max_request_bytes}\n",
-            )
-            _op_write_json(write_ops, out_failed_json, failure_meta)
-            _op_write_json(
-                write_ops,
-                out_json,
-                {
-                    "phase": phase,
-                    "step_id": step_id,
-                    "partition_id": partition_id,
-                    "generated_at": now_iso(),
-                    "artifacts": [],
-                    "request_meta": failure_meta,
-                },
-            )
-            return PartitionExecResult(
-                partition_id=partition_id,
-                write_ops=write_ops,
-                logs=logs,
-                request_meta=failure_meta,
-                artifacts=[],
-                success=False,
-                resume_skipped=False,
-                auth_failure=False,
-                auth_expired=False,
-                recomputed_delta=1,
-                dry_run_delta=0,
-                failed_delta=1,
+        )
+        if payload_bytes > cfg.max_chars:
+            raise RuntimeError(
+                f"Payload limit exceeded for {step_id} {partition_id}: "
+                f"{payload_bytes} > {cfg.max_chars} bytes."
             )
 
         if cfg.dry_run:
-            _append_log(
-                logs,
-                "info",
-                (
-                    f"Dry-run {step_id} {partition_id} files={context_stats['files_included']} "
-                    f"request_payload_bytes={payload_bytes} redaction_hits={context_stats['redaction_hits']} "
-                    f"max_request_bytes={cfg.max_request_bytes}"
-                ),
+            logger.info(
+                "Dry-run %s %s files=%s payload_bytes=%s redaction_hits=%s safe_mode_blocked=%s",
+                step_id,
+                partition_id,
+                context_stats["files_included"],
+                payload_bytes,
+                context_stats["redaction_hits"],
+                context_stats["safe_mode_blocked"],
             )
-            gemini_sequence = _gemini_auth_mode_sequence(cfg.gemini_auth_mode, endpoint_base)
-            dry_mode = gemini_sequence[0] if provider == "gemini" else None
-            endpoint_url = transport_endpoint_url(provider, model_id, cfg, "REDACTED", dry_mode)
-            dry_headers = make_headers(provider, "REDACTED", cfg, dry_mode) if transport == "openai_compat_http" else {}
-            dry_auth_flags = (
-                build_auth_present_flags(dry_headers, provider == "gemini" and dry_mode == "query_key")
-                if transport == "openai_compat_http"
-                else sdk_auth_present_flags(provider, True)
-            )
+
+        if cfg.dry_run:
             trace_text = (
                 f"# PROMPT_FILE\n{prompt_path}\n\n# SYSTEM_PROMPT\n{prompt_text}\n\n"
                 f"# PARTITION_ID\n{partition_id}\n\n# USER_CONTEXT_PREVIEW\n{context[:2000]}"
             )
-            dry_meta = {
-                "provider": provider,
-                "model_id": model_id,
-                "endpoint_base_url": endpoint_base,
-                "endpoint_effective": endpoint_effective(endpoint_url),
-                **endpoint_fingerprint(endpoint_url),
-                "status_code": None,
-                "failure_type": None,
-                "request_payload_bytes": payload_bytes,
-                "request_payload_bytes_mode": "sdk_estimate" if transport != "openai_compat_http" else "exact_http",
-                "gemini_auth_mode_requested": cfg.gemini_auth_mode if provider == "gemini" else None,
-                "gemini_auth_mode_effective": dry_mode,
-                "gemini_auth_attempt_sequence": gemini_sequence if provider == "gemini" else None,
-                "provider_signature": provider_signature(
-                    provider,
-                    model_id,
-                    endpoint_url,
-                    dry_mode if provider == "gemini" else None,
-                ),
-                "provider_error_reason": None,
-                "gemini_endpoint_family": "openai_compat"
-                if provider == "gemini" and _is_gemini_openai_compat_endpoint(endpoint_base)
-                else ("native" if provider == "gemini" else None),
-                "sent_header_keys": sorted(list(dry_headers.keys())),
-                "auth_present_flags": dry_auth_flags,
-                "transport": transport,
-                "structured_output": {
-                    "enabled": bool(force_json_output),
-                    "mime_type": "application/json" if force_json_output else None,
-                    "schema": None,
-                },
-            }
-            dry_meta = enrich_request_meta(
-                dry_meta,
-                run_id=run_id,
-                phase=phase,
-                step_id=step_id,
-                partition_id=partition_id,
-                provider=provider,
-                model_id=model_id,
-            )
-            _op_write_text(write_ops, out_trace, trace_text)
-            _op_write_json(
-                write_ops,
+            out_trace.write_text(trace_text, encoding="utf-8")
+            write_json(
                 out_json,
                 {
                     "phase": phase,
@@ -5218,182 +2535,128 @@ def execute_step_for_partitions(
                         for artifact_name in output_artifacts
                     ],
                     "dry_run": True,
-                    "request_meta": dry_meta,
                 },
             )
-            _op_unlink_if_exists(write_ops, out_failed)
-            _op_unlink_if_exists(write_ops, out_failed_json)
-            return PartitionExecResult(
-                partition_id=partition_id,
-                write_ops=write_ops,
-                logs=logs,
-                request_meta=dry_meta,
-                artifacts=[],
-                success=False,
-                resume_skipped=False,
-                auth_failure=False,
-                auth_expired=False,
-                recomputed_delta=1,
-                dry_run_delta=1,
-                failed_delta=0,
+            write_json(
+                out_meta,
+                {
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "provider": provider,
+                    "model_id": model_id,
+                    "chunk_key": chunk_key,
+                    "file_manifest_hash": file_manifest_hash,
+                    "request_payload_bytes": payload_bytes,
+                    "context_stats": context_stats,
+                    "injected_text_sha256": injected_text_sha256,
+                    "output_sha256": sha256_text(out_json),
+                    "status": "dry_run",
+                    "generated_at": now_iso(),
+                },
             )
+            if out_failed.exists():
+                out_failed.unlink()
+            completed_chunks += 1
+            continue
 
-        _append_log(
-            logs,
-            "info",
-            (
-                f"Executing {step_id} partition {partition_id} using provider={provider} model={model_id} "
-                f"files={context_stats['files_included']} skipped={context_stats['files_skipped']} "
-                f"context_bytes={context_stats['context_bytes']}"
-            ),
+        logger.info(
+            "Executing %s partition %s using provider=%s model=%s files=%s skipped=%s context_bytes=%s",
+            step_id,
+            partition_id,
+            provider,
+            model_id,
+            context_stats["files_included"],
+            context_stats["files_skipped"],
+            context_stats["context_bytes"],
         )
-        def _execute_llm_call() -> Tuple[str, Dict[str, Any]]:
-            llm_result = call_llm(
+        request_meta: Dict[str, Any] = {
+            "phase": phase,
+            "step_id": step_id,
+            "partition_id": partition_id,
+            "provider": provider,
+            "model_id": model_id,
+            "api_key_env": api_key_env,
+            "chunk_key": chunk_key,
+            "file_manifest_hash": file_manifest_hash,
+            "request_payload_bytes": payload_bytes,
+            "context_stats": context_stats,
+            "started_at": now_iso(),
+            "status": "in_progress",
+        }
+        write_json(out_meta, request_meta)
+        try:
+            response, call_meta = request_controller.execute_chat_completion(
                 provider=provider,
                 model_id=model_id,
                 api_key_env=api_key_env,
                 system_prompt=prompt_text,
                 user_content=user_prompt,
-                cfg=cfg,
-                force_json_output=force_json_output,
+                retry_seed=f"{request_controller.run_id}|{phase}|{step_id}|{partition_id}",
+                est_tokens=estimate_tokens_from_text(user_prompt),
             )
-            response_text_local = str(llm_result.get("text", ""))
-            request_meta_local = enrich_request_meta(
-                llm_result.get("meta", {}),
-                run_id=run_id,
-                phase=phase,
-                step_id=step_id,
-                partition_id=partition_id,
-                provider=provider,
-                model_id=model_id,
-            )
-            request_meta_local.setdefault("request_payload_bytes", payload_bytes)
-            return response_text_local, request_meta_local
-
-        parse_retry_attempted = False
-        parse_retry_attempts = 0
-        parse_retry_reason: Optional[str] = None
-        parse_retry_trace: List[Dict[str, Any]] = []
-        response_text, request_meta = _execute_llm_call()
-        artifacts: List[Dict[str, Any]] = []
-
-        while True:
-            strict_candidate = response_text.strip()
-            strict_error = _strict_decode_error(strict_candidate) if strict_candidate else None
-            strict_string_literal_error = bool(
-                strict_error is not None and _is_string_literal_decode_error(strict_error)
-            )
-            strict_semantic_eof_eligible = bool(
-                strict_error is not None and _is_semantic_eof_eligible(strict_error, strict_candidate)
-            )
-            parsed = parse_json_from_response(response_text)
-            artifacts = coerce_artifacts_from_response(
-                parsed=parsed,
-                raw_text=response_text,
-                expected_artifacts=output_artifacts,
-            )
-            parse_retry_trace.append(
+            request_meta.update(call_meta)
+        except Exception as exc:
+            failed_chunks += 1
+            failed_chunk_ids.append(partition_id)
+            error_text = str(exc)
+            write_json(
+                out_failed,
                 {
-                    "attempt": len(parse_retry_trace) + 1,
-                    "failure_type": request_meta.get("failure_type"),
-                    "finish_reason": (request_meta.get("response_summary") or {}).get("finish_reason")
-                    if isinstance(request_meta.get("response_summary"), dict)
-                    else None,
-                    "strict_decode_error": str(strict_error) if strict_error else None,
-                    "strict_decode_error_message": strict_error.msg if strict_error else None,
-                    "strict_decode_error_pos": int(strict_error.pos) if strict_error else None,
-                    "strict_string_literal_error": strict_string_literal_error,
-                    "strict_semantic_eof_eligible": strict_semantic_eof_eligible,
-                    "parsed_json": parsed is not None,
-                    "artifacts_ok": bool(artifacts),
-                    "response_text_length": len(response_text),
+                    "phase": phase,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "status": "failed",
+                    "error": error_text,
+                    "retry_trace": request_meta.get("retry_trace", []),
+                    "generated_at": now_iso(),
+                },
+            )
+            request_meta.update(
+                {
+                    "status": "failed",
+                    "finished_at": now_iso(),
+                    "error": error_text,
                 }
             )
-            if artifacts:
-                break
+            write_json(out_meta, request_meta)
+            logger.error("LLM execution failed for %s %s: %s", step_id, partition_id, error_text)
+            continue
 
-            eligible_reason = _parse_retry_reason(response_text, request_meta, strict_error)
-            if parse_retry_attempts >= PARSE_RETRY_MAX_EXTRA_ATTEMPTS or not eligible_reason:
-                break
-
-            parse_retry_attempted = True
-            parse_retry_attempts += 1
-            parse_retry_reason = eligible_reason
-            _append_log(
-                logs,
-                "info",
-                f"Artifact parse retry eligible for {step_id} {partition_id}: reason={eligible_reason}",
-            )
-            _append_log(
-                logs,
-                "info",
-                (
-                    f"Artifact parse retry attempt {parse_retry_attempts}/"
-                    f"{PARSE_RETRY_MAX_EXTRA_ATTEMPTS} for {step_id} {partition_id}"
-                ),
-            )
-            response_text, request_meta = _execute_llm_call()
-
-        request_meta = {
-            **request_meta,
-            "parse_retry_attempted": parse_retry_attempted,
-            "parse_retry_attempts": parse_retry_attempts,
-            "parse_retry_reason": parse_retry_reason,
-            "parse_retry_trace": parse_retry_trace,
-        }
-        auth_failure = is_auth_classified_failure(request_meta.get("failure_type"))
-        auth_expired = is_auth_expired_failure(request_meta.get("failure_type"))
-
+        parsed = parse_json_from_response(response)
+        artifacts = coerce_artifacts_from_response(
+            parsed=parsed,
+            raw_text=response,
+            expected_artifacts=output_artifacts,
+        )
         if not artifacts:
-            if parse_retry_attempted:
-                _append_log(logs, "info", f"Artifact parse retry exhausted for {step_id} {partition_id}")
-            _append_log(logs, "error", f"Artifact parse failed for {step_id} {partition_id}")
-            _op_write_text(write_ops, out_failed, response_text)
-            _op_write_json(
-                write_ops,
-                out_failed_json,
+            write_json(
+                out_failed,
                 {
                     "phase": phase,
                     "step_id": step_id,
                     "partition_id": partition_id,
+                    "status": "failed",
+                    "error": "artifact_parse_failed",
+                    "raw_response_excerpt": response[:4000],
+                    "retry_trace": request_meta.get("retry_trace", []),
                     "generated_at": now_iso(),
-                    "failure_type": request_meta.get("failure_type") or "parse",
-                    "status_code": request_meta.get("status_code"),
-                    "request_meta": request_meta,
                 },
             )
-            _op_write_json(
-                write_ops,
-                out_json,
+            logger.error("Artifact parse failed for %s %s", step_id, partition_id)
+            failed_chunks += 1
+            failed_chunk_ids.append(partition_id)
+            request_meta.update(
                 {
-                    "phase": phase,
-                    "step_id": step_id,
-                    "partition_id": partition_id,
-                    "generated_at": now_iso(),
-                    "artifacts": [],
-                    "request_meta": {
-                        **request_meta,
-                        "failure_type": request_meta.get("failure_type") or "parse",
-                    },
-                },
+                    "status": "failed",
+                    "finished_at": now_iso(),
+                    "error": "artifact_parse_failed",
+                }
             )
-            return PartitionExecResult(
-                partition_id=partition_id,
-                write_ops=write_ops,
-                logs=logs,
-                request_meta=request_meta,
-                artifacts=[],
-                success=False,
-                resume_skipped=False,
-                auth_failure=auth_failure,
-                auth_expired=auth_expired,
-                recomputed_delta=1,
-                dry_run_delta=0,
-                failed_delta=1,
-            )
+            write_json(out_meta, request_meta)
+            continue
 
-        _op_write_json(
-            write_ops,
+        write_json(
             out_json,
             {
                 "phase": phase,
@@ -5401,175 +2664,77 @@ def execute_step_for_partitions(
                 "partition_id": partition_id,
                 "generated_at": now_iso(),
                 "artifacts": artifacts,
-                "request_meta": request_meta,
             },
         )
-        return PartitionExecResult(
-            partition_id=partition_id,
-            write_ops=write_ops,
-            logs=logs,
-            request_meta=request_meta,
-            artifacts=artifacts,
-            success=True,
-            resume_skipped=False,
-            auth_failure=auth_failure,
-            auth_expired=auth_expired,
-            recomputed_delta=1,
-            dry_run_delta=0,
-            failed_delta=0,
+        request_meta.update(
+            {
+                "status": "ok",
+                "finished_at": now_iso(),
+                "output_sha256": sha256_text(out_json),
+            }
         )
-
-    ordered_partitions = sorted(partitions, key=lambda row: str(row["id"]))
-    results_by_partition: Dict[str, PartitionExecResult] = {}
-    if workers == 1:
-        for partition in ordered_partitions:
-            partition_id = str(partition["id"])
-            out_json = raw_dir / f"{step_id}__{partition_id}.json"
-            out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
-            out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
-            try:
-                results_by_partition[partition_id] = _run_one_partition(partition)
-            except Exception as exc:  # defensive: keep per-partition fail-open
-                results_by_partition[partition_id] = _worker_exception_result(
-                    partition_id=partition_id,
-                    out_json=out_json,
-                    out_failed=out_failed,
-                    out_failed_json=out_failed_json,
-                    exc=exc,
-                )
-            _ui_record_result(results_by_partition[partition_id])
-    else:
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            future_map = {executor.submit(_run_one_partition, partition): partition for partition in ordered_partitions}
-            for future in as_completed(future_map):
-                partition = future_map[future]
-                partition_id = str(partition["id"])
-                out_json = raw_dir / f"{step_id}__{partition_id}.json"
-                out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
-                out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
-                try:
-                    results_by_partition[partition_id] = future.result()
-                except Exception as exc:
-                    results_by_partition[partition_id] = _worker_exception_result(
-                        partition_id=partition_id,
-                        out_json=out_json,
-                        out_failed=out_failed,
-                        out_failed_json=out_failed_json,
-                        exc=exc,
-                    )
-                _ui_record_result(results_by_partition[partition_id])
-
-    for partition in ordered_partitions:
-        partition_id = str(partition["id"])
-        out_json = raw_dir / f"{step_id}__{partition_id}.json"
-        out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
-        out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
-        result = results_by_partition.get(partition_id)
-        if result is None:
-            result = _worker_exception_result(
-                partition_id=partition_id,
-                out_json=out_json,
-                out_failed=out_failed,
-                out_failed_json=out_failed_json,
-                exc=RuntimeError("missing partition result"),
-            )
-            _ui_record_result(result)
-
-        if result.resume_skipped:
-            _apply_write_ops(result.write_ops)
-            for level, message in result.logs:
-                if level == "error":
-                    logger.error("%s", message)
-                else:
-                    logger.info("%s", message)
-            resume_skipped += 1
-            continue
-
-        retry_trace = result.request_meta.get("retry_trace")
-        if isinstance(retry_trace, list):
-            step_retry_count += max(0, len(retry_trace) - 1)
-
-        if result.auth_failure:
-            step_auth_failures += 1
-            must_fail_fast = cfg.fail_fast_auth or result.auth_expired
-            if must_fail_fast and step_success_count == 0:
-                for level, message in result.logs:
-                    if level == "error":
-                        logger.error("%s", message)
-                    else:
-                        logger.info("%s", message)
-                if ui is not None:
-                    ui.step_progress_stop()
-                raise RuntimeError(
-                    f"Fail-fast auth triggered for step {step_id} partition {partition_id}. "
-                    f"failure_type={result.request_meta.get('failure_type')} provider={provider} "
-                    f"model={model_id} auth_mode={cfg.gemini_auth_mode}. "
-                    "Check credentials, endpoint mode, and gemini auth strategy."
-                )
-
-        _apply_write_ops(result.write_ops)
-        for level, message in result.logs:
-            if level == "error":
-                logger.error("%s", message)
-            else:
-                logger.info("%s", message)
-
-        if result.success:
-            valid_success, _validation_reason = validate_success_partition_output(
-                success_json_path=out_json,
-                phase=phase,
-                step_id=step_id,
-                partition_id=partition_id,
-                expected_artifact_names=output_artifacts,
-            )
-            if valid_success:
-                prune_ops: List[Dict[str, Any]] = []
-                prune_count = schedule_prune_failed_sidecars(
-                    write_ops=prune_ops,
-                    paths=list_failed_sidecars(raw_dir, step_id, partition_id),
-                    reason="after_success",
-                )
-                if prune_count > 0:
-                    logger.info(
-                        "Resume: prune stale FAILED after success for %s %s count=%s",
-                        step_id,
-                        partition_id,
-                        prune_count,
-                    )
-                    _apply_write_ops(prune_ops)
-
-        step_recomputed_count += result.recomputed_delta
-        step_dry_run_count += result.dry_run_delta
-        step_failed_count += result.failed_delta
-        if result.success:
-            step_success_count += 1
+        write_json(out_meta, request_meta)
+        if out_failed.exists():
+            out_failed.unlink()
+        completed_chunks += 1
 
     if resume_skipped:
         logger.info("Resume: skipped %s existing outputs for step %s", resume_skipped, step_id)
-    elapsed_ms = int((time.time() - started_at) * 1000)
-    logger.info(
-        "Step summary %s partitions_total=%s ok=%s failed=%s retries=%s elapsed_ms=%s workers=%s",
-        step_id,
-        len(ordered_partitions),
-        step_success_count,
-        step_failed_count,
-        step_retry_count,
-        elapsed_ms,
-        workers,
-    )
-    if ui is not None:
-        ui.step_progress_stop()
     return {
-        "partitions_total": len(ordered_partitions),
-        "resume_skipped": resume_skipped,
-        "recomputed": step_recomputed_count,
-        "dry_run": step_dry_run_count,
-        "ok": step_success_count,
-        "failed": step_failed_count,
-        "retries": step_retry_count,
-        "elapsed_ms": elapsed_ms,
-        "auth_failures": step_auth_failures,
+        "step_id": step_id,
+        "planned_chunks": len(partitions),
+        "completed_chunks": completed_chunks,
+        "skipped_chunks": resume_skipped,
+        "failed_chunks": failed_chunks,
+        "failed_chunk_ids": sorted(set(failed_chunk_ids)),
+        "hash_mismatch_chunk_ids": sorted(set(hash_mismatch_chunk_ids)),
+        "chunk_ids": chunk_ids,
+        "truncated_only_chunks": truncated_only_chunks,
+        "chunks_with_tail_snippets": chunks_with_tail_snippets,
+        "chunk_manifest_rows": chunk_manifest_rows,
     }
+
+
+def write_phase_merge_report(
+    phase: str,
+    phase_dir: Path,
+    partitions: List[Dict[str, Any]],
+    step_qas: List[Dict[str, Any]],
+) -> None:
+    partition_ids = [partition["id"] for partition in partitions]
+    step_reports: List[Dict[str, Any]] = []
+    total_parse_failures = 0
+    total_missing_expected_artifacts = 0
+
+    for qa_payload in sorted(step_qas, key=lambda item: str(item.get("step_id", ""))):
+        parse_failures = qa_payload.get("parse_failures", [])
+        missing_expected = qa_payload.get("missing_expected_artifacts", [])
+        successful = list(qa_payload.get("successful_partitions", []))
+        missing_partitions = list(qa_payload.get("missing_partitions", []))
+        step_reports.append(
+            {
+                "step_id": qa_payload.get("step_id"),
+                "partitions_total": qa_payload.get("partitions_total", len(partition_ids)),
+                "successful_partitions": successful,
+                "missing_partitions": missing_partitions,
+                "missing_expected_artifacts": missing_expected,
+                "parse_failures": parse_failures,
+            }
+        )
+        total_parse_failures += len(parse_failures)
+        total_missing_expected_artifacts += len(missing_expected)
+
+    phase_report = {
+        "phase": phase,
+        "generated_at": now_iso(),
+        "partitions_total": len(partition_ids),
+        "partition_ids": partition_ids,
+        "steps_total": len(step_reports),
+        "total_parse_failures": total_parse_failures,
+        "total_missing_expected_artifacts": total_missing_expected_artifacts,
+        "steps": step_reports,
+    }
+    write_json(phase_dir / "qa" / f"{phase}_MERGE_REPORT.json", phase_report)
 
 
 def _run_phase_inner(
@@ -5579,27 +2744,14 @@ def _run_phase_inner(
     collector: Optional[Collector],
     targets: Optional[List[str]],
     precollected_items: Optional[List[Dict[str, Any]]] = None,
-    ui: Optional[UI] = None,
+    forced_items: Optional[List[Dict[str, Any]]] = None,
 ) -> None:
-    phase_started_epoch = time.time()
     logger.info("--- Phase %s ---", phase)
     phase_dir = dirs[phase]
+    outputs_before = phase_output_files(phase_dir)
     prompts = get_phase_prompts(phase)
     if not prompts:
         raise RuntimeError(f"No prompts found for phase {phase} in UPGRADES/")
-    prompt_report = _prompt_hash_report_for_phase(phase, prompts)
-    if prompt_report["blocked_promptset"]:
-        update_run_manifest_promptset_block(phase_dir.parent, phase, prompt_report)
-        write_promptset_blocked_marker(phase, phase_dir, prompt_report)
-        bad_paths = prompt_report["prompt_missing"] + [
-            row.get("path", "") for row in prompt_report["prompt_unreadable"]
-        ]
-        preview = ", ".join(bad_paths[:3]) if bad_paths else f"phase={phase}"
-        if len(bad_paths) > 3:
-            preview += ", ..."
-        raise PromptsetBlockedError(
-            f"Promptset blocked for phase {phase}: invalid promptset ({preview})"
-        )
 
     if precollected_items is not None:
         context_items = sorted(precollected_items, key=lambda item: item["path"])
@@ -5612,12 +2764,28 @@ def _run_phase_inner(
             context_items = collector.collect(subdirs=targets)
             logger.info("Collected %s context files.", len(context_items))
 
+    if forced_items:
+        context_items = merge_items(context_items, forced_items)
+        logger.info("Phase %s merged %s forced tier-0 items.", phase, len(forced_items))
+
     inventory = build_inventory(context_items, cfg.file_truncate_chars)
+    update_magic_surface_index(dirs, phase, inventory, cfg.file_truncate_chars)
+    inventory_by_path = {str(item.get("path", "")): item for item in inventory}
     max_files = max_files_for_phase(phase, cfg)
-    partitions = build_partitions(phase, inventory, max_files=max_files, max_chars=cfg.max_chars)
+    partitions = build_partitions(
+        phase,
+        inventory,
+        max_files=max_files,
+        max_chars=cfg.max_chars,
+        file_truncate_chars=cfg.file_truncate_chars,
+    )
 
     write_json(
         phase_dir / "inputs" / "INVENTORY.json",
+        {"phase": phase, "generated_at": now_iso(), "items": inventory},
+    )
+    write_json(
+        dirs["inputs"] / f"{phase}_INVENTORY.json",
         {"phase": phase, "generated_at": now_iso(), "items": inventory},
     )
     write_json(
@@ -5628,33 +2796,26 @@ def _run_phase_inner(
             "limits": {
                 "max_files": max_files,
                 "max_chars": cfg.max_chars,
+                "max_tokens": max(int(cfg.max_chars / 4), 1024),
                 "file_truncate_chars": cfg.file_truncate_chars,
             },
             "partitions": partitions,
         },
     )
-    inventory_path = phase_dir / "inputs" / "INVENTORY.json"
-    partitions_path = phase_dir / "inputs" / "PARTITIONS.json"
-    inventory_meta = _phase_input_stat(inventory_path)
-    partitions_meta = _phase_input_stat(partitions_path)
-    if cfg.debug_phase_inputs:
-        logger.info(
-            "PHASE_INPUTS_PROVENANCE phase=%s phase_dir=%s INVENTORY=%s PARTITIONS=%s",
-            phase,
-            str(phase_dir.resolve()),
-            json.dumps(inventory_meta, sort_keys=True, separators=(",", ":")),
-            json.dumps(partitions_meta, sort_keys=True, separators=(",", ":")),
-        )
-    if ui is not None:
-        ui.phase_inputs_provenance(phase, inventory_meta, partitions_meta)
-    if cfg.fail_fast_missing_inputs and (
-        not inventory_meta["exists"] or not partitions_meta["exists"]
-    ):
-        raise RuntimeError(
-            "Phase inputs missing after write. "
-            f"phase={phase} run_id={phase_dir.parent.name} phase_dir={phase_dir.resolve()} "
-            f"inventory={inventory_meta} partitions={partitions_meta}"
-        )
+    write_json(
+        dirs["inputs"] / f"{phase}_PARTITIONS.json",
+        {
+            "phase": phase,
+            "generated_at": now_iso(),
+            "limits": {
+                "max_files": max_files,
+                "max_chars": cfg.max_chars,
+                "max_tokens": max(int(cfg.max_chars / 4), 1024),
+                "file_truncate_chars": cfg.file_truncate_chars,
+            },
+            "partitions": partitions,
+        },
+    )
 
     logger.info(
         "Phase %s inventory=%s partitions=%s max_files=%s max_chars=%s",
@@ -5664,964 +2825,560 @@ def _run_phase_inner(
         max_files,
         cfg.max_chars,
     )
-    provider, model_id, _ = MODEL_ROUTING.get(phase, ("xai", "grok-code-fast-1", "XAI_API_KEY"))
-    ui_flags = (
-        f"resume:{cfg.resume},dry_run:{cfg.dry_run},debug_phase_inputs:{cfg.debug_phase_inputs},"
-        f"fail_fast_auth:{cfg.fail_fast_auth}"
-    )
-    logger.info(
-        "PHASE_HEADER phase=%s run_id=%s phase_dir=%s inventory=%s partitions=%s max_files=%s "
-        "max_chars=%s max_request_bytes=%s provider=%s model=%s flags=resume:%s,dry_run:%s,debug_phase_inputs:%s,fail_fast_auth:%s",
-        phase,
-        phase_dir.parent.name,
-        str(phase_dir.resolve()),
-        len(inventory),
-        len(partitions),
-        max_files,
-        cfg.max_chars,
-        cfg.max_request_bytes,
-        provider,
-        model_id,
-        cfg.resume,
-        cfg.dry_run,
-        cfg.debug_phase_inputs,
-        cfg.fail_fast_auth,
-    )
-    if ui is not None:
-        ui.phase_start(
-            phase=phase,
-            phase_dir=phase_dir,
-            inventory=len(inventory),
-            partitions=len(partitions),
-            provider=provider,
-            model_id=model_id,
-            workers=cfg.partition_workers,
-            flags=ui_flags,
-        )
 
-    phase_auth_failures = 0
+    request_controller = RequestController(run_id=dirs["root"].name, cfg=cfg)
+    step_qas: List[Dict[str, Any]] = []
+    step_coverages: List[Dict[str, Any]] = []
+    step_chunk_manifests: Dict[str, List[Dict[str, Any]]] = {}
     for prompt_spec in prompts:
-        provider, model_id, api_key_env = MODEL_ROUTING.get(
-            phase, ("xai", "grok-code-fast-1", "XAI_API_KEY")
+        chunk_plan = plan_chunks_for_step(
+            partitions=partitions,
+            inventory_by_path=inventory_by_path,
+            max_files=max_files,
+            max_chars=cfg.max_chars,
         )
-        if provider == "gemini" and not cfg.dry_run:
-            probe = run_gemini_auth_probe(
-                run_id=phase_dir.parent.name,
-                phase=phase,
-                step_id=prompt_spec.step_id,
-                phase_dir=phase_dir,
-                provider=provider,
-                model_id=model_id,
-                api_key_env=api_key_env,
-                cfg=cfg,
-            )
-            probe_failure = str(probe.get("failure_type") or "")
-            if is_auth_classified_failure(probe_failure):
-                phase_auth_failures += 1
-                if cfg.fail_fast_auth or is_auth_expired_failure(probe_failure):
-                    raise RuntimeError(
-                        f"Gemini auth probe failed for phase={phase} step={prompt_spec.step_id} "
-                        f"failure_type={probe_failure} env=GEMINI_API_KEY "
-                        f"endpoint={probe.get('endpoint_effective')} "
-                        f"mode={probe.get('gemini_auth_mode_effective')}."
-                    )
-        step_stats = execute_step_for_partitions(
+        coverage = execute_step_for_partitions(
             phase=phase,
             prompt_spec=prompt_spec,
-            partitions=partitions,
+            partitions=chunk_plan,
+            inventory_by_path=inventory_by_path,
             phase_dir=phase_dir,
             cfg=cfg,
-            ui=ui,
+            request_controller=request_controller,
         )
-        phase_auth_failures += int(step_stats.get("auth_failures", 0))
-        if phase_auth_failures >= cfg.phase_auth_fail_threshold:
-            raise RuntimeError(
-                f"Phase {phase} auth circuit breaker triggered: auth_failures={phase_auth_failures} "
-                f"threshold={cfg.phase_auth_fail_threshold}. "
-                "Check auth config, provider routing, and endpoint mode."
-            )
+        step_chunk_rows = list(coverage.get("chunk_manifest_rows", []))
+        step_chunk_manifests[prompt_spec.step_id] = step_chunk_rows
+        write_json(
+            phase_dir / "inputs" / f"CHUNK_MANIFEST_{prompt_spec.step_id}.json",
+            {
+                "phase": phase,
+                "step_id": prompt_spec.step_id,
+                "generated_at": now_iso(),
+                "max_files": max_files,
+                "max_chars": cfg.max_chars,
+                "soft_target_chars": max(int(cfg.max_chars * 0.7), 2048),
+                "chunks": step_chunk_rows,
+            },
+        )
+        if "chunk_manifest_rows" in coverage:
+            del coverage["chunk_manifest_rows"]
+        step_coverages.append(dict(coverage))
+        write_json(phase_dir / "qa" / f"{prompt_spec.step_id}__chunk_coverage.json", coverage)
+        write_json(phase_dir / "qa" / f"{prompt_spec.step_id}_COVERAGE.json", coverage)
         qa_payload = normalize_step(
             phase=phase,
             prompt_spec=prompt_spec,
             phase_dir=phase_dir,
-            partitions=partitions,
-            step_exec_stats=step_stats,
+            partitions=chunk_plan,
         )
-        logger.info(
-            "STEP_DONE phase=%s step=%s partitions_total=%s ok=%s failed=%s retries=%s elapsed_ms=%s norm_written=%s qa_file=%s",
-            phase,
-            prompt_spec.step_id,
-            int(step_stats.get("partitions_total", 0)),
-            int(step_stats.get("ok", 0)),
-            int(step_stats.get("failed", 0)),
-            int(step_stats.get("retries", 0)),
-            int(step_stats.get("elapsed_ms", 0)),
-            len(qa_payload.get("written_files", [])) if isinstance(qa_payload.get("written_files"), list) else 0,
-            f"{prompt_spec.step_id}_QA.json",
-        )
-        if ui is not None:
-            ui.step_done(
-                phase=phase,
-                step_id=prompt_spec.step_id,
-                partitions_total=int(step_stats.get("partitions_total", 0)),
-                ok=int(step_stats.get("ok", 0)),
-                failed=int(step_stats.get("failed", 0)),
-                retries=int(step_stats.get("retries", 0)),
-                skipped=int(step_stats.get("resume_skipped", 0)),
-                elapsed_ms=int(step_stats.get("elapsed_ms", 0)),
-                norm_written=(
-                    len(qa_payload.get("written_files", []))
-                    if isinstance(qa_payload.get("written_files"), list)
-                    else 0
-                ),
-                qa_file=f"{prompt_spec.step_id}_QA.json",
-            )
-    logger.info(
-        "PHASE_EXECUTION_DONE phase=%s elapsed_ms=%s auth_failures=%s",
-        phase,
-        int((time.time() - phase_started_epoch) * 1000),
-        phase_auth_failures,
+        step_qas.append(qa_payload)
+
+    write_partition_manifest(
+        phase=phase,
+        phase_dir=phase_dir,
+        run_id=dirs["root"].name,
+        partitions=partitions,
+        inventory_by_path=inventory_by_path,
+        file_truncate_chars=cfg.file_truncate_chars,
+        max_files=max_files,
+        max_chars=cfg.max_chars,
+        step_chunk_manifests=step_chunk_manifests,
+    )
+    write_phase_merge_report(
+        phase=phase,
+        phase_dir=phase_dir,
+        partitions=partitions,
+        step_qas=step_qas,
+    )
+    write_json(phase_dir / "qa" / "RATE_LIMIT_REPORT.json", request_controller.export_rate_limit_report())
+    write_resume_proof(
+        phase=phase,
+        phase_dir=phase_dir,
+        run_id=dirs["root"].name,
+        prompts=prompts,
+        step_coverages=step_coverages,
+        step_qas=step_qas,
+        request_controller=request_controller,
+    )
+    outputs_after = phase_output_files(phase_dir)
+    write_phase_manifest(
+        phase=phase,
+        dirs=dirs,
+        cfg=cfg,
+        prompts=prompts,
+        context_items=context_items,
+        max_files=max_files,
+        outputs_before=outputs_before,
+        outputs_after=outputs_after,
     )
 
 
-def _count_files(directory: Path, suffixes: Optional[Set[str]] = None) -> int:
-    if not directory.exists():
-        return 0
-    count = 0
-    for entry in sorted(directory.iterdir()):
-        if not entry.is_file():
-            continue
-        if suffixes and entry.suffix.lower() not in suffixes:
-            continue
-        count += 1
-    return count
+# --- Phase M Runtime Export Helpers ---
+
+SQLITE_SUFFIXES = {".db", ".sqlite", ".sqlite3"}
+PHASE_M_MAX_DISCOVERED_FILES = 5000
+PHASE_M_MAX_CONFIG_KEYS = 40
 
 
-def gather_phase_counts(phase_dir: Path) -> Dict[str, Any]:
-    inputs_dir = phase_dir / "inputs"
-    raw_dir = phase_dir / "raw"
-    norm_dir = phase_dir / "norm"
-    qa_dir = phase_dir / "qa"
-
-    inputs_count = _count_files(inputs_dir)
-
-    raw_ok = 0
-    raw_failed = 0
-    raw_total = 0
-    if raw_dir.exists():
-        for entry in sorted(raw_dir.iterdir()):
-            if not entry.is_file():
-                continue
-            raw_total += 1
-            if ".FAILED" in entry.name:
-                raw_failed += 1
-            elif entry.suffix.lower() == ".json":
-                raw_ok += 1
-
-    norm_count = _count_files(norm_dir, suffixes={".json"})
-    qa_count = _count_files(qa_dir, suffixes={".json", ".md", ".txt"})
-
-    return {
-        "inputs": inputs_count,
-        "raw": {"total": raw_total, "ok": raw_ok, "failed": raw_failed},
-        "norm": norm_count,
-        "qa": qa_count,
-    }
+def hash_identifier(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8", errors="ignore")).hexdigest()[:12]
 
 
-def _verify_single_phase(
-    phase: str,
-    dirs: Dict[str, Path],
-    ui: Optional[UI] = None,
-) -> Tuple[int, Dict[str, Any], List[str]]:
-    phase_dir = dirs.get(phase)
-    if not phase_dir or not phase_dir.exists():
-        print(f"VERIFY PHASE {phase}: MISSING DIRECTORY")
-        if ui is not None:
-            ui.verify_result(
-                phase=phase,
-                status="MISSING",
-                counts={},
-                reasons=[f"Phase directory {phase} is missing."],
-                phase_dir=dirs.get(phase, Path(".")),
-            )
-        return 3, {}, [f"Phase directory {phase} is missing."]
-
-    counts = gather_phase_counts(phase_dir)
-    reasons: List[str] = []
-    if counts["inputs"] == 0:
-        reasons.append("inputs directory is empty.")
-    if counts["raw"]["total"] == 0:
-        reasons.append("raw directory has no artifacts.")
-    if counts["norm"] == 0:
-        reasons.append("norm directory has no json artifacts.")
-    if counts["qa"] == 0:
-        reasons.append("qa directory has no artifacts.")
-
-    status = "PASS" if not reasons else "FAIL"
-    print(f"VERIFY PHASE {phase}: {status}")
-    print(f"  inputs: {counts['inputs']} files")
-    raw_stats = counts["raw"]
-    print(f"  raw: {raw_stats['total']} files (ok={raw_stats['ok']} failed={raw_stats['failed']})")
-    print(f"  norm: {counts['norm']} files")
-    print(f"  qa: {counts['qa']} files")
-    if reasons:
-        print("  ISSUES:")
-        for reason in reasons:
-            print(f"    {reason}")
-
-    if ui is not None:
-        ui.verify_result(
-            phase=phase,
-            status=status,
-            counts=counts,
-            reasons=reasons,
-            phase_dir=phase_dir,
-        )
-
-    return (0 if status == "PASS" else 2), counts, reasons
+def classify_runtime_store(path: Path) -> str:
+    suffix = path.suffix.lower()
+    lower = str(path).lower()
+    if suffix in SQLITE_SUFFIXES:
+        return "sqlite_db"
+    if "/cache/" in lower or lower.endswith(".cache") or lower.endswith(".log") or lower.endswith(".tmp"):
+        return "cache"
+    if suffix in HOME_SAFE_ALLOW_SUFFIXES:
+        return "config"
+    return "unknown"
 
 
-def verify_phase_output(dirs: Dict[str, Path], phases: List[str], ui: Optional[UI] = None) -> int:
-    return_code = 0
-    for phase in phases:
-        code, _, _ = _verify_single_phase(phase, dirs, ui=ui)
-        return_code = max(return_code, code)
-    return return_code
-
-
-def _phase_last_modified_iso(phase_dir: Path) -> Optional[str]:
-    latest_mtime: Optional[float] = None
-    for bucket in ("inputs", "raw", "norm", "qa"):
-        bucket_dir = phase_dir / bucket
-        if not bucket_dir.exists():
-            continue
-        for entry in bucket_dir.iterdir():
-            if not entry.is_file():
-                continue
-            mtime = float(entry.stat().st_mtime)
-            if latest_mtime is None or mtime > latest_mtime:
-                latest_mtime = mtime
-    if latest_mtime is None:
-        return None
-    return datetime.fromtimestamp(latest_mtime, timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-def _phase_status_badge(
-    counts: Dict[str, Any],
-    reasons: List[str],
-    coverage_status: str,
-    has_any_files: bool,
-) -> str:
-    if not has_any_files:
-        return "NOT_STARTED"
-    if coverage_status == "FAIL":
-        return "FAIL"
-    if reasons:
-        return "IN_PROGRESS"
-    if int(counts.get("raw", {}).get("failed", 0)) > 0:
-        return "FAIL"
-    return "PASS"
-
-
-def phase_status_snapshot(run_id: str, dirs: Dict[str, Path], phases: List[str]) -> Dict[str, Any]:
-    rollup_path = dirs["root"] / COVERAGE_ROLLUP_FILENAME
-    rollup_payload = _load_json(rollup_path)
-    rollup_phases = rollup_payload.get("phases", {}) if isinstance(rollup_payload.get("phases"), dict) else {}
-
-    per_phase: Dict[str, Any] = {}
-    summary = {"NOT_STARTED": 0, "IN_PROGRESS": 0, "PASS": 0, "FAIL": 0}
-    for phase in phases:
-        phase_dir = dirs[phase]
-        phase_dir_exists = phase_dir.exists()
-        counts = gather_phase_counts(phase_dir) if phase_dir_exists else {"inputs": 0, "raw": {"total": 0, "ok": 0, "failed": 0}, "norm": 0, "qa": 0}
-        reasons: List[str] = []
-        if counts["inputs"] == 0:
-            reasons.append("inputs directory is empty.")
-        if counts["raw"]["total"] == 0:
-            reasons.append("raw directory has no artifacts.")
-        if counts["norm"] == 0:
-            reasons.append("norm directory has no json artifacts.")
-        if counts["qa"] == 0:
-            reasons.append("qa directory has no artifacts.")
-
-        has_any_files = (
-            counts["inputs"] > 0
-            or counts["raw"]["total"] > 0
-            or counts["norm"] > 0
-            or counts["qa"] > 0
-        )
-        rollup_row = rollup_phases.get(phase, {}) if isinstance(rollup_phases, dict) else {}
-        coverage_status = str(rollup_row.get("status", "UNKNOWN")) if isinstance(rollup_row, dict) else "UNKNOWN"
-        badge = _phase_status_badge(counts, reasons, coverage_status, has_any_files)
-        summary[badge] += 1
-
-        per_phase[phase] = {
-            "phase": phase,
-            "phase_dir": str(phase_dir.resolve()),
-            "phase_dir_exists": phase_dir_exists,
-            "inputs_count": counts["inputs"],
-            "raw_total": counts["raw"]["total"],
-            "raw_ok": counts["raw"]["ok"],
-            "raw_failed_sidecars": counts["raw"]["failed"],
-            "norm_count": counts["norm"],
-            "qa_count": counts["qa"],
-            "last_modified": _phase_last_modified_iso(phase_dir),
-            "coverage_status": coverage_status,
-            "status": badge,
-            "issues": reasons,
-        }
-
-    return {
-        "generated_at": now_iso(),
-        "run_id": run_id,
-        "run_dir": str(dirs["root"].resolve()),
-        "phases": per_phase,
-        "summary": summary,
-        "coverage_rollup": str(rollup_path.resolve()) if rollup_path.exists() else None,
-    }
-
-
-def _status_console(use_rich: bool) -> Optional[Any]:
-    if not use_rich or Console is None:
-        return None
-    return Console()
-
-
-def print_status_human(payload: Dict[str, Any], use_rich: bool, clear: bool = False) -> None:
-    if use_rich and Table is not None:
-        console = _status_console(use_rich)
-        if console is None:
-            print_status_human(payload, use_rich=False, clear=clear)
-            return
-        if clear:
-            console.clear()
-        summary = payload.get("summary", {})
-        console.print(
-            (
-                f"Run {payload.get('run_id')}  "
-                f"PASS={summary.get('PASS', 0)} FAIL={summary.get('FAIL', 0)} "
-                f"IN_PROGRESS={summary.get('IN_PROGRESS', 0)} NOT_STARTED={summary.get('NOT_STARTED', 0)}"
-            )
-        )
-        table = Table(show_header=True, header_style="bold")
-        table.add_column("Phase")
-        table.add_column("Status")
-        table.add_column("Inputs")
-        table.add_column("Raw (ok/failed/total)")
-        table.add_column("Norm")
-        table.add_column("QA")
-        table.add_column("Last Modified (UTC)")
-        for phase in PHASES:
-            row = payload.get("phases", {}).get(phase, {})
-            table.add_row(
-                phase,
-                str(row.get("status", "UNKNOWN")),
-                str(row.get("inputs_count", 0)),
-                f"{row.get('raw_ok', 0)}/{row.get('raw_failed_sidecars', 0)}/{row.get('raw_total', 0)}",
-                str(row.get("norm_count", 0)),
-                str(row.get("qa_count", 0)),
-                str(row.get("last_modified") or "-"),
-            )
-        console.print(table)
-        return
-
-    if clear and sys.stdout.isatty():
-        print("\033[2J\033[H", end="")
-    summary = payload.get("summary", {})
-    print(
-        f"Run {payload.get('run_id')} PASS={summary.get('PASS', 0)} FAIL={summary.get('FAIL', 0)} "
-        f"IN_PROGRESS={summary.get('IN_PROGRESS', 0)} NOT_STARTED={summary.get('NOT_STARTED', 0)}"
-    )
-    print("phase status inputs raw_ok raw_failed raw_total norm qa last_modified_utc")
-    for phase in PHASES:
-        row = payload.get("phases", {}).get(phase, {})
-        print(
-            f"{phase} {row.get('status', 'UNKNOWN')} {row.get('inputs_count', 0)} "
-            f"{row.get('raw_ok', 0)} {row.get('raw_failed_sidecars', 0)} {row.get('raw_total', 0)} "
-            f"{row.get('norm_count', 0)} {row.get('qa_count', 0)} {row.get('last_modified') or '-'}"
-        )
-
-
-def run_status_loop(
-    run_id: str,
-    dirs: Dict[str, Path],
-    args: argparse.Namespace,
-    ui: Optional[UI] = None,
-) -> int:
-    interval = float(args.watch) if args.watch is not None else 0.0
-    status_ui = ui if ui is not None else UI(UiConfig(mode="auto"), dirs["root"], run_id)
-
-    def _emit_once(clear: bool = False) -> None:
-        payload = phase_status_snapshot(run_id, dirs, PHASES)
-        try:
-            if args.status_json:
-                print(json.dumps(payload, indent=2, ensure_ascii=True))
-            else:
-                status_ui.status_table(payload, clear=clear)
-        except BrokenPipeError:
-            raise
-
-    if interval > 0:
-        try:
-            while True:
-                _emit_once(clear=True)
-                time.sleep(interval)
-        except BrokenPipeError:
-            return 0
-        except KeyboardInterrupt:
-            return 130
-    else:
-        try:
-            _emit_once(clear=False)
-        except BrokenPipeError:
-            return 0
-    return 0
-
-
-def print_promptpack(phases: List[str]) -> int:
-    payload: Dict[str, Any] = {
-        "generated_at": now_iso(),
-        "runner_script_path": str(RUNNER_SCRIPT.resolve()),
-        "phases": {},
-    }
-    for phase in phases:
-        specs = get_phase_prompts(phase)
-        payload["phases"][phase] = [
-            {
-                "step_id": spec.step_id,
-                "path": str(spec.prompt_path.resolve()),
-                "sha256": sha256_file_strict(spec.prompt_path),
-                "declared_outputs": list(spec.output_artifacts),
-            }
-            for spec in specs
-        ]
-    print(json.dumps(payload, indent=2))
-    return 0
-
-
-def _load_json(path: Path) -> Dict[str, Any]:
+def runtime_exportability(path: Path, classification: str) -> str:
     if not path.exists():
-        return {}
+        return "missing"
+    if not os.access(path, os.R_OK):
+        return "permission_denied"
+    if classification in {"sqlite_db", "config"}:
+        return "ok"
+    if classification == "cache":
+        return "unsafe"
+    return "unsafe"
+
+
+def collect_runtime_inventory(
+    home_root: Path, max_files: int = PHASE_M_MAX_DISCOVERED_FILES
+) -> Tuple[List[Dict[str, Any]], List[str], bool]:
+    discovered: List[Dict[str, Any]] = []
+    missing_roots: List[str] = []
+    truncated = False
+
+    for allow_root in home_safe_allow_roots(home_root):
+        if not allow_root.exists():
+            missing_roots.append(str(allow_root))
+            continue
+
+        for walk_root, dirs, files in os.walk(allow_root):
+            dirs.sort()
+            files.sort()
+            for filename in files:
+                path = Path(walk_root) / filename
+                if len(discovered) >= max_files:
+                    truncated = True
+                    break
+                try:
+                    st = path.stat()
+                    size = st.st_size
+                    mtime = st.st_mtime
+                except Exception:
+                    size = 0
+                    mtime = 0.0
+                classification = classify_runtime_store(path)
+                discovered.append(
+                    {
+                        "path": str(path.resolve()),
+                        "path_id": hash_identifier(str(path.resolve())),
+                        "size": size,
+                        "mtime": mtime,
+                        "classification": classification,
+                        "exportability": runtime_exportability(path, classification),
+                    }
+                )
+            if truncated:
+                break
+        if truncated:
+            break
+
+    discovered.sort(key=lambda item: item["path"])
+    return discovered, missing_roots, truncated
+
+
+def extract_config_key_names(path: Path, max_keys: int = PHASE_M_MAX_CONFIG_KEYS) -> List[str]:
+    keys: List[str] = []
+    seen = set()
+    text = safe_read(path)
+    for line in text.splitlines():
+        if len(line) > 256:
+            continue
+        match = CONFIG_KEY_RE.match(line)
+        if not match:
+            continue
+        key = match.group(1).strip()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        keys.append(key)
+        if len(keys) >= max_keys:
+            break
+    return keys
+
+
+def collect_env_keys(value: Any, env_keys: set) -> None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            key_text = str(key)
+            if key_text.lower() == "env" and isinstance(item, dict):
+                for env_key in item.keys():
+                    env_keys.add(str(env_key))
+            collect_env_keys(item, env_keys)
+    elif isinstance(value, list):
+        for item in value:
+            collect_env_keys(item, env_keys)
+
+
+def collect_mcp_server_summaries(path: Path) -> List[Dict[str, Any]]:
+    summaries: List[Dict[str, Any]] = []
+    if path.suffix.lower() not in {".json", ".yaml", ".yml", ".toml"}:
+        return summaries
+
+    text = safe_read(path)
+    if not text.strip():
+        return summaries
+
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        return payload if isinstance(payload, dict) else {}
+        payload = json.loads(text)
     except Exception:
-        return {}
+        return summaries
 
+    server_blocks: List[Tuple[str, Dict[str, Any]]] = []
+    if isinstance(payload, dict):
+        for key in ("mcpServers", "mcp_servers", "servers"):
+            candidate = payload.get(key)
+            if isinstance(candidate, dict):
+                for name, definition in candidate.items():
+                    if isinstance(definition, dict):
+                        server_blocks.append((str(name), definition))
 
-def _coverage_for_phase(phase: str, phase_dir: Path) -> Dict[str, Any]:
-    partitions_payload = _load_json(phase_dir / "inputs" / "PARTITIONS.json")
-    partitions = partitions_payload.get("partitions") if isinstance(partitions_payload.get("partitions"), list) else []
-    partition_ids = [str(partition.get("id")) for partition in partitions if isinstance(partition, dict) and partition.get("id")]
-
-    raw_dir = phase_dir / "raw"
-    attempted: Set[str] = set()
-    ok: Set[str] = set()
-    failed: Set[str] = set()
-    failure_hist = Counter()
-
-    if raw_dir.exists():
-        for raw_json in sorted(raw_dir.glob("*.json")):
-            payload = _load_json(raw_json)
-            partition_id = str(payload.get("partition_id") or "")
-            if not partition_id:
-                match = re.search(r"__([A-Z]_P\d+)\.json$", raw_json.name)
-                partition_id = match.group(1) if match else ""
-            if partition_id:
-                attempted.add(partition_id)
-            artifacts = payload.get("artifacts")
-            if isinstance(artifacts, list) and artifacts:
-                if partition_id:
-                    ok.add(partition_id)
-            else:
-                if partition_id:
-                    failed.add(partition_id)
-                request_meta = payload.get("request_meta")
-                failure_type = None
-                if isinstance(request_meta, dict):
-                    failure_type = request_meta.get("failure_type")
-                if not failure_type:
-                    failure_type = "parse_or_empty"
-                failure_hist[str(failure_type)] += 1
-
-        for failed_json in sorted(raw_dir.glob("*.FAILED.json")):
-            payload = _load_json(failed_json)
-            failure_type = payload.get("failure_type") or "failed_sidecar"
-            failure_hist[str(failure_type)] += 1
-            partition_id = str(payload.get("partition_id") or "")
-            if partition_id:
-                attempted.add(partition_id)
-                failed.add(partition_id)
-
-    attempted_count = len(attempted) if attempted else len(partition_ids)
-    total_partitions = len(partition_ids)
-    return {
-        "phase": phase,
-        "partitions_total": total_partitions,
-        "partitions_attempted": attempted_count,
-        "partitions_ok": len(ok),
-        "partitions_failed": len(failed),
-        "failure_type_histogram": dict(sorted(failure_hist.items())),
-    }
-
-
-def generate_coverage_report(root: Path, dirs: Dict[str, Path], run_id: str, phases: List[str]) -> int:
-    phase_rows = [_coverage_for_phase(phase, dirs[phase]) for phase in phases]
-    required_status = get_required_artifact_status(dirs, R_REQUIRED_INPUT_PHASES)
-    payload = {
-        "generated_at": now_iso(),
-        "run_id": run_id,
-        "runner_sha256": sha256_text(RUNNER_SCRIPT),
-        "git_sha": get_git_sha(root),
-        "phases": {row["phase"]: row for row in phase_rows},
-        "required_artifact_coverage": required_status,
-    }
-    write_json(dirs["root"] / "COVERAGE_REPORT.json", payload)
-    proof_path = dirs["root"] / PROOF_PACK_FILENAME
-    proof = _load_json(proof_path)
-    proof["coverage_report"] = payload
-    proof["updated_at"] = now_iso()
-    write_json(proof_path, proof)
-    print(json.dumps(payload, indent=2))
-    return 0
-
-
-def _read_step_qa_payloads(phase_dir: Path) -> List[Dict[str, Any]]:
-    qa_dir = phase_dir / "qa"
-    rows: List[Dict[str, Any]] = []
-    if not qa_dir.exists():
-        return rows
-    for path in sorted(qa_dir.glob("*_QA.json")):
-        row = _load_json(path)
-        if row:
-            rows.append(row)
-    return rows
-
-
-def _expected_artifact_present(norm_dir: Path, artifact_name: str) -> bool:
-    if ".partX." in artifact_name:
-        pattern = artifact_name.replace(".partX.", ".part*.")
-        return any(entry.is_file() for entry in norm_dir.glob(pattern))
-    return (norm_dir / artifact_name).is_file()
-
-
-def write_phase_coverage_manifest(phase: str, phase_dir: Path) -> Dict[str, Any]:
-    prompts = get_phase_prompts(phase)
-    expected_outputs = {
-        spec.step_id: list(spec.output_artifacts)
-        for spec in prompts
-    }
-    prompt_declared_outputs = sorted(
-        {artifact for artifacts in expected_outputs.values() for artifact in artifacts}
-    )
-    raw_dir = phase_dir / "raw"
-    norm_dir = phase_dir / "norm"
-    blocked_path = phase_dir / "qa" / f"PHASE_{phase}_BLOCKED_PROMPTSET.json"
-    blocked_payload = _load_json(blocked_path)
-    blocked_promptset = (
-        blocked_payload.get("status") == "blocked_promptset"
-        if isinstance(blocked_payload, dict)
-        else False
-    )
-    missing_prompts_count = int(blocked_payload.get("missing_prompts_count", 0)) if blocked_promptset else 0
-    unreadable_prompts_count = int(blocked_payload.get("unreadable_prompts_count", 0)) if blocked_promptset else 0
-    qa_rows = _read_step_qa_payloads(phase_dir)
-    qa_by_step: Dict[str, Dict[str, Any]] = {
-        str(row.get("step_id")): row
-        for row in qa_rows
-        if isinstance(row, dict) and row.get("step_id")
-    }
-
-    observed_raw = sorted(entry.name for entry in raw_dir.iterdir() if entry.is_file()) if raw_dir.exists() else []
-    observed_norm = sorted(entry.name for entry in norm_dir.iterdir() if entry.is_file()) if norm_dir.exists() else []
-    undeclared_observed_outputs = sorted(
-        [name for name in observed_norm if name not in prompt_declared_outputs]
-    )
-
-    counts = {
-        "ok": 0,
-        "failed": 0,
-        "skipped": 0,
-        "dry_run": 0,
-        "blocked_promptset": 1 if blocked_promptset else 0,
-        "missing_prompts_count": missing_prompts_count,
-        "unreadable_prompts_count": unreadable_prompts_count,
-    }
-    for row in qa_rows:
-        row_recomputed = int(row.get("recomputed_partitions", 0))
-        row_failed = int(row.get("execution_failed_partitions", row.get("raw_failed", 0)))
-        row_skipped = int(row.get("resume_skipped_partitions", 0))
-        row_dry_run = int(row.get("dry_run_partitions", 0))
-        row_ok = max(0, row_recomputed - row_failed - row_dry_run)
-
-        counts["ok"] += row_ok
-        counts["failed"] += row_failed
-        counts["skipped"] += row_skipped
-        counts["dry_run"] += row_dry_run
-
-    missing_required: List[Dict[str, str]] = []
-    missing_reason_counts = {
-        "failed": 0,
-        "skipped_resume": 0,
-        "dry_run": 0,
-        "blocked_promptset": 1 if blocked_promptset else 0,
-        "prompt_does_not_declare_it": 0,
-        "unknown": 0,
-    }
-    for step_id, artifacts in expected_outputs.items():
-        step_row = qa_by_step.get(step_id, {})
-        step_expected = set(step_row.get("expected_artifacts", [])) if isinstance(step_row, dict) else set()
-        step_failed = (
-            int(step_row.get("execution_failed_partitions", step_row.get("raw_failed", 0)))
-            if isinstance(step_row, dict)
-            else 0
+    for name, definition in server_blocks:
+        env_keys = set()
+        collect_env_keys(definition, env_keys)
+        command = definition.get("command")
+        args = definition.get("args")
+        summaries.append(
+            {
+                "name": name,
+                "name_id": hash_identifier(name),
+                "config_path": str(path.resolve()),
+                "command": str(command) if isinstance(command, str) else "",
+                "args_count": len(args) if isinstance(args, list) else 0,
+                "env_keys": sorted(env_keys),
+            }
         )
-        step_skipped = int(step_row.get("resume_skipped_partitions", 0)) if isinstance(step_row, dict) else 0
-        step_dry_run = int(step_row.get("dry_run_partitions", 0)) if isinstance(step_row, dict) else 0
+    return summaries
 
-        for artifact_name in artifacts:
-            if not _expected_artifact_present(norm_dir, artifact_name):
-                reason = "unknown"
-                if artifact_name not in step_expected and step_row:
-                    reason = "prompt_does_not_declare_it"
-                elif step_dry_run > 0:
-                    reason = "dry_run"
-                elif step_failed > 0:
-                    reason = "failed"
-                elif step_skipped > 0:
-                    reason = "skipped_resume"
-                missing_required.append({"step_id": step_id, "artifact": artifact_name, "reason": reason})
-                missing_reason_counts[reason] += 1
 
-    payload = {
-        "generated_at": now_iso(),
-        "phase": phase,
-        "expected_outputs": expected_outputs,
-        "prompt_declared_outputs": prompt_declared_outputs,
-        "observed_outputs": {
-            "raw": observed_raw,
-            "norm": observed_norm,
-            "undeclared_norm": undeclared_observed_outputs,
+def sqlite_identifier(name: str) -> str:
+    return '"' + name.replace('"', '""') + '"'
+
+
+def collect_sqlite_schema_snapshot(db_path: Path) -> Dict[str, Any]:
+    snapshot: Dict[str, Any] = {
+        "db_path": str(db_path.resolve()),
+        "db_path_id": hash_identifier(str(db_path.resolve())),
+        "status": "ok",
+        "tables": [],
+        "indexes": [],
+        "triggers": [],
+        "pragma": {
+            "user_version": None,
+            "foreign_keys": None,
+            "sqlite_version": None,
         },
-        "counts": counts,
-        "missing_required_artifacts": missing_required,
-        "missing_required_artifacts_by_reason": missing_reason_counts,
-        "blocked_promptset": {
-            "status": "BLOCKED" if blocked_promptset else "CLEAR",
-            "missing_prompts_count": missing_prompts_count,
-            "unreadable_prompts_count": unreadable_prompts_count,
-            "prompt_missing": blocked_payload.get("prompt_missing", []) if blocked_promptset else [],
-            "prompt_unreadable": blocked_payload.get("prompt_unreadable", []) if blocked_promptset else [],
-        },
-        "status": "FAIL" if blocked_promptset or missing_required else "PASS",
     }
-    write_json(phase_dir / "qa" / f"PHASE_{phase}_COVERAGE.json", payload)
-    return payload
+    try:
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+    except Exception as exc:
+        snapshot["status"] = "error"
+        snapshot["error"] = str(exc)
+        return snapshot
 
-
-def write_coverage_rollup(
-    root: Path,
-    dirs: Dict[str, Path],
-    run_id: str,
-    promptset_report: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
-    del root
-    blocked_promptset = bool((promptset_report or {}).get("blocked_promptset"))
-    if blocked_promptset:
-        payload = {
-            "generated_at": now_iso(),
-            "run_id": run_id,
-            "phases": {},
-            "missing_required_artifacts_total": 0,
-            "run_status": "BLOCKED",
-            "blocked_reason": PROMPTSET_BLOCKED_REASON,
-            "blocked_promptset": True,
-            "prompt_failures_count": int((promptset_report or {}).get("prompt_failures_count", 0)),
-            "phases_executed_count": 0,
-        }
-        write_json(dirs["root"] / COVERAGE_ROLLUP_FILENAME, payload)
-        return payload
-
-    phase_rollup: Dict[str, Any] = {}
-    missing_total = 0
-    for phase in PHASES:
-        coverage_path = dirs[phase] / "qa" / f"PHASE_{phase}_COVERAGE.json"
-        if not coverage_path.exists():
-            continue
-        payload = _load_json(coverage_path)
-        missing = payload.get("missing_required_artifacts")
-        missing_count = len(missing) if isinstance(missing, list) else 0
-        missing_total += missing_count
-        phase_rollup[phase] = {
-            "status": payload.get("status", "UNKNOWN"),
-            "missing_required_artifacts_count": missing_count,
-            "missing_required_artifacts": missing if isinstance(missing, list) else [],
-            "counts": payload.get("counts", {}),
-            "blocked_promptset": payload.get("blocked_promptset", {}),
-            "coverage_file": str(coverage_path.resolve()),
-        }
-
-    payload = {
-        "generated_at": now_iso(),
-        "run_id": run_id,
-        "phases": phase_rollup,
-        "missing_required_artifacts_total": missing_total,
-        "run_status": "BLOCKED" if blocked_promptset else "OK",
-        "blocked_reason": PROMPTSET_BLOCKED_REASON if blocked_promptset else None,
-        "blocked_promptset": blocked_promptset,
-        "prompt_failures_count": int((promptset_report or {}).get("prompt_failures_count", 0)),
-        "phases_executed_count": 0 if blocked_promptset else len(phase_rollup),
-    }
-    write_json(dirs["root"] / COVERAGE_ROLLUP_FILENAME, payload)
-    return payload
-
-
-def write_resume_proof(
-    dirs: Dict[str, Path],
-    run_id: str,
-    phases: Iterable[str],
-    promptset_report: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
-    active_phases = sorted(set(phases))
-    per_phase: Dict[str, Any] = {}
-    total_skipped = 0
-    total_recomputed = 0
-    for phase in PHASES:
-        phase_dir = dirs[phase]
-        inventory_path = phase_dir / "inputs" / "INVENTORY.json"
-        partitions_path = phase_dir / "inputs" / "PARTITIONS.json"
-        qa_rows = _read_step_qa_payloads(phase_dir)
-        skipped = sum(int(row.get("resume_skipped_partitions", 0)) for row in qa_rows)
-        recomputed = sum(int(row.get("recomputed_partitions", 0)) for row in qa_rows)
-        if not qa_rows and not inventory_path.exists() and not partitions_path.exists():
-            continue
-        total_skipped += skipped
-        total_recomputed += recomputed
-        per_phase[phase] = {
-            "resume_skipped_partitions": skipped,
-            "recomputed_partitions": recomputed,
-            "inventory_sha256": sha256_text(inventory_path) if inventory_path.exists() else None,
-            "partitions_sha256": sha256_text(partitions_path) if partitions_path.exists() else None,
-            "inventory_file": str(inventory_path.resolve()) if inventory_path.exists() else None,
-            "partitions_file": str(partitions_path.resolve()) if partitions_path.exists() else None,
-        }
-
-    promptset = promptset_report if promptset_report is not None else promptset_fingerprint(active_phases)
-    blocked_promptset = bool(promptset.get("blocked_promptset"))
-    payload = {
-        "generated_at": now_iso(),
-        "run_id": run_id,
-        "active_phases": active_phases,
-        "totals": {
-            "resume_skipped_partitions": total_skipped,
-            "recomputed_partitions": total_recomputed,
-        },
-        "phases": per_phase,
-        "prompt_hash_mode": promptset["prompt_hash_mode"],
-        "promptset_sha256": promptset["promptset_sha256"],
-        "prompt_hashes": promptset["prompt_hashes"],
-        "prompt_missing": promptset["prompt_missing"],
-        "prompt_unreadable": promptset["prompt_unreadable"],
-        "prompt_hash_errors": promptset["prompt_hash_errors"],
-        "prompt_failures": promptset.get("prompt_failures", []),
-        "blocked_promptset": promptset["blocked_promptset"],
-        "missing_prompts_count": promptset["missing_prompts_count"],
-        "unreadable_prompts_count": promptset["unreadable_prompts_count"],
-        "prompt_failures_count": promptset.get("prompt_failures_count", 0),
-        "resume_status": "blocked" if blocked_promptset else "ready",
-    }
-    if blocked_promptset:
-        payload["blocked_reason"] = PROMPTSET_BLOCKED_REASON
-        payload["blocked"] = _resume_blocked_payload(promptset)
-    write_json(dirs["root"] / RESUME_PROOF_FILENAME, payload)
-    return payload
-
-
-def apply_promptset_preflight_block(
-    root: Path,
-    dirs: Dict[str, Path],
-    run_id: str,
-    phases: List[str],
-    prompt_report: Dict[str, Any],
-    run_started_at: str,
-) -> None:
-    for phase in phases:
-        phase_report = _prompt_hash_report_for_phase(phase, get_phase_prompts(phase))
-        if phase_report.get("blocked_promptset"):
-            write_promptset_blocked_marker(phase, dirs[phase], phase_report)
-    write_coverage_rollup(root, dirs, run_id, prompt_report)
-    write_resume_proof(dirs, run_id, phases, promptset_report=prompt_report)
-    write_blocked_promptset_proof_pack(root, dirs, run_id, run_started_at, phases, prompt_report)
-
-
-def print_config(
-    args: argparse.Namespace,
-    root: Path,
-    run_id: str,
-    dirs: Dict[str, Path],
-    cfg: RunnerConfig,
-    phases: List[str],
-    run_context: RunContext,
-) -> None:
-    config_payload = {
-        "run_id": run_id,
-        "run_root": str(root.resolve()),
-        "git_sha": get_git_sha(root),
-        "runner_sha256": sha256_text(RUNNER_SCRIPT),
-        "python_version": platform.python_version(),
-        "cwd": str(Path.cwd().resolve()),
-        "phases": phases,
-        "cli": {
-            "phase_argument": args.phase,
-            "verify_phase_output": args.verify_phase_output,
-            "doctor": args.doctor,
-            "doctor_auth": args.doctor_auth,
-            "preflight_providers": args.preflight_providers,
-            "coverage_report": args.coverage_report,
-            "ui": args.ui,
-            "quiet": args.quiet,
-            "jsonl_events": args.jsonl_events,
-            "pretty": args.pretty,
-            "print_promptpack": args.print_promptpack,
-            "print_config": args.print_config,
-            "run_id_override": args.run_id,
-            "run_id_source": run_context.source,
-            "run_id_resolution_precedence": [
-                "explicit(--run-id)",
-                "implicit(extraction/latest_run_id.txt)",
-                "generated(new timestamp run id)",
-            ],
-            "dry_run": args.dry_run,
-            "resume": args.resume,
-            "no_write_latest": args.no_write_latest,
-            "write_latest_even_on_dry_run": args.write_latest_even_on_dry_run,
-            "latest_run_id_written": run_context.latest_written,
-            "latest_run_id_file": str(run_context.latest_file.resolve()),
-            "home_scan_mode": args.home_scan_mode,
-            "max_files_docs": args.max_files_docs,
-            "max_files_code": args.max_files_code,
-            "max_chars": args.max_chars,
-            "max_request_bytes": args.max_request_bytes,
-            "file_truncate_chars": args.file_truncate_chars,
-            "fail_fast_auth": args.fail_fast_auth,
-            "gemini_auth_mode": args.gemini_auth_mode,
-            "gemini_model_id": args.gemini_model_id,
-            "gemini_transport": args.gemini_transport,
-            "openai_transport": args.openai_transport,
-            "xai_transport": args.xai_transport,
-            "retry_policy": args.retry_policy,
-            "retry_max_attempts": args.retry_max_attempts,
-            "retry_base_seconds": args.retry_base_seconds,
-            "retry_max_seconds": args.retry_max_seconds,
-            "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
-            "partition_workers": args.partition_workers,
-            "debug_phase_inputs": args.debug_phase_inputs,
-            "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
-            "no_write_latest": args.no_write_latest,
-        },
-        "limits": {
-            "max_files_docs": cfg.max_files_docs,
-            "max_files_code": cfg.max_files_code,
-            "max_chars": cfg.max_chars,
-            "max_request_bytes": cfg.max_request_bytes,
-            "file_truncate_chars": cfg.file_truncate_chars,
-        },
-        "dirs": {phase: str(dirs[phase]) for phase in phases},
-        "effective_model_routing": effective_model_routing_payload(),
-    }
-    print(json.dumps(config_payload, indent=2))
-
-
-def update_proof_pack(
-    root: Path,
-    dirs: Dict[str, Path],
-    run_id: str,
-    run_started_at: str,
-    phase: str,
-    phase_counts: Dict[str, Any],
-    phase_started_at: str,
-    phase_finished_at: str,
-) -> None:
-    refresh_run_manifest_artifacts(dirs["root"], dirs)
-    proof_path = dirs["root"] / PROOF_PACK_FILENAME
-    proof: Dict[str, Any] = {}
-    if proof_path.exists():
+    try:
+        cur = conn.cursor()
         try:
-            proof = json.loads(proof_path.read_text(encoding="utf-8") or "{}")
-        except Exception:
-            proof = {}
-
-    proof["run_id"] = run_id
-    proof["git_sha"] = get_git_sha(root)
-    proof["runner_sha256"] = sha256_text(RUNNER_SCRIPT)
-    proof["argv"] = sys.argv
-    proof["python_version"] = platform.python_version()
-    proof["cwd"] = str(root.resolve())
-    proof["started_at"] = run_started_at
-    proof.setdefault("phases", {})[phase] = {
-        "started_at": phase_started_at,
-        "finished_at": phase_finished_at,
-        "counts": phase_counts,
-    }
-    proof["finished_at"] = phase_finished_at
-    proof["updated_at"] = now_iso()
-    doctor_dir = root / "extraction" / "doctor"
-    auth_doctor = doctor_dir / "AUTH_DOCTOR.json"
-    full_doctor = doctor_dir / "DOCTOR_FULL.json"
-    routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
-    coverage_rollup = dirs["root"] / COVERAGE_ROLLUP_FILENAME
-    resume_proof = dirs["root"] / RESUME_PROOF_FILENAME
-    proof["linked_artifacts"] = {
-        "coverage_rollup": str(coverage_rollup.resolve()) if coverage_rollup.exists() else None,
-        "resume_proof": str(resume_proof.resolve()) if resume_proof.exists() else None,
-        "run_routing_fingerprint": str(routing_fp.resolve()) if routing_fp.exists() else None,
-        "doctor_auth": str(auth_doctor.resolve()) if auth_doctor.exists() else None,
-        "doctor_full": str(full_doctor.resolve()) if full_doctor.exists() else None,
-    }
-    write_json(proof_path, proof)
-
-
-def write_blocked_promptset_proof_pack(
-    root: Path,
-    dirs: Dict[str, Path],
-    run_id: str,
-    run_started_at: str,
-    phases: List[str],
-    prompt_report: Dict[str, Any],
-) -> None:
-    refresh_run_manifest_artifacts(dirs["root"], dirs)
-    proof_path = dirs["root"] / PROOF_PACK_FILENAME
-    proof: Dict[str, Any] = {}
-    if proof_path.exists():
+            cur.execute("PRAGMA user_version;")
+            row = cur.fetchone()
+            snapshot["pragma"]["user_version"] = int(row[0]) if row else None
+        except Exception as exc:
+            snapshot["pragma"]["user_version_error"] = str(exc)
         try:
-            proof = json.loads(proof_path.read_text(encoding="utf-8") or "{}")
-        except Exception:
-            proof = {}
+            cur.execute("PRAGMA foreign_keys;")
+            row = cur.fetchone()
+            snapshot["pragma"]["foreign_keys"] = int(row[0]) if row else None
+        except Exception as exc:
+            snapshot["pragma"]["foreign_keys_error"] = str(exc)
+        try:
+            cur.execute("SELECT sqlite_version();")
+            row = cur.fetchone()
+            snapshot["pragma"]["sqlite_version"] = str(row[0]) if row else None
+        except Exception as exc:
+            snapshot["pragma"]["sqlite_version_error"] = str(exc)
 
-    blocked_at = now_iso()
-    coverage_rollup = dirs["root"] / COVERAGE_ROLLUP_FILENAME
-    resume_proof = dirs["root"] / RESUME_PROOF_FILENAME
-    routing_fp = dirs["root"] / "RUN_ROUTING_FINGERPRINT.json"
-    proof["run_id"] = run_id
-    proof["git_sha"] = get_git_sha(root)
-    proof["runner_sha256"] = sha256_text(RUNNER_SCRIPT)
-    proof["argv"] = sys.argv
-    proof["python_version"] = platform.python_version()
-    proof["cwd"] = str(root.resolve())
-    proof["started_at"] = run_started_at
-    proof["finished_at"] = blocked_at
-    proof["updated_at"] = blocked_at
-    proof["run_status"] = "BLOCKED"
-    proof["blocked_reason"] = PROMPTSET_BLOCKED_REASON
-    proof["blocked"] = _blocked_promptset_payload(prompt_report, at="preflight")
-    proof["phases"] = {phase: {"status": "NOT_EXECUTED"} for phase in phases}
-    proof["linked_artifacts"] = {
-        "coverage_rollup": str(coverage_rollup.resolve()) if coverage_rollup.exists() else None,
-        "resume_proof": str(resume_proof.resolve()) if resume_proof.exists() else None,
-        "run_routing_fingerprint": str(routing_fp.resolve()) if routing_fp.exists() else None,
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
+        table_names = [str(row[0]) for row in cur.fetchall() if row and row[0]]
+        for table_name in table_names:
+            table_payload: Dict[str, Any] = {
+                "name": table_name,
+                "name_id": hash_identifier(table_name),
+                "columns": [],
+            }
+            try:
+                cur.execute(f"PRAGMA table_info({sqlite_identifier(table_name)});")
+                table_payload["columns"] = [
+                    {
+                        "name": str(column_row["name"]),
+                        "type": str(column_row["type"]),
+                        "notnull": int(column_row["notnull"]),
+                    }
+                    for column_row in cur.fetchall()
+                ]
+            except Exception as exc:
+                table_payload["error"] = str(exc)
+            snapshot["tables"].append(table_payload)
+
+        cur.execute("SELECT name FROM sqlite_master WHERE type='index' ORDER BY name;")
+        snapshot["indexes"] = [str(row[0]) for row in cur.fetchall() if row and row[0]]
+        cur.execute("SELECT name FROM sqlite_master WHERE type='trigger' ORDER BY name;")
+        snapshot["triggers"] = [str(row[0]) for row in cur.fetchall() if row and row[0]]
+    except Exception as exc:
+        snapshot["status"] = "error"
+        snapshot["error"] = str(exc)
+    finally:
+        conn.close()
+    return snapshot
+
+
+def collect_sqlite_table_counts(db_path: Path) -> Dict[str, Any]:
+    counts_payload: Dict[str, Any] = {
+        "db_path": str(db_path.resolve()),
+        "db_path_id": hash_identifier(str(db_path.resolve())),
+        "status": "ok",
+        "table_counts": [],
     }
-    write_json(proof_path, proof)
+    try:
+        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    except Exception as exc:
+        counts_payload["status"] = "error"
+        counts_payload["error"] = str(exc)
+        return counts_payload
+
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
+        table_names = [str(row[0]) for row in cur.fetchall() if row and row[0]]
+        for table_name in table_names:
+            table_count: Dict[str, Any] = {"name": table_name, "name_id": hash_identifier(table_name)}
+            try:
+                cur.execute(f"SELECT COUNT(*) FROM {sqlite_identifier(table_name)};")
+                row = cur.fetchone()
+                table_count["row_count"] = int(row[0]) if row else 0
+            except Exception as exc:
+                table_count["row_count"] = None
+                table_count["error"] = str(exc)
+            counts_payload["table_counts"].append(table_count)
+    except Exception as exc:
+        counts_payload["status"] = "error"
+        counts_payload["error"] = str(exc)
+    finally:
+        conn.close()
+    return counts_payload
+
+
+def build_phase_m_seed_inputs(phase_dir: Path) -> List[Path]:
+    seed_dir = phase_dir / "inputs" / "runtime_seed"
+    seed_dir.mkdir(parents=True, exist_ok=True)
+
+    home_root = Path.home()
+    allow_roots = [str(path) for path in home_safe_allow_roots(home_root)]
+    discovered, missing_roots, truncated = collect_runtime_inventory(home_root)
+    sqlite_paths = [
+        Path(item["path"])
+        for item in discovered
+        if item.get("classification") == "sqlite_db" and item.get("exportability") == "ok"
+    ]
+    config_paths = [
+        Path(item["path"])
+        for item in discovered
+        if item.get("classification") == "config" and item.get("exportability") == "ok"
+    ]
+
+    schema_snapshots = [collect_sqlite_schema_snapshot(path) for path in sqlite_paths]
+    table_counts = [collect_sqlite_table_counts(path) for path in sqlite_paths]
+
+    config_summaries: List[Dict[str, Any]] = []
+    mcp_server_summaries: List[Dict[str, Any]] = []
+    for path in config_paths:
+        key_sample = extract_config_key_names(path)
+        config_summaries.append(
+            {
+                "path": str(path.resolve()),
+                "path_id": hash_identifier(str(path.resolve())),
+                "key_names_sample": key_sample,
+                "keys_total_sampled": len(key_sample),
+                "values": "REDACTED",
+            }
+        )
+        mcp_server_summaries.extend(collect_mcp_server_summaries(path))
+
+    mcp_server_unique = sorted(
+        {
+            (
+                server["name"],
+                server["name_id"],
+                server["config_path"],
+                server["command"],
+                server["args_count"],
+                tuple(server["env_keys"]),
+            )
+            for server in mcp_server_summaries
+        }
+    )
+    mcp_servers = [
+        {
+            "name": name,
+            "name_id": name_id,
+            "config_path": config_path,
+            "command": command,
+            "args_count": args_count,
+            "env_keys": list(env_keys),
+        }
+        for (name, name_id, config_path, command, args_count, env_keys) in mcp_server_unique
+    ]
+
+    m0_inventory = {
+        "generated_at": now_iso(),
+        "allow_roots": allow_roots,
+        "missing_roots": missing_roots,
+        "detected_paths": discovered,
+        "caps": {
+            "max_detected_files": PHASE_M_MAX_DISCOVERED_FILES,
+            "detected_files": len(discovered),
+        },
+        "markers": ["TRUNCATED"] if truncated else [],
+    }
+
+    m1_schema = {
+        "generated_at": now_iso(),
+        "sqlite_databases_discovered": len(sqlite_paths),
+        "snapshots": schema_snapshots,
+        "no_row_data_exported": True,
+    }
+
+    m2_counts = {
+        "generated_at": now_iso(),
+        "sqlite_databases_discovered": len(sqlite_paths),
+        "table_counts": table_counts,
+        "no_row_data_exported": True,
+    }
+
+    conport_keywords = ("conport", "context_portal")
+    dope_context_keywords = ("dope", "context.db", "global_index.sqlite")
+
+    def filter_refs(keywords: Tuple[str, ...]) -> Dict[str, Any]:
+        keyword_set = tuple(keyword.lower() for keyword in keywords)
+        db_refs = [
+            item
+            for item in discovered
+            if item.get("classification") == "sqlite_db"
+            and any(keyword in str(item.get("path", "")).lower() for keyword in keyword_set)
+        ]
+        config_refs = [
+            item
+            for item in config_summaries
+            if any(keyword in str(item.get("path", "")).lower() for keyword in keyword_set)
+        ]
+        schema_refs = [
+            snapshot
+            for snapshot in schema_snapshots
+            if any(keyword in str(snapshot.get("db_path", "")).lower() for keyword in keyword_set)
+        ]
+        counts_refs = [
+            count_payload
+            for count_payload in table_counts
+            if any(keyword in str(count_payload.get("db_path", "")).lower() for keyword in keyword_set)
+        ]
+        return {
+            "db_refs": db_refs,
+            "config_refs": config_refs,
+            "schema_refs": schema_refs,
+            "table_count_refs": counts_refs,
+        }
+
+    m3_conport = {
+        "generated_at": now_iso(),
+        "service": "conport",
+        "summary": filter_refs(conport_keywords),
+        "redaction": {"values": "REDACTED", "identifier_hash": "sha256(value)[:12]"},
+    }
+
+    m4_dope_context = {
+        "generated_at": now_iso(),
+        "service": "dope_context",
+        "summary": filter_refs(dope_context_keywords),
+        "redaction": {"values": "REDACTED", "identifier_hash": "sha256(value)[:12]"},
+    }
+
+    m5_mcp_health = {
+        "generated_at": now_iso(),
+        "sqlite3_available": True,
+        "mcp_config_files": [
+            summary for summary in config_summaries if "/mcp/" in summary["path"] or "mcp" in summary["path"]
+        ],
+        "mcp_servers": mcp_servers,
+        "network_calls_attempted": False,
+    }
+
+    seed_outputs = [
+        seed_dir / "M0_RUNTIME_EXPORT_INVENTORY.seed.json",
+        seed_dir / "M1_SQLITE_SCHEMA_SNAPSHOTS.seed.json",
+        seed_dir / "M2_SQLITE_TABLE_COUNTS.seed.json",
+        seed_dir / "M3_CONPORT_EXPORT_SAFE.seed.json",
+        seed_dir / "M4_DOPE_CONTEXT_EXPORT_SAFE.seed.json",
+        seed_dir / "M5_MCP_HEALTH_EXPORT_SAFE.seed.json",
+        seed_dir / "M6_RUNTIME_EXPORT_INDEX.seed.json",
+    ]
+
+    m6_index = {
+        "generated_at": now_iso(),
+        "attempted_exports": [
+            "inventory_allowlisted_home_paths",
+            "sqlite_schema_snapshots",
+            "sqlite_table_counts",
+            "conport_safe_summary",
+            "dope_context_safe_summary",
+            "mcp_health_safe_summary",
+        ],
+        "suggested_sqlite_verification_commands": [
+            'sqlite3 <db> ".schema"',
+            'sqlite3 <db> "select name from sqlite_master where type=\'table\';"',
+            'sqlite3 <db> "select count(*) from <table>;"',
+            'sqlite3 <db> "pragma user_version;"',
+        ],
+        "outputs_produced": [str(path.resolve()) for path in seed_outputs[:-1]],
+        "redaction_rules_applied": [
+            "REDACTED values for config content",
+            "sha256(value)[:12] for stable identifiers",
+            "no sqlite row exports",
+        ],
+        "missing_prerequisites": missing_roots,
+        "caps_hit": {"runtime_inventory_truncated": truncated},
+    }
+
+    payloads = [
+        m0_inventory,
+        m1_schema,
+        m2_counts,
+        m3_conport,
+        m4_dope_context,
+        m5_mcp_health,
+        m6_index,
+    ]
+    for path, payload in zip(seed_outputs, payloads):
+        write_json(path, payload)
+
+    return seed_outputs
 
 
 # --- Phase Wrappers ---
@@ -6640,6 +3397,61 @@ def to_items(paths: Iterable[Path]) -> List[Dict[str, Any]]:
     return items
 
 
+def merge_items(*groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    dedup: Dict[str, Dict[str, Any]] = {}
+    for group in groups:
+        for item in group:
+            path = str(item.get("path", "")).strip()
+            if not path:
+                continue
+            dedup[path] = item
+    return sorted(dedup.values(), key=lambda item: str(item.get("path", "")))
+
+
+def collect_repo_magic_items(repo_root: Path) -> List[Dict[str, Any]]:
+    collector = Collector(repo_root, [".git", "node_modules", "venv", ".venv", "extraction"])
+    collected = collector.collect(subdirs=REPO_MAGIC_SUBDIRS + REPO_MAGIC_EXPLICIT_FILES)
+    glob_paths: List[Path] = []
+    for pattern in REPO_MAGIC_GLOBS:
+        glob_paths.extend(sorted(repo_root.glob(pattern)))
+    return merge_items(collected, to_items(glob_paths))
+
+
+def collect_home_magic_items(home_root: Path) -> List[Dict[str, Any]]:
+    collector = Collector(home_root, ["Downloads", "Library", ".cache", ".npm", ".pip"])
+    return collector.collect(subdirs=HOME_MAGIC_SUBDIRS)
+
+
+def collect_docs_instruction_items(repo_root: Path) -> List[Dict[str, Any]]:
+    paths: List[Path] = []
+    for pattern in DOC_INSTRUCTION_GLOBS:
+        for path in sorted(repo_root.glob(pattern)):
+            if path.is_file() and is_text_candidate(path):
+                paths.append(path.resolve())
+    return to_items(paths)
+
+
+def collect_phase_c_magic_callers(repo_root: Path) -> List[Dict[str, Any]]:
+    caller_paths: List[Path] = []
+    patterns = [
+        "scripts/**/*call*.py",
+        "scripts/**/*call*.sh",
+        "scripts/**/*mcp*.py",
+        "scripts/**/*mcp*.sh",
+        "tools/**/*call*.py",
+        "tools/**/*call*.sh",
+        "tools/**/*mcp*.py",
+        "tools/**/*mcp*.sh",
+        "src/**/cli.py",
+        "src/**/main.py",
+    ]
+    for pattern in patterns:
+        for path in sorted(repo_root.glob(pattern)):
+            if path.is_file() and is_text_candidate(path):
+                caller_paths.append(path.resolve())
+    return to_items(caller_paths)
+
+
 def collect_phase_artifacts(dirs: Dict[str, Path], phases: List[str], buckets: List[str]) -> List[Dict[str, Any]]:
     files: List[Path] = []
     for phase in phases:
@@ -6655,9 +3467,11 @@ def _has_matching_file(directory: Path, pattern: str) -> bool:
     return any(True for _ in directory.glob(pattern))
 
 
-def _ensure_required_norm_artifact_groups(dirs: Dict[str, Path]) -> List[str]:
+def _ensure_required_norm_artifact_groups(
+    dirs: Dict[str, Path], required_groups: Dict[str, List[Tuple[str, ...]]]
+) -> List[str]:
     missing: List[str] = []
-    for phase, groups in R_REQUIRED_ARTIFACT_GROUPS.items():
+    for phase, groups in required_groups.items():
         norm_dir = dirs[phase] / "norm"
         if not norm_dir.exists():
             missing.append(f"{phase}: missing norm directory {norm_dir}")
@@ -6669,7 +3483,26 @@ def _ensure_required_norm_artifact_groups(dirs: Dict[str, Path]) -> List[str]:
     return missing
 
 
-def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def _ensure_r_full_prompt_set() -> None:
+    prompts = get_phase_prompts("R")
+    prompt_steps = sorted(spec.step_id for spec in prompts)
+    expected = sorted(R_FULL_STEP_IDS)
+    if prompt_steps != expected:
+        missing = sorted(set(expected) - set(prompt_steps))
+        extra = sorted(set(prompt_steps) - set(expected))
+        details: List[str] = []
+        if missing:
+            details.append(f"missing steps: {', '.join(missing)}")
+        if extra:
+            details.append(f"unexpected steps: {', '.join(extra)}")
+        detail_text = "; ".join(details) if details else f"found steps: {prompt_steps}"
+        raise RuntimeError(
+            "Phase R requires full prompt set R0-R8. "
+            + detail_text
+        )
+
+
+def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     excludes = [
         ".git",
         "node_modules",
@@ -6713,10 +3546,11 @@ def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
         ".claude.json",
         ".taskxroot",
     ]
-    _run_phase_inner("A", dirs, cfg, collector, targets, ui=ui)
+    forced_items = collect_repo_magic_items(Path.cwd())
+    _run_phase_inner("A", dirs, cfg, collector, targets, forced_items=forced_items)
 
 
-def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     home = Path.home()
     excludes = [
         "Downloads",
@@ -6732,68 +3566,118 @@ def run_phase_H(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
     ]
     collector = Collector(home, excludes)
     items = collector.collect(subdirs=HOME_SAFE_ROOTS)
+    items = merge_items(items, collect_home_magic_items(home))
     if cfg.home_scan_mode == "safe":
         items = home_safe_filter(items, home)
-    _run_phase_inner("H", dirs, cfg, None, None, precollected_items=items, ui=ui)
+    _run_phase_inner("H", dirs, cfg, None, None, precollected_items=items)
 
 
-def run_phase_C(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_M(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+    seed_files = build_phase_m_seed_inputs(dirs["M"])
+    _run_phase_inner("M", dirs, cfg, None, None, precollected_items=to_items(seed_files))
+
+
+def run_phase_C(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules", "venv", ".venv", "docs", "test-results"])
     targets = ["src", "services", "shared", "plugins", "tools", "scripts", "tests"]
-    _run_phase_inner("C", dirs, cfg, collector, targets, ui=ui)
+    forced_items = collect_phase_c_magic_callers(Path.cwd())
+    _run_phase_inner("C", dirs, cfg, collector, targets, forced_items=forced_items)
 
 
-def run_phase_D(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_D(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git"])
-    _run_phase_inner("D", dirs, cfg, collector, ["docs"], ui=ui)
+    forced_items = merge_items(
+        collect_repo_magic_items(Path.cwd()),
+        collect_docs_instruction_items(Path.cwd()),
+    )
+    _run_phase_inner("D", dirs, cfg, collector, ["docs"], forced_items=forced_items)
 
 
-def run_phase_E(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_E(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules", "docs"])
     targets = ["scripts", "tools", "compose", ".github", "Makefile", "package.json"]
-    _run_phase_inner("E", dirs, cfg, collector, targets, ui=ui)
+    _run_phase_inner("E", dirs, cfg, collector, targets)
 
 
-def run_phase_W(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_W(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules"])
-    _run_phase_inner("W", dirs, cfg, collector, ["docs", "scripts", "src", "services"], ui=ui)
+    forced_items = collect_repo_magic_items(Path.cwd())
+    _run_phase_inner("W", dirs, cfg, collector, ["docs", "scripts", "src", "services"], forced_items=forced_items)
 
 
-def run_phase_B(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_B(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules"])
-    _run_phase_inner("B", dirs, cfg, collector, ["src", "services", "docs"], ui=ui)
+    forced_items = collect_repo_magic_items(Path.cwd())
+    _run_phase_inner("B", dirs, cfg, collector, ["src", "services", "docs"], forced_items=forced_items)
 
 
-def run_phase_G(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_G(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     collector = Collector(Path.cwd(), [".git", "node_modules"])
-    _run_phase_inner("G", dirs, cfg, collector, [".github", "docs", ".claude", "AGENTS.md"], ui=ui)
+    forced_items = collect_repo_magic_items(Path.cwd())
+    _run_phase_inner("G", dirs, cfg, collector, [".github", "docs", ".claude", "AGENTS.md"], forced_items=forced_items)
 
 
-def run_phase_Q(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
-    items = collect_phase_artifacts(dirs, ["A", "H", "D", "C", "E", "W", "B", "G"], ["raw", "norm", "qa"])
-    _run_phase_inner("Q", dirs, cfg, None, None, precollected_items=items, ui=ui)
+def run_phase_Q(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+    items = collect_phase_artifacts(
+        dirs,
+        ["A", "H", "M", "D", "C", "E", "W", "B", "G"],
+        ["raw", "norm", "qa"],
+    )
+    _run_phase_inner("Q", dirs, cfg, None, None, precollected_items=items)
 
 
-def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
-    missing = _ensure_required_norm_artifact_groups(dirs)
-    if missing:
-        raise RuntimeError(
-            "Phase R requires normalized inputs from A/H/D/C. Missing norm artifacts: "
-            + "; ".join(missing)
-        )
+def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
+    _ensure_r_full_prompt_set()
+    required_groups_by_profile = load_r_required_artifact_groups_by_profile()
+    required_groups = required_groups_by_profile.get(cfg.r_profile)
+    if required_groups is None:
+        raise RuntimeError(f"Unsupported r-profile '{cfg.r_profile}'. Expected base or full.")
+    required_input_phases = required_input_phases_for_r_profile(cfg.r_profile)
 
+    missing: List[str] = []
     input_files: List[Path] = []
-    for phase in R_REQUIRED_INPUT_PHASES:
+    for phase in required_input_phases:
         phase_norm = dirs[phase] / "norm"
         if phase_norm.exists():
-            input_files.extend(sorted(phase_norm.glob("*.json")))
-            input_files.extend(sorted(phase_norm.glob("*.md")))
+            phase_files: List[Path] = []
+            phase_files.extend(sorted(phase_norm.glob("*.json")))
+            if not phase_files:
+                missing.append(f"{phase}: no json artifacts under {phase_norm}")
+            else:
+                input_files.extend(phase_files)
+        else:
+            missing.append(f"{phase}: missing norm directory {phase_norm}")
+
+    missing.extend(_ensure_required_norm_artifact_groups(dirs, required_groups))
+
+    if missing:
+        python_cmd = Path(sys.executable).name or "python3"
+        missing_sorted = sorted(set(missing))
+        recovery_commands = [
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase A --resume",
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase H --resume --home-scan-mode safe",
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase D --resume",
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase C --resume",
+            f"{python_cmd} UPGRADES/run_extraction_v3.py --phase R --resume --r-profile {cfg.r_profile}",
+        ]
+        if cfg.r_profile == "full":
+            recovery_commands.insert(
+                2, f"{python_cmd} UPGRADES/run_extraction_v3.py --phase M --resume"
+            )
+        required_phases_desc = "/".join(required_input_phases)
+        raise RuntimeError(
+            f"Phase R requires normalized inputs for profile '{cfg.r_profile}' from {required_phases_desc}.\n"
+            + "Missing norm artifacts:\n- "
+            + "\n- ".join(missing_sorted)
+            + "\nRecovery order:\n- "
+            + "\n- ".join(recovery_commands)
+        )
 
     deduped_inputs = sorted(set(input_files), key=lambda path: str(path))
-    _run_phase_inner("R", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs), ui=ui)
+    _run_phase_inner("R", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs))
 
 
-def run_phase_X(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_X(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     r_norm = dirs["R"] / "norm"
     r_inputs: List[Path] = []
     if r_norm.exists():
@@ -6801,296 +3685,86 @@ def run_phase_X(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
         r_inputs.extend(sorted(r_norm.glob("*.md")))
     if not r_inputs:
         raise RuntimeError(f"Phase X requires R norm outputs at {r_norm}")
-    _run_phase_inner("X", dirs, cfg, None, None, precollected_items=to_items(r_inputs), ui=ui)
+    _run_phase_inner("X", dirs, cfg, None, None, precollected_items=to_items(r_inputs))
 
 
-def run_phase_T(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_T(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     input_files: List[Path] = []
     for phase in ["R", "X"]:
         norm_dir = dirs[phase] / "norm"
         if norm_dir.exists():
             input_files.extend(sorted(norm_dir.glob("*.json")))
             input_files.extend(sorted(norm_dir.glob("*.md")))
-    _run_phase_inner("T", dirs, cfg, None, None, precollected_items=to_items(input_files), ui=ui)
+    _run_phase_inner("T", dirs, cfg, None, None, precollected_items=to_items(input_files))
 
 
-def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig) -> None:
     final_items = collect_phase_artifacts(dirs, ["R", "X", "T"], ["raw", "norm", "qa"])
-    _run_phase_inner("Z", dirs, cfg, None, None, precollected_items=final_items, ui=ui)
+    _run_phase_inner("Z", dirs, cfg, None, None, precollected_items=final_items)
 
 
 # --- Master Orchestrator ---
 
 def main() -> None:
-    try:
-        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-    except (AttributeError, ValueError):
-        pass
     parser = argparse.ArgumentParser("Master Extraction Runner")
-    parser.add_argument("--phase", choices=PHASES + ["ALL"], required=False)
+    parser.add_argument("--phase", choices=PHASES + ["ALL"], required=True)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--max-files-docs", type=int, default=35)
     parser.add_argument("--max-files-code", type=int, default=20)
     parser.add_argument("--max-chars", type=int, default=650000)
-    parser.add_argument("--max-request-bytes", type=int, default=200000)
     parser.add_argument("--file-truncate-chars", type=int, default=70000)
     parser.add_argument("--home-scan-mode", choices=["safe", "full"], default="safe")
+    parser.add_argument("--r-profile", choices=["base", "full"], default="base")
     parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--fail-fast-auth", dest="fail_fast_auth", action="store_true", default=True)
-    parser.add_argument("--no-fail-fast-auth", dest="fail_fast_auth", action="store_false")
-    parser.add_argument(
-        "--gemini-auth-mode",
-        choices=["api_key", "bearer", "both", "query_key", "auto"],
-        default="auto",
-    )
-    parser.add_argument(
-        "--gemini-model-id",
-        type=str,
-        default=DEFAULT_GEMINI_MODEL_ID,
-        help="Override Gemini model ID for all Gemini-routed phases.",
-    )
-    parser.add_argument(
-        "--gemini-transport",
-        choices=["sdk", "openai_compat_http"],
-        default="sdk",
-    )
-    parser.add_argument(
-        "--openai-transport",
-        choices=["openai_sdk"],
-        default="openai_sdk",
-    )
-    parser.add_argument(
-        "--xai-transport",
-        choices=["openai_sdk"],
-        default="openai_sdk",
-    )
-    parser.add_argument("--retry-policy", choices=["none", "default"], default="default")
-    parser.add_argument("--retry-max-attempts", type=int, default=4)
-    parser.add_argument("--retry-base-seconds", type=float, default=2.0)
-    parser.add_argument("--retry-max-seconds", type=float, default=30.0)
-    parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
-    parser.add_argument("--partition-workers", type=int, default=1)
-    parser.add_argument("--debug-phase-inputs", action="store_true")
-    parser.add_argument("--fail-fast-missing-inputs", action="store_true")
-    parser.add_argument("--run-id", type=str)
-    parser.add_argument("--no-write-latest", action="store_true")
-    parser.add_argument("--write-latest-even-on-dry-run", action="store_true")
-    parser.add_argument("--doctor", action="store_true")
-    parser.add_argument("--doctor-auth", action="store_true")
-    parser.add_argument("--preflight-providers", action="store_true")
-    parser.add_argument("--coverage-report", action="store_true")
-    parser.add_argument("--ui", choices=["auto", "rich", "plain"], default="auto")
-    parser.add_argument("--status", action="store_true")
-    parser.add_argument("--status-json", action="store_true")
-    parser.add_argument("--watch", type=float)
-    parser.add_argument("--quiet", action="store_true")
-    parser.add_argument("--jsonl-events", action="store_true")
-    parser.add_argument("--pretty", action="store_true")
-    parser.add_argument("--print-promptpack", action="store_true")
-    parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
-    parser.add_argument("--print-config", action="store_true")
-    parser.add_argument("--gemini-list-models", action="store_true")
-    promptgen_group = parser.add_argument_group("promptgen")
-    promptgen_group.add_argument("--promptgen-scan", action="store_true")
-    promptgen_group.add_argument("--promptgen-max-files", type=int, default=PROMPTGEN_DEFAULT_MAX_FILES)
-    promptgen_group.add_argument("--promptgen-max-bytes", type=int, default=PROMPTGEN_DEFAULT_MAX_BYTES)
-    promptgen_group.add_argument("--promptgen-excerpt-bytes", type=int, default=PROMPTGEN_DEFAULT_EXCERPT_BYTES)
-    promptgen_group.add_argument("--promptgen-include-globs", action="append")
-    promptgen_group.add_argument("--promptgen-exclude-globs", action="append")
-    promptgen_group.add_argument("--promptgen-output-dir", type=str, default=PROMPTGEN_DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--rpm-openai", type=int, default=60)
+    parser.add_argument("--tpm-openai", type=int, default=120000)
+    parser.add_argument("--rpm-gemini", type=int, default=15)
+    parser.add_argument("--tpm-gemini", type=int, default=64000)
+    parser.add_argument("--rpm-xai", type=int, default=30)
+    parser.add_argument("--tpm-xai", type=int, default=90000)
+    parser.add_argument("--max-inflight", type=int, default=1)
     args = parser.parse_args()
-    args.partition_workers = max(1, min(16, int(args.partition_workers)))
-    if args.pretty and args.ui == "auto":
-        args.ui = "rich"
-    apply_model_overrides(args.gemini_model_id)
-
-    if not (
-        args.phase
-        or args.verify_phase_output
-        or args.print_config
-        or args.doctor_auth
-        or args.preflight_providers
-        or args.doctor
-        or args.coverage_report
-        or args.status
-        or args.status_json
-        or args.print_promptpack
-        or args.promptgen_scan
-        or args.gemini_list_models
-    ):
-        parser.error(
-            "--phase is required unless using --verify-phase-output, --print-config, "
-            "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
-            "--status, --status-json, --print-promptpack, or --gemini-list-models."
-        )
-    if args.watch is not None and args.watch <= 0:
-        parser.error("--watch must be > 0 when provided.")
-    if args.watch is not None and not (args.status or args.status_json):
-        parser.error("--watch requires --status or --status-json.")
 
     root = Path.cwd()
     try:
-        allow_create_if_missing = bool(args.promptgen_scan or args.run_id or args.gemini_list_models)
-        run_context = resolve_run_context(root, args, allow_create_if_missing=allow_create_if_missing)
-        run_id = run_context.run_id
+        run_id = load_run_id(root)
         dirs = get_run_dirs(root, run_id)
     except Exception as exc:
         logger.error("Setup failed: %s", exc)
         sys.exit(1)
-
-    ui = UI(
-        UiConfig(
-            mode=str(args.ui),
-            quiet=bool(args.quiet),
-            jsonl_events=bool(args.jsonl_events),
-        ),
-        dirs["root"],
-        run_id,
-    )
-
-    if args.promptgen_scan:
-        started = time.time()
-        out_dir = dirs["root"] / args.promptgen_output_dir
-        try:
-            promptgen_inputs, project_fingerprint, stats = scan_promptgen_inputs(root, run_id, args)
-            promptgen_inputs_path = out_dir / PROMPTGEN_INPUTS_FILENAME
-            fingerprint_path = out_dir / PROMPTGEN_FINGERPRINT_FILENAME
-            promptgen_inputs_sha = _write_json_with_sha256(promptgen_inputs_path, promptgen_inputs)
-            fingerprint_sha = _write_json_with_sha256(fingerprint_path, project_fingerprint)
-            elapsed_ms = int((time.time() - started) * 1000)
-            logger.info(
-                "GX0 promptgen scan complete selected=%s excerpt_bytes=%s excerpt_policy=%s promptgen_inputs_sha=%s fingerprint_sha=%s elapsed_ms=%s",
-                stats["selected_files"],
-                stats["total_excerpt_bytes"],
-                stats["excerpt_policy"],
-                promptgen_inputs_sha,
-                fingerprint_sha,
-                elapsed_ms,
-            )
-            sys.exit(0)
-        except Exception as exc:
-            out_dir.mkdir(parents=True, exist_ok=True)
-            write_json(
-                out_dir / PROMPTGEN_FAILED_FILENAME,
-                {
-                    "generated_at": now_iso(),
-                    "run_id": run_id,
-                    "repo_root": str(root.resolve()),
-                    "status": "failed",
-                    "stage": "promptgen_scan",
-                    "error_type": type(exc).__name__,
-                    "error": str(exc),
-                },
-            )
-            logger.error("GX0 promptgen scan failed: %s", exc)
-            sys.exit(1)
-    if args.gemini_list_models:
-        sys.exit(run_gemini_list_models(root, run_id, dirs))
-    if args.status or args.status_json:
-        sys.exit(run_status_loop(run_id, dirs, args, ui=ui))
 
     cfg = RunnerConfig(
         dry_run=args.dry_run,
         max_files_docs=args.max_files_docs,
         max_files_code=args.max_files_code,
         max_chars=args.max_chars,
-        max_request_bytes=args.max_request_bytes,
         file_truncate_chars=args.file_truncate_chars,
         home_scan_mode=args.home_scan_mode,
+        r_profile=args.r_profile,
         resume=args.resume,
-        fail_fast_auth=args.fail_fast_auth,
-        gemini_auth_mode=args.gemini_auth_mode,
-        gemini_transport=args.gemini_transport,
-        openai_transport=args.openai_transport,
-        xai_transport=args.xai_transport,
-        retry_policy=args.retry_policy,
-        retry_max_attempts=max(1, args.retry_max_attempts),
-        retry_base_seconds=max(0.0, args.retry_base_seconds),
-        retry_max_seconds=max(0.0, args.retry_max_seconds),
-        phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
-        partition_workers=args.partition_workers,
-        debug_phase_inputs=args.debug_phase_inputs,
-        fail_fast_missing_inputs=args.fail_fast_missing_inputs,
+        rpm_openai=args.rpm_openai,
+        tpm_openai=args.tpm_openai,
+        rpm_gemini=args.rpm_gemini,
+        tpm_gemini=args.tpm_gemini,
+        rpm_xai=args.rpm_xai,
+        tpm_xai=args.tpm_xai,
+        max_inflight=max(args.max_inflight, 1),
     )
 
-    phase_sequence = resolve_phase_list(args.phase)
-    prompt_report = write_run_manifest(root, dirs, run_id, args, run_context, phase_sequence or PHASES)
-    write_runner_identity(root, dirs["root"], run_id)
-    if phase_sequence:
-        write_run_routing_fingerprint(dirs["root"], run_id, cfg, phase_sequence)
-    run_started_at = now_iso()
-    if args.print_config:
-        print_config(args, root, run_id, dirs, cfg, phase_sequence, run_context)
-        sys.exit(0)
-    should_gate_promptset = bool(phase_sequence) and (
-        args.preflight_providers
-        or args.doctor
-        or not (
-            args.doctor_auth
-            or args.print_promptpack
-            or args.coverage_report
-            or args.verify_phase_output
-        )
-    )
-    if should_gate_promptset and prompt_report.get("blocked_promptset"):
-        apply_promptset_preflight_block(
-            root=root,
-            dirs=dirs,
-            run_id=run_id,
-            phases=phase_sequence,
-            prompt_report=prompt_report,
-            run_started_at=run_started_at,
-        )
-        logger.error(
-            "Run blocked before execution: reason=%s prompt_failures=%s",
-            PROMPTSET_BLOCKED_REASON,
-            int(prompt_report.get("prompt_failures_count", 0)),
-        )
-        sys.exit(PROMPTSET_BLOCKED_EXIT_CODE)
-    if args.doctor_auth:
-        sys.exit(run_auth_doctor(root, args, cfg))
-    if args.preflight_providers:
-        targets = phase_sequence if phase_sequence else PHASES
-        ok, payload = run_provider_preflight(root, run_id, cfg, targets)
-        print(json.dumps(payload, indent=2))
-        sys.exit(0 if ok else 1)
-    if args.print_promptpack:
-        targets = phase_sequence if phase_sequence else PHASES
-        sys.exit(print_promptpack(targets))
-    if args.coverage_report:
-        targets = phase_sequence if phase_sequence else PHASES
-        for phase in targets:
-            write_phase_coverage_manifest(phase, dirs[phase])
-        write_coverage_rollup(root, dirs, run_id)
-        write_resume_proof(dirs, run_id, targets)
-        sys.exit(generate_coverage_report(root, dirs, run_id, targets))
-
-    if args.verify_phase_output:
-        verify_targets = PHASES if args.verify_phase_output == "ALL" else [args.verify_phase_output]
-        sys.exit(verify_phase_output(dirs, verify_targets, ui=ui))
-
-    if args.doctor:
-        targets = phase_sequence if phase_sequence else PHASES
-        sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg))
-
+    write_run_manifest(root, dirs, run_id, args)
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
+    logger.info("Phase R profile: %s", cfg.r_profile)
 
-    if not phase_sequence:
-        parser.error("--phase is required when running extraction phases.")
-    phases = phase_sequence
     if args.phase == "ALL":
-        ok, payload = run_provider_preflight(root, run_id, cfg, phases)
-        if not ok:
-            logger.error(
-                "Provider preflight failed before phase ALL. failed_providers=%s. See extraction/doctor/PROVIDER_PREFLIGHT.json",
-                ",".join(payload.get("failed_providers", [])),
-            )
-            sys.exit(1)
+        phases = ["A", "H", "M", "D", "E", "C", "W", "B", "G", "Q", "R", "X", "T", "Z"]
+    else:
+        phases = [args.phase]
 
     runners = {
         "A": run_phase_A,
         "H": run_phase_H,
+        "M": run_phase_M,
         "D": run_phase_D,
         "C": run_phase_C,
         "E": run_phase_E,
@@ -7105,83 +3779,15 @@ def main() -> None:
     }
 
     for phase in phases:
-        phase_started_at = now_iso()
         run_phase = runners.get(phase)
         if run_phase is None:
             logger.warning("Unknown phase: %s", phase)
             continue
         try:
-            run_phase(dirs, cfg, ui=ui)
+            run_phase(dirs, cfg)
         except Exception as exc:
             logger.error("Phase %s failed: %s", phase, exc)
-            failed_counts = gather_phase_counts(dirs[phase])
-            failed_raw = failed_counts.get("raw", {})
-            logger.info(
-                "PHASE_DONE phase=%s status=FAIL raw_ok=%s raw_failed=%s raw_total=%s norm=%s qa=%s",
-                phase,
-                int(failed_raw.get("ok", 0)),
-                int(failed_raw.get("failed", 0)),
-                int(failed_raw.get("total", 0)),
-                int(failed_counts.get("norm", 0)),
-                int(failed_counts.get("qa", 0)),
-            )
-            ui.phase_done(
-                phase=phase,
-                status="FAIL",
-                raw_ok=int(failed_raw.get("ok", 0)),
-                raw_failed=int(failed_raw.get("failed", 0)),
-                raw_total=int(failed_raw.get("total", 0)),
-                norm_count=int(failed_counts.get("norm", 0)),
-                qa_count=int(failed_counts.get("qa", 0)),
-                phase_dir=dirs[phase],
-            )
-            write_phase_coverage_manifest(phase, dirs[phase])
-            write_coverage_rollup(root, dirs, run_id)
-            write_resume_proof(dirs, run_id, phases)
             sys.exit(1)
-        phase_finished_at = now_iso()
-        counts = gather_phase_counts(dirs[phase])
-        raw_stats = counts.get("raw", {})
-        phase_reasons: List[str] = []
-        if counts["inputs"] == 0:
-            phase_reasons.append("inputs directory is empty.")
-        if counts["raw"]["total"] == 0:
-            phase_reasons.append("raw directory has no artifacts.")
-        if counts["norm"] == 0:
-            phase_reasons.append("norm directory has no json artifacts.")
-        if counts["qa"] == 0:
-            phase_reasons.append("qa directory has no artifacts.")
-        phase_has_any = (
-            counts["inputs"] > 0
-            or counts["raw"]["total"] > 0
-            or counts["norm"] > 0
-            or counts["qa"] > 0
-        )
-        phase_status = _phase_status_badge(counts, phase_reasons, "UNKNOWN", phase_has_any)
-        logger.info(
-            "PHASE_DONE phase=%s status=%s raw_ok=%s raw_failed=%s raw_total=%s norm=%s qa=%s",
-            phase,
-            phase_status,
-            int(raw_stats.get("ok", 0)),
-            int(raw_stats.get("failed", 0)),
-            int(raw_stats.get("total", 0)),
-            int(counts.get("norm", 0)),
-            int(counts.get("qa", 0)),
-        )
-        ui.phase_done(
-            phase=phase,
-            status=phase_status,
-            raw_ok=int(raw_stats.get("ok", 0)),
-            raw_failed=int(raw_stats.get("failed", 0)),
-            raw_total=int(raw_stats.get("total", 0)),
-            norm_count=int(counts.get("norm", 0)),
-            qa_count=int(counts.get("qa", 0)),
-            phase_dir=dirs[phase],
-        )
-        write_phase_coverage_manifest(phase, dirs[phase])
-        write_coverage_rollup(root, dirs, run_id)
-        write_resume_proof(dirs, run_id, phases)
-        update_proof_pack(root, dirs, run_id, run_started_at, phase, counts, phase_started_at, phase_finished_at)
 
 
 if __name__ == "__main__":

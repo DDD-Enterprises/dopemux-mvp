@@ -23,6 +23,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
 import warnings
+import logging
 
 import click
 try:
@@ -87,6 +88,8 @@ from .tmux import tmux as tmux_commands
 # Import genetic agent CLI
 try:
     # Ensure services directory is in Python path for production environments
+    import sys
+    from pathlib import Path
     services_path = Path(__file__).resolve().parent.parent / 'services'
     if str(services_path) not in sys.path:
         sys.path.insert(0, str(services_path))
@@ -120,10 +123,12 @@ ROLE_SERVER_SERVICE_MAP = {
     "conport": "conport",
     "serena": "serena",
     "serena-lsp": "serena",
+    "context7": "context7",
     "zen": "zen",
     "exa": "exa",
     "gptr-mcp": "gptr-mcp",
     "dopemux-gpt-researcher": "dopemux-gpt-researcher",
+    "mas-sequential-thinking": "mas-sequential-thinking",
     "desktop-commander": "desktop-commander",
     "leantime": "leantime-bridge",
     "leantime-bridge": "leantime-bridge",
@@ -574,6 +579,7 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
             src = Path(__file__).resolve().parents[2] / "scripts" / "git_post_worktree_hook.sh"
             dst = hooks_dir / "post-checkout"
             if not dst.exists():
+                import shutil
                 shutil.copy2(src, dst)
                 dst.chmod(0o755)
                 click.echo("🔗 Installed git post-checkout hook for ConPort wiring")
@@ -2817,6 +2823,8 @@ def _run_extract_docs(
     extensions: Optional[str],
     adhd_profile: bool,
 ) -> None:
+    from pathlib import Path
+    import sys
     import json
     import csv
     from io import StringIO
@@ -3111,6 +3119,8 @@ def _run_extract_pipeline(
     synthesis_types: tuple,
     synthesis_format: str,
 ) -> None:
+    from pathlib import Path
+    import sys
 
     try:
         from .extraction import UnifiedDocumentPipeline, PipelineConfig
@@ -3293,6 +3303,8 @@ def _run_extract_cleanup(
     report_format: str,
     report_file: Optional[str],
 ) -> None:
+    from pathlib import Path
+    import sys
     import json
     from datetime import datetime
 
@@ -3673,7 +3685,7 @@ def mcp_start_all_cmd(verify: bool):
     🚀 Start complete Dopemux stack (MCP servers + application services)
 
     Starts all services including:
-    - MCP servers (ConPort, Zen, Serena, etc.)
+    - 12 MCP servers (ConPort, Zen, Serena, Context7, etc.)
     - Integration Bridge (event processing, pattern detection)
     - Task Orchestrator (ADHD task coordination)
     - All infrastructure (PostgreSQL, Redis, Qdrant)
@@ -4059,39 +4071,6 @@ def _configure_openrouter_litellm():
 
 
 
-def _resolve_mcp_dir(project_path: Path) -> Optional[Path]:
-    """
-    Resolve MCP stack location deterministically.
-
-    Resolution order:
-    1. DOPEMUX_MCP_DIR (explicit override)
-    2. project_path/docker/mcp-servers (local project assets)
-    3. dopemux repo root (fallback for editable installs)
-    """
-    # 1. Explicit override
-    if env_dir := os.getenv("DOPEMUX_MCP_DIR"):
-        path = Path(env_dir).resolve()
-        if (path / "start-all-mcp-servers.sh").exists():
-            return path
-
-    # 2. Local project
-    local_path = project_path / "docker" / "mcp-servers"
-    if (local_path / "start-all-mcp-servers.sh").exists():
-        return local_path
-
-    # 3. Inferred package root (editable install)
-    # cli.py is at src/dopemux/cli.py -> parents[2] is repo root
-    try:
-        source_root = Path(__file__).resolve().parents[2]
-        pkg_path = source_root / "docker" / "mcp-servers"
-        if (pkg_path / "start-all-mcp-servers.sh").exists():
-            return pkg_path
-    except Exception:
-        pass
-
-    return None
-
-
 def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[dict] = None):
     """
     Start MCP servers with real-time output streaming and health check waiting.
@@ -4114,26 +4093,7 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
 
     import requests
 
-    # Resolve MCP stack location
-    mcp_dir = _resolve_mcp_dir(project_path)
-    
-    if not mcp_dir:
-        console.print()
-        console.logger.error("[red]❌ Required MCP startup assets not found.[/red]")
-        console.print("[dim]   (Checked: DOPEMUX_MCP_DIR, local project, and dopemux package root)[/dim]")
-        
-        console.print("\n[bold]Remedies:[/bold]")
-        console.print("  1. Set DOPEMUX_MCP_DIR to the location of 'docker/mcp-servers'")
-        console.print("     [green]export DOPEMUX_MCP_DIR=/path/to/dopemux/docker/mcp-servers[/green]")
-        console.print("  2. Symlink the docker stack to your project:")
-        console.print(f"     [green]cd {project_path} && mkdir -p docker && ln -s .../dopemux/docker/mcp-servers docker/mcp-servers[/green]")
-        console.print("  3. Skip MCP requirement (functionality will be reduced):")
-        console.print("     [green]dopemux start --no-mcp[/green]")
-        
-        raise click.ClickException("MCP stack required but not found. See remedies above.")
-    
-    # We found it - ensure script exists (double-check, though resolver checks it)
-    script_path = mcp_dir / "start-all-mcp-servers.sh"
+    mcp_dir = project_path / "docker" / "mcp-servers"
 
     # CRITICAL FIX: Merge instance env with current environment
     # This ensures MCP servers get DOPEMUX_WORKSPACE_ID and other instance vars
@@ -4143,8 +4103,8 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
 
     # Critical servers to health check
     critical_servers = [
-        ("ConPort", "http://localhost:3004/health"),
-        ("PAL", "http://localhost:3003/health"),
+        ("Context7", "http://localhost:3002/health"),
+        ("Zen", "http://localhost:3003/health"),
         ("LiteLLM", "http://localhost:4000/health/readiness"),
     ]
 
@@ -4585,6 +4545,8 @@ def _run_extract_chatlog(
     archive: Optional[str],
     workspace_id: Optional[str],
 ) -> None:
+    import sys
+    from pathlib import Path
 
     backend_path = Path(__file__).parent.parent.parent / "services" / "dopemux-gpt-researcher" / "backend"
     sys.path.insert(0, str(backend_path))
@@ -4767,6 +4729,8 @@ def _run_extract_pro(
     workspace_id: Optional[str],
     max_documents: int,
 ) -> None:
+    import sys
+    from pathlib import Path
 
     # Add the gpt-researcher backend to the path
     backend_path = Path(__file__).parent.parent.parent / "services" / "dopemux-gpt-researcher" / "backend"
@@ -6163,6 +6127,8 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
     # Import here to avoid circular dependencies
     try:
         # Add services to Python path if needed
+        import sys
+        from pathlib import Path
         services_path = Path(__file__).resolve().parent.parent / 'services'
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))
@@ -6229,6 +6195,8 @@ def analyze(ctx, bug_description, file_path, line, verbose):
     Provides insights, complexity assessment, and repair strategy recommendations.
     """
     try:
+        import sys
+        from pathlib import Path
         services_path = Path(__file__).resolve().parent.parent / 'services'
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))
@@ -6271,6 +6239,8 @@ def code_agent_status_cmd(ctx, verbose):
     Show code agent status and configuration.
     """
     try:
+        import sys
+        from pathlib import Path
         services_path = Path(__file__).resolve().parent.parent / 'services'
         if str(services_path) not in sys.path:
             sys.path.insert(0, str(services_path))
@@ -7342,217 +7312,48 @@ def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, inst
 
 @cli.group()
 def upgrades():
-    """UPGRADES extraction pipeline commands (v4 default, v3 fallback)."""
+    """
+    🔄 Full Context & Upgrade Pipeline (Phases A-S)
+
+    Orchestrates the full pipeline for capturing repository context,
+    scanning home configuration, extracting documentation,
+    arbitrating truth, and synthesizing architectural vision.
+    """
     pass
-
-
-def _resolve_upgrades_repo_root(start: Path) -> Path:
-    for candidate in [start, *start.parents]:
-        if (candidate / "UPGRADES").is_dir():
-            return candidate
-    return start
-
-
-def _upgrades_runner_path(repo_root: Path, pipeline_version: str) -> Path:
-    if pipeline_version == "v4":
-        return repo_root / "UPGRADES" / "run_extraction_v4.py"
-    return repo_root / "UPGRADES" / "run_extraction_v3.py"
-
-
-def _run_upgrades_runner(
-    *,
-    pipeline_version: str,
-    args: List[str],
-    repo_root: Optional[Path] = None,
-) -> None:
-    resolved_root = _resolve_upgrades_repo_root(repo_root or Path.cwd())
-    runner = _upgrades_runner_path(resolved_root, pipeline_version)
-    if not runner.exists():
-        raise click.ClickException(f"Runner not found: {runner}")
-    cmd = [sys.executable, str(runner), *args]
-    proc = subprocess.run(cmd, cwd=resolved_root)
-    if proc.returncode != 0:
-        raise click.ClickException(
-            f"UPGRADES {pipeline_version} runner failed with exit code {proc.returncode}"
-        )
-
-
-@upgrades.command("list")
-@click.option(
-    "--pipeline-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
-@click.pass_context
-def upgrades_list(ctx, pipeline_version: str):
-    """List available pipeline phases."""
-    if pipeline_version == "v4":
-        _run_upgrades_runner(
-            pipeline_version="v4",
-            args=["--promptset-audit", "--no-strict-audit"],
-        )
-        promptset_path = _resolve_upgrades_repo_root(Path.cwd()) / "UPGRADES" / "v4" / "promptset.yaml"
-        if promptset_path.exists():
-            payload = yaml.safe_load(promptset_path.read_text(encoding="utf-8")) or {}
-            order = payload.get("all_phase_order", [])
-            console.logger.info("v4 phases: " + " -> ".join(order))
-            return
-    _run_upgrades_runner(pipeline_version=pipeline_version, args=["--print-config"])
 
 
 @upgrades.command("run")
-@click.option(
-    "--pipeline-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
-@click.option("--phase", default="ALL", show_default=True, help="Phase code or ALL")
-@click.option("--run-id", default=None, help="Run ID")
-@click.option("--dry-run/--execute", default=True, show_default=True)
-@click.option("--resume/--no-resume", default=True, show_default=True)
-@click.option("--partition-workers", type=int, default=1, show_default=True)
-@click.option("--sync/--no-sync", default=True, show_default=True, help="v4 only: sync into extraction/v4")
-@click.pass_context
-def upgrades_run(
-    ctx,
-    pipeline_version: str,
-    phase: str,
-    run_id: Optional[str],
-    dry_run: bool,
-    resume: bool,
-    partition_workers: int,
-    sync: bool,
-):
-    """Run extraction pipeline with v4 default semantics."""
-    args: List[str] = []
-    if phase:
-        args.extend(["--phase", phase])
-    if run_id:
-        args.extend(["--run-id", run_id])
-    if dry_run:
-        args.append("--dry-run")
-    if resume:
-        args.append("--resume")
-    args.extend(["--partition-workers", str(partition_workers)])
-    if pipeline_version == "v4":
-        args.extend(["--sync" if sync else "--no-sync"])
-    _run_upgrades_runner(pipeline_version=pipeline_version, args=args)
-
-
-@upgrades.command("doctor")
-@click.option(
-    "--pipeline-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
-@click.option("--run-id", default=None, help="Run ID")
-@click.option("--auto-reprocess/--no-auto-reprocess", default=False, show_default=True)
-@click.option("--reprocess-dry-run/--no-reprocess-dry-run", default=False, show_default=True)
-@click.option("--reprocess-phases", default="", help="Comma-separated phase list")
-@click.pass_context
-def upgrades_doctor(
-    ctx,
-    pipeline_version: str,
-    run_id: Optional[str],
-    auto_reprocess: bool,
-    reprocess_dry_run: bool,
-    reprocess_phases: str,
-):
-    """Run doctor diagnostics and deterministic reprocess planning."""
-    args: List[str] = ["--doctor"]
-    if run_id:
-        args.extend(["--run-id", run_id])
-    if auto_reprocess:
-        args.append("--doctor-auto-reprocess")
-    if reprocess_dry_run:
-        args.append("--doctor-reprocess-dry-run")
-    if reprocess_phases.strip():
-        args.extend(["--doctor-reprocess-phases", reprocess_phases.strip()])
-    _run_upgrades_runner(pipeline_version=pipeline_version, args=args)
-
-
-@upgrades.command("status")
-@click.option(
-    "--pipeline-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
-@click.option("--run-id", default=None, help="Run ID")
-@click.option("--json", "status_json", is_flag=True, help="Emit JSON status")
-@click.pass_context
-def upgrades_status(ctx, pipeline_version: str, run_id: Optional[str], status_json: bool):
-    """Show extraction pipeline status."""
-    args: List[str] = ["--status-json" if status_json else "--status"]
-    if run_id:
-        args.extend(["--run-id", run_id])
-    _run_upgrades_runner(pipeline_version=pipeline_version, args=args)
-
-
-@upgrades.command("preflight")
-@click.option(
-    "--pipeline-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
-@click.option("--run-id", default=None, help="Run ID")
-@click.option("--auth-doctor", is_flag=True, help="Also run auth diagnostics")
-@click.pass_context
-def upgrades_preflight(ctx, pipeline_version: str, run_id: Optional[str], auth_doctor: bool):
-    """Run provider preflight and optional auth doctor checks."""
-    args: List[str] = ["--preflight-providers"]
-    if run_id:
-        args.extend(["--run-id", run_id])
-    _run_upgrades_runner(pipeline_version=pipeline_version, args=args)
-    if auth_doctor:
-        auth_args = ["--doctor-auth"]
-        if run_id:
-            auth_args.extend(["--run-id", run_id])
-        _run_upgrades_runner(pipeline_version=pipeline_version, args=auth_args)
-
-
-@upgrades.group("promptset")
-def upgrades_promptset_group():
-    """Promptset utilities."""
-    pass
-
-
-@upgrades_promptset_group.command("audit")
-@click.option(
-    "--pipeline-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
-@click.option("--strict/--no-strict", default=True, show_default=True)
-@click.pass_context
-def upgrades_promptset_audit(ctx, pipeline_version: str, strict: bool):
-    """Audit pipeline promptset contract compliance."""
-    if pipeline_version == "v4":
-        args = ["--promptset-audit", "--strict-audit" if strict else "--no-strict-audit"]
-        _run_upgrades_runner(pipeline_version="v4", args=args)
-        return
-    raise click.ClickException("Promptset audit is implemented for v4 only.")
-
-
-@upgrades.command("trace")
 @click.option("--dry-run", is_flag=True, default=True, help="Simulate execution by generating trace files only (default)")
 @click.option("--execute", is_flag=True, help="Actually call LLM providers (if configured)")
-@click.option("--phase", help="Run only a specific trace phase (A, H, D, C, R, S)")
+@click.option("--phase", help="Run only a specific phase (A, H, D, C, R, S)")
 @click.pass_context
-def upgrades_trace(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
-    """Legacy trace generation path for Phase-S style synthesis inputs."""
+def upgrades_run(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
+    """
+    Run the pipeline (or specific phase).
+
+    Generates trace files in _audit_out/pipeline_trace/ combining
+    the phase prompt with the gathered context.
+    """
     project_path = Path.cwd()
+
+    # If execute is set, dry_run is False unless explicitly set
     if execute:
         dry_run = False
+
     runner = PipelineRunner(project_path)
+
     if phase:
         runner.run_phase(phase, dry_run=dry_run)
     else:
         runner.run_all(dry_run=dry_run)
+
+
+@upgrades.command("list")
+@click.pass_context
+def upgrades_list(ctx):
+    """List available pipeline phases and status."""
+    project_path = Path.cwd()
+    runner = PipelineRunner(project_path)
+    runner.list_phases()
 if __name__ == "__main__":
     main()
