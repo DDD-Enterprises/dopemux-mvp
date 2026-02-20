@@ -808,8 +808,8 @@ async def get_tasks_for_user(
 ):
     """Get aggregated task completion metrics for user."""
     try:
-        completed = await engine._get_tasks_completed(user_id)
-        total = await engine._get_total_tasks(user_id)
+        completed = await engine.get_tasks_completed(user_id)
+        total = await engine.get_total_tasks(user_id)
         rate = completed / total if total > 0 else 0.0
 
         return {
@@ -1112,7 +1112,7 @@ async def _get_current_state(engine, user_id: str) -> dict:
         session_duration = await engine._get_session_duration(user_id)
         
         # Get tasks completed
-        tasks_completed = await engine._get_tasks_completed(user_id)
+        tasks_completed = await engine.get_tasks_completed(user_id)
         
         return {
             "energy_level": energy_str,
