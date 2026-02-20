@@ -17,6 +17,11 @@ graph_metadata:
 
 This guide uses `dopemux extractor` as the canonical entrypoint for extraction v4.
 
+For broader operator workflows, see:
+
+- `docs/02-how-to/extraction/repo-truth-extractor-user-guide.md`
+- `docs/02-how-to/extraction/batch-quickstart.md`
+
 ## 1) Promptset audit
 
 ```bash
