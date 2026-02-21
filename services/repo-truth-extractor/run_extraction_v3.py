@@ -9076,27 +9076,44 @@ def _build_event_store_for_runner() -> Any:
 
     db_url = storage.resolve_webhook_db_url()
 
-    # Best-effort: attempt to run the same migration step the server uses, if exposed
-    # by the storage module. If no migration helper is available, or it fails, we log
-    # and continue so that existing behavior is preserved.
+    # Best-effort: attempt to run migrations in the same way the main server does.
+    # Prefer calling ensure_migrations() from server.py; if that is not available,
+    # fall back to invoking webhook_migrate.py via subprocess. Any failures are
+    # logged but do not prevent the runner from continuing.
     try:
-        migration_fn = None
-        for candidate in ("run_migrations", "migrate", "apply_migrations", "ensure_migrations_applied"):
-            if hasattr(storage, candidate):
-                migration_fn = getattr(storage, candidate)
-                break
+        try:
+            import server  # type: ignore[import]
+        except Exception:
+            server = None  # type: ignore[assignment]
 
-        if callable(migration_fn):
+        ran_migrations = False
+
+        if server is not None and hasattr(server, "ensure_migrations"):
             try:
-                migration_fn(db_url)  # type: ignore[call-arg]
+                server.ensure_migrations()  # type: ignore[call-arg]
+                ran_migrations = True
             except Exception:
                 logging.exception(
-                    "Failed to apply webhook event store migrations; proceeding without them."
+                    "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
                 )
+
+        if not ran_migrations:
+            migrate_script = webhook_receiver_dir / "webhook_migrate.py"
+            if migrate_script.is_file():
+                try:
+                    subprocess.run(
+                        [sys.executable, str(migrate_script)],
+                        check=True,
+                    )
+                    ran_migrations = True
+                except Exception:
+                    logging.exception(
+                        "Failed to apply webhook event store migrations via webhook_migrate.py; proceeding without them."
+                    )
     except Exception:
-        # If the storage module cannot be used for migrations in this context, fall back
-        # to the previous behavior and let build_event_store handle any initialization.
-        logging.debug("storage module not available or failed for migrations in runner context.")
+        # If migrations cannot be run in this context, fall back to the previous behavior
+        # and let build_event_store handle any initialization.
+        logging.debug("Migrations not available or failed in runner context; continuing without them.")
 
     return storage.build_event_store(db_url)
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
