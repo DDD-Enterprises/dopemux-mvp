@@ -5,12 +5,15 @@ type: reference
 owner: '@hu3mann'
 date: '2026-02-05'
 author: '@hu3mann'
-prelude: Baseline resource and startup metrics for Dopemux MCP containers (used for future optimization comparisons).
+prelude: Baseline resource and startup metrics for Dopemux MCP containers (used for
+  future optimization comparisons).
 graph_metadata:
   node_type: DocPage
   impact: medium
   relates_to:
-    - docker/mcp-servers/
+  - docker/mcp-servers/
+last_review: '2026-02-21'
+next_review: '2026-05-22'
 ---
 # MCP Server Performance Baseline
 **Date**: 2026-02-05

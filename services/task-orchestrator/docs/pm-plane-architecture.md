@@ -1,3 +1,15 @@
+---
+id: pm-plane-architecture
+title: Pm Plane Architecture
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Pm Plane Architecture (explanation) for dopemux documentation and developer
+  workflows.
+---
 # PM Plane Architecture Documentation
 
 ## Overview

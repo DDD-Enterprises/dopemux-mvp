@@ -5,13 +5,16 @@ type: reference
 owner: '@hu3mann'
 date: '2026-02-05'
 author: '@hu3mann'
-prelude: Registry of MCP servers in the Dopemux stack, with roles, ports, health endpoints, and usage guidance.
+prelude: Registry of MCP servers in the Dopemux stack, with roles, ports, health endpoints,
+  and usage guidance.
 graph_metadata:
   node_type: DocPage
   impact: high
   relates_to:
-    - docker/mcp-servers/
-    - services/registry.yaml
+  - docker/mcp-servers/
+  - services/registry.yaml
+last_review: '2026-02-21'
+next_review: '2026-05-22'
 ---
 # Dopemux MCP Server Registry
 

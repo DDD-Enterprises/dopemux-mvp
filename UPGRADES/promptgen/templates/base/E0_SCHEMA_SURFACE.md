@@ -1,3 +1,14 @@
+---
+id: E0_SCHEMA_SURFACE
+title: E0 Schema Surface
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: E0 Schema Surface (explanation) for dopemux documentation and developer workflows.
+---
 You are extracting facts from a repository snapshot.
 
 TASK

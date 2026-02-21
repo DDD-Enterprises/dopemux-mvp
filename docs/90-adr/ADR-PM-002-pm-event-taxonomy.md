@@ -4,17 +4,16 @@ title: Adr Pm 002 Pm Event Taxonomy
 type: adr
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-02-13'
-last_review: '2026-02-13'
-next_review: '2026-05-14'
-prelude: Standardize PM event names and idempotent envelopes for deterministic cross-service coordination.
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Adr Pm 002 Pm Event Taxonomy (adr) for dopemux documentation and developer
+  workflows.
 status: proposed
 graph_metadata:
   node_type: ADR
-  impact: high
-  relates_to:
-- PM_ARCHITECTURE
-- ADR-PM-001-canonical-task-object
+  impact: medium
+  relates_to: []
 ---
 # Context
 

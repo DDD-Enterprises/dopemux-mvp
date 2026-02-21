@@ -1,3 +1,14 @@
+---
+id: Q0_RISK_LOCATIONS
+title: Q0 Risk Locations
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Q0 Risk Locations (explanation) for dopemux documentation and developer workflows.
+---
 You are extracting facts from a repository snapshot.
 
 TASK
