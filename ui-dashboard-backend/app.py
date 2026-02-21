@@ -4,6 +4,8 @@ import asyncio
 import copy
 import json
 import os
+import concurrent.futures
+import functools
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 from urllib.error import HTTPError, URLError
@@ -134,6 +136,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Dedicated thread pool for blocking HTTP operations to avoid
+# exhausting the default asyncio executor.
+_http_executor = concurrent.futures.ThreadPoolExecutor(
+    max_workers=50,
+    thread_name_prefix="http_worker",
+)
+
 
 def _clamp(value: float, minimum: float = 0.0, maximum: float = 1.0) -> float:
     return max(minimum, min(maximum, value))
@@ -151,11 +160,17 @@ def _status_from_load(load: float) -> Literal["low", "optimal", "high", "critica
 
 def _recommendation_for_status(status: str) -> str:
     if status == "critical":
-        return "Mandatory break now; switch to a low-complexity recovery task afterward."
+        return (
+            "Mandatory break now; switch to a low-complexity recovery task afterward."
+        )
     if status == "high":
-        return "Reduce scope, batch interruptions, and finish one task before switching."
+        return (
+            "Reduce scope, batch interruptions, and finish one task before switching."
+        )
     if status == "low":
-        return "Good window for deep, complex work. Protect focus for the next 45 minutes."
+        return (
+            "Good window for deep, complex work. Protect focus for the next 45 minutes."
+        )
     return "Continue current work patterns with short, planned breaks."
 
 
@@ -193,11 +208,15 @@ def _fetch_json_sync(
 async def _fetch_json(
     url: str, headers: Optional[Dict[str, str]] = None, timeout_seconds: float = 2.0
 ) -> Dict[str, Any]:
-    return await asyncio.to_thread(
-        _fetch_json_sync,
-        url,
-        headers,
-        timeout_seconds,
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        _http_executor,
+        functools.partial(
+            _fetch_json_sync,
+            url=url,
+            headers=headers,
+            timeout_seconds=timeout_seconds,
+        ),
     )
 
 
@@ -240,7 +259,9 @@ def _normalize_task(task: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
     energy_required = task.get("energyRequired") or task.get("energy_required")
     if not energy_required:
-        energy_required = "high" if complexity >= 0.7 else "medium" if complexity >= 0.45 else "low"
+        energy_required = (
+            "high" if complexity >= 0.7 else "medium" if complexity >= 0.45 else "low"
+        )
 
     return {
         "id": task_id,
@@ -268,7 +289,9 @@ async def _load_live_cognitive_state(user_id: str) -> Optional[CognitiveState]:
     except (URLError, HTTPError, TimeoutError, ValueError, OSError):
         return None
 
-    energy_score = _energy_level_to_score(str(energy_payload.get("energy_level", "medium")))
+    energy_score = _energy_level_to_score(
+        str(energy_payload.get("energy_level", "medium"))
+    )
     attention_state = str(attention_payload.get("attention_state", "focused"))
     attention_score = _attention_state_to_score(attention_state)
 
@@ -385,7 +408,12 @@ async def get_dashboard_snapshot(
         tasks=tasks,
         sources={
             "cognitive_state": str(cognitive_payload["source"]),
-            "tasks": "task-orchestrator" if tasks and tasks[0]["id"] not in {"task-1", "task-2", "task-3", "task-4"} else "fallback",
+            "tasks": (
+                "task-orchestrator"
+                if tasks
+                and tasks[0]["id"] not in {"task-1", "task-2", "task-3", "task-4"}
+                else "fallback"
+            ),
             "team_members": "fallback",
         },
         sampled_at=datetime.now(timezone.utc).isoformat(),
@@ -400,7 +428,9 @@ async def health() -> Dict[str, Any]:
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "integrations": {
             "adhd_engine_url": os.getenv("ADHD_ENGINE_URL", "http://localhost:8095"),
-            "task_orchestrator_url": os.getenv("TASK_ORCHESTRATOR_URL", "http://localhost:3017"),
+            "task_orchestrator_url": os.getenv(
+                "TASK_ORCHESTRATOR_URL", "http://localhost:3017"
+            ),
         },
     }
 

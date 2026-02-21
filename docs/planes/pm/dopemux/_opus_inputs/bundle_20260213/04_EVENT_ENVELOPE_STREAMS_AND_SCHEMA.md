@@ -1,3 +1,15 @@
+---
+id: 04_EVENT_ENVELOPE_STREAMS_AND_SCHEMA
+title: 04 Event Envelope Streams And Schema
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 04 Event Envelope Streams And Schema (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 04 Event Envelope Streams And Schema
 
 ## Canonical envelope summary (implementation-derived)
@@ -5,10 +17,10 @@ There is **no single shared envelope** across all services. Confirmed variants:
 
 | surface | fields observed | event_id computation |
 |---|---|---|
-| dope-memory capture emit | `id`, `ts`, `workspace_id`, `instance_id`, `session_id`, `type`, `source`, `data` | deterministic SHA256 over `event_type|session_id_or_empty|ts_bucket|stable_json(payload)` |
+| dope-memory capture emit | `id`, `ts`, `workspace_id`, `instance_id`, `session_id`, `type`, `source`, `data` | deterministic SHA256 over fields |
 | dope-memory derived output | `id`, `ts`, `workspace_id`, `instance_id`, `type`, `source`, `data` | UUID v4 at publish time |
-| dopecon-bridge event bus (`services/dopecon-bridge/event_bus.py`) | `event_type`, `timestamp`, `source`, `data` | no explicit `event_id` in serialized fields |
-| dopecon_bridge package event bus (`dopecon_bridge/event_bus.py`) | `type`, `data`, `source`, `timestamp` | no explicit `event_id` |
+| dopecon-bridge event bus | `event_type`, `timestamp`, `source`, `data` | no explicit `event_id` |
+| dopecon_bridge package | `type`, `data`, `source`, `timestamp` | no explicit `event_id` |
 | core dopemux typed event | `type`, `timestamp`, `priority`, `data`, `source` | no computed id field |
 
 ## Stream names (exact strings)
