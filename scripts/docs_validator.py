@@ -79,7 +79,7 @@ ALLOWED_PATHS = [
     'docs/04-explanation/',
     'docs/05-audit-reports/',
     'docs/planes/',
-    'docs/task-packets/',
+    'docs/task_packets/',
     'docs/'
 ]
 
