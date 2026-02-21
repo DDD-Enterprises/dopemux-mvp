@@ -21,18 +21,18 @@ Closure verification for backlog item:
 ## Implementation
 
 1. Shared utility added:
-   - `services/shared/mcp/response_budget.py`
-2. Serena integration:
-   - `services/serena/mcp_server.py` now delegates line truncation/token estimation to shared utility.
-3. GPT-Researcher integration:
-   - `services/dopemux-gpt-researcher/mcp-server/server.py` now delegates dict response truncation/token estimation to shared utility.
-4. Unit coverage:
-   - `tests/unit/test_mcp_response_budget.py`
+- `services/shared/mcp/response_budget.py`
+1. Serena integration:
+- `services/serena/mcp_server.py` now delegates line truncation/token estimation to shared utility.
+1. GPT-Researcher integration:
+- `services/dopemux-gpt-researcher/mcp-server/server.py` now delegates dict response truncation/token estimation to shared utility.
+1. Unit coverage:
+- `tests/unit/test_mcp_response_budget.py`
 
 ## Verification
 
 1. `pytest -q --no-cov tests/unit/test_mcp_response_budget.py` passed.
-2. `pytest -q --no-cov tests/unit/test_profile_cli_registration.py` passed.
+1. `pytest -q --no-cov tests/unit/test_profile_cli_registration.py` passed.
 
 ## Status
 

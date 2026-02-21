@@ -88,9 +88,9 @@ brew install --build-from-source ./dopemux.rb
 ## 🎯 Next Steps
 
 1. Create GitHub release (v0.1.0)
-2. Upload to PyPI
-3. Test installations
-4. Announce to community
+1. Upload to PyPI
+1. Test installations
+1. Announce to community
 
 ---
 

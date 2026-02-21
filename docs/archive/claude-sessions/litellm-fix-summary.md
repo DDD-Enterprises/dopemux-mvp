@@ -70,15 +70,15 @@ Unable to connect to DB. DATABASE_URL found in environment, but prisma package n
 ```yaml
 # BEFORE (incorrect):
 fallbacks:
-  - openai-gpt-5:      # ❌ Dash makes this a list item
-    - openai-gpt-5-mini
-    - xai-grok-4
+- openai-gpt-5:      # ❌ Dash makes this a list item
+- openai-gpt-5-mini
+- xai-grok-4
 
 # AFTER (correct):
 fallbacks:
   openai-gpt-5:        # ✅ No dash, proper mapping key
-    - openai-gpt-5-mini
-    - xai-grok-4
+- openai-gpt-5-mini
+- xai-grok-4
 ```
 
 **Applied to both**:
@@ -226,9 +226,9 @@ curl http://localhost:4000/v1/chat/completions \
 
 ### Configured Models
 1. **openai-gpt-5** → fallbacks: gpt-5-mini, grok-4
-2. **openai-gpt-5-mini** → fallbacks: grok-4
-3. **xai-grok-4** → fallbacks: grok-4-heavy, gpt-5-mini
-4. **xai-grok-4-heavy** → fallbacks: grok-4, gpt-5
+1. **openai-gpt-5-mini** → fallbacks: grok-4
+1. **xai-grok-4** → fallbacks: grok-4-heavy, gpt-5-mini
+1. **xai-grok-4-heavy** → fallbacks: grok-4, gpt-5
 
 ### Routing Strategy
 - **Primary**: Latency-based routing
@@ -244,14 +244,14 @@ curl http://localhost:4000/v1/chat/completions \
 **Solution**: Edit `docker-compose.yml` to use different port:
 ```yaml
 ports:
-  - "4001:4000"  # Change left side only
+- "4001:4000"  # Change left side only
 ```
 
 ### Issue: API Key Not Working
 **Solution**:
 1. Verify key in `.env` file
-2. Restart container: `docker-compose restart litellm`
-3. Check logs: `docker logs mcp-litellm`
+1. Restart container: `docker-compose restart litellm`
+1. Check logs: `docker logs mcp-litellm`
 
 ### Issue: Old Error Logs Still Present
 **Note**: The error logs in `.dopemux/litellm/A/litellm.log` are from the old broken config (Oct 9). New logs will be in Docker container stdout.
@@ -280,10 +280,10 @@ ports:
 
 The expert analysis correctly identified:
 1. ✅ Malformed YAML as primary root cause
-2. ✅ Missing prisma package as secondary issue
-3. ✅ Missing Docker orchestration as tertiary issue
-4. ✅ Exact line numbers and error messages
-5. ✅ Correct fix strategy (YAML structure → dependencies → Docker)
+1. ✅ Missing prisma package as secondary issue
+1. ✅ Missing Docker orchestration as tertiary issue
+1. ✅ Exact line numbers and error messages
+1. ✅ Correct fix strategy (YAML structure → dependencies → Docker)
 
 All recommended fixes have been implemented and validated.
 

@@ -26,9 +26,9 @@ prelude: Reorganization 2025 10 29 (explanation) for dopemux documentation and d
 **Root Directory Cleanup:**
 - Moved 44 files from root to organized locations
 - Root now contains only 3 essential files:
-  - `README.md` - Project overview
-  - `QUICK_START.md` - Quick start guide
-  - `CHANGELOG.md` - Version history
+- `README.md` - Project overview
+- `QUICK_START.md` - Quick start guide
+- `CHANGELOG.md` - Version history
 
 **Archive Structure Created:**
 ```
@@ -115,24 +115,24 @@ docs/
 The documentation now follows the Diátaxis framework with four main categories:
 
 1. **Tutorials** (01-tutorials/) - *Learning-oriented*
-   - Get newcomers started
-   - Hands-on lessons
-   - Build confidence
+- Get newcomers started
+- Hands-on lessons
+- Build confidence
 
-2. **How-To Guides** (02-how-to/) - *Problem-oriented*
-   - Solve specific problems
-   - Step-by-step instructions
-   - Practical and flexible
+1. **How-To Guides** (02-how-to/) - *Problem-oriented*
+- Solve specific problems
+- Step-by-step instructions
+- Practical and flexible
 
-3. **Reference** (03-reference/) - *Information-oriented*
-   - Technical specifications
-   - APIs, configs, schemas
-   - Accurate and complete
+1. **Reference** (03-reference/) - *Information-oriented*
+- Technical specifications
+- APIs, configs, schemas
+- Accurate and complete
 
-4. **Explanation** (04-explanation/) - *Understanding-oriented*
-   - Concepts and background
-   - Design rationale
-   - Deepen knowledge
+1. **Explanation** (04-explanation/) - *Understanding-oriented*
+- Concepts and background
+- Design rationale
+- Deepen knowledge
 
 ### Custom Sections
 
@@ -196,9 +196,9 @@ The documentation now follows the Diátaxis framework with four main categories:
 - Use `kebab-case.md` for new files
 - Keep existing names for now (can rename in future cleanup)
 - Special prefixes:
-  - `ADR-NNN-title.md` for architecture decisions
-  - `RFC-NNN-title.md` for proposals
-  - `YYYY-MM-DD-title.md` for session notes
+- `ADR-NNN-title.md` for architecture decisions
+- `RFC-NNN-title.md` for proposals
+- `YYYY-MM-DD-title.md` for session notes
 
 ### Where Files Go
 
@@ -219,24 +219,24 @@ The documentation now follows the Diátaxis framework with four main categories:
 ### When Adding Documentation
 
 1. **Choose the right category** (tutorial vs how-to vs reference vs explanation)
-2. **Update the relevant README** in that section
-3. **Add to master index** if important
-4. **Link from related docs**
-5. **Follow naming conventions**
+1. **Update the relevant README** in that section
+1. **Add to master index** if important
+1. **Link from related docs**
+1. **Follow naming conventions**
 
 ### When Completing Work
 
 1. **Move tracking docs** from `development/active-projects/` to `archive/completed-projects/`
-2. **Move session notes** to `archive/session-notes/YYYY-MM/`
-3. **Update indexes** to remove active links
-4. **Keep archive README** updated
+1. **Move session notes** to `archive/session-notes/YYYY-MM/`
+1. **Update indexes** to remove active links
+1. **Keep archive README** updated
 
 ### When Deprecating
 
 1. **Move to** `archive/deprecated/`
-2. **Add redirect comment** in original location if referenced elsewhere
-3. **Update links** in active documentation
-4. **Document in archive README** what replaced it
+1. **Add redirect comment** in original location if referenced elsewhere
+1. **Update links** in active documentation
+1. **Document in archive README** what replaced it
 
 ---
 

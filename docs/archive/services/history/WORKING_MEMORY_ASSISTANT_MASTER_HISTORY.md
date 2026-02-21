@@ -43,8 +43,8 @@ WMA solves this by automatically "snapshotting" the developer's mental and digit
 
 ### Context Layers
 1. **Development Context**: Open files, cursor positions, git branch, tmux pane state.
-2. **Cognitive Context**: Inferred goals, recent decisions, "Thought Process" notes.
-3. **ADHD Context**: Energy level, attention span remaining, break recommendations (via ADHD Engine).
+1. **Cognitive Context**: Inferred goals, recent decisions, "Thought Process" notes.
+1. **ADHD Context**: Energy level, attention span remaining, break recommendations (via ADHD Engine).
 
 ### Interfaces
 * **SnapshotEngine**: Capture logic (`captureSnapshot`).

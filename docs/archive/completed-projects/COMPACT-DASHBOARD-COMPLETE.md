@@ -216,21 +216,21 @@ Single line: active tasks only
 ### What It Catches
 
 1. **Uncommitted Changes**
-   - Modified files not yet staged
-   - Severity: high if 20+, medium if 5+
+- Modified files not yet staged
+- Severity: high if 20+, medium if 5+
 
-2. **Untracked Files**
-   - New files not in git
-   - Severity: medium if 10+
+1. **Untracked Files**
+- New files not in git
+- Severity: medium if 10+
 
-3. **Stale Branches**
-   - Branches with last commit 2+ weeks ago
-   - Shows days idle
-   - Severity: medium
+1. **Stale Branches**
+- Branches with last commit 2+ weeks ago
+- Shows days idle
+- Severity: medium
 
-4. **Unpushed Commits**
-   - Local commits not pushed to origin
-   - Warning if 5+ commits
+1. **Unpushed Commits**
+- Local commits not pushed to origin
+- Warning if 5+ commits
 
 ### ADHD-Friendly Warnings
 

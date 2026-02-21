@@ -23,9 +23,9 @@ prelude: Optimized Audit Plan (reference) for dopemux documentation and develope
 
 **Leverage MCP Capabilities**:
 1. **Dope-Context**: Already has 158 code vectors indexed → instant semantic search
-2. **Zen codereview**: Automate 700+ function reviews → manual review only flagged issues
-3. **Serena-v2**: Complexity scoring → prioritize high-risk functions automatically
-4. **PAL apilookup**: Validate framework usage → verify React/Next.js patterns instantly
+1. **Zen codereview**: Automate 700+ function reviews → manual review only flagged issues
+1. **Serena-v2**: Complexity scoring → prioritize high-risk functions automatically
+1. **PAL apilookup**: Validate framework usage → verify React/Next.js patterns instantly
 
 **Key Insight**: Don't manually review what AI can validate. Focus human time on:
 - Architecture violations
@@ -204,9 +204,9 @@ serena.analyze_complexity(file_path="services/task-orchestrator/src/risk_predict
 
 **Strategy**: Only manually review:
 1. Complexity > 0.7 (Serena scoring)
-2. Security-flagged (Phase 2A)
-3. Core business logic (ML algorithms, risk prediction)
-4. Zen-flagged issues
+1. Security-flagged (Phase 2A)
+1. Core business logic (ML algorithms, risk prediction)
+1. Zen-flagged issues
 
 **Process per function** (5 min):
 - Read Zen's analysis first
@@ -491,9 +491,9 @@ zen.consensus(
 
 **MCP Leverage**:
 1. **Dope-Context**: Instant semantic search (2 sec vs 5 min manual search)
-2. **Zen codereview**: AI validates 700+ functions (6 min per service vs 2h manual)
-3. **Serena complexity**: Auto-prioritize high-risk code (no manual complexity analysis)
-4. **Parallel operations**: Search code + docs simultaneously
+1. **Zen codereview**: AI validates 700+ functions (6 min per service vs 2h manual)
+1. **Serena complexity**: Auto-prioritize high-risk code (no manual complexity analysis)
+1. **Parallel operations**: Search code + docs simultaneously
 
 **Strategic Focus**:
 - Automate breadth (find all patterns)

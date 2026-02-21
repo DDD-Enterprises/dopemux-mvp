@@ -50,108 +50,108 @@ Last Updated: 2025-10-28
 #### Features to Add Now:
 
 1. **Enhanced Sparklines & Trends** 🎯 **DAY 10 - READY TO IMPLEMENT**
-   - [x] Implement proper sparkline generation from historical data ✅ (Day 2)
-   - [x] Add sparkline color-coding and trend indicators ✅ (Day 2)
-   - [x] Deep research complete (6,500 words) ✅ (Day 10)
-   - [x] Technical design documented ✅ (Day 10)
-   - [ ] **PrometheusSparklineIntegration class** (3-4 hours)
-   - [ ] **Wire to TrendsWidget** (1 hour)
-   - [ ] **Real-time auto-updates** (30 min)
-   - [ ] 7-day velocity graph (future enhancement)
-   - [ ] Cognitive load heatmap (future enhancement)
-   - **Priority:** HIGH → READY
-   - **Effort:** 3-4 hours remaining
-   - **Dependencies:** ✅ SparklineGenerator exists, ✅ PrometheusClient ready
-   - **Status:** 🚀 IMPLEMENTATION READY
-   - **Docs:** [DASHBOARD_DAY10_DEEP_RESEARCH.md](./DASHBOARD_DAY10_DEEP_RESEARCH.md)
+- [x] Implement proper sparkline generation from historical data ✅ (Day 2)
+- [x] Add sparkline color-coding and trend indicators ✅ (Day 2)
+- [x] Deep research complete (6,500 words) ✅ (Day 10)
+- [x] Technical design documented ✅ (Day 10)
+- [ ] **PrometheusSparklineIntegration class** (3-4 hours)
+- [ ] **Wire to TrendsWidget** (1 hour)
+- [ ] **Real-time auto-updates** (30 min)
+- [ ] 7-day velocity graph (future enhancement)
+- [ ] Cognitive load heatmap (future enhancement)
+- **Priority:** HIGH → READY
+- **Effort:** 3-4 hours remaining
+- **Dependencies:** ✅ SparklineGenerator exists, ✅ PrometheusClient ready
+- **Status:** 🚀 IMPLEMENTATION READY
+- **Docs:** [DASHBOARD_DAY10_DEEP_RESEARCH.md](./DASHBOARD_DAY10_DEEP_RESEARCH.md)
 
-2. **Interactive Dashboard Controls** 🎯 **DAY 10 - READY TO IMPLEMENT**
-   - [x] Add keyboard shortcuts for all actions ✅ (Day 1-3)
-   - [x] Implement focus mode toggle ✅ (Day 3)
-   - [x] Add theme cycling ✅ (Day 3)
-   - [x] Deep research: UX patterns, accessibility ✅ (Day 10)
-   - [x] WCAG 2.1 Level AA compliance research ✅ (Day 10)
-   - [ ] **FocusManager class** (1 hour)
-   - [ ] **KeybindingRegistry** (30 min)
-   - [ ] **Full keyboard navigation** (1-2 hours)
-   - [ ] **Help screen (?)** (30 min)
-   - [ ] Add scroll support for long lists (future)
-   - **Priority:** HIGH → READY
-   - **Effort:** 2-3 hours remaining
-   - **Dependencies:** None
-   - **Status:** 🚀 IMPLEMENTATION READY
-   - **Docs:** [DASHBOARD_DAY10_READY.md](./DASHBOARD_DAY10_READY.md)
+1. **Interactive Dashboard Controls** 🎯 **DAY 10 - READY TO IMPLEMENT**
+- [x] Add keyboard shortcuts for all actions ✅ (Day 1-3)
+- [x] Implement focus mode toggle ✅ (Day 3)
+- [x] Add theme cycling ✅ (Day 3)
+- [x] Deep research: UX patterns, accessibility ✅ (Day 10)
+- [x] WCAG 2.1 Level AA compliance research ✅ (Day 10)
+- [ ] **FocusManager class** (1 hour)
+- [ ] **KeybindingRegistry** (30 min)
+- [ ] **Full keyboard navigation** (1-2 hours)
+- [ ] **Help screen (?)** (30 min)
+- [ ] Add scroll support for long lists (future)
+- **Priority:** HIGH → READY
+- **Effort:** 2-3 hours remaining
+- **Dependencies:** None
+- **Status:** 🚀 IMPLEMENTATION READY
+- **Docs:** [DASHBOARD_DAY10_READY.md](./DASHBOARD_DAY10_READY.md)
 
-3. **Data Drill-Down Views** ✅ **COMPLETE (Day 4+6)**
-   - [x] Base modal infrastructure ✅
-   - [x] Task detail modal (press `d`) ✅
-   - [x] Service logs viewer (press `l`) ✅
-   - [x] Pattern analysis detail (press `p`) ✅
-   - [x] Metric history viewer (press `h`) ✅
-   - [x] Consistent keyboard shortcuts ✅
-   - [x] Rich text formatting ✅
-   - [x] Async data loading ✅
-   - [x] Help documentation updated ✅
-   - [x] **Real API integration (Day 6)** ✅
-   - [x] **ADHD Engine task assessment** ✅
-   - [x] **Docker logs streaming** ✅
-   - [x] **Prometheus pattern detection** ✅
-   - [x] **Performance monitoring** ✅
-   - **Priority:** HIGH → DONE
-   - **Effort:** 3 days → Complete
-   - **Status:** ✅ PRODUCTION READY
+1. **Data Drill-Down Views** ✅ **COMPLETE (Day 4+6)**
+- [x] Base modal infrastructure ✅
+- [x] Task detail modal (press `d`) ✅
+- [x] Service logs viewer (press `l`) ✅
+- [x] Pattern analysis detail (press `p`) ✅
+- [x] Metric history viewer (press `h`) ✅
+- [x] Consistent keyboard shortcuts ✅
+- [x] Rich text formatting ✅
+- [x] Async data loading ✅
+- [x] Help documentation updated ✅
+- [x] **Real API integration (Day 6)** ✅
+- [x] **ADHD Engine task assessment** ✅
+- [x] **Docker logs streaming** ✅
+- [x] **Prometheus pattern detection** ✅
+- [x] **Performance monitoring** ✅
+- **Priority:** HIGH → DONE
+- **Effort:** 3 days → Complete
+- **Status:** ✅ PRODUCTION READY
 
-4. **WebSocket Streaming & Real-Time Updates** ✅ **COMPLETE (Day 7 - 2025-10-29)**
-   - [x] Backend WebSocket endpoint (FastAPI) ✅
-   - [x] ConnectionManager for multi-client management ✅
-   - [x] Message buffering (last 50 messages) ✅
-   - [x] Heartbeat mechanism (30s keep-alive) ✅
-   - [x] Dashboard StreamingClient ✅
-   - [x] Auto-reconnect with exponential backoff ✅
-   - [x] Message routing to callbacks ✅
-   - [x] ADHD state broadcasting from engine ✅
-   - [x] Comprehensive test suite (95%+ coverage) ✅
-   - [x] Deep planning documentation (1,275 lines) ✅
-   - **Priority:** HIGH → DONE
-   - **Effort:** 10-12 hours estimated, 3 hours actual ⚡
-   - **Status:** ✅ PRODUCTION READY
-   - **Impact:** 98% latency reduction (<100ms vs 2-10s), +40% ADHD task completion
-   - **Files:** 6 files, 3,127 lines of production code
-   - **Next:** Dashboard integration (wire to widgets)
-   - **Status:** ✅ 100% complete (production-ready)
-   - **Next:** WebSocket streaming (Day 7)
+1. **WebSocket Streaming & Real-Time Updates** ✅ **COMPLETE (Day 7 - 2025-10-29)**
+- [x] Backend WebSocket endpoint (FastAPI) ✅
+- [x] ConnectionManager for multi-client management ✅
+- [x] Message buffering (last 50 messages) ✅
+- [x] Heartbeat mechanism (30s keep-alive) ✅
+- [x] Dashboard StreamingClient ✅
+- [x] Auto-reconnect with exponential backoff ✅
+- [x] Message routing to callbacks ✅
+- [x] ADHD state broadcasting from engine ✅
+- [x] Comprehensive test suite (95%+ coverage) ✅
+- [x] Deep planning documentation (1,275 lines) ✅
+- **Priority:** HIGH → DONE
+- **Effort:** 10-12 hours estimated, 3 hours actual ⚡
+- **Status:** ✅ PRODUCTION READY
+- **Impact:** 98% latency reduction (<100ms vs 2-10s), +40% ADHD task completion
+- **Files:** 6 files, 3,127 lines of production code
+- **Next:** Dashboard integration (wire to widgets)
+- **Status:** ✅ 100% complete (production-ready)
+- **Next:** WebSocket streaming (Day 7)
 
-5. **Real-Time Data Streaming** ✅ **COMPLETE (Day 7 - 2025-10-29)**
-   - [x] Async data fetching infrastructure ✅ (Day 1-2)
-   - [x] Auto-refresh every 1-30s by panel ✅ (Day 1-2)
-   - [x] Live log streaming in modals ✅ (Day 6)
-   - [x] Background data prefetching ✅ (Day 6)
-   - [x] Smart caching (75% hit rate) ✅ (Day 6)
-   - [x] Request deduplication ✅ (Day 6)
-   - [x] WebSocket support for instant updates ✅ (Day 7)
-   - [x] Backend WebSocket endpoint + ConnectionManager ✅
-   - [x] Dashboard StreamingClient with auto-reconnect ✅
-   - [x] ADHD state broadcasting from engine ✅
-   - [x] Comprehensive test suite (95%+ coverage) ✅
-   - [ ] Live sparkline animation (Day 8)
-   - [ ] WebSocket integration in dashboard widgets (Day 8)
-   - **Priority:** HIGH → DONE
-   - **Effort:** 3 hours actual (vs 10-12hr estimate) ⚡
-   - **Status:** ✅ Backend complete, frontend integration pending
-   - **Impact:** 98% latency reduction, +40% ADHD task completion
-   - **Next:** Integrate StreamingClient into dashboard widgets
+1. **Real-Time Data Streaming** ✅ **COMPLETE (Day 7 - 2025-10-29)**
+- [x] Async data fetching infrastructure ✅ (Day 1-2)
+- [x] Auto-refresh every 1-30s by panel ✅ (Day 1-2)
+- [x] Live log streaming in modals ✅ (Day 6)
+- [x] Background data prefetching ✅ (Day 6)
+- [x] Smart caching (75% hit rate) ✅ (Day 6)
+- [x] Request deduplication ✅ (Day 6)
+- [x] WebSocket support for instant updates ✅ (Day 7)
+- [x] Backend WebSocket endpoint + ConnectionManager ✅
+- [x] Dashboard StreamingClient with auto-reconnect ✅
+- [x] ADHD state broadcasting from engine ✅
+- [x] Comprehensive test suite (95%+ coverage) ✅
+- [ ] Live sparkline animation (Day 8)
+- [ ] WebSocket integration in dashboard widgets (Day 8)
+- **Priority:** HIGH → DONE
+- **Effort:** 3 hours actual (vs 10-12hr estimate) ⚡
+- **Status:** ✅ Backend complete, frontend integration pending
+- **Impact:** 98% latency reduction, +40% ADHD task completion
+- **Next:** Integrate StreamingClient into dashboard widgets
 
-6. **Advanced Panel Layouts**
-   - [x] Basic panel layout working ✅ (Day 1)
-   - [x] Focus mode with dynamic sizing ✅ (Day 3)
-   - [ ] Grid layout with custom sizing
-   - [ ] Panel split/merge functionality
-   - [ ] Layout presets (compact/standard/detailed)
-   - [ ] Save/load layout preferences
-   - **Priority:** MEDIUM
-   - **Effort:** 2-3 days
-   - **Dependencies:** None
-   - **Status:** 30% complete
+1. **Advanced Panel Layouts**
+- [x] Basic panel layout working ✅ (Day 1)
+- [x] Focus mode with dynamic sizing ✅ (Day 3)
+- [ ] Grid layout with custom sizing
+- [ ] Panel split/merge functionality
+- [ ] Layout presets (compact/standard/detailed)
+- [ ] Save/load layout preferences
+- **Priority:** MEDIUM
+- **Effort:** 2-3 days
+- **Dependencies:** None
+- **Status:** 30% complete
 
 ---
 
@@ -162,48 +162,48 @@ Last Updated: 2025-10-28
 **Tier 0 Features:**
 
 1. **Focus Mode Toggle**
-   - [ ] Press `f` to enable focus mode
-   - [ ] Mute system notifications (macOS DND)
-   - [ ] Hide non-critical panels
-   - [ ] Show focus banner
-   - [ ] Auto-enable on flow state detection
-   - **Effort:** 2-3 hours
-   - **Impact:** 🔥🔥🔥
+- [ ] Press `f` to enable focus mode
+- [ ] Mute system notifications (macOS DND)
+- [ ] Hide non-critical panels
+- [ ] Show focus banner
+- [ ] Auto-enable on flow state detection
+- **Effort:** 2-3 hours
+- **Impact:** 🔥🔥🔥
 
-2. **Break Timer Popup**
-   - [ ] Press `b` to start break timer
-   - [ ] Visual countdown with progress bar
-   - [ ] Break type selector (5min/15min/30min)
-   - [ ] Activity suggestions (stretch, water, walk)
-   - [ ] Skip/extend options
-   - **Effort:** 3-4 hours
-   - **Impact:** 🔥🔥🔥
+1. **Break Timer Popup**
+- [ ] Press `b` to start break timer
+- [ ] Visual countdown with progress bar
+- [ ] Break type selector (5min/15min/30min)
+- [ ] Activity suggestions (stretch, water, walk)
+- [ ] Skip/extend options
+- **Effort:** 3-4 hours
+- **Impact:** 🔥🔥🔥
 
-3. **Theme Switcher**
-   - [ ] Press `t` to cycle themes
-   - [ ] Catppuccin (Mocha/Latte/Frappe/Macchiato)
-   - [ ] Nord, Dracula, Gruvbox, Tokyo Night
-   - [ ] High contrast mode
-   - [ ] Save preference
-   - **Effort:** 2-3 hours
-   - **Impact:** 🔥🔥
+1. **Theme Switcher**
+- [ ] Press `t` to cycle themes
+- [ ] Catppuccin (Mocha/Latte/Frappe/Macchiato)
+- [ ] Nord, Dracula, Gruvbox, Tokyo Night
+- [ ] High contrast mode
+- [ ] Save preference
+- **Effort:** 2-3 hours
+- **Impact:** 🔥🔥
 
-4. **Keyboard Shortcuts Help**
-   - [ ] Press `?` to show help overlay
-   - [ ] List all shortcuts with descriptions
-   - [ ] Searchable/filterable
-   - [ ] Print to console option
-   - **Effort:** 1 hour
-   - **Impact:** 🔥🔥
+1. **Keyboard Shortcuts Help**
+- [ ] Press `?` to show help overlay
+- [ ] List all shortcuts with descriptions
+- [ ] Searchable/filterable
+- [ ] Print to console option
+- **Effort:** 1 hour
+- **Impact:** 🔥🔥
 
-5. **Desktop Notifications**
-   - [ ] macOS notification center integration
-   - [ ] Break reminders (can't miss!)
-   - [ ] Critical cognitive load warnings
-   - [ ] Flow state protection alerts
-   - [ ] Achievement celebrations
-   - **Effort:** 2-3 hours
-   - **Impact:** 🔥🔥🔥
+1. **Desktop Notifications**
+- [ ] macOS notification center integration
+- [ ] Break reminders (can't miss!)
+- [ ] Critical cognitive load warnings
+- [ ] Flow state protection alerts
+- [ ] Achievement celebrations
+- **Effort:** 2-3 hours
+- **Impact:** 🔥🔥🔥
 
 ---
 
@@ -212,47 +212,47 @@ Last Updated: 2025-10-28
 ### Phase 4: Gamification & Motivation
 
 1. **Streaks Tracker**
-   - [ ] Break adherence streak (consecutive days)
-   - [ ] Task completion streak
-   - [ ] Flow state streak
-   - [ ] Milestone celebrations
-   - **Effort:** 1 day
+- [ ] Break adherence streak (consecutive days)
+- [ ] Task completion streak
+- [ ] Flow state streak
+- [ ] Milestone celebrations
+- **Effort:** 1 day
 
-2. **Daily Goals**
-   - [ ] Set custom targets (tasks, breaks, focus time)
-   - [ ] Visual progress bars
-   - [ ] Goal completion celebrations
-   - [ ] Weekly recap
-   - **Effort:** 1 day
+1. **Daily Goals**
+- [ ] Set custom targets (tasks, breaks, focus time)
+- [ ] Visual progress bars
+- [ ] Goal completion celebrations
+- [ ] Weekly recap
+- **Effort:** 1 day
 
-3. **Achievement Badges**
-   - [ ] First week badge
-   - [ ] Hyperfocus hero (3+ hour flow)
-   - [ ] Break champion (100% adherence)
-   - [ ] Task master (10+ completed)
-   - **Effort:** 1-2 days
+1. **Achievement Badges**
+- [ ] First week badge
+- [ ] Hyperfocus hero (3+ hour flow)
+- [ ] Break champion (100% adherence)
+- [ ] Task master (10+ completed)
+- **Effort:** 1-2 days
 
 ### Phase 5: CLI & Automation
 
 1. **CLI Tools**
-   - [ ] `dopemux stats` - Quick stats
-   - [ ] `dopemux break` - Force break
-   - [ ] `dopemux export` - Data export
-   - [ ] `dopemux config` - Settings
-   - **Effort:** 3-4 days
+- [ ] `dopemux stats` - Quick stats
+- [ ] `dopemux break` - Force break
+- [ ] `dopemux export` - Data export
+- [ ] `dopemux config` - Settings
+- **Effort:** 3-4 days
 
-2. **Git Integration**
-   - [ ] Auto-log commits as decisions
-   - [ ] PR complexity scoring
-   - [ ] Contribution heatmap
-   - **Effort:** 1 week
+1. **Git Integration**
+- [ ] Auto-log commits as decisions
+- [ ] PR complexity scoring
+- [ ] Contribution heatmap
+- **Effort:** 1 week
 
-3. **Slack/Discord Bot**
-   - [ ] `/dopemux status` command
-   - [ ] Break reminders in chat
-   - [ ] EOD summaries
-   - [ ] Status sync
-   - **Effort:** 3-5 days
+1. **Slack/Discord Bot**
+- [ ] `/dopemux status` command
+- [ ] Break reminders in chat
+- [ ] EOD summaries
+- [ ] Status sync
+- **Effort:** 3-5 days
 
 ---
 
@@ -261,38 +261,38 @@ Last Updated: 2025-10-28
 ### Phase 6: ML & Predictions
 
 1. **ML-Powered Insights**
-   - [ ] Energy curve forecasting
-   - [ ] Break timing optimization
-   - [ ] Task duration estimation
-   - [ ] Burnout risk detection
-   - **Effort:** 2-3 weeks
+- [ ] Energy curve forecasting
+- [ ] Break timing optimization
+- [ ] Task duration estimation
+- [ ] Burnout risk detection
+- **Effort:** 2-3 weeks
 
-2. **Pattern Recognition**
-   - [ ] "You focus best 9-11am"
-   - [ ] "Breaks every 25min boost velocity"
-   - [ ] Anomaly detection
-   - **Effort:** 2-3 weeks
+1. **Pattern Recognition**
+- [ ] "You focus best 9-11am"
+- [ ] "Breaks every 25min boost velocity"
+- [ ] Anomaly detection
+- **Effort:** 2-3 weeks
 
 ### Phase 7: Team & Collaboration
 
 1. **Team Dashboards**
-   - [ ] Shared cognitive load view
-   - [ ] Team focus score
-   - [ ] Meeting cost calculator
-   - [ ] Collaborative goals
-   - **Effort:** 2-3 weeks
+- [ ] Shared cognitive load view
+- [ ] Team focus score
+- [ ] Meeting cost calculator
+- [ ] Collaborative goals
+- **Effort:** 2-3 weeks
 
-2. **Mobile Companion**
-   - [ ] Responsive web dashboard
-   - [ ] Progressive Web App
-   - [ ] iOS/Android widgets
-   - **Effort:** 2-3 weeks
+1. **Mobile Companion**
+- [ ] Responsive web dashboard
+- [ ] Progressive Web App
+- [ ] iOS/Android widgets
+- **Effort:** 2-3 weeks
 
-3. **Voice Interface**
-   - [ ] "Hey Dopemux" wake word
-   - [ ] Voice commands
-   - [ ] Spoken alerts
-   - **Effort:** 2-3 weeks
+1. **Voice Interface**
+- [ ] "Hey Dopemux" wake word
+- [ ] Voice commands
+- [ ] Spoken alerts
+- **Effort:** 2-3 weeks
 
 ---
 
@@ -430,10 +430,10 @@ LAYOUTS = {
 ## 🔗 RELATED DOCUMENTS
 
 1. **TMUX_METRICS_INVENTORY.md** - All available metrics
-2. **TMUX_DASHBOARD_DESIGN.md** - Research & rationale
-3. **TMUX_DASHBOARD_README.md** - User guide
-4. **DASHBOARD_ENHANCEMENTS.md** - Future features (150+ ideas)
-5. **dopemux_dashboard.py** - Current implementation
+1. **TMUX_DASHBOARD_DESIGN.md** - Research & rationale
+1. **TMUX_DASHBOARD_README.md** - User guide
+1. **DASHBOARD_ENHANCEMENTS.md** - Future features (150+ ideas)
+1. **dopemux_dashboard.py** - Current implementation
 
 ---
 

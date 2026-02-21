@@ -21,12 +21,12 @@ prelude: Start Here (reference) for dopemux documentation and developer workflow
 
 ### New to DDDPG?
 1. Read **2025_MODERNIZATION_ROADMAP.md** (15 min) - Complete overview
-2. Skim **2025_TECHNICAL_SPEC.md** (5 min) - Architecture & APIs
+1. Skim **2025_TECHNICAL_SPEC.md** (5 min) - Architecture & APIs
 
 ### Ready to Build?
 1. Open **WEEK4_DAY2_IMPLEMENTATION_PLAN.md** - Step-by-step guide
-2. Use **2025_TECHNICAL_SPEC.md** as reference while coding
-3. Estimated time: ~95 minutes
+1. Use **2025_TECHNICAL_SPEC.md** as reference while coding
+1. Estimated time: ~95 minutes
 
 ---
 
@@ -69,9 +69,9 @@ ADHD-optimized decision tracking with knowledge graph intelligence.
 
 **Week 4 Day 2** (~95 min):
 1. Decision-Task Linking (15 min)
-2. Relationship Mapper (25 min)
-3. Suggestion Engine (35 min)
-4. QueryService Integration (20 min)
+1. Relationship Mapper (25 min)
+1. Suggestion Engine (35 min)
+1. QueryService Integration (20 min)
 
 **Start Building**: Open WEEK4_DAY2_IMPLEMENTATION_PLAN.md
 

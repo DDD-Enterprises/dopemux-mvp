@@ -230,8 +230,8 @@ async def cleanup_old_pattern_events(days_to_keep: int = 180):
 
 ### Caching Strategy
 1. **Pattern Probability Cache**: 1-hour TTL, max 1000 entries
-2. **Recent Events Cache**: 5-minute TTL for hot paths
-3. **Top Patterns Cache**: 10-minute TTL, refreshed on write
+1. **Recent Events Cache**: 5-minute TTL for hot paths
+1. **Top Patterns Cache**: 10-minute TTL, refreshed on write
 
 ### Query Optimization
 - Use `category_filter` to limit FTS queries

@@ -26,9 +26,9 @@ This specification defines the **canonical event schema** for ConPort ↔ Task-O
 
 **Key Decisions**:
 1. **ADHD Metadata Storage**: Tags for queryable fields, description for display-only
-2. **Transformation Strategy**: Lossless bidirectional with validation
-3. **Tag Format**: Standardized `{category}-{value}` pattern
-4. **Dependency Tracking**: Use ConPort `link_conport_items` with `depends_on` relationship
+1. **Transformation Strategy**: Lossless bidirectional with validation
+1. **Tag Format**: Standardized `{category}-{value}` pattern
+1. **Dependency Tracking**: Use ConPort `link_conport_items` with `depends_on` relationship
 
 **Implementation**: Tasks 2.2-2.6 will implement this specification
 
@@ -911,9 +911,9 @@ schema_version: str = "1.0"
 
 **Backward Compatibility Rules**:
 1. **Additive Only**: New optional fields OK, removing fields breaks compatibility
-2. **Tag Namespace**: New tag categories use new prefixes (don't reuse)
-3. **Status Values**: Never remove status values, only add new ones
-4. **Defaults**: All new fields MUST have safe defaults
+1. **Tag Namespace**: New tag categories use new prefixes (don't reuse)
+1. **Status Values**: Never remove status values, only add new ones
+1. **Defaults**: All new fields MUST have safe defaults
 
 **Example** (hypothetical v1.1):
 ```python
@@ -999,10 +999,10 @@ tags = ["energy-high", "complexity-6", "time-estimate-60m", "time-actual-45m"]
 
 **Implementation Guidance**:
 1. Copy transformation functions from this specification (lines 90-180)
-2. Add error handling (safe_*, resilient_* wrappers)
-3. Implement ConPort MCP client wrapper
-4. Add logging for debugging
-5. Write unit tests for transformers
+1. Add error handling (safe_*, resilient_* wrappers)
+1. Implement ConPort MCP client wrapper
+1. Add logging for debugging
+1. Write unit tests for transformers
 
 **Estimated Lines**: ~300-400 lines
 
@@ -1014,9 +1014,9 @@ tags = ["energy-high", "complexity-6", "time-estimate-60m", "time-actual-45m"]
 
 **Implementation Guidance**:
 1. Implement `AIDecisionEvent` dataclass (from this spec lines 230-260)
-2. Create `log_ai_decision()` method
-3. Add automatic linking to related tasks
-4. Handle AI agent result parsing
+1. Create `log_ai_decision()` method
+1. Add automatic linking to related tasks
+1. Handle AI agent result parsing
 
 **Estimated Lines**: ~200 lines
 

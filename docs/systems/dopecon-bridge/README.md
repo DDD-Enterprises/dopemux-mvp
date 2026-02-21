@@ -32,12 +32,12 @@ DopeconBridge is **the central nervous system** of Dopemux - a unified coordinat
    export DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
    ```
 
-2. **Start DopeconBridge:**
+1. **Start DopeconBridge:**
    ```bash
    docker-compose up dopecon-bridge
    ```
 
-3. **Verify it's running:**
+1. **Verify it's running:**
    ```bash
    curl http://localhost:3016/health
    ```
@@ -63,22 +63,22 @@ await client.publish_event(
 
 ### 🎯 **Start With These**
 1. **DOPECONBRIDGE_EXEC_SUMMARY.md** - Executive overview (read first!)
-2. **DOPECONBRIDGE_QUICK_START.md** - Get running in 5 minutes
-3. **This document** - Navigation and orientation
+1. **DOPECONBRIDGE_QUICK_START.md** - Get running in 5 minutes
+1. **This document** - Navigation and orientation
 
 ### 🏗️ **Architecture & Planning**
 1. **DOPECONBRIDGE_COMPREHENSIVE_PLAN.md** - Full technical architecture
-2. **DOPECONBRIDGE_MASTER_INDEX.md** - Complete documentation index
-3. **DOPECONBRIDGE_SERVICE_CATALOG.md** - All 19 services detailed
+1. **DOPECONBRIDGE_MASTER_INDEX.md** - Complete documentation index
+1. **DOPECONBRIDGE_SERVICE_CATALOG.md** - All 19 services detailed
 
 ### 📊 **Completion Reports**
 1. **DOPECONBRIDGE_COMPLETE_FINAL.md** - Final completion report
-2. **DOPECONBRIDGE_FINAL_SUMMARY.md** - Transformation overview
-3. **DOPECONBRIDGE_RENAMING_COMPLETE.md** - Integration Bridge → DopeconBridge
+1. **DOPECONBRIDGE_FINAL_SUMMARY.md** - Transformation overview
+1. **DOPECONBRIDGE_RENAMING_COMPLETE.md** - Integration Bridge → DopeconBridge
 
 ### 🔧 **Implementation Details**
 1. **DOPECONBRIDGE_PHASE9_CONFIG_UPDATE.md** - Config & genetic agent updates
-2. **verify_dopecon_bridge.sh** - Automated verification script
+1. **verify_dopecon_bridge.sh** - Automated verification script
 
 ---
 

@@ -246,11 +246,11 @@ Created 11 comprehensive README/index files:
 
 ### Process
 1. Analysis phase (categorization by content type)
-2. Structure design (Diátaxis + custom sections)
-3. Migration scripts (move files with verification)
-4. Index creation (READMEs for each section)
-5. Catalog generation (comprehensive inventory)
-6. Validation (verify all files accessible)
+1. Structure design (Diátaxis + custom sections)
+1. Migration scripts (move files with verification)
+1. Index creation (READMEs for each section)
+1. Catalog generation (comprehensive inventory)
+1. Validation (verify all files accessible)
 
 ---
 
@@ -258,22 +258,22 @@ Created 11 comprehensive README/index files:
 
 ### When Adding Documentation
 1. Choose right category (learn/do/lookup/understand)
-2. Update section README
-3. Add to master index if important
-4. Link from related docs
-5. Follow naming conventions
+1. Update section README
+1. Add to master index if important
+1. Link from related docs
+1. Follow naming conventions
 
 ### When Completing Work
 1. Move tracking docs to archive/completed-projects/
-2. Move session notes to archive/session-notes/YYYY-MM/
-3. Update indexes
-4. Keep archive README current
+1. Move session notes to archive/session-notes/YYYY-MM/
+1. Update indexes
+1. Keep archive README current
 
 ### When Deprecating
 1. Move to archive/deprecated/
-2. Add redirect comment if referenced
-3. Update links in active docs
-4. Document what replaced it
+1. Add redirect comment if referenced
+1. Update links in active docs
+1. Document what replaced it
 
 ---
 

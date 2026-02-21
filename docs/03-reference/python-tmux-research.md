@@ -68,12 +68,12 @@ Effective tmux interfaces balance information density with visual clarity throug
 #### Seven Core Layout Patterns
 
 1. **even-horizontal** - Equal width panes horizontally
-2. **even-vertical** - Equal height panes vertically
-3. **main-horizontal** - Large top pane, smaller bottom panes
-4. **main-horizontal-reverse** - Large bottom pane, smaller top panes
-5. **main-vertical** - Large left pane, smaller right panes
-6. **main-vertical-reverse** - Large right pane, smaller left panes
-7. **tiled** - Automatic grid layout
+1. **even-vertical** - Equal height panes vertically
+1. **main-horizontal** - Large top pane, smaller bottom panes
+1. **main-horizontal-reverse** - Large bottom pane, smaller top panes
+1. **main-vertical** - Large left pane, smaller right panes
+1. **main-vertical-reverse** - Large right pane, smaller left panes
+1. **tiled** - Automatic grid layout
 
 Custom layout strings enable precise pane arrangements that can be captured and restored programmatically. Adaptive layouts respond to terminal size changes preventing information loss during window resizing.
 
@@ -121,19 +121,19 @@ YAML/JSON configurations defining reproducible workspace layouts with pre-config
 name: django-dev
 root: ~/projects/myapp
 before_script:
-  - source .env
-  - docker-compose up -d postgres redis
+- source .env
+- docker-compose up -d postgres redis
 windows:
-  - editor:
+- editor:
       layout: main-vertical
       panes:
-        - vim
-        - shell_command:
-          - source venv/bin/activate
-          - python manage.py runserver
-  - database:
+- vim
+- shell_command:
+- source venv/bin/activate
+- python manage.py runserver
+- database:
       panes:
-        - pgcli myapp_dev
+- pgcli myapp_dev
 ```
 
 #### Environment Management
@@ -321,8 +321,8 @@ Reflect purpose rather than content.
 #### Three-Tier Hierarchy
 
 1. **Sessions**: Projects
-2. **Windows**: Workspaces
-3. **Panes**: Individual tasks
+1. **Windows**: Workspaces
+1. **Panes**: Individual tasks
 
 #### Navigation Support
 
@@ -353,11 +353,11 @@ class DopemuxNavigator:
 Based on research, optimal technology stack:
 
 1. **Core Control**: libtmux for tmux interaction
-2. **UI Framework**: Textual for complex interfaces, Rich for beautiful output
-3. **Async Operations**: asyncio for responsive performance
-4. **Configuration**: YAML with Jinja2 templating
-5. **Testing**: pytest with pytest-tmux fixtures
-6. **Distribution**: PyPI package with optional Docker container
+1. **UI Framework**: Textual for complex interfaces, Rich for beautiful output
+1. **Async Operations**: asyncio for responsive performance
+1. **Configuration**: YAML with Jinja2 templating
+1. **Testing**: pytest with pytest-tmux fixtures
+1. **Distribution**: PyPI package with optional Docker container
 
 ```python
 # Recommended dopemux application structure
@@ -447,8 +447,8 @@ Visual indicators in status bar:
 
 Three-level information hierarchy:
 1. **Essential**: Always visible in status bar
-2. **Details**: On request (keybinding or hover)
-3. **Full**: Explicit navigation required
+1. **Details**: On request (keybinding or hover)
+1. **Full**: Explicit navigation required
 
 ### Visual Focus System
 
@@ -503,10 +503,10 @@ The combination of Python's expressive power, tmux's robust multiplexing, and mo
 
 **Differentiators:**
 1. **Two-Plane Architecture**: Unique PM plane (Leantime) + Cognitive plane (ConPort/Serena) separation
-2. **ADHD-First Design**: Energy-aware layouts, break reminders, progressive disclosure, complexity scoring
-3. **Knowledge Graph Integration**: ConPort decisions ↔ Serena code elements ↔ session state
-4. **F002 Multi-Session Support**: Parallel development across worktrees without context loss
-5. **Profile-Based MCP Management**: Context-aware tool reduction (70% fewer tools per session)
+1. **ADHD-First Design**: Energy-aware layouts, break reminders, progressive disclosure, complexity scoring
+1. **Knowledge Graph Integration**: ConPort decisions ↔ Serena code elements ↔ session state
+1. **F002 Multi-Session Support**: Parallel development across worktrees without context loss
+1. **Profile-Based MCP Management**: Context-aware tool reduction (70% fewer tools per session)
 
 Focus on user experience, extensibility, and performance to create a tool that developers will choose as their primary terminal interface.
 
@@ -516,6 +516,6 @@ Focus on user experience, extensibility, and performance to create a tool that d
 
 **Next Steps**:
 1. Phase 1: libtmux foundation (Week 1)
-2. Phase 2: Plugin architecture (Week 1)
-3. Phase 3: Session templates (Week 2)
-4. Phase 4: Textual dashboard (Week 2-3)
+1. Phase 2: Plugin architecture (Week 1)
+1. Phase 3: Session templates (Week 2)
+1. Phase 4: Textual dashboard (Week 2-3)

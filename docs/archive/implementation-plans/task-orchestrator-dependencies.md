@@ -195,18 +195,18 @@ env["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY", "")
 
 **Services**:
 1. **redis-event-bus** (dopemux-redis-events)
-   - Image: redis:7-alpine
-   - Port: 6379
-   - Volume: redis_events_data
-   - Config: ./redis/redis.conf
-   - Health check: redis-cli ping every 10s
-   - Network: dopemux-events (172.25.0.0/16)
+- Image: redis:7-alpine
+- Port: 6379
+- Volume: redis_events_data
+- Config: ./redis/redis.conf
+- Health check: redis-cli ping every 10s
+- Network: dopemux-events (172.25.0.0/16)
 
-2. **redis-commander** (dopemux-redis-ui)
-   - Image: rediscommander/redis-commander:latest
-   - Port: 8081
-   - Credentials: admin/dopemux-redis-ui
-   - Depends on: redis-event-bus
+1. **redis-commander** (dopemux-redis-ui)
+- Image: rediscommander/redis-commander:latest
+- Port: 8081
+- Credentials: admin/dopemux-redis-ui
+- Depends on: redis-event-bus
 
 ### Network Configuration
 ```yaml
@@ -215,7 +215,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.25.0.0/16
+- subnet: 172.25.0.0/16
 ```
 
 ## Agent Dependencies
@@ -276,10 +276,10 @@ MCP: stdio interface (no network port)
 ### Critical Issues
 
 1. **Missing Redis Dependency**
-   - **Issue**: `redis.asyncio` imported but not in `requirements.txt`
-   - **Impact**: Import failure in production environments
-   - **Fix**: Add `redis>=4.5.0` to requirements.txt or create `requirements-task-orchestrator.txt`
-   - **Priority**: HIGH
+- **Issue**: `redis.asyncio` imported but not in `requirements.txt`
+- **Impact**: Import failure in production environments
+- **Fix**: Add `redis>=4.5.0` to requirements.txt or create `requirements-task-orchestrator.txt`
+- **Priority**: HIGH
 
 ### Recommendations
 
@@ -290,17 +290,17 @@ MCP: stdio interface (no network port)
    services/task-orchestrator/requirements.txt  # Service-specific
    ```
 
-2. **Document Kotlin Core**
-   - Kotlin dependencies not audited (37 tools in Kotlin codebase)
-   - Recommendation: Create `kotlin-dependencies.md` in Phase 1.3
+1. **Document Kotlin Core**
+- Kotlin dependencies not audited (37 tools in Kotlin codebase)
+- Recommendation: Create `kotlin-dependencies.md` in Phase 1.3
 
-3. **Environment Variable Documentation**
-   - Create `.env.example` with all required variables
-   - Add validation script to check environment before startup
+1. **Environment Variable Documentation**
+- Create `.env.example` with all required variables
+- Add validation script to check environment before startup
 
-4. **Health Check Endpoints**
-   - Add MCP health check tool for dependency validation
-   - Check Redis, Leantime, ConPort connectivity on startup
+1. **Health Check Endpoints**
+- Add MCP health check tool for dependency validation
+- Check Redis, Leantime, ConPort connectivity on startup
 
 ## Next Steps (Component 2 Preview)
 

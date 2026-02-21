@@ -57,9 +57,9 @@ prelude: Dashboard_Day9_Summary (explanation) for dopemux documentation and deve
 
 **What We'll Build (6-8 hours):**
 1. **PrometheusSparklineIntegration** (~150 lines) - Wire Prometheus → Sparklines
-2. **FocusManager** (~100 lines) - Panel focusing, keyboard navigation
-3. **Keyboard Shortcuts** (~50 lines) - All actions, help modal
-4. **Tests** (~300 lines) - Integration, performance, stress
+1. **FocusManager** (~100 lines) - Panel focusing, keyboard navigation
+1. **Keyboard Shortcuts** (~50 lines) - All actions, help modal
+1. **Tests** (~300 lines) - Integration, performance, stress
 
 **Total New Code:** ~680 lines
 **Leverage Existing:** ~550 lines
@@ -74,10 +74,10 @@ prelude: Dashboard_Day9_Summary (explanation) for dopemux documentation and deve
 
 **Steps:**
 1. Create `PrometheusSparklineIntegration` class (150 lines)
-2. Add caching layer (30s TTL)
-3. Wire to `TrendsWidget.update_sparklines()`
-4. Test with live Prometheus
-5. Verify auto-refresh every 30s
+1. Add caching layer (30s TTL)
+1. Wire to `TrendsWidget.update_sparklines()`
+1. Test with live Prometheus
+1. Verify auto-refresh every 30s
 
 **Acceptance:**
 - [ ] Cognitive load sparkline (2h history)
@@ -93,11 +93,11 @@ prelude: Dashboard_Day9_Summary (explanation) for dopemux documentation and deve
 
 **Steps:**
 1. Create `FocusManager` class (100 lines)
-2. Add BINDINGS to `DopemuxDashboard` (20 shortcuts)
-3. Implement action methods (50 lines)
-4. Add CSS focus indicators (blue border + shadow)
-5. Create `KeyboardHelpScreen` (80 lines)
-6. Test all shortcuts manually
+1. Add BINDINGS to `DopemuxDashboard` (20 shortcuts)
+1. Implement action methods (50 lines)
+1. Add CSS focus indicators (blue border + shadow)
+1. Create `KeyboardHelpScreen` (80 lines)
+1. Test all shortcuts manually
 
 **Acceptance:**
 - [ ] 1-4 keys focus panels
@@ -113,12 +113,12 @@ prelude: Dashboard_Day9_Summary (explanation) for dopemux documentation and deve
 
 **Steps:**
 1. Write integration tests (10 tests)
-2. Write performance tests (5 tests)
-3. Run full test suite
-4. Performance profiling (CPU, memory, latency)
-5. 1-hour stress test
-6. Fix any bugs
-7. Update documentation
+1. Write performance tests (5 tests)
+1. Run full test suite
+1. Performance profiling (CPU, memory, latency)
+1. 1-hour stress test
+1. Fix any bugs
+1. Update documentation
 
 **Acceptance:**
 - [ ] All tests pass
@@ -239,22 +239,22 @@ htop -p $(pgrep -f dopemux_dashboard)
 
 **Sections:**
 1. Deep Research (sparklines, keyboard, testing)
-2. Technical Architecture (components, data flow)
-3. Implementation Plan (hour-by-hour breakdown)
-4. Risk Analysis (technical + ADHD risks)
-5. Success Criteria (functional, performance, quality)
-6. References (papers, docs, examples)
+1. Technical Architecture (components, data flow)
+1. Implementation Plan (hour-by-hour breakdown)
+1. Risk Analysis (technical + ADHD risks)
+1. Success Criteria (functional, performance, quality)
+1. References (papers, docs, examples)
 
 ### Implementation Guide (680 lines)
 **File:** `docs/implementation-plans/DASHBOARD_DAY9_READY.md`
 
 **Sections:**
 1. Executive Summary (current status, next steps)
-2. What Already Exists (no rebuilding!)
-3. What We Need to Build (3 clear tasks)
-4. Implementation Checklist (hour-by-hour)
-5. Success Metrics (performance, quality)
-6. Next Steps (how to start)
+1. What Already Exists (no rebuilding!)
+1. What We Need to Build (3 clear tasks)
+1. Implementation Checklist (hour-by-hour)
+1. Success Metrics (performance, quality)
+1. Next Steps (how to start)
 
 ### Quick Summary (This File!)
 **File:** `DASHBOARD_DAY9_SUMMARY.md`

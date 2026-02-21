@@ -43,8 +43,8 @@ Write these files:
 ## PHASE 0 METHOD
 
 1. Repo-wide scan for PM/task tooling and integrations (Task-Orchestrator, TaskMaster, Leantime bridge, CLI commands).
-2. For each component: purpose, entry points, stores, task states, transitions, tests, eventbus usage.
-3. Identify duplication, dead code, missing services, and missing decision linkage.
+1. For each component: purpose, entry points, stores, task states, transitions, tests, eventbus usage.
+1. Identify duplication, dead code, missing services, and missing decision linkage.
 
 ## STOP CONDITION
 

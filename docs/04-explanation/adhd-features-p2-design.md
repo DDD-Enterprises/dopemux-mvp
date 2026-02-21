@@ -61,9 +61,9 @@ A **Transition Coach** that actively manages context switches with structured pr
 #### 1.1 Pre-Transition Protocol
 Before switching tasks:
 1. **Capture current state**: Auto-save files, cursor positions, mental model
-2. **Quick summary**: "What were you working on?" (voice or text)
-3. **Set intention**: "What will you work on next?"
-4. **Estimate return time**: "When will you return to this?" (optional)
+1. **Quick summary**: "What were you working on?" (voice or text)
+1. **Set intention**: "What will you work on next?"
+1. **Estimate return time**: "When will you return to this?" (optional)
 
 #### 1.2 Transition Types
 Handle different transition patterns:
@@ -76,9 +76,9 @@ Handle different transition patterns:
 #### 1.3 Post-Transition Support
 When resuming work:
 1. **Context restoration**: "You were implementing X at line 156"
-2. **Goal reminder**: "Your goal was: Get OAuth working"
-3. **Progress recap**: "You completed 3/6 subtasks"
-4. **Next action**: "Start with: Write client registration endpoint"
+1. **Goal reminder**: "Your goal was: Get OAuth working"
+1. **Progress recap**: "You completed 3/6 subtasks"
+1. **Next action**: "Start with: Write client registration endpoint"
 
 #### 1.4 Transition Quality Metrics
 Track transition success:
@@ -114,10 +114,10 @@ class TransitionCoach:
         Start a transition with structured protocol.
 
         Steps:
-        1. Capture current state (via WorkingMemorySupport)
-        2. Ask for quick summary (optional, low friction)
-        3. Set intention for next context
-        4. Generate transition ID
+1. Capture current state (via WorkingMemorySupport)
+1. Ask for quick summary (optional, low friction)
+1. Set intention for next context
+1. Generate transition ID
         """
         pass
 
@@ -130,10 +130,10 @@ class TransitionCoach:
         Complete transition and restore context.
 
         Returns:
-        - Context summary
-        - Goal reminder
-        - Progress recap
-        - Suggested next action
+- Context summary
+- Goal reminder
+- Progress recap
+- Suggested next action
         """
         pass
 
@@ -147,10 +147,10 @@ class TransitionCoach:
         Suggest optimal transition timing.
 
         Factors:
-        - Current hyperfocus state
-        - Natural break points in work
-        - Upcoming calendar events
-        - Energy level trends
+- Current hyperfocus state
+- Natural break points in work
+- Upcoming calendar events
+- Energy level trends
         """
         pass
 ```
@@ -220,9 +220,9 @@ When overload detected:
 
 **Level 1 - Gentle** (first warning):
 - "I notice you have 23 browser tabs open. Would you like me to:"
-  1. Save tabs to ConPort for later
-  2. Close all but active tab
-  3. Group tabs by topic
+1. Save tabs to ConPort for later
+1. Close all but active tab
+1. Group tabs by topic
 
 **Level 2 - Moderate** (persistent overload):
 - Enable Do Not Disturb mode automatically
@@ -231,11 +231,11 @@ When overload detected:
 
 **Level 3 - Severe** (critical overload):
 - **Sensory Circuit Breaker**:
-  1. Save all state to ConPort
-  2. Close everything except terminal + 1 editor window
-  3. Enable DND across all apps
-  4. Show breathing exercise (optional)
-  5. Suggest ending session if late in day
+1. Save all state to ConPort
+1. Close everything except terminal + 1 editor window
+1. Enable DND across all apps
+1. Show breathing exercise (optional)
+1. Suggest ending session if late in day
 
 #### 2.4 Sensory Profile Calibration
 Learn individual thresholds:
@@ -275,11 +275,11 @@ class SensoryOverloadDetector:
         Check current sensory load across all dimensions.
 
         Factors:
-        - Open windows/tabs count
-        - Notification frequency
-        - Terminal panes
-        - Unread badge counts
-        - Audio activity (if detectable)
+- Open windows/tabs count
+- Notification frequency
+- Terminal panes
+- Unread badge counts
+- Audio activity (if detectable)
         """
         pass
 
@@ -301,10 +301,10 @@ class SensoryOverloadDetector:
         Save current environment to ConPort for restoration.
 
         Saves:
-        - Window positions
-        - Open tabs (URLs)
-        - Terminal session state
-        - Active file/line
+- Window positions
+- Open tabs (URLs)
+- Terminal session state
+- Active file/line
         """
         pass
 
@@ -439,9 +439,9 @@ class HabitStreakTracker:
         Weekly summary focusing on wins, not failures.
 
         Format:
-        - "Best week for X in Y months!"
-        - "Improvement: +20% vs last week"
-        - "Maintained consistency on 3/5 habits"
+- "Best week for X in Y months!"
+- "Improvement: +20% vs last week"
+- "Maintained consistency on 3/5 habits"
         """
         pass
 ```
@@ -539,9 +539,9 @@ class SleepPatternAnalyzer:
         Correlate sleep with next-day energy.
 
         Returns:
-        - Optimal sleep duration
-        - Quality vs. duration trade-offs
-        - Medication timing recommendations
+- Optimal sleep duration
+- Quality vs. duration trade-offs
+- Medication timing recommendations
         """
         pass
 
@@ -550,9 +550,9 @@ class SleepPatternAnalyzer:
         Detect natural circadian patterns.
 
         Returns:
-        - Chronotype (morning/evening/neither)
-        - Natural sleep time window
-        - Peak performance hours
+- Chronotype (morning/evening/neither)
+- Natural sleep time window
+- Peak performance hours
         """
         pass
 ```
@@ -647,10 +647,10 @@ class CodeReviewAssistant:
         Analyze PR and create review plan.
 
         Returns:
-        - Complexity assessment
-        - Chunking recommendations
-        - Time estimate
-        - Optimal scheduling
+- Complexity assessment
+- Chunking recommendations
+- Time estimate
+- Optimal scheduling
         """
         pass
 
@@ -663,9 +663,9 @@ class CodeReviewAssistant:
         Start focused review session.
 
         Features:
-        - Timer: 20-minute default
-        - Checklist: Security, errors, tests
-        - Progress tracking
+- Timer: 20-minute default
+- Checklist: Security, errors, tests
+- Progress tracking
         """
         pass
 
@@ -805,10 +805,10 @@ class MeetingAccommodations:
         Pre-meeting preparation protocol.
 
         Steps:
-        1. Check social battery
-        2. Capture current context
-        3. Show agenda & prep notes
-        4. Set intention
+1. Check social battery
+1. Capture current context
+1. Show agenda & prep notes
+1. Set intention
         """
         pass
 
@@ -832,11 +832,11 @@ class MeetingAccommodations:
         Post-meeting processing and context restoration.
 
         Returns:
-        - Action items (with option to add to task list)
-        - Decisions (synced to ConPort)
-        - Captured thoughts
-        - Battery drain
-        - Context restoration info
+- Action items (with option to add to task list)
+- Decisions (synced to ConPort)
+- Captured thoughts
+- Battery drain
+- Context restoration info
         """
         pass
 ```
@@ -913,9 +913,9 @@ Auto-detect emergency situations:
 
 When pressed (consent required unless pre-authorized):
 1. **Save everything** to ConPort (30 seconds max)
-2. **Close all applications** except terminal
-3. **Enable full DND** (OS-level + all apps)
-4. **Start recovery mode** (see below)
+1. **Close all applications** except terminal
+1. **Enable full DND** (OS-level + all apps)
+1. **Start recovery mode** (see below)
 
 #### 8.3 Recovery Mode
 
@@ -930,9 +930,9 @@ When pressed (consent required unless pre-authorized):
 - Check core needs: hunger, thirst, bathroom, sleep
 - Rate current state: 1-5 scale
 - Choose recovery path:
-  - Short break (20 min)
-  - Long break (2 hours)
-  - End of day (call it done)
+- Short break (20 min)
+- Long break (2 hours)
+- End of day (call it done)
 
 **Phase 3: Recovery** (20-120 minutes)
 - Block all notifications
@@ -984,11 +984,11 @@ class EmergencyResetProtocol:
         Detect emergency situation from multiple signals.
 
         Checks:
-        - Overwhelm detector
-        - Social battery
-        - Sensory overload
-        - Hyperfocus duration
-        - Combined stress score
+- Overwhelm detector
+- Social battery
+- Sensory overload
+- Hyperfocus duration
+- Combined stress score
         """
         pass
 
@@ -1001,10 +1001,10 @@ class EmergencyResetProtocol:
         Execute emergency reset protocol.
 
         Steps:
-        1. Save all state (30s timeout)
-        2. Close applications (requires Desktop Commander)
-        3. Enable DND everywhere
-        4. Enter recovery mode
+1. Save all state (30s timeout)
+1. Close applications (requires Desktop Commander)
+1. Enable DND everywhere
+1. Enter recovery mode
         """
         pass
 
@@ -1017,10 +1017,10 @@ class EmergencyResetProtocol:
         Guide user through recovery phases.
 
         Adaptive based on:
-        - Severity of emergency
-        - User preferences
-        - Time of day
-        - User feedback
+- Severity of emergency
+- User preferences
+- Time of day
+- User feedback
         """
         pass
 
@@ -1032,10 +1032,10 @@ class EmergencyResetProtocol:
         Post-recovery analysis of what went wrong.
 
         Returns:
-        - Trigger combination
-        - Warning signs timeline
-        - Prevention recommendations
-        - Pattern detection
+- Trigger combination
+- Warning signs timeline
+- Prevention recommendations
+- Pattern detection
         """
         pass
 ```
@@ -1072,15 +1072,15 @@ GET    /api/v1/emergency/{id}/analysis
 
 ### Phase 1 (High Impact)
 1. **Transition Coach** (4-6h) - Address #1 ADHD challenge
-2. **Meeting Accommodations** (6-8h) - High daily impact
-3. **Emergency Reset** (8-9h) - Safety critical
+1. **Meeting Accommodations** (6-8h) - High daily impact
+1. **Emergency Reset** (8-9h) - Safety critical
 
 **Total Phase 1**: 18-23 hours
 
 ### Phase 2 (Medium Impact)
 1. **Sensory Overload** (5-7h) - Protection feature
-2. **Sleep Pattern Analysis** (4-6h) - Foundation for other features
-3. **Code Review Accommodations** (8-10h) - Development workflow
+1. **Sleep Pattern Analysis** (4-6h) - Foundation for other features
+1. **Code Review Accommodations** (8-10h) - Development workflow
 
 **Total Phase 2**: 17-23 hours
 

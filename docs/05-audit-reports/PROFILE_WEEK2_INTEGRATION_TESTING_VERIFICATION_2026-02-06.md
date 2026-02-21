@@ -19,11 +19,11 @@ prelude: Verification for ConPort packet row 40 by introducing and executing a r
 ## Implemented Changes
 
 1. Added reusable integration harness:
-   - `/Users/hue/code/dopemux-mvp/scripts/verify_profile_week2_integration.sh`.
-2. Harness validates:
-   - profile unit/command/analytics suites.
-   - dope-context unified search suite subset (`-k 'not trio'`).
-   - scoped docs parity validation for updated profile docs and audit artifacts.
+- `/Users/hue/code/dopemux-mvp/scripts/verify_profile_week2_integration.sh`.
+1. Harness validates:
+- profile unit/command/analytics suites.
+- dope-context unified search suite subset (`-k 'not trio'`).
+- scoped docs parity validation for updated profile docs and audit artifacts.
 
 ## Verification Command
 
@@ -34,4 +34,4 @@ scripts/verify_profile_week2_integration.sh
 ## Result
 
 1. Command passed end-to-end.
-2. Row `40` is reclassified to implemented.
+1. Row `40` is reclassified to implemented.

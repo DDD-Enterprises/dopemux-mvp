@@ -66,9 +66,9 @@ class PredictiveRiskAssessmentEngine:
     ML-powered risk assessment with ADHD-specific pattern recognition.
 
     Features:
-    - Real-time risk prediction using historical patterns
-    - ADHD-specific risk factor identification
-    - Proactive mitigation strategy generation
+- Real-time risk prediction using historical patterns
+- ADHD-specific risk factor identification
+- Proactive mitigation strategy generation
     """
 ```
 
@@ -118,18 +118,18 @@ e) Never actually working despite code existing
 
 **High-Value Components**:
 1. **Predictive Risk Assessment** (562 lines)
-   - ML-based blocker prediction
-   - ADHD-specific risk factors
-   - Proactive mitigation
+- ML-based blocker prediction
+- ADHD-specific risk factors
+- Proactive mitigation
 
-2. **Enhanced Orchestrator** (973 lines)
-   - Dependency analysis
-   - Conflict detection
-   - Smart batching
+1. **Enhanced Orchestrator** (973 lines)
+- Dependency analysis
+- Conflict detection
+- Smart batching
 
-3. **Automation Workflows** (946 lines)
-   - Workflow templates
-   - Automation patterns
+1. **Automation Workflows** (946 lines)
+- Workflow templates
+- Automation patterns
 
 **Question**: Are these features valuable enough to un-deprecate?
 
@@ -155,16 +155,16 @@ e) Never actually working despite code existing
 ### Immediate Actions
 
 1. **Review Decision #140** (30 min)
-   - Read full rationale
-   - Check if discarded functionality was intentional
-   - Verify replacements exist
+- Read full rationale
+- Check if discarded functionality was intentional
+- Verify replacements exist
 
-2. **Check if Code Was Operational** (1 hour)
-   - Look for tests (orchestrator_integration_test.py exists!)
-   - Check git history for recent activity
-   - Verify if services were running
+1. **Check if Code Was Operational** (1 hour)
+- Look for tests (orchestrator_integration_test.py exists!)
+- Check git history for recent activity
+- Verify if services were running
 
-3. **Decision Point**: Un-deprecate or Confirm
+1. **Decision Point**: Un-deprecate or Confirm
 
 **If code was working**:
 - Consider un-deprecating valuable components
@@ -205,10 +205,10 @@ e) Never actually working despite code existing
 **Recommendation**: ⚠️ **PAUSE DEPRECATION** pending investigation:
 
 1. Review Decision #140 full rationale
-2. Check if discarded code was operational
-3. Verify replacement coverage is complete
-4. Document any intentional feature reductions
-5. Make informed decision: Confirm deprecation OR un-deprecate
+1. Check if discarded code was operational
+1. Verify replacement coverage is complete
+1. Document any intentional feature reductions
+1. Make informed decision: Confirm deprecation OR un-deprecate
 
 **Time Required**: 2-3 hours for thorough investigation
 

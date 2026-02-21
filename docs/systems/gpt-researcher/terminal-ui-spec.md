@@ -259,9 +259,9 @@ backend/cli/
 **Tool Suite**:
 
 1. **Rich startup messages** - Beautiful API server initialization
-2. **Click CLI commands** - `gptr create`, `gptr status`, `gptr cancel`
-3. **Simple progress viewer** - Lightweight monitoring
-4. **Full dashboard** - When detailed monitoring needed
+1. **Click CLI commands** - `gptr create`, `gptr status`, `gptr cancel`
+1. **Simple progress viewer** - Lightweight monitoring
+1. **Full dashboard** - When detailed monitoring needed
 
 **Implementation Strategy**:
 
@@ -294,35 +294,35 @@ Phase 3: Advanced Features (Week 4+)
 **Key Components**:
 
 1. **Main Dashboard** (`terminal_dashboard.py`)
-   - Multi-panel layout using Rich/Textual
-   - WebSocket connection to existing API
-   - Keyboard shortcuts for navigation
+- Multi-panel layout using Rich/Textual
+- WebSocket connection to existing API
+- Keyboard shortcuts for navigation
 
-2. **Progress Visualization** (`progress_panel.py`)
-   - Real-time progress bars for each research question
-   - Color-coded status indicators
-   - Estimated time remaining
+1. **Progress Visualization** (`progress_panel.py`)
+- Real-time progress bars for each research question
+- Color-coded status indicators
+- Estimated time remaining
 
-3. **Attention Tracker** (`attention_tracker.py`)
-   - Break timer with visual countdown
-   - Focus session tracking
-   - Gentle notification system
+1. **Attention Tracker** (`attention_tracker.py`)
+- Break timer with visual countdown
+- Focus session tracking
+- Gentle notification system
 
-4. **Source Explorer** (`sources_panel.py`)
-   - Collapsible tree view of discovered sources
-   - Quick preview of source content
-   - Relevance scoring visualization
+1. **Source Explorer** (`sources_panel.py`)
+- Collapsible tree view of discovered sources
+- Quick preview of source content
+- Relevance scoring visualization
 
 ### ADHD-Specific Features
 
 #### Visual Design
 
 - **Color Palette**: Consistent color coding across all panels
-  - 🟢 Green: Active/successful states
-  - 🟡 Yellow: Waiting/in-progress states
-  - 🔴 Red: Error/blocked states
-  - 🔵 Blue: Completed states
-  - ⚪ Gray: Inactive/background elements
+- 🟢 Green: Active/successful states
+- 🟡 Yellow: Waiting/in-progress states
+- 🔴 Red: Error/blocked states
+- 🔵 Blue: Completed states
+- ⚪ Gray: Inactive/background elements
 
 #### Interaction Patterns
 

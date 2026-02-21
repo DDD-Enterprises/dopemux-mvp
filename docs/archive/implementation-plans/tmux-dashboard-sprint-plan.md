@@ -23,10 +23,10 @@ prelude: Tmux Dashboard Sprint Plan (explanation) for dopemux documentation and 
 
 ### What We're Building
 1. Enhanced sparklines with real historical data
-2. Interactive keyboard navigation between panels
-3. Data drill-down popup views
-4. Real-time WebSocket streaming (optional)
-5. Advanced panel layouts with presets
+1. Interactive keyboard navigation between panels
+1. Data drill-down popup views
+1. Real-time WebSocket streaming (optional)
+1. Advanced panel layouts with presets
 
 ### Why Now
 - Core dashboard is complete and working
@@ -357,8 +357,8 @@ timeout 3600 python dopemux_dashboard.py
 
 ### Questions to Answer:
 1. What did I complete yesterday?
-2. What am I working on today?
-3. Any blockers?
+1. What am I working on today?
+1. Any blockers?
 
 ### Track in DASHBOARD_IMPLEMENTATION_TRACKER.md:
 ```markdown

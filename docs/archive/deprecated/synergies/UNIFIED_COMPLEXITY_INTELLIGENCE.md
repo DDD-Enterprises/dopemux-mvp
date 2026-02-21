@@ -23,19 +23,19 @@ prelude: Unified_Complexity_Intelligence (explanation) for dopemux documentation
 Three systems calculate code complexity independently:
 
 1. **dope-context** (`src/preprocessing/code_chunker.py`):
-   - Tree-sitter AST analysis
-   - Nesting depth, cyclomatic complexity
-   - Score: 0.0-1.0
+- Tree-sitter AST analysis
+- Nesting depth, cyclomatic complexity
+- Score: 0.0-1.0
 
-2. **Serena v2** (`adhd_features.py`):
-   - LSP symbol metadata
-   - Line count, reference patterns
-   - Score: 0.0-1.0
+1. **Serena v2** (`adhd_features.py`):
+- LSP symbol metadata
+- Line count, reference patterns
+- Score: 0.0-1.0
 
-3. **ADHD Engine** (implicitly via cognitive load):
-   - User-specific fatigue patterns
-   - Historical completion rates
-   - Adjustment multiplier
+1. **ADHD Engine** (implicitly via cognitive load):
+- User-specific fatigue patterns
+- Historical completion rates
+- Adjustment multiplier
 
 **Duplication**: Each system computes independently → wasted CPU + inconsistent scores
 
@@ -77,22 +77,22 @@ unified_score = (
 **Components**:
 
 1. **AST Complexity** (from dope-context):
-   - Nesting depth
-   - Cyclomatic complexity
-   - Control flow
-   - Weight: 50% (most objective)
+- Nesting depth
+- Cyclomatic complexity
+- Control flow
+- Weight: 50% (most objective)
 
-2. **Usage Complexity** (from Serena LSP):
-   - Reference count / 100
-   - Caller count / 50
-   - Import frequency
-   - Weight: 30% (impact indicator)
+1. **Usage Complexity** (from Serena LSP):
+- Reference count / 100
+- Caller count / 50
+- Import frequency
+- Weight: 30% (impact indicator)
 
-3. **User Adjustment** (from ADHD Engine):
-   - Historical completion rate for similar complexity
-   - Fatigue multiplier
-   - Energy-complexity match history
-   - Weight: 20% (personalization)
+1. **User Adjustment** (from ADHD Engine):
+- Historical completion rate for similar complexity
+- Fatigue multiplier
+- Energy-complexity match history
+- Weight: 20% (personalization)
 
 ### Implementation
 
@@ -197,10 +197,10 @@ assessment = await assess_task(task_with_code_refs)
 ## Benefits
 
 1. **Better Accuracy**: AST + LSP + user history = best score
-2. **Reduced Computation**: Calculate once, use everywhere
-3. **Consistent**: Same score across all systems
-4. **Personalized**: Adapts to individual ADHD patterns
-5. **Cached**: Avoid redundant calculations
+1. **Reduced Computation**: Calculate once, use everywhere
+1. **Consistent**: Same score across all systems
+1. **Personalized**: Adapts to individual ADHD patterns
+1. **Cached**: Avoid redundant calculations
 
 ---
 
@@ -234,9 +234,9 @@ assessment = await assess_task(task_with_code_refs)
 ## Testing Strategy
 
 1. **Accuracy Validation**: Compare unified scores vs individual scores
-2. **Performance Benchmarking**: Measure cache hit rates and latency
-3. **ADHD Effectiveness**: Test with real ADHD developers
-4. **Consistency Check**: Verify same score across systems
+1. **Performance Benchmarking**: Measure cache hit rates and latency
+1. **ADHD Effectiveness**: Test with real ADHD developers
+1. **Consistency Check**: Verify same score across systems
 
 ---
 

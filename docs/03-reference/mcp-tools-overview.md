@@ -16,14 +16,14 @@ This guide lists Dopemux MCP servers and their key tools with sample Claude usag
 ## Global Servers
 
 - ddg-mcp (stdio, on DopeconBridge)
-  - related_decisions(decision_id, k)
-  - related_text(query, workspace_id, k)
-  - instance_diff(workspace_id, a, b, kind)
-  - recent_decisions(workspace_id, limit)
-  - search_decisions(q, workspace_id, limit)
-  - conport_fork_instance(workspace_id, source_instance, target_instance, conport_url)
-  - conport_promote(progress_id, conport_url)
-  - conport_promote_all(workspace_id, conport_url)
+- related_decisions(decision_id, k)
+- related_text(query, workspace_id, k)
+- instance_diff(workspace_id, a, b, kind)
+- recent_decisions(workspace_id, limit)
+- search_decisions(q, workspace_id, limit)
+- conport_fork_instance(workspace_id, source_instance, target_instance, conport_url)
+- conport_promote(progress_id, conport_url)
+- conport_promote_all(workspace_id, conport_url)
 
 - mas-sequential-thinking, zen (stdio)
 - serena, exa, leantime-bridge (SSE)
@@ -34,13 +34,13 @@ This guide lists Dopemux MCP servers and their key tools with sample Claude usag
 ## Project Servers (per worktree)
 
 - conport (stdio)
-  - get_progress(workspace_id, status, limit)
-  - get_decisions(workspace_id, limit)
+- get_progress(workspace_id, status, limit)
+- get_decisions(workspace_id, limit)
 
 - conport-admin (stdio)
-  - fork_instance(workspace_id, source_instance, target_instance)
-  - promote(progress_id)
-  - promote_all(workspace_id)
+- fork_instance(workspace_id, source_instance, target_instance)
+- promote(progress_id)
+- promote_all(workspace_id)
 
 ## Sample Claude Prompts
 
@@ -78,14 +78,14 @@ List in-progress tasks for this project and propose 2 actionable next steps (< 2
 ## Configuration
 
 - VoyageAI
-  - VOYAGEAI_API_KEY required
-  - EMBEDDINGS_MODEL=voyage-3-large (default)
-  - RERANKER_MODEL=reranker-2.5 (default)
+- VOYAGEAI_API_KEY required
+- EMBEDDINGS_MODEL=voyage-3-large (default)
+- RERANKER_MODEL=reranker-2.5 (default)
 - Qdrant (embeddings index)
-  - QDRANT_URL (e.g., http://qdrant:6333)
-  - QDRANT_COLLECTION=ddg_decisions (optional)
+- QDRANT_URL (e.g., http://qdrant:6333)
+- QDRANT_COLLECTION=ddg_decisions (optional)
 - AGE Graph (optional)
-  - AGE_HOST, AGE_PORT, AGE_USER, AGE_PASSWORD, AGE_DATABASE
+- AGE_HOST, AGE_PORT, AGE_USER, AGE_PASSWORD, AGE_DATABASE
 
 ## Notes
 

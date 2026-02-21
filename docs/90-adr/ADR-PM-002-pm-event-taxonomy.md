@@ -13,8 +13,8 @@ graph_metadata:
   node_type: ADR
   impact: high
   relates_to:
-  - PM_ARCHITECTURE
-  - ADR-PM-001-canonical-task-object
+- PM_ARCHITECTURE
+- ADR-PM-001-canonical-task-object
 ---
 # Context
 
@@ -42,20 +42,20 @@ PM plane adopts a canonical `pm.*` event taxonomy and envelope:
 Envelope invariants:
 
 1. `event_id` is a content-address hash over canonical payload fields.
-2. `ts_utc` is the authoritative event timestamp field.
-3. `idempotency_key` is required for transition-producing events.
-4. `source` is required and normalized to producing component.
-5. Consumers are replay-safe and ignore duplicate `event_id`.
+1. `ts_utc` is the authoritative event timestamp field.
+1. `idempotency_key` is required for transition-producing events.
+1. `source` is required and normalized to producing component.
+1. Consumers are replay-safe and ignore duplicate `event_id`.
 
 # Consequences
 
 - Positive:
-  - Cross-service coordination semantics become explicit and auditable.
-  - Retries become safe by construction.
-  - Failure handling can return precise degraded statuses.
+- Cross-service coordination semantics become explicit and auditable.
+- Retries become safe by construction.
+- Failure handling can return precise degraded statuses.
 - Tradeoffs:
-  - Existing producers need mapping/adaptation into `pm.*` names.
-  - Additional normalization logic is required for timestamp and hashing fields.
+- Existing producers need mapping/adaptation into `pm.*` names.
+- Additional normalization logic is required for timestamp and hashing fields.
 
 # Alternatives Considered
 

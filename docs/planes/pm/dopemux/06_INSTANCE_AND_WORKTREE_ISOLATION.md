@@ -26,26 +26,26 @@ Mechanics and invariants: port offsets, workspace_id, worktree safety. Ensuring 
 
 ## Non-negotiable invariants
 1. **Identity Binding**: A running Dopemux instance is cryptographically bound to a specific git worktree root.
-2. **Port Isolation**: No two instances may share the same localhost ports for MCP or debugging.
-3. **Root Lock**: An instance must refuse to run if it detects it is inside a subdirectory of another active instance's root (nested worktrees are tricky, treat with caution).
+1. **Port Isolation**: No two instances may share the same localhost ports for MCP or debugging.
+1. **Root Lock**: An instance must refuse to run if it detects it is inside a subdirectory of another active instance's root (nested worktrees are tricky, treat with caution).
 
 ## FACT ANCHORS (Repo-derived)
 - **OBSERVED: Preflight Script**: `scripts/repo_preflight.sh`.
 - **OBSERVED: Port Manager**: `src/dopemux/net/ports.py` (to be verified).
 - **OBSERVED: Base Ports** (from `compose.yml`):
-  - **Internal Service/MCP**: 3000-3020 (e.g., `conport`:3004, `dopecon-bridge`:3016).
-  - **Health/Info**: 4000-4010 (e.g., `litellm`:4000, `conport-info`:4004).
-  - **Infrastructure**: 5432 (Postgres), 6379 (Redis), 6333 (Qdrant).
-  - **App Endpoints**:
-    - `task-orchestrator`: 8000 (Internal/Traefik).
-    - `leantime`: 8080 (External).
-    - `adhd-engine`: 8095 (Internal/Traefik).
-    - `dope-memory`: 3020 (Mapped to 8096 host).
+- **Internal Service/MCP**: 3000-3020 (e.g., `conport`:3004, `dopecon-bridge`:3016).
+- **Health/Info**: 4000-4010 (e.g., `litellm`:4000, `conport-info`:4004).
+- **Infrastructure**: 5432 (Postgres), 6379 (Redis), 6333 (Qdrant).
+- **App Endpoints**:
+- `task-orchestrator`: 8000 (Internal/Traefik).
+- `leantime`: 8080 (External).
+- `adhd-engine`: 8095 (Internal/Traefik).
+- `dope-memory`: 3020 (Mapped to 8096 host).
 - **INFERRED: Worktree Constants**: `WORKTREE` env var usage in `config/config.py`.
 
 ## Open questions
 - **Nested Worktrees**: How do we detect if a worktree is nested inside another?
-  - *Resolution*: recursive check of parent directories for `.repo_id`.
+- *Resolution*: recursive check of parent directories for `.repo_id`.
 
 ## Worktree identity rules
 - **Source**: `.repo_id` file in the root.
@@ -72,19 +72,19 @@ Realistically, we use a simple incremental search or a configured ID in `.dopemu
 
 ## Cleanup and recovery
 - **Safe Cleanup**:
-  - `dmux stop`: Sends SIGTERM to children (MCPs), waits 5s, sends SIGKILL. Removes `.dopemux/instance.lock`.
+- `dmux stop`: Sends SIGTERM to children (MCPs), waits 5s, sends SIGKILL. Removes `.dopemux/instance.lock`.
 - **Crash Recovery**:
-  - If `.dopemux/instance.lock` exists but PID is dead:
-    - Log "detected stale lock".
-    - Remove lock.
-    - Start normally.
+- If `.dopemux/instance.lock` exists but PID is dead:
+- Log "detected stale lock".
+- Remove lock.
+- Start normally.
 
 ## Failure modes
 - **Port Collision**: "Address already in use".
-  - *Mitigation*: Port Manager tries `base + offset`. If fail, increment offset.
+- *Mitigation*: Port Manager tries `base + offset`. If fail, increment offset.
 - **Cross-Talk**: Instance A connects to Instance B's ConPort.
-  - *Mitigation*: Auth tokens generated per-session/per-worktree in `.dopemux/secrets`.
+- *Mitigation*: Auth tokens generated per-session/per-worktree in `.dopemux/secrets`.
 
 ## Acceptance criteria
 1. **Multi-Run Test**: Start Dopemux in Repo A. Start Dopemux in Repo B. Both must come up online with different ports.
-2. **Lock Test**: Try to start a second Dopemux in Repo A. It must refuse ("Instance already running").
+1. **Lock Test**: Try to start a second Dopemux in Repo A. It must refuse ("Instance already running").

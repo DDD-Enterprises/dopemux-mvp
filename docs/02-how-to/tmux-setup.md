@@ -54,7 +54,7 @@ This guide documents the ADHD-optimized tmux configuration for the Dopemux devel
    tmux source-file .tmux.conf
    ```
 
-2. **Set model variables** (in tmux command mode Ctrl-b :):
+1. **Set model variables** (in tmux command mode Ctrl-b :):
    ```bash
    :set -g @model "Sonnet 4.5"
    :set -g @ctx_window "1M"
@@ -70,14 +70,14 @@ Since tmux layouts vary, use this manual setup for consistent monitoring:
    :select-pane -T "monitor:worktree"
    ```
 
-2. **Create logs pane**:
+1. **Create logs pane**:
    ```bash
    :split-window -v
    :send-keys '~/code/dopemux-mvp/scripts/tmux-monitor-logs.sh' C-m
    :select-pane -T "monitor:logs"
    ```
 
-3. **Create metrics pane**:
+1. **Create metrics pane**:
    ```bash
    :split-window -v
    :send-keys '~/code/dopemux-mvp/scripts/tmux-monitor-metrics.sh; watch -n 5 ~/code/dopemux-mvp/scripts/tmux-monitor-metrics.sh' C-m

@@ -84,13 +84,13 @@ prelude: Conport_Local_Guide (explanation) for dopemux documentation and develop
 
 **Service Won't Start**:
 1. Check if port 3007+ is available: `lsof -i :3007`
-2. Verify virtual environment: `services/conport/venv/bin/activate`
-3. Check startup logs: `tail -f .conport/logs/startup.log`
+1. Verify virtual environment: `services/conport/venv/bin/activate`
+1. Check startup logs: `tail -f .conport/logs/startup.log`
 
 **MCP Not Connecting**:
 1. Restart Claude Code to pick up config changes
-2. Verify service health: `./scripts/conport/status.sh --quick`
-3. Check mcp-proxy is installed: `uvx --help`
+1. Verify service health: `./scripts/conport/status.sh --quick`
+1. Check mcp-proxy is installed: `uvx --help`
 
 **Data Issues**:
 - Database locked: Stop all ConPort processes, then restart

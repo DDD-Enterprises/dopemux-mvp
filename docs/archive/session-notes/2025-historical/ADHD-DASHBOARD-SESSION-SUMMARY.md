@@ -122,19 +122,19 @@ Line 3: ✓ 🔄 1 in progress 📝 1 todo • Task name
 
 ### Immediately Usable:
 1. **Bash 3-Pane Dashboard**
-   - Launch: `./scripts/launch-adhd-dashboard.sh`
-   - Fully functional, zero dependencies
-   - Perfect for testing and daily use
+- Launch: `./scripts/launch-adhd-dashboard.sh`
+- Fully functional, zero dependencies
+- Perfect for testing and daily use
 
-2. **Typer/Rich Dashboard**
-   - Launch: `python3 scripts/dopemux-dashboard.py tmux`
-   - Requires: pip3 install typer rich requests
-   - Beautiful TUI, professional CLI
+1. **Typer/Rich Dashboard**
+- Launch: `python3 scripts/dopemux-dashboard.py tmux`
+- Requires: pip3 install typer rich requests
+- Beautiful TUI, professional CLI
 
-3. **Simple Dashboard**
-   - Launch: `./scripts/adhd-dashboard.sh`
-   - Single-pane bash version
-   - Quick health check
+1. **Simple Dashboard**
+- Launch: `./scripts/adhd-dashboard.sh`
+- Single-pane bash version
+- Quick health check
 
 ---
 
@@ -173,25 +173,25 @@ Line 3: ✓ 🔄 1 in progress 📝 1 todo • Task name
 ## 💡 Key Decisions Made
 
 1. **Both Bash AND Typer versions**
-   - Bash: Zero dependencies, fast, reliable
-   - Typer: Modern, beautiful, extensible
-   - Keep both for different use cases
+- Bash: Zero dependencies, fast, reliable
+- Typer: Modern, beautiful, extensible
+- Keep both for different use cases
 
-2. **3-pane layout over all-in-one**
-   - Easier to read (dedicated space per concern)
-   - Better for tmux workflow
-   - Can run panes independently
+1. **3-pane layout over all-in-one**
+- Easier to read (dedicated space per concern)
+- Better for tmux workflow
+- Can run panes independently
 
-3. **Compact design for top pane**
-   - 3-5 lines maximum
-   - Most critical info only
-   - ADHD-friendly (emoji, concrete numbers)
+1. **Compact design for top pane**
+- 3-5 lines maximum
+- Most critical info only
+- ADHD-friendly (emoji, concrete numbers)
 
-4. **Full integration roadmap**
-   - Serena for untracked work
-   - Leantime for tasks
-   - ConPort for context
-   - Task Orchestrator for sync
+1. **Full integration roadmap**
+- Serena for untracked work
+- Leantime for tasks
+- ConPort for context
+- Task Orchestrator for sync
 
 ---
 

@@ -19,218 +19,218 @@ prelude: Dopeconbridge_Checklist (explanation) for dopemux documentation and dev
 ## Phase 1: Foundation ✅
 
 - [x] Create shared client library
-  - [x] `services/shared/dopecon_bridge_client/__init__.py`
-  - [x] `services/shared/dopecon_bridge_client/client.py`
-  - [x] Sync client implementation
-  - [x] Async client implementation
-  - [x] Type-safe dataclasses
-  - [x] Environment config
-  - [x] Error handling
+- [x] `services/shared/dopecon_bridge_client/__init__.py`
+- [x] `services/shared/dopecon_bridge_client/client.py`
+- [x] Sync client implementation
+- [x] Async client implementation
+- [x] Type-safe dataclasses
+- [x] Environment config
+- [x] Error handling
 
 - [x] Write unit tests
-  - [x] `tests/shared/test_integration_bridge_client.py`
-  - [x] Event publishing tests
-  - [x] Routing tests
-  - [x] Custom data tests
-  - [x] Error handling tests
+- [x] `tests/shared/test_integration_bridge_client.py`
+- [x] Event publishing tests
+- [x] Routing tests
+- [x] Custom data tests
+- [x] Error handling tests
 
 ---
 
 ## Phase 2: Core Services ✅
 
 - [x] **ADHD Engine**
-  - [x] `services/adhd_engine/bridge_integration.py`
-  - [x] Progress tracking
-  - [x] Session state
-  - [x] Activity logging
+- [x] `services/adhd_engine/bridge_integration.py`
+- [x] Progress tracking
+- [x] Session state
+- [x] Activity logging
 
 - [x] **Voice Commands**
-  - [x] `services/voice-commands/bridge_adapter.py`
-  - [x] Command logging
-  - [x] Decision tracking
-  - [x] Follow-up creation
+- [x] `services/voice-commands/bridge_adapter.py`
+- [x] Command logging
+- [x] Decision tracking
+- [x] Follow-up creation
 
 - [x] **Task Orchestrator**
-  - [x] `services/task-orchestrator/bridge_adapter.py`
-  - [x] Task events
-  - [x] Status updates
-  - [x] PM routing
+- [x] `services/task-orchestrator/bridge_adapter.py`
+- [x] Task events
+- [x] Status updates
+- [x] PM routing
 
 - [x] **Serena v2**
-  - [x] `services/serena/v2/bridge_adapter.py`
-  - [x] Context management
-  - [x] Decision storage
-  - [x] Query interface
+- [x] `services/serena/v2/bridge_adapter.py`
+- [x] Context management
+- [x] Decision storage
+- [x] Query interface
 
 - [x] **GPT Researcher**
-  - [x] `services/dopemux-gpt-researcher/bridge_adapter.py`
-  - [x] Research logging
-  - [x] Source tracking
-  - [x] Result storage
+- [x] `services/dopemux-gpt-researcher/bridge_adapter.py`
+- [x] Research logging
+- [x] Source tracking
+- [x] Result storage
 
 ---
 
 ## Phase 3: Advanced Services ✅
 
 - [x] **DDDPG**
-  - [x] `services/dddpg/bridge_adapter.py`
-  - [x] Decision graph events
-  - [x] Node tracking
-  - [x] Graph queries
+- [x] `services/dddpg/bridge_adapter.py`
+- [x] Decision graph events
+- [x] Node tracking
+- [x] Graph queries
 
 - [x] **Dope Context**
-  - [x] `services/dope-context/bridge_adapter.py`
-  - [x] Context aggregation
-  - [x] Workspace context
-  - [x] Context queries
+- [x] `services/dope-context/bridge_adapter.py`
+- [x] Context aggregation
+- [x] Workspace context
+- [x] Context queries
 
 - [x] **Dope Brainz**
-  - [x] `services/shared/dopecon_bridge_client/brainz_adapter.py`
-  - [x] Knowledge synthesis
-  - [x] Pattern detection
-  - [x] Insight storage
+- [x] `services/shared/dopecon_bridge_client/brainz_adapter.py`
+- [x] Knowledge synthesis
+- [x] Pattern detection
+- [x] Insight storage
 
 ---
 
 ## Phase 4: PM Services ✅
 
 - [x] **Leantime**
-  - [x] `services/shared/dopecon_bridge_client/leantime_adapter.py`
-  - [x] Task creation
-  - [x] Status updates
-  - [x] Project events
-  - [x] Time tracking
+- [x] `services/shared/dopecon_bridge_client/leantime_adapter.py`
+- [x] Task creation
+- [x] Status updates
+- [x] Project events
+- [x] Time tracking
 
 - [x] **TaskMaster**
-  - [x] `services/taskmaster/bridge_adapter.py`
-  - [x] Task lifecycle
-  - [x] Dependency tracking
-  - [x] Progress updates
+- [x] `services/taskmaster/bridge_adapter.py`
+- [x] Task lifecycle
+- [x] Dependency tracking
+- [x] Progress updates
 
 ---
 
 ## Phase 5: Supporting Services ✅
 
 - [x] **Monitoring Dashboard**
-  - [x] `services/monitoring-dashboard/bridge_adapter.py`
-  - [x] Metric publishing
-  - [x] Alert generation
-  - [x] Health checks
+- [x] `services/monitoring-dashboard/bridge_adapter.py`
+- [x] Metric publishing
+- [x] Alert generation
+- [x] Health checks
 
 - [x] **Activity Capture**
-  - [x] `services/activity-capture/bridge_adapter.py`
-  - [x] User activity tracking
-  - [x] Window tracking
-  - [x] Time tracking
+- [x] `services/activity-capture/bridge_adapter.py`
+- [x] User activity tracking
+- [x] Window tracking
+- [x] Time tracking
 
 - [x] **Workspace Watcher**
-  - [x] `services/workspace-watcher/bridge_adapter.py`
-  - [x] File change events
-  - [x] Code metrics
-  - [x] Trend analysis
+- [x] `services/workspace-watcher/bridge_adapter.py`
+- [x] File change events
+- [x] Code metrics
+- [x] Trend analysis
 
 - [x] **Interruption Shield**
-  - [x] `services/interruption-shield/bridge_adapter.py`
-  - [x] Focus events
-  - [x] Interruption tracking
-  - [x] Shield decisions
+- [x] `services/interruption-shield/bridge_adapter.py`
+- [x] Focus events
+- [x] Interruption tracking
+- [x] Shield decisions
 
 ---
 
 ## Phase 6: Experimental Services ✅
 
 - [x] **Break Suggester**
-  - [x] `services/break-suggester/bridge_adapter.py`
-  - [x] Energy tracking
-  - [x] Break recommendations
-  - [x] Pattern analysis
+- [x] `services/break-suggester/bridge_adapter.py`
+- [x] Energy tracking
+- [x] Break recommendations
+- [x] Pattern analysis
 
 - [x] **Energy Trends**
-  - [x] `services/energy-trends/bridge_adapter.py`
-  - [x] Historical analysis
-  - [x] Trend detection
-  - [x] Prediction storage
+- [x] `services/energy-trends/bridge_adapter.py`
+- [x] Historical analysis
+- [x] Trend detection
+- [x] Prediction storage
 
 - [x] **Working Memory Assistant**
-  - [x] `services/working-memory-assistant/bridge_adapter.py`
-  - [x] Short-term context
-  - [x] Memory operations
-  - [x] Cache management
+- [x] `services/working-memory-assistant/bridge_adapter.py`
+- [x] Short-term context
+- [x] Memory operations
+- [x] Cache management
 
 - [x] **Session Intelligence**
-  - [x] `services/session-intelligence/bridge_adapter.py`
-  - [x] Pattern detection
-  - [x] Session analysis
-  - [x] Insights generation
+- [x] `services/session-intelligence/bridge_adapter.py`
+- [x] Pattern detection
+- [x] Session analysis
+- [x] Insights generation
 
 ---
 
 ## Phase 7: Infrastructure ✅
 
 - [x] **Docker Compose**
-  - [x] `docker-compose.master.yml` - DopeconBridge service
-  - [x] `docker-compose.unified.yml` - DopeconBridge service
-  - [x] ADHD Engine env vars
-  - [x] Task Orchestrator env vars
-  - [x] Genetic Agent env vars
+- [x] `docker-compose.master.yml` - DopeconBridge service
+- [x] `docker-compose.unified.yml` - DopeconBridge service
+- [x] ADHD Engine env vars
+- [x] Task Orchestrator env vars
+- [x] Genetic Agent env vars
 
 - [x] **Environment Files**
-  - [x] `.env.example` - Bridge vars
-  - [x] `.env.dopecon_bridge.example` - Complete config
-  - [x] `.env.production-ready` - Production settings
+- [x] `.env.example` - Bridge vars
+- [x] `.env.dopecon_bridge.example` - Complete config
+- [x] `.env.production-ready` - Production settings
 
 ---
 
 ## Phase 8: Genetic Agent ✅
 
 - [x] **Genetic Agent Integration**
-  - [x] `services/genetic_agent/dopecon_integration.py`
-  - [x] Iteration events
-  - [x] Population tracking
-  - [x] Fitness logging
-  - [x] Repair decisions
-  - [x] Historical queries
+- [x] `services/genetic_agent/dopecon_integration.py`
+- [x] Iteration events
+- [x] Population tracking
+- [x] Fitness logging
+- [x] Repair decisions
+- [x] Historical queries
 
 ---
 
 ## Phase 9: Documentation ✅
 
 - [x] **Core Documentation**
-  - [x] `DOPECONBRIDGE_MASTER_INDEX.md`
-  - [x] `DOPECONBRIDGE_SERVICE_CATALOG.md`
-  - [x] `DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`
-  - [x] `DOPECONBRIDGE_QUICK_START.md`
-  - [x] `DOPECONBRIDGE_EXECUTIVE_SUMMARY.md`
+- [x] `DOPECONBRIDGE_MASTER_INDEX.md`
+- [x] `DOPECONBRIDGE_SERVICE_CATALOG.md`
+- [x] `DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`
+- [x] `DOPECONBRIDGE_QUICK_START.md`
+- [x] `DOPECONBRIDGE_EXECUTIVE_SUMMARY.md`
 
 - [x] **Completion Reports**
-  - [x] `DOPECONBRIDGE_COMPLETE.md`
-  - [x] `DOPECONBRIDGE_COMPLETE_FINAL.md`
-  - [x] `DOPECONBRIDGE_FINAL_SUMMARY.md`
-  - [x] `DOPECONBRIDGE_EXEC_SUMMARY.md`
+- [x] `DOPECONBRIDGE_COMPLETE.md`
+- [x] `DOPECONBRIDGE_COMPLETE_FINAL.md`
+- [x] `DOPECONBRIDGE_FINAL_SUMMARY.md`
+- [x] `DOPECONBRIDGE_EXEC_SUMMARY.md`
 
 - [x] **Additional Docs**
-  - [x] `DOPECONBRIDGE_RENAMING_COMPLETE.md`
-  - [x] `DOPECONBRIDGE_PHASE9_CONFIG_UPDATE.md`
-  - [x] `START_HERE_DOPECONBRIDGE.md`
-  - [x] `DOPECONBRIDGE_CHECKLIST.md` (this file)
+- [x] `DOPECONBRIDGE_RENAMING_COMPLETE.md`
+- [x] `DOPECONBRIDGE_PHASE9_CONFIG_UPDATE.md`
+- [x] `START_HERE_DOPECONBRIDGE.md`
+- [x] `DOPECONBRIDGE_CHECKLIST.md` (this file)
 
 ---
 
 ## Phase 10: Verification ✅
 
 - [x] **Verification Tools**
-  - [x] `verify_dopecon_bridge.sh` - Automated checks
-  - [x] Service adapter presence
-  - [x] Docker config validation
-  - [x] Env template validation
-  - [x] Documentation completeness
+- [x] `verify_dopecon_bridge.sh` - Automated checks
+- [x] Service adapter presence
+- [x] Docker config validation
+- [x] Env template validation
+- [x] Documentation completeness
 
 - [x] **Code Quality**
-  - [x] No direct ConPort DB access
-  - [x] Consistent error handling
-  - [x] Type safety
-  - [x] Environment-based config
-  - [x] Comprehensive logging
+- [x] No direct ConPort DB access
+- [x] Consistent error handling
+- [x] Type safety
+- [x] Environment-based config
+- [x] Comprehensive logging
 
 ---
 

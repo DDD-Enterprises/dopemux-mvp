@@ -22,7 +22,7 @@ prelude: Conport_Http_Deep_Planning (explanation) for dopemux documentation and 
 
 Create a lightweight HTTP API layer for ConPort that exposes:
 1. Recent decisions logged by users
-2. Knowledge graph statistics (nodes, edges, workspaces)
+1. Knowledge graph statistics (nodes, edges, workspaces)
 
 **Why:** Dashboard needs HTTP endpoints to display ConPort data. ConPort currently runs only as MCP server (stdio mode).
 
@@ -236,10 +236,10 @@ SELECT COUNT(DISTINCT workspace_id) FROM workspaces;
 
 **Questions to Answer:**
 1. Is PostgreSQL running?
-2. What's the database connection string?
-3. Does AGE extension exist?
-4. Are there existing tables?
-5. What's the schema for decisions/nodes/edges?
+1. What's the database connection string?
+1. Does AGE extension exist?
+1. Are there existing tables?
+1. What's the schema for decisions/nodes/edges?
 
 **Commands:**
 ```bash
@@ -338,8 +338,8 @@ if __name__ == "__main__":
 
 **Options:**
 1. Use existing `postgres_client.py` if compatible
-2. Use `asyncpg` directly (lightweight)
-3. Use `psycopg3` (more features)
+1. Use `asyncpg` directly (lightweight)
+1. Use `psycopg3` (more features)
 
 **Recommended:** Check existing client first, fall back to asyncpg if needed.
 
@@ -375,17 +375,17 @@ curl http://localhost:8005/api/adhd/graph/stats | jq '.'
    WHERE table_name = 'decisions';
    ```
 
-2. **Nodes table structure**
+1. **Nodes table structure**
    ```sql
    DESCRIBE nodes;
    ```
 
-3. **Edges table structure**
+1. **Edges table structure**
    ```sql
    DESCRIBE edges;
    ```
 
-4. **Sample data**
+1. **Sample data**
    ```sql
    SELECT * FROM decisions LIMIT 1;
    SELECT * FROM nodes LIMIT 1;
@@ -481,10 +481,10 @@ curl http://localhost:8005/api/adhd/graph/stats | jq '.'
 ### Approach: Incremental with Fallbacks
 
 1. **Start with skeleton** - Get HTTP server running first
-2. **Add mock endpoints** - Dashboard can connect even if data empty
-3. **Investigate database** - While server runs, check DB setup
-4. **Add real queries** - Replace mocks once DB understood
-5. **Test end-to-end** - Verify dashboard → HTTP → DB flow
+1. **Add mock endpoints** - Dashboard can connect even if data empty
+1. **Investigate database** - While server runs, check DB setup
+1. **Add real queries** - Replace mocks once DB understood
+1. **Test end-to-end** - Verify dashboard → HTTP → DB flow
 
 **Philosophy:** Ship working (even if empty) fast, then add real data.
 
@@ -507,24 +507,24 @@ curl http://localhost:8005/api/adhd/graph/stats | jq '.'
 ## 🔍 NEXT ACTIONS
 
 1. **Investigate ConPort Database** (5 min)
-   - Check PostgreSQL status
-   - Find connection config
-   - Review existing client code
+- Check PostgreSQL status
+- Find connection config
+- Review existing client code
 
-2. **Create HTTP Server Skeleton** (10 min)
-   - Copy template above
-   - Test server starts
-   - Verify endpoints respond
+1. **Create HTTP Server Skeleton** (10 min)
+- Copy template above
+- Test server starts
+- Verify endpoints respond
 
-3. **Add Database Queries** (15 min)
-   - Connect to PostgreSQL
-   - Query decisions
-   - Query graph stats
+1. **Add Database Queries** (15 min)
+- Connect to PostgreSQL
+- Query decisions
+- Query graph stats
 
-4. **Integrate with Dashboard** (10 min)
-   - Update endpoints config
-   - Test end-to-end
-   - Verify graceful fallback
+1. **Integrate with Dashboard** (10 min)
+- Update endpoints config
+- Test end-to-end
+- Verify graceful fallback
 
 **Let's start with investigation!**
 

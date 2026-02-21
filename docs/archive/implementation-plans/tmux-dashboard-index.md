@@ -23,56 +23,56 @@ Created: 2025-10-28
 ### Core Documentation (Root Directory)
 
 1. **TMUX_METRICS_INVENTORY.md** (467 lines)
-   - Complete catalog of 50+ metrics across 10 services
-   - API endpoints and data access methods
-   - Update frequency recommendations
-   - Organized by priority tiers
-   - **Read this:** To understand what data is available
+- Complete catalog of 50+ metrics across 10 services
+- API endpoints and data access methods
+- Update frequency recommendations
+- Organized by priority tiers
+- **Read this:** To understand what data is available
 
-2. **TMUX_DASHBOARD_DESIGN.md** (717 lines)
-   - Research-backed framework recommendations
-   - Three-tier architecture design
-   - ADHD-optimized layout patterns
-   - Color psychology and visual hierarchy
-   - Performance optimization strategies
-   - **Read this:** To understand design decisions
+1. **TMUX_DASHBOARD_DESIGN.md** (717 lines)
+- Research-backed framework recommendations
+- Three-tier architecture design
+- ADHD-optimized layout patterns
+- Color psychology and visual hierarchy
+- Performance optimization strategies
+- **Read this:** To understand design decisions
 
-3. **dopemux_dashboard.py** (468 lines)
-   - Production-ready Python implementation
-   - Async data fetching with caching
-   - Textual-based TUI with real-time updates
-   - Fallback to simple console view
-   - **Read this:** Working code to customize
+1. **dopemux_dashboard.py** (468 lines)
+- Production-ready Python implementation
+- Async data fetching with caching
+- Textual-based TUI with real-time updates
+- Fallback to simple console view
+- **Read this:** Working code to customize
 
-4. **TMUX_DASHBOARD_README.md** (238 lines)
-   - Quick start guide
-   - Installation instructions
-   - Customization examples
-   - Troubleshooting tips
-   - **Read this:** To get started quickly
+1. **TMUX_DASHBOARD_README.md** (238 lines)
+- Quick start guide
+- Installation instructions
+- Customization examples
+- Troubleshooting tips
+- **Read this:** To get started quickly
 
-5. **DASHBOARD_ENHANCEMENTS.md** (462 lines)
-   - 150+ future feature ideas
-   - Prioritized roadmap (Tier 0-3)
-   - Implementation examples
-   - Priority matrix
-   - **Read this:** For future features
+1. **DASHBOARD_ENHANCEMENTS.md** (462 lines)
+- 150+ future feature ideas
+- Prioritized roadmap (Tier 0-3)
+- Implementation examples
+- Priority matrix
+- **Read this:** For future features
 
 ### Implementation Plans (This Directory)
 
 1. **tmux-dashboard-implementation-tracker.md** (433 lines)
-   - Overall progress tracking
-   - Phase-by-phase breakdown
-   - Technical notes and decisions
-   - Success metrics
-   - **Use this:** Track ongoing progress
+- Overall progress tracking
+- Phase-by-phase breakdown
+- Technical notes and decisions
+- Success metrics
+- **Use this:** Track ongoing progress
 
-2. **tmux-dashboard-sprint-plan.md** (NEW!)
-   - Detailed 2-week sprint plan
-   - Day-by-day tasks and acceptance criteria
-   - Code examples for each feature
-   - Daily standup format
-   - **Use this:** Current sprint execution
+1. **tmux-dashboard-sprint-plan.md** (NEW!)
+- Detailed 2-week sprint plan
+- Day-by-day tasks and acceptance criteria
+- Code examples for each feature
+- Daily standup format
+- **Use this:** Current sprint execution
 
 ---
 
@@ -207,19 +207,19 @@ dopemux-mvp/
 
 ### For Users:
 1. Read `TMUX_DASHBOARD_README.md`
-2. Install dependencies: `pip install textual rich httpx`
-3. Run: `python dopemux_dashboard.py`
+1. Install dependencies: `pip install textual rich httpx`
+1. Run: `python dopemux_dashboard.py`
 
 ### For Developers:
 1. Read `TMUX_DASHBOARD_DESIGN.md` (understand the vision)
-2. Read `TMUX_METRICS_INVENTORY.md` (know the data)
-3. Follow `tmux-dashboard-sprint-plan.md` (implement features)
-4. Update `tmux-dashboard-implementation-tracker.md` (track progress)
+1. Read `TMUX_METRICS_INVENTORY.md` (know the data)
+1. Follow `tmux-dashboard-sprint-plan.md` (implement features)
+1. Update `tmux-dashboard-implementation-tracker.md` (track progress)
 
 ### For Product Managers:
 1. Read `DASHBOARD_ENHANCEMENTS.md` (see roadmap)
-2. Review `tmux-dashboard-implementation-tracker.md` (check status)
-3. Prioritize features based on user feedback
+1. Review `tmux-dashboard-implementation-tracker.md` (check status)
+1. Prioritize features based on user feedback
 
 ---
 

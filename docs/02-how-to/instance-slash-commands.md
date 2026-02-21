@@ -75,11 +75,11 @@ Create a new instance with an isolated worktree and switch to it.
 
 **What Happens**:
 1. Detects running instances
-2. Allocates next available instance ID (B, C, D, E)
-3. Creates git worktree with your branch
-4. Updates environment variables in current process
-5. Changes working directory to worktree
-6. Ready for instance-specific work!
+1. Allocates next available instance ID (B, C, D, E)
+1. Creates git worktree with your branch
+1. Updates environment variables in current process
+1. Changes working directory to worktree
+1. Ready for instance-specific work!
 
 **Example**:
 ```
@@ -96,8 +96,8 @@ Environment variables updated. Current directory changed to worktree.
 
 **Next steps**:
 1. Services will use instance-specific ports
-2. ConPort data isolated (IN_PROGRESS tasks private)
-3. Run `/instance list` to see all instances
+1. ConPort data isolated (IN_PROGRESS tasks private)
+1. Run `/instance list` to see all instances
 ```
 
 ---
@@ -115,9 +115,9 @@ Switch to an already-created instance (including main worktree A).
 
 **What Happens**:
 1. Verifies worktree exists
-2. Updates environment variables
-3. Changes working directory
-4. Updates current instance context
+1. Updates environment variables
+1. Changes working directory
+1. Updates current instance context
 
 **Example**:
 ```
@@ -191,10 +191,10 @@ Automatically remove worktrees for instances that are no longer running.
 
 **What Happens**:
 1. Detects all worktrees
-2. Checks which instances are running
-3. Identifies stopped instances (worktree exists but not running)
-4. Removes dead worktrees (except main worktree A)
-5. Reports results
+1. Checks which instances are running
+1. Identifies stopped instances (worktree exists but not running)
+1. Removes dead worktrees (except main worktree A)
+1. Reports results
 
 **Example (instances to clean)**:
 ```
@@ -333,12 +333,12 @@ os.getcwd()
 ConPort automatically uses `DOPEMUX_INSTANCE_ID` to route data:
 
 - **Instance A** (`DOPEMUX_INSTANCE_ID=""`)
-  - IN_PROGRESS tasks: visible only in A
-  - COMPLETED tasks: visible everywhere
+- IN_PROGRESS tasks: visible only in A
+- COMPLETED tasks: visible everywhere
 
 - **Instance B** (`DOPEMUX_INSTANCE_ID="B"`)
-  - IN_PROGRESS tasks: visible only in B
-  - COMPLETED tasks: visible everywhere
+- IN_PROGRESS tasks: visible only in B
+- COMPLETED tasks: visible everywhere
 
 **Shared across all instances**:
 - Decisions (always shared)
@@ -456,23 +456,23 @@ git branch -a
 ### ADHD-Optimized Usage
 
 1. **Use `/instance list` frequently**
-   - Visual reminder of available contexts
-   - Shows current instance (👉 marker)
-   - Low cognitive overhead
+- Visual reminder of available contexts
+- Shows current instance (👉 marker)
+- Low cognitive overhead
 
-2. **Regular pruning**
-   - Run `/instance prune` weekly
-   - Prevents workspace clutter
-   - Maintains focus on active work
+1. **Regular pruning**
+- Run `/instance prune` weekly
+- Prevents workspace clutter
+- Maintains focus on active work
 
-3. **Descriptive branch names**
-   - `/instance new feature/jwt-auth` ✅
-   - `/instance new test` ❌
+1. **Descriptive branch names**
+- `/instance new feature/jwt-auth` ✅
+- `/instance new test` ❌
 
-4. **One feature per instance**
-   - Keep context boundaries clear
-   - Easier mental model
-   - Simpler switching decisions
+1. **One feature per instance**
+- Keep context boundaries clear
+- Easier mental model
+- Simpler switching decisions
 
 ### Instance Naming Conventions
 

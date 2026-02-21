@@ -23,8 +23,8 @@ The service is a standalone Python application intended to run as a background a
 * **Service Type**: Background Agent (Python)
 * **Location**: `services/workspace-watcher`
 * **Orchestration**:
-  * **Master**: *Missing* from `docker-compose.master.yml`.
-  * **Local**: Defined in `services/adhd_engine/docker/mcp-servers/docker-compose.yml`.
+* **Master**: *Missing* from `docker-compose.master.yml`.
+* **Local**: Defined in `services/adhd_engine/docker/mcp-servers/docker-compose.yml`.
 * **Dependencies**: Redis (for event emission), OS-level APIs (`osascript`, `wmctrl`).
 
 **Core Modules**:
@@ -49,10 +49,10 @@ The service is a standalone Python application intended to run as a background a
 ### Testing, Performance, Limitations & Opportunities
 * **Testing**: "No visible test coverage" (confirmed by Audit Reports).
 * **Limitations**:
-  * **Host Dependency**: Highly coupled to the host OS.
-  * **Polling**: Uses a 5s polling interval, which might miss rapid switches or add latency.
+* **Host Dependency**: Highly coupled to the host OS.
+* **Polling**: Uses a 5s polling interval, which might miss rapid switches or add latency.
 * **Opportunities**:
-  * **Refactor to Host Agent**: Officially designate this as a "Host Agent" that should be run via `systemd` or `launchd` rather than Docker, and update documentation/scripts (`start-all.sh`) to reflect this.
+* **Refactor to Host Agent**: Officially designate this as a "Host Agent" that should be run via `systemd` or `launchd` rather than Docker, and update documentation/scripts (`start-all.sh`) to reflect this.
 
 ## SECTION 2: EVIDENCE TRAIL
 
@@ -69,4 +69,4 @@ The service is a standalone Python application intended to run as a background a
 * Confidence Level: 90% (Source and Docs validated; Runtime not active but logic is clear)
 * Evidence Quality Score: High (Code analysis + Config trace)
 * Evolution Log:
-  * 2026-02-09: Initial Deep Dive. Identified orchestration drift and host-dependency constraints.
+* 2026-02-09: Initial Deep Dive. Identified orchestration drift and host-dependency constraints.

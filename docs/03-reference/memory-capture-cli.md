@@ -79,10 +79,10 @@ Resolved 3 project(s)
 
 **Behavior:**
 1. Resolves project roots from provided file
-2. Opens each project's chronicle ledger in read-only mode
-3. Registers projects in global index
-4. Indexes pointers to promoted work log entries
-5. Never writes to project ledgers (read-only guarantee)
+1. Opens each project's chronicle ledger in read-only mode
+1. Registers projects in global index
+1. Indexes pointers to promoted work log entries
+1. Never writes to project ledgers (read-only guarantee)
 
 ---
 
@@ -185,8 +185,8 @@ Showing 3 of up to 10 results
 ### Building the Index
 
 1. **Initial Setup**: Create a projects file with all your active repositories
-2. **Regular Updates**: Rebuild the index periodically to capture new work
-3. **Automation**: Consider adding to cron/scheduled tasks for automatic updates
+1. **Regular Updates**: Rebuild the index periodically to capture new work
+1. **Automation**: Consider adding to cron/scheduled tasks for automatic updates
 
 ```bash
 # Example cron entry (daily at 2 AM)
@@ -196,15 +196,15 @@ Showing 3 of up to 10 results
 ### Search Tips
 
 1. **Keep queries simple**: Single words or short phrases work best
-2. **Use quotes for multi-word searches**: `dopemux memory rollup search "bug fix"`
-3. **Adjust limit based on needs**: Default 10 is good for quick checks
-4. **Case-insensitive**: Search is case-insensitive by default
+1. **Use quotes for multi-word searches**: `dopemux memory rollup search "bug fix"`
+1. **Adjust limit based on needs**: Default 10 is good for quick checks
+1. **Case-insensitive**: Search is case-insensitive by default
 
 ### Project Management
 
 1. **Add new projects incrementally**: Just append to projects file and rebuild
-2. **Remove stale projects**: Remove from projects file, but old data remains queryable
-3. **Backup the index**: The global index is just a SQLite file - easy to backup
+1. **Remove stale projects**: Remove from projects file, but old data remains queryable
+1. **Backup the index**: The global index is just a SQLite file - easy to backup
 
 ```bash
 # Backup the global index
@@ -219,8 +219,8 @@ cp ~/.dopemux/global_index.sqlite ~/.dopemux/global_index.backup.sqlite
 
 **Possible causes:**
 1. Projects not yet built into index
-2. No promoted work log entries in projects
-3. Query doesn't match any summaries
+1. No promoted work log entries in projects
+1. Query doesn't match any summaries
 
 **Solution:**
 ```bash
@@ -262,9 +262,9 @@ dopemux memory rollup build --projects-file ~/projects.txt
 All rollup operations maintain strict read-only access:
 
 1. Project ledgers opened with `?mode=ro` URI parameter
-2. No write operations to project databases
-3. Only metadata and pointers stored in global index
-4. Original project ledgers remain authoritative
+1. No write operations to project databases
+1. Only metadata and pointers stored in global index
+1. Original project ledgers remain authoritative
 
 ### Data Model
 

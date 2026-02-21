@@ -243,12 +243,12 @@ This release focuses on enhancing deployment flexibility and improving the PyPI 
 ### Key Updates
 
 - **Official Docker Image:** Context Portal MCP is now available as an official Docker image on Docker Hub (`greatscottymac/context-portal-mcp`). This provides a streamlined way to deploy and run ConPort without needing to manage Python environments directly.
-  - Updated `README.md` with comprehensive instructions on how to pull and run the Docker image, including direct `docker run` commands and recommended MCP client configurations for seamless IDE integration.
-  - Added a new section to `CONTRIBUTING.md` detailing the process for building and publishing Docker images for contributors.
+- Updated `README.md` with comprehensive instructions on how to pull and run the Docker image, including direct `docker run` commands and recommended MCP client configurations for seamless IDE integration.
+- Added a new section to `CONTRIBUTING.md` detailing the process for building and publishing Docker images for contributors.
 
 - **PyPI Package Improvements:**
-  - The `context-portal-mcp` PyPI package has been updated to version `0.2.5`.
-  - Dependency conflicts, specifically related to `sentence-transformers` and `chromadb` which caused issues in certain environments (like Alpine-based Docker images), have been resolved by removing these non-core dependencies from the `requirements.txt`. This results in a leaner and more compatible PyPI distribution.
+- The `context-portal-mcp` PyPI package has been updated to version `0.2.5`.
+- Dependency conflicts, specifically related to `sentence-transformers` and `chromadb` which caused issues in certain environments (like Alpine-based Docker images), have been resolved by removing these non-core dependencies from the `requirements.txt`. This results in a leaner and more compatible PyPI distribution.
 
 ### How to Update
 
@@ -268,10 +268,10 @@ This release focuses on significant stability improvements, particularly around 
 #### 1. Robust Database Initialization and Migration (Alembic)
 - **Problem:** Persistent `alembic` migration failures, including `"No 'script_location' key found in configuration"` and `Can't locate revision` errors, which led to an inconsistent database state.
 - **Solution:**
-  - Refactored `src/context_portal_mcp/db/database.py` to ensure robust Alembic pathing and programmatic configuration of `script_location` and `sqlalchemy.url`.
-  - Introduced `ensure_alembic_files_exist` to reliably provision `alembic.ini` and the `alembic/` directory in the workspace, copying them from internal templates if missing. This ensures a consistent and correct Alembic environment for each workspace.
-  - Integrated this provisioning into `src/context_portal_mcp/main.py`'s `stdio` mode startup, guaranteeing that the Alembic environment is set up on server launch.
-  - Implemented a clean migration strategy that involves deleting the `context.db`, `alembic.ini`, and the `alembic/` directory to force a fresh, consistent migration when critical revision errors occur.
+- Refactored `src/context_portal_mcp/db/database.py` to ensure robust Alembic pathing and programmatic configuration of `script_location` and `sqlalchemy.url`.
+- Introduced `ensure_alembic_files_exist` to reliably provision `alembic.ini` and the `alembic/` directory in the workspace, copying them from internal templates if missing. This ensures a consistent and correct Alembic environment for each workspace.
+- Integrated this provisioning into `src/context_portal_mcp/main.py`'s `stdio` mode startup, guaranteeing that the Alembic environment is set up on server launch.
+- Implemented a clean migration strategy that involves deleting the `context.db`, `alembic.ini`, and the `alembic/` directory to force a fresh, consistent migration when critical revision errors occur.
 
 #### 2. Resolved Database Operation Errors
 - **Problem:** Recurrent `NameError: name 'cursor' is not defined` exceptions during database operations (e.g., `get_product_context`, `log_custom_data`), which prevented proper data interaction.
@@ -300,13 +300,13 @@ This release focuses on improving the stability, reliability, and user experienc
 **Key Changes and Improvements:**
 
 - **Enhanced Database Migration Reliability:**
-  - Resolved `AttributeError` for `timestamp` fields in `CustomData` and `SystemPattern` models, ensuring smoother data handling.
-  - Corrected Alembic `script_location` in `alembic.ini` and ensured all necessary Alembic configuration files are correctly bundled within the PyPI package. This significantly improves the robustness of database migrations for new installations and updates.
-  - Verified successful data import and custom data handling after fresh database migrations.
+- Resolved `AttributeError` for `timestamp` fields in `CustomData` and `SystemPattern` models, ensuring smoother data handling.
+- Corrected Alembic `script_location` in `alembic.ini` and ensured all necessary Alembic configuration files are correctly bundled within the PyPI package. This significantly improves the robustness of database migrations for new installations and updates.
+- Verified successful data import and custom data handling after fresh database migrations.
 - **Updated and Clarified Documentation:**
-  - Revised `README.md` and `v0.2.3_UPDATE_GUIDE.md` to provide the most accurate and up-to-date instructions.
-  - Updated `uv` commands in the documentation to `uv pip install` and `uv pip uninstall` for correct usage.
-  - Clarified Alembic setup, `workspace_id` usage, and requirements for custom data values to be valid JSON.
+- Revised `README.md` and `v0.2.3_UPDATE_GUIDE.md` to provide the most accurate and up-to-date instructions.
+- Updated `uv` commands in the documentation to `uv pip install` and `uv pip uninstall` for correct usage.
+- Clarified Alembic setup, `workspace_id` usage, and requirements for custom data values to be valid JSON.
 
 We recommend all users update to `v0.2.3` for these critical improvements. Please refer to `v0.2.3_UPDATE_GUIDE.md` for detailed update instructions.
 
@@ -413,20 +413,20 @@ Added PyPi installation option
 This version introduces a powerful semantic search capability to ConPort, along with a more intelligent data backend:
 
 - **New Semantic Search Tool (`semantic_search_conport`)**:
-  - Users can now search for ConPort items (Decisions, Progress, System Patterns, Custom Data, etc.) based on the semantic meaning of their query text, going beyond simple keyword matching.
-  - Supports advanced filtering by item type, tags (match all or any), and custom data categories to refine search results.
+- Users can now search for ConPort items (Decisions, Progress, System Patterns, Custom Data, etc.) based on the semantic meaning of their query text, going beyond simple keyword matching.
+- Supports advanced filtering by item type, tags (match all or any), and custom data categories to refine search results.
 
 - **Automatic Embedding Generation**:
-  - Key ConPort items (Decisions, Progress Entries, System Patterns, and text-based Custom Data) now automatically have embeddings generated and stored when they are logged.
-  - This powers the semantic search and enables future AI-driven insights.
-  - Utilizes the `all-MiniLM-L6-v2` model for generating embeddings, ensuring consistency.
+- Key ConPort items (Decisions, Progress Entries, System Patterns, and text-based Custom Data) now automatically have embeddings generated and stored when they are logged.
+- This powers the semantic search and enables future AI-driven insights.
+- Utilizes the `all-MiniLM-L6-v2` model for generating embeddings, ensuring consistency.
 
 - **Integrated Vector Store (ChromaDB)**:
-  - Embeddings are stored in a local ChromaDB vector database, managed per workspace within the `.conport_vector_data` directory.
-  - The system now explicitly configures ChromaDB to use the project's defined embedding model, enhancing consistency and reliability.
+- Embeddings are stored in a local ChromaDB vector database, managed per workspace within the `.conport_vector_data` directory.
+- The system now explicitly configures ChromaDB to use the project's defined embedding model, enhancing consistency and reliability.
 
 - **Embedding Lifecycle Management**:
-  - Embeddings are now automatically removed from the vector store when their corresponding items (currently Decisions and System Patterns) are deleted from ConPort, keeping the search index synchronized.
+- Embeddings are now automatically removed from the vector store when their corresponding items (currently Decisions and System Patterns) are deleted from ConPort, keeping the search index synchronized.
 
 These updates significantly enhance the ability to find relevant information within your ConPort workspace and lay the groundwork for more advanced contextual understanding features.
 

@@ -87,8 +87,8 @@ Configuration backed up to: `/Users/hue/.claude.json.backup-[timestamp]`
 
 ## Next Steps
 1. **Restart Claude Code** or reload MCP servers to apply changes
-2. **Verify in Claude Code UI** that all 4 servers show as connected
-3. **Test a tool** from each server to confirm functionality
+1. **Verify in Claude Code UI** that all 4 servers show as connected
+1. **Test a tool** from each server to confirm functionality
 
 ## Docker Container Status
 All containers confirmed healthy and running:

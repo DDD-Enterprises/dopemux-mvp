@@ -50,21 +50,21 @@ prelude: Session Summary 2025 10 24 Adhd Stack (explanation) for dopemux documen
 
 **Services Built**:
 1. **Activity Capture** (Docker, 750 lines):
-   - Redis Streams consumer
-   - Session tracking & aggregation
-   - ADHD Engine HTTP client
-   - Event-driven architecture
+- Redis Streams consumer
+- Session tracking & aggregation
+- ADHD Engine HTTP client
+- Event-driven architecture
 
-2. **Workspace Watcher** (background, 400 lines):
-   - Polls active app every 5s (macOS: osascript)
-   - Maps app to workspace path
-   - File modification detection
-   - Event emission to Redis
+1. **Workspace Watcher** (background, 400 lines):
+- Polls active app every 5s (macOS: osascript)
+- Maps app to workspace path
+- File modification detection
+- Event emission to Redis
 
-3. **Git Commit Tracking**:
-   - Post-commit hook
-   - Event emitter
-   - Automatic installation script
+1. **Git Commit Tracking**:
+- Post-commit hook
+- Event emitter
+- Automatic installation script
 
 **Files**: `services/activity-capture/`, `services/workspace-watcher/`, `scripts/git-hooks/`
 
@@ -88,26 +88,26 @@ prelude: Session Summary 2025 10 24 Adhd Stack (explanation) for dopemux documen
 
 **Features Built**:
 1. **ADHD Notifier** (340 lines):
-   - Desktop notifications (visual)
-   - Voice notifications (macOS TTS)
-   - Break reminders (25+ min)
-   - Hyperfocus alerts (60+ min)
+- Desktop notifications (visual)
+- Voice notifications (macOS TTS)
+- Break reminders (25+ min)
+- Hyperfocus alerts (60+ min)
 
-2. **Daily Reporter** (170 lines):
-   - Generate formatted reports
-   - Track sessions, breaks, hyperfocus
-   - Insights and recommendations
+1. **Daily Reporter** (170 lines):
+- Generate formatted reports
+- Track sessions, breaks, hyperfocus
+- Insights and recommendations
 
-3. **Dashboard** (250 lines):
-   - Web UI on port 8097
-   - REST API for metrics
-   - Real-time visualization
-   - Auto-refresh every 5s
+1. **Dashboard** (250 lines):
+- Web UI on port 8097
+- REST API for metrics
+- Real-time visualization
+- Auto-refresh every 5s
 
-4. **Task Recommender** (200 lines):
-   - Assess task suitability
-   - Rank tasks by ADHD state
-   - "Should I work on this?" answered
+1. **Task Recommender** (200 lines):
+- Assess task suitability
+- Rank tasks by ADHD state
+- "Should I work on this?" answered
 
 **Files**: `services/adhd-notifier/`, `services/adhd-dashboard/`
 
@@ -157,8 +157,8 @@ Dashboard (8097): Web UI + API
 
 ### Background Processes
 1. ADHD Engine (8095) - Energy/attention assessment
-2. Workspace Watcher - App monitoring
-3. ADHD Notifier - Break/hyperfocus alerts
+1. Workspace Watcher - App monitoring
+1. ADHD Notifier - Break/hyperfocus alerts
 
 ### Optional
 1. Dashboard (8097) - Web UI & REST API
@@ -169,21 +169,21 @@ Dashboard (8097): Web UI + API
 
 **Automatic Tracking**:
 1. ✅ Workspace switch detection (app polling)
-2. ✅ Session tracking (start/end/interruptions)
-3. ✅ Git commit velocity (post-commit hook)
-4. ✅ File activity detection (modification times)
+1. ✅ Session tracking (start/end/interruptions)
+1. ✅ Git commit velocity (post-commit hook)
+1. ✅ File activity detection (modification times)
 
 **ADHD Support**:
-5. ✅ Energy/attention assessment (6 monitors)
-6. ✅ Break reminders (25+ min, visual + voice)
-7. ✅ Hyperfocus protection (60+ min, urgent alerts)
-8. ✅ Profile persistence (Redis)
+1. ✅ Energy/attention assessment (6 monitors)
+1. ✅ Break reminders (25+ min, visual + voice)
+1. ✅ Hyperfocus protection (60+ min, urgent alerts)
+1. ✅ Profile persistence (Redis)
 
 **Visualization & Insights**:
-9. ✅ Real-time statusline (energy/attention symbols)
-10. ✅ Daily reports (formatted summaries)
-11. ✅ Web dashboard (metrics visualization)
-12. ✅ Smart task recommendations (suitability scoring)
+1. ✅ Real-time statusline (energy/attention symbols)
+1. ✅ Daily reports (formatted summaries)
+1. ✅ Web dashboard (metrics visualization)
+1. ✅ Smart task recommendations (suitability scoring)
 
 ---
 
@@ -268,11 +268,11 @@ Dashboard (8097): Web UI + API
 
 Starts 6 steps:
 1. MCP servers + infrastructure
-2. DopeconBridge
-3. Task Orchestrator
-4. ADHD Engine (8095)
-5. Workspace Watcher
-6. ADHD Notifier
+1. DopeconBridge
+1. Task Orchestrator
+1. ADHD Engine (8095)
+1. Workspace Watcher
+1. ADHD Notifier
 
 ### Optional Dashboard
 ```bash
@@ -295,24 +295,24 @@ open http://localhost:8097
 
 ### Biggest Wins
 1. **Complete ADHD infrastructure** built in one session
-2. **All 4 phases** implemented (planned for 3-4 sessions)
-3. **Zero-touch operation** - fully automatic tracking
-4. **Multi-modal notifications** - visual + voice
-5. **Production-ready** - security hardened, documented
+1. **All 4 phases** implemented (planned for 3-4 sessions)
+1. **Zero-touch operation** - fully automatic tracking
+1. **Multi-modal notifications** - visual + voice
+1. **Production-ready** - security hardened, documented
 
 ### Technical Achievements
 1. Event-driven architecture (Redis Streams)
-2. Docker + background process hybrid
-3. Cross-platform support (macOS + Linux)
-4. Real-time statusline integration
-5. Complete observability (logs, metrics, dashboard)
+1. Docker + background process hybrid
+1. Cross-platform support (macOS + Linux)
+1. Real-time statusline integration
+1. Complete observability (logs, metrics, dashboard)
 
 ### ADHD Optimization
 1. No manual tracking required
-2. Non-intrusive notifications
-3. Progressive disclosure (statusline)
-4. Automatic pattern learning
-5. Burnout prevention
+1. Non-intrusive notifications
+1. Progressive disclosure (statusline)
+1. Automatic pattern learning
+1. Burnout prevention
 
 ---
 

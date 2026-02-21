@@ -83,10 +83,10 @@ Guides in this section:
 
 When adding how-to guides:
 1. Start with a clear goal/problem statement
-2. List prerequisites
-3. Provide clear, numbered steps
-4. Include verification steps
-5. Troubleshoot common issues
+1. List prerequisites
+1. Provide clear, numbered steps
+1. Include verification steps
+1. Troubleshoot common issues
 
 ---
 

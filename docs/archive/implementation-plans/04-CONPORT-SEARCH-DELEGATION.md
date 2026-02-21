@@ -175,7 +175,7 @@ async def handle_semantic_search_conport(params: Dict[str, Any]) -> Dict[str, An
     Search ConPort data using dope-context's superior semantic search.
 
     SOLUTION: Delegate to dope-context for 1024-dim Voyage embeddings
-    + BM25 hybrid + neural reranking.
++ BM25 hybrid + neural reranking.
     """
     query_text = params['query_text']
     top_k = params.get('top_k', 5)
@@ -255,9 +255,9 @@ async def _search_via_conport(params: Dict[str, Any]) -> List[Dict]:
 
 **Tasks**:
 1. Remove sentence-transformers dependency
-2. Remove ConPort's Qdrant client (dope-context owns it now)
-3. Update requirements.txt
-4. Rebuild container
+1. Remove ConPort's Qdrant client (dope-context owns it now)
+1. Update requirements.txt
+1. Rebuild container
 
 **Update Requirements** (`services/conport/requirements.txt`):
 ```diff
@@ -470,7 +470,7 @@ async def handle_semantic_search_conport(params: Dict[str, Any]) -> Dict[str, An
     Search ConPort data using dope-context's superior semantic search.
 
     Delegates to dope-context for 1024-dim Voyage embeddings + BM25 hybrid
-    + neural reranking (35-67% better quality than old 384-dim search).
++ neural reranking (35-67% better quality than old 384-dim search).
     """
     workspace_id = params['workspace_id']
     query_text = params['query_text']
@@ -853,9 +853,9 @@ docker-compose up -d --build conport
 ## Next Steps After Completion
 
 1. **Monitor for 1 week**: Track search quality metrics
-2. **Optimize**: Tune caching if needed
-3. **Document**: Update ConPort docs to reference dope-context
-4. **Celebrate**: Easy win with huge quality boost! 🎉
+1. **Optimize**: Tune caching if needed
+1. **Document**: Update ConPort docs to reference dope-context
+1. **Celebrate**: Easy win with huge quality boost! 🎉
 
 ---
 

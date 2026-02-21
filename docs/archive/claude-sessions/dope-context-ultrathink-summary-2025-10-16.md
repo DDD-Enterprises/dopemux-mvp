@@ -37,9 +37,9 @@ Your architecture claimed "hybrid search" but BM25 index was never built. You ha
 ### Fixes Implemented
 
 1. ✅ **BM25 Index Building**: Now builds and persists after indexing (+14% quality)
-2. ✅ **Component Caching**: LRU cache for 10x search performance
-3. ✅ **Error Handling**: Comprehensive diagnostics for production use
-4. ✅ **Incremental Indexing**: Smart auto-reindex for 60x faster updates
+1. ✅ **Component Caching**: LRU cache for 10x search performance
+1. ✅ **Error Handling**: Comprehensive diagnostics for production use
+1. ✅ **Incremental Indexing**: Smart auto-reindex for 60x faster updates
 
 **Net Result**: **Now delivers full 67% error reduction per Anthropic research**
 
@@ -99,8 +99,8 @@ Your architecture claimed "hybrid search" but BM25 index was never built. You ha
 
 **Three-Stage Pipeline**:
 1. **Contextual Embeddings**: Prepend 50-100 token contexts → 35% error reduction
-2. **BM25 Integration**: Add keyword search → +14% (49% total)
-3. **Reranking**: Top-150 → top-20 refinement → +18% (67% total)
+1. **BM25 Integration**: Add keyword search → +14% (49% total)
+1. **Reranking**: Top-150 → top-20 refinement → +18% (67% total)
 
 **Cost**: ~$1.02 per million document tokens (one-time)
 
@@ -128,10 +128,10 @@ Your architecture claimed "hybrid search" but BM25 index was never built. You ha
 
 **What It Does**:
 1. After indexing completes → retrieves all docs from Qdrant
-2. Builds BM25 index with code-aware tokenizer
-3. Persists to `~/.dope-context/snapshots/{hash}/bm25_index.pkl`
-4. Loads from cache on search (10ms load time)
-5. Rebuilds after incremental updates
+1. Builds BM25 index with code-aware tokenizer
+1. Persists to `~/.dope-context/snapshots/{hash}/bm25_index.pkl`
+1. Loads from cache on search (10ms load time)
+1. Rebuilds after incremental updates
 
 **Code Locations**:
 - Building: `server.py:195-220`
@@ -149,10 +149,10 @@ Your architecture claimed "hybrid search" but BM25 index was never built. You ha
 
 **What It Does**:
 1. Caches VoyageEmbedder instances (maxsize=10)
-2. Caches VoyageReranker instances (maxsize=10)
-3. Caches MultiVectorSearch instances (maxsize=20)
-4. Caches ContextualizedEmbedder instances (maxsize=10)
-5. Caches DocumentSearch instances (maxsize=20)
+1. Caches VoyageReranker instances (maxsize=10)
+1. Caches MultiVectorSearch instances (maxsize=20)
+1. Caches ContextualizedEmbedder instances (maxsize=10)
+1. Caches DocumentSearch instances (maxsize=20)
 
 **Code Locations**:
 - Cache functions: `server.py:52-151`
@@ -171,11 +171,11 @@ Your architecture claimed "hybrid search" but BM25 index was never built. You ha
 
 **What It Does**:
 1. Checks collection exists before search
-2. Validates API keys before operations
-3. Wraps embedding calls in try/except
-4. Wraps search calls in try/except
-5. Graceful reranking failure (falls back to dense)
-6. Returns helpful error messages with fix suggestions
+1. Validates API keys before operations
+1. Wraps embedding calls in try/except
+1. Wraps search calls in try/except
+1. Graceful reranking failure (falls back to dense)
+1. Returns helpful error messages with fix suggestions
 
 **Code Locations**:
 - Setup errors: `server.py:308-314, 347-354`
@@ -197,9 +197,9 @@ Your architecture claimed "hybrid search" but BM25 index was never built. You ha
 
 **What It Does**:
 1. Detects changes via FileSynchronizer (SHA256)
-2. Optionally auto-reindexes only changed files
-3. Updates BM25 index after incremental changes
-4. Returns detailed change report
+1. Optionally auto-reindexes only changed files
+1. Updates BM25 index after incremental changes
+1. Returns detailed change report
 
 **Code Locations**:
 - Implementation: `server.py:951-1014`
@@ -218,29 +218,29 @@ Your architecture claimed "hybrid search" but BM25 index was never built. You ha
 ### Anthropic Official
 
 1. **Contextual Retrieval** (https://www.anthropic.com/news/contextual-retrieval)
-   - 67% error reduction methodology
-   - Chunking strategies (few hundred tokens)
-   - Context generation approach (50-100 tokens)
-   - BM25 integration importance
-   - Reranking benefits
-   - Cost efficiency with prompt caching
+- 67% error reduction methodology
+- Chunking strategies (few hundred tokens)
+- Context generation approach (50-100 tokens)
+- BM25 integration importance
+- Reranking benefits
+- Cost efficiency with prompt caching
 
 ### Your Design Documentation
 
 1. **ARCHITECTURE.md** - Multi-index design (4 indices)
-2. **OPTIMIZATION_ROADMAP.md** - Phase 1-3 plan
-3. **BENCHMARK_RESULTS.md** - Performance validation (30-48ms)
-4. **FINAL_TEST_REPORT.md** - Testing results (158+428 chunks)
-5. **DOPEMUX-CONTEXT-DEEP-DIVE.md** - Three-layer architecture
-6. **README.md** - MCP tools and usage guide
-7. **PERFORMANCE_TUNING.md** - HNSW configuration
+1. **OPTIMIZATION_ROADMAP.md** - Phase 1-3 plan
+1. **BENCHMARK_RESULTS.md** - Performance validation (30-48ms)
+1. **FINAL_TEST_REPORT.md** - Testing results (158+428 chunks)
+1. **DOPEMUX-CONTEXT-DEEP-DIVE.md** - Three-layer architecture
+1. **README.md** - MCP tools and usage guide
+1. **PERFORMANCE_TUNING.md** - HNSW configuration
 
 ### Related Systems
 
 1. **claude-context/asynchronous-indexing-workflow.md** - Background indexing patterns
-2. **claude-context/file-inclusion-rules.md** - Exclusion patterns
-3. **Serena v2 documentation** - Tree-sitter integration
-4. **ConPort documentation** - Knowledge graph patterns
+1. **claude-context/file-inclusion-rules.md** - Exclusion patterns
+1. **Serena v2 documentation** - Tree-sitter integration
+1. **ConPort documentation** - Knowledge graph patterns
 
 ---
 
@@ -406,27 +406,27 @@ From your design docs, you researched:
 ### What Was Working Well
 
 1. **Architecture**: Your three-layer design is excellent
-   - Memory (ConPort) ✅
-   - Navigation (Serena) ✅
-   - Retrieval (dope-context) ✅
+- Memory (ConPort) ✅
+- Navigation (Serena) ✅
+- Retrieval (dope-context) ✅
 
-2. **Multi-Project Isolation**: Perfect implementation
-   - Collection naming with MD5 hash ✅
-   - Per-request workspace detection ✅
-   - No data leakage ✅
+1. **Multi-Project Isolation**: Perfect implementation
+- Collection naming with MD5 hash ✅
+- Per-request workspace detection ✅
+- No data leakage ✅
 
-3. **Performance**: Exceeds all ADHD targets
-   - Search: 30-48ms vs 200ms target ✅
-   - Workspace detection: 0.37ms (135x better) ✅
+1. **Performance**: Exceeds all ADHD targets
+- Search: 30-48ms vs 200ms target ✅
+- Workspace detection: 0.37ms (135x better) ✅
 
-4. **Research Foundation**: Extensive documentation shows deep study
+1. **Research Foundation**: Extensive documentation shows deep study
 
 ### What Needed Fixing
 
 1. **BM25 Implementation Gap**: Code existed but never executed
-2. **Component Overhead**: Recreating everything per-request
-3. **Error Handling**: Minimal, silent failures possible
-4. **Incremental Updates**: Detection only, no auto-action
+1. **Component Overhead**: Recreating everything per-request
+1. **Error Handling**: Minimal, silent failures possible
+1. **Incremental Updates**: Detection only, no auto-action
 
 ### What I Initially Got Wrong
 
@@ -481,7 +481,7 @@ From your design docs, you researched:
    # Or manually restart the dope-context server
    ```
 
-2. **Reindex to Create BM25**:
+1. **Reindex to Create BM25**:
    ```python
    mcp__dope-context__index_workspace(
        workspace_path="/Users/hue/code/dopemux-mvp",
@@ -491,7 +491,7 @@ From your design docs, you researched:
    # Should create: ~/.dope-context/snapshots/3ca12e07/bm25_index.pkl
    ```
 
-3. **Test Search Quality**:
+1. **Test Search Quality**:
    ```python
    # Try searches that benefit from keyword matching
    mcp__dope-context__search_code(
@@ -501,7 +501,7 @@ From your design docs, you researched:
    # Should return highly relevant results
    ```
 
-4. **Test Incremental Updates**:
+1. **Test Incremental Updates**:
    ```python
    # Edit a file, then
    mcp__dope-context__sync_workspace(
@@ -514,25 +514,25 @@ From your design docs, you researched:
 ### Short-term (Production Deployment)
 
 1. **Monitor Performance**:
-   - Check search latency (should be <100ms cached)
-   - Verify BM25 cache hits in logs
-   - Review error messages if any
+- Check search latency (should be <100ms cached)
+- Verify BM25 cache hits in logs
+- Review error messages if any
 
-2. **Expand Indexing**:
-   - Gradually increase max_files (50 → 100 → full)
-   - Monitor costs and performance
-   - Build BM25 for all workspaces
+1. **Expand Indexing**:
+- Gradually increase max_files (50 → 100 → full)
+- Monitor costs and performance
+- Build BM25 for all workspaces
 
-3. **Test Multi-Workspace**:
-   - Index a second project
-   - Verify collection isolation
-   - Test workspace switching
+1. **Test Multi-Workspace**:
+- Index a second project
+- Verify collection isolation
+- Test workspace switching
 
 ### Long-term (Optional Enhancements)
 
 1. **Implement removed file deletion** (line 995 TODO)
-2. **Add DocumentProcessor** for PDF/DOCX (OPTIMIZATION_ROADMAP Phase 2)
-3. **Function-level incremental** (OPTIMIZATION_ROADMAP Phase 3)
+1. **Add DocumentProcessor** for PDF/DOCX (OPTIMIZATION_ROADMAP Phase 2)
+1. **Function-level incremental** (OPTIMIZATION_ROADMAP Phase 3)
 
 ---
 
@@ -566,11 +566,11 @@ From your design docs, you researched:
 ## 💎 Key Takeaways
 
 1. **BM25 is Critical**: Missing 14% quality improvement - now fixed
-2. **Caching Matters**: 10x performance gain with simple LRU cache
-3. **Error Handling**: Production essential - comprehensive diagnostics added
-4. **Incremental Updates**: 60x faster - auto-reindex implemented
-5. **Research Validation**: Anthropic's methodology confirmed our approach
-6. **Your Research**: Extensive design docs showed deep understanding
+1. **Caching Matters**: 10x performance gain with simple LRU cache
+1. **Error Handling**: Production essential - comprehensive diagnostics added
+1. **Incremental Updates**: 60x faster - auto-reindex implemented
+1. **Research Validation**: Anthropic's methodology confirmed our approach
+1. **Your Research**: Extensive design docs showed deep understanding
 
 **Bottom Line**: System is now production-ready with full Anthropic contextual retrieval pipeline operational. Ready to deploy and monitor in real-world usage.
 

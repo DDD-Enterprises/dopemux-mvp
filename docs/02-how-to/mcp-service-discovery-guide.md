@@ -131,26 +131,26 @@ name: Validate MCP Configuration
 on:
   pull_request:
     paths:
-      - 'docker/mcp-servers/**'
-      - '.claude.json'
+- 'docker/mcp-servers/**'
+- '.claude.json'
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+- uses: actions/checkout@v3
 
-      - name: Start MCP Services
+- name: Start MCP Services
         run: |
           cd docker/mcp-servers
           docker-compose up -d
           sleep 10  # Wait for services to be ready
 
-      - name: Validate Configuration
+- name: Validate Configuration
         run: |
           python scripts/generate-claude-config.py --validate
 
-      - name: Generate PR Comment
+- name: Generate PR Comment
         if: failure()
         run: |
           python scripts/generate-claude-config.py --diff > drift-report.txt
@@ -272,7 +272,7 @@ For servers that use mcp-proxy (stdio → SSE conversion), we run a **parallel H
        }
    ```
 
-2. **Start Script** (`start_with_info.sh`):
+1. **Start Script** (`start_with_info.sh`):
    ```bash
    #!/bin/bash
    # Start both servers in parallel
@@ -281,7 +281,7 @@ For servers that use mcp-proxy (stdio → SSE conversion), we run a **parallel H
    wait
    ```
 
-3. **Dockerfile**:
+1. **Dockerfile**:
    ```dockerfile
    # Install FastAPI + uvicorn
    RUN pip install fastapi uvicorn
@@ -296,11 +296,11 @@ For servers that use mcp-proxy (stdio → SSE conversion), we run a **parallel H
    CMD ["bash", "start_with_info.sh"]
    ```
 
-4. **Docker Compose**:
+1. **Docker Compose**:
    ```yaml
    ports:
-     - "3004:3004"  # MCP server
-     - "4004:4004"  # Info server
+- "3004:3004"  # MCP server
+- "4004:4004"  # Info server
    ```
 
 **Benefits**:
@@ -356,8 +356,8 @@ python scripts/generate-claude-config.py --validate
 
 **Fixes**:
 1. Check container name matches pattern: `mcp-*`, `conport`, `serena`, `leantime-bridge`, `dope-context`
-2. Verify port exposed in docker-compose.yml
-3. Check health endpoint: `curl http://localhost:{port}/health`
+1. Verify port exposed in docker-compose.yml
+1. Check health endpoint: `curl http://localhost:{port}/health`
 
 ### /info endpoint not responding
 
@@ -365,9 +365,9 @@ python scripts/generate-claude-config.py --validate
 
 **Fixes**:
 1. Server might not have /info yet (expected during migration)
-2. Check logs: `docker logs dopemux-mcp-{server}`
-3. Verify server running: `docker ps | grep {server}`
-4. Test manually: `curl http://localhost:{port}/info`
+1. Check logs: `docker logs dopemux-mcp-{server}`
+1. Verify server running: `docker ps | grep {server}`
+1. Test manually: `curl http://localhost:{port}/info`
 
 ### Validation fails
 
@@ -440,8 +440,8 @@ Infrastructure changes → /info endpoint auto-updated → Generate script → N
 ## Next Steps
 
 1. **Immediate**: Add /info to 3-4 more servers (gpt-researcher, desktop-commander, pal)
-2. **Short-term**: Generate and validate config, commit to repo
-3. **Long-term**: Add CI validation, service registry dashboard
+1. **Short-term**: Generate and validate config, commit to repo
+1. **Long-term**: Add CI validation, service registry dashboard
 
 ## References
 

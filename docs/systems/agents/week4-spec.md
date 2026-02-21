@@ -22,10 +22,10 @@ prelude: Week4 Spec (reference) for dopemux documentation and developer workflow
 
 Week 4 integrates **CognitiveGuardian** with **ConPort-KG** (Knowledge Graph) to provide:
 1. Task relationship mapping (dependencies, blockers)
-2. Semantic task search (natural language, fuzzy matching)
-3. Decision context graphs (track "why")
-4. ADHD pattern mining (successful work patterns)
-5. Agent knowledge sharing (cross-session learning)
+1. Semantic task search (natural language, fuzzy matching)
+1. Decision context graphs (track "why")
+1. ADHD pattern mining (successful work patterns)
+1. Agent knowledge sharing (cross-session learning)
 
 **Foundation**: ConPort-KG infrastructure already exists (discovered during research)
 
@@ -100,10 +100,10 @@ class CognitiveGuardianKG:
     ADHD-optimized Knowledge Graph integration for CognitiveGuardian.
 
     Provides:
-    - Task relationship mapping
-    - Semantic search
-    - Decision context retrieval
-    - Pattern mining
+- Task relationship mapping
+- Semantic search
+- Decision context retrieval
+- Pattern mining
     """
 
     def __init__(
@@ -179,12 +179,12 @@ class CognitiveGuardianKG:
 
 **Methods** (7):
 1. `__init__()` - Initialize with AGE client
-2. `get_task_relationships()` - Map dependencies/blockers
-3. `search_tasks_semantic()` - Natural language search
-4. `get_decision_context()` - Retrieve "why" decisions
-5. `mine_adhd_patterns()` - Pattern mining
-6. `_build_task_graph()` - Internal: Graph construction
-7. `_calculate_relevance()` - Internal: Semantic scoring
+1. `get_task_relationships()` - Map dependencies/blockers
+1. `search_tasks_semantic()` - Natural language search
+1. `get_decision_context()` - Retrieve "why" decisions
+1. `mine_adhd_patterns()` - Pattern mining
+1. `_build_task_graph()` - Internal: Graph construction
+1. `_calculate_relevance()` - Internal: Semantic scoring
 
 **Dependencies**:
 - `age_client.AGEClient` (existing)
@@ -210,9 +210,9 @@ async def suggest_tasks_with_context(
     Enhanced task suggestions with KG context.
 
     Adds:
-    - Dependency checking (prerequisite tasks first)
-    - Related task grouping
-    - Decision context (why this task exists)
+- Dependency checking (prerequisite tasks first)
+- Related task grouping
+- Decision context (why this task exists)
     """
 
 async def check_task_dependencies(
@@ -241,17 +241,17 @@ async def save_task_outcome(
     Save task outcome to KG for pattern mining.
 
     Stores:
-    - Task completion status
-    - Energy level at completion
-    - Complexity rating
-    - Duration (from session tracking)
+- Task completion status
+- Energy level at completion
+- Complexity rating
+- Duration (from session tracking)
     """
 ```
 
 **Integration Points**:
 1. `suggest_tasks()` → calls `suggest_tasks_with_context()`
-2. `check_task_readiness()` → calls `check_task_dependencies()`
-3. `stop_monitoring()` → calls `save_task_outcome()` (if task completed)
+1. `check_task_readiness()` → calls `check_task_dependencies()`
+1. `stop_monitoring()` → calls `save_task_outcome()` (if task completed)
 
 ---
 
@@ -300,8 +300,8 @@ async def _semantic_task_match(
 
 **Integration Points**:
 1. `_assign_optimal_agent()` → call `_check_dependencies_before_routing()` first
-2. `_dispatch_to_agent()` → call `_find_related_tasks()` for context
-3. Agent selection → use `_semantic_task_match()` for better routing
+1. `_dispatch_to_agent()` → call `_find_related_tasks()` for context
+1. Agent selection → use `_semantic_task_match()` for better routing
 
 ---
 
@@ -318,10 +318,10 @@ class ADHDPatternAnalyzer:
     Analyze historical data to identify successful ADHD patterns.
 
     Mines:
-    - Energy-task type correlations
-    - Optimal break timing (personalized)
-    - Task complexity preferences
-    - Time-of-day effectiveness
+- Energy-task type correlations
+- Optimal break timing (personalized)
+- Task complexity preferences
+- Time-of-day effectiveness
     """
 
     def __init__(self, kg_client: CognitiveGuardianKG):
@@ -376,11 +376,11 @@ class ADHDPatternAnalyzer:
 
 **Methods** (6):
 1. `analyze_energy_patterns()` - Energy-task correlations
-2. `analyze_break_patterns()` - Personalized break timing
-3. `analyze_complexity_preferences()` - Task complexity patterns
-4. `analyze_time_of_day_patterns()` - When user is most effective
-5. `get_personalized_recommendations()` - AI suggestions
-6. `_query_historical_data()` - Internal: KG queries
+1. `analyze_break_patterns()` - Personalized break timing
+1. `analyze_complexity_preferences()` - Task complexity patterns
+1. `analyze_time_of_day_patterns()` - When user is most effective
+1. `get_personalized_recommendations()` - AI suggestions
+1. `_query_historical_data()` - Internal: KG queries
 
 ---
 
@@ -644,29 +644,29 @@ CREATE (p:ADHDPattern {
 
 **cognitive_guardian_kg_test.py** (6 tests):
 1. `test_get_task_relationships()` - Basic relationship query
-2. `test_search_tasks_semantic()` - Semantic search
-3. `test_get_decision_context()` - Context retrieval
-4. `test_mine_adhd_patterns()` - Pattern mining
-5. `test_graceful_degradation()` - KG unavailable fallback
-6. `test_caching()` - Cache hit/miss behavior
+1. `test_search_tasks_semantic()` - Semantic search
+1. `test_get_decision_context()` - Context retrieval
+1. `test_mine_adhd_patterns()` - Pattern mining
+1. `test_graceful_degradation()` - KG unavailable fallback
+1. `test_caching()` - Cache hit/miss behavior
 
 **adhd_pattern_analyzer_test.py** (6 tests):
 1. `test_analyze_energy_patterns()` - Energy correlations
-2. `test_analyze_break_patterns()` - Personalized timing
-3. `test_analyze_complexity_preferences()` - Complexity patterns
-4. `test_analyze_time_of_day_patterns()` - Time effectiveness
-5. `test_get_personalized_recommendations()` - AI suggestions
-6. `test_insufficient_data_handling()` - Graceful degradation
+1. `test_analyze_break_patterns()` - Personalized timing
+1. `test_analyze_complexity_preferences()` - Complexity patterns
+1. `test_analyze_time_of_day_patterns()` - Time effectiveness
+1. `test_get_personalized_recommendations()` - AI suggestions
+1. `test_insufficient_data_handling()` - Graceful degradation
 
 ### Integration Tests
 
 **test_kg_integration.py** (6 tests):
 1. `test_cognitive_guardian_with_kg()` - Full integration
-2. `test_orchestrator_dependency_checks()` - Routing integration
-3. `test_task_completion_pattern_learning()` - Learning loop
-4. `test_semantic_search_accuracy()` - Search quality
-5. `test_cross_session_continuity()` - Persistence
-6. `test_performance_targets()` - Speed requirements
+1. `test_orchestrator_dependency_checks()` - Routing integration
+1. `test_task_completion_pattern_learning()` - Learning loop
+1. `test_semantic_search_accuracy()` - Search quality
+1. `test_cross_session_continuity()` - Persistence
+1. `test_performance_targets()` - Speed requirements
 
 **Total**: 18 tests (unit + integration)
 
@@ -744,33 +744,33 @@ def sanitize_query(query: str) -> str:
 
 ### Phase 1: KG Layer (Day 1)
 1. Create `cognitive_guardian_kg.py`
-2. Implement basic query methods
-3. Add unit tests
-4. Verify AGE connection
+1. Implement basic query methods
+1. Add unit tests
+1. Verify AGE connection
 
 ### Phase 2: Task Relationships (Day 2)
 1. Define graph schema extensions
-2. Implement relationship mapping
-3. Add dependency checking
-4. Integration tests
+1. Implement relationship mapping
+1. Add dependency checking
+1. Integration tests
 
 ### Phase 3: Semantic Search (Day 3)
 1. Add embedding generation
-2. Implement semantic matching
-3. Integrate with orchestrator
-4. Performance testing
+1. Implement semantic matching
+1. Integrate with orchestrator
+1. Performance testing
 
 ### Phase 4: Decision Context (Day 4)
 1. Link tasks to decisions
-2. Implement context retrieval
-3. Add to task suggestions
-4. Integration testing
+1. Implement context retrieval
+1. Add to task suggestions
+1. Integration testing
 
 ### Phase 5: Pattern Mining (Day 5)
 1. Create pattern analyzer
-2. Implement mining algorithms
-3. Add personalized recommendations
-4. Full integration test
+1. Implement mining algorithms
+1. Add personalized recommendations
+1. Full integration test
 
 ---
 
@@ -885,9 +885,9 @@ numpy==1.24.3
 ## Next Steps
 
 1. ✅ Technical spec complete (this document)
-2. ⏭️ Create implementation roadmap (Day-by-day)
-3. ⏭️ Set up development environment
-4. ⏭️ Begin Day 1 implementation
+1. ⏭️ Create implementation roadmap (Day-by-day)
+1. ⏭️ Set up development environment
+1. ⏭️ Begin Day 1 implementation
 
 **Status**: Ready for detailed roadmap creation
 

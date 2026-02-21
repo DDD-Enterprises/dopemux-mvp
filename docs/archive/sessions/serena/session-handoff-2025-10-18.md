@@ -28,11 +28,11 @@ prelude: Session Handoff 2025 10 18 (explanation) for dopemux documentation and 
 
 **What Was Done**:
 1. Validated existing 4-enhancement implementation
-2. Created 6 comprehensive documentation files
-3. Polished UX/UI for consistency (all messages reviewed)
-4. Updated .claude/CLAUDE.md with usage patterns
-5. Integrated ConPort database client
-6. All tests passing (6/6 modules)
+1. Created 6 comprehensive documentation files
+1. Polished UX/UI for consistency (all messages reviewed)
+1. Updated .claude/CLAUDE.md with usage patterns
+1. Integrated ConPort database client
+1. All tests passing (6/6 modules)
 
 **4 Enhancements**:
 - E1: False-Starts Dashboard - "Sure you want to make it 48?"
@@ -56,19 +56,19 @@ prelude: Session Handoff 2025 10 18 (explanation) for dopemux documentation and 
 
 **What Was Done**:
 1. Built 6 core components from scratch (1,650 lines)
-2. Created ConPort schema migration (applied successfully)
-3. Added 3 MCP tools for session operations
-4. Created comprehensive documentation (3 files)
-5. Full test suite passing (6/6 components)
-6. Discovered 5 worktrees in current repo!
+1. Created ConPort schema migration (applied successfully)
+1. Added 3 MCP tools for session operations
+1. Created comprehensive documentation (3 files)
+1. Full test suite passing (6/6 components)
+1. Discovered 5 worktrees in current repo!
 
 **6 Components**:
 1. session_id_generator.py - Collision-resistant IDs
-2. worktree_detector.py - Git worktree detection
-3. multi_session_dashboard.py - ADHD-optimized display
-4. session_lifecycle_manager.py - Start/update/complete
-5. session_manager.py - Main coordinator
-6. migrations/002_session_support_simple.sql - Database schema
+1. worktree_detector.py - Git worktree detection
+1. multi_session_dashboard.py - ADHD-optimized display
+1. session_lifecycle_manager.py - Start/update/complete
+1. session_manager.py - Main coordinator
+1. migrations/002_session_support_simple.sql - Database schema
 
 **3 MCP Tools**:
 - `initialize_session` - Start new session with worktree detection
@@ -88,10 +88,10 @@ prelude: Session Handoff 2025 10 18 (explanation) for dopemux documentation and 
 
 **What Was Done**:
 1. Created conport_db_client.py (direct PostgreSQL via asyncpg)
-2. Added lazy loading to mcp_server.py
-3. Updated 4 MCP tools to use real ConPort client
-4. Applied schema migration to dopemux_knowledge_graph
-5. Validated connection and queries
+1. Added lazy loading to mcp_server.py
+1. Updated 4 MCP tools to use real ConPort client
+1. Applied schema migration to dopemux_knowledge_graph
+1. Validated connection and queries
 
 **Database Migration Applied**:
 - Table: ag_catalog.workspace_contexts
@@ -206,17 +206,17 @@ dashboard = await mcp__serena-v2__get_multi_session_dashboard()
 
 ### F001 Enhanced (6 files)
 1. docs/F001_ENHANCED_USER_GUIDE.md - Complete usage guide
-2. docs/F001_USAGE_EXAMPLES.md - 5 scenario examples
-3. F001_TEST_RESULTS.md - Validation results
-4. F001_ENHANCED_BUILD_SUMMARY.md - Architecture details
-5. F001_ENHANCED_COMPLETION.md - Status report
-6. docs/UX_POLISH_CHECKLIST.md - Quality validation
+1. docs/F001_USAGE_EXAMPLES.md - 5 scenario examples
+1. F001_TEST_RESULTS.md - Validation results
+1. F001_ENHANCED_BUILD_SUMMARY.md - Architecture details
+1. F001_ENHANCED_COMPLETION.md - Status report
+1. docs/UX_POLISH_CHECKLIST.md - Quality validation
 
 ### F002 Multi-Session (3 files)
 1. docs/F002_USER_GUIDE.md - Complete usage guide
-2. F002_IMPLEMENTATION_PLAN.md - Architecture plan
-3. F002_COMPLETION_SUMMARY.md - Implementation summary
-4. F002_MIGRATION_SUCCESS.md - Database migration results
+1. F002_IMPLEMENTATION_PLAN.md - Architecture plan
+1. F002_COMPLETION_SUMMARY.md - Implementation summary
+1. F002_MIGRATION_SUCCESS.md - Database migration results
 
 ### Integration (1 file)
 1. test_conport_integration.py - Validation script
@@ -254,8 +254,8 @@ dashboard = await mcp__serena-v2__get_multi_session_dashboard()
 
 ### Immediate (< 5 minutes)
 1. Restart Claude Code session
-2. New MCP tools will auto-load
-3. ConPort client will auto-connect
+1. New MCP tools will auto-load
+1. ConPort client will auto-connect
 
 ### Testing (15-20 minutes)
 1. **Test F002**:
@@ -273,7 +273,7 @@ dashboard = await mcp__serena-v2__get_multi_session_dashboard()
    print(dashboard["dashboard"])
    ```
 
-2. **Test F001**:
+1. **Test F001**:
    ```python
    # This repo has untracked files - perfect test!
    result = await mcp__serena-v2__detect_untracked_work_enhanced(

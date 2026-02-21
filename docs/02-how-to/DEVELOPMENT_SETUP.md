@@ -192,8 +192,8 @@ dopemux dev paths
 Dev mode activates automatically when:
 
 1. **Environment variable set**: `export DOPEMUX_DEV_MODE=true`
-2. **Inside Dopemux repo**: Has `pyproject.toml` + `src/dopemux/`
-3. **Component in standard location**: `~/code/zen-mcp-server` exists
+1. **Inside Dopemux repo**: Has `pyproject.toml` + `src/dopemux/`
+1. **Component in standard location**: `~/code/zen-mcp-server` exists
 
 ### Standard Development Locations
 

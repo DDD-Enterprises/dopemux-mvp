@@ -467,11 +467,11 @@ Week 2: macOS Integration (Progress ID: 163)
 ## 🎓 Best Practices
 
 1. **Daily Updates**: Mark tasks IN_PROGRESS → DONE each day
-2. **Decision Logging**: Log all architectural choices immediately
-3. **Link Everything**: Use `linked_item_id` to build knowledge graph
-4. **Tag Consistently**: Use tags like `component-7`, `week-N` for filtering
-5. **Weekly Validation**: Update validation checkpoints at end of each week
-6. **Final Metrics**: Capture actual results in `phase1_final_results` custom data
+1. **Decision Logging**: Log all architectural choices immediately
+1. **Link Everything**: Use `linked_item_id` to build knowledge graph
+1. **Tag Consistently**: Use tags like `component-7`, `week-N` for filtering
+1. **Weekly Validation**: Update validation checkpoints at end of each week
+1. **Final Metrics**: Capture actual results in `phase1_final_results` custom data
 
 ---
 

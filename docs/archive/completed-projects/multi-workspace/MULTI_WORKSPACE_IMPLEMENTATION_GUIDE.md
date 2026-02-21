@@ -25,20 +25,20 @@ This guide provides step-by-step instructions for adding multi-workspace support
 **Time**: 30-60 minutes per service
 
 1. Import shared utilities
-2. Add `workspace_paths` parameter
-3. Loop over workspaces
-4. Aggregate results
-5. Add tests
+1. Add `workspace_paths` parameter
+1. Loop over workspaces
+1. Aggregate results
+1. Add tests
 
 ### For Complex Services (Stateful, LSP, Database)
 
 **Time**: 2-4 hours per service
 
 1. Design workspace isolation strategy
-2. Refactor state management
-3. Create per-workspace instances
-4. Implement workspace switching
-5. Add comprehensive tests
+1. Refactor state management
+1. Create per-workspace instances
+1. Implement workspace switching
+1. Add comprehensive tests
 
 ---
 
@@ -425,9 +425,9 @@ async def function_name(
 
         Multi-workspace mode:
             Dict containing:
-            - workspace_count: Number of workspaces processed
-            - total_results: Aggregated result count
-            - results: List of per-workspace results with metadata
+- workspace_count: Number of workspaces processed
+- total_results: Aggregated result count
+- results: List of per-workspace results with metadata
 
     Examples:
         >>> # Single workspace

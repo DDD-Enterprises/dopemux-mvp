@@ -46,9 +46,9 @@ prelude: Phase 6 Integration Tests Assessment (reference) for dopemux documentat
 
 **Why Defer**:
 1. Not blocking deployment (runtime code validated)
-2. Pre-existing issue (not caused by audit)
-3. Fixing tests = debugging old issues (not audit scope)
-4. Security validated via other means (100% pass rate)
+1. Pre-existing issue (not caused by audit)
+1. Fixing tests = debugging old issues (not audit scope)
+1. Security validated via other means (100% pass rate)
 
 **When to Fix**: Separate task/ticket
 **Effort**: 2-4 hours (fix imports, run suite, triage failures)
@@ -62,10 +62,10 @@ prelude: Phase 6 Integration Tests Assessment (reference) for dopemux documentat
 
 **Results**: ✅ 5/5 tests passed
 1. CORS parsing logic
-2. API key authentication
-3. Environment credential loading
-4. MCP call structures
-5. Configuration handling
+1. API key authentication
+1. Environment credential loading
+1. MCP call structures
+1. Configuration handling
 
 **Conclusion**: Security fixes work correctly without needing full pytest suite
 

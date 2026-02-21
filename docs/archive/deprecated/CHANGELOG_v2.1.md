@@ -172,24 +172,24 @@ conport = ConPortClient(workspace_id)  # Auto-detects backend
 ### Synergies Identified:
 
 1. **Synergy A**: Unified Complexity Intelligence (designed)
-   - Serena complexity + Dope-Context semantic enrichment
-   - **Status**: Design complete, implementation pending
+- Serena complexity + Dope-Context semantic enrichment
+- **Status**: Design complete, implementation pending
 
-2. **Synergy B**: Unified ConPort Client (✅ implemented)
-   - Single interface, 3 backends consolidated
-   - **Status**: Production ready
+1. **Synergy B**: Unified ConPort Client (✅ implemented)
+- Single interface, 3 backends consolidated
+- **Status**: Production ready
 
-3. **Synergy C**: Code Graph + Search Enrichment (designed)
-   - ConPort decisions + Dope-Context code search
-   - **Status**: Design complete, implementation pending
+1. **Synergy C**: Code Graph + Search Enrichment (designed)
+- ConPort decisions + Dope-Context code search
+- **Status**: Design complete, implementation pending
 
-4. **Synergy D**: Multi-Session Support (✅ implemented)
-   - Parallel Claude Code sessions with isolation
-   - **Status**: Production ready
+1. **Synergy D**: Multi-Session Support (✅ implemented)
+- Parallel Claude Code sessions with isolation
+- **Status**: Production ready
 
-5. **Synergy E**: Decision-Agent Linking (planned)
-   - Automatic linking between agent events and decisions
-   - **Status**: Planned for Phase 2
+1. **Synergy E**: Decision-Agent Linking (planned)
+- Automatic linking between agent events and decisions
+- **Status**: Planned for Phase 2
 
 **Documentation**:
 - `claudedocs/serena_adhd_cross_system_analysis_20251023.md` (1,083 lines)
@@ -251,30 +251,30 @@ conport = ConPortClient(workspace_id)  # Auto-detects backend
 ### New Documentation
 
 1. **ConPort-KG 2.0**:
-   - `services/conport_kg/README.md` (NEW - comprehensive guide)
-   - `docs/94-architecture/CONPORT_KG_2.0_MASTER_PLAN.md` (2,251 lines)
-   - `services/conport_kg/PHASE_1_WEEK_1_PLAN.md` (1,492 lines)
+- `services/conport_kg/README.md` (NEW - comprehensive guide)
+- `docs/94-architecture/CONPORT_KG_2.0_MASTER_PLAN.md` (2,251 lines)
+- `services/conport_kg/PHASE_1_WEEK_1_PLAN.md` (1,492 lines)
 
-2. **Dope-Context**:
-   - `services/dope-context/AUTONOMOUS_INDEXING.md` (454 lines - NEW)
-   - Updated README.md with autonomous indexing
+1. **Dope-Context**:
+- `services/dope-context/AUTONOMOUS_INDEXING.md` (454 lines - NEW)
+- Updated README.md with autonomous indexing
 
-3. **Unified ConPort Client**:
-   - `services/shared/conport_client/README.md` (comprehensive guide)
+1. **Unified ConPort Client**:
+- `services/shared/conport_client/README.md` (comprehensive guide)
 
-4. **Cross-System Analysis**:
-   - `claudedocs/serena_adhd_cross_system_analysis_20251023.md` (1,083 lines)
+1. **Cross-System Analysis**:
+- `claudedocs/serena_adhd_cross_system_analysis_20251023.md` (1,083 lines)
 
 ### Updated Documentation
 
 1. **Main Project**:
-   - `README.md` - Updated with v2.1 features
-   - Changelog section expanded
+- `README.md` - Updated with v2.1 features
+- Changelog section expanded
 
-2. **Dope-Context**:
-   - `README.md` - Autonomous indexing prominently featured
-   - Usage patterns updated (autonomous-first workflow)
-   - MCP tools section (9 → 12 tools)
+1. **Dope-Context**:
+- `README.md` - Autonomous indexing prominently featured
+- Usage patterns updated (autonomous-first workflow)
+- MCP tools section (9 → 12 tools)
 
 ---
 
@@ -304,19 +304,19 @@ conport = ConPortClient(workspace_id)  # Auto-detects backend
 **Expected Completion**: 3 days from 2025-10-23
 
 1. **PostgreSQL RLS Policies**:
-   - Row-level security for workspace isolation
-   - Database-enforced multi-tenancy
-   - Session variable workspace scoping
+- Row-level security for workspace isolation
+- Database-enforced multi-tenancy
+- Session variable workspace scoping
 
-2. **RBAC Middleware**:
-   - 4 roles: owner, admin, member, viewer
-   - Permission enforcement
-   - Role-based query filtering
+1. **RBAC Middleware**:
+- 4 roles: owner, admin, member, viewer
+- Permission enforcement
+- Role-based query filtering
 
-3. **Security Testing**:
-   - 130+ security tests
-   - Cross-workspace isolation validation
-   - Permission checks
+1. **Security Testing**:
+- 130+ security tests
+- Cross-workspace isolation validation
+- Permission checks
 
 ---
 
@@ -353,18 +353,18 @@ conport = ConPortClient(workspace_id)  # Auto-detects backend
 ### New ADHD Features
 
 1. **Autonomous Indexing**:
-   - **Cognitive Load Reduction**: 100% (never think about indexing)
-   - **Interruption-Safe**: Runs in background
-   - **Smart Batching**: Prevents API spam
+- **Cognitive Load Reduction**: 100% (never think about indexing)
+- **Interruption-Safe**: Runs in background
+- **Smart Batching**: Prevents API spam
 
-2. **Multi-Session Support**:
-   - **Context Preservation**: Each session isolated
-   - **Parallel Work**: No interference between sessions
-   - **Mental Clarity**: Physical session = mental boundary
+1. **Multi-Session Support**:
+- **Context Preservation**: Each session isolated
+- **Parallel Work**: No interference between sessions
+- **Mental Clarity**: Physical session = mental boundary
 
-3. **Progressive Disclosure**:
-   - **Maintained**: Top-3 ConPort queries
-   - **Enhanced**: Top-10 Dope-Context results + 40 cached
+1. **Progressive Disclosure**:
+- **Maintained**: Top-3 ConPort queries
+- **Enhanced**: Top-10 Dope-Context results + 40 cached
 
 ---
 
@@ -373,38 +373,38 @@ conport = ConPortClient(workspace_id)  # Auto-detects backend
 ### Immediate Priorities (This Week)
 
 1. **Complete Phase 1 Days 6-8**:
-   - PostgreSQL RLS policies
-   - RBAC middleware
-   - Security testing (130+ tests)
+- PostgreSQL RLS policies
+- RBAC middleware
+- Security testing (130+ tests)
 
-2. **Documentation Polish**:
-   - ConPort-KG API reference
-   - Deployment guide
-   - Migration guide
+1. **Documentation Polish**:
+- ConPort-KG API reference
+- Deployment guide
+- Migration guide
 
 ### Short-Term (Weeks 2-4)
 
 1. **Agent Integration** (Phase 2):
-   - Redis Streams event bus
-   - 6-agent integration
-   - Cross-agent insights
+- Redis Streams event bus
+- 6-agent integration
+- Cross-agent insights
 
-2. **Performance & Reliability** (Phase 3):
-   - Multi-tier caching
-   - Rate limiting
-   - Monitoring (Prometheus + Grafana)
+1. **Performance & Reliability** (Phase 3):
+- Multi-tier caching
+- Rate limiting
+- Monitoring (Prometheus + Grafana)
 
 ### Medium-Term (Weeks 5-8)
 
 1. **ADHD UX** (Phase 4):
-   - Adaptive UI components
-   - Decision health scoring
-   - Cognitive load forecasting
+- Adaptive UI components
+- Decision health scoring
+- Cognitive load forecasting
 
-2. **Testing & Deployment** (Phases 5-6):
-   - 200+ comprehensive tests
-   - Production Docker stack
-   - User acceptance testing
+1. **Testing & Deployment** (Phases 5-6):
+- 200+ comprehensive tests
+- Production Docker stack
+- User acceptance testing
 
 ---
 

@@ -34,8 +34,8 @@ The active service is a **Mock Server** running a simple FastAPI shell:
 - **No Vector DB**: Qdrant connection is not initialized or used.
 - **No Embeddings**: No Voyage AI integration.
 - **Hardcoded Responses**:
-  - `search_code` returns: `[{"code": "# Mock code result for 'query'..."}]`
-  - `docs_search` returns: `[{"text": "Mock documentation for 'query'..."}]`
+- `search_code` returns: `[{"code": "# Mock code result for 'query'..."}]`
+- `docs_search` returns: `[{"text": "Mock documentation for 'query'..."}]`
 - **Dependencies**: Explicitly avoids `fastmcp` and vector libraries.
 
 ### Evidence Trail

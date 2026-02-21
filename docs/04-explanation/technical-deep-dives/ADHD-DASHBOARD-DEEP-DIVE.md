@@ -50,11 +50,11 @@ The dashboard is a hybrid FastAPI application that serves a single-page HTML int
 ### Testing, Performance, Limitations & Opportunities
 * **Testing**: Basic tests found in `services/adhd-dashboard/tests`.
 * **Limitations**:
-  * **Monolithic UI**: The UI is embedded in the Python file as a string. While simple, it limits development of a complex frontend.
-  * **State Dependency**: Relies heavily on healthy Activity Capture and ADHD Engine services.
+* **Monolithic UI**: The UI is embedded in the Python file as a string. While simple, it limits development of a complex frontend.
+* **State Dependency**: Relies heavily on healthy Activity Capture and ADHD Engine services.
 * **Opportunities**:
-  * **Componentize UI**: Move the HTML/CSS/JS to a standalone React/Next.js frontend in `ui-dashboard`.
-  * **Orchestrate**: Include in the unified dev stack to provide a "single pane of glass" for ADHD metrics.
+* **Componentize UI**: Move the HTML/CSS/JS to a standalone React/Next.js frontend in `ui-dashboard`.
+* **Orchestrate**: Include in the unified dev stack to provide a "single pane of glass" for ADHD metrics.
 
 ## SECTION 2: EVIDENCE TRAIL
 
@@ -71,4 +71,4 @@ The dashboard is a hybrid FastAPI application that serves a single-page HTML int
 * Confidence Level: 100%
 * Evidence Quality Score: High
 * Evolution Log:
-  * 2026-02-09: Initial Deep Dive. Found robust real-time communication logic but orphaned deployment.
+* 2026-02-09: Initial Deep Dive. Found robust real-time communication logic but orphaned deployment.

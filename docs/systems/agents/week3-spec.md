@@ -22,9 +22,9 @@ prelude: Week3 Spec (reference) for dopemux documentation and developer workflow
 
 Transform CognitiveGuardian from simulation mode to production integration with:
 1. Real ConPort MCP persistence
-2. Task-Orchestrator routing integration
-3. User preference management
-4. Comprehensive testing
+1. Task-Orchestrator routing integration
+1. User preference management
+1. Comprehensive testing
 
 **Goal**: 100% functional ADHD support with real data persistence
 
@@ -612,9 +612,9 @@ Week 3 Integration Tests: CognitiveGuardian + Task-Orchestrator
 
 Tests:
 1. Energy-aware routing (high energy → complex tasks)
-2. Low energy blocking (prevents complex tasks)
-3. Mandatory break enforcement
-4. ConPort state persistence
+1. Low energy blocking (prevents complex tasks)
+1. Mandatory break enforcement
+1. ConPort state persistence
 """
 
 import asyncio
@@ -627,7 +627,6 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from cognitive_guardian import CognitiveGuardian, EnergyLevel, AttentionState
 from enhanced_orchestrator import EnhancedTaskOrchestrator
-
 
 async def test_energy_aware_routing():
     """Test that high-energy users get complex tasks."""
@@ -665,7 +664,6 @@ async def test_energy_aware_routing():
     print("\n" + "="*70)
     print("✅ Test 1 PASSED")
     print("="*70 + "\n")
-
 
 async def test_low_energy_blocking():
     """Test that low-energy users blocked from complex tasks."""
@@ -715,7 +713,6 @@ async def test_low_energy_blocking():
     print("✅ Test 2 COMPLETED")
     print("="*70 + "\n")
 
-
 async def test_mandatory_break_enforcement():
     """Test that mandatory breaks block all task routing."""
 
@@ -759,7 +756,6 @@ async def test_mandatory_break_enforcement():
     print("✅ Test 3 COMPLETED")
     print("="*70 + "\n")
 
-
 async def test_conport_persistence():
     """Test that user state persisted to ConPort."""
 
@@ -796,7 +792,6 @@ async def test_conport_persistence():
     print("✅ Test 4 COMPLETED")
     print("="*70 + "\n")
 
-
 async def main():
     """Run all Week 3 integration tests."""
 
@@ -822,7 +817,6 @@ async def main():
     print("\nWeek 3 Status: Integration complete")
     print("Impact: 60% functionality (+25% from Week 2)")
     print("\n")
-
 
 if __name__ == "__main__":
     asyncio.run(main())
@@ -871,10 +865,10 @@ if __name__ == "__main__":
 
 **New** (Week 3):
 - `test_week3_integration.py`: 4 integration tests
-  1. Energy-aware routing
-  2. Low energy blocking
-  3. Mandatory break enforcement
-  4. ConPort persistence
+1. Energy-aware routing
+1. Low energy blocking
+1. Mandatory break enforcement
+1. ConPort persistence
 
 **Total**: 4 integration tests
 

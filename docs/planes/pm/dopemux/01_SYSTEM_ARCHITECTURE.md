@@ -39,7 +39,7 @@ TODO: List the architectural invariants that must never be violated.
 
 ## Open questions
 - **Global Rollups**: How do we aggregate multi-repo stats without breaking isolation?
-  - *Resolution*: Define a separate "Observer" plane that reads-only from multiple approved roots.
+- *Resolution*: Define a separate "Observer" plane that reads-only from multiple approved roots.
 
 ## Components (contract status)
 
@@ -68,11 +68,11 @@ TODO: Confirm which of these exist today vs planned. Label as OBSERVED / PLANNED
 
 ## Data flows (high-level)
 1. request -> supervisor intake
-2. context -> retrieval and shaping
-3. routing -> choose runner/model
-4. execution -> TaskX runs packet
-5. artifacts -> deterministic outputs
-6. memory -> ConPort and state stores
+1. context -> retrieval and shaping
+1. routing -> choose runner/model
+1. execution -> TaskX runs packet
+1. artifacts -> deterministic outputs
+1. memory -> ConPort and state stores
 
 TODO: Add a diagram of the actual current flow once verified.
 

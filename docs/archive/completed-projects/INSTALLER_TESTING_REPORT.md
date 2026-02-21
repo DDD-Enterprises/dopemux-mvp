@@ -76,9 +76,9 @@ prelude: Installer_Testing_Report (explanation) for dopemux documentation and de
 
 **Issues Found & Fixed:**
 1. ✅ **FIXED:** Python 3.11+ requirement too strict
-   - Changed `REQUIRED_PYTHON_VERSION` from "3.11" to "3.10"
-   - Reason: Ubuntu 22.04 LTS ships with Python 3.10
-   - Project supports Python >= 3.8 (per pyproject.toml)
+- Changed `REQUIRED_PYTHON_VERSION` from "3.11" to "3.10"
+- Reason: Ubuntu 22.04 LTS ships with Python 3.10
+- Project supports Python >= 3.8 (per pyproject.toml)
 
 **What Works:**
 - ✅ Platform detection: Ubuntu 22.04.5 LTS
@@ -149,8 +149,8 @@ REQUIRED_PYTHON_VERSION="3.10"
 ## Recommendations
 
 1. **CI/CD Integration:** Use `test_installer_basic.sh` for quick validation
-2. **Platform Testing:** Test on real VMs, not containers (for Docker functionality)
-3. **Version Support:** Python 3.10+ is the sweet spot (Ubuntu 22.04 LTS compatible)
+1. **Platform Testing:** Test on real VMs, not containers (for Docker functionality)
+1. **Version Support:** Python 3.10+ is the sweet spot (Ubuntu 22.04 LTS compatible)
 
 ---
 - Platform detection: ✅ Works perfectly
@@ -375,23 +375,23 @@ apt update
 
 **Immediate:**
 1. ✅ Test verification mode on macOS
-2. ⏳ Test full install in Ubuntu 22.04 container
-3. ⏳ Test error handling scenarios
-4. ⏳ Fix any bugs found
-5. ⏳ Document platform quirks
+1. ⏳ Test full install in Ubuntu 22.04 container
+1. ⏳ Test error handling scenarios
+1. ⏳ Fix any bugs found
+1. ⏳ Document platform quirks
 
 **Short-term (This Week):**
 1. Test on all 5 major platforms
-2. Measure install times
-3. Get to >95% success rate
-4. Document known issues
-5. Create troubleshooting guide
+1. Measure install times
+1. Get to >95% success rate
+1. Document known issues
+1. Create troubleshooting guide
 
 **Medium-term (Week 2):**
 1. Add telemetry (opt-in)
-2. Create GitHub Action for CI testing
-3. Set up automated testing on multiple platforms
-4. Beta test with 10 users
+1. Create GitHub Action for CI testing
+1. Set up automated testing on multiple platforms
+1. Beta test with 10 users
 
 ---
 

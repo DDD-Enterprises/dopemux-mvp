@@ -19,10 +19,10 @@ Complete PM (Project Management) dashboard system for tmux orchestration with AD
 
 ### Core Components
 1. **tmux Layout**: 6-pane orchestration with PM-aware panes
-2. **Status Bar**: Real-time PM metrics (tasks, decisions, energy, blockers)
-3. **Dashboard Scripts**: Pane-specific PM views with live data
-4. **Hotkeys**: Interactive PM workflow controls
-5. **Integration**: Bidirectional sync with ConPort + Leantime
+1. **Status Bar**: Real-time PM metrics (tasks, decisions, energy, blockers)
+1. **Dashboard Scripts**: Pane-specific PM views with live data
+1. **Hotkeys**: Interactive PM workflow controls
+1. **Integration**: Bidirectional sync with ConPort + Leantime
 
 ### ADHD Optimizations
 - **Progressive Disclosure**: Essential info first, details on demand
@@ -38,7 +38,7 @@ Complete PM (Project Management) dashboard system for tmux orchestration with AD
 ```yaml
 session_name: dopemux-orchestrator
 windows:
-  - window_name: orchestration
+- window_name: orchestration
     layout: tiled
     options:
       status: on
@@ -47,17 +47,17 @@ windows:
       status-right: "#[fg=colour166] #(./scripts/pm-status.sh) #[default]"
     panes:
       # Pane 0: Task Orchestrator + PM Overview
-      - watch -n 30 './scripts/pm-dashboard.sh orchestrator'
+- watch -n 30 './scripts/pm-dashboard.sh orchestrator'
       # Pane 1: ConPort Memory Hub (Enhanced PM Dashboard)
-      - watch -n 30 './scripts/pm-dashboard.sh conport'
+- watch -n 30 './scripts/pm-dashboard.sh conport'
       # Pane 2: Leantime Strategic PM
-      - watch -n 30 './scripts/pm-dashboard.sh leantime'
+- watch -n 30 './scripts/pm-dashboard.sh leantime'
       # Pane 3: Playwright Validation (With PM Links)
-      - watch -n 30 './scripts/pm-dashboard.sh validation'
+- watch -n 30 './scripts/pm-dashboard.sh validation'
       # Pane 4: Morph Code Apply (With Task Links)
-      - watch -n 30 './scripts/pm-dashboard.sh morph'
+- watch -n 30 './scripts/pm-dashboard.sh morph'
       # Pane 5: Zen Reasoning (Background with PM Context)
-      - watch -n 30 './scripts/pm-dashboard.sh zen'
+- watch -n 30 './scripts/pm-dashboard.sh zen'
 ```
 
 ### 2. Status Bar Script (`scripts/pm-status.sh`)
@@ -153,10 +153,10 @@ Tasks: 3 Dec: 2 ⚡ ❌1
 
 ### Hello-Flow PM Integration
 1. **Pick Work**: `conport.upcoming_next()` provides prioritized tasks
-2. **Plan & Execute**: Task Orchestrator updates ConPort status
-3. **Validate**: Playwright attaches screenshots to ConPort artifacts
-4. **Close Loop**: Final status + decisions logged in ConPort
-5. **Dashboard Sync**: All panes update with real-time PM data
+1. **Plan & Execute**: Task Orchestrator updates ConPort status
+1. **Validate**: Playwright attaches screenshots to ConPort artifacts
+1. **Close Loop**: Final status + decisions logged in ConPort
+1. **Dashboard Sync**: All panes update with real-time PM data
 
 ### ConPort + Leantime Synchronization
 **Bidirectional Sync**:
@@ -186,10 +186,10 @@ conport_status_map = {
 
 ### Manual Testing Steps
 1. **Start tmux**: `tmuxp load tmux-dopemux-orchestrator.yaml`
-2. **Verify Status Bar**: Should show "Tasks: X Dec: Y ⚡ ❌Z"
-3. **Check Panes**: Each pane should show relevant PM data
-4. **Test Hotkeys**: Try `prefix + p` for PM overview
-5. **Validate Updates**: Make ConPort changes, watch dashboard refresh
+1. **Verify Status Bar**: Should show "Tasks: X Dec: Y ⚡ ❌Z"
+1. **Check Panes**: Each pane should show relevant PM data
+1. **Test Hotkeys**: Try `prefix + p` for PM overview
+1. **Validate Updates**: Make ConPort changes, watch dashboard refresh
 
 ### Automated Testing
 ```bash
@@ -231,10 +231,10 @@ export ADHD_ENGINE_URL="http://localhost:8080"
 
 ### Daily Workflow
 1. **Session Start**: Load tmux session → PM dashboard initializes
-2. **Work Intake**: Check status bar → `prefix + o` for next task
-3. **Progress Tracking**: Watch pane updates → `prefix + m` to log decisions
-4. **Quality Gates**: `prefix + v` for validation → Review artifacts
-5. **Session End**: `prefix + S` saves state to ConPort
+1. **Work Intake**: Check status bar → `prefix + o` for next task
+1. **Progress Tracking**: Watch pane updates → `prefix + m` to log decisions
+1. **Quality Gates**: `prefix + v` for validation → Review artifacts
+1. **Session End**: `prefix + S` saves state to ConPort
 
 ## ADHD Optimization Details
 
@@ -276,9 +276,9 @@ export ADHD_ENGINE_URL="http://localhost:8080"
 
 ### Common Issues
 1. **Blank Dashboards**: Check ConPort MCP connectivity
-2. **Slow Updates**: Verify 30s refresh interval
-3. **Color Issues**: Ensure tmux supports 256 colors
-4. **Hotkey Conflicts**: Check existing tmux configuration
+1. **Slow Updates**: Verify 30s refresh interval
+1. **Color Issues**: Ensure tmux supports 256 colors
+1. **Hotkey Conflicts**: Check existing tmux configuration
 
 ### Debug Commands
 ```bash

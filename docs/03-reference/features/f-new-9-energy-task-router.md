@@ -54,9 +54,9 @@ F-NEW-9 Energy-Aware Router
   └─ Rank by energy-complexity alignment
          ↓
 Suggested Tasks (top 3, ADHD-safe)
-  - Best match task
-  - Alternative 1
-  - Alternative 2
+- Best match task
+- Alternative 1
+- Alternative 2
 ```
 
 ### Matching Algorithm
@@ -119,11 +119,11 @@ async def get_suggested_tasks(user_id: str, count: int = 3) -> List[TaskSuggesti
     Get top N tasks matching current cognitive state.
 
     Returns:
-        - Task details
-        - Match score (why this task now)
-        - Estimated duration
-        - Energy requirement
-        - Complexity score
+- Task details
+- Match score (why this task now)
+- Estimated duration
+- Energy requirement
+- Complexity score
     """
 ```
 
@@ -134,9 +134,9 @@ async def detect_task_mismatch(user_id: str, current_task_id: str) -> Optional[M
     Detect if current task doesn't match cognitive state.
 
     Returns warning if:
-    - High complexity task + low energy
-    - Deep focus task + scattered attention
-    - Long task + little time before scheduled break
+- High complexity task + low energy
+- Deep focus task + scattered attention
+- Long task + little time before scheduled break
     """
 ```
 
@@ -145,10 +145,10 @@ async def detect_task_mismatch(user_id: str, current_task_id: str) -> Optional[M
 async def reorder_task_queue(user_id: str) -> List[str]:
     """
     Automatically reorder TODO queue based on:
-    - Current time of day
-    - Predicted energy curve (from F-NEW-6 patterns)
-    - Task complexity distribution
-    - Urgency/priority
+- Current time of day
+- Predicted energy curve (from F-NEW-6 patterns)
+- Task complexity distribution
+- Urgency/priority
     """
 ```
 
@@ -335,9 +335,9 @@ Response:
 ## Next Steps
 
 1. **This session**: Create design document (this file) ✅
-2. **Next session**: Implement Week 1 (matching engine)
-3. **Week 2**: Integration with F-NEW-6 + Task-Orchestrator
-4. **Week 3**: Pattern learning and personalization
+1. **Next session**: Implement Week 1 (matching engine)
+1. **Week 2**: Integration with F-NEW-6 + Task-Orchestrator
+1. **Week 3**: Pattern learning and personalization
 
 ## Decision
 

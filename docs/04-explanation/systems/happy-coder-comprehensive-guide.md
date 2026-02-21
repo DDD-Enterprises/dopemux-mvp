@@ -29,16 +29,16 @@ prelude: Happy Coder Comprehensive Guide (reference) for dopemux documentation a
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Quick Start (5 Minutes)](#quick-start-5-minutes)
-3. [Features](#features)
-4. [Installation & Configuration](#installation--configuration)
-5. [Usage Guide](#usage-guide)
-6. [Common Use Cases](#common-use-cases)
-7. [Architecture](#architecture)
-8. [ADHD Benefits](#adhd-benefits)
-9. [Troubleshooting](#troubleshooting)
-10. [v2.0 Enhancement Roadmap](#v20-enhancement-roadmap)
-11. [Research-Validated Enhancements](#research-validated-enhancements)
+1. [Quick Start (5 Minutes)](#quick-start-5-minutes)
+1. [Features](#features)
+1. [Installation & Configuration](#installation--configuration)
+1. [Usage Guide](#usage-guide)
+1. [Common Use Cases](#common-use-cases)
+1. [Architecture](#architecture)
+1. [ADHD Benefits](#adhd-benefits)
+1. [Troubleshooting](#troubleshooting)
+1. [v2.0 Enhancement Roadmap](#v20-enhancement-roadmap)
+1. [Research-Validated Enhancements](#research-validated-enhancements)
 
 ---
 
@@ -148,9 +148,9 @@ See [Quick Start](#quick-start-5-minutes) for basic setup.
 - **Type**: String or Array
 - **Default**: `"primary"`
 - **Options**:
-  - `"primary"` - Active pane or first pane
-  - `"all"` - All Claude panes
-  - `["name1", "name2"]` - Specific panes
+- `"primary"` - Active pane or first pane
+- `"all"` - All Claude panes
+- `["name1", "name2"]` - Specific panes
 - **Description**: Which Claude panes to mirror by default
 
 #### `mobile.popup_mode`
@@ -362,9 +362,9 @@ grep -A5 "\[mobile\]" ~/.config/dopemux/dopemux.toml
 
 **Known Limitations**:
 1. Notification spam during batch operations (50 files = 50 notifications)
-2. No sleep protection (late-night builds wake you up)
-3. No prioritization (all notifications equal)
-4. tmux dependency
+1. No sleep protection (late-night builds wake you up)
+1. No prioritization (all notifications equal)
+1. tmux dependency
 
 ### Planned Enhancements
 
@@ -406,8 +406,8 @@ Configurable quiet hours (default 22:00-08:00):
 Research revealed **2 critical patterns** missed in initial analysis:
 
 1. **Focus Mode Presets** (iOS-inspired) → One-command context switching
-2. **Time-Slot Availability** (Axolo-inspired) → Deep work protection (better than quiet hours!)
-3. **Scheduled Summaries** (iOS-inspired) → Predictable delivery (better than time-window batching)
+1. **Time-Slot Availability** (Axolo-inspired) → Deep work protection (better than quiet hours!)
+1. **Scheduled Summaries** (iOS-inspired) → Predictable delivery (better than time-window batching)
 
 ### Enhanced Roadmap (4 weeks, ~330 lines)
 

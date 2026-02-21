@@ -20,35 +20,35 @@ prelude: Conport Summary (explanation) for dopemux documentation and developer w
 
 ### Decisions Captured
 - **Decision #6**: "Implemented Event Coordinator Suppression Telemetry"
-  - Rationale: Answers PM Phase 2 open question on event-rate reduction
-  - Implementation: Comprehensive telemetry dataclass with 6 rule tracking
-  - Tags: event-coordinator, telemetry, signal-noise-ratio, suppression-rules, adhd-optimization, phase2-open-question, measurement
+- Rationale: Answers PM Phase 2 open question on event-rate reduction
+- Implementation: Comprehensive telemetry dataclass with 6 rule tracking
+- Tags: event-coordinator, telemetry, signal-noise-ratio, suppression-rules, adhd-optimization, phase2-open-question, measurement
 
 ### Progress Entries Created
 - **Progress #8**: Phase 1 Completion (DONE)
-  - All 6 suppression rules instrumented
-  - 14 comprehensive tests passing
-  - Full documentation and demo included
-  - Linked to Decision #6
+- All 6 suppression rules instrumented
+- 14 comprehensive tests passing
+- Full documentation and demo included
+- Linked to Decision #6
 
 - **Progress #9-26**: 18 Future Tasks (TODO)
-  - Phase 2 (2 tasks): Integration testing, performance benchmark
-  - Phase 3 (5 tasks): PM review, threshold tuning, alert system, per-worker telemetry, anomaly detection
-  - Phase 4 (6 tasks): Historical persistence, time-series, reports, dashboard, ML tuning, ConPort integration
-  - Phase 5 (5 tasks): User dashboard, distributed telemetry, benchmark suite, configuration, documentation
+- Phase 2 (2 tasks): Integration testing, performance benchmark
+- Phase 3 (5 tasks): PM review, threshold tuning, alert system, per-worker telemetry, anomaly detection
+- Phase 4 (6 tasks): Historical persistence, time-series, reports, dashboard, ML tuning, ConPort integration
+- Phase 5 (5 tasks): User dashboard, distributed telemetry, benchmark suite, configuration, documentation
 
 ### Custom Data Stored
 - **Key**: `task_prioritization:suppression_telemetry_roadmap`
 - **Content**: Comprehensive project roadmap with:
-  - 5 phases with timelines (Phase 1: done, Phase 2-5: 1-2 months total)
-  - 18 tasks with effort estimates and dependencies
-  - Ownership assignments (DevOps, Backend, Data Engineer, Frontend, etc.)
-  - Success metrics and risk management
-  - Estimated total effort: 189-260 hours (5-7 weeks)
+- 5 phases with timelines (Phase 1: done, Phase 2-5: 1-2 months total)
+- 18 tasks with effort estimates and dependencies
+- Ownership assignments (DevOps, Backend, Data Engineer, Frontend, etc.)
+- Success metrics and risk management
+- Estimated total effort: 189-260 hours (5-7 weeks)
 
 ### Links Created
 - **Progress #8 → Progress #9**: "Phase 1 complete, ready for Phase 2 immediate work"
-  - Shows progression from implementation to validation
+- Shows progression from implementation to validation
 
 ---
 
@@ -98,17 +98,17 @@ prelude: Conport Summary (explanation) for dopemux documentation and developer w
 
 ### In ConPort
 1. View Decision #6: Full rationale and implementation details
-2. Check Progress #8: Phase 1 completion status
-3. Get Roadmap: `custom_data:task_prioritization:suppression_telemetry_roadmap`
-4. Track Tasks: Progress entries #9-26 (all TODO)
+1. Check Progress #8: Phase 1 completion status
+1. Get Roadmap: `custom_data:task_prioritization:suppression_telemetry_roadmap`
+1. Track Tasks: Progress entries #9-26 (all TODO)
 
 ### In Repository
 1. **Implementation**: `services/task-orchestrator/event_coordinator.py` (commit: 4a81e830b)
-2. **Tests**: `services/task-orchestrator/tests/test_suppression_telemetry.py` (14 tests)
-3. **Docs**: `services/task-orchestrator/SUPPRESSION_TELEMETRY.md`
-4. **Demo**: `services/task-orchestrator/examples/telemetry_demo.py`
-5. **Status**: `PROJECT_STATUS.md` (comprehensive overview)
-6. **Roadmap**: `NEXT_STEPS.md` (future enhancements)
+1. **Tests**: `services/task-orchestrator/tests/test_suppression_telemetry.py` (14 tests)
+1. **Docs**: `services/task-orchestrator/SUPPRESSION_TELEMETRY.md`
+1. **Demo**: `services/task-orchestrator/examples/telemetry_demo.py`
+1. **Status**: `PROJECT_STATUS.md` (comprehensive overview)
+1. **Roadmap**: `NEXT_STEPS.md` (future enhancements)
 
 ---
 
@@ -116,9 +116,9 @@ prelude: Conport Summary (explanation) for dopemux documentation and developer w
 
 ### How to Track Progress
 1. **Start Phase 2 work**: Update Progress #9 to `IN_PROGRESS`
-2. **Complete task**: Update Progress #9 to `DONE`
-3. **Unblock next phase**: Creates readiness for Progress #11-15
-4. **Track dependencies**: Roadmap data shows which tasks block which
+1. **Complete task**: Update Progress #9 to `DONE`
+1. **Unblock next phase**: Creates readiness for Progress #11-15
+1. **Track dependencies**: Roadmap data shows which tasks block which
 
 ### How to Update Status
 - Use ConPort Progress entries to track completion
@@ -158,9 +158,9 @@ prelude: Conport Summary (explanation) for dopemux documentation and developer w
 
 **Next Action**: Start Phase 2 (Integration Testing) by:
 1. Setting Progress #9 to `IN_PROGRESS`
-2. Running integration tests with real Redis
-3. Measuring performance overhead
-4. Validating no regressions
+1. Running integration tests with real Redis
+1. Measuring performance overhead
+1. Validating no regressions
 
 **Timeline**: 1-2 days
 

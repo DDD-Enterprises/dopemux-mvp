@@ -118,9 +118,9 @@ prelude: Start Here 2025 (explanation) for dopemux documentation and developer w
 
 **Week 4 Day 2** (READY TO BUILD - ~95 min):
 1. Decision-Task Linking (15 min)
-2. RelationshipMapper (25 min)
-3. SuggestionEngine (35 min)
-4. QueryService Integration (20 min)
+1. RelationshipMapper (25 min)
+1. SuggestionEngine (35 min)
+1. QueryService Integration (20 min)
 
 **Week 4 Days 3-4** (~3 hours):
 - Semantic search with embeddings
@@ -146,9 +146,9 @@ prelude: Start Here 2025 (explanation) for dopemux documentation and developer w
 User/Agent Layer (CLI, LSP, API)
            ↓
     QueryService (Public API)
-    - overview() - Top-3 pattern
-    - suggest_next_tasks() - ADHD-optimized
-    - get_task_with_context() - Composite views
+- overview() - Top-3 pattern
+- suggest_next_tasks() - ADHD-optimized
+- get_task_with_context() - Composite views
            ↓
     Intelligence Layer
     ├─ SuggestionEngine (context-aware scoring)
@@ -266,35 +266,35 @@ open 2025_MODERNIZATION_ROADMAP.md
 
 ### Planning & Analysis (Start Here)
 1. ⭐ `2025_COMPREHENSIVE_ANALYSIS_AND_PLAN.md` - **MASTER DOCUMENT**
-2. `2025_SESSION_COMPLETE.md` - Session summary
-3. `2025_MODERNIZATION_ROADMAP.md` - Week-by-week plan
-4. `2025_TECHNICAL_SPEC.md` - Technical details
+1. `2025_SESSION_COMPLETE.md` - Session summary
+1. `2025_MODERNIZATION_ROADMAP.md` - Week-by-week plan
+1. `2025_TECHNICAL_SPEC.md` - Technical details
 
 ### Week 4 Implementation
 1. `WEEK4_DAY1_COMPLETE.md` - Day 1 results (✅ complete)
-2. `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` - Day 2 plan (ready to build)
-3. `WEEK4_DAY2_FINAL_ROADMAP.md` - Day 2 architecture
-4. `WEEK4_DAY2_SPEC.md` - Day 2 specifications
-5. `WEEK4_DAY2_DEEP_RESEARCH.md` - Day 2 research
-6. `WEEK4_PROGRESS.md` - Week 4 tracking
+1. `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` - Day 2 plan (ready to build)
+1. `WEEK4_DAY2_FINAL_ROADMAP.md` - Day 2 architecture
+1. `WEEK4_DAY2_SPEC.md` - Day 2 specifications
+1. `WEEK4_DAY2_DEEP_RESEARCH.md` - Day 2 research
+1. `WEEK4_PROGRESS.md` - Week 4 tracking
 
 ### Architecture & Design
 1. `DEEP_ANALYSIS_CURRENT_STATE.md` - Current state audit
-2. `ARCHITECTURE_ANALYSIS.md` - Architecture review
-3. `STORAGE_DESIGN.md` - Storage layer design
-4. `MODERNIZATION_ANALYSIS_2025.md` - Modernization analysis
+1. `ARCHITECTURE_ANALYSIS.md` - Architecture review
+1. `STORAGE_DESIGN.md` - Storage layer design
+1. `MODERNIZATION_ANALYSIS_2025.md` - Modernization analysis
 
 ### Historical/Reference
 1. `EXECUTIVE_SUMMARY.md` - High-level overview
-2. `BUILD_STATUS_SUMMARY.md` - Build status
-3. `ANALYSIS_COMPLETE.md` - Analysis completion
-4. `QUICK_REFERENCE.md` - Quick reference guide
-5. Other planning docs (see `ANALYSIS_INDEX.md`)
+1. `BUILD_STATUS_SUMMARY.md` - Build status
+1. `ANALYSIS_COMPLETE.md` - Analysis completion
+1. `QUICK_REFERENCE.md` - Quick reference guide
+1. Other planning docs (see `ANALYSIS_INDEX.md`)
 
 ### Code Documentation
 1. `README_START_HERE.md` - Original start here
-2. `START_HERE.md` - Alternative start
-3. `ANALYSIS_INDEX_OLD.md` - Old index
+1. `START_HERE.md` - Alternative start
+1. `ANALYSIS_INDEX_OLD.md` - Old index
 
 ---
 
@@ -304,18 +304,18 @@ open 2025_MODERNIZATION_ROADMAP.md
 
 **Day 1**: Understand DDDPG
 1. Read: `2025_SESSION_COMPLETE.md` (5 min) - Overview
-2. Read: `2025_COMPREHENSIVE_ANALYSIS_AND_PLAN.md` (20 min) - Deep dive
-3. Review: Code structure (`core/`, `storage/`, `queries/`)
+1. Read: `2025_COMPREHENSIVE_ANALYSIS_AND_PLAN.md` (20 min) - Deep dive
+1. Review: Code structure (`core/`, `storage/`, `queries/`)
 
 **Day 2**: Understand Architecture
 1. Read: `2025_TECHNICAL_SPEC.md` (15 min) - Technical details
-2. Review: `kg_integration.py` (10 min) - KG layer
-3. Run: `pytest test_kg_integration.py` (1 min) - See tests
+1. Review: `kg_integration.py` (10 min) - KG layer
+1. Run: `pytest test_kg_integration.py` (1 min) - See tests
 
 **Day 3**: Start Contributing
 1. Read: `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` (5 min)
-2. Choose: One subphase to implement
-3. Build: Follow the plan!
+1. Choose: One subphase to implement
+1. Build: Follow the plan!
 
 ---
 

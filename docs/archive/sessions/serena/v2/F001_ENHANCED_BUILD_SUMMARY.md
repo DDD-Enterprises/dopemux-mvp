@@ -74,10 +74,10 @@ prelude: F001_Enhanced_Build_Summary (explanation) for dopemux documentation and
 **Features**:
 - Analyzes top 5 abandoned from E1 dashboard
 - Calculates relevance score (0.0-1.0)
-  - File overlap (40% weight)
-  - Directory overlap (30% weight)
-  - Recency (20% weight)
-  - Branch similarity (10% weight)
+- File overlap (40% weight)
+- Directory overlap (30% weight)
+- Recency (20% weight)
+- Branch similarity (10% weight)
 - Suggests action: resume (0.7+), review (0.5+), learn_from (0.3+)
 - Max 3 suggestions (ADHD limit)
 
@@ -97,9 +97,9 @@ prelude: F001_Enhanced_Build_Summary (explanation) for dopemux documentation and
 - Queries ConPort progress_entry for active tasks
 - Categorizes: IN_PROGRESS, TODO, BLOCKED
 - Calculates overcommitment risk (low/medium/high)
-  - Low: ≤2 in-progress, ≤5 total
-  - Medium: ≤3 in-progress, ≤10 total
-  - High: >3 in-progress or >10 total
+- Low: ≤2 in-progress, ≤5 total
+- Medium: ≤3 in-progress, ≤10 total
+- High: >3 in-progress or >10 total
 - Shows top 5 in-progress tasks (ADHD limit)
 - Generates urgency recommendation
 
@@ -118,11 +118,11 @@ prelude: F001_Enhanced_Build_Summary (explanation) for dopemux documentation and
 
 **Changes**:
 1. Added imports for E1-E4 modules
-2. Initialized 4 enhancement components in `__init__`
-3. **New Method**: `detect_with_enhancements()`
-   - Runs base detection first
-   - Then runs all 4 enhancements in sequence
-   - Returns combined result with `enhancements` field
+1. Initialized 4 enhancement components in `__init__`
+1. **New Method**: `detect_with_enhancements()`
+- Runs base detection first
+- Then runs all 4 enhancements in sequence
+- Returns combined result with `enhancements` field
 
 **Method Signature**:
 ```python

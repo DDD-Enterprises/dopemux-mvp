@@ -333,10 +333,10 @@ CMD ["python", "server.py"]
 If a service has both files:
 
 1. **Compare dependencies** - ensure no drift
-2. **Migrate to pyproject.toml** as single source
-3. **Update Dockerfile** - change `pip install -r requirements.txt` to `pip install .`
-4. **Test build** - `docker build -t <service> -f services/<service>/Dockerfile .`
-5. **Delete requirements.txt** after validation
+1. **Migrate to pyproject.toml** as single source
+1. **Update Dockerfile** - change `pip install -r requirements.txt` to `pip install .`
+1. **Test build** - `docker build -t <service> -f services/<service>/Dockerfile .`
+1. **Delete requirements.txt** after validation
 
 ### Service Audit
 

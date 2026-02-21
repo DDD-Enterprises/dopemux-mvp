@@ -133,10 +133,10 @@ Make dopemux **dead-simple to install** and **rock-solid reliable** for any deve
 These **must** be complete before launch:
 
 1. **[P1.1] Universal Installer** - Works on all major platforms
-2. **[P2.1] Workspace Isolation** - No cross-contamination between projects
-3. **[P4.1] Auto-Backups** - Never lose ConPort data
-4. **[P7.1] Secure Secrets** - No plaintext API keys
-5. **[P8.1] Fast Startup** - <10s boot time (ADHD threshold)
+1. **[P2.1] Workspace Isolation** - No cross-contamination between projects
+1. **[P4.1] Auto-Backups** - Never lose ConPort data
+1. **[P7.1] Secure Secrets** - No plaintext API keys
+1. **[P8.1] Fast Startup** - <10s boot time (ADHD threshold)
 
 **Blockers cleared:** 0/5
 **Target:** All 5 by Week 8
@@ -226,21 +226,21 @@ Week 12    → PUBLIC v1.0 LAUNCH 🚀
 
 ### For Planning Sessions
 1. Review this summary (big picture)
-2. Deep-dive the full plan (`PRODUCTION_READINESS_PLAN.md`)
-3. Pick this week's tasks (start small!)
-4. Log decision in ConPort
+1. Deep-dive the full plan (`PRODUCTION_READINESS_PLAN.md`)
+1. Pick this week's tasks (start small!)
+1. Log decision in ConPort
 
 ### For Daily Work
 1. Check P0 blockers (are we on track?)
-2. Focus on highest-priority incomplete item
-3. Update checkboxes in full plan
-4. Commit progress daily
+1. Focus on highest-priority incomplete item
+1. Update checkboxes in full plan
+1. Commit progress daily
 
 ### For Reviews
 1. Weekly: Update completion % in this summary
-2. Demo: Show working features to beta testers
-3. Retrospective: What worked? What didn't?
-4. Adjust: Re-prioritize based on feedback
+1. Demo: Show working features to beta testers
+1. Retrospective: What worked? What didn't?
+1. Adjust: Re-prioritize based on feedback
 
 ---
 

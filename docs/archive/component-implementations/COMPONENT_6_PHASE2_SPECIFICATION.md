@@ -21,7 +21,7 @@ prelude: Component_6_Phase2_Specification (explanation) for dopemux documentatio
 
 Phase 2 adds ML-powered intelligence to Component 6:
 1. **Predictive Task Orchestration**: ML learns individual ADHD patterns to recommend optimal next tasks
-2. **Cognitive Load Balancer**: Real-time load estimation prevents overwhelm before it happens
+1. **Cognitive Load Balancer**: Real-time load estimation prevents overwhelm before it happens
 
 **Implementation**: ~1,900 lines over 3 weeks
 - Week 3: Rule-based recommendations + core load calculation
@@ -50,19 +50,19 @@ Confidence: 0.7                 Confidence: Variable          No: Use Rules
 ### Implementation Files
 
 1. **services/task-orchestrator/intelligence/predictive_orchestrator.py** (~800 lines)
-   - `RuleBasedRecommender`: Energy-complexity matching
-   - `MLTaskRecommender`: ML-powered predictions
-   - `HybridTaskRecommender`: Intelligent combination
+- `RuleBasedRecommender`: Energy-complexity matching
+- `MLTaskRecommender`: ML-powered predictions
+- `HybridTaskRecommender`: Intelligent combination
 
-2. **services/task-orchestrator/ml/feature_engineering.py** (~200 lines)
-   - Feature extraction from ADHD state
-   - One-hot encoding for categorical features
-   - Feature scaling and normalization
+1. **services/task-orchestrator/ml/feature_engineering.py** (~200 lines)
+- Feature extraction from ADHD state
+- One-hot encoding for categorical features
+- Feature scaling and normalization
 
-3. **services/task-orchestrator/ml/completion_predictor.py** (~400 lines)
-   - GradientBoostingClassifier training
-   - Model persistence and loading
-   - Continuous learning from outcomes
+1. **services/task-orchestrator/ml/completion_predictor.py** (~400 lines)
+- GradientBoostingClassifier training
+- Model persistence and loading
+- Continuous learning from outcomes
 
 ---
 
@@ -87,15 +87,15 @@ LOW/OPTIMAL/HIGH/CRITICAL             Log Event                     Adaptive Thr
 ### Implementation Files
 
 1. **services/task-orchestrator/intelligence/cognitive_load_balancer.py** (~600 lines)
-   - Real-time load calculation
-   - Caching strategy (30s cache for sub-queries)
-   - Load classification and recommendations
-   - User profile management
+- Real-time load calculation
+- Caching strategy (30s cache for sub-queries)
+- Load classification and recommendations
+- User profile management
 
-2. **services/task-orchestrator/intelligence/load_alert_manager.py** (~300 lines)
-   - Alert generation and rate limiting
-   - Adaptive threshold learning
-   - Alert acknowledgment tracking
+1. **services/task-orchestrator/intelligence/load_alert_manager.py** (~300 lines)
+- Alert generation and rate limiting
+- Adaptive threshold learning
+- Alert acknowledgment tracking
 
 ---
 
@@ -166,9 +166,9 @@ LOW/OPTIMAL/HIGH/CRITICAL             Log Event                     Adaptive Thr
 ## Next Steps
 
 1. Review this specification
-2. Start Week 3 implementation (rule-based + core load)
-3. Monitor metrics from Phase 1 (Context Switch Recovery)
-4. Iterate based on real ADHD user feedback
+1. Start Week 3 implementation (rule-based + core load)
+1. Monitor metrics from Phase 1 (Context Switch Recovery)
+1. Iterate based on real ADHD user feedback
 
 ---
 

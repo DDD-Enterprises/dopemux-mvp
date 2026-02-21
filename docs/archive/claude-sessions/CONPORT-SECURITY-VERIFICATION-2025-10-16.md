@@ -25,9 +25,9 @@ prelude: Conport Security Verification 2025 10 16 (explanation) for dopemux docu
 
 **All Protected**:
 1. `overview.py:156` (get_recent_decisions) - ✅ Line 148: `limit = self._validate_limit()`
-2. `overview.py:249` (get_root_decisions) - ✅ Line 238: `limit = self._validate_limit()`
-3. `overview.py:293` (search_by_tag) - ✅ Line 283: `limit = self._validate_limit()`
-4. `deep_context.py:245` (search_full_text) - ✅ Line 230: `limit = self._validate_limit()`
+1. `overview.py:249` (get_root_decisions) - ✅ Line 238: `limit = self._validate_limit()`
+1. `overview.py:293` (search_by_tag) - ✅ Line 283: `limit = self._validate_limit()`
+1. `deep_context.py:245` (search_full_text) - ✅ Line 230: `limit = self._validate_limit()`
 
 **Validation Method** (lines 50-79):
 ```python
@@ -84,9 +84,9 @@ import re
 **From ACTION-PLAN-MASTER.md**:
 
 1. ~~SQL Injection (4 locations)~~ - ✅ **RESOLVED**
-2. ~~ReDoS Attack (1 location)~~ - ✅ **RESOLVED**
-3. **ConPort UI URL Encoding** - ⚠️ Still pending (LOW impact)
-4. **N+1 Query Performance** - ⚠️ Documented with TODO (MEDIUM)
+1. ~~ReDoS Attack (1 location)~~ - ✅ **RESOLVED**
+1. **ConPort UI URL Encoding** - ⚠️ Still pending (LOW impact)
+1. **N+1 Query Performance** - ⚠️ Documented with TODO (MEDIUM)
 
 **Critical Security**: ✅ **COMPLETE**
 **Production Readiness**: ✅ **READY**

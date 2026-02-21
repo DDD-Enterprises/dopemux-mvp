@@ -99,21 +99,21 @@ Best for: Multi-environment setups, parallel deployments
 
 ### Pre-Deployment
 1. Review deployment checklist
-2. Verify all dependencies
-3. Run integration tests
-4. Backup existing data
+1. Verify all dependencies
+1. Run integration tests
+1. Backup existing data
 
 ### During Deployment
 1. Follow guide step-by-step
-2. Verify each stage
-3. Monitor service health
-4. Document any issues
+1. Verify each stage
+1. Monitor service health
+1. Document any issues
 
 ### Post-Deployment
 1. Run verification tests
-2. Monitor for 24 hours
-3. Update documentation
-4. Communicate to team
+1. Monitor for 24 hours
+1. Update documentation
+1. Communicate to team
 
 ---
 
@@ -139,9 +139,9 @@ Best for: Multi-environment setups, parallel deployments
 ### Getting Help
 
 1. Check deployment logs
-2. Review [How-To Guides](../02-how-to/)
-3. Consult [Architecture Docs](../04-explanation/)
-4. Check [Issues](https://github.com/your-repo/issues)
+1. Review [How-To Guides](../02-how-to/)
+1. Consult [Architecture Docs](../04-explanation/)
+1. Check [Issues](https://github.com/your-repo/issues)
 
 ---
 

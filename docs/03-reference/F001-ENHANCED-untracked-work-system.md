@@ -269,10 +269,10 @@ async def brainstorm_untracked_work(untracked_work: dict):
     Files involved: {', '.join(untracked_work['detection_signals']['git_uncommitted_files'])}
 
     Help me think through:
-    - What problem am I actually solving?
-    - Is this the right approach?
-    - What are the alternatives?
-    - Should this be designed formally?
+- What problem am I actually solving?
+- Is this the right approach?
+- What are the alternatives?
+- Should this be designed formally?
     """
 
     await run_slash_command("/sc:brainstorm", prompt=prompt)
@@ -361,7 +361,6 @@ async def get_revival_candidates(workspace_id: str) -> list:
     candidates.sort(key=lambda x: x["revival_score"], reverse=True)
     return candidates[:5]  # Top 5 only (ADHD limit)
 
-
 def calculate_revival_score(work_data: dict) -> float:
     """Score abandoned work by revival potential"""
     score = 0.0
@@ -398,20 +397,20 @@ def calculate_revival_score(work_data: dict) -> float:
 
 **[Revive]**:
 1. Restore git branch (if exists)
-2. Create ConPort task with context
-3. Ask: "Want to /sc:design this properly?"
-4. Update status to `revived`
+1. Create ConPort task with context
+1. Ask: "Want to /sc:design this properly?"
+1. Update status to `revived`
 
 **[Archive Forever]**:
 1. Change status to `archived_permanent`
-2. Never show in revival suggestions again
-3. Still queryable if user wants to browse
+1. Never show in revival suggestions again
+1. Still queryable if user wants to browse
 
 **[Details]**:
 1. Show full file list
-2. Show git branch and commit history
-3. Show original detection signals
-4. Ask: "Want to revive this?"
+1. Show git branch and commit history
+1. Show original detection signals
+1. Ask: "Want to revive this?"
 
 ---
 
@@ -542,11 +541,11 @@ async def launch_brainstorm(untracked_work: dict):
     {chr(10).join('  - ' + f for f in signals.git_uncommitted_files)}
 
     Let's think through:
-    1. What problem am I solving?
-    2. Is this the right approach?
-    3. What are the alternatives?
-    4. What are the trade-offs?
-    5. Does this need formal design (ADR/RFC)?
+1. What problem am I solving?
+1. Is this the right approach?
+1. What are the alternatives?
+1. What are the trade-offs?
+1. Does this need formal design (ADR/RFC)?
     """
 
     # Launch /sc:brainstorm with Zen MCP
@@ -599,13 +598,13 @@ Subject: 💡 5 Cool Ideas You Started
 Hey! Remember these?
 
 1. Dark Mode System (6 months ago)
-   - 3 files ready, 40% done
-   - Last: "Was implementing theme toggle"
+- 3 files ready, 40% done
+- Last: "Was implementing theme toggle"
    [Revive in 1-Click]
 
-2. Plugin Architecture (4 months ago)
-   - 5 files, 30% done
-   - Last: "Designed core loader interface"
+1. Plugin Architecture (4 months ago)
+- 5 files, 30% done
+- Last: "Designed core loader interface"
    [Revive in 1-Click]
 
 No pressure - just thought you might want to finish one! 😊
@@ -743,7 +742,6 @@ def calculate_cognitive_load_impact(
                       "moderate" if normalized_load < 0.8 else "high",
         "recommendation": get_recommendation(normalized_load)
     }
-
 
 def get_recommendation(load: float) -> str:
     """Get ADHD-friendly recommendation"""
@@ -1010,9 +1008,9 @@ config = {
 ## Next Steps
 
 1. **Validate Design**: Review this enhanced spec with stakeholders
-2. **Create Implementation Plan**: Use /sc:workflow or Zen planner
-3. **Set Up Infrastructure**: Ensure ConPort schema supports all features
-4. **Build Phase 1**: Start with F001 core + E1 dashboard (highest value)
+1. **Create Implementation Plan**: Use /sc:workflow or Zen planner
+1. **Set Up Infrastructure**: Ensure ConPort schema supports all features
+1. **Build Phase 1**: Start with F001 core + E1 dashboard (highest value)
 
 ---
 

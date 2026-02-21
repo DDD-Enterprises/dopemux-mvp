@@ -28,12 +28,12 @@ The GPT-Researcher integration with Dopemux is now **fully operational** with bo
 - **Status**: Production ready since Week 2
 - **Integration**: Configured in `.claude/claude_config.json`
 - **Tools Available**: 6 research tools via MCP protocol
-  - `quick_search`: Fast web search with relevant snippets
-  - `deep_research`: Comprehensive research with tree exploration
-  - `research_resource`: Retrieve and analyze specific web resources
-  - `write_report`: Generate formatted reports from research context
-  - `get_research_sources`: Access research sources and citations
-  - `get_research_context`: Retrieve full research context and findings
+- `quick_search`: Fast web search with relevant snippets
+- `deep_research`: Comprehensive research with tree exploration
+- `research_resource`: Retrieve and analyze specific web resources
+- `write_report`: Generate formatted reports from research context
+- `get_research_sources`: Access research sources and citations
+- `get_research_context`: Retrieve full research context and findings
 
 ### Phase 2: ADHD-Optimized API Server ✅ COMPLETE
 
@@ -48,25 +48,25 @@ The GPT-Researcher integration with Dopemux is now **fully operational** with bo
 ### 🔧 Critical Fixes Applied
 
 1. **Pydantic v2 Compatibility Migration**
-   - **Issue**: Pydantic v2 removed `.dict()` method causing runtime errors
-   - **Solution**: Systematically replaced with `.model_dump()` across all files
-   - **Files Updated**: `orchestrator.py`, `api/main.py`, model definitions
-   - **Result**: All object serialization now works correctly
+- **Issue**: Pydantic v2 removed `.dict()` method causing runtime errors
+- **Solution**: Systematically replaced with `.model_dump()` across all files
+- **Files Updated**: `orchestrator.py`, `api/main.py`, model definitions
+- **Result**: All object serialization now works correctly
 
-2. **ResearchTask Object Handling**
-   - **Issue**: Mixed bracket notation and attribute access patterns
-   - **Solution**: Standardized to attribute access (`task.id` vs `task['id']`)
-   - **Impact**: Eliminated "object not subscriptable" errors
+1. **ResearchTask Object Handling**
+- **Issue**: Mixed bracket notation and attribute access patterns
+- **Solution**: Standardized to attribute access (`task.id` vs `task['id']`)
+- **Impact**: Eliminated "object not subscriptable" errors
 
-3. **ADHDConfiguration Field Mapping**
-   - **Issue**: Mismatched field names between API requests and dataclass
-   - **Solution**: Corrected mapping (`break_interval` → `break_duration_minutes`)
-   - **Result**: ADHD configurations now properly applied
+1. **ADHDConfiguration Field Mapping**
+- **Issue**: Mismatched field names between API requests and dataclass
+- **Solution**: Corrected mapping (`break_interval` → `break_duration_minutes`)
+- **Result**: ADHD configurations now properly applied
 
-4. **Task Status Integration**
-   - **Issue**: Initial concern about API ↔ Orchestrator task tracking
-   - **Resolution**: Confirmed `get_task_status()` properly handles string-to-UUID conversion
-   - **Verification**: End-to-end workflow tested and operational
+1. **Task Status Integration**
+- **Issue**: Initial concern about API ↔ Orchestrator task tracking
+- **Resolution**: Confirmed `get_task_status()` properly handles string-to-UUID conversion
+- **Verification**: End-to-end workflow tested and operational
 
 ### 🏗️ Architecture Components
 
@@ -103,28 +103,28 @@ The GPT-Researcher integration with Dopemux is now **fully operational** with bo
 ### 🧠 ADHD Optimization Features
 
 1. **Session Persistence**
-   - Auto-save every 30 seconds
-   - 24+ sessions successfully restored on startup
-   - Context preservation across interruptions
-   - Break history tracking
+- Auto-save every 30 seconds
+- 24+ sessions successfully restored on startup
+- Context preservation across interruptions
+- Break history tracking
 
-2. **Attention Management**
-   - Attention state detection (warming_up → focused → sustained_focus → hyperfocus_alert)
-   - Break recommendations every 25 minutes (Pomodoro)
-   - Gentle notifications to reduce cognitive overwhelm
-   - Hyperfocus protection with 90+ minute alerts
+1. **Attention Management**
+- Attention state detection (warming_up → focused → sustained_focus → hyperfocus_alert)
+- Break recommendations every 25 minutes (Pomodoro)
+- Gentle notifications to reduce cognitive overwhelm
+- Hyperfocus protection with 90+ minute alerts
 
-3. **Progress Tracking**
-   - Real-time progress via WebSocket connections
-   - Visual progress indicators
-   - Stage-by-stage updates
-   - Estimated completion time
+1. **Progress Tracking**
+- Real-time progress via WebSocket connections
+- Visual progress indicators
+- Stage-by-stage updates
+- Estimated completion time
 
-4. **Task Decomposition**
-   - Automatic research planning phase
-   - Step-by-step execution visibility
-   - Pause/resume capability for context switching
-   - Results summarization with key findings
+1. **Task Decomposition**
+- Automatic research planning phase
+- Step-by-step execution visibility
+- Pause/resume capability for context switching
+- Results summarization with key findings
 
 ## API Implementation Details
 
@@ -215,9 +215,9 @@ services/dopemux-gpt-researcher/
 ### Operational Search Engines
 
 1. **Exa API** - High-quality search with developer focus
-2. **Tavily API** - Research-optimized search engine
-3. **Perplexity API** - AI-powered search and analysis
-4. **PAL apilookup API** - Documentation and code search
+1. **Tavily API** - Research-optimized search engine
+1. **Perplexity API** - AI-powered search and analysis
+1. **PAL apilookup API** - Documentation and code search
 
 ### Multi-Engine Orchestration
 

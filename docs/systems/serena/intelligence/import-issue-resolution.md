@@ -120,9 +120,9 @@ python_functions = test_*
 **Use Option 3** (absolute imports in database.py):
 
 1. Change database.py imports to absolute (5 min)
-2. Test import: `python -c "from services.serena.v2.intelligence.database import SerenaIntelligenceDatabase"`
-3. Run tests: `pytest services/serena/v2/intelligence/test_database.py`
-4. Proceed to GREEN phase
+1. Test import: `python -c "from services.serena.v2.intelligence.database import SerenaIntelligenceDatabase"`
+1. Run tests: `pytest services/serena/v2/intelligence/test_database.py`
+1. Proceed to GREEN phase
 
 **Time to fix**: 10-15 minutes
 
@@ -143,9 +143,9 @@ python_functions = test_*
 ## Next Session
 
 1. Apply Option 3 (absolute imports)
-2. Run full test suite
-3. Fix any failing tests
-4. Validate ADHD <200ms targets
-5. Document GREEN phase results
+1. Run full test suite
+1. Fix any failing tests
+1. Validate ADHD <200ms targets
+1. Document GREEN phase results
 
 **Estimated time**: 45-75 minutes total

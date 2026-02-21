@@ -112,8 +112,8 @@ Serena runs automatically and tracks:
 ### Break Suggestions
 When Serena suggests a break:
 1. **Yellow indicator** - Consider a break soon
-2. **Orange indicator** - Break recommended
-3. **Red indicator** - Break strongly recommended
+1. **Orange indicator** - Break recommended
+1. **Red indicator** - Break strongly recommended
 
 ### Customization
 Configure in profile YAML:
@@ -184,10 +184,10 @@ adhd_settings:
 
 When working on ADHD intelligence:
 1. Review deep dive documentation first
-2. Understand cognitive science principles
-3. Test with real ADHD developers
-4. Validate against research
-5. Document new patterns discovered
+1. Understand cognitive science principles
+1. Test with real ADHD developers
+1. Validate against research
+1. Document new patterns discovered
 
 ---
 

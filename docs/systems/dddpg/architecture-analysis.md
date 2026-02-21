@@ -576,12 +576,12 @@ FROM old_decisions;
    agent_metadata: Dict[str, Any] = {}
    ```
 
-2. ✅ **Add DecisionRelationship model**:
+1. ✅ **Add DecisionRelationship model**:
    ```python
    from_id, to_id, rel_type, weight
    ```
 
-3. ✅ **Add WorkSession model** (for ADHD tracking):
+1. ✅ **Add WorkSession model** (for ADHD tracking):
    ```python
    session_id, workspace_id, instance_id, focus_level
    ```
@@ -597,18 +597,18 @@ FROM old_decisions;
 ### Implementation Order
 
 1. **Week 1 Day 2** (NOW):
-   - Update Decision model with workspace_id, instance_id
-   - Create DecisionRelationship model
-   - Create WorkSession model (basic)
+- Update Decision model with workspace_id, instance_id
+- Create DecisionRelationship model
+- Create WorkSession model (basic)
 
-2. **Week 1 Day 3-4**:
-   - Build Postgres AGE storage adapter
-   - Build SQLite cache adapter
-   - Build storage interface (abstract)
+1. **Week 1 Day 3-4**:
+- Build Postgres AGE storage adapter
+- Build SQLite cache adapter
+- Build storage interface (abstract)
 
-3. **Week 1 Day 5**:
-   - EventBus integration (write-through cache)
-   - Multi-instance isolation testing
+1. **Week 1 Day 5**:
+- EventBus integration (write-through cache)
+- Multi-instance isolation testing
 
 ---
 
@@ -653,10 +653,10 @@ agent_metadata["task_orchestrator"] = {
 ✅ **We're ready to build storage**, but need to:
 
 1. Update `Decision` model with instance/workspace fields
-2. Add `DecisionRelationship` model
-3. Add `WorkSession` model
-4. Use hybrid Postgres + SQLite architecture
-5. Design for multi-instance from day 1
+1. Add `DecisionRelationship` model
+1. Add `WorkSession` model
+1. Use hybrid Postgres + SQLite architecture
+1. Design for multi-instance from day 1
 
 **Estimated Time**: Add 30 minutes to update models, then proceed with storage layer
 

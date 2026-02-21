@@ -127,11 +127,11 @@ Add `# EXC_REVIEW:<reason>` when retaining broad catch temporarily. Acceptable r
 
 ## Prioritized Task List (Roll-up)
 1. Replace remaining broad excepts in cli.py, mcp_server.py.
-2. Implement config validation (Week 2 deliverable).
-3. Introduce structured logging & metrics instrumentation.
-4. Refactor monolithic modules for maintainability.
-5. Expand tests & enforce CI guards.
-6. Final polish and reporting.
+1. Implement config validation (Week 2 deliverable).
+1. Introduce structured logging & metrics instrumentation.
+1. Refactor monolithic modules for maintainability.
+1. Expand tests & enforce CI guards.
+1. Final polish and reporting.
 
 ## Immediate Next Actions (Next 48h)
 - Finish exception refactor for cli.py lines 415, 573, 792, 862, 944, 1083.

@@ -58,9 +58,9 @@ prelude: Dopeconbridge_Deployment_Summary (explanation) for dopemux documentatio
 
 ### Essential Documentation
 1. **[DOPECONBRIDGE_COMPLETE_FINAL_V2.md](./DOPECONBRIDGE_COMPLETE_FINAL_V2.md)** - Complete status report
-2. **[DOPECONBRIDGE_MASTER_GUIDE.md](./DOPECONBRIDGE_MASTER_GUIDE.md)** - Comprehensive usage guide
-3. **[DOPECONBRIDGE_CONPORT_UPDATE.md](./DOPECONBRIDGE_CONPORT_UPDATE.md)** - ConPort integration details
-4. **[START_HERE_DOPECONBRIDGE.md](./START_HERE_DOPECONBRIDGE.md)** - Quick start guide
+1. **[DOPECONBRIDGE_MASTER_GUIDE.md](./DOPECONBRIDGE_MASTER_GUIDE.md)** - Comprehensive usage guide
+1. **[DOPECONBRIDGE_CONPORT_UPDATE.md](./DOPECONBRIDGE_CONPORT_UPDATE.md)** - ConPort integration details
+1. **[START_HERE_DOPECONBRIDGE.md](./START_HERE_DOPECONBRIDGE.md)** - Quick start guide
 
 ### Code Locations
 - Bridge Service: `services/dopecon-bridge/`

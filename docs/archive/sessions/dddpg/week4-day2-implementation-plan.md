@@ -215,16 +215,15 @@ from .kg_integration import DDDPGKG
 
 logger = logging.getLogger(__name__)
 
-
 class RelationshipMapper:
     """
     Aggregates multiple DDDPGKG queries into composite views.
 
     Responsibilities:
-    - Coordinate parallel queries
-    - Synthesize relationship data
-    - Identify task clusters
-    - Build rich context views
+- Coordinate parallel queries
+- Synthesize relationship data
+- Identify task clusters
+- Build rich context views
     """
 
     def __init__(self, kg: DDDPGKG):
@@ -245,10 +244,10 @@ class RelationshipMapper:
         Build complete task context in one call.
 
         Aggregates:
-        - Dependencies (upstream/downstream)
-        - Related tasks (semantic)
-        - Decisions (rationale)
-        - Clusters (themes)
+- Dependencies (upstream/downstream)
+- Related tasks (semantic)
+- Decisions (rationale)
+- Clusters (themes)
 
         Args:
             task_id: Task identifier
@@ -333,9 +332,9 @@ class RelationshipMapper:
         Build cluster of related work by theme.
 
         Uses:
-        - Semantic search (DDDPGKG)
-        - Relationship traversal
-        - Decision linking
+- Semantic search (DDDPGKG)
+- Relationship traversal
+- Decision linking
 
         Args:
             theme: Search theme/keyword
@@ -400,7 +399,6 @@ from unittest.mock import Mock, AsyncMock, patch
 from .relationship_mapper import RelationshipMapper
 from .kg_integration import DDDPGKG
 
-
 @pytest.mark.asyncio
 async def test_build_task_context():
     """Test building complete task context"""
@@ -425,7 +423,6 @@ async def test_build_task_context():
     assert 'decisions' in context
     assert context['decisions'] == ['decision_1', 'decision_2']
 
-
 @pytest.mark.asyncio
 async def test_build_work_cluster():
     """Test building work cluster by theme"""
@@ -443,7 +440,6 @@ async def test_build_work_cluster():
     assert cluster['theme'] == 'auth'
     assert len(cluster['tasks']) == 2
     assert cluster['total_tasks'] == 2
-
 
 @pytest.mark.asyncio
 async def test_graceful_degradation_no_kg():

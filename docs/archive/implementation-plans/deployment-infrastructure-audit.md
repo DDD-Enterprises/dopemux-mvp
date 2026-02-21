@@ -40,12 +40,12 @@ Task-Orchestrator **lacks dedicated deployment infrastructure** - no Dockerfile,
 | Service | Dockerfile | docker-compose | Port | Status |
 |---------|------------|----------------|------|--------|
 | **DopeconBridge** | ✅ `services/mcp-dopecon-bridge/Dockerfile` | ✅ Embedded | 3016 | Running |
-| **ConPort** | ✅ `services/conport/Dockerfile` | ✅ `docker/memory-stack/` | 5455 | Running |
+| **ConPort** | ✅ `services/conport/Dockerfile` \| ✅ `docker/memory-stack/` | 5455 | Running |
 | **Serena LSP** | ✅ Via scripts | ✅ Process-based | N/A | Running |
-| **GPT-Researcher** | ✅ `services/dopemux-gpt-researcher/Dockerfile` | ✅ `gptr-mcp/` | 3009 | Running |
+| **GPT-Researcher** | ✅ `services/dopemux-gpt-researcher/Dockerfile` \| ✅ `gptr-mcp/` | 3009 | Running |
 | **ADHD Engine** | ✅ `services/adhd_engine/Dockerfile` | ✅ Embedded | N/A | Running |
 | **Leantime** | ✅ Official image | ✅ `docker/leantime/` | 8080 | Available |
-| **Redis Event Bus** | ✅ `redis:7-alpine` | ✅ `docker/docker-compose.event-bus.yml` | 6379 | Running ✅ |
+| **Redis Event Bus** | ✅ `redis:7-alpine` \| ✅ `docker/docker-compose.event-bus.yml` | 6379 | Running ✅ |
 | **Task-Orchestrator** | ❌ **MISSING** | ❌ **MISSING** | TBD | **Not deployed** |
 
 ### Task-Orchestrator Deployment Status
@@ -109,14 +109,14 @@ services:
       dockerfile: services/task-orchestrator/Dockerfile
     container_name: dopemux-task-orchestrator
     environment:
-      - REDIS_URL=redis://redis-event-bus:6379
-      - LEANTIME_URL=http://leantime:8080
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - WORKSPACE_ID=/workspace
+- REDIS_URL=redis://redis-event-bus:6379
+- LEANTIME_URL=http://leantime:8080
+- OPENAI_API_KEY=${OPENAI_API_KEY}
+- WORKSPACE_ID=/workspace
     volumes:
-      - /Users/hue/code/dopemux-mvp:/workspace:ro
+- /Users/hue/code/dopemux-mvp:/workspace:ro
     networks:
-      - dopemux-unified-network
+- dopemux-unified-network
     depends_on:
       redis-event-bus:
         condition: service_healthy
@@ -175,7 +175,7 @@ LEAN_MCP_TOKEN=your_leantime_mcp_token_here
 | `LEANTIME_API_TOKEN` | ✅ Yes | ✅ Critical | Task-Orchestrator | Ready |
 | `OPENAI_API_KEY` | ✅ Yes | ✅ Critical | Predictive risk, ML features | Ready |
 | `MYSQL_*` | ✅ Yes | ✅ Critical | Leantime database | Ready |
-| `WORKSPACE_ID` | ⚠️ Implicit | Optional | ConPort integration | Default: `/Users/hue/code/dopemux-mvp` |
+| `WORKSPACE_ID` \| ⚠️ Implicit \| Optional \| ConPort integration \| Default: `/Users/hue/code/dopemux-mvp` |
 
 **Assessment**: 🟢 **100% Coverage** - All required env vars documented with secure defaults
 
@@ -185,10 +185,10 @@ LEAN_MCP_TOKEN=your_leantime_mcp_token_here
 ```bash
 # Deployment commands documented:
 1. cp .env.example .env
-2. Edit .env with actual values
-3. docker network create dopemux-unified-network
-4. docker-compose -f docker-compose.unified.yml up -d
-5. Check health: docker-compose ps
+1. Edit .env with actual values
+1. docker network create dopemux-unified-network
+1. docker-compose -f docker-compose.unified.yml up -d
+1. Check health: docker-compose ps
 ```
 
 **Recommendation**: Add task-orchestrator specific validation:
@@ -215,26 +215,26 @@ echo "✅ All task-orchestrator environment variables present"
 **Pipeline Structure** (3 parallel jobs):
 ```yaml
 Job 1: Code Quality (10 min timeout)
-  - pre-commit hooks
-  - linting (flake8)
-  - formatting (black, isort)
-  - ADHD summary: Quick feedback, clear next steps
+- pre-commit hooks
+- linting (flake8)
+- formatting (black, isort)
+- ADHD summary: Quick feedback, clear next steps
 
 Job 2: Security (25 min timeout)
-  - Security scanning
-  - Dependency vulnerability checks
-  - 25-minute ADHD focus session limit
+- Security scanning
+- Dependency vulnerability checks
+- 25-minute ADHD focus session limit
 
 Job 3: Documentation (15 min timeout)
-  - Link validation
-  - Frontmatter checks
-  - Graph structure validation
+- Link validation
+- Frontmatter checks
+- Graph structure validation
 
 Job 4: Summary
-  - ADHD-friendly results aggregation
-  - Visual status indicators (✅ ⚠️ 🔒 📝)
-  - Clear next steps guidance
-  - Pomodoro session recommendations
+- ADHD-friendly results aggregation
+- Visual status indicators (✅ ⚠️ 🔒 📝)
+- Clear next steps guidance
+- Pomodoro session recommendations
 ```
 
 ### ADHD CI/CD Optimizations (from workflow)
@@ -272,11 +272,11 @@ timeout-minutes: 25  # 25-minute focus session (security)
 Job: task-orchestrator-tests
   timeout-minutes: 25  # ADHD focus session
   steps:
-    - Lint task-orchestrator Python code
-    - Type-check with mypy
-    - Run unit tests (pytest services/task-orchestrator/tests/)
-    - Integration tests (Task 2.6, 4.4 deliverables)
-    - Performance tests (Task 5.2 deliverable)
+- Lint task-orchestrator Python code
+- Type-check with mypy
+- Run unit tests (pytest services/task-orchestrator/tests/)
+- Integration tests (Task 2.6, 4.4 deliverables)
+- Performance tests (Task 5.2 deliverable)
 ```
 
 **Timeline**: Add to CI/CD in Component 5 (Testing) - Tasks 5.1, 5.2
@@ -356,9 +356,9 @@ mcp-dopecon-bridge:
   container_name: dopemux-dopecon-bridge
   ports: ["3016:3016"]
   environment:
-    - REDIS_URL=redis://redis-primary:6379
-    - REDIS_PASSWORD=${REDIS_PASSWORD}
-    - DATABASE_URL=postgresql://...
+- REDIS_URL=redis://redis-primary:6379
+- REDIS_PASSWORD=${REDIS_PASSWORD}
+- DATABASE_URL=postgresql://...
   volumes: ["/path:/workspace:ro"]
   networks: [dopemux-unified-network]
   depends_on: [redis-primary, postgres-primary, postgres-age]
@@ -381,21 +381,21 @@ mcp-dopecon-bridge:
 **Phase 1 Component 3** (DopeconBridge Wiring) should create:
 
 1. **Dockerfile** (`services/task-orchestrator/Dockerfile`)
-   - Base: `python:3.11-slim`
-   - Install dependencies (including `redis>=4.5.0` fix from Task 1.1)
-   - Copy task-orchestrator code
-   - Expose MCP interface (stdio or port 3XXX)
+- Base: `python:3.11-slim`
+- Install dependencies (including `redis>=4.5.0` fix from Task 1.1)
+- Copy task-orchestrator code
+- Expose MCP interface (stdio or port 3XXX)
 
-2. **docker-compose** (`docker/task-orchestrator/docker-compose.yml`)
-   - Service: `task-orchestrator`
-   - Dependencies: redis-event-bus, leantime, conport
-   - Environment: REDIS_URL, LEANTIME_URL, OPENAI_API_KEY
-   - Network: dopemux-unified-network
-   - Health check: Ping endpoint or stdio check
+1. **docker-compose** (`docker/task-orchestrator/docker-compose.yml`)
+- Service: `task-orchestrator`
+- Dependencies: redis-event-bus, leantime, conport
+- Environment: REDIS_URL, LEANTIME_URL, OPENAI_API_KEY
+- Network: dopemux-unified-network
+- Health check: Ping endpoint or stdio check
 
-3. **Makefile Targets** (add to `./Makefile`)
-   - `orchestrator-build`, `orchestrator-up`, `orchestrator-down`
-   - `orchestrator-test`, `orchestrator-lint`, `orchestrator-logs`
+1. **Makefile Targets** (add to `./Makefile`)
+- `orchestrator-build`, `orchestrator-up`, `orchestrator-down`
+- `orchestrator-test`, `orchestrator-lint`, `orchestrator-logs`
 
 ## CI/CD Integration Analysis
 
@@ -406,11 +406,11 @@ mcp-dopecon-bridge:
 
 **Key Features**:
 1. **Parallel Execution**: 3 jobs run concurrently (code-quality, security, docs)
-2. **Timeout Management**: 10-25 min limits (Pomodoro-aligned)
-3. **Progressive Disclosure**: Summary job aggregates all results
-4. **Visual Indicators**: ✅ ⚠️ 🔒 📝 for quick scanning
-5. **Gentle Language**: "Small fixes needed" not "FAILED"
-6. **Next Step Guidance**: Specific recommendations per failure type
+1. **Timeout Management**: 10-25 min limits (Pomodoro-aligned)
+1. **Progressive Disclosure**: Summary job aggregates all results
+1. **Visual Indicators**: ✅ ⚠️ 🔒 📝 for quick scanning
+1. **Gentle Language**: "Small fixes needed" not "FAILED"
+1. **Next Step Guidance**: Specific recommendations per failure type
 
 **Example ADHD Output** (lines 136-145):
 ```yaml
@@ -447,21 +447,21 @@ task-orchestrator:
       ports: ["5432:5432"]
 
   steps:
-    - name: 📥 Checkout
+- name: 📥 Checkout
       uses: actions/checkout@v4
 
-    - name: 🐍 Setup Python 3.11
+- name: 🐍 Setup Python 3.11
       uses: actions/setup-python@v5
       with:
         python-version: "3.11"
 
-    - name: 📦 Install dependencies
+- name: 📦 Install dependencies
       run: |
         pip install -r requirements.txt
         pip install -r services/task-orchestrator/requirements.txt  # If created
         pip install pytest pytest-cov pytest-asyncio
 
-    - name: 🧪 Run unit tests
+- name: 🧪 Run unit tests
       run: |
         pytest services/task-orchestrator/tests/ -v --cov=services/task-orchestrator
       env:
@@ -469,11 +469,11 @@ task-orchestrator:
         LEANTIME_URL: http://localhost:8080  # Mock in tests
         OPENAI_API_KEY: test_key  # Mock for CI
 
-    - name: 📊 Coverage report
+- name: 📊 Coverage report
       run: |
         pytest --cov-report=term-missing --cov-report=html
 
-    - name: 🎯 ADHD Summary
+- name: 🎯 ADHD Summary
       if: always()
       run: |
         echo "## 🎯 Task-Orchestrator Tests" >> $GITHUB_STEP_SUMMARY
@@ -503,24 +503,24 @@ task-orchestrator:
 ### Deployment Gaps (Expected for Pre-Integration Service)
 
 1. **No Dockerfile** (EXPECTED - creates in Component 3)
-   - **Impact**: Cannot containerize yet
-   - **Timeline**: Task 3.1 (Configure DopeconBridge)
-   - **Effort**: 30 minutes (use DopeconBridge template)
+- **Impact**: Cannot containerize yet
+- **Timeline**: Task 3.1 (Configure DopeconBridge)
+- **Effort**: 30 minutes (use DopeconBridge template)
 
-2. **No docker-compose Service** (EXPECTED - creates in Component 3)
-   - **Impact**: Cannot deploy to stack yet
-   - **Timeline**: Task 3.1
-   - **Effort**: 15 minutes (add service definition)
+1. **No docker-compose Service** (EXPECTED - creates in Component 3)
+- **Impact**: Cannot deploy to stack yet
+- **Timeline**: Task 3.1
+- **Effort**: 15 minutes (add service definition)
 
-3. **No Makefile Targets** (LOW PRIORITY)
-   - **Impact**: Manual commands needed for build/test
-   - **Timeline**: Optional in Component 3 or 5
-   - **Effort**: 10 minutes (add convenience targets)
+1. **No Makefile Targets** (LOW PRIORITY)
+- **Impact**: Manual commands needed for build/test
+- **Timeline**: Optional in Component 3 or 5
+- **Effort**: 10 minutes (add convenience targets)
 
-4. **No CI/CD Integration** (EXPECTED - creates in Component 5)
-   - **Impact**: No automated testing yet
-   - **Timeline**: Task 5.1 (Integration Test Suite)
-   - **Effort**: 30 minutes (add GitHub Actions job)
+1. **No CI/CD Integration** (EXPECTED - creates in Component 5)
+- **Impact**: No automated testing yet
+- **Timeline**: Task 5.1 (Integration Test Suite)
+- **Effort**: 30 minutes (add GitHub Actions job)
 
 ### Deployment Creation Roadmap
 
@@ -572,32 +572,32 @@ Task 5.2: Performance and Load Testing (60 min)
 ### Recommendations
 
 1. **Create Dockerfile in Component 3** (HIGH PRIORITY)
-   - **Task**: 3.1 (Configure DopeconBridge)
-   - **Template**: Use DopeconBridge Dockerfile
-   - **Fix**: Include `redis>=4.5.0` (from Task 1.1)
-   - **Effort**: 30 minutes
+- **Task**: 3.1 (Configure DopeconBridge)
+- **Template**: Use DopeconBridge Dockerfile
+- **Fix**: Include `redis>=4.5.0` (from Task 1.1)
+- **Effort**: 30 minutes
 
-2. **Add docker-compose Service** (HIGH PRIORITY)
-   - **Task**: 3.1
-   - **Dependencies**: redis-event-bus, leantime, conport
-   - **Network**: dopemux-unified-network (already exists)
-   - **Effort**: 15 minutes
+1. **Add docker-compose Service** (HIGH PRIORITY)
+- **Task**: 3.1
+- **Dependencies**: redis-event-bus, leantime, conport
+- **Network**: dopemux-unified-network (already exists)
+- **Effort**: 15 minutes
 
-3. **Create Makefile Targets** (MEDIUM PRIORITY)
-   - **Benefit**: Developer convenience (make orchestrator-up)
-   - **Timeline**: Optional in Component 3, Component 5, or post-Phase 1
-   - **Effort**: 10 minutes
+1. **Create Makefile Targets** (MEDIUM PRIORITY)
+- **Benefit**: Developer convenience (make orchestrator-up)
+- **Timeline**: Optional in Component 3, Component 5, or post-Phase 1
+- **Effort**: 10 minutes
 
-4. **Add CI/CD Job** (HIGH PRIORITY)
-   - **Task**: 5.1 (Integration Test Suite)
-   - **Pattern**: Use existing job structure with ADHD optimizations
-   - **Effort**: 30 minutes
+1. **Add CI/CD Job** (HIGH PRIORITY)
+- **Task**: 5.1 (Integration Test Suite)
+- **Pattern**: Use existing job structure with ADHD optimizations
+- **Effort**: 30 minutes
 
-5. **Document Deployment Process** (MEDIUM PRIORITY)
-   - **Create**: `DEPLOYMENT.md` for task-orchestrator
-   - **Include**: Docker commands, health checks, troubleshooting
-   - **Timeline**: Component 3 or Component 5
-   - **Effort**: 20 minutes
+1. **Document Deployment Process** (MEDIUM PRIORITY)
+- **Create**: `DEPLOYMENT.md` for task-orchestrator
+- **Include**: Docker commands, health checks, troubleshooting
+- **Timeline**: Component 3 or Component 5
+- **Effort**: 20 minutes
 
 ## Deployment Templates (Ready to Use)
 
@@ -639,17 +639,17 @@ services:
       dockerfile: services/task-orchestrator/Dockerfile
     container_name: dopemux-task-orchestrator
     environment:
-      - REDIS_URL=redis://redis-primary:6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - LEANTIME_URL=http://leantime:8080
-      - LEANTIME_API_TOKEN=${LEANTIME_API_TOKEN}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - WORKSPACE_ID=/workspace
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+- REDIS_URL=redis://redis-primary:6379
+- REDIS_PASSWORD=${REDIS_PASSWORD}
+- LEANTIME_URL=http://leantime:8080
+- LEANTIME_API_TOKEN=${LEANTIME_API_TOKEN}
+- OPENAI_API_KEY=${OPENAI_API_KEY}
+- WORKSPACE_ID=/workspace
+- LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
-      - ${PWD}:/workspace:ro  # Read-only workspace access
+- ${PWD}:/workspace:ro  # Read-only workspace access
     networks:
-      - dopemux-unified-network
+- dopemux-unified-network
     depends_on:
       redis-primary:
         condition: service_healthy

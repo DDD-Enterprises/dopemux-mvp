@@ -62,9 +62,9 @@ Update `~/.claude.json` conport configuration:
 
 **Code Changes Needed**:
 1. Update `services/conport/src/context_portal_mcp/db/database.py`
-2. Add PostgreSQL support alongside SQLite
-3. Use DATABASE_URL env var to choose backend
-4. Add EventBus publishing to all write operations
+1. Add PostgreSQL support alongside SQLite
+1. Use DATABASE_URL env var to choose backend
+1. Add EventBus publishing to all write operations
 
 **Complexity**: High (significant refactoring)
 **Time**: 4-6 hours
@@ -76,8 +76,8 @@ Update `~/.claude.json` conport configuration:
 
 Modify conport-wrapper.sh to:
 1. Call stdio conport-mcp (SQLite)
-2. Also POST to enhanced_server.py HTTP API
-3. Dual-write to both backends
+1. Also POST to enhanced_server.py HTTP API
+1. Dual-write to both backends
 
 **Pros**: Backward compatible
 **Cons**: Eventual consistency issues, complexity
@@ -88,10 +88,10 @@ Modify conport-wrapper.sh to:
 
 **Steps**:
 1. Ensure `mcp-conport` container running
-2. Update `~/.claude.json` to use SSE on port 3004
-3. Restart Claude Code
-4. Test: Create new decision
-5. Verify: Decision appears in DDG within seconds
+1. Update `~/.claude.json` to use SSE on port 3004
+1. Restart Claude Code
+1. Test: Create new decision
+1. Verify: Decision appears in DDG within seconds
 
 **Verification**:
 ```bash

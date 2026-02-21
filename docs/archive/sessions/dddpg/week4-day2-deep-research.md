@@ -91,20 +91,20 @@ prelude: Week4 Day2 Deep Research (explanation) for dopemux documentation and de
 **Use Cases**:
 
 1. **Dependency Chain**:
-   - "What needs to happen before Task X?"
-   - "What's blocked by Task Y?"
+- "What needs to happen before Task X?"
+- "What's blocked by Task Y?"
 
-2. **Related Work Cluster**:
-   - "What other tasks involve API design?"
-   - "Show me all authentication-related work"
+1. **Related Work Cluster**:
+- "What other tasks involve API design?"
+- "Show me all authentication-related work"
 
-3. **Decision History**:
-   - "Why did I choose this approach?"
-   - "What alternatives did I consider?"
+1. **Decision History**:
+- "Why did I choose this approach?"
+- "What alternatives did I consider?"
 
-4. **Success Pattern**:
-   - "What worked well last time I did X?"
-   - "What mistakes should I avoid?"
+1. **Success Pattern**:
+- "What worked well last time I did X?"
+- "What mistakes should I avoid?"
 
 **Graph Patterns**:
 ```python
@@ -177,16 +177,16 @@ suggestions = await kg.get_enhanced_suggestions(
 
 **Algorithm**:
 1. Get current task context (energy, focus, time)
-2. Query KG for:
-   - Tasks with satisfied dependencies
-   - Similar past tasks (success patterns)
-   - Related decisions (avoid re-thinking)
-3. Score by:
-   - Energy level match
-   - Time availability
-   - Focus state compatibility
-   - Success pattern similarity
-4. Return ranked suggestions
+1. Query KG for:
+- Tasks with satisfied dependencies
+- Similar past tasks (success patterns)
+- Related decisions (avoid re-thinking)
+1. Score by:
+- Energy level match
+- Time availability
+- Focus state compatibility
+- Success pattern similarity
+1. Return ranked suggestions
 
 ### 3. Integration with DDDPG Core
 
@@ -209,8 +209,8 @@ services/dddpg/
 
 **Integration Points**:
 1. `queries/service.py` - Add KG-powered queries
-2. `core/models.py` - Add Decision/Context models
-3. `storage/interface.py` - Add KG storage backend option
+1. `core/models.py` - Add Decision/Context models
+1. `storage/interface.py` - Add KG storage backend option
 
 ---
 
@@ -225,18 +225,18 @@ services/dddpg/
 
 **Analysis**:
 - **A**: Simple, existing infrastructure, no new dependencies
-  - ❌ Relationship queries are slow
-  - ❌ Graph traversals require multiple JOINs
+- ❌ Relationship queries are slow
+- ❌ Graph traversals require multiple JOINs
 
 - **B**: Optimal for graph queries, natural fit
-  - ❌ Requires AGE setup
-  - ❌ Separate from other DDDPG data
+- ❌ Requires AGE setup
+- ❌ Separate from other DDDPG data
 
 - **C**: Best of both worlds
-  - ✅ Fast queries
-  - ✅ Data consistency
-  - ✅ Graph traversals
-  - ⚠️  More complex
+- ✅ Fast queries
+- ✅ Data consistency
+- ✅ Graph traversals
+- ⚠️  More complex
 
 **Recommendation**: **C (Hybrid)** - Store in PostgreSQL, index in AGE
 
@@ -249,17 +249,17 @@ services/dddpg/
 
 **Analysis**:
 - **A**: Always fresh, simple
-  - ❌ Slow for large graphs
-  - ❌ Repeated computation
+- ❌ Slow for large graphs
+- ❌ Repeated computation
 
 - **B**: Fast queries, pre-computed
-  - ❌ Stale data
-  - ❌ Memory intensive
+- ❌ Stale data
+- ❌ Memory intensive
 
 - **C**: Best of both
-  - ✅ Fast common queries (cached)
-  - ✅ Fresh data (incremental updates)
-  - ⚠️  Cache invalidation complexity
+- ✅ Fast common queries (cached)
+- ✅ Fresh data (incremental updates)
+- ⚠️  Cache invalidation complexity
 
 **Recommendation**: **C (Hybrid)** - Cache common graphs, update incrementally
 
@@ -272,18 +272,18 @@ services/dddpg/
 
 **Analysis**:
 - **A**: Simple, predictable, debuggable
-  - ✅ No training needed
-  - ✅ Fast
-  - ❌ Less adaptive
+- ✅ No training needed
+- ✅ Fast
+- ❌ Less adaptive
 
 - **B**: Learns user preferences
-  - ❌ Requires training data
-  - ❌ Complex
-  - ❌ Black box
+- ❌ Requires training data
+- ❌ Complex
+- ❌ Black box
 
 - **C**: Rules for safety, ML for personalization
-  - ✅ Best of both
-  - ⚠️  More complex
+- ✅ Best of both
+- ⚠️  More complex
 
 **Recommendation**: **A (Rule-based)** for Week 4 - Keep it simple, proven patterns
 
@@ -296,18 +296,18 @@ services/dddpg/
 
 **Analysis**:
 - **A**: Simple, cohesive
-  - ⚠️  Class growing large
-  - ⚠️  Mixed responsibilities
+- ⚠️  Class growing large
+- ⚠️  Mixed responsibilities
 
 - **B**: Separate concerns
-  - ✅ Single responsibility
-  - ✅ Easier testing
-  - ⚠️  More files
+- ✅ Single responsibility
+- ✅ Easier testing
+- ⚠️  More files
 
 - **C**: Domain-specific
-  - ✅ Clear purpose
-  - ✅ Reusable
-  - ⚠️  More classes
+- ✅ Clear purpose
+- ✅ Reusable
+- ⚠️  More classes
 
 **Recommendation**: **A for now** - Add to `DDDPGKG`, refactor later if needed
 
@@ -315,8 +315,8 @@ services/dddpg/
 
 **Scenarios**:
 1. AGE unavailable → Fall back to keyword search
-2. No decision history → Return empty context
-3. No relationships → Suggest by recency
+1. No decision history → Return empty context
+1. No relationships → Suggest by recency
 
 **Strategy**:
 ```python
@@ -343,8 +343,8 @@ async def get_enhanced_suggestions(self, ...):
 
 **Tasks**:
 1. Add `save_decision_context()` method (10 min)
-2. Add `get_decision_context()` method (10 min)
-3. Add tests (5 min)
+1. Add `get_decision_context()` method (10 min)
+1. Add tests (5 min)
 
 **API Design**:
 ```python
@@ -371,8 +371,8 @@ async def get_decision_context(
 
 **Tasks**:
 1. Add `build_dependency_chain()` (10 min)
-2. Add `build_work_cluster()` (10 min)
-3. Add tests (5 min)
+1. Add `build_work_cluster()` (10 min)
+1. Add tests (5 min)
 
 **API Design**:
 ```python
@@ -397,8 +397,8 @@ async def build_work_cluster(
 
 **Tasks**:
 1. Add `get_enhanced_suggestions()` (15 min)
-2. Add scoring logic (5 min)
-3. Add tests (5 min)
+1. Add scoring logic (5 min)
+1. Add tests (5 min)
 
 **API Design**:
 ```python
@@ -418,8 +418,8 @@ async def get_enhanced_suggestions(
 
 **Tasks**:
 1. Add to `queries/service.py` (10 min)
-2. Update models if needed (10 min)
-3. Integration test (5 min)
+1. Update models if needed (10 min)
+1. Integration test (5 min)
 
 ---
 
@@ -456,8 +456,8 @@ async def get_enhanced_suggestions(
 
 **Next Steps**:
 1. Review this research document
-2. Make any adjustments to plan
-3. Start Phase 1 (Decision Context)
+1. Make any adjustments to plan
+1. Start Phase 1 (Decision Context)
 
 ---
 

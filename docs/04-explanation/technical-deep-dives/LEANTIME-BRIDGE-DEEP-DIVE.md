@@ -47,10 +47,10 @@ The service is a Python-based MCP server using `Starlette` and `Uvicorn`, implem
 * **Testing**: Comprehensive contract tests (`test_contract_api_tools.py`) verify API interactions, error handling, and method fallbacks.
 * **Performance**: Uses `httpx.AsyncClient` for non-blocking I/O.
 * **Limitations**:
-  * **Auth Dependency**: Strictly requires `LEANTIME_API_TOKEN` to be configured. The service will be healthy but tools will fail if the token is missing.
-  * **Setup Gate**: Cannot function until Leantime itself is fully installed and an admin user is created.
+* **Auth Dependency**: Strictly requires `LEANTIME_API_TOKEN` to be configured. The service will be healthy but tools will fail if the token is missing.
+* **Setup Gate**: Cannot function until Leantime itself is fully installed and an admin user is created.
 * **Opportunities**:
-  * Automated token generation/retrieval during the setup phase to reduce manual friction.
+* Automated token generation/retrieval during the setup phase to reduce manual friction.
 
 ## SECTION 2: EVIDENCE TRAIL
 
@@ -72,4 +72,4 @@ The service is a Python-based MCP server using `Starlette` and `Uvicorn`, implem
 * Confidence Level: 100% (Source, Runtime, and Audit validated)
 * Evidence Quality Score: High (Comprehensive audit report + code verification)
 * Evolution Log:
-  * 2026-02-09: Initial Deep Dive. Confirmed alignment with 2026-02-06 Audit.
+* 2026-02-09: Initial Deep Dive. Confirmed alignment with 2026-02-06 Audit.

@@ -17,38 +17,38 @@ prelude: Verification that profile analytics now capture switch metrics, power p
 Closure verification for execution-packet backlog items:
 
 1. `4.4.1: Metrics collection`
-2. `4.4.2: dopemux profile stats command`
-3. `4.4.3: Analytics dashboard`
+1. `4.4.2: dopemux profile stats command`
+1. `4.4.3: Analytics dashboard`
 
 ## Runtime Change
 
 Updated `src/dopemux/profile_analytics.py`:
 
 1. Switch metrics now include:
-   - `switch_duration_seconds`
-   - `mcp_count` (tool footprint proxy)
-2. Aggregated analytics now include:
-   - `avg_switch_duration_seconds`
-   - `avg_mcp_count`
-3. Dashboard-style output (`display_stats`) now shows:
-   - summary metrics
-   - profile usage table
-   - ASCII time-of-day heatmap
-   - optimization insights surface consumed by `profile stats` command
+- `switch_duration_seconds`
+- `mcp_count` (tool footprint proxy)
+1. Aggregated analytics now include:
+- `avg_switch_duration_seconds`
+- `avg_mcp_count`
+1. Dashboard-style output (`display_stats`) now shows:
+- summary metrics
+- profile usage table
+- ASCII time-of-day heatmap
+- optimization insights surface consumed by `profile stats` command
 
 Updated `src/dopemux/profile_commands.py`:
 
 1. Switch telemetry logging now supplies:
-   - elapsed switch duration
-   - active profile MCP count
+- elapsed switch duration
+- active profile MCP count
 
 ## Test Coverage
 
 Added in `tests/unit/test_profile_analytics.py`:
 
 1. `test_analyze_switches_computes_duration_and_mcp_averages`
-2. `test_log_switch_includes_duration_and_mcp_metrics`
-3. `test_display_stats_includes_ascii_heatmap_and_usage_insights`
+1. `test_log_switch_includes_duration_and_mcp_metrics`
+1. `test_display_stats_includes_ascii_heatmap_and_usage_insights`
 
 Added in `tests/unit/test_profile_use_command.py`:
 
@@ -57,7 +57,7 @@ Added in `tests/unit/test_profile_use_command.py`:
 ## Verification
 
 1. `pytest -q --no-cov tests/unit/test_profile_analytics.py tests/unit/test_profile_use_command.py tests/unit/test_profile_management_commands.py tests/unit/test_profile_manager_detection.py tests/unit/test_profile_cli_registration.py tests/unit/test_auto_detection_service.py tests/test_claude_config.py` passed.
-2. `python -m py_compile src/dopemux/profile_analytics.py src/dopemux/profile_commands.py` passed.
+1. `python -m py_compile src/dopemux/profile_analytics.py src/dopemux/profile_commands.py` passed.
 
 ## Status
 

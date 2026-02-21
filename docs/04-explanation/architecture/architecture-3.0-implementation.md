@@ -167,12 +167,12 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 
 **Endpoints**:
 1. `GET /orchestrator/tasks` - List tasks with filters
-2. `GET /orchestrator/tasks/{id}` - Task details
-3. `GET /orchestrator/tasks/{id}/status` - Quick status
-4. `GET /orchestrator/adhd-state` - Energy/attention state
-5. `GET /orchestrator/recommendations` - ADHD-aware suggestions
-6. `GET /orchestrator/session` - Current session info
-7. `GET /orchestrator/active-sprint` - Sprint progress
+1. `GET /orchestrator/tasks/{id}` - Task details
+1. `GET /orchestrator/tasks/{id}/status` - Quick status
+1. `GET /orchestrator/adhd-state` - Energy/attention state
+1. `GET /orchestrator/recommendations` - ADHD-aware suggestions
+1. `GET /orchestrator/session` - Current session info
+1. `GET /orchestrator/active-sprint` - Sprint progress
 
 **Performance**:
 - Average latency: 70ms (65% under 200ms ADHD target)
@@ -193,11 +193,11 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 
 ```
 1. Leantime updates task status → "in_progress"
-2. Task-Orchestrator detects change
-3. Component 3: Publishes event to Redis Streams
-4. DopeconBridge routes event
-5. Component 4: Task-Orchestrator calls ConPort MCP
-6. ConPort updates progress_entry + knowledge graph
+1. Task-Orchestrator detects change
+1. Component 3: Publishes event to Redis Streams
+1. DopeconBridge routes event
+1. Component 4: Task-Orchestrator calls ConPort MCP
+1. ConPort updates progress_entry + knowledge graph
 ```
 
 **Latency**: 50-150ms (async, non-blocking)
@@ -208,11 +208,11 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 
 ```
 1. UI requests ADHD state
-2. DopeconBridge receives GET /orchestrator/adhd-state
-3. Component 5: Bridge queries Orchestrator HTTP (PORT 3017)
-4. Orchestrator queries ConPort MCP
-5. ConPort returns ADHD state from active_context
-6. Response flows back to UI
+1. DopeconBridge receives GET /orchestrator/adhd-state
+1. Component 5: Bridge queries Orchestrator HTTP (PORT 3017)
+1. Orchestrator queries ConPort MCP
+1. ConPort returns ADHD state from active_context
+1. Response flows back to UI
 ```
 
 **Latency**: 70ms average (synchronous HTTP)
@@ -223,13 +223,13 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 
 ```
 1. User asks: "What should I work on?"
-2. DopeconBridge: GET /orchestrator/recommendations
-3. Orchestrator:
+1. DopeconBridge: GET /orchestrator/recommendations
+1. Orchestrator:
    a. Queries ConPort for decisions (via Component 5)
    b. Queries ConPort for patterns (via Component 5)
    c. Gets current ADHD state (energy, attention)
    d. Applies ML pattern learning
-4. Enriched recommendations returned
+1. Enriched recommendations returned
 ```
 
 **Latency**: 90ms average (includes multiple ConPort queries)
@@ -260,10 +260,10 @@ Task-Orchestrator:   65ms (93%)  ✅ Acceptable
 ### Optimization Strategies Implemented
 
 1. **AsyncIO + aiohttp**: Non-blocking I/O throughout
-2. **Connection Pooling**: Persistent HTTP sessions (10ms → 1ms)
-3. **Redis Caching**: ADHD state cached at 1.76ms (30s TTL)
-4. **Parallel Queries**: `asyncio.gather()` for 3x speedup
-5. **Progressive Disclosure**: Return essentials first (80% queries satisfied)
+1. **Connection Pooling**: Persistent HTTP sessions (10ms → 1ms)
+1. **Redis Caching**: ADHD state cached at 1.76ms (30s TTL)
+1. **Parallel Queries**: `asyncio.gather()` for 3x speedup
+1. **Progressive Disclosure**: Return essentials first (80% queries satisfied)
 
 ## Authority Enforcement
 
@@ -360,14 +360,14 @@ Task-Orchestrator:   65ms (93%)  ✅ Acceptable
 
 **Full Integration Flow**:
 1. Start ConPort MCP server
-2. Start DopeconBridge (PORT 3016)
-3. Start Task-Orchestrator with query server (PORT 3017)
-4. Publish tasks_imported event
-5. Verify ConPort active_context updated
-6. Query orchestrator via DopeconBridge
-7. Verify ADHD state returned
-8. Update task status in Leantime
-9. Verify status synced to ConPort
+1. Start DopeconBridge (PORT 3016)
+1. Start Task-Orchestrator with query server (PORT 3017)
+1. Publish tasks_imported event
+1. Verify ConPort active_context updated
+1. Query orchestrator via DopeconBridge
+1. Verify ADHD state returned
+1. Update task status in Leantime
+1. Verify status synced to ConPort
 
 ## Deployment Readiness
 
@@ -430,17 +430,17 @@ USE_MOCK_FALLBACK=false        # Production: disable
 ### Current State
 
 1. **Mock Fallback Enabled**: DopeconBridge uses mock data when orchestrator unavailable (development only)
-2. **Single Worker**: Query server runs single uvicorn worker (scaling requires load balancer)
-3. **No Authentication**: HTTP endpoints public (Phase 11+ feature)
-4. **No Rate Limiting**: Unlimited requests (Phase 11+ feature)
+1. **Single Worker**: Query server runs single uvicorn worker (scaling requires load balancer)
+1. **No Authentication**: HTTP endpoints public (Phase 11+ feature)
+1. **No Rate Limiting**: Unlimited requests (Phase 11+ feature)
 
 ### Future Enhancements (Post-MVP)
 
 1. **Component 6: Authentication** (JWT tokens, API keys)
-2. **Component 7: Caching Layer** (Redis caching for all queries)
-3. **Component 8: Analytics** (Query patterns, usage metrics)
-4. **Component 9: WebSocket Support** (Real-time push notifications)
-5. **Component 10: GraphQL** (Flexible query optimization)
+1. **Component 7: Caching Layer** (Redis caching for all queries)
+1. **Component 8: Analytics** (Query patterns, usage metrics)
+1. **Component 9: WebSocket Support** (Real-time push notifications)
+1. **Component 10: GraphQL** (Flexible query optimization)
 
 ## Documentation Index
 
@@ -549,10 +549,10 @@ Decision #166: Component 5 Performance (70ms latency)
 
 **Next Steps**:
 1. Deploy to staging environment
-2. Run end-to-end integration tests
-3. Monitor performance metrics (Prometheus + Grafana)
-4. Validate ADHD user experience
-5. Proceed to Phase 11: Production features (auth, caching, analytics)
+1. Run end-to-end integration tests
+1. Monitor performance metrics (Prometheus + Grafana)
+1. Validate ADHD user experience
+1. Proceed to Phase 11: Production features (auth, caching, analytics)
 
 ---
 

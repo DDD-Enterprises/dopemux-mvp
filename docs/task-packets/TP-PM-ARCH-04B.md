@@ -33,14 +33,14 @@ No EventBus imports inside `dopemux.pm.*`.
 
 ### IN
 - `dopemux.pm.events`
-  - `PMEventType` (exact list below)
-  - `canonical_json()` stable serializer
-  - `sha256_hex()` helper
-  - `create_pm_event(...)` factory producing an envelope dict
+- `PMEventType` (exact list below)
+- `canonical_json()` stable serializer
+- `sha256_hex()` helper
+- `create_pm_event(...)` factory producing an envelope dict
 - `dopemux.pm.adapters`
-  - `taskmaster_event_to_pm(event_type: str, data: dict, source: str="taskmaster") -> dict`
-  - `orchestrator_event_to_pm(coord_event_like, source: str="task-orchestrator") -> dict`
-  - `pm_to_bus_event(envelope: dict) -> dict` (returns `{namespace, payload}`)
+- `taskmaster_event_to_pm(event_type: str, data: dict, source: str="taskmaster") -> dict`
+- `orchestrator_event_to_pm(coord_event_like, source: str="task-orchestrator") -> dict`
+- `pm_to_bus_event(envelope: dict) -> dict` (returns `{namespace, payload}`)
 - Unit tests for determinism, mapping, breadcrumbs, and Trinity boundary
 
 ### OUT
@@ -67,9 +67,9 @@ No EventBus imports inside `dopemux.pm.*`.
 ### I2. Task ID policy (Opus Decision #1)
 Derive canonical `task_id` by:
 1) If source provides stable source_task_id:
-   - `task_id = sha256(f"{source}:{source_task_id}")`
+- `task_id = sha256(f"{source}:{source_task_id}")`
 2) Else fallback:
-   - `task_id = sha256(f"{source}:{norm(title)}:{norm(description)}")`
+- `task_id = sha256(f"{source}:{norm(title)}:{norm(description)}")`
 
 `norm(x)`:
 - lowercase
@@ -151,21 +151,21 @@ Must include:
 - `normalize_text(s: str) -> str`
 - `canonical_task_id(source: str, source_task_id: str|None, title: str|None, description: str|None) -> str`
 - `taskmaster_event_to_pm(...)` mappings:
-  - `"taskmaster.task.created"` -> `pm.task.created`
-  - `"taskmaster.task.status_updated"` -> `pm.task.status_changed`
-  - `"taskmaster.task.completed"` -> `pm.task.completed`
-  - include dialect breadcrumbs in payload
+- `"taskmaster.task.created"` -> `pm.task.created`
+- `"taskmaster.task.status_updated"` -> `pm.task.status_changed`
+- `"taskmaster.task.completed"` -> `pm.task.completed`
+- include dialect breadcrumbs in payload
 - `orchestrator_event_to_pm(coord_event_like, ...)` duck-typed support:
-  - event type in: `.event_type` or `.type` or `["event_type"]` or `["type"]`
-  - task id in: `.task_id` or `["task_id"]` or nested `.payload/.data`
-  - map common names:
-    - `task_created` -> `pm.task.created`
-    - `task_updated` -> `pm.task.updated`
-    - `task_completed` -> `pm.task.completed`
-  - unknown types degrade to `pm.task.updated` with `mapping_reason`
+- event type in: `.event_type` or `.type` or `["event_type"]` or `["type"]`
+- task id in: `.task_id` or `["task_id"]` or nested `.payload/.data`
+- map common names:
+- `task_created` -> `pm.task.created`
+- `task_updated` -> `pm.task.updated`
+- `task_completed` -> `pm.task.completed`
+- unknown types degrade to `pm.task.updated` with `mapping_reason`
 - `pm_to_bus_event(envelope)` returns:
-  - `{"namespace": envelope["event_type"], "payload": {"envelope": envelope}}`
-  - namespace must start with `pm.`
+- `{"namespace": envelope["event_type"], "payload": {"envelope": envelope}}`
+- namespace must start with `pm.`
 
 ---
 
@@ -176,7 +176,7 @@ Must test:
 1) PM event types are exactly the 9 values, no more, no less
 2) `canonical_json` is stable (dict key order changes do not change output)
 3) `create_pm_event` deterministic:
-   - same inputs -> same `event_id`
+- same inputs -> same `event_id`
 4) `event_id` changes when payload changes
 5) datetime formatting is stable and includes `Z`
 
@@ -187,8 +187,8 @@ Must test:
 3) unknown orchestrator event produces pm.task.updated and includes `mapping_reason`
 4) dialect breadcrumbs are present for lossy mappings
 5) task id policy:
-   - when source_task_id present, created_at never influences
-   - fallback uses normalized title + description
+- when source_task_id present, created_at never influences
+- fallback uses normalized title + description
 
 ---
 
@@ -262,12 +262,12 @@ git push -u origin codex/pm-plane/arch-04b
 
 Acceptance Criteria
 1. PM event type set is exactly the 9 canonical values
-2. event_id deterministic with canonical_json hashing
-3. taskmaster mappings cover: created, status_updated, completed
-4. orchestrator mappings cover: task_created, task_updated, task_completed, plus graceful unknown handling
-5. pm_to_bus_event() returns dict with namespace starting pm.
-6. No edits to src/dopemux/events/types.py unless forced by evidence from failing tests
-7. pytest tests/unit/pm/ passes with 0 failures
+1. event_id deterministic with canonical_json hashing
+1. taskmaster mappings cover: created, status_updated, completed
+1. orchestrator mappings cover: task_created, task_updated, task_completed, plus graceful unknown handling
+1. pm_to_bus_event() returns dict with namespace starting pm.
+1. No edits to src/dopemux/events/types.py unless forced by evidence from failing tests
+1. pytest tests/unit/pm/ passes with 0 failures
 
 ---
 

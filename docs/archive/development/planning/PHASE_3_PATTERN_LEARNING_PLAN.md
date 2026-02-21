@@ -33,19 +33,19 @@ Transform ConPort from **passive logging** to **active pattern detection** that:
 
 ### Available Data (After Phases 0-2):
 - ✅ **23 decisions** with enhanced metadata
-  - Tags: adhd-optimization (26%), architecture (13%), technical (44%)
-  - Types: technical (44%), architectural (17%), process/adhd-pattern (22%)
-  - Ages: 0-120 days (varied distribution)
-  - Outcomes: 1 tracked (11% - need to improve adoption)
+- Tags: adhd-optimization (26%), architecture (13%), technical (44%)
+- Types: technical (44%), architectural (17%), process/adhd-pattern (22%)
+- Ages: 0-120 days (varied distribution)
+- Outcomes: 1 tracked (11% - need to improve adoption)
 
 - ✅ **6 energy logs** in adhd_metrics
-  - Distribution: 2 high (33%), 3 medium (50%), 1 low (17%)
-  - Time-of-day data available
-  - Context notes for qualitative analysis
+- Distribution: 2 high (33%), 3 medium (50%), 1 low (17%)
+- Time-of-day data available
+- Context notes for qualitative analysis
 
 - ✅ **3 decision relationships** in genealogy graph
-  - Demonstrates builds_upon chains
-  - Foundation for decision chain patterns
+- Demonstrates builds_upon chains
+- Foundation for decision chain patterns
 
 ### Data Sufficiency:
 - ✅ **Tag clustering**: Viable NOW (6+ decisions per top tag)
@@ -64,19 +64,19 @@ Transform ConPort from **passive logging** to **active pattern detection** that:
 
 **Features:**
 1. **Tag Cluster Detection**
-   - Group decisions by tag co-occurrence
-   - Calculate cluster frequency and density
-   - Identify "tag signatures" (commonly paired tags)
-   - Example: "adhd-optimization + performance" appears together 3x
+- Group decisions by tag co-occurrence
+- Calculate cluster frequency and density
+- Identify "tag signatures" (commonly paired tags)
+- Example: "adhd-optimization + performance" appears together 3x
 
-2. **Tag-Based Recommendations**
-   - When logging decision with tag X, suggest related tags
-   - "Decisions tagged 'architecture' are usually also tagged 'database' (67% co-occurrence)"
+1. **Tag-Based Recommendations**
+- When logging decision with tag X, suggest related tags
+- "Decisions tagged 'architecture' are usually also tagged 'database' (67% co-occurrence)"
 
-3. **CLI Command**: `dopemux decisions patterns tags`
-   - Show top tag clusters
-   - Display co-occurrence matrix
-   - Recommend tags for new decisions
+1. **CLI Command**: `dopemux decisions patterns tags`
+- Show top tag clusters
+- Display co-occurrence matrix
+- Recommend tags for new decisions
 
 **Implementation:**
 ```python
@@ -115,17 +115,17 @@ async def detect_tag_clusters(workspace_id):
 
 **Features:**
 1. **Chain Detection via Relationships**
-   - Query decision_relationships for common sequences
-   - Example: "Database decision → Caching decision → Optimization" (3-step chain)
+- Query decision_relationships for common sequences
+- Example: "Database decision → Caching decision → Optimization" (3-step chain)
 
-2. **Time-Based Chains (Without Explicit Relationships)**
-   - Detect decisions made close in time with related tags
-   - Example: Decisions within 7 days with overlapping tags = implicit chain
+1. **Time-Based Chains (Without Explicit Relationships)**
+- Detect decisions made close in time with related tags
+- Example: Decisions within 7 days with overlapping tags = implicit chain
 
-3. **CLI Command**: `dopemux decisions patterns chains`
-   - Show frequent decision sequences
-   - Display average chain length
-   - Completion rate for chains
+1. **CLI Command**: `dopemux decisions patterns chains`
+- Show frequent decision sequences
+- Display average chain length
+- Completion rate for chains
 
 **Implementation:**
 ```python
@@ -148,23 +148,23 @@ async def detect_decision_chains(workspace_id):
 
 **Features:**
 1. **Decision Time Analysis**
-   - Correlate decision_time_minutes with outcomes
-   - Detect: "Quick decisions (<15min) have lower success rate"
-   - Recommend: "Take 25-45 minutes for high-impact decisions"
+- Correlate decision_time_minutes with outcomes
+- Detect: "Quick decisions (<15min) have lower success rate"
+- Recommend: "Take 25-45 minutes for high-impact decisions"
 
-2. **Energy-Decision Correlation**
-   - Link energy logs with decisions made at same time
-   - Detect: "High-energy decisions more likely successful"
-   - Recommend: "Defer complex decisions when energy < 60%"
+1. **Energy-Decision Correlation**
+- Link energy logs with decisions made at same time
+- Detect: "High-energy decisions more likely successful"
+- Recommend: "Defer complex decisions when energy < 60%"
 
-3. **Time-of-Day Patterns**
-   - Analyze created_at hour distribution
-   - Find peak decision-making hours
-   - Correlate with outcomes
+1. **Time-of-Day Patterns**
+- Analyze created_at hour distribution
+- Find peak decision-making hours
+- Correlate with outcomes
 
-4. **CLI Commands**:
-   - `dopemux decisions patterns timing`
-   - `dopemux decisions patterns energy-correlation`
+1. **CLI Commands**:
+- `dopemux decisions patterns timing`
+- `dopemux decisions patterns energy-correlation`
 
 **Implementation:**
 ```python
@@ -211,16 +211,16 @@ async def detect_energy_correlation(workspace_id):
        return score
    ```
 
-2. **Recommendation Engine**
-   - Suggest improving confidence if low
-   - Suggest adding success criteria if missing
-   - Suggest deferring if energy low
-   - Suggest tags based on cluster patterns
+1. **Recommendation Engine**
+- Suggest improving confidence if low
+- Suggest adding success criteria if missing
+- Suggest deferring if energy low
+- Suggest tags based on cluster patterns
 
-3. **CLI Command**: `dopemux decisions predict`
-   - Input: Draft decision (summary, type, confidence)
-   - Output: Success prediction + recommendations
-   - Example: "72% likely successful. Tip: Add success criteria for +10%"
+1. **CLI Command**: `dopemux decisions predict`
+- Input: Draft decision (summary, type, confidence)
+- Output: Success prediction + recommendations
+- Example: "72% likely successful. Tip: Add success criteria for +10%"
 
 **Implementation:**
 ```python
@@ -420,10 +420,10 @@ def detect_tag_clusters(decisions, min_support=3):
     Find frequently co-occurring tag sets.
 
     Algorithm:
-    1. Count single tag frequencies
-    2. Generate tag pairs, filter by min_support
-    3. Generate triplets from frequent pairs
-    4. Calculate confidence and lift metrics
+1. Count single tag frequencies
+1. Generate tag pairs, filter by min_support
+1. Generate triplets from frequent pairs
+1. Calculate confidence and lift metrics
     """
     # Collect all tag transactions
     transactions = [set(d.tags) for d in decisions]
@@ -460,8 +460,8 @@ def detect_decision_chains(decisions, relationships):
     Find common decision sequences.
 
     Methods:
-    1. Explicit: Use decision_relationships graph
-    2. Implicit: Temporal proximity + tag similarity
+1. Explicit: Use decision_relationships graph
+1. Implicit: Temporal proximity + tag similarity
     """
     # Method 1: Graph traversal
     chains_explicit = traverse_relationship_graph(relationships)
@@ -493,9 +493,9 @@ def analyze_timing_patterns(decisions_with_outcomes):
     Correlate decision timing with success.
 
     Patterns:
-    - Time of day (morning/afternoon/evening)
-    - Decision time (quick/moderate/thoughtful)
-    - Day of week effects
+- Time of day (morning/afternoon/evening)
+- Decision time (quick/moderate/thoughtful)
+- Day of week effects
     """
     patterns = {}
 
@@ -544,9 +544,9 @@ def correlate_energy_with_decision_quality(decisions, energy_logs):
     Link decisions to energy levels via temporal proximity.
 
     Correlation:
-    - Match decisions to energy logs within ±2 hours
-    - Calculate success rate by energy level
-    - Detect optimal energy thresholds
+- Match decisions to energy logs within ±2 hours
+- Calculate success rate by energy level
+- Detect optimal energy thresholds
     """
     correlations = []
 
@@ -716,22 +716,22 @@ Improve future predictions
 
 ### Immediate (Today - 2 hours):
 1. **Create decision_patterns table** (15 min)
-2. **Implement tag cluster detection** (1 hour)
-3. **Create `patterns tags` command** (45 min)
+1. **Implement tag cluster detection** (1 hour)
+1. **Create `patterns tags` command** (45 min)
 
 Result: **Immediate pattern visibility with current data!**
 
 ### Short-term (This Week - 4 hours):
 1. Temporal chain detection (works with current data)
-2. Time-of-day analysis (works with timestamps)
-3. Pattern confidence scoring
-4. Recommendation engine v1
+1. Time-of-day analysis (works with timestamps)
+1. Pattern confidence scoring
+1. Recommendation engine v1
 
 ### Medium-term (Next 2 Weeks):
 1. Encourage outcome logging via review prompts
-2. Build up energy+decision correlation dataset
-3. Implement prediction model
-4. Refine patterns based on feedback
+1. Build up energy+decision correlation dataset
+1. Implement prediction model
+1. Refine patterns based on feedback
 
 ---
 
@@ -756,10 +756,10 @@ Result: **Immediate pattern visibility with current data!**
 ## 📝 Next Steps
 
 1. **Review this plan** - Adjust based on feedback
-2. **Start with Sprint 1** - Tag patterns (immediate value)
-3. **Commit pattern table schema** - Foundation for all sprints
-4. **Implement tag cluster detection** - First pattern type
-5. **Test with current 23 decisions** - Validate approach
+1. **Start with Sprint 1** - Tag patterns (immediate value)
+1. **Commit pattern table schema** - Foundation for all sprints
+1. **Implement tag cluster detection** - First pattern type
+1. **Test with current 23 decisions** - Validate approach
 
 **Estimated Phase 3 Time**: 2 weeks (but based on Phase 0-2 velocity, likely **~4 hours actual**)
 

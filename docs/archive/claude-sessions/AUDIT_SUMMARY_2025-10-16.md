@@ -53,8 +53,8 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 
 **Issues Found**:
 1. 🔴 **SQL Injection** (4 locations) - `LIMIT {limit}` unvalidated
-2. 🔴 **ReDoS Attack** (1 location) - Unescaped regex causing catastrophic backtracking
-3. 🟡 **N+1 Query** (1 location) - Performance issue documented
+1. 🔴 **ReDoS Attack** (1 location) - Unescaped regex causing catastrophic backtracking
+1. 🟡 **N+1 Query** (1 location) - Performance issue documented
 
 **Fix Time**: 2 hours
 **Test Coverage**: 12 security tests, 100% pass rate
@@ -86,7 +86,7 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 
 **Zen Systematic Analysis Found**:
 1. ⚠️ Database writes violate service boundaries (not read-only!)
-2. ⚠️ Missing API authentication on all 7 endpoints
+1. ⚠️ Missing API authentication on all 7 endpoints
 
 **Corrected Score**: 7/10 with deployment restrictions
 
@@ -128,7 +128,7 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 
 **ConPort KG**:
 1. SQL Injection (4 locations) - ✅ **FIXED**
-2. ReDoS Attack (1 location) - ✅ **FIXED**
+1. ReDoS Attack (1 location) - ✅ **FIXED**
 
 **Status**: All critical issues resolved
 
@@ -140,8 +140,8 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 1. Missing URL parameter encoding - ⏳ **30min fix needed**
 
 **ADHD Engine**:
-2. Service boundary violations (database writes) - ⏳ **Week 7 migration**
-3. Missing API authentication - ⏳ **Add auth OR localhost-only**
+1. Service boundary violations (database writes) - ⏳ **Week 7 migration**
+1. Missing API authentication - ⏳ **Add auth OR localhost-only**
 
 **Status**: Require deployment restrictions or fixes
 
@@ -153,7 +153,7 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 1. Hardcoded password default - 🟢 **15min optional fix**
 
 **ConPort KG**:
-2. N+1 query optimization - 🟢 **Documented for Phase 2**
+1. N+1 query optimization - 🟢 **Documented for Phase 2**
 
 **Status**: Optional enhancements
 
@@ -164,35 +164,35 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 ### Tier 1: Ship Immediately ✅
 
 1. **Serena v2** (8.5/10)
-   - Secure by design
-   - Fully implemented
-   - Production-grade
-   - Optional: 15min password fix
+- Secure by design
+- Fully implemented
+- Production-grade
+- Optional: 15min password fix
 
-2. **ConPort KG** (9/10 after fixes)
-   - Critical vulnerabilities fixed
-   - Comprehensive test coverage
-   - Production-ready
+1. **ConPort KG** (9/10 after fixes)
+- Critical vulnerabilities fixed
+- Comprehensive test coverage
+- Production-ready
 
-3. **Dope-Context** (Pre-validated)
-   - Ready per your review plan
+1. **Dope-Context** (Pre-validated)
+- Ready per your review plan
 
-4. **Orchestrator** (Pre-validated)
-   - Ready per your review plan
+1. **Orchestrator** (Pre-validated)
+- Ready per your review plan
 
 ### Tier 2: Ship with Minor Fixes ⚠️
 
 1. **ConPort KG UI** (7/10)
-   - Simple, clean terminal UI
-   - Needs: 30min URL encoding fix
-   - Then: Production-ready
+- Simple, clean terminal UI
+- Needs: 30min URL encoding fix
+- Then: Production-ready
 
 ### Tier 3: Ship with Restrictions ⚠️
 
 1. **ADHD Engine** (7/10)
-   - Good code quality
-   - Needs: Localhost-only OR add auth (2h)
-   - Future: Fix service boundaries (Week 7)
+- Good code quality
+- Needs: Localhost-only OR add auth (2h)
+- Future: Fix service boundaries (Week 7)
 
 ---
 
@@ -220,30 +220,30 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 ### What Worked
 
 1. **Zen thinkdeep** - Systematic multi-step investigation
-   - Caught database writes in ADHD Engine
-   - Found all SQL injection points in ConPort
-   - Prevented rushed assessments
+- Caught database writes in ADHD Engine
+- Found all SQL injection points in ConPort
+- Prevented rushed assessments
 
-2. **Serena-v2 MCP** - Code navigation
-   - Fast file reading
-   - Directory exploration
-   - Symbol finding
+1. **Serena-v2 MCP** - Code navigation
+- Fast file reading
+- Directory exploration
+- Symbol finding
 
-3. **Grep for pattern matching** - Security scans
-   - Found all LIMIT {limit} vulnerabilities
-   - Verified parameterized query usage
-   - Detected TODO/stub patterns
+1. **Grep for pattern matching** - Security scans
+- Found all LIMIT {limit} vulnerabilities
+- Verified parameterized query usage
+- Detected TODO/stub patterns
 
 ### What Didn't Work
 
 1. **Rushed assessments** - ADHD Engine initially
-   - Missed database writes
-   - Missed authentication gap
-   - Over-optimistic scoring
+- Missed database writes
+- Missed authentication gap
+- Over-optimistic scoring
 
-2. **Assumptions without verification**
-   - "Read-only" claim not verified
-   - Deployment model not checked
+1. **Assumptions without verification**
+- "Read-only" claim not verified
+- Deployment model not checked
 
 ---
 
@@ -252,10 +252,10 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 ### Always Use Systematic Analysis
 
 1. **Step 1**: Architecture discovery
-2. **Step 2**: Security deep-dive with evidence
-3. **Step 3**: Implementation verification
-4. **Step 4**: Integration and edge cases
-5. **Step 5**: Synthesis and recommendations
+1. **Step 2**: Security deep-dive with evidence
+1. **Step 3**: Implementation verification
+1. **Step 4**: Integration and edge cases
+1. **Step 5**: Synthesis and recommendations
 
 ### Always Verify Claims
 
@@ -278,20 +278,20 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 ### Immediate (Before Any Production Deploy)
 
 1. ✅ **ConPort KG**: Already fixed and committed
-2. **ConPort KG UI**: Fix URL encoding (30 min)
-3. **ADHD Engine**: Add authentication OR localhost-only (2h OR document)
+1. **ConPort KG UI**: Fix URL encoding (30 min)
+1. **ADHD Engine**: Add authentication OR localhost-only (2h OR document)
 
 ### Short-term (Week 7)
 
 1. **ADHD Engine**: Migrate to ConPort HTTP API (3 hours)
-2. **All Services**: Add integration tests
-3. **All Services**: Add monitoring/metrics
+1. **All Services**: Add integration tests
+1. **All Services**: Add monitoring/metrics
 
 ### Long-term
 
 1. **ConPort KG**: Implement N+1 fix
-2. **Serena v2**: Optional password env var
-3. **All Services**: Performance optimization
+1. **Serena v2**: Optional password env var
+1. **All Services**: Performance optimization
 
 ---
 

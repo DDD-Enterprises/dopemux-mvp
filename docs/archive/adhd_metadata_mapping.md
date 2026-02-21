@@ -51,9 +51,9 @@ This specification defines the mapping between Dopemux's ADHD metadata fields an
 
 ### 2. Energy Level Mapping
 - Dopemux `energy_level` → Task-Orchestrator `priority` mapping:
-  - "high" → "high"
-  - "medium" → "medium"
-  - "low" → "low"
+- "high" → "high"
+- "medium" → "medium"
+- "low" → "low"
 - Add tag "energy_{energy_level}" for filtering
 
 ### 3. Session State Mapping
@@ -64,9 +64,9 @@ This specification defines the mapping between Dopemux's ADHD metadata fields an
 
 ### 4. Derived Priority Mapping
 - Combine cognitive_load and energy_level:
-  - High cognitive_load + Low energy → Priority "high" with tag "risky"
-  - High cognitive_load + High energy → Priority "medium" with tag "optimal"
-  - Low cognitive_load + Low energy → Priority "low" with tag "safe"
+- High cognitive_load + Low energy → Priority "high" with tag "risky"
+- High cognitive_load + High energy → Priority "medium" with tag "optimal"
+- Low cognitive_load + Low energy → Priority "low" with tag "safe"
 
 ### 5. Duration Estimation
 - Dopemux `recommended_duration` → Task-Orchestrator `estimated_duration` (direct mapping)
@@ -80,10 +80,10 @@ This specification defines the mapping between Dopemux's ADHD metadata fields an
 
 ### Semantic Preservation Checks
 1. **Range Validation**: Ensure complexity stays within 0.0-1.0
-2. **Tag Consistency**: Verify tags match calculated values
-3. **Priority Logic**: Validate priority matches cognitive_load + energy_level rules
-4. **Duration Range**: Estimated duration must be between 5-120 minutes
-5. **Session State**: Focus active must match session duration patterns
+1. **Tag Consistency**: Verify tags match calculated values
+1. **Priority Logic**: Validate priority matches cognitive_load + energy_level rules
+1. **Duration Range**: Estimated duration must be between 5-120 minutes
+1. **Session State**: Focus active must match session duration patterns
 
 ### Integration Testing
 - Test with edge cases (cognitive_load = 0.0, 1.0, 0.5)
@@ -137,10 +137,10 @@ def generate_tags(adhd_data):
 ## Validation Rules
 
 1. **Complexity Range**: `0.0 <= complexity <= 1.0`
-2. **Priority Values**: `priority in ["low", "medium", "high"]`
-3. **Duration Range**: `5 <= estimated_duration <= 120`
-4. **Tag Consistency**: Tags must match cognitive_load and energy_level combinations
-5. **Metadata Completeness**: All ADHD session data must be preserved
+1. **Priority Values**: `priority in ["low", "medium", "high"]`
+1. **Duration Range**: `5 <= estimated_duration <= 120`
+1. **Tag Consistency**: Tags must match cognitive_load and energy_level combinations
+1. **Metadata Completeness**: All ADHD session data must be preserved
 
 ## Error Handling
 

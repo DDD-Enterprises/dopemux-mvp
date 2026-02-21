@@ -98,17 +98,17 @@ All endpoints enforce cognitive plane authority for writes.
 
 ### Migrated Services (Bridge-Safe) ✅
 1. **ADHD Engine** - Activity tracking, progress logging
-2. **Voice Commands** - Task decomposition, voice integration
-3. **Task Orchestrator** - Task sync, cross-plane routing
-4. **Serena v2** - Decision search, navigation
-5. **GPT-Researcher** - Research state, findings
+1. **Voice Commands** - Task decomposition, voice integration
+1. **Task Orchestrator** - Task sync, cross-plane routing
+1. **Serena v2** - Decision search, navigation
+1. **GPT-Researcher** - Research state, findings
 
 ### Pending Migration 🔄
 1. **agents/cognitive_guardian.py** - ConPort references
-2. **agents/memory_agent_conport.py** - Direct access
-3. **orchestrator/src/context_protocol.py** - ConPort imports
-4. **orchestrator/src/conversation_manager.py** - ConPort refs
-5. **genetic_agent/** - Multiple files
+1. **agents/memory_agent_conport.py** - Direct access
+1. **orchestrator/src/context_protocol.py** - ConPort imports
+1. **orchestrator/src/conversation_manager.py** - ConPort refs
+1. **genetic_agent/** - Multiple files
 
 ### Legacy/Experimental (Documented as Not Bridge-Safe) 📝
 - `ml-risk-assessment` - Experimental
@@ -213,30 +213,30 @@ Benefits:
 
 ### Phase 1: Complete DopeconBridge (1-2 hours)
 1. ✅ **DONE:** Add missing endpoints to DopeconBridge
-2. ⏳ **TODO:** Add ConPort MCP client method implementations
-3. ⏳ **TODO:** Test new endpoints with mock ConPort
+1. ⏳ **TODO:** Add ConPort MCP client method implementations
+1. ⏳ **TODO:** Test new endpoints with mock ConPort
 
 ### Phase 2: Update Deployment Configuration (1 hour)
 1. ⏳ Update `docker-compose.master.yml` with bridge env vars
-2. ⏳ Update `docker-compose.unified.yml`
-3. ⏳ Update service Dockerfiles if needed
+1. ⏳ Update `docker-compose.unified.yml`
+1. ⏳ Update service Dockerfiles if needed
 
 ### Phase 3: Migrate Remaining Services (2-3 hours)
 1. ⏳ Create `agents/bridge_adapter.py` for cognitive_guardian and memory_agent
-2. ⏳ Update orchestrator context_protocol and conversation_manager
-3. ⏳ Migrate or deprecate genetic_agent ConPort usage
+1. ⏳ Update orchestrator context_protocol and conversation_manager
+1. ⏳ Migrate or deprecate genetic_agent ConPort usage
 
 ### Phase 4: Testing & Validation (2 hours)
 1. ⏳ Integration test: Voice Commands → Bridge → ConPort
-2. ⏳ Integration test: Task Orchestrator → Bridge → PM Plane
-3. ⏳ Integration test: Serena → Bridge → Decision Search
-4. ⏳ End-to-end test: Full workflow across all services
+1. ⏳ Integration test: Task Orchestrator → Bridge → PM Plane
+1. ⏳ Integration test: Serena → Bridge → Decision Search
+1. ⏳ End-to-end test: Full workflow across all services
 
 ### Phase 5: Documentation & Deployment (1 hour)
 1. ⏳ Update main `README.md` with DopeconBridge architecture
-2. ⏳ Update architecture diagrams
-3. ⏳ Create deployment runbook
-4. ⏳ Deploy to staging environment
+1. ⏳ Update architecture diagrams
+1. ⏳ Create deployment runbook
+1. ⏳ Deploy to staging environment
 
 **Total Estimated Time:** 7-9 hours remaining work
 
@@ -276,10 +276,10 @@ Benefits:
 ### What Makes This Implementation Special
 
 1. **Production-Ready:** Not just prototypes - full error handling, logging, type safety
-2. **Backward Compatible:** All adapters match old client APIs exactly
-3. **Test Coverage:** Shared client has 100% test coverage
-4. **Beyond Spec:** Added 4 endpoints, 2 extra adapters, 20KB of docs
-5. **Future-Proof:** Easy to add caching, rate limiting, new backends
+1. **Backward Compatible:** All adapters match old client APIs exactly
+1. **Test Coverage:** Shared client has 100% test coverage
+1. **Beyond Spec:** Added 4 endpoints, 2 extra adapters, 20KB of docs
+1. **Future-Proof:** Easy to add caching, rate limiting, new backends
 
 ### Code Quality Indicators
 
@@ -293,10 +293,10 @@ Benefits:
 ## 🎓 Lessons Learned
 
 1. **ConPort usage was more widespread than documented** - Found 10+ services
-2. **Three different client types existed** - SQLite, HTTP, PostgreSQL direct
-3. **DopeconBridge needed new endpoints** - Original spec assumed they existed
-4. **Service-specific adapters are crucial** - Raw client too low-level for most services
-5. **Documentation is as important as code** - 50% of deliverable is docs
+1. **Three different client types existed** - SQLite, HTTP, PostgreSQL direct
+1. **DopeconBridge needed new endpoints** - Original spec assumed they existed
+1. **Service-specific adapters are crucial** - Raw client too low-level for most services
+1. **Documentation is as important as code** - 50% of deliverable is docs
 
 ## 👥 Handoff Checklist
 

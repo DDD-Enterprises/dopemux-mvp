@@ -59,8 +59,8 @@ prelude: Ultimate Audit Success (explanation) for dopemux documentation and deve
 **Fixed** (10 HIGH-severity):
 1-4. CORS wildcards → Environment whitelists
 5-6. Hardcoded credentials → Environment variables
-7. No authentication → API key middleware (7 endpoints)
-8. Missing import → Fixed (deployment blocker)
+1. No authentication → API key middleware (7 endpoints)
+1. Missing import → Fixed (deployment blocker)
 9-10. DopeconBridge stubs → Fully implemented
 
 **Verified SAFE**:
@@ -97,17 +97,17 @@ prelude: Ultimate Audit Success (explanation) for dopemux documentation and deve
 
 **Core Services** (8/12):
 1. Dope-Context ✅
-2. ADHD Engine ✅ (NOW FULLY COMPLIANT!)
-3. Serena v2 ✅
-4. Dope Decision Graph UI (formerly ConPort KG UI) ✅
-5. GPT-Researcher ✅
-6. ML Risk Assessment ✅
-7. Orchestrator ✅
-8. Taskmaster ✅
+1. ADHD Engine ✅ (NOW FULLY COMPLIANT!)
+1. Serena v2 ✅
+1. Dope Decision Graph UI (formerly ConPort KG UI) ✅
+1. GPT-Researcher ✅
+1. ML Risk Assessment ✅
+1. Orchestrator ✅
+1. Taskmaster ✅
 
 **Infrastructure** (2/12):
-9. DopeconBridge ✅ (100% COMPLETE!)
-10. Dope Decision Graph ✅ (formerly ConPort KG; can now use complete bridge)
+1. DopeconBridge ✅ (100% COMPLETE!)
+1. Dope Decision Graph ✅ (formerly ConPort KG; can now use complete bridge)
 
 **Legacy** (2/12):
 11-12. Claude-Context (not critical)
@@ -248,9 +248,9 @@ curl -H "X-API-Key: your-key" http://localhost:8000/health
 
 **Key Commits**:
 1. `26b2f285` - Chunking bug fix
-2. `62202733` - Security fixes
-3. `1b76ef66` - DopeconBridge completion
-4. `2c8e7fbc` - Architecture compliance
+1. `62202733` - Security fixes
+1. `1b76ef66` - DopeconBridge completion
+1. `2c8e7fbc` - Architecture compliance
 
 ---
 

@@ -196,21 +196,21 @@ Get active sprint information.
 ### Files Created
 
 1. **services/mcp-dopecon-bridge/orchestrator_endpoints.py** (313 lines)
-   - FastAPI router with 8 query endpoints
-   - Pydantic response models (TaskDetail, ADHDState, etc.)
-   - Mock data implementations (ready for wiring)
-   - Comprehensive docstrings with use cases
+- FastAPI router with 8 query endpoints
+- Pydantic response models (TaskDetail, ADHDState, etc.)
+- Mock data implementations (ready for wiring)
+- Comprehensive docstrings with use cases
 
-2. **services/mcp-dopecon-bridge/test_orchestrator_queries.py** (100 lines)
-   - Async test suite for all endpoints
-   - aiohttp client for HTTP testing
-   - Test summary and pass/fail reporting
+1. **services/mcp-dopecon-bridge/test_orchestrator_queries.py** (100 lines)
+- Async test suite for all endpoints
+- aiohttp client for HTTP testing
+- Test summary and pass/fail reporting
 
 ### Files Modified
 
 1. **services/mcp-dopecon-bridge/main.py** (+2 lines)
-   - Import: `from orchestrator_endpoints import router as orchestrator_router`
-   - Include: `app.include_router(orchestrator_router)`
+- Import: `from orchestrator_endpoints import router as orchestrator_router`
+- Include: `app.include_router(orchestrator_router)`
 
 ## Response Models
 
@@ -305,20 +305,20 @@ Results: 8/8 tests passed (100%)
 Currently, all endpoints return mock data. To complete Component 5:
 
 1. **Wire Task-Orchestrator State**:
-   - Add `get_tasks()`, `get_task_by_id()` methods to EnhancedTaskOrchestrator
-   - Wire orchestrator_endpoints to call actual orchestrator methods
+- Add `get_tasks()`, `get_task_by_id()` methods to EnhancedTaskOrchestrator
+- Wire orchestrator_endpoints to call actual orchestrator methods
 
-2. **Wire ADHD Engine**:
-   - Connect `/adhd-state` to ADHD Engine current state
-   - Connect `/recommendations` to Task-Orchestrator recommendation engine
+1. **Wire ADHD Engine**:
+- Connect `/adhd-state` to ADHD Engine current state
+- Connect `/recommendations` to Task-Orchestrator recommendation engine
 
-3. **Wire Session/Sprint Management**:
-   - Connect to actual session state
-   - Connect to ConPort sprint context
+1. **Wire Session/Sprint Management**:
+- Connect to actual session state
+- Connect to ConPort sprint context
 
-4. **Replace Mock Data**:
-   - Remove `_mock_tasks` dict
-   - Implement actual orchestrator queries
+1. **Replace Mock Data**:
+- Remove `_mock_tasks` dict
+- Implement actual orchestrator queries
 
 ## Integration Example
 

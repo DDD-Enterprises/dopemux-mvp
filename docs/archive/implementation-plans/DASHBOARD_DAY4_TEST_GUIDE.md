@@ -93,13 +93,13 @@ q  →  Quit
 
 **Steps:**
 1. Start dashboard
-2. Press `d`
-3. Verify modal opens centered
-4. Check content loads (should show task #1)
-5. Press `c` (complete task)
-6. Verify notification appears
-7. Press `Esc`
-8. Verify back to main view
+1. Press `d`
+1. Verify modal opens centered
+1. Check content loads (should show task #1)
+1. Press `c` (complete task)
+1. Verify notification appears
+1. Press `Esc`
+1. Verify back to main view
 
 **Expected:**
 - Modal centers on screen (85% size)
@@ -114,12 +114,12 @@ q  →  Quit
 
 **Steps:**
 1. Press `l`
-2. Verify modal opens
-3. Check log table renders
-4. Look for color-coded log levels
-5. Press `f` to toggle filter
-6. Press `s` to toggle auto-scroll
-7. Press `Esc`
+1. Verify modal opens
+1. Check log table renders
+1. Look for color-coded log levels
+1. Press `f` to toggle filter
+1. Press `s` to toggle auto-scroll
+1. Press `Esc`
 
 **Expected:**
 - Modal shows service name in title
@@ -134,10 +134,10 @@ q  →  Quit
 
 **Steps:**
 1. Press `p`
-2. Check pattern statistics load
-3. Scroll through content
-4. Review recommendations section
-5. Press `Esc`
+1. Check pattern statistics load
+1. Scroll through content
+1. Review recommendations section
+1. Press `Esc`
 
 **Expected:**
 - Pattern #7 "Deep Work Morning Block" shown
@@ -152,11 +152,11 @@ q  →  Quit
 
 **Steps:**
 1. Press `h`
-2. View metric summary
-3. Check sparkline renders
-4. Press `z` (zoom - shows notification)
-5. Press `e` (export - shows notification)
-6. Press `Esc`
+1. View metric summary
+1. Check sparkline renders
+1. Press `z` (zoom - shows notification)
+1. Press `e` (export - shows notification)
+1. Press `Esc`
 
 **Expected:**
 - Metric name "Cognitive Load" in title
@@ -171,13 +171,13 @@ q  →  Quit
 
 **Steps:**
 1. Press `d` → modal opens
-2. Press `Esc` → modal closes
-3. Press `l` → new modal opens
-4. Press `q` → modal closes
-5. Press `p` → modal opens
-6. Press `?` → help opens (modal on top of modal)
-7. Press `Esc` → help closes, pattern modal visible
-8. Press `Esc` → pattern modal closes
+1. Press `Esc` → modal closes
+1. Press `l` → new modal opens
+1. Press `q` → modal closes
+1. Press `p` → modal opens
+1. Press `?` → help opens (modal on top of modal)
+1. Press `Esc` → help closes, pattern modal visible
+1. Press `Esc` → pattern modal closes
 
 **Expected:**
 - All modals respond to Esc
@@ -192,9 +192,9 @@ q  →  Quit
 
 **Steps:**
 1. Press `d` → `Esc` (repeat 10x)
-2. Press `l` → `Esc` (repeat 10x)
-3. Press `p` → `Esc` (repeat 10x)
-4. Press `h` → `Esc` (repeat 10x)
+1. Press `l` → `Esc` (repeat 10x)
+1. Press `p` → `Esc` (repeat 10x)
+1. Press `h` → `Esc` (repeat 10x)
 
 **Expected:**
 - No errors or crashes
@@ -208,11 +208,11 @@ q  →  Quit
 
 **Steps:**
 1. Press `?` to open help
-2. Scroll down to "Drill-Downs (NEW! 🎯)" section
-3. Verify all new keybindings listed
-4. Press `Esc`
-5. Press `d` to verify binding works
-6. Press `Esc`
+1. Scroll down to "Drill-Downs (NEW! 🎯)" section
+1. Verify all new keybindings listed
+1. Press `Esc`
+1. Press `d` to verify binding works
+1. Press `Esc`
 
 **Expected:**
 - Help shows drill-down section

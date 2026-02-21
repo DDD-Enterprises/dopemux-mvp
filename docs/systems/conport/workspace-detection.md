@@ -28,13 +28,13 @@ This document describes the universal workspace auto-detection system integrated
 ## Core Components
 
 1. `WorkspaceDetector` (multi-strategy upward search).
-2. `auto_detect_workspace(start_path)`.
-3. `resolve_workspace_id(provided_workspace_id, auto_detect, start_path)`.
-4. CLI flags:
-   - `--auto-detect-workspace` (default: enabled)
-   - `--no-auto-detect`
-   - `--workspace-search-start <path>`
-5. MCP tool: `get_workspace_detection_info`.
+1. `auto_detect_workspace(start_path)`.
+1. `resolve_workspace_id(provided_workspace_id, auto_detect, start_path)`.
+1. CLI flags:
+- `--auto-detect-workspace` (default: enabled)
+- `--no-auto-detect`
+- `--workspace-search-start <path>`
+1. MCP tool: `get_workspace_detection_info`.
 
 ---
 
@@ -42,26 +42,26 @@ This document describes the universal workspace auto-detection system integrated
 
 1. **Strong Indicators**
    Presence (in current or ancestor directory, up to max depth) of any high-confidence files:
-   - `package.json`
-   - `.git`
-   - `pyproject.toml`
-   - `Cargo.toml`
-   - `go.mod`
-   - `pom.xml`
+- `package.json`
+- `.git`
+- `pyproject.toml`
+- `Cargo.toml`
+- `go.mod`
+- `pom.xml`
    If found, the directory is validated (light structural/content checks).
 
-2. **Multiple General Indicators**
+1. **Multiple General Indicators**
    If two or more of a broader set exist (e.g., `README.md`, `LICENSE`, `requirements.txt`, `CMakeLists.txt`, `Makefile`, `setup.py`, `.gitignore`) the directory is treated as a workspace.
 
-3. **Existing ConPort Workspace**
+1. **Existing ConPort Workspace**
    A `context_portal/` directory (database or prior usage) signals a valid root.
 
-4. **MCP / Environment Context**
+1. **MCP / Environment Context**
    Environment variables (if directories):
-   - `VSCODE_WORKSPACE_FOLDER`
-   - `CONPORT_WORKSPACE`
+- `VSCODE_WORKSPACE_FOLDER`
+- `CONPORT_WORKSPACE`
 
-5. **Fallback**
+1. **Fallback**
    Start directory (with a warning) if nothing else matches.
 
 ---
@@ -148,7 +148,7 @@ Use this when:
 | Empty directory (no indicators) | Fallback to start path | Provide explicit `--workspace_id` or add project files |
 | Multi-language polyrepo (e.g., `backend/`, `frontend/`) | Strong indicator may pick nested path depending on start | Launch from desired subtree or override start path |
 | IDE launches from temporary wrapper dir | Upward search climbs to actual repo root | None needed |
-| User wants per-tool isolation | Disable auto-detect and provide explicit `workspace_id` each call | Use `--no-auto-detect` |
+| User wants per-tool isolation | Disable auto-detect and provide explicit `workspace_id` each call \| Use `--no-auto-detect` |
 
 ---
 
@@ -159,7 +159,7 @@ Use this when:
 | Wrong directory selected | Multiple candidate ancestors | Pin with `--workspace-search-start` or explicit `--workspace_id` |
 | Detection always falls back | No indicators present | Add a sentinel file (`README.md`, `pyproject.toml`, etc.) |
 | Literal `${workspaceFolder}` logged | IDE did not expand variable | Remove flag or rely on auto-detect |
-| Tool reports `fallback` unexpectedly | Indicators below start path only | Adjust `--workspace-search-start` to deeper path |
+| Tool reports `fallback` unexpectedly \| Indicators below start path only \| Adjust `--workspace-search-start` to deeper path |
 
 ---
 
@@ -181,9 +181,9 @@ No database changes required; behavior is runtime-only.
 - Validation heuristics are intentionally lightweight (avoid heavy parsing).
 - Strategy order biases correctness over pure speed; early return on first success.
 - Logging levels:
-  - `DEBUG`: Iteration details
-  - `INFO`: Successful detection outcome
-  - `WARNING`: Fallback, unexpanded placeholders
+- `DEBUG`: Iteration details
+- `INFO`: Successful detection outcome
+- `WARNING`: Fallback, unexpanded placeholders
 
 ---
 

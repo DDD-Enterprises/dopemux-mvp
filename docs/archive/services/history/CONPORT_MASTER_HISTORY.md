@@ -27,10 +27,10 @@ ConPort began as a simple "Context Portal" for properly logging developer contex
 * **Phase 1 (Legacy)**: Simple SQLite database for logging "decisions". Direct synchronous Access.
 * **Phase 2 (Service Mesh)**: Standalone Docker service, but still limited integration.
 * **Phase 3 (The "Bridge" Era - Current)**: A highly distributed architecture where ConPort is not just a database, but a set of "Bridge Clients" embedded in every major service (Serena, Orchestrator, GPT-Researcher). It now supports:
-  * **Vector Search** (Semantic understanding)
-  * **Graph Queries** (AGE/Cypher)
-  * **Multi-Workspace Support**
-  * **Async Event Bus Integration**
+* **Vector Search** (Semantic understanding)
+* **Graph Queries** (AGE/Cypher)
+* **Multi-Workspace Support**
+* **Async Event Bus Integration**
 
 ---
 
@@ -45,21 +45,21 @@ ConPort began as a simple "Context Portal" for properly logging developer contex
 
 ### Data Namespaces (The "Big Three")
 1. **Decisions (`decisions/*`)**:
-    * Atomic units of architectural history.
-    * Schema: `title`, `rationale`, `implementation_details`, `tags`, `links`.
-    * **Feature**: "Genealogy" - tracking parent/child relationships between decisions.
-2. **Work Items (`work/*`)**:
-    * Unified task queue bridging Leantime tickets and internal tasks.
-    * Schema: `priority`, `cognitive_load`, `energy_required`.
-3. **Artifacts (`artifacts/*`)**:
-    * Evidence of work (Logs, Screenshots, Diffs).
-    * Schema: `kind`, `path`, `hash`, `mime_type`.
+* Atomic units of architectural history.
+* Schema: `title`, `rationale`, `implementation_details`, `tags`, `links`.
+* **Feature**: "Genealogy" - tracking parent/child relationships between decisions.
+1. **Work Items (`work/*`)**:
+* Unified task queue bridging Leantime tickets and internal tasks.
+* Schema: `priority`, `cognitive_load`, `energy_required`.
+1. **Artifacts (`artifacts/*`)**:
+* Evidence of work (Logs, Screenshots, Diffs).
+* Schema: `kind`, `path`, `hash`, `mime_type`.
 
 ### ADHD Optimizations
 * **Progressive Disclosure**: Three tiers of data presentation to prevent overwhelm:
-  * Tier 1: `DecisionCard` (Summary)
-  * Tier 2: `DecisionSummary` (Details)
-  * Tier 3: `DecisionNeighborhood` (Graph relations)
+* Tier 1: `DecisionCard` (Summary)
+* Tier 2: `DecisionSummary` (Details)
+* Tier 3: `DecisionNeighborhood` (Graph relations)
 * **Cognitive Load Scoring**: Automatic calculation of complexity (0.0 - 1.0) based on task metadata.
 * **Context Preservation**: "Spooling" operations to disk if the service is down, ensuring no thought is ever lost ("No User Context Lost" guarantee).
 * **Proactive Context**: Automatically finding relevant decisions when a file is opened (via Serena).

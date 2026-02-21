@@ -72,14 +72,14 @@ cat WEEK3_IMPLEMENTATION_ROADMAP.md | grep -A 50 "Day 1 (Monday)"
 
 **Morning Prep** (30 min before starting):
 1. ☕ Coffee/tea + comfortable workspace
-2. 📖 Read WEEK3_KICKOFF_SUMMARY.md (10 min)
-3. 👀 Skim WEEK3_TECHNICAL_SPEC.md - code changes (10 min)
-4. 🗓️ Review Day 1 in WEEK3_IMPLEMENTATION_ROADMAP.md (10 min)
+1. 📖 Read WEEK3_KICKOFF_SUMMARY.md (10 min)
+1. 👀 Skim WEEK3_TECHNICAL_SPEC.md - code changes (10 min)
+1. 🗓️ Review Day 1 in WEEK3_IMPLEMENTATION_ROADMAP.md (10 min)
 
 **Then**:
-5. ✅ Verify environment ready
-6. ⏰ Set 25-minute timer
-7. 🚀 Begin Focus Block 1.1
+1. ✅ Verify environment ready
+1. ⏰ Set 25-minute timer
+1. 🚀 Begin Focus Block 1.1
 
 ---
 
@@ -323,11 +323,11 @@ Impact: <ADHD benefit>"
 
 **Right Now**:
 1. ✅ Read this file (you're almost done!)
-2. ☕ Get comfortable (water, coffee, snacks)
-3. 📖 Read WEEK3_KICKOFF_SUMMARY.md (10 min)
-4. 🗓️ Review Day 1 plan (10 min)
-5. ⏰ Set timer (25 min)
-6. 🚀 Begin Focus Block 1.1
+1. ☕ Get comfortable (water, coffee, snacks)
+1. 📖 Read WEEK3_KICKOFF_SUMMARY.md (10 min)
+1. 🗓️ Review Day 1 plan (10 min)
+1. ⏰ Set timer (25 min)
+1. 🚀 Begin Focus Block 1.1
 
 **Monday Morning**:
 - 9:00 AM: Start Day 1, Block 1.1

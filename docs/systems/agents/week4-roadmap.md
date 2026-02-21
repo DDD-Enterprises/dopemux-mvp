@@ -49,9 +49,9 @@ prelude: Week4 Roadmap (reference) for dopemux documentation and developer workf
 
 **Tasks**:
 1. Create `cognitive_guardian_kg.py` file
-2. Set up imports and dependencies
-3. Define class structure
-4. Initialize AGE client connection
+1. Set up imports and dependencies
+1. Define class structure
+1. Initialize AGE client connection
 
 **Code Template**:
 ```python
@@ -83,7 +83,6 @@ from adhd_query_adapter import ADHDQueryAdapter, AttentionStateMonitor
 from queries.exploration import ExplorationQueries
 
 logger = logging.getLogger(__name__)
-
 
 class CognitiveGuardianKG:
     """ADHD-optimized Knowledge Graph integration."""
@@ -314,14 +313,12 @@ import pytest
 import asyncio
 from cognitive_guardian_kg import CognitiveGuardianKG
 
-
 @pytest.mark.asyncio
 async def test_initialization():
     """Test KG client initialization"""
     kg = CognitiveGuardianKG(workspace_id="/test")
     assert kg.workspace_id == "/test"
     assert kg.age_client is not None
-
 
 @pytest.mark.asyncio
 async def test_get_task_relationships_empty():
@@ -330,14 +327,12 @@ async def test_get_task_relationships_empty():
     rels = await kg.get_task_relationships("nonexistent")
     assert rels == {"dependencies": [], "blockers": [], "related": []}
 
-
 @pytest.mark.asyncio
 async def test_search_tasks_empty_query():
     """Test search with empty query"""
     kg = CognitiveGuardianKG("/test")
     results = await kg.search_tasks_semantic("")
     assert isinstance(results, list)
-
 
 @pytest.mark.asyncio
 async def test_graceful_degradation():
@@ -349,7 +344,6 @@ async def test_graceful_degradation():
 
     rels = await kg.get_task_relationships("task-123")
     assert rels == {"dependencies": [], "blockers": [], "related": []}
-
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
@@ -374,21 +368,21 @@ python test_cognitive_guardian_kg.py
 
 **Tasks**:
 1. Review all code written today
-2. Run all tests
-3. Commit changes:
+1. Run all tests
+1. Commit changes:
    ```bash
    git add cognitive_guardian_kg.py test_cognitive_guardian_kg.py
    git commit -m "Week 4 Day 1: KG query layer foundation
 
-   - CognitiveGuardianKG class created
-   - Task relationship queries implemented
-   - Basic semantic search (keyword matching)
-   - Unit tests: 4/4 passing
+- CognitiveGuardianKG class created
+- Task relationship queries implemented
+- Basic semantic search (keyword matching)
+- Unit tests: 4/4 passing
 
    Output: ~150 lines
    Status: Day 1 complete"
    ```
-4. Update progress doc
+1. Update progress doc
 
 **Completion Criteria**:
 - [ ] All Day 1 tests passing
@@ -814,9 +808,9 @@ Output: ~130 lines"
 
 **Tasks**:
 1. Finish energy pattern analysis
-2. Add break timing analysis
-3. Add complexity preference analysis
-4. Generate personalized recommendations
+1. Add break timing analysis
+1. Add complexity preference analysis
+1. Generate personalized recommendations
 
 **Output**: ~70 lines
 
@@ -828,11 +822,11 @@ Output: ~130 lines"
 
 **Tests** (6):
 1. Full CognitiveGuardian + KG workflow
-2. Task suggestions with context
-3. Semantic search accuracy
-4. Pattern mining with sample data
-5. Cross-session continuity
-6. Performance benchmarks
+1. Task suggestions with context
+1. Semantic search accuracy
+1. Pattern mining with sample data
+1. Cross-session continuity
+1. Performance benchmarks
 
 ---
 
@@ -840,9 +834,9 @@ Output: ~130 lines"
 
 **Create**:
 1. `WEEK4_COMPLETE.md` - Summary
-2. Update `INTEGRATION_GUIDE.md`
-3. Add KG usage examples
-4. Document performance tuning
+1. Update `INTEGRATION_GUIDE.md`
+1. Add KG usage examples
+1. Document performance tuning
 
 **Output**: ~600 lines docs
 
@@ -921,8 +915,8 @@ Status: Production-ready"
 
 **Week 5 Options**:
 1. **Production deployment** (already in Week 5 plan)
-2. **Dashboard integration** (visualize KG)
-3. **Advanced features** (biometric/ML from research)
+1. **Dashboard integration** (visualize KG)
+1. **Advanced features** (biometric/ML from research)
 
 ---
 

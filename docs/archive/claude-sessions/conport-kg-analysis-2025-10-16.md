@@ -177,8 +177,8 @@ if impl_decisions:
 
 **Fix (3h)**:
 1. Wire DopeconBridge client (1h)
-2. Implement event publishing (1h)
-3. Add error handling + retries (1h)
+1. Implement event publishing (1h)
+1. Add error handling + retries (1h)
 
 ---
 
@@ -199,8 +199,8 @@ class UserActivity:
 
 **Fix (3h)**:
 1. Integrate with LSP file-open events (1h)
-2. Track git commit events (1h)
-3. Monitor IDE focus changes (1h)
+1. Track git commit events (1h)
+1. Monitor IDE focus changes (1h)
 
 ---
 
@@ -456,13 +456,13 @@ else:
 
 ### Production-Ready ADHD Features
 1. ✅ **Progressive Disclosure** - Works perfectly, ship it
-2. ✅ **Cognitive Load Tracking** - Manual calculation works
-3. ✅ **Top-3 Pattern** - Enforced in Tier 1 queries
+1. ✅ **Cognitive Load Tracking** - Manual calculation works
+1. ✅ **Top-3 Pattern** - Enforced in Tier 1 queries
 
 ### NOT Ready (Document as Phase 2)
 1. ❌ **Attention Monitoring** - No data source
-2. ❌ **Flow State Protection** - No activity tracking
-3. ❌ **Event Automation** - No DopeconBridge wiring
+1. ❌ **Flow State Protection** - No activity tracking
+1. ❌ **Event Automation** - No DopeconBridge wiring
 
 ---
 

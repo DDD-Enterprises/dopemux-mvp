@@ -27,22 +27,22 @@ prelude: Week6 Complete (explanation) for dopemux documentation and developer wo
 
 **Features Added**:
 1. **POST /route/pm** - Route Cognitive → PM requests
-   - Translates REST → EventBus
-   - Returns mock PM data (tasks)
-   - Correlation ID tracking
+- Translates REST → EventBus
+- Returns mock PM data (tasks)
+- Correlation ID tracking
 
-2. **POST /route/cognitive** - Route PM → Cognitive requests
-   - Translates REST → EventBus
-   - Returns mock Cognitive data (complexity, ADHD state)
-   - Correlation ID tracking
+1. **POST /route/cognitive** - Route PM → Cognitive requests
+- Translates REST → EventBus
+- Returns mock Cognitive data (complexity, ADHD state)
+- Correlation ID tracking
 
-3. **Request/Response Models**:
-   - CrossPlaneRouteRequest (source, operation, data, requester)
-   - CrossPlaneRouteResponse (success, data, error, correlation_id)
+1. **Request/Response Models**:
+- CrossPlaneRouteRequest (source, operation, data, requester)
+- CrossPlaneRouteResponse (success, data, error, correlation_id)
 
-4. **Query vs Command Handling**:
-   - Queries (get_*, query_*): Immediate response
-   - Commands (update_*, set_*): Event queued, ack returned
+1. **Query vs Command Handling**:
+- Queries (get_*, query_*): Immediate response
+- Commands (update_*, set_*): Event queued, ack returned
 
 **Architecture**:
 ```
@@ -63,28 +63,28 @@ Redis Streams (async coordination)
 **Features Added**:
 
 1. **Retry Logic** (exponential backoff):
-   - 3 retry attempts
-   - Delays: 0.5s, 1.0s, 2.0s (exponential)
-   - Smart retry: Don't retry 4xx errors (except 429)
-   - Retry 5xx server errors and timeouts
+- 3 retry attempts
+- Delays: 0.5s, 1.0s, 2.0s (exponential)
+- Smart retry: Don't retry 4xx errors (except 429)
+- Retry 5xx server errors and timeouts
 
-2. **ConPort Logging**:
-   - `_log_authority_violation_to_conport()` method
-   - Logs violations to custom_data category "authority_violations"
-   - Tracks: source, target, operation, reason, blocked status
-   - Graceful degradation if ConPort unavailable
+1. **ConPort Logging**:
+- `_log_authority_violation_to_conport()` method
+- Logs violations to custom_data category "authority_violations"
+- Tracks: source, target, operation, reason, blocked status
+- Graceful degradation if ConPort unavailable
 
-3. **Health Check**:
-   - `health_check()` method
-   - Tests bridge connectivity
-   - Reports orchestrator status
-   - Returns metrics and configuration
+1. **Health Check**:
+- `health_check()` method
+- Tests bridge connectivity
+- Reports orchestrator status
+- Returns metrics and configuration
 
-4. **Metrics Summary**:
-   - `get_metrics_summary()` method
-   - Compliance rate calculation
-   - Success rate tracking
-   - Request pattern analysis (PM → Cognitive vs Cognitive → PM)
+1. **Metrics Summary**:
+- `get_metrics_summary()` method
+- Compliance rate calculation
+- Success rate tracking
+- Request pattern analysis (PM → Cognitive vs Cognitive → PM)
 
 **Error Handling**:
 - Timeout: Fall back to degraded mode after 3 attempts
@@ -103,44 +103,44 @@ Redis Streams (async coordination)
 **Test Coverage** (8/8 passing):
 
 1. **test_cognitive_to_pm_query**:
-   - Cognitive → PM (get_tasks)
-   - Validates: Success, task list returned
-   - Authority: Read allowed
+- Cognitive → PM (get_tasks)
+- Validates: Success, task list returned
+- Authority: Read allowed
 
-2. **test_pm_to_cognitive_query**:
-   - PM → Cognitive (get_complexity)
-   - Validates: Success, complexity score returned
-   - Authority: Read allowed
+1. **test_pm_to_cognitive_query**:
+- PM → Cognitive (get_complexity)
+- Validates: Success, complexity score returned
+- Authority: Read allowed
 
-3. **test_pm_to_cognitive_adhd**:
-   - PM → Cognitive (get_adhd_state)
-   - Validates: Energy, attention, cognitive load returned
-   - Authority: Read allowed
+1. **test_pm_to_cognitive_adhd**:
+- PM → Cognitive (get_adhd_state)
+- Validates: Energy, attention, cognitive load returned
+- Authority: Read allowed
 
-4. **test_authority_metrics**:
-   - Compliance tracking
-   - Validates: Metrics accumulate correctly
-   - Compliance rate: 100%
+1. **test_authority_metrics**:
+- Compliance tracking
+- Validates: Metrics accumulate correctly
+- Compliance rate: 100%
 
-5. **test_authority_violation_warn_mode**:
-   - PM writes to decisions (strict_mode=False)
-   - Validates: Warning logged, request proceeds
-   - Violation tracked in metrics
+1. **test_authority_violation_warn_mode**:
+- PM writes to decisions (strict_mode=False)
+- Validates: Warning logged, request proceeds
+- Violation tracked in metrics
 
-6. **test_authority_violation_strict_mode**:
-   - PM writes to decisions (strict_mode=True)
-   - Validates: ValueError raised, request blocked
-   - Violation tracked in metrics
+1. **test_authority_violation_strict_mode**:
+- PM writes to decisions (strict_mode=True)
+- Validates: ValueError raised, request blocked
+- Violation tracked in metrics
 
-7. **test_health_check**:
-   - Health check functionality
-   - Validates: Bridge connectivity, orchestrator status
-   - Reports: 5 authority rules configured
+1. **test_health_check**:
+- Health check functionality
+- Validates: Bridge connectivity, orchestrator status
+- Reports: 5 authority rules configured
 
-8. **test_metrics_summary**:
-   - Detailed metrics analysis
-   - Validates: Request patterns, success rate, compliance
-   - Pattern tracking: PM → Cognitive vs Cognitive → PM
+1. **test_metrics_summary**:
+- Detailed metrics analysis
+- Validates: Request patterns, success rate, compliance
+- Pattern tracking: PM → Cognitive vs Cognitive → PM
 
 **Test Infrastructure**:
 - Standalone test server (week6_test_server.py on port 3017)
@@ -212,12 +212,12 @@ Redis Streams (async coordination)
 
 **Created** (3 files):
 1. `services/agents/week6_test_server.py` (180 lines) - Standalone test server
-2. `services/agents/test_week6_orchestrator.py` (320 lines) - Complete test suite
-3. `services/agents/WEEK6_COMPLETE.md` (this file)
+1. `services/agents/test_week6_orchestrator.py` (320 lines) - Complete test suite
+1. `services/agents/WEEK6_COMPLETE.md` (this file)
 
 **Modified** (2 files):
-4. `services/mcp-dopecon-bridge/main.py` (+217 lines) - REST endpoints
-5. `services/agents/two_plane_orchestrator.py` (+180 lines) - Enhancements
+1. `services/mcp-dopecon-bridge/main.py` (+217 lines) - REST endpoints
+1. `services/agents/two_plane_orchestrator.py` (+180 lines) - Enhancements
 
 **Total**: 5 files, ~897 lines
 

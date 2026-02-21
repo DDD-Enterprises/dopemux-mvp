@@ -16,12 +16,12 @@ prelude: 07 Pm Plane Bypass And Execution Surfaces (explanation) for dopemux doc
 
 | severity | surface | why this is a bypass/execution surface | evidence |
 |---|---|---|---|
-| **CRITICAL** | `POST /api/decompose` | PM plane endpoint triggers decomposition flow with PAL planner + ConPort persistence writes | `services/task-orchestrator/task_orchestrator/app.py:137-149` |
-| **CRITICAL** | ConPort authority writes from decomposition path | updates parent status + creates subtasks + creates links (`DECOMPOSED_INTO`) | `services/task-orchestrator/task_decomposition_endpoint.py:195-229` |
-| **RISK** | `POST /api/tools/{tool_name}` | exposes executable tool dispatch surface | `services/task-orchestrator/task_orchestrator/app.py:113-121`, `services/task-orchestrator/task_orchestrator/mcp/__init__.py:109-138` |
-| **RISK** | LLM planner usage inside PM path | PAL client invokes planner with model `gemini-2.5-pro` | `services/task-orchestrator/pal_client.py:85-91`, `:163-169` |
-| **RISK** | Tool endpoint returns `200` on logical tool errors | error payload path can be treated as success at HTTP layer | `services/task-orchestrator/task_orchestrator/app.py:122-128` |
-| **RISK** | Adapter import/path drift risk | runtime imports `adapters.conport_adapter`, but only `app/adapters/conport_adapter.py` found in repo tree scan | `services/task-orchestrator/task_orchestrator/core.py:241-243` + filesystem scan |
+| **CRITICAL** | `POST /api/decompose` \| PM plane endpoint triggers decomposition flow with PAL planner + ConPort persistence writes \| `services/task-orchestrator/task_orchestrator/app.py:137-149` |
+| **CRITICAL** | ConPort authority writes from decomposition path | updates parent status + creates subtasks + creates links (`DECOMPOSED_INTO`) \| `services/task-orchestrator/task_decomposition_endpoint.py:195-229` |
+| **RISK** | `POST /api/tools/{tool_name}` \| exposes executable tool dispatch surface \| `services/task-orchestrator/task_orchestrator/app.py:113-121`, `services/task-orchestrator/task_orchestrator/mcp/__init__.py:109-138` |
+| **RISK** | LLM planner usage inside PM path | PAL client invokes planner with model `gemini-2.5-pro` \| `services/task-orchestrator/pal_client.py:85-91`, `:163-169` |
+| **RISK** | Tool endpoint returns `200` on logical tool errors \| error payload path can be treated as success at HTTP layer \| `services/task-orchestrator/task_orchestrator/app.py:122-128` |
+| **RISK** | Adapter import/path drift risk | runtime imports `adapters.conport_adapter`, but only `app/adapters/conport_adapter.py` found in repo tree scan \| `services/task-orchestrator/task_orchestrator/core.py:241-243` + filesystem scan |
 
 ## Tool execution surface (callable tools in this module)
 - `analyze_dependencies`
@@ -52,10 +52,10 @@ async def decompose_task(request: DecompositionRequest):
     Called by ADHD Engine when automatic decomposition is triggered.
 
     Flow:
-    1. Get task from internal storage
-    2. Call Pal planner for AI decomposition
-    3. Convert to OrchestrationTask objects
-    4. Persist to ConPort (parent BLOCKED, subtasks TODO, DECOMPOSED_INTO links)
+1. Get task from internal storage
+1. Call Pal planner for AI decomposition
+1. Convert to OrchestrationTask objects
+1. Persist to ConPort (parent BLOCKED, subtasks TODO, DECOMPOSED_INTO links)
 ```
 - `services/task-orchestrator/task_decomposition_endpoint.py:194-205`
 ```text

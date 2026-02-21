@@ -95,11 +95,11 @@ networks:
 ## 📝 FILES CREATED FOR YOU
 
 1. **`.dockerignore`** - Speeds up docker builds by excluding unnecessary files
-2. **`.env.example`** - Template for environment variables (commit this, not .env)
-3. **`scripts/cleanup.sh`** - Removes orphan containers and unused images
-4. **`scripts/start.sh`** - Starts the stack with proper setup
-5. **`DOCKER_AUDIT_REPORT.md`** - Full detailed audit (read this!)
-6. **`services/*/Dockerfile.fixed`** - Fixed versions of problematic Dockerfiles
+1. **`.env.example`** - Template for environment variables (commit this, not .env)
+1. **`scripts/cleanup.sh`** - Removes orphan containers and unused images
+1. **`scripts/start.sh`** - Starts the stack with proper setup
+1. **`DOCKER_AUDIT_REPORT.md`** - Full detailed audit (read this!)
+1. **`services/*/Dockerfile.fixed`** - Fixed versions of problematic Dockerfiles
 
 ---
 
@@ -219,11 +219,11 @@ docker compose -f docker-compose.master.yml down -v  # removes volumes too
 ## 📞 NEXT STEPS
 
 1. ✅ Run cleanup script
-2. ✅ Create .env file
-3. ✅ Fix docker-compose.master.yml (remove external: true)
-4. ✅ Start stack: `./scripts/start.sh`
-5. 📋 Once running, apply Dockerfile fixes
-6. 📖 Review DOCKER_AUDIT_REPORT.md for security improvements
+1. ✅ Create .env file
+1. ✅ Fix docker-compose.master.yml (remove external: true)
+1. ✅ Start stack: `./scripts/start.sh`
+1. 📋 Once running, apply Dockerfile fixes
+1. 📖 Review DOCKER_AUDIT_REPORT.md for security improvements
 
 ---
 

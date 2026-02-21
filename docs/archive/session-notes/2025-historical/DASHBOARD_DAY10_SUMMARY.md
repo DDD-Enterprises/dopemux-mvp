@@ -52,33 +52,33 @@ prelude: Dashboard_Day10_Summary (explanation) for dopemux documentation and dev
 
 **Tasks Covered:**
 1. **Drill-Down Screens** (~400 lines, 4-5 hrs)
-   - TaskDetailScreen - Task history, context, decisions, stats
-   - ServiceLogsScreen - Real-time log streaming (1000-line buffer)
-   - PatternAnalysisScreen - 7-day trends, correlations, AI insights
-   - TimelineScreen - Session events, state changes
-   - DrillDownScreen base class
+- TaskDetailScreen - Task history, context, decisions, stats
+- ServiceLogsScreen - Real-time log streaming (1000-line buffer)
+- PatternAnalysisScreen - 7-day trends, correlations, AI insights
+- TimelineScreen - Session events, state changes
+- DrillDownScreen base class
 
-2. **Context Menu System** (~200 lines, 2-3 hrs)
-   - ContextMenu base class
-   - MenuItem configuration
-   - Panel-specific menus (ADHD, Productivity, Services)
-   - Keyboard (`:`) & mouse (right-click) triggers
+1. **Context Menu System** (~200 lines, 2-3 hrs)
+- ContextMenu base class
+- MenuItem configuration
+- Panel-specific menus (ADHD, Productivity, Services)
+- Keyboard (`:`) & mouse (right-click) triggers
 
-3. **Search System** (~150 lines, 2-3 hrs)
-   - SearchManager (indexing, ranking, scoring)
-   - SearchScreen UI with live results
-   - Debounced search (300ms)
-   - Drill-down integration
+1. **Search System** (~150 lines, 2-3 hrs)
+- SearchManager (indexing, ranking, scoring)
+- SearchScreen UI with live results
+- Debounced search (300ms)
+- Drill-down integration
 
-4. **Production Hardening** (~200 lines, 2-3 hrs)
-   - Error boundaries (widget-level crash prevention)
-   - Crash recovery & state persistence
-   - Telemetry (events + metrics logging)
+1. **Production Hardening** (~200 lines, 2-3 hrs)
+- Error boundaries (widget-level crash prevention)
+- Crash recovery & state persistence
+- Telemetry (events + metrics logging)
 
-5. **Testing** (~300 lines, 2 hrs)
-   - Integration tests (10+)
-   - Performance tests (5+)
-   - 24-hour stress test
+1. **Testing** (~300 lines, 2 hrs)
+- Integration tests (10+)
+- Performance tests (5+)
+- 24-hour stress test
 
 **Use:** Keep this open while coding - it's your complete implementation guide
 
@@ -89,33 +89,33 @@ prelude: Dashboard_Day10_Summary (explanation) for dopemux documentation and dev
 
 **Contents:**
 - 📚 **ADHD-Optimized Dashboard Research (2024 Best Practices)**
-  - Cognitive simplicity & minimal distraction
-  - Enhanced focus indicators
-  - Visual aids & high contrast
-  - Keyboard navigation essentials
+- Cognitive simplicity & minimal distraction
+- Enhanced focus indicators
+- Visual aids & high contrast
+- Keyboard navigation essentials
 
 - 🏗️ **Terminal TUI Best Practices (Python/Textual/Rich)**
-  - Modular components
-  - Responsive layouts
-  - Real-time data handling
-  - Performance optimization
+- Modular components
+- Responsive layouts
+- Real-time data handling
+- Performance optimization
 
 - 📊 **Prometheus Metrics Visualization Patterns**
-  - Sparklines integration
-  - Trend analysis patterns
-  - Dashboard design best practices
-  - Comparative analysis
+- Sparklines integration
+- Trend analysis patterns
+- Dashboard design best practices
+- Comparative analysis
 
 - 🏛️ **Architectural Deep Dive**
-  - Drill-down architecture & screen stack management
-  - Data flow & lazy loading patterns
-  - Context menu system
-  - Full-text search system
+- Drill-down architecture & screen stack management
+- Data flow & lazy loading patterns
+- Context menu system
+- Full-text search system
 
 - ⚡ **Performance Optimization**
-  - Rendering optimization
-  - Virtual scrolling
-  - Debouncing & throttling
+- Rendering optimization
+- Virtual scrolling
+- Debouncing & throttling
 
 **Research Sources:**
 - HogoNext: Keyboard Navigation Accessibility
@@ -141,34 +141,34 @@ After completing sparklines and keyboard navigation (Day 9), we're adding:
 **The Power of Deep Inspection**
 
 - **TaskDetailScreen** - See full task lifecycle
-  - History (all events with timestamps)
-  - Context (session, energy, focus scores)
-  - Decisions (what was decided, when, why)
-  - Stats (time spent, interruptions, context switches)
+- History (all events with timestamps)
+- Context (session, energy, focus scores)
+- Decisions (what was decided, when, why)
+- Stats (time spent, interruptions, context switches)
 
 - **ServiceLogsScreen** - Real-time log streaming
-  - Last 100 logs on open
-  - Live streaming (new logs appear instantly)
-  - Color-coded by level (error/warn/info/debug)
-  - 1000-line buffer (auto-trim oldest)
-  - Search logs (coming soon)
+- Last 100 logs on open
+- Live streaming (new logs appear instantly)
+- Color-coded by level (error/warn/info/debug)
+- 1000-line buffer (auto-trim oldest)
+- Search logs (coming soon)
 
 - **PatternAnalysisScreen** - AI-powered insights
-  - 7-day sparklines for all metrics
-  - Correlation matrix (Pearson coefficients)
-  - Auto-generated insights (3-5 actionable items)
-  - Trend detection (rising/declining patterns)
+- 7-day sparklines for all metrics
+- Correlation matrix (Pearson coefficients)
+- Auto-generated insights (3-5 actionable items)
+- Trend detection (rising/declining patterns)
 
 - **TimelineScreen** - Session event timeline
-  - All events in chronological order
-  - State changes highlighted
-  - Task completions, interruptions, breaks
-  - Session duration and stats
+- All events in chronological order
+- State changes highlighted
+- Task completions, interruptions, breaks
+- Session duration and stats
 
 - **StateDetailScreen** - Cognitive load breakdown
-  - Current state details
-  - Historical state changes
-  - Energy patterns
+- Current state details
+- Historical state changes
+- Energy patterns
 
 **Why:** ADHD brains need to investigate without breaking flow. One keypress from overview → deep details.
 
@@ -178,19 +178,19 @@ After completing sparklines and keyboard navigation (Day 9), we're adding:
 **Muscle Memory > Memorization**
 
 - **Panel-Specific Menus**
-  - ADHD Panel: View details, refresh, export JSON, toggle notifications
-  - Productivity Panel: Task details, timeline, export CSV
-  - Services Panel: View logs, restart, view metrics
+- ADHD Panel: View details, refresh, export JSON, toggle notifications
+- Productivity Panel: Task details, timeline, export CSV
+- Services Panel: View logs, restart, view metrics
 
 - **Global Menu**
-  - Search (/)
-  - Settings (⚙️)
-  - Help (?)
-  - Quit (q)
+- Search (/)
+- Settings (⚙️)
+- Help (?)
+- Quit (q)
 
 - **Triggers**
-  - Keyboard: `:` key (Vim-style)
-  - Mouse: Right-click
+- Keyboard: `:` key (Vim-style)
+- Mouse: Right-click
 
 **Why:** Power users build muscle memory for common actions. No need to remember 50 shortcuts.
 
@@ -200,19 +200,19 @@ After completing sparklines and keyboard navigation (Day 9), we're adding:
 **Find Anything Instantly**
 
 - **Search Across Everything**
-  - Tasks (title, description, status)
-  - Services (name, status, logs)
-  - Patterns (insights, metrics)
+- Tasks (title, description, status)
+- Services (name, status, logs)
+- Patterns (insights, metrics)
 
 - **Live Search**
-  - Results update as you type (debounced 300ms)
-  - Ranked by relevance
-  - Click to drill down
+- Results update as you type (debounced 300ms)
+- Ranked by relevance
+- Click to drill down
 
 - **Performance**
-  - Index 1000+ items
-  - Search results in <100ms
-  - Prefix matching + partial matching
+- Index 1000+ items
+- Search results in <100ms
+- Prefix matching + partial matching
 
 **Why:** Reduce cognitive overhead. Don't remember where things are - just search.
 
@@ -222,20 +222,20 @@ After completing sparklines and keyboard navigation (Day 9), we're adding:
 **Zero-Crash Guarantee**
 
 - **Error Boundaries**
-  - Widget-level crash prevention
-  - Fallback UI on errors
-  - Retry button
-  - No full dashboard crash
+- Widget-level crash prevention
+- Fallback UI on errors
+- Retry button
+- No full dashboard crash
 
 - **Crash Recovery**
-  - State saved every 30 seconds
-  - Restore on startup
-  - Warning if previous crash detected
+- State saved every 30 seconds
+- Restore on startup
+- Warning if previous crash detected
 
 - **Telemetry**
-  - Event tracking (user actions)
-  - Metric tracking (performance)
-  - Batch reporting to logs/Prometheus
+- Event tracking (user actions)
+- Metric tracking (performance)
+- Batch reporting to logs/Prometheus
 
 **Why:** ADHD requires predictability. Crashes = anxiety = broken trust.
 
@@ -437,11 +437,11 @@ You will have:
 
 **In docs/implementation-plans/:**
 1. ✅ `DASHBOARD_DAY10_MASTER_INDEX.md` (21KB) - Navigation hub
-2. ✅ `DASHBOARD_DAY10_IMPLEMENTATION_READY.md` (49KB) - Code guide
-3. ✅ `DASHBOARD_DAY10_ZEN_RESEARCH.md` (29KB) - Deep research
+1. ✅ `DASHBOARD_DAY10_IMPLEMENTATION_READY.md` (49KB) - Code guide
+1. ✅ `DASHBOARD_DAY10_ZEN_RESEARCH.md` (29KB) - Deep research
 
 **In root:**
-4. ✅ `DASHBOARD_DAY10_SUMMARY.md` (this file!) - Quick overview
+1. ✅ `DASHBOARD_DAY10_SUMMARY.md` (this file!) - Quick overview
 
 **Total:** 99KB of comprehensive planning and research
 
@@ -451,17 +451,17 @@ You will have:
 
 ### From Research
 1. **ADHD brains process visuals 3x faster than numbers** (sparklines > tables)
-2. **Keyboard navigation is 8x faster than mouse** (50ms vs 500ms latency)
-3. **High contrast reduces cognitive load by ~40%** (WCAG AAA: 7:1 minimum)
-4. **Progressive disclosure prevents overwhelm** (show essentials, hide details)
-5. **Predictability builds trust** (zero crashes = ADHD-friendly)
+1. **Keyboard navigation is 8x faster than mouse** (50ms vs 500ms latency)
+1. **High contrast reduces cognitive load by ~40%** (WCAG AAA: 7:1 minimum)
+1. **Progressive disclosure prevents overwhelm** (show essentials, hide details)
+1. **Predictability builds trust** (zero crashes = ADHD-friendly)
 
 ### From Architecture
 1. **Lazy loading = fast initial render** (fetch on demand)
-2. **Error boundaries = crash prevention** (widget-level isolation)
-3. **Virtual scrolling = unlimited scale** (only render visible items)
-4. **Debouncing = smooth UX** (wait for typing to stop)
-5. **Telemetry = continuous improvement** (measure everything)
+1. **Error boundaries = crash prevention** (widget-level isolation)
+1. **Virtual scrolling = unlimited scale** (only render visible items)
+1. **Debouncing = smooth UX** (wait for typing to stop)
+1. **Telemetry = continuous improvement** (measure everything)
 
 ---
 
@@ -491,27 +491,27 @@ You will have:
 
 ### Immediate (After Day 10)
 1. **Implement Day 10 features** (10-12 hours)
-2. **Run 24-hour stress test** (overnight)
-3. **Merge to main** (celebrate! 🎉)
+1. **Run 24-hour stress test** (overnight)
+1. **Merge to main** (celebrate! 🎉)
 
 ### Future Enhancements (Days 11-15)
 1. **Quick Wins** (Week 1-2)
-   - Focus mode toggle (2-3 hrs)
-   - Break timer popup (3-4 hrs)
-   - Theme switcher (2-3 hrs)
-   - Desktop notifications (2-3 hrs)
+- Focus mode toggle (2-3 hrs)
+- Break timer popup (3-4 hrs)
+- Theme switcher (2-3 hrs)
+- Desktop notifications (2-3 hrs)
 
-2. **Advanced Analytics** (Week 3-4)
-   - Predictive insights
-   - Energy pattern analysis
-   - Task optimization suggestions
-   - Flow state detection
+1. **Advanced Analytics** (Week 3-4)
+- Predictive insights
+- Energy pattern analysis
+- Task optimization suggestions
+- Flow state detection
 
-3. **Integrations** (Week 5+)
-   - Slack notifications
-   - Calendar integration
-   - Pomodoro timer
-   - Session recording
+1. **Integrations** (Week 5+)
+- Slack notifications
+- Calendar integration
+- Pomodoro timer
+- Session recording
 
 ---
 
@@ -537,8 +537,8 @@ You will have:
 
 ### Your Roadmap:
 1. **Read:** DASHBOARD_DAY10_MASTER_INDEX.md (5 min)
-2. **Code with:** DASHBOARD_DAY10_IMPLEMENTATION_READY.md ⭐
-3. **Reference:** DASHBOARD_DAY10_ZEN_RESEARCH.md (when stuck)
+1. **Code with:** DASHBOARD_DAY10_IMPLEMENTATION_READY.md ⭐
+1. **Reference:** DASHBOARD_DAY10_ZEN_RESEARCH.md (when stuck)
 
 ---
 

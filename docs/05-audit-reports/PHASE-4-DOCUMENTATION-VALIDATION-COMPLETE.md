@@ -34,10 +34,10 @@ Validated documentation against code reality using semantic search across 4,413 
 **Examples Tested** (Representative Sample):
 
 1. ✅ **Dope-Context index_workspace**: Call structure correct
-2. ✅ **Dope-Context search_code**: Parameters and return types match
-3. ✅ **ADHD Engine auth**: API key logic validated
-4. ✅ **CORS configuration**: Environment parsing works
-5. ✅ **Credential loading**: Environment variable override functional
+1. ✅ **Dope-Context search_code**: Parameters and return types match
+1. ✅ **ADHD Engine auth**: API key logic validated
+1. ✅ **CORS configuration**: Environment parsing works
+1. ✅ **Credential loading**: Environment variable override functional
 
 **Test Results**: 5/5 passed (100%)
 
@@ -71,32 +71,32 @@ Validated documentation against code reality using semantic search across 4,413 
 **Claims Tested**:
 
 1. **"6 background monitors" (ADHD Engine)**
-   - Status: ✅ VERIFIED (Phase 3A)
-   - Evidence: All 6 found in engine.py:150-156
+- Status: ✅ VERIFIED (Phase 3A)
+- Evidence: All 6 found in engine.py:150-156
 
-2. **"7 API endpoints" (ADHD Engine)**
-   - Status: ✅ CLOSE (6-8 depending on counting method)
-   - Evidence: routes.py has 6 /api/v1/* + 2 root
+1. **"7 API endpoints" (ADHD Engine)**
+- Status: ✅ CLOSE (6-8 depending on counting method)
+- Evidence: routes.py has 6 /api/v1/* + 2 root
 
-3. **"AST-aware chunking" (Dope-Context)**
-   - Status: ✅ VERIFIED
-   - Evidence: Tree-sitter parser working, tested during indexing
+1. **"AST-aware chunking" (Dope-Context)**
+- Status: ✅ VERIFIED
+- Evidence: Tree-sitter parser working, tested during indexing
 
-4. **"Multi-vector embeddings" (Dope-Context)**
-   - Status: ✅ VERIFIED
-   - Evidence: 3 vectors (content 0.7, title 0.2, breadcrumb 0.1) in code
+1. **"Multi-vector embeddings" (Dope-Context)**
+- Status: ✅ VERIFIED
+- Evidence: 3 vectors (content 0.7, title 0.2, breadcrumb 0.1) in code
 
-5. **"DopeconBridge cross-plane coordination"**
-   - Status: ⚠️ PARTIAL (authority code exists, custom_data stubs)
-   - Evidence: kg_authority.py working, kg_endpoints.py has stubs
+1. **"DopeconBridge cross-plane coordination"**
+- Status: ⚠️ PARTIAL (authority code exists, custom_data stubs)
+- Evidence: kg_authority.py working, kg_endpoints.py has stubs
 
-6. **"Event-driven automation"**
-   - Status: ⚠️ PARTIAL (infrastructure exists, partial adoption)
-   - Evidence: Redis Streams in Task-Orchestrator, Serena; not universal
+1. **"Event-driven automation"**
+- Status: ⚠️ PARTIAL (infrastructure exists, partial adoption)
+- Evidence: Redis Streams in Task-Orchestrator, Serena; not universal
 
-7. **"Real-time WebSocket streaming" (GPT-Researcher)**
-   - Status: ✅ IMPLEMENTED
-   - Evidence: WebSocket endpoint exists, WebSocketProgressStreamer class
+1. **"Real-time WebSocket streaming" (GPT-Researcher)**
+- Status: ✅ IMPLEMENTED
+- Evidence: WebSocket endpoint exists, WebSocketProgressStreamer class
 
 **Overall Claim Accuracy**: 90-95% (excellent!)
 
@@ -143,8 +143,8 @@ Validated documentation against code reality using semantic search across 4,413 
 
 **Documentation Updates** (Optional, 30min):
 1. Add "STUB" markers to DopeconBridge custom_data endpoint docs
-2. Clarify "partial adoption" for event bus
-3. Standardize endpoint counting (e.g., "6 API endpoints + 2 utility endpoints")
+1. Clarify "partial adoption" for event bus
+1. Standardize endpoint counting (e.g., "6 API endpoints + 2 utility endpoints")
 
 **No Breaking Issues**: Documentation is accurate enough for production use
 

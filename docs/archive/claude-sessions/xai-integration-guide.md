@@ -36,9 +36,9 @@ export XAI_API_KEY="xai-abc123...your-actual-key"
 ### 3. Verify Configuration
 
 Your LiteLLM config at `litellm.config.yaml` already includes:
-- **xai-grok-4**: General purpose Grok model
-- **Fallback routing**: Claude → GPT-5 → Grok
-- **Rate limiting**: 60 RPM, 1M TPM for xAI
+* **xai-grok-4**: General purpose Grok model
+* **Fallback routing**: Claude → GPT-5 → Grok
+* **Rate limiting**: 60 RPM, 1M TPM for xAI
 
 ## How It Works
 
@@ -55,12 +55,12 @@ Claude Pro Max (Primary)
 ### Integration Points
 
 1. **Claude Code**: Uses your Claude Pro Max subscription directly
-2. **LiteLLM Proxy**: Provides unified access to all models
-3. **Dopemux**: Orchestrates model selection based on:
-   - Availability
-   - Rate limits
-   - Task requirements
-   - Cost optimization
+1. **LiteLLM Proxy**: Provides unified access to all models
+1. **Dopemux**: Orchestrates model selection based on:
+* Availability
+* Rate limits
+* Task requirements
+* Cost optimization
 
 ## Using xAI with Claude Code
 
@@ -135,16 +135,16 @@ curl -X POST http://localhost:4100/v1/chat/completions \
 ### Common Issues
 
 1. **"XAI_API_KEY not found"**
-   - Ensure you've sourced `.env` or exported the variable
-   - Check: `echo $XAI_API_KEY`
+* Ensure you've sourced `.env` or exported the variable
+* Check: `echo $XAI_API_KEY`
 
-2. **Rate limiting errors**
-   - xAI has 60 RPM limit (lower than Claude/OpenAI)
-   - System automatically falls back to other models
+1. **Rate limiting errors**
+* xAI has 60 RPM limit (lower than Claude/OpenAI)
+* System automatically falls back to other models
 
-3. **Connection errors**
-   - Verify API endpoint: `https://api.x.ai/v1`
-   - Check network/firewall settings
+1. **Connection errors**
+* Verify API endpoint: `https://api.x.ai/v1`
+* Check network/firewall settings
 
 ### Debug Mode
 
@@ -165,9 +165,9 @@ Edit `litellm.config.yaml` to adjust:
 ```yaml
 # Adjust fallback order
 fallbacks:
-  - claude-sonnet-4.5:
-    - xai-grok-4  # Prefer Grok over GPT-5
-    - openai-gpt-5
+* claude-sonnet-4.5:
+* xai-grok-4  # Prefer Grok over GPT-5
+* openai-gpt-5
 ```
 
 ### ADHD-Optimized Settings
@@ -186,16 +186,16 @@ xai-grok-code-fast-1:
 ## Benefits of xAI Integration
 
 1. **Cost Optimization**: Grok is often cheaper than GPT-5
-2. **Speed**: Grok-code-fast-1 optimized for quick responses
-3. **Redundancy**: Multiple model fallbacks prevent interruptions
-4. **Specialized Models**: Different models for different tasks
+1. **Speed**: Grok-code-fast-1 optimized for quick responses
+1. **Redundancy**: Multiple model fallbacks prevent interruptions
+1. **Specialized Models**: Different models for different tasks
 
 ## Next Steps
 
 1. Set your XAI_API_KEY in `.env` (✅ Already done!)
-2. Source the environment: `source .env`
-3. Test with: `dopemux start --litellm`
-4. Monitor usage: `tail -f .dopemux/litellm/A/litellm.log`
+1. Source the environment: `source .env`
+1. Test with: `dopemux start --litellm`
+1. Monitor usage: `tail -f .dopemux/litellm/A/litellm.log`
 
 ---
 

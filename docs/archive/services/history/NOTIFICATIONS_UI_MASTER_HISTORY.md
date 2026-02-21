@@ -33,9 +33,9 @@ The **Notifications & UI Services** are the "Face" and "Voice" of the system. Th
 ### 🔔 ADHD Notifier (`services/adhd-notifier`)
 * **Smart Delivery**: Checks `attention_state` before notifying.
 * **Multi-Channel**:
-  * **Terminal**: In-band notifications for users living in CLI.
-  * **Voice**: "It's time for a break" (TTS).
-  * **System**: Native OS notifications.
+* **Terminal**: In-band notifications for users living in CLI.
+* **Voice**: "It's time for a break" (TTS).
+* **System**: Native OS notifications.
 * **Break Logic**: Enforces Pomodoro-style breaks (25/5) but adapts to flow.
 
 ### 📊 ADHD Dashboard (`services/adhd-dashboard`)

@@ -134,9 +134,9 @@ Use serena-v2 list_dir for services/serena/v2
 
 **If tools don't appear after restart:**
 1. Check MCP server list: `/mcp`
-2. Look for serena-v2 in the list
-3. Check if it's enabled (not disabled)
-4. View logs for startup errors
+1. Look for serena-v2 in the list
+1. Check if it's enabled (not disabled)
+1. View logs for startup errors
 
 **If LSP tools fail:**
 - Install pylsp: `pip install python-lsp-server[all]`
@@ -151,10 +151,10 @@ Use serena-v2 list_dir for services/serena/v2
 
 After verifying tools work:
 1. Test complex navigation workflows
-2. Try ADHD focus mode switching
-3. Test untracked work detection
-4. Benchmark performance against targets
-5. Report any issues to ConPort via log_decision
+1. Try ADHD focus mode switching
+1. Test untracked work detection
+1. Benchmark performance against targets
+1. Report any issues to ConPort via log_decision
 
 ---
 

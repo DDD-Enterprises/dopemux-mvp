@@ -24,17 +24,17 @@ Exit criteria
 ## Phase 1 — Chronicle Spine (Signal-to-Noise Proof)
 Deliverables
 1) SQLite canonical DB with:
-   - raw_activity_events
-   - work_log_entries
-   - issue_links
+- raw_activity_events
+- work_log_entries
+- issue_links
 2) Postgres mirror with:
-   - dm_raw_activity_events
-   - dm_work_log_entries + tsvector index
-   - dm_issue_links
+- dm_raw_activity_events
+- dm_work_log_entries + tsvector index
+- dm_issue_links
 3) Ingestor + Redactor
 4) Promotion engine (deterministic rules)
 5) MCP server with:
-   - memory_search, memory_store, memory_recap, mark_issue, link_resolution, replay_session
+- memory_search, memory_store, memory_recap, mark_issue, link_resolution, replay_session
 6) Retention job for raw events
 
 Scope constraints
@@ -54,9 +54,9 @@ Deliverables
 - memory.pulse emission every 30-60 minutes or on end
 - trajectory_state store + deterministic boosting
 - DopeContext indexing:
-  - curated work logs into a dedicated collection (worklog_index)
+- curated work logs into a dedicated collection (worklog_index)
 - Hybrid bundle retrieval mode (optional):
-  - fuse worklogs + decisions + semantic hits via deterministic RRF
+- fuse worklogs + decisions + semantic hits via deterministic RRF
 
 Exit criteria
 - Reflection cards accurately capture decisions/blockers/progress for typical sessions.
@@ -66,12 +66,12 @@ Exit criteria
 Deliverables
 - AGE nodes: WorkLogEntry, ReflectionCard
 - Edge proposal engine:
-  - FOLLOWED_BY
-  - RESULTED_IN (entry->decision)
-  - RESOLVED_BY (issue->resolution)
-  - LIKELY_CAUSED (entry->error), confidence + evidence
+- FOLLOWED_BY
+- RESULTED_IN (entry->decision)
+- RESOLVED_BY (issue->resolution)
+- LIKELY_CAUSED (entry->error), confidence + evidence
 - Promote-edge workflow:
-  - proposed edges require explicit acceptance or strict heuristics
+- proposed edges require explicit acceptance or strict heuristics
 
 Exit criteria
 - Proposed edges are explainable with evidence windows and confidence.
@@ -81,9 +81,9 @@ Exit criteria
 Deliverables
 - ADHD Engine focus-state integration
 - Surfacing rules:
-  - Focus mode: blockers only unless asked
-  - Drift mode: current goal + last steps
-  - Recovery: recap on resume after interruption
+- Focus mode: blockers only unless asked
+- Drift mode: current goal + last steps
+- Recovery: recap on resume after interruption
 
 Exit criteria
 - Reduced interruptions in focus mode.

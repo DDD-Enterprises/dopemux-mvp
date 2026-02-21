@@ -69,9 +69,9 @@ Statusline display
 
 **Components**:
 1. **main.py** (210 lines) - FastAPI service on port 8096
-2. **event_subscriber.py** (190 lines) - Redis Streams consumer
-3. **activity_tracker.py** (180 lines) - Session aggregation
-4. **adhd_client.py** (160 lines) - HTTP client
+1. **event_subscriber.py** (190 lines) - Redis Streams consumer
+1. **activity_tracker.py** (180 lines) - Session aggregation
+1. **adhd_client.py** (160 lines) - HTTP client
 
 **Deployment**: Docker container, auto-starts with docker-compose
 
@@ -89,10 +89,10 @@ Statusline display
 
 **Components**:
 1. **main.py** (180 lines) - Async polling loop
-2. **app_detector.py** (130 lines) - OS-specific detection
-3. **workspace_mapper.py** (110 lines) - App → workspace mapping
-4. **event_emitter.py** (140 lines) - Redis publisher
-5. **config.json** - 17 app mappings
+1. **app_detector.py** (130 lines) - OS-specific detection
+1. **workspace_mapper.py** (110 lines) - App → workspace mapping
+1. **event_emitter.py** (140 lines) - Redis publisher
+1. **config.json** - 17 app mappings
 
 **Deployment**: Background Python process, started by start-all.sh
 
@@ -171,11 +171,11 @@ Displays: 🧠 ⚡= 👁️● (real-time state)
 
 This starts:
 1. All MCP servers + infrastructure
-2. DopeconBridge (event processing)
-3. Task Orchestrator
-4. ADHD Engine (port 8095)
-5. Workspace Watcher (automatic monitoring)
-6. Activity Capture (Docker, port 8096)
+1. DopeconBridge (event processing)
+1. Task Orchestrator
+1. ADHD Engine (port 8095)
+1. Workspace Watcher (automatic monitoring)
+1. Activity Capture (Docker, port 8096)
 
 ### Monitor Activity
 ```bash
@@ -292,9 +292,9 @@ curl http://localhost:8095/api/v1/attention-state/hue | jq '.'
 **Total**: 20+ commits, ~5,000 lines
 
 1. Statusline enhancements (10 commits)
-2. Activity Capture Service (5 commits)
-3. ADHD Engine integration (3 commits)
-4. Workspace Watcher (2 commits)
+1. Activity Capture Service (5 commits)
+1. ADHD Engine integration (3 commits)
+1. Workspace Watcher (2 commits)
 
 **Key Commits**:
 - e5ec7a0e - Phase 1: Statusline symbols

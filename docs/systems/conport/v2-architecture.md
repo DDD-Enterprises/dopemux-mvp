@@ -230,8 +230,8 @@ class EmbeddingRequest:
 
 # Processing workflow:
 1. Text → Hash → Cache Check → Queue (if miss) → Worker → Model → Vector → Cache + Store
-2. Parallel: Metadata Enhancement → Context Analysis → Related Item Discovery
-3. Result: Vector + Enhanced Metadata → Qdrant Point → PostgreSQL Reference
+1. Parallel: Metadata Enhancement → Context Analysis → Related Item Discovery
+1. Result: Vector + Enhanced Metadata → Qdrant Point → PostgreSQL Reference
 ```
 
 ### **Batch Optimization Strategy**

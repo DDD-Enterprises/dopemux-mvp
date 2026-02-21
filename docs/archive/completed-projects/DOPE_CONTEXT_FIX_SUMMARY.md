@@ -22,20 +22,20 @@ Error calling tool 'docs_search': Server disconnected without sending a response
 The issue was a **collection name mismatch** between host and container environments:
 
 1. **Host indexing**: Documents were indexed from `/Users/hue/code/dopemux-mvp`
-   - Collection hash (MD5): `3ca12e07`
-   - Collection name: `docs_3ca12e07`
+- Collection hash (MD5): `3ca12e07`
+- Collection name: `docs_3ca12e07`
 
-2. **Container runtime**: Workspace mounted at `/workspaces/dopemux-mvp`
-   - Collection hash (MD5): `3f49fa17` (different!)
-   - Attempted collection name: `docs_3f49fa17` (doesn't exist in Qdrant)
+1. **Container runtime**: Workspace mounted at `/workspaces/dopemux-mvp`
+- Collection hash (MD5): `3f49fa17` (different!)
+- Attempted collection name: `docs_3f49fa17` (doesn't exist in Qdrant)
 
-3. **Result**: Container tried to search non-existent collection, causing 404 errors that appeared as disconnections
+1. **Result**: Container tried to search non-existent collection, causing 404 errors that appeared as disconnections
 
 ## Contributing Factors
 - Missing environment variables in container:
-  - `QDRANT_URL` (needed for Qdrant connection)
-  - `VOYAGE_API_KEY` (needed for embeddings)
-  - `OPENAI_API_KEY` (needed for context generation)
+- `QDRANT_URL` (needed for Qdrant connection)
+- `VOYAGE_API_KEY` (needed for embeddings)
+- `OPENAI_API_KEY` (needed for context generation)
 - Qdrant service had restarted and wasn't immediately accessible
 - Workspace path detection inside container didn't match indexing path
 
@@ -46,18 +46,18 @@ Three changes were made:
 Updated `docker-compose.yml` to include all required API keys and service URLs:
 ```yaml
 environment:
-  - QDRANT_URL=mcp-qdrant
-  - QDRANT_PORT=6333
-  - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
-  - VOYAGE_API_KEY=${VOYAGEAI_API_KEY}
-  - OPENAI_API_KEY=${OPENAI_API_KEY}
+- QDRANT_URL=mcp-qdrant
+- QDRANT_PORT=6333
+- VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
+- VOYAGE_API_KEY=${VOYAGEAI_API_KEY}
+- OPENAI_API_KEY=${OPENAI_API_KEY}
 ```
 
 ### 2. Workspace Hash Override
 Implemented `WORKSPACE_HASH_OVERRIDE` environment variable to force consistent collection names:
 ```yaml
 environment:
-  - WORKSPACE_HASH_OVERRIDE=3ca12e07
+- WORKSPACE_HASH_OVERRIDE=3ca12e07
 ```
 
 Modified `services/dope-context/src/utils/workspace.py`:
@@ -91,13 +91,13 @@ After fixes, docs_search works correctly:
 Collection: docs_3ca12e07
 ✅ SUCCESS! Found 3 results
 1. /Users/hue/code/dopemux-mvp/CHANGELOG_v2.1.md... (score: 0.194)
-2. /Users/hue/code/dopemux-mvp/CHANGELOG.md... (score: 0.174)
-3. /Users/hue/code/dopemux-mvp/README.md... (score: 0.163)
+1. /Users/hue/code/dopemux-mvp/CHANGELOG.md... (score: 0.174)
+1. /Users/hue/code/dopemux-mvp/README.md... (score: 0.163)
 ```
 
 ## Files Changed
 1. `docker/mcp-servers/docker-compose.yml` - Added environment variables and hash override
-2. `services/dope-context/src/utils/workspace.py` - Added WORKSPACE_HASH_OVERRIDE support
+1. `services/dope-context/src/utils/workspace.py` - Added WORKSPACE_HASH_OVERRIDE support
 
 ## Testing
 To test docs_search functionality:
@@ -119,9 +119,9 @@ asyncio.run(test())
 
 ## Lessons Learned
 1. **Mount path != indexing path**: When mounting volumes in Docker, the container path differs from the host path, causing hash mismatches
-2. **Environment completeness matters**: Missing env vars cause silent failures that look like disconnections
-3. **Hash consistency is critical**: Collection names must match between indexing and search operations
-4. **Docker networking**: Container needs proper network configuration to reach Qdrant and other services
+1. **Environment completeness matters**: Missing env vars cause silent failures that look like disconnections
+1. **Hash consistency is critical**: Collection names must match between indexing and search operations
+1. **Docker networking**: Container needs proper network configuration to reach Qdrant and other services
 
 ## Future Improvements
 - Add health check that verifies collection existence before startup

@@ -36,8 +36,8 @@ Inside Claude Code, run:
 
 This will:
 1. Open your browser to Claude's authentication page
-2. Ask you to sign in with your Claude Pro Max account
-3. Save the OAuth token for future sessions
+1. Ask you to sign in with your Claude Pro Max account
+1. Save the OAuth token for future sessions
 
 ### Step 2: Restart Claude Code
 
@@ -71,8 +71,8 @@ dopemux start
 **Key Points**:
 
 1. **Claude Code uses OAuth** - No ANTHROPIC_API_KEY needed in subprocess
-2. **MCP servers use API keys** - For fallback when Pro Max hits limits
-3. **No routing layer** - LiteLLM/CCR disabled by default
+1. **MCP servers use API keys** - For fallback when Pro Max hits limits
+1. **No routing layer** - LiteLLM/CCR disabled by default
 
 ### Why This Design?
 
@@ -150,8 +150,8 @@ dopemux start --claude-router
 
 This will:
 1. Enable LiteLLM proxy
-2. Start Claude Code Router
-3. Route API calls through the proxy chain
+1. Start Claude Code Router
+1. Route API calls through the proxy chain
 
 **Note**: This is deprecated and not recommended for Claude Pro Max users.
 

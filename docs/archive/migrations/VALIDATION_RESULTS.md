@@ -124,10 +124,10 @@ All queries < 5ms (well within ADHD target of < 200ms)
 ### Scenario: Feature Development in Worktree
 
 1. **Setup**: Created git worktree `feature/test-worktree-isolation`
-2. **Task Creation**: Set `DOPEMUX_INSTANCE_ID="feature-test"`
-3. **Isolation Verified**: Main worktree cannot see IN_PROGRESS work
-4. **Completion Sharing**: After marking COMPLETED, visible everywhere
-5. **Context Switching**: Zero data loss when switching between worktrees
+1. **Task Creation**: Set `DOPEMUX_INSTANCE_ID="feature-test"`
+1. **Isolation Verified**: Main worktree cannot see IN_PROGRESS work
+1. **Completion Sharing**: After marking COMPLETED, visible everywhere
+1. **Context Switching**: Zero data loss when switching between worktrees
 
 **Result**: ✅ Workflow validated end-to-end
 
@@ -143,9 +143,9 @@ Without environment variables:
 ## Known Limitations (Expected)
 
 1. ❌ Other 20+ ConPort tools not yet updated (Day 3 only updated 5 core tools)
-2. ❌ No automatic git worktree detection (manual env vars required)
-3. ❌ No UI visualization of instance isolation
-4. ❌ No migration for existing decisions/patterns to instances
+1. ❌ No automatic git worktree detection (manual env vars required)
+1. ❌ No UI visualization of instance isolation
+1. ❌ No migration for existing decisions/patterns to instances
 
 **Note**: All limitations are expected for Simple MVP and documented in README.md
 

@@ -221,17 +221,17 @@ prelude: Adhd_Architecture_Diagram (explanation) for dopemux documentation and d
    → Activity Capture receives
    → Starts session tracking
 
-2. User codes for 10 minutes
+1. User codes for 10 minutes
    → Activity Capture aggregates
    → Logs to ADHD Engine
    → ADHD Engine updates energy/attention
 
-3. User codes for 25 minutes
+1. User codes for 25 minutes
    → ADHD Notifier checks Activity Capture metrics
    → Detects 25+ min session
    → Sends notification + voice: "Time for a break"
 
-4. Meanwhile: High complexity detected
+1. Meanwhile: High complexity detected
    → Serena emits: code.complexity.high
    → F-NEW-8 receives and correlates
    → Evaluates: 3+ events + 25 min + scattered attention
@@ -239,12 +239,12 @@ prelude: Adhd_Architecture_Diagram (explanation) for dopemux documentation and d
    → ADHD Notifier receives
    → Sends intelligent notification: "High complexity work for 30 min - break recommended"
 
-5. User switches to Chrome
+1. User switches to Chrome
    → Workspace Watcher detects
    → Activity Capture ends session
    → Logs final activity with interruption count
 
-6. Statusline updates
+1. Statusline updates
    → Queries ADHD Engine /api/v1/statusline/hue
    → Displays: 🧠 ⚡= 👁️●
 ```
@@ -379,9 +379,9 @@ localhost:8097  - Dashboard (optional)
 - DB 0: MCP server cache
 - DB 1: Activity Capture cache (future)
 - DB 6: ADHD Engine state
-  - Keys: `adhd:profile:{user_id}`
-  - Data: User profiles (JSON)
-  - TTL: No expiration (persistent)
+- Keys: `adhd:profile:{user_id}`
+- Data: User profiles (JSON)
+- TTL: No expiration (persistent)
 
 ### In-Memory:
 - Activity Capture: Current session state
@@ -518,8 +518,8 @@ localhost:8097  - Dashboard (optional)
         → Correlates with: Scattered attention
         → Generates: HIGH priority suggestion
         → ADHD Notifier delivers:
-          - Desktop: "High complexity work for 30 min"
-          - Voice: "Time for a break. You have been focused for 30 minutes"
+- Desktop: "High complexity work for 30 min"
+- Voice: "Time for a break. You have been focused for 30 minutes"
 ```
 
 ### Break Time:

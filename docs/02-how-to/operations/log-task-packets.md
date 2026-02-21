@@ -95,7 +95,7 @@ The script writes `analysis/datadog_emit_result.json` with API response details.
 ## Recommended Investigation Flow
 
 1. Generate packet from the failing environment.
-2. Attach the `.tar.gz` to the task/incident.
-3. Start with `summary.json` to identify highest-error services.
-4. Correlate `logs/` with `health/` and `metrics/`.
-5. Record root cause + fix plan back into task tracking.
+1. Attach the `.tar.gz` to the task/incident.
+1. Start with `summary.json` to identify highest-error services.
+1. Correlate `logs/` with `health/` and `metrics/`.
+1. Record root cause + fix plan back into task tracking.

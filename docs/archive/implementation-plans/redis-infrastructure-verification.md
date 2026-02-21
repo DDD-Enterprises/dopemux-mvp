@@ -227,19 +227,19 @@ Task-Orchestrator
 ### Optional Improvements
 
 1. **Deploy Redis Commander** (LOW priority)
-   - **Benefit**: Visual monitoring and debugging
-   - **Effort**: 5 minutes (`docker-compose up redis-commander`)
-   - **Blocki ng**: No
+- **Benefit**: Visual monitoring and debugging
+- **Effort**: 5 minutes (`docker-compose up redis-commander`)
+- **Blocki ng**: No
 
-2. **Add redis.conf File** (LOW priority)
-   - **Benefit**: Explicit configuration documentation
-   - **Current**: Using runtime defaults (working well)
-   - **Blocking**: No
+1. **Add redis.conf File** (LOW priority)
+- **Benefit**: Explicit configuration documentation
+- **Current**: Using runtime defaults (working well)
+- **Blocking**: No
 
-3. **Monitor Memory Growth** (MEDIUM priority)
-   - **Action**: Track memory usage over time
-   - **Trigger**: If exceeds 10MB, review stream retention
-   - **Timeframe**: Monitor in Phase 2 load testing
+1. **Monitor Memory Growth** (MEDIUM priority)
+- **Action**: Track memory usage over time
+- **Trigger**: If exceeds 10MB, review stream retention
+- **Timeframe**: Monitor in Phase 2 load testing
 
 ## Next Steps
 
@@ -267,37 +267,37 @@ Task-Orchestrator
 ### For Phase 1 Implementation
 
 1. **Use Current Redis Setup** (✅ Verified)
-   - No configuration changes needed
-   - Handles event bus requirements
-   - AOF persistence protects against data loss
+- No configuration changes needed
+- Handles event bus requirements
+- AOF persistence protects against data loss
 
-2. **Redis URL Configuration** (from Task 1.1)
+1. **Redis URL Configuration** (from Task 1.1)
    ```bash
    REDIS_URL="redis://localhost:6379"
    ```
    Status: ✅ Matches running configuration
 
-3. **Event Bus Integration** (IP-002)
-   - Redis Streams ready for xadd/xreadgroup pattern
-   - Consumer groups supported
-   - Stream TTL management available
+1. **Event Bus Integration** (IP-002)
+- Redis Streams ready for xadd/xreadgroup pattern
+- Consumer groups supported
+- Stream TTL management available
 
 ### For Production Deployment
 
 1. **Consider Redis Sentinel** (HA)
-   - Automatic failover
-   - Master election
-   - Not needed for development/testing
+- Automatic failover
+- Master election
+- Not needed for development/testing
 
-2. **Monitor Stream Retention**
-   - Set MAXLEN on XADD to limit stream size
-   - Prevents unbounded memory growth
-   - Recommended: MAXLEN ~ 10000 for event history
+1. **Monitor Stream Retention**
+- Set MAXLEN on XADD to limit stream size
+- Prevents unbounded memory growth
+- Recommended: MAXLEN ~ 10000 for event history
 
-3. **Enable Redis Persistence Tuning**
-   - Current: AOF with default sync policy
-   - Consider: `appendfsync everysec` for balance
-   - Monitor: fsync performance under load
+1. **Enable Redis Persistence Tuning**
+- Current: AOF with default sync policy
+- Consider: `appendfsync everysec` for balance
+- Monitor: fsync performance under load
 
 ## Conclusion
 

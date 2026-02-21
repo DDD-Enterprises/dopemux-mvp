@@ -30,38 +30,38 @@ prelude: Dopeconbridge_Index (explanation) for dopemux documentation and develop
 
 ### Quick Reference (< 5 minutes)
 1. **[DOPECONBRIDGE_SESSION_SUMMARY.md](./DOPECONBRIDGE_SESSION_SUMMARY.md)**
-   - Executive summary
-   - Key deliverables
-   - Quick start commands
-   - Validation checklist
+- Executive summary
+- Key deliverables
+- Quick start commands
+- Validation checklist
 
-2. **[DOPECONBRIDGE_QUICK_START.md](./DOPECONBRIDGE_QUICK_START.md)**
-   - 5-minute setup guide
-   - CLI command reference
-   - Python usage examples
-   - Troubleshooting guide
+1. **[DOPECONBRIDGE_QUICK_START.md](./DOPECONBRIDGE_QUICK_START.md)**
+- 5-minute setup guide
+- CLI command reference
+- Python usage examples
+- Troubleshooting guide
 
 ### Comprehensive Reference (15-30 minutes)
 1. **[DOPECONBRIDGE_COMPLETE_INTEGRATION.md](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)**
-   - Full architectural reference
-   - Migration status (20+ components)
-   - Shared client library docs
-   - Service adapter patterns
-   - Environment configuration
-   - Docker Compose integration
-   - Testing strategy
-   - Security & monitoring
-   - Performance considerations
-   - Future roadmap
+- Full architectural reference
+- Migration status (20+ components)
+- Shared client library docs
+- Service adapter patterns
+- Environment configuration
+- Docker Compose integration
+- Testing strategy
+- Security & monitoring
+- Performance considerations
+- Future roadmap
 
 ### Execution Report (Technical Deep Dive)
 1. **[DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md)**
-   - Complete session execution report
-   - Detailed deliverables breakdown
-   - Architectural validation
-   - Code quality metrics
-   - Lessons learned
-   - Handoff checklist
+- Complete session execution report
+- Detailed deliverables breakdown
+- Architectural validation
+- Code quality metrics
+- Lessons learned
+- Handoff checklist
 
 ---
 
@@ -92,37 +92,37 @@ prelude: Dopeconbridge_Index (explanation) for dopemux documentation and develop
 **Priority**: Quick Start → Service Adapter Examples → Testing
 
 1. [Quick Start Guide](./DOPECONBRIDGE_QUICK_START.md) - Get running fast
-2. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Service-Specific Adapters" section
-3. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Testing Strategy" section
+1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Service-Specific Adapters" section
+1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Testing Strategy" section
 
 ### DevOps/SRE
 **Priority**: Complete Integration → Deployment → Monitoring
 
 1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Environment Configuration"
-2. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Docker Compose Updates"
-3. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Monitoring & Observability"
-4. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Security"
+1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Docker Compose Updates"
+1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Monitoring & Observability"
+1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Security"
 
 ### Architect
 **Priority**: Complete Integration → Execution Report → Architectural Validation
 
 1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Architectural Invariant"
-2. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Migration Status"
-3. [Execution Report](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md) - "Architectural Validation"
+1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Migration Status"
+1. [Execution Report](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md) - "Architectural Validation"
 
 ### QA/Testing
 **Priority**: Testing Strategy → Validation Checklist
 
 1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Testing Strategy"
-2. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Validation Checklist"
-3. [Execution Report](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md) - "Testing Coverage"
+1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Validation Checklist"
+1. [Execution Report](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md) - "Testing Coverage"
 
 ### Product Manager
 **Priority**: Session Summary → Migration Status
 
 1. [Session Summary](./DOPECONBRIDGE_SESSION_SUMMARY.md) - Full document
-2. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Migration Status"
-3. [Execution Report](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md) - "Executive Summary"
+1. [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) - "Migration Status"
+1. [Execution Report](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md) - "Executive Summary"
 
 ---
 
@@ -221,21 +221,21 @@ make bridge-logs
 
 ### Beginner (0-2 hours)
 1. Read [Session Summary](./DOPECONBRIDGE_SESSION_SUMMARY.md) (5 min)
-2. Read [Quick Start](./DOPECONBRIDGE_QUICK_START.md) (15 min)
-3. Try CLI commands (15 min)
-4. Run a Python example (30 min)
+1. Read [Quick Start](./DOPECONBRIDGE_QUICK_START.md) (15 min)
+1. Try CLI commands (15 min)
+1. Run a Python example (30 min)
 
 ### Intermediate (2-4 hours)
 1. Read [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md) (45 min)
-2. Study service adapter patterns (30 min)
-3. Write a simple adapter (1 hour)
-4. Run tests (30 min)
+1. Study service adapter patterns (30 min)
+1. Write a simple adapter (1 hour)
+1. Run tests (30 min)
 
 ### Advanced (4+ hours)
 1. Read [Execution Report](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md) (1 hour)
-2. Review all service adapters (1 hour)
-3. Study testing strategy (30 min)
-4. Implement complex integration (2+ hours)
+1. Review all service adapters (1 hour)
+1. Study testing strategy (30 min)
+1. Implement complex integration (2+ hours)
 
 ---
 
@@ -291,9 +291,9 @@ All checks passing? → Ready for deployment! 🚀
 ## 🆘 Getting Help
 
 1. **Quick issues**: Check [Quick Start Troubleshooting](./DOPECONBRIDGE_QUICK_START.md#troubleshooting)
-2. **Architecture questions**: See [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)
-3. **Implementation details**: Review [Execution Report](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md)
-4. **Still stuck**: File GitHub issue with `dopeconbridge` tag
+1. **Architecture questions**: See [Complete Integration](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)
+1. **Implementation details**: Review [Execution Report](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md)
+1. **Still stuck**: File GitHub issue with `dopeconbridge` tag
 
 ---
 

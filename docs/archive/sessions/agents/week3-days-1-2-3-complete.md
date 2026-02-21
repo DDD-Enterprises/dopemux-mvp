@@ -35,9 +35,9 @@ prelude: Week3 Days 1 2 3 Complete (explanation) for dopemux documentation and d
 
 **Delivered**:
 1. Claude Code context detection
-2. User preference loading
-3. User state persistence
-4. Metrics persistence
+1. User preference loading
+1. User state persistence
+1. Metrics persistence
 
 **Lines**: +99 lines
 **Time**: 30 minutes
@@ -48,9 +48,9 @@ prelude: Week3 Days 1 2 3 Complete (explanation) for dopemux documentation and d
 
 **Delivered**:
 1. Real ConPort `get_progress()` queries
-2. Energy + attention-based filtering
-3. Task match scoring algorithm
-4. Simulation fallback extraction
+1. Energy + attention-based filtering
+1. Task match scoring algorithm
+1. Simulation fallback extraction
 
 **Lines**: +106 lines
 **Time**: 15 minutes
@@ -69,7 +69,7 @@ prelude: Week3 Days 1 2 3 Complete (explanation) for dopemux documentation and d
 
 **Enhanced**:
 1. Break-required signal handling
-2. Break dispatch message
+1. Break dispatch message
 
 **Lines**: +30 lines
 **Time**: 30 minutes (mostly research + validation)
@@ -157,11 +157,11 @@ agent = await orchestrator._assign_optimal_agent(task)
 
 **Week 5 Features Already In Production**:
 1. ✅ CognitiveGuardian initialization in orchestrator
-2. ✅ Energy/attention/complexity readiness checks
-3. ✅ Task deferral when user not ready
-4. ✅ Complexity-first routing (with "Week 2 testing" fix note)
-5. ✅ ADHD optimization settings
-6. ✅ Metrics tracking ("adhd_accommodations_applied")
+1. ✅ Energy/attention/complexity readiness checks
+1. ✅ Task deferral when user not ready
+1. ✅ Complexity-first routing (with "Week 2 testing" fix note)
+1. ✅ ADHD optimization settings
+1. ✅ Metrics tracking ("adhd_accommodations_applied")
 
 **This means**:
 - Week 3 original plan: Build integration

@@ -118,10 +118,10 @@ export DOPE_CONTEXT_WORKSPACES="/path/ws1,/path/ws2"
 All functions support both `workspace_path` (single) and `workspace_paths` (multiple):
 
 1. **search_code()** - Search code with hybrid dense+sparse
-2. **docs_search()** - Search documentation
-3. **search_all()** - Combined code + docs search
-4. **sync_workspace()** - Sync workspace files
-5. **sync_docs()** - Sync documentation files
+1. **docs_search()** - Search documentation
+1. **search_all()** - Combined code + docs search
+1. **sync_workspace()** - Sync workspace files
+1. **sync_docs()** - Sync documentation files
 
 ## Return Value Patterns
 
@@ -208,9 +208,9 @@ scripts/
 ## Next Steps
 
 1. Read `DOPE_CONTEXT_MULTI_WORKSPACE_COMPLETE.md` for full details
-2. Run tests to verify your environment
-3. Try the daemon with multiple workspaces
-4. Check out the multi-workspace test examples for patterns
+1. Run tests to verify your environment
+1. Try the daemon with multiple workspaces
+1. Check out the multi-workspace test examples for patterns
 
 ---
 

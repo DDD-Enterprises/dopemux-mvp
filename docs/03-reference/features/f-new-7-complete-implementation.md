@@ -35,16 +35,16 @@ ConPort-KG 2.0 adds multi-user support, cross-workspace queries, and cross-agent
 
 ### Changes
 - Added `user_id VARCHAR(100) DEFAULT 'default'` to 5 core tables:
-  - decisions (1,495 records migrated)
-  - progress_entries
-  - workspace_contexts
-  - session_snapshots
-  - custom_data
+- decisions (1,495 records migrated)
+- progress_entries
+- workspace_contexts
+- session_snapshots
+- custom_data
 
 - Created user management tables:
-  - users (1 default user)
-  - workspaces (schema exists, partial)
-  - user_workspace_access (partial due to schema conflict)
+- users (1 default user)
+- workspaces (schema exists, partial)
+- user_workspace_access (partial due to schema conflict)
 
 ### Validation
 ```sql
@@ -146,13 +146,13 @@ Response:
 
 **Migration 004** created 8 indexes:
 1. `idx_decisions_user_btree` - User queries
-2. `idx_decisions_fts_gin` - Full-text search
-3. `idx_decisions_user_workspace_recent` - Recent queries
-4. `idx_decisions_user_workspace` - Workspace lists
-5. `idx_progress_user_workspace_status` - Progress aggregations
-6. `idx_progress_user_recent` - Recent activity
-7. `idx_custom_data_user_category` - Custom queries
-8. _(1 failed: GIN+VARCHAR, replaced with separate indexes)_
+1. `idx_decisions_fts_gin` - Full-text search
+1. `idx_decisions_user_workspace_recent` - Recent queries
+1. `idx_decisions_user_workspace` - Workspace lists
+1. `idx_progress_user_workspace_status` - Progress aggregations
+1. `idx_progress_user_recent` - Recent activity
+1. `idx_custom_data_user_category` - Custom queries
+1. _(1 failed: GIN+VARCHAR, replaced with separate indexes)_
 
 ### Caching Strategy
 - **Workspace list**: 5 min TTL (rarely changes)
@@ -359,14 +359,14 @@ idx_custom_data_user_category
 
 ### Test Files
 1. **test_fnew7_unified_queries.py** (187 lines)
-   - Import validation ✅
-   - Migration readiness ✅
-   - Database tests: Deferred (need running services)
+- Import validation ✅
+- Migration readiness ✅
+- Database tests: Deferred (need running services)
 
-2. **test_fnew7_phase3_intelligence.py** (99 lines)
-   - Import validation ✅
-   - Complexity cluster detection ✅
-   - Cognitive-code mismatch ✅
+1. **test_fnew7_phase3_intelligence.py** (99 lines)
+- Import validation ✅
+- Complexity cluster detection ✅
+- Cognitive-code mismatch ✅
 
 ### Test Coverage
 - Phase 1: Validated via SQL queries (100%)

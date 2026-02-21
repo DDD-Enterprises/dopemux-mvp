@@ -171,9 +171,9 @@ COLORS = {
 ### Add Custom Metrics
 
 1. Add endpoint to `ENDPOINTS` dict
-2. Create fetcher method in `MetricsFetcher`
-3. Create widget in Textual app
-4. Wire up update interval
+1. Create fetcher method in `MetricsFetcher`
+1. Create widget in Textual app
+1. Wire up update interval
 
 ## 🔧 Troubleshooting
 

@@ -146,9 +146,9 @@ First Claude pane
 - **Type**: String or Array
 - **Default**: `"primary"`
 - **Options**:
-  - `"primary"` - Active pane or first pane
-  - `"all"` - All Claude panes
-  - `["name1", "name2"]` - Specific panes
+- `"primary"` - Active pane or first pane
+- `"all"` - All Claude panes
+- `["name1", "name2"]` - Specific panes
 - **Description**: Which Claude panes to mirror by default
 
 ### `mobile.popup_mode`
@@ -300,8 +300,8 @@ dopemux mobile start
 ### Notifications not received
 
 1. Check Happy is running: `tmux list-panes -a | grep happy`
-2. Verify config: `dopemux mobile start` (should show Happy sessions)
-3. Test manually: `dopemux mobile notify "Test"`
+1. Verify config: `dopemux mobile start` (should show Happy sessions)
+1. Test manually: `dopemux mobile notify "Test"`
 
 ## Future Enhancements
 

@@ -19,10 +19,10 @@ prelude: Unfinished_Work (explanation) for dopemux documentation and developer w
 ## ✅ Completed Services (100%)
 
 1. **dope-context** - Fully integrated, all MCP tools support multi-workspace
-2. **orchestrator** - Workspace context handling complete
-3. **activity-capture** - Event enrichment with workspace complete
-4. **serena** - 10 MCP tools updated with workspace support
-5. **conport_kg** - AGE client + deep context queries updated
+1. **orchestrator** - Workspace context handling complete
+1. **activity-capture** - Event enrichment with workspace complete
+1. **serena** - 10 MCP tools updated with workspace support
+1. **conport_kg** - AGE client + deep context queries updated
 
 ---
 
@@ -292,14 +292,14 @@ results = await query_across_workspaces(
 ### Phase 2 (Polish) - Production Ready
 **Priority Items** (4-5 hours):
 1. ConPort_KG overview queries (1-2h)
-2. ConPort_KG exploration queries (1-2h)
-3. ConPort_KG graph auto-creation (1h)
+1. ConPort_KG exploration queries (1-2h)
+1. ConPort_KG graph auto-creation (1h)
 
 **Nice to Have** (5-7 hours):
-4. Serena wrapper optimization (2-3h)
-5. ConPort_KG orchestrator updates (1h)
-6. ConPort_KG cross-workspace queries (2h)
-7. Serena LSP per-workspace (1-2h)
+1. Serena wrapper optimization (2-3h)
+1. ConPort_KG orchestrator updates (1h)
+1. ConPort_KG cross-workspace queries (2h)
+1. Serena LSP per-workspace (1-2h)
 
 ### Phase 3 (Future) - Advanced Features
 - Full semantic search across workspaces

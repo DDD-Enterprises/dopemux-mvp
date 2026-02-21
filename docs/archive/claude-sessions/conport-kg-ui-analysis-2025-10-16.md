@@ -361,7 +361,7 @@ async searchByTag(tag: string, limit: number = 3): Promise<DecisionCard[]> {
    # Replace all query string construction with URLSearchParams
    ```
 
-2. **Test Fix**
+1. **Test Fix**
    ```bash
    # Test with special characters
    searchByTag("adhd&optimization")  # Should work
@@ -378,13 +378,13 @@ async searchByTag(tag: string, limit: number = 3): Promise<DecisionCard[]> {
    // Already imported in package.json!
    ```
 
-2. **Add Search Input** (1 hour)
+1. **Add Search Input** (1 hour)
    ```tsx
    import {TextInput} from 'ink';
    // Allow user to type search queries directly
    ```
 
-3. **Add Tests** (30 min)
+1. **Add Tests** (30 min)
    ```bash
    # Unit tests for API client
    # Component rendering tests

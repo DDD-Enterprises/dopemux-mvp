@@ -88,11 +88,11 @@ Each service gets a domain-specific adapter:
 ## 💡 Key Benefits
 
 1. **Single Choke Point** - Monitor all KG access in one place
-2. **Type Safety** - Typed responses prevent runtime errors
-3. **Consistent Security** - Token auth across all services
-4. **Easy Testing** - Mock bridge, test everything
-5. **Future-Proof** - Add features once, all services benefit
-6. **PM ↔ Cognitive Routing** - Clean cross-plane communication
+1. **Type Safety** - Typed responses prevent runtime errors
+1. **Consistent Security** - Token auth across all services
+1. **Easy Testing** - Mock bridge, test everything
+1. **Future-Proof** - Add features once, all services benefit
+1. **PM ↔ Cognitive Routing** - Clean cross-plane communication
 
 ---
 
@@ -110,8 +110,8 @@ await client.publish_event("task.done", {"id": "123"}, source="my-service")
 ```yaml
 # docker-compose.yml
 environment:
-  - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
-  - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+- DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
 ```
 
 ---

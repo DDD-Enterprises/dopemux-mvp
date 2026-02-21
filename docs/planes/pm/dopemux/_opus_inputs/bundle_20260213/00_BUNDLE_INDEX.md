@@ -29,7 +29,7 @@ Primary raw capture log: `tmp/opus_preflight_evidence_notes.md`
     container_name: dopemux-postgres-age
     restart: unless-stopped
     networks:
-      - dopemux-network
+- dopemux-network
 ```
 - `src/dopemux/memory/capture_client.py:323`
 ```text

@@ -23,14 +23,14 @@ The Leantime MCP Bridge now supports **HTTP/SSE (Server-Sent Events) transport**
 The HTTP server uses **Server-Sent Events (SSE)** for bidirectional communication:
 
 1. **SSE Stream (GET /sse)**: Server → Client messages
-   - Long-lived HTTP connection
-   - Server pushes messages to client as SSE events
-   - First event provides the POST endpoint URL with session ID
+- Long-lived HTTP connection
+- Server pushes messages to client as SSE events
+- First event provides the POST endpoint URL with session ID
 
-2. **POST Endpoint (POST /messages/)**: Client → Server messages
-   - Client sends JSON-RPC messages via POST
-   - Session ID in query parameters links to SSE stream
-   - Server responds with 202 Accepted
+1. **POST Endpoint (POST /messages/)**: Client → Server messages
+- Client sends JSON-RPC messages via POST
+- Session ID in query parameters links to SSE stream
+- Server responds with 202 Accepted
 
 ### Endpoints
 
@@ -75,10 +75,10 @@ python -m leantime_bridge.http_server
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MCP_SERVER_HOST` | `0.0.0.0` | Server bind address |
-| `MCP_SERVER_PORT` | `3015` | Server port |
-| `LEANTIME_API_URL` | `http://leantime:80` | Leantime instance URL |
-| `LEANTIME_API_TOKEN` | `""` | Leantime API authentication token |
+| `MCP_SERVER_HOST` \| `0.0.0.0` | Server bind address |
+| `MCP_SERVER_PORT` \| `3015` | Server port |
+| `LEANTIME_API_URL` \| `http://leantime:80` | Leantime instance URL |
+| `LEANTIME_API_TOKEN` \| `""` | Leantime API authentication token |
 
 ### Docker Configuration
 
@@ -87,12 +87,12 @@ The server is configured in `docker-compose.yml`:
 ```yaml
 leantime-bridge:
   environment:
-    - MCP_SERVER_HOST=0.0.0.0
-    - MCP_SERVER_PORT=3015
-    - LEANTIME_API_URL=http://leantime:80
-    - LEANTIME_API_TOKEN=${LEAN_MCP_TOKEN}
+- MCP_SERVER_HOST=0.0.0.0
+- MCP_SERVER_PORT=3015
+- LEANTIME_API_URL=http://leantime:80
+- LEANTIME_API_TOKEN=${LEAN_MCP_TOKEN}
   ports:
-    - "3015:3015"
+- "3015:3015"
   healthcheck:
     test: ["CMD-SHELL", "curl -f http://localhost:3015/sse --head || exit 1"]
 ```
@@ -220,13 +220,13 @@ curl -X POST "http://localhost:3015/messages/?session_id=<uuid>" \
 The HTTP server exposes the same 8 Leantime integration tools:
 
 1. **create_project** - Create new Leantime projects
-2. **list_projects** - List all projects
-3. **create_ticket** - Create tasks/tickets
-4. **list_tickets** - List tickets from a project
-5. **update_ticket** - Update ticket properties
-6. **get_project_stats** - Get project statistics
-7. **create_milestone** - Create project milestones
-8. **sync_with_external** - Sync with external systems
+1. **list_projects** - List all projects
+1. **create_ticket** - Create tasks/tickets
+1. **list_tickets** - List tickets from a project
+1. **update_ticket** - Update ticket properties
+1. **get_project_stats** - Get project statistics
+1. **create_milestone** - Create project milestones
+1. **sync_with_external** - Sync with external systems
 
 ## Differences from stdio Transport
 
@@ -302,7 +302,7 @@ The server includes built-in DNS rebinding protection via `TransportSecurityMidd
 Currently, the server does not implement its own authentication layer. It relies on:
 
 1. **Network isolation** (Docker networks)
-2. **Leantime API authentication** (bearer token)
+1. **Leantime API authentication** (bearer token)
 
 For production deployments, consider adding:
 

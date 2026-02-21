@@ -44,9 +44,9 @@ The **Data & Query Services** operate on the "Intelligence Plane" to manage the 
 ### 🖥️ ConPort KG UI (`services/conport_kg_ui`)
 * **TUI**: A Terminal User Interface for graph exploration (built with `ink` & React).
 * **Progressive Disclosure**:
-  * **Tier 1**: Top-3 recent decisions.
-  * **Tier 2**: 1-hop neighbors (what did this decision impact?).
-  * **Tier 3**: Full context and metadata.
+* **Tier 1**: Top-3 recent decisions.
+* **Tier 2**: 1-hop neighbors (what did this decision impact?).
+* **Tier 3**: Full context and metadata.
 * **Visuals**: Color-coded cognitive load indicators.
 
 ---

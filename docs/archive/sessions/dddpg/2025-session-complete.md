@@ -31,24 +31,24 @@ prelude: 2025 Session Complete (explanation) for dopemux documentation and devel
 
 **New Master Documents**:
 1. **2025_MODERNIZATION_ROADMAP.md** (650 lines)
-   - Complete modernization plan
-   - What makes DDDPG unique
-   - Week 4 Day 2 → Week 5 roadmap
-   - Timeline: 17.5 hours (at 3.5x: 1.5-2 weeks)
+- Complete modernization plan
+- What makes DDDPG unique
+- Week 4 Day 2 → Week 5 roadmap
+- Timeline: 17.5 hours (at 3.5x: 1.5-2 weeks)
 
-2. **2025_TECHNICAL_SPEC.md** (600 lines)
-   - System architecture
-   - Complete API specifications
-   - ADHD patterns explained
-   - Security & performance specs
-   - Event specifications
-   - Migration paths
+1. **2025_TECHNICAL_SPEC.md** (600 lines)
+- System architecture
+- Complete API specifications
+- ADHD patterns explained
+- Security & performance specs
+- Event specifications
+- Migration paths
 
-3. **ANALYSIS_INDEX.md** (updated)
-   - Reorganized navigation
-   - Quick reference by role
-   - Use case-based document finding
-   - 22 documents cataloged
+1. **ANALYSIS_INDEX.md** (updated)
+- Reorganized navigation
+- Quick reference by role
+- Use case-based document finding
+- 22 documents cataloged
 
 **Total New Documentation**: ~1,350 lines
 
@@ -118,9 +118,9 @@ prelude: 2025 Session Complete (explanation) for dopemux documentation and devel
 
 ### Week 4 Day 2 (NEXT - ~95 min)
 1. Decision-Task Linking (15 min)
-2. Relationship Mapper (25 min)
-3. Suggestion Engine (35 min)
-4. QueryService Integration (20 min)
+1. Relationship Mapper (25 min)
+1. Suggestion Engine (35 min)
+1. QueryService Integration (20 min)
 
 ### Week 4 Days 3-4 (~3 hours)
 - Semantic search (embeddings)
@@ -147,53 +147,53 @@ prelude: 2025 Session Complete (explanation) for dopemux documentation and devel
 ### What Makes DDDPG Special
 
 1. **ADHD-First, Not ADHD-After**
-   - Top-3 pattern baked into every query
-   - Progressive disclosure is the default
-   - Cognitive load is a first-class field
-   - Context preservation via WorkSession
+- Top-3 pattern baked into every query
+- Progressive disclosure is the default
+- Cognitive load is a first-class field
+- Context preservation via WorkSession
 
-2. **Multi-Instance from Day 1**
-   - Not retrofitted (unlike ConPort)
-   - Supports Git worktrees natively
-   - Visibility controls prevent chaos
-   - Instance isolation prevents bugs
+1. **Multi-Instance from Day 1**
+- Not retrofitted (unlike ConPort)
+- Supports Git worktrees natively
+- Visibility controls prevent chaos
+- Instance isolation prevents bugs
 
-3. **Graph-Native Architecture**
-   - PostgreSQL AGE (not just relationships in SQL)
-   - Cypher queries (not JOIN hell)
-   - Semantic search ready (embeddings planned)
-   - Relationship types are typed enums
+1. **Graph-Native Architecture**
+- PostgreSQL AGE (not just relationships in SQL)
+- Cypher queries (not JOIN hell)
+- Semantic search ready (embeddings planned)
+- Relationship types are typed enums
 
-4. **Production Security First**
-   - 100% parameterized (not "mostly")
-   - Pydantic validation (not manual checks)
-   - Graceful degradation (not hard failures)
-   - Comprehensive logging (not debugging print())
+1. **Production Security First**
+- 100% parameterized (not "mostly")
+- Pydantic validation (not manual checks)
+- Graceful degradation (not hard failures)
+- Comprehensive logging (not debugging print())
 
 ### What's Working Exceptionally Well
 
 1. **Development Velocity**: 3.5x faster than planned
-2. **Code Quality**: 100% test coverage on KG layer
-3. **Architecture**: Multi-instance design validated
-4. **Documentation**: Comprehensive (22 docs, 7000 lines)
-5. **Planning**: Detailed roadmaps with time estimates
+1. **Code Quality**: 100% test coverage on KG layer
+1. **Architecture**: Multi-instance design validated
+1. **Documentation**: Comprehensive (22 docs, 7000 lines)
+1. **Planning**: Detailed roadmaps with time estimates
 
 ### What Needs Building
 
 1. **Week 4 Day 2 Features** (immediate):
-   - Relationship mapping
-   - Enhanced suggestions
-   - Context-aware scoring
+- Relationship mapping
+- Enhanced suggestions
+- Context-aware scoring
 
-2. **Semantic Search** (short-term):
-   - Embedding generation
-   - Vector similarity
-   - Improved matching
+1. **Semantic Search** (short-term):
+- Embedding generation
+- Vector similarity
+- Improved matching
 
-3. **Production Infrastructure** (medium-term):
-   - Hybrid storage
-   - EventBus integration
-   - Agent coordination
+1. **Production Infrastructure** (medium-term):
+- Hybrid storage
+- EventBus integration
+- Agent coordination
 
 ---
 
@@ -201,9 +201,9 @@ prelude: 2025 Session Complete (explanation) for dopemux documentation and devel
 
 ### Documents Created
 1. ✅ 2025_MODERNIZATION_ROADMAP.md (650 lines)
-2. ✅ 2025_TECHNICAL_SPEC.md (600 lines)
-3. ✅ ANALYSIS_INDEX.md (updated, 120 lines)
-4. ✅ 2025_SESSION_COMPLETE.md (this doc, 250 lines)
+1. ✅ 2025_TECHNICAL_SPEC.md (600 lines)
+1. ✅ ANALYSIS_INDEX.md (updated, 120 lines)
+1. ✅ 2025_SESSION_COMPLETE.md (this doc, 250 lines)
 
 **Total**: ~1,620 lines of new documentation
 
@@ -232,19 +232,19 @@ prelude: 2025 Session Complete (explanation) for dopemux documentation and devel
 
 **TODAY (Week 4 Day 2)**:
 1. Read **2025_MODERNIZATION_ROADMAP.md** (15 min)
-2. Review **2025_TECHNICAL_SPEC.md** API section (5 min)
-3. Open **WEEK4_DAY2_IMPLEMENTATION_PLAN.md**
-4. Start Phase 1: Decision-Task Linking (15 min)
+1. Review **2025_TECHNICAL_SPEC.md** API section (5 min)
+1. Open **WEEK4_DAY2_IMPLEMENTATION_PLAN.md**
+1. Start Phase 1: Decision-Task Linking (15 min)
 
 **THIS WEEK (Week 4 Days 3-5)**:
 1. Complete Day 2 features (95 min)
-2. Implement semantic search (3 hours)
-3. Add EventBus integration (2 hours)
+1. Implement semantic search (3 hours)
+1. Add EventBus integration (2 hours)
 
 **NEXT WEEK (Week 5)**:
 1. Storage migration (4 hours)
-2. Agent integrations (3 hours)
-3. Dashboard (3 hours)
+1. Agent integrations (3 hours)
+1. Dashboard (3 hours)
 
 ### For Project Management
 

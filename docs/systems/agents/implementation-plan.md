@@ -57,9 +57,9 @@ Weeks 15-16: SuperClaude Integration
 
 **Day 1-2: MemoryAgent Production Mode** (2 focus blocks)
 1. Update `_save_to_conport()` to use `mcp__conport__update_active_context`
-2. Update `_get_conport_client()` to detect Claude Code context
-3. Test with real ConPort database
-4. Validate auto-save persists across sessions
+1. Update `_get_conport_client()` to detect Claude Code context
+1. Test with real ConPort database
+1. Validate auto-save persists across sessions
 
 - Complexity: 0.3
 - Energy: Medium
@@ -67,18 +67,18 @@ Weeks 15-16: SuperClaude Integration
 
 **Day 3-5: Wire Task-Orchestrator Stubs** (6 focus blocks)
 1. Day 3: `_dispatch_to_conport`
-   - Real `log_progress`, `update_progress` calls
-   - Test ConPort dispatch
-   - **Break point**
+- Real `log_progress`, `update_progress` calls
+- Test ConPort dispatch
+- **Break point**
 
-2. Day 4: `_dispatch_to_serena`
-   - Real `find_symbol`, `analyze_complexity` calls
-   - Test Serena dispatch with complexity scoring
-   - **Break point**
+1. Day 4: `_dispatch_to_serena`
+- Real `find_symbol`, `analyze_complexity` calls
+- Test Serena dispatch with complexity scoring
+- **Break point**
 
-3. Day 5: `_dispatch_to_zen`
-   - Real `thinkdeep`, `planner` calls
-   - Integration test - route task through all agents
+1. Day 5: `_dispatch_to_zen`
+- Real `thinkdeep`, `planner` calls
+- Integration test - route task through all agents
 
 - Complexity: 0.5
 - Energy: High
@@ -470,10 +470,10 @@ After Week 5:
 
 **Enhancement Pattern** (3 hours per persona):
 1. Tool Preferences (Serena, ConPort, PAL apilookup)
-2. Two-Plane Awareness (Cognitive vs PM)
-3. ADHD Accommodations (progressive disclosure, complexity, breaks)
-4. Usage Tracking (log start/end, outcomes)
-5. Integration examples (with 7 agents)
+1. Two-Plane Awareness (Cognitive vs PM)
+1. ADHD Accommodations (progressive disclosure, complexity, breaks)
+1. Usage Tracking (log start/end, outcomes)
+1. Integration examples (with 7 agents)
 
 **Schedule**:
 - Day 1: 2 personas (4 focus blocks)
@@ -498,10 +498,10 @@ After Week 5:
 - Day 1-2: 4 personas (6 focus blocks)
 - Day 3-4: 3 personas (5 focus blocks)
 - Day 5: Complete validation (3 focus blocks)
-  - Test persona usage tracking
-  - Validate tool preferences
-  - Check ADHD accommodations
-  - Query ConPort analytics
+- Test persona usage tracking
+- Validate tool preferences
+- Check ADHD accommodations
+- Query ConPort analytics
 
 **Deliverables**:
 - 16/16 personas enhanced (100%)
@@ -524,9 +524,9 @@ After Week 5:
 
 **Day 2-3: Build MetaMCP Bridge** (4 focus blocks)
 - Translate SuperClaude -> Dopemux MCPs
-  - PAL apilookup -> pal + claude-context + docrag
-  - Sequential -> zen (multi-model)
-  - Magic -> morphllm + serena
+- PAL apilookup -> pal + claude-context + docrag
+- Sequential -> zen (multi-model)
+- Magic -> morphllm + serena
 - Complexity: 0.7, Energy: High
 - Break: After Day 2
 

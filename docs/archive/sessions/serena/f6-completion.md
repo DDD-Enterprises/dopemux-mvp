@@ -25,35 +25,35 @@ F6 adds temporal analysis to detect uncommitted work that's been idle for extend
 
 ### Files Created (2)
 1. **services/serena/v2/abandonment_tracker.py** (265 lines)
-   - AbandonmentTracker class: Time-based abandonment scoring
-   - calculate_abandonment_score(): Score = days_idle / 14 (capped at 1.0)
-   - classify_severity(): Maps scores to none/stale/likely/definitely
-   - generate_message(): GUILT-FREE messaging with emoji indicators
-   - suggest_action(): Recommends commit/archive/delete based on context
-   - get_abandonment_summary(): Statistics across all abandoned work
+- AbandonmentTracker class: Time-based abandonment scoring
+- calculate_abandonment_score(): Score = days_idle / 14 (capped at 1.0)
+- classify_severity(): Maps scores to none/stale/likely/definitely
+- generate_message(): GUILT-FREE messaging with emoji indicators
+- suggest_action(): Recommends commit/archive/delete based on context
+- get_abandonment_summary(): Statistics across all abandoned work
 
-2. **tests/serena/v2/test_abandonment_tracker_f6.py** (370 lines)
-   - 19 comprehensive tests (100% passing)
-   - Score calculation testing: 7-day, 14-day, 28-day scenarios
-   - Severity classification testing: All 4 levels validated
-   - Messaging testing: ADHD-friendly, guilt-free validation
-   - Action suggestion testing: Commit/archive/delete logic
-   - Integration testing: Full workflow validation
-   - Statistics testing: Summary generation
+1. **tests/serena/v2/test_abandonment_tracker_f6.py** (370 lines)
+- 19 comprehensive tests (100% passing)
+- Score calculation testing: 7-day, 14-day, 28-day scenarios
+- Severity classification testing: All 4 levels validated
+- Messaging testing: ADHD-friendly, guilt-free validation
+- Action suggestion testing: Commit/archive/delete logic
+- Integration testing: Full workflow validation
+- Statistics testing: Summary generation
 
 ### Files Modified (2)
 1. **services/serena/v2/untracked_work_detector.py** (+4 lines)
-   - Import AbandonmentTracker
-   - Initialize abandonment_tracker in **init**
-   - Calculate abandonment score in detect() (Step 3.75)
-   - Add abandonment_data to detection result
+- Import AbandonmentTracker
+- Initialize abandonment_tracker in **init**
+- Calculate abandonment score in detect() (Step 3.75)
+- Add abandonment_data to detection result
 
-2. **services/serena/v2/mcp_server.py** (+309 lines)
-   - Added get_abandoned_work_tool (100 lines)
-   - Added mark_abandoned_tool (67 lines)
-   - Added get_abandonment_stats_tool (73 lines)
-   - Tool registrations (3 tools)
-   - Dispatcher routing (3 routes)
+1. **services/serena/v2/mcp_server.py** (+309 lines)
+- Added get_abandoned_work_tool (100 lines)
+- Added mark_abandoned_tool (67 lines)
+- Added get_abandonment_stats_tool (73 lines)
+- Tool registrations (3 tools)
+- Dispatcher routing (3 routes)
 
 ## Technical Decisions
 
@@ -191,11 +191,11 @@ if stats.get("new", 0) > 0:
 
 ### Lines of Code (Total: 944)
 - **Production Code**: 574 lines
-  - abandonment_tracker.py: 265 lines
-  - untracked_work_detector.py: +4 lines
-  - mcp_server.py: +309 lines (tool implementations + registrations)
+- abandonment_tracker.py: 265 lines
+- untracked_work_detector.py: +4 lines
+- mcp_server.py: +309 lines (tool implementations + registrations)
 - **Test Code**: 370 lines
-  - test_abandonment_tracker_f6.py: 370 lines
+- test_abandonment_tracker_f6.py: 370 lines
 
 ### Complexity Analysis
 - **AbandonmentTracker**: Low complexity (simple time math, threshold checks)
@@ -218,34 +218,34 @@ if stats.get("new", 0) > 0:
 
 ### Immediate (Week 4-5): F7 - Metrics Dashboard
 1. Create metrics_dashboard.py
-2. Aggregate F1-F6 analytics (detection stats, pattern probabilities, abandonment rates)
-3. Visualize trends over time (matplotlib or text-based)
-4. Add MCP tools: get_metrics_dashboard, get_metric_history
+1. Aggregate F1-F6 analytics (detection stats, pattern probabilities, abandonment rates)
+1. Visualize trends over time (matplotlib or text-based)
+1. Add MCP tools: get_metrics_dashboard, get_metric_history
 
 ### Future Enhancements
 1. **ConPort Integration**: Connect abandonment_tracker to ConPort for event logging
-2. **F5 Feedback Loop**: Feed abandoned patterns back to pattern_learner
-3. **Risky Pattern Detection**: Learn "I always abandon .py files in experiments/"
-4. **Action Outcome Tracking**: Did committing abandoned work improve productivity?
+1. **F5 Feedback Loop**: Feed abandoned patterns back to pattern_learner
+1. **Risky Pattern Detection**: Learn "I always abandon .py files in experiments/"
+1. **Action Outcome Tracking**: Did committing abandoned work improve productivity?
 
 ## Lessons Learned
 
 ### What Worked Well
 1. **Thinkdeep Analysis**: Zen thinkdeep extracted F6 requirements efficiently (4 steps)
-2. **ADHD Design Validation**: Guilt-free messaging tested explicitly, not assumed
-3. **Test-First Severity**: All 4 severity levels tested before messaging validation
-4. **F5 Pattern Reuse**: MCP tool structure from F5 applied cleanly to F6
+1. **ADHD Design Validation**: Guilt-free messaging tested explicitly, not assumed
+1. **Test-First Severity**: All 4 severity levels tested before messaging validation
+1. **F5 Pattern Reuse**: MCP tool structure from F5 applied cleanly to F6
 
 ### Issues Encountered
 1. **Thinkdeep Step 5 Timeout**: Final step timed out, but steps 1-4 provided sufficient info
-   - **Learning**: Don't over-rely on final synthesis step, extract incrementally
-   - **Impact**: None - implementation proceeded successfully
+- **Learning**: Don't over-rely on final synthesis step, extract incrementally
+- **Impact**: None - implementation proceeded successfully
 
 ### Future Improvements
 1. Add time-decay to abandonment score (older work less urgent than recent)
-2. Implement user feedback loop (track whether suggestions were helpful)
-3. Add "snooze" option for work user wants to keep but not act on immediately
-4. Consider context-switching cost (abandoned work during hyperfocus vs distraction)
+1. Implement user feedback loop (track whether suggestions were helpful)
+1. Add "snooze" option for work user wants to keep but not act on immediately
+1. Consider context-switching cost (abandoned work during hyperfocus vs distraction)
 
 ## Dependencies
 

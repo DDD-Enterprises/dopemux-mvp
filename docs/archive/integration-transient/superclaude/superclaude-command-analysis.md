@@ -69,9 +69,9 @@ SuperClaude uses a sophisticated context injection system where commands are NOT
 SuperClaude modifies Claude's behavior through:
 
 1. **Context File Loading**: Commands trigger reading of specialized `.md` files
-2. **Behavioral Personas**: 9 cognitive personas (architect, security, qa, etc.)
-3. **Workflow State Management**: Multi-step process tracking and continuation
-4. **Domain-Specific Contexts**: Specialized knowledge injection per command
+1. **Behavioral Personas**: 9 cognitive personas (architect, security, qa, etc.)
+1. **Workflow State Management**: Multi-step process tracking and continuation
+1. **Domain-Specific Contexts**: Specialized knowledge injection per command
 
 ### Command Chaining & Workflow Continuity
 

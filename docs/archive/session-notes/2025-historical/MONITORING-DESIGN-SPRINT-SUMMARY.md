@@ -68,11 +68,11 @@ Documentation:
 
 **Tasks:**
 1. Save compact dashboard script to disk ❌
-2. Save dashboard_integrations.py ❌
-3. Add error handling to bash scripts ❌
-4. Create config file system ❌
-5. Add logging to Python dashboards ❌
-6. Write unit tests ❌
+1. Save dashboard_integrations.py ❌
+1. Add error handling to bash scripts ❌
+1. Create config file system ❌
+1. Add logging to Python dashboards ❌
+1. Write unit tests ❌
 
 **Acceptance:**
 - All designed code saved
@@ -88,10 +88,10 @@ Documentation:
 
 **Tasks:**
 1. Import abandonment_tracker.py
-2. Call from SerenaIntegration class
-3. Test git detection
-4. Add to compact dashboard line 2
-5. Wire up ConPort storage (optional)
+1. Call from SerenaIntegration class
+1. Test git detection
+1. Add to compact dashboard line 2
+1. Wire up ConPort storage (optional)
 
 **Acceptance:**
 - Dashboard shows real untracked work
@@ -107,10 +107,10 @@ Documentation:
 
 **Tasks:**
 1. Get API credentials
-2. Implement LeantimeIntegration
-3. Test GET /tasks
-4. Add to compact dashboard line 3
-5. Handle overdue warnings
+1. Implement LeantimeIntegration
+1. Test GET /tasks
+1. Add to compact dashboard line 3
+1. Handle overdue warnings
 
 **Acceptance:**
 - In-progress + todo counts shown
@@ -126,9 +126,9 @@ Documentation:
 
 **Tasks:**
 1. Implement ConPortIntegration
-2. Test GET /context/current
-3. Add to dashboard
-4. Integrate with health score
+1. Test GET /context/current
+1. Add to dashboard
+1. Integrate with health score
 
 **Acceptance:**
 - Context name shown
@@ -143,11 +143,11 @@ Documentation:
 
 **Tasks:**
 1. Click handlers (Rich mouse)
-2. Historical view
-3. Export metrics (JSON/CSV)
-4. Custom themes
-5. Performance optimization
-6. Documentation update
+1. Historical view
+1. Export metrics (JSON/CSV)
+1. Custom themes
+1. Performance optimization
+1. Documentation update
 
 **Acceptance:**
 - <1% CPU idle
@@ -331,28 +331,28 @@ GET http://localhost:8091/api/context/current
 
 ### Cognitive (4)
 1. Energy level (5 states)
-2. Attention state (4 states)
-3. Health score (0-100)
-4. Peak hour detection
+1. Attention state (4 states)
+1. Health score (0-100)
+1. Peak hour detection
 
 ### Session (3)
 1. Duration (minutes)
-2. Interruptions (count)
-3. Recovery cost (23 min × count)
+1. Interruptions (count)
+1. Recovery cost (23 min × count)
 
 ### Work Context (7)
 1. Git branch
-2. Git project
-3. Modified files
-4. Untracked files
-5. Stale branches
-6. Unpushed commits
-7. Workspace complexity
+1. Git project
+1. Modified files
+1. Untracked files
+1. Stale branches
+1. Unpushed commits
+1. Workspace complexity
 
 ### Tasks (3)
 1. In-progress count
-2. Todo count
-3. Overdue warnings
+1. Todo count
+1. Overdue warnings
 
 ### System (9)
 18-26. Services, Docker, CPU, Memory, etc.
@@ -400,10 +400,10 @@ Proactive ADHD support, break reminders
 ## 📝 Next Steps for Sprint Planning
 
 1. **Review this doc** - Understand current state
-2. **Prioritize sprints** - Which integrations first?
-3. **Set up tracking** - Leantime tasks for each sprint
-4. **Reserve time** - Block calendar for sprint work
-5. **Prepare environment** - Install dependencies, test APIs
+1. **Prioritize sprints** - Which integrations first?
+1. **Set up tracking** - Leantime tasks for each sprint
+1. **Reserve time** - Block calendar for sprint work
+1. **Prepare environment** - Install dependencies, test APIs
 
 **Estimated Total:** 88-128 hours (2-3 weeks)
 

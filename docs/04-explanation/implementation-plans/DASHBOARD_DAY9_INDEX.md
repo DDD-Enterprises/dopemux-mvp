@@ -55,10 +55,10 @@ prelude: Explanation of Dashboard_Day9_Index.
 - Caching layer (30s TTL)
 - Integration into `TrendsWidget`
 - 4 metrics with sparklines:
-  - Cognitive load (2h history)
-  - Task velocity (7d history)
-  - Context switches (24h history)
-  - Energy level (24h history)
+- Cognitive load (2h history)
+- Task velocity (7d history)
+- Context switches (24h history)
+- Energy level (24h history)
 
 **Status:** 🟡 Not started
 **File:** `dopemux_dashboard.py` (additions)
@@ -95,25 +95,25 @@ prelude: Explanation of Dashboard_Day9_Index.
 
 ### Core Components (Leverage These!)
 1. **SparklineGenerator** ✅
-   - File: `sparkline_generator.py` (302 lines)
-   - Unicode rendering, coloring, trend detection
-   - No changes needed!
+- File: `sparkline_generator.py` (302 lines)
+- Unicode rendering, coloring, trend detection
+- No changes needed!
 
-2. **PrometheusClient** ✅
-   - File: `prometheus_client.py`
-   - Query execution, caching, error handling
-   - No changes needed!
+1. **PrometheusClient** ✅
+- File: `prometheus_client.py`
+- Query execution, caching, error handling
+- No changes needed!
 
-3. **MetricsManager** ✅ (Day 8)
-   - File: `dopemux_dashboard.py`
-   - WebSocket streaming, HTTP fallback, auto-reconnect
-   - No changes needed!
+1. **MetricsManager** ✅ (Day 8)
+- File: `dopemux_dashboard.py`
+- WebSocket streaming, HTTP fallback, auto-reconnect
+- No changes needed!
 
-4. **Dashboard Architecture** ✅
-   - Widgets: ADHD, Productivity, Services, Trends
-   - Themes: Catppuccin Mocha + 6 others
-   - Notifications: Smart notification manager
-   - No changes needed!
+1. **Dashboard Architecture** ✅
+- Widgets: ADHD, Productivity, Services, Trends
+- Themes: Catppuccin Mocha + 6 others
+- Notifications: Smart notification manager
+- No changes needed!
 
 **Code Reuse Rate:** 80% 🎉
 
@@ -149,38 +149,38 @@ Polish:     ░░░░░░░░░░░░░░░░░░░░   0% �
 
 ### Research Papers (Read for Context)
 1. **Tufte, E. (2006)** - "Beautiful Evidence" (Sparklines chapter)
-   - Why sparklines work for dense data
-   - Design principles for minimal charts
+- Why sparklines work for dense data
+- Design principles for minimal charts
 
-2. **Barkley, R. (2015)** - "ADHD and Visual Information Processing"
-   - Visual > numerical for ADHD brains
-   - 3x faster pattern recognition
+1. **Barkley, R. (2015)** - "ADHD and Visual Information Processing"
+- Visual > numerical for ADHD brains
+- 3x faster pattern recognition
 
-3. **Nielsen Norman Group (2019)** - "Data Visualization for Neurodivergent Users"
-   - High contrast colors essential
-   - Clear labels reduce cognitive load
+1. **Nielsen Norman Group (2019)** - "Data Visualization for Neurodivergent Users"
+- High contrast colors essential
+- Clear labels reduce cognitive load
 
 ### Technical Documentation
 1. **Prometheus Query API**
-   - https://prometheus.io/docs/prometheus/latest/querying/api/
-   - `query_range()` for historical data
+- https://prometheus.io/docs/prometheus/latest/querying/api/
+- `query_range()` for historical data
 
-2. **Textual Keyboard Events**
-   - https://textual.textualize.io/guide/input/#keyboard-input
-   - BINDINGS, actions, key combinations
+1. **Textual Keyboard Events**
+- https://textual.textualize.io/guide/input/#keyboard-input
+- BINDINGS, actions, key combinations
 
-3. **WAI-ARIA 1.2**
-   - https://www.w3.org/TR/wai-aria-practices-1.2/
-   - Accessibility best practices
+1. **WAI-ARIA 1.2**
+- https://www.w3.org/TR/wai-aria-practices-1.2/
+- Accessibility best practices
 
 ### Code Examples
 1. **Sparklines in Python**
-   - https://github.com/deeplook/sparklines
-   - Alternative implementations
+- https://github.com/deeplook/sparklines
+- Alternative implementations
 
-2. **Textual Focus Management**
-   - https://github.com/Textualize/textual/discussions
-   - Focus state, CSS styling
+1. **Textual Focus Management**
+- https://github.com/Textualize/textual/discussions
+- Focus state, CSS styling
 
 ---
 
@@ -416,7 +416,7 @@ git push origin feature/day9-sparklines-keyboard
 
 ### Read First (5 minutes)
 1. This index (you're here!)
-2. [DASHBOARD_DAY9_SUMMARY.md](../../DASHBOARD_DAY9_SUMMARY.md)
+1. [DASHBOARD_DAY9_SUMMARY.md](../../DASHBOARD_DAY9_SUMMARY.md)
 
 ### Code With (During implementation)
 1. [DASHBOARD_DAY9_READY.md](./DASHBOARD_DAY9_READY.md)

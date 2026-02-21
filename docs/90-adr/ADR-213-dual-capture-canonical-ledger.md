@@ -32,8 +32,8 @@ Dopemux memory capture operates in multiple modes:
 
 Prior to this ADR, the design lacked explicit guarantees about:
 1. Where each mode writes capture events
-2. Whether plugin vs MCP produce identical event_id for same events
-3. How global rollup interacts with per-project truth
+1. Whether plugin vs MCP produce identical event_id for same events
+1. How global rollup interacts with per-project truth
 
 This created ambiguity about the "authoritative" capture path and potential for divergent ledgers.
 
@@ -119,7 +119,7 @@ mcp_result = emit_capture_event(
 | Mode | Trigger | Ledger Path | Event ID | Use Case |
 |------|---------|-------------|----------|----------|
 | **plugin** | Claude Code hooks | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Auto-capture during Claude sessions |
-| **cli** | `dopemux memory capture` | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Manual/scripted capture |
+| **cli** | `dopemux memory capture` \| `repo_root/.dopemux/chronicle.sqlite` | Content hash | Manual/scripted capture |
 | **mcp** | MCP tool calls | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Bridge from external tools |
 | **auto** | Context-driven selection | `repo_root/.dopemux/chronicle.sqlite` | Content hash | Smart mode resolution |
 
@@ -159,20 +159,20 @@ mcp_result = emit_capture_event(
 Tests landing with this ADR:
 
 1. **Dual Capture Convergence**:
-   - `test_plugin_and_mcp_modes_produce_identical_event_id()`
-   - Verifies same event → same event_id across modes
+- `test_plugin_and_mcp_modes_produce_identical_event_id()`
+- Verifies same event → same event_id across modes
 
-2. **Capture Failure Modes**:
-   - `test_capture_fails_closed_without_repo_root()`
-   - Verifies deterministic failure outside repo
+1. **Capture Failure Modes**:
+- `test_capture_fails_closed_without_repo_root()`
+- Verifies deterministic failure outside repo
 
-3. **Global Rollup Safety**:
-   - `test_global_rollup_never_writes_to_project_ledger()`
-   - Verifies read-only guarantee
+1. **Global Rollup Safety**:
+- `test_global_rollup_never_writes_to_project_ledger()`
+- Verifies read-only guarantee
 
-4. **Existing Unit Tests**:
-   - `test_plugin_and_cli_modes_share_single_ledger()` (already exists)
-   - `test_duplicate_retry_is_ignored()` (already exists)
+1. **Existing Unit Tests**:
+- `test_plugin_and_cli_modes_share_single_ledger()` (already exists)
+- `test_duplicate_retry_is_ignored()` (already exists)
 
 ---
 
@@ -184,8 +184,8 @@ Tests landing with this ADR:
 
 **Critical Invariants**:
 1. `emit_capture_event()` is the only write path to project ledgers
-2. `event_id` generation is content-based, mode-independent
-3. Global rollup uses read-only SQLite connections
+1. `event_id` generation is content-based, mode-independent
+1. Global rollup uses read-only SQLite connections
 
 ---
 
@@ -222,9 +222,9 @@ This design is **deterministic and testable**, not subject to future debate.
 
 Any change must:
 1. Preserve canonical ledger location
-2. Preserve convergent event_id semantics
-3. Preserve global rollup read-only guarantee
-4. Pass all verification tests
+1. Preserve convergent event_id semantics
+1. Preserve global rollup read-only guarantee
+1. Pass all verification tests
 
 ---
 

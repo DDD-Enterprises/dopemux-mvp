@@ -202,9 +202,9 @@ Phase 1 is configured in `.claude/claude_config.json`:
 ### From Phase 1 to Phase 2
 
 1. **Data Migration**: Research history from Phase 1 can be imported
-2. **API Compatibility**: Phase 2 will support Phase 1 tool signatures
-3. **Gradual Rollout**: Features can be enabled incrementally
-4. **Fallback Support**: Phase 1 remains available as fallback
+1. **API Compatibility**: Phase 2 will support Phase 1 tool signatures
+1. **Gradual Rollout**: Features can be enabled incrementally
+1. **Fallback Support**: Phase 1 remains available as fallback
 
 ### Backwards Compatibility
 
@@ -307,11 +307,11 @@ python test_orchestrator_integration.py
 ## Recommendations
 
 1. **Continue using Phase 1** for immediate research needs
-2. **Develop Phase 2** features incrementally
-3. **Test both phases** in parallel
-4. **Document differences** clearly
-5. **Plan migration** for Week 6
-6. **Maintain backwards compatibility**
+1. **Develop Phase 2** features incrementally
+1. **Test both phases** in parallel
+1. **Document differences** clearly
+1. **Plan migration** for Week 6
+1. **Maintain backwards compatibility**
 
 ## Next Actions
 
@@ -363,9 +363,9 @@ python test_orchestrator_integration.py
 The parallel deployment strategy enables:
 
 1. **Immediate Value**: Phase 1 provides research tools today
-2. **Continuous Development**: Phase 2 advances without disruption
-3. **Risk Mitigation**: Fallback options always available
-4. **ADHD Focus**: Progressive enhancement of accommodations
-5. **Smooth Migration**: Clear upgrade path when ready
+1. **Continuous Development**: Phase 2 advances without disruption
+1. **Risk Mitigation**: Fallback options always available
+1. **ADHD Focus**: Progressive enhancement of accommodations
+1. **Smooth Migration**: Clear upgrade path when ready
 
 Both phases complement each other, ensuring users have powerful research capabilities while we build the ultimate ADHD-optimized research experience.

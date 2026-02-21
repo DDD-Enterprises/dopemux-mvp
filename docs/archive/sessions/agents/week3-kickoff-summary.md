@@ -24,12 +24,12 @@ prelude: Week3 Kickoff Summary (explanation) for dopemux documentation and devel
 
 **Research Activities**:
 1. ✅ Web search: ADHD Pomodoro timing research (2024)
-2. ✅ Web search: Neurodivergent notification patterns
-3. ✅ Web search: Async Python monitoring patterns
-4. ✅ Web search: Task complexity matching algorithms
-5. ✅ Code review: Existing CognitiveGuardian implementation
-6. ✅ Code review: Existing test suite
-7. ✅ Architecture analysis: Current vs. target state
+1. ✅ Web search: Neurodivergent notification patterns
+1. ✅ Web search: Async Python monitoring patterns
+1. ✅ Web search: Task complexity matching algorithms
+1. ✅ Code review: Existing CognitiveGuardian implementation
+1. ✅ Code review: Existing test suite
+1. ✅ Architecture analysis: Current vs. target state
 
 **Research Output**:
 - 15+ academic/professional sources cited
@@ -133,9 +133,9 @@ prelude: Week3 Kickoff Summary (explanation) for dopemux documentation and devel
 
 **Our Implementation**:
 - Gentle messaging already present ✅
-  - "⏰ Great work! Time for break?"
-  - "⚠️ Consider a break soon"
-  - "🛑 MANDATORY BREAK: Take 10 min"
+- "⏰ Great work! Time for break?"
+- "⚠️ Consider a break soon"
+- "🛑 MANDATORY BREAK: Take 10 min"
 - Week 3: Explore MCP notifications (if available)
 
 ---
@@ -430,18 +430,18 @@ python -c "from cognitive_guardian import CognitiveGuardian; g = CognitiveGuardi
 
 **Planning Documents**:
 1. `WEEK3_RESEARCH_AND_PLAN.md` - Research findings & strategy
-2. `WEEK3_TECHNICAL_SPEC.md` - Detailed code changes
-3. `WEEK3_IMPLEMENTATION_ROADMAP.md` - Day-by-day tasks
-4. `WEEK3_KICKOFF_SUMMARY.md` - This file (quick reference)
+1. `WEEK3_TECHNICAL_SPEC.md` - Detailed code changes
+1. `WEEK3_IMPLEMENTATION_ROADMAP.md` - Day-by-day tasks
+1. `WEEK3_KICKOFF_SUMMARY.md` - This file (quick reference)
 
 **Code Files**:
 1. `services/agents/cognitive_guardian.py` - Main agent (603 lines)
-2. `services/agents/test_cognitive_guardian.py` - Tests (240 lines)
-3. `services/task-orchestrator/enhanced_orchestrator.py` - Routing
+1. `services/agents/test_cognitive_guardian.py` - Tests (240 lines)
+1. `services/task-orchestrator/enhanced_orchestrator.py` - Routing
 
 **Reference Implementations**:
 1. `services/agents/memory_agent.py` - ConPort MCP patterns
-2. `services/agents/WEEK1_WEEK2_SUMMARY.md` - Previous work
+1. `services/agents/WEEK1_WEEK2_SUMMARY.md` - Previous work
 
 ---
 
@@ -449,12 +449,12 @@ python -c "from cognitive_guardian import CognitiveGuardian; g = CognitiveGuardi
 
 **Why We'll Succeed**:
 1. ✅ Extensive research completed (2+ hours, 15+ sources)
-2. ✅ Clear technical specifications (every code change documented)
-3. ✅ ADHD-optimized roadmap (25-min blocks, built-in breaks)
-4. ✅ Strong foundation (CognitiveGuardian already 603 lines)
-5. ✅ Proven patterns (MemoryAgent Week 1-2 success)
-6. ✅ Comprehensive testing (16+ tests planned)
-7. ✅ Risk mitigation (graceful fallbacks, error handling)
+1. ✅ Clear technical specifications (every code change documented)
+1. ✅ ADHD-optimized roadmap (25-min blocks, built-in breaks)
+1. ✅ Strong foundation (CognitiveGuardian already 603 lines)
+1. ✅ Proven patterns (MemoryAgent Week 1-2 success)
+1. ✅ Comprehensive testing (16+ tests planned)
+1. ✅ Risk mitigation (graceful fallbacks, error handling)
 
 **Confidence Level**: **95%** (very high)
 

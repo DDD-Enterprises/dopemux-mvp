@@ -14,8 +14,8 @@ prelude: Quick_Fix_Summary (explanation) for dopemux documentation and developer
 ## What Was Broken
 
 1. **Docker Compose validation failed** - duplicate networks in 3 services
-2. **Leantime never started** - health check failed every time
-3. **Errors hidden** - `|| true` masked failures
+1. **Leantime never started** - health check failed every time
+1. **Errors hidden** - `|| true` masked failures
 
 ## What Was Fixed
 

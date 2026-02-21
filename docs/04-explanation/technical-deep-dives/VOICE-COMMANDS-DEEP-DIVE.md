@@ -25,9 +25,9 @@ The service is a FastAPI-based Python application configured to run as a backend
 * **Location**: `services/voice-commands`
 * **Orchestration**: *Missing* from `docker-compose.master.yml`.
 * **Dependencies**:
-  * **Zen MCP**: (Default `http://localhost:3003`) for decomposition logic.
-  * **DopeconBridge**: (Default `http://localhost:3016`) for data persistence.
-  * **ADHD Engine**: (Default `http://localhost:8095`) for attention-state context.
+* **Zen MCP**: (Default `http://localhost:3003`) for decomposition logic.
+* **DopeconBridge**: (Default `http://localhost:3016`) for data persistence.
+* **ADHD Engine**: (Default `http://localhost:8095`) for attention-state context.
 
 **Core Modules**:
 1. **`voice_api.py`**: The entry point. Handles the `/api/v1/decompose-task` POST endpoint.
@@ -52,10 +52,10 @@ The service is a FastAPI-based Python application configured to run as a backend
 ### Testing, Performance, Limitations & Opportunities
 * **Testing**: Test coverage is sparse. Internal tests exist in `adhd_engine` (`test_voice_assistant.py`) but not within the component itself.
 * **Limitations**:
-  * **Synchronous Processing**: The decomposition involves multiple external LLM/MCP calls and could benefit from more robust error handling and task queuing.
+* **Synchronous Processing**: The decomposition involves multiple external LLM/MCP calls and could benefit from more robust error handling and task queuing.
 * **Opportunities**:
-  * **Orchestrate**: Add to standard dev stack.
-  * **Extend**: Integrate with other voice-to-text providers or UI-level voice capture utilities.
+* **Orchestrate**: Add to standard dev stack.
+* **Extend**: Integrate with other voice-to-text providers or UI-level voice capture utilities.
 
 ## SECTION 2: EVIDENCE TRAIL
 
@@ -72,4 +72,4 @@ The service is a FastAPI-based Python application configured to run as a backend
 * Confidence Level: 95% (Code is well-structured and easy to read)
 * Evidence Quality Score: High
 * Evolution Log:
-  * 2026-02-09: Initial Deep Dive. Found functional code but lacking orchestration and documentation.
+* 2026-02-09: Initial Deep Dive. Found functional code but lacking orchestration and documentation.

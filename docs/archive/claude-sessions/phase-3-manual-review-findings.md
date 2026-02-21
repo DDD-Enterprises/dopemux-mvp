@@ -26,10 +26,10 @@ prelude: Phase 3 Manual Review Findings (explanation) for dopemux documentation 
 
 **Monitors Found** (grep "async def _.*monitor"):
 1. `_energy_level_monitor` (line 538) - Monitor user energy levels
-2. `_attention_state_monitor` (line 614) - Monitor attention patterns
-3. `_cognitive_load_monitor` (line 666) - Monitor overall cognitive load
-4. `_hyperfocus_protection_monitor` (line 815) - Hyperfocus detection
-5. `_break_timing_monitor` (line 695) - Break compliance monitoring
+1. `_attention_state_monitor` (line 614) - Monitor attention patterns
+1. `_cognitive_load_monitor` (line 666) - Monitor overall cognitive load
+1. `_hyperfocus_protection_monitor` (line 815) - Hyperfocus detection
+1. `_break_timing_monitor` (line 695) - Break compliance monitoring
 
 **Count**: 5 monitors found
 
@@ -37,9 +37,9 @@ prelude: Phase 3 Manual Review Findings (explanation) for dopemux documentation 
 
 **Possible Explanations**:
 1. One monitor planned but not yet implemented
-2. Documentation outdated
-3. One monitor removed during development
-4. Miscounted in documentation
+1. Documentation outdated
+1. One monitor removed during development
+1. Miscounted in documentation
 
 **Action Needed**: Check `_start_accommodation_monitoring()` to see what's actually started
 
@@ -65,15 +65,15 @@ prelude: Phase 3 Manual Review Findings (explanation) for dopemux documentation 
 
 **Endpoints Found**:
 1. `POST /api/v1/assess-task` - Task suitability assessment
-2. `GET /api/v1/energy-level/{user_id}` - Current energy level
-3. `GET /api/v1/attention-state/{user_id}` - Current attention state
-4. `POST /api/v1/recommend-break` - Break recommendations
-5. `POST /api/v1/user-profile` - Create/update profile
-6. `PUT /api/v1/activity/{user_id}` - Log activity event
+1. `GET /api/v1/energy-level/{user_id}` - Current energy level
+1. `GET /api/v1/attention-state/{user_id}` - Current attention state
+1. `POST /api/v1/recommend-break` - Break recommendations
+1. `POST /api/v1/user-profile` - Create/update profile
+1. `PUT /api/v1/activity/{user_id}` - Log activity event
 
 **Plus Root Endpoints** (main.py):
-7. `GET /` - Service info
-8. `GET /health` - Health check
+1. `GET /` - Service info
+1. `GET /health` - Health check
 
 **Count**: 6 API endpoints (v1) + 2 root = 8 total
 

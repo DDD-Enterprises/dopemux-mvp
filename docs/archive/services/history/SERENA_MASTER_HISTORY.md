@@ -27,8 +27,8 @@ Serena is the **"LSP for Thoughts"**—a cognitive layer that sits between the d
 **Evolutionary Phases:**
 * **Phase 1 (The Duplication Crisis)**: Initially planned to duplicate `claude-context`'s vector search.
 * **Pivot (Sep 2025)**: Decision #84 reframed Serena as an *integration* layer. Instead of storing vectors itself, it uses a "Hybrid Architecture":
-  * **Semantic Search**: Via `claude-context` (Milvus).
-  * **Structural Intelligence**: Via internal LSP + Tree-sitter engines.
+* **Semantic Search**: Via `claude-context` (Milvus).
+* **Structural Intelligence**: Via internal LSP + Tree-sitter engines.
 * **Phase 2 (The Intelligence Layer)**: Added PostgreSQL for "Adaptive Learning" (learning user patterns) and "Complexity Scoring" (traffic light indicators).
 * **Current State**: A production-grade service with 31 components, fully implemented and validated (ADR-202).
 
@@ -43,13 +43,13 @@ Serena is the **"LSP for Thoughts"**—a cognitive layer that sits between the d
 
 ### ADHD Accommodations (The "Cognitive Plane")
 * **Complexity Scoring**: Auto-scores every file/function from `0.0` (Simple) to `1.0` (Very Complex).
-  * 🟢 Simple (0.0-0.3)
-  * 🟡 Moderate (0.3-0.6)
-  * 🟠 Complex (0.6-0.8)
-  * 🔴 Very Complex (0.8+)
+* 🟢 Simple (0.0-0.3)
+* 🟡 Moderate (0.3-0.6)
+* 🟠 Complex (0.6-0.8)
+* 🔴 Very Complex (0.8+)
 * **Progressive Disclosure**:
-  * **Hard Limit**: Max 10 results per query.
-  * **Focus Modes**: Light (10 items), Medium (7 items), Deep (5 items).
+* **Hard Limit**: Max 10 results per query.
+* **Focus Modes**: Light (10 items), Medium (7 items), Deep (5 items).
 * **Fatigue Detection**: Monitors query patterns to detect "Scattered" or "Fatigued" states and auto-simplifies results.
 * **Guilt-Free Abandonment**: Tracks untracked work (git branches) and offers non-judgmental "Snooze" or "Track" options.
 
@@ -75,8 +75,8 @@ Serena is the **"LSP for Thoughts"**—a cognitive layer that sits between the d
 ### Integration Points
 * **Inbound**: MCP Requests from Claude/Zen.
 * **Outbound**:
-  * `claude-context` (HTTP) for vectors.
-  * `conport` (HTTP) for linking code to decisions.
+* `claude-context` (HTTP) for vectors.
+* `conport` (HTTP) for linking code to decisions.
 
 ---
 

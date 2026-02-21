@@ -227,11 +227,11 @@ python -m pdb dopemux_dashboard.py
 Once basic dashboard works:
 
 1. **Add Redis caching** (fallback when services down)
-2. **Add sparklines** (historical trends)
-3. **Add keyboard nav** (1-4 to focus panels)
-4. **Optimize performance** (profile & cache)
-5. **Write tests** (pytest + integration)
-6. **Document** (update README)
+1. **Add sparklines** (historical trends)
+1. **Add keyboard nav** (1-4 to focus panels)
+1. **Optimize performance** (profile & cache)
+1. **Write tests** (pytest + integration)
+1. **Document** (update README)
 
 ---
 
