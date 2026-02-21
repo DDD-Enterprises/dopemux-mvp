@@ -174,9 +174,9 @@ curl 'http://localhost:9090/api/v1/query?query=adhd_cognitive_load'
 
 After integration works:
 1. **Day 7:** WebSocket real-time streaming
-2. **Day 8:** Automated pytest tests
-3. **Day 9:** Advanced pattern detection
-4. **Day 10:** Performance optimization
+1. **Day 8:** Automated pytest tests
+1. **Day 9:** Advanced pattern detection
+1. **Day 10:** Performance optimization
 
 ---
 

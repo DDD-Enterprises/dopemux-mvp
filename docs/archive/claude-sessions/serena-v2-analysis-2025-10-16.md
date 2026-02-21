@@ -409,8 +409,8 @@ class DatabaseConfig:
 
 **Requirements**:
 1. PostgreSQL (Serena intelligence)
-2. Redis (caching, sessions)
-3. ConPort (decisions, progress)
+1. Redis (caching, sessions)
+1. ConPort (decisions, progress)
 
 **vs ConPort**: Only 1 database (PostgreSQL AGE)
 
@@ -451,16 +451,16 @@ class DatabaseConfig:
 ### Immediate Actions
 
 1. ✅ **DEPLOY TO PRODUCTION**
-   - No critical issues blocking deployment
-   - Security is solid (parameterized queries)
-   - Implementation is complete
+- No critical issues blocking deployment
+- Security is solid (parameterized queries)
+- Implementation is complete
 
-2. **Optional**: Fix password (15 min)
+1. **Optional**: Fix password (15 min)
    ```python
    password: str = os.getenv('SERENA_DB_PASSWORD', 'serena_dev_pass')
    ```
 
-3. **Recommended**: Run integration tests (1 hour)
+1. **Recommended**: Run integration tests (1 hour)
    ```bash
    python services/serena/v2/intelligence/complete_system_integration_test.py
    python services/serena/v2/intelligence/convergence_test.py
@@ -469,16 +469,16 @@ class DatabaseConfig:
 ### Phase 2 Enhancements (Post-Launch)
 
 1. **Documentation** (2 hours)
-   - User guide for 31 MCP tools
-   - ADHD feature configuration guide
+- User guide for 31 MCP tools
+- ADHD feature configuration guide
 
-2. **Monitoring** (2 hours)
-   - Add Prometheus metrics
-   - Set up alerting for performance degradation
+1. **Monitoring** (2 hours)
+- Add Prometheus metrics
+- Set up alerting for performance degradation
 
-3. **Performance** (2 hours)
-   - Benchmark all 31 tools
-   - Validate ADHD performance targets
+1. **Performance** (2 hours)
+- Benchmark all 31 tools
+- Validate ADHD performance targets
 
 ---
 
@@ -572,10 +572,10 @@ python services/serena/v2/intelligence/performance_validation_system.py
 Serena v2 is **production-ready with excellent quality**. It demonstrates:
 
 1. ✅ **Secure by design** - Parameterized queries prevent SQL injection
-2. ✅ **Fully implemented** - 28-file intelligence system complete (0 TODOs)
-3. ✅ **Production-grade** - Timeouts, pooling, monitoring, error handling
-4. ✅ **ADHD-optimized** - All features working, not architectural promises
-5. ⚠️ **Minor issue** - Hardcoded password (15min fix, non-blocking)
+1. ✅ **Fully implemented** - 28-file intelligence system complete (0 TODOs)
+1. ✅ **Production-grade** - Timeouts, pooling, monitoring, error handling
+1. ✅ **ADHD-optimized** - All features working, not architectural promises
+1. ⚠️ **Minor issue** - Hardcoded password (15min fix, non-blocking)
 
 **Recommendation**: ✅ **SHIP TO PRODUCTION IMMEDIATELY**
 
@@ -589,9 +589,9 @@ Serena v2 is **production-ready with excellent quality**. It demonstrates:
 
 **Completed**:
 1. ✅ **Dope-Context** - Ready to ship (per your review plan)
-2. ✅ **Orchestrator** - Ready to ship (per your review plan)
-3. ✅ **ConPort KG** - Production-ready after 4h security fixes (COMPLETED)
-4. ✅ **Serena v2** - Production-ready NOW (COMPLETED)
+1. ✅ **Orchestrator** - Ready to ship (per your review plan)
+1. ✅ **ConPort KG** - Production-ready after 4h security fixes (COMPLETED)
+1. ✅ **Serena v2** - Production-ready NOW (COMPLETED)
 
 **Status**: ✅ **Phase 1 Critical Systems Review COMPLETE**
 

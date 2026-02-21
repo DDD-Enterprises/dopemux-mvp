@@ -20,8 +20,8 @@ Scope: documentation contract only; no CLI flag implementation in this packet.
 PM output MUST default to exactly three user-facing elements:
 
 1. One-line summary of current PM state.
-2. Next single recommended action.
-3. Optional hint line: `Run --more for details`.
+1. Next single recommended action.
+1. Optional hint line: `Run --more for details`.
 
 No additional tables, counters, or multi-step trees are shown by default.
 Evidence basis for progressive minimality patterns: `src/dopemux/adhd/workflow_manager.py:L211-L234`.

@@ -34,12 +34,12 @@ The **Task Execution Layer** acts as the "Hands" of the system, whereas ConPort 
 ### 🕵️ 7 Infrastructure Agents (`services/agents`)
 A suite of 7 planned agents to support the "2-Plane Architecture":
 1. **MemoryAgent** (✅ Implemented): Auto-saves context every 30s. Prevents "Where was I?" syndrome.
-2. **CognitiveGuardian**: Enforces breaks and monitors attention drift.
-3. **TwoPlaneOrchestrator**: Manages traffic between Leantime (PM) and ConPort (AI).
-4. **TaskDecomposer**: Breaks PRDs into atomic, ADHD-sized tasks.
-5. **DopemuxEnforcer**: Validates architecture rules (e.g., "No direct DB access").
-6. **ToolOrchestrator**: Selects the right MCP tool for the job.
-7. **WorkflowCoordinator**: Manages long-running multi-step processes.
+1. **CognitiveGuardian**: Enforces breaks and monitors attention drift.
+1. **TwoPlaneOrchestrator**: Manages traffic between Leantime (PM) and ConPort (AI).
+1. **TaskDecomposer**: Breaks PRDs into atomic, ADHD-sized tasks.
+1. **DopemuxEnforcer**: Validates architecture rules (e.g., "No direct DB access").
+1. **ToolOrchestrator**: Selects the right MCP tool for the job.
+1. **WorkflowCoordinator**: Manages long-running multi-step processes.
 
 ### 🔀 Task Router (`services/task-router`)
 * **Energy Matching**: Matches tasks to user's current energy (e.g., "High Energy" -> "Deep Work", "Low Energy" -> "Docs").

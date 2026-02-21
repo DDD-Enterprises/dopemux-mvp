@@ -23,9 +23,9 @@ prelude: Dashboard_Deep_Planning (explanation) for dopemux documentation and dev
 We have a **dashboard prototype with mock data** and **services that already support HTTP APIs** (ADHD Engine). The path forward is clear:
 
 1. **Start ADHD Engine's FastAPI server** (already exists!)
-2. **Add lightweight HTTP endpoints to ConPort & Serena** (minimal code)
-3. **Wire up dashboard to real APIs** (replace mock data)
-4. **Optimize with caching & WebSockets** (Phase 2)
+1. **Add lightweight HTTP endpoints to ConPort & Serena** (minimal code)
+1. **Wire up dashboard to real APIs** (replace mock data)
+1. **Optimize with caching & WebSockets** (Phase 2)
 
 **Key Insight:** We're 70% there. The hard work (research, design, API structure) is done. Now we just connect the dots.
 
@@ -43,11 +43,11 @@ We have a **dashboard prototype with mock data** and **services that already sup
 - **Has:** Complete FastAPI server with `/api/v1/` endpoints
 - **Port:** 8095 (configurable)
 - **APIs:**
-  - `/api/v1/assess-task`
-  - `/api/v1/energy-level/{user_id}`
-  - `/api/v1/attention-state/{user_id}`
-  - `/api/v1/recommend-break`
-  - `/health` ✅
+- `/api/v1/assess-task`
+- `/api/v1/energy-level/{user_id}`
+- `/api/v1/attention-state/{user_id}`
+- `/api/v1/recommend-break`
+- `/health` ✅
 - **Status:** ✅ Ready to use, just needs to be started as HTTP server
 
 ### 3. ConPort & Serena Services
@@ -133,10 +133,10 @@ uvicorn.run(fastapi_app, port=8005)
 ### Data Flow
 
 1. **Dashboard Widget** needs data (e.g., energy level)
-2. **MetricsFetcher** tries HTTP API first
-3. If HTTP fails, tries **Redis cache**
-4. If cache fails, returns **mock data** (graceful degradation)
-5. Widget renders with whatever data is available
+1. **MetricsFetcher** tries HTTP API first
+1. If HTTP fails, tries **Redis cache**
+1. If cache fails, returns **mock data** (graceful degradation)
+1. Widget renders with whatever data is available
 
 **Result:** Dashboard always shows *something*, never crashes.
 
@@ -426,13 +426,13 @@ Footer: ConPort ✓  ADHD ✓  Serena ⚠  Redis ✗
 
 ### Immediate (Today)
 1. **Review this plan** - Does the architecture make sense?
-2. **Test ADHD Engine HTTP** - Start it, curl the endpoints
-3. **Confirm service ports** - 8095 (ADHD), 8005 (ConPort), 8003 (Serena)
+1. **Test ADHD Engine HTTP** - Start it, curl the endpoints
+1. **Confirm service ports** - 8095 (ADHD), 8005 (ConPort), 8003 (Serena)
 
 ### Day 1 (Tomorrow)
 1. **Start ADHD Engine HTTP server**
-2. **Update dashboard to use real API**
-3. **Test with real energy/attention data**
+1. **Update dashboard to use real API**
+1. **Test with real energy/attention data**
 
 ### Week 1
 - Wire up all services (HTTP wrappers for ConPort/Serena)
@@ -461,10 +461,10 @@ Footer: ConPort ✓  ADHD ✓  Serena ⚠  Redis ✗
 ## 💡 KEY INSIGHTS
 
 1. **We're closer than we thought:** ADHD Engine already has HTTP!
-2. **Dual-mode is the answer:** Services can do both MCP + HTTP
-3. **Start simple, optimize later:** Polling → WebSocket progression
-4. **Graceful degradation:** Dashboard should never crash
-5. **The research was worth it:** We know exactly what to build
+1. **Dual-mode is the answer:** Services can do both MCP + HTTP
+1. **Start simple, optimize later:** Polling → WebSocket progression
+1. **Graceful degradation:** Dashboard should never crash
+1. **The research was worth it:** We know exactly what to build
 
 ---
 
@@ -472,9 +472,9 @@ Footer: ConPort ✓  ADHD ✓  Serena ⚠  Redis ✗
 
 **Start with Day 1 immediately:**
 1. Launch ADHD Engine HTTP server (it already exists!)
-2. Point dashboard at `http://localhost:8095`
-3. See real energy/attention data flowing
-4. Build momentum from early win
+1. Point dashboard at `http://localhost:8095`
+1. See real energy/attention data flowing
+1. Build momentum from early win
 
 **Then iterate:**
 - Day 2: ConPort HTTP wrapper

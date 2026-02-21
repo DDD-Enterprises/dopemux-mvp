@@ -33,22 +33,22 @@ Learn individual ADHD patterns from historical data to provide personalized pred
 ConPort (Historical Data)
   → Pattern Extractor
   → Feature Engineering:
-    - Hour of day
-    - Day of week
-    - Session duration before energy drop
-    - Complexity patterns
+- Hour of day
+- Day of week
+- Session duration before energy drop
+- Complexity patterns
   → ML Model (Random Forest or LSTM)
   → Predictions:
-    - Energy level (next hour)
-    - Optimal work time
-    - Break timing
+- Energy level (next hour)
+- Optimal work time
+- Break timing
 ```
 
 ### Features
 1. **Energy Prediction**: Forecast energy drops 30-60 min ahead
-2. **Optimal Schedule**: "Your best coding hours are 9-11am and 2-4pm"
-3. **Personalized Breaks**: Learn individual break needs (not just 25 min)
-4. **Complexity Matching**: Recommend task difficulty based on predicted energy
+1. **Optimal Schedule**: "Your best coding hours are 9-11am and 2-4pm"
+1. **Personalized Breaks**: Learn individual break needs (not just 25 min)
+1. **Complexity Matching**: Recommend task difficulty based on predicted energy
 
 ### Implementation Plan (1-2 weeks)
 - Week 1: ConPort integration, data collection, feature engineering
@@ -70,21 +70,21 @@ Support team environments with aggregated ADHD metrics.
 Multi-User ADHD Engine
   ↓
 Team Metrics Aggregator
-  - Average energy across team
-  - Optimal team focus hours
-  - Break coordination
+- Average energy across team
+- Optimal team focus hours
+- Break coordination
   ↓
 Team Dashboard (port 8098)
-  - Individual tiles for each team member
-  - Aggregate metrics
-  - Shared focus time recommendations
+- Individual tiles for each team member
+- Aggregate metrics
+- Shared focus time recommendations
 ```
 
 ### Features
 1. **Team Energy View**: See whole team's ADHD state at a glance
-2. **Focus Hour Coordination**: "Whole team high energy 10-11am - good for standup"
-3. **Break Synchronization**: Coordinate team breaks
-4. **Privacy Controls**: Opt-in sharing, granular permissions
+1. **Focus Hour Coordination**: "Whole team high energy 10-11am - good for standup"
+1. **Break Synchronization**: Coordinate team breaks
+1. **Privacy Controls**: Opt-in sharing, granular permissions
 
 ### Implementation Plan (1-2 weeks)
 - Phase 1: Multi-user ADHD Engine support (user_id parameter everywhere)
@@ -109,18 +109,18 @@ Companion mobile app for quick ADHD state checks and notifications.
 Mobile App (React Native / Flutter)
   ↓ HTTPS
 ADHD Dashboard API (port 8097)
-  - Authentication required
-  - REST endpoints
+- Authentication required
+- REST endpoints
   ↓
 ADHD Engine + Activity Capture
 ```
 
 ### Features
 1. **Quick State Check**: Glance at energy/attention
-2. **Push Notifications**: Break reminders on phone
-3. **Manual Break Logging**: "Taking break" button
-4. **Session Overview**: See today's sessions
-5. **Task Recommendations**: "Should I start this task?"
+1. **Push Notifications**: Break reminders on phone
+1. **Manual Break Logging**: "Taking break" button
+1. **Session Overview**: See today's sessions
+1. **Task Recommendations**: "Should I start this task?"
 
 ### Screens
 - Home: Current ADHD state (energy, attention, session duration)
@@ -145,22 +145,22 @@ ADHD Engine + Activity Capture
 
 ### Option A: ML First (If you have data)
 1. Week 1-2: ML Pattern Learning
-2. Week 3-4: Multi-User Dashboard
-3. Week 5-7: Mobile App
+1. Week 3-4: Multi-User Dashboard
+1. Week 5-7: Mobile App
 
 **Rationale**: ML provides immediate value for single user, multi-user needs team
 
 ### Option B: Multi-User First (If you have team)
 1. Week 1-2: Multi-User Dashboard
-2. Week 3-5: Mobile App
-3. Week 6-7: ML Pattern Learning
+1. Week 3-5: Mobile App
+1. Week 6-7: ML Pattern Learning
 
 **Rationale**: Team collaboration more valuable than ML predictions initially
 
 ### Option C: Mobile First (If you want portability)
 1. Week 1-3: Mobile App
-2. Week 4-5: ML Pattern Learning
-3. Week 6-7: Multi-User Dashboard
+1. Week 4-5: ML Pattern Learning
+1. Week 6-7: Multi-User Dashboard
 
 **Rationale**: Mobile enables anywhere access, ML enhances experience
 
@@ -172,16 +172,16 @@ ADHD Engine + Activity Capture
 
 **Why**:
 1. Current stack is production-ready and complete
-2. Tier 2 features provide more immediate value
-3. Need real usage data before ML (2-4 weeks)
-4. Multi-user needs actual team use case
-5. Mobile app is significant investment
+1. Tier 2 features provide more immediate value
+1. Need real usage data before ML (2-4 weeks)
+1. Multi-user needs actual team use case
+1. Mobile app is significant investment
 
 **Instead**:
 1. Use current system for 2-4 weeks
-2. Collect real data
-3. Identify actual pain points
-4. Then decide which Tier 3 feature addresses real needs
+1. Collect real data
+1. Identify actual pain points
+1. Then decide which Tier 3 feature addresses real needs
 
 **Best approach**: Ship what you have, learn from usage, build what's actually needed!
 

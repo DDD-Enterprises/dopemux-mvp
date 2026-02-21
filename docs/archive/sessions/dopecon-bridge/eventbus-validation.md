@@ -101,9 +101,9 @@ prelude: Eventbus Validation (explanation) for dopemux documentation and develop
 ## Next Steps
 
 1. **Integration**: Wire ConPort updates to publish events
-2. **Subscription**: Build Dashboard subscriber to consume events
-3. **ADHD Engine**: Publish session lifecycle events
-4. **Monitoring**: Add event metrics and monitoring
+1. **Subscription**: Build Dashboard subscriber to consume events
+1. **ADHD Engine**: Publish session lifecycle events
+1. **Monitoring**: Add event metrics and monitoring
 
 ## Conclusion
 

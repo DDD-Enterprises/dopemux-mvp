@@ -137,10 +137,10 @@ The original implementation (prior to streamlining) included:
 **Research-Backed Formula**:
 ```python
 Load = 0.4 * task_complexity        # Primary load factor
-     + 0.2 * (decision_count / 10)   # Working memory load
-     + 0.2 * (switches / 5)          # Mental switching penalty
-     + 0.1 * (time_since_break / 60) # Fatigue factor
-     + 0.1 * interruption_score      # Distraction factor
++ 0.2 * (decision_count / 10)   # Working memory load
++ 0.2 * (switches / 5)          # Mental switching penalty
++ 0.1 * (time_since_break / 60) # Fatigue factor
++ 0.1 * interruption_score      # Distraction factor
 ```
 
 **Load Classifications**:
@@ -311,11 +311,11 @@ Load = 0.4 * task_complexity        # Primary load factor
 
 **Conflict Resolution Strategies**:
 1. `PM_WINS`: Leantime takes precedence (team visibility)
-2. `COGNITIVE_WINS`: ConPort takes precedence (developer authority)
-3. `MERGE_INTELLIGENT`: Smart merge based on context
-4. `ASK_USER`: Present conflict for manual resolution
-5. `LAST_MODIFIED`: Most recent change wins
-6. `CONSENSUS`: Require agreement from both planes
+1. `COGNITIVE_WINS`: ConPort takes precedence (developer authority)
+1. `MERGE_INTELLIGENT`: Smart merge based on context
+1. `ASK_USER`: Present conflict for manual resolution
+1. `LAST_MODIFIED`: Most recent change wins
+1. `CONSENSUS`: Require agreement from both planes
 
 **Currently Used**: ✅ Active in app/main.py coordination API
 
@@ -379,10 +379,10 @@ Load = 0.4 * task_complexity        # Primary load factor
 
 **Major Features**:
 1. **Task Storage**: Internal task queue + ConPort persistence
-2. **Leantime Polling**: Fetch updated tickets every 60s
-3. **Auto-Decomposition**: Trigger decomposition for high-complexity tasks
-4. **ADHD Routing**: Route tasks based on cognitive state
-5. **Event Coordination**: Publish task updates to Redis streams
+1. **Leantime Polling**: Fetch updated tickets every 60s
+1. **Auto-Decomposition**: Trigger decomposition for high-complexity tasks
+1. **ADHD Routing**: Route tasks based on cognitive state
+1. **Event Coordination**: Publish task updates to Redis streams
 
 **Currently Used**: ✅ Active as primary orchestration backend
 
@@ -609,9 +609,9 @@ Load = 0.4 * task_complexity        # Primary load factor
 **Trigger**: User provides PRD or complex task
 **Flow**:
 1. **SuperClaude** (`/dx:prd-parse`) - Parse requirements
-2. **task-orchestrator MCP** (`analyze_dependencies`) - Detect dependencies
-3. **ConPort** - Store task hierarchy with links
-4. **Leantime** - Create tickets for team visibility
+1. **task-orchestrator MCP** (`analyze_dependencies`) - Detect dependencies
+1. **ConPort** - Store task hierarchy with links
+1. **Leantime** - Create tickets for team visibility
 
 **Status**: ✅ ACTIVE
 
@@ -621,9 +621,9 @@ Load = 0.4 * task_complexity        # Primary load factor
 **Trigger**: User asks "What should I work on?"
 **Flow**:
 1. **task-orchestrator MCP** (`get_adhd_state`) - Check cognitive state
-2. **task-orchestrator MCP** (`get_task_recommendations`) - Get energy-matched tasks
-3. **ConPort** - Query unblocked tasks with ADHD metadata
-4. **ADHD Engine** - Verify energy/attention levels
+1. **task-orchestrator MCP** (`get_task_recommendations`) - Get energy-matched tasks
+1. **ConPort** - Query unblocked tasks with ADHD metadata
+1. **ADHD Engine** - Verify energy/attention levels
 
 **Status**: ✅ ACTIVE
 
@@ -633,10 +633,10 @@ Load = 0.4 * task_complexity        # Primary load factor
 **Trigger**: User starts focused work
 **Flow**:
 1. **task-orchestrator MCP** (`batch_tasks`) - Group related tasks
-2. **ADHD Engine** - Start 25-minute timer
-3. **ConPort** - Log session start in active_context
-4. **task-orchestrator** - Monitor cognitive load (background)
-5. **task-orchestrator MCP** (`record_break`) - Reset after break
+1. **ADHD Engine** - Start 25-minute timer
+1. **ConPort** - Log session start in active_context
+1. **task-orchestrator** - Monitor cognitive load (background)
+1. **task-orchestrator MCP** (`record_break`) - Reset after break
 
 **Status**: ✅ ACTIVE
 
@@ -646,9 +646,9 @@ Load = 0.4 * task_complexity        # Primary load factor
 **Trigger**: 25 minutes elapsed or cognitive load > 0.85
 **Flow**:
 1. **Cognitive Load Balancer** - Detect high load
-2. **Load Alert Manager** - Trigger break alert
-3. **ADHD Engine** - Send gentle notification
-4. **task-orchestrator MCP** (`record_break`) - Reset counters
+1. **Load Alert Manager** - Trigger break alert
+1. **ADHD Engine** - Send gentle notification
+1. **task-orchestrator MCP** (`record_break`) - Reset counters
 
 **Status**: ✅ ACTIVE
 
@@ -659,9 +659,9 @@ Load = 0.4 * task_complexity        # Primary load factor
 #### 1. Predictive Task Planning
 **Potential Flow**:
 1. **Predictive Orchestrator** - Analyze historical patterns
-2. **Sequence Optimizer** - Generate optimal daily task sequence
-3. **task-orchestrator MCP** (new tool: `get_daily_plan`) - Return AI-generated plan
-4. **ConPort** - Store plan for tracking
+1. **Sequence Optimizer** - Generate optimal daily task sequence
+1. **task-orchestrator MCP** (new tool: `get_daily_plan`) - Return AI-generated plan
+1. **ConPort** - Store plan for tracking
 
 **Value**: Reduce decision fatigue, automate morning planning
 **Status**: ⚠️ NOT IMPLEMENTED
@@ -671,9 +671,9 @@ Load = 0.4 * task_complexity        # Primary load factor
 #### 2. Flow Protection
 **Potential Flow**:
 1. **Flow State Detector** - Detect flow entry
-2. **task-orchestrator** - Block non-urgent notifications
-3. **DopeconBridge** - Defer low-priority events
-4. **ConPort** - Log flow session for analytics
+1. **task-orchestrator** - Block non-urgent notifications
+1. **DopeconBridge** - Defer low-priority events
+1. **ConPort** - Log flow session for analytics
 
 **Value**: Protect deep work, maximize productivity
 **Status**: ⚠️ NOT IMPLEMENTED
@@ -683,9 +683,9 @@ Load = 0.4 * task_complexity        # Primary load factor
 #### 3. Risk-Based Task Prioritization
 **Potential Flow**:
 1. **Predictive Risk Assessment** - Score tasks by risk
-2. **task-orchestrator MCP** (new tool: `prioritize_by_risk`) - Return risk-prioritized list
-3. **ConPort** - Update task priorities
-4. **Leantime** - Sync priority changes
+1. **task-orchestrator MCP** (new tool: `prioritize_by_risk`) - Return risk-prioritized list
+1. **ConPort** - Update task priorities
+1. **Leantime** - Sync priority changes
 
 **Value**: Proactive blocker prevention, reduce firefighting
 **Status**: ⚠️ NOT IMPLEMENTED
@@ -695,9 +695,9 @@ Load = 0.4 * task_complexity        # Primary load factor
 #### 4. Sprint Automation
 **Potential Flow**:
 1. **Automation Workflows** - Generate sprint plan from backlog
-2. **Multi-Team Coordination** - Balance team capacity
-3. **task-orchestrator MCP** (new tool: `plan_sprint`) - Return sprint breakdown
-4. **Leantime** - Create sprint tickets
+1. **Multi-Team Coordination** - Balance team capacity
+1. **task-orchestrator MCP** (new tool: `plan_sprint`) - Return sprint breakdown
+1. **Leantime** - Create sprint tickets
 
 **Value**: Automate sprint planning, save 2-3 hours per sprint
 **Status**: ⚠️ NOT IMPLEMENTED
@@ -958,24 +958,24 @@ Task-Orchestrator is a **high-quality, production-grade service** with:
 ### Highest-Value Improvements (Top 4)
 
 1. **Expose Flow State Detector** (2-3h, ⭐⭐⭐⭐⭐)
-   - Immediate ADHD UX improvement
-   - Protect deep work automatically
-   - Low implementation effort
+- Immediate ADHD UX improvement
+- Protect deep work automatically
+- Low implementation effort
 
-2. **Add Predictive Daily Plan** (4-6h, ⭐⭐⭐⭐⭐)
-   - Eliminate morning decision fatigue
-   - Leverage existing predictive_orchestrator.py
-   - High perceived value
+1. **Add Predictive Daily Plan** (4-6h, ⭐⭐⭐⭐⭐)
+- Eliminate morning decision fatigue
+- Leverage existing predictive_orchestrator.py
+- High perceived value
 
-3. **Risk-Based Task Recommendations** (3-4h, ⭐⭐⭐⭐)
-   - Proactive blocker prevention
-   - Enhance existing tool
-   - Reduce firefighting
+1. **Risk-Based Task Recommendations** (3-4h, ⭐⭐⭐⭐)
+- Proactive blocker prevention
+- Enhance existing tool
+- Reduce firefighting
 
-4. **Context Switch Analytics** (4-5h, ⭐⭐⭐⭐)
-   - Awareness → behavior change
-   - Leverage existing switch_cost_calculator.py
-   - Data-driven insights
+1. **Context Switch Analytics** (4-5h, ⭐⭐⭐⭐)
+- Awareness → behavior change
+- Leverage existing switch_cost_calculator.py
+- Data-driven insights
 
 **Total Effort**: 13-18 hours
 **Total Value**: 🚀 Transforms task-orchestrator from "good" to "exceptional"
@@ -986,20 +986,20 @@ Task-Orchestrator is a **high-quality, production-grade service** with:
 
 ### Immediate (This Week)
 1. Review this analysis with user
-2. Prioritize Top 4 improvements
-3. Create implementation plan
+1. Prioritize Top 4 improvements
+1. Create implementation plan
 
 ### Short-Term (2-4 Weeks)
 1. Implement Top 4 improvements
-2. Add integration tests
-3. Create metrics dashboard
-4. Document ConPort schema
+1. Add integration tests
+1. Create metrics dashboard
+1. Document ConPort schema
 
 ### Long-Term (1-3 Months)
 1. Sprint automation features
-2. Multi-team coordination (if applicable)
-3. Deployment orchestration integration
-4. Extract shared intelligence package
+1. Multi-team coordination (if applicable)
+1. Deployment orchestration integration
+1. Extract shared intelligence package
 
 ---
 

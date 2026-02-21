@@ -175,27 +175,27 @@ prelude: Dopeconbridge_Path_B_Execution_Report (explanation) for dopemux documen
 
 ### Fully Migrated (10 services) ✅
 1. **ADHD Engine** - Activity tracking, progress
-2. **Voice Commands** - Task decomposition, voice
-3. **Task Orchestrator** - Task sync, orchestration
-4. **Serena v2** - Decision search, navigation
-5. **GPT-Researcher** - Research state, findings
-6. **DDDPG** - Decision graph, traversal
-7. **Dope Context** - Context management, switching
-8. **Dope Brainz** - Intelligence, ML, predictions
-9. **Leantime** - PM plane coordination
-10. **TaskMaster** - Task management
+1. **Voice Commands** - Task decomposition, voice
+1. **Task Orchestrator** - Task sync, orchestration
+1. **Serena v2** - Decision search, navigation
+1. **GPT-Researcher** - Research state, findings
+1. **DDDPG** - Decision graph, traversal
+1. **Dope Context** - Context management, switching
+1. **Dope Brainz** - Intelligence, ML, predictions
+1. **Leantime** - PM plane coordination
+1. **TaskMaster** - Task management
 
 ### Remaining (10+ services) ⏳
 1. Monitoring Dashboard
-2. Activity Capture
-3. Workspace Watcher
-4. Break Suggester
-5. Energy Trends
-6. Interruption Shield
-7. Slack Integration
-8. Various Agents
-9. Working Memory Assistant
-10. Session Intelligence
+1. Activity Capture
+1. Workspace Watcher
+1. Break Suggester
+1. Energy Trends
+1. Interruption Shield
+1. Slack Integration
+1. Various Agents
+1. Working Memory Assistant
+1. Session Intelligence
 
 ---
 
@@ -300,23 +300,23 @@ python3 -m pytest tests/integration/
 
 ### New Adapters
 1. `services/dddpg/bridge_adapter.py` (217 lines)
-2. `services/dope-context/bridge_adapter.py` (272 lines)
-3. `services/shared/dopecon_bridge_client/brainz_adapter.py` (330 lines)
-4. `services/shared/dopecon_bridge_client/leantime_adapter.py` (320 lines)
-5. `services/taskmaster/bridge_adapter.py` (340 lines)
+1. `services/dope-context/bridge_adapter.py` (272 lines)
+1. `services/shared/dopecon_bridge_client/brainz_adapter.py` (330 lines)
+1. `services/shared/dopecon_bridge_client/leantime_adapter.py` (320 lines)
+1. `services/taskmaster/bridge_adapter.py` (340 lines)
 
 ### Documentation
 1. `DOPECONBRIDGE_COMPREHENSIVE_PLAN.md` (21KB)
-2. `DOPECONBRIDGE_COMPLETE_SUMMARY.md` (11KB)
-3. `DOPECONBRIDGE_MASTER_INDEX.md` (13KB)
-4. `DOPECONBRIDGE_RENAMING_COMPLETE.md` (auto-generated)
-5. `scripts/rename_to_dopecon_bridge.py` (286 lines)
+1. `DOPECONBRIDGE_COMPLETE_SUMMARY.md` (11KB)
+1. `DOPECONBRIDGE_MASTER_INDEX.md` (13KB)
+1. `DOPECONBRIDGE_RENAMING_COMPLETE.md` (auto-generated)
+1. `scripts/rename_to_dopecon_bridge.py` (286 lines)
 
 ### Renamed Files
 1. `services/shared/dopecon_bridge_client/` (from integration_bridge_client)
-2. `services/dopecon-bridge/` (from mcp-integration-bridge)
-3. `tests/shared/test_dopecon_bridge_client.py` (renamed)
-4. All `DOPECONBRIDGE_*.md` docs (6 files)
+1. `services/dopecon-bridge/` (from mcp-integration-bridge)
+1. `tests/shared/test_dopecon_bridge_client.py` (renamed)
+1. All `DOPECONBRIDGE_*.md` docs (6 files)
 
 ---
 
@@ -365,11 +365,11 @@ grep -r "Integration Bridge" services/ --include="*.py" | wc -l  # Should be 0 o
 
 **Phase 1-6 delivered:**
 1. **Complete rebrand** to DopeconBridge
-2. **DDDPG integration** - Full decision graph access
-3. **Dope Context** - Context management and switching
-4. **Dope Brainz** - Intelligence/ML integration
-5. **Leantime** - PM plane coordination
-6. **TaskMaster** - Task management
+1. **DDDPG integration** - Full decision graph access
+1. **Dope Context** - Context management and switching
+1. **Dope Brainz** - Intelligence/ML integration
+1. **Leantime** - PM plane coordination
+1. **TaskMaster** - Task management
 
 **All with:**
 - Production-ready code
@@ -386,22 +386,22 @@ grep -r "Integration Bridge" services/ --include="*.py" | wc -l  # Should be 0 o
 **To complete the remaining 40%:**
 
 1. **Create remaining service adapters** (4 hours)
-   - Use template from comprehensive plan
-   - ~10 services remaining
+- Use template from comprehensive plan
+- ~10 services remaining
 
-2. **Update DopeconBridge server** (2 hours)
-   - Add routing endpoints
-   - Update service registry
+1. **Update DopeconBridge server** (2 hours)
+- Add routing endpoints
+- Update service registry
 
-3. **Update documentation** (2 hours)
-   - Service catalog
-   - Architecture diagrams
-   - README updates
+1. **Update documentation** (2 hours)
+- Service catalog
+- Architecture diagrams
+- README updates
 
-4. **Testing & deployment** (3 hours)
-   - Integration tests
-   - Docker Compose updates
-   - Staging deployment
+1. **Testing & deployment** (3 hours)
+- Integration tests
+- Docker Compose updates
+- Staging deployment
 
 **Total remaining:** ~10 hours
 

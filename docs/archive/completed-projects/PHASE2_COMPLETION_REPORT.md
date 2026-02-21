@@ -24,9 +24,9 @@ prelude: Phase2_Completion_Report (explanation) for dopemux documentation and de
 Phase 2 has successfully improved code quality across the entire dopemux-mvp codebase by:
 
 1. ✅ **Fixed all bare exception handlers** (100+ occurrences)
-2. ✅ **Replaced print() statements with proper logging** (150+ occurrences)
-3. ✅ **Removed hardcoded secrets** (1 critical fix)
-4. ⚠️ **Type hints** (deferred to future - too aggressive for automated fix)
+1. ✅ **Replaced print() statements with proper logging** (150+ occurrences)
+1. ✅ **Removed hardcoded secrets** (1 critical fix)
+1. ⚠️ **Type hints** (deferred to future - too aggressive for automated fix)
 
 **Result**: The codebase now follows Python best practices for error handling, logging, and security.
 
@@ -79,10 +79,10 @@ except Exception as e:
 **Solution**:
 - Added `import logging` and `logger = logging.getLogger(__name__)` where missing
 - Replaced all `print()` with appropriate log levels:
-  - Errors/failures → `logger.error()`
-  - Warnings → `logger.warning()`
-  - Debug info → `logger.debug()`
-  - General info → `logger.info()`
+- Errors/failures → `logger.error()`
+- Warnings → `logger.warning()`
+- Debug info → `logger.debug()`
+- General info → `logger.info()`
 
 **Statistics**:
 - Files fixed: 312 files
@@ -142,7 +142,7 @@ def process_data(data):
    url: str = os.getenv("DATABASE_URL", "postgresql://dopemux_age:dopemux_age_dev_password@...")
    ```
 
-2. **shared/config.py** - RedisConfig:
+1. **shared/config.py** - RedisConfig:
    ```python
    # Before
    url: str = "redis://redis-primary:6379"
@@ -257,36 +257,36 @@ pytest tests/ -v --tb=short
 ### Immediate
 
 1. **Better Production Debugging**
-   - Structured logs with levels and context
-   - Exception details captured instead of silent failures
-   - Can adjust log verbosity at runtime
+- Structured logs with levels and context
+- Exception details captured instead of silent failures
+- Can adjust log verbosity at runtime
 
-2. **Improved Security**
-   - No credentials in version control
-   - Easy to rotate secrets (just update env vars)
-   - Different credentials per environment
+1. **Improved Security**
+- No credentials in version control
+- Easy to rotate secrets (just update env vars)
+- Different credentials per environment
 
-3. **Code Quality**
-   - Consistent error handling patterns
-   - Easier to add monitoring/alerting
-   - Better stack traces for debugging
+1. **Code Quality**
+- Consistent error handling patterns
+- Easier to add monitoring/alerting
+- Better stack traces for debugging
 
 ### Long Term
 
 1. **Maintainability**
-   - Developers can find issues faster
-   - Logs are searchable and parseable
-   - Clear error propagation patterns
+- Developers can find issues faster
+- Logs are searchable and parseable
+- Clear error propagation patterns
 
-2. **Observability**
-   - Can integrate with log aggregation (ELK, Splunk, etc.)
-   - Error rate tracking becomes possible
-   - Performance monitoring via log timings
+1. **Observability**
+- Can integrate with log aggregation (ELK, Splunk, etc.)
+- Error rate tracking becomes possible
+- Performance monitoring via log timings
 
-3. **Team Velocity**
-   - New developers understand error handling patterns
-   - Debugging is faster with proper logs
-   - Less time spent on "mysterious failures"
+1. **Team Velocity**
+- New developers understand error handling patterns
+- Debugging is faster with proper logs
+- Less time spent on "mysterious failures"
 
 ---
 
@@ -295,22 +295,22 @@ pytest tests/ -v --tb=short
 ### Immediate (Today)
 
 1. ✅ Phase 2 complete - no further action
-2. ⚠️ Review `PHASE2_SECURITY_REVIEW.md`
-3. 🔄 Run test suite to verify no regressions
+1. ⚠️ Review `PHASE2_SECURITY_REVIEW.md`
+1. 🔄 Run test suite to verify no regressions
 
 ### Short Term (This Week)
 
 1. Update CI/CD to fail on bare `except:` clauses
-2. Add linter rule for print() in non-test code
-3. Document logging levels and when to use each
-4. Add environment variable documentation
+1. Add linter rule for print() in non-test code
+1. Document logging levels and when to use each
+1. Add environment variable documentation
 
 ### Long Term (Next Sprint)
 
 1. Add type hints to public APIs manually
-2. Implement structured logging (JSON format)
-3. Set up log aggregation service
-4. Create monitoring dashboards from logs
+1. Implement structured logging (JSON format)
+1. Set up log aggregation service
+1. Create monitoring dashboards from logs
 
 ---
 
@@ -323,24 +323,24 @@ Files Modified:           448
 Total Fixes Applied:      6,943
 
 Exception Handling:
-  - Bare except: fixed         287
-  - Handlers improved          287
-  - Logger.error() added       143
+- Bare except: fixed         287
+- Handlers improved          287
+- Logger.error() added       143
 
 Logging:
-  - print() replaced         1,847
-  - Logger imports added       156
-  - Files updated              312
+- print() replaced         1,847
+- Logger imports added       156
+- Files updated              312
 
 Security:
-  - Hardcoded secrets fixed      2
-  - Env vars added               2
-  - False positives cleared     24
+- Hardcoded secrets fixed      2
+- Env vars added               2
+- False positives cleared     24
 
 Code Coverage:
-  - Services improved         35/40 (87.5%)
-  - Scripts updated          85/120 (70.8%)
-  - Shared modules              8/8 (100%)
+- Services improved         35/40 (87.5%)
+- Scripts updated          85/120 (70.8%)
+- Shared modules              8/8 (100%)
 ```
 
 ---

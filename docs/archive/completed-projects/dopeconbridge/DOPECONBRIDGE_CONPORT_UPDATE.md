@@ -312,15 +312,15 @@ services:
   conport:
     image: conport:latest
     ports:
-      - "3010:3010"
+- "3010:3010"
     networks:
-      - dopemux
+- dopemux
 
   my-service:
     environment:
-      - CONPORT_URL=http://conport:3010  # Direct access ❌
+- CONPORT_URL=http://conport:3010  # Direct access ❌
     depends_on:
-      - conport
+- conport
 ```
 
 ### After
@@ -330,28 +330,28 @@ services:
   conport:
     image: conport:latest
     ports:
-      - "3010:3010"
+- "3010:3010"
     networks:
-      - dopemux
+- dopemux
 
   dopecon-bridge:
     build: ./services/dopecon-bridge
     ports:
-      - "3016:3016"
+- "3016:3016"
     environment:
-      - CONPORT_URL=http://conport:3010  # Only bridge accesses ConPort
+- CONPORT_URL=http://conport:3010  # Only bridge accesses ConPort
     depends_on:
-      - conport
+- conport
     networks:
-      - dopemux
+- dopemux
 
   my-service:
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016  # Via bridge ✅
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016  # Via bridge ✅
     depends_on:
-      - dopecon-bridge
+- dopecon-bridge
     networks:
-      - dopemux
+- dopemux
 ```
 
 ---
@@ -587,9 +587,9 @@ DopeconBridge logs all ConPort operations:
 
 **Solutions:**
 1. Check ConPort is running: `curl http://localhost:3010/health`
-2. Verify `CONPORT_URL` in DopeconBridge config
-3. Check ConPort logs for errors
-4. Restart ConPort: `cd context_portal && python3 server.py`
+1. Verify `CONPORT_URL` in DopeconBridge config
+1. Check ConPort logs for errors
+1. Restart ConPort: `cd context_portal && python3 server.py`
 
 ### MCP Connection Failed
 
@@ -597,9 +597,9 @@ DopeconBridge logs all ConPort operations:
 
 **Solutions:**
 1. Verify ConPort MCP endpoint is available
-2. Check ConPort workspace ID is valid
-3. Review ConPort MCP protocol version compatibility
-4. Check network connectivity between bridge and ConPort
+1. Check ConPort workspace ID is valid
+1. Review ConPort MCP protocol version compatibility
+1. Check network connectivity between bridge and ConPort
 
 ### Custom Data Not Persisting
 
@@ -607,10 +607,10 @@ DopeconBridge logs all ConPort operations:
 
 **Solutions:**
 1. Check ConPort database integrity
-2. Verify workspace ID matches
-3. Check category/key spelling
-4. Review ConPort logs for write errors
-5. Verify ConPort has write permissions to DB
+1. Verify workspace ID matches
+1. Check category/key spelling
+1. Review ConPort logs for write errors
+1. Verify ConPort has write permissions to DB
 
 ### Search Not Working
 
@@ -618,10 +618,10 @@ DopeconBridge logs all ConPort operations:
 
 **Solutions:**
 1. Check ConPort indexing is enabled
-2. Verify workspace has indexed content
-3. Try simpler search query
-4. Check ConPort logs for indexing errors
-5. Rebuild ConPort search index
+1. Verify workspace has indexed content
+1. Try simpler search query
+1. Check ConPort logs for indexing errors
+1. Rebuild ConPort search index
 
 ---
 
@@ -726,8 +726,8 @@ Services should **never** have direct ConPort credentials:
 services:
   my-service:
     environment:
-      - POSTGRES_PASSWORD=conport_secret
-      - CONPORT_DB_PATH=/data/conport.db
+- POSTGRES_PASSWORD=conport_secret
+- CONPORT_DB_PATH=/data/conport.db
 ```
 
 ### 2. Bridge Authentication

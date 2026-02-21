@@ -132,9 +132,9 @@ python3 -m build --sdist --wheel
 ## 🎯 Next Steps
 
 1. Create GitHub tag: `v0.1.0`
-2. Test PyPI upload (TestPyPI)
-3. Production PyPI release
-4. Update Homebrew formula
+1. Test PyPI upload (TestPyPI)
+1. Production PyPI release
+1. Update Homebrew formula
 
 ---
 

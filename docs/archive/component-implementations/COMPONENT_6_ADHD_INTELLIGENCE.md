@@ -34,11 +34,11 @@ Component 6: Intelligence (learns, predicts, adapts, protects)
 ### 60% - ADHD Intelligence 🧠
 **6 Major Features** (research-backed ADHD optimizations):
 1. **Session Intelligence & Flow State** (15%) - Detect and protect hyperfocus
-2. **Predictive Task Orchestration** (20%) - ML-powered recommendations
-3. **Cognitive Load Balancer** (15%) - Real-time overwhelm prevention
-4. **Context Switch Recovery** (10%) ⭐ **Phase 1 Complete**
-5. **Energy-Aware Task Matching** (5%) - Match tasks to energy levels
-6. **Focus Drift Detection** (5%) - Gentle interventions
+1. **Predictive Task Orchestration** (20%) - ML-powered recommendations
+1. **Cognitive Load Balancer** (15%) - Real-time overwhelm prevention
+1. **Context Switch Recovery** (10%) ⭐ **Phase 1 Complete**
+1. **Energy-Aware Task Matching** (5%) - Match tasks to energy levels
+1. **Focus Drift Detection** (5%) - Gentle interventions
 
 ### 25% - Essential Observability 📊
 **4 Key Metrics** (debugging and learning):
@@ -66,15 +66,15 @@ Component 6: Intelligence (learns, predicts, adapts, protects)
 
 **Files Created**:
 1. **services/task-orchestrator/observability/**init**.py** (13 lines)
-2. **services/task-orchestrator/observability/metrics_collector.py** (600+ lines)
-   - 20+ Prometheus metrics for ADHD workflows
-   - Graceful degradation when Prometheus unavailable
-   - In-memory fallback for metric tracking
+1. **services/task-orchestrator/observability/metrics_collector.py** (600+ lines)
+- 20+ Prometheus metrics for ADHD workflows
+- Graceful degradation when Prometheus unavailable
+- In-memory fallback for metric tracking
 
-3. **services/task-orchestrator/observability/adhd_dashboard.py** (350+ lines)
-   - 8 Grafana dashboard panels
-   - Visual ADHD workflow monitoring
-   - Cognitive load heatmaps, flow state timelines
+1. **services/task-orchestrator/observability/adhd_dashboard.py** (350+ lines)
+- 8 Grafana dashboard panels
+- Visual ADHD workflow monitoring
+- Cognitive load heatmaps, flow state timelines
 
 **Key Metrics Implemented**:
 ```python
@@ -109,7 +109,7 @@ adhd_context_switch_recovery_seconds  # Histogram (target: < 2s)
 
 **Files Created**:
 1. **services/task-orchestrator/intelligence/**init**.py** (15 lines)
-2. **services/task-orchestrator/intelligence/context_switch_recovery.py** (650+ lines)
+1. **services/task-orchestrator/intelligence/context_switch_recovery.py** (650+ lines)
 
 **Key Features Implemented**:
 
@@ -118,14 +118,14 @@ adhd_context_switch_recovery_seconds  # Histogram (target: < 2s)
 async def detect_context_switch() -> Optional[ContextSwitch]:
     """
     Detect context switches using multiple signals:
-    - Window focus changes (Desktop-Commander)
-    - Task changes (Task-Orchestrator)
-    - Worktree changes (Git)
+- Window focus changes (Desktop-Commander)
+- Task changes (Task-Orchestrator)
+- Worktree changes (Git)
 
     Classifies switches as:
-    - INTERRUPT: External interruption
-    - INTENTIONAL: User-chosen switch
-    - BREAK_RETURN: Returning from break (>10 min idle)
+- INTERRUPT: External interruption
+- INTENTIONAL: User-chosen switch
+- BREAK_RETURN: Returning from break (>10 min idle)
     """
 ```
 
@@ -134,13 +134,13 @@ async def detect_context_switch() -> Optional[ContextSwitch]:
 class RecoveryContext:
     """
     Complete recovery information:
-    - last_screenshot_path: Visual memory aid
-    - open_files: Files that were open
-    - cursor_positions: Exact cursor locations
-    - current_task: Task being worked on
-    - recent_decisions: Last 3 ConPort decisions
-    - current_worktree: Git worktree context
-    - summary: "You were doing X" narrative
+- last_screenshot_path: Visual memory aid
+- open_files: Files that were open
+- cursor_positions: Exact cursor locations
+- current_task: Task being worked on
+- recent_decisions: Last 3 ConPort decisions
+- current_worktree: Git worktree context
+- summary: "You were doing X" narrative
     """
 ```
 
@@ -150,14 +150,14 @@ async def provide_recovery_assistance(switch: ContextSwitch) -> RecoveryContext:
     """
     Provides recovery in < 2 seconds:
 
-    1. Screenshot (visual memory aid)
-    2. Open files list with cursor positions
-    3. Last 3 decisions from ConPort
-    4. In-progress tasks from ConPort
-    5. "You were doing X" summary
-    6. Auto-restore navigation state (Serena)
-    7. Recovery UI display
-    8. Metrics tracking
+1. Screenshot (visual memory aid)
+1. Open files list with cursor positions
+1. Last 3 decisions from ConPort
+1. In-progress tasks from ConPort
+1. "You were doing X" summary
+1. Auto-restore navigation state (Serena)
+1. Recovery UI display
+1. Metrics tracking
 
     Returns: Complete RecoveryContext
     """
@@ -168,10 +168,10 @@ async def provide_recovery_assistance(switch: ContextSwitch) -> RecoveryContext:
 async def start_monitoring(interval_seconds: int = 5):
     """
     Continuous monitoring:
-    - Captures screenshots every 5 seconds (visual memory aid)
-    - Detects context switches in real-time
-    - Automatically provides recovery assistance
-    - Tracks recovery metrics
+- Captures screenshots every 5 seconds (visual memory aid)
+- Detects context switches in real-time
+- Automatically provides recovery assistance
+- Tracks recovery metrics
     """
 ```
 
@@ -180,11 +180,11 @@ async def start_monitoring(interval_seconds: int = 5):
 async def get_recovery_statistics() -> Dict[str, Any]:
     """
     Returns:
-    - total_switches: Count of switches
-    - average_recovery_seconds: Actual recovery time
-    - target_recovery_seconds: 2.0
-    - performance_vs_target: How we're doing
-    - switches_by_reason: Breakdown by type
+- total_switches: Count of switches
+- average_recovery_seconds: Actual recovery time
+- target_recovery_seconds: 2.0
+- performance_vs_target: How we're doing
+- switches_by_reason: Breakdown by type
     """
 ```
 
@@ -351,35 +351,35 @@ dashboard.export_to_file("adhd_intelligence_dashboard.json")
 ### Phase 2: Intelligence Core (Weeks 3-5) - 50% of Component 6
 **Features**:
 - **Predictive Task Orchestration** (ML model training)
-  - Rule-based heuristics (Weeks 1-4)
-  - ML predictions (Week 5+)
-  - Reinforcement learning from outcomes
+- Rule-based heuristics (Weeks 1-4)
+- ML predictions (Week 5+)
+- Reinforcement learning from outcomes
 
 - **Cognitive Load Balancer**
-  - Real-time load estimation (0.4/0.2/0.2/0.1/0.1 formula)
-  - Configurable per-user weights
-  - Overwhelm prevention alerts
+- Real-time load estimation (0.4/0.2/0.2/0.1/0.1 formula)
+- Configurable per-user weights
+- Overwhelm prevention alerts
 
 **Deliverable**: AI recommending next tasks based on learned patterns
 
 ### Phase 3: Flow Optimization (Weeks 6-7) - 20% of Component 6
 **Features**:
 - **Session Intelligence & Flow State**
-  - Flow detection algorithm
-  - Interruption protection during hyperfocus
-  - Learning optimal session lengths
+- Flow detection algorithm
+- Interruption protection during hyperfocus
+- Learning optimal session lengths
 
 - **Energy-Aware Task Matching**
-  - Energy level detection (via ConPort)
-  - Complexity-to-energy matching
+- Energy level detection (via ConPort)
+- Complexity-to-energy matching
 
 **Deliverable**: System protects flow and matches tasks to energy
 
 ### Phase 4: Polish & Drift Prevention (Week 8) - 10% of Component 6
 **Features**:
 - **Focus Drift Detection**
-  - Gentle interventions
-  - Drift pattern learning
+- Gentle interventions
+- Drift pattern learning
 
 - Observability dashboards (Grafana setup)
 - Resilience testing (event replay, health checks)
@@ -410,13 +410,13 @@ Component 1: Dependency Audit (understand codebase)
 ### Data Flow Example: Context Switch Recovery
 ```
 1. Desktop-Commander → Detects window change
-2. Context Switch Recovery → Queries ConPort (Component 5)
-3. ConPort → Returns recent decisions, in-progress tasks
-4. Context Switch Recovery → Queries Serena (navigation state)
-5. Context Switch Recovery → Generates recovery context
-6. DopeconBridge → Routes recovery event (Component 3)
-7. Metrics Collector → Records switch metrics (Component 6)
-8. Grafana → Displays recovery dashboard
+1. Context Switch Recovery → Queries ConPort (Component 5)
+1. ConPort → Returns recent decisions, in-progress tasks
+1. Context Switch Recovery → Queries Serena (navigation state)
+1. Context Switch Recovery → Generates recovery context
+1. DopeconBridge → Routes recovery event (Component 3)
+1. Metrics Collector → Records switch metrics (Component 6)
+1. Grafana → Displays recovery dashboard
 ```
 
 ---
@@ -489,10 +489,10 @@ Component 1: Dependency Audit (understand codebase)
 - ✅ Component 4: ConPort MCP Real-Time Sync (Push)
 - ✅ Component 5: Cross-Plane Queries (Pull)
 - 🟡 **Component 6: ADHD Intelligence Layer** ⬅ **Phase 1 Complete (25%)**
-  - ✅ Phase 1: Observability + Context Switch Recovery
-  - ⏳ Phase 2: Intelligence Core (ML predictions, cognitive load)
-  - ⏳ Phase 3: Flow Optimization
-  - ⏳ Phase 4: Polish & Drift Prevention
+- ✅ Phase 1: Observability + Context Switch Recovery
+- ⏳ Phase 2: Intelligence Core (ML predictions, cognitive load)
+- ⏳ Phase 3: Flow Optimization
+- ⏳ Phase 4: Polish & Drift Prevention
 
 ---
 
@@ -502,5 +502,5 @@ Component 1: Dependency Audit (understand codebase)
 
 **Next Session**:
 1. Test Context Switch Recovery with live MCPs
-2. Start Phase 2 (ML predictions + cognitive load balancer)
-3. Validate Phase 2 design with Zen consensus (Docker now running)
+1. Start Phase 2 (ML predictions + cognitive load balancer)
+1. Validate Phase 2 design with Zen consensus (Docker now running)

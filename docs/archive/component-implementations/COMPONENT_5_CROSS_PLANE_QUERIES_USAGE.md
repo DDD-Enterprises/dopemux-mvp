@@ -29,10 +29,10 @@ ConPort (Cognitive Plane) → Query Methods → Task-Orchestrator (PM Plane)
 
 **5 Query Operations**:
 1. `enrich_task_with_decisions` - Decision context for tasks
-2. `get_applicable_patterns` - Proven patterns to guide implementation
-3. `get_current_adhd_state` - User energy/attention for adaptive scheduling
-4. `get_task_dependencies_from_graph` - Implicit dependencies via knowledge graph
-5. `find_similar_completed_tasks` - Learn from past implementations
+1. `get_applicable_patterns` - Proven patterns to guide implementation
+1. `get_current_adhd_state` - User energy/attention for adaptive scheduling
+1. `get_task_dependencies_from_graph` - Implicit dependencies via knowledge graph
+1. `find_similar_completed_tasks` - Learn from past implementations
 
 ---
 
@@ -51,10 +51,10 @@ async def prepare_task_for_execution(
     Enrich task with ConPort knowledge before execution.
 
     Steps:
-    1. Query relevant decisions
-    2. Query applicable patterns
-    3. Find similar completed tasks
-    4. Attach enrichment data to task metadata
+1. Query relevant decisions
+1. Query applicable patterns
+1. Find similar completed tasks
+1. Attach enrichment data to task metadata
     """
     enrichment = {}
 

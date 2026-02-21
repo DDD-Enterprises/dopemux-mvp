@@ -56,57 +56,57 @@ Extracted **all action items** from comprehensive audit and categorized by:
 ### ✅ COMPLETE (This Session)
 
 1. **CORS Wildcards** 🔴 CRITICAL
-   - Status: ✅ FIXED
-   - Impact: 4 services secured
-   - Evidence: Commits 62202733, 8e40ecf9
+- Status: ✅ FIXED
+- Impact: 4 services secured
+- Evidence: Commits 62202733, 8e40ecf9
 
-2. **Hardcoded Credentials** 🔴 CRITICAL
-   - Status: ✅ FIXED
-   - Impact: 2 files migrated to env vars
-   - Evidence: Commit 62202733
+1. **Hardcoded Credentials** 🔴 CRITICAL
+- Status: ✅ FIXED
+- Impact: 2 files migrated to env vars
+- Evidence: Commit 62202733
 
-3. **No API Authentication** 🔴 CRITICAL
-   - Status: ✅ FIXED
-   - Impact: 7 ADHD Engine endpoints secured
-   - Evidence: auth.py created, commit 62202733
+1. **No API Authentication** 🔴 CRITICAL
+- Status: ✅ FIXED
+- Impact: 7 ADHD Engine endpoints secured
+- Evidence: auth.py created, commit 62202733
 
 ### ⚠️ PENDING (From Older Audits)
 
 1. **ConPort KG SQL Injection** 🔴 CRITICAL
-   - Location: `services/conport_kg/queries/{overview,exploration,deep_context}.py`
-   - Issue: Unvalidated `limit` parameter in Cypher queries
-   - Attack: `limit = "1; DROP TABLE--"`
-   - Fix: Add `_validate_limit()` method
-   - Effort: 2 hours (30min per file × 4 locations)
-   - Priority: 🔴 **CRITICAL** (from conport-kg-analysis-2025-10-16.md)
-   - **Action**: Fix before ANY ConPort KG production use
+- Location: `services/conport_kg/queries/{overview,exploration,deep_context}.py`
+- Issue: Unvalidated `limit` parameter in Cypher queries
+- Attack: `limit = "1; DROP TABLE--"`
+- Fix: Add `_validate_limit()` method
+- Effort: 2 hours (30min per file × 4 locations)
+- Priority: 🔴 **CRITICAL** (from conport-kg-analysis-2025-10-16.md)
+- **Action**: Fix before ANY ConPort KG production use
 
-2. **ConPort KG ReDoS Attack** 🔴 CRITICAL
-   - Location: `services/conport_kg/queries/deep_context.py:200`
-   - Issue: Unescaped regex `pattern = f'.*{search_term}.*'`
-   - Attack: `search_term = "(a+)+"` causes infinite loop
-   - Fix: Use `re.escape(search_term)`
-   - Effort: 1 hour
-   - Priority: 🔴 **CRITICAL** (from ADR-201)
-   - **Action**: Fix immediately
+1. **ConPort KG ReDoS Attack** 🔴 CRITICAL
+- Location: `services/conport_kg/queries/deep_context.py:200`
+- Issue: Unescaped regex `pattern = f'.*{search_term}.*'`
+- Attack: `search_term = "(a+)+"` causes infinite loop
+- Fix: Use `re.escape(search_term)`
+- Effort: 1 hour
+- Priority: 🔴 **CRITICAL** (from ADR-201)
+- **Action**: Fix immediately
 
-3. **GPT-Researcher WebSocket Auth** 🟠 MEDIUM
-   - Location: `services/dopemux-gpt-researcher/backend/main.py:332`
-   - Issue: No authentication on WS endpoint
-   - Risk: Information disclosure (user can access any user's progress)
-   - Fix: Add API key to query params
-   - Effort: 1 hour
-   - Priority: 🟠 MEDIUM (defense-in-depth)
-   - **Action**: Add to next sprint
+1. **GPT-Researcher WebSocket Auth** 🟠 MEDIUM
+- Location: `services/dopemux-gpt-researcher/backend/main.py:332`
+- Issue: No authentication on WS endpoint
+- Risk: Information disclosure (user can access any user's progress)
+- Fix: Add API key to query params
+- Effort: 1 hour
+- Priority: 🟠 MEDIUM (defense-in-depth)
+- **Action**: Add to next sprint
 
-4. **ConPort UI URL Encoding** 🟠 MEDIUM
-   - Location: `services/conport_kg_ui/src/api/client.ts`
-   - Issue: Manual query string construction
-   - Risk: Special characters break URLs
-   - Fix: Use `URLSearchParams`
-   - Effort: 30 minutes
-   - Priority: 🟠 MEDIUM (from conport-kg-ui-analysis)
-   - **Action**: Quick fix, high value
+1. **ConPort UI URL Encoding** 🟠 MEDIUM
+- Location: `services/conport_kg_ui/src/api/client.ts`
+- Issue: Manual query string construction
+- Risk: Special characters break URLs
+- Fix: Use `URLSearchParams`
+- Effort: 30 minutes
+- Priority: 🟠 MEDIUM (from conport-kg-ui-analysis)
+- **Action**: Quick fix, high value
 
 ---
 
@@ -115,15 +115,15 @@ Extracted **all action items** from comprehensive audit and categorized by:
 ### ✅ COMPLETE (This Session)
 
 1. **DopeconBridge Completion** 🔴 CRITICAL
-   - Status: ✅ DONE (80% → 100%)
-   - Impact: custom_data endpoints now functional
-   - Evidence: mcp_client.py created, commit 1b76ef66
-   - Time: 1 hour (projected 4-6h!)
+- Status: ✅ DONE (80% → 100%)
+- Impact: custom_data endpoints now functional
+- Evidence: mcp_client.py created, commit 1b76ef66
+- Time: 1 hour (projected 4-6h!)
 
-2. **ADHD Engine Migration** 🟡 HIGH
-   - Status: ✅ DONE (uses bridge, not direct SQLite)
-   - Impact: Architecture violation eliminated
-   - Evidence: bridge_integration.py, commit 2c8e7fbc
+1. **ADHD Engine Migration** 🟡 HIGH
+- Status: ✅ DONE (uses bridge, not direct SQLite)
+- Impact: Architecture violation eliminated
+- Evidence: bridge_integration.py, commit 2c8e7fbc
 
 ### ✅ COMPLETE (October 2025)
 
@@ -156,12 +156,12 @@ Extracted **all action items** from comprehensive audit and categorized by:
 
 **Features Operational**:
 1. F-NEW-1: Dynamic result limits (3-40) ✅ LIVE
-2. F-NEW-2: Semantic code search ✅ LIVE
-3. F-NEW-3: Unified complexity (AST+LSP+Usage+ADHD) ✅ READY Oct 25
-4. F-NEW-4: Attention-aware search ✅ OPERATIONAL
-5. F-NEW-5: Code graph enrichment ✅ READY
-6. F-NEW-6: Session intelligence dashboard ✅ READY
-7. F-NEW-7: ConPort-KG 2.0 ⏳ STRATEGIC (Q1 2026, 3-4 weeks)
+1. F-NEW-2: Semantic code search ✅ LIVE
+1. F-NEW-3: Unified complexity (AST+LSP+Usage+ADHD) ✅ READY Oct 25
+1. F-NEW-4: Attention-aware search ✅ OPERATIONAL
+1. F-NEW-5: Code graph enrichment ✅ READY
+1. F-NEW-6: Session intelligence dashboard ✅ READY
+1. F-NEW-7: ConPort-KG 2.0 ⏳ STRATEGIC (Q1 2026, 3-4 weeks)
 
 **Documentation**: docs/F-NEW_FEATURES_STATUS.md (285 lines)
 
@@ -225,9 +225,9 @@ Extracted **all action items** from comprehensive audit and categorized by:
 - Impact: 634 tests can't run
 - Root Cause: Tests import from ../dopemux-mvp/
 - Fix Options:
-  - A: Workspace restructuring (4-6h)
-  - B: Monorepo setup (2-3h)
-  - C: Defer (separate task)
+- A: Workspace restructuring (4-6h)
+- B: Monorepo setup (2-3h)
+- C: Defer (separate task)
 - Priority: 🟡 HIGH (quality)
 - **Action**: Separate infrastructure task
 
@@ -431,9 +431,9 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 
 **Must Do Before Production**:
 1. Fix ConPort KG SQL injection (2h) 🔴
-2. Fix ConPort KG ReDoS (1h) 🔴
-3. Fix ConPort UI URL encoding (30min) 🟠
-4. Test all fixes (30min)
+1. Fix ConPort KG ReDoS (1h) 🔴
+1. Fix ConPort UI URL encoding (30min) 🟠
+1. Test all fixes (30min)
 
 **Outcome**: ConPort KG production-ready
 
@@ -442,10 +442,10 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 ### Sprint 2: Architecture Completion (6h)
 
 **Complete Two-Plane Architecture**:
-5. Wire ConPort Orchestrator to bridge (2-3h) 🟡
-6. Add GPT-Researcher WebSocket auth (1h) 🟠
-7. Review Task-Orchestrator un-deprecation (2h) 🟡
-8. Integration testing (1h)
+1. Wire ConPort Orchestrator to bridge (2-3h) 🟡
+1. Add GPT-Researcher WebSocket auth (1h) 🟠
+1. Review Task-Orchestrator un-deprecation (2h) 🟡
+1. Integration testing (1h)
 
 **Outcome**: Full architecture compliance + automation layer
 
@@ -454,8 +454,8 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 ### Sprint 3: Quality & Performance (8h)
 
 **Optional but High Value**:
-9. Fix integration test infrastructure (4h) 🟡
-10. ConPort search → PostgreSQL FTS (4h) 🟠
+1. Fix integration test infrastructure (4h) 🟡
+1. ConPort search → PostgreSQL FTS (4h) 🟠
 
 **Outcome**: Automated testing + 10x search performance
 
@@ -495,21 +495,21 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 
 **Week 1** (This Week):
 1. Deploy current fixes (30min) ✅
-2. Fix ConPort KG security (4h) 🔴
-3. Test ConPort KG thoroughly (1h)
+1. Fix ConPort KG security (4h) 🔴
+1. Test ConPort KG thoroughly (1h)
 
 **Week 2**:
-4. Wire ConPort Orchestrator (2-3h) 🟡
-5. Review Task-Orchestrator decision (2h) 🟡
-6. Add WebSocket auth (1h) 🟠
+1. Wire ConPort Orchestrator (2-3h) 🟡
+1. Review Task-Orchestrator decision (2h) 🟡
+1. Add WebSocket auth (1h) 🟠
 
 **Week 3**:
-7. Fix test infrastructure (4h) 🟡
-8. Performance improvements (4h) 🟠
+1. Fix test infrastructure (4h) 🟡
+1. Performance improvements (4h) 🟠
 
 **Quarterly Planning**:
-9. Prioritize Q1 2026 features
-10. Allocate resources for major enhancements
+1. Prioritize Q1 2026 features
+1. Allocate resources for major enhancements
 
 ---
 

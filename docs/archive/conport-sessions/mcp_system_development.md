@@ -59,27 +59,27 @@ Size: 796 words
 
 ### **Critical MCP Tools Needed**
 1. **Exa MCP Server** - For fast research queries on:
-   - Task-Orchestrator template customization patterns
-   - Git worktree multi-agent automation scripts
-   - ADHD accommodation behavioral patterns
-   - Docker Compose multi-service optimization
+- Task-Orchestrator template customization patterns
+- Git worktree multi-agent automation scripts
+- ADHD accommodation behavioral patterns
+- Docker Compose multi-service optimization
 
-2. **MAS Sequential Thinking MCP Server** - For comprehensive analysis:
-   - Process complete research findings package
-   - Generate integrated architecture specification
-   - Synthesize evidence-based implementation parameters
+1. **MAS Sequential Thinking MCP Server** - For comprehensive analysis:
+- Process complete research findings package
+- Generate integrated architecture specification
+- Synthesize evidence-based implementation parameters
 
 ### **Remaining Research Queries** (6 critical queries)
 
 #### **ChatGPT Deep Research** (Execute with context)
 1. **ConPort GraphRAG Integration** - Project memory with Neo4j knowledge graphs
-2. **Git Worktree Multi-Agent Patterns** - Isolation strategies and cleanup policies
-3. **ADHD Trait Detection Systems** - Behavioral pattern analysis for personalization
+1. **Git Worktree Multi-Agent Patterns** - Isolation strategies and cleanup policies
+1. **ADHD Trait Detection Systems** - Behavioral pattern analysis for personalization
 
 #### **Exa Fast Research** (Execute when connected)
 1. **Task-Orchestrator Template Examples** - Custom workflow development
-2. **Docker Compose Multi-DB Patterns** - 15+ service optimization
-3. **Claude Code Extension Packaging** - Distribution strategies
+1. **Docker Compose Multi-DB Patterns** - 15+ service optimization
+1. **Claude Code Extension Packaging** - Distribution strategies
 
 ### **Research Integration Process**
 ```mermaid
@@ -102,10 +102,10 @@ graph LR
 
 ### **After Restart**
 1. **Validate MCP Connections** - Confirm Exa and MAS Sequential Thinking available
-2. **Execute Remaining Research** - Process 6 remaining queries with proper tools
-3. **Comprehensive Synthesis** - Feed complete research package to Sequential Thinking
-4. **Architecture Validation** - Generate final evidence-based specifications
-5. **Implementation Updates** - Refine Phase 1-3 artifacts with research findings
+1. **Execute Remaining Research** - Process 6 remaining queries with proper tools
+1. **Comprehensive Synthesis** - Feed complete research package to Sequential Thinking
+1. **Architecture Validation** - Generate final evidence-based specifications
+1. **Implementation Updates** - Refine Phase 1-3 artifacts with research findings
 
 ## 🔬 **Research Framework Status**
 
@@ -116,15 +116,15 @@ graph LR
 
 ### **Architecture Decisions Validated**
 1. ✅ **Milvus Native Hybrid** - Single collection vs dual-system
-2. ✅ **Redis Semantic Cache** - 0.95 similarity, 1h TTL + events
-3. ✅ **Voyage Reranking** - rerank-2.5 for quality, optimal batch size 20-50
-4. ✅ **MetaMCP Security** - Namespace isolation, Bearer tokens
+1. ✅ **Redis Semantic Cache** - 0.95 similarity, 1h TTL + events
+1. ✅ **Voyage Reranking** - rerank-2.5 for quality, optimal batch size 20-50
+1. ✅ **MetaMCP Security** - Namespace isolation, Bearer tokens
 
 ### **Decisions Pending Research**
 1. 🔄 **ConPort Graph Schema** - Entity extraction for project memory
-2. 🔄 **Git Worktree Automation** - Multi-agent isolation patterns
-3. 🔄 **Task-Orchestrator Integration** - Template customization for ADHD workflows
-4. 🔄 **ADHD Personalization** - Trait detection and adaptation systems
+1. 🔄 **Git Worktree Automation** - Multi-agent isolation patterns
+1. 🔄 **Task-Orchestrator Integration** - Template customization for ADHD workflows
+1. 🔄 **ADHD Personalization** - Trait detection and adaptation systems
 
 ## 📁 **Key Files Created This Session**
 
@@ -263,13 +263,13 @@ Size: 771 words
 
 ### **Need to Connect**:
 1. **Real Exa MCP Server** - Web research capabilities
-   - Not the demo `@modelcontextprotocol/server-everything`
-   - Actual Exa search API integration
+- Not the demo `@modelcontextprotocol/server-everything`
+- Actual Exa search API integration
 
-2. **MAS Sequential Thinking** - Deep analysis (optional)
-   - Docker container working at localhost:8000
-   - HTTP transport established
-   - Alternative: Use zen thinkdeep for synthesis
+1. **MAS Sequential Thinking** - Deep analysis (optional)
+- Docker container working at localhost:8000
+- HTTP transport established
+- Alternative: Use zen thinkdeep for synthesis
 
 ### **Already Available**:
 - **zen MCP**: thinkdeep, consensus, debug, planner, codereview
@@ -289,10 +289,10 @@ graph LR
 
 ### **Session Restart Workflow**:
 1. **Verify MCP Connections** - Confirm real Exa and zen availability
-2. **Execute Research Queries** - Process all 6 queries systematically
-3. **Synthesis Processing** - Feed results to zen thinkdeep for analysis
-4. **Architecture Validation** - Generate evidence-based specifications
-5. **Update Documentation** - Refine implementation artifacts
+1. **Execute Research Queries** - Process all 6 queries systematically
+1. **Synthesis Processing** - Feed results to zen thinkdeep for analysis
+1. **Architecture Validation** - Generate evidence-based specifications
+1. **Update Documentation** - Refine implementation artifacts
 
 ## 📁 **Key Research Context Files**
 
@@ -473,9 +473,9 @@ $ uvx mcp-proxy --transport streamablehttp http://localhost:3004/mcp
 
 ### Critical MCP Patterns:
 1. **Streamable HTTP Transport**: Required for HTTP-based MCP servers
-2. **mcp-proxy**: Essential bridge between stdio and HTTP transports
-3. **Protocol Negotiation**: Must implement proper JSON-RPC 2.0 handshake
-4. **MetaMCP Architecture**: Use proxy patterns for containerized servers
+1. **mcp-proxy**: Essential bridge between stdio and HTTP transports
+1. **Protocol Negotiation**: Must implement proper JSON-RPC 2.0 handshake
+1. **MetaMCP Architecture**: Use proxy patterns for containerized servers
 
 ### What Doesn't Work:
 - ❌ Basic HTTP servers without MCP protocol layer
@@ -497,9 +497,9 @@ $ uvx mcp-proxy --transport streamablehttp http://localhost:3004/mcp
 
 ### Future Implementation:
 1. **Claude-Context Server**: Complete rebuild and test
-2. **Serena Server**: Convert to mcp-proxy pattern
-3. **MorphLLM Server**: Update transport mechanism
-4. **Documentation**: Update MCP setup guides with correct patterns
+1. **Serena Server**: Convert to mcp-proxy pattern
+1. **MorphLLM Server**: Update transport mechanism
+1. **Documentation**: Update MCP setup guides with correct patterns
 
 ## 🎯 Impact Assessment
 
@@ -581,10 +581,10 @@ Size: 862 words
 - ✅ **Python Implementation**: Created `exa_server.py` using official `exa-py>=1.0.0` package
 - ✅ **API Compatibility**: Replaced unofficial `exa-mcp` npm package with official Python client
 - ✅ **Full Feature Set**: Implemented all core Exa capabilities:
-  - `search_web()` - AI-powered web search with autoprompt
-  - `search_and_contents()` - Search + content retrieval in one call
-  - `get_contents()` - URL content extraction
-  - `find_similar()` - Similar website discovery
+- `search_web()` - AI-powered web search with autoprompt
+- `search_and_contents()` - Search + content retrieval in one call
+- `get_contents()` - URL content extraction
+- `find_similar()` - Similar website discovery
 
 ### 3. **FastMCP Server Architecture**
 - ✅ **Proper Server Setup**: Using `FastMCP("Exa Research")` with correct HTTP transport
@@ -595,20 +595,20 @@ Size: 862 words
 ### 4. **Docker Infrastructure**
 - ✅ **Python Container**: Refactored from Node.js to Python 3.11-slim
 - ✅ **Dependencies**: Updated requirements.txt with official packages:
-  - `exa-py>=1.0.0` (official Exa client)
-  - `fastmcp>=0.1.0` (MCP server framework)
-  - `uvicorn[standard]>=0.30.0` (ASGI server)
+- `exa-py>=1.0.0` (official Exa client)
+- `fastmcp>=0.1.0` (MCP server framework)
+- `uvicorn[standard]>=0.30.0` (ASGI server)
 - ✅ **Health Checks**: Docker health check using `/health` endpoint
 - ✅ **Container Build**: Successfully built `dopemux-exa:latest`
 
 ### 5. **API Integration Details**
 - ✅ **Authentication**: Real API key integration (`EXA_API_KEY=8f180834-2db5-4574-8b68-f8512628ee66`)
 - ✅ **Parameter Support**: Full parameter support including:
-  - Date filtering (`start_published_date`, `end_published_date`)
-  - Domain filtering (`include_domains`, `exclude_domains`)
-  - Search types (`neural`, `keyword`)
-  - Categories (`company`)
-  - Content limits and highlighting
+- Date filtering (`start_published_date`, `end_published_date`)
+- Domain filtering (`include_domains`, `exclude_domains`)
+- Search types (`neural`, `keyword`)
+- Categories (`company`)
+- Content limits and highlighting
 
 ## 🚀 **Key Architecture Improvements**
 
@@ -653,10 +653,10 @@ async def health_check(request):
 
 ### **Docker Compose Integration**
 - Existing service definition in `docker/mcp-servers/docker-compose.yml`:
-  - Service name: `exa`
-  - Port: `3008:3008`
-  - Health checks configured
-  - Environment: `EXA_API_KEY=${EXA_API_KEY}`
+- Service name: `exa`
+- Port: `3008:3008`
+- Health checks configured
+- Environment: `EXA_API_KEY=${EXA_API_KEY}`
 
 ## ✅ **Testing Results (All Phases Complete)**
 
@@ -670,10 +670,10 @@ async def health_check(request):
 ### **✅ Phase 2: MCP Tools Verification**
 - ✅ **Server Architecture**: FastMCP with proper lifespan management
 - ✅ **4 Core Tools**: All implemented with official `exa-py>=1.0.0`:
-  - `search_web()` - AI-powered neural search with autoprompt
-  - `search_and_contents()` - Search + content retrieval combined
-  - `get_contents()` - URL content extraction
-  - `find_similar()` - Similar website discovery
+- `search_web()` - AI-powered neural search with autoprompt
+- `search_and_contents()` - Search + content retrieval combined
+- `get_contents()` - URL content extraction
+- `find_similar()` - Similar website discovery
 - ✅ **Error Handling**: Graceful exception handling with JSON responses
 - ✅ **Parameter Validation**: Optional validation using exa-py built-ins
 
@@ -691,9 +691,9 @@ async def health_check(request):
 
 ### **MCP Tools Available**
 1. `search_web` - Neural search with autoprompt
-2. `search_and_contents` - Search + content in one call
-3. `get_contents` - Content extraction from URLs
-4. `find_similar` - Similar website discovery
+1. `search_and_contents` - Search + content in one call
+1. `get_contents` - Content extraction from URLs
+1. `find_similar` - Similar website discovery
 
 ### **Environment Configuration**
 - `EXA_API_KEY`: `8f180834-2db5-4574-8b68-f8512628ee66`
@@ -760,9 +760,9 @@ Size: 769 words
 ### ✅ 1. Thorough Documentation Audit via PAL apilookup
 - **Completed**: Full pal research on MCP specifications
 - **Key Learnings**:
-  - MCP supports stdio/SSE/streamable-HTTP transports
-  - FastMCP Python SDK with decorators for tools/resources/prompts
-  - Docker integration patterns with volume mounts and env vars
+- MCP supports stdio/SSE/streamable-HTTP transports
+- FastMCP Python SDK with decorators for tools/resources/prompts
+- Docker integration patterns with volume mounts and env vars
 - **Source**: pal queries on MCP documentation and Python SDK
 
 ### ✅ 2. Complete Reality vs Documentation Gap Analysis
@@ -774,14 +774,14 @@ Size: 769 words
 ### ✅ 3. Systematic Server Inventory and Health Check
 **Working Servers (6/13)**:
 1. MAS Sequential Thinking (3001) - ✅ Healthy, connected to MetaMCP
-2. Zen MCP (3003) - ✅ Healthy, 16 tools, NOT connected to MetaMCP
-3. Task Master AI (3005) - ✅ Healthy, connected to MetaMCP
-4. Serena (3006) - ✅ Healthy, NOT connected to MetaMCP
-5. Exa (3008) - ✅ Healthy, web search ready, NOT connected to MetaMCP
-6. MorphLLM (3011) - ✅ Healthy, NOT connected to MetaMCP
+1. Zen MCP (3003) - ✅ Healthy, 16 tools, NOT connected to MetaMCP
+1. Task Master AI (3005) - ✅ Healthy, connected to MetaMCP
+1. Serena (3006) - ✅ Healthy, NOT connected to MetaMCP
+1. Exa (3008) - ✅ Healthy, web search ready, NOT connected to MetaMCP
+1. MorphLLM (3011) - ✅ Healthy, NOT connected to MetaMCP
 
 **Problematic Servers (1/13)**:
-7. ConPort (3004) - ❌ MCP endpoint hangs (timeout 2min), connected but non-functional
+1. ConPort (3004) - ❌ MCP endpoint hangs (timeout 2min), connected but non-functional
 
 **Missing Servers (6/13)**:
 - PAL apilookup (3003), Claude Context (3007), DocRAG (3009)
@@ -824,7 +824,7 @@ response = self.server.conport_process.stdout.readline()  # <-- BLOCKS HERE
 
 ## 📁 FILES CREATED/UPDATED
 1. ✅ `/Users/hue/code/dopemux-mvp/MCP_SYSTEM_AUDIT_LOG.md` - Comprehensive findings
-2. ✅ `/Users/hue/code/dopemux-mvp/SESSION_CHECKPOINT_MCP_AUDIT_2025-09-24.md` - This checkpoint
+1. ✅ `/Users/hue/code/dopemux-mvp/SESSION_CHECKPOINT_MCP_AUDIT_2025-09-24.md` - This checkpoint
 
 ## 🔧 KEY TECHNICAL INSIGHTS
 
@@ -860,13 +860,13 @@ response = self.server.conport_process.stdout.readline()  # <-- BLOCKS HERE
 
 ### Immediate Session (Next)
 1. **Fix ConPort subprocess blocking** - Async or timeout approach
-2. **Add 4 healthy servers to MetaMCP config** - Update broker-minimal.yaml
-3. **Test full MetaMCP integration** - Verify all 7 servers work
+1. **Add 4 healthy servers to MetaMCP config** - Update broker-minimal.yaml
+1. **Test full MetaMCP integration** - Verify all 7 servers work
 
 ### Follow-up Sessions
 1. **Deploy PAL apilookup server** - High value documentation lookup
-2. **Update all inaccurate documentation** - Align with actual state
-3. **Evaluate and deploy remaining missing servers** - Based on value analysis
+1. **Update all inaccurate documentation** - Align with actual state
+1. **Evaluate and deploy remaining missing servers** - Based on value analysis
 
 ## 🔄 CONTEXT PRESERVATION
 
@@ -1023,9 +1023,9 @@ Based on comprehensive tool audit documentation:
 
 ### **Primary References**
 1. **MCP_TOOL_AUDIT_COMPLETE.md**: Server priorities and ADHD optimizations
-2. **MCP_ROUTING_MATRIX.md**: Evidence-based routing and role mappings
-3. **tools-inventory.md**: Actual tool capabilities and token costs
-4. **MCP_SYSTEM_AUDIT_LOG.md**: Initial audit findings and server status
+1. **MCP_ROUTING_MATRIX.md**: Evidence-based routing and role mappings
+1. **tools-inventory.md**: Actual tool capabilities and token costs
+1. **MCP_SYSTEM_AUDIT_LOG.md**: Initial audit findings and server status
 
 ### **Key Insights Applied**
 - PAL apilookup "Always First" principle (ADR-012 compliance)
@@ -1056,27 +1056,27 @@ Based on comprehensive tool audit documentation:
 
 ### **Immediate Actions**
 1. **Test Role Switching**: Validate broker role mappings work correctly
-2. **Token Monitoring**: Implement budget tracking and alerts
-3. **Integration Testing**: Test tool interactions across roles
+1. **Token Monitoring**: Implement budget tracking and alerts
+1. **Integration Testing**: Test tool interactions across roles
 
 ### **Future Enhancements**
 1. **MetaMCP Integration**: Consider official MetaMCP for advanced orchestration
-2. **Additional Tools**: ConPort for context preservation, Desktop Commander for automation
-3. **Monitoring**: Add metrics collection for optimization
+1. **Additional Tools**: ConPort for context preservation, Desktop Commander for automation
+1. **Monitoring**: Add metrics collection for optimization
 
 ## 📝 Session Learning & Insights
 
 ### **Key Realizations**
 1. **Documentation First**: Always consult existing comprehensive documentation before implementing
-2. **Evidence-Based Approach**: Server capabilities from audit documents beat assumptions
-3. **ADHD-First Design**: Cognitive load considerations must drive architecture decisions
-4. **Systematic Deployment**: Fix root causes (async handling) before expanding scope
+1. **Evidence-Based Approach**: Server capabilities from audit documents beat assumptions
+1. **ADHD-First Design**: Cognitive load considerations must drive architecture decisions
+1. **Systematic Deployment**: Fix root causes (async handling) before expanding scope
 
 ### **Technical Patterns Identified**
 1. **Async Subprocess Pattern**: Replace blocking calls in MCP servers
-2. **Health Check Standardization**: Consistent /health endpoints across servers
-3. **Docker Network Configuration**: Proper MCP network setup and volume management
-4. **Role-Based Tool Filtering**: Evidence-based server assignment by development role
+1. **Health Check Standardization**: Consistent /health endpoints across servers
+1. **Docker Network Configuration**: Proper MCP network setup and volume management
+1. **Role-Based Tool Filtering**: Evidence-based server assignment by development role
 
 ## 🎉 Deployment Celebration
 
@@ -1174,9 +1174,9 @@ Size: 1,111 words
 
 **Specific Tasks Identified**:
 1. Create attention state detection system
-2. Implement dynamic tool filtering based on cognitive load
-3. Add visual indicators for tool complexity
-4. Build session state preservation mechanism
+1. Implement dynamic tool filtering based on cognitive load
+1. Add visual indicators for tool complexity
+1. Build session state preservation mechanism
 
 ### **Step 5: Create Performance Dashboard**
 **Estimated Time**: 30 minutes
@@ -1206,9 +1206,9 @@ Size: 1,111 words
 
 ### **Key Files Modified This Session**
 1. `config/mcp/broker-minimal.yaml` - Health check method updates
-2. `docker/mcp-servers/health-check-server.py` - Created (unused)
-3. `ARM64_VECTOR_DB_RESEARCH.md` - Complete research documentation
-4. Claude MCP configuration - Removed/re-added metamcp-simple server
+1. `docker/mcp-servers/health-check-server.py` - Created (unused)
+1. `ARM64_VECTOR_DB_RESEARCH.md` - Complete research documentation
+1. Claude MCP configuration - Removed/re-added metamcp-simple server
 
 ### **Documentation Created Following Project Standards**
 All documentation follows established Diátaxis framework:
@@ -1223,20 +1223,20 @@ All documentation follows established Diátaxis framework:
 
 ### **Technical Insights**
 1. **Health Check Strategy**: Process-based (ping) more reliable than HTTP endpoints for containerized MCP servers
-2. **Claude Connection Issues**: Manual server testing validates functionality even when Claude shows connection failed
-3. **ARM64 Vector Database**: Qdrant provides excellent ARM64 compatibility with minimal performance trade-offs
-4. **Configuration Persistence**: Claude MCP configuration changes may require restart to take effect
+1. **Claude Connection Issues**: Manual server testing validates functionality even when Claude shows connection failed
+1. **ARM64 Vector Database**: Qdrant provides excellent ARM64 compatibility with minimal performance trade-offs
+1. **Configuration Persistence**: Claude MCP configuration changes may require restart to take effect
 
 ### **ADHD Workflow Insights**
 1. **Step-by-step approach**: Breaking complex enhancements into discrete 15-25 minute tasks works well
-2. **Documentation standards**: Following established project patterns reduces cognitive load
-3. **Quick wins first**: Completing simpler tasks builds momentum for complex work
-4. **Research depth**: Comprehensive research prevents future rework and decision paralysis
+1. **Documentation standards**: Following established project patterns reduces cognitive load
+1. **Quick wins first**: Completing simpler tasks builds momentum for complex work
+1. **Research depth**: Comprehensive research prevents future rework and decision paralysis
 
 ### **Architecture Insights**
 1. **Hybrid integration approach**: Direct connections + HTTP services + broker aggregation provides flexibility
-2. **Health monitoring**: Multiple health check strategies needed for different server types
-3. **ARM64 compatibility**: Modern Rust-based tools (Qdrant) have better ARM64 support than older C++ tools (Milvus)
+1. **Health monitoring**: Multiple health check strategies needed for different server types
+1. **ARM64 compatibility**: Modern Rust-based tools (Qdrant) have better ARM64 support than older C++ tools (Milvus)
 
 ---
 
@@ -1266,19 +1266,19 @@ All documentation follows established Diátaxis framework:
 ### **When Resuming This Session**:
 
 1. **Quick Orientation** (2 minutes):
-   - Review current todo list status
-   - Confirm MCP core servers still operational: `claude mcp list`
-   - Check any background processes still running
+- Review current todo list status
+- Confirm MCP core servers still operational: `claude mcp list`
+- Check any background processes still running
 
-2. **Context Restoration** (3 minutes):
-   - Read Step 4 scope (Advanced ADHD features)
-   - Review identified tasks for attention-aware tool selection
-   - Confirm development environment ready
+1. **Context Restoration** (3 minutes):
+- Read Step 4 scope (Advanced ADHD features)
+- Review identified tasks for attention-aware tool selection
+- Confirm development environment ready
 
-3. **Immediate Next Action** (start within 5 minutes):
-   - Begin Step 4: Create attention state detection system
-   - Time-box to 25 minutes for first component
-   - Update todo list as each component completes
+1. **Immediate Next Action** (start within 5 minutes):
+- Begin Step 4: Create attention state detection system
+- Time-box to 25 minutes for first component
+- Update todo list as each component completes
 
 ### **If Attention/Energy Different**:
 - **High focus**: Continue with Step 4 advanced features implementation
@@ -1396,10 +1396,10 @@ class AttentionManager:
 
 ### **Core Algorithm Logic**
 1. **Activity Tracking**: Records all MCP tool usage with timestamps
-2. **Pattern Analysis**: Detects context switches, error rates, decision paralysis
-3. **State Assessment**: Maps patterns to attention states using ADHD-specific thresholds
-4. **Tool Filtering**: Returns appropriate tools based on current cognitive capacity
-5. **Break Management**: Provides timely break recommendations
+1. **Pattern Analysis**: Detects context switches, error rates, decision paralysis
+1. **State Assessment**: Maps patterns to attention states using ADHD-specific thresholds
+1. **Tool Filtering**: Returns appropriate tools based on current cognitive capacity
+1. **Break Management**: Provides timely break recommendations
 
 ### **ADHD-Specific Accommodations**
 - **Choice Reduction**: Max 1-8 tools (vs unlimited) based on attention state
@@ -1416,25 +1416,25 @@ class AttentionManager:
 **Estimated Time**: 15 minutes
 **Tasks**:
 1. Integrate AttentionManager with metamcp_simple_server.py
-2. Add attention-aware tool list endpoint
-3. Include cognitive load indicators in tool responses
-4. Add break recommendations to status calls
+1. Add attention-aware tool list endpoint
+1. Include cognitive load indicators in tool responses
+1. Add break recommendations to status calls
 
 ### **Component 3: Visual Attention Indicators**
 **Estimated Time**: 15 minutes
 **Tasks**:
 1. Add attention state emoji indicators
-2. Create cognitive load visual system (🟢🟡🔴)
-3. Format break recommendations with clear actions
-4. Progressive disclosure for tool descriptions
+1. Create cognitive load visual system (🟢🟡🔴)
+1. Format break recommendations with clear actions
+1. Progressive disclosure for tool descriptions
 
 ### **Component 4: Session State Persistence**
 **Estimated Time**: 15 minutes
 **Tasks**:
 1. Save attention metrics to session database
-2. Restore attention state across Claude Code restarts
-3. Cross-session learning for better state detection
-4. Export attention analytics for review
+1. Restore attention state across Claude Code restarts
+1. Cross-session learning for better state detection
+1. Export attention analytics for review
 
 **Total Remaining for Step 4**: ~45 minutes
 
@@ -1456,10 +1456,10 @@ class AttentionManager:
 
 ### **Design Decisions Made**
 1. **Enum-based states**: Clear, type-safe attention state representation
-2. **Dataclass metrics**: Structured attention tracking with timestamps
-3. **Keyword-based complexity**: Simple, fast tool complexity assessment
-4. **Rolling activity window**: 100 activities max for performance
-5. **Global instance pattern**: Single attention_manager for consistency
+1. **Dataclass metrics**: Structured attention tracking with timestamps
+1. **Keyword-based complexity**: Simple, fast tool complexity assessment
+1. **Rolling activity window**: 100 activities max for performance
+1. **Global instance pattern**: Single attention_manager for consistency
 
 ---
 
@@ -1481,14 +1481,14 @@ Overall Progress: 1/4 components complete (25%)
 
 ### **Immediate Next Action** (within 2 minutes of resuming):
 1. Open `metamcp_simple_server.py` for editing
-2. Import AttentionManager: `from src.dopemux.adhd.attention_manager import attention_manager`
-3. Modify `get_role_tools()` method to use `attention_manager.get_appropriate_tools()`
+1. Import AttentionManager: `from src.dopemux.adhd.attention_manager import attention_manager`
+1. Modify `get_role_tools()` method to use `attention_manager.get_appropriate_tools()`
 
 ### **Quick Test Plan** (5 minutes):
 1. Test attention state transitions manually
-2. Verify tool filtering works for different states
-3. Confirm break recommendations trigger correctly
-4. Validate cognitive load indicators display
+1. Verify tool filtering works for different states
+1. Confirm break recommendations trigger correctly
+1. Validate cognitive load indicators display
 
 ### **Integration Points to Modify**:
 - `metamcp_simple_server.py` - Line ~235 (get_role_tools method)
@@ -1502,21 +1502,21 @@ Overall Progress: 1/4 components complete (25%)
 
 ### **ADHD Accommodation Patterns**
 1. **Choice Architecture**: Reducing options (1-8 tools) more effective than just organizing them
-2. **Cognitive Load Matching**: Tool complexity must align with current attention capacity
-3. **State Transitions**: ADHD attention states change rapidly, need real-time assessment
-4. **Break Timing**: Proactive break recommendations prevent cognitive overload better than reactive
+1. **Cognitive Load Matching**: Tool complexity must align with current attention capacity
+1. **State Transitions**: ADHD attention states change rapidly, need real-time assessment
+1. **Break Timing**: Proactive break recommendations prevent cognitive overload better than reactive
 
 ### **Technical Implementation Insights**
 1. **Keyword Classification**: Simple keyword-based tool complexity assessment sufficient for v1
-2. **Activity Window**: 100 recent activities provide good pattern detection without memory bloat
-3. **State Persistence**: Attention state should survive Claude Code restarts for continuity
-4. **Global Instance**: Single AttentionManager instance ensures consistent state across tool calls
+1. **Activity Window**: 100 recent activities provide good pattern detection without memory bloat
+1. **State Persistence**: Attention state should survive Claude Code restarts for continuity
+1. **Global Instance**: Single AttentionManager instance ensures consistent state across tool calls
 
 ### **User Experience Principles**
 1. **Invisible Intelligence**: Attention management should be automatic, not require user configuration
-2. **Progressive Disclosure**: Show complexity indicators only when helpful for decision-making
-3. **Gentle Guidance**: Break recommendations should be supportive, not disruptive
-4. **Context Preservation**: Attention state should inform all MCP tool interactions
+1. **Progressive Disclosure**: Show complexity indicators only when helpful for decision-making
+1. **Gentle Guidance**: Break recommendations should be supportive, not disruptive
+1. **Context Preservation**: Attention state should inform all MCP tool interactions
 
 ---
 
@@ -1538,12 +1538,12 @@ Overall Progress: 1/4 components complete (25%)
 
 ### **Files to Modify Next**:
 1. `metamcp_simple_server.py` - Integration with attention-aware tool selection
-2. Directory creation: `src/dopemux/adhd/__init__.py` (if doesn't exist)
+1. Directory creation: `src/dopemux/adhd/__init__.py` (if doesn't exist)
 
 ### **Documentation Created**:
 1. This comprehensive session checkpoint
-2. Complete technical architecture in AttentionManager docstrings
-3. ADHD accommodation rationale in code comments
+1. Complete technical architecture in AttentionManager docstrings
+1. ADHD accommodation rationale in code comments
 
 ---
 
@@ -1578,16 +1578,16 @@ Size: 464 words
 
 ### Completed Work
 1. **Comprehensive RAG Architecture Documentation**
-   - Created `/docs/04-explanation/architecture/rag-search-architecture.md`
-   - Full production configurations for VoyageAI embeddings
-   - Migration strategy with 3-phase implementation plan
-   - Performance metrics and evaluation framework
+- Created `/docs/04-explanation/architecture/rag-search-architecture.md`
+- Full production configurations for VoyageAI embeddings
+- Migration strategy with 3-phase implementation plan
+- Performance metrics and evaluation framework
 
-2. **Architecture Decision Record**
-   - Created `ADR-013-rag-search-architecture.md`
-   - Documents decision to use VoyageAI specialized embeddings
-   - Hybrid retrieval (dense + BM25) with RRF fusion
-   - Clear implementation timeline and rollback strategies
+1. **Architecture Decision Record**
+- Created `ADR-013-rag-search-architecture.md`
+- Documents decision to use VoyageAI specialized embeddings
+- Hybrid retrieval (dense + BM25) with RRF fusion
+- Clear implementation timeline and rollback strategies
 
 ### Key Technical Decisions Documented
 
@@ -1608,8 +1608,8 @@ Size: 464 words
 
 ### Implementation Phases
 1. **Phase 1 (Now)**: Switch Claude-Context to VoyageAI embeddings
-2. **Phase 2 (1-2mo)**: Deploy DocRAG MCP with hybrid search
-3. **Phase 3 (3-6mo)**: Unified search interface, ConPort scaling
+1. **Phase 2 (1-2mo)**: Deploy DocRAG MCP with hybrid search
+1. **Phase 3 (3-6mo)**: Unified search interface, ConPort scaling
 
 ## 🎯 Next Steps for Implementation
 
@@ -1620,8 +1620,8 @@ Size: 464 words
    EMBEDDING_MODEL: "voyage-code-3"
    ```
 
-2. Verify VoyageAI API key configuration
-3. Test embedding model switch with sample queries
+1. Verify VoyageAI API key configuration
+1. Test embedding model switch with sample queries
 
 ### Validation Required
 - [ ] Claude-Context supports embedder swapping via env vars
@@ -1659,9 +1659,9 @@ Size: 464 words
 
 When resuming:
 1. Use `dopemux restore` to reload full session context
-2. Begin with Phase 1 implementation (VoyageAI embedder switch)
-3. Reference ADR-013 for decision rationale and technical details
-4. Use RAG architecture doc for detailed configuration specs
+1. Begin with Phase 1 implementation (VoyageAI embedder switch)
+1. Reference ADR-013 for decision rationale and technical details
+1. Use RAG architecture doc for detailed configuration specs
 
 ---
 
@@ -1707,28 +1707,28 @@ Size: 995 words
 
 ### **Real ADHD Problems Identified by User**
 1. **"There is NOW and NEVER"** - Time blindness reality
-2. **Finishing is harder than starting** - Not activation energy problem
-3. **"Out of sight = out of mind"** - Visual field reminders critical
-4. **Need help getting across finish line** - Completion support
-5. **Remind us of ongoing unfinished work that's almost done**
-6. **Do things for us so we don't get distracted**
-7. **Minimize shiny things**
-8. **Put deadlines/reminders in visual field**
+1. **Finishing is harder than starting** - Not activation energy problem
+1. **"Out of sight = out of mind"** - Visual field reminders critical
+1. **Need help getting across finish line** - Completion support
+1. **Remind us of ongoing unfinished work that's almost done**
+1. **Do things for us so we don't get distracted**
+1. **Minimize shiny things**
+1. **Put deadlines/reminders in visual field**
 
 ### **What I Hastily Implemented (Half-Baked)**
 - Restored visual indicators (🟢🟡🟠🔴🎯)
 - Added basic finishing helper tools:
-  - `track_almost_done`
-  - `finish_line_check`
-  - `mark_completed`
+- `track_almost_done`
+- `finish_line_check`
+- `mark_completed`
 - Visual progress bars and urgency indicators
 - Status integration for "out of sight = out of mind"
 
 ### **User's "1234" Request Completed**
 1. ✅ Restore emoji/color visual system (keep user control)
-2. ✅ Build ADHD finishing helpers
-3. ✅ Focus on "out of sight = out of mind" problem
-4. ✅ Add "almost done" project tracking
+1. ✅ Build ADHD finishing helpers
+1. ✅ Focus on "out of sight = out of mind" problem
+1. ✅ Add "almost done" project tracking
 
 ---
 
@@ -1803,9 +1803,9 @@ Size: 995 words
 
 ### **Critical User Feedback Patterns**
 1. **Stop and ask before major changes** - I made assumptions about preferences
-2. **ADHD accommodation ≠ removal of visual cues** - Emojis/colors are helpful
-3. **Focus on finishing, not starting** - Activation energy wasn't the real problem
-4. **Half-baked is worse than nothing** - Need systematic approach
+1. **ADHD accommodation ≠ removal of visual cues** - Emojis/colors are helpful
+1. **Focus on finishing, not starting** - Activation energy wasn't the real problem
+1. **Half-baked is worse than nothing** - Need systematic approach
 
 ### **ADHD Development Insights**
 - Visual indicators are navigation aids, not noise
@@ -1826,9 +1826,9 @@ Size: 995 words
 
 **When Resuming**:
 1. **Complete systematic planning** - Finish the planner workflow
-2. **Get user input on architecture approach** - Core integration vs MCP enhancement
-3. **Define proper development phases** - MVP, validation, full implementation
-4. **Create testing strategy** - How to validate ADHD effectiveness
+1. **Get user input on architecture approach** - Core integration vs MCP enhancement
+1. **Define proper development phases** - MVP, validation, full implementation
+1. **Create testing strategy** - How to validate ADHD effectiveness
 
 **Architecture Decision Needed**:
 - Should ADHD finishing helpers be core Dopemux features?
@@ -1920,11 +1920,11 @@ Develop comprehensive ADHD finishing helper system that addresses real ADHD comp
 
 ### **User-Validated Real Problems**
 1. **"There is NOW and NEVER"** - Time blindness, urgency distortion
-2. **Finishing is harder than starting** - Completion energy > activation energy
-3. **"Out of sight = out of mind"** - Need constant visual reminders
-4. **Dopamine crashes near completion** - Need encouragement systems
-5. **Context switching kills momentum** - Need to preserve "finishing state"
-6. **Executive dysfunction** - Need external completion structure
+1. **Finishing is harder than starting** - Completion energy > activation energy
+1. **"Out of sight = out of mind"** - Need constant visual reminders
+1. **Dopamine crashes near completion** - Need encouragement systems
+1. **Context switching kills momentum** - Need to preserve "finishing state"
+1. **Executive dysfunction** - Need external completion structure
 
 ### **Key User Insights**
 - **Visual cues ARE helpful** (emojis, colors, progress bars)
@@ -2044,18 +2044,18 @@ class SimpleMetaMCPServer:
 
 ### **Architecture Decision (Critical)**
 1. Should this be core Dopemux functionality or enhanced MCP tooling?
-2. How do we balance functionality vs complexity?
-3. What's the minimal viable implementation that actually helps?
+1. How do we balance functionality vs complexity?
+1. What's the minimal viable implementation that actually helps?
 
 ### **User Experience Design**
 1. How do we keep things visible without overwhelming?
-2. What visual indicators actually help vs distract?
-3. How do we handle different types of "finishing" scenarios?
+1. What visual indicators actually help vs distract?
+1. How do we handle different types of "finishing" scenarios?
 
 ### **Implementation Strategy**
 1. What's the MVP that provides immediate value?
-2. How do we validate it actually helps ADHD users?
-3. What's the rollout/testing strategy?
+1. How do we validate it actually helps ADHD users?
+1. What's the rollout/testing strategy?
 
 ---
 
@@ -2086,9 +2086,9 @@ continuation_id: "2b3ab782-152b-4551-8e73-5838d9b93395"
 
 ### **Key Questions for Next Step**
 1. **Architecture Decision**: Core integration vs enhanced MCP tooling?
-2. **Persistence Strategy**: How to handle data across sessions?
-3. **Integration Scope**: How deep into Dopemux workflows?
-4. **MVP Definition**: What's the smallest useful implementation?
+1. **Persistence Strategy**: How to handle data across sessions?
+1. **Integration Scope**: How deep into Dopemux workflows?
+1. **MVP Definition**: What's the smallest useful implementation?
 
 ---
 

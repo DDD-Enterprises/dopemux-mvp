@@ -134,22 +134,22 @@ prelude: Phase 1D Documentation Inventory (explanation) for dopemux documentatio
 From README files and architectural docs:
 
 1. **"Two-Plane Architecture with DopeconBridge"**
-   - ✅ Design documented
-   - ⚠️ Implementation partial (bridge disconnected)
+- ✅ Design documented
+- ⚠️ Implementation partial (bridge disconnected)
 
-2. **"ADHD-Optimized Development Platform"**
-   - ✅ Extensively documented (50+ occurrences)
-   - ✅ Features: Progressive disclosure, energy tracking, attention monitoring
-   - Validation needed: Are features implemented?
+1. **"ADHD-Optimized Development Platform"**
+- ✅ Extensively documented (50+ occurrences)
+- ✅ Features: Progressive disclosure, energy tracking, attention monitoring
+- Validation needed: Are features implemented?
 
-3. **"Event-Driven Coordination"**
-   - ✅ Redis Streams infrastructure
-   - ⚠️ Partial adoption (Task-Orchestrator yes, others TBD)
+1. **"Event-Driven Coordination"**
+- ✅ Redis Streams infrastructure
+- ⚠️ Partial adoption (Task-Orchestrator yes, others TBD)
 
-4. **"Semantic Code Search"**
-   - ✅ Dope-Context fully implemented
-   - ✅ 4,413 doc chunks + 26 code chunks indexed
-   - ✅ Validated working (just tested!)
+1. **"Semantic Code Search"**
+- ✅ Dope-Context fully implemented
+- ✅ 4,413 doc chunks + 26 code chunks indexed
+- ✅ Validated working (just tested!)
 
 ### Service-Specific Claims
 

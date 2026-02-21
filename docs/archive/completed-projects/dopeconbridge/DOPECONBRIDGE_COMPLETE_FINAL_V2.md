@@ -26,12 +26,12 @@ The DopeconBridge integration is **COMPLETE** and **PRODUCTION READY**. All serv
 ### What Changed
 
 1. **Renamed** `mcp-integration-bridge` → `dopecon-bridge` (codebase-wide)
-2. **Created** shared `dopecon_bridge_client` package with comprehensive API
-3. **Migrated** 18 production services to use bridge-based communication
-4. **Eliminated** all direct ConPort database/HTTP access
-5. **Documented** every service, adapter, and integration pattern
-6. **Tested** with unit tests, integration tests, and validation scripts
-7. **Configured** Docker Compose, environment vars, and CLI integration
+1. **Created** shared `dopecon_bridge_client` package with comprehensive API
+1. **Migrated** 18 production services to use bridge-based communication
+1. **Eliminated** all direct ConPort database/HTTP access
+1. **Documented** every service, adapter, and integration pattern
+1. **Tested** with unit tests, integration tests, and validation scripts
+1. **Configured** Docker Compose, environment vars, and CLI integration
 
 ---
 
@@ -229,24 +229,24 @@ services:
   dopecon-bridge:
     build: ./services/dopecon-bridge
     ports:
-      - "3016:3016"
+- "3016:3016"
     environment:
-      - REDIS_URL=redis://redis:6379/0
-      - CONPORT_URL=http://conport:3010
+- REDIS_URL=redis://redis:6379/0
+- CONPORT_URL=http://conport:3010
     depends_on:
-      - redis
-      - conport
+- redis
+- conport
     networks:
-      - dopemux
+- dopemux
 
   my-service:
     environment:
-      - DOPECONBRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
+- DOPECONBRIDGE_URL=http://dopecon-bridge:3016
+- DOPECONBRIDGE_SOURCE_PLANE=cognitive_plane
     depends_on:
-      - dopecon-bridge
+- dopecon-bridge
     networks:
-      - dopemux
+- dopemux
 ```
 
 ---
@@ -287,9 +287,9 @@ python3 -m pytest tests/integration/ -v
 
 ### Master Documentation
 1. **[DOPECONBRIDGE_MASTER_GUIDE.md](./DOPECONBRIDGE_MASTER_GUIDE.md)** - Complete usage guide
-2. **[DOPECONBRIDGE_CONPORT_UPDATE.md](./DOPECONBRIDGE_CONPORT_UPDATE.md)** - ConPort migration details
-3. **[DOPECONBRIDGE_SERVICE_CATALOG.md](./DOPECONBRIDGE_SERVICE_CATALOG.md)** - All services documented
-4. **[START_HERE_DOPECONBRIDGE.md](./START_HERE_DOPECONBRIDGE.md)** - Quick start guide
+1. **[DOPECONBRIDGE_CONPORT_UPDATE.md](./DOPECONBRIDGE_CONPORT_UPDATE.md)** - ConPort migration details
+1. **[DOPECONBRIDGE_SERVICE_CATALOG.md](./DOPECONBRIDGE_SERVICE_CATALOG.md)** - All services documented
+1. **[START_HERE_DOPECONBRIDGE.md](./START_HERE_DOPECONBRIDGE.md)** - Quick start guide
 
 ### Service Documentation
 - Each service has updated README with bridge adapter usage
@@ -460,9 +460,9 @@ For any future service migrations:
 
 ### Prerequisites
 1. Redis running (for event bus)
-2. ConPort running (for knowledge graph)
-3. Leantime running (for PM operations)
-4. DopeBrainz running (for learning patterns)
+1. ConPort running (for knowledge graph)
+1. Leantime running (for PM operations)
+1. DopeBrainz running (for learning patterns)
 
 ### Deployment Steps
 

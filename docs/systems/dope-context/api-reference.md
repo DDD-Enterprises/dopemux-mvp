@@ -372,10 +372,10 @@ if changes["changes"] > 0:
 **How It Works:**
 
 1. Loads previous snapshot from `~/.dope-context/snapshots/{hash}/snapshot.json`
-2. Scans workspace, computes SHA256 for each file
-3. Compares hashes to detect changes
-4. Saves new snapshot
-5. Returns change statistics
+1. Scans workspace, computes SHA256 for each file
+1. Compares hashes to detect changes
+1. Saves new snapshot
+1. Returns change statistics
 
 **Notes:**
 
@@ -578,8 +578,8 @@ Common errors:
 |----------|----------|---------|-------------|
 | `VOYAGE_API_KEY` | Yes | - | VoyageAI API key |
 | `ANTHROPIC_API_KEY` | No | - | Claude API key (improves quality) |
-| `QDRANT_URL` | No | `localhost` | Qdrant server URL |
-| `QDRANT_PORT` | No | `6333` | Qdrant server port |
+| `QDRANT_URL` \| No \| `localhost` | Qdrant server URL |
+| `QDRANT_PORT` \| No \| `6333` | Qdrant server port |
 | `WORKSPACE_ID` | No | Auto-detected | Override workspace detection |
 
 ### Search Profiles

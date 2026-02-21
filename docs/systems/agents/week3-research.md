@@ -24,9 +24,9 @@ CognitiveGuardian **already exists** (603 lines) with comprehensive ADHD support
 
 **Key Insight**: We have a working agent that needs:
 1. Real ConPort MCP integration (currently simulation mode)
-2. Energy tracking persistence (save/restore from ConPort)
-3. Integration with Task-Orchestrator for real-time routing
-4. Production deployment patterns
+1. Energy tracking persistence (save/restore from ConPort)
+1. Integration with Task-Orchestrator for real-time routing
+1. Production deployment patterns
 
 **Strategy**: Surgical enhancements to existing code (not rewrite)
 
@@ -264,9 +264,9 @@ self.mandatory_break = preferences.get("mandatory", 90)
 
 **Tasks**:
 1. Replace `suggest_tasks()` simulation with real ConPort queries
-2. Add energy state persistence (save/restore)
-3. Add user preferences loading
-4. Test with real ConPort database
+1. Add energy state persistence (save/restore)
+1. Add user preferences loading
+1. Test with real ConPort database
 
 **Files Modified**:
 - `cognitive_guardian.py` (~100 lines modified)
@@ -284,9 +284,9 @@ self.mandatory_break = preferences.get("mandatory", 90)
 
 **Tasks**:
 1. Add `cognitive_guardian` parameter to `EnhancedTaskOrchestrator.__init__()`
-2. Update `_assign_optimal_agent()` to check user readiness
-3. Energy-aware routing logic
-4. Integration tests
+1. Update `_assign_optimal_agent()` to check user readiness
+1. Energy-aware routing logic
+1. Integration tests
 
 **Files Modified**:
 - `services/task-orchestrator/enhanced_orchestrator.py` (~80 lines modified)
@@ -304,9 +304,9 @@ self.mandatory_break = preferences.get("mandatory", 90)
 
 **Tasks**:
 1. Create `COGNITIVE_GUARDIAN_PRODUCTION_GUIDE.md`
-2. Add configuration examples
-3. Deployment checklist
-4. Week 3 summary document
+1. Add configuration examples
+1. Deployment checklist
+1. Week 3 summary document
 
 **Files Created**:
 - `COGNITIVE_GUARDIAN_PRODUCTION_GUIDE.md` (~400 lines)
@@ -513,31 +513,31 @@ async def _detect_cognitive_load_biometric(self) -> float:
 
 **ADHD Break Research**:
 1. Choosing Therapy (2024): "How the Pomodoro Technique Can Help With ADHD Symptoms"
-2. Collegenp (2024): "Adapt the Pomodoro Technique to Overcome ADHD Procrastination"
-3. Life Skills Advocate (2024): "Reducing Overwhelm With the Pomodoro Technique for ADHD"
-4. Goals and Progress (2024): "ADHD and Pomodoro Technique: Boost Your Focus"
-5. MindPop (2024): "ADHD and Pomodoro Timers: Do They Actually Work?"
+1. Collegenp (2024): "Adapt the Pomodoro Technique to Overcome ADHD Procrastination"
+1. Life Skills Advocate (2024): "Reducing Overwhelm With the Pomodoro Technique for ADHD"
+1. Goals and Progress (2024): "ADHD and Pomodoro Technique: Boost Your Focus"
+1. MindPop (2024): "ADHD and Pomodoro Timers: Do They Actually Work?"
 
 **Neurodivergent UX**:
 1. Gridfiti (2024): "The 18 Best Apps for Neurodivergent Adults"
-2. Julie Bjelland (2024): "Rest on Purpose: Reclaiming Health for Sensitive and Neurodivergent Nervous Systems"
-3. Seasons of Growth Counseling (2024): "For Neurodivergent Adults: 6 Creative Ways to Regulate Your Nervous System"
-4. Neurodiversity Education Academy (2024): "Patterns for Resilience: Embracing Habits, Routines, Rituals"
-5. The Neurodivergent Brain (2024): "Systems and Anxiety Reduction"
+1. Julie Bjelland (2024): "Rest on Purpose: Reclaiming Health for Sensitive and Neurodivergent Nervous Systems"
+1. Seasons of Growth Counseling (2024): "For Neurodivergent Adults: 6 Creative Ways to Regulate Your Nervous System"
+1. Neurodiversity Education Academy (2024): "Patterns for Resilience: Embracing Habits, Routines, Rituals"
+1. The Neurodivergent Brain (2024): "Systems and Anxiety Reduction"
 
 **Async Python Patterns**:
 1. Python Docs (3.14): "Coroutines and Tasks — asyncio"
-2. Backendmesh (2024): "Mastering asyncio and Background Tasks"
-3. Real Python (2024): "Python's asyncio: A Hands-On Walkthrough"
-4. Stack Overflow (2024): "Asynchronous Background task in python with asyncio library"
-5. Santhalakshminarayana (2024): "Asynchronous or Concurrency Patterns in Python with Asyncio"
+1. Backendmesh (2024): "Mastering asyncio and Background Tasks"
+1. Real Python (2024): "Python's asyncio: A Hands-On Walkthrough"
+1. Stack Overflow (2024): "Asynchronous Background task in python with asyncio library"
+1. Santhalakshminarayana (2024): "Asynchronous or Concurrency Patterns in Python with Asyncio"
 
 **Cognitive Load Research**:
 1. Springer (2023): "A Cognitive Load Theory Approach to Defining and Measuring Task Complexity"
-2. ResearchGate (2024): "AI-Augmented Software Engineering: Measuring Developer Productivity"
-3. ScienceDirect (2024): "Complexity affects performance, cognitive load, and awareness"
-4. CMS Conferences (2024): "Engineering a Cognitive Load Assessment System Through Multimodal Monitoring"
-5. Taylor & Francis (2024): "A testing load: a review of cognitive load in computer and paper-based assessments"
+1. ResearchGate (2024): "AI-Augmented Software Engineering: Measuring Developer Productivity"
+1. ScienceDirect (2024): "Complexity affects performance, cognitive load, and awareness"
+1. CMS Conferences (2024): "Engineering a Cognitive Load Assessment System Through Multimodal Monitoring"
+1. Taylor & Francis (2024): "A testing load: a review of cognitive load in computer and paper-based assessments"
 
 ---
 

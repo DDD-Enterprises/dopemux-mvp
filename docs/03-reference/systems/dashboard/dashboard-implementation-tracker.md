@@ -48,50 +48,50 @@ Last Updated: 2025-10-28
 #### Features to Add Now:
 
 1. **Enhanced Sparklines & Trends**
-   - [ ] Implement proper sparkline generation from historical data
-   - [ ] Add 7-day velocity graph (not just sparkline)
-   - [ ] Create cognitive load heatmap (hour x day-of-week)
-   - [ ] Build comparison view (this week vs last)
-   - [ ] Add historical data fetching from Prometheus
-   - **Priority:** HIGH
-   - **Effort:** 2-3 days
-   - **Dependencies:** Prometheus data retention configured
+- [ ] Implement proper sparkline generation from historical data
+- [ ] Add 7-day velocity graph (not just sparkline)
+- [ ] Create cognitive load heatmap (hour x day-of-week)
+- [ ] Build comparison view (this week vs last)
+- [ ] Add historical data fetching from Prometheus
+- **Priority:** HIGH
+- **Effort:** 2-3 days
+- **Dependencies:** Prometheus data retention configured
 
-2. **Interactive Dashboard Controls**
-   - [ ] Add keyboard navigation between panels
-   - [ ] Implement panel focus/expand (press number key)
-   - [ ] Add scroll support for long lists
-   - [ ] Create context menus (right-click or key)
-   - **Priority:** HIGH
-   - **Effort:** 1-2 days
-   - **Dependencies:** None
+1. **Interactive Dashboard Controls**
+- [ ] Add keyboard navigation between panels
+- [ ] Implement panel focus/expand (press number key)
+- [ ] Add scroll support for long lists
+- [ ] Create context menus (right-click or key)
+- **Priority:** HIGH
+- **Effort:** 1-2 days
+- **Dependencies:** None
 
-3. **Real-Time Data Streaming**
-   - [ ] WebSocket support for instant updates
-   - [ ] Live sparkline animation
-   - [ ] Real-time alert notifications
-   - [ ] Optimized update batching
-   - **Priority:** MEDIUM
-   - **Effort:** 2-3 days
-   - **Dependencies:** WebSocket server setup
+1. **Real-Time Data Streaming**
+- [ ] WebSocket support for instant updates
+- [ ] Live sparkline animation
+- [ ] Real-time alert notifications
+- [ ] Optimized update batching
+- **Priority:** MEDIUM
+- **Effort:** 2-3 days
+- **Dependencies:** WebSocket server setup
 
-4. **Advanced Panel Layouts**
-   - [ ] Grid layout with custom sizing
-   - [ ] Panel split/merge functionality
-   - [ ] Layout presets (compact/standard/detailed)
-   - [ ] Save/load layout preferences
-   - **Priority:** MEDIUM
-   - **Effort:** 3-4 days
-   - **Dependencies:** None
+1. **Advanced Panel Layouts**
+- [ ] Grid layout with custom sizing
+- [ ] Panel split/merge functionality
+- [ ] Layout presets (compact/standard/detailed)
+- [ ] Save/load layout preferences
+- **Priority:** MEDIUM
+- **Effort:** 3-4 days
+- **Dependencies:** None
 
-5. **Data Drill-Down Views**
-   - [ ] Task detail popup (press `t` on task panel)
-   - [ ] Service logs viewer (press `l` on service panel)
-   - [ ] Pattern analysis detail (press `p` on pattern panel)
-   - [ ] Decision history browser
-   - **Priority:** HIGH
-   - **Effort:** 2-3 days
-   - **Dependencies:** MCP tool access
+1. **Data Drill-Down Views**
+- [ ] Task detail popup (press `t` on task panel)
+- [ ] Service logs viewer (press `l` on service panel)
+- [ ] Pattern analysis detail (press `p` on pattern panel)
+- [ ] Decision history browser
+- **Priority:** HIGH
+- **Effort:** 2-3 days
+- **Dependencies:** MCP tool access
 
 ---
 
@@ -102,48 +102,48 @@ Last Updated: 2025-10-28
 **Tier 0 Features:**
 
 1. **Focus Mode Toggle**
-   - [ ] Press `f` to enable focus mode
-   - [ ] Mute system notifications (macOS DND)
-   - [ ] Hide non-critical panels
-   - [ ] Show focus banner
-   - [ ] Auto-enable on flow state detection
-   - **Effort:** 2-3 hours
-   - **Impact:** 🔥🔥🔥
+- [ ] Press `f` to enable focus mode
+- [ ] Mute system notifications (macOS DND)
+- [ ] Hide non-critical panels
+- [ ] Show focus banner
+- [ ] Auto-enable on flow state detection
+- **Effort:** 2-3 hours
+- **Impact:** 🔥🔥🔥
 
-2. **Break Timer Popup**
-   - [ ] Press `b` to start break timer
-   - [ ] Visual countdown with progress bar
-   - [ ] Break type selector (5min/15min/30min)
-   - [ ] Activity suggestions (stretch, water, walk)
-   - [ ] Skip/extend options
-   - **Effort:** 3-4 hours
-   - **Impact:** 🔥🔥🔥
+1. **Break Timer Popup**
+- [ ] Press `b` to start break timer
+- [ ] Visual countdown with progress bar
+- [ ] Break type selector (5min/15min/30min)
+- [ ] Activity suggestions (stretch, water, walk)
+- [ ] Skip/extend options
+- **Effort:** 3-4 hours
+- **Impact:** 🔥🔥🔥
 
-3. **Theme Switcher**
-   - [ ] Press `t` to cycle themes
-   - [ ] Catppuccin (Mocha/Latte/Frappe/Macchiato)
-   - [ ] Nord, Dracula, Gruvbox, Tokyo Night
-   - [ ] High contrast mode
-   - [ ] Save preference
-   - **Effort:** 2-3 hours
-   - **Impact:** 🔥🔥
+1. **Theme Switcher**
+- [ ] Press `t` to cycle themes
+- [ ] Catppuccin (Mocha/Latte/Frappe/Macchiato)
+- [ ] Nord, Dracula, Gruvbox, Tokyo Night
+- [ ] High contrast mode
+- [ ] Save preference
+- **Effort:** 2-3 hours
+- **Impact:** 🔥🔥
 
-4. **Keyboard Shortcuts Help**
-   - [ ] Press `?` to show help overlay
-   - [ ] List all shortcuts with descriptions
-   - [ ] Searchable/filterable
-   - [ ] Print to console option
-   - **Effort:** 1 hour
-   - **Impact:** 🔥🔥
+1. **Keyboard Shortcuts Help**
+- [ ] Press `?` to show help overlay
+- [ ] List all shortcuts with descriptions
+- [ ] Searchable/filterable
+- [ ] Print to console option
+- **Effort:** 1 hour
+- **Impact:** 🔥🔥
 
-5. **Desktop Notifications**
-   - [ ] macOS notification center integration
-   - [ ] Break reminders (can't miss!)
-   - [ ] Critical cognitive load warnings
-   - [ ] Flow state protection alerts
-   - [ ] Achievement celebrations
-   - **Effort:** 2-3 hours
-   - **Impact:** 🔥🔥🔥
+1. **Desktop Notifications**
+- [ ] macOS notification center integration
+- [ ] Break reminders (can't miss!)
+- [ ] Critical cognitive load warnings
+- [ ] Flow state protection alerts
+- [ ] Achievement celebrations
+- **Effort:** 2-3 hours
+- **Impact:** 🔥🔥🔥
 
 ---
 
@@ -152,47 +152,47 @@ Last Updated: 2025-10-28
 ### Phase 4: Gamification & Motivation
 
 1. **Streaks Tracker**
-   - [ ] Break adherence streak (consecutive days)
-   - [ ] Task completion streak
-   - [ ] Flow state streak
-   - [ ] Milestone celebrations
-   - **Effort:** 1 day
+- [ ] Break adherence streak (consecutive days)
+- [ ] Task completion streak
+- [ ] Flow state streak
+- [ ] Milestone celebrations
+- **Effort:** 1 day
 
-2. **Daily Goals**
-   - [ ] Set custom targets (tasks, breaks, focus time)
-   - [ ] Visual progress bars
-   - [ ] Goal completion celebrations
-   - [ ] Weekly recap
-   - **Effort:** 1 day
+1. **Daily Goals**
+- [ ] Set custom targets (tasks, breaks, focus time)
+- [ ] Visual progress bars
+- [ ] Goal completion celebrations
+- [ ] Weekly recap
+- **Effort:** 1 day
 
-3. **Achievement Badges**
-   - [ ] First week badge
-   - [ ] Hyperfocus hero (3+ hour flow)
-   - [ ] Break champion (100% adherence)
-   - [ ] Task master (10+ completed)
-   - **Effort:** 1-2 days
+1. **Achievement Badges**
+- [ ] First week badge
+- [ ] Hyperfocus hero (3+ hour flow)
+- [ ] Break champion (100% adherence)
+- [ ] Task master (10+ completed)
+- **Effort:** 1-2 days
 
 ### Phase 5: CLI & Automation
 
 1. **CLI Tools**
-   - [ ] `dopemux stats` - Quick stats
-   - [ ] `dopemux break` - Force break
-   - [ ] `dopemux export` - Data export
-   - [ ] `dopemux config` - Settings
-   - **Effort:** 3-4 days
+- [ ] `dopemux stats` - Quick stats
+- [ ] `dopemux break` - Force break
+- [ ] `dopemux export` - Data export
+- [ ] `dopemux config` - Settings
+- **Effort:** 3-4 days
 
-2. **Git Integration**
-   - [ ] Auto-log commits as decisions
-   - [ ] PR complexity scoring
-   - [ ] Contribution heatmap
-   - **Effort:** 1 week
+1. **Git Integration**
+- [ ] Auto-log commits as decisions
+- [ ] PR complexity scoring
+- [ ] Contribution heatmap
+- **Effort:** 1 week
 
-3. **Slack/Discord Bot**
-   - [ ] `/dopemux status` command
-   - [ ] Break reminders in chat
-   - [ ] EOD summaries
-   - [ ] Status sync
-   - **Effort:** 3-5 days
+1. **Slack/Discord Bot**
+- [ ] `/dopemux status` command
+- [ ] Break reminders in chat
+- [ ] EOD summaries
+- [ ] Status sync
+- **Effort:** 3-5 days
 
 ---
 
@@ -201,38 +201,38 @@ Last Updated: 2025-10-28
 ### Phase 6: ML & Predictions
 
 1. **ML-Powered Insights**
-   - [ ] Energy curve forecasting
-   - [ ] Break timing optimization
-   - [ ] Task duration estimation
-   - [ ] Burnout risk detection
-   - **Effort:** 2-3 weeks
+- [ ] Energy curve forecasting
+- [ ] Break timing optimization
+- [ ] Task duration estimation
+- [ ] Burnout risk detection
+- **Effort:** 2-3 weeks
 
-2. **Pattern Recognition**
-   - [ ] "You focus best 9-11am"
-   - [ ] "Breaks every 25min boost velocity"
-   - [ ] Anomaly detection
-   - **Effort:** 2-3 weeks
+1. **Pattern Recognition**
+- [ ] "You focus best 9-11am"
+- [ ] "Breaks every 25min boost velocity"
+- [ ] Anomaly detection
+- **Effort:** 2-3 weeks
 
 ### Phase 7: Team & Collaboration
 
 1. **Team Dashboards**
-   - [ ] Shared cognitive load view
-   - [ ] Team focus score
-   - [ ] Meeting cost calculator
-   - [ ] Collaborative goals
-   - **Effort:** 2-3 weeks
+- [ ] Shared cognitive load view
+- [ ] Team focus score
+- [ ] Meeting cost calculator
+- [ ] Collaborative goals
+- **Effort:** 2-3 weeks
 
-2. **Mobile Companion**
-   - [ ] Responsive web dashboard
-   - [ ] Progressive Web App
-   - [ ] iOS/Android widgets
-   - **Effort:** 2-3 weeks
+1. **Mobile Companion**
+- [ ] Responsive web dashboard
+- [ ] Progressive Web App
+- [ ] iOS/Android widgets
+- **Effort:** 2-3 weeks
 
-3. **Voice Interface**
-   - [ ] "Hey Dopemux" wake word
-   - [ ] Voice commands
-   - [ ] Spoken alerts
-   - **Effort:** 2-3 weeks
+1. **Voice Interface**
+- [ ] "Hey Dopemux" wake word
+- [ ] Voice commands
+- [ ] Spoken alerts
+- **Effort:** 2-3 weeks
 
 ---
 
@@ -370,10 +370,10 @@ LAYOUTS = {
 ## 🔗 RELATED DOCUMENTS
 
 1. **TMUX_METRICS_INVENTORY.md** - All available metrics
-2. **TMUX_DASHBOARD_DESIGN.md** - Research & rationale
-3. **TMUX_DASHBOARD_README.md** - User guide
-4. **DASHBOARD_ENHANCEMENTS.md** - Future features (150+ ideas)
-5. **scripts/dopemux_dashboard.py** - Current implementation
+1. **TMUX_DASHBOARD_DESIGN.md** - Research & rationale
+1. **TMUX_DASHBOARD_README.md** - User guide
+1. **DASHBOARD_ENHANCEMENTS.md** - Future features (150+ ideas)
+1. **dopemux_dashboard.py** - Current implementation
 
 ---
 

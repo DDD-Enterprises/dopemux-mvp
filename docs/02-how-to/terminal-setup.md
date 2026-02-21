@@ -19,22 +19,22 @@ Dopemux includes a comprehensive terminal environment installer that sets up mod
 ### Core Tools
 
 1. **Kitty Terminal**
-   - GPU-accelerated
-   - Low latency
-   - Reduced visual noise
-   - Custom ADHD-optimized config
+- GPU-accelerated
+- Low latency
+- Reduced visual noise
+- Custom ADHD-optimized config
 
-2. **zsh + Oh My Zsh**
-   - Fast, modern shell
-   - Smart auto-suggestions
-   - Syntax highlighting
-   - History search
+1. **zsh + Oh My Zsh**
+- Fast, modern shell
+- Smart auto-suggestions
+- Syntax highlighting
+- History search
 
-3. **Starship Prompt**
-   - Minimal, fast prompt
-   - Reduced cognitive load
-   - Git status at a glance
-   - Battery indicator (laptop reminder)
+1. **Starship Prompt**
+- Minimal, fast prompt
+- Reduced cognitive load
+- Git status at a glance
+- Battery indicator (laptop reminder)
 
 ### Productivity CLI Tools
 

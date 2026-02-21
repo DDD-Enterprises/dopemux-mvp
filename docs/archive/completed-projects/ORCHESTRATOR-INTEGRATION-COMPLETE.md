@@ -19,7 +19,7 @@ prelude: Orchestrator Integration Complete (explanation) for dopemux documentati
 ### Two Layouts Created:
 
 1. **Full Orchestrator** - 4-pane professional environment
-2. **Minimal** - 2-pane quick launcher
+1. **Minimal** - 2-pane quick launcher
 
 ---
 
@@ -284,25 +284,25 @@ tmux select-pane -T "My Custom Title"
    ./scripts/launch-dopemux-orchestrator.sh
    ```
 
-2. **Start services** (Pane 1: CLI)
+1. **Start services** (Pane 1: CLI)
    ```bash
    docker-compose up -d
    ```
 
-3. **Watch logs** (Pane 2: Logs)
+1. **Watch logs** (Pane 2: Logs)
    ```bash
    docker-compose logs -f adhd_engine
    ```
 
-4. **Monitor dashboard** (Pane 0: auto-updates)
-   - Glance at energy level
-   - Check session time
-   - Watch for untracked work warnings
+1. **Monitor dashboard** (Pane 0: auto-updates)
+- Glance at energy level
+- Check session time
+- Watch for untracked work warnings
 
-5. **Work in CLI** (Pane 1)
-   - Run dopemux commands
-   - Test features
-   - Git operations
+1. **Work in CLI** (Pane 1)
+- Run dopemux commands
+- Test features
+- Git operations
 
 ### Debugging Session
 
@@ -312,18 +312,18 @@ tmux select-pane -T "My Custom Title"
    Ctrl+b z (zoom to full screen)
    ```
 
-2. **Watch specific service**
+1. **Watch specific service**
    ```bash
    docker logs -f staging-activity-capture
    ```
 
-3. **Check ADHD dashboard for context**
+1. **Check ADHD dashboard for context**
    ```
    Ctrl+b z (un-zoom)
    Ctrl+b ↑ (navigate to dashboard)
    ```
 
-4. **Return to work**
+1. **Return to work**
    ```
    Ctrl+b ↓ (back to CLI)
    ```
@@ -335,13 +335,13 @@ tmux select-pane -T "My Custom Title"
    tmux attach -t dopemux-orchestrator
    ```
 
-2. **Glance at all 4 panes**
-   - Top: ADHD state
-   - Left: CLI ready
-   - Middle: Logs streaming
-   - Right: Containers running
+1. **Glance at all 4 panes**
+- Top: ADHD state
+- Left: CLI ready
+- Middle: Logs streaming
+- Right: Containers running
 
-3. **Detach when done**
+1. **Detach when done**
    ```
    Ctrl+b d
    ```
@@ -392,8 +392,8 @@ tmux attach -t dopemux-orchestrator
 
 **Check:**
 1. Services running? `docker ps`
-2. ADHD Engine accessible? `curl localhost:8095/api/v1/energy-level/hue`
-3. Activity Capture running? `curl localhost:8096/metrics`
+1. ADHD Engine accessible? `curl localhost:8095/api/v1/energy-level/hue`
+1. Activity Capture running? `curl localhost:8096/metrics`
 
 **Restart dashboard pane:**
 ```

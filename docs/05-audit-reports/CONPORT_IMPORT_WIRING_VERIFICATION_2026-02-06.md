@@ -36,13 +36,13 @@ Verify that extracted ConPort SQLite snapshot artifacts can flow directly into t
 From active snapshot `reports/conport_sqlite_exports/20260206T143748Z/`:
 
 1. `reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json`
-2. `reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp___dopemux__context_db__conport_import_bundle.json`
+1. `reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp___dopemux__context_db__conport_import_bundle.json`
 
 From quarantine snapshot `reports/conport_sqlite_exports/20260206T144006Z/`:
 
 1. `reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json`
-2. `reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json`
-3. `reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json`
+1. `reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json`
+1. `reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json`
 
 ## Dry-Run Verification Results
 

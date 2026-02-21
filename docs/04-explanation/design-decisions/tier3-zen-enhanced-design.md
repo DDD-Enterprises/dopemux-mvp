@@ -41,23 +41,23 @@ Current system uses hardcoded rules:
 **Phase 1: Pattern Detection** (No ML needed!)
 ```
 Week 1: Collect Data
-  - Store energy level every 5 minutes
-  - Tag with: hour, day-of-week, recent-activity
+- Store energy level every 5 minutes
+- Tag with: hour, day-of-week, recent-activity
 
 Week 2: Analyze Patterns
-  - Calculate: Average energy by hour-of-day
-  - Identify: "High energy hours" (energy > medium for 80%+ of samples)
-  - Detect: Post-lunch dip, morning peak, evening decline
+- Calculate: Average energy by hour-of-day
+- Identify: "High energy hours" (energy > medium for 80%+ of samples)
+- Detect: Post-lunch dip, morning peak, evening decline
 
 Week 3: Generate Schedule
-  - "Your peak hours: 9-11am, 2-4pm (based on 2 weeks data)"
-  - "Avoid complex work: 12-2pm (post-lunch dip detected)"
-  - "Best break times: 11:30am, 3:30pm (before energy drops)"
+- "Your peak hours: 9-11am, 2-4pm (based on 2 weeks data)"
+- "Avoid complex work: 12-2pm (post-lunch dip detected)"
+- "Best break times: 11:30am, 3:30pm (before energy drops)"
 
 Week 4: Adaptive Recommendations
-  - Adjust break timing based on actual fatigue patterns
-  - Suggest task complexity based on current time + historical data
-  - No ML needed - just statistics!
+- Adjust break timing based on actual fatigue patterns
+- Suggest task complexity based on current time + historical data
+- No ML needed - just statistics!
 ```
 
 **Benefits vs Full ML**:
@@ -87,19 +87,19 @@ Original: "Team dashboard aggregating everyone's ADHD state"
 **Design**:
 ```
 Individual Opt-In Sharing:
-  - User chooses: "Share focus status" (yes/no)
-  - Shared info: "In focus" / "Available" / "On break" (not energy/attention)
-  - Privacy: No metrics shared, just status
+- User chooses: "Share focus status" (yes/no)
+- Shared info: "In focus" / "Available" / "On break" (not energy/attention)
+- Privacy: No metrics shared, just status
 
 Team Dashboard (Minimal):
-  - Who's focused right now? (list of names)
-  - Optimal interruption windows: "Most available: 11am, 3pm"
-  - Suggested team break: "4 people free at 2:30pm"
+- Who's focused right now? (list of names)
+- Optimal interruption windows: "Most available: 11am, 3pm"
+- Suggested team break: "4 people free at 2:30pm"
 
 Slack Integration:
-  - Auto-set status: 🧠 Focused (during sessions)
-  - Auto-set status: ☕ Break (when taking breaks)
-  - Auto-DND: During hyperfocus sessions
+- Auto-set status: 🧠 Focused (during sessions)
+- Auto-set status: ☕ Break (when taking breaks)
+- Auto-DND: During hyperfocus sessions
 ```
 
 **Benefits**:
@@ -128,33 +128,33 @@ Original: "Native iOS/Android app"
 **Design**:
 ```
 PWA Advantages:
-  - No app stores (just visit URL)
-  - Works on iOS + Android
-  - Add to home screen (looks like app)
-  - Push notifications (web push API)
-  - Offline support (service worker)
-  - One codebase (same as dashboard)
+- No app stores (just visit URL)
+- Works on iOS + Android
+- Add to home screen (looks like app)
+- Push notifications (web push API)
+- Offline support (service worker)
+- One codebase (same as dashboard)
 
 Features:
-  1. Current State Screen:
-     - Large energy indicator
-     - Current attention state
-     - Session duration
-     - Time until suggested break
+1. Current State Screen:
+- Large energy indicator
+- Current attention state
+- Session duration
+- Time until suggested break
 
-  2. Quick Actions:
-     - "Taking break" button
-     - "Start focus session" button
-     - "End session" button
+1. Quick Actions:
+- "Taking break" button
+- "Start focus session" button
+- "End session" button
 
-  3. Today Summary:
-     - Sessions completed
-     - Breaks taken
-     - Current streak
+1. Today Summary:
+- Sessions completed
+- Breaks taken
+- Current streak
 
-  4. Notifications:
-     - Web Push API for break reminders
-     - Works when browser tab closed (service worker)
+1. Notifications:
+- Web Push API for break reminders
+- Works when browser tab closed (service worker)
 ```
 
 **Implementation**:
@@ -195,8 +195,8 @@ Features:
 
 **Immediate** (Do First):
 1. **Adaptive Scheduler** - Highest value, uses existing data
-2. **Progressive Web App** - Quick win, extends dashboard
-3. **Team Focus Coordinator** - Only if team use case exists
+1. **Progressive Web App** - Quick win, extends dashboard
+1. **Team Focus Coordinator** - Only if team use case exists
 
 **Rationale**:
 - Adaptive Scheduler: Personal benefit, immediate ROI

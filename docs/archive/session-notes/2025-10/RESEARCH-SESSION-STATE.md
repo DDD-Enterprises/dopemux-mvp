@@ -26,26 +26,26 @@ prelude: Research Session State (explanation) for dopemux documentation and deve
 - **Decision**: #17
 - **Documentation**: `docs/03-reference/adhd-theme-design-principles.md`
 - **Key Findings**:
-  - Dual color strategy: blue (calm, borders) vs green (interactive, faster 200ms ADHD response)
-  - Contrast sweet spot: 5-8:1 (between WCAG AA and AAA)
-  - Nord error color fix: #bf616a → #d08770 (WCAG AA compliance)
-  - Three themes: Nord ADHD, Dracula ADHD, Tokyo Night ADHD
-  - Energy progression: cool→warm, avoiding red overstimulation
-  - Icons + color for colorblind accessibility
+- Dual color strategy: blue (calm, borders) vs green (interactive, faster 200ms ADHD response)
+- Contrast sweet spot: 5-8:1 (between WCAG AA and AAA)
+- Nord error color fix: #bf616a → #d08770 (WCAG AA compliance)
+- Three themes: Nord ADHD, Dracula ADHD, Tokyo Night ADHD
+- Energy progression: cool→warm, avoiding red overstimulation
+- Icons + color for colorblind accessibility
 
 #### 2. libtmux Integration Best Practices
 - **Status**: Step 4/5 Complete (Final synthesis pending)
 - **Confidence**: Very High
 - **Continuation ID**: `4cbe1440-38c4-48d1-9684-f88de0209068`
 - **Key Findings**:
-  - Three-tier caching: L1 object cache (5s TTL), L2 lazy refresh, L3 graceful degradation
-  - Server singleton with lazy loading
-  - Performance: 20-100x faster than subprocess (5-15ms vs 100-500ms)
-  - ADHD targets exceeded: statusline 10-20ms (<50ms target ✅)
-  - Edge cases handled: external modifications, concurrent ops, server restart, session collisions
-  - Session ID validation prevents cache staleness
-  - Don't cache Window/Pane objects (only Session)
-  - Strict vs lenient error modes for different use cases
+- Three-tier caching: L1 object cache (5s TTL), L2 lazy refresh, L3 graceful degradation
+- Server singleton with lazy loading
+- Performance: 20-100x faster than subprocess (5-15ms vs 100-500ms)
+- ADHD targets exceeded: statusline 10-20ms (<50ms target ✅)
+- Edge cases handled: external modifications, concurrent ops, server restart, session collisions
+- Session ID validation prevents cache staleness
+- Don't cache Window/Pane objects (only Session)
+- Strict vs lenient error modes for different use cases
 
 ### 🔄 In Progress (1/6)
 
@@ -88,35 +88,35 @@ prelude: Research Session State (explanation) for dopemux documentation and deve
    Create decision and documentation
    ```
 
-2. **Plugin System Security** (30-40 min):
+1. **Plugin System Security** (30-40 min):
    ```
    Research already gathered (RestrictedPython, PyPy, CodeJail, seccomp)
    Run zen/thinkdeep 5-step investigation
    Focus: hook-based plugins, permission models, sandboxing strategies
    ```
 
-3. **Textual Dashboard Performance** (30-40 min):
+1. **Textual Dashboard Performance** (30-40 min):
    ```
    Web research: Textual best practices, async rendering, performance optimization
    Run zen/thinkdeep investigation
    Target: <50ms refresh, <2s startup, support 10+ sessions
    ```
 
-4. **Energy-Aware Layout Algorithm** (30-40 min):
+1. **Energy-Aware Layout Algorithm** (30-40 min):
    ```
    Web research: ADHD energy management, adaptive UI layouts
    Run zen/thinkdeep investigation
    Design: very_low→low→medium→high→hyperfocus layout mapping
    ```
 
-5. **Session Template Patterns** (30-40 min):
+1. **Session Template Patterns** (30-40 min):
    ```
    Web research: YAML templating, Jinja2 best practices, tmuxp patterns
    Run zen/thinkdeep investigation
    Design: Two-plane templates (PLAN vs ACT modes)
    ```
 
-6. **Create comprehensive synthesis** (15-20 min):
+1. **Create comprehensive synthesis** (15-20 min):
    ```
    Combine all 6 investigations into master UI design document
    Update UI-IMPLEMENTATION-ROADMAP.md with findings

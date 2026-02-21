@@ -197,12 +197,12 @@ python test_security_fixes.py
 
 ### Modified Files (5)
 1. `services/conport_kg/queries/overview.py` (added validation, fixed 3 locations)
-2. `services/conport_kg/queries/deep_context.py` (added validation + re.escape, fixed 2 vulns)
-3. `services/conport_kg/orchestrator.py` (added TODO for N+1 optimization)
+1. `services/conport_kg/queries/deep_context.py` (added validation + re.escape, fixed 2 vulns)
+1. `services/conport_kg/orchestrator.py` (added TODO for N+1 optimization)
 
 ### New Files (2)
 1. `services/conport_kg/test_security_fixes.py` (comprehensive security test suite)
-2. `claudedocs/conport-kg-security-fixes-2025-10-16.md` (this document)
+1. `claudedocs/conport-kg-security-fixes-2025-10-16.md` (this document)
 
 ---
 
@@ -225,18 +225,18 @@ python test_security_fixes.py
 
 ### Immediate (Required for Production)
 1. ✅ **DONE**: Deploy security fixes to production
-2. ✅ **DONE**: Run security test suite as part of CI/CD
-3. **TODO**: Add pre-commit hook to run security tests
+1. ✅ **DONE**: Run security test suite as part of CI/CD
+1. **TODO**: Add pre-commit hook to run security tests
 
 ### Short-term (Within 1-2 weeks)
 1. Implement N+1 query optimization (6-8 hour task)
-2. Add query result caching (2 hour task)
-3. Add connection health checks (1 hour task)
+1. Add query result caching (2 hour task)
+1. Add connection health checks (1 hour task)
 
 ### Long-term (Phase 2)
 1. Wire DopeconBridge events
-2. Add activity tracking for ADHD features
-3. Implement full-text search with PostgreSQL GIN index
+1. Add activity tracking for ADHD features
+1. Implement full-text search with PostgreSQL GIN index
 
 ---
 

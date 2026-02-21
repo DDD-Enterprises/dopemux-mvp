@@ -20,14 +20,14 @@ Phase 2 Reflection + Trajectory features have been successfully implemented and 
 ### Phase 1 Stabilization ✅
 
 1. **tests/conftest.py** - Created pytest configuration to add service directory to sys.path
-   - Location: `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/tests/conftest.py`
-   - Ensures proper module imports in test environment
+- Location: `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/tests/conftest.py`
+- Ensures proper module imports in test environment
 
-2. **Module Verification** - Confirmed all required modules exist and import correctly:
-   - ✓ `eventbus_consumer.py` - Event bus consumer for Redis streams
-   - ✓ `postgres_mirror_sync.py` - PostgreSQL mirror synchronization
-   - ✓ `chronicle/store.py` - ChronicleStore with parameter-based insert API
-   - Note: `chronicle/models.py` is NOT needed (not referenced anywhere)
+1. **Module Verification** - Confirmed all required modules exist and import correctly:
+- ✓ `eventbus_consumer.py` - Event bus consumer for Redis streams
+- ✓ `postgres_mirror_sync.py` - PostgreSQL mirror synchronization
+- ✓ `chronicle/store.py` - ChronicleStore with parameter-based insert API
+- Note: `chronicle/models.py` is NOT needed (not referenced anywhere)
 
 ### Phase 2 Implementation ✅
 
@@ -41,9 +41,9 @@ Phase 2 Reflection + Trajectory features have been successfully implemented and 
 - **Progress Summary**: Total entries, category breakdown, active session
 - **Trajectory**: Current stream based on most active category
 - **Next Steps**: Deterministic prioritization:
-  1. Resolve blocker (if exists)
-  2. Implement decision (if exists)
-  3. Continue recent work (fallback)
+1. Resolve blocker (if exists)
+1. Implement decision (if exists)
+1. Continue recent work (fallback)
 
 **Persistence**: Stores reflection cards in `reflection_cards` table
 
@@ -196,22 +196,22 @@ CREATE TABLE IF NOT EXISTS trajectory_state (
 
 **Coverage**:
 - ✓ `TestReflectionGenerator` (8 tests)
-  - Empty window handling
-  - Top-3 decisions (sorted by importance)
-  - Top-3 blockers (sorted by importance)
-  - Progress summary with category counts
-  - Next steps prioritization (blocker → decision → continue)
-  - Persistence in reflection_cards table
+- Empty window handling
+- Top-3 decisions (sorted by importance)
+- Top-3 blockers (sorted by importance)
+- Progress summary with category counts
+- Next steps prioritization (blocker → decision → continue)
+- Persistence in reflection_cards table
 
 - ✓ `TestTrajectoryManager` (3 tests)
-  - Empty state (returns "idle")
-  - Updated on reflection generation
-  - Boost factor decay (12h = ~1.5x, 24h = 1.0x)
+- Empty state (returns "idle")
+- Updated on reflection generation
+- Boost factor decay (12h = ~1.5x, 24h = 1.0x)
 
 - ✓ `TestMemoryReflections` (3 tests)
-  - Empty list handling
-  - Fetch recent reflections
-  - Limit parameter enforcement
+- Empty list handling
+- Fetch recent reflections
+- Limit parameter enforcement
 
 **Test Results**: All 12 Phase 2 tests pass + 21 existing tests = 33 total ✅
 
@@ -238,13 +238,13 @@ CREATE TABLE IF NOT EXISTS trajectory_state (
 ## Files Modified
 
 1. `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/tests/conftest.py` - CREATED
-2. `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/dope_memory_main.py` - MODIFIED
-   - Added imports: uuid, timedelta, timezone
-   - Added Phase 2 methods: memory_generate_reflection, memory_reflections, memory_trajectory, _update_trajectory_state
-   - Added Phase 2 request models: MemoryGenerateReflectionRequest, MemoryReflectionsRequest, MemoryTrajectoryRequest
-   - Added Phase 2 endpoints: /tools/memory_generate_reflection, /tools/memory_reflections, /tools/memory_trajectory
-3. `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py` - CREATED
-4. `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/verify_phase2.py` - CREATED
+1. `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/dope_memory_main.py` - MODIFIED
+- Added imports: uuid, timedelta, timezone
+- Added Phase 2 methods: memory_generate_reflection, memory_reflections, memory_trajectory, _update_trajectory_state
+- Added Phase 2 request models: MemoryGenerateReflectionRequest, MemoryReflectionsRequest, MemoryTrajectoryRequest
+- Added Phase 2 endpoints: /tools/memory_generate_reflection, /tools/memory_reflections, /tools/memory_trajectory
+1. `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/tests/test_phase2_reflection_trajectory.py` - CREATED
+1. `/Users/hue/code/dopemux-mvp/services/working-memory-assistant/verify_phase2.py` - CREATED
 
 ## Usage Examples
 

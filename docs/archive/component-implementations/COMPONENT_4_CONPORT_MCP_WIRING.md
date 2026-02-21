@@ -40,12 +40,12 @@ ConPort (PostgreSQL AGE)
 
 **Methods Implemented** (7 total):
 1. `log_progress()` - Create new progress entry in ConPort
-2. `update_progress()` - Update existing progress entry
-3. `get_progress()` - Retrieve progress entries with filters
-4. `link_conport_items()` - Create relationship links between items
-5. `update_active_context()` - Update ConPort active context
-6. `log_decision()` - Log architectural decisions
-7. (Internal) Error handling with proper exception propagation
+1. `update_progress()` - Update existing progress entry
+1. `get_progress()` - Retrieve progress entries with filters
+1. `link_conport_items()` - Create relationship links between items
+1. `update_active_context()` - Update ConPort active context
+1. `log_decision()` - Log architectural decisions
+1. (Internal) Error handling with proper exception propagation
 
 **Key Features**:
 - Async wrapper around `mcp__conport__*` tools
@@ -170,14 +170,14 @@ if self.conport_adapter:
 
 | Event Handler | Adapter Method | ConPort Operation |
 |---------------|----------------|-------------------|
-| `_handle_tasks_imported` | `sync_imported_tasks()` | Update active_context with sprint |
-| `_handle_session_started` | `update_task_status("IN_PROGRESS")` | Update progress status |
-| `_handle_session_paused` | `update_task_status("BLOCKED")` | Update progress status |
-| `_handle_session_completed` | `update_task_status("DONE")` | Update progress status |
-| `_handle_progress_updated` | `update_task_progress()` | Update progress + percentage |
-| `_handle_decision_logged` | `link_decision_to_tasks()` | Link decision → tasks |
-| `_handle_adhd_state_changed` | `adjust_task_recommendations()` | Update active_context |
-| `_handle_break_reminder` | `update_task_status("IN_PROGRESS")` | Log break notification |
+| `_handle_tasks_imported` \| `sync_imported_tasks()` | Update active_context with sprint |
+| `_handle_session_started` \| `update_task_status("IN_PROGRESS")` | Update progress status |
+| `_handle_session_paused` \| `update_task_status("BLOCKED")` | Update progress status |
+| `_handle_session_completed` \| `update_task_status("DONE")` | Update progress status |
+| `_handle_progress_updated` \| `update_task_progress()` | Update progress + percentage |
+| `_handle_decision_logged` \| `link_decision_to_tasks()` | Link decision → tasks |
+| `_handle_adhd_state_changed` \| `adjust_task_recommendations()` | Update active_context |
+| `_handle_break_reminder` \| `update_task_status("IN_PROGRESS")` | Log break notification |
 
 ## Integration Architecture
 
@@ -320,16 +320,16 @@ POST /events {
 **Full Integration Test**:
 ```
 1. Start ConPort MCP server
-2. Start DopeconBridge
-3. Start Task-Orchestrator with MCP client configured
-4. Publish tasks_imported event
-5. Verify ConPort active_context updated
-6. Create task in Leantime
-7. Verify task appears in ConPort via Task-Orchestrator
-8. Update task status in Leantime
-9. Verify status synced to ConPort
-10. Log decision in ConPort
-11. Verify decision linked to active tasks
+1. Start DopeconBridge
+1. Start Task-Orchestrator with MCP client configured
+1. Publish tasks_imported event
+1. Verify ConPort active_context updated
+1. Create task in Leantime
+1. Verify task appears in ConPort via Task-Orchestrator
+1. Update task status in Leantime
+1. Verify status synced to ConPort
+1. Log decision in ConPort
+1. Verify decision linked to active tasks
 ```
 
 ## Architecture Compliance
@@ -398,22 +398,22 @@ POST /events {
 
 **Immediate (For Testing)**:
 1. Create mock MCP tools for isolated testing
-2. Run integration test suite with mocks
-3. Verify all event handlers execute without errors
+1. Run integration test suite with mocks
+1. Verify all event handlers execute without errors
 
 **Short-Term (For Deployment)**:
 1. Choose MCP integration option (Direct/HTTP/Bridge Extension)
-2. Implement MCP client initialization in enhanced_orchestrator.py
-3. Deploy with ConPort MCP server
-4. Run end-to-end integration tests
-5. Monitor production event flow
+1. Implement MCP client initialization in enhanced_orchestrator.py
+1. Deploy with ConPort MCP server
+1. Run end-to-end integration tests
+1. Monitor production event flow
 
 **Long-Term (Enhancements)**:
 1. Add progress percentage field to ConPort schema
-2. Implement batch operations for performance
-3. Add ConPort caching layer for frequent queries
-4. Implement webhook notifications for critical events
-5. Add ConPort health monitoring dashboard
+1. Implement batch operations for performance
+1. Add ConPort caching layer for frequent queries
+1. Implement webhook notifications for critical events
+1. Add ConPort health monitoring dashboard
 
 ## Known Limitations
 

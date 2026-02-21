@@ -53,7 +53,7 @@ python services/orchestrator/tui/main_with_orchestrator.py
 | `Ctrl+1` | Focus Claude pane | Make Claude active target |
 | `Ctrl+2` | Focus Gemini pane | Make Gemini active target |
 | `Ctrl+3` | Focus Grok pane | Make Grok active target |
-| `c` | Show comparison view | After `@all`, compare responses |
+| `c` \| Show comparison view \| After `@all`, compare responses |
 | `Ctrl+L` | Clear all outputs | Start fresh when panes get cluttered |
 | `Ctrl+R` | Refresh energy level | Update ADHD Engine status |
 | `?` | Show help | Quick reference |
@@ -69,9 +69,9 @@ python services/orchestrator/tui/main_with_orchestrator.py
 
 **What happens**:
 1. Command appears in Claude pane with 📤 icon
-2. Border turns yellow (busy)
-3. Output streams in real-time as Claude responds
-4. Border returns to cyan (ready) with ✅ success
+1. Border turns yellow (busy)
+1. Output streams in real-time as Claude responds
+1. Border returns to cyan (ready) with ✅ success
 
 **ADHD Benefit**: Visual feedback prevents "is it working?" anxiety
 
@@ -83,10 +83,10 @@ python services/orchestrator/tui/main_with_orchestrator.py
 
 **What happens**:
 1. All 3 panes show 📤 command simultaneously
-2. All available CLIs execute in parallel
-3. Each pane streams its AI's response independently
-4. Summary shows: "📊 Parallel execution: 2.3s total | 2/3 succeeded"
-5. Press `c` to see side-by-side comparison
+1. All available CLIs execute in parallel
+1. Each pane streams its AI's response independently
+1. Summary shows: "📊 Parallel execution: 2.3s total | 2/3 succeeded"
+1. Press `c` to see side-by-side comparison
 
 **ADHD Benefit**: Parallel = faster results, comparison reduces decision fatigue
 
@@ -100,8 +100,8 @@ python services/orchestrator/tui/main_with_orchestrator.py
 
 **What happens**:
 1. Pane shows: "❌ gemini CLI not available."
-2. Pane shows: "   Install from: https://ai.google.dev/gemini-api/docs/cli"
-3. Border turns red (error)
+1. Pane shows: "   Install from: https://ai.google.dev/gemini-api/docs/cli"
+1. Border turns red (error)
 
 **ADHD Benefit**: Actionable error with clear next step
 
@@ -111,11 +111,11 @@ python services/orchestrator/tui/main_with_orchestrator.py
 
 **What happens**:
 1. Auto-save runs every 30s in background
-2. When you restart TUI, state restores:
-   - Command history preserved
-   - Last pane outputs visible
-   - Progress tracking maintained
-3. Visual indicator shows session age: "Session restored (15m ago)"
+1. When you restart TUI, state restores:
+- Command history preserved
+- Last pane outputs visible
+- Progress tracking maintained
+1. Visual indicator shows session age: "Session restored (15m ago)"
 
 **ADHD Benefit**: Zero cognitive overhead for session recovery
 
@@ -139,16 +139,16 @@ You'll see: "⏳ Retry 1/3 in 1.0s..." in the pane
 After using `@all`, press `c` to cycle through comparison modes:
 
 1. **Side-by-Side** (default): First 5 lines from each AI
-   - Quick scanning
-   - See differences at a glance
+- Quick scanning
+- See differences at a glance
 
-2. **Sequential**: Complete outputs one after another
-   - Deep analysis
-   - Read each response fully
+1. **Sequential**: Complete outputs one after another
+- Deep analysis
+- Read each response fully
 
-3. **Consensus**: Highlights agreements/disagreements
-   - Decision-making support
-   - See where AIs agree
+1. **Consensus**: Highlights agreements/disagreements
+- Decision-making support
+- See where AIs agree
 
 **ADHD Benefit**: Multiple views support different cognitive modes
 
@@ -191,8 +191,8 @@ claude --version
 
 **Solutions**:
 1. Simplify prompt
-2. Check internet connection
-3. Try again later (AI service may be temporarily down)
+1. Check internet connection
+1. Try again later (AI service may be temporarily down)
 
 ### Outputs cluttered with old responses
 
@@ -251,9 +251,9 @@ python main.py
 - **Progress bar**: Shows session progress (0-100%)
 - **Task counter**: "2/5 tasks ✅" provides concrete achievement
 - **Break timer**: Color-coded countdown to next break
-  - Green: > 10 min remaining
-  - Yellow: 5-10 min
-  - Red: < 5 min (take break soon!)
+- Green: > 10 min remaining
+- Yellow: 5-10 min
+- Red: < 5 min (take break soon!)
 
 ### Cognitive Load Reduction
 - **Max 4 panes**: Prevents overwhelm

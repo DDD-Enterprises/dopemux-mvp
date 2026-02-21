@@ -36,12 +36,12 @@ prelude: Dashboard_Day1_Complete (explanation) for dopemux documentation and dev
 - **Successfully started** ADHD Engine FastAPI server
 - Running on `http://localhost:8000`
 - All 6 background monitors active:
-  - ⚡ Energy level monitoring
-  - 👁️ Attention state monitoring
-  - 🧠 Cognitive load monitoring
-  - ☕ Break timing monitor
-  - 🛡️ Hyperfocus protection monitor
-  - 🔄 Context switch analyzer
+- ⚡ Energy level monitoring
+- 👁️ Attention state monitoring
+- 🧠 Cognitive load monitoring
+- ☕ Break timing monitor
+- 🛡️ Hyperfocus protection monitor
+- 🔄 Context switch analyzer
 
 ### ✅ Dashboard Integration
 - Updated `dopemux_dashboard.py` to connect to real API
@@ -57,8 +57,8 @@ prelude: Dashboard_Day1_Complete (explanation) for dopemux documentation and dev
 |----------|--------|----------|
 | `GET /health` | ✅ Working | Service health + stats |
 | `GET /` | ✅ Working | Service info |
-| `GET /api/v1/energy-level/default_user` | ✅ Working | `{"energy_level": "medium"}` |
-| `GET /api/v1/attention-state/default_user` | ✅ Working | `{"attention_state": "focused"}` |
+| `GET /api/v1/energy-level/default_user` \| ✅ Working \| `{"energy_level": "medium"}` |
+| `GET /api/v1/attention-state/default_user` \| ✅ Working \| `{"attention_state": "focused"}` |
 
 ---
 
@@ -173,23 +173,23 @@ python3 dopemux_dashboard.py
 ## 💡 Key Learnings
 
 1. **Redis was already available** via dopemux-redis-events on localhost:6379
-   - No need to start new Redis instance
-   - Just needed correct configuration
+- No need to start new Redis instance
+- Just needed correct configuration
 
-2. **ADHD Engine works great**
-   - All monitors started successfully
-   - APIs respond quickly
-   - ML Predictive Engine enabled
+1. **ADHD Engine works great**
+- All monitors started successfully
+- APIs respond quickly
+- ML Predictive Engine enabled
 
-3. **Dashboard architecture is solid**
-   - Graceful fallback works perfectly
-   - Easy to add new endpoints
-   - Textual + Rich render beautifully
+1. **Dashboard architecture is solid**
+- Graceful fallback works perfectly
+- Easy to add new endpoints
+- Textual + Rich render beautifully
 
-4. **Planning paid off**
-   - DASHBOARD_DEEP_PLANNING.md gave clear direction
-   - No wasted time on wrong approaches
-   - Understood the architecture before coding
+1. **Planning paid off**
+- DASHBOARD_DEEP_PLANNING.md gave clear direction
+- No wasted time on wrong approaches
+- Understood the architecture before coding
 
 ---
 

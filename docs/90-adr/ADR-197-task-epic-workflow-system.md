@@ -47,10 +47,10 @@ Dopemux currently lacks a comprehensive workflow system for tracking ideas from 
 
 **Current Pain Points**:
 1. **Idea Capture Gap**: No structured place to store unvalidated ideas or feature requests
-2. **Epic Planning Gap**: No workflow for promoting approved ideas into planned epics
-3. **Task Decomposition Gap**: No system for breaking epics into concrete, executable tasks
-4. **Execution Tracking Gap**: No clear handoff from planning to active development
-5. **ADHD Context Loss**: Ideas get lost between stages, work falls through cracks
+1. **Epic Planning Gap**: No workflow for promoting approved ideas into planned epics
+1. **Task Decomposition Gap**: No system for breaking epics into concrete, executable tasks
+1. **Execution Tracking Gap**: No clear handoff from planning to active development
+1. **ADHD Context Loss**: Ideas get lost between stages, work falls through cracks
 
 **User Request** (2025-10-04):
 > "I think we should have a place to put things that we want to build but haven't fleshed out, either as ideas or todo's or epics, then have a queue of approved and thought out features or work, then once those are fully planned and broken down under an epic they can go in a work queue or something."
@@ -231,9 +231,9 @@ Serena LSP Activation (start tracking files)
 
 **Conflict Resolution**:
 1. **Status Conflicts**: Leantime always wins (status authority)
-2. **Knowledge Conflicts**: ConPort always wins (knowledge authority)
-3. **Race Conditions**: Last-write-wins with audit trail
-4. **Sync Failures**: Queue for retry, show warning in UI
+1. **Knowledge Conflicts**: ConPort always wins (knowledge authority)
+1. **Race Conditions**: Last-write-wins with audit trail
+1. **Sync Failures**: Queue for retry, show warning in UI
 
 ### Promotion Flow (One-Way)
 
@@ -532,11 +532,11 @@ def test_conflict_resolution():
 def test_full_workflow_idea_to_execution():
     """
     End-to-end test:
-    1. Create idea in ConPort
-    2. Promote to epic (Leantime project created)
-    3. Decompose to tasks (Leantime tasks created)
-    4. Update status in Leantime
-    5. Verify ConPort synced
+1. Create idea in ConPort
+1. Promote to epic (Leantime project created)
+1. Decompose to tasks (Leantime tasks created)
+1. Update status in Leantime
+1. Verify ConPort synced
     """
 
 def test_leantime_unavailable_fallback():
@@ -618,10 +618,10 @@ def test_conport_unavailable_fallback():
 
 **Rationale**:
 1. **Multi-Model Consensus**: Both FOR and AGAINST perspectives (8/10 + 8/10) recommended one-way promotion architecture
-2. **Zero New Infrastructure**: Uses existing ConPort + Leantime + DopeconBridge
-3. **Industry Alignment**: Matches proven patterns (Salesforce→Jira)
-4. **ADHD Value**: Prevents idea loss, reduces context switching, preserves focus
-5. **Low Risk**: Phase 1+2 = 12 hours, well-defined scope, clear success criteria
+1. **Zero New Infrastructure**: Uses existing ConPort + Leantime + DopeconBridge
+1. **Industry Alignment**: Matches proven patterns (Salesforce→Jira)
+1. **ADHD Value**: Prevents idea loss, reduces context switching, preserves focus
+1. **Low Risk**: Phase 1+2 = 12 hours, well-defined scope, clear success criteria
 
 **Implementation Priority**: P0 (Immediate)
 

@@ -97,9 +97,9 @@ get_search_metrics()
    clear_search_metrics()
    ```
 
-2. **Work normally** for 1-2 hours on real tasks
+1. **Work normally** for 1-2 hours on real tasks
 
-3. **Record baseline**:
+1. **Record baseline**:
    ```
    get_search_metrics()
    ```
@@ -110,14 +110,14 @@ get_search_metrics()
 
 1. **Restart Claude Code** (loads new descriptions)
 
-2. **Clear metrics**:
+1. **Clear metrics**:
    ```
    clear_search_metrics()
    ```
 
-3. **Work on SAME types of tasks** for 1-2 hours
+1. **Work on SAME types of tasks** for 1-2 hours
 
-4. **Record enhanced**:
+1. **Record enhanced**:
    ```
    get_search_metrics()
    ```

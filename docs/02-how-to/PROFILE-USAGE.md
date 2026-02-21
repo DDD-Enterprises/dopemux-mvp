@@ -97,9 +97,9 @@ name: developer
 display_name: "Developer"
 description: "Code implementation and debugging"
 mcps:
-  - conport
-  - serena-v2
-  - zen
+- conport
+- serena-v2
+- zen
 adhd_config:
   energy_preference: medium
   attention_mode: focused
@@ -109,6 +109,6 @@ adhd_config:
 Notes:
 
 1. `conport` is required in all profiles.
-2. MCP names can map to runtime aliases (for example `serena-v2` to `serena` in Claude config).
-3. Backup and rollback safeguards are active when profile-backed config writes occur.
-4. `dopemux profile stats` emits optimization suggestions and archives them to ConPort under `profile_optimization_recommendations`.
+1. MCP names can map to runtime aliases (for example `serena-v2` to `serena` in Claude config).
+1. Backup and rollback safeguards are active when profile-backed config writes occur.
+1. `dopemux profile stats` emits optimization suggestions and archives them to ConPort under `profile_optimization_recommendations`.

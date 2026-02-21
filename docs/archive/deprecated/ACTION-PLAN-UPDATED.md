@@ -37,15 +37,15 @@ prelude: Action Plan Updated (explanation) for dopemux documentation and develop
 
 **Security** (ALL DONE):
 1. ✅ CORS wildcards → Fixed (this session)
-2. ✅ Hardcoded credentials → Fixed (this session)
-3. ✅ API authentication → Fixed (this session)
-4. ✅ DopeconBridge stubs → Fixed (this session)
-5. ✅ ConPort SQL injection → Already fixed (pre-session)
-6. ✅ ConPort ReDoS → Already fixed (pre-session)
+1. ✅ Hardcoded credentials → Fixed (this session)
+1. ✅ API authentication → Fixed (this session)
+1. ✅ DopeconBridge stubs → Fixed (this session)
+1. ✅ ConPort SQL injection → Already fixed (pre-session)
+1. ✅ ConPort ReDoS → Already fixed (pre-session)
 
 **Architecture** (ALL DONE):
-7. ✅ DopeconBridge 100% → Complete (this session)
-8. ✅ ADHD Engine migration → Complete (this session)
+1. ✅ DopeconBridge 100% → Complete (this session)
+1. ✅ ADHD Engine migration → Complete (this session)
 
 **Result**: **PERFECT 10/10 security across all services!** ⭐⭐⭐⭐⭐
 
@@ -56,22 +56,22 @@ prelude: Action Plan Updated (explanation) for dopemux documentation and develop
 **Minor Enhancements** (3-4h total):
 
 1. **ConPort UI URL Encoding** (30min)
-   - Priority: 🟢 LOW (nice-to-have)
-   - Location: `services/conport_kg_ui/src/api/client.ts`
-   - Fix: Replace manual query strings with `URLSearchParams`
-   - Benefit: Handles special characters properly
+- Priority: 🟢 LOW (nice-to-have)
+- Location: `services/conport_kg_ui/src/api/client.ts`
+- Fix: Replace manual query strings with `URLSearchParams`
+- Benefit: Handles special characters properly
 
-2. **GPT-Researcher WebSocket Auth** (1h)
-   - Priority: 🟠 MEDIUM (defense-in-depth)
-   - Location: `services/dopemux-gpt-researcher/backend/main.py:332`
-   - Fix: Add API key to WebSocket connection
-   - Benefit: Prevents unauthorized progress stream access
+1. **GPT-Researcher WebSocket Auth** (1h)
+- Priority: 🟠 MEDIUM (defense-in-depth)
+- Location: `services/dopemux-gpt-researcher/backend/main.py:332`
+- Fix: Add API key to WebSocket connection
+- Benefit: Prevents unauthorized progress stream access
 
-3. **ConPort Orchestrator → Bridge Wiring** (2-3h)
-   - Priority: 🟠 MEDIUM (completes automation)
-   - Location: `services/conport_kg/orchestrator.py:127`
-   - Fix: Wire event publishing to DopeconBridge
-   - Benefit: Event-driven automation functional
+1. **ConPort Orchestrator → Bridge Wiring** (2-3h)
+- Priority: 🟠 MEDIUM (completes automation)
+- Location: `services/conport_kg/orchestrator.py:127`
+- Fix: Wire event publishing to DopeconBridge
+- Benefit: Event-driven automation functional
 
 ---
 

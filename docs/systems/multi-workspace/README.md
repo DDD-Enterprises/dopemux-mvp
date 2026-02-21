@@ -62,19 +62,19 @@ DOPE_CONTEXT_WORKSPACES="/ws1,/ws2" python daemon.py
 
 ### To Use Multi-Workspace Now
 1. Read `DOPE_CONTEXT_QUICK_START.md`
-2. Set `DOPE_WORKSPACES="/path1,/path2"`
-3. Use dope-context with multiple workspaces
+1. Set `DOPE_WORKSPACES="/path1,/path2"`
+1. Use dope-context with multiple workspaces
 
 ### To Implement in Another Service
 1. Read `MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md`
-2. Follow the template for your service type
-3. Use shared utilities (15-90 minutes per service)
+1. Follow the template for your service type
+1. Use shared utilities (15-90 minutes per service)
 
 ### Recommended Implementation Order
 1. **serena** (3-4h) - Code graph analysis
-2. **conport_kg** (2-3h) - Knowledge graph
-3. **orchestrator** (30m) - Service routing
-4. **task-orchestrator** (1h) - Task management
+1. **conport_kg** (2-3h) - Knowledge graph
+1. **orchestrator** (30m) - Service routing
+1. **task-orchestrator** (1h) - Task management
 
 ---
 
@@ -245,8 +245,8 @@ A: Read `SERVICE_WORKSPACE_ANALYSIS.md`
 
 **Next recommended action**:
 1. Read this file
-2. Check `MULTI_WORKSPACE_INDEX.md` for navigation
-3. Use or implement based on your needs
+1. Check `MULTI_WORKSPACE_INDEX.md` for navigation
+1. Use or implement based on your needs
 
 ---
 

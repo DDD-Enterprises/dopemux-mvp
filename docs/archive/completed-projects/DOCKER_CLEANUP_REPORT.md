@@ -156,14 +156,14 @@ dopemux-postgres-age    Port 5456  ✅ Healthy  - PostgreSQL + AGE
 
 ### Minor (Non-Critical)
 1. **mcp-serena** - No health check configured
-2. **mcp-qdrant** - No health check configured
-3. **Unknown containers**: `admiring_boyd`, `serene_goodall` (need investigation)
+1. **mcp-qdrant** - No health check configured
+1. **Unknown containers**: `admiring_boyd`, `serene_goodall` (need investigation)
 
 ### Recommendations
 1. Add health checks to mcp-serena and mcp-qdrant
-2. Identify and remove/rename unknown containers
-3. Consider consolidating Redis instances (currently 3)
-4. Decide on dope-decision-graph-qdrant (start or remove)
+1. Identify and remove/rename unknown containers
+1. Consider consolidating Redis instances (currently 3)
+1. Decide on dope-decision-graph-qdrant (start or remove)
 
 ---
 
@@ -203,15 +203,15 @@ Build Cache:    9.14GB (100% reclaimable)
 
 ### Why We Removed It:
 1. ✅ **Redundant** - Qdrant already provides vector search
-2. ✅ **Heavyweight** - Milvus = 3 containers, Qdrant = 1
-3. ✅ **Unused** - All containers exited 4+ days ago
-4. ✅ **No code references** - Verified with grep
-5. ✅ **Better alternative** - Qdrant is:
-   - Lighter weight (1 vs 3 containers)
-   - More modern architecture
-   - Better documented
-   - More actively maintained
-   - Already integrated and working
+1. ✅ **Heavyweight** - Milvus = 3 containers, Qdrant = 1
+1. ✅ **Unused** - All containers exited 4+ days ago
+1. ✅ **No code references** - Verified with grep
+1. ✅ **Better alternative** - Qdrant is:
+- Lighter weight (1 vs 3 containers)
+- More modern architecture
+- Better documented
+- More actively maintained
+- Already integrated and working
 
 ### What Replaced It:
 **mcp-qdrant** (ports 6333-6334)
@@ -226,22 +226,22 @@ Build Cache:    9.14GB (100% reclaimable)
 
 ### Immediate
 1. ✅ Cleanup complete
-2. ✅ All MCP servers verified running
-3. ✅ No port conflicts
-4. ✅ Documentation updated
+1. ✅ All MCP servers verified running
+1. ✅ No port conflicts
+1. ✅ Documentation updated
 
 ### Recommended
 1. Add health checks to mcp-serena and mcp-qdrant
-2. Investigate unknown containers (admiring_boyd, serene_goodall)
-3. Run `docker image prune -a` to free 33GB of unused images
-4. Run `docker builder prune` to free 9GB of build cache
-5. Update monitoring dashboards to reflect new architecture
+1. Investigate unknown containers (admiring_boyd, serene_goodall)
+1. Run `docker image prune -a` to free 33GB of unused images
+1. Run `docker builder prune` to free 9GB of build cache
+1. Update monitoring dashboards to reflect new architecture
 
 ### Future Optimization
 1. Consider consolidating Redis instances (3 → 2)
-2. Document service dependencies
-3. Create resource usage monitoring
-4. Set up automated cleanup scripts
+1. Document service dependencies
+1. Create resource usage monitoring
+1. Set up automated cleanup scripts
 
 ---
 

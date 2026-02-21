@@ -51,13 +51,13 @@ Dope-context semantic search system has been comprehensively indexed, tested, an
 - **Created**: OpenAI-based context generator using gpt-5-mini
 - **Reason**: Anthropic credits depleted
 - **Features**:
-  - Compatible API with Claude generator (`generate_contexts_batch`)
-  - Cost tracking ($0.15/1M input, $0.60/1M output)
-  - Caching with TTL
+- Compatible API with Claude generator (`generate_contexts_batch`)
+- Cost tracking ($0.15/1M input, $0.60/1M output)
+- Caching with TTL
 - **Fixes Applied**:
-  - `max_completion_tokens` instead of `max_tokens`
-  - Removed `temperature` (gpt-5-mini restriction)
-  - Added `cost_usd` field for pipeline compatibility
+- `max_completion_tokens` instead of `max_tokens`
+- Removed `temperature` (gpt-5-mini restriction)
+- Added `cost_usd` field for pipeline compatibility
 
 ✅ **UUID Point IDs** (`src/pipeline/indexing_pipeline.py:165`)
 - **Issue**: Qdrant rejected hex strings like `8345e73f4b3ac1a4`
@@ -69,10 +69,10 @@ Dope-context semantic search system has been comprehensively indexed, tested, an
 - **Solution**: Upgraded to tree-sitter v0.25.2
 - **Fix**: `Language(tspython.language())` pattern from PAL apilookup
 - **Result**:
-  - ✅ Function/class/method detection working
-  - ✅ Semantic boundaries (not line-based)
-  - ✅ Complexity scoring (0.16-0.32 range)
-  - ✅ Symbol name extraction
+- ✅ Function/class/method detection working
+- ✅ Semantic boundaries (not line-based)
+- ✅ Complexity scoring (0.16-0.32 range)
+- ✅ Symbol name extraction
 
 ✅ **Voyage Embeddings**
 - Model: voyage-code-3 (1024 dimensions)
@@ -273,16 +273,16 @@ Type: function
 
 ### New Files
 1. `src/context/openai_generator.py` - OpenAI context generator (gpt-5-mini)
-2. `TEST_RESULTS.md` - Initial test documentation
-3. `FINAL_TEST_REPORT.md` - This comprehensive report
+1. `TEST_RESULTS.md` - Initial test documentation
+1. `FINAL_TEST_REPORT.md` - This comprehensive report
 
 ### Modified Files
 1. `src/pipeline/indexing_pipeline.py:165` - UUID point IDs
-2. `src/search/docs_search.py:85` - UUID point IDs (docs)
-3. `src/pipeline/docs_pipeline.py:87` - Token validation
-4. `src/search/dense_search.py:397` - SearchResult compatibility
-5. `src/preprocessing/code_chunker.py:96` - Language() wrapper
-6. `requirements.txt` - tree-sitter>=0.25.2, openai>=1.0.0
+1. `src/search/docs_search.py:85` - UUID point IDs (docs)
+1. `src/pipeline/docs_pipeline.py:87` - Token validation
+1. `src/search/dense_search.py:397` - SearchResult compatibility
+1. `src/preprocessing/code_chunker.py:96` - Language() wrapper
+1. `requirements.txt` - tree-sitter>=0.25.2, openai>=1.0.0
 
 ---
 
@@ -441,8 +441,8 @@ mcp__dope-context__search_all(
 
 ### Development Costs (One-Time Indexing)
 - **50 Code Files**: $0.052
-  - gpt-5-mini contexts: ~$0.03
-  - Voyage embeddings: ~$0.02
+- gpt-5-mini contexts: ~$0.03
+- Voyage embeddings: ~$0.02
 - **428 Docs**: $0.00 (cached/free tier)
 - **Total**: ~$0.05 per workspace initial index
 
@@ -518,18 +518,18 @@ Very affordable for development use!
 
 ### Immediate (Ready Now)
 1. ✅ **Use dope-context in workflows** - Fully operational for semantic code/docs search
-2. ✅ **Leverage AST chunking** - Complexity scores now available
-3. ✅ **Multi-workspace projects** - Isolation working perfectly
+1. ✅ **Leverage AST chunking** - Complexity scores now available
+1. ✅ **Multi-workspace projects** - Isolation working perfectly
 
 ### Short-term Enhancements
 1. **Expand Indexing**: Index full codebase (currently 50 files)
-2. **Performance Tuning**: Optimize for large repositories
-3. **Incremental Sync**: Test change detection and re-indexing
+1. **Performance Tuning**: Optimize for large repositories
+1. **Incremental Sync**: Test change detection and re-indexing
 
 ### Long-term Improvements
 1. **Async Indexing**: Background indexing with progress streaming
-2. **Smart Chunking**: Learn optimal chunk sizes from usage patterns
-3. **Cross-Repository**: Search across multiple related projects
+1. **Smart Chunking**: Learn optimal chunk sizes from usage patterns
+1. **Cross-Repository**: Search across multiple related projects
 
 ---
 

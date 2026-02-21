@@ -326,9 +326,9 @@ $ docker ps --filter "health=healthy" | wc -l
 ## 📁 Commits Delivered
 
 1. **ab7ce38c** - Event signature fixes (9/13 passing)
-2. **794738db** - Documentation (9/13 status)
-3. **03975e30** - 100% test pass rate achievement
-4. **098ef6d5** - Smoke test fix (4/4 agents)
+1. **794738db** - Documentation (9/13 status)
+1. **03975e30** - 100% test pass rate achievement
+1. **098ef6d5** - Smoke test fix (4/4 agents)
 
 **All commits pushed to origin/main** ✅
 
@@ -508,15 +508,15 @@ docker exec dopemux-redis-events redis-cli XINFO GROUPS dopemux:events
 
 ### Post-Deployment Monitoring
 1. Monitor event stream growth rate
-2. Track pattern detection insights
-3. Validate ConPort knowledge graph enrichment
-4. Monitor ADHD latency targets in production
+1. Track pattern detection insights
+1. Validate ConPort knowledge graph enrichment
+1. Monitor ADHD latency targets in production
 
 ### Optional Enhancements
 1. Enable Prometheus server for metrics dashboard
-2. Add Grafana dashboards for visualization
-3. Configure alerting rules
-4. Complete remaining agent implementations (Weeks 9-16)
+1. Add Grafana dashboards for visualization
+1. Configure alerting rules
+1. Complete remaining agent implementations (Weeks 9-16)
 
 ---
 

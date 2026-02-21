@@ -580,14 +580,14 @@ WORKING_MEMORY_AUTO_REMINDER=true
 ## Quick Start
 
 1. ✅ Enable energy predictor (2 weeks to learn)
-2. ✅ Setup mobile push (ntfy easiest)
-3. ✅ Configure end-of-day hour
-4. ✅ Try voice: "How's my focus?"
-5. ✅ Complete first micro-task when procrastinating
-6. ✅ Accept breaks for calibration
-7. ✅ Run end-of-day ritual tonight
-8. ✅ Check weekly report Friday
-9. ✅ Provide attention feedback when off
+1. ✅ Setup mobile push (ntfy easiest)
+1. ✅ Configure end-of-day hour
+1. ✅ Try voice: "How's my focus?"
+1. ✅ Complete first micro-task when procrastinating
+1. ✅ Accept breaks for calibration
+1. ✅ Run end-of-day ritual tonight
+1. ✅ Check weekly report Friday
+1. ✅ Provide attention feedback when off
 
 ---
 

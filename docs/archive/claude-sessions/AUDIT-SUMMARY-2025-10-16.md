@@ -271,11 +271,11 @@ async def save_custom_data(...):
 
 ### Week 7 (Integration Work)
 - [ ] Complete DopeconBridge (4-6h)
-  - Implement MCP→ConPort integration
-  - Wire custom_data endpoints
+- Implement MCP→ConPort integration
+- Wire custom_data endpoints
 - [ ] Migrate services (6-8h)
-  - Remove direct SQLite access
-  - Update to use HTTP API
+- Remove direct SQLite access
+- Update to use HTTP API
 - [ ] Validate authority enforcement
 
 ---
@@ -311,16 +311,16 @@ async def save_custom_data(...):
 
 **Continue Audit** (20h remaining estimated):
 1. Phase 3: Manual review (10h)
-2. Phase 4: Doc validation (4h)
-3. Phase 6: Integration tests (4h)
-4. Phase 8: Final synthesis (2h)
+1. Phase 4: Doc validation (4h)
+1. Phase 6: Integration tests (4h)
+1. Phase 8: Final synthesis (2h)
 
 **OR**
 
 **Deployment Focus**:
 1. Test security fixes
-2. Deploy with new .env configuration
-3. Validate in staging environment
+1. Deploy with new .env configuration
+1. Validate in staging environment
 
 ---
 

@@ -35,18 +35,18 @@ The entire Dopemux ecosystem now supports **multiple workspaces** with:
 **All services enhanced with `workspace_path` field:**
 
 1. **serena/v2** - Code intelligence (already complete)
-2. **desktop_commander** - Workspace detection
-3. **task_orchestrator** - Task execution
-4. **dope_context** - Search & prompts
-5. **adhd_engine** - Cognitive state tracking
-6. **session_intelligence** - Session coordination
-7. **intelligence** - Pattern correlation
-8. **activity-capture** - Activity tracking (already complete)
-9. **adhd-dashboard** - Metrics API (gateway)
-10. **working-memory-assistant** - Context recovery
-11. **break-suggester** - Proactive breaks
-12. **conport_kg** - Knowledge graph
-13. **dopecon-bridge** - Event coordination
+1. **desktop_commander** - Workspace detection
+1. **task_orchestrator** - Task execution
+1. **dope_context** - Search & prompts
+1. **adhd_engine** - Cognitive state tracking
+1. **session_intelligence** - Session coordination
+1. **intelligence** - Pattern correlation
+1. **activity-capture** - Activity tracking (already complete)
+1. **adhd-dashboard** - Metrics API (gateway)
+1. **working-memory-assistant** - Context recovery
+1. **break-suggester** - Proactive breaks
+1. **conport_kg** - Knowledge graph
+1. **dopecon-bridge** - Event coordination
 
 Plus 13 additional services (energy-trends, ml-predictions, etc.)
 
@@ -54,13 +54,13 @@ Plus 13 additional services (energy-trends, ml-predictions, etc.)
 **All agent dataclasses enhanced:**
 
 1. **cognitive_guardian** - UserState, BreakReminder
-2. **tool_orchestrator** - ToolSelection, TaskToolRequirements
-3. **task_decomposer** - TaskInput, SubTask, DecompositionResult
-4. **workflow_coordinator** - WorkflowStep, WorkflowTemplate, WorkflowExecution
-5. **two_plane_orchestrator** - CrossPlaneRequest, AuthorityRule
-6. **dopemux_enforcer** - ComplianceViolation, ComplianceReport
-7. **memory_agent** - SessionState
-8. **persona_enhancer** - Inherits workspace context
+1. **tool_orchestrator** - ToolSelection, TaskToolRequirements
+1. **task_decomposer** - TaskInput, SubTask, DecompositionResult
+1. **workflow_coordinator** - WorkflowStep, WorkflowTemplate, WorkflowExecution
+1. **two_plane_orchestrator** - CrossPlaneRequest, AuthorityRule
+1. **dopemux_enforcer** - ComplianceViolation, ComplianceReport
+1. **memory_agent** - SessionState
+1. **persona_enhancer** - Inherits workspace context
 
 ### PHASE 3: Infrastructure (HIGH Priority)
 
@@ -363,7 +363,7 @@ adhd:
 
 code:
   preferred_models:
-    - "claude-sonnet-4.5"
+- "claude-sonnet-4.5"
 ```
 
 ---
@@ -494,10 +494,10 @@ Every layer of the Dopemux ecosystem - from core services through infrastructure
 
 **Users can immediately:**
 1. Install with workspace configuration
-2. Work across multiple projects
-3. Query and analyze across workspaces
-4. Switch workspaces seamlessly
-5. Maintain separate cognitive states
+1. Work across multiple projects
+1. Query and analyze across workspaces
+1. Switch workspaces seamlessly
+1. Maintain separate cognitive states
 
 **The implementation is backward compatible, well-tested, fully documented, and ready for production use.**
 

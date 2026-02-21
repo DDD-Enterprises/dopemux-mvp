@@ -44,26 +44,26 @@ The PM plane defines one canonical task object used for deterministic lifecycle 
 | `task_id` | string | Stable deterministic ID; never reassigned. |
 | `title` | string | Required short user-visible title. |
 | `body` | string nullable | Optional details or pointer text. |
-| `status` | enum | Canonical enum: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `CANCELED`. |
+| `status` \| enum \| Canonical enum: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `CANCELED`. |
 | `phase` | string nullable | Optional workflow phase label. |
-| `source` | enum/string | Creator/updater source (`task-orchestrator`, `taskmaster`, `leantime`, `cli`). |
+| `source` \| enum/string \| Creator/updater source (`task-orchestrator`, `taskmaster`, `leantime`, `cli`). |
 | `created_at_utc` | RFC3339 UTC | Creation timestamp authority. |
 | `updated_at_utc` | RFC3339 UTC | Monotonic update timestamp authority. |
 | `version` | integer | Monotonic optimistic version for conflict refusal. |
-| `provenance` | object | Actor/tool details (`actor_id`, `origin_command`, `source_event_id`). |
-| `idempotency` | object | `transition_key` and optional `content_hash` for replay-safe writes. |
+| `provenance` \| object \| Actor/tool details (`actor_id`, `origin_command`, `source_event_id`). |
+| `idempotency` \| object \| `transition_key` and optional `content_hash` for replay-safe writes. |
 | `links.conport_progress_entry_id` | string nullable | Link to ConPort progress entry when present. |
 | `links.conport_decision_ids` | list[string] | Linked decision IDs when present. |
 | `links.chronicle_event_ids` | list[string] | Mirrored chronicle event IDs when present. |
-| `links.external` | object | External refs (`leantime_ticket_id`, `taskmaster_tool_id`, `orchestrator_task_id`). |
+| `links.external` \| object \| External refs (`leantime_ticket_id`, `taskmaster_tool_id`, `orchestrator_task_id`). |
 
 Canonical invariants:
 
 1. `task_id` immutable after creation.
-2. `updated_at_utc` strictly monotonic per `task_id`.
-3. Every transition request carries an idempotency key; duplicate keys are replay-safe no-ops.
-4. Canonical write occurs at most once per accepted transition.
-5. Default user output remains minimal with progressive disclosure gates (`--more`, `--why`, `--evidence`).
+1. `updated_at_utc` strictly monotonic per `task_id`.
+1. Every transition request carries an idempotency key; duplicate keys are replay-safe no-ops.
+1. Canonical write occurs at most once per accepted transition.
+1. Default user output remains minimal with progressive disclosure gates (`--more`, `--why`, `--evidence`).
    Evidence: `docs/planes/pm/PM_OUTPUT_BOUNDARIES.md:L16-L33`.
 
 Status dialect mapping into canonical enum:
@@ -98,15 +98,15 @@ Allowed transitions:
 Transition rules:
 
 1. Every accepted transition emits exactly one PM event.
-2. Transition processing must be idempotent by `transition_key`.
-3. Terminal states (`DONE`, `CANCELED`) reject non-idempotent reopening.
+1. Transition processing must be idempotent by `transition_key`.
+1. Terminal states (`DONE`, `CANCELED`) reject non-idempotent reopening.
 
 Refusal rules:
 
 1. Reject unknown status values.
-2. Reject stale `version` or non-monotonic `updated_at_utc`.
-3. Reject transitions without idempotency key.
-4. Reject source updates that cannot be mapped to canonical enum.
+1. Reject stale `version` or non-monotonic `updated_at_utc`.
+1. Reject transitions without idempotency key.
+1. Reject source updates that cannot be mapped to canonical enum.
 
 Evidence basis for current multi-surface lifecycle operations: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_task-orchestrator_event_coordinator.py.txt:L191-L207`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_services_taskmaster_bridge_adapter.py.txt:L122-L146`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/10_conport_search.txt:L58-L110`.
 
@@ -227,15 +227,15 @@ Evidence: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_src_dopemux_cli.py.txt
 1. Where should canonical PM task persistence live in existing service topology?
 Evidence needed: concrete module and storage contract in active runtime path (not design docs).
 
-2. What is the exact write-through contract between canonical PM transitions and Chronicle promotion?
+1. What is the exact write-through contract between canonical PM transitions and Chronicle promotion?
 Evidence needed: concrete promotion adapter and retention rules for PM event subsets.
 
-3. Should `paused`, `needs_break`, and `context_switch` become canonical states or remain advisory overlays?
+1. Should `paused`, `needs_break`, and `context_switch` become canonical states or remain advisory overlays?
 Evidence needed: user-facing semantics contract and migration plan for existing status values.
 
-4. What fields are mandatory inputs to compute `event_id` hash across all producers?
+1. What fields are mandatory inputs to compute `event_id` hash across all producers?
 Evidence needed: cross-service event normalization spec covering CLI, task-orchestrator, and taskmaster wrappers.
 
-5. Is dopecon-bridge `tasks` table a PM projection or a competing source of truth in current deployments?
+1. Is dopecon-bridge `tasks` table a PM projection or a competing source of truth in current deployments?
 Evidence needed: runtime ownership contract between PM plane and dopecon-bridge task integration path.
 Evidence surface: `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_models.py.txt:L46-L65`; `docs/planes/pm/_evidence/PM-ARCH-03.outputs/nl_top10_services_dopecon-bridge_dopecon_bridge_services_task_integration.py.txt:L47-L68`.

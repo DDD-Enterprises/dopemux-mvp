@@ -25,8 +25,8 @@ prelude: Dashboard_Day10_Zen_Research (explanation) for dopemux documentation an
 ### What We're Building Today
 After completing enhanced sparklines and keyboard navigation (Day 9), we now focus on:
 1. **Drill-Down Views** - Detailed popup screens for tasks, services, patterns (4-5 hrs)
-2. **Advanced Interactions** - Context menus, filtering, search (3-4 hrs)
-3. **Production Hardening** - Error boundaries, crash recovery, telemetry (2-3 hrs)
+1. **Advanced Interactions** - Context menus, filtering, search (3-4 hrs)
+1. **Production Hardening** - Error boundaries, crash recovery, telemetry (2-3 hrs)
 
 ### Why This Matters - The "Last 20%" That Matters Most
 - **Drill-Downs:** Transform monitoring → debugging (ADHD: investigate without breaking flow)
@@ -52,28 +52,28 @@ After completing enhanced sparklines and keyboard navigation (Day 9), we now foc
 **Source: HogoNext, Equally AI, Esri, Tableau (2024)**
 
 1. **Cognitive Simplicity & Minimal Distraction**
-   - ✅ Clear visual hierarchy with semantic structure
-   - ✅ Aggregate data to show only essentials (drill for details)
-   - ✅ Consistent layout (predictability reduces ADHD friction)
-   - ✅ Eliminate redundant information (focus on signal, not noise)
+- ✅ Clear visual hierarchy with semantic structure
+- ✅ Aggregate data to show only essentials (drill for details)
+- ✅ Consistent layout (predictability reduces ADHD friction)
+- ✅ Eliminate redundant information (focus on signal, not noise)
 
-2. **Enhanced Focus Indicators**
-   - ✅ Thicker borders (3-4px) for focused elements
-   - ✅ High-contrast colors (not gray/muted - invisible to ADHD)
-   - ✅ Instant visual feedback on keyboard actions
-   - ✅ Logical tab order (top→bottom, left→right)
+1. **Enhanced Focus Indicators**
+- ✅ Thicker borders (3-4px) for focused elements
+- ✅ High-contrast colors (not gray/muted - invisible to ADHD)
+- ✅ Instant visual feedback on keyboard actions
+- ✅ Logical tab order (top→bottom, left→right)
 
-3. **Visual Aids & Contrast**
-   - ✅ Enhanced contrast mode (WCAG AAA: 7:1 minimum)
-   - ✅ Redundant markers (color + shape + text)
-   - ✅ Custom color selections for colorblind users
-   - ✅ Progressive disclosure (hide complexity until needed)
+1. **Visual Aids & Contrast**
+- ✅ Enhanced contrast mode (WCAG AAA: 7:1 minimum)
+- ✅ Redundant markers (color + shape + text)
+- ✅ Custom color selections for colorblind users
+- ✅ Progressive disclosure (hide complexity until needed)
 
-4. **Keyboard Navigation Essentials**
-   - ✅ Comprehensive keyboard support (Tab, Enter, Space, Arrows, shortcuts)
-   - ✅ Visible feedback on activation (confirm messages, active states)
-   - ✅ Documentation for shortcuts (in-app help modal)
-   - ✅ Power user shortcuts (Vim keys: j/k/g/G)
+1. **Keyboard Navigation Essentials**
+- ✅ Comprehensive keyboard support (Tab, Enter, Space, Arrows, shortcuts)
+- ✅ Visible feedback on activation (confirm messages, active states)
+- ✅ Documentation for shortcuts (in-app help modal)
+- ✅ Power user shortcuts (Vim keys: j/k/g/G)
 
 **ADHD-Specific Usability Rules:**
 ```
@@ -922,20 +922,20 @@ class PatternAnalysisScreen(DrillDownScreen):
 ## 📚 REFERENCES
 
 1. **ADHD Dashboard Design**
-   - HogoNext: Keyboard Navigation Accessibility
-   - Equally AI: User Dashboard Best Practices
-   - Esri: Dashboard Accessibility Guide
-   - Tableau: Accessible Dashboard Patterns
+- HogoNext: Keyboard Navigation Accessibility
+- Equally AI: User Dashboard Best Practices
+- Esri: Dashboard Accessibility Guide
+- Tableau: Accessible Dashboard Patterns
 
-2. **Terminal TUI Best Practices**
-   - RealPython: Textual Tutorial
-   - Textual Docs: Layouts & Widgets
-   - GitHub Awesome-TUIs: Inspiration
+1. **Terminal TUI Best Practices**
+- RealPython: Textual Tutorial
+- Textual Docs: Layouts & Widgets
+- GitHub Awesome-TUIs: Inspiration
 
-3. **Prometheus Visualization**
-   - Grafana: Dashboard Design Patterns
-   - FasterCapital: Sparklines Integration
-   - MoldStud: Metrics Visualization
+1. **Prometheus Visualization**
+- Grafana: Dashboard Design Patterns
+- FasterCapital: Sparklines Integration
+- MoldStud: Metrics Visualization
 
 ---
 

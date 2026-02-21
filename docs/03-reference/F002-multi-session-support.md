@@ -346,9 +346,9 @@ def strict_check(changes):
 ```yaml
 # GitHub branch protection (main/production branches)
 required_checks:
-  - "tests/pytest"
-  - "docs/validation"
-  - "dopemux-quality-gate"
+- "tests/pytest"
+- "docs/validation"
+- "dopemux-quality-gate"
 ```
 
 ### Smart Documentation Detection

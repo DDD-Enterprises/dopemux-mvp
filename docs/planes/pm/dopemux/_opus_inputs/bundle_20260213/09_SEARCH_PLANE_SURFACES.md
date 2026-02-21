@@ -23,7 +23,7 @@ prelude: 09 Search Plane Surfaces (explanation) for dopemux documentation and de
 | Retrieval stack | hybrid search (dense + BM25) + optional reranker | non-deterministic risk when rerank fails/fallback path changes ordering |
 | Dynamic result count | `top_k` can be overridden via ADHD feature flag integration | non-deterministic by user state/feature flag state |
 | Cache/snapshot use | BM25 index loaded from snapshot file if present | cache/file freshness affects ranking |
-| Workspace scoping | workspace-derived hashed collection names (`code_<hash>`, `docs_<hash>`) | scoped to workspace path, not explicit `workspace_id`/`worktree_id` in event envelope |
+| Workspace scoping | workspace-derived hashed collection names (`code_<hash>`, `docs_<hash>`) \| scoped to workspace path, not explicit `workspace_id`/`worktree_id` in event envelope |
 | Qdrant writes | indexing pipeline creates collections + upserts points | index update timing affects retrieval results |
 
 ## Serena (proven vs unknown)
@@ -110,14 +110,14 @@ async def get_dynamic_top_k(user_id: str = "default", requested_top_k: int = 10)
     container_name: dopemux-mcp-serena
     restart: unless-stopped
     networks:
-      - dopemux-network
+- dopemux-network
     ports:
-      - "3006:3006"
-      - "4006:4006"
+- "3006:3006"
+- "4006:4006"
     environment:
-      - MCP_SERVER_PORT=3006
-      - HTTP_PORT=4006
-      - WORKSPACE_ID=${WORKSPACE_ID:-/workspace}
+- MCP_SERVER_PORT=3006
+- HTTP_PORT=4006
+- WORKSPACE_ID=${WORKSPACE_ID:-/workspace}
 ```
 - `docker/mcp-servers/serena/Dockerfile:11-13`
 ```text

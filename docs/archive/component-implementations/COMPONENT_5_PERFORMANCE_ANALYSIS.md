@@ -191,9 +191,9 @@ tasks, adhd, session = await asyncio.gather(
 
 **Tests**:
 1. **Endpoint Latency**: Individual endpoint performance
-2. **Connection Overhead**: Bridge vs direct orchestrator
-3. **Concurrent Load**: 1/5/10 concurrent requests
-4. **Throughput**: Requests per second at saturation
+1. **Connection Overhead**: Bridge vs direct orchestrator
+1. **Concurrent Load**: 1/5/10 concurrent requests
+1. **Throughput**: Requests per second at saturation
 
 **Metrics**:
 - Average latency (mean)
@@ -249,23 +249,23 @@ python services/mcp-dopecon-bridge/test_component5_performance.py
 ### Immediate (Architecture 3.0)
 
 1. **Enable Redis Caching**: Cache ADHD state, session info
-2. **Connection Pooling**: Use persistent aiohttp sessions
-3. **Parallel Queries**: Implement `asyncio.gather()` for dashboard queries
-4. **Mock Fallback**: Use `USE_MOCK_FALLBACK=true` for development
+1. **Connection Pooling**: Use persistent aiohttp sessions
+1. **Parallel Queries**: Implement `asyncio.gather()` for dashboard queries
+1. **Mock Fallback**: Use `USE_MOCK_FALLBACK=true` for development
 
 ### Short-Term (Post-MVP)
 
 1. **HTTP/2 Support**: Upgrade to HTTP/2 for multiplexing
-2. **Response Compression**: Enable gzip for large payloads
-3. **Database Indexes**: Optimize ConPort queries with indexes
-4. **Materialized Views**: Pre-compute common aggregates
+1. **Response Compression**: Enable gzip for large payloads
+1. **Database Indexes**: Optimize ConPort queries with indexes
+1. **Materialized Views**: Pre-compute common aggregates
 
 ### Long-Term (Production Scale)
 
 1. **CDN for Static Data**: Cache sprint info, task metadata
-2. **Read Replicas**: Separate read/write database paths
-3. **Query Result Streaming**: Return partial results progressively
-4. **GraphQL**: Replace REST for flexible query optimization
+1. **Read Replicas**: Separate read/write database paths
+1. **Query Result Streaming**: Return partial results progressively
+1. **GraphQL**: Replace REST for flexible query optimization
 
 ## ADHD Performance Validation
 
@@ -299,9 +299,9 @@ python services/mcp-dopecon-bridge/test_component5_performance.py
 ### Key Performance Indicators (KPIs)
 
 1. **P95 Latency < 200ms**: 95% of requests under ADHD threshold
-2. **Error Rate < 1%**: High availability for cognitive tools
-3. **Throughput > 100 req/s**: Handle concurrent dashboard queries
-4. **Cache Hit Rate > 80%**: Effective caching strategy
+1. **Error Rate < 1%**: High availability for cognitive tools
+1. **Throughput > 100 req/s**: Handle concurrent dashboard queries
+1. **Cache Hit Rate > 80%**: Effective caching strategy
 
 ### Performance Monitoring
 
@@ -352,9 +352,9 @@ Component 5 architecture is designed for high performance with ADHD-aware latenc
 
 **Next Steps**:
 1. Run performance benchmark suite when servers deployed
-2. Enable Redis caching for production
-3. Monitor P95 latency in production
-4. Optimize ConPort MCP layer (critical path)
+1. Enable Redis caching for production
+1. Monitor P95 latency in production
+1. Optimize ConPort MCP layer (critical path)
 
 ---
 

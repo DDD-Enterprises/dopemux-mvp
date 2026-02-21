@@ -151,10 +151,10 @@ python3 -m pytest scripts/neon_dashboard/tests/ --cov=scripts/neon_dashboard
 The implementation is complete and production-ready. Future enhancements could include:
 
 1. **Smart Context Detection** - Auto-switch to PM mode during planning hours
-2. **Voice Commands** - "Switch to PM mode", "Plan this work"
-3. **Mobile Dashboard** - Web-based view of same metrics
-4. **Advanced Analytics** - Velocity trends, energy patterns, burndown charts
-5. **GitHub Issues Sync** - Two-way sync with Leantime tasks
+1. **Voice Commands** - "Switch to PM mode", "Plan this work"
+1. **Mobile Dashboard** - Web-based view of same metrics
+1. **Advanced Analytics** - Velocity trends, energy patterns, burndown charts
+1. **GitHub Issues Sync** - Two-way sync with Leantime tasks
 
 ## Performance Validation
 

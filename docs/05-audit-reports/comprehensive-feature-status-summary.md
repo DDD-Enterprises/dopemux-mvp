@@ -77,18 +77,18 @@ A comprehensive line-by-line audit of all documentation in `/docs` (200+ files) 
 
 ### Immediate (High Impact, Low Effort)
 1. **Leantime Setup** (289) - 10-15 minutes, enables PM plane
-2. **Phase 6 Testing Fixes** (281) - Resolves known pytest issues
-3. **SQL Injection Verification** (from audit) - 30 minutes security check
+1. **Phase 6 Testing Fixes** (281) - Resolves known pytest issues
+1. **SQL Injection Verification** (from audit) - 30 minutes security check
 
 ### Short-term (1-2 Weeks)
 1. **DopeconBridge Fixes** (291) - Critical for service communication
-2. **Phase 3 Service Reviews** (279) - Complete audit coverage
-3. **Replace Mock Data** (296) - Production readiness
+1. **Phase 3 Service Reviews** (279) - Complete audit coverage
+1. **Replace Mock Data** (296) - Production readiness
 
 ### Medium-term (1-2 Months)
 1. **F-NEW-7 Implementation** (283, 284) - Advanced features
-2. **Full PM Deployment** (293, 294) - Complete workflow integration
-3. **Claude-Code-Tools Integration** (285) - Enhanced tooling
+1. **Full PM Deployment** (293, 294) - Complete workflow integration
+1. **Claude-Code-Tools Integration** (285) - Enhanced tooling
 
 ## ConPort Integration
 
@@ -109,9 +109,9 @@ All 25 identified work items are now tracked as `progress_entry` items in ConPor
 ## Next Steps
 
 1. **Review ConPort Tasks**: Access via ConPort tools to prioritize and assign work
-2. **Execute High-Impact Items**: Start with Leantime setup and bridge fixes
-3. **Update Status**: Mark ConPort tasks complete as work progresses
-4. **Regular Audits**: Re-run this analysis periodically to catch new work items
+1. **Execute High-Impact Items**: Start with Leantime setup and bridge fixes
+1. **Update Status**: Mark ConPort tasks complete as work progresses
+1. **Regular Audits**: Re-run this analysis periodically to catch new work items
 
 ## Impact Assessment
 

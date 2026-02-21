@@ -23,10 +23,10 @@ This document explains how the Ritual Daemon voice surfaces inside `dopemux` CLI
 
 | Scenario | Chip | Style | Example |
 |----------|------|-------|---------|
-| Routine success | `[LIVE]` | `cyan` | `brand_status("Checklist synced")` |
-| Logged/aftercare info | `[LOGGED]` / `[AFTERCARE]` | `dim` / `purple` | `brand_status("Session saved", chip="[LOGGED]", style="dim")` |
-| Blockers | `[BLOCKER]` | `red` | `brand_status("Missing database", chip="[BLOCKER]", style="red")` |
-| Overrides or migrations | `[OVERRIDE]` | `yellow` | `brand_status("Fallback routing active", chip="[OVERRIDE]", style="yellow")` |
+| Routine success | `[LIVE]` \| `cyan` \| `brand_status("Checklist synced")` |
+| Logged/aftercare info | `[LOGGED]` / `[AFTERCARE]` \| `dim` / `purple` \| `brand_status("Session saved", chip="[LOGGED]", style="dim")` |
+| Blockers | `[BLOCKER]` \| `red` \| `brand_status("Missing database", chip="[BLOCKER]", style="red")` |
+| Overrides or migrations | `[OVERRIDE]` \| `yellow` \| `brand_status("Fallback routing active", chip="[OVERRIDE]", style="yellow")` |
 
 The console helper automatically handles color tags, so you can pass `message` as a preformatted string (e.g., `[dim]Hint[/dim]`) and it will still emit the chip in front.
 
@@ -37,7 +37,7 @@ If a command needs to print a table, raw Markdown, or other layout-sensitive blo
 ## 4. Future contribution tips
 
 1. Start with `brand_status(...)` whenever you want a chip; add new chip constants to the brand system if needed.
-2. Avoid sprinkling literal `console.print("[color]...")` lines unless you're printing multiline tables or help text that relies on precise spacing.
-3. If you need a new tone (e.g., `[EDGE]`), register it in `docs/branding/DØPEMÜX_BRAND_SYSTEM.md` before using it in code.
+1. Avoid sprinkling literal `console.print("[color]...")` lines unless you're printing multiline tables or help text that relies on precise spacing.
+1. If you need a new tone (e.g., `[EDGE]`), register it in `docs/branding/DØPEMÜX_BRAND_SYSTEM.md` before using it in code.
 
 Logged. Hydrate. See you in the changelog.

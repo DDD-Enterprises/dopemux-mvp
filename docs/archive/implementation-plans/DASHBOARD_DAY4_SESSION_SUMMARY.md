@@ -140,24 +140,24 @@ h - Show metric history (graphs)
 ### ADHD-Optimized Features
 
 1. **Instant Context Recognition**
-   - Clear modal titles
-   - Visual distinction (blue border)
-   - Breadcrumb support (planned)
+- Clear modal titles
+- Visual distinction (blue border)
+- Breadcrumb support (planned)
 
-2. **Progressive Disclosure**
-   - Most important info at top
-   - Hierarchical sections
-   - Color-coded by importance
+1. **Progressive Disclosure**
+- Most important info at top
+- Hierarchical sections
+- Color-coded by importance
 
-3. **Zero Friction Exit**
-   - Multiple exit keys
-   - Always visible in footer
-   - Return to exact same place
+1. **Zero Friction Exit**
+- Multiple exit keys
+- Always visible in footer
+- Return to exact same place
 
-4. **Reduced Cognitive Load**
-   - All context in one place
-   - No need to remember details
-   - Quick decision making
+1. **Reduced Cognitive Load**
+- All context in one place
+- No need to remember details
+- Quick decision making
 
 ### Visual Design
 
@@ -271,55 +271,55 @@ Footer (3 lines)  - Available actions
 ### What Worked Well
 
 1. **Textual Screen API**
-   - `push_screen()` / `pop_screen()` perfect
-   - Automatic state management
-   - Clean separation of concerns
+- `push_screen()` / `pop_screen()` perfect
+- Automatic state management
+- Clean separation of concerns
 
-2. **Base Class Pattern**
-   - Reduced code duplication
-   - Consistent UX across modals
-   - Easy to extend
+1. **Base Class Pattern**
+- Reduced code duplication
+- Consistent UX across modals
+- Easy to extend
 
-3. **Mock Data Strategy**
-   - Implement UI first, wire data later
-   - Faster iteration
-   - Clear separation of concerns
+1. **Mock Data Strategy**
+- Implement UI first, wire data later
+- Faster iteration
+- Clear separation of concerns
 
-4. **Rich Text Formatting**
-   - Readable and scannable
-   - ADHD-friendly
-   - Professional appearance
+1. **Rich Text Formatting**
+- Readable and scannable
+- ADHD-friendly
+- Professional appearance
 
 ### Challenges Overcome
 
 1. **Modal Sizing**
-   - **Solution:** 85% width/height leaves backdrop
-   - **Result:** Perfect visual balance
+- **Solution:** 85% width/height leaves backdrop
+- **Result:** Perfect visual balance
 
-2. **Async Data Loading**
-   - **Solution:** Show "Loading..." immediately
-   - **Result:** No UI blocking
+1. **Async Data Loading**
+- **Solution:** Show "Loading..." immediately
+- **Result:** No UI blocking
 
-3. **Color Coding**
-   - **Solution:** Use Rich Text markup
-   - **Result:** Clean, readable code
+1. **Color Coding**
+- **Solution:** Use Rich Text markup
+- **Result:** Clean, readable code
 
 ### ADHD-Specific Wins
 
 1. **Context Preservation**
-   - Press key → See details → Press Esc → Back
-   - No mental overhead
-   - No context switching
+- Press key → See details → Press Esc → Back
+- No mental overhead
+- No context switching
 
-2. **Quick Decisions**
-   - All info in one view
-   - Clear actions available
-   - No hunting for details
+1. **Quick Decisions**
+- All info in one view
+- Clear actions available
+- No hunting for details
 
-3. **Visual Hierarchy**
-   - Icons as anchors
-   - Color-coded sections
-   - Sparklines for patterns
+1. **Visual Hierarchy**
+- Icons as anchors
+- Color-coded sections
+- Sparklines for patterns
 
 ---
 
@@ -328,53 +328,53 @@ Footer (3 lines)  - Available actions
 ### Immediate (Day 5)
 
 1. **Real API Integration**
-   - Connect TaskDetailModal to Task API
-   - Wire ServiceLogsModal to log endpoints
-   - Fetch patterns from Serena
-   - Pull metrics from Prometheus
+- Connect TaskDetailModal to Task API
+- Wire ServiceLogsModal to log endpoints
+- Fetch patterns from Serena
+- Pull metrics from Prometheus
 
-2. **Live Streaming**
-   - Implement log auto-update (1s poll)
-   - WebSocket support (stretch)
-   - Visual indicator for new data
+1. **Live Streaming**
+- Implement log auto-update (1s poll)
+- WebSocket support (stretch)
+- Visual indicator for new data
 
-3. **Selection System**
-   - Arrow keys to select items
-   - Highlight selected item
-   - Open modal for selected item
+1. **Selection System**
+- Arrow keys to select items
+- Highlight selected item
+- Open modal for selected item
 
 ### Near Term (Week 2)
 
 1. **Enhanced Features**
-   - Search in logs
-   - Filter by log level
-   - Export to file
-   - Copy to clipboard
+- Search in logs
+- Filter by log level
+- Export to file
+- Copy to clipboard
 
-2. **Nested Drills**
-   - From pattern → related tasks
-   - From task → related patterns
-   - Breadcrumb navigation
+1. **Nested Drills**
+- From pattern → related tasks
+- From task → related patterns
+- Breadcrumb navigation
 
-3. **Polish**
-   - Skeleton loading screens
-   - Better error messages
-   - Retry logic
-   - Performance optimization
+1. **Polish**
+- Skeleton loading screens
+- Better error messages
+- Retry logic
+- Performance optimization
 
 ### Future
 
 1. **Advanced Modals**
-   - Tabbed interfaces
-   - Split views
-   - Charts and graphs
-   - Custom themes per modal
+- Tabbed interfaces
+- Split views
+- Charts and graphs
+- Custom themes per modal
 
-2. **Productivity**
-   - Quick actions from modals
-   - Bulk operations
-   - Saved searches
-   - Bookmarks
+1. **Productivity**
+- Quick actions from modals
+- Bulk operations
+- Saved searches
+- Bookmarks
 
 ---
 
@@ -507,10 +507,10 @@ Dashboard = Interactive command center
 
 **How to Extend:**
 1. Create new class inheriting from `ModalView`
-2. Override `compose()` and `on_mount()`
-3. Add keybinding to main app
-4. Add action method
-5. Update help screen
+1. Override `compose()` and `on_mount()`
+1. Add keybinding to main app
+1. Add action method
+1. Update help screen
 
 **Example:**
 ```python

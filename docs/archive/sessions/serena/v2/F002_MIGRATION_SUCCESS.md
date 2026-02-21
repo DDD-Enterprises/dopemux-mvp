@@ -27,16 +27,16 @@ prelude: F002_Migration_Success (explanation) for dopemux documentation and deve
 
 **New Columns** (4 added):
 1. `session_id` TEXT DEFAULT 'default' ✅
-2. `worktree_path` TEXT DEFAULT NULL ✅
-3. `branch` TEXT DEFAULT NULL ✅
-4. `status` TEXT DEFAULT 'active' ✅
+1. `worktree_path` TEXT DEFAULT NULL ✅
+1. `branch` TEXT DEFAULT NULL ✅
+1. `status` TEXT DEFAULT 'active' ✅
 
 **New Indexes** (5 created):
 1. `idx_workspace_session_unique` - UNIQUE(workspace_id, session_id) ✅
-2. `idx_ws_ctx_updated` - Performance for time-based queries ✅
-3. `idx_ws_ctx_status` - Partial index for active sessions ✅
-4. `idx_ws_ctx_worktree` - Worktree-based queries ✅
-5. `idx_ws_ctx_branch` - Branch-based queries ✅
+1. `idx_ws_ctx_updated` - Performance for time-based queries ✅
+1. `idx_ws_ctx_status` - Partial index for active sessions ✅
+1. `idx_ws_ctx_worktree` - Worktree-based queries ✅
+1. `idx_ws_ctx_branch` - Branch-based queries ✅
 
 **New Table** created:
 - `ag_catalog.session_history` - Archive for completed sessions ✅
@@ -149,21 +149,21 @@ SELECT * FROM ag_catalog.workspace_contexts WHERE workspace_id = 'dopemux-mvp';
 
 **F002 Files to Update**:
 1. `session_lifecycle_manager.py` - Replace conport_client=None
-2. `session_manager.py` - Add ConPort client methods
-3. `mcp_server.py` - Pass real ConPort client to tools
+1. `session_manager.py` - Add ConPort client methods
+1. `mcp_server.py` - Pass real ConPort client to tools
 
 **F001 Files to Update**:
-4. `false_starts_aggregator.py` - Enable real stats queries
-5. `revival_suggester.py` - (uses E1 data, indirect)
-6. `priority_context_builder.py` - Enable real task queries
-7. `untracked_work_detector.py` - Pass ConPort client
+1. `false_starts_aggregator.py` - Enable real stats queries
+1. `revival_suggester.py` - (uses E1 data, indirect)
+1. `priority_context_builder.py` - Enable real task queries
+1. `untracked_work_detector.py` - Pass ConPort client
 
 ### Testing
 
 1. Test F002 Multi-Session with 2 Claude Code instances
-2. Test F001 Enhanced with real untracked work
-3. Validate dashboard formatting with real data
-4. Performance benchmark (<50ms queries)
+1. Test F001 Enhanced with real untracked work
+1. Validate dashboard formatting with real data
+1. Performance benchmark (<50ms queries)
 
 ---
 

@@ -24,20 +24,20 @@ for project truth.
 Inputs:
 
 1. Claude hook/plugin adapter events.
-2. CLI/MCP trigger adapter events.
+1. CLI/MCP trigger adapter events.
 
 Storage:
 
 1. Canonical per-project SQLite ledger:
    `repo_root/.dopemux/chronicle.sqlite`.
-2. Table: `raw_activity_events`.
+1. Table: `raw_activity_events`.
 
 Rules:
 
 1. Resolve repo root deterministically (`.git` or `.dopemux` marker).
-2. Redact payload before persistence.
-3. Generate deterministic `event_id` for retry-idempotency.
-4. Use duplicate-safe insert semantics (`INSERT OR IGNORE`).
+1. Redact payload before persistence.
+1. Generate deterministic `event_id` for retry-idempotency.
+1. Use duplicate-safe insert semantics (`INSERT OR IGNORE`).
 
 **Dual-Capture Convergence** (ADR-213):
 
@@ -60,8 +60,8 @@ Storage (implementation-flexible):
 Rules:
 
 1. Deterministic transforms only.
-2. No probabilistic ranking or heuristic mutation.
-3. Preserve stable provenance fields (`workspace_id`, `instance_id`,
+1. No probabilistic ranking or heuristic mutation.
+1. Preserve stable provenance fields (`workspace_id`, `instance_id`,
    `session_id`, `event_id`).
 
 ## Stage 2: Promote
@@ -77,8 +77,8 @@ Storage:
 Rules:
 
 1. Promotion allowlist is deterministic and explicit.
-2. Promotion-level redaction remains fail-closed.
-3. Stable ordering for retrieval remains deterministic:
+1. Promotion-level redaction remains fail-closed.
+1. Stable ordering for retrieval remains deterministic:
    `importance_score DESC`, `ts DESC`, `id ASC`.
 
 ## Stage 3: Derive
@@ -90,13 +90,13 @@ Inputs:
 Outputs (deterministic products):
 
 1. Session recaps.
-2. Issue-resolution chains.
-3. Reflection/trajectory artifacts (phase-gated).
+1. Issue-resolution chains.
+1. Reflection/trajectory artifacts (phase-gated).
 
 Rules:
 
 1. Derived artifacts must retain provenance pointers.
-2. Derived artifacts must not back-write into raw capture history.
+1. Derived artifacts must not back-write into raw capture history.
 
 ## Stage 4: Global Rollup (Read-Only Index, ADR-213)
 
@@ -107,16 +107,16 @@ Purpose:
 Storage:
 
 1. Global index DB (default): `~/.dopemux/global_index.sqlite`.
-2. `projects` registry table.
-3. `promoted_pointers` table with bounded summaries and metadata pointers.
+1. `projects` registry table.
+1. `promoted_pointers` table with bounded summaries and metadata pointers.
 
 Rules (ADR-213 Read-Only Guarantees):
 
 1. Rollup reads project ledgers in **read-only mode** (SQLite URI: `file:path?mode=ro`)
-2. Rollup stores pointers and bounded redacted summaries only.
-3. **Rollup NEVER writes into project ledgers** (architectural invariant)
-4. Rollup never overrides per-project truth.
-5. Deterministic ordering: `ts_utc DESC`, `event_id ASC`.
+1. Rollup stores pointers and bounded redacted summaries only.
+1. **Rollup NEVER writes into project ledgers** (architectural invariant)
+1. Rollup never overrides per-project truth.
+1. Deterministic ordering: `ts_utc DESC`, `event_id ASC`.
 
 **Critical Invariants**:
 
@@ -128,8 +128,8 @@ Rules (ADR-213 Read-Only Guarantees):
 ## Injection Contract
 
 1. Injection is explicit only through tool/command calls.
-2. No default auto-injection in capture, rollup, or retrieval pathways.
-3. Responses must include provenance (`project_id`, `event_id`, timestamps).
+1. No default auto-injection in capture, rollup, or retrieval pathways.
+1. Responses must include provenance (`project_id`, `event_id`, timestamps).
 
 ## CLI Interface
 
@@ -168,15 +168,15 @@ Searches promoted work log entries across all registered projects using LIKE pat
 All global rollup operations follow these guarantees:
 
 1. Project ledgers are opened in read-only mode (`file:path?mode=ro`)
-2. Only pointers and bounded summaries are stored in global index
-3. **No writes back to project ledgers occur** (architectural invariant)
-4. Deterministic ordering is preserved: `ts_utc DESC`, `event_id ASC`
-5. Project ledger remains single source of truth
+1. Only pointers and bounded summaries are stored in global index
+1. **No writes back to project ledgers occur** (architectural invariant)
+1. Deterministic ordering is preserved: `ts_utc DESC`, `event_id ASC`
+1. Project ledger remains single source of truth
 
 **See**: ADR-213 for dual-capture design and global rollup guarantees
 
 ## Out of Scope (This Spec Version)
 
 1. LLM-based promotion/summarization.
-2. Embedding-based global semantic retrieval.
-3. Implicit prompt enrichment in any runtime path.
+1. Embedding-based global semantic retrieval.
+1. Implicit prompt enrichment in any runtime path.

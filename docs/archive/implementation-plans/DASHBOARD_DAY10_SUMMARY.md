@@ -24,26 +24,26 @@ prelude: Dashboard_Day10_Summary (explanation) for dopemux documentation and dev
 
 #### 1. Comprehensive Research Documents Created
 - **[DASHBOARD_DAY10_DEEP_RESEARCH.md](./DASHBOARD_DAY10_DEEP_RESEARCH.md)** - 6,500 words
-  - Neuroscience research on ADHD & visual processing
-  - Sparkline design principles (Tufte, 2006)
-  - Keyboard navigation UX research (Raskin, 2000)
-  - WCAG 2.1 accessibility standards
-  - Prometheus query optimization
-  - Technical architecture design
-  - Performance benchmarks
+- Neuroscience research on ADHD & visual processing
+- Sparkline design principles (Tufte, 2006)
+- Keyboard navigation UX research (Raskin, 2000)
+- WCAG 2.1 accessibility standards
+- Prometheus query optimization
+- Technical architecture design
+- Performance benchmarks
 
 - **[DASHBOARD_DAY10_READY.md](./DASHBOARD_DAY10_READY.md)** - Complete implementation guide
-  - Ready-to-copy code for all components
-  - Step-by-step task breakdown
-  - Integration test suites
-  - Verification checklists
-  - Troubleshooting guide
+- Ready-to-copy code for all components
+- Step-by-step task breakdown
+- Integration test suites
+- Verification checklists
+- Troubleshooting guide
 
 - **[DASHBOARD_DAY10_INDEX.md](./DASHBOARD_DAY10_INDEX.md)** - Quick reference
-  - Navigation hub
-  - Quick checklists
-  - Pro tips
-  - Troubleshooting
+- Navigation hub
+- Quick checklists
+- Pro tips
+- Troubleshooting
 
 #### 2. Technical Design Completed
 
@@ -71,32 +71,32 @@ User Input → KeybindingRegistry → FocusManager → Visual Feedback
 
 **Files to Create (900+ lines):**
 1. `dopemux/integrations/prometheus_sparkline.py` (300 lines)
-   - `PrometheusSparklineIntegration` class
-   - `SparklineConfig` dataclass
-   - `SparklineResult` dataclass
-   - Batch fetching, caching, error handling
+- `PrometheusSparklineIntegration` class
+- `SparklineConfig` dataclass
+- `SparklineResult` dataclass
+- Batch fetching, caching, error handling
 
-2. `dopemux/ui/keybindings.py` (200 lines)
-   - `KeybindingRegistry` class
-   - `FocusManager` class
-   - `PanelID` enum
+1. `dopemux/ui/keybindings.py` (200 lines)
+- `KeybindingRegistry` class
+- `FocusManager` class
+- `PanelID` enum
 
-3. `tests/test_prometheus_sparkline.py` (250 lines)
-   - Integration tests
-   - Cache tests
-   - Error handling tests
+1. `tests/test_prometheus_sparkline.py` (250 lines)
+- Integration tests
+- Cache tests
+- Error handling tests
 
-4. `tests/test_keyboard_nav.py` (200 lines)
-   - Navigation tests
-   - Focus management tests
-   - Help generation tests
+1. `tests/test_keyboard_nav.py` (200 lines)
+- Navigation tests
+- Focus management tests
+- Help generation tests
 
 **Files to Modify (80 lines):**
 1. `dopemux_dashboard.py`
-   - Wire PrometheusSparklineIntegration
-   - Add keyboard BINDINGS
-   - Update TrendsPanel widget
-   - Add CSS for focus indicators
+- Wire PrometheusSparklineIntegration
+- Add keyboard BINDINGS
+- Update TrendsPanel widget
+- Add CSS for focus indicators
 
 ---
 
@@ -146,9 +146,9 @@ Catppuccin Mocha palette optimized for:
 #### Task 1: PrometheusSparklineIntegration (3-4 hours)
 **Subtasks:**
 1. Create integration class (1 hour)
-2. Implement sparkline generation (1 hour)
-3. Add batch processing (30 min)
-4. Wire to TrendsWidget (1-1.5 hours)
+1. Implement sparkline generation (1 hour)
+1. Add batch processing (30 min)
+1. Wire to TrendsWidget (1-1.5 hours)
 
 **Deliverables:**
 - [ ] All 6 sparklines show real Prometheus data
@@ -159,9 +159,9 @@ Catppuccin Mocha palette optimized for:
 #### Task 2: Keyboard Navigation (2-3 hours)
 **Subtasks:**
 1. Implement FocusManager (1 hour)
-2. Add KeybindingRegistry (30 min)
-3. Update Dashboard app (1 hour)
-4. Create help screen (30 min)
+1. Add KeybindingRegistry (30 min)
+1. Update Dashboard app (1 hour)
+1. Create help screen (30 min)
 
 **Deliverables:**
 - [ ] 100% keyboard navigable
@@ -172,8 +172,8 @@ Catppuccin Mocha palette optimized for:
 #### Task 3: Integration Testing (1-2 hours)
 **Subtasks:**
 1. Write integration tests (45 min)
-2. Performance profiling (30 min)
-3. Polish & bug fixes (45 min)
+1. Performance profiling (30 min)
+1. Polish & bug fixes (45 min)
 
 **Deliverables:**
 - [ ] 95%+ test coverage
@@ -318,11 +318,11 @@ ls sparkline_generator.py prometheus_client.py
 
 ### Research Sources
 1. Tufte, E. (2006). "Beautiful Evidence" - Sparklines
-2. Barkley, R. (2015). "ADHD and Visual Information Processing"
-3. Nielsen Norman Group (2019). "Data Visualization for Neurodivergent Users"
-4. Raskin, J. (2000). "The Humane Interface"
-5. W3C (2023). "ARIA Authoring Practices Guide"
-6. WCAG 2.1 (2018). "Web Content Accessibility Guidelines"
+1. Barkley, R. (2015). "ADHD and Visual Information Processing"
+1. Nielsen Norman Group (2019). "Data Visualization for Neurodivergent Users"
+1. Raskin, J. (2000). "The Humane Interface"
+1. W3C (2023). "ARIA Authoring Practices Guide"
+1. WCAG 2.1 (2018). "Web Content Accessibility Guidelines"
 
 ### Technical Documentation
 - Prometheus API: https://prometheus.io/docs/prometheus/latest/querying/api/
@@ -361,13 +361,13 @@ ls sparkline_generator.py prometheus_client.py
 **Implementation complete when:**
 
 1. ✅ All 6 sparklines show real Prometheus data
-2. ✅ Sparklines auto-update every 30 seconds
-3. ✅ 100% keyboard navigable (no mouse needed)
-4. ✅ Performance < 100ms, < 5% CPU maintained
-5. ✅ 95%+ test coverage achieved
-6. ✅ Zero crashes in 1-hour stress test
-7. ✅ WCAG 2.1 Level AA compliant
-8. ✅ Clean git history with commits
+1. ✅ Sparklines auto-update every 30 seconds
+1. ✅ 100% keyboard navigable (no mouse needed)
+1. ✅ Performance < 100ms, < 5% CPU maintained
+1. ✅ 95%+ test coverage achieved
+1. ✅ Zero crashes in 1-hour stress test
+1. ✅ WCAG 2.1 Level AA compliant
+1. ✅ Clean git history with commits
 
 **Then:** Move to Quick Wins (focus mode, break timer, themes)
 

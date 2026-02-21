@@ -62,9 +62,9 @@ prelude: Quick Start 2025 (explanation) for dopemux documentation and developer 
 ## 🔥 What Makes DDDPG Unique?
 
 1. **ADHD-First** - Top-3 pattern, progressive disclosure, cognitive load tracking
-2. **Multi-Instance** - Git worktree native, zero collisions
-3. **Graph-Native** - PostgreSQL AGE, 10-100x faster relationship queries
-4. **Production-Ready** - 100% parameterized queries, type-safe, tested
+1. **Multi-Instance** - Git worktree native, zero collisions
+1. **Graph-Native** - PostgreSQL AGE, 10-100x faster relationship queries
+1. **Production-Ready** - 100% parameterized queries, type-safe, tested
 
 ---
 
@@ -106,18 +106,18 @@ Read: **EXECUTIVE_BRIEFING_2025.md** for full details
 
 **Right Now**:
 1. Read START_HERE_2025.md (5 min)
-2. Read 2025_COMPREHENSIVE_ANALYSIS_AND_PLAN.md (20 min)
-3. Start Week 4 Day 2 implementation
+1. Read 2025_COMPREHENSIVE_ANALYSIS_AND_PLAN.md (20 min)
+1. Start Week 4 Day 2 implementation
 
 **This Week**:
 1. Complete Week 4 Day 2 (95 min estimated)
-2. Start Week 4 Days 3-4 (semantic search)
-3. Track velocity and metrics
+1. Start Week 4 Days 3-4 (semantic search)
+1. Track velocity and metrics
 
 **Next 2-3 Weeks**:
 1. Complete all Week 4 features
-2. Complete all Week 5 features
-3. Deploy to production
+1. Complete all Week 5 features
+1. Deploy to production
 
 ---
 

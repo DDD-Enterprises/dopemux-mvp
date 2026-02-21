@@ -35,17 +35,17 @@ The ADHD Engine is the "heart" of Dopemux, designed to adapt the development env
 ### Core Monitoring (The "Four Signals")
 Real-time energy assessment based on:
 1. **Task Completion Rate**: High velocity = High Energy.
-2. **Context Switching Freq**: >5 switches/hour = Scattered Attention / Low Energy.
-3. **Break Compliance**: Skipping breaks = Impending Crash.
-4. **Time Sine Last Break**: >60 mins = Depletion Risk.
+1. **Context Switching Freq**: >5 switches/hour = Scattered Attention / Low Energy.
+1. **Break Compliance**: Skipping breaks = Impending Crash.
+1. **Time Sine Last Break**: >60 mins = Depletion Risk.
 
 ### Cognitive Accommodations
 * **Hyperfocus Guard**:
-  * **25min**: Gentle reminder.
-  * **60min**: Warning.
-  * **90min**: Mandatory break enforcement (Auto-save & Lock).
+* **25min**: Gentle reminder.
+* **60min**: Warning.
+* **90min**: Mandatory break enforcement (Auto-save & Lock).
 * **Energy-Aware Task Routing**: Matches task complexity (0.0-1.0) to current capacity.
-  * *Example*: "Your energy is Low (0.3). Here is a documentation task (0.2) instead of the refactor (0.8)."
+* *Example*: "Your energy is Low (0.3). Here is a documentation task (0.2) instead of the refactor (0.8)."
 * **Procrastination Detection**: Detects "spinning" (reading without writing) and offers "Micro-tasks" to break inertia.
 * **Wind Down Ritual**: End-of-day summary of "Quick Wins" to combat negative self-talk.
 
@@ -68,8 +68,8 @@ Real-time energy assessment based on:
 
 ### Three-Layer Architecture
 1. **Layer 1: Real-Time Monitoring**: Redis-backed state tracking (<5ms latency).
-2. **Layer 2: Analysis & Decision**: Cognitive Load Calculation logic.
-3. **Layer 3: Intervention**: UI adaptations, Toast notifications, Task re-routing.
+1. **Layer 2: Analysis & Decision**: Cognitive Load Calculation logic.
+1. **Layer 3: Intervention**: UI adaptations, Toast notifications, Task re-routing.
 
 ### Storage Strategy
 * **Redis**: Real-time state (Energy, Attention, Session Timers). TTLs: 5m (Energy), 1m (Breaks).

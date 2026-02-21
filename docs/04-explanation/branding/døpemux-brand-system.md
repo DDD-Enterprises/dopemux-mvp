@@ -40,15 +40,15 @@ Use this doc before touching UI code, docs, tmux themes, CLI strings, or prompts
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `ink.black` | `#020617` | Primary background, terminal panes |
-| `void.navy` | `#041628` | Panels, cards, CLI blocks |
-| `ritual.cyan` | `#7DFBF6` | Primary accent, glow, focus states |
-| `serum.mint` | `#94FADB` | Secondary accent, data emphasis |
-| `gilt.edge` | `#F5F26D` | Status highlights, warnings |
-| `velvet.plum` | `#1A0520` | Sandbox + sensual surfaces |
-| `gremlin.pink` | `#FF8BD1` | Playful interrupts, dopamine spikes |
-| `saint.gold` | `#FFCF78` | Secondary agent, CTA outlines |
-| `aftercare.violet` | `#9B78FF` | Aftercare chips, helpful tips |
+| `ink.black` \| `#020617` | Primary background, terminal panes |
+| `void.navy` \| `#041628` | Panels, cards, CLI blocks |
+| `ritual.cyan` \| `#7DFBF6` | Primary accent, glow, focus states |
+| `serum.mint` \| `#94FADB` | Secondary accent, data emphasis |
+| `gilt.edge` \| `#F5F26D` | Status highlights, warnings |
+| `velvet.plum` \| `#1A0520` | Sandbox + sensual surfaces |
+| `gremlin.pink` \| `#FF8BD1` | Playful interrupts, dopamine spikes |
+| `saint.gold` \| `#FFCF78` | Secondary agent, CTA outlines |
+| `aftercare.violet` \| `#9B78FF` | Aftercare chips, helpful tips |
 
 ### Gradients & Glows
 
@@ -109,10 +109,10 @@ Emoji whitelist: `💊 🧪 📼 📎 📈 🧷 🧠 🗜️`
 ## 6. UI Implementation Notes
 
 1. **Global Background**: radial gradient anchored to top-left, tinted with cyan glow.
-2. **Cards**: 1px inset border (`rgba(125, 251, 246, 0.25)`), inner blur, top label chip (status).
-3. **Buttons**: pill shape, uppercase, `text-shadow: 0 0 12px rgba(245,242,109,0.6)`.
-4. **Graphs**: neon traces on charcoal backgrounds; highlight active values with animated glint.
-5. **Microcopy**: each panel includes a one-line roast and a one-line aftercare tip.
+1. **Cards**: 1px inset border (`rgba(125, 251, 246, 0.25)`), inner blur, top label chip (status).
+1. **Buttons**: pill shape, uppercase, `text-shadow: 0 0 12px rgba(245,242,109,0.6)`.
+1. **Graphs**: neon traces on charcoal backgrounds; highlight active values with animated glint.
+1. **Microcopy**: each panel includes a one-line roast and a one-line aftercare tip.
 
 ---
 
@@ -152,8 +152,8 @@ Roast yourself and the Operator, keep consent chips visible, honor safety bounda
 
 Checklists for prompt writers:
 1. Reference safewords (`refactor`) when you push boundaries.
-2. Reassure with aftercare instructions at the end.
-3. Remind the model to log decisions (`"Memory is oxygen. Breathe deeper."`).
+1. Reassure with aftercare instructions at the end.
+1. Remind the model to log decisions (`"Memory is oxygen. Breathe deeper."`).
 
 ---
 

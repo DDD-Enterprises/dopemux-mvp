@@ -17,12 +17,12 @@ Source implementation: `docker/mcp-servers/conport/enhanced_server.py`
 
 | route | purpose | write target |
 |---|---|---|
-| `POST /api/context/{workspace_id}` | update active context/session fields | `workspace_contexts` |
-| `POST /api/decisions` | log decision record | `decisions` |
-| `POST /api/progress` | create progress entry | `progress_entries` |
-| `PUT /api/progress/{progress_id}` | update progress entry | `progress_entries` |
-| `POST /api/custom_data` | upsert custom key/value | `custom_data` |
-| `DELETE /api/custom_data` | delete custom key/value | `custom_data` |
+| `POST /api/context/{workspace_id}` \| update active context/session fields \| `workspace_contexts` |
+| `POST /api/decisions` \| log decision record \| `decisions` |
+| `POST /api/progress` \| create progress entry \| `progress_entries` |
+| `PUT /api/progress/{progress_id}` \| update progress entry \| `progress_entries` |
+| `POST /api/custom_data` \| upsert custom key/value \| `custom_data` |
+| `DELETE /api/custom_data` \| delete custom key/value \| `custom_data` |
 
 ## Auth expectations (evidence-backed)
 - In `enhanced_server.py`, no bearer/API-key validation was found on the write handlers above.
@@ -31,10 +31,10 @@ Source implementation: `docker/mcp-servers/conport/enhanced_server.py`
 ## Direct DB write bypass surfaces
 Confirmed direct SQL writers outside ConPort HTTP route handlers:
 - `services/shared/conport_client/adapters/postgresql_adapter.py`
-  - `INSERT INTO ag_catalog.decisions`
-  - `INSERT INTO ag_catalog.workspace_contexts` with `ON CONFLICT (workspace_id, session_id)`
-  - `INSERT INTO ag_catalog.progress_entries`
-  - `INSERT INTO ag_catalog.custom_data` with `ON CONFLICT (workspace_id, category, key)`
+- `INSERT INTO ag_catalog.decisions`
+- `INSERT INTO ag_catalog.workspace_contexts` with `ON CONFLICT (workspace_id, session_id)`
+- `INSERT INTO ag_catalog.progress_entries`
+- `INSERT INTO ag_catalog.custom_data` with `ON CONFLICT (workspace_id, category, key)`
 
 ## Evidence excerpts
 - `docker/mcp-servers/conport/enhanced_server.py:245-272`
@@ -91,15 +91,15 @@ Confirmed direct SQL writers outside ConPort HTTP route handlers:
 - `compose.yml:235-244`
 ```text
     environment:
-      - MCP_SERVER_PORT=3004
-      - DOPECON_BRIDGE_URL=http://dope-decision-graph-bridge:3016
-      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
-      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
-      - AGE_HOST=dopemux-postgres-age
-      - AGE_PORT=5432
-      - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
-      - REDIS_URL=redis://redis-primary:6379
-      - QDRANT_URL=http://mcp-qdrant:6333
+- MCP_SERVER_PORT=3004
+- DOPECON_BRIDGE_URL=http://dope-decision-graph-bridge:3016
+- DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+- POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+- AGE_HOST=dopemux-postgres-age
+- AGE_PORT=5432
+- AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+- REDIS_URL=redis://redis-primary:6379
+- QDRANT_URL=http://mcp-qdrant:6333
 ```
 
 ## Command used for auth search

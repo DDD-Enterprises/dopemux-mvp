@@ -29,16 +29,16 @@ class DDDPGKG:
     """KG query layer - DONE ✅"""
 
     # Task relationships
-    - get_task_relationships()      # Dependencies + blockers
-    - get_related_tasks()            # Semantic similarity
-    - get_dependency_chain()         # Full traversal
+- get_task_relationships()      # Dependencies + blockers
+- get_related_tasks()            # Semantic similarity
+- get_dependency_chain()         # Full traversal
 
     # Search
-    - search_tasks()                 # Keyword search
+- search_tasks()                 # Keyword search
 
     # Helpers
-    - _execute_query()               # Safe parameterized queries
-    - _format_task_result()          # Consistent output
+- _execute_query()               # Safe parameterized queries
+- _format_task_result()          # Consistent output
 ```
 
 **QueryService** (`queries/service.py` - 417 lines):
@@ -50,17 +50,17 @@ class QueryService:
         self.storage = storage  # No KG yet!
 
     # Tier 1: Overview (Top-3)
-    - overview()
-    - overview_by_type()
-    - overview_by_tags()
+- overview()
+- overview_by_type()
+- overview_by_tags()
 
     # Tier 2: Exploration
-    - explore_related()
-    - explore_timeline()
+- explore_related()
+- explore_timeline()
 
     # Tier 3: Deep
-    - deep_context()
-    - full_graph()
+- deep_context()
+- full_graph()
 ```
 
 **Decision** (`core/models.py` - 221 lines):
@@ -107,8 +107,8 @@ class RelationshipMapper:
 
 **Options**:
 1. **Keep RelationshipMapper** - Higher-level orchestration
-2. **Extend DDDPGKG** - Add cluster methods directly
-3. **Skip it** - Use existing DDDPGKG methods
+1. **Extend DDDPGKG** - Add cluster methods directly
+1. **Skip it** - Use existing DDDPGKG methods
 
 **Recommendation**: **Option 1 - Keep it**, BUT:
 - Focus on **aggregation** not duplication
@@ -141,8 +141,8 @@ class RelationshipMapper:
 
 **Options**:
 1. **DDDPGKG** - Fits with other KG queries
-2. **Decision model** - Domain logic
-3. **Separate service** - Decision management
+1. **Decision model** - Domain logic
+1. **Separate service** - Decision management
 
 **Analysis**:
 - Decisions are stored in DDDPG storage (SQLite/Postgres)
@@ -191,13 +191,13 @@ class SuggestionEngine:
 
 **Issues**:
 1. Where does task metadata (energy_required, estimated_minutes) live?
-   - Not in KG currently
-   - Should it be?
+- Not in KG currently
+- Should it be?
 
-2. How do we get current state (energy_level, focus_state)?
-   - From user input?
-   - From attention monitor?
-   - From session history?
+1. How do we get current state (energy_level, focus_state)?
+- From user input?
+- From attention monitor?
+- From session history?
 
 **Architectural Decision Required**:
 
@@ -306,9 +306,9 @@ class QueryService:
 ```python
 # get_enhanced_suggestions() might do:
 1. get_dependency_chain() → graph traversal
-2. get_related_tasks() → semantic search
-3. get_task_decisions() → multiple lookups
-4. Score all results → computation
+1. get_related_tasks() → semantic search
+1. get_task_decisions() → multiple lookups
+1. Score all results → computation
 ```
 
 **Analysis**: We need **caching**!
@@ -437,20 +437,20 @@ SuggestionEngine.get_enhanced_suggestions()
 
 ### What's GOOD:
 1. ✅ DDDPGKG foundation is solid
-2. ✅ QueryService integration is backward compatible
-3. ✅ Decision model already exists
-4. ✅ Graceful degradation strategy works
+1. ✅ QueryService integration is backward compatible
+1. ✅ Decision model already exists
+1. ✅ Graceful degradation strategy works
 
 ### What Needs REFINEMENT:
 1. 🔄 Task schema needs ADHD metadata
-2. 🔄 Add caching to SuggestionEngine
-3. 🔄 RelationshipMapper should aggregate, not duplicate
-4. 🔄 Add factory method to QueryService
+1. 🔄 Add caching to SuggestionEngine
+1. 🔄 RelationshipMapper should aggregate, not duplicate
+1. 🔄 Add factory method to QueryService
 
 ### What's MISSING:
 1. ❌ Task creation workflow (how do ADHD fields get set?)
-2. ❌ Context source (where does energy_level come from?)
-3. ❌ Pattern learning (how do we track success patterns?)
+1. ❌ Context source (where does energy_level come from?)
+1. ❌ Pattern learning (how do we track success patterns?)
 
 ---
 
@@ -465,8 +465,8 @@ SuggestionEngine.get_enhanced_suggestions()
 
 **Work**:
 1. Update `create_task()` method (if exists)
-2. Add ADHD metadata to schema
-3. Update tests
+1. Add ADHD metadata to schema
+1. Update tests
 
 ### Phase 2: Decision-Task Linking (15 min)
 
@@ -477,8 +477,8 @@ SuggestionEngine.get_enhanced_suggestions()
 
 **Work**:
 1. `link_decision_to_task()`
-2. `get_task_decisions()`
-3. Tests
+1. `get_task_decisions()`
+1. Tests
 
 ### Phase 3: Relationship Mapper (20 min)
 
@@ -489,9 +489,9 @@ SuggestionEngine.get_enhanced_suggestions()
 
 **Work**:
 1. `RelationshipMapper` class
-2. `build_task_context()` - Aggregates all relationships
-3. `build_work_cluster()` - Theme-based grouping
-4. Tests
+1. `build_task_context()` - Aggregates all relationships
+1. `build_work_cluster()` - Theme-based grouping
+1. Tests
 
 ### Phase 4: Suggestion Engine (30 min)
 
@@ -502,10 +502,10 @@ SuggestionEngine.get_enhanced_suggestions()
 
 **Work**:
 1. `SuggestionEngine` class with cache
-2. `get_enhanced_suggestions()` - Main API
-3. `_compute_suggestions()` - Core logic
-4. `_score_task()` - Context matching
-5. Tests
+1. `get_enhanced_suggestions()` - Main API
+1. `_compute_suggestions()` - Core logic
+1. `_score_task()` - Context matching
+1. Tests
 
 ### Phase 5: QueryService Integration (15 min)
 
@@ -516,10 +516,10 @@ SuggestionEngine.get_enhanced_suggestions()
 
 **Work**:
 1. Add `kg` parameter (optional)
-2. Add `with_kg()` factory method
-3. Add `get_task_with_context()`
-4. Add `suggest_next_tasks()`
-5. Integration test
+1. Add `with_kg()` factory method
+1. Add `get_task_with_context()`
+1. Add `suggest_next_tasks()`
+1. Integration test
 
 **Total**: ~100 minutes (1h 40m)
 
@@ -531,9 +531,9 @@ SuggestionEngine.get_enhanced_suggestions()
 
 **Key Changes from Original Plan**:
 1. Added Task schema enhancement (Phase 1)
-2. Added caching to SuggestionEngine
-3. Refined RelationshipMapper to aggregate
-4. Added factory method pattern
+1. Added caching to SuggestionEngine
+1. Refined RelationshipMapper to aggregate
+1. Added factory method pattern
 
 **Confidence**: Very High ✅
 

@@ -117,15 +117,15 @@ open http://localhost:3000
 The **Dopemux Service Overview** dashboard includes:
 
 1. **Service Status** - Real-time UP/DOWN indicators
-2. **Service Health Status** - Health check results
-3. **Service Uptime** - How long services have been running
-4. **Total Requests (Rate)** - Request rate over time
-5. **Request Duration (p95)** - 95th percentile latency
-6. **Requests In Progress** - Current active requests
-7. **Error Rate** - Errors per second by type
-8. **ADHD Engine - Active Users** - Current user count
-9. **ADHD Metrics** - Energy, attention, cognitive load
-10. **Workspace Distribution** - Services by workspace
+1. **Service Health Status** - Health check results
+1. **Service Uptime** - How long services have been running
+1. **Total Requests (Rate)** - Request rate over time
+1. **Request Duration (p95)** - 95th percentile latency
+1. **Requests In Progress** - Current active requests
+1. **Error Rate** - Errors per second by type
+1. **ADHD Engine - Active Users** - Current user count
+1. **ADHD Metrics** - Energy, attention, cognitive load
+1. **Workspace Distribution** - Services by workspace
 
 ---
 
@@ -218,9 +218,9 @@ adhd_active_users
 ### Data Flow
 
 1. **Services** export metrics on `/metrics` endpoint
-2. **Prometheus** scrapes metrics every 15 seconds
-3. **Grafana** queries Prometheus for visualization
-4. **AlertManager** receives alerts from Prometheus
+1. **Prometheus** scrapes metrics every 15 seconds
+1. **Grafana** queries Prometheus for visualization
+1. **AlertManager** receives alerts from Prometheus
 
 ### Network Configuration
 
@@ -257,10 +257,10 @@ vim services/monitoring/grafana/dashboards/dopemux-overview.json
 ### Add New Service
 
 1. Integrate `DopemuxMonitoring` class in service code
-2. Add `/metrics` endpoint
-3. Add target to `prometheus.yml`
-4. Restart Prometheus
-5. Update dashboard to include new service
+1. Add `/metrics` endpoint
+1. Add target to `prometheus.yml`
+1. Restart Prometheus
+1. Update dashboard to include new service
 
 ---
 
@@ -338,19 +338,19 @@ docker-compose.monitoring.yml   # Monitoring stack compose
 
 ### Immediate Enhancements
 1. **Test Alerts** - Trigger conditions and verify notifications
-2. **Add Notification Channels** - Slack, email, PagerDuty
-3. **Create SLO Dashboard** - Service level objectives
+1. **Add Notification Channels** - Slack, email, PagerDuty
+1. **Create SLO Dashboard** - Service level objectives
 
 ### Additional Services
 1. **Orchestrator** - Task orchestration metrics
-2. **Serena** - AI assistant metrics
-3. **Dopecon Bridge** - Event bus metrics
-4. **Dope Context** - Context switching metrics
+1. **Serena** - AI assistant metrics
+1. **Dopecon Bridge** - Event bus metrics
+1. **Dope Context** - Context switching metrics
 
 ### Advanced Features
 1. **Custom Metrics** - Business-specific KPIs
-2. **Trace Integration** - Add distributed tracing
-3. **Log Aggregation** - Integrate with Loki
+1. **Trace Integration** - Add distributed tracing
+1. **Log Aggregation** - Integrate with Loki
 
 ---
 

@@ -180,16 +180,16 @@ python tools/ports_health_audit.py --mode runtime
 
 ### Immediate (User-Driven)
 1. Build service Docker images if not already done
-2. Start smoke stack: `docker compose -f docker-compose.smoke.yml up -d --build`
-3. Run runtime validation: `python tools/ports_health_audit.py --mode runtime`
+1. Start smoke stack: `docker compose -f docker-compose.smoke.yml up -d --build`
+1. Run runtime validation: `python tools/ports_health_audit.py --mode runtime`
 
 ### Future Enhancements
 1. **Add remaining services** to registry (adhd-engine enabled, working-memory-assistant, etc.)
-2. **Extend registry** with startup timeouts, resource limits, dependencies
-3. **Create `tools/registry_validate.py`** for JSON schema validation
-4. **Add health contract tests** per service (validate response schema)
-5. **Integrate with CI/CD** to enforce alignment on every PR
-6. **Move to G32**: Standardize FastAPI app initialization and uvicorn entrypoints
+1. **Extend registry** with startup timeouts, resource limits, dependencies
+1. **Create `tools/registry_validate.py`** for JSON schema validation
+1. **Add health contract tests** per service (validate response schema)
+1. **Integrate with CI/CD** to enforce alignment on every PR
+1. **Move to G32**: Standardize FastAPI app initialization and uvicorn entrypoints
 
 ---
 

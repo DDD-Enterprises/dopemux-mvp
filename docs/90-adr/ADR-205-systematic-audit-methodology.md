@@ -156,10 +156,10 @@ During 2025-10-16 code audit, comparison between "rush review" and "systematic Z
 ### Minimum Requirements for Production Reviews
 
 1. **Use Zen thinkdeep** (not rush review)
-2. **Minimum 3 investigation steps**
-3. **Evidence-based findings** (no assumptions)
-4. **Confidence levels** (exploring → certain)
-5. **Log in ConPort** (build knowledge graph)
+1. **Minimum 3 investigation steps**
+1. **Evidence-based findings** (no assumptions)
+1. **Confidence levels** (exploring → certain)
+1. **Log in ConPort** (build knowledge graph)
 
 ### Quality Gates
 

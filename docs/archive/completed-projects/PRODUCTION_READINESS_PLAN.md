@@ -48,22 +48,22 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 
 **Tasks**:
 1. Modify MCP tools to accept workspace params (3h)
-   - `find_symbol_tool`
-   - `get_context_tool`
-   - `find_references_tool`
-   - `analyze_complexity_tool`
-   - `find_relationships_tool`
-   - 5 more tools
+- `find_symbol_tool`
+- `get_context_tool`
+- `find_references_tool`
+- `analyze_complexity_tool`
+- `find_relationships_tool`
+- 5 more tools
 
-2. Per-workspace LSP clients (1h)
-   - Modify `SerenaMultiWorkspace` wrapper
-   - Lazy-load LSP client per workspace
-   - Cache instances
+1. Per-workspace LSP clients (1h)
+- Modify `SerenaMultiWorkspace` wrapper
+- Lazy-load LSP client per workspace
+- Cache instances
 
-3. Integration tests (1h)
-   - Test MCP tools with multi-workspace
-   - Test LSP client isolation
-   - Test result aggregation
+1. Integration tests (1h)
+- Test MCP tools with multi-workspace
+- Test LSP client isolation
+- Test result aggregation
 
 **Deliverables**:
 - ✅ All MCP tools support workspace_paths
@@ -77,28 +77,28 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 
 **Tasks**:
 1. AGE Client integration (3h)
-   - Modify `AGEClient` class
-   - Add workspace_path parameter
-   - Scope queries to workspace graphs
+- Modify `AGEClient` class
+- Add workspace_path parameter
+- Scope queries to workspace graphs
 
-2. Query module updates (2h)
-   - `queries/deep_context.py`
-   - `queries/overview.py`
-   - `queries/exploration.py`
+1. Query module updates (2h)
+- `queries/deep_context.py`
+- `queries/overview.py`
+- `queries/exploration.py`
 
-3. Graph initialization (1h)
-   - Workspace graph creation on demand
-   - Schema setup per workspace
-   - Migration support
+1. Graph initialization (1h)
+- Workspace graph creation on demand
+- Schema setup per workspace
+- Migration support
 
-4. Orchestrator API updates (1h)
-   - HTTP endpoints accept workspace params
-   - Response aggregation
+1. Orchestrator API updates (1h)
+- HTTP endpoints accept workspace params
+- Response aggregation
 
-5. Tests (1h)
-   - Workspace isolation tests
-   - Cross-workspace query tests
-   - Graph creation tests
+1. Tests (1h)
+- Workspace isolation tests
+- Cross-workspace query tests
+- Graph creation tests
 
 **Deliverables**:
 - ✅ AGE client workspace-aware
@@ -128,23 +128,23 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
        ...
    ```
 
-2. Update task coordinator (1h)
-   - Accept workspace in task creation
-   - Filter tasks by workspace
-   - Workspace-aware task routing
+1. Update task coordinator (1h)
+- Accept workspace in task creation
+- Filter tasks by workspace
+- Workspace-aware task routing
 
-3. Database schema migration (0.5h)
-   - Add workspace column
-   - Migration script
+1. Database schema migration (0.5h)
+- Add workspace column
+- Migration script
 
-4. API updates (0.5h)
-   - HTTP endpoints accept workspace
-   - Response includes workspace
+1. API updates (0.5h)
+- HTTP endpoints accept workspace
+- Response includes workspace
 
-5. Tests (1h)
-   - Task creation with workspace
-   - Filtering by workspace
-   - Multi-workspace task lists
+1. Tests (1h)
+- Task creation with workspace
+- Filtering by workspace
+- Multi-workspace task lists
 
 **Deliverables**:
 - ✅ Tasks tagged with workspace
@@ -164,19 +164,19 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
    }
    ```
 
-2. Workspace switch detection (1h)
-   - Detect when workspace changes
-   - Save current session state
-   - Load new workspace session
+1. Workspace switch detection (1h)
+- Detect when workspace changes
+- Save current session state
+- Load new workspace session
 
-3. Session API updates (0.5h)
-   - Accept workspace parameter
-   - Return workspace-specific state
+1. Session API updates (0.5h)
+- Accept workspace parameter
+- Return workspace-specific state
 
-4. Tests (0.5h)
-   - Multi-workspace sessions
-   - Switch detection
-   - State persistence
+1. Tests (0.5h)
+- Multi-workspace sessions
+- Switch detection
+- State persistence
 
 **Deliverables**:
 - ✅ Sessions per workspace
@@ -189,16 +189,16 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 
 **Tasks**:
 1. Forward workspace params (0.5h)
-   - Add workspace_paths to MCP calls
-   - Handle aggregated responses
+- Add workspace_paths to MCP calls
+- Handle aggregated responses
 
-2. Response parsing (0.5h)
-   - Parse multi-workspace results
-   - Extract per-workspace data
+1. Response parsing (0.5h)
+- Parse multi-workspace results
+- Extract per-workspace data
 
-3. Tests (0.5h)
-   - Parameter forwarding
-   - Response parsing
+1. Tests (0.5h)
+- Parameter forwarding
+- Response parsing
 
 **Deliverables**:
 - ✅ MCP calls include workspace
@@ -211,16 +211,16 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 
 **Tasks**:
 1. Tag metrics with workspace (0.5h)
-   - Add workspace field to metrics
-   - Workspace in energy calculations
+- Add workspace field to metrics
+- Workspace in energy calculations
 
-2. Per-workspace state (optional) (0.5h)
-   - Track energy per workspace
-   - Workspace-aware recommendations
+1. Per-workspace state (optional) (0.5h)
+- Track energy per workspace
+- Workspace-aware recommendations
 
-3. Tests (0.5h)
-   - Workspace tagging
-   - Multi-workspace metrics
+1. Tests (0.5h)
+- Workspace tagging
+- Multi-workspace metrics
 
 **Deliverables**:
 - ✅ Metrics include workspace
@@ -232,16 +232,16 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 
 **Tasks**:
 1. Include workspace in prompts (0.5h)
-   - Add workspace to context
-   - Workspace-aware model selection
+- Add workspace to context
+- Workspace-aware model selection
 
-2. API updates (0.5h)
-   - Accept workspace parameter
-   - Forward to downstream
+1. API updates (0.5h)
+- Accept workspace parameter
+- Forward to downstream
 
-3. Tests (0.5h)
-   - Workspace in context
-   - Prompt generation
+1. Tests (0.5h)
+- Workspace in context
+- Prompt generation
 
 **Deliverables**:
 - ✅ AI prompts include workspace
@@ -258,19 +258,19 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 #### 3.1 Cross-Service Integration Tests (2-3 hours)
 **Tasks**:
 1. End-to-end test scenarios (1h)
-   - Search in dope-context → route via orchestrator
-   - Task in task-orchestrator → log in activity-capture
-   - Query in conport_kg → analyze in serena
+- Search in dope-context → route via orchestrator
+- Task in task-orchestrator → log in activity-capture
+- Query in conport_kg → analyze in serena
 
-2. Multi-service workflows (1h)
-   - Full context gathering workflow
-   - Multi-workspace search & analyze
-   - Session tracking across services
+1. Multi-service workflows (1h)
+- Full context gathering workflow
+- Multi-workspace search & analyze
+- Session tracking across services
 
-3. Performance testing (1h)
-   - Load test with multiple workspaces
-   - Response time benchmarks
-   - Resource usage monitoring
+1. Performance testing (1h)
+- Load test with multiple workspaces
+- Response time benchmarks
+- Resource usage monitoring
 
 **Deliverables**:
 - ✅ 10+ integration tests
@@ -280,24 +280,24 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 #### 3.2 Error Handling & Edge Cases (2-3 hours)
 **Tasks**:
 1. Invalid workspace paths (0.5h)
-   - Non-existent paths
-   - Permission errors
-   - Graceful fallbacks
+- Non-existent paths
+- Permission errors
+- Graceful fallbacks
 
-2. Empty results handling (0.5h)
-   - No results in some workspaces
-   - Partial failures
-   - Timeout handling
+1. Empty results handling (0.5h)
+- No results in some workspaces
+- Partial failures
+- Timeout handling
 
-3. Concurrent access (1h)
-   - Multiple clients same workspace
-   - Race conditions
-   - Lock management
+1. Concurrent access (1h)
+- Multiple clients same workspace
+- Race conditions
+- Lock management
 
-4. Recovery scenarios (0.5h)
-   - Service restarts
-   - State recovery
-   - Data consistency
+1. Recovery scenarios (0.5h)
+- Service restarts
+- State recovery
+- Data consistency
 
 **Deliverables**:
 - ✅ Robust error handling
@@ -307,24 +307,24 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 #### 3.3 Documentation Completion (2 hours)
 **Tasks**:
 1. API documentation (0.5h)
-   - OpenAPI specs updated
-   - Parameter descriptions
-   - Response schemas
+- OpenAPI specs updated
+- Parameter descriptions
+- Response schemas
 
-2. User guides (0.5h)
-   - Getting started
-   - Common workflows
-   - Troubleshooting
+1. User guides (0.5h)
+- Getting started
+- Common workflows
+- Troubleshooting
 
-3. Developer guides (0.5h)
-   - Adding multi-workspace to new services
-   - Best practices
-   - Common pitfalls
+1. Developer guides (0.5h)
+- Adding multi-workspace to new services
+- Best practices
+- Common pitfalls
 
-4. Operations runbook (0.5h)
-   - Deployment procedures
-   - Monitoring setup
-   - Incident response
+1. Operations runbook (0.5h)
+- Deployment procedures
+- Monitoring setup
+- Incident response
 
 **Deliverables**:
 - ✅ Complete API docs
@@ -342,19 +342,19 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 #### 4.1 Docker Infrastructure (2-3 hours)
 **Tasks**:
 1. Docker compose updates (1h)
-   - Environment variable templates
-   - Multi-workspace volume mounts
-   - Service configuration
+- Environment variable templates
+- Multi-workspace volume mounts
+- Service configuration
 
-2. Container optimization (0.5h)
-   - Multi-stage builds
-   - Layer caching
-   - Size optimization
+1. Container optimization (0.5h)
+- Multi-stage builds
+- Layer caching
+- Size optimization
 
-3. Health checks (0.5h)
-   - Per-service health endpoints
-   - Workspace validation
-   - Dependency checks
+1. Health checks (0.5h)
+- Per-service health endpoints
+- Workspace validation
+- Dependency checks
 
 **Files to update**:
 - `docker-compose.yml`
@@ -369,19 +369,19 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 #### 4.2 Monitoring & Observability (1-2 hours)
 **Tasks**:
 1. Metrics (0.5h)
-   - Per-workspace metrics
-   - Prometheus exporters
-   - Grafana dashboards
+- Per-workspace metrics
+- Prometheus exporters
+- Grafana dashboards
 
-2. Logging (0.5h)
-   - Workspace in log context
-   - Structured logging
-   - Log aggregation
+1. Logging (0.5h)
+- Workspace in log context
+- Structured logging
+- Log aggregation
 
-3. Tracing (0.5h)
-   - Distributed tracing
-   - Workspace in trace context
-   - Performance insights
+1. Tracing (0.5h)
+- Distributed tracing
+- Workspace in trace context
+- Performance insights
 
 **Deliverables**:
 - ✅ Metrics dashboard
@@ -391,14 +391,14 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 #### 4.3 Deployment Automation (1 hour)
 **Tasks**:
 1. CI/CD pipeline (0.5h)
-   - Automated testing
-   - Docker builds
-   - Deployment scripts
+- Automated testing
+- Docker builds
+- Deployment scripts
 
-2. Environment management (0.5h)
-   - Staging environment
-   - Production environment
-   - Configuration management
+1. Environment management (0.5h)
+- Staging environment
+- Production environment
+- Configuration management
 
 **Deliverables**:
 - ✅ Automated deployments
@@ -458,26 +458,26 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 
 ### High Risk
 1. **AGE integration complexity** (conport_kg)
-   - Mitigation: Start early, allocate extra time
-   - Fallback: Simplify to single-graph with workspace field
+- Mitigation: Start early, allocate extra time
+- Fallback: Simplify to single-graph with workspace field
 
-2. **LSP client per workspace** (serena)
-   - Mitigation: Use connection pooling
-   - Fallback: Single LSP with workspace context
+1. **LSP client per workspace** (serena)
+- Mitigation: Use connection pooling
+- Fallback: Single LSP with workspace context
 
 ### Medium Risk
 1. **Performance with many workspaces**
-   - Mitigation: Load testing in phase 3
-   - Fallback: Add workspace limits
+- Mitigation: Load testing in phase 3
+- Fallback: Add workspace limits
 
-2. **Docker volume complexity**
-   - Mitigation: Simple bind mounts first
-   - Fallback: Named volumes
+1. **Docker volume complexity**
+- Mitigation: Simple bind mounts first
+- Fallback: Named volumes
 
 ### Low Risk
 1. **Documentation completeness**
-   - Mitigation: Progressive documentation
-   - Fallback: Minimal viable docs first
+- Mitigation: Progressive documentation
+- Fallback: Minimal viable docs first
 
 ---
 
@@ -638,48 +638,48 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 
 ### After Initial Launch
 1. **Parallel Workspace Querying**
-   - Currently sequential
-   - Could parallelize for 3-5x speedup
+- Currently sequential
+- Could parallelize for 3-5x speedup
 
-2. **Workspace Caching**
-   - Cache recent workspace results
-   - Reduce duplicate queries
+1. **Workspace Caching**
+- Cache recent workspace results
+- Reduce duplicate queries
 
-3. **Connection Pooling**
-   - Reuse LSP connections
-   - Reduce startup overhead
+1. **Connection Pooling**
+- Reuse LSP connections
+- Reduce startup overhead
 
-4. **Smart Workspace Selection**
-   - Auto-detect relevant workspaces
-   - Reduce user input burden
+1. **Smart Workspace Selection**
+- Auto-detect relevant workspaces
+- Reduce user input burden
 
 ---
 
 ## 📚 Documentation Deliverables
 
 1. **User Documentation**
-   - Getting started guide
-   - Common workflows
-   - FAQ
-   - Troubleshooting
+- Getting started guide
+- Common workflows
+- FAQ
+- Troubleshooting
 
-2. **Developer Documentation**
-   - API reference
-   - Integration guide
-   - Best practices
-   - Code examples
+1. **Developer Documentation**
+- API reference
+- Integration guide
+- Best practices
+- Code examples
 
-3. **Operations Documentation**
-   - Deployment guide
-   - Monitoring setup
-   - Incident response
-   - Backup & recovery
+1. **Operations Documentation**
+- Deployment guide
+- Monitoring setup
+- Incident response
+- Backup & recovery
 
-4. **Architecture Documentation**
-   - System design
-   - Data flow
-   - Service interactions
-   - Decision records
+1. **Architecture Documentation**
+- System design
+- Data flow
+- Service interactions
+- Decision records
 
 ---
 
@@ -687,19 +687,19 @@ prelude: Production_Readiness_Plan (explanation) for dopemux documentation and d
 
 ### Immediate (Today)
 1. Review and approve this plan
-2. Set up project tracking
-3. Allocate resources
-4. Begin Phase 1
+1. Set up project tracking
+1. Allocate resources
+1. Begin Phase 1
 
 ### This Week
 1. Complete Phase 1 & 2
-2. Begin Phase 3
-3. Prepare staging environment
+1. Begin Phase 3
+1. Prepare staging environment
 
 ### Next Week
 1. Complete Phase 3 & 4
-2. Deploy to production
-3. Monitor and iterate
+1. Deploy to production
+1. Monitor and iterate
 
 ---
 

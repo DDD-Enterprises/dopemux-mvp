@@ -94,7 +94,7 @@ The seam between deterministic engine and stateful runtime. This defines the API
 | Artifact | Direction | Required | Schema |
 |----------|-----------|----------|--------|
 | `ROUTE_PLAN.json` | Supervisor → TaskX | Yes | Input packet with steps, runner selection, constraints |
-| `RUN_REPORT.json` | TaskX → Supervisor | Yes | `{status, steps[], cost}` |
+| `RUN_REPORT.json` \| TaskX → Supervisor \| Yes \| `{status, steps[], cost}` |
 | `ARTIFACT_INDEX.json` | TaskX → Supervisor | Yes | List of all files created/modified |
 | `REFUSAL_REPORT.json` | TaskX → Supervisor | Conditional | Generated when TaskX refuses a step |
 
@@ -324,7 +324,7 @@ The seam between deterministic engine and stateful runtime. This defines the API
 | L0: Nominal | TaskX available, all runners healthy | Full execution capability |
 | L1: Runner Degraded | Preferred runner unavailable | Supervisor selects alternative runner in new packet |
 | L2: TaskX Slow | TaskX execution exceeds timeout | Supervisor marks packet as TIMEOUT, creates retry packet |
-| L3: TaskX Down | `.taskx_venv/` corrupt or missing | Supervisor refuses execution. `scripts/taskx` exits 2. Operator reinstalls from `.taskx-pin` |
+| L3: TaskX Down | `.taskx_venv/` corrupt or missing \| Supervisor refuses execution. `scripts/taskx` exits 2. Operator reinstalls from `.taskx-pin` |
 | L4: Contract Violation | Artifact missing after execution | Supervisor creates synthetic failure record. Flags for manual review |
 
 ---
@@ -342,8 +342,8 @@ The seam between deterministic engine and stateful runtime. This defines the API
 
 | Claim | Source | Status |
 |-------|--------|--------|
-| TaskX is external repo | `.taskx-pin` | CONFIRMED — `repo=https://github.com/hu3mann/taskX.git ref=v0.1.2` |
-| `scripts/taskx` is wrapper only | `scripts/taskx` | CONFIRMED — 23 lines, activates venv, execs binary |
+| TaskX is external repo | `.taskx-pin` \| CONFIRMED — `repo=https://github.com/hu3mann/taskX.git ref=v0.1.2` |
+| `scripts/taskx` is wrapper only \| `scripts/taskx` | CONFIRMED — 23 lines, activates venv, execs binary |
 | task-orchestrator is coordination layer | `main.py` | CONFIRMED — API is coordination/events/conflicts, not execution |
 | task-orchestrator has "37 tools" | `/info` endpoint | CONFIRMED — but tools are coordination tools, not execution tools |
 | `enhanced_orchestrator.py` exists | Earlier doc FACT ANCHOR | NOT FOUND — file not present in repo |
@@ -390,12 +390,12 @@ taskx orchestrate \
 
 ## Open questions
 - **Live Output Streaming**: Can Supervisor stream TaskX stdout in real-time to UI?
-  - *Resolution*: Yes, via subprocess pipe reading in `Dispatch`. This is for display only — not for logic (INV-TX-003).
+- *Resolution*: Yes, via subprocess pipe reading in `Dispatch`. This is for display only — not for logic (INV-TX-003).
 
 ## Acceptance criteria
 1. **Determinism Test**: Run the same Packet twice on the same file state. Resulting artifacts MUST be byte-identical (ignoring timestamps in artifact metadata).
-2. **Refusal Test**: Give TaskX a packet with an invalid step. It MUST fail gracefully with a `REFUSAL_REPORT.json` and not crash.
-3. **One-Way Test**: Audit TaskX codebase for any HTTP client calls to Supervisor endpoints. Must find zero.
-4. **Artifact Presence Test**: Kill TaskX mid-execution. Supervisor must detect missing artifacts and create synthetic failure record.
-5. **History Immutability Test**: Attempt to overwrite an existing packet file. System must refuse or create a new version instead.
-6. **Coordination Boundary Test**: Audit task-orchestrator for runner selection or TaskX invocation logic. Must find zero.
+1. **Refusal Test**: Give TaskX a packet with an invalid step. It MUST fail gracefully with a `REFUSAL_REPORT.json` and not crash.
+1. **One-Way Test**: Audit TaskX codebase for any HTTP client calls to Supervisor endpoints. Must find zero.
+1. **Artifact Presence Test**: Kill TaskX mid-execution. Supervisor must detect missing artifacts and create synthetic failure record.
+1. **History Immutability Test**: Attempt to overwrite an existing packet file. System must refuse or create a new version instead.
+1. **Coordination Boundary Test**: Audit task-orchestrator for runner selection or TaskX invocation logic. Must find zero.

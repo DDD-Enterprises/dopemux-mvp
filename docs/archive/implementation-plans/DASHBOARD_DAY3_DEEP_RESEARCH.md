@@ -332,7 +332,6 @@ class DetailPopup(Screen):
     def action_dismiss(self) -> None:
         self.app.pop_screen()
 
-
 class CognitiveLoadDetail(DetailPopup):
     """Detailed cognitive load history"""
 
@@ -487,11 +486,11 @@ python3 dopemux_dashboard.py
 ### Test Keyboard Navigation
 ```
 1. Press '1' → Should focus ADHD panel
-2. Press Tab → Should move to next panel
-3. Press Enter → Should expand panel
-4. Press Escape → Should collapse
-5. Press 'd' → Should open detail popup
-6. Press Escape → Should close popup
+1. Press Tab → Should move to next panel
+1. Press Enter → Should expand panel
+1. Press Escape → Should collapse
+1. Press 'd' → Should open detail popup
+1. Press Escape → Should close popup
 ```
 
 ---

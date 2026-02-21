@@ -25,26 +25,26 @@ It is designed to integrate with:
 
 ## Principles (Non-Negotiables)
 1) No duplication
-   - Dope-Memory is not a second DopeQuery or DopeContext.
-   - Dope-Memory stores temporal narrative and derived summaries, not canonical facts.
+- Dope-Memory is not a second DopeQuery or DopeContext.
+- Dope-Memory stores temporal narrative and derived summaries, not canonical facts.
 
 2) ADHD-first output boundary
-   - All default outputs return Top-3 items max.
-   - Additional results only on explicit pagination/expand.
+- All default outputs return Top-3 items max.
+- Additional results only on explicit pagination/expand.
 
 3) Redaction before persistence (strict)
-   - Secrets/PII must be scrubbed before writing to storage.
-   - Redaction applies at raw ingestion and again at promotion/curation.
+- Secrets/PII must be scrubbed before writing to storage.
+- Redaction applies at raw ingestion and again at promotion/curation.
 
 4) Local-first canonical
-   - SQLite is canonical for the Chronicle store.
-   - Postgres is a mirrored substrate for query speed and multi-service access.
-   - Mirroring must be idempotent and tolerant of partial failures.
+- SQLite is canonical for the Chronicle store.
+- Postgres is a mirrored substrate for query speed and multi-service access.
+- Mirroring must be idempotent and tolerant of partial failures.
 
 5) Deterministic tool outputs
-   - Stable schemas.
-   - Stable sorting and tie-breakers.
-   - Cursor-based pagination with opaque tokens.
+- Stable schemas.
+- Stable sorting and tie-breakers.
+- Cursor-based pagination with opaque tokens.
 
 ## Trinity Placement
 - DopeContext (Archival/Semantic): "What did we do last month?"

@@ -115,13 +115,13 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 **Recovery Strategy**: Docker Compose automatically retries based on `restart: unless-stopped`. Services with `start_period` get grace time.
 **Evidence**:
 * `compose.yml` dependency chain:
-  * `postgres` → healthcheck `pg_isready`, `start_period: 20s`
-  * `redis-events` → healthcheck `redis-cli ping`
-  * `redis-primary` → healthcheck `redis-cli ping`
-  * `conport` → depends on `postgres`, `redis-primary`, `mcp-qdrant`, `dopecon-bridge`
-  * `task-orchestrator` → depends on `redis-primary`, `conport`, `leantime`
-  * `adhd-engine` → depends on `redis-primary`
-  * `dopecon-bridge` → depends on `postgres` (healthy), `redis-events` (healthy), `mcp-qdrant` (started)
+* `postgres` → healthcheck `pg_isready`, `start_period: 20s`
+* `redis-events` → healthcheck `redis-cli ping`
+* `redis-primary` → healthcheck `redis-cli ping`
+* `conport` → depends on `postgres`, `redis-primary`, `mcp-qdrant`, `dopecon-bridge`
+* `task-orchestrator` → depends on `redis-primary`, `conport`, `leantime`
+* `adhd-engine` → depends on `redis-primary`
+* `dopecon-bridge` → depends on `postgres` (healthy), `redis-events` (healthy), `mcp-qdrant` (started)
 
 ---
 
@@ -178,19 +178,19 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 **Recovery Strategy**: `restart: unless-stopped` triggers automatic container restart on failure.
 **Evidence**:
 * All services in `compose.yml` have `healthcheck` blocks:
-  * `postgres`: `pg_isready`, interval 10s, retries 10, start_period 20s.
-  * `redis-*`: `redis-cli ping`, interval 10s, retries 3.
-  * `conport`: `curl -f http://localhost:3004/health`, interval 30s, retries 3, start_period 30s.
-  * `dopecon-bridge`: `curl -f http://localhost:3016/health`, interval 30s, retries 3, start_period 30s.
-  * `task-orchestrator`: `curl -f http://localhost:8000/health`, interval 30s, retries 3, start_period 40s.
-  * `adhd-engine`: `curl -f http://localhost:8095/health`, interval 30s, retries 3, start_period 30s.
-  * `pal`: `exit 0` (always healthy — no real check). **GAP**: should have real health endpoint.
-  * `dope-context`: `curl -f http://localhost:3010/health  exit 0`. **GAP**: `exit 0` fallback means unhealthy is never reported.
-  * `conport`: `curl -f http://localhost:3004/health  exit 0`. **GAP**: same `exit 0` fallback issue.
+* `postgres`: `pg_isready`, interval 10s, retries 10, start_period 20s.
+* `redis-*`: `redis-cli ping`, interval 10s, retries 3.
+* `conport`: `curl -f http://localhost:3004/health`, interval 30s, retries 3, start_period 30s.
+* `dopecon-bridge`: `curl -f http://localhost:3016/health`, interval 30s, retries 3, start_period 30s.
+* `task-orchestrator`: `curl -f http://localhost:8000/health`, interval 30s, retries 3, start_period 40s.
+* `adhd-engine`: `curl -f http://localhost:8095/health`, interval 30s, retries 3, start_period 30s.
+* `pal`: `exit 0` (always healthy — no real check). **GAP**: should have real health endpoint.
+* `dope-context`: `curl -f http://localhost:3010/health || exit 0`. **GAP**: `exit 0` fallback means unhealthy is never reported.
+* `conport`: `curl -f http://localhost:3004/health || exit 0`. **GAP**: same `exit 0` fallback issue.
 
 **GAPS IDENTIFIED**:
 * `pal` healthcheck is `exit 0` — always passes regardless of actual health.
-* `conport` and `dope-context` use `exit 0` — failures are swallowed.
+* `conport` and `dope-context` use `|| exit 0` — failures are swallowed.
 * These should be fixed to return real health status.
 
 ---
@@ -202,7 +202,7 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 * **OBSERVED: MCP Servers**: ConPort (3004), PAL/Zen (3003), LiteLLM (4000), Dope-Context (3010), Serena (3006), GPTR (3009), Desktop Commander (3012), Leantime Bridge (3015).
 * **OBSERVED: Application Services**: DopeconBridge (3016), Task Orchestrator (8000), ADHD Engine (8095), Genetic Agent (8000), Dope-Memory (3020/8096).
 * **OBSERVED: Dependency Chain**: postgres → conport → task-orchestrator; redis-events → dopecon-bridge → conport.
-* **OBSERVED: Health Endpoints**: All services have healthcheck blocks in compose.yml, but quality varies (some use `exit 0` fallback).
+* **OBSERVED: Health Endpoints**: All services have healthcheck blocks in compose.yml, but quality varies (some use `|| exit 0` fallback).
 * **OBSERVED: Task-Orchestrator Tools**: `/info` endpoint reports "37 tools" (line 306 of main.py).
 * **OBSERVED: Restart Policy**: All services use `restart: unless-stopped`.
 
@@ -231,10 +231,10 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 * **Containment**: Docker Compose will error on startup if host ports conflict.
 
 ### 4. Swallowed Health Failures
-* **Trigger**: Services using `exit 0` in healthcheck (conport, dope-context, pal).
+* **Trigger**: Services using `|| exit 0` in healthcheck (conport, dope-context, pal).
 * **Impact**: Docker reports container as healthy when it may not be. Dependent services start prematurely or don't detect failures.
 * **Severity**: S2 medium.
-* **Containment**: Fix healthchecks to remove `exit 0` fallback. Replace `exit 0` in pal with actual health probe.
+* **Containment**: Fix healthchecks to remove `|| exit 0` fallback. Replace `exit 0` in pal with actual health probe.
 
 ### 5. Startup Race Condition
 * **Trigger**: `depends_on` with `condition: service_started` (not `service_healthy`) — used for `mcp-qdrant` in dopecon-bridge.
@@ -249,7 +249,7 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 | Invariant | Enforcement Point | Mechanism | Automated? |
 |-----------|-------------------|-----------|------------|
 | INV-MCP-001 | Docker Compose | `down` sends SIGTERM/SIGKILL | Yes |
-| INV-MCP-002 | `depends_on` | `condition: service_healthy` | Yes (for startup) |
+| INV-MCP-002 | `depends_on` \\\| `condition: service_healthy` | Yes (for startup) |
 | INV-MCP-002 | Runtime | Timeout + explicit error | FUTURE |
 | INV-MCP-003 | MCPServerManager | Circuit breaker state machine | FUTURE |
 | INV-MCP-004 | Docker Compose | `depends_on` + `start_period` | Yes |
@@ -285,9 +285,9 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 
 | Claim | Source | Status |
 |-------|--------|--------|
-| ConPort uses `\|\| exit 0` healthcheck | compose.yml line 254 | CONFIRMED — masks failures |
+| ConPort uses `\\\|\\\| exit 0` healthcheck | compose.yml line 254 | CONFIRMED — masks failures |
 | PAL healthcheck is `exit 0` | compose.yml line 277 | CONFIRMED — never actually checks health |
-| Dope-context uses `\|\| exit 0` | compose.yml line 334 | CONFIRMED — masks failures |
+| Dope-context uses `\\\|\\\| exit 0` | compose.yml line 334 | CONFIRMED — masks failures |
 | Task-orchestrator has real health | compose.yml line 406 | CONFIRMED — `curl -f` without fallback |
 | DopeconBridge has real health | compose.yml line 372 | CONFIRMED — `curl -f` without fallback |
 | `config/mcp_servers.yaml` exists | Earlier doc version | NOT FOUND — file does not exist in repo |
@@ -347,25 +347,25 @@ Layer 4 (Optional/Independent):
 If a server is UNHEALTHY or STOPPED:
 
 1. **Tool Substitution**:
-   * IF `dope-context` (Semantic Search) is down: Fall back to `grep`/`ripgrep` keyword search.
-   * IF `pal` (Zen reasoning) is down: Use native Claude reasoning (no multi-model validation).
-   * IF `litellm` (Model Router) is down: Direct API calls to model providers.
-   * IF `leantime-bridge` is down: Task-orchestrator operates without PM sync.
+* IF `dope-context` (Semantic Search) is down: Fall back to `grep`/`ripgrep` keyword search.
+* IF `pal` (Zen reasoning) is down: Use native Claude reasoning (no multi-model validation).
+* IF `litellm` (Model Router) is down: Direct API calls to model providers.
+* IF `leantime-bridge` is down: Task-orchestrator operates without PM sync.
 
 1. **Refusal**:
-   * If ConPort is required for an operation and is down: **STOP** and Refuse.
-   * If PostgreSQL is down: **STOP** — no REQUIRED service can function.
-   * Message format: `"Cannot execute: [server] is unavailable and required for this task."`
+* If ConPort is required for an operation and is down: **STOP** and Refuse.
+* If PostgreSQL is down: **STOP** — no REQUIRED service can function.
+* Message format: `"Cannot execute: [server] is unavailable and required for this task."`
 
 ## Open questions
 * **Dynamic Discovery**: Can we auto-discover new MCP servers?
-  * *Resolution*: No. Usage must be explicit in compose.yml for security and determinism.
+* *Resolution*: No. Usage must be explicit in compose.yml for security and determinism.
 * **config/mcp_servers.yaml**: Referenced in earlier docs but does not exist.
-  * *Resolution*: Compose.yml IS the canonical server registry. No separate YAML needed.
+* *Resolution*: Compose.yml IS the canonical server registry. No separate YAML needed.
 
 ## Acceptance criteria
 1. **Kill Test**: Kill an MCP server container manually. Ensure Docker detects it and restarts within 30s.
 1. **Dependency Test**: Stop PostgreSQL. Ensure ConPort fails its healthcheck. Ensure task-orchestrator does not start (or restarts and fails to connect).
 1. **Fallback Test**: Stop `dope-context`. Execute a search operation. Ensure it falls back to keyword search or refuses with clear message.
 1. **Zombie Test**: Run `docker compose down`. Verify zero dopemux containers running with `docker ps`.
-1. **Health Gap Test**: Stop the actual ConPort process inside its container (but keep container running). Verify healthcheck reports unhealthy (currently fails due to `exit 0` — this test documents the gap).
+1. **Health Gap Test**: Stop the actual ConPort process inside its container (but keep container running). Verify healthcheck reports unhealthy (currently fails due to `|| exit 0` — this test documents the gap).

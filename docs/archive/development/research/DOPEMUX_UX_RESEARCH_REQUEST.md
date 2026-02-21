@@ -24,9 +24,9 @@ prelude: Dopemux_Ux_Research_Request (explanation) for dopemux documentation and
 We're building **4 interconnected UX enhancements** for Dopemux:
 
 1. **HYPERFOCUS REVIVAL TUI** - Interactive dashboard for untracked work management
-2. **Enhanced Status Display** - Better role/persona visualization
-3. **Research Mode Launcher** - Quick access to deep research capabilities
-4. **Unified UX Framework** - Consistent ADHD-optimized patterns across all features
+1. **Enhanced Status Display** - Better role/persona visualization
+1. **Research Mode Launcher** - Quick access to deep research capabilities
+1. **Unified UX Framework** - Consistent ADHD-optimized patterns across all features
 
 **Technology Stack:**
 - **Textual** (6.3.0) - Terminal UI framework (already installed)
@@ -183,13 +183,13 @@ Please use Zen's multi-model analysis to research, design, and plan the followin
 Research and apply these principles to ALL UX designs:
 
 1. **Progressive Disclosure** - Show essentials first, details on demand
-2. **Gentle Nudging** - Helpful reminders, not nagging
-3. **Quick Wins Visible** - Celebrate small completions
-4. **Interruption Recovery** - Easy to resume after context switches
-5. **Cognitive Load Awareness** - Adapt complexity to user state
-6. **Visual Hierarchy** - Clear priorities, scannable layouts
-7. **Shame-Free Messaging** - Encouraging, not judgmental
-8. **Autonomy Respect** - Easy to disable/customize features
+1. **Gentle Nudging** - Helpful reminders, not nagging
+1. **Quick Wins Visible** - Celebrate small completions
+1. **Interruption Recovery** - Easy to resume after context switches
+1. **Cognitive Load Awareness** - Adapt complexity to user state
+1. **Visual Hierarchy** - Clear priorities, scannable layouts
+1. **Shame-Free Messaging** - Encouraging, not judgmental
+1. **Autonomy Respect** - Easy to disable/customize features
 
 ### Integration Architecture
 
@@ -351,9 +351,9 @@ Please create a comprehensive document with:
 **Use Zen to orchestrate:**
 
 1. **Multi-Model Consensus** on design decisions
-2. **Web Search** for Textual best practices, ADHD UX research
-3. **Code Analysis** of existing Dopemux CLI patterns
-4. **Synthesis** across all 4 features for consistency
+1. **Web Search** for Textual best practices, ADHD UX research
+1. **Code Analysis** of existing Dopemux CLI patterns
+1. **Synthesis** across all 4 features for consistency
 
 **Models to Leverage:**
 - GPT-5 (architecture design)
@@ -384,13 +384,13 @@ Please create a comprehensive document with:
 This design document should:
 
 1. ✅ Provide complete specs for all 4 features
-2. ✅ Be implementable by single developer (ADHD-aware pacing)
-3. ✅ Include ADHD optimization in every design decision
-4. ✅ Show how features integrate cohesively
-5. ✅ Provide clear next steps for implementation
-6. ✅ Be comprehensive yet scannable (ADHD-friendly)
-7. ✅ Include realistic timelines and milestones
-8. ✅ Validate against ADHD research evidence
+1. ✅ Be implementable by single developer (ADHD-aware pacing)
+1. ✅ Include ADHD optimization in every design decision
+1. ✅ Show how features integrate cohesively
+1. ✅ Provide clear next steps for implementation
+1. ✅ Be comprehensive yet scannable (ADHD-friendly)
+1. ✅ Include realistic timelines and milestones
+1. ✅ Validate against ADHD research evidence
 
 ---
 
@@ -416,10 +416,10 @@ Since HYPERFOCUS REVIVAL is the flagship feature, ensure deep integration:
 Please analyze this entire request and:
 
 1. **Research** all topics using web search + code analysis
-2. **Design** all 4 features with UX best practices
-3. **Plan** implementation with realistic timelines
-4. **Synthesize** into comprehensive design document
-5. **Validate** against ADHD research and accessibility standards
+1. **Design** all 4 features with UX best practices
+1. **Plan** implementation with realistic timelines
+1. **Synthesize** into comprehensive design document
+1. **Validate** against ADHD research and accessibility standards
 
 **Use your multi-model capabilities to ensure:**
 - Technical feasibility (GPT-5, o1)

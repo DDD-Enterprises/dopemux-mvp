@@ -132,22 +132,22 @@ dopemux decisions energy status --days 7              # Show history
 
 ### New Files (2):
 1. **`src/dopemux/commands/decisions_commands.py`** (457 lines)
-   - All 3 Quick Win implementations
-   - Database connection helpers
-   - Async query functions
-   - Rich console formatting
+- All 3 Quick Win implementations
+- Database connection helpers
+- Async query functions
+- Rich console formatting
 
-2. **`docs/conport_enhancement_decisions.json`** (102 lines)
-   - Decision logging template (Decisions #146-151)
-   - Progress entry templates (10 sprints + quick wins)
-   - Ready for ConPort import when MCP available
+1. **`docs/conport_enhancement_decisions.json`** (102 lines)
+- Decision logging template (Decisions #146-151)
+- Progress entry templates (10 sprints + quick wins)
+- Ready for ConPort import when MCP available
 
 ### Modified Files (1):
 1. **`src/dopemux/cli.py`** (+52 lines)
-   - Added `@cli.group() decisions` command group
-   - Added `@decisions.group() energy` subcommand group
-   - Imported and registered 4 commands
-   - Graceful degradation for missing dependencies
+- Added `@cli.group() decisions` command group
+- Added `@decisions.group() energy` subcommand group
+- Imported and registered 4 commands
+- Graceful degradation for missing dependencies
 
 ---
 
@@ -196,23 +196,23 @@ dopemux decisions energy status --days 7              # Show history
 ### Why Pure Async?
 All commands use async/await for database operations because:
 1. **Non-blocking**: Won't freeze CLI during queries
-2. **Scalable**: Ready for Phase 3 batch operations
-3. **Consistent**: Matches ConPort MCP async patterns
-4. **Future-proof**: Easy to add parallel queries later
+1. **Scalable**: Ready for Phase 3 batch operations
+1. **Consistent**: Matches ConPort MCP async patterns
+1. **Future-proof**: Easy to add parallel queries later
 
 ### Why Rich Console?
 Terminal UI library provides:
 1. **ADHD-friendly**: Color, emoji, visual structure
-2. **Professional**: Clean tables, panels, progress bars
-3. **Maintainable**: Declarative formatting
-4. **Consistent**: Matches existing dopemux CLI style
+1. **Professional**: Clean tables, panels, progress bars
+1. **Maintainable**: Declarative formatting
+1. **Consistent**: Matches existing dopemux CLI style
 
 ### Why Custom Data for Energy?
 Using `custom_data` table instead of new table:
 1. **No migration needed**: Works with current schema
-2. **Flexible**: JSONB allows schema evolution
-3. **Foundation**: Phase 4 will add proper adhd_metrics table
-4. **Safe**: No risk of breaking existing ConPort functionality
+1. **Flexible**: JSONB allows schema evolution
+1. **Foundation**: Phase 4 will add proper adhd_metrics table
+1. **Safe**: No risk of breaking existing ConPort functionality
 
 ---
 
@@ -236,22 +236,22 @@ Using `custom_data` table instead of new table:
 
 ### Immediate (This Sprint):
 1. **Test with more decisions**: Create 10-20 decisions via ConPort MCP
-2. **Verify review workflow**: Test with >30 day old decisions
-3. **Energy pattern analysis**: Log energy for 1 week, analyze patterns
+1. **Verify review workflow**: Test with >30 day old decisions
+1. **Energy pattern analysis**: Log energy for 1 week, analyze patterns
 
 ### Phase 1 Database Migration (1 week):
 1. Add 14 new metadata fields to decisions table
-2. Create decision_relationships table
-3. Create adhd_metrics table (migrate from custom_data)
-4. Update MCP tool schemas
-5. Add decision lifecycle states
+1. Create decision_relationships table
+1. Create adhd_metrics table (migrate from custom_data)
+1. Update MCP tool schemas
+1. Add decision lifecycle states
 
 ### Phase 2 Enhanced CLI (1 week):
 1. `dopemux decisions show ID` - Detailed decision view
-2. `dopemux decisions graph ID` - ASCII genealogy tree
-3. `dopemux decisions query` - Flexible query language
-4. Enhanced stats with confidence distribution
-5. Interactive review mode with outcome updates
+1. `dopemux decisions graph ID` - ASCII genealogy tree
+1. `dopemux decisions query` - Flexible query language
+1. Enhanced stats with confidence distribution
+1. Interactive review mode with outcome updates
 
 ---
 

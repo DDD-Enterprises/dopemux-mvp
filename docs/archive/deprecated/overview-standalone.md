@@ -245,9 +245,9 @@ Supports various Voyage AI models:
 This standalone CLI is extracted from the larger Dopemux project. For contributions:
 
 1. Fork the repository
-2. Make changes to `src/dopemux/analysis/`
-3. Test with `python -m pytest tests/`
-4. Submit pull request
+1. Make changes to `src/dopemux/analysis/`
+1. Test with `python -m pytest tests/`
+1. Submit pull request
 
 ## License
 

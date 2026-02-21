@@ -32,15 +32,15 @@ prelude: Dashboard_Quick_Reference (explanation) for dopemux documentation and d
 ### ✅ Enhanced Sparklines (Day 2)
 - **Prometheus Client** - Async time-series data fetching
 - **Sparkline Generator** - Unicode block rendering with:
-  - 8-level smooth rendering
-  - Smart downsampling (bucket averaging)
-  - Linear interpolation
-  - ADHD-optimized colorization
-  - Trend detection (↗ ↘ →)
+- 8-level smooth rendering
+- Smart downsampling (bucket averaging)
+- Linear interpolation
+- ADHD-optimized colorization
+- Trend detection (↗ ↘ →)
 - **Trends Panel** with 3 live sparklines:
-  - Cognitive Load (last 2 hours)
-  - Task Velocity (last 7 days)
-  - Context Switches (last 24 hours)
+- Cognitive Load (last 2 hours)
+- Task Velocity (last 7 days)
+- Context Switches (last 24 hours)
 - Auto-refresh every 30 seconds
 - Graceful Prometheus fallback
 
@@ -138,11 +138,11 @@ python -m pytest test_sparkline_generator.py -v
 
 ### Manual Testing
 1. Start ADHD Engine: `cd services/adhd_engine && python main.py`
-2. Start Prometheus: `docker start dopemux-prometheus` (optional)
-3. Run dashboard: `python3 dopemux_dashboard.py`
-4. Test keyboard shortcuts (q, r, f, t, n, ?)
-5. Watch sparklines update (wait 30s)
-6. Stop Prometheus → verify graceful fallback
+1. Start Prometheus: `docker start dopemux-prometheus` (optional)
+1. Run dashboard: `python3 dopemux_dashboard.py`
+1. Test keyboard shortcuts (q, r, f, t, n, ?)
+1. Watch sparklines update (wait 30s)
+1. Stop Prometheus → verify graceful fallback
 
 ---
 
@@ -199,10 +199,10 @@ See `docs/implementation-plans/DASHBOARD_DAY3_DEEP_RESEARCH.md` for details.
 ## 💡 Tips & Tricks
 
 1. **Focus Mode** - Press `f` to enlarge ADHD panel when overwhelmed
-2. **Themes** - Press `t` repeatedly to find your favorite color scheme
-3. **Notifications** - Press `n` to disable if they're distracting
-4. **Refresh** - Press `r` to force update all data
-5. **Help** - Press `?` anytime to see all keyboard shortcuts
+1. **Themes** - Press `t` repeatedly to find your favorite color scheme
+1. **Notifications** - Press `n` to disable if they're distracting
+1. **Refresh** - Press `r` to force update all data
+1. **Help** - Press `?` anytime to see all keyboard shortcuts
 
 ---
 

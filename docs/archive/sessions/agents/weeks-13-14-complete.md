@@ -28,10 +28,10 @@ prelude: Weeks 13 14 Complete (explanation) for dopemux documentation and develo
 
 **Purpose**: Systematically enhance all 16 SuperClaude personas with:
 1. Dopemux MCP awareness
-2. Two-plane architecture understanding
-3. ADHD accommodations
-4. Agent coordination patterns
-5. Tool preference guidelines
+1. Two-plane architecture understanding
+1. ADHD accommodations
+1. Agent coordination patterns
+1. Tool preference guidelines
 
 **Enhancement Pattern** (from python-expert-dopemux.md template):
 
@@ -75,28 +75,28 @@ prelude: Weeks 13 14 Complete (explanation) for dopemux documentation and develo
 
 ### Foundation Layer (2)
 1. ✅ **python-expert** - Python development, testing, debugging
-2. ✅ **general-purpose** - Multi-domain, balanced approach
+1. ✅ **general-purpose** - Multi-domain, balanced approach
 
 ### Architecture & Design (3)
 1. ✅ **system-architect** - System design, scalability, architecture decisions
-2. ✅ **frontend-architect** - UI/UX, React, accessibility, performance
-3. ✅ **backend-architect** - APIs, databases, scalability, reliability
+1. ✅ **frontend-architect** - UI/UX, React, accessibility, performance
+1. ✅ **backend-architect** - APIs, databases, scalability, reliability
 
 ### Quality & Analysis (4)
 1. ✅ **quality-engineer** - Testing strategies, test coverage, QA
-2. ✅ **root-cause-analyst** - Debugging, hypothesis testing, investigation
-3. ✅ **security-engineer** - Security vulnerabilities, compliance, threat modeling
-4. ✅ **performance-engineer** - Optimization, profiling, benchmarking
+1. ✅ **root-cause-analyst** - Debugging, hypothesis testing, investigation
+1. ✅ **security-engineer** - Security vulnerabilities, compliance, threat modeling
+1. ✅ **performance-engineer** - Optimization, profiling, benchmarking
 
 ### Code Improvement (2)
 1. ✅ **refactoring-expert** - Code cleanup, technical debt, refactoring patterns
-2. ✅ **devops-architect** - Infrastructure, CI/CD, deployment, monitoring
+1. ✅ **devops-architect** - Infrastructure, CI/CD, deployment, monitoring
 
 ### Communication & Learning (4)
 1. ✅ **learning-guide** - Teaching, explaining concepts, progressive learning
-2. ✅ **requirements-analyst** - Requirements discovery, specification, validation
-3. ✅ **technical-writer** - Documentation, clarity, audience adaptation
-4. ✅ **socratic-mentor** - Question-driven learning, discovery, critical thinking
+1. ✅ **requirements-analyst** - Requirements discovery, specification, validation
+1. ✅ **technical-writer** - Documentation, clarity, audience adaptation
+1. ✅ **socratic-mentor** - Question-driven learning, discovery, critical thinking
 
 ### Utility (1)
 1. ✅ **statusline-setup** - Configuration, setup, system integration
@@ -291,23 +291,23 @@ async def persona_workflow(task_description: str, complexity: float):
 ### Persona Files (.claude/personas/)
 
 1. backend-architect-dopemux.md (5.4 KB)
-2. devops-architect-dopemux.md (5.2 KB)
-3. frontend-architect-dopemux.md (5.2 KB)
-4. general-purpose-dopemux.md (5.4 KB)
-5. learning-guide-dopemux.md (5.2 KB)
-6. performance-engineer-dopemux.md (5.5 KB)
-7. quality-engineer-dopemux.md (5.5 KB)
-8. refactoring-expert-dopemux.md (5.2 KB)
-9. requirements-analyst-dopemux.md (5.3 KB)
-10. root-cause-analyst-dopemux.md (5.2 KB)
-11. security-engineer-dopemux.md (5.2 KB)
-12. socratic-mentor-dopemux.md (5.2 KB)
-13. statusline-setup-dopemux.md (5.5 KB)
-14. system-architect-dopemux.md (5.4 KB)
-15. technical-writer-dopemux.md (5.0 KB)
+1. devops-architect-dopemux.md (5.2 KB)
+1. frontend-architect-dopemux.md (5.2 KB)
+1. general-purpose-dopemux.md (5.4 KB)
+1. learning-guide-dopemux.md (5.2 KB)
+1. performance-engineer-dopemux.md (5.5 KB)
+1. quality-engineer-dopemux.md (5.5 KB)
+1. refactoring-expert-dopemux.md (5.2 KB)
+1. requirements-analyst-dopemux.md (5.3 KB)
+1. root-cause-analyst-dopemux.md (5.2 KB)
+1. security-engineer-dopemux.md (5.2 KB)
+1. socratic-mentor-dopemux.md (5.2 KB)
+1. statusline-setup-dopemux.md (5.5 KB)
+1. system-architect-dopemux.md (5.4 KB)
+1. technical-writer-dopemux.md (5.0 KB)
 
 **Plus existing**:
-16. python-expert-dopemux.md (500 lines - already existed)
+1. python-expert-dopemux.md (500 lines - already existed)
 
 **Total**: 16 persona files, ~81 KB, ~2,500 lines
 

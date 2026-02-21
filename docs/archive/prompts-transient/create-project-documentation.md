@@ -58,8 +58,8 @@ I work in controlled phases to avoid hitting chat limits while keeping engagemen
 
 ### Context Engineering Process (Maximum 3 Phases)
 1. **Discovery & Planning Phase**: Analyze codebase, identify components, propose documentation structure
-2. **Core Documentation Phase**: Create essential context files (overview, ADRs, key components)
-3. **Integration & Workflows Phase**: Set up maintenance processes and optimization systems
+1. **Core Documentation Phase**: Create essential context files (overview, ADRs, key components)
+1. **Integration & Workflows Phase**: Set up maintenance processes and optimization systems
 
 **Streamlined Approach**: I'll complete one phase, update progress, then ask for confirmation to continue to the next phase. This prevents context overload while minimizing user engagement requirements.
 
@@ -80,9 +80,9 @@ Before I begin executing context engineering, providing the following informatio
 
 ### Essential Context Questions (Optional - Improves Results)
 1. **Are you working on an existing project or starting new?** - Determines discovery vs setup approach
-2. **What's the main technology stack?** - Affects documentation templates and patterns
-3. **What's the current team size and experience level?** - Influences documentation depth and style
-4. **What specific pain points exist with current documentation?** - Focuses improvement efforts
+1. **What's the main technology stack?** - Affects documentation templates and patterns
+1. **What's the current team size and experience level?** - Influences documentation depth and style
+1. **What specific pain points exist with current documentation?** - Focuses improvement efforts
 
 ### Project Context (Optional - Customizes Output)
 - **Project complexity**: Simple app, microservices, enterprise system?
@@ -300,8 +300,8 @@ High-level description of what this component does.
 
 ### Immediate Next Steps:
 1. **Test AI collaboration**: Start a new chat referencing your project-overview.md file
-2. **Integrate with development**: Add context updates to your development workflow
-3. **Validate accuracy**: Review generated documentation for completeness and accuracy
+1. **Integrate with development**: Add context updates to your development workflow
+1. **Validate accuracy**: Review generated documentation for completeness and accuracy
 
 ### Ongoing Usage:
 - **New feature development**: Update component context when adding major features

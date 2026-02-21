@@ -26,21 +26,21 @@ ConPort Event Bridge running in Docker, production-ready!
 ### Components Deployed
 
 1. **Docker Image** - `conport-event-bridge:latest`
-   - Python 3.11 slim
-   - All dependencies
-   - Health checks
-   - Logging configured
+- Python 3.11 slim
+- All dependencies
+- Health checks
+- Logging configured
 
-2. **Docker Compose** - `docker-compose.conport-bridge.yml`
-   - Auto-restart on failure
-   - Read-only workspace access
-   - Connected to Redis network
-   - Health monitoring
+1. **Docker Compose** - `docker-compose.conport-bridge.yml`
+- Auto-restart on failure
+- Read-only workspace access
+- Connected to Redis network
+- Health monitoring
 
-3. **Startup Script** - `scripts/start-conport-bridge.sh`
-   - Pre-flight checks
-   - Easy one-command start
-   - Status monitoring
+1. **Startup Script** - `scripts/start-conport-bridge.sh`
+- Pre-flight checks
+- Easy one-command start
+- Status monitoring
 
 ---
 
@@ -128,22 +128,22 @@ docker ps --filter name=conport-event-bridge
 ### Active Components
 
 1. **Event Bridge** ✅
-   - Container: `conport-event-bridge`
-   - Status: Running, healthy
-   - Watching: `context_portal/context.db`
-   - Publishing to: `redis://dopemux-redis-events:6379`
+- Container: `conport-event-bridge`
+- Status: Running, healthy
+- Watching: `context_portal/context.db`
+- Publishing to: `redis://dopemux-redis-events:6379`
 
-2. **Redis Streams** ✅
-   - Container: `dopemux-redis-events`
-   - Stream: `conport:events`
-   - Events: 3+ decisions cached
-   - Consumers: Serena (ready)
+1. **Redis Streams** ✅
+- Container: `dopemux-redis-events`
+- Stream: `conport:events`
+- Events: 3+ decisions cached
+- Consumers: Serena (ready)
 
-3. **Serena Integration** ✅
-   - Module: `eventbus_consumer.py`
-   - Module: `kg_integration.py`
-   - Status: Tested, working
-   - Demo: `demo_hover_integration.py`
+1. **Serena Integration** ✅
+- Module: `eventbus_consumer.py`
+- Module: `kg_integration.py`
+- Status: Tested, working
+- Demo: `demo_hover_integration.py`
 
 ---
 
@@ -214,38 +214,38 @@ All 15 criteria met:
 ### For Developers
 
 1. **Automatic Context** ✅
-   - Decisions appear in code tooltips
-   - No manual lookup required
-   - Context preserved automatically
+- Decisions appear in code tooltips
+- No manual lookup required
+- Context preserved automatically
 
-2. **ADHD-Friendly** ✅
-   - Top-3 pattern (never overwhelming)
-   - Visual cues (emoji, formatting)
-   - Progressive disclosure
-   - Zero cognitive load
+1. **ADHD-Friendly** ✅
+- Top-3 pattern (never overwhelming)
+- Visual cues (emoji, formatting)
+- Progressive disclosure
+- Zero cognitive load
 
-3. **Fast & Reliable** ✅
-   - < 1ms cache lookups
-   - < 50ms event delivery
-   - Auto-restart on failure
-   - Health monitoring
+1. **Fast & Reliable** ✅
+- < 1ms cache lookups
+- < 50ms event delivery
+- Auto-restart on failure
+- Health monitoring
 
 ### For Teams
 
 1. **Knowledge Sharing** ✅
-   - Past decisions visible
-   - Rationale preserved
-   - Context for new team members
+- Past decisions visible
+- Rationale preserved
+- Context for new team members
 
-2. **Decision Traceability** ✅
-   - See why code exists
-   - Understand choices
-   - Track evolution
+1. **Decision Traceability** ✅
+- See why code exists
+- Understand choices
+- Track evolution
 
-3. **Reduced Bus Factor** ✅
-   - Decisions documented
-   - Context available
-   - Easy to find
+1. **Reduced Bus Factor** ✅
+- Decisions documented
+- Context available
+- Easy to find
 
 ---
 
@@ -261,17 +261,17 @@ Now that Path C has validated the value of agent coordination via EventBus, we'r
 
 **Components**:
 1. **Week 1**: Core architecture (PostgreSQL AGE + SQLite cache)
-2. **Week 2**: Deployment modes (STDIO, HTTP, REST, EventBus)
-3. **Week 3-4**: Migration & testing
-4. **Week 5**: Agent integration (6 agents)
-5. **Week 6**: ADHD Dashboard + polish
+1. **Week 2**: Deployment modes (STDIO, HTTP, REST, EventBus)
+1. **Week 3-4**: Migration & testing
+1. **Week 5**: Agent integration (6 agents)
+1. **Week 6**: ADHD Dashboard + polish
 
 **Decision**: Should we proceed with Path A?
 
 Validation questions:
 1. ✅ Is decision context useful? YES - Demo shows clear value
-2. 🤔 Do other agents need this? To be determined
-3. ✅ Is the pattern working? YES - Clean, simple, scalable
+1. 🤔 Do other agents need this? To be determined
+1. ✅ Is the pattern working? YES - Clean, simple, scalable
 
 **Recommendation**: START PATH A! 🚀
 

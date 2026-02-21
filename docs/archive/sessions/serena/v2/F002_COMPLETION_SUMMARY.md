@@ -278,10 +278,10 @@ services/serena/v2/
 ## Edge Cases Handled
 
 1. **Session ID Collisions**: Millisecond timestamp + UUID = impossible
-2. **Orphaned Sessions**: Auto-cleanup after 24h inactive
-3. **Deleted Worktrees**: Path validation marks as invalid
-4. **Multiple Sessions Same Worktree**: Allowed with ⚠️ warning
-5. **Branch Mismatch**: Detection and auto-update (planned)
+1. **Orphaned Sessions**: Auto-cleanup after 24h inactive
+1. **Deleted Worktrees**: Path validation marks as invalid
+1. **Multiple Sessions Same Worktree**: Allowed with ⚠️ warning
+1. **Branch Mismatch**: Detection and auto-update (planned)
 
 ---
 
@@ -321,8 +321,8 @@ psql -U dopemux -d dopemux_memory -c "
 
 **Locations to Update**:
 1. `mcp_server.py:2835` - initialize_session_tool
-2. `mcp_server.py:2900` - get_multi_session_dashboard_tool
-3. `session_lifecycle_manager.py` - All ConPort operations
+1. `mcp_server.py:2900` - get_multi_session_dashboard_tool
+1. `session_lifecycle_manager.py` - All ConPort operations
 
 **Code Change**:
 ```python
@@ -394,21 +394,21 @@ if result["status"] == "session_active":
 
 ### Immediate (Before Production Use)
 1. ✅ All components built and tested
-2. ⏳ Run ConPort schema migration
-3. ⏳ Integrate ConPort MCP client
-4. ⏳ Test with 2-3 active Claude Code sessions
+1. ⏳ Run ConPort schema migration
+1. ⏳ Integrate ConPort MCP client
+1. ⏳ Test with 2-3 active Claude Code sessions
 
 ### Short-Term
 1. ⏳ Add session update MCP tool
-2. ⏳ Add session complete MCP tool
-3. ⏳ Add cleanup stale sessions tool
-4. ⏳ Integration tests with real ConPort
+1. ⏳ Add session complete MCP tool
+1. ⏳ Add cleanup stale sessions tool
+1. ⏳ Integration tests with real ConPort
 
 ### Long-Term
 1. ⏳ Analytics on session patterns
-2. ⏳ Session recommendations (optimal focus time)
-3. ⏳ Cross-session learning
-4. ⏳ Session templates
+1. ⏳ Session recommendations (optimal focus time)
+1. ⏳ Cross-session learning
+1. ⏳ Session templates
 
 ---
 
@@ -480,10 +480,10 @@ if result["status"] == "session_active":
 
 ### Production Code (5 modules)
 1. `session_id_generator.py` - ID generation with collision resistance
-2. `worktree_detector.py` - Git worktree detection and mapping
-3. `multi_session_dashboard.py` - ADHD-optimized dashboard formatting
-4. `session_lifecycle_manager.py` - Start/update/complete/cleanup
-5. `session_manager.py` - Main coordinator
+1. `worktree_detector.py` - Git worktree detection and mapping
+1. `multi_session_dashboard.py` - ADHD-optimized dashboard formatting
+1. `session_lifecycle_manager.py` - Start/update/complete/cleanup
+1. `session_manager.py` - Main coordinator
 
 ### Database (1 migration)
 1. `migrations/002_add_session_support.sql` - Schema changes
@@ -496,7 +496,7 @@ if result["status"] == "session_active":
 
 ### Documentation (2 files)
 1. `F002_IMPLEMENTATION_PLAN.md` - Architecture and planning
-2. `F002_COMPLETION_SUMMARY.md` - This file
+1. `F002_COMPLETION_SUMMARY.md` - This file
 
 ---
 

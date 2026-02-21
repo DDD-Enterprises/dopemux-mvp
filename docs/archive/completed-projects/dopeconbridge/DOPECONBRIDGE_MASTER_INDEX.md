@@ -131,10 +131,10 @@ python3 scripts/validate_dopecon_bridge.py
 
 **Services with Adapters:**
 1. ADHD Engine ✅
-2. Voice Commands ✅
-3. Task Orchestrator ✅
-4. Serena v2 ✅
-5. GPT-Researcher ✅
+1. Voice Commands ✅
+1. Task Orchestrator ✅
+1. Serena v2 ✅
+1. GPT-Researcher ✅
 
 ### 🔄 Phase 2: Renaming (READY)
 
@@ -148,12 +148,12 @@ python3 scripts/validate_dopecon_bridge.py
 ### 📋 Phase 3: Expansion (PLANNED)
 
 **Services to Add:**
-6. Dope Decision Graph (DDDPG)
-7. Dope Context
-8. Dope Brainz (Intelligence/ML)
-9. Leantime (PM Plane)
-10. TaskMaster
-11. 10+ additional services
+1. Dope Decision Graph (DDDPG)
+1. Dope Context
+1. Dope Brainz (Intelligence/ML)
+1. Leantime (PM Plane)
+1. TaskMaster
+1. 10+ additional services
 
 **Code Templates:** All ready in comprehensive plan
 **Estimated Time:** 23 hours
@@ -170,10 +170,10 @@ python3 scripts/validate_dopecon_bridge.py
 
 **Steps:**
 1. Read [`DOPECONBRIDGE_COMPLETE_SUMMARY.md`](./DOPECONBRIDGE_COMPLETE_SUMMARY.md)
-2. Run `python3 scripts/rename_to_dopecon_bridge.py`
-3. Manual directory renames
-4. Update Docker Compose
-5. Run tests
+1. Run `python3 scripts/rename_to_dopecon_bridge.py`
+1. Manual directory renames
+1. Update Docker Compose
+1. Run tests
 
 ### Path B: Rename + Add Services
 
@@ -183,10 +183,10 @@ python3 scripts/validate_dopecon_bridge.py
 
 **Steps:**
 1. Execute Path A (rename)
-2. Follow [`DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`](./DOPECONBRIDGE_COMPREHENSIVE_PLAN.md)
-3. Create adapters using templates
-4. Update DopeconBridge server
-5. Integration testing
+1. Follow [`DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`](./DOPECONBRIDGE_COMPREHENSIVE_PLAN.md)
+1. Create adapters using templates
+1. Update DopeconBridge server
+1. Integration testing
 
 ### Path C: Quick Reference Only
 
@@ -196,8 +196,8 @@ python3 scripts/validate_dopecon_bridge.py
 
 **Steps:**
 1. Read [`DOPECONBRIDGE_COMPLETE_SUMMARY.md`](./DOPECONBRIDGE_COMPLETE_SUMMARY.md)
-2. Skim [`DOPECON_BRIDGE_COMPLETE.md`](./DOPECON_BRIDGE_COMPLETE.md)
-3. Review adapter code in `services/*/bridge_adapter.py`
+1. Skim [`DOPECON_BRIDGE_COMPLETE.md`](./DOPECON_BRIDGE_COMPLETE.md)
+1. Review adapter code in `services/*/bridge_adapter.py`
 
 ---
 
@@ -260,37 +260,37 @@ tests/
 
 **Beginner (New to DopeconBridge):**
 1. Read summary → `DOPECONBRIDGE_COMPLETE_SUMMARY.md`
-2. Read client docs → `services/shared/dopecon_bridge_client/README.md`
-3. Try examples from client README
-4. Review one adapter: `services/voice-commands/bridge_adapter.py`
+1. Read client docs → `services/shared/dopecon_bridge_client/README.md`
+1. Try examples from client README
+1. Review one adapter: `services/voice-commands/bridge_adapter.py`
 
 **Intermediate (Ready to Implement):**
 1. Read comprehensive plan → `DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`
-2. Choose a service to migrate
-3. Copy adapter template from plan
-4. Implement using existing adapters as reference
-5. Test and validate
+1. Choose a service to migrate
+1. Copy adapter template from plan
+1. Implement using existing adapters as reference
+1. Test and validate
 
 **Advanced (Adding New Features):**
 1. Review DopeconBridge server code
-2. Understand endpoint patterns
-3. Add new routing endpoints
-4. Extend shared client
-5. Update documentation
+1. Understand endpoint patterns
+1. Add new routing endpoints
+1. Extend shared client
+1. Update documentation
 
 ### For Project Managers
 
 1. Read executive summary → `DOPECON_BRIDGE_EXECUTIVE_SUMMARY.md`
-2. Check completion status → `DOPECON_BRIDGE_COMPLETE.md`
-3. Review comprehensive plan timeline → `DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`
-4. Understand risks and dependencies
+1. Check completion status → `DOPECON_BRIDGE_COMPLETE.md`
+1. Review comprehensive plan timeline → `DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`
+1. Understand risks and dependencies
 
 ### For Architects
 
 1. Review architecture in → `DOPECON_BRIDGE_MIGRATION_COMPLETE.md`
-2. Understand service registry in → `DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`
-3. Check endpoint patterns in → `services/mcp-dopecon-bridge/kg_endpoints.py`
-4. Plan new service integrations
+1. Understand service registry in → `DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`
+1. Check endpoint patterns in → `services/mcp-dopecon-bridge/kg_endpoints.py`
+1. Plan new service integrations
 
 ---
 
@@ -300,36 +300,36 @@ tests/
 
 **Steps:**
 1. Install client: `pip install httpx pydantic`
-2. Import: `from services.shared.dopecon_bridge_client import AsyncDopeconBridgeClient`
-3. Follow examples in → `services/shared/dopecon_bridge_client/README.md`
+1. Import: `from services.shared.dopecon_bridge_client import AsyncDopeconBridgeClient`
+1. Follow examples in → `services/shared/dopecon_bridge_client/README.md`
 
 ### I want to migrate a service to DopeconBridge
 
 **Steps:**
 1. Read → `DOPECONBRIDGE_COMPREHENSIVE_PLAN.md`
-2. Find your service in Phase 2-7
-3. Copy the adapter template
-4. Customize for your service
-5. Update service code to use adapter
-6. Test and validate
+1. Find your service in Phase 2-7
+1. Copy the adapter template
+1. Customize for your service
+1. Update service code to use adapter
+1. Test and validate
 
 ### I want to add a new endpoint to DopeconBridge
 
 **Steps:**
 1. Review existing endpoints in → `services/mcp-dopecon-bridge/kg_endpoints.py`
-2. Add new endpoint function
-3. Update shared client in → `services/shared/dopecon_bridge_client/client.py`
-4. Add tests
-5. Update documentation
+1. Add new endpoint function
+1. Update shared client in → `services/shared/dopecon_bridge_client/client.py`
+1. Add tests
+1. Update documentation
 
 ### I want to rename everything to DopeconBridge
 
 **Steps:**
 1. Read → `DOPECONBRIDGE_COMPLETE_SUMMARY.md`
-2. Run → `python3 scripts/rename_to_dopecon_bridge.py`
-3. Follow manual rename steps
-4. Test everything
-5. Update Docker Compose
+1. Run → `python3 scripts/rename_to_dopecon_bridge.py`
+1. Follow manual rename steps
+1. Test everything
+1. Update Docker Compose
 
 ---
 
@@ -449,8 +449,8 @@ cd services/dopecon-bridge && python3 main.py
 **Choose your path and get started:**
 
 1. **Quick rename:** Run renaming script → 2 hours
-2. **Full expansion:** Follow comprehensive plan → 25 hours
-3. **Just explore:** Read documentation → 30 minutes
+1. **Full expansion:** Follow comprehensive plan → 25 hours
+1. **Just explore:** Read documentation → 30 minutes
 
 **Everything is ready. Pick your path and execute!**
 

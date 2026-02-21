@@ -128,10 +128,10 @@ Research shows:
 
 **Why FastAPI WebSocket?**
 1. Already using FastAPI in ADHD engine
-2. Built-in support (no new frameworks)
-3. Works with existing asyncio architecture
-4. Battle-tested (10k+ concurrent connections)
-5. `websockets` library already in venv
+1. Built-in support (no new frameworks)
+1. Works with existing asyncio architecture
+1. Battle-tested (10k+ concurrent connections)
+1. `websockets` library already in venv
 
 **Backend Implementation**
 ```python
@@ -211,10 +211,10 @@ async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
     Real-time event streaming to dashboard
 
     Sends:
-    - state_update: ADHD state changes (energy, attention, cognitive load)
-    - metric_update: Sparkline data points
-    - alert: Critical notifications (break needed, energy crash)
-    - heartbeat: Keep-alive every 30s
+- state_update: ADHD state changes (energy, attention, cognitive load)
+- metric_update: Sparkline data points
+- alert: Critical notifications (break needed, energy crash)
+- heartbeat: Keep-alive every 30s
     """
     await manager.connect(websocket, user_id)
 
@@ -308,10 +308,10 @@ class StreamingClient:
     WebSocket client for real-time dashboard updates
 
     Features:
-    - Auto-reconnect with exponential backoff
-    - Message routing to callbacks
-    - Heartbeat monitoring
-    - Graceful fallback to polling
+- Auto-reconnect with exponential backoff
+- Message routing to callbacks
+- Heartbeat monitoring
+- Graceful fallback to polling
     """
 
     def __init__(
@@ -637,24 +637,24 @@ interface Heartbeat {
 **Why Real-Time Matters for ADHD**
 
 1. **Rapid Attention Fluctuations**
-   - ADHD attention shifts every 30-90 seconds (Brown, 2013)
-   - Polling at 5-10s intervals misses 80% of transitions
-   - Real-time tracking captures all state changes
+- ADHD attention shifts every 30-90 seconds (Brown, 2013)
+- Polling at 5-10s intervals misses 80% of transitions
+- Real-time tracking captures all state changes
 
-2. **Instant Feedback Loop**
-   - ADHD brains need immediate reinforcement (Barkley, 2015)
-   - Feedback delay >500ms = perceived as "not working"
-   - <100ms latency feels instantaneous
+1. **Instant Feedback Loop**
+- ADHD brains need immediate reinforcement (Barkley, 2015)
+- Feedback delay >500ms = perceived as "not working"
+- <100ms latency feels instantaneous
 
-3. **Cognitive Load Spikes**
-   - Cognitive load can spike from 30% to 90% in <1 second
-   - Context switches happen in bursts (3-5 in 10s)
-   - Real-time detection enables proactive intervention
+1. **Cognitive Load Spikes**
+- Cognitive load can spike from 30% to 90% in <1 second
+- Context switches happen in bursts (3-5 in 10s)
+- Real-time detection enables proactive intervention
 
-4. **Hyperfocus Protection**
-   - Hyperfocus onset: 2-5 minutes (rapid)
-   - Need to detect and protect immediately
-   - Polling would disrupt with delayed warnings
+1. **Hyperfocus Protection**
+- Hyperfocus onset: 2-5 minutes (rapid)
+- Need to detect and protect immediately
+- Polling would disrupt with delayed warnings
 
 **User Testing Results (n=12 ADHD developers)**
 ```
@@ -880,8 +880,8 @@ class ConnectionManager:
 
 **Files to Create:**
 1. `services/adhd_engine/api/websocket.py` - ConnectionManager
-2. Update `services/adhd_engine/api/routes.py` - Add WebSocket route
-3. Update `services/adhd_engine/engine.py` - Add publish methods
+1. Update `services/adhd_engine/api/routes.py` - Add WebSocket route
+1. Update `services/adhd_engine/engine.py` - Add publish methods
 
 **Tasks:**
 ```bash
@@ -930,7 +930,7 @@ curl -X POST http://localhost:8001/api/v1/assess \
 
 **Files to Create:**
 1. `dashboard/streaming.py` - StreamingClient class
-2. Update `dopemux_dashboard.py` - Integrate WebSocket
+1. Update `dopemux_dashboard.py` - Integrate WebSocket
 
 **Tasks:**
 ```bash
@@ -976,7 +976,7 @@ python dopemux_dashboard.py
 
 **Files to Update:**
 1. `dopemux_dashboard.py` - TrendsPanel widget
-2. `dashboard/streaming.py` - Handle metric_update events
+1. `dashboard/streaming.py` - Handle metric_update events
 
 **Tasks:**
 ```python
@@ -1093,8 +1093,8 @@ async def test_message_buffering():
 
 ## Setup
 1. ADHD Engine must be running: `cd services/adhd_engine && python main.py`
-2. Dashboard auto-connects on startup
-3. Connection status shown in footer
+1. Dashboard auto-connects on startup
+1. Connection status shown in footer
 
 ## Troubleshooting
 - "WebSocket connection failed" → Check ADHD Engine is running

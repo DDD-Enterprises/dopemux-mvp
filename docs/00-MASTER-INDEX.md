@@ -162,13 +162,13 @@ Outdated or superseded documentation kept for reference.
 This documentation follows a hybrid approach:
 
 1. **Getting Started** (`01-tutorials/`) - Learning-oriented guides for newcomers
-2. **How-To** (`02-how-to/`) - Problem-oriented step-by-step instructions
-3. **Reference** (`03-reference/`) - Technical specifications and API docs
-4. **Explanation** (`04-explanation/`) - Understanding-oriented architecture docs
-5. **Systems** (`systems/`) - Component-specific documentation hubs
-6. **Design** (`90-adr/`, `91-rfc/`) - Architecture decisions and proposals
-7. **Development** (`development/`, `implementation-plans/`) - Active development docs
-8. **Archive** (`archive/`) - Historical records and completed work
+1. **How-To** (`02-how-to/`) - Problem-oriented step-by-step instructions
+1. **Reference** (`03-reference/`) - Technical specifications and API docs
+1. **Explanation** (`04-explanation/`) - Understanding-oriented architecture docs
+1. **Systems** (`systems/`) - Component-specific documentation hubs
+1. **Design** (`90-adr/`, `91-rfc/`) - Architecture decisions and proposals
+1. **Development** (`development/`, `implementation-plans/`) - Active development docs
+1. **Archive** (`archive/`) - Historical records and completed work
 
 ---
 
@@ -177,21 +177,21 @@ This documentation follows a hybrid approach:
 When adding new documentation:
 
 1. **Choose the right location:**
-   - Tutorials: Step-by-step learning paths
-   - How-To: Solving specific problems
-   - Reference: Technical specs, APIs, schemas
-   - Explanation: Concepts, architecture, design rationale
-   - Systems: Feature/component-specific docs
+- Tutorials: Step-by-step learning paths
+- How-To: Solving specific problems
+- Reference: Technical specs, APIs, schemas
+- Explanation: Concepts, architecture, design rationale
+- Systems: Feature/component-specific docs
 
-2. **File naming:**
-   - Use `kebab-case.md` for new files
-   - Prefix ADRs: `ADR-NNN-title.md`
-   - Prefix RFCs: `RFC-NNN-title.md`
+1. **File naming:**
+- Use `kebab-case.md` for new files
+- Prefix ADRs: `ADR-NNN-title.md`
+- Prefix RFCs: `RFC-NNN-title.md`
 
-3. **Update indexes:**
-   - Add entry to this master index
-   - Update relevant section README
-   - Link from related documents
+1. **Update indexes:**
+- Add entry to this master index
+- Update relevant section README
+- Link from related documents
 
 ---
 

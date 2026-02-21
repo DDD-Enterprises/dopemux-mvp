@@ -374,10 +374,10 @@ def conport_progress_to_orchestration_task(progress: Dict) -> OrchestrationTask:
 
 | Task-Orchestrator Expectation | ConPort v2 API | Compatible | Notes |
 |-------------------------------|----------------|------------|-------|
-| `update_active_context(patch_content={...})` | `mcp__conport__update_active_context(workspace_id, patch_content)` | ✅ YES | Exact match |
-| `log_progress(**progress_data)` | `mcp__conport__log_progress(workspace_id, status, description, tags, ...)` | ✅ YES | Exact match |
-| `log_decision(**decision_data)` | `mcp__conport__log_decision(workspace_id, summary, rationale, implementation_details, tags)` | ✅ YES | Exact match |
-| `update_progress(progress_id, ...)` | `mcp__conport__update_progress(workspace_id, progress_id, status, ...)` | ✅ YES | Available for status updates |
+| `update_active_context(patch_content={...})` \| `mcp__conport__update_active_context(workspace_id, patch_content)` | ✅ YES | Exact match |
+| `log_progress(**progress_data)` \| `mcp__conport__log_progress(workspace_id, status, description, tags, ...)` | ✅ YES | Exact match |
+| `log_decision(**decision_data)` \| `mcp__conport__log_decision(workspace_id, summary, rationale, implementation_details, tags)` | ✅ YES | Exact match |
+| `update_progress(progress_id, ...)` \| `mcp__conport__update_progress(workspace_id, progress_id, status, ...)` | ✅ YES | Available for status updates |
 | Batch progress updates | No dedicated batch endpoint | ⚠️ WORKAROUND | Use `mcp__conport__batch_log_items` or loop |
 | Link items | `mcp__conport__link_conport_items` | ✅ YES | For dependency tracking |
 
@@ -392,12 +392,12 @@ Task-Orchestrator's ADHD fields → ConPort storage strategy:
 
 | ADHD Field | ConPort Storage | Method |
 |------------|-----------------|--------|
-| `energy_required` | Tag: `energy-{low\|medium\|high}` | Embedded in tags array |
-| `cognitive_load` | Tag: `complexity-{0-10}` | Scaled to integer tag |
-| `context_switches_allowed` | Custom metadata JSON | Use `custom_data` category if needed |
+| `energy_required` \| Tag: `energy-{low\|medium\|high}` | Embedded in tags array |
+| `cognitive_load` \| Tag: `complexity-{0-10}` | Scaled to integer tag |
+| `context_switches_allowed` \| Custom metadata JSON \| Use `custom_data` category if needed |
 | `break_frequency_minutes` | Progress description | Embedded in description text |
 | `estimated_minutes` | Progress description | Embedded in description text |
-| `complexity_score` | Tag: `complexity-{0-10}` | Integer scale for querying |
+| `complexity_score` \| Tag: `complexity-{0-10}` | Integer scale for querying |
 
 **Recommendation**: Use tags for queryable ADHD metadata, use description for display-only metadata.
 
@@ -409,9 +409,9 @@ Task-Orchestrator's ADHD fields → ConPort storage strategy:
 **Flow**:
 ```
 1. Leantime poller detects new sprint
-2. automation_workflows.py triggers sprint automation
-3. ConPort: update_active_context(mode="ACT", sprint_id=X)
-4. Task-Orchestrator begins orchestration
+1. automation_workflows.py triggers sprint automation
+1. ConPort: update_active_context(mode="ACT", sprint_id=X)
+1. Task-Orchestrator begins orchestration
 ```
 
 **Code Locations**:
@@ -424,10 +424,10 @@ Task-Orchestrator's ADHD fields → ConPort storage strategy:
 **Flow**:
 ```
 1. Leantime: Task moved to "In Progress"
-2. sync_engine.py detects change
-3. ConPort: log_progress(status="IN_PROGRESS", linked_item_id=leantime_task_id)
-4. Local ADHD system updated
-5. Bidirectional sync maintains consistency
+1. sync_engine.py detects change
+1. ConPort: log_progress(status="IN_PROGRESS", linked_item_id=leantime_task_id)
+1. Local ADHD system updated
+1. Bidirectional sync maintains consistency
 ```
 
 **Code Location**: `sync_engine.py:320-360` (Leantime → ConPort sync)
@@ -438,9 +438,9 @@ Task-Orchestrator's ADHD fields → ConPort storage strategy:
 **Flow**:
 ```
 1. Task-Orchestrator dispatches task to AI agent (Zen, Serena, etc.)
-2. AI agent returns decision/analysis
-3. ConPort: log_decision(summary, rationale, tags=["ai-generated", agent_type])
-4. Decision linked to progress_entry for traceability
+1. AI agent returns decision/analysis
+1. ConPort: log_decision(summary, rationale, tags=["ai-generated", agent_type])
+1. Decision linked to progress_entry for traceability
 ```
 
 **Code Location**: `sync_engine.py:540-556` (AI agent decision logging)
@@ -498,11 +498,11 @@ self.orchestrated_tasks: Dict[str, OrchestrationTask] = {}
 **Test Flow**:
 ```
 1. Create OrchestrationTask
-2. Transform → ConPort progress_entry
-3. Call ConPort log_progress
-4. Retrieve from ConPort
-5. Transform back → OrchestrationTask
-6. Verify data integrity (ADHD metadata preserved)
+1. Transform → ConPort progress_entry
+1. Call ConPort log_progress
+1. Retrieve from ConPort
+1. Transform back → OrchestrationTask
+1. Verify data integrity (ADHD metadata preserved)
 ```
 
 ## Recommendations
@@ -510,49 +510,49 @@ self.orchestrated_tasks: Dict[str, OrchestrationTask] = {}
 ### For Phase 1 Component 2
 
 1. **Start with Simple Transformations** (Task 2.4)
-   - Implement basic OrchestrationTask ↔ progress_entry mapping
-   - Test with manual data before integrating MCP calls
-   - Validate ADHD metadata preservation
+- Implement basic OrchestrationTask ↔ progress_entry mapping
+- Test with manual data before integrating MCP calls
+- Validate ADHD metadata preservation
 
-2. **Use Tags for ADHD Metadata** (Task 2.1)
-   - `energy-{low|medium|high}` for queryability
-   - `complexity-{0-10}` for filtering
-   - `priority-{1-5}` for sorting
-   - Enables ConPort queries like "get all low-energy tasks"
+1. **Use Tags for ADHD Metadata** (Task 2.1)
+- `energy-{low|medium|high}` for queryability
+- `complexity-{0-10}` for filtering
+- `priority-{1-5}` for sorting
+- Enables ConPort queries like "get all low-energy tasks"
 
-3. **Implement Graceful Degradation** (Task 2.2)
-   - If ConPort unavailable, log warning and continue
-   - Cache locally temporarily
-   - Retry on next sync cycle
-   - Don't block orchestration on ConPort failures
+1. **Implement Graceful Degradation** (Task 2.2)
+- If ConPort unavailable, log warning and continue
+- Cache locally temporarily
+- Retry on next sync cycle
+- Don't block orchestration on ConPort failures
 
-4. **Remove `self.orchestrated_tasks` Dict** (Task 2.5)
-   - **Critical for authority compliance**
-   - Query ConPort instead of in-memory storage
-   - Ensures single source of truth
-   - Prevents sync conflicts
+1. **Remove `self.orchestrated_tasks` Dict** (Task 2.5)
+- **Critical for authority compliance**
+- Query ConPort instead of in-memory storage
+- Ensures single source of truth
+- Prevents sync conflicts
 
-5. **Test Bidirectional Sync** (Task 2.6)
-   - Leantime → ConPort → Task-Orchestrator
-   - Verify no data loss in transformations
-   - Test conflict detection and resolution
+1. **Test Bidirectional Sync** (Task 2.6)
+- Leantime → ConPort → Task-Orchestrator
+- Verify no data loss in transformations
+- Test conflict detection and resolution
 
 ### For Production Deployment
 
 1. **Add ConPort Health Checks**
-   - Verify ConPort connectivity on startup
-   - Monitor MCP call success rates
-   - Alert on sync failures
+- Verify ConPort connectivity on startup
+- Monitor MCP call success rates
+- Alert on sync failures
 
-2. **Implement Retry Logic**
-   - Exponential backoff for failed ConPort calls
-   - Dead letter queue for persistent failures
-   - Manual reconciliation for complex conflicts
+1. **Implement Retry Logic**
+- Exponential backoff for failed ConPort calls
+- Dead letter queue for persistent failures
+- Manual reconciliation for complex conflicts
 
-3. **Monitor ADHD Metadata Integrity**
-   - Validate tags are preserved through sync cycles
-   - Alert on metadata corruption
-   - Audit trail for troubleshooting
+1. **Monitor ADHD Metadata Integrity**
+- Validate tags are preserved through sync cycles
+- Alert on metadata corruption
+- Audit trail for troubleshooting
 
 ## Issue Tracker
 
@@ -563,27 +563,27 @@ self.orchestrated_tasks: Dict[str, OrchestrationTask] = {}
 ### Recommendations
 
 1. **Implement Batch Progress Endpoint in ConPort** (OPTIONAL)
-   - **Benefit**: Reduce MCP overhead for bulk updates
-   - **Current**: Use `batch_log_items` or sequential calls
-   - **Priority**: LOW (sequential is acceptable for Phase 1)
+- **Benefit**: Reduce MCP overhead for bulk updates
+- **Current**: Use `batch_log_items` or sequential calls
+- **Priority**: LOW (sequential is acceptable for Phase 1)
 
-2. **Add ConPort Query Endpoint** (HIGH PRIORITY)
-   - **Need**: `get_progress(status="IN_PROGRESS", tags=["task-orchestrator"])`
-   - **Current**: May need to retrieve all and filter client-side
-   - **Priority**: HIGH (required for Task 2.5 refactoring)
-   - **Workaround**: Use existing `get_progress()` with client-side filtering
+1. **Add ConPort Query Endpoint** (HIGH PRIORITY)
+- **Need**: `get_progress(status="IN_PROGRESS", tags=["task-orchestrator"])`
+- **Current**: May need to retrieve all and filter client-side
+- **Priority**: HIGH (required for Task 2.5 refactoring)
+- **Workaround**: Use existing `get_progress()` with client-side filtering
 
-3. **Document ADHD Tag Schema** (HIGH PRIORITY)
-   - **Need**: Standardized tag format for ADHD metadata
-   - **Impact**: Ensures consistency across all services
-   - **Action**: Create `ADHD_TAG_SCHEMA.md` in Component 2
+1. **Document ADHD Tag Schema** (HIGH PRIORITY)
+- **Need**: Standardized tag format for ADHD metadata
+- **Impact**: Ensures consistency across all services
+- **Action**: Create `ADHD_TAG_SCHEMA.md` in Component 2
 
 ## Next Steps
 
 **Immediate (Component 2 Start)**:
 - Task 2.1: Design ConPort Event Schema (60 min) - **READY TO START**
-  - Input: This audit document
-  - Output: Event schema spec with ADHD tag format
+- Input: This audit document
+- Output: Event schema spec with ADHD tag format
 
 **Dependencies**:
 - Component 1 (Tasks 1.1-1.5) completion - **40% DONE** (1.1, 1.2 complete)

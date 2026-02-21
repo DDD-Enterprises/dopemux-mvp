@@ -36,10 +36,10 @@ Dope Context is the **Retrieval Layer** of Dopemux, sitting alongside ConPort (M
 ### Core Capabilities
 * **Hybrid Search**: Combines Dense vectors (embeddings) + Sparse (BM25) + Reranking (Voyage) for ~67% better retrieval than pure vector search.
 * **4 Specialized Indices**:
-    1. **Code**: Source files (AST-aware chunking via Tree-sitter).
-    2. **Docs**: Markdown/PDF files (semantic chunking).
-    3. **API**: OpenAPI specs and library signatures.
-    4. **Chat**: Historical conversations.
+1. **Code**: Source files (AST-aware chunking via Tree-sitter).
+1. **Docs**: Markdown/PDF files (semantic chunking).
+1. **API**: OpenAPI specs and library signatures.
+1. **Chat**: Historical conversations.
 * **Multi-Workspace**: Supports indexing distinct directories (e.g., `main`, `feature-branch`) and searching across them in one query.
 * **Autonomous Indexing Daemon**: Background process that watches file changes and updates the index incrementally (using SHA256 hashes).
 

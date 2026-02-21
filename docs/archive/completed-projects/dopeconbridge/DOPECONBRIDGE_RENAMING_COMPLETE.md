@@ -88,9 +88,9 @@ python3 -m pytest tests/shared/test_dopecon_bridge_client.py -v
 ## Next Steps
 
 1. **Update Docker Compose** - Change service names and env vars
-2. **Update CI/CD** - Change any hardcoded references
-3. **Run Tests** - Verify all tests still pass
-4. **Update README** - Main project README references
+1. **Update CI/CD** - Change any hardcoded references
+1. **Run Tests** - Verify all tests still pass
+1. **Update README** - Main project README references
 
 ## Files Modified
 

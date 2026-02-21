@@ -113,19 +113,19 @@ dopemux mobile start
 ### Step 5: Connect Mobile Device
 
 1. **Install Happy App:**
-   - **iOS**: Download from App Store
-   - **Android**: Download from Play Store
-   - **Web**: Use browser at provided URL
+- **iOS**: Download from App Store
+- **Android**: Download from Play Store
+- **Web**: Use browser at provided URL
 
-2. **Scan QR Code:**
-   - Open Happy app on mobile device
-   - Scan the QR code displayed in terminal
-   - Accept connection on mobile device
+1. **Scan QR Code:**
+- Open Happy app on mobile device
+- Scan the QR code displayed in terminal
+- Accept connection on mobile device
 
-3. **Verify Connection:**
-   - Terminal status bar shows: `📱 active` (green)
-   - Mobile app shows connected status
-   - Test synchronization by typing in either interface
+1. **Verify Connection:**
+- Terminal status bar shows: `📱 active` (green)
+- Mobile app shows connected status
+- Test synchronization by typing in either interface
 
 ---
 

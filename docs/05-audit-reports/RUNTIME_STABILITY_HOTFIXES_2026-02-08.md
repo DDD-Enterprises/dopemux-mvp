@@ -21,24 +21,24 @@ the verification evidence that those blockers are no longer active.
 
 1. ADHD engine startup crash:
    `AttributeError: 'Settings' object has no attribute 'task_orchestrator_url'`
-2. ADHD engine event bus wiring issue:
+1. ADHD engine event bus wiring issue:
    event emitter was initialized with a bridge adapter instead of a Redis URL.
-3. ADHD engine monitoring oversight:
+1. ADHD engine monitoring oversight:
    break monitor was started twice.
-4. Genetic agent startup crash:
+1. Genetic agent startup crash:
    package import drift (`from core...`, `from shared...`) and missing runtime
    dependencies caused restart loops.
-5. Genetic agent MCP compatibility drift:
+1. Genetic agent MCP compatibility drift:
    missing Zen client shim and GPT-Researcher base-client mismatch.
-6. Leantime bridge degraded-health ambiguity:
+1. Leantime bridge degraded-health ambiguity:
    setup-required upstream conditions surfaced only as generic `all candidates failed`.
 
 ## Commits
 
 1. `a9bce589` `fix(adhd-engine): restore missing settings contract for startup`
-2. `3e140f2a` `fix(adhd-engine): wire event emitter redis bus and dedupe monitors`
-3. `132d8503` `fix(genetic-agent): restore package wiring and runtime dependencies`
-4. `4b5a40e8` `fix(genetic-agent): migrate startup wiring to lifespan`
+1. `3e140f2a` `fix(adhd-engine): wire event emitter redis bus and dedupe monitors`
+1. `132d8503` `fix(genetic-agent): restore package wiring and runtime dependencies`
+1. `4b5a40e8` `fix(genetic-agent): migrate startup wiring to lifespan`
 
 ## Verification Evidence
 
@@ -67,9 +67,9 @@ Leantime bridge readiness signals (closure recheck):
 - `GET /health?deep=1` returns `200` with `status=ok`
 - `POST /api/tools/list_projects` returns `200` with real project payload
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json` now captures:
-  - `deep_health_status=ok`
-  - `setup_required_signal_present=false`
-  - `token_status=set`
+- `deep_health_status=ok`
+- `setup_required_signal_present=false`
+- `token_status=set`
 - `reports/strict_closure/leantime_api_key_automation_verification_2026-02-08.json` verifies non-interactive key generation + bridge reconfiguration path
 
 Evidence artifact:

@@ -168,10 +168,10 @@ This comprehensive analysis examines the Dopemux MCP ecosystem with deep focus o
 
 **Edge Cases Handled**:
 1. Session ID collisions (millisecond timestamp + UUID)
-2. Orphaned sessions (24h auto-cleanup)
-3. Deleted worktrees (path validation)
-4. Multiple sessions same worktree (allowed with warning)
-5. Branch mismatch detection (auto-update planned)
+1. Orphaned sessions (24h auto-cleanup)
+1. Deleted worktrees (path validation)
+1. Multiple sessions same worktree (allowed with warning)
+1. Branch mismatch detection (auto-update planned)
 
 #### ADHD Engine Integration
 - ✅ Feature flag system active
@@ -252,8 +252,8 @@ This comprehensive analysis examines the Dopemux MCP ecosystem with deep focus o
 
 **Prediction Types**:
 1. Energy level prediction (5 states: exhausted → energized)
-2. Attention state prediction (5 states: scattered → hyperfocus)
-3. Break timing prediction (optimal break windows)
+1. Attention state prediction (5 states: scattered → hyperfocus)
+1. Break timing prediction (optimal break windows)
 
 #### Monitoring Endpoints
 
@@ -289,9 +289,9 @@ This comprehensive analysis examines the Dopemux MCP ecosystem with deep focus o
 
 **Algorithm**:
 1. Track recent activity (last 4 hours)
-2. Apply time-decay weighting (recent events matter more)
-3. Predict next hour energy level
-4. Recommend tasks matching predicted energy
+1. Apply time-decay weighting (recent events matter more)
+1. Predict next hour energy level
+1. Recommend tasks matching predicted energy
 
 #### Attention State Tracking
 - ✅ 5 states: Scattered, Transitioning, Focused, Deep Focus, Hyperfocus
@@ -500,16 +500,16 @@ self.conport = ConPortSQLiteClient(
 
 **Systems with Complexity Scoring**:
 1. **Serena** (`adhd_features.py`):
-   - Uses LSP symbol range (line count)
-   - Nesting depth estimation
-   - Cognitive complexity indicators
-   - Score: 0.0-1.0
+- Uses LSP symbol range (line count)
+- Nesting depth estimation
+- Cognitive complexity indicators
+- Score: 0.0-1.0
 
-2. **dope-context** (`src/indexing/code_chunker.py`):
-   - Uses Tree-sitter AST
-   - Nesting depth (actual)
-   - Cyclomatic complexity
-   - Score: 0.0-1.0
+1. **dope-context** (`src/indexing/code_chunker.py`):
+- Uses Tree-sitter AST
+- Nesting depth (actual)
+- Cyclomatic complexity
+- Score: 0.0-1.0
 
 **Duplication**: YES - Both calculate complexity independently
 
@@ -522,14 +522,14 @@ self.conport = ConPortSQLiteClient(
 
 **Systems with Session State**:
 1. **Serena** (multi-session support):
-   - session_id, worktree_path, branch
-   - current_focus, session_duration
-   - Stored in: ConPort (planned)
+- session_id, worktree_path, branch
+- current_focus, session_duration
+- Stored in: ConPort (planned)
 
-2. **ADHD Engine**:
-   - user_id, energy_level, attention_state
-   - session_start, last_break
-   - Stored in: Redis DB 6
+1. **ADHD Engine**:
+- user_id, energy_level, attention_state
+- session_start, last_break
+- Stored in: Redis DB 6
 
 **Duplication**: PARTIAL - Different aspects of session
 
@@ -541,8 +541,8 @@ self.conport = ConPortSQLiteClient(
 
 **Systems with ConPort Access**:
 1. **Serena**: Direct PostgreSQL (code graph storage)
-2. **ADHD Engine**: SQLite client (activity tracking)
-3. **ConPort MCP**: PostgreSQL AGE (knowledge graph)
+1. **ADHD Engine**: SQLite client (activity tracking)
+1. **ConPort MCP**: PostgreSQL AGE (knowledge graph)
 
 **Duplication**: YES - Three different ConPort clients
 
@@ -874,10 +874,10 @@ Implement ConPort-KG 2.0 as **multi-tenant central hub**:
 
 **Steps**:
 1. Add ADHD Engine client to dope-context
-2. Modify `search_code()` to check attention state
-3. Adjust `top_k` dynamically (5-20 based on state)
-4. Test with mock attention states
-5. Deploy
+1. Modify `search_code()` to check attention state
+1. Adjust `top_k` dynamically (5-20 based on state)
+1. Test with mock attention states
+1. Deploy
 
 **Expected Outcome**: Search results adapt to cognitive capacity in real-time
 
@@ -890,10 +890,10 @@ Implement ConPort-KG 2.0 as **multi-tenant central hub**:
 
 **Steps**:
 1. Create `@dopemux/conport-client` package
-2. Implement unified interface (PostgreSQL + SQLite + MCP)
-3. Migrate Serena to use unified client
-4. Migrate ADHD Engine to use unified client
-5. Document canonical client usage
+1. Implement unified interface (PostgreSQL + SQLite + MCP)
+1. Migrate Serena to use unified client
+1. Migrate ADHD Engine to use unified client
+1. Document canonical client usage
 
 **Expected Outcome**: Single ConPort client used by all systems
 
@@ -906,10 +906,10 @@ Implement ConPort-KG 2.0 as **multi-tenant central hub**:
 
 **Steps**:
 1. Run ConPort schema migration (`002_add_session_support.sql`)
-2. Replace `conport_client=None` with real client
-3. Test multi-session dashboard
-4. Validate session persistence
-5. Test with 2-3 Claude Code instances
+1. Replace `conport_client=None` with real client
+1. Test multi-session dashboard
+1. Validate session persistence
+1. Test with 2-3 Claude Code instances
 
 **Expected Outcome**: Multi-session support fully operational
 
@@ -924,10 +924,10 @@ Implement ConPort-KG 2.0 as **multi-tenant central hub**:
 
 **Steps**:
 1. Create `complexity_coordinator.py`
-2. Integrate dope-context AST complexity
-3. Integrate Serena LSP metadata
-4. Add ADHD Engine adjustments
-5. Benchmark accuracy improvement
+1. Integrate dope-context AST complexity
+1. Integrate Serena LSP metadata
+1. Add ADHD Engine adjustments
+1. Benchmark accuracy improvement
 
 **Expected Outcome**: Single unified complexity score used by all systems
 
@@ -940,10 +940,10 @@ Implement ConPort-KG 2.0 as **multi-tenant central hub**:
 
 **Steps**: See `CONPORT_KG_2.0_MASTER_PLAN.md` Phase 1
 1. JWT authentication
-2. Multi-tenant schema
-3. PostgreSQL RLS
-4. Event processing (Redis Streams)
-5. Agent integration adapters
+1. Multi-tenant schema
+1. PostgreSQL RLS
+1. Event processing (Redis Streams)
+1. Agent integration adapters
 
 **Expected Outcome**: Multi-tenant knowledge graph operational
 
@@ -977,10 +977,10 @@ Implement ConPort-KG 2.0 as **multi-tenant central hub**:
 ### Critical Insights
 
 1. **Serena v2 is feature-complete** with 13+ tools, 32 intelligence modules, and ADHD Engine integration
-2. **ADHD Engine is operational** with 6 monitors, ML predictions, and <200ms latency
-3. **Strong foundation exists** for cross-system synergies
-4. **5 high-impact synergies identified** with clear implementation paths
-5. **ConPort-KG 2.0 is strategic** but not urgent (excellent planning, deferred implementation)
+1. **ADHD Engine is operational** with 6 monitors, ML predictions, and <200ms latency
+1. **Strong foundation exists** for cross-system synergies
+1. **5 high-impact synergies identified** with clear implementation paths
+1. **ConPort-KG 2.0 is strategic** but not urgent (excellent planning, deferred implementation)
 
 ### Success Metrics
 
@@ -1004,12 +1004,12 @@ Implement ConPort-KG 2.0 as **multi-tenant central hub**:
 
 **Immediate Actions**:
 1. Implement Attention-Aware Search (1 day)
-2. Consolidate ConPort Clients (2 days)
-3. Complete Serena ConPort Integration (1 day)
+1. Consolidate ConPort Clients (2 days)
+1. Complete Serena ConPort Integration (1 day)
 
 **Strategic Actions**:
-4. Unified Complexity Intelligence (2-3 days)
-5. ConPort-KG 2.0 Phase 1 (3-4 weeks)
+1. Unified Complexity Intelligence (2-3 days)
+1. ConPort-KG 2.0 Phase 1 (3-4 weeks)
 
 **Total Effort**: 1 week immediate + 3-4 weeks strategic
 

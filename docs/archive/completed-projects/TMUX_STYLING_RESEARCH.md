@@ -17,9 +17,9 @@ prelude: Tmux_Styling_Research (explanation) for dopemux documentation and devel
 ### Key Findings
 
 1. **Native tmux Styling Capabilities**
-2. **Popular Theme Frameworks**
-3. **TUI Libraries for Rich Formatting**
-4. **Python Integration Examples**
+1. **Popular Theme Frameworks**
+1. **TUI Libraries for Rich Formatting**
+1. **Python Integration Examples**
 
 ---
 
@@ -263,9 +263,9 @@ class DopePaneApp(App):
 
 **Workarounds**:
 1. Use pane titles with conditional formatting
-2. Rely on pane background colors for differentiation
-3. Use hooks to dynamically change border on pane focus
-4. Run TUI apps inside panes for custom borders
+1. Rely on pane background colors for differentiation
+1. Use hooks to dynamically change border on pane focus
+1. Run TUI apps inside panes for custom borders
 
 ### Example: Conditional Border Styling
 
@@ -341,15 +341,15 @@ tmux send-keys -t %2 'python agent_monitor.py' Enter
    pip install textual
    ```
 
-2. **Rich** - For formatted output in non-interactive panes
+1. **Rich** - For formatted output in non-interactive panes
    ```bash
    pip install rich
    ```
 
-3. **tmux native styling** - For global theme consistency
-   - Already implemented in your NEON/HOUSE themes
+1. **tmux native styling** - For global theme consistency
+- Already implemented in your NEON/HOUSE themes
 
-4. **libtmux** - Python library for tmux automation
+1. **libtmux** - Python library for tmux automation
    ```bash
    pip install libtmux
    ```
@@ -399,17 +399,17 @@ tmux new-session "printf '\x1b[38;2;255;100;0mTRUECOLOR\x1b[0m\n'; read"
 ### Projects Found in Research:
 
 1. **JASMIN** - Pentesting cockpit with tmux layouts
-   - Python + tmux automation
-   - Custom pane styling
-   - https://github.com/smoovmove/JASMIN
+- Python + tmux automation
+- Custom pane styling
+- https://github.com/smoovmove/JASMIN
 
-2. **haconiwa** - tmux monitoring tool
-   - Python-based tmux integration
-   - Custom status bars
+1. **haconiwa** - tmux monitoring tool
+- Python-based tmux integration
+- Custom status bars
 
-3. **claude-orc** - AI orchestration in tmux
-   - Similar to your use case
-   - tmux layouts for Claude Code integration
+1. **claude-orc** - AI orchestration in tmux
+- Similar to your use case
+- tmux layouts for Claude Code integration
 
 ---
 

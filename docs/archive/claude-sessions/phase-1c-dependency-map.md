@@ -24,14 +24,14 @@ prelude: Phase 1C Dependency Map (explanation) for dopemux documentation and dev
 
 **PostgreSQL Instances**:
 1. **Primary** (port 5432)
-   - Used by: Multi-database setup
-   - Purpose: Primary data storage
+- Used by: Multi-database setup
+- Purpose: Primary data storage
 
-2. **AGE Extension** (port 5455)
-   - Database: `dopemux_knowledge_graph`
-   - User: `dopemux_age`
-   - Used by: ConPort KG (graph database)
-   - Extension: Apache AGE (graph queries)
+1. **AGE Extension** (port 5455)
+- Database: `dopemux_knowledge_graph`
+- User: `dopemux_age`
+- Used by: ConPort KG (graph database)
+- Extension: Apache AGE (graph queries)
 
 **MySQL**:
 - **Leantime** (port 3306)
@@ -41,13 +41,13 @@ prelude: Phase 1C Dependency Map (explanation) for dopemux documentation and dev
 
 **Redis Instances**:
 1. **Primary** (port 6379)
-   - Event bus (Redis Streams)
-   - General caching
-   - Password: Optional (configurable)
+- Event bus (Redis Streams)
+- General caching
+- Password: Optional (configurable)
 
-2. **Leantime** (port 6380)
-   - Dedicated Redis for Leantime
-   - Isolated from event bus
+1. **Leantime** (port 6380)
+- Dedicated Redis for Leantime
+- Isolated from event bus
 
 **Qdrant** (port 6333):
 - Used by: Dope-Context
@@ -207,10 +207,10 @@ prelude: Phase 1C Dependency Map (explanation) for dopemux documentation and dev
 ## Docker Compose Files Found
 
 1. `docker/conport-kg/docker-compose.yml` - ConPort production setup
-2. `docker/memory-stack/docker-compose.yml` - Memory infrastructure
-3. `docker/leantime/docker-compose.yml` - PM plane
-4. `docker/docker-compose.event-bus.yml` - Redis event bus
-5. `docker/mcp-servers/zen/docker-compose.yml` - Zen MCP
+1. `docker/memory-stack/docker-compose.yml` - Memory infrastructure
+1. `docker/leantime/docker-compose.yml` - PM plane
+1. `docker/docker-compose.event-bus.yml` - Redis event bus
+1. `docker/mcp-servers/zen/docker-compose.yml` - Zen MCP
 
 **Architecture**: Service-per-container with shared network
 

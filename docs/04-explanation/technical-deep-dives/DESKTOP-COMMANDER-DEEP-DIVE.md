@@ -48,19 +48,19 @@ The service is built as a FastAPI application (`server.py`) serving MCP tools ov
 ### Testing, Performance, Limitations & Opportunities
 * **Performance**: Local tool execution (AppleScript/subprocess) is generally fast (<100ms), but polling overhead in ADHD engine could be optimized.
 * **Limitations**:
-  * Requires X11 socket access on Linux.
-  * Requires Accessibility permissions on macOS.
-  * Currently appears **STOPPED** in the runtime environment.
+* Requires X11 socket access on Linux.
+* Requires Accessibility permissions on macOS.
+* Currently appears **STOPPED** in the runtime environment.
 * **Opportunities**:
-  * Migrate from polling (ADHD Engine) to push-based events (via Bridge) for all activities, not just workspace switches.
+* Migrate from polling (ADHD Engine) to push-based events (via Bridge) for all activities, not just workspace switches.
 
 ## SECTION 2: EVIDENCE TRAIL
 
 ### Inventory Evidence (Phase 1)
 * **Source Code**: Located in `docker/mcp-servers/desktop-commander`.
-  * `server.py` (Main entrypoint)
-  * `integration_bridge_connector.py` (Bridge integration)
-  * `Dockerfile` (Python 3.10 slim)
+* `server.py` (Main entrypoint)
+* `integration_bridge_connector.py` (Bridge integration)
+* `Dockerfile` (Python 3.10 slim)
 * **Config**: Defined in `docker-compose.master.yml` (Service `desktop-commander`, Port 3012).
 
 ### Failure & Drift Findings (Phase 2)
@@ -76,4 +76,4 @@ The service is built as a FastAPI application (`server.py`) serving MCP tools ov
 * Confidence Level: 90% (Source & Config verified, Runtime confirmed stopped)
 * Evidence Quality Score: High (Direct code analysis)
 * Evolution Log:
-  * 2026-02-09: Initial Deep Dive completed. Phase 1-3 verified.
+* 2026-02-09: Initial Deep Dive completed. Phase 1-3 verified.

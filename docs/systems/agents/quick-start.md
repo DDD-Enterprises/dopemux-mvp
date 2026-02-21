@@ -102,13 +102,13 @@ python test_memory_agent.py
 🎯 Last Focus: Creating token generation function
 
 📂 Open Files:
-   - src/auth/jwt.py
-   - src/auth/models.py
+- src/auth/jwt.py
+- src/auth/models.py
 
 🎯 Next Steps:
-   1. Add token validation
-   2. Implement refresh token rotation
-   3. Write tests
+1. Add token validation
+1. Implement refresh token rotation
+1. Write tests
 
 🚀 Ready to continue?
 ```
@@ -161,12 +161,12 @@ You continue exactly where you left off
 ## 6 More Agents Coming
 
 1. ✅ **MemoryAgent** - Context preservation (DONE)
-2. ⏳ **CognitiveGuardian** - Break reminders, energy matching (Weeks 3-4)
-3. ⏳ **TwoPlaneOrchestrator** - Cross-plane coordination (Week 6)
-4. ⏳ **TaskDecomposer** - ADHD task planning (Week 9)
-5. ⏳ **DopemuxEnforcer** - Compliance validation (Week 7)
-6. ⏳ **ToolOrchestrator** - MCP selection (Week 8)
-7. ⏳ **WorkflowCoordinator** - Multi-step orchestration (Week 10)
+1. ⏳ **CognitiveGuardian** - Break reminders, energy matching (Weeks 3-4)
+1. ⏳ **TwoPlaneOrchestrator** - Cross-plane coordination (Week 6)
+1. ⏳ **TaskDecomposer** - ADHD task planning (Week 9)
+1. ⏳ **DopemuxEnforcer** - Compliance validation (Week 7)
+1. ⏳ **ToolOrchestrator** - MCP selection (Week 8)
+1. ⏳ **WorkflowCoordinator** - Multi-step orchestration (Week 10)
 
 **Progress**: 1/7 (14%)
 **Timeline**: Week 1 of 16 complete

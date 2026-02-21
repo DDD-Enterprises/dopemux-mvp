@@ -133,9 +133,9 @@ ImportError: cannot import name 'SeranaIntelligenceDatabase' from 'serena.v2.int
 
 **Solutions to Try**:
 1. Move test file to `tests/` directory instead of `intelligence/`
-2. Use `conftest.py` to set up paths
-3. Use relative imports instead of absolute
-4. Create `__init__.py` files in missing directories
+1. Use `conftest.py` to set up paths
+1. Use relative imports instead of absolute
+1. Create `__init__.py` files in missing directories
 
 ### 2. Missing `import os` in database.py
 **Status**: ✅ FIXED
@@ -158,17 +158,17 @@ To run these tests, you need:
    GRANT ALL PRIVILEGES ON DATABASE serena_intelligence_test TO serena;
    ```
 
-2. **Python Dependencies**
+1. **Python Dependencies**
    ```bash
    pip install asyncpg pytest pytest-asyncio
    ```
 
-3. **Test Configuration**
-   - Host: localhost
-   - Port: 5432
-   - Database: serena_intelligence_test
-   - User: serena
-   - Password: serena_test_pass
+1. **Test Configuration**
+- Host: localhost
+- Port: 5432
+- Database: serena_intelligence_test
+- User: serena
+- Password: serena_test_pass
 
 ---
 
@@ -199,29 +199,29 @@ To run these tests, you need:
 ## Next Steps for GREEN Phase
 
 1. **Fix Import Issues** (30 min)
-   - Try test file relocation
-   - Add conftest.py
-   - Test with pytest -v --collect-only
+- Try test file relocation
+- Add conftest.py
+- Test with pytest -v --collect-only
 
-2. **Set Up Test Database** (15 min)
-   - Create PostgreSQL database
-   - Run schema migrations if any
-   - Test connection manually
+1. **Set Up Test Database** (15 min)
+- Create PostgreSQL database
+- Run schema migrations if any
+- Test connection manually
 
-3. **Run Tests** (10 min)
-   - Execute full suite
-   - Document actual failures
-   - Identify bugs in database.py
+1. **Run Tests** (10 min)
+- Execute full suite
+- Document actual failures
+- Identify bugs in database.py
 
-4. **Fix Failures** (1-2 hours)
-   - Address each failing test
-   - Validate ADHD <200ms targets
-   - Ensure all metrics work correctly
+1. **Fix Failures** (1-2 hours)
+- Address each failing test
+- Validate ADHD <200ms targets
+- Ensure all metrics work correctly
 
-5. **Validate Coverage** (30 min)
-   - Ensure all 13 critical areas tested
-   - Performance benchmarks documented
-   - ADHD compliance verified
+1. **Validate Coverage** (30 min)
+- Ensure all 13 critical areas tested
+- Performance benchmarks documented
+- ADHD compliance verified
 
 ---
 
@@ -266,10 +266,10 @@ To run these tests, you need:
 
 **Deliverables**:
 1. ✅ Comprehensive test suite (14 tests)
-2. ✅ Test documentation
-3. ⚠️ Import issues documented
-4. ✅ Database requirements specified
-5. ✅ Fixed bugs found during test creation
+1. ✅ Test documentation
+1. ⚠️ Import issues documented
+1. ✅ Database requirements specified
+1. ✅ Fixed bugs found during test creation
 
 **Blocker**: Import path resolution preventing execution
 

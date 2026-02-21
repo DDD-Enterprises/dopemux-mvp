@@ -65,13 +65,13 @@ cat ~/.claude/config/mcp_servers.json
 
 ## Troubleshooting
 - Role switch fails:
-  - Run `dopemux mcp status`
-  - Start required services shown by the CLI warning
+- Run `dopemux mcp status`
+- Start required services shown by the CLI warning
 - Tools missing after switch:
-  - Restart Claude Code session
-  - Re-run `dopemux start --role <role>`
+- Restart Claude Code session
+- Re-run `dopemux start --role <role>`
 - Role mismatch across panes:
-  - Re-target pane explicitly with `--pane` or `--target`
+- Re-target pane explicitly with `--pane` or `--target`
 
 ## Notes
 - Prefer focused roles (`quickfix`, `act`, `plan`, `research`) over `all` to reduce tool noise.

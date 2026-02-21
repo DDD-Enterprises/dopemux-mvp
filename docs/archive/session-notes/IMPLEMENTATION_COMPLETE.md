@@ -184,9 +184,9 @@ curl -s http://localhost:3015/info | jq -r '.mcp.endpoints.sse'
 
 ### Immediate (Ready to Use)
 1. ✅ Test startup without Leantime: `./start-all-mcp-servers.sh`
-2. ✅ Test startup with Leantime: `ENABLE_LEANTIME=1 ./start-all-mcp-servers.sh`
-3. ✅ Test /info endpoint: `curl http://localhost:3015/info | jq`
-4. ✅ Check Docker Desktop for single "dopemux" project
+1. ✅ Test startup with Leantime: `ENABLE_LEANTIME=1 ./start-all-mcp-servers.sh`
+1. ✅ Test /info endpoint: `curl http://localhost:3015/info | jq`
+1. ✅ Check Docker Desktop for single "dopemux" project
 
 ### Future Enhancements
 - [ ] Cache /info response (30s TTL) for performance
@@ -219,8 +219,8 @@ curl -s http://localhost:3015/info | jq -r '.mcp.endpoints.sse'
 
 **Issues**: If you encounter problems, check:
 1. `docker compose config` output for validation errors
-2. `docker compose logs leantime-bridge` for bridge issues
-3. Leantime accessibility: `curl http://localhost:8080/index.php`
+1. `docker compose logs leantime-bridge` for bridge issues
+1. Leantime accessibility: `curl http://localhost:8080/index.php`
 
 ---
 

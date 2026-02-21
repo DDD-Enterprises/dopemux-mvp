@@ -60,9 +60,9 @@ class TmuxLayoutManager:
         Create adaptive layout based on ADHD energy level
 
         Energy levels:
-        - low: 2 panes (1 active, 1 context)
-        - medium: 3 panes (2 active, 1 context)
-        - high: 4 panes (3 active, 1 monitoring)
+- low: 2 panes (1 active, 1 context)
+- medium: 3 panes (2 active, 1 context)
+- high: 4 panes (3 active, 1 monitoring)
         """
         layout_config = self._get_layout_config(energy_level, num_agents)
         return self._apply_layout(layout_config)
@@ -79,16 +79,16 @@ class TmuxLayoutManager:
 **Dependencies**:
 - **Required Before**: None (first step)
 - **External Dependencies**:
-  - tmux installed on system
-  - Python 3.11+ with subprocess module
-  - PyYAML for config parsing
+- tmux installed on system
+- Python 3.11+ with subprocess module
+- PyYAML for config parsing
 
 **Effort Estimate**:
 - **Focus Blocks**: 4 blocks (100 minutes)
-  - Block 1: Layout manager class structure (25 min)
-  - Block 2: Energy-based layout logic (25 min)
-  - Block 3: Tmux command integration (25 min)
-  - Block 4: Unit tests and validation (25 min)
+- Block 1: Layout manager class structure (25 min)
+- Block 2: Energy-based layout logic (25 min)
+- Block 3: Tmux command integration (25 min)
+- Block 4: Unit tests and validation (25 min)
 
 **ADHD Considerations**:
 - **Complexity Score**: 0.35 (Low-Medium)
@@ -113,22 +113,22 @@ tmux list-panes -t dopemux  # Should show correct count
 
 **Risk Assessment**:
 - **⚠️ Risk**: Tmux not installed or incompatible version
-  - **Mitigation**: Add version check (tmux >= 3.0)
-  - **Fallback**: Provide installation instructions
+- **Mitigation**: Add version check (tmux >= 3.0)
+- **Fallback**: Provide installation instructions
 
 - **⚠️ Risk**: Pane creation fails on some terminals
-  - **Mitigation**: Test on iTerm2, Terminal.app, Alacritty
-  - **Fallback**: Graceful degradation to 2-pane layout
+- **Mitigation**: Test on iTerm2, Terminal.app, Alacritty
+- **Fallback**: Graceful degradation to 2-pane layout
 
 - **⚠️ Risk**: Energy level detection unclear for users
-  - **Mitigation**: Provide visual indicators and defaults
-  - **Fallback**: Always default to "medium" if uncertain
+- **Mitigation**: Provide visual indicators and defaults
+- **Fallback**: Always default to "medium" if uncertain
 
 **Branch Points**:
 - **Decision Point**: Layout persistence strategy
-  - Option A: Store in ConPort (recommended)
-  - Option B: Local config file
-  - **Recommendation**: ConPort for cross-session consistency
+- Option A: Store in ConPort (recommended)
+- Option B: Local config file
+- **Recommendation**: ConPort for cross-session consistency
 
 ---
 
@@ -137,11 +137,11 @@ tmux list-panes -t dopemux  # Should show correct count
 **File Paths**:
 - `services/orchestrator/src/command_parser.py` (new)
 - `services/orchestrator/src/commands/` (new directory)
-  - `__init__.py`
-  - `research_commands.py`
-  - `plan_commands.py`
-  - `implement_commands.py`
-  - `delegate_commands.py`
+- `__init__.py`
+- `research_commands.py`
+- `plan_commands.py`
+- `implement_commands.py`
+- `delegate_commands.py`
 - `services/orchestrator/tests/test_command_parser.py` (new)
 
 **Implementation Details**:
@@ -183,9 +183,9 @@ class CommandParser:
         Parse slash command and return routing info
 
         Examples:
-        - /research "Next.js 14 best practices" → claude + gemini
-        - /implement @ui-component → grok (Magic MCP)
-        - /delegate --parallel [task1, task2] → all agents
+- /research "Next.js 14 best practices" → claude + gemini
+- /implement @ui-component → grok (Magic MCP)
+- /delegate --parallel [task1, task2] → all agents
         """
         pass
 
@@ -197,17 +197,17 @@ class CommandParser:
 **Dependencies**:
 - **Required Before**: Step 1 (need pane IDs for routing)
 - **External Dependencies**:
-  - Python dataclasses
-  - Regex for command parsing
-  - ConPort MCP for context retrieval
+- Python dataclasses
+- Regex for command parsing
+- ConPort MCP for context retrieval
 
 **Effort Estimate**:
 - **Focus Blocks**: 5 blocks (125 minutes)
-  - Block 1: Command parser core (25 min)
-  - Block 2: Routing logic (25 min)
-  - Block 3: Research/Plan/Implement commands (25 min)
-  - Block 4: Delegate command with parallel support (25 min)
-  - Block 5: Tests and edge cases (25 min)
+- Block 1: Command parser core (25 min)
+- Block 2: Routing logic (25 min)
+- Block 3: Research/Plan/Implement commands (25 min)
+- Block 4: Delegate command with parallel support (25 min)
+- Block 5: Tests and edge cases (25 min)
 
 **ADHD Considerations**:
 - **Complexity Score**: 0.45 (Medium)
@@ -234,22 +234,22 @@ echo "/research Next.js patterns" | python -m orchestrator.command_parser
 
 **Risk Assessment**:
 - **⚠️ Risk**: Command syntax too complex for ADHD users
-  - **Mitigation**: Provide autocomplete and examples
-  - **Fallback**: Simple natural language fallback
+- **Mitigation**: Provide autocomplete and examples
+- **Fallback**: Simple natural language fallback
 
 - **⚠️ Risk**: Ambiguous routing (multiple valid agents)
-  - **Mitigation**: Use ConPort decision history for precedent
-  - **Fallback**: Prompt user for clarification
+- **Mitigation**: Use ConPort decision history for precedent
+- **Fallback**: Prompt user for clarification
 
 - **⚠️ Risk**: Context extraction fails for complex queries
-  - **Mitigation**: Use Zen consensus for ambiguous inputs
-  - **Fallback**: Pass raw input to most capable agent
+- **Mitigation**: Use Zen consensus for ambiguous inputs
+- **Fallback**: Pass raw input to most capable agent
 
 **Branch Points**:
 - **Decision Point**: Autocomplete implementation
-  - Option A: Readline-based (CLI)
-  - Option B: fzf integration (recommended for tmux)
-  - **Recommendation**: fzf for visual ADHD-friendly selection
+- Option A: Readline-based (CLI)
+- Option B: fzf integration (recommended for tmux)
+- **Recommendation**: fzf for visual ADHD-friendly selection
 
 ---
 
@@ -258,11 +258,11 @@ echo "/research Next.js patterns" | python -m orchestrator.command_parser
 **File Paths**:
 - `services/orchestrator/src/agent_spawner.py` (new)
 - `services/orchestrator/src/agents/` (new directory)
-  - `__init__.py`
-  - `claude_agent.py`
-  - `gemini_agent.py`
-  - `grok_agent.py`
-  - `base_agent.py`
+- `__init__.py`
+- `claude_agent.py`
+- `gemini_agent.py`
+- `grok_agent.py`
+- `base_agent.py`
 - `services/orchestrator/config/agent_configs.yaml` (new)
 - `services/orchestrator/tests/test_agent_spawner.py` (new)
 
@@ -336,22 +336,22 @@ class AgentSpawner:
 
 **Dependencies**:
 - **Required Before**:
-  - Step 1 (tmux layout manager)
-  - Step 2 (command parser for agent routing)
+- Step 1 (tmux layout manager)
+- Step 2 (command parser for agent routing)
 - **External Dependencies**:
-  - Claude API key (ANTHROPIC_API_KEY)
-  - Gemini API key (GOOGLE_API_KEY)
-  - Grok API key (XAI_API_KEY)
-  - API client libraries
+- Claude API key (ANTHROPIC_API_KEY)
+- Gemini API key (GOOGLE_API_KEY)
+- Grok API key (XAI_API_KEY)
+- API client libraries
 
 **Effort Estimate**:
 - **Focus Blocks**: 6 blocks (150 minutes)
-  - Block 1: BaseAgent abstraction (25 min)
-  - Block 2: ClaudeAgent implementation (25 min)
-  - Block 3: GeminiAgent implementation (25 min)
-  - Block 4: GrokAgent implementation (25 min)
-  - Block 5: AgentSpawner orchestration (25 min)
-  - Block 6: Tests and health checks (25 min)
+- Block 1: BaseAgent abstraction (25 min)
+- Block 2: ClaudeAgent implementation (25 min)
+- Block 3: GeminiAgent implementation (25 min)
+- Block 4: GrokAgent implementation (25 min)
+- Block 5: AgentSpawner orchestration (25 min)
+- Block 6: Tests and health checks (25 min)
 
 **ADHD Considerations**:
 - **Complexity Score**: 0.65 (Medium-High)
@@ -379,26 +379,26 @@ tmux capture-pane -t dopemux:0 -p | grep "Claude"  # Should see Claude prompt
 
 **Risk Assessment**:
 - **🚨 CRITICAL**: API keys not configured
-  - **Mitigation**: Check for keys on startup, provide clear error messages
-  - **Fallback**: Spawn only agents with valid keys
+- **Mitigation**: Check for keys on startup, provide clear error messages
+- **Fallback**: Spawn only agents with valid keys
 
 - **⚠️ Risk**: Agent crashes or becomes unresponsive
-  - **Mitigation**: Implement health checks every 30 seconds
-  - **Fallback**: Auto-restart with exponential backoff
+- **Mitigation**: Implement health checks every 30 seconds
+- **Fallback**: Auto-restart with exponential backoff
 
 - **⚠️ Risk**: Tmux pane communication fails
-  - **Mitigation**: Use tmux send-keys with error handling
-  - **Fallback**: Log failures to ConPort for debugging
+- **Mitigation**: Use tmux send-keys with error handling
+- **Fallback**: Log failures to ConPort for debugging
 
 - **⚠️ Risk**: Resource exhaustion (too many agents)
-  - **Mitigation**: Limit to 4 concurrent agents max
-  - **Fallback**: Queue additional agents
+- **Mitigation**: Limit to 4 concurrent agents max
+- **Fallback**: Queue additional agents
 
 **Branch Points**:
 - **Decision Point**: Agent communication protocol
-  - Option A: Tmux send-keys (simple, recommended for MVP)
-  - Option B: Unix sockets (more robust, future enhancement)
-  - **Recommendation**: Tmux send-keys for MVP, socket upgrade in Phase 2
+- Option A: Tmux send-keys (simple, recommended for MVP)
+- Option B: Unix sockets (more robust, future enhancement)
+- **Recommendation**: Tmux send-keys for MVP, socket upgrade in Phase 2
 
 ---
 
@@ -500,19 +500,19 @@ class TmuxCapture:
 
 **Dependencies**:
 - **Required Before**:
-  - Step 1 (tmux pane management)
-  - Step 3 (agents must be spawned to capture output)
+- Step 1 (tmux pane management)
+- Step 3 (agents must be spawned to capture output)
 - **External Dependencies**:
-  - tmux capture-pane functionality
-  - Python regex for response parsing
+- tmux capture-pane functionality
+- Python regex for response parsing
 
 **Effort Estimate**:
 - **Focus Blocks**: 5 blocks (125 minutes)
-  - Block 1: Message data structure (25 min)
-  - Block 2: TmuxMessageBus implementation (25 min)
-  - Block 3: TmuxCapture with incremental parsing (25 min)
-  - Block 4: Message extraction patterns (25 min)
-  - Block 5: Tests and validation (25 min)
+- Block 1: Message data structure (25 min)
+- Block 2: TmuxMessageBus implementation (25 min)
+- Block 3: TmuxCapture with incremental parsing (25 min)
+- Block 4: Message extraction patterns (25 min)
+- Block 5: Tests and validation (25 min)
 
 **ADHD Considerations**:
 - **Complexity Score**: 0.55 (Medium)
@@ -540,22 +540,22 @@ tmux capture-pane -t dopemux:0 -p | tail -5
 
 **Risk Assessment**:
 - **⚠️ Risk**: Agent response format changes unexpectedly
-  - **Mitigation**: Use flexible regex patterns, version detection
-  - **Fallback**: Capture raw output if parsing fails
+- **Mitigation**: Use flexible regex patterns, version detection
+- **Fallback**: Capture raw output if parsing fails
 
 - **⚠️ Risk**: High message volume causes memory issues
-  - **Mitigation**: Implement rolling history (keep last 500 messages)
-  - **Fallback**: Persist to ConPort if memory exceeds threshold
+- **Mitigation**: Implement rolling history (keep last 500 messages)
+- **Fallback**: Persist to ConPort if memory exceeds threshold
 
 - **⚠️ Risk**: Tmux capture-pane latency
-  - **Mitigation**: Capture only new content, not full pane
-  - **Fallback**: Reduce capture frequency if system load high
+- **Mitigation**: Capture only new content, not full pane
+- **Fallback**: Reduce capture frequency if system load high
 
 **Branch Points**:
 - **Decision Point**: When to add Redis?
-  - Trigger: Message volume > 1000/hour OR multi-process orchestrator needed
-  - **Current Plan**: Start without Redis, monitor performance
-  - **Future Enhancement**: Add RedisMessageBus as drop-in replacement
+- Trigger: Message volume > 1000/hour OR multi-process orchestrator needed
+- **Current Plan**: Start without Redis, monitor performance
+- **Future Enhancement**: Add RedisMessageBus as drop-in replacement
 
 ---
 
@@ -677,19 +677,19 @@ class ConPortClient:
 
 **Dependencies**:
 - **Required Before**:
-  - Step 3 (agents to checkpoint)
-  - Step 4 (message bus to save history)
+- Step 3 (agents to checkpoint)
+- Step 4 (message bus to save history)
 - **External Dependencies**:
-  - ConPort MCP running (port 5455)
-  - httpx for async HTTP
-  - asyncio for background tasks
+- ConPort MCP running (port 5455)
+- httpx for async HTTP
+- asyncio for background tasks
 
 **Effort Estimate**:
 - **Focus Blocks**: 4 blocks (100 minutes)
-  - Block 1: ConPort client wrapper (25 min)
-  - Block 2: Checkpoint data collection (25 min)
-  - Block 3: Auto-save loop (25 min)
-  - Block 4: Restore logic and tests (25 min)
+- Block 1: ConPort client wrapper (25 min)
+- Block 2: Checkpoint data collection (25 min)
+- Block 3: Auto-save loop (25 min)
+- Block 4: Restore logic and tests (25 min)
 
 **ADHD Considerations**:
 - **Complexity Score**: 0.40 (Medium)
@@ -725,22 +725,22 @@ python -m orchestrator.main --restore
 
 **Risk Assessment**:
 - **⚠️ Risk**: ConPort unavailable during checkpoint
-  - **Mitigation**: Retry with exponential backoff (max 3 attempts)
-  - **Fallback**: Cache locally, sync when ConPort returns
+- **Mitigation**: Retry with exponential backoff (max 3 attempts)
+- **Fallback**: Cache locally, sync when ConPort returns
 
 - **⚠️ Risk**: Checkpoint data too large (>1MB)
-  - **Mitigation**: Limit message history to 50 recent messages
-  - **Fallback**: Compress with gzip before saving
+- **Mitigation**: Limit message history to 50 recent messages
+- **Fallback**: Compress with gzip before saving
 
 - **⚠️ Risk**: Auto-save interrupts user during flow state
-  - **Mitigation**: Make saves non-blocking (async)
-  - **Fallback**: None needed - async prevents interruption
+- **Mitigation**: Make saves non-blocking (async)
+- **Fallback**: None needed - async prevents interruption
 
 **Branch Points**:
 - **Decision Point**: Checkpoint granularity
-  - Option A: 30-second interval (recommended for ADHD)
-  - Option B: On-command basis (more efficient but risky)
-  - **Recommendation**: 30-second for MVP, make configurable later
+- Option A: 30-second interval (recommended for ADHD)
+- Option B: On-command basis (more efficient but risky)
+- **Recommendation**: 30-second for MVP, make configurable later
 
 ---
 
@@ -749,11 +749,11 @@ python -m orchestrator.main --restore
 **File Paths**:
 - `services/orchestrator/src/router.py` (new)
 - `services/orchestrator/src/modes/` (new directory)
-  - `__init__.py`
-  - `research_mode.py`
-  - `plan_mode.py`
-  - `implement_mode.py`
-  - `delegate_mode.py`
+- `__init__.py`
+- `research_mode.py`
+- `plan_mode.py`
+- `implement_mode.py`
+- `delegate_mode.py`
 - `services/orchestrator/config/routing_rules.yaml` (new)
 - `services/orchestrator/tests/test_router.py` (new)
 
@@ -770,11 +770,11 @@ class CommandRouter:
     Route commands to appropriate agents based on mode
 
     Routing Rules:
-    - RESEARCH: Claude + Gemini (parallel consensus)
-    - PLAN: Grok (zen/planner) primary, Claude validation
-    - IMPLEMENT: Grok (code generation) + Claude (review)
-    - DELEGATE: All agents in parallel
-    - DEBUG: Claude (zen/debug) primary
+- RESEARCH: Claude + Gemini (parallel consensus)
+- PLAN: Grok (zen/planner) primary, Claude validation
+- IMPLEMENT: Grok (code generation) + Claude (review)
+- DELEGATE: All agents in parallel
+- DEBUG: Claude (zen/debug) primary
     """
 
     def __init__(self, message_bus: MessageBusProtocol, agent_spawner):
@@ -812,10 +812,10 @@ class ResearchModeHandler:
     Research mode: Parallel consensus between Claude and Gemini
 
     Workflow:
-    1. Send research query to Claude and Gemini in parallel
-    2. Collect responses
-    3. Use Zen consensus to synthesize findings
-    4. Return synthesized result to user
+1. Send research query to Claude and Gemini in parallel
+1. Collect responses
+1. Use Zen consensus to synthesize findings
+1. Return synthesized result to user
     """
 
     def __init__(self, agent_spawner):
@@ -849,10 +849,10 @@ class PlanModeHandler:
     Plan mode: Grok (zen/planner) primary, Claude validation
 
     Workflow:
-    1. Send to Grok for incremental planning (zen/planner)
-    2. Grok builds plan step-by-step
-    3. Claude reviews final plan for completeness
-    4. Return validated plan to user
+1. Send to Grok for incremental planning (zen/planner)
+1. Grok builds plan step-by-step
+1. Claude reviews final plan for completeness
+1. Return validated plan to user
     """
 
     def create_messages(self, parsed_command: ParsedCommand) -> list[Message]:
@@ -874,10 +874,10 @@ class ImplementModeHandler:
     Implement mode: Grok (code gen) + Claude (review)
 
     Workflow:
-    1. Grok generates implementation
-    2. Claude reviews for quality/security
-    3. If approved, apply changes
-    4. If issues found, Grok revises
+1. Grok generates implementation
+1. Claude reviews for quality/security
+1. If approved, apply changes
+1. If issues found, Grok revises
     """
 
     def create_messages(self, parsed_command: ParsedCommand) -> list[Message]:
@@ -888,18 +888,18 @@ class ImplementModeHandler:
 
 **Dependencies**:
 - **Required Before**:
-  - Step 2 (command parser)
-  - Step 3 (agent spawner)
-  - Step 4 (message bus)
+- Step 2 (command parser)
+- Step 3 (agent spawner)
+- Step 4 (message bus)
 - **External Dependencies**: None (uses existing components)
 
 **Effort Estimate**:
 - **Focus Blocks**: 5 blocks (125 minutes)
-  - Block 1: Router core logic (25 min)
-  - Block 2: Research mode handler (25 min)
-  - Block 3: Plan mode handler (25 min)
-  - Block 4: Implement mode handler (25 min)
-  - Block 5: Tests and routing validation (25 min)
+- Block 1: Router core logic (25 min)
+- Block 2: Research mode handler (25 min)
+- Block 3: Plan mode handler (25 min)
+- Block 4: Implement mode handler (25 min)
+- Block 5: Tests and routing validation (25 min)
 
 **ADHD Considerations**:
 - **Complexity Score**: 0.50 (Medium)
@@ -931,22 +931,22 @@ echo "/plan authentication system" | python -m orchestrator.main
 
 **Risk Assessment**:
 - **⚠️ Risk**: Agent not available when routing
-  - **Mitigation**: Health check before routing, spawn if needed
-  - **Fallback**: Route to available agent with capability
+- **Mitigation**: Health check before routing, spawn if needed
+- **Fallback**: Route to available agent with capability
 
 - **⚠️ Risk**: Mode detection incorrect for ambiguous commands
-  - **Mitigation**: Use ConPort decision history for precedent
-  - **Fallback**: Prompt user for mode clarification
+- **Mitigation**: Use ConPort decision history for precedent
+- **Fallback**: Prompt user for mode clarification
 
 - **⚠️ Risk**: Routing rules become too complex
-  - **Mitigation**: Keep rules simple and explicit in YAML
-  - **Fallback**: Default to Claude for unknown modes
+- **Mitigation**: Keep rules simple and explicit in YAML
+- **Fallback**: Default to Claude for unknown modes
 
 **Branch Points**:
 - **Decision Point**: Dynamic routing based on agent load
-  - Option A: Static routing (MVP)
-  - Option B: Load-aware routing (future enhancement)
-  - **Recommendation**: Static for MVP, add load balancing in Phase 2
+- Option A: Static routing (MVP)
+- Option B: Load-aware routing (future enhancement)
+- **Recommendation**: Static for MVP, add load balancing in Phase 2
 
 ---
 
@@ -955,10 +955,10 @@ echo "/plan authentication system" | python -m orchestrator.main
 **File Paths**:
 - `services/orchestrator/src/session_manager.py` (new)
 - `services/orchestrator/src/resume/` (new directory)
-  - `__init__.py`
-  - `state_restorer.py`
-  - `pane_restorer.py`
-  - `agent_restorer.py`
+- `__init__.py`
+- `state_restorer.py`
+- `pane_restorer.py`
+- `agent_restorer.py`
 - `services/orchestrator/tests/test_session_manager.py` (new)
 
 **Implementation Details**:
@@ -975,11 +975,11 @@ class SessionManager:
     ADHD-optimized session management with resume capability
 
     Features:
-    - Restore exact pane layout
-    - Re-spawn agents in same panes
-    - Restore message history
-    - Resume interrupted commands
-    - Gentle re-orientation message
+- Restore exact pane layout
+- Re-spawn agents in same panes
+- Restore message history
+- Resume interrupted commands
+- Gentle re-orientation message
     """
 
     def __init__(self, checkpoint_manager: CheckpointManager,
@@ -1011,11 +1011,11 @@ class SessionManager:
         Restore session from checkpoint
 
         Steps:
-        1. Recreate tmux layout
-        2. Re-spawn agents in same panes
-        3. Restore message history
-        4. Show re-orientation message
-        5. Resume interrupted command if any
+1. Recreate tmux layout
+1. Re-spawn agents in same panes
+1. Restore message history
+1. Show re-orientation message
+1. Resume interrupted command if any
         """
         print("🔄 Restoring session...")
 
@@ -1125,17 +1125,17 @@ class SessionManager:
 
 **Dependencies**:
 - **Required Before**: ALL previous steps (1-6)
-  - Step 5 (checkpoint manager for restore)
-  - Step 3 (agent spawner)
-  - Step 1 (tmux layout manager)
+- Step 5 (checkpoint manager for restore)
+- Step 3 (agent spawner)
+- Step 1 (tmux layout manager)
 - **External Dependencies**: ConPort for checkpoint retrieval
 
 **Effort Estimate**:
 - **Focus Blocks**: 4 blocks (100 minutes)
-  - Block 1: Session start/restore logic (25 min)
-  - Block 2: Re-orientation UI (25 min)
-  - Block 3: Agent/layout restoration (25 min)
-  - Block 4: Tests and edge cases (25 min)
+- Block 1: Session start/restore logic (25 min)
+- Block 2: Re-orientation UI (25 min)
+- Block 3: Agent/layout restoration (25 min)
+- Block 4: Tests and edge cases (25 min)
 
 **ADHD Considerations**:
 - **Complexity Score**: 0.45 (Medium)
@@ -1179,26 +1179,26 @@ python -m orchestrator.main --resume
 
 **Risk Assessment**:
 - **⚠️ Risk**: Checkpoint corrupted or incomplete
-  - **Mitigation**: Validate checkpoint structure before restore
-  - **Fallback**: Start fresh session if validation fails
+- **Mitigation**: Validate checkpoint structure before restore
+- **Fallback**: Start fresh session if validation fails
 
 - **⚠️ Risk**: Agent fails to re-spawn
-  - **Mitigation**: Retry with exponential backoff
-  - **Fallback**: Spawn remaining agents, warn user
+- **Mitigation**: Retry with exponential backoff
+- **Fallback**: Spawn remaining agents, warn user
 
 - **⚠️ Risk**: User confusion during restore
-  - **Mitigation**: Clear re-orientation message with context
-  - **Fallback**: Offer "fresh start" option if disoriented
+- **Mitigation**: Clear re-orientation message with context
+- **Fallback**: Offer "fresh start" option if disoriented
 
 - **⚠️ Risk**: Tmux session no longer exists
-  - **Mitigation**: Check for session, create if missing
-  - **Fallback**: Fresh session creation
+- **Mitigation**: Check for session, create if missing
+- **Fallback**: Fresh session creation
 
 **Branch Points**:
 - **Decision Point**: Auto-resume vs manual prompt
-  - Option A: Always auto-resume (recommended for ADHD)
-  - Option B: Prompt user (adds friction)
-  - **Recommendation**: Auto-resume with clear messaging
+- Option A: Always auto-resume (recommended for ADHD)
+- Option B: Prompt user (adds friction)
+- **Recommendation**: Auto-resume with clear messaging
 
 ---
 
@@ -1267,10 +1267,10 @@ Step 1 (Tmux Layout)
 
 **Key Steps**:
 1. FastAPI setup and routing
-2. WebSocket server for live updates
-3. JWT authentication
-4. OpenAPI documentation
-5. Integration tests
+1. WebSocket server for live updates
+1. JWT authentication
+1. OpenAPI documentation
+1. Integration tests
 
 **Branch Point**: If monitoring not needed, skip to Phase 3 or declare MVP complete
 
@@ -1294,11 +1294,11 @@ Step 1 (Tmux Layout)
 
 **Key Steps**:
 1. Frontend framework setup (React recommended)
-2. Real-time WebSocket integration
-3. Agent status components
-4. Message history display
-5. Command input UI
-6. Analytics dashboard
+1. Real-time WebSocket integration
+1. Agent status components
+1. Message history display
+1. Command input UI
+1. Analytics dashboard
 
 **Branch Point**: If visual interface not needed, declare Phase 1 as complete MVP
 
@@ -1332,10 +1332,10 @@ Step 1 (Tmux Layout)
 
 **Critical Risks**:
 1. **API Key Issues** → Check all keys on Day 1, provide clear setup docs
-2. **Tmux Compatibility** → Test on 3 terminals early (iTerm2, Terminal.app, Alacritty)
-3. **Agent Responsiveness** → Implement health checks in Step 3
-4. **ConPort Availability** → Add retry logic and local caching fallback
-5. **ADHD Context Loss** → Prioritize Step 5 (checkpoint) and Step 7 (resume)
+1. **Tmux Compatibility** → Test on 3 terminals early (iTerm2, Terminal.app, Alacritty)
+1. **Agent Responsiveness** → Implement health checks in Step 3
+1. **ConPort Availability** → Add retry logic and local caching fallback
+1. **ADHD Context Loss** → Prioritize Step 5 (checkpoint) and Step 7 (resume)
 
 **Contingency Plans**:
 - If agent fails: Spawn backup agent type
@@ -1398,10 +1398,10 @@ Step 1 (Tmux Layout)
 
 **Immediate (Today)**:
 1. Review this roadmap for completeness
-2. Decide: Proceed with Phase 1 implementation?
-3. Set up development environment (API keys, tmux, ConPort)
-4. Create project structure: `services/orchestrator/`
-5. Start Step 1: Tmux Layout Manager
+1. Decide: Proceed with Phase 1 implementation?
+1. Set up development environment (API keys, tmux, ConPort)
+1. Create project structure: `services/orchestrator/`
+1. Start Step 1: Tmux Layout Manager
 
 **Decision Points**:
 - After Phase 1: Continue to Phase 2 OR declare MVP complete?

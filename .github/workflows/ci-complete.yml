@@ -159,14 +159,15 @@ jobs:
           pip install -r requirements.txt
           pip install -e .[dev]
 
-      - name: ⚙️ Setup TaskX venv
+      - name: 📦 Setup TaskX venv
         run: |
-          PIN_REPO="$(sed -n 's/^repo=//p' .taskx-pin | head -n 1)"
-          PIN_REF="$(sed -n 's/^ref=//p' .taskx-pin | head -n 1)"
-          python3 -m venv .taskx_venv
-          .taskx_venv/bin/pip install PyYAML
-          .taskx_venv/bin/pip install "git+${PIN_REPO}@${PIN_REF}"
-          .taskx_venv/bin/pip install PyYAML
+          if [ ! -d .taskx_venv ]; then
+            source .taskx-pin
+            python -m venv .taskx_venv
+            .taskx_venv/bin/pip install "git+$repo@$ref" pyyaml
+          else
+            .taskx_venv/bin/pip install pyyaml
+          fi
 
       - name: ✅ Verify TaskX wiring
         run: |

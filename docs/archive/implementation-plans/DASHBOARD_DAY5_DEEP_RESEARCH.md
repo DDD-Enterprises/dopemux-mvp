@@ -121,9 +121,9 @@ POST /api/v1/recommend-break
 
 **Solution Path:**
 1. Use current endpoints for live data ✅
-2. Cache responses in Redis with 10s TTL ✅
-3. Add `/task-history/{task_id}` endpoint (15 min work) 🔧
-4. Mock historical data gracefully until endpoint exists 📊
+1. Cache responses in Redis with 10s TTL ✅
+1. Add `/task-history/{task_id}` endpoint (15 min work) 🔧
+1. Mock historical data gracefully until endpoint exists 📊
 
 ---
 
@@ -185,9 +185,9 @@ POST /api/v1/tasks/{task_id}/decompose
 
 **Solution Path:**
 1. Use existing GET /tasks with status filters ✅
-2. Add client-side aggregation for counts 📊
-3. Request batch endpoint: `GET /tasks/summary` (20 min) 🔧
-4. Cache task list aggressively (60s TTL) 💾
+1. Add client-side aggregation for counts 📊
+1. Request batch endpoint: `GET /tasks/summary` (20 min) 🔧
+1. Cache task list aggressively (60s TTL) 💾
 
 ---
 
@@ -310,8 +310,8 @@ GET  /api/search?q={query}&limit=10
 
 **Solution Path:**
 1. Use existing decision endpoints ✅
-2. Add 2 pattern endpoints (30 min) 🔧
-3. Cache pattern queries (120s TTL) 💾
+1. Add 2 pattern endpoints (30 min) 🔧
+1. Cache pattern queries (120s TTL) 💾
 
 ---
 
@@ -368,9 +368,9 @@ GET /api/v1/query_range
 
 **Solution Path:**
 1. Use existing PrometheusClient ✅
-2. Add graceful handling for empty results 📊
-3. Show "No data" state clearly in UI 🎨
-4. Validate metrics are being pushed (separate task) 🔧
+1. Add graceful handling for empty results 📊
+1. Show "No data" state clearly in UI 🎨
+1. Validate metrics are being pushed (separate task) 🔧
 
 ---
 
@@ -511,17 +511,16 @@ class ServiceEndpoints:
     max_retries: int = 3
     retry_delay: float = 0.5
 
-
 class APIClient:
     """
     Unified HTTP client for all backend services.
 
     Features:
-    - Connection pooling
-    - Automatic retries with exponential backoff
-    - Circuit breaker pattern
-    - Request/response logging
-    - Error normalization
+- Connection pooling
+- Automatic retries with exponential backoff
+- Circuit breaker pattern
+- Request/response logging
+- Error normalization
     """
 
     def __init__(self, endpoints: Optional[ServiceEndpoints] = None):
@@ -678,11 +677,9 @@ class APIClient:
             breaker["failures"] = 0
             breaker["open"] = False
 
-
 class ServiceUnavailableError(Exception):
     """Raised when a service circuit breaker is open"""
     pass
-
 
 class APIError(Exception):
     """Raised when an API request fails"""
@@ -711,7 +708,6 @@ class ErrorState(Static):
 
 [cyan]↻ Retrying automatically...[/cyan]
 """
-
 
 class LoadingState(Static):
     """Widget to show loading spinner"""
@@ -1627,21 +1623,21 @@ if __name__ == "__main__":
 
 ### What Works Well
 1. ✅ **HTTP APIs are consistent** - All services use FastAPI with similar patterns
-2. ✅ **Prometheus is stable** - Reliable time-series storage
-3. ✅ **PrometheusClient exists** - Already implemented and tested
-4. ✅ **Error handling patterns established** - Can copy from existing code
+1. ✅ **Prometheus is stable** - Reliable time-series storage
+1. ✅ **PrometheusClient exists** - Already implemented and tested
+1. ✅ **Error handling patterns established** - Can copy from existing code
 
 ### Gaps to Address
 1. ❌ **Serena has no HTTP API** - Using ConPort as proxy for patterns
-2. ❌ **No service log endpoints** - Using docker logs temporarily
-3. ❌ **No batch task endpoints** - Multiple queries for counts
-4. ❌ **No task history endpoint** - Can't show temporal data yet
+1. ❌ **No service log endpoints** - Using docker logs temporarily
+1. ❌ **No batch task endpoints** - Multiple queries for counts
+1. ❌ **No task history endpoint** - Can't show temporal data yet
 
 ### Risk Mitigation
 1. **Service Downtime** → Circuit breakers prevent cascading failures
-2. **Slow APIs** → Aggressive caching reduces user-visible latency
-3. **Missing Data** → Graceful degradation with clear messaging
-4. **Version Mismatches** → API client validates response shapes
+1. **Slow APIs** → Aggressive caching reduces user-visible latency
+1. **Missing Data** → Graceful degradation with clear messaging
+1. **Version Mismatches** → API client validates response shapes
 
 ---
 

@@ -21,9 +21,9 @@ prelude: F001 Enhanced User Guide (explanation) for dopemux documentation and de
 F001 Enhanced helps you complete more tasks and start fewer false-starts by:
 
 1. **E1 - False-Starts Dashboard**: Shows how many unfinished projects you have ("Sure you want to make it 48?")
-2. **E2 - Design-First Prompting**: Suggests creating ADR/RFC before diving into substantial features
-3. **E3 - Abandoned Work Revival**: Recommends resuming relevant abandoned work instead of starting new
-4. **E4 - Prioritization Context**: Shows your current commitments to help decide "Is this urgent?"
+1. **E2 - Design-First Prompting**: Suggests creating ADR/RFC before diving into substantial features
+1. **E3 - Abandoned Work Revival**: Recommends resuming relevant abandoned work instead of starting new
+1. **E4 - Prioritization Context**: Shows your current commitments to help decide "Is this urgent?"
 
 ---
 
@@ -137,11 +137,11 @@ New untracked work detected:
 
 **Heuristics** (need 0.5+ confidence to trigger):
 1. **Significant file count**: 5+ files (+0.3)
-2. **Multi-directory**: 3+ directories (+0.25)
-3. **Architecture keywords**: "orchestrator", "engine", "core" (+0.35)
-4. **New service creation**: Creating 2+ service dirs (+0.4)
-5. **Schema changes**: Database migrations (+0.3)
-6. **API changes**: Interface/contract changes (+0.25)
+1. **Multi-directory**: 3+ directories (+0.25)
+1. **Architecture keywords**: "orchestrator", "engine", "core" (+0.35)
+1. **New service creation**: Creating 2+ service dirs (+0.4)
+1. **Schema changes**: Database migrations (+0.3)
+1. **API changes**: Interface/contract changes (+0.25)
 
 **Document Type Suggestions**:
 - **ADR** (Architecture Decision Record): Architectural/schema changes
@@ -206,7 +206,7 @@ that might be worth reviving:
    Idle: 14 days
    → Highly relevant - consider resuming this instead?
 
-2. 👀 Session management
+1. 👀 Session management
    Relevance: 58% (2 overlapping files, from this month)
    Idle: 21 days
    → Review first - might save work
@@ -302,16 +302,16 @@ Create ConPort task with pre-filled metadata:
 ### Design First
 Create formal design document before implementing:
 1. Use template from suggestion (ADR/RFC/Design Doc)
-2. Fill in context, decision, consequences
-3. Get team feedback
-4. Then implement with clarity
+1. Fill in context, decision, consequences
+1. Get team feedback
+1. Then implement with clarity
 
 ### Resume Abandoned
 Switch to abandoned work instead of starting new:
 1. Review abandoned work files
-2. Refresh mental context
-3. Resume with momentum
-4. Complete before starting new
+1. Refresh mental context
+1. Resume with momentum
+1. Complete before starting new
 
 ### Snooze
 Delay reminder (1 hour, 4 hours, or 1 day):

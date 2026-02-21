@@ -16,8 +16,8 @@ prelude: 002 Mcp Service Discovery (explanation) for dopemux documentation and d
 A common infrastructure problem was identified where client configs lag behind deployment refactors (e.g., local → Docker, stdio → HTTP).
 Signals of this drift included:
 1. Symptom mismatch: Servers "healthy" in Docker, but clients can't connect.
-2. Protocol misalignment: Config expects stdio/files, servers provide HTTP.
-3. Commit gap: Infrastructure changes without corresponding config commits.
+1. Protocol misalignment: Config expects stdio/files, servers provide HTTP.
+1. Commit gap: Infrastructure changes without corresponding config commits.
 
 ## Decision
 We favored **HTTP/SSE over stdio** for containerized MCP servers.
@@ -30,7 +30,7 @@ We favored **HTTP/SSE over stdio** for containerized MCP servers.
 ## Strategic Evolution: Service Discovery
 To prevent manual sync and drift, the next evolution of the platform will implement **Service Discovery**:
 1. Servers advertise connection details via an `/info` endpoint.
-2. A script consumes these endpoints to generate `.claude.json` automatically.
+1. A script consumes these endpoints to generate `.claude.json` automatically.
 
 ## Status
 - **Lesson Learned**: Feb 2026

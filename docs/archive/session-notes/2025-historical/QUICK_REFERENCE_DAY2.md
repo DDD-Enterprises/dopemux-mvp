@@ -97,9 +97,9 @@ pip install --index-url https://test.pypi.org/simple/ dopemux
 ## 🎯 Next Steps (Day 3)
 
 1. Test Homebrew formula locally
-2. Upload to TestPyPI
-3. Create GitHub release (v0.1.0)
-4. Test installations
+1. Upload to TestPyPI
+1. Create GitHub release (v0.1.0)
+1. Test installations
 
 ---
 

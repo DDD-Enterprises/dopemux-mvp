@@ -42,8 +42,8 @@ Building `CognitiveGuardianKG` to integrate CognitiveGuardian with existing ConP
 
 **Options**:
 1. **Direct dependency** (tight coupling)
-2. **Separate service** (loose coupling)
-3. **Compositional** (dependency injection)
+1. **Separate service** (loose coupling)
+1. **Compositional** (dependency injection)
 
 **Analysis**:
 
@@ -89,8 +89,8 @@ class CognitiveGuardianKG:
 
 **Options**:
 1. **Fail fast**: Raise exception, let caller handle
-2. **Graceful degradation**: Return empty results, log warning
-3. **Hybrid**: Configurable behavior
+1. **Graceful degradation**: Return empty results, log warning
+1. **Hybrid**: Configurable behavior
 
 **Analysis**:
 
@@ -143,8 +143,8 @@ async def get_task_relationships(self, task_id: str) -> Dict[str, List[str]]:
 
 **Options**:
 1. **Per-instance**: Each CognitiveGuardianKG gets own client
-2. **Singleton**: Global shared client
-3. **Lazy**: Create only when first query
+1. **Singleton**: Global shared client
+1. **Lazy**: Create only when first query
 
 **Analysis**:
 
@@ -362,10 +362,10 @@ async def get_task_relationships(self, task_id: str) -> Dict[str, List[str]]:
 ### Final Design Decisions
 
 1. **Integration Pattern**: Dependency injection with defaults ✅
-2. **Error Handling**: Graceful degradation + ERROR logs ✅
-3. **AGE Client Sharing**: Per-instance default, optional sharing ✅
-4. **Import Path**: sys.path.insert() now, refactor Week 5 ✅
-5. **Query Security**: Parameterized queries (AGE syntax) ✅
+1. **Error Handling**: Graceful degradation + ERROR logs ✅
+1. **AGE Client Sharing**: Per-instance default, optional sharing ✅
+1. **Import Path**: sys.path.insert() now, refactor Week 5 ✅
+1. **Query Security**: Parameterized queries (AGE syntax) ✅
 
 ---
 
@@ -396,16 +396,15 @@ from adhd_query_adapter import ADHDQueryAdapter
 
 logger = logging.getLogger(__name__)
 
-
 class CognitiveGuardianKG:
     """
     ADHD-optimized Knowledge Graph integration.
 
     Design Decisions:
-    - Dependency injection (testable, flexible)
-    - Graceful degradation (ADHD-friendly)
-    - Parameterized queries (secure)
-    - Per-instance AGE client (isolated)
+- Dependency injection (testable, flexible)
+- Graceful degradation (ADHD-friendly)
+- Parameterized queries (secure)
+- Per-instance AGE client (isolated)
     """
 
     def __init__(
@@ -549,14 +548,14 @@ class CognitiveGuardianKG:
 
 ### Immediate (Day 1 Focus Block 1.1)
 1. ✅ Create `cognitive_guardian_kg.py`
-2. ✅ Implement class structure (validated above)
-3. ✅ Add `get_task_relationships()` (parameterized)
-4. ✅ Add unit tests (with mocked AGE client)
+1. ✅ Implement class structure (validated above)
+1. ✅ Add `get_task_relationships()` (parameterized)
+1. ✅ Add unit tests (with mocked AGE client)
 
 ### Day 1 Focus Block 1.2
 1. Add `search_tasks_semantic()` (basic keyword)
-2. Add more unit tests
-3. Validate against real ConPort-KG instance
+1. Add more unit tests
+1. Validate against real ConPort-KG instance
 
 ---
 
@@ -571,10 +570,10 @@ class CognitiveGuardianKG:
 
 **Key Insights**:
 1. AGE client already supports parameterized queries (discovered!)
-2. Dependency injection enables testing AND flexibility
-3. Graceful degradation is ADHD-critical
-4. Per-instance approach is safe for ~10 concurrent users
-5. Refactor imports later (Week 5) is acceptable
+1. Dependency injection enables testing AND flexibility
+1. Graceful degradation is ADHD-critical
+1. Per-instance approach is safe for ~10 concurrent users
+1. Refactor imports later (Week 5) is acceptable
 
 **ROI**: 15 min analysis prevents hours of refactoring later
 

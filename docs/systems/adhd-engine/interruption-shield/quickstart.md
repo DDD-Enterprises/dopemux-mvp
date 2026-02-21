@@ -58,19 +58,19 @@ shield:
 
   urgency:
     critical_keywords:
-      - "urgent"
-      - "p0"
-      - "production down"
-      - "incident"
+- "urgent"
+- "p0"
+- "production down"
+- "incident"
 
     high_keywords:
-      - "important"
-      - "deadline"
-      - "today"
+- "important"
+- "deadline"
+- "today"
 
     vip_users:
-      - "U123ABC"  # Your CEO's Slack user ID (get from Slack)
-      - "U456DEF"  # Your manager
+- "U123ABC"  # Your CEO's Slack user ID (get from Slack)
+- "U456DEF"  # Your manager
 
   integrations:
     adhd_engine_url: "http://localhost:8095"
@@ -275,8 +275,8 @@ python -m uvicorn main:app --host 0.0.0.0 --port 8095
 
 **Solution**:
 1. Open System Preferences → Security & Privacy → Privacy
-2. Add Terminal to "Automation" permissions
-3. Allow Terminal to control System Events
+1. Add Terminal to "Automation" permissions
+1. Allow Terminal to control System Events
 
 ### Pre-commit Hooks Not Running
 
@@ -293,9 +293,9 @@ pre-commit run --all-files
 ## Next Steps
 
 1. ✅ **Installation Complete** - You're running!
-2. **Week 1 Implementation** - See [`phase1-sprint-plan.md`](../../../archive/sessions/adhd-engine/phase1-sprint-plan.md)
-3. **Slack Integration** - Week 3 (see sprint plan)
-4. **Beta Testing** - Week 4 (recruit ADHD developers)
+1. **Week 1 Implementation** - See [`phase1-sprint-plan.md`](../../../archive/sessions/adhd-engine/phase1-sprint-plan.md)
+1. **Slack Integration** - Week 3 (see sprint plan)
+1. **Beta Testing** - Week 4 (recruit ADHD developers)
 
 ## Useful Commands
 

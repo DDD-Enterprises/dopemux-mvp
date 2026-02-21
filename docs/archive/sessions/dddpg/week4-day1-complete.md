@@ -26,10 +26,10 @@ prelude: Week4 Day1 Complete (explanation) for dopemux documentation and develop
 
 **5 Critical Decisions Made**:
 1. **Integration Pattern**: Dependency injection with defaults ✅
-2. **Error Handling**: Graceful degradation + ERROR logs ✅
-3. **AGE Client Sharing**: Per-instance default, optional sharing ✅
-4. **Import Strategy**: sys.path now, refactor Week 5 ✅
-5. **Query Security**: Parameterized queries (AGE syntax) ✅
+1. **Error Handling**: Graceful degradation + ERROR logs ✅
+1. **AGE Client Sharing**: Per-instance default, optional sharing ✅
+1. **Import Strategy**: sys.path now, refactor Week 5 ✅
+1. **Query Security**: Parameterized queries (AGE syntax) ✅
 
 **Key Discovery**: AGE client supports parameterized queries! (prevents SQL injection)
 
@@ -85,35 +85,35 @@ class CognitiveGuardianKG:
 
 **Test Categories**:
 1. **Initialization** (3 tests)
-   - Basic mode (KG disabled)
-   - With workspace ID
-   - With mocked client (DI)
+- Basic mode (KG disabled)
+- With workspace ID
+- With mocked client (DI)
 
-2. **Task Relationships** (4 tests)
-   - Empty in basic mode
-   - With mocked data
-   - Error handling (graceful degradation)
-   - Empty result handling
+1. **Task Relationships** (4 tests)
+- Empty in basic mode
+- With mocked data
+- Error handling (graceful degradation)
+- Empty result handling
 
-3. **Semantic Search** (5 tests)
-   - Empty in basic mode
-   - Empty query handling
-   - Results parsing
-   - Relevance calculation
-   - Error handling
+1. **Semantic Search** (5 tests)
+- Empty in basic mode
+- Empty query handling
+- Results parsing
+- Relevance calculation
+- Error handling
 
-4. **Helper Methods** (4 tests)
-   - Parse Python lists
-   - Parse JSON strings
-   - Handle empty/null
-   - Filter None values
+1. **Helper Methods** (4 tests)
+- Parse Python lists
+- Parse JSON strings
+- Handle empty/null
+- Filter None values
 
-5. **Graceful Degradation** (2 tests)
-   - All methods work in basic mode
-   - Close without errors
+1. **Graceful Degradation** (2 tests)
+- All methods work in basic mode
+- Close without errors
 
-6. **Security** (1 test)
-   - Parameterized queries prevent injection
+1. **Security** (1 test)
+- Parameterized queries prevent injection
 
 **Test Execution**:
 ```
@@ -241,25 +241,25 @@ result = client.execute_cypher(query, (task_id,))
 **Day 2 Focus**: Task Relationship Mapping
 
 1. **Decision Context Query** (25 min)
-   - Retrieve "why" decisions were made
-   - Link tasks to decision rationale
-   - Add tests
+- Retrieve "why" decisions were made
+- Link tasks to decision rationale
+- Add tests
 
-2. **Graph Construction Helper** (25 min)
-   - Batch relationship queries
-   - Build task graphs
-   - Internal helper method
+1. **Graph Construction Helper** (25 min)
+- Batch relationship queries
+- Build task graphs
+- Internal helper method
 
-3. **CognitiveGuardian Integration** (25 min)
-   - Add KG to CognitiveGuardian `__init__`
-   - Optional feature (graceful if unavailable)
-   - Tests
+1. **CognitiveGuardian Integration** (25 min)
+- Add KG to CognitiveGuardian `__init__`
+- Optional feature (graceful if unavailable)
+- Tests
 
-4. **Enhanced Task Suggestions** (25 min)
-   - Use KG for context-aware suggestions
-   - Include relationships in suggestions
-   - Include decision context
-   - Integration tests
+1. **Enhanced Task Suggestions** (25 min)
+- Use KG for context-aware suggestions
+- Include relationships in suggestions
+- Include decision context
+- Integration tests
 
 **Estimated Time**: 3.5 hours planned → ~1 hour likely (based on Day 1 efficiency)
 
@@ -297,18 +297,18 @@ result = client.execute_cypher(query, (task_id,))
 ### What Went Well ✅
 
 1. **Deep Think First**: 15 min analysis saved hours later
-2. **Discovered Capabilities**: AGE parameterized queries (security win)
-3. **Test-Driven**: Tests written alongside code (19 passing)
-4. **Graceful Degradation**: ADHD-friendly from the start
-5. **Dependency Injection**: Enables testing + flexibility
+1. **Discovered Capabilities**: AGE parameterized queries (security win)
+1. **Test-Driven**: Tests written alongside code (19 passing)
+1. **Graceful Degradation**: ADHD-friendly from the start
+1. **Dependency Injection**: Enables testing + flexibility
 
 ### Key Insights
 
 1. **ConPort-KG is well-designed**: Connection pooling, parameterized queries already there
-2. **Graceful degradation is critical**: ADHD users can't tolerate interruptions
-3. **Security by default**: Parameterized queries prevent injection
-4. **DI enables testing**: All methods testable via mocks
-5. **Documentation ROI**: Deep analysis document worth the time
+1. **Graceful degradation is critical**: ADHD users can't tolerate interruptions
+1. **Security by default**: Parameterized queries prevent injection
+1. **DI enables testing**: All methods testable via mocks
+1. **Documentation ROI**: Deep analysis document worth the time
 
 ---
 
@@ -320,10 +320,10 @@ result = client.execute_cypher(query, (task_id,))
 
 **Why So Fast?**:
 1. ✅ Clear roadmap (template code provided)
-2. ✅ Deep think upfront (no refactoring needed)
-3. ✅ Existing infrastructure (ConPort-KG discovered)
-4. ✅ Test-driven approach (caught issues early)
-5. ✅ Focused execution (25-min blocks)
+1. ✅ Deep think upfront (no refactoring needed)
+1. ✅ Existing infrastructure (ConPort-KG discovered)
+1. ✅ Test-driven approach (caught issues early)
+1. ✅ Focused execution (25-min blocks)
 
 ---
 

@@ -42,13 +42,13 @@ docker compose config >/dev/null && echo "OK: compose valid"
 
 **Fix**:
 1. Added `ENABLE_LEANTIME` environment variable (default: 0)
-2. When `ENABLE_LEANTIME=1`:
-   - Start Leantime stack first: `(cd ../leantime && docker compose up -d --build)`
-   - Run health check
-   - Continue even if health check fails (warning only)
-3. When `ENABLE_LEANTIME=0`:
-   - Skip Leantime startup
-   - Skip health check
+1. When `ENABLE_LEANTIME=1`:
+- Start Leantime stack first: `(cd ../leantime && docker compose up -d --build)`
+- Run health check
+- Continue even if health check fails (warning only)
+1. When `ENABLE_LEANTIME=0`:
+- Skip Leantime startup
+- Skip health check
 
 **Usage**:
 ```bash

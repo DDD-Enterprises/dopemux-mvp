@@ -58,8 +58,8 @@ spawner.start_all()
 
 ### Location Priority
 1. `./config/agents.yaml` (project-specific, highest priority)
-2. `~/.config/dopemux/agents.yaml` (user default)
-3. Built-in defaults (zero-config fallback)
+1. `~/.config/dopemux/agents.yaml` (user default)
+1. Built-in defaults (zero-config fallback)
 
 ### Example Configuration
 
@@ -320,10 +320,10 @@ Based on comprehensive multi-model Zen analysis (confidence: 0.87):
 ## 🚀 **Next Steps**
 
 1. ✅ Config system complete and tested
-2. **Update existing test files** to use new system (replace hardcoded paths)
-3. **Response parser** (Priority 3) - Clean AI output
-4. **Error recovery** (Priority 4) - Retry logic, timeouts
-5. **End-to-end test** (Priority 5) - Full workflow validation
+1. **Update existing test files** to use new system (replace hardcoded paths)
+1. **Response parser** (Priority 3) - Clean AI output
+1. **Error recovery** (Priority 4) - Retry logic, timeouts
+1. **End-to-end test** (Priority 5) - Full workflow validation
 
 ---
 

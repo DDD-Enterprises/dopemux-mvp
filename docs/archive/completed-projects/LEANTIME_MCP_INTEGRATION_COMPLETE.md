@@ -58,14 +58,14 @@ The Leantime MCP integration is fully implemented and configured. All components
 leantime-bridge:
   container_name: mcp-leantime-bridge
   networks:
-    - mcp-network
-    - leantime-net
-    - dopemux-unified-network
+- mcp-network
+- leantime-net
+- dopemux-unified-network
   ports:
-    - "3015:3015"
+- "3015:3015"
   environment:
-    - LEANTIME_API_URL=http://leantime:8080
-    - LEANTIME_API_TOKEN=${LEAN_MCP_TOKEN}
+- LEANTIME_API_URL=http://leantime:8080
+- LEANTIME_API_TOKEN=${LEAN_MCP_TOKEN}
 ```
 
 **Status**: ✅ Running
@@ -106,16 +106,16 @@ Claude/Client → MCP Proxy (3015) → leantime-bridge → Leantime API (8080)
 ### Key Technical Decisions
 
 1. **HTTP/SSE Transport**: Chosen for better compatibility with Docker networking
-2. **httpx over aiohttp**: Resolved DNS resolution issues in Docker environment
-3. **Token Budget**: Enforced 9K token limit (90% of 10K hard limit) with truncation
-4. **Network Configuration**: Connected to `leantime-net`, `mcp-network`, and `dopemux-unified-network`
+1. **httpx over aiohttp**: Resolved DNS resolution issues in Docker environment
+1. **Token Budget**: Enforced 9K token limit (90% of 10K hard limit) with truncation
+1. **Network Configuration**: Connected to `leantime-net`, `mcp-network`, and `dopemux-unified-network`
 
 ### Bug Fixes Applied
 
 1. ✅ Fixed aiohttp DNS resolution issue (switched to httpx)
-2. ✅ Fixed Docker network connectivity
-3. ✅ Fixed SSE transport implementation
-4. ✅ Added token budget enforcement
+1. ✅ Fixed Docker network connectivity
+1. ✅ Fixed SSE transport implementation
+1. ✅ Added token budget enforcement
 
 ## 📋 Next Steps
 
@@ -132,7 +132,7 @@ Claude/Client → MCP Proxy (3015) → leantime-bridge → Leantime API (8080)
    # - Set up company details
    ```
 
-2. **Create API Key**
+1. **Create API Key**
 
    **Option A - Via Web UI (Recommended):**
    ```bash
@@ -147,9 +147,9 @@ Claude/Client → MCP Proxy (3015) → leantime-bridge → Leantime API (8080)
    ```
 
    **Option B - See detailed guide:**
-   - See `LEANTIME_API_SETUP_GUIDE.md` for 3 methods including database direct access
+- See `LEANTIME_API_SETUP_GUIDE.md` for 3 methods including database direct access
 
-3. **Configure Bridge**
+1. **Configure Bridge**
    ```bash
    # Use the automated configuration script
    ./docker/leantime/configure_bridge.sh lt_your_api_key_here
@@ -160,13 +160,13 @@ Claude/Client → MCP Proxy (3015) → leantime-bridge → Leantime API (8080)
    # - Test connection automatically
    ```
 
-4. **Test Integration**
+1. **Test Integration**
    ```bash
    cd docker/mcp-servers/leantime-bridge
    python test_http_server.py
    ```
 
-5. **Verify in Claude**
+1. **Verify in Claude**
    ```
    # In Claude Desktop or CLI
    /mcp list tools
@@ -211,11 +211,11 @@ Claude/Client → MCP Proxy (3015) → leantime-bridge → Leantime API (8080)
 
 ### Data Flow
 1. Claude sends MCP request to proxy
-2. Proxy routes to leantime-bridge via HTTP/SSE
-3. Bridge translates to JSON-RPC 2.0
-4. Leantime API processes request
-5. Response flows back through chain
-6. Token budget enforced before returning to client
+1. Proxy routes to leantime-bridge via HTTP/SSE
+1. Bridge translates to JSON-RPC 2.0
+1. Leantime API processes request
+1. Response flows back through chain
+1. Token budget enforced before returning to client
 
 ## 📊 Service Status
 
@@ -241,9 +241,9 @@ docker-compose -f docker/mcp-servers/docker-compose.yml ps leantime-bridge
 
 **Solution**:
 1. Access http://localhost:8080
-2. Complete installation wizard
-3. Generate API token
-4. Update environment variables
+1. Complete installation wizard
+1. Generate API token
+1. Update environment variables
 
 ### SSE Connection Issues
 

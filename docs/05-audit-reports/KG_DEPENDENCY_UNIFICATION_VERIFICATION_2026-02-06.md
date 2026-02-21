@@ -25,44 +25,44 @@ This verification covers the `kg_dependency_unification` cluster (`7` items) fro
 ## Runtime/Testability Fixes Applied During Verification
 
 1. `services/serena/intelligence/database.py`: fixed collection-time `NameError` for `asyncpg` annotations.
-2. `services/serena/tree_sitter_analyzer.py`: fixed collection-time `NameError` for `Node` annotations when tree-sitter bindings are unavailable.
-3. `pytest.ini`: set `asyncio_mode = auto` so async regression tests execute without per-test markers.
+1. `services/serena/tree_sitter_analyzer.py`: fixed collection-time `NameError` for `Node` annotations when tree-sitter bindings are unavailable.
+1. `pytest.ini`: set `asyncio_mode = auto` so async regression tests execute without per-test markers.
 
 ## Status Matrix
 
 | Item | Classification | Evidence | Residual gap |
 |---|---|---|---|
-| `3.2.2: Test semantic similarity & ADHD disclosure` | `partial` | `tests/regression/test_serena_enhancements.py`, `tests/regression/test_fnew5_code_graph_enrichment.py` | test depth is still mostly smoke-level; no explicit ADHD-disclosure assertion matrix |
-| `3.2.1: Integrate dope-context in Serena, add Find Similar command` | `implemented` | `services/serena/mcp_server.py`, `services/serena/claude_context_integration.py` | none for integration path |
-| `3.1.1: Design & populate conport_integration_links` | `implemented_in_code` | `services/serena/intelligence/schema.sql`, `services/serena/intelligence/conport_bridge.py`, `services/serena/intelligence/integration_test.py` | runtime population density not yet measured on prod-like dataset |
-| `2.2.3: Validate embedding quality & schema` | `partial` | `src/dopemux/extraction/consensus_validator.py`, `services/dope-context/src/pipeline/indexing_pipeline.py` | no dedicated conport decision embedding regression benchmark |
-| `2.2.2: Write & run migration script (re-embed decisions)` | `partial` | `scripts/deploy/migration/backfill_embeddings.py` | script exists; no current-wave run artifact against target dataset |
-| `2.2.1: Remove ConPort embedding_service, import from core` | `partial` | `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | embedding-service path is now hard-deprecated with keyword fallback, but compatibility shim is still present (not removed) |
-| `2.1.2: Update docs & add deprecation warnings` | `implemented` | `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3.0-implementation.md`, `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | none for current deprecation-label requirement |
+| `3.2.2: Test semantic similarity & ADHD disclosure` \| `partial` \| `tests/regression/test_serena_enhancements.py`, `tests/regression/test_fnew5_code_graph_enrichment.py` | test depth is still mostly smoke-level; no explicit ADHD-disclosure assertion matrix |
+| `3.2.1: Integrate dope-context in Serena, add Find Similar command` \| `implemented` \| `services/serena/mcp_server.py`, `services/serena/claude_context_integration.py` | none for integration path |
+| `3.1.1: Design & populate conport_integration_links` \| `implemented_in_code` \| `services/serena/intelligence/schema.sql`, `services/serena/intelligence/conport_bridge.py`, `services/serena/intelligence/integration_test.py` | runtime population density not yet measured on prod-like dataset |
+| `2.2.3: Validate embedding quality & schema` \| `partial` \| `src/dopemux/extraction/consensus_validator.py`, `services/dope-context/src/pipeline/indexing_pipeline.py` | no dedicated conport decision embedding regression benchmark |
+| `2.2.2: Write & run migration script (re-embed decisions)` \| `partial` \| `scripts/deploy/migration/backfill_embeddings.py` | script exists; no current-wave run artifact against target dataset |
+| `2.2.1: Remove ConPort embedding_service, import from core` \| `partial` \| `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | embedding-service path is now hard-deprecated with keyword fallback, but compatibility shim is still present (not removed) |
+| `2.1.2: Update docs & add deprecation warnings` \| `implemented` \| `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3.0-implementation.md`, `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | none for current deprecation-label requirement |
 
 ## Summary
 
 1. Implemented: `2`
-2. Implemented in code (runtime population pending): `1`
-3. Partial: `4`
-4. Open with no evidence: `0`
+1. Implemented in code (runtime population pending): `1`
+1. Partial: `4`
+1. Open with no evidence: `0`
 
 ## Recommended Next Focus
 
 1. Strengthen semantic-similarity and ADHD-disclosure assertions from smoke to deterministic regression checks.
-2. Run `backfill_embeddings.py` against target decision dataset and capture success/failure artifact.
-3. Complete removal of deprecated ConPort semantic-search compatibility shims once external callers are migrated.
+1. Run `backfill_embeddings.py` against target decision dataset and capture success/failure artifact.
+1. Complete removal of deprecated ConPort semantic-search compatibility shims once external callers are migrated.
 
 ## Deprecated Shim Caller Inventory (Snapshot)
 
 Primary active call sites referencing ConPort semantic-search compatibility paths:
 
 1. `services/working-memory-assistant/conport_client.py`
-2. `services/task-orchestrator/conport_mcp_client.py`
-3. `services/session-manager/src/conport_http_client.py`
-4. `services/session-manager/src/conport_client.py`
-5. `src/dopemux/tools/conport_client.py`
-6. `services/task-orchestrator/app/adapters/conport_adapter.py`
+1. `services/task-orchestrator/conport_mcp_client.py`
+1. `services/session-manager/src/conport_http_client.py`
+1. `services/session-manager/src/conport_client.py`
+1. `src/dopemux/tools/conport_client.py`
+1. `services/task-orchestrator/app/adapters/conport_adapter.py`
 
 ## Artifact
 

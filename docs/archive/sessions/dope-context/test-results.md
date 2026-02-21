@@ -63,21 +63,21 @@ Relevance: 0.64-0.73 (excellent)
 
 ### 5. Key Fixes Implemented
 1. **Created OpenAI Context Generator**: Drop-in replacement for Claude (gpt-5-mini)
-   - Fixed `max_completion_tokens` parameter for gpt-5-mini
-   - Removed `temperature` parameter (gpt-5-mini restriction)
-   - Added cost tracking ($0.15/1M input, $0.60/1M output)
+- Fixed `max_completion_tokens` parameter for gpt-5-mini
+- Removed `temperature` parameter (gpt-5-mini restriction)
+- Added cost tracking ($0.15/1M input, $0.60/1M output)
 
-2. **Fixed Qdrant Point IDs**: Convert hex strings to UUIDs
-   - Code pipeline: `indexing_pipeline.py:165`
-   - Docs pipeline: `docs_search.py:85`
+1. **Fixed Qdrant Point IDs**: Convert hex strings to UUIDs
+- Code pipeline: `indexing_pipeline.py:165`
+- Docs pipeline: `docs_search.py:85`
 
-3. **Fixed Docs Token Overflow**: Added validation and splitting
-   - File: `docs_pipeline.py:87-113`
-   - Max: 8K tokens per chunk (safe for 32K context window)
+1. **Fixed Docs Token Overflow**: Added validation and splitting
+- File: `docs_pipeline.py:87-113`
+- Max: 8K tokens per chunk (safe for 32K context window)
 
-4. **Fixed SearchResult Compatibility**: Support both code and docs payloads
-   - File: `dense_search.py:397-400`
-   - Handles: `file_path`/`source_path`, `raw_code`/`text`, `language`/`doc_type`
+1. **Fixed SearchResult Compatibility**: Support both code and docs payloads
+- File: `dense_search.py:397-400`
+- Handles: `file_path`/`source_path`, `raw_code`/`text`, `language`/`doc_type`
 
 ---
 
@@ -180,12 +180,12 @@ tree = parser.parse(lambda offset, point: code_bytes[offset:offset+1])
 
 ### Medium Priority
 1. **Fix Tree-sitter Parsing**: Enable AST-aware chunking and complexity scores
-2. **Performance Benchmarking**: Validate ADHD target response times
+1. **Performance Benchmarking**: Validate ADHD target response times
 
 ### Low Priority
 1. **Cleanup Temporary Files**: Remove test scripts from services/dope-context/
-2. **Docs Search Formatting**: Verify fix works after MCP restart
-3. **Large Docs Handling**: Reduce chunk_size for very large files
+1. **Docs Search Formatting**: Verify fix works after MCP restart
+1. **Large Docs Handling**: Reduce chunk_size for very large files
 
 ---
 
@@ -222,24 +222,24 @@ mcp__dope-context__search_all(
 ## 📝 Key Learnings
 
 1. **OpenAI gpt-5-mini Restrictions**:
-   - Only supports `max_completion_tokens` (not `max_tokens`)
-   - Only supports `temperature=1` (default, no customization)
-   - Works well for code context generation
+- Only supports `max_completion_tokens` (not `max_tokens`)
+- Only supports `temperature=1` (default, no customization)
+- Works well for code context generation
 
-2. **Voyage API Limits**:
-   - voyage-context-3: 32K token limit per chunk
-   - Requires validation and splitting for large docs
-   - Contextualized embeddings improve quality by 35-67%
+1. **Voyage API Limits**:
+- voyage-context-3: 32K token limit per chunk
+- Requires validation and splitting for large docs
+- Contextualized embeddings improve quality by 35-67%
 
-3. **Qdrant Point IDs**:
-   - Requires proper UUIDs or integers
-   - Hex strings like `8345e73f4b3ac1a4` are rejected
-   - Solution: `uuid.UUID(bytes=hashlib.sha256(...).digest()[:16])`
+1. **Qdrant Point IDs**:
+- Requires proper UUIDs or integers
+- Hex strings like `8345e73f4b3ac1a4` are rejected
+- Solution: `uuid.UUID(bytes=hashlib.sha256(...).digest()[:16])`
 
-4. **Workspace Isolation**:
-   - MD5 hash of absolute path (8 chars)
-   - Collections: `code_{hash}` and `docs_{hash}`
-   - Prevents multi-project data contamination
+1. **Workspace Isolation**:
+- MD5 hash of absolute path (8 chars)
+- Collections: `code_{hash}` and `docs_{hash}`
+- Prevents multi-project data contamination
 
 ---
 

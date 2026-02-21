@@ -88,23 +88,23 @@ Exploratory work and technical investigations:
 ### Starting New Work
 
 1. **Create a tracking doc** in `active-projects/`
-2. **Link from planning** if part of larger initiative
-3. **Update regularly** with progress notes
-4. **Move to archive** when complete
+1. **Link from planning** if part of larger initiative
+1. **Update regularly** with progress notes
+1. **Move to archive** when complete
 
 ### Implementation Plans
 
 1. **Major features** get detailed plans in `implementation-plans/`
-2. **Follow naming convention:** `NN-FEATURE-NAME.md` or descriptive names
-3. **Update master index** when adding new plans
-4. **Cross-reference** with ADRs for decisions
+1. **Follow naming convention:** `NN-FEATURE-NAME.md` or descriptive names
+1. **Update master index** when adding new plans
+1. **Cross-reference** with ADRs for decisions
 
 ### Research Work
 
 1. **Spike/POC work** goes in `research/`
-2. **Document findings** even if not implemented
-3. **Link to issues/decisions** that result from research
-4. **Archive or promote** to implementation when concluded
+1. **Document findings** even if not implemented
+1. **Link to issues/decisions** that result from research
+1. **Archive or promote** to implementation when concluded
 
 ---
 
@@ -141,10 +141,10 @@ Use these status markers in tracking docs:
 When working on active development:
 
 1. **Keep tracking docs updated** - Don't let them go stale
-2. **Link commits/PRs** in tracking docs
-3. **Document blockers** and dependencies
-4. **Celebrate milestones** in summaries
-5. **Archive when done** - Keep this area clean
+1. **Link commits/PRs** in tracking docs
+1. **Document blockers** and dependencies
+1. **Celebrate milestones** in summaries
+1. **Archive when done** - Keep this area clean
 
 ---
 

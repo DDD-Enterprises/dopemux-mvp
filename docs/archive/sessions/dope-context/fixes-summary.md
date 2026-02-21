@@ -41,6 +41,6 @@ prelude: Fixes Summary (explanation) for dopemux documentation and developer wor
 
 ## Next Steps
 1. Test autonomous docs indexing
-2. Implement structure-aware chunking (1 day effort)
+1. Implement structure-aware chunking (1 day effort)
 
 **Commit**: 422aba6b

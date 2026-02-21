@@ -19,13 +19,13 @@ prelude: Runtime verification that ConPort persistence is active via Postgres du
 ## Runtime Evidence
 
 1. `mcp-conport` runtime environment points to Postgres AGE backend:
-   - `DATABASE_URL=postgresql://dopemux_age:***@dopemux-postgres-age:5432/dopemux_knowledge_graph`
-2. `dopemux-postgres-age` uses a named Docker volume mounted at `/var/lib/postgresql/data`:
-   - volume name: `dopemux-mvp_pg_age_data`
-3. Historical `progress_entries` data is retained:
-   - count: `210`
-   - oldest timestamp: `2025-10-05 14:16:54+00`
-   - newest timestamp: `2025-11-10 17:46:46.458241+00`
+- `DATABASE_URL=postgresql://dopemux_age:***@dopemux-postgres-age:5432/dopemux_knowledge_graph`
+1. `dopemux-postgres-age` uses a named Docker volume mounted at `/var/lib/postgresql/data`:
+- volume name: `dopemux-mvp_pg_age_data`
+1. Historical `progress_entries` data is retained:
+- count: `210`
+- oldest timestamp: `2025-10-05 14:16:54+00`
+- newest timestamp: `2025-11-10 17:46:46.458241+00`
 
 ## Conclusion
 

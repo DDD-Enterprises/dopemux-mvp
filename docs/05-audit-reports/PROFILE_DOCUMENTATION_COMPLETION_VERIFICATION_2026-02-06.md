@@ -15,18 +15,18 @@ prelude: Verification for ConPort packet rows 35 through 37 covering user, migra
 ## Scope
 
 1. Row `35`: `4.5.3 Migration guide documentation`.
-2. Row `36`: `4.6.1 User documentation`.
-3. Row `37`: `4.6.2 Developer documentation`.
+1. Row `36`: `4.6.1 User documentation`.
+1. Row `37`: `4.6.2 Developer documentation`.
 
 ## Implemented Changes
 
 Updated active docs:
 
 1. `/Users/hue/code/dopemux-mvp/docs/01-tutorials/profile-user-guide.md`
-2. `/Users/hue/code/dopemux-mvp/docs/01-tutorials/profile-migration-guide.md`
-3. `/Users/hue/code/dopemux-mvp/docs/03-reference/profile-developer-guide.md`
-4. `/Users/hue/code/dopemux-mvp/docs/02-how-to/PROFILE-USAGE.md`
-5. `/Users/hue/code/dopemux-mvp/docs/docs_index.yaml`
+1. `/Users/hue/code/dopemux-mvp/docs/01-tutorials/profile-migration-guide.md`
+1. `/Users/hue/code/dopemux-mvp/docs/03-reference/profile-developer-guide.md`
+1. `/Users/hue/code/dopemux-mvp/docs/02-how-to/PROFILE-USAGE.md`
+1. `/Users/hue/code/dopemux-mvp/docs/docs_index.yaml`
 
 ## Verification Commands
 
@@ -37,5 +37,5 @@ python scripts/docs_validator.py
 ## Result
 
 1. Documentation validator passed for updated profile docs.
-2. Active docs now reflect implemented command surface and runtime behavior.
-3. Rows `35`, `36`, and `37` are reclassified to implemented.
+1. Active docs now reflect implemented command surface and runtime behavior.
+1. Rows `35`, `36`, and `37` are reclassified to implemented.

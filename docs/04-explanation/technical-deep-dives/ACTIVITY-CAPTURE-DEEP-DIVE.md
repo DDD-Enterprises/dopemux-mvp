@@ -50,11 +50,11 @@ There is a fundamental "blocking startup" bug in the service's lifecycle managem
 ### Testing, Performance, Limitations & Opportunities
 * **Testing**: No automated tests found.
 * **Limitations**:
-  * **Blocking Startup**: Prevents the service from serving API/Health requests.
-  * **Statelessness**: Aggregated counts are lost if the container restarts before the window closes (though it tries to flush on shutdown).
+* **Blocking Startup**: Prevents the service from serving API/Health requests.
+* **Statelessness**: Aggregated counts are lost if the container restarts before the window closes (though it tries to flush on shutdown).
 * **Opportunities**:
-  * **Fix Startup**: Change `await event_subscriber.start()` to `asyncio.create_task(event_subscriber.start())`.
-  * **Externalize Windowing**: Use Redis-side aggregation for better persistence.
+* **Fix Startup**: Change `await event_subscriber.start()` to `asyncio.create_task(event_subscriber.start())`.
+* **Externalize Windowing**: Use Redis-side aggregation for better persistence.
 
 ## SECTION 2: EVIDENCE TRAIL
 
@@ -71,4 +71,4 @@ There is a fundamental "blocking startup" bug in the service's lifecycle managem
 * Confidence Level: 100% (Bug identified and root cause confirmed)
 * Evidence Quality Score: High (Reproducible logic error)
 * Evolution Log:
-  * 2026-02-09: Initial Deep Dive. Found critical blocking loop in FastAPI lifespan.
+* 2026-02-09: Initial Deep Dive. Found critical blocking loop in FastAPI lifespan.

@@ -39,16 +39,16 @@ cd services/adhd-notifier && python daily_reporter.py
 
 ### Core Services (6)
 1. **Activity Capture** (Docker, 8096) - Event consumer & aggregator
-2. **ADHD Engine** (background, 8095) - Energy/attention assessment
-3. **Workspace Watcher** (background) - App monitoring
-4. **ADHD Notifier** (background) - Break alerts (visual + voice)
-5. **F-NEW-8 Break Suggester** (background) - Intelligent detection
-6. **Dashboard** (optional, 8097) - Web UI + API
+1. **ADHD Engine** (background, 8095) - Energy/attention assessment
+1. **Workspace Watcher** (background) - App monitoring
+1. **ADHD Notifier** (background) - Break alerts (visual + voice)
+1. **F-NEW-8 Break Suggester** (background) - Intelligent detection
+1. **Dashboard** (optional, 8097) - Web UI + API
 
 ### Utility Services (3)
 1. **Context Switch Tracker** - Interruption cost analysis
-2. **Energy Trends** - Pattern visualization
-3. **Slack Integration** - Team summaries
+1. **Energy Trends** - Pattern visualization
+1. **Slack Integration** - Team summaries
 
 ## Features (16 Complete)
 

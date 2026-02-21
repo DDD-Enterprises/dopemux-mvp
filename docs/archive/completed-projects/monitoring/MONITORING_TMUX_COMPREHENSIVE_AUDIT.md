@@ -23,9 +23,9 @@ Deep investigation reveals **significant architectural gaps** in both monitoring
 ### Critical Findings
 
 1. **Monitoring System**: Fragmented, incomplete, lacks multi-workspace/multi-instance support
-2. **Tmux Integration**: Poorly designed, non-functional, lacks cohesion
-3. **Multi-Workspace Support**: Monitoring has **ZERO** workspace awareness
-4. **Data Flow**: Broken integration between monitoring, tmux, and services
+1. **Tmux Integration**: Poorly designed, non-functional, lacks cohesion
+1. **Multi-Workspace Support**: Monitoring has **ZERO** workspace awareness
+1. **Data Flow**: Broken integration between monitoring, tmux, and services
 
 ### Impact
 
@@ -63,30 +63,30 @@ services/orchestrator/src/
 #### Problems Identified
 
 1. **No Multi-Workspace Support**
-   - Metrics lack `workspace_id` labels
-   - Single Prometheus instance can't distinguish workspaces
-   - No workspace-scoped retention policies
+- Metrics lack `workspace_id` labels
+- Single Prometheus instance can't distinguish workspaces
+- No workspace-scoped retention policies
 
-2. **No Multi-Instance Support**
-   - Services hard-coded to single endpoints
-   - No instance ID in metrics
-   - Can't run multiple instances per workspace
+1. **No Multi-Instance Support**
+- Services hard-coded to single endpoints
+- No instance ID in metrics
+- Can't run multiple instances per workspace
 
-3. **Fragmented Implementation**
-   - 4 different monitoring modules (no cohesion)
-   - Different patterns in each service
-   - No shared monitoring base class
+1. **Fragmented Implementation**
+- 4 different monitoring modules (no cohesion)
+- Different patterns in each service
+- No shared monitoring base class
 
-4. **Incomplete Integration**
-   - Prometheus not running (no Docker container)
-   - Services don't export metrics
-   - Grafana absent
-   - Alert manager not configured
+1. **Incomplete Integration**
+- Prometheus not running (no Docker container)
+- Services don't export metrics
+- Grafana absent
+- Alert manager not configured
 
-5. **Data Accuracy Issues**
-   - ADHD Engine metrics mock in many places
-   - Dashboard shows simulated data
-   - Health checks return hardcoded values
+1. **Data Accuracy Issues**
+- ADHD Engine metrics mock in many places
+- Dashboard shows simulated data
+- Health checks return hardcoded values
 
 ### 2. Tmux Integration Analysis
 
@@ -109,27 +109,27 @@ dopemux_dashboard.py            ✅ Rich Textual dashboard (not used in tmux)
    # Scripts don't exist! Returns empty or errors
    ```
 
-2. **Clunky Dashboard Design**
-   - 8 panes running `watch` commands (resource intensive)
-   - No real-time updates (30s polling via `watch`)
-   - Mock data in most panes
-   - Visual inconsistency
+1. **Clunky Dashboard Design**
+- 8 panes running `watch` commands (resource intensive)
+- No real-time updates (30s polling via `watch`)
+- Mock data in most panes
+- Visual inconsistency
 
-3. **Poor Multi-Workspace Support**
-   - No workspace context in tmux sessions
-   - Can't switch between workspace views
-   - Status bar doesn't show current workspace
+1. **Poor Multi-Workspace Support**
+- No workspace context in tmux sessions
+- Can't switch between workspace views
+- Status bar doesn't show current workspace
 
-4. **Broken Integration**
-   - pm-dashboard.sh queries non-existent APIs
-   - Status bar scripts missing
-   - Keybindings reference broken commands
+1. **Broken Integration**
+- pm-dashboard.sh queries non-existent APIs
+- Status bar scripts missing
+- Keybindings reference broken commands
 
-5. **Accessibility Issues**
-   - Too much information at once (ADHD hostile)
-   - No progressive disclosure
-   - Hard to scan quickly
-   - Colors not optimized
+1. **Accessibility Issues**
+- Too much information at once (ADHD hostile)
+- No progressive disclosure
+- Hard to scan quickly
+- Colors not optimized
 
 ### 3. Multi-Workspace Integration
 
@@ -148,26 +148,26 @@ dopemux_dashboard.py            ✅ Rich Textual dashboard (not used in tmux)
 ### Design Principles
 
 1. **Label-Based Multi-Tenancy** (Prometheus best practice)
-   - Every metric includes `workspace_id` label
-   - Every metric includes `instance_id` label
-   - Central Prometheus with label filtering
+- Every metric includes `workspace_id` label
+- Every metric includes `instance_id` label
+- Central Prometheus with label filtering
 
-2. **Unified Monitoring Base**
-   - Single monitoring base class
-   - Consistent integration pattern
-   - Shared metric registry
+1. **Unified Monitoring Base**
+- Single monitoring base class
+- Consistent integration pattern
+- Shared metric registry
 
-3. **Tmux Simplification**
-   - Fewer, smarter panes
-   - Real-time data feeds (not polling)
-   - Clean, scannable interface
-   - Workspace-aware status bar
+1. **Tmux Simplification**
+- Fewer, smarter panes
+- Real-time data feeds (not polling)
+- Clean, scannable interface
+- Workspace-aware status bar
 
-4. **Progressive Disclosure** (ADHD-optimized)
-   - Summary view by default
-   - Drill-down on demand
-   - Visual hierarchy
-   - Minimal cognitive load
+1. **Progressive Disclosure** (ADHD-optimized)
+- Summary view by default
+- Drill-down on demand
+- Visual hierarchy
+- Minimal cognitive load
 
 ---
 
@@ -192,10 +192,10 @@ class DopemuxMonitoring:
     Unified monitoring for Dopemux services.
 
     Features:
-    - Multi-workspace support via labels
-    - Multi-instance support via instance_id
-    - Consistent metric naming
-    - Automatic service registration
+- Multi-workspace support via labels
+- Multi-instance support via instance_id
+- Consistent metric naming
+- Automatic service registration
     """
 
     def __init__(
@@ -347,73 +347,73 @@ global:
 # Alert manager (to be added)
 alerting:
   alertmanagers:
-    - static_configs:
-        - targets: ['alertmanager:9093']
+- static_configs:
+- targets: ['alertmanager:9093']
 
 rule_files:
-  - '/etc/prometheus/alerting_rules.yml'
+- '/etc/prometheus/alerting_rules.yml'
 
 scrape_configs:
   # Self-monitoring
-  - job_name: 'prometheus'
+- job_name: 'prometheus'
     static_configs:
-      - targets: ['localhost:9090']
+- targets: ['localhost:9090']
 
   # ADHD Engine (multi-instance capable)
-  - job_name: 'adhd-engine'
+- job_name: 'adhd-engine'
     metrics_path: '/metrics'
     # DNS-based service discovery
     dns_sd_configs:
-      - names: ['adhd-engine.dopemux.local']
+- names: ['adhd-engine.dopemux.local']
         type: 'A'
         port: 8001
     # OR static configs for multiple instances
     static_configs:
-      - targets:
-        - 'adhd-engine-0:8001'
-        - 'adhd-engine-1:8001'
+- targets:
+- 'adhd-engine-0:8001'
+- 'adhd-engine-1:8001'
         labels:
           service: 'adhd-engine'
 
   # ConPort (multi-workspace, multi-instance)
-  - job_name: 'conport'
+- job_name: 'conport'
     metrics_path: '/metrics'
     static_configs:
-      - targets:
-        - 'conport-workspace1:3004'
-        - 'conport-workspace2:3004'
+- targets:
+- 'conport-workspace1:3004'
+- 'conport-workspace2:3004'
         labels:
           service: 'conport'
 
   # Serena
-  - job_name: 'serena'
+- job_name: 'serena'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['serena:3001']
+- targets: ['serena:3001']
         labels:
           service: 'serena'
 
   # Orchestrator
-  - job_name: 'orchestrator'
+- job_name: 'orchestrator'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['orchestrator:8000']
+- targets: ['orchestrator:8000']
         labels:
           service: 'orchestrator'
 
   # Dopecon Bridge
-  - job_name: 'dopecon-bridge'
+- job_name: 'dopecon-bridge'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['dopecon-bridge:8080']
+- targets: ['dopecon-bridge:8080']
         labels:
           service: 'dopecon-bridge'
 
   # Dope Context
-  - job_name: 'dope-context'
+- job_name: 'dope-context'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['dope-context:8000']
+- targets: ['dope-context:8000']
         labels:
           service: 'dope-context'
 ```
@@ -430,51 +430,51 @@ services:
     image: prom/prometheus:v2.47.0
     container_name: dopemux-prometheus
     ports:
-      - "9090:9090"
+- "9090:9090"
     volumes:
-      - ./services/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./services/monitoring/alerting_rules.yml:/etc/prometheus/alerting_rules.yml
-      - prometheus-data:/prometheus
+- ./services/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+- ./services/monitoring/alerting_rules.yml:/etc/prometheus/alerting_rules.yml
+- prometheus-data:/prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=30d'
-      - '--web.enable-lifecycle'
+- '--config.file=/etc/prometheus/prometheus.yml'
+- '--storage.tsdb.path=/prometheus'
+- '--web.console.libraries=/etc/prometheus/console_libraries'
+- '--web.console.templates=/etc/prometheus/consoles'
+- '--storage.tsdb.retention.time=30d'
+- '--web.enable-lifecycle'
     networks:
-      - dopemux
+- dopemux
 
   grafana:
     image: grafana/grafana:10.1.0
     container_name: dopemux-grafana
     ports:
-      - "3000:3000"
+- "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=dopemux_admin
-      - GF_USERS_ALLOW_SIGN_UP=false
+- GF_SECURITY_ADMIN_PASSWORD=dopemux_admin
+- GF_USERS_ALLOW_SIGN_UP=false
     volumes:
-      - grafana-data:/var/lib/grafana
-      - ./services/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./services/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+- grafana-data:/var/lib/grafana
+- ./services/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+- ./services/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
     networks:
-      - dopemux
+- dopemux
     depends_on:
-      - prometheus
+- prometheus
 
   alertmanager:
     image: prom/alertmanager:v0.26.0
     container_name: dopemux-alertmanager
     ports:
-      - "9093:9093"
+- "9093:9093"
     volumes:
-      - ./services/monitoring/alertmanager.yml:/etc/alertmanager/config.yml
-      - alertmanager-data:/alertmanager
+- ./services/monitoring/alertmanager.yml:/etc/alertmanager/config.yml
+- alertmanager-data:/alertmanager
     command:
-      - '--config.file=/etc/alertmanager/config.yml'
-      - '--storage.path=/alertmanager'
+- '--config.file=/etc/alertmanager/config.yml'
+- '--storage.path=/alertmanager'
     networks:
-      - dopemux
+- dopemux
 
 volumes:
   prometheus-data:
@@ -794,31 +794,31 @@ esac
 **Priority Order**:
 
 1. ✅ ADHD Engine (week 1)
-   - Add monitoring base
-   - Export metrics endpoint
-   - Test with Prometheus
+- Add monitoring base
+- Export metrics endpoint
+- Test with Prometheus
 
-2. ✅ ConPort (week 1)
-   - Add monitoring base
-   - Multi-workspace metrics
-   - Test workspace filtering
+1. ✅ ConPort (week 1)
+- Add monitoring base
+- Multi-workspace metrics
+- Test workspace filtering
 
-3. ✅ Orchestrator (week 2)
-   - Add monitoring base
-   - Task metrics
-   - Health monitoring
+1. ✅ Orchestrator (week 2)
+- Add monitoring base
+- Task metrics
+- Health monitoring
 
-4. ✅ Serena (week 2)
-   - Add monitoring base
-   - Pattern metrics
+1. ✅ Serena (week 2)
+- Add monitoring base
+- Pattern metrics
 
-5. ✅ Dopecon Bridge (week 2)
-   - Add monitoring base
-   - Bridge metrics
+1. ✅ Dopecon Bridge (week 2)
+- Add monitoring base
+- Bridge metrics
 
-6. ✅ Dope Context (week 3)
-   - Add monitoring base
-   - Search metrics
+1. ✅ Dope Context (week 3)
+- Add monitoring base
+- Search metrics
 
 #### 3.2 End-to-End Testing
 
@@ -1046,26 +1046,26 @@ echo "✅ All tmux integration tests passed"
 ## 📚 Documentation Updates Required
 
 1. **Monitoring Guide** (`docs/monitoring/README.md`)
-   - Architecture overview
-   - Adding monitoring to new services
-   - Query examples
-   - Troubleshooting
+- Architecture overview
+- Adding monitoring to new services
+- Query examples
+- Troubleshooting
 
-2. **Tmux Guide** (`docs/tmux/README.md`)
-   - Setup instructions
-   - Keybinding reference
-   - Customization guide
-   - ADHD optimization notes
+1. **Tmux Guide** (`docs/tmux/README.md`)
+- Setup instructions
+- Keybinding reference
+- Customization guide
+- ADHD optimization notes
 
-3. **Multi-Workspace Guide** (update existing)
-   - Monitoring per workspace
-   - Tmux workspace sessions
-   - Filtering and querying
+1. **Multi-Workspace Guide** (update existing)
+- Monitoring per workspace
+- Tmux workspace sessions
+- Filtering and querying
 
-4. **Developer Onboarding** (update)
-   - Monitoring requirements
-   - Testing checklist
-   - Best practices
+1. **Developer Onboarding** (update)
+- Monitoring requirements
+- Testing checklist
+- Best practices
 
 ---
 
@@ -1074,50 +1074,50 @@ echo "✅ All tmux integration tests passed"
 ### Tmux Best Practices (from web search)
 
 1. **Show only actionable information** - Avoid clutter
-2. **Use monitor-activity for alerts** - Background task notifications
-3. **Consistent theming** - Match terminal/IDE colors
-4. **Leverage plugins** - tmux-powerline, tmux-mem-cpu-load
-5. **Named sessions per project** - Multi-workspace organization
-6. **Iterative customization** - Start simple, add as needed
+1. **Use monitor-activity for alerts** - Background task notifications
+1. **Consistent theming** - Match terminal/IDE colors
+1. **Leverage plugins** - tmux-powerline, tmux-mem-cpu-load
+1. **Named sessions per project** - Multi-workspace organization
+1. **Iterative customization** - Start simple, add as needed
 
 ### Prometheus Multi-Workspace Patterns (from web search)
 
 1. **Label-based multi-tenancy** (CHOSEN)
-   - Single Prometheus with workspace labels
-   - Query proxy for access control
-   - Efficient resource usage
-   - Global metrics view possible
+- Single Prometheus with workspace labels
+- Query proxy for access control
+- Efficient resource usage
+- Global metrics view possible
 
-2. **Multiple Prometheus instances**
-   - Strong isolation
-   - High resource overhead
-   - Complex management
-   - NOT chosen for Dopemux
+1. **Multiple Prometheus instances**
+- Strong isolation
+- High resource overhead
+- Complex management
+- NOT chosen for Dopemux
 
-3. **Thanos/Cortex**
-   - True multi-tenancy
-   - Long-term storage
-   - Overkill for current scale
-   - Future consideration
+1. **Thanos/Cortex**
+- True multi-tenancy
+- Long-term storage
+- Overkill for current scale
+- Future consideration
 
 ---
 
 ## ✅ Next Steps
 
 1. **Immediate** (Today):
-   - Review and approve this plan
-   - Set up project tracking (issues/tasks)
-   - Assign team members
+- Review and approve this plan
+- Set up project tracking (issues/tasks)
+- Assign team members
 
-2. **Week 1 Kickoff** (Monday):
-   - Create unified monitoring base class
-   - Set up dev environment with Prometheus
-   - Begin ADHD Engine integration
+1. **Week 1 Kickoff** (Monday):
+- Create unified monitoring base class
+- Set up dev environment with Prometheus
+- Begin ADHD Engine integration
 
-3. **Communication**:
-   - Daily standup updates
-   - Weekly demos
-   - Documentation as we go
+1. **Communication**:
+- Daily standup updates
+- Weekly demos
+- Documentation as we go
 
 ---
 

@@ -61,9 +61,9 @@ prelude: Tomorrow Game Plan (explanation) for dopemux documentation and develope
 
 Start with IP-003 infrastructure validation:
 1. Run: `docker ps -a --format "table {{.Names}}\t{{.Status}}"`
-2. Compare to research expectations
-3. Document reality vs research
-4. Celebrate if it's already clean!
+1. Compare to research expectations
+1. Document reality vs research
+1. Celebrate if it's already clean!
 
 **Estimated Time**: 1-2 hours
 **Cognitive Load**: Low (investigation, not coding)
