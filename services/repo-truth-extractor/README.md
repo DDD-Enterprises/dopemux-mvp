@@ -22,6 +22,28 @@ dopemux extractor promptset audit --engine-version v4
 - `services/repo-truth-extractor/run_extraction_v3.py`
 - `services/repo-truth-extractor/run_extraction_v4.py`
 
+## v3 Introspection and Async Batch Utilities
+
+```bash
+# Deterministic CLI introspection
+python services/repo-truth-extractor/run_extraction_v3.py --print-run-order
+python services/repo-truth-extractor/run_extraction_v3.py --print-phase-routing --phase Q --dry-run
+python services/repo-truth-extractor/run_extraction_v3.py --print-phase-prompts ALL
+
+# Async batch split mode (explicit)
+python services/repo-truth-extractor/run_extraction_v3.py --phase D --batch-mode --batch-submit-only --run-id <RUN_ID>
+python services/repo-truth-extractor/run_extraction_v3.py --phase D --batch-watch --run-id <RUN_ID>
+```
+
+Webhook notify mode for `--batch-watch` is controlled by:
+
+- `DPMX_WEBHOOK_URL`
+- `DPMX_WEBHOOK_SECRET`
+- `DPMX_WEBHOOK_TIMEOUT_SECONDS`
+- `DPMX_WEBHOOK_REQUIRED`
+- `DPMX_WEBHOOK_AUTO_CONTINUE`
+- `DPMX_LIVE_OK`
+
 ## Prompt Assets
 
 - v3 prompts: `services/repo-truth-extractor/prompts/v3/`

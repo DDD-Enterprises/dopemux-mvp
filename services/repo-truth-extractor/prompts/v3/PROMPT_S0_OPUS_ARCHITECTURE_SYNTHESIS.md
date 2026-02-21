@@ -65,3 +65,13 @@ OUTPUT FORMAT (write the full content of S0_ARCHITECTURE_SYNTHESIS_OPUS.md):
 
 6) UNKNOWN Register
 - Strict list of unresolved claims and exact missing evidence artifacts.
+
+7) PRO_ESCALATIONS
+- Output a deterministic list sorted by escalation_id.
+- Each row must include:
+  - escalation_id
+  - conflict_id
+  - kind (conflict|collision|risk)
+  - recommended_manual_prompt (MANUAL_PRO_CONFLICT_RULING.md|MANUAL_PRO_COLLISION_POLICY.md|MANUAL_PRO_RISK_RERANK.md)
+  - missing_evidence[]
+- If no escalations are needed, output an empty list.

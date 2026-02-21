@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 import importlib.util
 import json
 from pathlib import Path
@@ -92,6 +93,17 @@ class _BatchResultShim:
         self.error = error
 
 
+class _WebhookResponse:
+    def __init__(self, status: int = 204) -> None:
+        self.status = status
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> bool:
+        return False
+
+
 def test_batch_mode_writes_batch_artifacts_and_request_meta(monkeypatch, tmp_path: Path) -> None:
     runner = _load_runner_module()
     phase_dir, prompt_spec, partitions = _prepare_step(runner, tmp_path)
@@ -123,3 +135,140 @@ def test_batch_mode_writes_batch_artifacts_and_request_meta(monkeypatch, tmp_pat
     assert (batch_dir / "A1.job.json").exists()
     assert (batch_dir / "A1.results.jsonl").exists()
     assert (batch_dir / "A1.summary.json").exists()
+
+
+def test_send_webhook_success_includes_signature(monkeypatch) -> None:
+    runner = _load_runner_module()
+    captured = {}
+
+    def _fake_urlopen(request, timeout):  # type: ignore[no-untyped-def]
+        captured["request"] = request
+        captured["timeout"] = timeout
+        return _WebhookResponse(status=204)
+
+    monkeypatch.setattr(runner.urllib_request, "urlopen", _fake_urlopen)
+    payload = {"schema": "DPMX_WEBHOOK_V1", "event": "batch.completed", "event_id": "evt_test"}
+    ok, status_code, err = runner.send_webhook(
+        payload,
+        webhook_url="https://example.com/webhook",
+        webhook_secret="topsecret",
+        timeout_seconds=7,
+    )
+
+    assert ok is True
+    assert status_code == 204
+    assert err is None
+    assert captured["timeout"] == 7
+    request = captured["request"]
+    headers = {k.lower(): v for k, v in request.header_items()}
+    assert "x-dopemux-signature" in headers
+    assert headers["x-dopemux-event"] == "batch.completed"
+
+
+def test_send_webhook_http_error(monkeypatch) -> None:
+    runner = _load_runner_module()
+
+    def _fake_urlopen(request, timeout):  # type: ignore[no-untyped-def]
+        raise runner.urllib_error.HTTPError(request.full_url, 502, "bad gateway", None, None)
+
+    monkeypatch.setattr(runner.urllib_request, "urlopen", _fake_urlopen)
+    ok, status_code, err = runner.send_webhook(
+        {"schema": "DPMX_WEBHOOK_V1", "event": "batch.completed", "event_id": "evt_http_error"},
+        webhook_url="https://example.com/webhook",
+        webhook_secret="",
+        timeout_seconds=5,
+    )
+
+    assert ok is False
+    assert status_code == 502
+    assert err == "http_error:502"
+
+
+def test_run_batch_watch_marks_missing_api_key(monkeypatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "Q_quality_assurance"
+    batch_dir = phase_dir / "batch"
+    batch_dir.mkdir(parents=True, exist_ok=True)
+    runner.write_json(
+        batch_dir / "BATCH_JOB_INDEX.json",
+        {
+            "run_id": "rid",
+            "phase_id": "Q",
+            "jobs": [
+                {
+                    "run_id": "rid",
+                    "phase_id": "Q",
+                    "step_id": "Q0",
+                    "partition_id": "Q_P0001",
+                    "provider_id": "openai",
+                    "model_id": "gpt-5-nano",
+                    "api_key_env": "OPENAI_API_KEY",
+                    "job_id": "job-1",
+                    "state": "submitted",
+                    "submitted_at_utc": "2026-02-21T00:00:00Z",
+                }
+            ],
+        },
+    )
+    monkeypatch.setattr(runner, "resolve_api_key", lambda provider, api_key_env: ("", api_key_env))
+    monkeypatch.setattr(runner, "normalize_step", lambda **kwargs: None)
+
+    cfg = _make_cfg(runner)
+    result = runner.run_batch_watch(
+        root=tmp_path,
+        run_id="rid",
+        phase="Q",
+        dirs={"Q": phase_dir},
+        cfg=cfg,
+    )
+
+    assert result.exit_code == 0
+    payload = json.loads((batch_dir / "BATCH_JOB_INDEX.json").read_text(encoding="utf-8"))
+    job = payload["jobs"][0]
+    assert job["state"] == "failed"
+    assert str(job["error"]).startswith("missing_api_key")
+
+
+def test_run_batch_watch_auto_continue_blocked_without_live_guard(tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "Q_quality_assurance"
+    batch_dir = phase_dir / "batch"
+    batch_dir.mkdir(parents=True, exist_ok=True)
+    runner.write_json(
+        batch_dir / "BATCH_JOB_INDEX.json",
+        {
+            "run_id": "rid",
+            "phase_id": "Q",
+            "jobs": [
+                {
+                    "run_id": "rid",
+                    "phase_id": "Q",
+                    "step_id": "Q0",
+                    "partition_id": "Q_P0001",
+                    "provider_id": "openai",
+                    "model_id": "gpt-5-nano",
+                    "api_key_env": "OPENAI_API_KEY",
+                    "job_id": "job-2",
+                    "state": "completed",
+                    "results_applied": True,
+                }
+            ],
+        },
+    )
+
+    cfg = replace(
+        _make_cfg(runner),
+        webhook_auto_continue=True,
+        live_ok=False,
+    )
+    result = runner.run_batch_watch(
+        root=tmp_path,
+        run_id="rid",
+        phase="Q",
+        dirs={"Q": phase_dir},
+        cfg=cfg,
+    )
+
+    assert result.exit_code == 0
+    assert result.auto_continue_blocked is True
+    assert result.next_phase is None
