@@ -6,6 +6,8 @@ owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
 prelude: Deterministic partitioning, canonical promotion, and coverage gates in extraction v4.
+last_review: '2026-02-21'
+next_review: '2026-05-21'
 graph_metadata:
   node_type: DocPage
   impact: high
@@ -19,6 +21,8 @@ graph_metadata:
 This document describes reliability and determinism controls in `services/repo-truth-extractor/run_extraction_v4.py`.
 
 v4 executes via v3-compatible provider flows, then enforces v4 contracts during sync.
+
+Canonical CLI: `dopemux upgrades ...` (legacy alias: `dopemux extractor ...`).
 
 ## Deterministic partition planning
 
@@ -41,6 +45,11 @@ v4 preserves v3 resume behavior for provider execution:
 2. it is a valid success output for that step (parseable JSON, expected artifact structure)
 
 If `raw/<STEP>__<PARTITION>.FAILED.*` exists and is older than the success output, the runner prunes stale FAILED sidecars on skip.
+
+## Prompt routing proof gate
+
+For v4 runs, the wrapper sets prompt root to `services/repo-truth-extractor/promptsets/v4/prompts`.
+After v3 execution completes, v4 validates `RESUME_PROOF.json` prompt hash paths. If a hash path points outside the v4 prompt root, the run fails closed.
 
 ## Canonical artifact reliability
 
