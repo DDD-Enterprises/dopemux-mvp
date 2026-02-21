@@ -8512,8 +8512,8 @@ def run_batch_watch(
                     terminal_status = "timeout"
                     try:
                         batch_client.cancel(job_id)
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.debug("Failed to cancel batch job %s after timeout: %s", job_id, exc)
                     break
                 if ui is not None:
                     ui.batch_event(

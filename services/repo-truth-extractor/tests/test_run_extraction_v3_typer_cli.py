@@ -79,3 +79,24 @@ def test_cli_print_phase_routing_json(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert "Q" in payload["phases"]
     assert isinstance(payload["phases"]["Q"], list)
+
+
+def test_cli_print_phase_prompts_json(tmp_path: Path) -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_runner_script()),
+            "--print-phase-prompts",
+            "Q",
+            "--run-id",
+            "test_print_phase_prompts",
+        ],
+        cwd=str(tmp_path),
+        check=True,
+        text=True,
+        capture_output=True,
+    )
+    payload = json.loads(result.stdout)
+    prompts = payload["phases"]["Q"]
+    assert isinstance(prompts, list)
+    assert any(str(row.get("step_id", "")).startswith("Q") for row in prompts)
