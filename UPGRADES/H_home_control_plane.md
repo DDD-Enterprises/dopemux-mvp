@@ -1,3 +1,15 @@
+---
+id: H_home_control_plane
+title: H Home Control Plane
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: H Home Control Plane (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Phase H: Home Control Plane Scan
 
 ## H: Home Control Plane Scan (Tier 0)

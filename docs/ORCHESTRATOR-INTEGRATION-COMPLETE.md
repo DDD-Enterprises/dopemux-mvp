@@ -224,23 +224,23 @@ Add to your `Makefile`:
 
 # Launch full orchestrator environment
 orchestrator:
-	@./scripts/launch-dopemux-orchestrator.sh
+    @./scripts/launch-dopemux-orchestrator.sh
 
 # Launch minimal 2-pane
 minimal:
-	@./scripts/launch-dopemux-minimal.sh
+    @./scripts/launch-dopemux-minimal.sh
 
 # Just the dashboard (3 panes side-by-side)
 dashboard:
-	@./scripts/launch-adhd-dashboard.sh
+    @./scripts/launch-adhd-dashboard.sh
 
 # Attach to existing orchestrator session
 attach:
-	@tmux attach -t dopemux-orchestrator || echo "No session found. Run 'make orchestrator' first"
+    @tmux attach -t dopemux-orchestrator || echo "No session found. Run 'make orchestrator' first"
 
 # Kill orchestrator session
 kill-orchestrator:
-	@tmux kill-session -t dopemux-orchestrator 2>/dev/null || echo "No session to kill"
+    @tmux kill-session -t dopemux-orchestrator 2>/dev/null || echo "No session to kill"
 ```
 
 Then use:

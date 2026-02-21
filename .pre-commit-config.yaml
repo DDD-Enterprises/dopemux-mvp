@@ -7,35 +7,8 @@ repos:
         name: Validate YAML frontmatter in docs
         entry: python3 scripts/docs_frontmatter_guard.py --fix
         language: system
-        files: \.md$
-        exclude: |
-          (?x)^(
-            node_modules/|
-            vendor/|
-            archive/|
-            reports/|
-            out/|
-            _audit_out/|
-            extraction/|
-            quarantine/|
-            tests/|
-            examples/|
-            \.claude/|
-            \.taskx/|
-            \.github/|
-            \.conport/|
-            conport_export/|
-            \.pytest_cache/|
-            # Specific root files that shouldn't have frontmatter
-            CHANGELOG\.md$|
-            INSTALL\.md$|
-            QUICK_START\.md$|
-            TASKX_INTEGRATION_ANALYSIS\.md$|
-            COMPACT-DASHBOARD-COMPLETE\.md$|
-            AG-master_plan\.md$|
-            # Standard metadata files anywhere
-            (.*/)?(README|CHANGELOG|CONTRIBUTING|LICENSE|SECURITY)\.md$
-          )
+        files: ^(docs/|UPGRADES/|services/[^/]+/docs/|docker/[^/]+/docs/).*\.md$
+        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md)
 
       # Graph schema validation
       - id: docs-graph-validator
@@ -219,7 +192,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^docs/.*\.md$
-        exclude: (^docs/archive/|node_modules/)
+        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md)
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
@@ -234,9 +207,9 @@ repos:
     hooks:
       - id: trailing-whitespace
         files: ^docs/.*\.md$
-        exclude: ^docs/archive/
+        exclude: (^docs/archive/|docs/rgOutput\.md)
       - id: end-of-file-fixer
         files: ^docs/.*\.md$
-        exclude: ^docs/archive/
+        exclude: (^docs/archive/|docs/rgOutput\.md)
       - id: check-yaml
         files: ^config/.*\.ya?ml$

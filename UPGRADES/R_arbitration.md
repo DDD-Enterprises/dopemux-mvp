@@ -1,3 +1,14 @@
+---
+id: R_arbitration
+title: R Arbitration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: R Arbitration (explanation) for dopemux documentation and developer workflows.
+---
 # Phase R: Arbitration
 
 ## R: Arbitration (Truth maps + conflict ledger)

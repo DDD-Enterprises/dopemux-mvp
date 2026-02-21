@@ -1,3 +1,15 @@
+---
+id: TASK_ORCHESTRATOR_FIX
+title: Task Orchestrator Fix
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Task Orchestrator Fix (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Task-Orchestrator Fix Documentation
 **Date**: 2026-02-05
 **Issue**: task-orchestrator container failing to start
