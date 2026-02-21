@@ -55,8 +55,8 @@ CREATE TABLE IF NOT EXISTS async_jobs (
   attempt INTEGER NOT NULL,
   status TEXT NOT NULL,
   last_error TEXT,
-  created_at_utc TIMESTAMPTZ NOT NULL,
-  updated_at_utc TIMESTAMPTZ NOT NULL,
+  created_at_utc TIMESTAMPTZ NOT NULL DEFAULT (now() at time zone 'utc'),
+  updated_at_utc TIMESTAMPTZ NOT NULL DEFAULT (now() at time zone 'utc'),
   UNIQUE(provider, external_job_id, attempt)
 );
 
