@@ -60,6 +60,25 @@ That's it! The installer handles everything automatically.
 - Verifies all services are running
 - Shows status of each component
 
+## TaskX Kernel Integration (Submodule-First)
+
+Dopemux now consumes TaskX from `vendor/taskx` and executes through `scripts/taskx`.
+
+```bash
+git submodule update --init --recursive vendor/taskx
+scripts/taskx --version
+scripts/taskx doctor --timestamp-mode deterministic
+```
+
+Kernel lifecycle commands are available through Dopemux:
+
+```bash
+dopemux kernel --help
+```
+
+`.taskx-pin` is deprecated for runtime and CI behavior.
+See `docs/TASKX_KERNEL_INTEGRATION.md` for contract details, update procedure, and rollback.
+
 ## 🧱 Service Bundles
 
 | Mode | Compose File | Services Included |

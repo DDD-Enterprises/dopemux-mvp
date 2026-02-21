@@ -1,0 +1,3 @@
+[submodule "vendor/taskx"]
+	path = vendor/taskx
+	url = https://github.com/hu3mann/taskX.git

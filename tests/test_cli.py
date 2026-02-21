@@ -43,6 +43,14 @@ class TestCLI:
         assert "status" in result.output
         assert "task" in result.output
 
+    def test_cli_group_help_includes_kernel(self):
+        """Kernel command group should be exposed in top-level help."""
+        runner = CliRunner()
+        result = runner.invoke(cli, ["--help"])
+
+        assert result.exit_code == 0
+        assert "kernel" in result.output
+
     def test_cli_verbose_flag(self):
         """Test verbose flag is passed to context."""
         runner = CliRunner()
