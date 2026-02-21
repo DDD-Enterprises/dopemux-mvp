@@ -112,7 +112,7 @@ class PostgresEventStore(EventStore):
             clauses.append("phase = %s")
             params.append(phase)
         with self._connect() as conn:
-            with conn.cursor(row_factory=self._dict_row_factory()) as cur:
+            with conn.cursor(cursor_factory=self._dict_row_factory()) as cur:
                 cur.execute(
                     f"""
                     SELECT *
