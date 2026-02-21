@@ -5,13 +5,16 @@ type: reference
 owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
-prelude: Artifact registry, canonical writer policy, and deterministic normalization for Repo Truth Extractor v4.
+prelude: Artifact registry, canonical writer policy, and deterministic normalization
+  for Repo Truth Extractor v4.
 graph_metadata:
   node_type: DocPage
   impact: high
   relates_to:
-    - services/repo-truth-extractor/promptsets/v4/artifacts.yaml
-    - services/repo-truth-extractor/run_extraction_v4.py
+  - services/repo-truth-extractor/promptsets/v4/artifacts.yaml
+  - services/repo-truth-extractor/run_extraction_v4.py
+last_review: '2026-02-21'
+next_review: '2026-05-22'
 ---
 # Extraction Artifact Contract v4
 
