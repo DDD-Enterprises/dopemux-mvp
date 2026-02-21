@@ -78,7 +78,7 @@
     {
       "artifact_name": "SERVICE_CATALOG.json",
       "canonical_step": "C9",
-      "sha256": "73a188b86cf8f63322349a110cf87183645763c97a855cf7a818ffdf29fce8a1"
+      "sha256": "62be64dbcaf184574e591f932d06d5a84605c2889ddbaa58a43efcbcb7737f78"
     },
     {
       "artifact_name": "SERVICE_ENTRYPOINTS.json",
@@ -101,6 +101,6 @@
       "sha256": "0343639fac1511a32a4c9a92c7655a6e9f9ad3a600fc6f30b5bdad6806160a97"
     }
   ],
-  "generated_at": "2026-02-20T14:06:23.052021+00:00",
+  "generated_at": "2026-02-20T14:33:42.330000+00:00",
   "phase": "C"
 }
