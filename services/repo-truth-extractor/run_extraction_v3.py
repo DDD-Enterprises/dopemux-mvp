@@ -460,6 +460,22 @@ OUTPUT_SECTION_STOP_PREFIXES = (
 DEFAULT_OUTPUT_BY_STEP = {
     "T1": ("TP_BACKLOG_TOPN.json",),
 }
+DPMX_ROUTING_ENABLE_ENV = "DPMX_ROUTING_ENABLE"
+DPMX_MODEL_INVENTORY_ENV = "DPMX_MODEL_INVENTORY"
+DPMX_MODEL_EXTRACT_ENV = "DPMX_MODEL_EXTRACT"
+DPMX_MODEL_SYNTHESIS_ENV = "DPMX_MODEL_SYNTHESIS"
+DPMX_MODEL_QA_ENV = "DPMX_MODEL_QA"
+STEP_TYPE_MODEL_ENV_VARS: Dict[str, str] = {
+    "inventory": DPMX_MODEL_INVENTORY_ENV,
+    "extract": DPMX_MODEL_EXTRACT_ENV,
+    "synthesis": DPMX_MODEL_SYNTHESIS_ENV,
+    "qa": DPMX_MODEL_QA_ENV,
+}
+PROVIDER_API_KEY_ENV: Dict[str, str] = {
+    "openai": "OPENAI_API_KEY",
+    "gemini": "GEMINI_API_KEY",
+    "xai": "XAI_API_KEY",
+}
 REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A99"},
     "H": {"H0", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H9"},
@@ -1885,6 +1901,161 @@ def resolve_step_tier(phase: str, step_id: str) -> str:
     if token.endswith("0"):
         return "bulk"
     return "extract"
+
+
+def classify_step_type(phase: str, step_id: str) -> str:
+    phase_code = str(phase or "").upper()
+    token = str(step_id or "").upper()
+    if phase_code == "Q" or token.endswith("9"):
+        return "qa"
+    if phase_code in {"R", "S"}:
+        return "synthesis"
+    if token.endswith("0") and phase_code in {"A", "H", "D", "C", "E", "W", "B", "G", "X"}:
+        return "inventory"
+    return "extract"
+
+
+def _env_is_truthy(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _parse_provider_model_env(value: str, env_name: str) -> Tuple[str, str, str]:
+    raw = str(value or "").strip()
+    if not raw:
+        raise RuntimeError(
+            f"{env_name} is required when {DPMX_ROUTING_ENABLE_ENV}=1 and must be provider/model."
+        )
+    if raw.count("/") != 1:
+        raise RuntimeError(
+            f"{env_name} must be provider/model (example: openai/gpt-5-nano). Got: {raw}"
+        )
+    provider_raw, model_raw = raw.split("/", 1)
+    provider = provider_raw.strip().lower()
+    model_id = model_raw.strip()
+    if provider not in PROVIDER_API_KEY_ENV:
+        allowed = ",".join(sorted(PROVIDER_API_KEY_ENV.keys()))
+        raise RuntimeError(f"{env_name} provider must be one of {allowed}. Got: {provider_raw}")
+    if not model_id:
+        raise RuntimeError(f"{env_name} model id is required in provider/model value. Got: {raw}")
+    return (provider, model_id, PROVIDER_API_KEY_ENV[provider])
+
+
+def _resolve_env_step_type_routes() -> Dict[str, Tuple[str, str, str]]:
+    routes: Dict[str, Tuple[str, str, str]] = {}
+    for step_type, env_name in STEP_TYPE_MODEL_ENV_VARS.items():
+        routes[step_type] = _parse_provider_model_env(os.getenv(env_name, ""), env_name)
+    return routes
+
+
+def dpmx_env_routing_payload(validate: bool = False) -> Dict[str, Any]:
+    enabled = _env_is_truthy(DPMX_ROUTING_ENABLE_ENV)
+    payload: Dict[str, Any] = {
+        "enabled": enabled,
+        "models": {
+            step_type: os.getenv(env_name, "")
+            for step_type, env_name in STEP_TYPE_MODEL_ENV_VARS.items()
+        },
+    }
+    if enabled:
+        routes = _resolve_env_step_type_routes() if validate else {}
+        if routes:
+            payload["resolved_routes"] = {
+                step_type: {
+                    "provider": provider,
+                    "model_id": model_id,
+                    "api_key_env": api_key_env,
+                }
+                for step_type, (provider, model_id, api_key_env) in routes.items()
+            }
+    return payload
+
+
+def choose_model_for_step(
+    phase: str,
+    step_id: str,
+    cfg: RunnerConfig,
+) -> Optional[Tuple[str, str, str, str, str]]:
+    del cfg
+    if not _env_is_truthy(DPMX_ROUTING_ENABLE_ENV):
+        return None
+    step_type = classify_step_type(phase, step_id)
+    routes = _resolve_env_step_type_routes()
+    provider, model_id, api_key_env = routes[step_type]
+    return (provider, model_id, api_key_env, step_type, "env_step_type_override")
+
+
+def resolve_effective_step_route(
+    phase: str,
+    step_id: str,
+    cfg: RunnerConfig,
+) -> Dict[str, Any]:
+    step_tier = resolve_step_tier(phase, step_id)
+    step_type = classify_step_type(phase, step_id)
+    chosen = choose_model_for_step(phase, step_id, cfg)
+    reason = "policy_ladder_default"
+    if chosen is not None:
+        provider, model_id, api_key_env, step_type, reason = chosen
+        step_ladder: List[Tuple[str, str, str]] = [(provider, model_id, api_key_env)]
+    else:
+        step_ladder = resolve_step_ladder(cfg.routing_policy, phase, step_id)
+        if not step_ladder:
+            step_ladder = [("openai", "gpt-5-mini", "OPENAI_API_KEY")]
+        provider, model_id, api_key_env = step_ladder[0]
+    return {
+        "step_tier": step_tier,
+        "step_type": step_type,
+        "ladder": [tuple(route) for route in step_ladder],
+        "provider": provider,
+        "model_id": model_id,
+        "api_key_env": api_key_env,
+        "reason": reason,
+    }
+
+
+def write_phase_routing_log(
+    phase_dir: Path,
+    *,
+    phase: str,
+    step_id: str,
+    step_type: str,
+    provider: str,
+    model_id: str,
+    reason: str,
+) -> None:
+    payload_path = phase_dir / "ROUTING_LOG.json"
+    rows: List[Dict[str, Any]] = []
+    if payload_path.exists():
+        try:
+            existing = json.loads(payload_path.read_text(encoding="utf-8"))
+            if isinstance(existing, dict) and isinstance(existing.get("entries"), list):
+                rows = [row for row in existing["entries"] if isinstance(row, dict)]
+        except Exception:
+            rows = []
+    rows = [
+        row
+        for row in rows
+        if not (str(row.get("phase")) == phase and str(row.get("step_id")) == step_id)
+    ]
+    rows.append(
+        {
+            "phase": phase,
+            "step_id": step_id,
+            "step_type": step_type,
+            "model": f"{provider}/{model_id}",
+            "provider": provider,
+            "model_id": model_id,
+            "reason": reason,
+        }
+    )
+    rows.sort(
+        key=lambda row: (
+            str(row.get("phase", "")),
+            step_sort_key(str(row.get("step_id", ""))),
+            str(row.get("step_type", "")),
+            str(row.get("model", "")),
+        )
+    )
+    write_json(payload_path, {"entries": rows})
 
 
 def _normalize_routing_policy(policy: str) -> str:
@@ -5380,17 +5551,39 @@ def execute_step_for_partitions(
         }
 
     raw_dir = phase_dir / "raw"
-    step_tier = resolve_step_tier(phase, step_id)
-    step_ladder = resolve_step_ladder(cfg.routing_policy, phase, step_id)
-    if not step_ladder:
-        step_ladder = [("openai", "gpt-5-mini", "OPENAI_API_KEY")]
-    initial_provider, initial_model_id, initial_api_key_env = step_ladder[0]
+    route_info = resolve_effective_step_route(phase, step_id, cfg)
+    step_tier = str(route_info["step_tier"])
+    step_type = str(route_info["step_type"])
+    step_ladder = [tuple(route) for route in route_info["ladder"]]
+    initial_provider = str(route_info["provider"])
+    initial_model_id = str(route_info["model_id"])
+    initial_api_key_env = str(route_info["api_key_env"])
+    routing_reason = str(route_info["reason"])
     provider, model_id, api_key_env = initial_provider, initial_model_id, initial_api_key_env
     endpoint_base = llm_base_url(initial_provider, cfg)
     transport = transport_for_provider(initial_provider, cfg)
     force_json_output = initial_provider == "gemini"
     max_files = max_files_for_phase(phase, cfg)
     run_id = phase_dir.parent.name
+    if routing_reason == "env_step_type_override":
+        logger.info(
+            "ROUTE phase=%s step=%s type=%s model=%s/%s reason=%s",
+            phase,
+            step_id,
+            step_type,
+            initial_provider,
+            initial_model_id,
+            routing_reason,
+        )
+        write_phase_routing_log(
+            phase_dir,
+            phase=phase,
+            step_id=step_id,
+            step_type=step_type,
+            provider=initial_provider,
+            model_id=initial_model_id,
+            reason=routing_reason,
+        )
     logger.info(
         "Step %s using prompt %s outputs=%s",
         step_id,
@@ -6604,7 +6797,7 @@ def _run_phase_inner(
             phase_tier_defaults[tier_name] = f"{routes[0][0]}/{routes[0][1]}"
     first_step = prompts[0] if prompts else None
     if first_step is not None:
-        first_ladder = resolve_step_ladder(cfg.routing_policy, phase, first_step.step_id)
+        first_ladder = resolve_effective_step_route(phase, first_step.step_id, cfg)["ladder"]
     else:
         first_ladder = []
     provider, model_id, _ = first_ladder[0] if first_ladder else MODEL_ROUTING.get(phase, ("openai", "gpt-5-mini", "OPENAI_API_KEY"))
@@ -6650,10 +6843,10 @@ def _run_phase_inner(
 
     phase_auth_failures = 0
     for prompt_spec in prompts:
-        step_ladder = resolve_step_ladder(cfg.routing_policy, phase, prompt_spec.step_id)
-        provider, model_id, api_key_env = (
-            step_ladder[0] if step_ladder else ("openai", "gpt-5-mini", "OPENAI_API_KEY")
-        )
+        route_info = resolve_effective_step_route(phase, prompt_spec.step_id, cfg)
+        provider = str(route_info["provider"])
+        model_id = str(route_info["model_id"])
+        api_key_env = str(route_info["api_key_env"])
         if provider == "gemini" and not cfg.dry_run:
             probe = run_gemini_auth_probe(
                 run_id=phase_dir.parent.name,
@@ -7483,6 +7676,11 @@ def print_config(
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "partition_workers": args.partition_workers,
             "routing_policy": args.routing_policy,
+            "dpmx_routing_enable": os.getenv(DPMX_ROUTING_ENABLE_ENV, ""),
+            "dpmx_model_inventory": os.getenv(DPMX_MODEL_INVENTORY_ENV, ""),
+            "dpmx_model_extract": os.getenv(DPMX_MODEL_EXTRACT_ENV, ""),
+            "dpmx_model_synthesis": os.getenv(DPMX_MODEL_SYNTHESIS_ENV, ""),
+            "dpmx_model_qa": os.getenv(DPMX_MODEL_QA_ENV, ""),
             "disable_escalation": args.disable_escalation,
             "escalation_max_hops": args.escalation_max_hops,
             "batch_mode": args.batch_mode,
@@ -7505,6 +7703,7 @@ def print_config(
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "routing_ladders": routing_ladders_payload(),
         "effective_model_routing": effective_model_routing_payload(),
+        "dpmx_env_routing": dpmx_env_routing_payload(validate=True),
     }
     print(json.dumps(config_payload, indent=2))
 
