@@ -9128,7 +9128,7 @@ def _build_event_store_for_runner() -> Any:
     except Exception:
         logging.debug("Migration helper failed; continuing.")
 
-    return build_event_store(db_url)
+    return storage.build_event_store(db_url)
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
     """Extract plain text content from an OpenAI response.completed webhook payload."""
     data = payload.get("data")
