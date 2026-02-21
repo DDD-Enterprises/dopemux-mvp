@@ -156,6 +156,9 @@ class DocumentValidator:
     def _matches_prohibited_pattern(self, file_path: str) -> bool:
         """Check if filename matches prohibited patterns."""
         filename = os.path.basename(file_path)
+        # Exclude templates
+        if filename.startswith('TEMPLATE_'):
+            return False
         return any(re.match(pattern, filename, re.IGNORECASE) for pattern in PROHIBITED_PATTERNS)
 
     def _parse_frontmatter(self, content: str) -> Tuple[Optional[Dict], str]:

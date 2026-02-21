@@ -1,3 +1,15 @@
+---
+id: DOC_OUTPUT_SCHEMAS
+title: Doc Output Schemas
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Doc Output Schemas (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Documentation Output Schemas
 
 All JSON outputs from the phased documentation extraction pipeline conform to these schemas.
