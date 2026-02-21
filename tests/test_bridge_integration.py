@@ -27,7 +27,7 @@ async def test_bridge():
     # Create config with the correct API token
     config = SimpleConfig({
         'leantime.api_url': 'http://localhost:8080',
-        'leantime.api_token': 'REPLACE_WITH_LEANTIME_API_TOKEN'
+        'leantime.api_token': os.getenv('LEANTIME_API_TOKEN', 'REPLACE_WITH_LEANTIME_API_TOKEN')
     })
 
     print("🔗 Testing Leantime JSON-RPC Bridge Integration")

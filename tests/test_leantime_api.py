@@ -10,7 +10,7 @@ import json
 
 # API Configuration
 LEANTIME_API_URL = "http://localhost:8080"
-LEANTIME_API_TOKEN = "REPLACE_WITH_LEANTIME_API_TOKEN"
+LEANTIME_API_TOKEN = os.getenv("LEANTIME_API_TOKEN", "REPLACE_WITH_LEANTIME_API_TOKEN")
 
 def test_leantime_api():
     """Test LeanTime API connectivity and basic endpoints"""
