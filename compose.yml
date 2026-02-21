@@ -624,7 +624,7 @@ services:
       interval: 30s
 
   # OpenAI Webhook Receiver Sidecar
-  webhook_receiver:
+  webhook-receiver:
     build:
       context: .
       dockerfile: services/webhook_receiver/Dockerfile
