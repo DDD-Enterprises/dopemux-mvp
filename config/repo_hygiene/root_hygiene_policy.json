@@ -31,7 +31,7 @@
     "src",
     "tests",
     "tmp",
-    "task_packets",
+    "task-packets",
     "tools",
     "ui-dashboard",
     "ui-dashboard-backend",
