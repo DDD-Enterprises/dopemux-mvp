@@ -12,17 +12,23 @@ LEDGER_ROOT = ROOT / "services" / "webhook_receiver"
 
 
 def _parse_db_url(db_url: str) -> dict:
-    token = db_url.strip()
-    if token.startswith("sqlite:///"):
-        path = token.removeprefix("sqlite:///")
-        if not path:
-            raise ValueError("Invalid sqlite URL")
-        return {"backend": "sqlite", "path": "/" + path if not path.startswith("/") else path}
-    if token.startswith("postgresql://") or token.startswith("postgresql+psycopg://"):
-        return {"backend": "postgres", "url": token}
-    raise ValueError(f"Unsupported DB URL: {token}")
+    """
+    Delegate DB URL parsing to the canonical implementation used by the webhook ledger.
 
+    This avoids duplicating logic and keeps supported schemes in sync with
+    services/webhook_receiver/ledger/interface.py.
+    """
+    # Import lazily and ensure the project root is on sys.path so the
+    # services package is importable when this script is run directly.
+    import sys
 
+    root_str = str(ROOT)
+    if root_str not in sys.path:
+        sys.path.insert(0, root_str)
+
+    from services.webhook_receiver.ledger.interface import parse_db_url as ledger_parse_db_url
+
+    return ledger_parse_db_url(db_url)
 def _migration_files(backend: str) -> List[Path]:
     migration_dir = LEDGER_ROOT / "migrations" / backend
     if not migration_dir.exists():
