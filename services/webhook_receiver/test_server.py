@@ -16,15 +16,36 @@ def _load_module(name: str, module_path: Path):
     Python 3.13 dataclasses can resolve forward-reference annotations."""
     if name in sys.modules:
         return sys.modules[name]
-    spec = importlib.util.spec_from_file_location(name, module_path)
-    assert spec is not None
-    module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    sys.modules[name] = module  # register before exec so dataclasses can resolve annotations
-    spec.loader.exec_module(module)
-    return module
 
+    # Temporarily adjust sys.path so that absolute imports within the loaded
+    # module (e.g. `from ledger.interface ...`) resolve against this service
+    # rather than an unrelated third-party package.
+    old_sys_path = list(sys.path)
+    try:
+        module_dir = str(module_path.parent)
+        if module_dir not in sys.path:
+            sys.path.insert(0, module_dir)
 
+        # Also add the webhook_receiver service root (containing the `ledger`
+        # package) if we can locate it by walking up from the module path.
+        service_root = module_path.parent
+        while service_root.parent != service_root and service_root.name != "webhook_receiver":
+            service_root = service_root.parent
+        if service_root.name == "webhook_receiver":
+            service_root_str = str(service_root)
+            if service_root_str not in sys.path:
+                sys.path.insert(0, service_root_str)
+
+        spec = importlib.util.spec_from_file_location(name, module_path)
+        assert spec is not None
+        module = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        # Register before exec so dataclasses can resolve annotations.
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        sys.path = old_sys_path
 def _load_server_module():
     root = Path(__file__).resolve().parents[2]
     return _load_module(

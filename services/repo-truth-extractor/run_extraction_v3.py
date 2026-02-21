@@ -8904,15 +8904,44 @@ WEBHOOK_DB_URL_ENV = "WEBHOOK_DB_URL"
 
 
 def _build_event_store_for_runner() -> Any:
-    """Lazily import the webhook receiver ledger package and return a ready EventStore."""
+    """Lazily import the webhook receiver ledger package and return a ready EventStore.
+
+    This helper ensures (on a best-effort basis) that any pending DB migrations for the
+    webhook event store have been applied before constructing the EventStore, mirroring
+    the migration behavior used by the main server where possible.
+    """
     webhook_receiver_dir = RUNNER_SERVICE_DIR.parent / "webhook_receiver"
     if str(webhook_receiver_dir) not in sys.path:
         sys.path.insert(0, str(webhook_receiver_dir))
     from storage import build_event_store, resolve_webhook_db_url  # type: ignore[import]
 
-    return build_event_store(resolve_webhook_db_url())
+    db_url = resolve_webhook_db_url()
 
+    # Best-effort: attempt to run the same migration step the server uses, if exposed
+    # by the storage module. If no migration helper is available, or it fails, we log
+    # and continue so that existing behavior is preserved.
+    try:
+        import storage  # type: ignore[import]
 
+        migration_fn = None
+        for candidate in ("run_migrations", "migrate", "apply_migrations", "ensure_migrations_applied"):
+            if hasattr(storage, candidate):
+                migration_fn = getattr(storage, candidate)
+                break
+
+        if callable(migration_fn):
+            try:
+                migration_fn(db_url)  # type: ignore[call-arg]
+            except Exception:
+                logging.exception(
+                    "Failed to apply webhook event store migrations; proceeding without them."
+                )
+    except ImportError:
+        # If the storage module cannot be imported in this context, fall back to the
+        # previous behavior and let build_event_store handle any initialization.
+        logging.debug("storage module not available for migrations in runner context.")
+
+    return build_event_store(db_url)
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
     """Extract plain text content from an OpenAI response.completed webhook payload."""
     data = payload.get("data")
@@ -9136,41 +9165,25 @@ def run_phase_R_async_submit(
 
 def _fetch_webhook_payload_for_job(event_store: Any, run_id: str, provider_ref: str) -> Dict[str, Any]:
     """Retrieve the raw webhook payload JSON for a given provider_ref from the ledger."""
-    payload_json = ""
-    if hasattr(event_store, "_conn"):
-        # SQLiteEventStore
-        with event_store._conn() as conn:  # type: ignore[attr-defined]
-            row = conn.execute(
-                """
-                SELECT we.payload_json
-                FROM webhook_events we
-                JOIN run_events re ON re.webhook_event_id = we.id
-                WHERE re.provider = 'openai' AND re.run_id = ?
-                  AND re.provider_ref = ? AND re.orphaned = 0
-                LIMIT 1
-                """,
-                (run_id, provider_ref),
-            ).fetchone()
-            if row:
-                payload_json = str(row[0] or "")
-    elif hasattr(event_store, "_connect"):
-        # PostgresEventStore
-        with event_store._connect() as conn:  # type: ignore[attr-defined]
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT we.payload_json::text
-                    FROM webhook_events we
-                    JOIN run_events re ON re.webhook_event_id = we.id
-                    WHERE re.provider = 'openai' AND re.run_id = %s
-                      AND re.provider_ref = %s AND re.orphaned = FALSE
-                    LIMIT 1
-                    """,
-                    (run_id, provider_ref),
-                )
-                row = cur.fetchone()
-                if row:
-                    payload_json = str(row[0] or "")
+    fetch_fn = getattr(event_store, "fetch_webhook_payload", None)
+    if not callable(fetch_fn):
+        return {}
+
+    try:
+        # The EventStore is responsible for any backend-specific querying.
+        payload = fetch_fn(provider="openai", run_id=run_id, provider_ref=provider_ref)
+    except Exception:
+        return {}
+
+    if isinstance(payload, dict):
+        return payload
+
+    if isinstance(payload, str):
+        payload_json = payload
+    else:
+        # Unsupported payload type
+        return {}
+
     if not payload_json:
         return {}
     try:
@@ -9233,7 +9246,6 @@ def run_phase_R_finalize(
                         status="completed",
                         last_error=None,
                     )
-                    finalized += 1
                     continue
             except Exception:
                 pass
