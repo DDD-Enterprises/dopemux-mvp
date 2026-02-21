@@ -9208,8 +9208,8 @@ def run_phase_R_async_submit(
                     if _p.get("status") != "pending" and isinstance(_p.get("artifacts"), list):
                         logger.info("Async R: %s/%s already finalized, skipping", step_id, partition_id)
                         continue
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("Async R: failed to parse idempotency artifact %s: %s", out_json, exc)
 
             context_budget = max(cfg.max_chars - len(prompt_prefix), 2048)
             context, _ = build_partition_context(
@@ -9406,8 +9406,8 @@ def run_phase_R_finalize(
                         last_error=None,
                     )
                     continue
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("Finalize R: failed to parse idempotency artifact %s: %s", out_json, exc)
 
         # Not yet completed via webhook
         if external_job_id not in completed_refs:
@@ -9472,8 +9472,8 @@ def run_phase_R_finalize(
         if pending_path.exists():
             try:
                 pending_path.unlink()
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning("Failed to remove pending placeholder %s: %s", pending_path, exc)
 
         event_store.update_async_job_status(
             provider="openai",
