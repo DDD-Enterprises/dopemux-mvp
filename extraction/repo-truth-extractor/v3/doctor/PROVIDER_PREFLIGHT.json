@@ -1,23 +1,35 @@
 {
   "batch_capability": {
-    "checks": [],
-    "enabled": false,
+    "checks": [
+      {
+        "api_key_env": "GEMINI_API_KEY",
+        "api_key_present": true,
+        "provider": "gemini"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "api_key_present": true,
+        "provider": "openai"
+      },
+      {
+        "api_key_env": "XAI_API_KEY",
+        "api_key_present": true,
+        "provider": "xai"
+      }
+    ],
+    "enabled": true,
     "provider": "auto",
-    "status": "SKIPPED"
+    "status": "PASS"
   },
-  "failed_providers": [
-    "openai",
-    "openai",
-    "openai"
-  ],
-  "generated_at": "2026-02-20T14:16:30.952112+00:00",
+  "failed_providers": [],
+  "generated_at": "2026-02-20T14:39:11.862411+00:00",
   "probes": [
     {
       "api_key_env_name": "OPENAI_API_KEY",
       "api_key_env_resolved": "OPENAI_API_KEY",
       "api_key_present": true,
       "endpoint_effective": "https://api.openai.com/v1/chat/completions",
-      "failure_type": "payload",
+      "failure_type": null,
       "gemini_auth_attempt_sequence": null,
       "gemini_auth_mode_effective": null,
       "gemini_auth_mode_requested": null,
@@ -25,7 +37,7 @@
       "provider": "openai",
       "provider_error_reason": null,
       "provider_signature": "provider=openai;model=gpt-5-nano;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
-      "status_code": 400,
+      "status_code": 200,
       "transport": "openai_sdk"
     },
     {
@@ -67,7 +79,7 @@
       "api_key_env_resolved": "OPENAI_API_KEY",
       "api_key_present": true,
       "endpoint_effective": "https://api.openai.com/v1/chat/completions",
-      "failure_type": "payload",
+      "failure_type": null,
       "gemini_auth_attempt_sequence": null,
       "gemini_auth_mode_effective": null,
       "gemini_auth_mode_requested": null,
@@ -75,7 +87,7 @@
       "provider": "openai",
       "provider_error_reason": null,
       "provider_signature": "provider=openai;model=gpt-5-mini;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
-      "status_code": 400,
+      "status_code": 200,
       "transport": "openai_sdk"
     },
     {
@@ -83,15 +95,15 @@
       "api_key_env_resolved": "OPENAI_API_KEY",
       "api_key_present": true,
       "endpoint_effective": "https://api.openai.com/v1/chat/completions",
-      "failure_type": "payload",
+      "failure_type": null,
       "gemini_auth_attempt_sequence": null,
       "gemini_auth_mode_effective": null,
       "gemini_auth_mode_requested": null,
-      "model_id": "gpt-5.2-extended",
+      "model_id": "gpt-5.2",
       "provider": "openai",
       "provider_error_reason": null,
-      "provider_signature": "provider=openai;model=gpt-5.2-extended;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
-      "status_code": 404,
+      "provider_signature": "provider=openai;model=gpt-5.2;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+      "status_code": 200,
       "transport": "openai_sdk"
     }
   ],
@@ -111,9 +123,9 @@
       "model_id": "gpt-5-nano",
       "provider": "openai"
     },
-    "openai:gpt-5.2-extended:OPENAI_API_KEY": {
+    "openai:gpt-5.2:OPENAI_API_KEY": {
       "api_key_env": "OPENAI_API_KEY",
-      "model_id": "gpt-5.2-extended",
+      "model_id": "gpt-5.2",
       "provider": "openai"
     },
     "xai:grok-code-fast-1:XAI_API_KEY": {
@@ -124,6 +136,6 @@
   },
   "routing_policy": "cost",
   "routing_policy_version": "RTE_ROUTING_V1",
-  "run_id": "rte_scan_c2",
-  "status": "FAIL"
+  "run_id": "rte_full_batch_20260220_063852",
+  "status": "PASS"
 }

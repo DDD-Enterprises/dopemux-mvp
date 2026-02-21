@@ -1,0 +1,48 @@
+{
+  "api_key_env_name": "GEMINI_API_KEY",
+  "api_key_env_resolved": "GEMINI_API_KEY",
+  "api_key_length": 39,
+  "api_key_present": true,
+  "checks": [
+    {
+      "auth_present_flags": {
+        "has_auth": false,
+        "has_xgoog": true,
+        "sdk_api_key_present": true,
+        "used_query_key": false
+      },
+      "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      "exception_message_excerpt": null,
+      "exception_type": null,
+      "failure_bucket": "none",
+      "failure_type": null,
+      "mode": "sdk_api_key",
+      "ok": true,
+      "provider_error_reason": null,
+      "provider_signature": "provider=gemini;model=gemini-2.5-flash;host=generativelanguage.googleapis.com;path=/v1beta/models/gemini-2.5-flash:generateContent;auth_mode=sdk_api_key",
+      "response_received": true,
+      "sdk_response_summary": {
+        "candidate_count": 1,
+        "finish_reason": "STOP",
+        "text_length": 2
+      },
+      "sent_header_keys": [],
+      "status_code": 200,
+      "transport": "sdk"
+    }
+  ],
+  "failed_modes": [],
+  "gemini_auth_mode_requested": "auto",
+  "generated_at": "2026-02-20T14:33:41.518764+00:00",
+  "model_id": "gemini-2.5-flash",
+  "modes_tested": [
+    "sdk_api_key"
+  ],
+  "phase": "A",
+  "provider": "gemini",
+  "succeeded_modes": [
+    "sdk_api_key"
+  ],
+  "summary": "PASS provider=gemini transport=sdk endpoint=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent response_received=True succeeded_modes=sdk_api_key failed_modes=-",
+  "transport": "sdk"
+}

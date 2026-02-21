@@ -488,8 +488,8 @@
               {
                 "excerpt": "desktop-commander:",
                 "line_range": [
-                  582,
-                  582
+                  585,
+                  585
                 ],
                 "path": "compose.yml"
               }
@@ -505,8 +505,8 @@
               {
                 "excerpt": "- DISPLAY=${DISPLAY:-:0}",
                 "line_range": [
-                  594,
-                  594
+                  597,
+                  597
                 ],
                 "path": "compose.yml"
               }
@@ -519,8 +519,8 @@
               {
                 "excerpt": "- MCP_SERVER_PORT=3012",
                 "line_range": [
-                  593,
-                  593
+                  596,
+                  596
                 ],
                 "path": "compose.yml"
               }
@@ -652,6 +652,20 @@
         "enabled_in_smoke": true,
         "env_contract_exceptions": [],
         "env_vars": [
+          {
+            "evidence": [
+              {
+                "excerpt": "- ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097}",
+                "line_range": [
+                  489,
+                  489
+                ],
+                "path": "compose.yml"
+              }
+            ],
+            "name": "ALLOWED_ORIGINS",
+            "required": false
+          },
           {
             "evidence": [
               {
@@ -2338,8 +2352,8 @@
               {
                 "excerpt": "leantime-bridge:",
                 "line_range": [
-                  602,
-                  602
+                  605,
+                  605
                 ],
                 "path": "compose.yml"
               }
@@ -2355,8 +2369,8 @@
               {
                 "excerpt": "- LEANTIME_API_TOKEN=${LEANTIME_API_TOKEN:-${LEANTIME_TOKEN:-}}",
                 "line_range": [
-                  618,
-                  618
+                  621,
+                  621
                 ],
                 "path": "compose.yml"
               }
@@ -2369,8 +2383,8 @@
               {
                 "excerpt": "- LEANTIME_API_URL=${LEANTIME_API_URL:-${LEANTIME_URL:-http://leantime:80}}",
                 "line_range": [
-                  617,
-                  617
+                  620,
+                  620
                 ],
                 "path": "compose.yml"
               }
@@ -2383,8 +2397,8 @@
               {
                 "excerpt": "- MCP_SERVER_HOST=0.0.0.0",
                 "line_range": [
-                  615,
-                  615
+                  618,
+                  618
                 ],
                 "path": "compose.yml"
               }
@@ -2397,8 +2411,8 @@
               {
                 "excerpt": "- MCP_SERVER_PORT=3015",
                 "line_range": [
-                  616,
-                  616
+                  619,
+                  619
                 ],
                 "path": "compose.yml"
               }
