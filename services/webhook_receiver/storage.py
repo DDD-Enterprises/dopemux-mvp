@@ -21,7 +21,7 @@ def resolve_webhook_db_url() -> str:
 
 
 def build_event_store(db_url: Optional[str] = None) -> EventStore:
-    resolved = db_url.strip() if db_url else resolve_webhook_db_url()
+    resolved = db_url.strip() if db_url is not None else resolve_webhook_db_url()
     parsed = parse_db_url(resolved)
     if parsed["backend"] == "sqlite":
         return SQLiteEventStore(parsed["path"])
