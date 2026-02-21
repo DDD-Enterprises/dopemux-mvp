@@ -5,10 +5,37 @@ repos:
       # Frontmatter validation (enable existing)
       - id: docs-frontmatter-guard
         name: Validate YAML frontmatter in docs
-        entry: python scripts/docs_frontmatter_guard.py --fix
+        entry: python3 scripts/docs_frontmatter_guard.py --fix
         language: system
-        files: ^docs/.*\.md$
-        exclude: ^docs/archive/
+        files: \.md$
+        exclude: |
+          (?x)^(
+            node_modules/|
+            vendor/|
+            archive/|
+            reports/|
+            out/|
+            _audit_out/|
+            extraction/|
+            quarantine/|
+            tests/|
+            examples/|
+            \.claude/|
+            \.taskx/|
+            \.github/|
+            \.conport/|
+            conport_export/|
+            \.pytest_cache/|
+            # Specific root files that shouldn't have frontmatter
+            CHANGELOG\.md$|
+            INSTALL\.md$|
+            QUICK_START\.md$|
+            TASKX_INTEGRATION_ANALYSIS\.md$|
+            COMPACT-DASHBOARD-COMPLETE\.md$|
+            AG-master_plan\.md$|
+            # Standard metadata files anywhere
+            (.*/)?(README|CHANGELOG|CONTRIBUTING|LICENSE|SECURITY)\.md$
+          )
 
       # Graph schema validation
       - id: docs-graph-validator
