@@ -25,23 +25,29 @@ logger = logging.getLogger(__name__)
 
 # Mapping from profile-friendly names to actual Claude config names
 MCP_NAME_MAPPING = {
-    # Profile name -> Claude config name
-    "serena-v2": "serena",
-    "tavily": "exa",  # Exa is what's actually in the config
-    "dope-context": "claude-context",  # Canonicalize legacy key to claude-context
-    "mas-sequential-thinking": "mas-sequential-thinking",
-    # Direct mappings (same name in both)
-    "conport": "conport",
-    "zen": "zen",
-    "pal": "pal",
-    "gpt-researcher": "gpt-researcher",
-    "claude-context": "claude-context",
-    "desktop-commander": "desktop-commander",
-    "morphllm-fast-apply": "morphllm-fast-apply",
-    "morph-llm": "morph-llm",
+    # Profile name -> Claude config name (with dopemux- prefix)
+    "serena-v2": "dopemux-serena",
+    "serena": "dopemux-serena",
+    "tavily": "dopemux-exa",  # Exa is what's actually in the config
+    "exa": "dopemux-exa",
+    "dope-context": "dopemux-claude-context",  # Canonicalize legacy key to claude-context
+    "dope-context-legacy": "dopemux-dope-context",
+    "mas-sequential-thinking": "dopemux-mas-sequential-thinking",
+    # Direct mappings (prefixed)
+    "conport": "dopemux-conport",
+    "zen": "dopemux-zen",
+    "pal": "dopemux-pal",
+    "gpt-researcher": "dopemux-gpt-researcher",
+    "gpt-researcher-legacy": "gpt-researcher",  # Old name fallback
+    "claude-context": "dopemux-claude-context",
+    "desktop-commander": "dopemux-desktop-commander",
+    "morphllm-fast-apply": "dopemux-morphllm-fast-apply",
+    "morph-llm": "dopemux-morphllm-fast-apply",
     "magic-mcp": "magic-mcp",
     "playwright": "playwright",
-    "sequential_thinking": "sequential_thinking",
+    "sequential_thinking": "dopemux-mas-sequential-thinking",
+    # Legacy unprefixed names (for backwards compatibility)
+    "leantime-bridge": "dopemux-leantime-bridge",
 }
 
 
