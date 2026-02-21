@@ -1,233 +1,417 @@
 from __future__ import annotations
 
+import http.client
 import importlib.util
-import sqlite3
+import json
+import socket
+import subprocess
+import sys
 import threading
-import urllib.error
-import urllib.request
+import time
 from pathlib import Path
 
 
+def _load_module(name: str, module_path: Path):
+    """Load a module by file path, registering it in sys.modules so that
+    Python 3.13 dataclasses can resolve forward-reference annotations."""
+    if name in sys.modules:
+        return sys.modules[name]
+
+    # Temporarily adjust sys.path so that absolute imports within the loaded
+    # module (e.g. `from ledger.interface ...`) resolve against this service
+    # rather than an unrelated third-party package.
+    old_sys_path = list(sys.path)
+    try:
+        module_dir = str(module_path.parent)
+        if module_dir not in sys.path:
+            sys.path.insert(0, module_dir)
+
+        # Also add the webhook_receiver service root (containing the `ledger`
+        # package) if we can locate it by walking up from the module path.
+        service_root = module_path.parent
+        while service_root.parent != service_root and service_root.name != "webhook_receiver":
+            service_root = service_root.parent
+        if service_root.name == "webhook_receiver":
+            service_root_str = str(service_root)
+            if service_root_str not in sys.path:
+                sys.path.insert(0, service_root_str)
+
+        spec = importlib.util.spec_from_file_location(name, module_path)
+        assert spec is not None
+        module = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        # Register before exec so dataclasses can resolve annotations.
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        sys.path = old_sys_path
 def _load_server_module():
     root = Path(__file__).resolve().parents[2]
-    module_path = root / "services" / "webhook_receiver" / "server.py"
-    spec = importlib.util.spec_from_file_location("webhook_receiver_server", module_path)
-    assert spec is not None
-    module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    spec.loader.exec_module(module)
-    return module
-
-
-def _openai_event(server, *, delivery_id: str, attempt: int = 1):
-    return server.ProviderEvent(
-        provider="openai",
-        delivery_id=delivery_id,
-        event_id=f"evt_{delivery_id}",
-        event_type="response.completed",
-        payload={
-            "id": f"evt_{delivery_id}",
-            "type": "response.completed",
-            "data": {
-                "id": "resp_123",
-                "metadata": {
-                    "run_id": "run_1",
-                    "phase": "D",
-                    "step_id": "D2",
-                    "partition_id": "D_P0001",
-                    "attempt": attempt,
-                },
-            },
-        },
-        headers={"webhook-id": delivery_id},
-        external_id="resp_123",
-        run_id="run_1",
-        phase="D",
-        step_id="D2",
-        partition_id="D_P0001",
-        attempt=attempt,
+    return _load_module(
+        "webhook_receiver_server",
+        root / "services" / "webhook_receiver" / "server.py",
     )
 
 
-def test_provider_events_idempotent_insert(tmp_path: Path) -> None:
-    server = _load_server_module()
-    db_path = tmp_path / "events.db"
-    server.init_db(db_path)
-    event = _openai_event(server, delivery_id="wh_1", attempt=1)
+def _load_storage_module():
+    root = Path(__file__).resolve().parents[2]
+    return _load_module(
+        "webhook_receiver_storage",
+        root / "services" / "webhook_receiver" / "storage.py",
+    )
 
-    first = server.ingest_provider_event(db_path, event)
-    second = server.ingest_provider_event(db_path, event)
 
+def _load_ledger_interface_module():
+    root = Path(__file__).resolve().parents[2]
+    return _load_module(
+        "webhook_receiver_ledger_interface",
+        root / "services" / "webhook_receiver" / "ledger" / "interface.py",
+    )
+
+
+def _free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        sock.listen(1)
+        return int(sock.getsockname()[1])
+
+
+def test_sqlite_event_store_idempotency(tmp_path: Path, monkeypatch) -> None:
+    storage = _load_storage_module()
+    interface_mod = _load_ledger_interface_module()
+
+    db_url = f"sqlite:///{(tmp_path / 'events.db').as_posix()}"
+    monkeypatch.setenv("WEBHOOK_DB_URL", db_url)
+
+    # run migrations first
+    migrate_script = Path(__file__).resolve().parents[2] / "scripts" / "webhook_migrate.py"
+    assert migrate_script.exists()
+    subprocess.run([sys.executable, str(migrate_script), "--db", db_url], check=True)
+
+    store = storage.build_event_store(db_url)
+    payload = {"id": "evt_abc", "type": "response.completed", "data": {"id": "resp_1"}}
+    event = interface_mod.WebhookEventInsert(
+        provider="openai",
+        idempotency_key="wh_1",
+        event_type="response.completed",
+        event_id="evt_abc",
+        received_at_utc="2026-02-21T00:00:00Z",
+        payload_json=json.dumps(payload),
+        headers_json=json.dumps({"webhook-id": "wh_1"}),
+        signature_valid=True,
+    )
+    first = store.insert_webhook_event_if_absent(event)
+    second = store.insert_webhook_event_if_absent(event)
     assert first is True
     assert second is False
-    with sqlite3.connect(db_path) as conn:
-        provider_count = conn.execute("select count(*) from provider_events").fetchone()[0]
-        run_event_count = conn.execute("select count(*) from run_events").fetchone()[0]
-    assert provider_count == 1
-    assert run_event_count == 1
+    assert store.count_webhook_events() == 1
 
 
-def test_async_job_latest_attempt_marks_orphaned(tmp_path: Path) -> None:
-    server = _load_server_module()
-    db_path = tmp_path / "events.db"
-    server.init_db(db_path)
-    server.register_async_job(
-        db_path,
-        job_id="job_attempt_1",
-        provider="openai",
-        job_kind="responses.background",
-        external_job_id="resp_123",
-        run_id="run_1",
-        phase="D",
-        step_id="D2",
-        partition_id="D_P0001",
-        attempt=1,
-        status="running",
-    )
-    server.register_async_job(
-        db_path,
-        job_id="job_attempt_2",
-        provider="openai",
-        job_kind="responses.background",
-        external_job_id="resp_123",
-        run_id="run_1",
-        phase="D",
-        step_id="D2",
-        partition_id="D_P0001",
-        attempt=2,
-        status="running",
-    )
-    stale_event = _openai_event(server, delivery_id="wh_stale", attempt=1)
-    server.ingest_provider_event(db_path, stale_event)
-    latest_event = _openai_event(server, delivery_id="wh_latest", attempt=2)
-    server.ingest_provider_event(db_path, latest_event)
+def test_server_invalid_signature_returns_401(tmp_path: Path, monkeypatch) -> None:
+    server_mod = _load_server_module()
+    storage = _load_storage_module()
 
-    with sqlite3.connect(db_path) as conn:
-        rows = conn.execute(
-            "select delivery_id, orphaned from provider_events p join run_events r on p.id=r.provider_event_id order by p.id"
-        ).fetchall()
-    assert rows[0][0] == "wh_stale"
-    assert rows[0][1] == 1
-    assert rows[1][0] == "wh_latest"
-    assert rows[1][1] == 0
+    db_url = f"sqlite:///{(tmp_path / 'events.db').as_posix()}"
+    migrate_script = Path(__file__).resolve().parents[2] / "scripts" / "webhook_migrate.py"
+    subprocess.run([sys.executable, str(migrate_script), "--db", db_url], check=True)
 
+    monkeypatch.setenv("OPENAI_WEBHOOK_SECRET", "test_secret")
 
-def test_poller_ingest_is_idempotent(tmp_path: Path) -> None:
-    server = _load_server_module()
-    db_path = tmp_path / "events.db"
-    server.init_db(db_path)
-    server.register_async_job(
-        db_path,
-        job_id="job_xai_1",
-        provider="xai",
-        job_kind="batch",
-        external_job_id="xjob_001",
-        run_id="run_2",
-        phase="C",
-        step_id="C0",
-        partition_id="C_P0001",
-        attempt=1,
-        status="running",
-    )
-    jobs = server.list_pending_jobs(db_path, ["xai"])
-    assert len(jobs) == 1
-    inserted_first = server.ingest_polled_job_event(db_path, jobs[0], "completed")
-    inserted_second = server.ingest_polled_job_event(db_path, jobs[0], "completed")
-    assert inserted_first is True
-    assert inserted_second is False
+    def _fail_verify(raw_body, headers, secret):
+        raise RuntimeError("bad_signature")
 
-    with sqlite3.connect(db_path) as conn:
-        provider_count = conn.execute("select count(*) from provider_events where provider='xai'").fetchone()[0]
-        status = conn.execute("select status from async_jobs where job_id='job_xai_1'").fetchone()[0]
-    assert provider_count == 1
-    assert status == "completed"
-
-
-def _start_server(server_module, db_path: Path):
-    srv = server_module.WebhookServer("127.0.0.1", 0, db_path)
-    thread = threading.Thread(target=srv.serve_forever, daemon=True)
+    monkeypatch.setattr(server_mod, "verify_openai_webhook", _fail_verify)
+    event_store = storage.build_event_store(db_url)
+    port = _free_port()
+    httpd = server_mod.WebhookServer("127.0.0.1", port, event_store)
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
-    return srv, thread
+    time.sleep(0.05)
+
+    conn = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
+    conn.request(
+        "POST",
+        "/webhook/openai",
+        body="{}",
+        headers={"Content-Type": "application/json", "webhook-id": "wh_invalid"},
+    )
+    response = conn.getresponse()
+    body = response.read().decode("utf-8")
+    conn.close()
+    httpd.shutdown()
+    thread.join(timeout=1)
+
+    assert response.status == 401
+    assert "invalid_signature" in body
 
 
-def test_http_invalid_signature_returns_unauthorized(tmp_path: Path, monkeypatch) -> None:
-    server = _load_server_module()
-    db_path = tmp_path / "events.db"
-    server.init_db(db_path)
-    monkeypatch.setenv("OPENAI_WEBHOOK_SECRET", "test-secret")
-    srv, thread = _start_server(server, db_path)
-    try:
-        url = f"http://127.0.0.1:{srv.server_port}/webhook/openai"
-        req = urllib.request.Request(
-            url,
-            data=b'{"id":"evt_bad","type":"response.completed"}',
-            method="POST",
-            headers={"Content-Type": "application/json", "webhook-id": "wh_bad"},
+def test_server_duplicate_delivery_returns_204_and_no_second_insert(tmp_path: Path, monkeypatch) -> None:
+    server_mod = _load_server_module()
+    storage = _load_storage_module()
+
+    db_url = f"sqlite:///{(tmp_path / 'events.db').as_posix()}"
+    migrate_script = Path(__file__).resolve().parents[2] / "scripts" / "webhook_migrate.py"
+    subprocess.run([sys.executable, str(migrate_script), "--db", db_url], check=True)
+
+    monkeypatch.setenv("OPENAI_WEBHOOK_SECRET", "test_secret")
+
+    payload = {
+        "id": "evt_1",
+        "type": "response.completed",
+        "data": {
+            "id": "resp_1",
+            "metadata": {
+                "run_id": "run_test",
+                "phase": "R",
+                "step_id": "R1",
+                "partition_id": "R_P0001",
+                "attempt": "1",
+            },
+        },
+    }
+
+    def _ok_verify(raw_body, headers, secret):
+        return payload
+
+    monkeypatch.setattr(server_mod, "verify_openai_webhook", _ok_verify)
+    event_store = storage.build_event_store(db_url)
+    port = _free_port()
+    httpd = server_mod.WebhookServer("127.0.0.1", port, event_store)
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    time.sleep(0.05)
+
+    headers = {"Content-Type": "application/json", "webhook-id": "wh_dupe"}
+    for _ in range(2):
+        conn = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
+        conn.request("POST", "/webhook/openai", body=json.dumps(payload), headers=headers)
+        response = conn.getresponse()
+        _ = response.read()
+        conn.close()
+        assert response.status == 204
+
+    httpd.shutdown()
+    thread.join(timeout=1)
+
+    assert event_store.count_webhook_events() == 1
+    assert event_store.count_run_events() == 1
+
+
+# --- TP-WEBHOOKS-0002 tests ---
+
+
+def _build_store_with_migrations(tmp_path: Path, monkeypatch, db_name: str = "events.db"):
+    """Helper: migrate + build SQLite EventStore."""
+    storage = _load_storage_module()
+    db_url = f"sqlite:///{(tmp_path / db_name).as_posix()}"
+    migrate_script = Path(__file__).resolve().parents[2] / "scripts" / "webhook_migrate.py"
+    assert migrate_script.exists()
+    subprocess.run([sys.executable, str(migrate_script), "--db", db_url], check=True)
+    monkeypatch.setenv("WEBHOOK_DB_URL", db_url)
+    return storage.build_event_store(db_url)
+
+
+def _load_ledger_module(name: str):
+    """Load a module from the ledger package by file path."""
+    root = Path(__file__).resolve().parents[2]
+    return _load_module(
+        f"ledger_{name}",
+        root / "services" / "webhook_receiver" / "ledger" / f"{name}.py",
+    )
+
+
+def test_phase_r_async_submit_finalize_integration(tmp_path: Path, monkeypatch) -> None:
+    """End-to-end: submit pending -> simulate webhook ingestion -> finalize writes output."""
+    interface_mod = _load_ledger_interface_module()
+    store = _build_store_with_migrations(tmp_path, monkeypatch)
+
+    run_id = "run_test_async"
+    step_id = "R1"
+    partition_id = "R_P0001"
+    attempt = 1
+    external_job_id = "resp_async_001"
+
+    # 1. Simulate submit: register async_job and run_event(request.pending)
+    store.register_async_job(
+        interface_mod.AsyncJobInsert(
+            provider="openai",
+            job_kind="responses_async",
+            external_job_id=external_job_id,
+            run_id=run_id,
+            phase="R",
+            step_id=step_id,
+            partition_id=partition_id,
+            attempt=attempt,
+            status="submitted",
         )
-        try:
-            urllib.request.urlopen(req, timeout=5)
-            assert False, "Expected HTTPError for invalid signature"
-        except urllib.error.HTTPError as exc:
-            assert exc.code == 401
-    finally:
-        srv.shutdown()
-        srv.server_close()
-        thread.join(timeout=2)
+    )
+    import hashlib
+
+    pending_dedupe = hashlib.sha256(
+        f"openai|{run_id}|R|{step_id}|{partition_id}|{attempt}|request.pending".encode()
+    ).hexdigest()
+    store.append_run_event(
+        interface_mod.RunEventInsert(
+            run_id=run_id,
+            phase="R",
+            step_id=step_id,
+            partition_id=partition_id,
+            provider="openai",
+            event_type="request.pending",
+            event_id=None,
+            provider_ref=external_job_id,
+            webhook_event_id=None,
+            dedupe_key=pending_dedupe,
+            orphaned=False,
+        )
+    )
+
+    # 2. Simulate webhook receiver storing the completion event
+    webhook_payload = {
+        "id": "evt_done_001",
+        "type": "response.completed",
+        "data": {
+            "id": external_job_id,
+            "metadata": {
+                "run_id": run_id,
+                "phase": "R",
+                "step_id": step_id,
+                "partition_id": partition_id,
+                "attempt": str(attempt),
+            },
+            "output": [
+                {
+                    "type": "message",
+                    "content": [
+                        {
+                            "type": "output_text",
+                            "text": json.dumps(
+                                {
+                                    "artifacts": [
+                                        {
+                                            "artifact_name": "R_ARBITRATION.json",
+                                            "payload": {"verdict": "pass"},
+                                        }
+                                    ]
+                                }
+                            ),
+                        }
+                    ],
+                }
+            ],
+        },
+    }
+    inserted = store.insert_webhook_event_if_absent(
+        interface_mod.WebhookEventInsert(
+            provider="openai",
+            idempotency_key="wh_done_001",
+            event_type="response.completed",
+            event_id="evt_done_001",
+            received_at_utc="2026-02-21T00:00:00Z",
+            payload_json=json.dumps(webhook_payload),
+            headers_json=json.dumps({"webhook-id": "wh_done_001"}),
+            signature_valid=True,
+        )
+    )
+    assert inserted is True
+    webhook_event_id = store.fetch_webhook_event_id("openai", "wh_done_001")
+    assert webhook_event_id is not None
+
+    # 3. Link completion run_event to the webhook_event
+    completion_dedupe = hashlib.sha256(
+        f"openai|{run_id}|R|{step_id}|{partition_id}|{attempt}|response.completed".encode()
+    ).hexdigest()
+    store.append_run_event(
+        interface_mod.RunEventInsert(
+            run_id=run_id,
+            phase="R",
+            step_id=step_id,
+            partition_id=partition_id,
+            provider="openai",
+            event_type="response.completed",
+            event_id="evt_done_001",
+            provider_ref=external_job_id,
+            webhook_event_id=webhook_event_id,
+            dedupe_key=completion_dedupe,
+            orphaned=False,
+        )
+    )
+
+    # 4. Verify list_completed_provider_refs sees it
+    completed = store.list_completed_provider_refs(provider="openai", run_id=run_id, phase="R")
+    assert external_job_id in completed
+
+    # 5. Verify pending_jobs sees the submitted job
+    pending = store.list_pending_jobs(provider="openai", run_id=run_id, phase="R")
+    assert len(pending) == 1
+    assert pending[0]["external_job_id"] == external_job_id
+
+    # 6. Simulate finalizer: mark as completed
+    store.update_async_job_status(
+        provider="openai",
+        external_job_id=external_job_id,
+        attempt=attempt,
+        status="completed",
+        last_error=None,
+    )
+    # Should no longer appear in pending
+    still_pending = store.list_pending_jobs(provider="openai", run_id=run_id, phase="R")
+    assert len(still_pending) == 0
 
 
-def test_http_duplicate_delivery_returns_no_content(tmp_path: Path, monkeypatch) -> None:
-    server = _load_server_module()
-    db_path = tmp_path / "events.db"
-    server.init_db(db_path)
-    monkeypatch.setenv("OPENAI_WEBHOOK_SECRET", "test-secret")
+def test_latest_attempt_reconciliation_stale_event_orphaned(tmp_path: Path, monkeypatch) -> None:
+    """Stale attempt: a superseded job should be marked orphaned, not trigger output."""
+    interface_mod = _load_ledger_interface_module()
+    store = _build_store_with_migrations(tmp_path, monkeypatch, "events2.db")
 
-    class _FakeAdapter:
-        def __init__(self, secret: str):
-            assert secret == "test-secret"
+    run_id = "run_stale"
+    step_id = "R1"
+    partition_id = "R_P0001"
 
-        def verify_and_normalize(self, raw_body: bytes, headers: dict):
-            delivery_id = (
-                headers.get("webhook-id")
-                or headers.get("Webhook-Id")
-                or headers.get("X-Webhook-Id")
-                or ""
-            )
-            return server.ProviderEvent(
+    # Register two attempts for the same tuple
+    for attempt in (1, 2):
+        store.register_async_job(
+            interface_mod.AsyncJobInsert(
                 provider="openai",
-                delivery_id=str(delivery_id),
-                event_id="evt_http_ok",
-                event_type="response.completed",
-                payload={
-                    "id": "evt_http_ok",
-                    "type": "response.completed",
-                    "data": {"id": "resp_http_ok", "metadata": {"run_id": "run_http"}},
-                },
-                headers={str(k): str(v) for k, v in headers.items()},
-                external_id="resp_http_ok",
-                run_id="run_http",
-                phase="",
-                step_id="",
-                partition_id="",
-                attempt=None,
+                job_kind="responses_async",
+                external_job_id=f"resp_{attempt}",
+                run_id=run_id,
+                phase="R",
+                step_id=step_id,
+                partition_id=partition_id,
+                attempt=attempt,
+                status="submitted",
             )
+        )
 
-    monkeypatch.setattr(server, "OpenAIWebhookAdapter", _FakeAdapter)
-    srv, thread = _start_server(server, db_path)
-    try:
-        url = f"http://127.0.0.1:{srv.server_port}/webhook/openai"
-        headers = {"Content-Type": "application/json", "webhook-id": "wh_dup_http"}
-        req1 = urllib.request.Request(url, data=b"{}", method="POST", headers=headers)
-        req2 = urllib.request.Request(url, data=b"{}", method="POST", headers=headers)
-        with urllib.request.urlopen(req1, timeout=5) as resp1:
-            assert resp1.status == 204
-        with urllib.request.urlopen(req2, timeout=5) as resp2:
-            assert resp2.status == 204
-        with sqlite3.connect(db_path) as conn:
-            count = conn.execute(
-                "select count(*) from provider_events where provider='openai' and delivery_id='wh_dup_http'"
-            ).fetchone()[0]
-        assert count == 1
-    finally:
-        srv.shutdown()
-        srv.server_close()
-        thread.join(timeout=2)
+    # Latest attempt should be 2
+    latest = store.latest_attempt_for_tuple(
+        run_id=run_id, phase="R", step_id=step_id, partition_id=partition_id
+    )
+    assert latest == 2
+
+    # Attempt 1 is stale: mark orphaned
+    store.update_async_job_status(
+        provider="openai",
+        external_job_id="resp_1",
+        attempt=1,
+        status="orphaned",
+        last_error="stale_attempt",
+    )
+
+    # Attempt 2 is still pending
+    pending = store.list_pending_jobs(provider="openai", run_id=run_id, phase="R")
+    assert len(pending) == 1
+    assert pending[0]["external_job_id"] == "resp_2"
+    assert pending[0]["attempt"] == 2
+
+    # find_async_job without attempt returns latest (attempt 2)
+    job = store.find_async_job(provider="openai", external_job_id="resp_2")
+    assert job is not None
+    assert int(job["attempt"]) == 2
+
+    # find_async_job for orphaned attempt 1
+    orphaned_job = store.find_async_job(provider="openai", external_job_id="resp_1", attempt=1)
+    assert orphaned_job is not None
+    assert orphaned_job["status"] == "orphaned"

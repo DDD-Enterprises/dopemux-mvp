@@ -28,12 +28,13 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 
+import requests
+
 # Ensure local service modules are importable when loaded via importlib in tests.
 RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
 if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
-import requests
 try:
     from lib.batch_clients import (
         BatchClient,
@@ -230,6 +231,17 @@ ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
 DEFAULT_ROUTING_POLICY = "cost"
 DEFAULT_GEMINI_MODEL_ID = "gemini-2.5-flash"
 STEP_TIERS = ("bulk", "extract", "synthesis", "qa")
+
+MAGIC_SUBTYPE_ORDER = {
+    "instructions": 0,
+    "mcp_router_provider": 1,
+    "compose_bootstrap": 2,
+    "hooks": 3,
+    "ci": 4,
+    "workflow_launchers": 5,
+    "instruction_docs": 6,
+    "other": 7,
+}
 
 # Route tuple: provider, model_id, api_key_env
 ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
@@ -5149,7 +5161,6 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
     provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("gemini", DEFAULT_GEMINI_MODEL_ID, "GEMINI_API_KEY"))
     if provider != "gemini":
         provider, model_id, api_key_env = ("gemini", DEFAULT_GEMINI_MODEL_ID, "GEMINI_API_KEY")
-    endpoint_base = llm_base_url(provider, cfg)
     transport = transport_for_provider(provider, cfg)
     api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
     if provider == "gemini" and transport == "openai_compat_http":
@@ -5901,7 +5912,7 @@ def execute_step_for_partitions(
     initial_model_id = str(route_info["model_id"])
     initial_api_key_env = str(route_info["api_key_env"])
     routing_reason = str(route_info["reason"])
-    provider, model_id, api_key_env = initial_provider, initial_model_id, initial_api_key_env
+    provider, model_id, _ = initial_provider, initial_model_id, initial_api_key_env
     endpoint_base = llm_base_url(initial_provider, cfg)
     transport = transport_for_provider(initial_provider, cfg)
     force_json_output = initial_provider == "gemini"
@@ -8324,7 +8335,6 @@ def print_config(
             "dpmx_live_ok": os.getenv(DPMX_LIVE_OK_ENV, ""),
             "debug_phase_inputs": args.debug_phase_inputs,
             "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
-            "no_write_latest": args.no_write_latest,
         },
         "limits": {
             "max_files_docs": cfg.max_files_docs,
@@ -8722,8 +8732,8 @@ def run_batch_watch(
                 )
             else:
                 response_text = str(result.output_text or "")
-                parsed = parse_json_candidate(response_text)
-                artifacts = parse_response_artifacts(
+                parsed = parse_json_from_response(response_text)
+                artifacts = coerce_artifacts_from_response(
                     parsed=parsed,
                     raw_text=response_text,
                     expected_artifacts=output_artifacts,
@@ -9057,6 +9067,461 @@ def run_phase_Q(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
     _run_phase_inner("Q", dirs, cfg, None, None, precollected_items=items, ui=ui)
 
 
+# --- TP-WEBHOOKS-0002: Phase R Async Pilot ---
+
+WEBHOOK_DB_URL_ENV = "WEBHOOK_DB_URL"
+
+
+def _build_event_store_for_runner() -> Any:
+    """Lazily import the webhook receiver ledger package and return a ready EventStore.
+
+    This helper ensures (on a best-effort basis) that any pending DB migrations for the
+    webhook event store have been applied before constructing the EventStore, mirroring
+    the migration behavior used by the main server where possible.
+    """
+    webhook_receiver_dir = RUNNER_SERVICE_DIR.parent / "webhook_receiver"
+    if str(webhook_receiver_dir) not in sys.path:
+        sys.path.insert(0, str(webhook_receiver_dir))
+    import storage  # type: ignore[import]
+
+    db_url = storage.resolve_webhook_db_url()
+
+    # Best-effort: attempt to run migrations in the same way the main server does.
+    # Prefer calling ensure_migrations() from server.py; if that is not available,
+    # fall back to invoking webhook_migrate.py via subprocess. Any failures are
+    # logged but do not prevent the runner from continuing.
+    try:
+        try:
+            import server  # type: ignore[import]
+        except Exception:
+            server = None  # type: ignore[assignment]
+
+        if server is not None and hasattr(server, "ensure_migrations"):
+            try:
+                server.ensure_migrations(db_url)  # type: ignore[call-arg]
+            except Exception:
+                logging.exception(
+                    "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
+                )
+
+        if not (server is not None and hasattr(server, "ensure_migrations")):
+            migrate_script = RUNNER_SERVICE_DIR.parent.parent / "scripts" / "webhook_migrate.py"
+            if migrate_script.is_file():
+                try:
+                    subprocess.run(
+                        [sys.executable, str(migrate_script)],
+                        check=True,
+                    )
+                except Exception:
+                    logging.exception(
+                        "Failed to apply webhook event store migrations via webhook_migrate.py; proceeding without them."
+                    )
+    except Exception:
+        # If migrations cannot be run in this context, fall back to the previous behavior
+        # and let build_event_store handle any initialization.
+        logging.debug("Migrations not available or failed in runner context; continuing without them.")
+
+    return storage.build_event_store(db_url)
+def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
+    """Extract plain text content from an OpenAI response.completed webhook payload."""
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        return ""
+    for item in (data.get("output") or []):
+        if not isinstance(item, dict):
+            continue
+        if item.get("type") == "message":
+            for block in (item.get("content") or []):
+                if isinstance(block, dict) and block.get("type") in ("output_text", "text"):
+                    text = block.get("text")
+                    if text:
+                        return str(text)
+    # Fallback: direct text field on data
+    direct = data.get("text")
+    return str(direct) if direct else ""
+
+
+def _phase_r_async_dedupe_key(
+    run_id: str, step_id: str, partition_id: str, attempt: int, event_type: str
+) -> str:
+    return hashlib.sha256(
+        f"openai|{run_id}|R|{step_id}|{partition_id}|{attempt}|{event_type}".encode("utf-8")
+    ).hexdigest()
+
+
+def run_phase_R_async_submit(
+    run_id: str,
+    dirs: Dict[str, Path],
+    cfg: RunnerConfig,
+) -> int:
+    """TP-WEBHOOKS-0002: Submit Phase R partitions asynchronously via OpenAI Responses API.
+
+    Writes async_jobs + run_events(request.pending) rows and PENDING placeholder artifacts.
+    Does NOT wait for completion.  Returns count of newly-submitted partitions.
+    """
+    missing = _ensure_required_norm_artifact_groups(dirs)
+    if missing:
+        raise RuntimeError(
+            "Phase R async submit requires norm inputs from A/H/D/C. Missing: " + "; ".join(missing)
+        )
+
+    input_files: List[Path] = []
+    for phase in R_REQUIRED_INPUT_PHASES:
+        phase_norm = dirs[phase] / "norm"
+        if phase_norm.exists():
+            input_files.extend(sorted(phase_norm.glob("*.json")))
+            input_files.extend(sorted(phase_norm.glob("*.md")))
+    deduped_inputs = sorted(set(input_files), key=str)
+    context_items = to_items(deduped_inputs)
+    inventory = build_inventory(context_items, cfg.file_truncate_chars)
+    max_files = max_files_for_phase("R", cfg)
+    partitions = build_partitions("R", inventory, max_files=max_files, max_chars=cfg.max_chars)
+    prompts = get_phase_prompts("R")
+    if not prompts:
+        raise RuntimeError("No prompts found for phase R")
+
+    try:
+        from openai import OpenAI  # type: ignore[import]
+    except Exception as exc:
+        raise RuntimeError("openai SDK required for --async-provider openai") from exc
+
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is required for --async-provider openai")
+
+    # Determine model: prefer synthesis tier OpenAI route
+    route_info = resolve_effective_step_route("R", prompts[0].step_id, cfg)
+    model_id = str(route_info["model_id"]) if route_info.get("provider") == "openai" else "gpt-4o-mini"
+
+    client = OpenAI(api_key=api_key)
+    event_store = _build_event_store_for_runner()
+    phase_dir = dirs["R"]
+    raw_dir = phase_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    (phase_dir / "inputs").mkdir(parents=True, exist_ok=True)
+    write_json(
+        phase_dir / "inputs" / "INVENTORY.json",
+        {"phase": "R", "generated_at": now_iso(), "items": inventory},
+    )
+
+    submitted = 0
+
+    for prompt_spec in prompts:
+        step_id = prompt_spec.step_id
+        prompt_text = safe_read(prompt_spec.prompt_path)
+        if not prompt_text:
+            logger.warning("Async R: empty prompt for step %s, skipping", step_id)
+            continue
+        output_artifacts = prompt_spec.output_artifacts
+        output_instructions = build_output_envelope_instructions(output_artifacts)
+        prompt_prefix = "Extract from the files below.\n" + output_instructions + "\n\nFILES:\n"
+
+        for partition in partitions:
+            partition_id = str(partition["id"])
+
+            latest_attempt = event_store.latest_attempt_for_tuple(
+                run_id=run_id, phase="R", step_id=step_id, partition_id=partition_id
+            )
+            attempt = (latest_attempt or 0) + 1
+
+            out_json = raw_dir / f"{step_id}__{partition_id}.json"
+            pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
+
+            # Idempotency: skip if already finalized
+            if out_json.exists():
+                try:
+                    _p = json.loads(out_json.read_text(encoding="utf-8"))
+                    if _p.get("status") != "pending" and isinstance(_p.get("artifacts"), list):
+                        logger.info("Async R: %s/%s already finalized, skipping", step_id, partition_id)
+                        continue
+                except Exception as exc:
+                    logger.debug("Async R: failed to parse idempotency artifact %s: %s", out_json, exc)
+
+            context_budget = max(cfg.max_chars - len(prompt_prefix), 2048)
+            context, _ = build_partition_context(
+                phase="R",
+                partition_paths=partition["paths"],
+                file_truncate_chars=cfg.file_truncate_chars,
+                home_scan_mode=cfg.home_scan_mode,
+                max_files=max_files,
+                max_chars=context_budget,
+            )
+            user_prompt = f"{prompt_prefix}{context}"
+
+            metadata_dict = {
+                "run_id": run_id,
+                "phase": "R",
+                "step_id": step_id,
+                "partition_id": partition_id,
+                "attempt": str(attempt),
+            }
+
+            try:
+                response = client.responses.create(
+                    model=model_id,
+                    instructions=prompt_text,
+                    input=user_prompt,
+                    metadata=metadata_dict,
+                )
+                external_job_id = str(response.id)
+                logger.info(
+                    "Async R submitted provider=openai step=%s partition=%s response_id=%s",
+                    step_id,
+                    partition_id,
+                    external_job_id,
+                )
+            except Exception as exc:
+                logger.error(
+                    "Async R submit failed step=%s partition=%s error=%s",
+                    step_id,
+                    partition_id,
+                    exc,
+                )
+                write_json(
+                    raw_dir / f"{step_id}__{partition_id}.FAILED.json",
+                    {
+                        "phase": "R",
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "generated_at": now_iso(),
+                        "failure_type": "async_submit_error",
+                        "request_meta": {
+                            "failure_type": "async_submit_error",
+                            "error": str(exc)[:500],
+                        },
+                    },
+                )
+                continue
+
+            from ledger.interface import AsyncJobInsert, RunEventInsert  # type: ignore[import]
+
+            event_store.register_async_job(
+                AsyncJobInsert(
+                    provider="openai",
+                    job_kind="responses_async",
+                    external_job_id=external_job_id,
+                    run_id=run_id,
+                    phase="R",
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    attempt=attempt,
+                    status="submitted",
+                )
+            )
+            event_store.append_run_event(
+                RunEventInsert(
+                    run_id=run_id,
+                    phase="R",
+                    step_id=step_id,
+                    partition_id=partition_id,
+                    provider="openai",
+                    event_type="request.pending",
+                    event_id=None,
+                    provider_ref=external_job_id,
+                    webhook_event_id=None,
+                    dedupe_key=_phase_r_async_dedupe_key(run_id, step_id, partition_id, attempt, "request.pending"),
+                    orphaned=False,
+                )
+            )
+            write_json(
+                pending_path,
+                {
+                    "phase": "R",
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "generated_at": now_iso(),
+                    "status": "pending",
+                    "external_job_id": external_job_id,
+                    "attempt": attempt,
+                    "artifacts": [],
+                    "request_meta": {
+                        "provider": "openai",
+                        "model_id": model_id,
+                        "execution_mode": "async",
+                        "external_job_id": external_job_id,
+                    },
+                },
+            )
+            submitted += 1
+
+    logger.info("Async R submit complete: submitted=%s", submitted)
+    return submitted
+
+
+def _fetch_webhook_payload_for_job(event_store: Any, run_id: str, provider_ref: str) -> Dict[str, Any]:
+    """Retrieve the raw webhook payload JSON for a given provider_ref from the ledger."""
+    fetch_fn = getattr(event_store, "fetch_webhook_payload", None)
+    if not callable(fetch_fn):
+        return {}
+
+    try:
+        # The EventStore is responsible for any backend-specific querying.
+        payload = fetch_fn(provider="openai", run_id=run_id, provider_ref=provider_ref)
+    except Exception:
+        return {}
+
+    if isinstance(payload, dict):
+        return payload
+
+    if isinstance(payload, str):
+        payload_json = payload
+    else:
+        # Unsupported payload type
+        return {}
+
+    if not payload_json:
+        return {}
+    try:
+        return json.loads(payload_json)
+    except Exception:
+        return {}
+
+
+def run_phase_R_finalize(
+    run_id: str,
+    dirs: Dict[str, Path],
+    cfg: RunnerConfig,
+) -> int:
+    """TP-WEBHOOKS-0002: Finalize Phase R from ledger webhook completions.
+
+    For each pending async_job (run_id, phase=R, provider=openai):
+      - If webhook completion received and this is the latest attempt: write raw output.
+      - If stale attempt (superseded by a newer one): mark orphaned, skip output.
+    Idempotent: already-written outputs are not re-written.
+    Returns count of newly-finalized partitions.
+    """
+    event_store = _build_event_store_for_runner()
+    phase_dir = dirs["R"]
+    raw_dir = phase_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+
+    pending_jobs = event_store.list_pending_jobs(provider="openai", run_id=run_id, phase="R")
+    if not pending_jobs:
+        logger.info("Finalize R: no pending jobs for run_id=%s", run_id)
+        return 0
+
+    completed_refs = set(
+        event_store.list_completed_provider_refs(provider="openai", run_id=run_id, phase="R")
+    )
+    prompts_list = get_phase_prompts("R")
+    artifacts_by_step: Dict[str, Tuple[str, ...]] = {ps.step_id: ps.output_artifacts for ps in prompts_list}
+
+    finalized = 0
+    for job in pending_jobs:
+        step_id = str(job.get("step_id") or "")
+        partition_id = str(job.get("partition_id") or "")
+        attempt = int(job.get("attempt") or 1)
+        external_job_id = str(job.get("external_job_id") or "")
+        if not (step_id and partition_id and external_job_id):
+            logger.warning("Finalize R: malformed job row, skipping: %s", job)
+            continue
+
+        out_json = raw_dir / f"{step_id}__{partition_id}.json"
+
+        # Idempotency: already finalized with non-pending output
+        if out_json.exists():
+            try:
+                _p = json.loads(out_json.read_text(encoding="utf-8"))
+                if _p.get("status") != "pending" and isinstance(_p.get("artifacts"), list):
+                    logger.info("Finalize R: %s/%s already written, marking completed", step_id, partition_id)
+                    event_store.update_async_job_status(
+                        provider="openai",
+                        external_job_id=external_job_id,
+                        attempt=attempt,
+                        status="completed",
+                        last_error=None,
+                    )
+                    continue
+            except Exception as exc:
+                logger.debug("Finalize R: failed to parse idempotency artifact %s: %s", out_json, exc)
+
+        # Not yet completed via webhook
+        if external_job_id not in completed_refs:
+            logger.info(
+                "Finalize R: no completion event yet step=%s partition=%s response_id=%s",
+                step_id,
+                partition_id,
+                external_job_id,
+            )
+            continue
+
+        # Reconciliation: check latest attempt
+        latest_attempt = event_store.latest_attempt_for_tuple(
+            run_id=run_id,
+            phase="R",
+            step_id=step_id,
+            partition_id=partition_id,
+        )
+        if latest_attempt is not None and attempt < latest_attempt:
+            logger.info(
+                "Finalize R: orphaning stale attempt=%s latest=%s step=%s partition=%s",
+                attempt,
+                latest_attempt,
+                step_id,
+                partition_id,
+            )
+            event_store.update_async_job_status(
+                provider="openai",
+                external_job_id=external_job_id,
+                attempt=attempt,
+                status="orphaned",
+                last_error="stale_attempt",
+            )
+            continue
+
+        # Fetch and parse webhook payload
+        webhook_payload = _fetch_webhook_payload_for_job(event_store, run_id, external_job_id)
+        response_text = _extract_openai_response_text(webhook_payload)
+        parsed = parse_json_from_response(response_text) if response_text else None
+        expected_artifacts = artifacts_by_step.get(step_id, ("R_ARBITRATION.json",))
+        artifacts = coerce_artifacts_from_response(parsed, response_text or "", expected_artifacts)
+
+        write_json(
+            out_json,
+            {
+                "phase": "R",
+                "step_id": step_id,
+                "partition_id": partition_id,
+                "generated_at": now_iso(),
+                "artifacts": artifacts,
+                "request_meta": {
+                    "provider": "openai",
+                    "execution_mode": "async",
+                    "external_job_id": external_job_id,
+                    "attempt": attempt,
+                },
+            },
+        )
+
+        # Remove pending placeholder
+        pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
+        if pending_path.exists():
+            try:
+                pending_path.unlink()
+            except Exception as exc:
+                logger.warning("Failed to remove pending placeholder %s: %s", pending_path, exc)
+
+        event_store.update_async_job_status(
+            provider="openai",
+            external_job_id=external_job_id,
+            attempt=attempt,
+            status="completed",
+            last_error=None,
+        )
+        logger.info(
+            "Finalize R: wrote output step=%s partition=%s artifacts=%s",
+            step_id,
+            partition_id,
+            len(artifacts),
+        )
+        finalized += 1
+
+    logger.info(
+        "Finalize R complete: finalized=%s of %s pending", finalized, len(pending_jobs)
+    )
+    return finalized
+
+
 def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     missing = _ensure_required_norm_artifact_groups(dirs)
     if missing:
@@ -9239,6 +9704,18 @@ def main() -> None:
     parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
     parser.add_argument("--print-config", action="store_true")
     parser.add_argument("--gemini-list-models", action="store_true")
+    # TP-WEBHOOKS-0002: async pilot flags
+    parser.add_argument(
+        "--async-provider",
+        choices=["openai"],
+        default=None,
+        help="Submit Phase R partitions asynchronously via the given provider's API.",
+    )
+    parser.add_argument(
+        "--finalize",
+        action="store_true",
+        help="Finalize Phase R by reading webhook completions from the ledger.",
+    )
     promptgen_group = parser.add_argument_group("promptgen")
     promptgen_group.add_argument("--promptgen-scan", action="store_true")
     promptgen_group.add_argument("--promptgen-max-files", type=int, default=PROMPTGEN_DEFAULT_MAX_FILES)
@@ -9258,6 +9735,16 @@ def main() -> None:
     if args.batch_submit_only:
         args.batch_mode = True
     apply_model_overrides(args.gemini_model_id, args.routing_policy)
+
+    # TP-WEBHOOKS-0002 validation
+    if args.async_provider and not args.phase:
+        parser.error("--async-provider requires --phase R.")
+    if args.async_provider and args.phase != "R":
+        parser.error("--async-provider is only supported for --phase R.")
+    if args.finalize and not args.phase:
+        parser.error("--finalize requires --phase R.")
+    if args.finalize and args.phase != "R":
+        parser.error("--finalize is only supported for --phase R.")
 
     if not (
         args.phase
@@ -9487,6 +9974,25 @@ def main() -> None:
     if args.doctor:
         targets = phase_sequence if phase_sequence else PHASES
         sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg))
+
+    # TP-WEBHOOKS-0002: async submit / finalize dispatch (Phase R only)
+    if args.async_provider == "openai" and not args.finalize:
+        try:
+            n = run_phase_R_async_submit(run_id=run_id, dirs=dirs, cfg=cfg)
+            logger.info("Async R submit complete: submitted=%s run_id=%s", n, run_id)
+            sys.exit(0)
+        except Exception as exc:
+            logger.error("Async R submit failed: %s", exc)
+            sys.exit(1)
+
+    if args.finalize:
+        try:
+            n = run_phase_R_finalize(run_id=run_id, dirs=dirs, cfg=cfg)
+            logger.info("Finalize R complete: finalized=%s run_id=%s", n, run_id)
+            sys.exit(0)
+        except Exception as exc:
+            logger.error("Finalize R failed: %s", exc)
+            sys.exit(1)
 
     if args.batch_watch:
         if not phase_sequence or len(phase_sequence) != 1:
