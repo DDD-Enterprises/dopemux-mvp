@@ -11,6 +11,8 @@ import {
   Chip,
   Divider,
   Tooltip,
+  LinearProgress,
+  alpha,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -181,38 +183,73 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           <Typography variant="h5" sx={{ mb: 0.5 }}>
             {currentTask.title}
           </Typography>
-          <Typography variant="h3" sx={{ fontFamily: '"Space Grotesk", sans-serif', mb: 1 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              mb: 1,
+              ...(isTimerRunning && {
+                animation: 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                '@keyframes timer-pulse': {
+                  '0%, 100%': { opacity: 1 },
+                  '50%': { opacity: 0.6 },
+                },
+              }),
+            }}
+          >
             {formatTime(taskTimer)}
           </Typography>
+          <LinearProgress
+            variant="determinate"
+            value={Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)}
+            sx={{
+              mb: 2.5,
+              height: 6,
+              borderRadius: 3,
+              bgcolor: alpha(brandTokens.colors.saintGold, 0.1),
+              '& .MuiLinearProgress-bar': {
+                bgcolor: brandTokens.colors.saintGold,
+                borderRadius: 3,
+              },
+            }}
+            aria-label="Current task progress"
+            aria-valuetext={`${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`}
+          />
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              size="small"
-              variant="contained"
-              startIcon={isTimerRunning ? <Pause /> : <Play />}
-              onClick={() => setIsTimerRunning(!isTimerRunning)}
-              aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}
-            >
-              {isTimerRunning ? 'Pause' : 'Start'}
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<CheckCircle />}
-              onClick={() => completeTask(currentTask.id)}
-              aria-label={`Complete task: ${currentTask.title}`}
-            >
-              Complete
-            </Button>
-            <Button
-              size="small"
-              variant="text"
-              startIcon={<SkipForward />}
-              onClick={() => skipTask(currentTask.id)}
-              sx={{ color: brandTokens.colors.gremlinPink }}
-              aria-label={`Skip task: ${currentTask.title}`}
-            >
-              Skip
-            </Button>
+            <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'}>
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={isTimerRunning ? <Pause /> : <Play />}
+                onClick={() => setIsTimerRunning(!isTimerRunning)}
+                aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}
+              >
+                {isTimerRunning ? 'Pause' : 'Start'}
+              </Button>
+            </Tooltip>
+            <Tooltip title="Complete and Proceed">
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<CheckCircle />}
+                onClick={() => completeTask(currentTask.id)}
+                aria-label={`Complete task: ${currentTask.title}`}
+              >
+                Complete
+              </Button>
+            </Tooltip>
+            <Tooltip title="Skip for Now">
+              <Button
+                size="small"
+                variant="text"
+                startIcon={<SkipForward />}
+                onClick={() => skipTask(currentTask.id)}
+                sx={{ color: brandTokens.colors.gremlinPink }}
+                aria-label={`Skip task: ${currentTask.title}`}
+              >
+                Skip
+              </Button>
+            </Tooltip>
           </Box>
         </Box>
       )}
