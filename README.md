@@ -10,6 +10,7 @@
 - [Why Dopemux?](#why-dopemux)
 - [Project Name and Description](#project-name-and-description)
 - [Quick Start](#quick-start)
+- [TaskX Kernel Integration](#taskx-kernel-integration)
 - [Technology Stack](#technology-stack)
 - [Project Architecture](#project-architecture)
 - [Project Structure](#project-structure)
@@ -76,6 +77,24 @@ dopemux --help
 ```
 
 See [docs/04-installation.md](docs/04-installation.md), [INSTALL.md](INSTALL.md), and [QUICK_START.md](QUICK_START.md) for more.
+
+---
+
+## TaskX Kernel Integration
+
+Dopemux consumes TaskX via a vendored submodule (`vendor/taskx`) and wrapper (`scripts/taskx`).
+
+```bash
+git submodule update --init --recursive vendor/taskx
+scripts/taskx --version
+dopemux kernel doctor --timestamp-mode deterministic
+```
+
+- Runtime and CI are submodule-first.
+- `.taskx-pin` is deprecated for runtime/CI behavior.
+- Use `dopemux kernel <lifecycle-command>` for kernel lifecycle operations.
+
+See [docs/TASKX_KERNEL_INTEGRATION.md](docs/TASKX_KERNEL_INTEGRATION.md) for the full contract and update/rollback process.
 
 ---
 
