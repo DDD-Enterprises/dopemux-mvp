@@ -86,6 +86,7 @@
     "FINAL-COMPLETE-SESSION-SUMMARY.md",
     "MONITORING-DESIGN-SPRINT-SUMMARY.md",
     "ORCHESTRATOR-INTEGRATION-COMPLETE.md",
+    "README_WEBHOOKS.md",
     "Dockerfile",
     "Dockerfile.frontend",
     "compose.yml",
