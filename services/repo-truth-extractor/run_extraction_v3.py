@@ -28,12 +28,13 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 
+import requests
+
 # Ensure local service modules are importable when loaded via importlib in tests.
 RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
 if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
-import requests
 try:
     from lib.batch_clients import (
         BatchClient,
@@ -230,6 +231,17 @@ ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
 DEFAULT_ROUTING_POLICY = "cost"
 DEFAULT_GEMINI_MODEL_ID = "gemini-2.5-flash"
 STEP_TIERS = ("bulk", "extract", "synthesis", "qa")
+
+MAGIC_SUBTYPE_ORDER = {
+    "instructions": 0,
+    "mcp_router_provider": 1,
+    "compose_bootstrap": 2,
+    "hooks": 3,
+    "ci": 4,
+    "workflow_launchers": 5,
+    "instruction_docs": 6,
+    "other": 7,
+}
 
 # Route tuple: provider, model_id, api_key_env
 ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
@@ -5149,7 +5161,6 @@ def run_auth_doctor(root: Path, args: argparse.Namespace, cfg: RunnerConfig) -> 
     provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("gemini", DEFAULT_GEMINI_MODEL_ID, "GEMINI_API_KEY"))
     if provider != "gemini":
         provider, model_id, api_key_env = ("gemini", DEFAULT_GEMINI_MODEL_ID, "GEMINI_API_KEY")
-    endpoint_base = llm_base_url(provider, cfg)
     transport = transport_for_provider(provider, cfg)
     api_key, resolved_api_key_env = resolve_api_key(provider, api_key_env)
     if provider == "gemini" and transport == "openai_compat_http":
@@ -5901,7 +5912,7 @@ def execute_step_for_partitions(
     initial_model_id = str(route_info["model_id"])
     initial_api_key_env = str(route_info["api_key_env"])
     routing_reason = str(route_info["reason"])
-    provider, model_id, api_key_env = initial_provider, initial_model_id, initial_api_key_env
+    provider, model_id, _ = initial_provider, initial_model_id, initial_api_key_env
     endpoint_base = llm_base_url(initial_provider, cfg)
     transport = transport_for_provider(initial_provider, cfg)
     force_json_output = initial_provider == "gemini"
@@ -8324,7 +8335,6 @@ def print_config(
             "dpmx_live_ok": os.getenv(DPMX_LIVE_OK_ENV, ""),
             "debug_phase_inputs": args.debug_phase_inputs,
             "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
-            "no_write_latest": args.no_write_latest,
         },
         "limits": {
             "max_files_docs": cfg.max_files_docs,
@@ -8722,8 +8732,8 @@ def run_batch_watch(
                 )
             else:
                 response_text = str(result.output_text or "")
-                parsed = parse_json_candidate(response_text)
-                artifacts = parse_response_artifacts(
+                parsed = parse_json_from_response(response_text)
+                artifacts = coerce_artifacts_from_response(
                     parsed=parsed,
                     raw_text=response_text,
                     expected_artifacts=output_artifacts,
