@@ -33,10 +33,12 @@
     "tools",
     "ui-dashboard",
     "ui-dashboard-backend",
+    "vendor",
     "UPGRADES",
     "_audit_out"
   ],
   "allowed_root_files": [
+    ".gitmodules",
     ".taskxroot",
     ".taskx-pin",
     ".repo_id",
