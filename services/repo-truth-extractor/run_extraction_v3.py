@@ -9072,16 +9072,14 @@ def _build_event_store_for_runner() -> Any:
     webhook_receiver_dir = RUNNER_SERVICE_DIR.parent / "webhook_receiver"
     if str(webhook_receiver_dir) not in sys.path:
         sys.path.insert(0, str(webhook_receiver_dir))
-    from storage import build_event_store, resolve_webhook_db_url  # type: ignore[import]
+    import storage  # type: ignore[import]
 
-    db_url = resolve_webhook_db_url()
+    db_url = storage.resolve_webhook_db_url()
 
     # Best-effort: attempt to run the same migration step the server uses, if exposed
     # by the storage module. If no migration helper is available, or it fails, we log
     # and continue so that existing behavior is preserved.
     try:
-        import storage  # type: ignore[import]
-
         migration_fn = None
         for candidate in ("run_migrations", "migrate", "apply_migrations", "ensure_migrations_applied"):
             if hasattr(storage, candidate):
@@ -9095,12 +9093,12 @@ def _build_event_store_for_runner() -> Any:
                 logging.exception(
                     "Failed to apply webhook event store migrations; proceeding without them."
                 )
-    except ImportError:
-        # If the storage module cannot be imported in this context, fall back to the
-        # previous behavior and let build_event_store handle any initialization.
-        logging.debug("storage module not available for migrations in runner context.")
+    except Exception:
+        # If the storage module cannot be used for migrations in this context, fall back
+        # to the previous behavior and let build_event_store handle any initialization.
+        logging.debug("storage module not available or failed for migrations in runner context.")
 
-    return build_event_store(db_url)
+    return storage.build_event_store(db_url)
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
     """Extract plain text content from an OpenAI response.completed webhook payload."""
     data = payload.get("data")
