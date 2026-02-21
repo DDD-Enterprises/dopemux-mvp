@@ -63,7 +63,6 @@ def test_v4_step_order_validation_rejects_lexical_order(tmp_path: Path) -> None:
 
 
 def test_v4_promptset_lint_fails_on_missing_required_sections(tmp_path: Path) -> None:
-    root = Path(__file__).resolve().parents[3]
     module = _load_linter_module()
     prompts_dir = tmp_path / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "prompts"
     prompts_dir.mkdir(parents=True, exist_ok=True)
