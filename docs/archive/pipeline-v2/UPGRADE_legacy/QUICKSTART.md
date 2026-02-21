@@ -1,3 +1,14 @@
+---
+id: QUICKSTART
+title: Quickstart
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Quickstart (explanation) for dopemux documentation and developer workflows.
+---
 # Quick Start: Run Priority Extraction
 
 This guide shows you how to run the priority extraction phases (I, W, H) immediately.

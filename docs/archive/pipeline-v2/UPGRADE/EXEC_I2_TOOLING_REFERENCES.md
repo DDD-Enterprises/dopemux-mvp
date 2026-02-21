@@ -1,3 +1,15 @@
+---
+id: EXEC_I2_TOOLING_REFERENCES
+title: Exec I2 Tooling References
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Exec I2 Tooling References (explanation) for dopemux documentation and developer
+  workflows.
+---
 # EXECUTABLE PROMPT: I2 - LLM Tooling & Server References
 
 ---

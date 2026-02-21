@@ -1,6 +1,6 @@
 # Dopemux Development Makefile
 
-.PHONY: help install install-dev test test-unit test-integration test-coverage clean lint format type-check build docs serve-docs
+.PHONY: help install install-dev test test-unit test-integration test-coverage test-extractor test-extractor-smoke clean lint format type-check build docs serve-docs probe probe-c
 
 # Default target
 help:
@@ -16,6 +16,8 @@ help:
 	@echo "  test-integration  Run integration tests only"
 	@echo "  test-coverage  Run tests with coverage report"
 	@echo "  test-fast      Run tests without slow tests"
+	@echo "  test-extractor Run Repo Truth Extractor tests without global coverage gate"
+	@echo "  test-extractor-smoke  Run extractor rename-migration unit smoke tests without coverage gate"
 	@echo ""
 	@echo "Quality:"
 	@echo "  lint           Run linting checks (flake8)"
@@ -47,6 +49,8 @@ help:
 	@echo "  x-status                                     Print file counts per phase"
 	@echo "  x-manifest                                   Update/generate MANIFEST.json for run"
 	@echo "  x-doctor                                     Run pipeline doctor on latest run"
+	@echo "  probe                                        Deterministic run/phase/step debug bundle"
+	@echo "  probe-c                                      Convenience probe for Phase C (default STEP=C0)"
 
 # Installation targets
 install:
@@ -73,6 +77,12 @@ test-fast:
 
 test-verbose:
 	pytest -v
+
+test-extractor:
+	pytest --no-cov services/repo-truth-extractor/tests
+
+test-extractor-smoke:
+	pytest --no-cov tests/unit/test_run_extraction_v3_phase_m.py tests/unit/test_run_extraction_v3_pipeline_controls.py
 
 # Quality targets
 lint:
@@ -248,3 +258,17 @@ x-manifest:
 
 x-doctor:
 	@python3 scripts/pipeline_doctor.py
+
+probe:
+	@if [ -z "$(PHASE)" ]; then echo "Usage: make probe PHASE=<A|H|D|C|E|W|B|G|Q|R|X|T|Z> (RID=<rid> | RID_FROM_LATEST=1) [STEP=<step>]"; exit 1; fi
+	@if [ -n "$(RID)" ] && [ "$(RID_FROM_LATEST)" = "1" ]; then echo "Set either RID=<rid> or RID_FROM_LATEST=1, not both."; exit 1; fi
+	@if [ -z "$(RID)" ] && [ "$(RID_FROM_LATEST)" != "1" ]; then echo "Set RID=<rid> or RID_FROM_LATEST=1."; exit 1; fi
+	@python3 services/repo-truth-extractor/run_probe.py --phase "$(PHASE)" \
+		$(if $(RID),--rid "$(RID)",--rid-from-latest) \
+		$(if $(STEP),--step "$(STEP)",) \
+		$(if $(MAX_PARTITIONS),--max-partitions "$(MAX_PARTITIONS)",) \
+		$(if $(MAX_FAILURES),--max-failures "$(MAX_FAILURES)",) \
+		$(if $(SEARCH_ROOT),--search-root "$(SEARCH_ROOT)",)
+
+probe-c:
+	@$(MAKE) probe PHASE=C STEP=$(if $(STEP),$(STEP),C0) RID="$(RID)" RID_FROM_LATEST="$(RID_FROM_LATEST)" MAX_PARTITIONS="$(MAX_PARTITIONS)" MAX_FAILURES="$(MAX_FAILURES)" SEARCH_ROOT="$(SEARCH_ROOT)"

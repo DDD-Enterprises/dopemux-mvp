@@ -1,0 +1,34 @@
+{
+  "blocked_promptset": false,
+  "blocked_reason": null,
+  "generated_at": "2026-02-20T14:06:22.090837+00:00",
+  "missing_required_artifacts_total": 0,
+  "phases": {
+    "C": {
+      "blocked_promptset": {
+        "missing_prompts_count": 0,
+        "prompt_missing": [],
+        "prompt_unreadable": [],
+        "status": "CLEAR",
+        "unreadable_prompts_count": 0
+      },
+      "counts": {
+        "blocked_promptset": 0,
+        "dry_run": 924,
+        "failed": 0,
+        "missing_prompts_count": 0,
+        "ok": 0,
+        "skipped": 0,
+        "unreadable_prompts_count": 0
+      },
+      "coverage_file": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_scan_c2/C_code_surfaces/qa/PHASE_C_COVERAGE.json",
+      "missing_required_artifacts": [],
+      "missing_required_artifacts_count": 0,
+      "status": "PASS"
+    }
+  },
+  "phases_executed_count": 1,
+  "prompt_failures_count": 0,
+  "run_id": "rte_scan_c2",
+  "run_status": "OK"
+}
