@@ -21,7 +21,7 @@ import tempfile
 import shlex
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Callable, Dict, Iterable, List, Optional, Sequence
 import warnings
 
 import click
@@ -7340,10 +7340,21 @@ def hooks_cmd(ctx, setup, teardown, status, enable, disable, shell_scripts, inst
             raise
         sys.exit(1)
 
+_PIPELINE_VERSION_CHOICES = ["v4", "v3"]
+
+
 @cli.group()
-def extractor():
-    """Repo Truth Extractor commands (v4 default, v3 fallback)."""
+def upgrades():
+    """Canonical Repo Truth Extractor commands (v4 default, v3 fallback)."""
     pass
+
+
+@cli.group()
+@click.pass_context
+def extractor(ctx):
+    """Legacy alias for `dopemux upgrades`."""
+    if ctx.invoked_subcommand:
+        console.logger.info("[yellow]⚠ `dopemux extractor` is legacy. Use `dopemux upgrades`.[/yellow]")
 
 
 def _resolve_extractor_repo_root(start: Path) -> Path:
@@ -7353,28 +7364,28 @@ def _resolve_extractor_repo_root(start: Path) -> Path:
     return start
 
 
-def _extractor_runner_path(repo_root: Path, engine_version: str) -> Path:
+def _extractor_runner_path(repo_root: Path, pipeline_version: str) -> Path:
     base = repo_root / "services" / "repo-truth-extractor"
-    if engine_version == "v4":
+    if pipeline_version == "v4":
         return base / "run_extraction_v4.py"
     return base / "run_extraction_v3.py"
 
 
 def _run_extractor_runner(
     *,
-    engine_version: str,
+    pipeline_version: str,
     args: List[str],
     repo_root: Optional[Path] = None,
 ) -> None:
     resolved_root = _resolve_extractor_repo_root(repo_root or Path.cwd())
-    runner = _extractor_runner_path(resolved_root, engine_version)
+    runner = _extractor_runner_path(resolved_root, pipeline_version)
     if not runner.exists():
         raise click.ClickException(f"Runner not found: {runner}")
     cmd = [sys.executable, str(runner), *args]
     proc = subprocess.run(cmd, cwd=resolved_root)
     if proc.returncode != 0:
         raise click.ClickException(
-            f"Repo Truth Extractor {engine_version} runner failed with exit code {proc.returncode}"
+            f"Repo Truth Extractor {pipeline_version} runner failed with exit code {proc.returncode}"
         )
 
 
@@ -7439,19 +7450,39 @@ def repscan_passthrough(
     _run_repscan_runner(args=forwarded)
 
 
-@extractor.command("list")
-@click.option(
-    "--engine-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
+def _pipeline_version_options(command_fn: Callable) -> Callable:
+    command_fn = click.option(
+        "--engine-version",
+        "engine_version_legacy",
+        type=click.Choice(_PIPELINE_VERSION_CHOICES),
+        default=None,
+        hidden=True,
+    )(command_fn)
+    command_fn = click.option(
+        "--pipeline-version",
+        "pipeline_version",
+        type=click.Choice(_PIPELINE_VERSION_CHOICES),
+        default="v4",
+        show_default=True,
+    )(command_fn)
+    return command_fn
+
+
+def _resolved_pipeline_version(pipeline_version: str, engine_version_legacy: Optional[str]) -> str:
+    if engine_version_legacy:
+        return engine_version_legacy
+    return pipeline_version
+
+
+@upgrades.command("list")
+@_pipeline_version_options
 @click.pass_context
-def extractor_list(ctx, engine_version: str):
-    """List available extractor phases."""
-    if engine_version == "v4":
+def extractor_list(ctx, pipeline_version: str, engine_version_legacy: Optional[str]):
+    """List phases and effective pipeline order."""
+    effective_version = _resolved_pipeline_version(pipeline_version, engine_version_legacy)
+    if effective_version == "v4":
         _run_extractor_runner(
-            engine_version="v4",
+            pipeline_version="v4",
             args=["--promptset-audit", "--no-strict-audit"],
         )
         promptset_path = (
@@ -7467,16 +7498,11 @@ def extractor_list(ctx, engine_version: str):
             order = payload.get("all_phase_order", [])
             console.logger.info("v4 phases: " + " -> ".join(order))
             return
-    _run_extractor_runner(engine_version=engine_version, args=["--print-config"])
+    _run_extractor_runner(pipeline_version=effective_version, args=["--print-config"])
 
 
-@extractor.command("run")
-@click.option(
-    "--engine-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
+@upgrades.command("run")
+@_pipeline_version_options
 @click.option("--phase", default="ALL", show_default=True, help="Phase code or ALL")
 @click.option("--run-id", default=None, help="Run ID")
 @click.option("--dry-run/--execute", default=True, show_default=True)
@@ -7500,6 +7526,10 @@ def extractor_list(ctx, engine_version: str):
 @click.option("--batch-poll-seconds", type=int, default=30, show_default=True)
 @click.option("--batch-wait-timeout-seconds", type=int, default=86400, show_default=True)
 @click.option("--batch-max-requests-per-job", type=int, default=2000, show_default=True)
+@click.option("--ui", type=click.Choice(["auto", "rich", "plain"]), default="auto", show_default=True)
+@click.option("--pretty", is_flag=True, default=False, show_default=True)
+@click.option("--quiet", is_flag=True, default=False, show_default=True)
+@click.option("--jsonl-events", is_flag=True, default=False, show_default=True)
 @click.option(
     "--sync/--no-sync",
     default=True,
@@ -7509,7 +7539,8 @@ def extractor_list(ctx, engine_version: str):
 @click.pass_context
 def extractor_run(
     ctx,
-    engine_version: str,
+    pipeline_version: str,
+    engine_version_legacy: Optional[str],
     phase: str,
     run_id: Optional[str],
     dry_run: bool,
@@ -7523,9 +7554,22 @@ def extractor_run(
     batch_poll_seconds: int,
     batch_wait_timeout_seconds: int,
     batch_max_requests_per_job: int,
+    ui: str,
+    pretty: bool,
+    quiet: bool,
+    jsonl_events: bool,
     sync: bool,
 ):
-    """Run Repo Truth Extractor pipeline."""
+    """
+    Run Repo Truth Extractor pipeline (resumable).
+
+    \b
+    Examples:
+      dopemux upgrades run --pipeline-version v4 --phase A --run-id local_a --dry-run --resume
+      dopemux upgrades run --pipeline-version v4 --phase ALL --run-id full_001 --execute --resume
+      dopemux upgrades run --pipeline-version v4 --phase C --execute --batch-mode --ui rich
+    """
+    effective_version = _resolved_pipeline_version(pipeline_version, engine_version_legacy)
     args: List[str] = []
     if phase:
         args.extend(["--phase", phase])
@@ -7546,18 +7590,20 @@ def extractor_run(
     args.extend(["--batch-poll-seconds", str(max(1, int(batch_poll_seconds)))])
     args.extend(["--batch-wait-timeout-seconds", str(max(60, int(batch_wait_timeout_seconds)))])
     args.extend(["--batch-max-requests-per-job", str(max(1, int(batch_max_requests_per_job)))])
-    if engine_version == "v4":
+    args.extend(["--ui", ui])
+    if pretty:
+        args.append("--pretty")
+    if quiet:
+        args.append("--quiet")
+    if jsonl_events:
+        args.append("--jsonl-events")
+    if effective_version == "v4":
         args.extend(["--sync" if sync else "--no-sync"])
-    _run_extractor_runner(engine_version=engine_version, args=args)
+    _run_extractor_runner(pipeline_version=effective_version, args=args)
 
 
-@extractor.command("doctor")
-@click.option(
-    "--engine-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
+@upgrades.command("doctor")
+@_pipeline_version_options
 @click.option("--run-id", default=None, help="Run ID")
 @click.option("--auto-reprocess/--no-auto-reprocess", default=False, show_default=True)
 @click.option("--reprocess-dry-run/--no-reprocess-dry-run", default=False, show_default=True)
@@ -7565,13 +7611,21 @@ def extractor_run(
 @click.pass_context
 def extractor_doctor(
     ctx,
-    engine_version: str,
+    pipeline_version: str,
+    engine_version_legacy: Optional[str],
     run_id: Optional[str],
     auto_reprocess: bool,
     reprocess_dry_run: bool,
     reprocess_phases: str,
 ):
-    """Run doctor diagnostics and deterministic reprocess planning."""
+    """
+    Run doctor diagnostics and deterministic reprocess planning for a run.
+
+    \b
+    Example:
+      dopemux upgrades doctor --pipeline-version v4 --run-id <RUN_ID> --auto-reprocess --reprocess-dry-run
+    """
+    effective_version = _resolved_pipeline_version(pipeline_version, engine_version_legacy)
     args: List[str] = ["--doctor"]
     if run_id:
         args.extend(["--run-id", run_id])
@@ -7581,75 +7635,86 @@ def extractor_doctor(
         args.append("--doctor-reprocess-dry-run")
     if reprocess_phases.strip():
         args.extend(["--doctor-reprocess-phases", reprocess_phases.strip()])
-    _run_extractor_runner(engine_version=engine_version, args=args)
+    _run_extractor_runner(pipeline_version=effective_version, args=args)
 
 
-@extractor.command("status")
-@click.option(
-    "--engine-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
+@upgrades.command("status")
+@_pipeline_version_options
 @click.option("--run-id", default=None, help="Run ID")
 @click.option("--json", "status_json", is_flag=True, help="Emit JSON status")
 @click.pass_context
-def extractor_status(ctx, engine_version: str, run_id: Optional[str], status_json: bool):
-    """Show Repo Truth Extractor status."""
+def extractor_status(
+    ctx,
+    pipeline_version: str,
+    engine_version_legacy: Optional[str],
+    run_id: Optional[str],
+    status_json: bool,
+):
+    """Show run status or a machine-readable JSON status payload."""
+    effective_version = _resolved_pipeline_version(pipeline_version, engine_version_legacy)
     args: List[str] = ["--status-json" if status_json else "--status"]
     if run_id:
         args.extend(["--run-id", run_id])
-    _run_extractor_runner(engine_version=engine_version, args=args)
+    _run_extractor_runner(pipeline_version=effective_version, args=args)
 
 
-@extractor.command("preflight")
-@click.option(
-    "--engine-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
+@upgrades.command("preflight")
+@_pipeline_version_options
 @click.option("--run-id", default=None, help="Run ID")
 @click.option("--auth-doctor", is_flag=True, help="Also run auth diagnostics")
 @click.pass_context
-def extractor_preflight(ctx, engine_version: str, run_id: Optional[str], auth_doctor: bool):
-    """Run provider preflight and optional auth doctor checks."""
+def extractor_preflight(
+    ctx,
+    pipeline_version: str,
+    engine_version_legacy: Optional[str],
+    run_id: Optional[str],
+    auth_doctor: bool,
+):
+    """Run provider preflight checks and optional auth diagnostics."""
+    effective_version = _resolved_pipeline_version(pipeline_version, engine_version_legacy)
     args: List[str] = ["--preflight-providers"]
     if run_id:
         args.extend(["--run-id", run_id])
-    _run_extractor_runner(engine_version=engine_version, args=args)
+    _run_extractor_runner(pipeline_version=effective_version, args=args)
     if auth_doctor:
         auth_args = ["--doctor-auth"]
         if run_id:
             auth_args.extend(["--run-id", run_id])
-        _run_extractor_runner(engine_version=engine_version, args=auth_args)
+        _run_extractor_runner(pipeline_version=effective_version, args=auth_args)
 
 
-@extractor.group("promptset")
-def extractor_promptset_group():
+@upgrades.group("promptset")
+def upgrades_promptset_group():
     """Promptset utilities."""
     pass
 
 
-@extractor_promptset_group.command("audit")
-@click.option(
-    "--engine-version",
-    type=click.Choice(["v4", "v3"]),
-    default="v4",
-    show_default=True,
-)
+@upgrades_promptset_group.command("audit")
+@_pipeline_version_options
 @click.option("--strict/--no-strict", default=True, show_default=True)
 @click.pass_context
-def extractor_promptset_audit(ctx, engine_version: str, strict: bool):
-    """Audit Repo Truth Extractor promptset contract compliance."""
-    if engine_version == "v4":
+def extractor_promptset_audit(
+    ctx,
+    pipeline_version: str,
+    engine_version_legacy: Optional[str],
+    strict: bool,
+):
+    """
+    Audit promptset contract compliance (required sections, schemas, determinism).
+
+    \b
+    Example:
+      dopemux upgrades promptset audit --pipeline-version v4 --strict
+    """
+    effective_version = _resolved_pipeline_version(pipeline_version, engine_version_legacy)
+    if effective_version == "v4":
         args = ["--promptset-audit", "--strict-audit" if strict else "--no-strict-audit"]
-        _run_extractor_runner(engine_version="v4", args=args)
+        _run_extractor_runner(pipeline_version="v4", args=args)
         return
     raise click.ClickException("Promptset audit is implemented for v4 only.")
 
 
-@extractor.command("trace")
+@upgrades.command("trace")
 @click.option("--dry-run", is_flag=True, default=True, help="Simulate execution by generating trace files only (default)")
 @click.option("--execute", is_flag=True, help="Actually call LLM providers (if configured)")
 @click.option("--phase", help="Run only a specific trace phase (A, H, D, C, R, S)")
@@ -7664,5 +7729,22 @@ def extractor_trace(ctx, dry_run: bool, execute: bool, phase: Optional[str]):
         runner.run_phase(phase, dry_run=dry_run)
     else:
         runner.run_all(dry_run=dry_run)
+
+
+extractor.add_command(extractor_list, "list")
+extractor.add_command(extractor_run, "run")
+extractor.add_command(extractor_doctor, "doctor")
+extractor.add_command(extractor_status, "status")
+extractor.add_command(extractor_preflight, "preflight")
+extractor.add_command(extractor_trace, "trace")
+
+
+@extractor.group("promptset")
+def extractor_promptset_group():
+    """Promptset utilities (legacy alias for upgrades promptset)."""
+    pass
+
+
+extractor_promptset_group.add_command(extractor_promptset_audit, "audit")
 if __name__ == "__main__":
     main()

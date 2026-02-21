@@ -144,6 +144,10 @@ def test_build_v3_cmd_passes_routing_and_batch_flags() -> None:
         batch_poll_seconds=15,
         batch_wait_timeout_seconds=120,
         batch_max_requests_per_job=99,
+        ui="rich",
+        pretty=True,
+        quiet=True,
+        jsonl_events=True,
     )
     cmd_text = " ".join(cmd)
     assert "--routing-policy cost" in cmd_text
@@ -154,3 +158,76 @@ def test_build_v3_cmd_passes_routing_and_batch_flags() -> None:
     assert "--batch-poll-seconds 15" in cmd_text
     assert "--batch-wait-timeout-seconds 120" in cmd_text
     assert "--batch-max-requests-per-job 99" in cmd_text
+    assert "--ui rich" in cmd_text
+    assert "--pretty" in cmd_text
+    assert "--quiet" in cmd_text
+    assert "--jsonl-events" in cmd_text
+
+
+def test_call_v3_runner_sets_prompt_root_env(monkeypatch) -> None:
+    runner = _load_runner_module()
+    captured = {}
+
+    class _Proc:
+        returncode = 0
+
+    def _fake_run(cmd, cwd=None, env=None):
+        captured["cmd"] = cmd
+        captured["cwd"] = cwd
+        captured["env"] = env or {}
+        return _Proc()
+
+    monkeypatch.setattr(runner.subprocess, "run", _fake_run)
+    prompt_root = Path("/tmp/rte_v4_prompts")
+    rc = runner.call_v3_runner(["python", "run_extraction_v3.py"], prompt_root=prompt_root)
+    assert rc == 0
+    assert captured["env"]["REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"] == str(prompt_root.resolve())
+    assert captured["env"]["UPGRADES_PROMPT_ROOT"] == str(prompt_root.resolve())
+
+
+def test_verify_resume_proof_prompt_paths_rejects_legacy_prompt_paths(tmp_path: Path, monkeypatch) -> None:
+    runner = _load_runner_module()
+    run_id = "v4_prompt_proof_bad"
+    run_root = tmp_path / "v3" / "runs" / run_id
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "RESUME_PROOF.json").write_text(
+        json.dumps(
+            {
+                "prompt_hashes": [
+                    {
+                        "path": str(tmp_path / "services" / "repo-truth-extractor" / "prompts" / "v3" / "PROMPT_A0.md"),
+                        "prompt_id": "A0",
+                        "sha256": "abc",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(runner, "V3_RUNS_ROOT", tmp_path / "v3" / "runs")
+    prompt_root = tmp_path / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "prompts"
+    prompt_root.mkdir(parents=True, exist_ok=True)
+
+    try:
+        runner.verify_resume_proof_prompt_paths(run_id, prompt_root)
+        assert False, "Expected verify_resume_proof_prompt_paths to fail"
+    except RuntimeError as exc:
+        assert "non-v4 prompts" in str(exc)
+
+
+def test_verify_resume_proof_prompt_paths_accepts_v4_prompt_paths(tmp_path: Path, monkeypatch) -> None:
+    runner = _load_runner_module()
+    run_id = "v4_prompt_proof_ok"
+    prompt_root = tmp_path / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "prompts"
+    prompt_root.mkdir(parents=True, exist_ok=True)
+    prompt_path = prompt_root / "PROMPT_A0_EXAMPLE.md"
+    prompt_path.write_text("# prompt", encoding="utf-8")
+    run_root = tmp_path / "v3" / "runs" / run_id
+    run_root.mkdir(parents=True, exist_ok=True)
+    (run_root / "RESUME_PROOF.json").write_text(
+        json.dumps({"prompt_hashes": [{"path": str(prompt_path.resolve()), "prompt_id": "A0", "sha256": "abc"}]}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(runner, "V3_RUNS_ROOT", tmp_path / "v3" / "runs")
+
+    runner.verify_resume_proof_prompt_paths(run_id, prompt_root)
