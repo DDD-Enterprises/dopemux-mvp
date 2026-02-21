@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script to setup a Cloudflare Tunnel for the webhook receiver.
 
-PORT=${1:-8000}
+PORT=${1:-8790}
 echo "Starting Cloudflare tunnel for localhost:$PORT..."
 
 # Start cloudflared in the background and capture output to a temp file
