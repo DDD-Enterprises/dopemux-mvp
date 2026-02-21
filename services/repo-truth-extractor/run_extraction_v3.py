@@ -2184,7 +2184,8 @@ def _append_webhook_receipt(batch_dir: Path, filename: str, receipt: Dict[str, A
 
 
 def _webhook_event_id(run_id: str, phase_id: str, step_id: str, job_id: str, state: str) -> str:
-    now_basic = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    # Use microsecond precision to avoid collisions for multiple events within the same second.
+    now_basic = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     token = f"{run_id}|{phase_id}|{step_id}|{job_id}|{state}"
     digest = hashlib.sha256(token.encode("utf-8")).hexdigest()[:8]
     return f"evt_{now_basic}_{digest}"
