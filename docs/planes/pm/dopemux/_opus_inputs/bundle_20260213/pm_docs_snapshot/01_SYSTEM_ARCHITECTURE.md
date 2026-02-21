@@ -1,10 +1,18 @@
 ---
-title: "System Architecture"
-plane: "pm"
-component: "dopemux"
-status: "skeleton"
+title: System Architecture
+plane: pm
+component: dopemux
+status: skeleton
+id: 01_SYSTEM_ARCHITECTURE
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: System Architecture (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # System Architecture
 
 ## Purpose

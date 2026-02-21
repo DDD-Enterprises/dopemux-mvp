@@ -147,6 +147,7 @@ logs/
 
 # macOS
 .DS_Store
+**/.DS_Store
 .AppleDouble
 .LSOverride
 
@@ -282,6 +283,8 @@ ARCHIVE_MANIFEST.txt
 quarantine/
 tmp/*
 !tmp/.gitkeep
+extraction/runs/
+extraction/latest_run_id.txt
 
 # Artifact and report hygiene
 .claude/*.backup

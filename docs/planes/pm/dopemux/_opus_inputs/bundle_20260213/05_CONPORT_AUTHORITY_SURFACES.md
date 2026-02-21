@@ -1,3 +1,15 @@
+---
+id: 05_CONPORT_AUTHORITY_SURFACES
+title: 05 Conport Authority Surfaces
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 05 Conport Authority Surfaces (explanation) for dopemux documentation and
+  developer workflows.
+---
 # 05 ConPort Authority Surfaces
 
 ## Official ConPort write API surface (containerized runtime)
