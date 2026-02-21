@@ -5,14 +5,17 @@ type: reference
 owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
-prelude: Required prompt sections and validation rules for Repo Truth Extractor v4 prompts.
+prelude: Required prompt sections and validation rules for Repo Truth Extractor v4
+  prompts.
 graph_metadata:
   node_type: DocPage
   impact: high
   relates_to:
-    - services/repo-truth-extractor/promptsets/v4/promptset.yaml
-    - services/repo-truth-extractor/promptsets/v4/prompts/
-    - scripts/repo_truth_extractor_promptset_audit_v4.py
+  - services/repo-truth-extractor/promptsets/v4/promptset.yaml
+  - services/repo-truth-extractor/promptsets/v4/prompts/
+  - scripts/repo_truth_extractor_promptset_audit_v4.py
+last_review: '2026-02-21'
+next_review: '2026-05-22'
 ---
 # Extraction Prompt Contract v4
 

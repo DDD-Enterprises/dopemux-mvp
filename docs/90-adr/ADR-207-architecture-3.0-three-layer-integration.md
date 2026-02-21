@@ -3,20 +3,18 @@ id: ADR-207-architecture-3.0-three-layer-integration
 title: Adr 207 Architecture 3.0 Three Layer Integration
 type: adr
 owner: '@hu3mann'
-last_review: '2026-02-08'
-next_review: '2026-02-08'
 author: '@hu3mann'
-date: '2026-02-05'
-prelude: Architecture decision defining the three-layer integration model and service
-  authority boundaries for Dopemux runtime.
-status: accepted
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Adr 207 Architecture 3.0 Three Layer Integration (adr) for dopemux documentation
+  and developer workflows.
+status: proposed
 graph_metadata:
   node_type: ADR
   impact: medium
-  relates_to:
-- ADR-201-conport-kg-security-hardening
+  relates_to: []
 ---
-
 # Context
 
 The runtime evolved into a distributed stack with overlapping responsibilities

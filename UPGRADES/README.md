@@ -1,3 +1,14 @@
+---
+id: README
+title: Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Readme (explanation) for dopemux documentation and developer workflows.
+---
 # UPGRADES (Legacy Docs Only)
 
 `UPGRADES/` is now a legacy documentation namespace.

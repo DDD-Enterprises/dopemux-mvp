@@ -1,3 +1,14 @@
+---
+id: PIPELINE_PROOF
+title: Pipeline Proof
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Pipeline Proof (explanation) for dopemux documentation and developer workflows.
+---
 # Pipeline Proof Pack Runbook
 
 ## 1. Required command sequence

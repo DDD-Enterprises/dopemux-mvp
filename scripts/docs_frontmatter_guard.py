@@ -78,17 +78,17 @@ def default_prelude(path: Path, title: str) -> str:
 
 def guess_type(path: str) -> str:
     p = path.replace("\\", "/")
-    if "/90-adr/" in p:
+    if "/90-adr/" in p or "/adr/" in p:
         return "adr"
-    if "/91-rfc/" in p:
+    if "/91-rfc/" in p or "/rfc/" in p:
         return "rfc"
-    if "/92-runbooks/" in p:
+    if "/92-runbooks/" in p or "/runbooks/" in p:
         return "runbook"
-    if "/01-tutorials/" in p:
+    if "/01-tutorials/" in p or "/tutorials/" in p:
         return "tutorial"
-    if "/02-how-to/" in p or "/deployment/" in p:
+    if "/02-how-to/" in p or "/how-to/" in p or "/deployment/" in p:
         return "how-to"
-    if "/03-reference/" in p or "/05-audit-reports/" in p or "/06-research/" in p or "/systems/" in p:
+    if "/03-reference/" in p or "/reference/" in p or "/05-audit-reports/" in p or "/06-research/" in p or "/systems/" in p:
         return "reference"
     return "explanation"
 
@@ -256,7 +256,8 @@ def main() -> int:
         print(f"{action} {len(changed_files)} file(s):")
         for path in changed_files:
             print(f" - {path}")
-        return 0 if args.fix else 1
+        # Always return 1 if files were changed/need change, to signal pre-commit
+        return 1
 
     print("All docs have valid frontmatter.")
     return 0

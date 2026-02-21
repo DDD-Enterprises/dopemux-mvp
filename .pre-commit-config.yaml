@@ -5,10 +5,10 @@ repos:
       # Frontmatter validation (enable existing)
       - id: docs-frontmatter-guard
         name: Validate YAML frontmatter in docs
-        entry: python scripts/docs_frontmatter_guard.py --fix
+        entry: python3 scripts/docs_frontmatter_guard.py --fix
         language: system
-        files: ^docs/.*\.md$
-        exclude: ^docs/archive/
+        files: ^(docs/|UPGRADES/|services/[^/]+/docs/|docker/[^/]+/docs/).*\.md$
+        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md)
 
       # Graph schema validation
       - id: docs-graph-validator
@@ -192,7 +192,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^docs/.*\.md$
-        exclude: (^docs/archive/|node_modules/)
+        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md)
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
@@ -207,9 +207,9 @@ repos:
     hooks:
       - id: trailing-whitespace
         files: ^docs/.*\.md$
-        exclude: ^docs/archive/
+        exclude: (^docs/archive/|docs/rgOutput\.md)
       - id: end-of-file-fixer
         files: ^docs/.*\.md$
-        exclude: ^docs/archive/
+        exclude: (^docs/archive/|docs/rgOutput\.md)
       - id: check-yaml
         files: ^config/.*\.ya?ml$

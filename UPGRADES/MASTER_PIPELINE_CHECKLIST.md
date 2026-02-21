@@ -1,3 +1,15 @@
+---
+id: MASTER_PIPELINE_CHECKLIST
+title: Master Pipeline Checklist
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Master Pipeline Checklist (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Master Pipeline Checklist & Operational Guide
 
 ## 0. Setup & Initialization

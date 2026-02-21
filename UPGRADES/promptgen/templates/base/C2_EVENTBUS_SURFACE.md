@@ -1,3 +1,15 @@
+---
+id: C2_EVENTBUS_SURFACE
+title: C2 Eventbus Surface
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: C2 Eventbus Surface (explanation) for dopemux documentation and developer
+  workflows.
+---
 You are extracting facts from a repository snapshot.
 
 TASK

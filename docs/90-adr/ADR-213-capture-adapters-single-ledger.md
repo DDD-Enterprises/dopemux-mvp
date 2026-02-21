@@ -3,20 +3,18 @@ id: ADR-213-capture-adapters-single-ledger
 title: Adr 213 Capture Adapters Single Ledger
 type: adr
 owner: '@hu3mann'
-last_review: '2026-02-08'
-next_review: '2026-05-09'
 author: '@hu3mann'
-date: '2026-02-08'
-prelude: Architecture decision establishing dual capture adapters with one canonical
-  per-project chronicle ledger and explicit memory injection boundaries.
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Adr 213 Capture Adapters Single Ledger (adr) for dopemux documentation and
+  developer workflows.
 status: proposed
 graph_metadata:
   node_type: ADR
-  impact: high
-  relates_to:
-- ADR-207-architecture-3.0-three-layer-integration
+  impact: medium
+  relates_to: []
 ---
-
 # Context
 
 Dopemux needs reliable capture across Claude Code hook/plugin mode and

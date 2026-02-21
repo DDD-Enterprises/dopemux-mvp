@@ -5,13 +5,16 @@ type: how-to
 owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
-prelude: Quick operational guide for running Repo Truth Extractor in batch mode with OpenAI, Gemini, or xAI providers.
+prelude: Quick operational guide for running Repo Truth Extractor in batch mode with
+  OpenAI, Gemini, or xAI providers.
 graph_metadata:
   node_type: DocPage
   impact: high
   relates_to:
-    - services/repo-truth-extractor/run_extraction_v3.py
-    - services/repo-truth-extractor/lib/batch_clients.py
+  - services/repo-truth-extractor/run_extraction_v3.py
+  - services/repo-truth-extractor/lib/batch_clients.py
+last_review: '2026-02-21'
+next_review: '2026-05-22'
 ---
 # Repo Truth Extractor Batch Quickstart
 
@@ -187,4 +190,3 @@ For first production batch run:
 ```
 
 Then tune based on observed queue latency and provider throughput.
-

@@ -1,3 +1,14 @@
+---
+id: C_code_surfaces
+title: C Code Surfaces
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: C Code Surfaces (explanation) for dopemux documentation and developer workflows.
+---
 # Phase C: Code Surfaces
 
 ## C: Code Surfaces (Tier 1)
