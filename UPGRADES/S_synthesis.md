@@ -1,3 +1,14 @@
+---
+id: S_synthesis
+title: S Synthesis
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: S Synthesis (explanation) for dopemux documentation and developer workflows.
+---
 # Phase S: Synthesis
 
 ## S: Synthesis (Architectural Vision)

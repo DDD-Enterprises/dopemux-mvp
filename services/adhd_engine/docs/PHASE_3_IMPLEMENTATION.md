@@ -1,3 +1,15 @@
+---
+id: PHASE_3_IMPLEMENTATION
+title: Phase 3 Implementation
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Phase 3 Implementation (explanation) for dopemux documentation and developer
+  workflows.
+---
 # ADHD Engine Phase 3: Proactive Intelligence Implementation
 
 ## Overview

@@ -1,3 +1,14 @@
+---
+id: TROUBLESHOOTING
+title: Troubleshooting
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Troubleshooting (explanation) for dopemux documentation and developer workflows.
+---
 # MCP Server Troubleshooting Guide
 **Version**: 1.0
 **Last Updated**: 2026-02-05
