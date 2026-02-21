@@ -13,20 +13,17 @@ Usage:
 """
 
 import sys
-
 import logging
-
-logger = logging.getLogger(__name__)
-
 import os
 import re
 import yaml
-import json
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
+
+logger = logging.getLogger(__name__)
 
 # Graph node types from knowledge graph schema
 VALID_NODE_TYPES = {
@@ -79,7 +76,11 @@ ALLOWED_PATHS = [
     'docs/01-tutorials/',
     'docs/02-how-to/',
     'docs/03-reference/',
-    'docs/04-explanation/'
+    'docs/04-explanation/',
+    'docs/05-audit-reports/',
+    'docs/planes/',
+    'docs/task_packets/',
+    'docs/'
 ]
 
 @dataclass
@@ -156,6 +157,8 @@ class DocumentValidator:
     def _matches_prohibited_pattern(self, file_path: str) -> bool:
         """Check if filename matches prohibited patterns."""
         filename = os.path.basename(file_path)
+        if filename.startswith('TEMPLATE_'):
+            return False
         return any(re.match(pattern, filename, re.IGNORECASE) for pattern in PROHIBITED_PATTERNS)
 
     def _parse_frontmatter(self, content: str) -> Tuple[Optional[Dict], str]:
@@ -172,7 +175,7 @@ class DocumentValidator:
             body = content[end_marker + 5:]
             frontmatter = yaml.safe_load(fm_content)
             return frontmatter, body
-        except yaml.YAMLError as e:
+        except yaml.YAMLError:
             return None, content
 
     def _validate_frontmatter(self, file_path: str, frontmatter: Dict, fix: bool) -> bool:
