@@ -289,6 +289,12 @@ tmp/*
 !tmp/.gitkeep
 extraction/runs/
 extraction/latest_run_id.txt
+extraction/repo-truth-extractor/v3/runs/
+extraction/repo-truth-extractor/v4/runs/
+extraction/repo-truth-extractor/v3/doctor/
+extraction/repo-truth-extractor/v4/doctor/
+extraction/repo-truth-extractor/v3/latest_run_id.txt
+extraction/repo-truth-extractor/v4/latest_run_id.txt
 
 # Artifact and report hygiene
 .claude/*.backup

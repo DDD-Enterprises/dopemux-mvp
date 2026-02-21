@@ -1,8 +1,0 @@
-{
-  "generated_at": "2026-02-20T14:03:34.304380+00:00",
-  "jobs": [],
-  "phase": "A",
-  "routing_policy": "cost",
-  "routing_tier": "extract",
-  "step_id": "A4"
-}
