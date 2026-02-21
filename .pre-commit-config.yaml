@@ -111,6 +111,7 @@ repos:
               # Config/state and tooling docs
               if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi
               if [[ "$normalized" =~ /\.taskx/ ]]; then continue; fi
+              if [[ "$normalized" =~ /\.Jules/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.conport/|conport_export/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.github/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(examples/) ]]; then continue; fi
@@ -129,7 +130,7 @@ repos:
               if [[ "$normalized" =~ ^\./(services|docker)/[^/]+/(docs|research|intelligence|archive|migrations)/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(services|docker)/[^/]+/[A-Z_0-9-]+\.md$ ]]; then continue; fi
               # Repo-truth-extractor prompt assets are runtime inputs, not docs
-              if [[ "$normalized" =~ ^\./services/repo-truth-extractor/(prompts|promptsets)/ ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./services/repo-truth-extractor/(prompts|promptsets|tests/fixtures)/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(docker/mcp-servers/pal/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(docker/mcp-servers/)[A-Z_0-9-]+\.md$ ]]; then continue; fi
 
