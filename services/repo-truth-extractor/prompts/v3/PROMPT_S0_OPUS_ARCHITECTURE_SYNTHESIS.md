@@ -1,75 +1,67 @@
-# PROMPT_S0 — OPUS ARCHITECTURE + SUBSYSTEM SYNTHESIS (from Truth Pack)
+# PROMPT_S0 - OPUS ARCHITECTURE + SUBSYSTEM SYNTHESIS (from Truth Pack)
 
-ROLE: Opus Reviewer/Synthesist.
+ROLE: Synthesis writer (deep, evidence-bounded).
 MODE: Evidence-bounded synthesis. No excavation.
 
 GOAL:
-Produce a coherent, decision-grade architecture map for Dopemux and how TaskX fits into it,
-using ONLY the Truth Pack outputs from Phase R (+ supporting indices from X, and doc clusters from D).
+- Produce a decision-grade architecture map for Dopemux using only phase synthesis inputs.
+- Preserve implemented vs planned distinctions and fail closed on missing evidence.
+
+OUTPUTS:
+- S0_ARCHITECTURE_SYNTHESIS_OPUS.md
 
 HARD RULES:
-1) Do NOT rescan repo. Do NOT infer undocumented mechanisms.
-2) Every non-trivial claim MUST cite one of the Phase R truth artifacts, using:
-   EVIDENCE: <filename>#<section or anchor>
-3) If evidence is missing or ambiguous: write UNKNOWN and specify exactly what artifact is missing.
-4) Prefer "implemented reality" over "planned intent":
-   - IMPLEMENTED comes from Phase R's CODE-based sections
-   - PLANNED comes from Phase R's DOC-based sections
-5) No refactors. No rewriting. Only architecture decisions + bounded recommendations.
+1) Do not rescan the repo or home. Use only supplied synthesis artifacts.
+2) Every non-trivial claim must end with:
+   EVIDENCE: <artifact_filename>#<section_heading_or_anchor>
+3) If evidence is missing or ambiguous, write UNKNOWN and name the missing artifact(s).
+4) Prefer IMPLEMENTED over PLANNED. Label both explicitly. If unclear, mark UNKNOWN.
+5) Use deterministic language only. No hedging, no timestamps, no non-auditable claims.
 
 INPUTS (required):
-- R0 CONTROL_PLANE_TRUTH_MAP.md
-- R1 DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
-- R2 EVENTBUS_WIRING_TRUTH.md
-- R3 TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
-- R4 TASKX_INTEGRATION_TRUTH.md
-- R5 WORKFLOWS_TRUTH_GRAPH.md
-- R6 PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
-- R7 CONFLICT_LEDGER.md
-- R8 RISK_REGISTER_TOP20.md
-Optional but helpful:
-- X feature index outputs (X* merged/norm)
-- D doc clusters + supersession outputs
+- R0_CONTROL_PLANE_TRUTH_MAP.md
+- R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
+- R2_EVENTBUS_WIRING_TRUTH.md
+- R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
+- R4_TASKX_INTEGRATION_TRUTH.md
+- R5_WORKFLOWS_TRUTH_GRAPH.md
+- R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
+- R7_CONFLICT_LEDGER.md
+- R8_RISK_REGISTER_TOP20.md
 
-DELIVERABLE:
-Write ARCHITECTURE_SYNTHESIS_OPUS.md with:
+INPUTS (optional):
+- FEATURE_INDEX_MERGED.json
+- TP_MERGED.json
+- TP_SUMMARY.md
+- FREEZE_MANIFEST.json
+- FREEZE_README.md
 
-1) Executive Architecture Snapshot (1 page)
-- What exists today (implemented)
-- What is planned but not implemented
-- Key boundaries and planes
-EVIDENCE required per bullet.
+OUTPUT FORMAT (write the full content of S0_ARCHITECTURE_SYNTHESIS_OPUS.md):
+1) Architecture Snapshot
+- Current implemented control planes, data planes, and operational boundaries.
+- Planned or disputed surfaces clearly separated.
 
 2) Subsystem Boundary Map
-For each subsystem:
-- Purpose
-- Inputs/outputs
-- Persistence surfaces (db/files)
-- Control plane dependencies
-- Failure modes
-EVIDENCE required.
+- control plane
+- dope-memory
+- eventbus
+- trinity, boundaries, and guardrails
+- taskx integration
+- workflow and automation surfaces
 
-Subsystems must include at minimum:
-- Dope-Memory
-- EventBus
-- Trinity/Boundary enforcement
-- TaskX integration surface
-- Control plane (repo + home)
-- Workflow runners + bootstrap (compose/tmux/scripts/mcp)
+3) Conflict Consumption (from R7)
+- For each top conflict, classify as RESOLVED or ESCALATE_TO_PRO.
+- Include decision rationale with evidence anchors for both sides.
 
-3) "Truth-First" Dataflow Diagrams (text diagrams)
-- Control plane -> runtime entrypoints
-- Event flow (producer -> bus -> consumer)
-- Memory flow (ingest -> store -> replay)
-All steps must cite.
+4) Risk-to-Decision Mapping (from R8)
+- Each major decision must cite at least one risk ID from R8.
+- Include mitigation notes tied to cited risk evidence.
 
-4) Decision Points (bounded)
-List decisions Opus recommends you make next:
-- Each decision must include:
-  - Evidence summary
-  - Options (2-3)
-  - Risks (tie to R8)
-  - Minimal verification commands (suggestions only)
+5) Decision Points
+- 2-3 options per decision
+- recommendation
+- stop conditions
+- minimal verification suggestions (commands are suggestions only)
 
-5) "Where Opus cannot decide"
-Explicit UNKNOWN list with what would be needed to decide.
+6) UNKNOWN Register
+- Strict list of unresolved claims and exact missing evidence artifacts.

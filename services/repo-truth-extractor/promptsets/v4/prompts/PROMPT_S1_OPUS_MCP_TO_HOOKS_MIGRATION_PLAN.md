@@ -1,142 +1,87 @@
 # PROMPT_S1
 
 ## Goal
-Produce `S1` outputs for phase `S` with strict schema, explicit evidence, and deterministic normalization.
-Focus on concrete, machine-verifiable implementation facts.
+Produce phase `S1` migration planning artifacts that transform arbitration truths into a conservative MCP-to-hooks plan. The output must remain evidence-bounded, reversible, and suitable for task packet generation without introducing refactors or speculative behavior claims.
 
 ## Inputs
-- Source scope (scan these roots first):
-- `extraction/**/norm/**`
-- `docs/**`
-- `services/repo-truth-extractor/**`
-- Upstream normalized artifacts available to this step:
-- `CONTROL_PLANE_TRUTH_MAP.md`
-- `DOPE_MEMORY_IMPLEMENTATION_TRUTH.md`
-- `EVENTBUS_WIRING_TRUTH.md`
-- `TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md`
-- `TASKX_INTEGRATION_TRUTH.md`
-- `WORKFLOWS_TRUTH_GRAPH.md`
-- `PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
-- `CONFLICT_LEDGER.md`
-- `RISK_REGISTER_TOP20.md`
-- `ARCHITECTURE_SYNTHESIS_OPUS.md`
-- Runner context artifacts:
-  - `extraction/*/inputs/INVENTORY.json`
-  - `extraction/*/inputs/PARTITIONS.json`
-  - `services/repo-truth-extractor/promptsets/v4/promptset.yaml`
-  - `services/repo-truth-extractor/promptsets/v4/artifacts.yaml`
-- When relevant, use `services/registry.yaml` as canonical service list.
+- Source scope:
+  - `extraction/**/R_arbitration/norm/**`
+  - `extraction/**/X_feature_index/norm/**`
+  - `extraction/**/T_task_packets/norm/**`
+  - `extraction/**/Z_handoff_freeze/norm/**`
+- Required artifacts:
+  - `CONTROL_PLANE_TRUTH_MAP.md`
+  - `TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md`
+  - `PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
+  - `CONFLICT_LEDGER.md`
+  - `RISK_REGISTER_TOP20.md`
+- Optional supporting artifacts:
+  - `REPO_MCP_SERVER_DEFS.json`
+  - `REPO_HOOKS_SURFACE.json`
+  - `REPO_MCP_PROXY_SURFACE.json`
+  - `REPO_ROUTER_SURFACE.json`
+  - `FEATURE_INDEX_MERGED.json`
+  - `S0_ARCHITECTURE_SYNTHESIS_OPUS.md`
+- Constraint:
+  - Operate only on supplied phase artifacts; no direct repository scans.
 
 ## Outputs
 - `MCP_TO_HOOKS_MIGRATION_OPUS.md`
+- `S1_MCP_TO_HOOKS_MIGRATION_PLAN.md`
 
 ## Schema
-- Use deterministic containers only:
-  - `ItemList`: `{"schema":"<schema_id>@v1","items":[...]}`
-  - `Graph`: `{"schema":"<schema_id>@v1","nodes":[...],"edges":[...]}`
+- Artifact kind: markdown planning documents with deterministic section order.
+- Canonical writer: `S1` for both declared outputs.
 - Output contracts:
-  - `MCP_TO_HOOKS_MIGRATION_OPUS.md`
-    - `kind`: `markdown`
-    - `merge_strategy`: `markdown_concat`
-    - `canonical_writer_step_id`: `S1`
-    - `id_rule`: `MCP_TO_HOOKS_MIGRATION_OPUS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, evidence`
+  - `MCP_TO_HOOKS_MIGRATION_OPUS.md`: compatibility migration report for existing consumers.
+  - `S1_MCP_TO_HOOKS_MIGRATION_PLAN.md`: step-scoped migration plan alias for new consumers.
+- Mandatory content blocks in each output:
+  - Scope and constraints
+  - Candidate inventory with eligibility gate status
+  - Staged migration plan with entry criteria, steps, verification suggestions, and rollback
+  - No-go triggers table with `risk_id` and optional `conflict_id`
+  - Unknown/missing evidence register
+- Candidate eligibility rule:
+  - Include a candidate only when evidence exists for both current MCP surface and target hooks surface.
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Build a migration evidence map from required arbitration artifacts and optional control-surface artifacts.
+2. Enumerate candidate surfaces and evaluate eligibility using the dual-evidence gate.
+3. Reject ineligible candidates into `UNKNOWN` with explicit missing evidence references.
+4. Create staged plan entries that remain mechanical and rollback-capable.
+5. Derive no-go triggers from `R8` risk IDs and `R7` conflicts where relevant.
+6. Write identical semantic content to both outputs to maintain compatibility and alias determinism.
 
 ## Evidence Rules
-- Every load-bearing value must carry at least one evidence object:
-```json
-{
-  "path": "<repo-relative-path>",
-  "line_range": [<start>, <end>],
-  "excerpt": "<exact substring <=200 chars>"
-}
-```
-- `path` must be repo-relative (never absolute in norm artifacts).
-- `excerpt` must be exact (no paraphrase) and <= 200 chars.
-- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
+- Every non-trivial plan claim must terminate with:
+  - `EVIDENCE: <artifact_filename>#<section_heading_or_anchor>`
+- Risk and no-go entries must cite `R8` and include `R7` when conflict-driven.
+- Candidate inclusion must reference at least one MCP-side and one hook-side evidence anchor.
+- Unsupported candidates must be listed in unknowns with explicit missing artifacts.
+- If evidence objects are emitted, include `path`, `line_range`, and `excerpt` keys.
+- Never present migration readiness without cited evidence.
+- Do not cite non-input artifacts.
 
 ## Determinism Rules
-- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
-- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
-- Merge duplicates deterministically:
-  - union evidence by `(path,line_range,excerpt)`
-  - union arrays with stable sort
-  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
-- Output byte content must be reproducible for same commit + same configuration.
+- Do not include `generated_at`, `timestamp`, `created_at`, `updated_at`, or `run_id`.
+- Keep section order fixed and candidate ordering deterministic.
+- Use fixed status tokens: `ELIGIBLE`, `INELIGIBLE`, `UNKNOWN`, `NO_GO`, `READY`.
+- Keep `MCP_TO_HOOKS_MIGRATION_OPUS.md` and `S1_MCP_TO_HOOKS_MIGRATION_PLAN.md` semantically identical.
+- Avoid speculative terms unless coupled with `UNKNOWN` and missing evidence details.
+- Normalize table columns and heading names for reproducible output.
 
 ## Anti-Fabrication Rules
-- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
-- Do not infer intent from filenames alone; require direct textual/code evidence.
-- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
-- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
+- Do not invent migration targets, hooks, proxies, or service boundaries.
+- Do not infer target mechanisms without direct evidence.
+- Do not claim execution or validation was performed.
+- Do not recommend refactors or broad architecture rewrites.
+- Do not hide uncertainty; unresolved issues must stay explicit.
+- Do not modify risk severity labels without evidence anchors.
 
 ## Failure Modes
-- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
-- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
-- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
-- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-
-## Legacy Context (for intent only; never as evidence)
-```markdown
-# PROMPT_S1 — OPUS MCP -> HOOKS MIGRATION IMPACT + PLAN (from Truth Pack)
-
-ROLE: Opus Reviewer/Synthesist.
-MODE: Migration planner under evidence constraints.
-
-GOAL:
-Design a safe, incremental MCP -> hooks migration plan (or a no-go recommendation),
-grounded ONLY in Phase R truth artifacts and portability risks.
-
-HARD RULES:
-1) No repo rescans, no invented components.
-2) Every migration claim MUST cite Phase R evidence:
-   EVIDENCE: <filename>#<section>
-3) Separate:
-   - What is feasible now (IMPLEMENTED surfaces)
-   - What requires new work (PLANNED or UNKNOWN)
-4) No large refactors: propose minimal, mechanical steps.
-
-INPUTS (required):
-- R0 CONTROL_PLANE_TRUTH_MAP.md
-- R5 WORKFLOWS_TRUTH_GRAPH.md
-- R6 PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
-- R7 CONFLICT_LEDGER.md
-- R8 RISK_REGISTER_TOP20.md
-Optional:
-- R3 TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md (to avoid bypassing guardrails)
-
-DELIVERABLE:
-Write MCP_TO_HOOKS_MIGRATION_OPUS.md with:
-
-1) Current-State Control Surfaces
-- What MCP is currently responsible for (by evidence)
-- What hooks/scripts/compose already do (by evidence)
-EVIDENCE per bullet.
-
-2) Migration Candidates Table
-Surface | Current mechanism | Proposed mechanism | Preconditions | Risks | Evidence
-Only include candidates supported by evidence.
-
-3) "Portability First" Plan (staged)
-Stage 0: Observability + proof pack hardening
-Stage 1: Low-risk moves (no behavior change)
-Stage 2: Behavioral moves behind flags
-Stage 3: Decommission candidates
-Each stage must include:
-- Entry criteria
-- Steps
-- Rollback
-- Evidence links
-- Risks mapped to R8
-
-4) No-Go Triggers
-List c
-```
+- Required artifacts missing: output conservative plan with `UNKNOWN` sections and missing input list.
+- Candidate evidence asymmetric (MCP present, hook absent or vice versa): mark candidate `INELIGIBLE` and exclude from execution steps.
+- Conflict cannot be resolved from available evidence: tie candidate to `NO_GO` and flag for PRO escalation.
+- Risk mapping incomplete: include explicit no-go placeholder and missing-risk evidence request.
+- Alias output drift between two files: regenerate both from the same deterministic content template.
+- Excessive optional-input dependence: downgrade confidence and keep stage progression conservative.

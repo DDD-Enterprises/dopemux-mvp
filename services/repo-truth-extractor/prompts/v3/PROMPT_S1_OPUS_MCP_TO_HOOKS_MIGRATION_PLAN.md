@@ -1,56 +1,53 @@
-# PROMPT_S1 — OPUS MCP -> HOOKS MIGRATION IMPACT + PLAN (from Truth Pack)
+# PROMPT_S1 - OPUS MCP TO HOOKS MIGRATION PLAN (evidence-bounded)
 
-ROLE: Opus Reviewer/Synthesist.
-MODE: Migration planner under evidence constraints.
+ROLE: Migration planner (audit-grade, conservative).
+MODE: Evidence-bounded synthesis. No excavation.
 
 GOAL:
-Design a safe, incremental MCP -> hooks migration plan (or a no-go recommendation),
-grounded ONLY in Phase R truth artifacts and portability risks.
+- Produce a staged MCP-to-hooks migration plan using only supplied synthesis artifacts.
+- Preserve boundary controls and avoid behavioral drift.
+
+OUTPUTS:
+- S1_MCP_TO_HOOKS_MIGRATION_PLAN.md
 
 HARD RULES:
-1) No repo rescans, no invented components.
-2) Every migration claim MUST cite Phase R evidence:
-   EVIDENCE: <filename>#<section>
-3) Separate:
-   - What is feasible now (IMPLEMENTED surfaces)
-   - What requires new work (PLANNED or UNKNOWN)
-4) No large refactors: propose minimal, mechanical steps.
+1) Do not rescan the repo or invent components.
+2) Every non-trivial claim must end with:
+   EVIDENCE: <artifact_filename>#<section_heading_or_anchor>
+3) If evidence is missing, write UNKNOWN and exclude the candidate from execution steps.
+4) Prefer minimal mechanical moves. No refactors.
+5) All no-go gates must tie to R8 risk IDs and R7 conflicts when relevant.
 
 INPUTS (required):
-- R0 CONTROL_PLANE_TRUTH_MAP.md
-- R5 WORKFLOWS_TRUTH_GRAPH.md
-- R6 PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
-- R7 CONFLICT_LEDGER.md
-- R8 RISK_REGISTER_TOP20.md
-Optional:
-- R3 TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md (to avoid bypassing guardrails)
+- R0_CONTROL_PLANE_TRUTH_MAP.md
+- R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
+- R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
+- R7_CONFLICT_LEDGER.md
+- R8_RISK_REGISTER_TOP20.md
 
-DELIVERABLE:
-Write MCP_TO_HOOKS_MIGRATION_OPUS.md with:
+INPUTS (optional):
+- REPO_MCP_SERVER_DEFS.json
+- REPO_HOOKS_SURFACE.json
+- REPO_MCP_PROXY_SURFACE.json
+- REPO_ROUTER_SURFACE.json
+- FEATURE_INDEX_MERGED.json
 
-1) Current-State Control Surfaces
-- What MCP is currently responsible for (by evidence)
-- What hooks/scripts/compose already do (by evidence)
-EVIDENCE per bullet.
+OUTPUT FORMAT (write the full content of S1_MCP_TO_HOOKS_MIGRATION_PLAN.md):
+1) Scope and Constraints
+- Summarize objective boundaries and guardrails.
 
-2) Migration Candidates Table
-Surface | Current mechanism | Proposed mechanism | Preconditions | Risks | Evidence
-Only include candidates supported by evidence.
+2) Candidate Inventory
+- Include only candidates with evidence for both current MCP mechanism and target hook surface.
+- Mark unsupported candidates as UNKNOWN with missing evidence references.
 
-3) "Portability First" Plan (staged)
-Stage 0: Observability + proof pack hardening
-Stage 1: Low-risk moves (no behavior change)
-Stage 2: Behavioral moves behind flags
-Stage 3: Decommission candidates
-Each stage must include:
-- Entry criteria
-- Steps
-- Rollback
-- Evidence links
-- Risks mapped to R8
+3) Plan Stages
+- Entry criteria (evidence-based)
+- Steps (mechanical)
+- Verification suggestions
+- Rollback path
 
-4) No-Go Triggers
-List conditions that should stop migration, with evidence.
+4) No-Go Triggers Table
+- Columns: trigger, linked risk_id (R8), linked conflict_id (R7 if applicable), evidence.
 
-5) Minimal verification commands (suggestions only)
-No claims of having run them.
+5) UNKNOWN and Missing Evidence Register
+- Explicit unresolved items and required artifacts.

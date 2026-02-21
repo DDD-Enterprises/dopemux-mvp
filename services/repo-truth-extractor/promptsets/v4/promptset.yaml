@@ -875,6 +875,8 @@ phases:
     required_steps:
     - S0
     - S1
+    - S2
+    - S3
     steps:
     - step_id: S0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md
@@ -891,9 +893,25 @@ phases:
       - CONFLICT_LEDGER.md
       - RISK_REGISTER_TOP20.md
       - ARCHITECTURE_SYNTHESIS_OPUS.md
+      - S0_ARCHITECTURE_SYNTHESIS_OPUS.md
     - step_id: S1
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md
       coverage_targets:
       - phase_scope
       outputs:
       - MCP_TO_HOOKS_MIGRATION_OPUS.md
+      - S1_MCP_TO_HOOKS_MIGRATION_PLAN.md
+    - step_id: S2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S2_DECISION_DOSSIER.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DECISION_DOSSIER_OPUS.md
+      - S2_DECISION_DOSSIER.md
+    - step_id: S3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S3_ARCHITECTURE_PROOF_HOOKS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - ARCHITECTURE_PROOF_HOOKS.md
+      - S3_ARCH_PROOF_HOOKS.md

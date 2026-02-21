@@ -1681,6 +1681,14 @@ artifacts:
   merge_strategy: markdown_concat
   required_fields: []
 - phase: S
+  artifact_name: S0_ARCHITECTURE_SYNTHESIS_OPUS.md
+  canonical_writer_step_id: S0
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
   artifact_name: CONFLICT_LEDGER.md
   canonical_writer_step_id: S0
   kind: markdown
@@ -1715,6 +1723,46 @@ artifacts:
 - phase: S
   artifact_name: MCP_TO_HOOKS_MIGRATION_OPUS.md
   canonical_writer_step_id: S1
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
+  artifact_name: S1_MCP_TO_HOOKS_MIGRATION_PLAN.md
+  canonical_writer_step_id: S1
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
+  artifact_name: DECISION_DOSSIER_OPUS.md
+  canonical_writer_step_id: S2
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
+  artifact_name: S2_DECISION_DOSSIER.md
+  canonical_writer_step_id: S2
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
+  artifact_name: ARCHITECTURE_PROOF_HOOKS.md
+  canonical_writer_step_id: S3
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: S
+  artifact_name: S3_ARCH_PROOF_HOOKS.md
+  canonical_writer_step_id: S3
   kind: markdown
   norm_artifact: true
   allow_timestamp_keys: false
