@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "pal": {
+    "dopemux-pal": {
       "type": "stdio",
       "command": "uv",
       "args": [
@@ -20,7 +20,7 @@
         "PAL_DEFAULT_PROVIDER": "openrouter"
       }
     },
-    "conport": {
+    "dopemux-conport": {
       "type": "sse",
       "url": "http://localhost:3004/sse",
       "env": {
@@ -30,20 +30,20 @@
         "OPENAI_API_KEY": "${OPENAI_API_KEY:-}"
       }
     },
-    "serena-v2": {
+    "dopemux-serena": {
       "type": "sse",
       "url": "http://localhost:3006/sse",
       "env": {
         "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
       }
     },
-    "gpt-researcher": {
+    "dopemux-gpt-researcher": {
       "type": "stdio",
       "command": "docker",
       "args": [
         "exec",
         "-i",
-        "mcp-gptr-mcp",
+        "dopemux-gpt-researcher",
         "python",
         "/app/server.py"
       ],
@@ -56,21 +56,13 @@
       },
       "description": "Deep research with comprehensive analysis using Docker container"
     },
-    "leantime-bridge": {
-      "type": "sse",
-      "url": "http://localhost:3015/sse",
-      "env": {
-        "LEANTIME_API_TOKEN": "${LEANTIME_API_TOKEN:-}"
-      },
-      "description": "Leantime project management integration bridge"
-    },
-    "exa": {
+    "dopemux-exa": {
       "type": "stdio",
       "command": "docker",
       "args": [
         "exec",
         "-i",
-        "mcp-exa",
+        "dopemux-mcp-litellm",
         "python",
         "/app/exa_server.py"
       ],
@@ -79,7 +71,7 @@
       },
       "description": "Neural web search via Docker container"
     },
-    "dope-context": {
+    "dopemux-claude-context": {
       "type": "sse",
       "url": "http://localhost:3010/mcp",
       "env": {
@@ -88,13 +80,13 @@
         "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}"
       }
     },
-    "desktop-commander": {
+    "dopemux-desktop-commander": {
       "type": "stdio",
       "command": "docker",
       "args": [
         "exec",
         "-i",
-        "mcp-desktop-commander",
+        "dopemux-mcp-desktop-commander",
         "python",
         "/app/mcp_server.py"
       ],

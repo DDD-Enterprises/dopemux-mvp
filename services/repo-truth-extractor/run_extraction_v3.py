@@ -9098,21 +9098,18 @@ def _build_event_store_for_runner() -> Any:
 
         if server is not None and hasattr(server, "ensure_migrations"):
             try:
-                server.ensure_migrations(db_url)  # type: ignore[call-arg]
+                server.ensure_migrations()  # type: ignore[call-arg]
             except Exception:
                 logging.exception(
                     "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
                 )
 
         if not (server is not None and hasattr(server, "ensure_migrations")):
-            migrate_script = RUNNER_SERVICE_DIR.parent.parent / "scripts" / "webhook_migrate.py"
+            migrate_script = webhook_receiver_dir / "webhook_migrate.py"
             if migrate_script.is_file():
                 try:
-                    cmd = [sys.executable, str(migrate_script)]
-                    if db_url:
-                        cmd.extend(["--db", db_url])
                     subprocess.run(
-                        cmd,
+                        [sys.executable, str(migrate_script)],
                         check=True,
                     )
                 except Exception:
@@ -9221,12 +9218,12 @@ def run_phase_R_async_submit(
 
         for partition in partitions:
             partition_id = str(partition["id"])
-
+            
             latest_attempt = event_store.latest_attempt_for_tuple(
                 run_id=run_id, phase="R", step_id=step_id, partition_id=partition_id
             )
             attempt = (latest_attempt or 0) + 1
-
+            
             out_json = raw_dir / f"{step_id}__{partition_id}.json"
             pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
 
