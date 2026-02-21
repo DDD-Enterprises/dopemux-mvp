@@ -16,9 +16,9 @@ jobs:
     name: "🤖 Claude Code Security Analysis"
     runs-on: ubuntu-latest
     timeout-minutes: 25  # ADHD-optimized: 25-minute chunks
-    if: github.repository == "DDD-Enterprises/dopemux-mvp" && (github.event_name == "push" || github.event.pull_request.head.repo.full_name == github.repository)
-    if: github.repository == "DDD-Enterprises/dopemux-mvp" && (github.event_name == "push" || github.event.pull_request.head.repo.full_name == github.repository)
     if: github.repository == 'DDD-Enterprises/dopemux-mvp' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     steps:
       - name: 📥 Checkout code
@@ -26,17 +26,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2  # Get enough history for diff analysis
-        if: ${{ secrets.ANTHROPIC_API_KEY != "" }}
-
-        if: ${{ secrets.ANTHROPIC_API_KEY != "" }}
       - name: 🔐 ADHD-Optimized Security Review
-        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         with:
           comment-pr: true
-          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
           upload-results: true
 
           # ADHD-optimized timeout (25-minute focus sessions)
