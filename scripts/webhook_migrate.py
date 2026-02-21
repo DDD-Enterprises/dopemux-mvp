@@ -29,6 +29,8 @@ def _parse_db_url(db_url: str) -> Dict[str, str]:
     from services.webhook_receiver.ledger.interface import parse_db_url as ledger_parse_db_url
 
     return ledger_parse_db_url(db_url)
+
+
 def _migration_files(backend: str) -> List[Path]:
     migration_dir = LEDGER_ROOT / "migrations" / backend
     if not migration_dir.exists():
