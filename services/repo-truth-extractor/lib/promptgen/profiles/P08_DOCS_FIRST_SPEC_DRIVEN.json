@@ -1,0 +1,37 @@
+{
+  "description": "Docs/spec-heavy repository where contracts and ADRs drive truth.",
+  "match_weights": {
+    "is_docs_first": 3.0,
+    "has_adrs": 1.8,
+    "has_api_specs": 1.2,
+    "is_monorepo": 0.2
+  },
+  "phase_policy": {
+    "budgets_by_phase": {
+      "D": {"file_truncate_chars": 80000, "max_chars": 780000, "max_files": 40},
+      "C": {"file_truncate_chars": 60000, "max_chars": 500000, "max_files": 12}
+    },
+    "prompt_variants_by_phase_step": {
+      "D": {"D1": "contract_reconcile", "D4": "contract_reconcile"},
+      "C": {"C0": "code_light_contract_focus"}
+    },
+    "targets_by_phase": {
+      "D": ["docs", "services", "src"],
+      "C": ["src", "services", "docs"]
+    }
+  },
+  "priority": 72,
+  "profile_id": "P08_DOCS_FIRST_SPEC_DRIVEN",
+  "prompt_overlays": {
+    "base": "Treat ADR/spec statements as candidate contracts; reconcile code evidence against them."
+  },
+  "selection_threshold": 1.7,
+  "v2_rules": {
+    "RULE_ENABLE_STRICT_ENVELOPE_ON_PARSE": {"enabled": true},
+    "RULE_REDUCE_MAX_FILES_ON_PARSE_OR_EMPTY": {"decrement": 2, "enabled": true, "threshold": 1},
+    "RULE_SHRINK_BUDGET_ON_PAYLOAD_UNSHRINKABLE": {"enabled": true, "factor": 0.8, "threshold": 1},
+    "RULE_SPLIT_STEP_ON_MISSING_ARTIFACTS": {"enabled": true, "threshold": 0.35},
+    "RULE_TARGET_REORDER_ON_THIN_COVERAGE": {"enabled": true, "threshold": 0.65}
+  },
+  "version": "1.0.0"
+}

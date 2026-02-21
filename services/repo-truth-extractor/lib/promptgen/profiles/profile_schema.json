@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Repo Archetype Profile",
+  "type": "object",
+  "required": [
+    "profile_id",
+    "version",
+    "priority",
+    "description",
+    "selection_threshold",
+    "match_weights",
+    "phase_policy",
+    "prompt_overlays",
+    "v2_rules"
+  ],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "pattern": "^P[0-9]{2}_[A-Z0-9_]+$"
+    },
+    "version": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "integer"
+    },
+    "description": {
+      "type": "string"
+    },
+    "selection_threshold": {
+      "type": "number"
+    },
+    "match_weights": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+    "phase_policy": {
+      "type": "object",
+      "required": [
+        "targets_by_phase",
+        "budgets_by_phase",
+        "prompt_variants_by_phase_step"
+      ],
+      "properties": {
+        "targets_by_phase": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "budgets_by_phase": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["max_files", "max_chars", "file_truncate_chars"],
+            "properties": {
+              "max_files": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "max_chars": {
+                "type": "integer",
+                "minimum": 1024
+              },
+              "file_truncate_chars": {
+                "type": "integer",
+                "minimum": 128
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "prompt_variants_by_phase_step": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "prompt_overlays": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "v2_rules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": false
+}
