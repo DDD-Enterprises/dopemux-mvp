@@ -43,7 +43,7 @@
       "args": [
         "exec",
         "-i",
-        "dopemux-gpt-researcher",
+        "dopemux-mcp-gptr-mcp",
         "python",
         "/app/server.py"
       ],
