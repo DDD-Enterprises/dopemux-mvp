@@ -9165,41 +9165,25 @@ def run_phase_R_async_submit(
 
 def _fetch_webhook_payload_for_job(event_store: Any, run_id: str, provider_ref: str) -> Dict[str, Any]:
     """Retrieve the raw webhook payload JSON for a given provider_ref from the ledger."""
-    payload_json = ""
-    if hasattr(event_store, "_conn"):
-        # SQLiteEventStore
-        with event_store._conn() as conn:  # type: ignore[attr-defined]
-            row = conn.execute(
-                """
-                SELECT we.payload_json
-                FROM webhook_events we
-                JOIN run_events re ON re.webhook_event_id = we.id
-                WHERE re.provider = 'openai' AND re.run_id = ?
-                  AND re.provider_ref = ? AND re.orphaned = 0
-                LIMIT 1
-                """,
-                (run_id, provider_ref),
-            ).fetchone()
-            if row:
-                payload_json = str(row[0] or "")
-    elif hasattr(event_store, "_connect"):
-        # PostgresEventStore
-        with event_store._connect() as conn:  # type: ignore[attr-defined]
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT we.payload_json::text
-                    FROM webhook_events we
-                    JOIN run_events re ON re.webhook_event_id = we.id
-                    WHERE re.provider = 'openai' AND re.run_id = %s
-                      AND re.provider_ref = %s AND re.orphaned = FALSE
-                    LIMIT 1
-                    """,
-                    (run_id, provider_ref),
-                )
-                row = cur.fetchone()
-                if row:
-                    payload_json = str(row[0] or "")
+    fetch_fn = getattr(event_store, "fetch_webhook_payload", None)
+    if not callable(fetch_fn):
+        return {}
+
+    try:
+        # The EventStore is responsible for any backend-specific querying.
+        payload = fetch_fn(provider="openai", run_id=run_id, provider_ref=provider_ref)
+    except Exception:
+        return {}
+
+    if isinstance(payload, dict):
+        return payload
+
+    if isinstance(payload, str):
+        payload_json = payload
+    else:
+        # Unsupported payload type
+        return {}
+
     if not payload_json:
         return {}
     try:
