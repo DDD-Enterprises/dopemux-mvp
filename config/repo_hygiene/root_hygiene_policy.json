@@ -35,7 +35,8 @@
     "ui-dashboard-backend",
     "vendor",
     "UPGRADES",
-    "_audit_out"
+    "_audit_out",
+    "review_artifacts"
   ],
   "allowed_root_files": [
     ".gitmodules",
@@ -138,7 +139,11 @@
     "extract_metadata.py",
     "inventory_audit.txt",
     "rgOutput.md",
-    "litellm.config.yaml.backup"
+    "litellm.config.yaml.backup",
+    "uv.lock",
+    "audit_prompts.py",
+    "TASKX_INTEGRATION_ANALYSIS.md",
+    "AUDIT_RESULTS.json"
   ],
   "legacy_root_files": [],
   "blocked_root_file_patterns": [
