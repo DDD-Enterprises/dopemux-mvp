@@ -185,6 +185,23 @@ webhook-health:  ## Check webhook receiver health (local and public)
 	@echo "Checking public health..."
 	@curl -fsS https://webhooks.krohman.org/healthz && echo "" || echo "Public health check failed"
 
+webhook-db-stats:  ## Print webhook receiver DB stats
+	@docker compose exec webhook_receiver python services/webhook_receiver/admin.py db stats
+
+webhook-db-tail:  ## Tail last 20 webhook events
+	@docker compose exec webhook_receiver python services/webhook_receiver/admin.py db tail --table provider_events --limit 20
+
+webhook-db-tail-run:  ## Tail last 20 run events
+	@docker compose exec webhook_receiver python services/webhook_receiver/admin.py db tail --table run_events --limit 20
+
+webhook-proof:  ## Generate proof bundle
+	@echo "--- webhook-db-stats ---"
+	@$(MAKE) webhook-db-stats
+	@echo "\n--- webhook-db-tail ---"
+	@$(MAKE) webhook-db-tail
+	@echo "\n--- webhook-db-tail-run ---"
+	@$(MAKE) webhook-db-tail-run
+
 # ============================================
 # ADHD Dashboard & Orchestrator
 # ============================================
