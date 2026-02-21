@@ -11,8 +11,8 @@ Produce phase `S2` decision dossier artifacts that compress synthesis results in
 - Required artifacts:
   - `S0_ARCHITECTURE_SYNTHESIS_OPUS.md`
   - `S1_MCP_TO_HOOKS_MIGRATION_PLAN.md`
-  - `R7_CONFLICT_LEDGER.md`
-  - `R8_RISK_REGISTER_TOP20.md`
+  - `CONFLICT_LEDGER.md`
+  - `RISK_REGISTER_TOP20.md`
 - Optional artifacts:
   - `TP_MERGED.json`
   - `FEATURE_INDEX_MERGED.json`

@@ -10,11 +10,11 @@ Produce phase `S1` migration planning artifacts that transform arbitration truth
   - `extraction/**/T_task_packets/norm/**`
   - `extraction/**/Z_handoff_freeze/norm/**`
 - Required artifacts:
-  - `R0_CONTROL_PLANE_TRUTH_MAP.md`
-  - `R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md`
-  - `R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
-  - `R7_CONFLICT_LEDGER.md`
-  - `R8_RISK_REGISTER_TOP20.md`
+  - `CONTROL_PLANE_TRUTH_MAP.md`
+  - `TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md`
+  - `PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
+  - `CONFLICT_LEDGER.md`
+  - `RISK_REGISTER_TOP20.md`
 - Optional supporting artifacts:
   - `REPO_MCP_SERVER_DEFS.json`
   - `REPO_HOOKS_SURFACE.json`

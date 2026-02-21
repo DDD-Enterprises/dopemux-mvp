@@ -10,15 +10,15 @@ Produce phase `S0` synthesis artifacts from arbitration truth inputs with determ
   - `extraction/**/T_task_packets/norm/**`
   - `extraction/**/Z_handoff_freeze/norm/**`
 - Required arbitration artifacts:
-  - `R0_CONTROL_PLANE_TRUTH_MAP.md`
-  - `R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md`
-  - `R2_EVENTBUS_WIRING_TRUTH.md`
-  - `R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md`
-  - `R4_TASKX_INTEGRATION_TRUTH.md`
-  - `R5_WORKFLOWS_TRUTH_GRAPH.md`
-  - `R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
-  - `R7_CONFLICT_LEDGER.md`
-  - `R8_RISK_REGISTER_TOP20.md`
+  - `CONTROL_PLANE_TRUTH_MAP.md`
+  - `DOPE_MEMORY_IMPLEMENTATION_TRUTH.md`
+  - `EVENTBUS_WIRING_TRUTH.md`
+  - `TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md`
+  - `TASKX_INTEGRATION_TRUTH.md`
+  - `WORKFLOWS_TRUTH_GRAPH.md`
+  - `PORTABILITY_AND_MIGRATION_RISK_LEDGER.md`
+  - `CONFLICT_LEDGER.md`
+  - `RISK_REGISTER_TOP20.md`
 - Optional synthesis helpers:
   - `FEATURE_INDEX_MERGED.json`
   - `TP_MERGED.json`
@@ -65,7 +65,7 @@ Produce phase `S0` synthesis artifacts from arbitration truth inputs with determ
 ## Extraction Procedure
 1. Load only provided phase synthesis inputs and build a deterministic evidence index keyed by artifact and section.
 2. Produce implemented/planned splits for each subsystem before writing conclusions.
-3. Consume `R7_CONFLICT_LEDGER.md` and classify each material conflict as `RESOLVED` or `ESCALATE_TO_PRO` with evidence.
+3. Consume `CONFLICT_LEDGER.md` and classify each material conflict as `RESOLVED` or `ESCALATE_TO_PRO` with evidence.
 4. Build risk-to-decision mapping so each decision references one or more `R8` risk IDs.
 5. Write each declared output with stable section order, stable list ordering, and explicit unknown handling.
 6. Mirror the architecture narrative into both `ARCHITECTURE_SYNTHESIS_OPUS.md` and `S0_ARCHITECTURE_SYNTHESIS_OPUS.md` so compatibility and step-specific consumers receive the same deterministic payload.

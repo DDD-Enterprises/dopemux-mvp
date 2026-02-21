@@ -7765,7 +7765,7 @@ def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
 
-    deduped_inputs = sorted(set(input_files), key=lambda path: str(path))
+    deduped_inputs = sorted(set(input_files), key=str)
     _run_phase_inner("R", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs), ui=ui)
 
 

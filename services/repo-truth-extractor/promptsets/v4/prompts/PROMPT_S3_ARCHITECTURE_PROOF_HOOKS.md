@@ -12,7 +12,7 @@ Produce phase `S3` proof-hook artifacts that transform architecture and migratio
   - `S0_ARCHITECTURE_SYNTHESIS_OPUS.md`
   - `S1_MCP_TO_HOOKS_MIGRATION_PLAN.md`
   - `S2_DECISION_DOSSIER.md`
-  - `R8_RISK_REGISTER_TOP20.md`
+  - `RISK_REGISTER_TOP20.md`
 - Optional artifacts:
   - `TP_MERGED.json`
   - `FREEZE_MANIFEST.json`
