@@ -215,7 +215,7 @@ See [docs/engineering/refactor_gates.md](docs/engineering/refactor_gates.md) for
 - No cross-layer imports; respect boundaries enforced by `tests/arch/`
 - Run `pre-commit run --all-files` before PRs
 
-See [copilot-instructions.md](.github/copilot/copilot-instructions.md) for more.
+See [copilot-instructions.md](.github/copilot-instructions.md) for more.
 
 ---
 

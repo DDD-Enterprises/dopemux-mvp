@@ -2,7 +2,7 @@
 
 ## Where to Get Help
 
-- Usage questions: open a GitHub Discussion (if enabled) or Issue using the support template path.
+- Usage questions: open a GitHub Discussion (if enabled) or a GitHub Issue using the most appropriate issue template.
 - Bug reports: open a GitHub Issue with reproduction details.
 - Security issues: follow `SECURITY.md` and use private reporting.
 

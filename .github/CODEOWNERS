@@ -1,18 +1,18 @@
 # Global ownership
-* @DDD-Enterprises
+* @hu3mann
 
 # Core platform
-/src/ @DDD-Enterprises
-/services/ @DDD-Enterprises
-/docker/ @DDD-Enterprises
-/compose.yml @DDD-Enterprises
+/src/ @hu3mann
+/services/ @hu3mann
+/docker/ @hu3mann
+/compose.yml @hu3mann
 
 # CI/CD and governance
-/.github/ @DDD-Enterprises
-/config/repo_hygiene/ @DDD-Enterprises
+/.github/ @hu3mann
+/config/repo_hygiene/ @hu3mann
 
 # Docs
-/docs/ @DDD-Enterprises
-/README.md @DDD-Enterprises
-/INSTALL.md @DDD-Enterprises
-/QUICK_START.md @DDD-Enterprises
+/docs/ @hu3mann
+/README.md @hu3mann
+/INSTALL.md @hu3mann
+/QUICK_START.md @hu3mann
