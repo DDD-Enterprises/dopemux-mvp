@@ -5,14 +5,17 @@ type: how-to
 owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
-prelude: End-user guide for running, validating, and operating Repo Truth Extractor with v4 defaults and cost-first routing.
+prelude: End-user guide for running, validating, and operating Repo Truth Extractor
+  with v4 defaults and cost-first routing.
 graph_metadata:
   node_type: DocPage
   impact: high
   relates_to:
-    - src/dopemux/cli.py
-    - services/repo-truth-extractor/run_extraction_v3.py
-    - services/repo-truth-extractor/run_extraction_v4.py
+  - src/dopemux/cli.py
+  - services/repo-truth-extractor/run_extraction_v3.py
+  - services/repo-truth-extractor/run_extraction_v4.py
+last_review: '2026-02-21'
+next_review: '2026-05-22'
 ---
 # Repo Truth Extractor User Guide
 
@@ -259,4 +262,3 @@ dopemux extractor run --engine-version v3 --phase ALL --execute --run-id rte_v3_
 5. Check status
 6. Run doctor and reprocess plan
 7. Archive run artifacts and QA outputs
-

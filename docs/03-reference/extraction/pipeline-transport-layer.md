@@ -5,13 +5,16 @@ type: reference
 owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
-prelude: Provider transports, endpoints, and request-meta evidence for extraction runs.
+prelude: Provider transports, endpoints, and request-meta evidence for extraction
+  runs.
 graph_metadata:
   node_type: DocPage
   impact: medium
   relates_to:
-    - services/repo-truth-extractor/run_extraction_v3.py
-    - services/repo-truth-extractor/lib/request_meta_classification.py
+  - services/repo-truth-extractor/run_extraction_v3.py
+  - services/repo-truth-extractor/lib/request_meta_classification.py
+last_review: '2026-02-21'
+next_review: '2026-05-22'
 ---
 # Extraction Pipeline Transport Layer
 
