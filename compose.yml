@@ -628,3 +628,32 @@ services:
       timeout: 10s
       retries: 3
       interval: 30s
+
+  # OpenAI Webhook Receiver Sidecar
+  webhook-receiver:
+    build:
+      context: .
+      dockerfile: services/webhook_receiver/Dockerfile
+    container_name: dopemux-webhook-receiver
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "8790:8790"
+    environment:
+      - WEBHOOK_RECEIVER_HOST=0.0.0.0
+      - WEBHOOK_RECEIVER_PORT=8790
+      - WEBHOOK_DB_PATH=/data/webhook_receiver.db
+      - OPENAI_WEBHOOK_SECRET=${OPENAI_WEBHOOK_SECRET:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    volumes:
+      - ./.dopemux/webhook_receiver:/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8790/healthz', timeout=2)
+      timeout: 5s
+      retries: 3
+      interval: 30s
