@@ -38,7 +38,8 @@ start_service() {
         echo "  ✅ Already running on port $port"
     else
         echo "  🚀 Starting $service..."
-        cd /Users/hue/code/dopemux-mvp
+        # Ensure we are in the project root if needed, but assuming running from root or script dir
+        # cd /Users/hue/code/dopemux-mvp
         docker compose -f compose.yml up -d --no-recreate $service 2>&1 | grep -v "level=warning" || true
         echo "  ✅ Started $service"
     fi

@@ -1,0 +1,104 @@
+{
+  "failed_providers": [],
+  "generated_at": "2026-02-20T11:29:42.485023+00:00",
+  "probes": [
+    {
+      "api_key_env_name": "GEMINI_API_KEY",
+      "api_key_env_resolved": "GEMINI_API_KEY",
+      "api_key_present": true,
+      "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/models/gemini-3-flash-preview:generateContent",
+      "failure_type": null,
+      "gemini_auth_attempt_sequence": [
+        "sdk_api_key"
+      ],
+      "gemini_auth_mode_effective": "sdk_api_key",
+      "gemini_auth_mode_requested": "auto",
+      "model_id": "models/gemini-3-flash-preview",
+      "provider": "gemini",
+      "provider_error_reason": null,
+      "provider_signature": "provider=gemini;model=models/gemini-3-flash-preview;host=generativelanguage.googleapis.com;path=/v1beta/models/models/gemini-3-flash-preview:generateContent;auth_mode=sdk_api_key",
+      "status_code": 200,
+      "transport": "sdk"
+    },
+    {
+      "api_key_env_name": "OPENAI_API_KEY",
+      "api_key_env_resolved": "OPENAI_API_KEY",
+      "api_key_present": true,
+      "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+      "failure_type": null,
+      "gemini_auth_attempt_sequence": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_mode_requested": null,
+      "model_id": "gpt-5.2",
+      "provider": "openai",
+      "provider_error_reason": null,
+      "provider_signature": "provider=openai;model=gpt-5.2;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+      "status_code": 200,
+      "transport": "openai_sdk"
+    },
+    {
+      "api_key_env_name": "XAI_API_KEY",
+      "api_key_env_resolved": "XAI_API_KEY",
+      "api_key_present": true,
+      "endpoint_effective": "https://api.x.ai/v1/chat/completions",
+      "failure_type": null,
+      "gemini_auth_attempt_sequence": null,
+      "gemini_auth_mode_effective": null,
+      "gemini_auth_mode_requested": null,
+      "model_id": "grok-code-fast-1",
+      "provider": "xai",
+      "provider_error_reason": null,
+      "provider_signature": "provider=xai;model=grok-code-fast-1;host=api.x.ai;path=/v1/chat/completions;auth_mode=bearer",
+      "status_code": 200,
+      "transport": "openai_sdk"
+    }
+  ],
+  "route_validation_errors": [],
+  "routes": [
+    {
+      "api_key_env": "GEMINI_API_KEY",
+      "model_id": "models/gemini-3-flash-preview",
+      "phases": [
+        "A",
+        "B",
+        "D",
+        "G",
+        "H",
+        "W",
+        "Z"
+      ],
+      "provider": "gemini",
+      "route_types": [
+        "phase"
+      ]
+    },
+    {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5.2",
+      "phases": [
+        "R",
+        "T",
+        "X"
+      ],
+      "provider": "openai",
+      "route_types": [
+        "phase"
+      ]
+    },
+    {
+      "api_key_env": "XAI_API_KEY",
+      "model_id": "grok-code-fast-1",
+      "phases": [
+        "C",
+        "E",
+        "Q"
+      ],
+      "provider": "xai",
+      "route_types": [
+        "phase"
+      ]
+    }
+  ],
+  "run_id": "test_v4_local2",
+  "status": "PASS"
+}

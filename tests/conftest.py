@@ -6,16 +6,96 @@ import shutil
 import sys
 import tempfile
 import types
+import importlib
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
 
+# Provide a lightweight pydantic stub when the library is unavailable.
+try:
+    import pydantic
+except ImportError:
+    pydantic_stub = types.ModuleType("pydantic")
+    pydantic_stub.BaseModel = MagicMock
+    pydantic_stub.Field = MagicMock
+    pydantic_stub.ConfigDict = MagicMock
+    class ValidationError(Exception): pass
+    pydantic_stub.ValidationError = ValidationError
+    pydantic_stub.field_validator = lambda *args, **kwargs: lambda f: f
+    pydantic_stub.model_validator = lambda *args, **kwargs: lambda f: f
+    pydantic_stub.root_validator = lambda *args, **kwargs: lambda f: f
+    pydantic_stub.validator = lambda *args, **kwargs: lambda f: f
+    sys.modules["pydantic"] = pydantic_stub
+
+# Provide a lightweight yaml stub when the library is unavailable.
+try:
+    import yaml
+except ImportError:
+    yaml_stub = types.ModuleType("yaml")
+    yaml_stub.safe_load = MagicMock(return_value={})
+    yaml_stub.dump = MagicMock()
+    sys.modules["yaml"] = yaml_stub
+
+# Provide a lightweight rich stub when the library is unavailable.
+try:
+    import rich
+except ImportError:
+    rich_stub = MagicMock()
+    sys.modules["rich"] = rich_stub
+    for sub in ["console", "logging", "table", "panel", "live", "progress", "theme", "prompt", "text", "box"]:
+        sys.modules[f"rich.{sub}"] = MagicMock()
+
+# Provide a lightweight toml stub when the library is unavailable.
+try:
+    import toml
+except ImportError:
+    toml_stub = types.ModuleType("toml")
+    toml_stub.load = MagicMock(return_value={})
+    toml_stub.loads = MagicMock(return_value={})
+    toml_stub.dump = MagicMock()
+    toml_stub.dumps = MagicMock(return_value="")
+    sys.modules["toml"] = toml_stub
+
+# Provide a lightweight click stub when the library is unavailable.
+try:
+    import click
+except ImportError:
+    click_stub = types.ModuleType("click")
+    click_stub.group = lambda *args, **kwargs: lambda f: f
+    click_stub.command = lambda *args, **kwargs: lambda f: f
+    click_stub.option = lambda *args, **kwargs: lambda f: f
+    click_stub.argument = lambda *args, **kwargs: lambda f: f
+    click_stub.pass_context = lambda f: f
+    click_stub.echo = MagicMock()
+    click_stub.style = lambda text, **kwargs: text
+    click_stub.confirm = MagicMock(return_value=True)
+    click_stub.prompt = MagicMock(return_value="")
+    class CliRunner:
+        def invoke(self, *args, **kwargs): return MagicMock()
+    click_stub.testing = types.ModuleType("click.testing")
+    click_stub.testing.CliRunner = CliRunner
+    sys.modules["click"] = click_stub
+    sys.modules["click.testing"] = click_stub.testing
+
+# Provide a lightweight fastapi stub when the library is unavailable.
+try:
+    import fastapi
+except ImportError:
+    fastapi_stub = types.ModuleType("fastapi")
+    fastapi_stub.FastAPI = MagicMock
+    fastapi_stub.APIRouter = MagicMock
+    fastapi_stub.Depends = MagicMock
+    fastapi_stub.HTTPException = Exception
+    fastapi_stub.Query = MagicMock
+    fastapi_stub.Body = MagicMock
+    fastapi_stub.Path = MagicMock
+    fastapi_stub.testclient = types.ModuleType("fastapi.testclient")
+    fastapi_stub.testclient.TestClient = MagicMock
+    sys.modules["fastapi"] = fastapi_stub
+    sys.modules["fastapi.testclient"] = fastapi_stub.testclient
+
 # Provide a lightweight aiohttp stub when the library is unavailable.
-from dopemux.adhd.attention_monitor import AttentionMonitor
-from dopemux.adhd.context_manager import ContextManager
-from dopemux.adhd.task_decomposer import TaskDecomposer
-from dopemux.config.manager import ConfigManager
 try:  # pragma: no cover - exercised indirectly during import
     import aiohttp  # type: ignore  # noqa: F401
 except ImportError:  # pragma: no cover - fallback
@@ -114,6 +194,12 @@ except ImportError:  # pragma: no cover - fallback
     aiohttp_stub.TCPConnector = TCPConnector
 
     sys.modules["aiohttp"] = aiohttp_stub
+
+# Now import dopemux modules after stubs are in place
+from dopemux.adhd.attention_monitor import AttentionMonitor
+from dopemux.adhd.context_manager import ContextManager
+from dopemux.adhd.task_decomposer import TaskDecomposer
+from dopemux.config.manager import ConfigManager
 
 # Skip asyncio-marked tests when pytest-asyncio is unavailable.
 try:  # pragma: no cover - best effort compatibility

@@ -1,10 +1,18 @@
 ---
-title: "Operational Playbooks"
-plane: "pm"
-component: "dopemux"
-status: "proposed"
+title: Operational Playbooks
+plane: pm
+component: dopemux
+status: proposed
+id: 10_PLAYBOOKS
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Operational Playbooks (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # Operational Playbooks
 
 ## Purpose
