@@ -14,11 +14,11 @@ def sample_config() -> dict:
         "statusLine": {"type": "command", "command": "echo status"},
         "alwaysThinkingEnabled": False,
         "mcpServers": {
-            "conport": {"type": "stdio"},
-            "serena": {"type": "stdio"},
-            "zen": {"type": "stdio"},
-            "pal": {"type": "stdio"},
-            "gpt-researcher": {"type": "stdio"},
+            "dopemux-conport": {"type": "stdio"},
+            "dopemux-serena": {"type": "stdio"},
+            "dopemux-zen": {"type": "stdio"},
+            "dopemux-pal": {"type": "stdio"},
+            "dopemux-gpt-researcher": {"type": "stdio"},
         },
     }
 
@@ -51,7 +51,7 @@ def test_developer_profile_has_three_mcps(claude_config: ClaudeConfig):
     )
 
     new_config = claude_config.apply_profile(developer_profile, create_backup=False)
-    assert set(new_config["mcpServers"].keys()) == {"conport", "serena", "zen"}
+    assert set(new_config["mcpServers"].keys()) == {"dopemux-conport", "dopemux-serena", "dopemux-zen"}
     assert len(new_config["mcpServers"]) == 3
 
 
