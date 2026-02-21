@@ -24,8 +24,6 @@ from task_orchestrator.core import leantime_client, redis_manager
 from task_orchestrator.mcp import handle_tool_call, MCP_TOOLS
 
 # Import decomposition endpoint
-import sys
-sys.path.insert(0, "/Users/hue/code/dopemux-mvp/services/task-orchestrator")
 from task_decomposition_endpoint import (
     DecompositionRequest,
     DecompositionResponse,

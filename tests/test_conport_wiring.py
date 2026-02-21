@@ -44,3 +44,26 @@ def test_wire_conport_writes_required_claude_config(tmp_path):
     assert "DOPEMUX_WORKSPACE_ID" in conport["env"]
     assert conport["env"]["DOPEMUX_INSTANCE_ID"] == "main"
     assert conport["env"]["DOPEMUX_WORKSPACE_ID"] == str(tmp_path)
+
+
+def test_wire_conport_uses_explicit_project_over_workspace_env(tmp_path, monkeypatch):
+    (tmp_path / ".git").mkdir()
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ID", "/tmp/stale-workspace")
+
+    config_path = wire_conport_project(project=str(tmp_path), instance="main")
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    conport = config["mcpServers"]["conport"]
+
+    assert conport["env"]["DOPEMUX_WORKSPACE_ID"] == str(tmp_path)
+
+
+def test_wire_conport_still_allows_env_workspace_without_explicit_project(tmp_path, monkeypatch):
+    (tmp_path / ".git").mkdir()
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("DOPEMUX_WORKSPACE_ID", "/tmp/workspace-from-env")
+
+    config_path = wire_conport_project(instance="main")
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    conport = config["mcpServers"]["conport"]
+
+    assert conport["env"]["DOPEMUX_WORKSPACE_ID"] == "/tmp/workspace-from-env"

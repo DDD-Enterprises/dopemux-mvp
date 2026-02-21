@@ -1,0 +1,347 @@
+{
+  "canonical_mismatches": [],
+  "collisions": [
+    {
+      "artifact_name": "REPO_COMPOSE_SERVICE_GRAPH.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A6",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "REPO_HOOKS_SURFACE.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A5",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "REPO_IMPLICIT_BEHAVIOR_HINTS.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A9",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "REPO_INSTRUCTION_REFERENCES.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A1",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "REPO_INSTRUCTION_SURFACE.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A1",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "REPO_LITELLM_SURFACE.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A7",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "REPO_MCP_PROXY_SURFACE.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A3",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "REPO_MCP_SERVER_DEFS.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A2",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "REPO_ROUTER_SURFACE.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A4",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "REPO_TASKX_SURFACE.json",
+      "canonical_writer_step_id": "A99",
+      "phase": "A",
+      "producer_steps": [
+        "A8",
+        "A99"
+      ]
+    },
+    {
+      "artifact_name": "HOME_KEYS_SURFACE.json",
+      "canonical_writer_step_id": "H9",
+      "phase": "H",
+      "producer_steps": [
+        "H1",
+        "H9"
+      ]
+    },
+    {
+      "artifact_name": "HOME_LITELLM_SURFACE.json",
+      "canonical_writer_step_id": "H9",
+      "phase": "H",
+      "producer_steps": [
+        "H4",
+        "H9"
+      ]
+    },
+    {
+      "artifact_name": "HOME_MCP_SURFACE.json",
+      "canonical_writer_step_id": "H9",
+      "phase": "H",
+      "producer_steps": [
+        "H2",
+        "H9"
+      ]
+    },
+    {
+      "artifact_name": "HOME_PROFILES_SURFACE.json",
+      "canonical_writer_step_id": "H9",
+      "phase": "H",
+      "producer_steps": [
+        "H5",
+        "H9"
+      ]
+    },
+    {
+      "artifact_name": "HOME_PROVIDER_LADDER_HINTS.json",
+      "canonical_writer_step_id": "H9",
+      "phase": "H",
+      "producer_steps": [
+        "H3",
+        "H9"
+      ]
+    },
+    {
+      "artifact_name": "HOME_REFERENCES.json",
+      "canonical_writer_step_id": "H9",
+      "phase": "H",
+      "producer_steps": [
+        "H1",
+        "H9"
+      ]
+    },
+    {
+      "artifact_name": "HOME_ROUTER_SURFACE.json",
+      "canonical_writer_step_id": "H9",
+      "phase": "H",
+      "producer_steps": [
+        "H3",
+        "H9"
+      ]
+    },
+    {
+      "artifact_name": "HOME_SQLITE_SCHEMA.json",
+      "canonical_writer_step_id": "H9",
+      "phase": "H",
+      "producer_steps": [
+        "H7",
+        "H9"
+      ]
+    },
+    {
+      "artifact_name": "HOME_TMUX_WORKFLOW_SURFACE.json",
+      "canonical_writer_step_id": "H9",
+      "phase": "H",
+      "producer_steps": [
+        "H6",
+        "H9"
+      ]
+    },
+    {
+      "artifact_name": "DOC_TOPIC_CLUSTERS.json",
+      "canonical_writer_step_id": "D5",
+      "phase": "D",
+      "producer_steps": [
+        "D4",
+        "D5"
+      ]
+    },
+    {
+      "artifact_name": "CONCURRENCY_RISK_LOCATIONS.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C8",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "DETERMINISM_RISK_LOCATIONS.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C8",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "DOPE_MEMORY_CODE_SURFACE.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C3",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "DOPE_MEMORY_DB_WRITES.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C3",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "DOPE_MEMORY_SCHEMAS.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C3",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "EVENTBUS_SURFACE.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C2",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "EVENT_CONSUMERS.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C2",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "EVENT_PRODUCERS.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C2",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "IDEMPOTENCY_RISK_LOCATIONS.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C8",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "REFUSAL_AND_GUARDRAILS_SURFACE.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C4",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "SERVICE_ENTRYPOINTS.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C1",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "TASKX_INTEGRATION_SURFACE.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C5",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "TRINITY_ENFORCEMENT_SURFACE.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C4",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "WORKFLOW_RUNNER_SURFACE.json",
+      "canonical_writer_step_id": "C9",
+      "phase": "C",
+      "producer_steps": [
+        "C6",
+        "C9"
+      ]
+    },
+    {
+      "artifact_name": "TP_BACKLOG_TOPN.json",
+      "canonical_writer_step_id": "T9",
+      "phase": "T",
+      "producer_steps": [
+        "T0",
+        "T1",
+        "T5",
+        "T9"
+      ]
+    },
+    {
+      "artifact_name": "TP_INDEX.json",
+      "canonical_writer_step_id": "T9",
+      "phase": "T",
+      "producer_steps": [
+        "T0",
+        "T9"
+      ]
+    }
+  ],
+  "dup_registry": [],
+  "kind_mismatches": [],
+  "missing_registry": [],
+  "summary": {
+    "artifact_registry_duplicates": 0,
+    "artifact_registry_entries": 168,
+    "canonical_mismatches": 0,
+    "date": "2026-02-20",
+    "kind_mismatches": 0,
+    "missing_registry_outputs": 0,
+    "producer_collisions": 36,
+    "prompt_files_discovered": 103,
+    "promptset_steps_total": 103,
+    "unused_registry_entries": 0
+  },
+  "unused_registry": []
+}

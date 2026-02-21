@@ -1,0 +1,285 @@
+{
+  "config": {
+    "debug_phase_inputs": false,
+    "fail_fast_auth": true,
+    "fail_fast_missing_inputs": false,
+    "gemini_auth_mode_requested": "auto",
+    "gemini_model_id_requested": "gemini-2.0-flash-001",
+    "gemini_transport": "sdk",
+    "openai_transport": "openai_sdk",
+    "xai_transport": "openai_sdk"
+  },
+  "created_at": "2026-02-20T12:54:44.525159+00:00",
+  "effective_model_routing": {
+    "A": {
+      "api_key_env": "GEMINI_API_KEY",
+      "model_id": "gemini-2.0-flash-001",
+      "provider": "gemini"
+    },
+    "B": {
+      "api_key_env": "GEMINI_API_KEY",
+      "model_id": "gemini-2.0-flash-001",
+      "provider": "gemini"
+    },
+    "C": {
+      "api_key_env": "XAI_API_KEY",
+      "model_id": "grok-code-fast-1",
+      "provider": "xai"
+    },
+    "D": {
+      "api_key_env": "GEMINI_API_KEY",
+      "model_id": "gemini-2.0-flash-001",
+      "provider": "gemini"
+    },
+    "E": {
+      "api_key_env": "XAI_API_KEY",
+      "model_id": "grok-code-fast-1",
+      "provider": "xai"
+    },
+    "G": {
+      "api_key_env": "GEMINI_API_KEY",
+      "model_id": "gemini-2.0-flash-001",
+      "provider": "gemini"
+    },
+    "H": {
+      "api_key_env": "GEMINI_API_KEY",
+      "model_id": "gemini-2.0-flash-001",
+      "provider": "gemini"
+    },
+    "Q": {
+      "api_key_env": "XAI_API_KEY",
+      "model_id": "grok-code-fast-1",
+      "provider": "xai"
+    },
+    "R": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5.2-extended",
+      "provider": "openai"
+    },
+    "T": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5.2-extended",
+      "provider": "openai"
+    },
+    "W": {
+      "api_key_env": "GEMINI_API_KEY",
+      "model_id": "gemini-2.0-flash-001",
+      "provider": "gemini"
+    },
+    "X": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5.2-extended",
+      "provider": "openai"
+    },
+    "Z": {
+      "api_key_env": "GEMINI_API_KEY",
+      "model_id": "gemini-2.0-flash-001",
+      "provider": "gemini"
+    }
+  },
+  "phases": {
+    "A": [
+      {
+        "declared_outputs": [
+          "REPOCTRL_INVENTORY.json",
+          "REPOCTRL_PARTITIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+        "provider": "gemini",
+        "routing_signature": "3ab8fe28048d28748f549de830d54fdac43c5e2566d3a450fba67ab37a917e24",
+        "step_id": "A0",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_INSTRUCTION_SURFACE.json",
+          "REPO_INSTRUCTION_REFERENCES.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A1_INSTRUCTION_SURFACES.md",
+        "provider": "gemini",
+        "routing_signature": "577559834946b761ca5351adafef8aeeca7de6d75ff21b90fd0ca05d37582829",
+        "step_id": "A1",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_MCP_SERVER_DEFS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A2_MCP_SERVER_DEFS.md",
+        "provider": "gemini",
+        "routing_signature": "d7075ed7224e20de3f8278cfff9d5d81a0ca735fd4baf20c2b91d4d9be8a3301",
+        "step_id": "A2",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_MCP_PROXY_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A3_MCP_PROXY_SURFACE.md",
+        "provider": "gemini",
+        "routing_signature": "af6ac269c9a060c1429e812031c4bdb276ee04c625861f43a7f815d9c921af34",
+        "step_id": "A3",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_ROUTER_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A4_ROUTER_SURFACE.md",
+        "provider": "gemini",
+        "routing_signature": "13e8cc276c22ec8447b462e581c9b09a69172c4488d47100717dc234ac935992",
+        "step_id": "A4",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_HOOKS_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A5_HOOKS_SURFACE.md",
+        "provider": "gemini",
+        "routing_signature": "592c3c679db9370ce122804cc9d7542cb71ea420cddc537d0da1ef743ddd33d2",
+        "step_id": "A5",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_COMPOSE_SERVICE_GRAPH.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+        "provider": "gemini",
+        "routing_signature": "cc8f9a77066d499be7673cd5585fece1210a1812feaa0fa295d2e3ed7f8a7951",
+        "step_id": "A6",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_LITELLM_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A7_LITELLM_SURFACE.md",
+        "provider": "gemini",
+        "routing_signature": "683d07536f6fd47b84f3f49c5b420c4a7ecc921fe95db973b668a754336071f0",
+        "step_id": "A7",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_TASKX_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A8_TASKX_SURFACE.md",
+        "provider": "gemini",
+        "routing_signature": "b17916d00cb9599ceb6d9f4baf3e923a8bc332c1d12c8d0ad87e3e155595cc17",
+        "step_id": "A8",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_IMPLICIT_BEHAVIOR_HINTS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+        "provider": "gemini",
+        "routing_signature": "e601a4427727f7b780de16a3cd35252f6f1ad70c40703d589ddd2ab9e1b23448",
+        "step_id": "A9",
+        "transport": "sdk"
+      },
+      {
+        "declared_outputs": [
+          "REPO_INSTRUCTION_SURFACE.json",
+          "REPO_INSTRUCTION_REFERENCES.json",
+          "REPO_MCP_SERVER_DEFS.json",
+          "REPO_MCP_PROXY_SURFACE.json",
+          "REPO_ROUTER_SURFACE.json",
+          "REPO_HOOKS_SURFACE.json",
+          "REPO_IMPLICIT_BEHAVIOR_HINTS.json",
+          "REPO_COMPOSE_SERVICE_GRAPH.json",
+          "REPO_LITELLM_SURFACE.json",
+          "REPO_TASKX_SURFACE.json",
+          "REPOCTRL_NORM_MANIFEST.json",
+          "REPOCTRL_QA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_api_key"
+        ],
+        "endpoint_base_url": "https://generativelanguage.googleapis.com",
+        "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent",
+        "gemini_endpoint_family": "native",
+        "model_id": "gemini-2.0-flash-001",
+        "prompt_file": "PROMPT_A99_MERGE___QA.md",
+        "provider": "gemini",
+        "routing_signature": "5f5f7a82b4f26428a84058c21a9753e9aa83d9af892a666c54c1ce953288de34",
+        "step_id": "A99",
+        "transport": "sdk"
+      }
+    ]
+  },
+  "run_id": "rte_v3_smoke"
+}
