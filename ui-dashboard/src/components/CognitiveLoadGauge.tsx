@@ -18,11 +18,11 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'low': return <CheckCircle size={20} color={statusStyles.low.color} />;
-      case 'optimal': return <CheckCircle size={20} color={statusStyles.optimal.color} />;
-      case 'high': return <AlertTriangle size={20} color={statusStyles.high.color} />;
-      case 'critical': return <XCircle size={20} color={statusStyles.critical.color} />;
-      default: return <Brain size={20} />;
+      case 'low': return <CheckCircle size={20} color={statusStyles.low.color} aria-hidden="true" />;
+      case 'optimal': return <CheckCircle size={20} color={statusStyles.optimal.color} aria-hidden="true" />;
+      case 'high': return <AlertTriangle size={20} color={statusStyles.high.color} aria-hidden="true" />;
+      case 'critical': return <XCircle size={20} color={statusStyles.critical.color} aria-hidden="true" />;
+      default: return <Brain size={20} aria-hidden="true" />;
     }
   };
 
@@ -39,7 +39,7 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Brain size={24} style={{ marginRight: 8 }} />
+        <Brain size={24} style={{ marginRight: 8 }} aria-hidden="true" />
         <Typography variant="h6">Cognitive Load</Typography>
       </Box>
 
@@ -72,6 +72,8 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
         <LinearProgress
           variant="determinate"
           value={load * 100}
+          aria-label="Cognitive Load Percentage"
+          aria-valuetext={`${(load * 100).toFixed(0)}%`}
           sx={{
             height: 12,
             borderRadius: 6,
@@ -102,7 +104,7 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
             : "I log your restraint, even when you pretend you don't need any."}
         </Typography>
         <Typography className="dopemux-aftercare">
-          <Droplet size={14} style={{ marginRight: 6 }} />
+          <Droplet size={14} style={{ marginRight: 6 }} aria-hidden="true" />
           Logged. Hydrate. Ask nicely if you want aftercare.
         </Typography>
       </Box>

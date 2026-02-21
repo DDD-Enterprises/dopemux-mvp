@@ -1,3 +1,14 @@
+---
+id: EXEC_D_DB_SURFACE
+title: Exec D Db Surface
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Exec D Db Surface (explanation) for dopemux documentation and developer workflows.
+---
 # EXECUTABLE PROMPT: D - DB Surface (DDL + Migrations + DAOs)
 
 ---
