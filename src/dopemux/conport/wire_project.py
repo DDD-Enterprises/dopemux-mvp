@@ -37,11 +37,12 @@ def detect_project_root(project: Optional[str] = None) -> Path:
     return cwd
 
 
-def detect_workspace_id(project_root: Path) -> str:
-    """Resolve workspace id from env, git root, or project root."""
-    workspace_id = os.getenv("DOPEMUX_WORKSPACE_ID")
-    if workspace_id:
-        return workspace_id
+def detect_workspace_id(project_root: Path, *, prefer_env: bool = True) -> str:
+    """Resolve workspace id from env (optional), git root, or project root."""
+    if prefer_env:
+        workspace_id = os.getenv("DOPEMUX_WORKSPACE_ID")
+        if workspace_id:
+            return workspace_id
 
     git_root = _run_git(["rev-parse", "--show-toplevel"], project_root)
     if git_root:
@@ -75,7 +76,8 @@ def wire_conport_project(project: Optional[str] = None, instance: Optional[str] 
     """Write project `.claude/claude_config.json` with portable ConPort MCP wiring."""
     project_root = detect_project_root(project)
     instance_id = detect_instance_id(project_root, instance)
-    workspace_id = detect_workspace_id(project_root)
+    # If project is explicit, prefer that workspace over inherited shell env.
+    workspace_id = detect_workspace_id(project_root, prefer_env=project is None)
 
     claude_dir = project_root / ".claude"
     config_path = claude_dir / "claude_config.json"

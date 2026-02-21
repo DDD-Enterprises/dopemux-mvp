@@ -1,10 +1,18 @@
 ---
-title: "Usage Limits and Resets"
-plane: "pm"
-component: "dopemux"
-status: "proposed"
+title: Usage Limits and Resets
+plane: pm
+component: dopemux
+status: proposed
+id: 09_USAGE_LIMITS_AND_RESETS
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Usage Limits and Resets (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # Usage Limits Tracking and Reset Strategy
 
 ## Purpose

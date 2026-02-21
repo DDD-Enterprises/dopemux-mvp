@@ -1,10 +1,17 @@
 ---
-title: "Memory and State"
-plane: "pm"
-component: "dopemux"
-status: "proposed"
+title: Memory and State
+plane: pm
+component: dopemux
+status: proposed
+id: 02_MEMORY_AND_STATE
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Memory and State (explanation) for dopemux documentation and developer workflows.
 ---
-
 # Memory and State
 
 ## Purpose

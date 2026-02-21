@@ -1,0 +1,54 @@
+{
+  "profile": "base",
+  "requires": {
+    "A": [
+      ["REPO_INSTRUCTION_SURFACE.json"],
+      ["REPO_INSTRUCTION_REFERENCES.json"],
+      ["REPO_MCP_SERVER_DEFS.json"],
+      ["REPO_MCP_PROXY_SURFACE.json"],
+      ["REPO_ROUTER_SURFACE.json"],
+      ["REPO_HOOKS_SURFACE.json"],
+      ["REPO_IMPLICIT_BEHAVIOR_HINTS.json"],
+      ["REPO_COMPOSE_SERVICE_GRAPH.json"],
+      ["REPO_LITELLM_SURFACE.json"],
+      ["REPO_TASKX_SURFACE.json"]
+    ],
+    "H": [
+      ["HOME_MCP_SURFACE.json"],
+      ["HOME_ROUTER_SURFACE.json"],
+      ["HOME_PROVIDER_LADDER_HINTS.json"],
+      ["HOME_LITELLM_SURFACE.json"],
+      ["HOME_PROFILES_SURFACE.json"],
+      ["HOME_TMUX_WORKFLOW_SURFACE.json"],
+      ["HOME_SQLITE_SCHEMA.json"]
+    ],
+    "D": [
+      ["DOC_TOPIC_CLUSTERS.json"],
+      ["DOC_SUPERSESSION.json"],
+      ["DOC_CONTRACT_CLAIMS.json"],
+      ["DOC_INDEX.json"],
+      ["DOC_BOUNDARIES.json"],
+      ["DOC_INTERFACES.json"],
+      ["DOC_WORKFLOWS.json"],
+      ["DOC_DECISIONS.json"],
+      ["DOC_CITATION_GRAPH.json"],
+      ["DOC_COVERAGE_REPORT.json"]
+    ],
+    "C": [
+      ["SERVICE_ENTRYPOINTS.json"],
+      ["EVENTBUS_SURFACE.json"],
+      ["EVENT_PRODUCERS.json"],
+      ["EVENT_CONSUMERS.json"],
+      ["DOPE_MEMORY_CODE_SURFACE.json"],
+      ["DOPE_MEMORY_SCHEMAS.json"],
+      ["DOPE_MEMORY_DB_WRITES.json"],
+      ["TRINITY_ENFORCEMENT_SURFACE.json"],
+      ["REFUSAL_AND_GUARDRAILS_SURFACE.json"],
+      ["TASKX_INTEGRATION_SURFACE.json"],
+      ["WORKFLOW_RUNNER_SURFACE.json"],
+      ["DETERMINISM_RISK_LOCATIONS.json"],
+      ["IDEMPOTENCY_RISK_LOCATIONS.json"],
+      ["CONCURRENCY_RISK_LOCATIONS.json"]
+    ]
+  }
+}
