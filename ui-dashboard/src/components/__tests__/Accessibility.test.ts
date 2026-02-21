@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { expect, test } from 'vitest';
 import fs from 'fs';
 import path from 'path';
@@ -13,9 +14,10 @@ test('CognitiveLoadGauge.tsx has aria-label for LinearProgress', () => {
 test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'PredictionPanel.tsx'), 'utf8');
   expect(content).toContain('aria-label="15-Minute Load Prediction Percentage"');
+  expect(content).toContain('aria-valuetext');
   expect(content).toContain('Prediction Loading...');
   // Indeterminate LinearProgress in loading state
-  expect(content).toContain('<LinearProgress sx={{ mt: 2, mb: 2, width: \'80%\', mx: \'auto\', borderRadius: 4 }} />');
+  expect(content).toContain('aria-label="Loading prediction data"');
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars', () => {
@@ -30,6 +32,8 @@ test('TaskSequencer.tsx has contextual aria-labels for buttons', () => {
   expect(content).toContain('aria-label={`Complete task: ${currentTask.title}`}');
   expect(content).toContain('aria-label={`Skip task: ${currentTask.title}`}');
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
+  // New LinearProgress for task progress
+  expect(content).toContain('aria-label="Current task progress"');
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
