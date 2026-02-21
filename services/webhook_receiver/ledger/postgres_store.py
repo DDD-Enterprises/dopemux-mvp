@@ -234,3 +234,24 @@ class PostgresEventStore(EventStore):
                     (provider, run_id, phase),
                 )
                 return [str(row[0]) for row in cur.fetchall() if row[0]]
+
+    def fetch_webhook_payload(self, *, provider: str, run_id: str, provider_ref: str) -> Optional[str]:
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT w.payload_json
+                    FROM run_events r
+                    JOIN webhook_events w ON r.webhook_event_id = w.id
+                    WHERE r.provider = %s AND r.run_id = %s AND r.provider_ref = %s
+                      AND r.orphaned = FALSE AND r.webhook_event_id IS NOT NULL
+                    ORDER BY r.id DESC
+                    LIMIT 1
+                    """,
+                    (provider, run_id, provider_ref),
+                )
+                row = cur.fetchone()
+                if not row or row[0] is None:
+                    return None
+                import json
+                return json.dumps(row[0]) if isinstance(row[0], dict) else str(row[0])

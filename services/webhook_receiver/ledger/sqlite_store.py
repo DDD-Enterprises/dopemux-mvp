@@ -240,6 +240,22 @@ class SQLiteEventStore(EventStore):
             ).fetchall()
         return [str(row["provider_ref"]) for row in rows if row["provider_ref"]]
 
+    def fetch_webhook_payload(self, *, provider: str, run_id: str, provider_ref: str) -> Optional[str]:
+        with self._conn() as conn:
+            row = conn.execute(
+                """
+                SELECT w.payload_json
+                FROM run_events r
+                JOIN webhook_events w ON r.webhook_event_id = w.id
+                WHERE r.provider = ? AND r.run_id = ? AND r.provider_ref = ?
+                  AND r.orphaned = 0 AND r.webhook_event_id IS NOT NULL
+                ORDER BY r.id DESC
+                LIMIT 1
+                """,
+                (provider, run_id, provider_ref),
+            ).fetchone()
+        return str(row["payload_json"]) if row else None
+
     def dump_recent_run_events(self, limit: int = 20) -> List[Dict[str, Any]]:
         with self._conn() as conn:
             rows = conn.execute(
