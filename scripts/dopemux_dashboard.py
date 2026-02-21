@@ -70,7 +70,7 @@ ENDPOINTS = {
     "adhd_flow": "http://localhost:8095/api/v1/flow-state/default_user",  # Day 2: NEW
     "adhd_session": "http://localhost:8095/api/v1/session-time/default_user",  # Day 2: NEW
     "adhd_breaks": "http://localhost:8095/api/v1/breaks/default_user",  # Day 2: NEW
-    "tasks": "http://localhost:8095/api/v1/tasks?user_id=default_user",
+    "tasks": "http://localhost:8095/api/v1/tasks",  # ✅ Added endpoint
     "decisions": "http://localhost:8005/api/adhd/decisions/recent",  # ConPort (Day 2)
     "services": "http://localhost:3016/health",
     "patterns": "http://localhost:8003/api/patterns/top",  # Serena (Day 2: NEW)
