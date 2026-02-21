@@ -16,7 +16,7 @@ jobs:
             pre-commit run --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD
           else
             BEFORE="${{ github.event.before }}"
-            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
               pre-commit run --all-files
             else
               pre-commit run --from-ref "$BEFORE" --to-ref "${{ github.sha }}"
