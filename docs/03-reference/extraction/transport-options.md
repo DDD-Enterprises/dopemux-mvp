@@ -10,8 +10,10 @@ graph_metadata:
   node_type: DocPage
   impact: medium
   relates_to:
-    - services/repo-truth-extractor/run_extraction_v3.py
-    - scripts/reprocess_failed_partitions.py
+  - services/repo-truth-extractor/run_extraction_v3.py
+  - scripts/reprocess_failed_partitions.py
+last_review: '2026-02-21'
+next_review: '2026-05-22'
 ---
 # Extraction Transport Options
 

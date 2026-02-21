@@ -1,3 +1,15 @@
+---
+id: TP-CLOUDFLARE-WEBHOOKS-0001
+title: Tp Cloudflare Webhooks 0001
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-21'
+last_review: '2026-02-21'
+next_review: '2026-05-22'
+prelude: Tp Cloudflare Webhooks 0001 (explanation) for dopemux documentation and developer
+  workflows.
+---
 # TP-CLOUDFLARE-WEBHOOKS-0001: Cloudflare Tunnel Option B — Automated, Locked Down, Proof-Pack Ready (+ OpenAI Checklist)
 
 ## Objective
