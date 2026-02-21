@@ -15,7 +15,7 @@ All endpoints secured with X-API-Key authentication (configurable via ADHD_ENGIN
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Security, WebSocket, WebSocketDisconnect
-from typing import Any
+from typing import Any, Dict, List
 from datetime import datetime, timezone
 from dataclasses import asdict
 import logging
@@ -126,55 +126,62 @@ async def get_cache_instance():
     return _cache_instance
 
 # Prometheus metrics (only if available)
+# Guard against duplicate registration during testing
+API_REQUESTS_TOTAL = None
+CACHE_HITS_TOTAL = None
+CACHE_MISSES_TOTAL = None
+API_REQUEST_DURATION = None
+ML_PREDICTIONS_TOTAL = None
+ML_PREDICTION_CONFIDENCE = None
+CACHE_SIZE = None
+
 if PROMETHEUS_AVAILABLE:
-    # API call counters
-    API_REQUESTS_TOTAL = Counter(
-        'adhd_api_requests_total',
-        'Total number of API requests',
-        ['endpoint', 'method', 'status']
-    )
+    try:
+        # API call counters
+        API_REQUESTS_TOTAL = Counter(
+            'adhd_api_requests_total',
+            'Total number of API requests',
+            ['endpoint', 'method', 'status']
+        )
 
-    # Cache performance metrics
-    CACHE_HITS_TOTAL = Counter(
-        'adhd_cache_hits_total',
-        'Total number of cache hits',
-        ['endpoint']
-    )
+        # Cache performance metrics
+        CACHE_HITS_TOTAL = Counter(
+            'adhd_cache_hits_total',
+            'Total number of cache hits',
+            ['endpoint']
+        )
 
-    CACHE_MISSES_TOTAL = Counter(
-        'adhd_cache_misses_total',
-        'Total number of cache misses',
-        ['endpoint']
-    )
+        CACHE_MISSES_TOTAL = Counter(
+            'adhd_cache_misses_total',
+            'Total number of cache misses',
+            ['endpoint']
+        )
 
-    # Response time histograms
-    API_REQUEST_DURATION = Histogram(
-        'adhd_api_request_duration_seconds',
-        'API request duration in seconds',
-        ['endpoint'],
-        buckets=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0]
-    )
+        # Response time histograms
+        API_REQUEST_DURATION = Histogram(
+            'adhd_api_request_duration_seconds',
+            'API request duration in seconds',
+            ['endpoint'],
+            buckets=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0]
+        )
 
-    # ML prediction metrics
-    ML_PREDICTIONS_TOTAL = Counter(
-        'adhd_ml_predictions_total',
-        'Total number of ML predictions made',
-        ['endpoint', 'prediction_type']
-    )
+        # ML prediction metrics
+        ML_PREDICTIONS_TOTAL = Counter(
+            'adhd_ml_predictions_total',
+            'Total number of ML predictions made',
+            ['endpoint', 'prediction_type']
+        )
 
-    ML_PREDICTION_CONFIDENCE = Histogram(
+        ML_PREDICTION_CONFIDENCE = Histogram(
         'adhd_ml_prediction_confidence',
         'ML prediction confidence scores',
         ['endpoint'],
         buckets=[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
     )
-
-    # Cache size gauge
-    CACHE_SIZE = Gauge(
-        'adhd_cache_entries',
-        'Current number of cache entries',
-        ['cache_type']
-    )
+    except ValueError as e:
+        # Metrics already registered (common in testing)
+        logger.warning(f"Prometheus metrics already registered: {e}")
+        PROMETHEUS_AVAILABLE = False
 
 else:
     # Dummy metrics if Prometheus not available
@@ -184,6 +191,7 @@ else:
     API_REQUEST_DURATION = None
     ML_PREDICTIONS_TOTAL = None
     ML_PREDICTION_CONFIDENCE = None
+    CACHE_SIZE = None
     CACHE_SIZE = None
 
 def _make_cache_key(endpoint: str, user_id: str, **params) -> str:
@@ -792,26 +800,37 @@ async def get_breaks_info(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/tasks", tags=["dashboard"])
-async def get_tasks(
-    user_id: str = "default",
+@router.get("/tasks/{user_id}", response_model=schemas.TasksResponse)
+async def get_tasks_for_user(
+    user_id: str,
     engine = Depends(get_engine),
     api_key: str = Security(verify_api_key)
 ):
-    """
-    Get task completion metrics for dashboard.
-
-    Returns:
-        Dict with completed, total, rate
-    """
+    """Get aggregated task completion metrics for user."""
     try:
-        if engine.activity_tracker:
-            return await engine.activity_tracker.get_daily_task_stats(user_id)
-        else:
-            return {"completed": 0, "total": 0, "rate": 0.0}
+        completed = await engine.get_tasks_completed(user_id)
+        total = await engine.get_total_tasks(user_id)
+        rate = completed / total if total > 0 else 0.0
+
+        return {
+            "completed": completed,
+            "total": total,
+            "rate": round(rate, 2),
+            "user_id": user_id,
+            "timestamp": datetime.now(timezone.utc)
+        }
     except Exception as e:
-        logger.error(f"Tasks retrieval failed: {e}")
+        logger.error(f"Tasks metrics retrieval failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/tasks", response_model=schemas.TasksResponse)
+async def get_tasks_default(
+    engine = Depends(get_engine),
+    api_key: str = Security(verify_api_key)
+):
+    """Get aggregated task completion metrics for default user."""
+    return await get_tasks_for_user("default_user", engine, api_key)
 
 
 # ML Pattern & Prediction Endpoints (IP-005 Days 11-12)
@@ -1093,7 +1112,7 @@ async def _get_current_state(engine, user_id: str) -> dict:
         session_duration = await engine._get_session_duration(user_id)
         
         # Get tasks completed
-        tasks_completed = await engine._get_tasks_completed(user_id)
+        tasks_completed = await engine.get_tasks_completed(user_id)
         
         return {
             "energy_level": energy_str,

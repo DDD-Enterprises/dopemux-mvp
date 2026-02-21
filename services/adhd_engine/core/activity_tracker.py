@@ -231,6 +231,39 @@ class ActivityTracker:
             return 60
 
             logger.error(f"Error: {e}")
+    async def get_daily_stats(self, user_id: str) -> Dict[str, int]:
+        """
+        Get daily task completion statistics for user.
+
+        Returns:
+            Dict with 'completed' and 'total' task counts for today.
+        """
+        try:
+            # Query ConPort for today's progress entries
+            if self.conport_mcp:
+                # Use MCP client for real data
+                progress_entries = await self.conport_mcp.get_progress(
+                    workspace_id=settings.workspace_id,
+                    limit=100
+                )
+            else:
+                # Fallback to SQLite stub (last 24 hours)
+                progress_entries = self.conport.get_progress_entries(
+                    limit=100,
+                    hours_ago=24
+                )
+
+            total = len(progress_entries) if progress_entries else 0
+            completed = len([p for p in progress_entries if p.get('status') == 'DONE']) if progress_entries else 0
+
+            return {
+                "completed": completed,
+                "total": total
+            }
+        except Exception as e:
+            logger.error(f"Failed to get daily stats for {user_id}: {e}")
+            return {"completed": 0, "total": 0}
+
     def _calculate_break_compliance(self, break_history: list) -> float:
         """
         Calculate break compliance rate from Redis history.

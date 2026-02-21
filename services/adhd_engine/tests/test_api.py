@@ -231,3 +231,139 @@ class TestUserProfile:
 
             assert data["user_id"] == "new_user"
             assert data["profile_created"] is True
+
+
+class TestTasksEndpoints:
+    """Test task completion metrics endpoints."""
+
+    def test_get_tasks_for_specific_user(self, client, mock_initialized_engine):
+        """Should return task completion metrics for specific user."""
+        # Mock the activity tracker with sample data
+        mock_activity_tracker = AsyncMock()
+        mock_activity_tracker.get_daily_stats = AsyncMock(return_value={
+            "completed": 5,
+            "total": 10
+        })
+        mock_initialized_engine.activity_tracker = mock_activity_tracker
+        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=5)
+        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=10)
+
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
+            response = client.get("/api/v1/tasks/test_user")
+
+            assert response.status_code == 200
+            data = response.json()
+
+            assert data["completed"] == 5
+            assert data["total"] == 10
+            assert data["rate"] == 0.5
+            assert data["user_id"] == "test_user"
+            assert "timestamp" in data
+
+    def test_get_tasks_default_user(self, client, mock_initialized_engine):
+        """Should return task completion metrics for default user."""
+        # Mock the activity tracker with sample data
+        mock_activity_tracker = AsyncMock()
+        mock_activity_tracker.get_daily_stats = AsyncMock(return_value={
+            "completed": 3,
+            "total": 7
+        })
+        mock_initialized_engine.activity_tracker = mock_activity_tracker
+        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=3)
+        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=7)
+
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
+            response = client.get("/api/v1/tasks")
+
+            assert response.status_code == 200
+            data = response.json()
+
+            assert data["completed"] == 3
+            assert data["total"] == 7
+            assert data["rate"] == 0.43
+            assert data["user_id"] == "default_user"
+            assert "timestamp" in data
+
+    def test_get_tasks_zero_total(self, client, mock_initialized_engine):
+        """Should handle zero total tasks (division by zero)."""
+        # Mock the activity tracker with zero tasks
+        mock_activity_tracker = AsyncMock()
+        mock_activity_tracker.get_daily_stats = AsyncMock(return_value={
+            "completed": 0,
+            "total": 0
+        })
+        mock_initialized_engine.activity_tracker = mock_activity_tracker
+        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=0)
+        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=0)
+
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
+            response = client.get("/api/v1/tasks/test_user")
+
+            assert response.status_code == 200
+            data = response.json()
+
+            assert data["completed"] == 0
+            assert data["total"] == 0
+            assert data["rate"] == 0.0
+            assert data["user_id"] == "test_user"
+
+    def test_get_tasks_all_completed(self, client, mock_initialized_engine):
+        """Should handle 100% completion rate."""
+        # Mock the activity tracker with all tasks completed
+        mock_activity_tracker = AsyncMock()
+        mock_activity_tracker.get_daily_stats = AsyncMock(return_value={
+            "completed": 8,
+            "total": 8
+        })
+        mock_initialized_engine.activity_tracker = mock_activity_tracker
+        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=8)
+        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=8)
+
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
+            response = client.get("/api/v1/tasks/test_user")
+
+            assert response.status_code == 200
+            data = response.json()
+
+            assert data["completed"] == 8
+            assert data["total"] == 8
+            assert data["rate"] == 1.0
+            assert data["user_id"] == "test_user"
+
+    def test_get_tasks_engine_error(self, client, mock_initialized_engine):
+        """Should handle engine errors gracefully."""
+        # Mock the activity tracker to raise an exception
+        mock_initialized_engine._get_tasks_completed = AsyncMock(
+            side_effect=Exception("Activity tracker unavailable")
+        )
+
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
+            response = client.get("/api/v1/tasks/test_user")
+
+            assert response.status_code == 500
+            data = response.json()
+            assert "detail" in data
+
+    def test_get_tasks_partial_completion(self, client, mock_initialized_engine):
+        """Should correctly calculate partial completion rate."""
+        # Mock the activity tracker with partial completion
+        mock_activity_tracker = AsyncMock()
+        mock_activity_tracker.get_daily_stats = AsyncMock(return_value={
+            "completed": 2,
+            "total": 3
+        })
+        mock_initialized_engine.activity_tracker = mock_activity_tracker
+        mock_initialized_engine._get_tasks_completed = AsyncMock(return_value=2)
+        mock_initialized_engine._get_total_tasks = AsyncMock(return_value=3)
+
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
+            response = client.get("/api/v1/tasks/test_user")
+
+            assert response.status_code == 200
+            data = response.json()
+
+            assert data["completed"] == 2
+            assert data["total"] == 3
+            # Rate should be rounded to 2 decimal places
+            assert data["rate"] == 0.67
+            assert data["user_id"] == "test_user"
