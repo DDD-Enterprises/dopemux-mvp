@@ -63,11 +63,11 @@ def _apply_sqlite(db_path: str, migrations: Iterable[Path]) -> None:
 
 def _apply_postgres(db_url: str, migrations: Iterable[Path]) -> None:
     try:
-        import psycopg
+        import psycopg2
     except Exception as exc:  # pragma: no cover
-        raise RuntimeError("psycopg is required for postgres migrations") from exc
+        raise RuntimeError("psycopg2 is required for postgres migrations") from exc
 
-    with psycopg.connect(db_url) as conn:
+    with psycopg2.connect(db_url) as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
