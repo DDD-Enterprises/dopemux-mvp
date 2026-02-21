@@ -598,7 +598,8 @@ services:
     volumes:
       - mcp_qdrant_data:/qdrant/storage
     healthcheck:
-      # qdrant image has no curl/wget; use bash /dev/tcp built-in
+      # qdrant image has no curl/wget and no lightweight HTTP health endpoint enabled,
+      # so we use the bash /dev/tcp built-in to perform a simple TCP port check instead.
       test: [ "CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/6333' || exit 1" ]
       timeout: 10s
       retries: 3

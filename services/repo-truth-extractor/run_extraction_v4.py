@@ -32,6 +32,7 @@ SERVICE_ROOT = Path(__file__).resolve().parent
 ROOT = Path(__file__).resolve().parents[2]
 PROMPTSET_PATH = SERVICE_ROOT / "promptsets" / "v4" / "promptset.yaml"
 ARTIFACTS_PATH = SERVICE_ROOT / "promptsets" / "v4" / "artifacts.yaml"
+V4_PROMPT_ROOT = SERVICE_ROOT / "promptsets" / "v4" / "prompts"
 V3_RUNNER = SERVICE_ROOT / "run_extraction_v3.py"
 SERVICES_REGISTRY = ROOT / "services" / "registry.yaml"
 COMPOSE_FILES = [
@@ -195,6 +196,10 @@ def build_v3_cmd(
     batch_poll_seconds: int,
     batch_wait_timeout_seconds: int,
     batch_max_requests_per_job: int,
+    ui: str,
+    pretty: bool,
+    quiet: bool,
+    jsonl_events: bool,
 ) -> List[str]:
     cmd = [sys.executable, str(V3_RUNNER)]
     if phase:
@@ -217,6 +222,13 @@ def build_v3_cmd(
     cmd.extend(["--batch-poll-seconds", str(max(1, int(batch_poll_seconds)))])
     cmd.extend(["--batch-wait-timeout-seconds", str(max(60, int(batch_wait_timeout_seconds)))])
     cmd.extend(["--batch-max-requests-per-job", str(max(1, int(batch_max_requests_per_job)))])
+    cmd.extend(["--ui", ui])
+    if pretty:
+        cmd.append("--pretty")
+    if quiet:
+        cmd.append("--quiet")
+    if jsonl_events:
+        cmd.append("--jsonl-events")
     if doctor:
         cmd.append("--doctor")
     if doctor_auto_reprocess:
@@ -241,9 +253,51 @@ def build_v3_cmd(
 def call_v3_runner(cmd: Sequence[str], *, prompt_root: Optional[Path] = None) -> int:
     env = os.environ.copy()
     if prompt_root is not None:
-        env["REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"] = str(prompt_root.resolve())
+        prompt_root_value = str(prompt_root.resolve())
+        env["REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"] = prompt_root_value
+        env["UPGRADES_PROMPT_ROOT"] = prompt_root_value
     proc = subprocess.run(list(cmd), cwd=ROOT, env=env)
     return proc.returncode
+
+
+def _path_is_within(candidate: Path, parent: Path) -> bool:
+    try:
+        candidate.resolve().relative_to(parent.resolve())
+        return True
+    except Exception:
+        return False
+
+
+def verify_resume_proof_prompt_paths(run_id: str, prompt_root: Path) -> None:
+    resume_proof_path = V3_RUNS_ROOT / run_id / "RESUME_PROOF.json"
+    payload = read_json(resume_proof_path)
+    if not isinstance(payload, dict):
+        return
+    prompt_hashes = payload.get("prompt_hashes")
+    candidate_paths: List[str] = []
+    if isinstance(prompt_hashes, dict):
+        candidate_paths = [value for value in prompt_hashes.keys() if isinstance(value, str)]
+    elif isinstance(prompt_hashes, list):
+        candidate_paths = [
+            str(row.get("path", "")).strip()
+            for row in prompt_hashes
+            if isinstance(row, dict) and str(row.get("path", "")).strip()
+        ]
+    if not candidate_paths:
+        return
+    invalid_paths: List[str] = []
+    for raw_path in candidate_paths:
+        candidate = Path(raw_path)
+        if not candidate.is_absolute():
+            candidate = (ROOT / candidate).resolve()
+        if not _path_is_within(candidate, prompt_root):
+            invalid_paths.append(str(candidate))
+    if invalid_paths:
+        preview = ", ".join(sorted(invalid_paths)[:5])
+        raise RuntimeError(
+            "v4 prompt routing verification failed: RESUME_PROOF prompt hashes reference non-v4 prompts "
+            f"(examples: {preview})"
+        )
 
 
 def read_json(path: Path) -> Optional[Any]:
@@ -1167,6 +1221,10 @@ def run_pipeline(
     batch_poll_seconds: int,
     batch_wait_timeout_seconds: int,
     batch_max_requests_per_job: int,
+    ui: str,
+    pretty: bool,
+    quiet: bool,
+    jsonl_events: bool,
 ) -> int:
     promptset = load_promptset()
     all_phases = expected_phase_order(promptset)
@@ -1210,10 +1268,16 @@ def run_pipeline(
             batch_poll_seconds=batch_poll_seconds,
             batch_wait_timeout_seconds=batch_wait_timeout_seconds,
             batch_max_requests_per_job=batch_max_requests_per_job,
+            ui=ui,
+            pretty=pretty,
+            quiet=quiet,
+            jsonl_events=jsonl_events,
         )
-        rc = call_v3_runner(cmd, prompt_root=SERVICE_ROOT / "promptsets" / "v4" / "prompts")
+        rc = call_v3_runner(cmd, prompt_root=V4_PROMPT_ROOT)
         if rc != 0:
             return rc
+        if not any([doctor, doctor_auth, preflight_providers, coverage_report, status, status_json]):
+            verify_resume_proof_prompt_paths(run_id, V4_PROMPT_ROOT)
 
     if doctor or doctor_auth or preflight_providers:
         mirror_doctor_outputs()
@@ -1250,6 +1314,10 @@ def cli(
     batch_poll_seconds: int = typer.Option(30, "--batch-poll-seconds"),
     batch_wait_timeout_seconds: int = typer.Option(86400, "--batch-wait-timeout-seconds"),
     batch_max_requests_per_job: int = typer.Option(2000, "--batch-max-requests-per-job"),
+    ui: str = typer.Option("auto", "--ui"),
+    pretty: bool = typer.Option(False, "--pretty"),
+    quiet: bool = typer.Option(False, "--quiet"),
+    jsonl_events: bool = typer.Option(False, "--jsonl-events"),
     sync: bool = typer.Option(
         True,
         "--sync/--no-sync",
@@ -1301,6 +1369,10 @@ def cli(
         batch_poll_seconds=batch_poll_seconds,
         batch_wait_timeout_seconds=batch_wait_timeout_seconds,
         batch_max_requests_per_job=batch_max_requests_per_job,
+        ui=ui,
+        pretty=pretty,
+        quiet=quiet,
+        jsonl_events=jsonl_events,
     )
     raise typer.Exit(code=rc)
 

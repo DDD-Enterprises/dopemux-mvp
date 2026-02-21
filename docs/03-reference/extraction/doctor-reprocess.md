@@ -6,6 +6,8 @@ owner: '@hu3mann'
 date: '2026-02-20'
 author: '@codex'
 prelude: Deterministic diagnosis and policy-driven reprocessing for extraction v4 runs.
+last_review: '2026-02-21'
+next_review: '2026-05-21'
 graph_metadata:
   node_type: DocPage
   impact: high
@@ -18,11 +20,13 @@ graph_metadata:
 
 ## What doctor does
 
-CLI-first command:
+Canonical CLI command:
 
 ```bash
-dopemux extractor doctor --engine-version v4 --run-id <RUN_ID>
+dopemux upgrades doctor --pipeline-version v4 --run-id <RUN_ID>
 ```
+
+Legacy alias: `dopemux extractor doctor ...`
 
 Runner equivalent:
 

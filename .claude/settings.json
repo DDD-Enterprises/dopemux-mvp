@@ -11,7 +11,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/hue/code/dopemux-mvp/.claude/hooks/check_energy.sh"
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/check_energy.sh\""
           }
         ]
       }
@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/hue/code/dopemux-mvp/.claude/hooks/log_progress.sh"
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/log_progress.sh\""
           }
         ]
       }
@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/hue/code/dopemux-mvp/.claude/hooks/save_context.sh"
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hooks/save_context.sh\""
           }
         ]
       }
