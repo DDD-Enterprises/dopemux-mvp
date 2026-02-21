@@ -9246,7 +9246,6 @@ def run_phase_R_finalize(
                         status="completed",
                         last_error=None,
                     )
-                    finalized += 1
                     continue
             except Exception:
                 pass
