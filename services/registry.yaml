@@ -15,7 +15,7 @@
 #   description: string - brief service description
 
 version: "1.0"
-last_updated: "2026-02-06"
+last_updated: "2026-02-21"
 
 services:
   # Infrastructure Services
@@ -114,6 +114,18 @@ services:
     enabled_in_smoke: true
     category: coordination
     description: "DopeconBridge - Central coordination and event routing layer"
+
+  - name: webhook-receiver
+    port: 8790
+    container_port: 8790
+    health_path: /healthz
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: webhook-receiver
+    enabled_in_smoke: false
+    category: coordination
+    description: "OpenAI webhook receiver sidecar for signed event ingestion and deduplicated ledger writes"
 
   # Cognitive Services
   - name: task-orchestrator

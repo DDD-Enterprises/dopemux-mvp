@@ -8,6 +8,7 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import fnmatch
 import hashlib
+import hmac
 import json
 import logging
 import os
@@ -24,6 +25,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
 # Ensure local service modules are importable when loaded via importlib in tests.
 RUNNER_SERVICE_DIR = Path(__file__).resolve().parent
@@ -465,6 +468,14 @@ DPMX_MODEL_INVENTORY_ENV = "DPMX_MODEL_INVENTORY"
 DPMX_MODEL_EXTRACT_ENV = "DPMX_MODEL_EXTRACT"
 DPMX_MODEL_SYNTHESIS_ENV = "DPMX_MODEL_SYNTHESIS"
 DPMX_MODEL_QA_ENV = "DPMX_MODEL_QA"
+DPMX_WEBHOOK_URL_ENV = "DPMX_WEBHOOK_URL"
+DPMX_WEBHOOK_SECRET_ENV = "DPMX_WEBHOOK_SECRET"
+DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV = "DPMX_WEBHOOK_TIMEOUT_SECONDS"
+DPMX_WEBHOOK_REQUIRED_ENV = "DPMX_WEBHOOK_REQUIRED"
+DPMX_WEBHOOK_AUTO_CONTINUE_ENV = "DPMX_WEBHOOK_AUTO_CONTINUE"
+DPMX_LIVE_OK_ENV = "DPMX_LIVE_OK"
+DPMX_WEBHOOK_SCHEMA = "DPMX_WEBHOOK_V1"
+DPMX_WEBHOOK_EVENT = "batch.completed"
 STEP_TYPE_MODEL_ENV_VARS: Dict[str, str] = {
     "inventory": DPMX_MODEL_INVENTORY_ENV,
     "extract": DPMX_MODEL_EXTRACT_ENV,
@@ -485,12 +496,12 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
     "G": {"G0", "G1", "G2", "G3", "G4", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9"},
+    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9", "Q11"},
     "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"},
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3"},
+    "S": {"S0", "S1", "S2", "S3", "S4", "S5"},
 }
 
 
@@ -534,6 +545,13 @@ class RunnerConfig:
     batch_poll_seconds: int = 30
     batch_wait_timeout_seconds: int = 86400
     batch_max_requests_per_job: int = 2000
+    batch_submit_only: bool = False
+    webhook_url: str = ""
+    webhook_secret: str = ""
+    webhook_timeout_seconds: int = 5
+    webhook_required: bool = False
+    webhook_auto_continue: bool = False
+    live_ok: bool = False
 
 
 @dataclass(frozen=True)
@@ -549,6 +567,13 @@ class RunContext:
     source: str
     latest_file: Path
     latest_written: bool
+
+
+@dataclass(frozen=True)
+class BatchWatchResult:
+    exit_code: int
+    next_phase: Optional[str] = None
+    auto_continue_blocked: bool = False
 
 
 @dataclass(frozen=True)
@@ -1919,6 +1944,17 @@ def _env_is_truthy(name: str) -> bool:
     return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _int_env(name: str, default: int, minimum: int = 1) -> int:
+    raw = os.getenv(name, "").strip()
+    if not raw:
+        return max(minimum, int(default))
+    try:
+        value = int(raw)
+    except Exception as exc:
+        raise RuntimeError(f"{name} must be an integer. Got: {raw}") from exc
+    return max(minimum, value)
+
+
 def _parse_provider_model_env(value: str, env_name: str) -> Tuple[str, str, str]:
     raw = str(value or "").strip()
     if not raw:
@@ -2058,6 +2094,273 @@ def write_phase_routing_log(
     write_json(payload_path, {"entries": rows})
 
 
+def _read_json_dict(path: Path) -> Dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _batch_job_sort_key(row: Dict[str, Any]) -> Tuple[str, Tuple[int, str], str, str]:
+    return (
+        str(row.get("phase_id", "")),
+        step_sort_key(str(row.get("step_id", ""))),
+        str(row.get("partition_id", "")),
+        str(row.get("job_id", "")),
+    )
+
+
+def _read_batch_job_rows(path: Path) -> List[Dict[str, Any]]:
+    payload = _read_json_dict(path)
+    rows = payload.get("jobs")
+    if not isinstance(rows, list):
+        return []
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def _upsert_batch_job_rows(existing: List[Dict[str, Any]], updates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    keyed: Dict[Tuple[str, str, str, str], Dict[str, Any]] = {}
+    for row in existing + updates:
+        key = (
+            str(row.get("phase_id", "")),
+            str(row.get("step_id", "")),
+            str(row.get("partition_id", "")),
+            str(row.get("job_id", "")),
+        )
+        if not all(key):
+            continue
+        keyed[key] = dict(row)
+    return sorted(keyed.values(), key=_batch_job_sort_key)
+
+
+def write_batch_job_manifests(
+    phase_dir: Path,
+    *,
+    run_id: str,
+    phase_id: str,
+    step_id: str,
+    jobs: List[Dict[str, Any]],
+) -> None:
+    if not jobs:
+        return
+    batch_dir = phase_dir / "batch"
+    batch_dir.mkdir(parents=True, exist_ok=True)
+    step_jobs = sorted([dict(row) for row in jobs if isinstance(row, dict)], key=_batch_job_sort_key)
+    write_json(
+        batch_dir / "BATCH_JOB.json",
+        {
+            "run_id": run_id,
+            "phase_id": phase_id,
+            "step_id": step_id,
+            "updated_at_utc": now_iso(),
+            "jobs": step_jobs,
+        },
+    )
+    index_path = batch_dir / "BATCH_JOB_INDEX.json"
+    existing_rows = _read_batch_job_rows(index_path)
+    merged_rows = _upsert_batch_job_rows(existing_rows, step_jobs)
+    write_json(
+        index_path,
+        {
+            "run_id": run_id,
+            "phase_id": phase_id,
+            "updated_at_utc": now_iso(),
+            "jobs": merged_rows,
+        },
+    )
+
+
+def _append_webhook_receipt(batch_dir: Path, filename: str, receipt: Dict[str, Any]) -> None:
+    path = batch_dir / filename
+    payload = _read_json_dict(path)
+    rows = payload.get("events")
+    existing: List[Dict[str, Any]] = [row for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
+    existing.append(dict(receipt))
+    existing.sort(key=lambda row: (str(row.get("event_id", "")), str(row.get("job_id", ""))))
+    write_json(path, {"events": existing})
+
+
+def _webhook_event_id(run_id: str, phase_id: str, step_id: str, job_id: str, state: str) -> str:
+    # Use microsecond precision to avoid collisions for multiple events within the same second.
+    now_basic = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    token = f"{run_id}|{phase_id}|{step_id}|{job_id}|{state}"
+    digest = hashlib.sha256(token.encode("utf-8")).hexdigest()[:8]
+    return f"evt_{now_basic}_{digest}"
+
+
+def _redacted_webhook_url(url: str) -> str:
+    try:
+        parsed = urlparse(url)
+        return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, "", ""))
+    except Exception:
+        return url
+
+
+def build_webhook_payload(
+    *,
+    root: Path,
+    run_id: str,
+    phase_id: str,
+    phase_dir: Path,
+    step_id: str,
+    provider_id: str,
+    model_id: str,
+    job_id: str,
+    state: str,
+    detail: str,
+    artifacts_written: List[str],
+    artifacts_missing: List[str],
+) -> Dict[str, Any]:
+    event_id = _webhook_event_id(run_id, phase_id, step_id, job_id, state)
+    emitted_at = now_iso()
+    return {
+        "schema": DPMX_WEBHOOK_SCHEMA,
+        "event": DPMX_WEBHOOK_EVENT,
+        "event_id": event_id,
+        "emitted_at_utc": emitted_at,
+        "run": {
+            "run_id": run_id,
+            "run_root": str(root.resolve()),
+            "git_sha": get_git_sha(root),
+            "runner_sha256": sha256_text(RUNNER_SCRIPT),
+        },
+        "phase": {
+            "phase_id": phase_id,
+            "phase_dir": str(phase_dir.resolve()),
+            "step_id": step_id,
+            "exec_mode": "batch",
+        },
+        "provider": {
+            "provider_id": provider_id,
+            "model_id": model_id,
+            "job_id": job_id,
+        },
+        "status": {
+            "state": state,
+            "detail": detail[:240],
+        },
+        "artifacts": {
+            "written": sorted(set(artifacts_written)),
+            "missing": sorted(set(artifacts_missing)),
+        },
+        "links": {
+            "local_phase_dir": str(phase_dir.resolve()),
+        },
+    }
+
+
+def send_webhook(
+    payload: Dict[str, Any],
+    *,
+    webhook_url: str,
+    webhook_secret: str,
+    timeout_seconds: int,
+) -> Tuple[bool, int, Optional[str]]:
+    body = json.dumps(payload, ensure_ascii=True, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Dopemux-Event": DPMX_WEBHOOK_EVENT,
+        "X-Dopemux-Schema": DPMX_WEBHOOK_SCHEMA,
+    }
+    if webhook_secret:
+        signature = hmac.new(webhook_secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
+        headers["X-Dopemux-Signature"] = f"sha256={signature}"
+    request = urllib_request.Request(webhook_url, data=body, headers=headers, method="POST")
+    try:
+        with urllib_request.urlopen(request, timeout=max(1, int(timeout_seconds))) as response:
+            status_code = int(getattr(response, "status", 200))
+            return (200 <= status_code < 300, status_code, None)
+    except urllib_error.HTTPError as exc:
+        return (False, int(getattr(exc, "code", 0) or 0), f"http_error:{exc.code}")
+    except urllib_error.URLError as exc:
+        return (False, 0, f"url_error:{exc.reason}")
+    except Exception as exc:  # pragma: no cover - defensive path
+        return (False, 0, f"send_error:{type(exc).__name__}")
+
+
+def maybe_send_batch_webhook(
+    *,
+    cfg: RunnerConfig,
+    root: Path,
+    run_id: str,
+    phase_id: str,
+    phase_dir: Path,
+    step_id: str,
+    provider_id: str,
+    model_id: str,
+    job_id: str,
+    state: str,
+    detail: str,
+    artifacts_written: List[str],
+    artifacts_missing: List[str],
+) -> bool:
+    if not cfg.webhook_url.strip():
+        return True
+    payload = build_webhook_payload(
+        root=root,
+        run_id=run_id,
+        phase_id=phase_id,
+        phase_dir=phase_dir,
+        step_id=step_id,
+        provider_id=provider_id,
+        model_id=model_id,
+        job_id=job_id,
+        state=state,
+        detail=detail,
+        artifacts_written=artifacts_written,
+        artifacts_missing=artifacts_missing,
+    )
+    ok, status_code, err = send_webhook(
+        payload,
+        webhook_url=cfg.webhook_url,
+        webhook_secret=cfg.webhook_secret,
+        timeout_seconds=cfg.webhook_timeout_seconds,
+    )
+    batch_dir = phase_dir / "batch"
+    batch_dir.mkdir(parents=True, exist_ok=True)
+    if ok:
+        _append_webhook_receipt(
+            batch_dir,
+            "WEBHOOK_SENT.json",
+            {
+                "event_id": payload.get("event_id"),
+                "job_id": job_id,
+                "step_id": step_id,
+                "status_code": status_code,
+                "url": _redacted_webhook_url(cfg.webhook_url),
+                "sent_at_utc": now_iso(),
+            },
+        )
+        return True
+    _append_webhook_receipt(
+        batch_dir,
+        "WEBHOOK_FAIL.json",
+        {
+            "event_id": payload.get("event_id"),
+            "job_id": job_id,
+            "step_id": step_id,
+            "status_code": status_code,
+            "error": err or "unknown",
+            "url": _redacted_webhook_url(cfg.webhook_url),
+            "failed_at_utc": now_iso(),
+        },
+    )
+    return False
+
+
+def next_phase_id(current_phase: str) -> Optional[str]:
+    current = str(current_phase or "").upper()
+    if current not in PHASES:
+        return None
+    idx = PHASES.index(current)
+    if idx + 1 >= len(PHASES):
+        return None
+    return PHASES[idx + 1]
+
+
 def _normalize_routing_policy(policy: str) -> str:
     if policy in ROUTING_LADDERS:
         return policy
@@ -2183,6 +2486,8 @@ def write_run_manifest(
     disable_escalation = bool(getattr(args, "disable_escalation", False))
     escalation_max_hops = int(getattr(args, "escalation_max_hops", 2))
     batch_mode = bool(getattr(args, "batch_mode", False))
+    batch_submit_only = bool(getattr(args, "batch_submit_only", False))
+    batch_watch = bool(getattr(args, "batch_watch", False))
     batch_provider = str(getattr(args, "batch_provider", "auto"))
     batch_poll_seconds = int(getattr(args, "batch_poll_seconds", 30))
     batch_wait_timeout_seconds = int(getattr(args, "batch_wait_timeout_seconds", 86400))
@@ -2218,6 +2523,8 @@ def write_run_manifest(
             "disable_escalation": disable_escalation,
             "escalation_max_hops": escalation_max_hops,
             "batch_mode": batch_mode,
+            "batch_submit_only": batch_submit_only,
+            "batch_watch": batch_watch,
             "batch_provider": batch_provider,
             "batch_poll_seconds": batch_poll_seconds,
             "batch_wait_timeout_seconds": batch_wait_timeout_seconds,
@@ -2244,8 +2551,17 @@ def write_run_manifest(
             "jsonl_events": args.jsonl_events,
             "pretty": args.pretty,
             "print_promptpack": args.print_promptpack,
+            "print_run_order": bool(getattr(args, "print_run_order", False)),
+            "print_phase_routing": bool(getattr(args, "print_phase_routing", False)),
+            "print_phase_prompts": getattr(args, "print_phase_prompts", None),
             "verify_phase_output": args.verify_phase_output,
             "print_config": args.print_config,
+            "dpmx_webhook_url": os.getenv(DPMX_WEBHOOK_URL_ENV, "").strip(),
+            "dpmx_webhook_secret_set": bool(os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip()),
+            "dpmx_webhook_timeout_seconds": os.getenv(DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV, "").strip(),
+            "dpmx_webhook_required": os.getenv(DPMX_WEBHOOK_REQUIRED_ENV, "").strip(),
+            "dpmx_webhook_auto_continue": os.getenv(DPMX_WEBHOOK_AUTO_CONTINUE_ENV, "").strip(),
+            "dpmx_live_ok": os.getenv(DPMX_LIVE_OK_ENV, "").strip(),
         },
         "prompt_hash_mode": PROMPT_HASH_MODE,
         "prompt_files": [row["path"] for row in prompt_report["prompt_hashes"]],
@@ -2270,6 +2586,8 @@ def write_run_manifest(
         "routing_ladders": routing_ladders_payload(),
         "batch_config": {
             "enabled": batch_mode,
+            "submit_only": batch_submit_only,
+            "watch_mode": batch_watch,
             "provider": batch_provider,
             "poll_seconds": batch_poll_seconds,
             "wait_timeout_seconds": batch_wait_timeout_seconds,
@@ -6150,15 +6468,19 @@ def execute_step_for_partitions(
                         )
                     try:
                         batch_job_id = batch_client.submit(batch_requests, BatchRoute(*selected_route), step_context)
-                        batch_job_rows.append(
-                            {
-                                "partition_id": partition_id,
-                                "provider": batch_provider,
-                                "model_id": batch_model_id,
-                                "job_id": batch_job_id,
-                                "submitted_at": now_iso(),
-                            }
-                        )
+                        job_row = {
+                            "run_id": run_id,
+                            "phase_id": phase,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "provider_id": batch_provider,
+                            "model_id": batch_model_id,
+                            "api_key_env": batch_api_key_env,
+                            "job_id": batch_job_id,
+                            "state": "submitted",
+                            "submitted_at_utc": now_iso(),
+                        }
+                        batch_job_rows.append(job_row)
                     except Exception as exc:
                         failed_meta = {
                             "provider": batch_provider,
@@ -6172,6 +6494,41 @@ def execute_step_for_partitions(
                         }
                         return "", enrich_request_meta(
                             failed_meta,
+                            run_id=run_id,
+                            phase=phase,
+                            step_id=step_id,
+                            partition_id=partition_id,
+                            provider=batch_provider,
+                            model_id=batch_model_id,
+                        )
+                    if cfg.batch_submit_only:
+                        submit_payload = {
+                            "artifacts": [
+                                {
+                                    "artifact_name": artifact_name,
+                                    "payload": {
+                                        "batch_status": "submitted",
+                                        "batch_job_id": batch_job_id,
+                                        "partition_id": partition_id,
+                                    },
+                                }
+                                for artifact_name in output_artifacts
+                            ]
+                        }
+                        meta = {
+                            "provider": batch_provider,
+                            "model_id": batch_model_id,
+                            "status_code": 202,
+                            "failure_type": None,
+                            "provider_error_reason": None,
+                            "execution_mode": "batch_submit_only",
+                            "batch_provider": batch_provider,
+                            "batch_job_id": batch_job_id,
+                            "response_summary": {"batch_status": "submitted"},
+                            "batch_pending": True,
+                        }
+                        return json.dumps(submit_payload, ensure_ascii=True, sort_keys=True), enrich_request_meta(
+                            meta,
                             run_id=run_id,
                             phase=phase,
                             step_id=step_id,
@@ -6209,6 +6566,14 @@ def execute_step_for_partitions(
                                 provider=batch_provider,
                                 model_id=batch_model_id,
                             )
+                        for row in batch_job_rows:
+                            if (
+                                str(row.get("partition_id")) == partition_id
+                                and str(row.get("job_id")) == batch_job_id
+                            ):
+                                row["state"] = status or "running"
+                                row["last_polled_at_utc"] = now_iso()
+                                break
                         if ui is not None:
                             ui.batch_event(
                                 phase=phase,
@@ -6232,6 +6597,14 @@ def execute_step_for_partitions(
                             details=f"partition={partition_id} state={status} results={len(results)}",
                         )
                     if row is None:
+                        for job_row in batch_job_rows:
+                            if (
+                                str(job_row.get("partition_id")) == partition_id
+                                and str(job_row.get("job_id")) == batch_job_id
+                            ):
+                                job_row["state"] = "failed"
+                                job_row["completed_at_utc"] = now_iso()
+                                break
                         failed_meta = {
                             "provider": batch_provider,
                             "model_id": batch_model_id,
@@ -6261,6 +6634,14 @@ def execute_step_for_partitions(
                         "batch_job_id": batch_job_id,
                         "response_summary": {"batch_status": status},
                     }
+                    for job_row in batch_job_rows:
+                        if (
+                            str(job_row.get("partition_id")) == partition_id
+                            and str(job_row.get("job_id")) == batch_job_id
+                        ):
+                            job_row["state"] = "completed" if not row.error else "failed"
+                            job_row["completed_at_utc"] = now_iso()
+                            break
                     batch_result_rows.append(
                         {
                             "partition_id": partition_id,
@@ -6650,10 +7031,12 @@ def execute_step_for_partitions(
             job_path,
             {
                 "generated_at": now_iso(),
+                "run_id": run_id,
                 "phase": phase,
                 "step_id": step_id,
                 "routing_policy": cfg.routing_policy,
                 "routing_tier": step_tier,
+                "batch_submit_only": bool(cfg.batch_submit_only),
                 "jobs": batch_job_rows,
             },
         )
@@ -6666,7 +7049,15 @@ def execute_step_for_partitions(
                 "request_count": len(batch_request_rows),
                 "result_count": len(batch_result_rows),
                 "job_count": len(batch_job_rows),
+                "batch_submit_only": bool(cfg.batch_submit_only),
             },
+        )
+        write_batch_job_manifests(
+            phase_dir,
+            run_id=run_id,
+            phase_id=phase,
+            step_id=step_id,
+            jobs=batch_job_rows,
         )
     elapsed_ms = int((time.time() - started_at) * 1000)
     logger.info(
@@ -7259,6 +7650,79 @@ def print_promptpack(phases: List[str]) -> int:
     return 0
 
 
+def print_run_order(phases: List[str]) -> int:
+    payload = {
+        "generated_at": now_iso(),
+        "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "phase_order": [
+            {
+                "phase_id": phase,
+                "phase_dir": PHASE_DIR_NAMES.get(phase, phase),
+            }
+            for phase in phases
+        ],
+    }
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
+    payload: Dict[str, Any] = {
+        "generated_at": now_iso(),
+        "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "routing_policy": cfg.routing_policy,
+        "phases": {},
+    }
+    for phase in phases:
+        entries: List[Dict[str, Any]] = []
+        for spec in get_phase_prompts(phase):
+            route = resolve_effective_step_route(phase, spec.step_id, cfg)
+            entries.append(
+                {
+                    "step_id": spec.step_id,
+                    "step_type": route.get("step_type"),
+                    "step_tier": route.get("step_tier"),
+                    "provider": route.get("provider"),
+                    "model_id": route.get("model_id"),
+                    "model": f"{route.get('provider')}/{route.get('model_id')}",
+                    "reason": route.get("reason"),
+                    "ladder": [
+                        {
+                            "provider": row[0],
+                            "model_id": row[1],
+                            "api_key_env": row[2],
+                        }
+                        for row in route.get("ladder", [])
+                    ],
+                }
+            )
+        entries.sort(key=lambda row: step_sort_key(str(row.get("step_id", ""))))
+        payload["phases"][phase] = entries
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def print_phase_prompts(phases: List[str]) -> int:
+    payload: Dict[str, Any] = {
+        "generated_at": now_iso(),
+        "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "phases": {},
+    }
+    for phase in phases:
+        specs = get_phase_prompts(phase)
+        payload["phases"][phase] = [
+            {
+                "step_id": spec.step_id,
+                "prompt_file": spec.prompt_path.name,
+                "prompt_path": str(spec.prompt_path.resolve()),
+                "declared_outputs": list(spec.output_artifacts),
+            }
+            for spec in specs
+        ]
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
 def _load_json(path: Path) -> Dict[str, Any]:
     if not path.exists():
         return {}
@@ -7643,6 +8107,9 @@ def print_config(
             "jsonl_events": args.jsonl_events,
             "pretty": args.pretty,
             "print_promptpack": args.print_promptpack,
+            "print_run_order": args.print_run_order,
+            "print_phase_routing": args.print_phase_routing,
+            "print_phase_prompts": args.print_phase_prompts,
             "print_config": args.print_config,
             "run_id_override": args.run_id,
             "run_id_source": run_context.source,
@@ -7684,10 +8151,18 @@ def print_config(
             "disable_escalation": args.disable_escalation,
             "escalation_max_hops": args.escalation_max_hops,
             "batch_mode": args.batch_mode,
+            "batch_submit_only": args.batch_submit_only,
+            "batch_watch": args.batch_watch,
             "batch_provider": args.batch_provider,
             "batch_poll_seconds": args.batch_poll_seconds,
             "batch_wait_timeout_seconds": args.batch_wait_timeout_seconds,
             "batch_max_requests_per_job": args.batch_max_requests_per_job,
+            "dpmx_webhook_url": os.getenv(DPMX_WEBHOOK_URL_ENV, ""),
+            "dpmx_webhook_secret_set": bool(os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip()),
+            "dpmx_webhook_timeout_seconds": os.getenv(DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV, ""),
+            "dpmx_webhook_required": os.getenv(DPMX_WEBHOOK_REQUIRED_ENV, ""),
+            "dpmx_webhook_auto_continue": os.getenv(DPMX_WEBHOOK_AUTO_CONTINUE_ENV, ""),
+            "dpmx_live_ok": os.getenv(DPMX_LIVE_OK_ENV, ""),
             "debug_phase_inputs": args.debug_phase_inputs,
             "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
             "no_write_latest": args.no_write_latest,
@@ -7704,6 +8179,24 @@ def print_config(
         "routing_ladders": routing_ladders_payload(),
         "effective_model_routing": effective_model_routing_payload(),
         "dpmx_env_routing": dpmx_env_routing_payload(validate=True),
+        "webhook_settings": {
+            "schema": DPMX_WEBHOOK_SCHEMA,
+            "event": DPMX_WEBHOOK_EVENT,
+            "url": cfg.webhook_url,
+            "secret_set": bool(cfg.webhook_secret),
+            "timeout_seconds": cfg.webhook_timeout_seconds,
+            "required": cfg.webhook_required,
+            "auto_continue": cfg.webhook_auto_continue,
+            "live_ok": cfg.live_ok,
+        },
+        "batch_settings": {
+            "enabled": cfg.batch_mode,
+            "submit_only": cfg.batch_submit_only,
+            "provider": cfg.batch_provider,
+            "poll_seconds": cfg.batch_poll_seconds,
+            "wait_timeout_seconds": cfg.batch_wait_timeout_seconds,
+            "max_requests_per_job": cfg.batch_max_requests_per_job,
+        },
     }
     print(json.dumps(config_payload, indent=2))
 
@@ -7830,6 +8323,459 @@ def _has_matching_file(directory: Path, pattern: str) -> bool:
     return any(True for _ in directory.glob(pattern))
 
 
+def _phase_partitions_from_inputs(phase_dir: Path) -> List[Dict[str, Any]]:
+    payload = _read_json_dict(phase_dir / "inputs" / "PARTITIONS.json")
+    rows = payload.get("partitions")
+    if not isinstance(rows, list):
+        return []
+    partitions: List[Dict[str, Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        partition_id = str(row.get("id") or "").strip()
+        if not partition_id:
+            continue
+        paths = row.get("paths")
+        safe_paths = [str(path) for path in paths] if isinstance(paths, list) else []
+        partitions.append({"id": partition_id, "paths": safe_paths})
+    partitions.sort(key=lambda row: str(row["id"]))
+    return partitions
+
+
+def _batch_terminal_state(status: str) -> bool:
+    token = str(status or "").strip().lower()
+    return token in {"completed", "succeeded", "done", "failed", "cancelled", "canceled", "timeout"}
+
+
+def _write_q_promptpack_declared_outputs_manifest(dirs: Dict[str, Path]) -> Path:
+    manifest_path = dirs["Q"] / "inputs" / "Q_PROMPTPACK_DECLARED_OUTPUTS.json"
+    rows: List[Dict[str, Any]] = []
+    for phase in PHASES:
+        for spec in get_phase_prompts(phase):
+            rows.append(
+                {
+                    "phase": phase,
+                    "step_id": spec.step_id,
+                    "prompt_file": spec.prompt_path.name,
+                    "declared_outputs": list(spec.output_artifacts),
+                }
+            )
+    rows.sort(key=lambda row: (str(row["phase"]), step_sort_key(str(row["step_id"])), str(row["prompt_file"])))
+    write_json(manifest_path, {"promptpack_declared_outputs": rows})
+    return manifest_path
+
+
+def _write_s_truth_pack_provenance_manifest(
+    dirs: Dict[str, Path],
+    input_sources: Dict[Path, str],
+) -> Path:
+    manifest_path = dirs["S"] / "inputs" / "S_PHASE_TRUTH_PACK_PROVENANCE.json"
+    rows: List[Dict[str, Any]] = []
+    for path, source_phase in sorted(input_sources.items(), key=lambda row: (row[1], row[0].name, str(row[0]))):
+        try:
+            size = int(path.stat().st_size)
+        except Exception:
+            size = 0
+        try:
+            digest = sha256_file_strict(path)
+            sha_value = digest
+            sha_reason: Optional[str] = None
+        except Exception:
+            sha_value = "UNKNOWN"
+            sha_reason = "hash_unavailable"
+        item: Dict[str, Any] = {
+            "source_phase": source_phase,
+            "artifact_name": path.name,
+            "path": str(path),
+            "sha256": sha_value,
+            "bytes": size,
+        }
+        if sha_reason:
+            item["sha256_reason"] = sha_reason
+        rows.append(item)
+
+    expected_optional = {
+        "X": ["FEATURE_INDEX_MERGED.json"],
+        "T": ["TP_MERGED.json", "TP_SUMMARY.md"],
+        "Z": ["FREEZE_MANIFEST.json", "FREEZE_README.md"],
+    }
+    seen: Dict[str, Set[str]] = defaultdict(set)
+    for row in rows:
+        seen[str(row.get("source_phase", ""))].add(str(row.get("artifact_name", "")))
+    missing_expected_inputs: List[Dict[str, str]] = []
+    for source_phase, names in expected_optional.items():
+        for name in names:
+            if name not in seen.get(source_phase, set()):
+                missing_expected_inputs.append(
+                    {
+                        "artifact_name": name,
+                        "reason": f"not present in {source_phase}/norm",
+                    }
+                )
+    missing_expected_inputs.sort(key=lambda row: (row["artifact_name"], row["reason"]))
+    write_json(
+        manifest_path,
+        {
+            "truth_pack_inputs": rows,
+            "missing_expected_inputs": missing_expected_inputs,
+        },
+    )
+    return manifest_path
+
+
+def run_batch_watch(
+    *,
+    root: Path,
+    run_id: str,
+    phase: str,
+    dirs: Dict[str, Path],
+    cfg: RunnerConfig,
+    ui: Optional[UI] = None,
+) -> BatchWatchResult:
+    phase_id = str(phase or "").upper()
+    if phase_id not in PHASES:
+        logger.error("Batch watcher requires a concrete phase in PHASES. Got: %s", phase)
+        return BatchWatchResult(exit_code=1)
+    phase_dir = dirs[phase_id]
+    batch_dir = phase_dir / "batch"
+    index_path = batch_dir / "BATCH_JOB_INDEX.json"
+    jobs = _read_batch_job_rows(index_path)
+    if not jobs:
+        logger.error("Batch watcher found no jobs at %s", index_path)
+        return BatchWatchResult(exit_code=1)
+
+    jobs = sorted(
+        [row for row in jobs if str(row.get("phase_id", "")).upper() == phase_id],
+        key=_batch_job_sort_key,
+    )
+    if not jobs:
+        logger.error("Batch watcher found no jobs for phase %s in %s", phase_id, index_path)
+        return BatchWatchResult(exit_code=1)
+
+    prompts_by_step = {spec.step_id: spec for spec in get_phase_prompts(phase_id)}
+    partitions = _phase_partitions_from_inputs(phase_dir)
+    partition_ids = {str(row["id"]) for row in partitions}
+    step_stats: Dict[str, Dict[str, int]] = defaultdict(lambda: {"recomputed": 0, "failed": 0})
+    steps_touched: Set[str] = set()
+    webhook_failures = 0
+
+    for row in jobs:
+        step_id = str(row.get("step_id", "")).strip()
+        partition_id = str(row.get("partition_id", "")).strip()
+        provider_id = str(row.get("provider_id", "")).strip().lower()
+        model_id = str(row.get("model_id", "")).strip()
+        api_key_env = str(row.get("api_key_env", "")).strip() or PROVIDER_API_KEY_ENV.get(provider_id, "")
+        job_id = str(row.get("job_id", "")).strip()
+        if not (step_id and partition_id and provider_id and model_id and job_id):
+            row["state"] = "failed"
+            row["error"] = "invalid_job_manifest_row"
+            row["completed_at_utc"] = now_iso()
+            continue
+
+        prompt_spec = prompts_by_step.get(step_id)
+        if prompt_spec is None:
+            row["state"] = "failed"
+            row["error"] = "missing_prompt_spec_for_step"
+            row["completed_at_utc"] = now_iso()
+            continue
+
+        output_artifacts = prompt_spec.output_artifacts
+        current_state = str(row.get("state", "submitted")).strip().lower() or "submitted"
+        if _batch_terminal_state(current_state) and row.get("results_applied"):
+            continue
+
+        steps_touched.add(step_id)
+        raw_dir = phase_dir / "raw"
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        out_json = raw_dir / f"{step_id}__{partition_id}.json"
+        out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+        out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+
+        api_key, _ = resolve_api_key(provider_id, api_key_env)
+        if not api_key:
+            row["state"] = "failed"
+            row["error"] = f"missing_api_key:{api_key_env}"
+            row["completed_at_utc"] = now_iso()
+            step_stats[step_id]["recomputed"] += 1
+            step_stats[step_id]["failed"] += 1
+            continue
+
+        batch_client = build_batch_client(provider_id, api_key, cfg)
+        terminal_status = current_state
+        if not _batch_terminal_state(current_state):
+            poll_started = time.time()
+            while True:
+                terminal_status = str(batch_client.poll(job_id) or "").lower().strip()
+                if _batch_terminal_state(terminal_status):
+                    break
+                if time.time() - poll_started >= float(cfg.batch_wait_timeout_seconds):
+                    terminal_status = "timeout"
+                    try:
+                        batch_client.cancel(job_id)
+                    except Exception as exc:
+                        logger.debug("Failed to cancel batch job %s after timeout: %s", job_id, exc)
+                    break
+                if ui is not None:
+                    ui.batch_event(
+                        phase=phase_id,
+                        step_id=step_id,
+                        status="watch_poll",
+                        provider=provider_id,
+                        details=f"partition={partition_id} state={terminal_status or 'pending'}",
+                    )
+                time.sleep(max(1, int(cfg.batch_poll_seconds)))
+
+        artifacts_written: List[str] = []
+        artifacts_missing: List[str] = []
+        event_detail = f"state={terminal_status}"
+        row["state"] = terminal_status
+        row["last_polled_at_utc"] = now_iso()
+
+        if terminal_status in {"completed", "succeeded", "done"}:
+            results = batch_client.fetch_results(job_id)
+            results_by_partition = {str(result.custom_id): result for result in results}
+            result = results_by_partition.get(partition_id)
+            if result is None:
+                row["state"] = "failed"
+                row["error"] = "batch_missing_result_for_partition"
+                row["completed_at_utc"] = now_iso()
+                artifacts_missing = list(output_artifacts)
+                step_stats[step_id]["recomputed"] += 1
+                step_stats[step_id]["failed"] += 1
+                out_failed.write_text("batch_missing_result_for_partition\n", encoding="utf-8")
+                write_json(
+                    out_failed_json,
+                    {
+                        "phase": phase_id,
+                        "step_id": step_id,
+                        "partition_id": partition_id,
+                        "generated_at": now_iso(),
+                        "failure_type": "provider",
+                        "status_code": None,
+                        "request_meta": {
+                            "execution_mode": "batch_watch",
+                            "provider": provider_id,
+                            "model_id": model_id,
+                            "batch_provider": provider_id,
+                            "batch_job_id": job_id,
+                        },
+                    },
+                )
+            else:
+                response_text = str(result.output_text or "")
+                parsed = parse_json_candidate(response_text)
+                artifacts = parse_response_artifacts(
+                    parsed=parsed,
+                    raw_text=response_text,
+                    expected_artifacts=output_artifacts,
+                )
+                schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts, output_artifacts)
+                step_stats[step_id]["recomputed"] += 1
+                if not artifacts or not schema_ok or result.error:
+                    row["state"] = "failed"
+                    row["error"] = result.error or schema_reason or "batch_parse_failure"
+                    row["completed_at_utc"] = now_iso()
+                    artifacts_missing = list(output_artifacts)
+                    step_stats[step_id]["failed"] += 1
+                    out_failed.write_text(response_text or (result.error or "batch_parse_failure"), encoding="utf-8")
+                    write_json(
+                        out_failed_json,
+                        {
+                            "phase": phase_id,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "generated_at": now_iso(),
+                            "failure_type": "parse" if not result.error else "provider",
+                            "status_code": None,
+                            "request_meta": {
+                                "execution_mode": "batch_watch",
+                                "provider": provider_id,
+                                "model_id": model_id,
+                                "batch_provider": provider_id,
+                                "batch_job_id": job_id,
+                                "provider_error_reason": result.error,
+                                "schema_gate_reason": schema_reason,
+                            },
+                        },
+                    )
+                else:
+                    row["state"] = "completed"
+                    row["error"] = None
+                    row["completed_at_utc"] = now_iso()
+                    row["results_applied"] = True
+                    artifacts_written = sorted(
+                        {
+                            str(artifact.get("artifact_name", "")).strip()
+                            for artifact in artifacts
+                            if isinstance(artifact, dict)
+                        }
+                    )
+                    request_meta = enrich_request_meta(
+                        {
+                            "provider": provider_id,
+                            "model_id": model_id,
+                            "status_code": 200,
+                            "failure_type": None,
+                            "provider_error_reason": None,
+                            "execution_mode": "batch_watch",
+                            "batch_provider": provider_id,
+                            "batch_job_id": job_id,
+                            "response_summary": {
+                                "batch_status": terminal_status,
+                                "watch_mode": True,
+                            },
+                        },
+                        run_id=run_id,
+                        phase=phase_id,
+                        step_id=step_id,
+                        partition_id=partition_id,
+                        provider=provider_id,
+                        model_id=model_id,
+                    )
+                    write_json(
+                        out_json,
+                        {
+                            "phase": phase_id,
+                            "step_id": step_id,
+                            "partition_id": partition_id,
+                            "generated_at": now_iso(),
+                            "artifacts": artifacts,
+                            "request_meta": request_meta,
+                        },
+                    )
+                    if out_failed.exists():
+                        out_failed.unlink()
+                    if out_failed_json.exists():
+                        out_failed_json.unlink()
+            event_detail = f"state={row.get('state')}"
+        else:
+            row["completed_at_utc"] = now_iso()
+            artifacts_missing = list(output_artifacts)
+            step_stats[step_id]["recomputed"] += 1
+            step_stats[step_id]["failed"] += 1
+            write_json(
+                out_failed_json,
+                {
+                    "phase": phase_id,
+                    "step_id": step_id,
+                    "partition_id": partition_id,
+                    "generated_at": now_iso(),
+                    "failure_type": "timeout" if terminal_status == "timeout" else "provider",
+                    "status_code": None,
+                    "request_meta": {
+                        "execution_mode": "batch_watch",
+                        "provider": provider_id,
+                        "model_id": model_id,
+                        "batch_provider": provider_id,
+                        "batch_job_id": job_id,
+                        "provider_error_reason": f"batch_terminal_state:{terminal_status}",
+                    },
+                },
+            )
+            out_failed.write_text(f"batch_terminal_state:{terminal_status}\n", encoding="utf-8")
+
+        row["updated_at_utc"] = now_iso()
+        webhook_ok = maybe_send_batch_webhook(
+            cfg=cfg,
+            root=root,
+            run_id=run_id,
+            phase_id=phase_id,
+            phase_dir=phase_dir,
+            step_id=step_id,
+            provider_id=provider_id,
+            model_id=model_id,
+            job_id=job_id,
+            state=str(row.get("state", "unknown")),
+            detail=event_detail,
+            artifacts_written=artifacts_written,
+            artifacts_missing=artifacts_missing,
+        )
+        if not webhook_ok:
+            webhook_failures += 1
+
+        if partition_id not in partition_ids:
+            partitions.append({"id": partition_id, "paths": []})
+            partition_ids.add(partition_id)
+
+    jobs = sorted(jobs, key=_batch_job_sort_key)
+    write_json(
+        index_path,
+        {
+            "run_id": run_id,
+            "phase_id": phase_id,
+            "updated_at_utc": now_iso(),
+            "jobs": jobs,
+        },
+    )
+    write_json(
+        batch_dir / "BATCH_JOB.json",
+        {
+            "run_id": run_id,
+            "phase_id": phase_id,
+            "updated_at_utc": now_iso(),
+            "jobs": jobs,
+        },
+    )
+
+    jobs_by_step: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for row in jobs:
+        step_id = str(row.get("step_id", "")).strip()
+        if not step_id:
+            continue
+        jobs_by_step[step_id].append(row)
+    for step_id, step_jobs in jobs_by_step.items():
+        write_json(
+            batch_dir / f"{step_id}.job.json",
+            {
+                "generated_at": now_iso(),
+                "run_id": run_id,
+                "phase": phase_id,
+                "step_id": step_id,
+                "jobs": sorted(step_jobs, key=_batch_job_sort_key),
+            },
+        )
+
+    if not partitions:
+        partitions = [{"id": str(row.get("partition_id")), "paths": []} for row in jobs if row.get("partition_id")]
+
+    for step_id in sorted(steps_touched, key=step_sort_key):
+        prompt_spec = prompts_by_step.get(step_id)
+        if prompt_spec is None:
+            continue
+        stats = step_stats.get(step_id, {"recomputed": 0, "failed": 0})
+        normalize_step(
+            phase=phase_id,
+            prompt_spec=prompt_spec,
+            phase_dir=phase_dir,
+            partitions=partitions,
+            step_exec_stats={
+                "resume_skipped": 0,
+                "recomputed": int(stats.get("recomputed", 0)),
+                "dry_run": 0,
+                "failed": int(stats.get("failed", 0)),
+            },
+        )
+
+    auto_continue_blocked = False
+    next_phase = None
+    if cfg.webhook_auto_continue:
+        if cfg.live_ok:
+            next_phase = next_phase_id(phase_id)
+        else:
+            auto_continue_blocked = True
+            logger.info(
+                "AUTO_CONTINUE_BLOCKED phase=%s reason=live_guard env=%s",
+                phase_id,
+                DPMX_LIVE_OK_ENV,
+            )
+    exit_code = 1 if (cfg.webhook_required and webhook_failures > 0) else 0
+    return BatchWatchResult(
+        exit_code=exit_code,
+        next_phase=next_phase,
+        auto_continue_blocked=auto_continue_blocked,
+    )
+
+
 def _ensure_required_norm_artifact_groups(dirs: Dict[str, Path]) -> List[str]:
     missing: List[str] = []
     for phase, groups in R_REQUIRED_ARTIFACT_GROUPS.items():
@@ -7946,6 +8892,9 @@ def run_phase_G(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
 
 def run_phase_Q(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     items = collect_phase_artifacts(dirs, ["A", "H", "D", "C", "E", "W", "B", "G"], ["raw", "norm", "qa"])
+    promptpack_manifest = _write_q_promptpack_declared_outputs_manifest(dirs)
+    items.extend(to_items([promptpack_manifest]))
+    items.sort(key=lambda item: str(item.get("path", "")))
     _run_phase_inner("Q", dirs, cfg, None, None, precollected_items=items, ui=ui)
 
 
@@ -7991,21 +8940,28 @@ def run_phase_T(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
 
 def run_phase_S(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
     r_norm = dirs["R"] / "norm"
-    input_files: List[Path] = []
+    input_sources: Dict[Path, str] = {}
     if r_norm.exists():
-        input_files.extend(sorted(r_norm.glob("*.json")))
-        input_files.extend(sorted(r_norm.glob("*.md")))
-    if not input_files:
+        for path in sorted(r_norm.glob("*.json")) + sorted(r_norm.glob("*.md")):
+            input_sources[path.resolve()] = "R"
+    if not input_sources:
         raise RuntimeError(f"Phase S requires R norm outputs at {r_norm}")
 
     for phase in ["X", "T", "Z"]:
         norm_dir = dirs[phase] / "norm"
         if norm_dir.exists():
-            input_files.extend(sorted(norm_dir.glob("*.json")))
-            input_files.extend(sorted(norm_dir.glob("*.md")))
+            for path in sorted(norm_dir.glob("*.json")) + sorted(norm_dir.glob("*.md")):
+                input_sources.setdefault(path.resolve(), phase)
 
-    deduped_inputs = sorted(set(input_files), key=lambda path: str(path))
-    _run_phase_inner("S", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs), ui=ui)
+    manual_rulings_dir = dirs["root"] / "manual_rulings"
+    if manual_rulings_dir.exists():
+        for path in sorted(manual_rulings_dir.glob("PRO_*.json")):
+            input_sources.setdefault(path.resolve(), "MANUAL")
+
+    deduped_inputs = sorted(input_sources.keys(), key=str)
+    truth_pack_manifest = _write_s_truth_pack_provenance_manifest(dirs, input_sources)
+    precollected_files = deduped_inputs + [truth_pack_manifest]
+    _run_phase_inner("S", dirs, cfg, None, None, precollected_items=to_items(precollected_files), ui=ui)
 
 
 def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
@@ -8052,6 +9008,16 @@ def main() -> None:
     parser.add_argument("--escalation-max-hops", type=int, default=2)
     parser.add_argument("--batch-mode", action="store_true")
     parser.add_argument(
+        "--batch-submit-only",
+        action="store_true",
+        help="Submit batch jobs and persist metadata without inline polling/fetch.",
+    )
+    parser.add_argument(
+        "--batch-watch",
+        action="store_true",
+        help="Poll submitted batch jobs, fetch results, and emit webhook notifications.",
+    )
+    parser.add_argument(
         "--batch-provider",
         choices=["auto", "openai", "gemini", "xai"],
         default="auto",
@@ -8097,6 +9063,15 @@ def main() -> None:
     parser.add_argument("--jsonl-events", action="store_true")
     parser.add_argument("--pretty", action="store_true")
     parser.add_argument("--print-promptpack", action="store_true")
+    parser.add_argument("--print-run-order", action="store_true")
+    parser.add_argument("--print-phase-routing", action="store_true")
+    parser.add_argument(
+        "--print-phase-prompts",
+        nargs="?",
+        const="ALL",
+        type=str,
+        help="Print prompt files and declared outputs for PHASE or ALL.",
+    )
     parser.add_argument("--verify-phase-output", choices=VERIFY_PHASE_CHOICES)
     parser.add_argument("--print-config", action="store_true")
     parser.add_argument("--gemini-list-models", action="store_true")
@@ -8116,6 +9091,8 @@ def main() -> None:
     args.batch_poll_seconds = max(1, int(args.batch_poll_seconds))
     args.batch_wait_timeout_seconds = max(60, int(args.batch_wait_timeout_seconds))
     args.batch_max_requests_per_job = max(1, int(args.batch_max_requests_per_job))
+    if args.batch_submit_only:
+        args.batch_mode = True
     apply_model_overrides(args.gemini_model_id, args.routing_policy)
 
     if not (
@@ -8129,18 +9106,28 @@ def main() -> None:
         or args.status
         or args.status_json
         or args.print_promptpack
+        or args.print_run_order
+        or args.print_phase_routing
+        or args.print_phase_prompts
         or args.promptgen_scan
         or args.gemini_list_models
     ):
         parser.error(
             "--phase is required unless using --verify-phase-output, --print-config, "
             "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
-            "--status, --status-json, --print-promptpack, or --gemini-list-models."
+            "--status, --status-json, --print-promptpack, --print-run-order, "
+            "--print-phase-routing, --print-phase-prompts, or --gemini-list-models."
         )
     if args.watch is not None and args.watch <= 0:
         parser.error("--watch must be > 0 when provided.")
     if args.watch is not None and not (args.status or args.status_json):
         parser.error("--watch requires --status or --status-json.")
+    if args.batch_watch and not args.phase:
+        parser.error("--batch-watch requires --phase.")
+    if args.batch_watch and args.phase == "ALL":
+        parser.error("--batch-watch requires a concrete phase, not ALL.")
+    if args.batch_watch and args.batch_submit_only:
+        parser.error("--batch-watch cannot be combined with --batch-submit-only.")
 
     root = Path.cwd()
     try:
@@ -8233,6 +9220,13 @@ def main() -> None:
         batch_poll_seconds=args.batch_poll_seconds,
         batch_wait_timeout_seconds=args.batch_wait_timeout_seconds,
         batch_max_requests_per_job=args.batch_max_requests_per_job,
+        batch_submit_only=bool(args.batch_submit_only),
+        webhook_url=os.getenv(DPMX_WEBHOOK_URL_ENV, "").strip(),
+        webhook_secret=os.getenv(DPMX_WEBHOOK_SECRET_ENV, "").strip(),
+        webhook_timeout_seconds=_int_env(DPMX_WEBHOOK_TIMEOUT_SECONDS_ENV, 5, minimum=1),
+        webhook_required=_env_is_truthy(DPMX_WEBHOOK_REQUIRED_ENV),
+        webhook_auto_continue=_env_is_truthy(DPMX_WEBHOOK_AUTO_CONTINUE_ENV),
+        live_ok=_env_is_truthy(DPMX_LIVE_OK_ENV),
     )
 
     phase_sequence = resolve_phase_list(args.phase)
@@ -8244,12 +9238,30 @@ def main() -> None:
     if args.print_config:
         print_config(args, root, run_id, dirs, cfg, phase_sequence, run_context)
         sys.exit(0)
+    if args.print_run_order:
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(print_run_order(targets))
+    if args.print_phase_routing:
+        targets = phase_sequence if phase_sequence else PHASES
+        sys.exit(print_phase_routing(targets, cfg))
+    if args.print_phase_prompts is not None:
+        token = str(args.print_phase_prompts).strip().upper() if args.print_phase_prompts else "ALL"
+        if token == "ALL":
+            targets = PHASES
+        elif token in PHASES:
+            targets = [token]
+        else:
+            parser.error("--print-phase-prompts expects ALL or a single phase letter.")
+        sys.exit(print_phase_prompts(targets))
     should_gate_promptset = bool(phase_sequence) and (
         args.preflight_providers
         or args.doctor
         or not (
             args.doctor_auth
             or args.print_promptpack
+            or args.print_run_order
+            or args.print_phase_routing
+            or args.print_phase_prompts is not None
             or args.coverage_report
             or args.verify_phase_output
         )
@@ -8294,6 +9306,30 @@ def main() -> None:
     if args.doctor:
         targets = phase_sequence if phase_sequence else PHASES
         sys.exit(run_doctor_full(root, dirs, run_id, targets, cfg))
+
+    if args.batch_watch:
+        if not phase_sequence or len(phase_sequence) != 1:
+            parser.error("--batch-watch requires exactly one phase via --phase.")
+        watch_phase = phase_sequence[0]
+        watch_result = run_batch_watch(
+            root=root,
+            run_id=run_id,
+            phase=watch_phase,
+            dirs=dirs,
+            cfg=cfg,
+            ui=ui,
+        )
+        if watch_result.exit_code != 0:
+            sys.exit(watch_result.exit_code)
+        if watch_result.next_phase:
+            logger.info(
+                "AUTO_CONTINUE phase=%s next_phase=%s",
+                watch_phase,
+                watch_result.next_phase,
+            )
+            phase_sequence = [watch_result.next_phase]
+        else:
+            sys.exit(watch_result.exit_code)
 
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
