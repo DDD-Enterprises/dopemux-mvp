@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS async_jobs (
   attempt INTEGER NOT NULL,
   status TEXT NOT NULL,
   last_error TEXT,
-  created_at_utc TEXT NOT NULL,
-  updated_at_utc TEXT NOT NULL,
+  created_at_utc TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+  updated_at_utc TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   UNIQUE(provider, external_job_id, attempt)
 );
 
