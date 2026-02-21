@@ -1,3 +1,15 @@
+---
+id: 15_MISSING_CONTRACT_RELEVANT_DOCS
+title: 15 Missing Contract Relevant Docs
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 15 Missing Contract Relevant Docs (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 15_MISSING_CONTRACT_RELEVANT_DOCS
 
 The following documents should be represented in the Opus bundle for a complete contract grounding but are currently missing, thin, or undocumented in the `docs/` tree.

@@ -14,9 +14,11 @@ prelude: LiteLLM Deep Dive (explanation) for dopemux documentation and developer
 ## SECTION 1: TECHNICAL REPORT
 
 ### Executive Summary & Strategic Intent
+
 **LiteLLM** acts as the universal proxy and router for the Dopemux intelligence stack. it provides a unified OpenAI-compatible interface for multiple LLM providers (xAI, OpenRouter/OpenAI, Google, etc.). Its intent is to provide resilience, cost-optimization, and unified analytics across all LLM interactions in the system.
 
 ### Architecture & Core Components (Validated)
+
 The service is a LiteLLM Proxy server running in a Python container.
 
 * **Service Type**: AI Proxy / Router
@@ -30,6 +32,7 @@ The service is a LiteLLM Proxy server running in a Python container.
 1. **Database**: Integrates with `dopemux-postgres-age` for request logging and caching.
 
 ### Failure & Drift Analysis
+
 **Status**: **Running (Unhealthy)**.
 
 **Findings**:

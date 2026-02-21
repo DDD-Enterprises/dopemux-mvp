@@ -1,3 +1,15 @@
+---
+id: 08_ADHD_COGNITIVE_PLANE_SURFACES
+title: 08 Adhd Cognitive Plane Surfaces
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 08 Adhd Cognitive Plane Surfaces (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 08 ADHD Cognitive Plane Surfaces
 
 ## Verdict: advisory vs policy

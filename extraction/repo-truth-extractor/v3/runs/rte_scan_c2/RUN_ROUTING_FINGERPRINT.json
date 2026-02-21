@@ -1,0 +1,3938 @@
+{
+  "batch_settings": {
+    "enabled": false,
+    "max_requests_per_job": 2000,
+    "poll_seconds": 30,
+    "provider": "auto",
+    "wait_timeout_seconds": 86400
+  },
+  "config": {
+    "batch_max_requests_per_job": 2000,
+    "batch_mode": false,
+    "batch_poll_seconds": 30,
+    "batch_provider": "auto",
+    "batch_wait_timeout_seconds": 86400,
+    "debug_phase_inputs": false,
+    "disable_escalation": false,
+    "escalation_max_hops": 2,
+    "fail_fast_auth": true,
+    "fail_fast_missing_inputs": false,
+    "gemini_auth_mode_requested": "auto",
+    "gemini_model_id_requested": "gemini-2.5-flash",
+    "gemini_transport": "sdk",
+    "openai_transport": "openai_sdk",
+    "routing_policy": "cost",
+    "routing_policy_version": "RTE_ROUTING_V1",
+    "xai_transport": "openai_sdk"
+  },
+  "created_at": "2026-02-20T14:16:18.137546+00:00",
+  "effective_model_routing": {
+    "A": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-nano",
+      "provider": "openai"
+    },
+    "B": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-nano",
+      "provider": "openai"
+    },
+    "C": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-mini",
+      "provider": "openai"
+    },
+    "D": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-nano",
+      "provider": "openai"
+    },
+    "E": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-mini",
+      "provider": "openai"
+    },
+    "G": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-nano",
+      "provider": "openai"
+    },
+    "H": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-nano",
+      "provider": "openai"
+    },
+    "Q": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-nano",
+      "provider": "openai"
+    },
+    "R": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5.2-extended",
+      "provider": "openai"
+    },
+    "T": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5.2-extended",
+      "provider": "openai"
+    },
+    "W": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-nano",
+      "provider": "openai"
+    },
+    "X": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5.2-extended",
+      "provider": "openai"
+    },
+    "Z": {
+      "api_key_env": "OPENAI_API_KEY",
+      "model_id": "gpt-5-mini",
+      "provider": "openai"
+    }
+  },
+  "phases": {
+    "A": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPOCTRL_INVENTORY.json",
+          "REPOCTRL_PARTITIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "c44f226b8987ccd13135566b5018d9351eb21068c8c924aa7553404fb386c035",
+        "step_id": "A0",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_INSTRUCTION_SURFACE.json",
+          "REPO_INSTRUCTION_REFERENCES.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_A1_INSTRUCTION_SURFACES.md",
+        "provider": "openai",
+        "routing_signature": "d5a8b3af21dc7c25fb70c523c1c847cf53ec4722661bcb01466f0c8e018bcb93",
+        "step_id": "A1",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_MCP_SERVER_DEFS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_A2_MCP_SERVER_DEFS.md",
+        "provider": "openai",
+        "routing_signature": "dd1a733457d7fa96faa1f72d054ff55f595c8d571d43dd4bdc1296ce6fb7b370",
+        "step_id": "A2",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_MCP_PROXY_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_A3_MCP_PROXY_SURFACE.md",
+        "provider": "openai",
+        "routing_signature": "ea1957d3195122c71cb074d458734341ae7bb9dee6352de82921ec95b30ebe06",
+        "step_id": "A3",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_ROUTER_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_A4_ROUTER_SURFACE.md",
+        "provider": "openai",
+        "routing_signature": "3c76139d549b4ae85f31ae15d6288ceb98c36bb1e49b1bfd04eff85ff86b8a01",
+        "step_id": "A4",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_HOOKS_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_A5_HOOKS_SURFACE.md",
+        "provider": "openai",
+        "routing_signature": "3356b2f8ef65d50c276eed6d96c1818e2957d2507135abb47aab4cc92d65f79c",
+        "step_id": "A5",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_COMPOSE_SERVICE_GRAPH.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+        "provider": "openai",
+        "routing_signature": "071ba15e063eb10cbe64e3f3170e636a75c6820fae47f127a312d6836fb46b06",
+        "step_id": "A6",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_LITELLM_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_A7_LITELLM_SURFACE.md",
+        "provider": "openai",
+        "routing_signature": "687853631fa5f386627c3dc1e8780fe16275202675f4e7ff6ac460c122ddfc4a",
+        "step_id": "A7",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_TASKX_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_A8_TASKX_SURFACE.md",
+        "provider": "openai",
+        "routing_signature": "4c40cf5800ea6c7b56d78bf0d3f4de12031b415b9e8b51a765c311c329c7a884",
+        "step_id": "A8",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_IMPLICIT_BEHAVIOR_HINTS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+        "provider": "openai",
+        "routing_signature": "27fa81d6eae5d174937da34345f2005bad13204dd9bb5afac56686aa79c4c5b0",
+        "step_id": "A9",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REPO_INSTRUCTION_SURFACE.json",
+          "REPO_INSTRUCTION_REFERENCES.json",
+          "REPO_MCP_SERVER_DEFS.json",
+          "REPO_MCP_PROXY_SURFACE.json",
+          "REPO_ROUTER_SURFACE.json",
+          "REPO_HOOKS_SURFACE.json",
+          "REPO_IMPLICIT_BEHAVIOR_HINTS.json",
+          "REPO_COMPOSE_SERVICE_GRAPH.json",
+          "REPO_LITELLM_SURFACE.json",
+          "REPO_TASKX_SURFACE.json",
+          "REPOCTRL_NORM_MANIFEST.json",
+          "REPOCTRL_QA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_A99_MERGE___QA.md",
+        "provider": "openai",
+        "routing_signature": "ebdeac4ee29f1d4c2e9303fa57e61131a8a33c88693e77f213bd6bfa3ce6370a",
+        "step_id": "A99",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      }
+    ],
+    "B": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "BOUNDARY_INVENTORY.json",
+          "BOUNDARY_PARTITIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "a9b6fee69a8172dbe7ba0db39dc3fca38f4ba48580ab24d1e7eaf0bb8afd32ea",
+        "step_id": "B0",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "BOUNDARY_ENFORCEMENT_POINTS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md",
+        "provider": "openai",
+        "routing_signature": "a6717f5454ce77fd70c36b3f8a9f10e83b228582c0680840b894e75f42d076dc",
+        "step_id": "B1",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "REFUSAL_GUARDRAILS_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md",
+        "provider": "openai",
+        "routing_signature": "d2d5af58d5ff61870de2354fe3ac58ba3a3c0254479861abe39e0e4d162416a1",
+        "step_id": "B2",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "BOUNDARY_BYPASS_RISKS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md",
+        "provider": "openai",
+        "routing_signature": "b531df37cbcc61259049c3327120a1c9f7632b7f20210f3b4ea3e2c14abe936e",
+        "step_id": "B3",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "BOUNDARY_MERGED.json",
+          "BOUNDARY_QA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_B9_MERGE___QA.md",
+        "provider": "openai",
+        "routing_signature": "286c045fdba7e5930d8dd637ec8b17130d3b0dab839ca3d91cef95ba478db522",
+        "step_id": "B9",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      }
+    ],
+    "C": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "CODE_INVENTORY.json",
+          "CODE_PARTITIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "a9bd5cfc276899acd46d161f9e23bf55ec32b9ec17fb98290731c6ab82543bdc",
+        "step_id": "C0",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "SERVICE_ENTRYPOINTS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_C1_SERVICE_ENTRYPOINTS.md",
+        "provider": "openai",
+        "routing_signature": "f185106a88ddacf85f6b57e35e32bf6ecd11fe0f987f2eda521141168bcc7553",
+        "step_id": "C1",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "SERVICE_CATALOG.partX.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_C10_SERVICE_CATALOG_DEEP.md",
+        "provider": "openai",
+        "routing_signature": "d75ceafb000bea423ce72cb10b248a26102bf855461b6dacb80429cefacafb1a",
+        "step_id": "C10",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EVENTBUS_SURFACE.json",
+          "EVENT_PRODUCERS.json",
+          "EVENT_CONSUMERS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md",
+        "provider": "openai",
+        "routing_signature": "a9022f6d0c10d8aa119249f32a3dbadb5c73d16aeb81cc081fe94ac0138cb554",
+        "step_id": "C2",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "DOPE_MEMORY_CODE_SURFACE.json",
+          "DOPE_MEMORY_SCHEMAS.json",
+          "DOPE_MEMORY_DB_WRITES.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_C3_DOPE_MEMORY_SURFACES.md",
+        "provider": "openai",
+        "routing_signature": "728ee89c084d7e73ff6165e7fc8b789f2c86f6a0311b2643f36794afecd5023b",
+        "step_id": "C3",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TRINITY_ENFORCEMENT_SURFACE.json",
+          "REFUSAL_AND_GUARDRAILS_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md",
+        "provider": "openai",
+        "routing_signature": "5a67a609f2454649d4842bf0fe84aa46472e0d6aef7e00f7de6562129da353f1",
+        "step_id": "C4",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TASKX_INTEGRATION_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
+        "provider": "openai",
+        "routing_signature": "9561bf751f0b1b3d731db783798acfec02b04d83d2aed1ef9d4ae160ec8aa8c3",
+        "step_id": "C5",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "WORKFLOW_RUNNER_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md",
+        "provider": "openai",
+        "routing_signature": "e2432e3ce2fe02991f227ac446b9da5f159cd952f95143b8209e1d18cbc568a3",
+        "step_id": "C6",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "API_DASHBOARD_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_C7_API___DASHBOARDS.md",
+        "provider": "openai",
+        "routing_signature": "69a0f7caa1e1a186b081e3af11818abd1e2608f9cae0595637442f223c3439cf",
+        "step_id": "C7",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "DETERMINISM_RISK_LOCATIONS.json",
+          "IDEMPOTENCY_RISK_LOCATIONS.json",
+          "CONCURRENCY_RISK_LOCATIONS.json",
+          "SECRETS_RISK_LOCATIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md",
+        "provider": "openai",
+        "routing_signature": "6a9e63a6fdaac473b48c3008449f37d2171dff7f78e49f9a3740141548e78480",
+        "step_id": "C8",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "SERVICE_ENTRYPOINTS.json",
+          "EVENTBUS_SURFACE.json",
+          "EVENT_PRODUCERS.json",
+          "EVENT_CONSUMERS.json",
+          "DOPE_MEMORY_CODE_SURFACE.json",
+          "DOPE_MEMORY_SCHEMAS.json",
+          "DOPE_MEMORY_DB_WRITES.json",
+          "TRINITY_ENFORCEMENT_SURFACE.json",
+          "REFUSAL_AND_GUARDRAILS_SURFACE.json",
+          "TASKX_INTEGRATION_SURFACE.json",
+          "WORKFLOW_RUNNER_SURFACE.json",
+          "DETERMINISM_RISK_LOCATIONS.json",
+          "IDEMPOTENCY_RISK_LOCATIONS.json",
+          "CONCURRENCY_RISK_LOCATIONS.json",
+          "CODE_SURFACES_QA.json",
+          "SERVICE_CATALOG.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_C9_MERGE___NORMALIZE___QA.md",
+        "provider": "openai",
+        "routing_signature": "bfed139d41d2efa20e48b35f7bdfb150de9e1a06c1ed26ed0165f509d1bc17b9",
+        "step_id": "C9",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      }
+    ],
+    "D": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "DOC_INVENTORY.json",
+          "DOC_PARTITIONS.json",
+          "DOC_TODO_QUEUE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_D0_INVENTORY___PARTITION_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "35f948f6d381aa07df95dcabb2be1b54e1b5cb3af5886579a026525e925fb4ab",
+        "step_id": "D0",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "DOC_INDEX.partX.json",
+          "DOC_CONTRACT_CLAIMS.partX.json",
+          "DOC_BOUNDARIES.partX.json",
+          "DOC_SUPERSESSION.partX.json",
+          "CAP_NOTICES.partX.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md",
+        "provider": "openai",
+        "routing_signature": "94eebd3f708a45cd2f89bdbbaf4967652e9d55cd17015c62c3bd1f0fbdd73d2b",
+        "step_id": "D1",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "DOC_INTERFACES.partX.json",
+          "DOC_WORKFLOWS.partX.json",
+          "DOC_DECISIONS.partX.json",
+          "DOC_GLOSSARY.partX.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_D2_DEEP_EXTRACTION.md",
+        "provider": "openai",
+        "routing_signature": "274fc152354576a33ff29f1fae7ba5e6b167d437111e32083369bb909c9e4d98",
+        "step_id": "D2",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "DOC_CITATION_GRAPH.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_D3_CITATION___REFERENCE_GRAPH.md",
+        "provider": "openai",
+        "routing_signature": "6184e1180cedc83295b79bc7cbec3c941bd15ce9a8f97a9c8e3fdc618f931a8e",
+        "step_id": "D3",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "DOC_INDEX.json",
+          "DOC_CONTRACT_CLAIMS.json",
+          "DOC_SUPERSESSION.json",
+          "DOC_TOPIC_CLUSTERS.json",
+          "DUPLICATE_DRIFT_REPORT.json",
+          "DOC_RECENCY_DUPLICATE_REPORT.json",
+          "DOC_COVERAGE_REPORT.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md",
+        "provider": "openai",
+        "routing_signature": "33007a5670fea13ec36cce7e0dc096b43f70159da47b2d04cac890218a29ecde",
+        "step_id": "D4",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "DOC_TOPIC_CLUSTERS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md",
+        "provider": "openai",
+        "routing_signature": "c4d2b0f5b64751ad7916b51c3eaf93b88c107752a19e2374a4dd8e5047d8d602",
+        "step_id": "D5",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      }
+    ],
+    "E": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EXEC_INVENTORY.json",
+          "EXEC_PARTITIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "7c4b078bcad5bf5324024121050d69b74811d4356a1fd86da5a3fa9816d69315",
+        "step_id": "E0",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EXEC_BOOTSTRAP_COMMANDS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md",
+        "provider": "openai",
+        "routing_signature": "2208c4d3f2fdc500128ab4f4f2c84957c6422528a37bae16cf64a6f38c4ebab3",
+        "step_id": "E1",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EXEC_ENV_CHAIN.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md",
+        "provider": "openai",
+        "routing_signature": "b590287d601038cb7e4b48d93263b9a6b60b995d3650d24a5f592172af6993ad",
+        "step_id": "E2",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EXEC_STARTUP_GRAPH.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_E3_SERVICE_STARTUP_GRAPH.md",
+        "provider": "openai",
+        "routing_signature": "642f8081a9322fb45088754139cae7afb2568fd464ea6d6042e8455ad9a48c6a",
+        "step_id": "E3",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EXEC_RUNTIME_MODES.json",
+          "EXEC_MODE_DELTA_REPORT.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md",
+        "provider": "openai",
+        "routing_signature": "c592b526acca9adc73871a561425eb12db8152947279878762f05e5941bde027",
+        "step_id": "E4",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EXEC_ARTIFACT_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md",
+        "provider": "openai",
+        "routing_signature": "0d2ee253e765d2d15363cceb838305f96346703bab1a9324354f4da29d2fbc46",
+        "step_id": "E5",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EXEC_RISK_FACTS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md",
+        "provider": "openai",
+        "routing_signature": "4039248c04d595ed1c493b127b4a1e0e02e89590086ad9702a5bc1625e7f9992",
+        "step_id": "E6",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EXEC_MERGED.json",
+          "EXEC_QA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_E9_MERGE___NORMALIZE___QA.md",
+        "provider": "openai",
+        "routing_signature": "7ea8abd4fa5ee426270266269f90255835fd0ae50b7d49c6276ee03822ab5c43",
+        "step_id": "E9",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      }
+    ],
+    "G": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "GOV_INVENTORY.json",
+          "GOV_PARTITIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "ca3961602dfd8c320279533d6dfafe6a89e39e229d928432e25d0779e9490fd7",
+        "step_id": "G0",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "GOV_CI_GATES.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_G1_CI_GATES___QUALITY_BARS.md",
+        "provider": "openai",
+        "routing_signature": "55fac504937024998acbeed435e4d7eb55253bf7416731561930a9b281305977",
+        "step_id": "G1",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "GOV_HYGIENE_POLICIES.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md",
+        "provider": "openai",
+        "routing_signature": "23bca84ff8d7ac131bdffdfe0f8b1b1c05dca1d74349851553c85914dad73a74",
+        "step_id": "G2",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "GOV_POLICIES.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_G3_POLICY_FILES___ENFORCEMENT.md",
+        "provider": "openai",
+        "routing_signature": "ddd5b5d40be5b9a1e333e010a009e1cf1371dfee98933f1f20796d09aaec7547",
+        "step_id": "G3",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "GOV_SECRETS_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md",
+        "provider": "openai",
+        "routing_signature": "f6bb15916be3818fc8cd932c44e4629b745e3c745569abdb54980a76501c3691",
+        "step_id": "G4",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "GOV_MERGED.json",
+          "GOV_QA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_G9_MERGE___QA.md",
+        "provider": "openai",
+        "routing_signature": "3ce9535895b202769cce29487ed1c9b944dfcff49ce136db344fe8f029701c1c",
+        "step_id": "G9",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      }
+    ],
+    "H": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "HOME_INVENTORY.json",
+          "HOME_PARTITIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_H0_INVENTORY___PARTITION_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "2ec68563874ff777e393ff78585ed5658822dc5f7d382e5a3626cd9985403087",
+        "step_id": "H0",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "HOME_KEYS_SURFACE.json",
+          "HOME_REFERENCES.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_H1_KEYS___REFERENCES.md",
+        "provider": "openai",
+        "routing_signature": "5715c5d5c5f879d9cf632e96c020c7e26f11ccb20268d949a444776369fe5117",
+        "step_id": "H1",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "HOME_MCP_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_H2_MCP_SURFACE.md",
+        "provider": "openai",
+        "routing_signature": "858806000a0daceaf62a01167e908b2d78eb0a2ed9853b2e11eaee2bf03c57e3",
+        "step_id": "H2",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "HOME_ROUTER_SURFACE.json",
+          "HOME_PROVIDER_LADDER_HINTS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_H3_ROUTER___PROVIDER_LADDERS.md",
+        "provider": "openai",
+        "routing_signature": "1a6889fe56c6ba641d7ee9a849f8972d30a4b71bc7482192b5aa5a4b468b7263",
+        "step_id": "H3",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "HOME_LITELLM_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_H4_LITELLM_SURFACES.md",
+        "provider": "openai",
+        "routing_signature": "f94158e55431b84467a02707fda79d77d6d5066e30a057aa920e0f4d6e51d357",
+        "step_id": "H4",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "HOME_PROFILES_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_H5_PROFILES___SESSIONS.md",
+        "provider": "openai",
+        "routing_signature": "30a9859e051ffbed4705ea660969a087e2e991021587e73016e6f46b9adef579",
+        "step_id": "H5",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "HOME_TMUX_WORKFLOW_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_H6_TMUX___WORKFLOW_HELPERS.md",
+        "provider": "openai",
+        "routing_signature": "42551a4e095cbd373a7498ceedce63775e178c6f701d380b4d1a4cab1469c735",
+        "step_id": "H6",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "HOME_SQLITE_SCHEMA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_H7_SQLITE___STATE_DB_METADATA.md",
+        "provider": "openai",
+        "routing_signature": "50f858f7acaa630c135eeabc610e8aa85d1f60d02491e6fe3bf9296113a191ff",
+        "step_id": "H7",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "HOMECTRL_NORM_MANIFEST.json",
+          "HOMECTRL_QA.json",
+          "HOME_KEYS_SURFACE.json",
+          "HOME_REFERENCES.json",
+          "HOME_MCP_SURFACE.json",
+          "HOME_ROUTER_SURFACE.json",
+          "HOME_PROVIDER_LADDER_HINTS.json",
+          "HOME_LITELLM_SURFACE.json",
+          "HOME_PROFILES_SURFACE.json",
+          "HOME_TMUX_WORKFLOW_SURFACE.json",
+          "HOME_SQLITE_SCHEMA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_H9_MERGE___QA.md",
+        "provider": "openai",
+        "routing_signature": "70a1bf6a91911c9e3f922b9d7bae00e0be60eb0ea77b22158351b936d9015fa1",
+        "step_id": "H9",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      }
+    ],
+    "Q": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "QA_RUN_MANIFEST.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md",
+        "provider": "openai",
+        "routing_signature": "38901971dce4feb0049d8430421421c067579438bf2a63aad6e3f1c8eba59979",
+        "step_id": "Q0",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "QA_MISSING_ARTIFACTS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "ab087c088bf8a3a998c0a1e6da0109914c5824224268af3b1bec364791af42c8",
+        "step_id": "Q1",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "QA_PROMPT_COLLISIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md",
+        "provider": "openai",
+        "routing_signature": "6f9058df7640b687b8b5bb8d2886335d9bedd72ee7e85d2815cda7d7b511859b",
+        "step_id": "Q2",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "QA_NORM_DRIFT_REPORT.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md",
+        "provider": "openai",
+        "routing_signature": "1e3c59298ac0ab60256e83fbb8197f9d10163362d8edc05c04076a71c407d80f",
+        "step_id": "Q3",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "PIPELINE_DOCTOR_REPORT.json",
+          "QA_SERVICE_COVERAGE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_Q9_MERGE___QA.md",
+        "provider": "openai",
+        "routing_signature": "0fbfbfd925197701b60707f081abfbc1b65659febcd3ddafd542c23525d6e15f",
+        "step_id": "Q9",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      }
+    ],
+    "R": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "CONTROL_PLANE_TRUTH_MAP.md"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md",
+        "provider": "openai",
+        "routing_signature": "cae951498ec2561172f9015bd3def1556ed0ca1a67537e72fdb4564e0267a6ff",
+        "step_id": "R0",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+          "DOPE_MEMORY_SCHEMAS.json",
+          "DOPE_MEMORY_DB_WRITES.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+        "provider": "openai",
+        "routing_signature": "f999b57bdbac925bacabcbccef30a1b54e9392c3bb3a549d9ed5c2d72cb759a6",
+        "step_id": "R1",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "EVENTBUS_WIRING_TRUTH.md"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_R2_EVENTBUS_WIRING_TRUTH.md",
+        "provider": "openai",
+        "routing_signature": "5dd0744d233474b1ac39a49b77c76518c8a2cccacddedac7b10dd05b40dfc0c6",
+        "step_id": "R2",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
+        "provider": "openai",
+        "routing_signature": "c742245cb8f73eee288eace5315e366eab19a35dae47ee84f791b89ce83035ac",
+        "step_id": "R3",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TASKX_INTEGRATION_TRUTH.md"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_R4_TASKX_INTEGRATION_TRUTH.md",
+        "provider": "openai",
+        "routing_signature": "fc556fb760ab3aeb975b887520e180d7ec4bf3c5174a9c1eeeacc436e67e15d2",
+        "step_id": "R4",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "WORKFLOWS_TRUTH_GRAPH.md"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md",
+        "provider": "openai",
+        "routing_signature": "f95d1fcc51d5bf2c87e042e5a1f25983d68fa6a092a46046c5540f8bc0f2e426",
+        "step_id": "R5",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "PORTABILITY_AND_MIGRATION_RISK_LEDGER.md"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
+        "provider": "openai",
+        "routing_signature": "673c552acd9f9ba5d3feecf11da8bd2a23d4894bd6593c28f9566183f94507cf",
+        "step_id": "R6",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "CONFLICT_LEDGER.md"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_R7_CONFLICT_LEDGER.md",
+        "provider": "openai",
+        "routing_signature": "7ee85a69153c76d46fc229ee171e5a448fa27d721205fb5b8301d77b0d6fb178",
+        "step_id": "R7",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "RISK_REGISTER_TOP20.md"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_R8_RISK_REGISTER_TOP20.md",
+        "provider": "openai",
+        "routing_signature": "670e57e3ff52c9187439f41f2afdac42ea4dce30124ac1470401e99f209ec1e2",
+        "step_id": "R8",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      }
+    ],
+    "T": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "PROJECT_INSTRUCTIONS.md",
+          "TP_BACKLOG_TOPN.json",
+          "TP_INDEX.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_T0_TASK_PACKET_FACTORY.md",
+        "provider": "openai",
+        "routing_signature": "4803e4feaced351e145fbd385717e30fc7ec2083b73c9c35d9ad9e724f21f5c1",
+        "step_id": "T0",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TP_PACKETS_TOP10.partX.md",
+          "TP_PACKET_IMPLEMENTATION_INDEX.json",
+          "TP_BACKLOG_TOPN.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md",
+        "provider": "openai",
+        "routing_signature": "9b1f586915110238bc8ced6cf8cc37604bb5342202d7480e80d9a339bc0075f0",
+        "step_id": "T1",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TP_SCHEMA.json",
+          "TP_AUTHORITY_RULES.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md",
+        "provider": "openai",
+        "routing_signature": "d39ec94c856e71cc3dc3544f2cfa160f6a929a78a7683e35fea3dcf9566d8bb0",
+        "step_id": "T2",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TP_BATCHED_PACKETS.partX.md",
+          "TP_BATCH_INDEX.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_T3_PACKET_GENERATION___BATCHED.md",
+        "provider": "openai",
+        "routing_signature": "9441f946cb23f7e6e571fdccb03c500eff1dff08841b2ce1c2e31880a4b57dac",
+        "step_id": "T3",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TP_DEDUPED.json",
+          "TP_COLLISIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md",
+        "provider": "openai",
+        "routing_signature": "e81747b29ce82ae693ce5ec1cea6a110fcbb1a818362df0d08615d5cc58696d6",
+        "step_id": "T4",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TP_RUN_PLAN.json",
+          "TP_BACKLOG_TOPN.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "31e8a864be1650c8b2f4a13ff9b2170ace6bd32f9ca496640791d5392652d945",
+        "step_id": "T5",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "TP_INDEX.json",
+          "TP_MERGED.json",
+          "TP_QA.json",
+          "TP_SUMMARY.md",
+          "TP_BACKLOG_TOPN.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_T9_MERGE___QA.md",
+        "provider": "openai",
+        "routing_signature": "24d16e3744a92fb3b7ff0665c4dbae56ba1b3cee12995bc37e4396f6f9d64618",
+        "step_id": "T9",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      }
+    ],
+    "W": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "WORKFLOW_INVENTORY.json",
+          "WORKFLOW_PARTITIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "9a3eabf1249a2feab8751aaba2820ef18a890890d2c3672df127a830d81d7a31",
+        "step_id": "W0",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "WORKFLOW_CATALOG.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md",
+        "provider": "openai",
+        "routing_signature": "94846e35a0ff0a3b334d272368cbdf0216bceb1232700c24796dbbeb92d67de4",
+        "step_id": "W1",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "WORKFLOW_IO_MAP.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md",
+        "provider": "openai",
+        "routing_signature": "9cf1f17016bb30c0186e9876d88fdd1226620412859f4dd1ffc6df520b5d24b0",
+        "step_id": "W2",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "WORKFLOW_COORDINATION_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md",
+        "provider": "openai",
+        "routing_signature": "b32c638df473bf6853d94a7b26ccacccb71fb66f0995af00fe177524451297b0",
+        "step_id": "W3",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "WORKFLOW_FAILURE_RECOVERY.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md",
+        "provider": "openai",
+        "routing_signature": "cbf3319eca3bc5f6a83e908c6b70a57c130bfd6ccc2f19c2bd49bc33cc87923b",
+        "step_id": "W4",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "WORKFLOW_STATE_COUPLING.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-mini",
+        "prompt_file": "PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md",
+        "provider": "openai",
+        "routing_signature": "0e4d6d12b2bd0a81ee07aa9628c9098791d8d3a65f1750bd840fc55e4dc8e206",
+        "step_id": "W5",
+        "step_tier": "extract",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "WORKFLOW_MERGED.json",
+          "WORKFLOW_QA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_W9_MERGE___QA.md",
+        "provider": "openai",
+        "routing_signature": "ba988d14b5d8be176ec01882adbd29a07d01de09dfdcec5a55dd4aeb9020f76d",
+        "step_id": "W9",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      }
+    ],
+    "X": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "FEATURE_INDEX_INVENTORY.json",
+          "FEATURE_INDEX_PARTITIONS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md",
+        "provider": "openai",
+        "routing_signature": "1895e5a05a401378ffd642b0a258a400253b5155e00d2a9fe8a8d494a289498c",
+        "step_id": "X0",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "FEATURE_SURFACE.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_X1_FEATURE_SURFACE_EXTRACT.md",
+        "provider": "openai",
+        "routing_signature": "7074d9f39361f77bed34fd40b38b4308f707c8718d69517bb474dfb3c3f4a072",
+        "step_id": "X1",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "FEATURE_CODE_MAP.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_X2_FEATURE_TO_CODE_MAP.md",
+        "provider": "openai",
+        "routing_signature": "ea26b232554dd0a677d796c589b24ae27b8173d2df6b68012a0671c53029460b",
+        "step_id": "X2",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "FEATURE_DOC_MAP.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_X3_FEATURE_TO_DOC_MAP.md",
+        "provider": "openai",
+        "routing_signature": "0f523dac05a30379db507f6a91f17e8dfd92cfac4b3a494075a9b2afa6abf6dc",
+        "step_id": "X3",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "FEATURE_DEP_GRAPH.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md",
+        "provider": "openai",
+        "routing_signature": "d11879505c29524b6f5e2c404df45e874868630fdd30c8029097a6a11ef1bedc",
+        "step_id": "X4",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "FEATURE_INDEX_MERGED.json",
+          "FEATURE_INDEX_QA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_X9_MERGE___QA.md",
+        "provider": "openai",
+        "routing_signature": "cfba811f35cfe8a698210c71fc81341d161d894bb7b41f3bdbad887bbf12ae70",
+        "step_id": "X9",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      }
+    ],
+    "Z": [
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "FREEZE_FILE_INDEX.json",
+          "FREEZE_CHECKSUMS.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md",
+        "provider": "openai",
+        "routing_signature": "bf94e3fad3fcdec76c9cc3a4aacddec3cfe040ecb409dabaff94bda45ba147a3",
+        "step_id": "Z0",
+        "step_tier": "bulk",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "PROOF_PACK.md"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_Z1_PROOF_PACK___RUNBOOK.md",
+        "provider": "openai",
+        "routing_signature": "9fbc6f5c3e8c513839a1bbeba7b88ab3623c78acdb2537c5044a581ce2a4fd48",
+        "step_id": "Z1",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "OPUS_INPUT_MANIFEST.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "GEMINI_API_KEY",
+            "model_id": "gemini-2.5-flash",
+            "provider": "gemini"
+          },
+          {
+            "api_key_env": "XAI_API_KEY",
+            "model_id": "grok-code-fast-1",
+            "provider": "xai"
+          }
+        ],
+        "model_id": "gpt-5.2-extended",
+        "prompt_file": "PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md",
+        "provider": "openai",
+        "routing_signature": "04433b74e5ff8894dfa028f0c6a0163ec02baa93ca21bd5fe0149b0eabd9c847",
+        "step_id": "Z2",
+        "step_tier": "synthesis",
+        "transport": "openai_sdk"
+      },
+      {
+        "api_key_env": "OPENAI_API_KEY",
+        "declared_outputs": [
+          "FREEZE_MANIFEST.json",
+          "FREEZE_README.md",
+          "FREEZE_QA.json"
+        ],
+        "default_auth_sequence": [
+          "sdk_bearer"
+        ],
+        "endpoint_base_url": "https://api.openai.com/v1",
+        "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+        "gemini_endpoint_family": null,
+        "ladder": [
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-nano",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5-mini",
+            "provider": "openai"
+          },
+          {
+            "api_key_env": "OPENAI_API_KEY",
+            "model_id": "gpt-5.2-extended",
+            "provider": "openai"
+          }
+        ],
+        "model_id": "gpt-5-nano",
+        "prompt_file": "PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md",
+        "provider": "openai",
+        "routing_signature": "5102e6035dead5ca4b12ffd783578b4011e28c48789bd88a987ff5cb9786916c",
+        "step_id": "Z9",
+        "step_tier": "qa",
+        "transport": "openai_sdk"
+      }
+    ]
+  },
+  "routing_ladders": {
+    "balanced": {
+      "bulk": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-nano",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        },
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-mini",
+          "provider": "openai"
+        }
+      ],
+      "extract": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-mini",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        },
+        {
+          "api_key_env": "XAI_API_KEY",
+          "model_id": "grok-code-fast-1",
+          "provider": "xai"
+        }
+      ],
+      "qa": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-mini",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-nano",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        }
+      ],
+      "synthesis": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5.2-extended",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        },
+        {
+          "api_key_env": "XAI_API_KEY",
+          "model_id": "grok-code-fast-1",
+          "provider": "xai"
+        }
+      ]
+    },
+    "cost": {
+      "bulk": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-nano",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        },
+        {
+          "api_key_env": "XAI_API_KEY",
+          "model_id": "grok-code-fast-1",
+          "provider": "xai"
+        }
+      ],
+      "extract": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-mini",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        },
+        {
+          "api_key_env": "XAI_API_KEY",
+          "model_id": "grok-code-fast-1",
+          "provider": "xai"
+        }
+      ],
+      "qa": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-nano",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-mini",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5.2-extended",
+          "provider": "openai"
+        }
+      ],
+      "synthesis": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5.2-extended",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        },
+        {
+          "api_key_env": "XAI_API_KEY",
+          "model_id": "grok-code-fast-1",
+          "provider": "xai"
+        }
+      ]
+    },
+    "quality": {
+      "bulk": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-mini",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        },
+        {
+          "api_key_env": "XAI_API_KEY",
+          "model_id": "grok-code-fast-1",
+          "provider": "xai"
+        }
+      ],
+      "extract": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5.2-extended",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        },
+        {
+          "api_key_env": "XAI_API_KEY",
+          "model_id": "grok-code-fast-1",
+          "provider": "xai"
+        }
+      ],
+      "qa": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5-mini",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5.2-extended",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        }
+      ],
+      "synthesis": [
+        {
+          "api_key_env": "OPENAI_API_KEY",
+          "model_id": "gpt-5.2-extended",
+          "provider": "openai"
+        },
+        {
+          "api_key_env": "GEMINI_API_KEY",
+          "model_id": "gemini-2.5-flash",
+          "provider": "gemini"
+        },
+        {
+          "api_key_env": "XAI_API_KEY",
+          "model_id": "grok-code-fast-1",
+          "provider": "xai"
+        }
+      ]
+    }
+  },
+  "run_id": "rte_scan_c2",
+  "selected_policy": "cost",
+  "step_tier_map": {
+    "A": {
+      "A0": "bulk",
+      "A1": "extract",
+      "A2": "extract",
+      "A3": "extract",
+      "A4": "extract",
+      "A5": "extract",
+      "A6": "extract",
+      "A7": "extract",
+      "A8": "extract",
+      "A9": "qa",
+      "A99": "qa"
+    },
+    "B": {
+      "B0": "bulk",
+      "B1": "extract",
+      "B2": "extract",
+      "B3": "extract",
+      "B9": "qa"
+    },
+    "C": {
+      "C0": "bulk",
+      "C1": "extract",
+      "C10": "bulk",
+      "C2": "extract",
+      "C3": "extract",
+      "C4": "extract",
+      "C5": "extract",
+      "C6": "extract",
+      "C7": "extract",
+      "C8": "extract",
+      "C9": "qa"
+    },
+    "D": {
+      "D0": "bulk",
+      "D1": "extract",
+      "D2": "extract",
+      "D3": "extract",
+      "D4": "extract",
+      "D5": "extract"
+    },
+    "E": {
+      "E0": "bulk",
+      "E1": "extract",
+      "E2": "extract",
+      "E3": "extract",
+      "E4": "extract",
+      "E5": "extract",
+      "E6": "extract",
+      "E9": "qa"
+    },
+    "G": {
+      "G0": "bulk",
+      "G1": "extract",
+      "G2": "extract",
+      "G3": "extract",
+      "G4": "extract",
+      "G9": "qa"
+    },
+    "H": {
+      "H0": "bulk",
+      "H1": "extract",
+      "H2": "extract",
+      "H3": "extract",
+      "H4": "extract",
+      "H5": "extract",
+      "H6": "extract",
+      "H7": "extract",
+      "H9": "qa"
+    },
+    "Q": {
+      "Q0": "qa",
+      "Q1": "qa",
+      "Q2": "qa",
+      "Q3": "qa",
+      "Q9": "qa"
+    },
+    "R": {
+      "R0": "synthesis",
+      "R1": "synthesis",
+      "R2": "synthesis",
+      "R3": "synthesis",
+      "R4": "synthesis",
+      "R5": "synthesis",
+      "R6": "synthesis",
+      "R7": "synthesis",
+      "R8": "synthesis"
+    },
+    "T": {
+      "T0": "synthesis",
+      "T1": "synthesis",
+      "T2": "synthesis",
+      "T3": "synthesis",
+      "T4": "synthesis",
+      "T5": "synthesis",
+      "T9": "synthesis"
+    },
+    "W": {
+      "W0": "bulk",
+      "W1": "extract",
+      "W2": "extract",
+      "W3": "extract",
+      "W4": "extract",
+      "W5": "extract",
+      "W9": "qa"
+    },
+    "X": {
+      "X0": "synthesis",
+      "X1": "synthesis",
+      "X2": "synthesis",
+      "X3": "synthesis",
+      "X4": "synthesis",
+      "X9": "synthesis"
+    },
+    "Z": {
+      "Z0": "bulk",
+      "Z1": "synthesis",
+      "Z2": "synthesis",
+      "Z9": "qa"
+    }
+  }
+}

@@ -129,6 +129,58 @@ class ActivityTracker:
 
         return result
 
+    async def get_daily_task_stats(self, user_id: str) -> Dict[str, Any]:
+        """
+        Get daily task statistics for dashboard.
+
+        Returns:
+            Dict with completed, total, rate
+        """
+        try:
+            # Determine start of day (UTC)
+            now = datetime.now(timezone.utc)
+            start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+            # Query ConPort for progress entries
+            if self.conport_mcp:
+                # Use MCP client for real data
+                progress_entries = await self.conport_mcp.get_progress(
+                    workspace_id=settings.workspace_id,
+                    limit=100
+                )
+            else:
+                # Fallback to SQLite stub (get last 24h to be safe)
+                progress_entries = self.conport.get_progress_entries(
+                    limit=100,
+                    hours_ago=24
+                )
+
+            # Filter for today
+            today_entries = []
+            for entry in progress_entries:
+                ts_str = entry.get("timestamp")
+                if ts_str:
+                    try:
+                        ts = datetime.fromisoformat(ts_str)
+                        if ts >= start_of_day:
+                            today_entries.append(entry)
+                    except ValueError:
+                        continue
+
+            total = len(today_entries)
+            completed = len([e for e in today_entries if e.get("status") == "DONE"])
+            rate = completed / total if total > 0 else 0.0
+
+            return {
+                "completed": completed,
+                "total": total,
+                "rate": round(rate, 2)
+            }
+
+        except Exception as e:
+            logger.error(f"Failed to get daily task stats: {e}")
+            return {"completed": 0, "total": 0, "rate": 0.0}
+
     async def get_attention_indicators(self, user_id: str) -> Dict[str, Any]:
         """
         Get attention state indicators from activity patterns.
@@ -179,6 +231,39 @@ class ActivityTracker:
             return 60
 
             logger.error(f"Error: {e}")
+    async def get_daily_stats(self, user_id: str) -> Dict[str, int]:
+        """
+        Get daily task completion statistics for user.
+
+        Returns:
+            Dict with 'completed' and 'total' task counts for today.
+        """
+        try:
+            # Query ConPort for today's progress entries
+            if self.conport_mcp:
+                # Use MCP client for real data
+                progress_entries = await self.conport_mcp.get_progress(
+                    workspace_id=settings.workspace_id,
+                    limit=100
+                )
+            else:
+                # Fallback to SQLite stub (last 24 hours)
+                progress_entries = self.conport.get_progress_entries(
+                    limit=100,
+                    hours_ago=24
+                )
+
+            total = len(progress_entries) if progress_entries else 0
+            completed = len([p for p in progress_entries if p.get('status') == 'DONE']) if progress_entries else 0
+
+            return {
+                "completed": completed,
+                "total": total
+            }
+        except Exception as e:
+            logger.error(f"Failed to get daily stats for {user_id}: {e}")
+            return {"completed": 0, "total": 0}
+
     def _calculate_break_compliance(self, break_history: list) -> float:
         """
         Calculate break compliance rate from Redis history.

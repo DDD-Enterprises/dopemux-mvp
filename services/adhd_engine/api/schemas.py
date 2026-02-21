@@ -262,6 +262,15 @@ class CodeComplexityRequest(BaseModel):
     code_snippet: str = Field(..., min_length=1, description="Code snippet to analyze")
     language: Optional[str] = Field(None, description="Programming language (e.g., python, javascript)")
 
+class TasksResponse(BaseModel):
+    """Aggregated task completion metrics."""
+    completed: int
+    total: int
+    rate: float
+    user_id: str
+    timestamp: datetime
+
+
 class ComplexityResponse(BaseModel):
     """Response for code complexity assessment."""
     complexity_score: float = Field(..., ge=0.0, le=1.0, description="Complexity score (0.0-1.0)")

@@ -1,0 +1,32 @@
+{
+  "dry_run_partitions": 84,
+  "duplicate_ids": [],
+  "execution_failed_partitions": 0,
+  "expected_artifacts": [
+    "DOPE_MEMORY_CODE_SURFACE.json",
+    "DOPE_MEMORY_SCHEMAS.json",
+    "DOPE_MEMORY_DB_WRITES.json"
+  ],
+  "generated_at": "2026-02-20T14:06:18.533979+00:00",
+  "missing_expected_artifacts": [],
+  "missing_required_keys_counts": {},
+  "parse_failures": [],
+  "partitions_total": 84,
+  "phase": "C",
+  "raw_failed": 0,
+  "raw_ok": 84,
+  "recomputed_partitions": 84,
+  "required_item_keys": [
+    "path",
+    "line_range",
+    "id"
+  ],
+  "resume_skipped_partitions": 0,
+  "step_id": "C3",
+  "unexpected_artifacts": {},
+  "written_files": [
+    "DOPE_MEMORY_CODE_SURFACE.json",
+    "DOPE_MEMORY_SCHEMAS.json",
+    "DOPE_MEMORY_DB_WRITES.json"
+  ]
+}

@@ -920,7 +920,8 @@ if __name__ == "__main__":
         """Demonstrate plane coordination functionality."""
 
         # Create coordinator
-        coordinator = await create_plane_coordinator("/Users/hue/code/dopemux-mvp")
+        workspace_id = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", os.getcwd()))
+        coordinator = await create_plane_coordinator(workspace_id)
 
         # Register event handler
         def handle_task_events(event: CoordinationEvent):

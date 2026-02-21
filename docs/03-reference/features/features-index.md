@@ -154,6 +154,18 @@ prelude: Features_Index (reference) for dopemux documentation and developer work
 
 ---
 
+## Platform Operations
+
+**Repo Truth Extractor (v4)**
+- Status: ✅ Operational (default engine)
+- Focus: Deterministic extraction with cost-first routing and batch mode
+- Docs:
+  - `docs/02-how-to/extraction/repo-truth-extractor-user-guide.md`
+  - `docs/02-how-to/extraction/batch-quickstart.md`
+  - `docs/03-reference/extraction/pipeline-reliability.md`
+
+---
+
 ## Documentation Index
 
 ### Implementation Guides

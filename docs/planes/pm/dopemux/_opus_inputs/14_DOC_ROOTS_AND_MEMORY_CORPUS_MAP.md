@@ -1,3 +1,15 @@
+---
+id: 14_DOC_ROOTS_AND_MEMORY_CORPUS_MAP
+title: 14 Doc Roots And Memory Corpus Map
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 14 Doc Roots And Memory Corpus Map (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 14_DOC_ROOTS_AND_MEMORY_CORPUS_MAP
 
 ## Table 1: Doc Roots

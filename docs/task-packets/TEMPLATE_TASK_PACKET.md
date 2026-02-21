@@ -1,3 +1,15 @@
+---
+id: TEMPLATE_TASK_PACKET
+title: Template Task Packet
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Template Task Packet (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Task Packet: <ID> · <Subsystem> · <Short Title>
 
 ════════════════════════════════════════════════════════════

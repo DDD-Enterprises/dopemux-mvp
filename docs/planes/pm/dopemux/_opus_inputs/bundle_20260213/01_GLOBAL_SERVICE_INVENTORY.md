@@ -1,3 +1,15 @@
+---
+id: 01_GLOBAL_SERVICE_INVENTORY
+title: 01 Global Service Inventory
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 01 Global Service Inventory (explanation) for dopemux documentation and developer
+  workflows.
+---
 # 01 Global Service Inventory
 
 ## Canonical compose inventory (`compose.yml`)

@@ -1,3 +1,15 @@
+---
+id: 10_DETERMINISM_LEAKS_AND_ENFORCEMENT_POINTS
+title: 10 Determinism Leaks And Enforcement Points
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 10 Determinism Leaks And Enforcement Points (explanation) for dopemux documentation
+  and developer workflows.
+---
 # 10 Determinism Leaks And Enforcement Points
 
 Only evidence-backed leaks are listed.
