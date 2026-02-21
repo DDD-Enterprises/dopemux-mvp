@@ -90,6 +90,8 @@ jobs:
     name: "🔒 Security Review"
     runs-on: ubuntu-latest
     timeout-minutes: 25  # 25-minute focus session
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     steps:
       - name: 📥 Checkout code
@@ -99,13 +101,11 @@ jobs:
           fetch-depth: 2
 
       - name: 🛡️ AI-Powered Security Analysis
-        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        if: ${{ env.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         with:
           comment-pr: true
-          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude-api-key: ${{ env.ANTHROPIC_API_KEY }}
           custom-security-scan-instructions: .github/security-scan-instructions.txt
           false-positive-filtering-instructions: .github/security-filtering-instructions.txt
           claudecode-timeout: "20"
