@@ -11,7 +11,8 @@ from dopemux.litellm_proxy import LiteLLMProxyInfo
 @patch("shutil.which")
 def test_altp_skips_openrouter_gate(mock_which, mock_start_proxy, mock_router_cls, mock_litellm_cls):
     """
-    Verify that using --altp does not require OPENROUTER_API_KEY.
+    Verify that ALTP routing works correctly when provider-based API keys
+    (OPENROUTER_API_KEY and XAI_API_KEY) are configured.
     """
     mock_which.return_value = "/bin/claude"
     mock_start_proxy.return_value = (4000, "sk-test")
@@ -41,12 +42,10 @@ def test_altp_skips_openrouter_gate(mock_which, mock_start_proxy, mock_router_cl
 
     # Setup environment
     env = os.environ.copy()
-    env.pop("OPENROUTER_API_KEY", None)
     env.pop("DOPEMUX_AGENT_ROLE", None)
     
-    env["ALTP_OPUS_KEY"] = "sk-opus"
-    env["ALTP_SONNET_KEY"] = "sk-sonnet"
-    env["ALTP_HAIKU_KEY"] = "sk-haiku"
+    env["OPENROUTER_API_KEY"] = "sk-openrouter"
+    env["XAI_API_KEY"] = "sk-xai"
 
     runner = CliRunner(env=env)
     

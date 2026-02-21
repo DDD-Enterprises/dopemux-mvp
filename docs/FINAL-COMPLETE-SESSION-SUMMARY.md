@@ -1,3 +1,15 @@
+---
+id: FINAL-COMPLETE-SESSION-SUMMARY
+title: Final Complete Session Summary
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Final Complete Session Summary (explanation) for dopemux documentation and
+  developer workflows.
+---
 # 🎉 COMPLETE SESSION SUMMARY - ADHD Dashboard + Orchestrator Integration
 
 ## 🎯 What We Accomplished Today

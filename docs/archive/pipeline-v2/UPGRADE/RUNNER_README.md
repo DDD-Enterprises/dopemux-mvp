@@ -1,3 +1,14 @@
+---
+id: RUNNER_README
+title: Runner Readme
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Runner Readme (explanation) for dopemux documentation and developer workflows.
+---
 # Production Runner - Complete Features
 
 Updated `run_extraction.py` with production-grade reliability:

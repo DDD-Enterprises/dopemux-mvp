@@ -16,6 +16,9 @@ jobs:
     name: "🤖 Claude Code Security Analysis"
     runs-on: ubuntu-latest
     timeout-minutes: 25  # ADHD-optimized: 25-minute chunks
+    if: github.repository == "DDD-Enterprises/dopemux-mvp" && (github.event_name == "push" || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.repository == "DDD-Enterprises/dopemux-mvp" && (github.event_name == "push" || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.repository == 'DDD-Enterprises/dopemux-mvp' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
 
     steps:
       - name: 📥 Checkout code
@@ -23,7 +26,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2  # Get enough history for diff analysis
+        if: ${{ secrets.ANTHROPIC_API_KEY != "" }}
 
+        if: ${{ secrets.ANTHROPIC_API_KEY != "" }}
       - name: 🔐 ADHD-Optimized Security Review
         if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main

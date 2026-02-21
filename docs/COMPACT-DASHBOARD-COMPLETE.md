@@ -1,3 +1,15 @@
+---
+id: COMPACT-DASHBOARD-COMPLETE
+title: Compact Dashboard Complete
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Compact Dashboard Complete (explanation) for dopemux documentation and developer
+  workflows.
+---
 # ✅ Compact ADHD Dashboard with Full Integration - COMPLETE
 
 ## 🎯 What Was Built
@@ -5,7 +17,7 @@
 A **ultra-compact ADHD dashboard** (3-5 lines) designed for tmux top pane with full integration:
 
 ✅ **Serena v2** - Untracked work detection, abandonment tracking
-✅ **Leantime** - Active tasks, overdue warnings  
+✅ **Leantime** - Active tasks, overdue warnings
 ✅ **ConPort** - Context tracking, switches
 ✅ **Task Orchestrator** - Sync status across systems
 ✅ **ADHD Engine** - Cognitive state, energy, attention

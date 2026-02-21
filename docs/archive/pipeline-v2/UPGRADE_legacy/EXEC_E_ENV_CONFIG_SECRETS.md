@@ -1,3 +1,15 @@
+---
+id: EXEC_E_ENV_CONFIG_SECRETS
+title: Exec E Env Config Secrets
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Exec E Env Config Secrets (explanation) for dopemux documentation and developer
+  workflows.
+---
 # EXECUTABLE PROMPT: E - Env Vars + Config Loaders + Secrets Risk
 
 ---
