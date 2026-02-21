@@ -82,7 +82,7 @@ except Exception:  # pragma: no cover - optional rich rendering
 
 # --- Configuration & Constants ---
 
-PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
+PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z", "S"]
 PROMPT_HASH_MODE = "strict"
 PROMPT_ROOT_ENV_VAR = "REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"
 LEGACY_PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
@@ -163,6 +163,7 @@ PHASE_DIR_NAMES: Dict[str, str] = {
     "X": "X_feature_index",
     "T": "T_task_packets",
     "Z": "Z_handoff_freeze",
+    "S": "S_synthesis",
 }
 LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
     "R2_synthesis": "R_arbitration",
@@ -473,6 +474,7 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
+    "S": {"S0", "S1", "S2", "S3"},
 }
 
 
@@ -7763,7 +7765,7 @@ def run_phase_R(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
             input_files.extend(sorted(phase_norm.glob("*.json")))
             input_files.extend(sorted(phase_norm.glob("*.md")))
 
-    deduped_inputs = sorted(set(input_files), key=lambda path: str(path))
+    deduped_inputs = sorted(set(input_files), key=str)
     _run_phase_inner("R", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs), ui=ui)
 
 
@@ -7786,6 +7788,25 @@ def run_phase_T(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
             input_files.extend(sorted(norm_dir.glob("*.json")))
             input_files.extend(sorted(norm_dir.glob("*.md")))
     _run_phase_inner("T", dirs, cfg, None, None, precollected_items=to_items(input_files), ui=ui)
+
+
+def run_phase_S(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
+    r_norm = dirs["R"] / "norm"
+    input_files: List[Path] = []
+    if r_norm.exists():
+        input_files.extend(sorted(r_norm.glob("*.json")))
+        input_files.extend(sorted(r_norm.glob("*.md")))
+    if not input_files:
+        raise RuntimeError(f"Phase S requires R norm outputs at {r_norm}")
+
+    for phase in ["X", "T", "Z"]:
+        norm_dir = dirs[phase] / "norm"
+        if norm_dir.exists():
+            input_files.extend(sorted(norm_dir.glob("*.json")))
+            input_files.extend(sorted(norm_dir.glob("*.md")))
+
+    deduped_inputs = sorted(set(input_files), key=lambda path: str(path))
+    _run_phase_inner("S", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs), ui=ui)
 
 
 def run_phase_Z(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = None) -> None:
@@ -8105,6 +8126,7 @@ def main() -> None:
         "X": run_phase_X,
         "T": run_phase_T,
         "Z": run_phase_Z,
+        "S": run_phase_S,
     }
 
     for phase in phases:
