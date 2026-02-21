@@ -1,0 +1,35 @@
+{
+  "description": "Node/TypeScript workspace monorepo.",
+  "match_weights": {
+    "is_node_ts_monorepo": 3.2,
+    "node_present": 2.0,
+    "is_monorepo": 1.0,
+    "python_present": -0.5
+  },
+  "phase_policy": {
+    "budgets_by_phase": {
+      "C": {"file_truncate_chars": 65000, "max_chars": 560000, "max_files": 16},
+      "E": {"file_truncate_chars": 65000, "max_chars": 560000, "max_files": 16}
+    },
+    "prompt_variants_by_phase_step": {
+      "C": {"C0": "ts_workspace_first", "C1": "ts_runner_entrypoint"}
+    },
+    "targets_by_phase": {
+      "C": ["services", "packages", "apps", "src", "scripts", "tests"]
+    }
+  },
+  "priority": 75,
+  "profile_id": "P04_NODE_TYPESCRIPT_MONOREPO",
+  "prompt_overlays": {
+    "base": "Prefer package/workspace boundaries and tsconfig/build scripts for ownership."
+  },
+  "selection_threshold": 2.0,
+  "v2_rules": {
+    "RULE_ENABLE_STRICT_ENVELOPE_ON_PARSE": {"enabled": true},
+    "RULE_REDUCE_MAX_FILES_ON_PARSE_OR_EMPTY": {"decrement": 3, "enabled": true, "threshold": 1},
+    "RULE_SHRINK_BUDGET_ON_PAYLOAD_UNSHRINKABLE": {"enabled": true, "factor": 0.75, "threshold": 1},
+    "RULE_SPLIT_STEP_ON_MISSING_ARTIFACTS": {"enabled": true, "threshold": 0.28},
+    "RULE_TARGET_REORDER_ON_THIN_COVERAGE": {"enabled": true, "threshold": 0.72}
+  },
+  "version": "1.0.0"
+}

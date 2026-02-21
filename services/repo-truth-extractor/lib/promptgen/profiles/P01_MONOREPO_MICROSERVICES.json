@@ -1,0 +1,39 @@
+{
+  "description": "Monorepo with many services and mixed build surfaces.",
+  "match_weights": {
+    "is_monorepo": 3.0,
+    "is_microservices": 2.5,
+    "services_root_count_norm": 2.0,
+    "dockerfile_count_norm": 1.0
+  },
+  "phase_policy": {
+    "budgets_by_phase": {
+      "A": {"file_truncate_chars": 60000, "max_chars": 520000, "max_files": 20},
+      "C": {"file_truncate_chars": 60000, "max_chars": 520000, "max_files": 14},
+      "E": {"file_truncate_chars": 60000, "max_chars": 520000, "max_files": 14},
+      "Q": {"file_truncate_chars": 60000, "max_chars": 520000, "max_files": 14}
+    },
+    "prompt_variants_by_phase_step": {
+      "C": {"C0": "service_first", "C1": "service_first"},
+      "E": {"E0": "service_first"}
+    },
+    "targets_by_phase": {
+      "C": ["services", "shared", "src", "plugins", "scripts", "tests"],
+      "E": ["services", "scripts", "tools", "compose", ".github"]
+    }
+  },
+  "priority": 90,
+  "profile_id": "P01_MONOREPO_MICROSERVICES",
+  "prompt_overlays": {
+    "base": "Prioritize per-service boundaries. Do not blend unrelated services in one summary."
+  },
+  "selection_threshold": 2.8,
+  "v2_rules": {
+    "RULE_ENABLE_STRICT_ENVELOPE_ON_PARSE": {"enabled": true},
+    "RULE_REDUCE_MAX_FILES_ON_PARSE_OR_EMPTY": {"decrement": 3, "enabled": true, "threshold": 1},
+    "RULE_SHRINK_BUDGET_ON_PAYLOAD_UNSHRINKABLE": {"enabled": true, "factor": 0.7, "threshold": 1},
+    "RULE_SPLIT_STEP_ON_MISSING_ARTIFACTS": {"enabled": true, "threshold": 0.25},
+    "RULE_TARGET_REORDER_ON_THIN_COVERAGE": {"enabled": true, "threshold": 0.75}
+  },
+  "version": "1.0.0"
+}
