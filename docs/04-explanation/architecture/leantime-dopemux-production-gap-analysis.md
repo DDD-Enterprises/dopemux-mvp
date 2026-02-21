@@ -16,17 +16,17 @@ prelude: Deep-dive on Leantime container integration, implementation status, and
 ## Scope
 
 This document captures:
-- Current Leantime integration architecture in Dopemux
-- Features implemented versus planned/mentioned
-- Production-readiness gaps
-- Hardening work completed on 2026-02-06
-- Remaining work to reach feature-complete, production-grade operation
+* Current Leantime integration architecture in Dopemux
+* Features implemented versus planned/mentioned
+* Production-readiness gaps
+* Hardening work completed on 2026-02-06
+* Remaining work to reach feature-complete, production-grade operation
 
 ## Current Integration Topology
 
 1. Leantime runtime stack
-- `docker/leantime/docker-compose.yml` (separate stack for Leantime + MySQL + Redis)
-- `docker/leantime/plugins/Dopemux/*` (Leantime-side plugin code)
+* `docker/leantime/docker-compose.yml` (separate stack for Leantime + MySQL + Redis)
+* `docker/leantime/plugins/Dopemux/*` (Leantime-side plugin code)
 
 1. Leantime bridge service (PM plane)
 - `docker/mcp-servers/leantime-bridge/leantime_bridge/http_server.py`
@@ -42,14 +42,14 @@ This document captures:
 ## Planned and Mentioned Feature Surface
 
 Across docs/code, the following capabilities are explicitly referenced:
-- Create/list/update Leantime tickets
-- Create/list projects and fetch project status/progress
-- Milestone creation
-- Sprint status updates
-- Resource allocation
-- Bidirectional PM ↔ Cognitive sync
-- Service discovery (`/info`) for auto-configuration
-- ADHD-oriented metadata and recommendations surfaced from Leantime context
+* Create/list/update Leantime tickets
+* Create/list projects and fetch project status/progress
+* Milestone creation
+* Sprint status updates
+* Resource allocation
+* Bidirectional PM ↔ Cognitive sync
+* Service discovery (`/info`) for auto-configuration
+* ADHD-oriented metadata and recommendations surfaced from Leantime context
 
 ## Hardening Completed (2026-02-06)
 
@@ -136,7 +136,7 @@ Across docs/code, the following capabilities are explicitly referenced:
 ## Production Completion Plan
 
 1. Deployment convergence
-- Create canonical compose profile including Leantime stack and explicit inter-service dependencies.
+* Create canonical compose profile including Leantime stack and explicit inter-service dependencies.
 
 1. Contract and E2E testing
 - Add integration tests for PM routing and bridge tool execution with real Leantime test fixture.

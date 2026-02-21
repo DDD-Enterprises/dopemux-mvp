@@ -1,10 +1,18 @@
 ---
-title: "Supervisor Packet Format"
-plane: "pm"
-component: "dopemux"
-status: "proposed"
+title: Supervisor Packet Format
+plane: pm
+component: dopemux
+status: proposed
+id: 08_SUPERVISOR_PACKET_FORMAT
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Supervisor Packet Format (explanation) for dopemux documentation and developer
+  workflows.
 ---
-
 # Supervisor Packet Generation and Manual Model Switching
 
 ## Purpose

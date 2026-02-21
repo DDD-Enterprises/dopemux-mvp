@@ -1,12 +1,20 @@
 ---
-title: "Cross-Plane Authority & Determinism Audit"
-plane: "pm"
-component: "dopemux"
-status: "delivered"
-audit_date: "2026-02-13"
-audit_model: "Opus 4.6"
+title: Cross-Plane Authority & Determinism Audit
+plane: pm
+component: dopemux
+status: delivered
+audit_date: '2026-02-13'
+audit_model: Opus 4.6
+id: OPUS-CROSS-PLANE-AUDIT
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: Cross-Plane Authority & Determinism Audit (explanation) for dopemux documentation
+  and developer workflows.
 ---
-
 # Cross-Plane Authority & Determinism Audit
 
 **Purpose**: Identify authority overlaps, mutation ambiguities, and determinism leaks across TaskX, task-orchestrator, dope-memory, ConPort, MCP servers, and the Investigation CLI (planned).

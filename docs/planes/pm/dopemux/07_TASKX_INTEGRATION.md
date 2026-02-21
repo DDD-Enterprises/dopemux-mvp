@@ -1,10 +1,17 @@
 ---
-title: "TaskX Integration"
-plane: "pm"
-component: "dopemux"
-status: "proposed"
+title: TaskX Integration
+plane: pm
+component: dopemux
+status: proposed
+id: 07_TASKX_INTEGRATION
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: TaskX Integration (explanation) for dopemux documentation and developer workflows.
 ---
-
 # TaskX Integration Contract
 
 ## Purpose

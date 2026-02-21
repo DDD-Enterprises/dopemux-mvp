@@ -49,6 +49,11 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Orchestrator Dashboard Quickstart](02-how-to/orchestrator-dashboard.md)
 - [Workflow Idea to Epic Lifecycle](02-how-to/operations/workflow-idea-epic-lifecycle.md)
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
+- [Repo Truth Extractor CLI Runbook](02-how-to/extraction/run-v4-from-dopemux-cli.md)
+- [Repo Truth Extractor User Guide](02-how-to/extraction/repo-truth-extractor-user-guide.md)
+- [Repo Truth Extractor Batch Quickstart](02-how-to/extraction/batch-quickstart.md)
+- [Repo Truth Extractor Reference](03-reference/extraction/pipeline-reliability.md)
+- [Repo Truth Extractor Phase Map](03-reference/extraction/pipeline-phases.md)
 
 ---
 

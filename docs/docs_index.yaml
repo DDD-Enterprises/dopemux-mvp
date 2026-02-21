@@ -63,6 +63,7 @@ architecture:
   overview: "docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
   system_bible: "docs/04-explanation/architecture/system-bible.md"
   multi_instance: "docs/04-explanation/architecture/multi-instance-implementation.md"
+  pipeline_readme: "services/repo-truth-extractor/README.md"
   adr_index: "docs/90-adr/"
   rfc_index: "docs/91-rfc/"
 
@@ -77,6 +78,9 @@ how_to:
   multi_instance: "docs/02-how-to/multi-instance-workflow.md"
   orchestrator_dashboard: "docs/02-how-to/orchestrator-dashboard.md"
   workflow_idea_epic_lifecycle: "docs/02-how-to/operations/workflow-idea-epic-lifecycle.md"
+  repo_truth_extractor_cli: "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md"
+  repo_truth_extractor_user_guide: "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md"
+  repo_truth_extractor_batch_quickstart: "docs/02-how-to/extraction/batch-quickstart.md"
 
 # Tutorials
 tutorials:
@@ -95,6 +99,9 @@ reference:
   mcp_tools_overview: "docs/03-reference/mcp-tools-overview.md"
   mcp_token_management_best_practices: "docs/best-practices/mcp-token-management.md"
   memory_capture_cli: "docs/03-reference/memory-capture-cli.md"
+  repo_truth_extractor_pipeline_phases: "docs/03-reference/extraction/pipeline-phases.md"
+  repo_truth_extractor_pipeline_reliability: "docs/03-reference/extraction/pipeline-reliability.md"
+  repo_truth_extractor_prompt_contract: "docs/03-reference/extraction/prompt-contract-v4.md"
 
 # Explanation & Deep Dives
 explanation:

@@ -1,0 +1,30 @@
+{
+  "dry_run_partitions": 84,
+  "duplicate_ids": [],
+  "execution_failed_partitions": 0,
+  "expected_artifacts": [
+    "TRINITY_ENFORCEMENT_SURFACE.json",
+    "REFUSAL_AND_GUARDRAILS_SURFACE.json"
+  ],
+  "generated_at": "2026-02-20T14:06:19.073425+00:00",
+  "missing_expected_artifacts": [],
+  "missing_required_keys_counts": {},
+  "parse_failures": [],
+  "partitions_total": 84,
+  "phase": "C",
+  "raw_failed": 0,
+  "raw_ok": 84,
+  "recomputed_partitions": 84,
+  "required_item_keys": [
+    "path",
+    "line_range",
+    "id"
+  ],
+  "resume_skipped_partitions": 0,
+  "step_id": "C4",
+  "unexpected_artifacts": {},
+  "written_files": [
+    "TRINITY_ENFORCEMENT_SURFACE.json",
+    "REFUSAL_AND_GUARDRAILS_SURFACE.json"
+  ]
+}

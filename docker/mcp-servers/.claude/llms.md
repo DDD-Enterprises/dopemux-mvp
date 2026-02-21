@@ -39,9 +39,6 @@ Multi-model AI configuration optimized for python development with ADHD accommod
 
 - **mas-sequential-thinking**: Complex reasoning for architecture
 - **PAL apilookup**: Python documentation and patterns
-- **claude-context**: Semantic code search
-- **morphllm-fast-apply**: Code transformations
-
 
 ### Cost Optimization
 - Prefer faster models for simple queries

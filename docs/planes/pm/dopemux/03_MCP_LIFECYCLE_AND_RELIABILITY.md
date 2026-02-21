@@ -1,8 +1,17 @@
 ---
-title: "MCP Lifecycle and Reliability"
-plane: "pm"
-component: "dopemux"
-status: "proposed"
+id: 03_MCP_LIFECYCLE_AND_RELIABILITY
+title: MCP Lifecycle and Reliability
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-15'
+last_review: '2026-02-15'
+next_review: '2026-05-16'
+prelude: MCP Lifecycle and Reliability (explanation) for dopemux documentation and developer
+  workflows.
+plane: pm
+component: dopemux
+status: proposed
 ---
 
 # MCP Lifecycle and Circuit Breakers
@@ -126,7 +135,7 @@ How MCP servers start, fail, recover, and how the system degrades gracefully. Th
 **Classification (derived from compose.yml evidence)**:
 
 | Server | Port | Classification | Rationale |
-|--------|------|----------------|-----------|
+|---|---|---|---|
 | postgres (AGE) | 5432 | REQUIRED | Backing store for ConPort, LiteLLM. Everything depends on it. |
 | redis-events | 6379 | REQUIRED | EventBus streaming. DopeconBridge depends on it (healthy). |
 | redis-primary | — | REQUIRED | Caching. ConPort, task-orchestrator, adhd-engine depend on it (healthy). |
