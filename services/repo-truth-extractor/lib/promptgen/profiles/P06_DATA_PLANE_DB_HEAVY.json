@@ -1,0 +1,35 @@
+{
+  "description": "Data-plane heavy repository with migrations/schemas and DB write paths.",
+  "match_weights": {
+    "is_db_heavy": 3.0,
+    "has_db_contracts": 2.0,
+    "is_event_driven": 0.5
+  },
+  "phase_policy": {
+    "budgets_by_phase": {
+      "C": {"file_truncate_chars": 65000, "max_chars": 540000, "max_files": 14},
+      "R": {"file_truncate_chars": 65000, "max_chars": 540000, "max_files": 16}
+    },
+    "prompt_variants_by_phase_step": {
+      "C": {"C3": "schema_first", "C8": "schema_first"},
+      "R": {"R1": "schema_first"}
+    },
+    "targets_by_phase": {
+      "C": ["services", "src", "migrations", "schemas", "shared", "docs"]
+    }
+  },
+  "priority": 83,
+  "profile_id": "P06_DATA_PLANE_DB_HEAVY",
+  "prompt_overlays": {
+    "base": "Prioritize schema facts, migration traces, and explicit DB-write evidence."
+  },
+  "selection_threshold": 2.0,
+  "v2_rules": {
+    "RULE_ENABLE_STRICT_ENVELOPE_ON_PARSE": {"enabled": true},
+    "RULE_REDUCE_MAX_FILES_ON_PARSE_OR_EMPTY": {"decrement": 2, "enabled": true, "threshold": 1},
+    "RULE_SHRINK_BUDGET_ON_PAYLOAD_UNSHRINKABLE": {"enabled": true, "factor": 0.75, "threshold": 1},
+    "RULE_SPLIT_STEP_ON_MISSING_ARTIFACTS": {"enabled": true, "threshold": 0.3},
+    "RULE_TARGET_REORDER_ON_THIN_COVERAGE": {"enabled": true, "threshold": 0.75}
+  },
+  "version": "1.0.0"
+}

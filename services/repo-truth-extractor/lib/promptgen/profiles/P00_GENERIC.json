@@ -1,0 +1,55 @@
+{
+  "description": "Fallback generic profile for unknown repositories.",
+  "match_weights": {
+    "is_monorepo": 0.2,
+    "is_single_service": 0.2,
+    "python_present": 0.2
+  },
+  "phase_policy": {
+    "budgets_by_phase": {
+      "A": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 28},
+      "B": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "C": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "D": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 35},
+      "E": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "G": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "H": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 35},
+      "Q": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "R": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "T": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "W": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "X": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20},
+      "Z": {"file_truncate_chars": 70000, "max_chars": 650000, "max_files": 20}
+    },
+    "prompt_variants_by_phase_step": {},
+    "targets_by_phase": {
+      "A": [".claude", ".dopemux", ".taskx", ".github", "config", "scripts", "tools", "compose", "docker", "services", "src"],
+      "B": ["src", "services", "docs"],
+      "C": ["services", "shared", "plugins", "src", "scripts", "tools", "tests"],
+      "D": ["docs"],
+      "E": ["scripts", "tools", "compose", ".github", "services", "src"],
+      "G": [".github", "docs", ".claude", "AGENTS.md", "config"],
+      "H": ["~/.dopemux", "~/.config/dopemux", "~/.claude"],
+      "Q": ["extraction/repo-truth-extractor/v3/runs"],
+      "R": ["A_repo_control_plane", "H_home_control_plane", "D_docs_pipeline", "C_code_surfaces"],
+      "T": ["R_arbitration", "X_feature_index"],
+      "W": ["docs", "scripts", "src", "services"],
+      "X": ["R_arbitration"],
+      "Z": ["R_arbitration", "X_feature_index", "T_task_packets"]
+    }
+  },
+  "priority": 0,
+  "profile_id": "P00_GENERIC",
+  "prompt_overlays": {
+    "base": "If unknown, emit UNKNOWN and never fabricate missing facts."
+  },
+  "selection_threshold": 0.0,
+  "v2_rules": {
+    "RULE_ENABLE_STRICT_ENVELOPE_ON_PARSE": {"enabled": true},
+    "RULE_REDUCE_MAX_FILES_ON_PARSE_OR_EMPTY": {"decrement": 2, "enabled": true, "threshold": 1},
+    "RULE_SHRINK_BUDGET_ON_PAYLOAD_UNSHRINKABLE": {"enabled": true, "factor": 0.8, "threshold": 1},
+    "RULE_SPLIT_STEP_ON_MISSING_ARTIFACTS": {"enabled": true, "threshold": 0.34},
+    "RULE_TARGET_REORDER_ON_THIN_COVERAGE": {"enabled": true, "threshold": 0.7}
+  },
+  "version": "1.0.0"
+}
