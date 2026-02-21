@@ -12,7 +12,7 @@ Passing this checklist is a prerequisite for shipping non-trivial changes.
 ────────────────────────────────────────────────────────────
 🧠 Task Packet Enforcement
 ☐ A Task Packet exists for this change
-☐ The packet is listed in docs/task-packets/INDEX.md
+☐ The packet is listed in task_packets/INDEX.md
 ☐ The packet scope matches the actual diff
 ☐ No files outside scope were modified
 ☐ Stop conditions are defined
