@@ -1,0 +1,15 @@
+{
+  "id": "evt_test_response_completed",
+  "type": "response.completed",
+  "created_at": 1735689600,
+  "data": {
+    "id": "resp_test_123",
+    "metadata": {
+      "run_id": "run_fixture",
+      "phase": "C",
+      "step_id": "C0",
+      "partition_id": "C_P0001",
+      "attempt": 1
+    }
+  }
+}
