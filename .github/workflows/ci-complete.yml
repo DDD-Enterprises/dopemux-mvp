@@ -40,7 +40,7 @@ jobs:
             CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)"
           else
             BEFORE="${{ github.event.before }}"
-            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
               # Fallback to main if it's a new branch push
               git fetch origin main --depth=1
               CHANGED_FILES="$(git diff --name-only origin/main...HEAD)"
@@ -63,7 +63,7 @@ jobs:
             pre-commit run --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD
           else
             BEFORE="${{ github.event.before }}"
-            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
               # Fallback to main if it's a new branch push
               git fetch origin main --depth=1
               pre-commit run --from-ref origin/main --to-ref HEAD
