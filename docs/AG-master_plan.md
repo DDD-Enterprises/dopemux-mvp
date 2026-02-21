@@ -1,3 +1,14 @@
+---
+id: AG-master_plan
+title: Ag Master Plan
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Ag Master Plan (explanation) for dopemux documentation and developer workflows.
+---
 # Dopemux Master Engineering Plan
 
 ## 1. Executive Context
@@ -16,7 +27,7 @@ This document details the exact engineering tasks required to fix debt, stabiliz
 
 - [ ] **Frontend Verification**
     - **Context**: The `adhd-engine` now runs on `localhost:8095` (Host), while `adhd-dashboard` is a React app served via `backend.py` on `:8097`.
-    - **Task**: 
+    - **Task**:
         1. Open `http://localhost:8097` in browser.
         2. Check "System Health" widget. It pulls from `http://localhost:8095/health`.
         3. Check "Memory" tab. It relies on Redis key `dopemux:events` which `task-orchestrator` writes to.
@@ -44,7 +55,7 @@ This document details the exact engineering tasks required to fix debt, stabiliz
     - **Action**:
         1. Refactor `src/dopemux/cli.py` commands (`plan`, `chat`) to use `mcp-client` for tool discovery.
         2. Delete `src/dopemux/mcp/` directory once zero references remain.
-    
+
 - [ ] **Research Service Consolidation**
     - **Context**: We have `gptr-mcp` (Stock Fork) and `dopemux-gpt-researcher` (Custom). We picked Custom.
     - **Action**:
@@ -74,10 +85,10 @@ This document details the exact engineering tasks required to fix debt, stabiliz
 - [ ] **Test Suite Stabilization**
     - **Context**: `pytest` fails with collection errors in `roast-engine` and `serena` due to missing `__init__.py` or path issues.
     - **Task**: Run `pytest` recursively. Fix `ModuleNotFoundError` by adding `sys.path` hacks or `conftest.py` adjustments.
-    
+
 - [ ] **Contract Tests for Orchestrator**
     - **Context**: `task-orchestrator` APIs drift often.
-    - **Task**: Create `tests/contract/test_orchestrator_api.py`. Test `/health`, `/tasks/create`, `/status`. 
+    - **Task**: Create `tests/contract/test_orchestrator_api.py`. Test `/health`, `/tasks/create`, `/status`.
 
 - [ ] **V1-C Schema Hardening**
     - **Context**: `chat-audit` pipeline outputs need strict JSON validation.
@@ -106,7 +117,7 @@ This document details the exact engineering tasks required to fix debt, stabiliz
 - [ ] **Vector Store Performance**
     - **Location**: `src/dopemux/extraction/hybrid_vector_store.py` (L651).
     - **Task**: "Implement ScaNN". Swap generic cosine similarity for `scann` library for faster retrieval.
-    
+
 - [ ] **Hooks Integration**
     - **Location**: `src/dopemux/hooks/claude_code_hooks.py` (L215).
     - **Task**: "Implement dopemux trigger command". Replace placeholder print with actual `subprocess.run(["dopemux", "trigger", ...])`.

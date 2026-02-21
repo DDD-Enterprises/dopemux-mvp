@@ -1,0 +1,57 @@
+{
+  "argv": [
+    "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/run_extraction_v3.py",
+    "--phase",
+    "C",
+    "--run-id",
+    "rte_scan_c2",
+    "--dry-run",
+    "--resume",
+    "--partition-workers",
+    "1",
+    "--routing-policy",
+    "cost",
+    "--disable-escalation",
+    "--escalation-max-hops",
+    "2",
+    "--batch-provider",
+    "auto",
+    "--batch-poll-seconds",
+    "30",
+    "--batch-wait-timeout-seconds",
+    "86400",
+    "--batch-max-requests-per-job",
+    "2000"
+  ],
+  "cwd": "/Users/hue/code/dopemux-mvp",
+  "finished_at": "2026-02-20T14:06:22.048895+00:00",
+  "git_sha": "3a5a5b0657f09da33e6d29b8d51b366d7246eeb8",
+  "linked_artifacts": {
+    "coverage_rollup": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_scan_c2/COVERAGE_ROLLUP.json",
+    "doctor_auth": null,
+    "doctor_full": null,
+    "resume_proof": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_scan_c2/RESUME_PROOF.json",
+    "run_routing_fingerprint": "/Users/hue/code/dopemux-mvp/extraction/repo-truth-extractor/v3/runs/rte_scan_c2/RUN_ROUTING_FINGERPRINT.json"
+  },
+  "phases": {
+    "C": {
+      "counts": {
+        "inputs": 2,
+        "norm": 104,
+        "qa": 11,
+        "raw": {
+          "failed": 0,
+          "ok": 924,
+          "total": 1848
+        }
+      },
+      "finished_at": "2026-02-20T14:06:22.048895+00:00",
+      "started_at": "2026-02-20T14:06:15.080092+00:00"
+    }
+  },
+  "python_version": "3.13.6",
+  "run_id": "rte_scan_c2",
+  "runner_sha256": "15c360675b3caa7f5ab1e868f9c23521d3bb9ed57c8ba0857abc9c0dcce9a225",
+  "started_at": "2026-02-20T14:06:15.079810+00:00",
+  "updated_at": "2026-02-20T14:06:22.221655+00:00"
+}

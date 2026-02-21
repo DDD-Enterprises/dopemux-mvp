@@ -35,8 +35,8 @@ Usage:
 
 Modes:
   --next-batch  Create targeted "next batch" archive for audit handoff:
-                1) UPGRADES prompts for W/B/G/Q
-                2) UPGRADES/run_extraction_v3.py
+                1) Repo Truth Extractor prompts for W/B/G/Q
+                2) services/repo-truth-extractor/run_extraction_v3.py
                 3) tiny A/H sample run (raw + norm + qa) from latest run if available
 EOF
 }
@@ -49,30 +49,31 @@ create_next_batch_archive() {
   manifest_path="${staging_root}/NEXT_BATCH_MANIFEST.txt"
 
   mkdir -p reports
-  mkdir -p "${staging_root}/UPGRADES" "${staging_root}/extraction/runs"
+  mkdir -p "${staging_root}/services/repo-truth-extractor/prompts/v3" \
+    "${staging_root}/extraction/repo-truth-extractor/v3/runs"
 
-  # 1) W/B/G/Q prompt set (active current state in UPGRADES root)
-  find UPGRADES -maxdepth 1 -type f -name 'PROMPT_W*.md' -exec cp {} "${staging_root}/UPGRADES/" \;
-  find UPGRADES -maxdepth 1 -type f -name 'PROMPT_B*.md' -exec cp {} "${staging_root}/UPGRADES/" \;
-  find UPGRADES -maxdepth 1 -type f -name 'PROMPT_G*.md' -exec cp {} "${staging_root}/UPGRADES/" \;
-  find UPGRADES -maxdepth 1 -type f -name 'PROMPT_Q*.md' -exec cp {} "${staging_root}/UPGRADES/" \;
+  # 1) W/B/G/Q prompt set (active current state in Repo Truth Extractor v3 prompts)
+  find services/repo-truth-extractor/prompts/v3 -maxdepth 1 -type f -name 'PROMPT_W*.md' -exec cp {} "${staging_root}/services/repo-truth-extractor/prompts/v3/" \;
+  find services/repo-truth-extractor/prompts/v3 -maxdepth 1 -type f -name 'PROMPT_B*.md' -exec cp {} "${staging_root}/services/repo-truth-extractor/prompts/v3/" \;
+  find services/repo-truth-extractor/prompts/v3 -maxdepth 1 -type f -name 'PROMPT_G*.md' -exec cp {} "${staging_root}/services/repo-truth-extractor/prompts/v3/" \;
+  find services/repo-truth-extractor/prompts/v3 -maxdepth 1 -type f -name 'PROMPT_Q*.md' -exec cp {} "${staging_root}/services/repo-truth-extractor/prompts/v3/" \;
 
   # 2) Runner
-  cp UPGRADES/run_extraction_v3.py "${staging_root}/UPGRADES/"
+  cp services/repo-truth-extractor/run_extraction_v3.py "${staging_root}/services/repo-truth-extractor/"
 
   # 3) Tiny sample run (optional): one step each for A and H with raw/norm/qa.
   local latest_run
   latest_run=""
-  if [ -f extraction/latest_run_id.txt ]; then
-    latest_run="$(cat extraction/latest_run_id.txt | tr -d '[:space:]')"
+  if [ -f extraction/repo-truth-extractor/v3/latest_run_id.txt ]; then
+    latest_run="$(cat extraction/repo-truth-extractor/v3/latest_run_id.txt | tr -d '[:space:]')"
   fi
-  if [ -n "${latest_run}" ] && [ -d "extraction/runs/${latest_run}" ]; then
+  if [ -n "${latest_run}" ] && [ -d "extraction/repo-truth-extractor/v3/runs/${latest_run}" ]; then
     local phase_dir stage_dir phase_prefix raw_sample_file step_id
     for phase_dir in A_repo_control_plane H_home_control_plane; do
-      stage_dir="${staging_root}/extraction/runs/${latest_run}/${phase_dir}"
+      stage_dir="${staging_root}/extraction/repo-truth-extractor/v3/runs/${latest_run}/${phase_dir}"
       mkdir -p "${stage_dir}/raw" "${stage_dir}/norm" "${stage_dir}/qa"
 
-      raw_sample_file="$(find "extraction/runs/${latest_run}/${phase_dir}/raw" -maxdepth 1 -type f -name '*.json' \
+      raw_sample_file="$(find "extraction/repo-truth-extractor/v3/runs/${latest_run}/${phase_dir}/raw" -maxdepth 1 -type f -name '*.json' \
         | rg -v 'request_meta|FAILED|ATTEMPTS' | sort | head -n 1 || true)"
       if [ -n "${raw_sample_file}" ]; then
         cp "${raw_sample_file}" "${stage_dir}/raw/"
@@ -82,19 +83,19 @@ create_next_batch_archive() {
       fi
 
       if [ -n "${step_id}" ]; then
-        find "extraction/runs/${latest_run}/${phase_dir}/norm" -maxdepth 1 -type f -name "${step_id}__*" -exec cp {} "${stage_dir}/norm/" \; 2>/dev/null || true
-        find "extraction/runs/${latest_run}/${phase_dir}/qa" -maxdepth 1 -type f -name "${step_id}__*" -exec cp {} "${stage_dir}/qa/" \; 2>/dev/null || true
-        find "extraction/runs/${latest_run}/${phase_dir}/qa" -maxdepth 1 -type f -name "${step_id}_*" -exec cp {} "${stage_dir}/qa/" \; 2>/dev/null || true
+        find "extraction/repo-truth-extractor/v3/runs/${latest_run}/${phase_dir}/norm" -maxdepth 1 -type f -name "${step_id}__*" -exec cp {} "${stage_dir}/norm/" \; 2>/dev/null || true
+        find "extraction/repo-truth-extractor/v3/runs/${latest_run}/${phase_dir}/qa" -maxdepth 1 -type f -name "${step_id}__*" -exec cp {} "${stage_dir}/qa/" \; 2>/dev/null || true
+        find "extraction/repo-truth-extractor/v3/runs/${latest_run}/${phase_dir}/qa" -maxdepth 1 -type f -name "${step_id}_*" -exec cp {} "${stage_dir}/qa/" \; 2>/dev/null || true
       fi
 
       # Ensure tiny sample always has at least one norm + one qa file if available.
       if ! find "${stage_dir}/norm" -maxdepth 1 -type f | read -r _; then
-        find "extraction/runs/${latest_run}/${phase_dir}/norm" -maxdepth 1 -type f | sort | head -n 1 | while read -r normf; do
+        find "extraction/repo-truth-extractor/v3/runs/${latest_run}/${phase_dir}/norm" -maxdepth 1 -type f | sort | head -n 1 | while read -r normf; do
           [ -n "${normf}" ] && cp "${normf}" "${stage_dir}/norm/"
         done
       fi
       if ! find "${stage_dir}/qa" -maxdepth 1 -type f | read -r _; then
-        find "extraction/runs/${latest_run}/${phase_dir}/qa" -maxdepth 1 -type f -name '*.json' \
+        find "extraction/repo-truth-extractor/v3/runs/${latest_run}/${phase_dir}/qa" -maxdepth 1 -type f -name '*.json' \
           | rg -v 'PHASE_.*_MANIFEST' | sort | head -n 1 | while read -r qaf; do
           [ -n "${qaf}" ] && cp "${qaf}" "${stage_dir}/qa/"
         done
@@ -109,9 +110,9 @@ Created: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 Mode: --next-batch
 
 Included:
-1) UPGRADES prompts for W/B/G/Q (current active prompts in UPGRADES root)
-2) UPGRADES/run_extraction_v3.py
-3) Optional tiny sample run from extraction/latest_run_id.txt:
+1) Repo Truth Extractor prompts for W/B/G/Q (active v3 prompts)
+2) services/repo-truth-extractor/run_extraction_v3.py
+3) Optional tiny sample run from extraction/repo-truth-extractor/v3/latest_run_id.txt:
    - A_repo_control_plane: one step sample in raw + matching norm/qa where available
    - H_home_control_plane: one step sample in raw + matching norm/qa where available
 EOF
@@ -214,8 +215,7 @@ services/**/*.py
 scripts/**/*.py
 scripts/**/*.sh
 tests/**/*.py
-UPGRADES/**
-UPGRADES/**
+services/repo-truth-extractor/**
 
 # Configuration
 pyproject.toml

@@ -1,3 +1,15 @@
+---
+id: 00_UNIVERSAL_SCHEMA_HEADER
+title: 00 Universal Schema Header
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: 00 Universal Schema Header (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Universal Output Schema (include at top of every Flash run)
 
 **Paste this header at the top of every Gemini Flash job:**

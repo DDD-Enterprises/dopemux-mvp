@@ -70,7 +70,7 @@ ENDPOINTS = {
     "adhd_flow": "http://localhost:8095/api/v1/flow-state/default_user",  # Day 2: NEW
     "adhd_session": "http://localhost:8095/api/v1/session-time/default_user",  # Day 2: NEW
     "adhd_breaks": "http://localhost:8095/api/v1/breaks/default_user",  # Day 2: NEW
-    "tasks": "http://localhost:8001/api/v1/tasks",
+    "tasks": "http://localhost:8095/api/v1/tasks?user_id=default_user",
     "decisions": "http://localhost:8005/api/adhd/decisions/recent",  # ConPort (Day 2)
     "services": "http://localhost:3016/health",
     "patterns": "http://localhost:8003/api/patterns/top",  # Serena (Day 2: NEW)
@@ -182,7 +182,7 @@ async def trigger_break(duration_minutes: int = 5):
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://localhost:8000/api/v1/break/start",
+                "http://localhost:8095/api/v1/break/start",
                 json={"user_id": "default_user", "duration_minutes": duration_minutes},
                 timeout=2.0
             )
@@ -466,7 +466,7 @@ class MetricsManager:
         """Start WebSocket streaming"""
         self.streaming_client = StreamingClient(
             config=StreamingConfig(
-                url="ws://localhost:8000/api/v1/ws/stream",
+                url="ws://localhost:8095/api/v1/ws/stream",
                 user_id="default_user"
             ),
             on_state_update=self.handle_state_update,
@@ -604,7 +604,7 @@ class MetricsManager:
         """Fetch service health via HTTP"""
         services = {}
         for name, url in [
-            ("ADHD Engine", "http://localhost:8000/health"),
+            ("ADHD Engine", "http://localhost:8095/health"),
             ("ConPort", "http://localhost:8005/health"),
             ("Serena", "http://localhost:8003/health"),
             ("MCP Bridge", "http://localhost:3016/health"),
@@ -728,7 +728,7 @@ class MetricsFetcher:
         """Get health status of all services"""
         services = {
             "ConPort": "http://localhost:8005/health",
-            "ADHD Engine": "http://localhost:8001/health",
+            "ADHD Engine": "http://localhost:8095/health",
             "Serena": "http://localhost:8003/health",
             "MCP Bridge": "http://localhost:3016/health",
         }
