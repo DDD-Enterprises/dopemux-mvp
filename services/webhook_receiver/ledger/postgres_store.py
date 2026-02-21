@@ -11,15 +11,15 @@ class PostgresEventStore(EventStore):
 
     def _connect(self):
         try:
-            import psycopg
+            import psycopg2
         except Exception as exc:  # pragma: no cover
-            raise RuntimeError("psycopg is required for postgres WEBHOOK_DB_URL") from exc
-        return psycopg.connect(self._db_url)
+            raise RuntimeError("psycopg2 is required for postgres WEBHOOK_DB_URL") from exc
+        return psycopg2.connect(self._db_url)
 
     def _dict_row_factory(self):
-        import psycopg.rows
+        import psycopg2.extras
 
-        return psycopg.rows.dict_row
+        return psycopg2.extras.RealDictCursor
 
     def insert_webhook_event_if_absent(self, event: WebhookEventInsert) -> bool:
         with self._connect() as conn:
