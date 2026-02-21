@@ -9108,8 +9108,11 @@ def _build_event_store_for_runner() -> Any:
             migrate_script = RUNNER_SERVICE_DIR.parent.parent / "scripts" / "webhook_migrate.py"
             if migrate_script.is_file():
                 try:
+                    cmd = [sys.executable, str(migrate_script)]
+                    if db_url:
+                        cmd.extend(["--db", db_url])
                     subprocess.run(
-                        [sys.executable, str(migrate_script)],
+                        cmd,
                         check=True,
                     )
                 except Exception:
