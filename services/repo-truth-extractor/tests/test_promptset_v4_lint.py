@@ -60,3 +60,66 @@ def test_v4_step_order_validation_rejects_lexical_order(tmp_path: Path) -> None:
     payload = module.run_audit(root, bad_promptset, artifacts_path)
     assert payload["summary"]["status"] == "FAIL"
     assert any("not numeric deterministic" in issue for issue in payload["summary"]["global_issues"])
+
+
+def test_v4_promptset_lint_fails_on_missing_required_sections(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[3]
+    module = _load_linter_module()
+    prompts_dir = tmp_path / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "prompts"
+    prompts_dir.mkdir(parents=True, exist_ok=True)
+    prompt_rel_path = "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_STUB.md"
+    (tmp_path / prompt_rel_path).write_text(
+        "# PROMPT_A0\n\n## Goal\nTiny.\n\n## Outputs\n- `A0_OUTPUT.json`\n",
+        encoding="utf-8",
+    )
+
+    promptset = {
+        "version": "4.0",
+        "required_prompt_sections": [
+            "Goal",
+            "Inputs",
+            "Outputs",
+            "Schema",
+            "Extraction Procedure",
+            "Evidence Rules",
+            "Determinism Rules",
+            "Anti-Fabrication Rules",
+            "Failure Modes",
+        ],
+        "phases": {
+            "A": {
+                "required_steps": ["A0"],
+                "steps": [
+                    {
+                        "step_id": "A0",
+                        "prompt_file": prompt_rel_path,
+                        "outputs": ["A0_OUTPUT.json"],
+                    }
+                ],
+            }
+        },
+    }
+    artifacts = {
+        "version": "4.0",
+        "forbidden_norm_keys": ["generated_at"],
+        "artifacts": [
+            {
+                "phase": "A",
+                "artifact_name": "A0_OUTPUT.json",
+                "canonical_writer_step_id": "A0",
+                "kind": "json_item_list",
+                "norm_artifact": True,
+                "allow_timestamp_keys": False,
+                "merge_strategy": "itemlist_by_id",
+                "required_fields": ["id", "path", "line_range"],
+            }
+        ],
+    }
+    promptset_path = tmp_path / "promptset.yaml"
+    artifacts_path = tmp_path / "artifacts.yaml"
+    promptset_path.write_text(yaml.safe_dump(promptset, sort_keys=False), encoding="utf-8")
+    artifacts_path.write_text(yaml.safe_dump(artifacts, sort_keys=False), encoding="utf-8")
+
+    payload = module.run_audit(tmp_path, promptset_path, artifacts_path)
+    assert payload["summary"]["status"] == "FAIL"
+    assert payload["summary"]["lint_failures"] > 0
