@@ -128,6 +128,8 @@ repos:
               # Service/container docs and research
               if [[ "$normalized" =~ ^\./(services|docker)/[^/]+/(docs|research|intelligence|archive|migrations)/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(services|docker)/[^/]+/[A-Z_0-9-]+\.md$ ]]; then continue; fi
+              # Repo-truth-extractor prompt assets are runtime inputs, not docs
+              if [[ "$normalized" =~ ^\./services/repo-truth-extractor/(prompts|promptsets)/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(docker/mcp-servers/pal/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(docker/mcp-servers/)[A-Z_0-9-]+\.md$ ]]; then continue; fi
 
