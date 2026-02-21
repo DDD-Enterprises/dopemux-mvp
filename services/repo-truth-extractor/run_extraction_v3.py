@@ -9074,7 +9074,7 @@ WEBHOOK_DB_URL_ENV = "WEBHOOK_DB_URL"
 
 def _build_event_store_for_runner() -> Any:
     """Lazily import the webhook receiver ledger package and return a ready EventStore.
- 
+
     This helper ensures (on a best-effort basis) that any pending DB migrations for the
     webhook event store have been applied before constructing the EventStore, mirroring
     the migration behavior used by the main server where possible.
@@ -9082,46 +9082,53 @@ def _build_event_store_for_runner() -> Any:
     webhook_receiver_dir = RUNNER_SERVICE_DIR.parent / "webhook_receiver"
     if str(webhook_receiver_dir) not in sys.path:
         sys.path.insert(0, str(webhook_receiver_dir))
-    import storage  # type: ignore[import]
- 
-    db_url = storage.resolve_webhook_db_url()
- 
+
+    from storage import build_event_store, resolve_webhook_db_url  # type: ignore[import]
+    db_url = resolve_webhook_db_url()
+
     # Best-effort: attempt to run migrations in the same way the main server does.
-    # Prefer calling ensure_migrations() from server.py; if that is not available,
-    # fall back to invoking webhook_migrate.py via subprocess. Any failures are
-    # logged but do not prevent the runner from continuing.
+    # Prefer calling ensure_migrations() if available in server or storage.
     try:
+        import storage  # type: ignore[import]
         try:
             import server  # type: ignore[import]
         except Exception:
             server = None  # type: ignore[assignment]
- 
+
+        migration_fn = None
+        # Check server first (canonical)
         if server is not None and hasattr(server, "ensure_migrations"):
+            migration_fn = getattr(server, "ensure_migrations")
+        # Then storage
+        if migration_fn is None:
+            for candidate in ("run_migrations", "migrate", "apply_migrations", "ensure_migrations_applied"):
+                if hasattr(storage, candidate):
+                    migration_fn = getattr(storage, candidate)
+                    break
+
+        if callable(migration_fn):
             try:
-                server.ensure_migrations()  # type: ignore[call-arg]
+                # server.ensure_migrations doesn't take args, storage ones might
+                import inspect
+                sig = inspect.signature(migration_fn)
+                if len(sig.parameters) > 0:
+                    migration_fn(db_url)
+                else:
+                    migration_fn()
             except Exception:
-                logging.exception(
-                    "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
-                )
- 
-        if not (server is not None and hasattr(server, "ensure_migrations")):
+                logging.exception("Failed to apply migrations via function; proceeding.")
+        else:
+            # Fallback to script
             migrate_script = webhook_receiver_dir / "webhook_migrate.py"
             if migrate_script.is_file():
                 try:
-                    subprocess.run(
-                        [sys.executable, str(migrate_script)],
-                        check=True,
-                    )
+                    subprocess.run([sys.executable, str(migrate_script)], check=True)
                 except Exception:
-                    logging.exception(
-                        "Failed to apply webhook event store migrations via webhook_migrate.py; proceeding without them."
-                    )
+                    logging.exception("Failed to apply migrations via script; proceeding.")
     except Exception:
-        # If migrations cannot be run in this context, fall back to the previous behavior
-        # and let build_event_store handle any initialization.
-        logging.debug("Migrations not available or failed in runner context; continuing without them.")
- 
-    return storage.build_event_store(db_url)
+        logging.debug("Migration helper failed; continuing.")
+
+    return build_event_store(db_url)
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
     """Extract plain text content from an OpenAI response.completed webhook payload."""
     data = payload.get("data")
