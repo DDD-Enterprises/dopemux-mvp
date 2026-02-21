@@ -3,7 +3,6 @@ from __future__ import annotations
 import http.client
 import importlib.util
 import json
-import os
 import socket
 import subprocess
 import sys
