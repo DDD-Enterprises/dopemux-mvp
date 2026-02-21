@@ -46,6 +46,8 @@ def _load_module(name: str, module_path: Path):
         return module
     finally:
         sys.path = old_sys_path
+
+
 def _load_server_module():
     root = Path(__file__).resolve().parents[2]
     return _load_module(
