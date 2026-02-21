@@ -9098,7 +9098,7 @@ def _build_event_store_for_runner() -> Any:
 
         if server is not None and hasattr(server, "ensure_migrations"):
             try:
-                server.ensure_migrations()  # type: ignore[call-arg]
+                server.ensure_migrations(db_url)  # type: ignore[call-arg]
             except Exception:
                 logging.exception(
                     "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
