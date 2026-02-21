@@ -9194,7 +9194,6 @@ def run_phase_R_async_submit(
         {"phase": "R", "generated_at": now_iso(), "items": inventory},
     )
 
-    attempt = 1
     submitted = 0
 
     for prompt_spec in prompts:
@@ -9209,6 +9208,12 @@ def run_phase_R_async_submit(
 
         for partition in partitions:
             partition_id = str(partition["id"])
+            
+            latest_attempt = event_store.latest_attempt_for_tuple(
+                run_id=run_id, phase="R", step_id=step_id, partition_id=partition_id
+            )
+            attempt = (latest_attempt or 0) + 1
+            
             out_json = raw_dir / f"{step_id}__{partition_id}.json"
             pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
 
