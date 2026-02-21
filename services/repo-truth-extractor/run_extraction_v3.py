@@ -93,6 +93,7 @@ VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
 COVERAGE_ROLLUP_FILENAME = "COVERAGE_ROLLUP.json"
 RESUME_PROOF_FILENAME = "RESUME_PROOF.json"
+RUN_LOG_FILENAME = "RUN.log"
 PROMPTSET_BLOCKED_REASON = "PROMPTSET_INVALID"
 PROMPTSET_BLOCKED_EXIT_CODE = 2
 RUNNER_SCRIPT = Path(__file__).resolve()
@@ -512,6 +513,29 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 logger = logging.getLogger("extract_runner")
+_RUN_FILE_HANDLER: Optional[logging.Handler] = None
+
+
+def configure_run_file_logger(run_root: Path) -> Path:
+    global _RUN_FILE_HANDLER
+    run_log_path = run_root / RUN_LOG_FILENAME
+    run_log_path.parent.mkdir(parents=True, exist_ok=True)
+    if _RUN_FILE_HANDLER is not None:
+        logger.removeHandler(_RUN_FILE_HANDLER)
+        try:
+            _RUN_FILE_HANDLER.close()
+        except Exception:
+            pass
+        _RUN_FILE_HANDLER = None
+    file_handler = logging.FileHandler(run_log_path, mode="a", encoding="utf-8")
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(
+        logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S")
+    )
+    logger.addHandler(file_handler)
+    _RUN_FILE_HANDLER = file_handler
+    logger.info("RUN_LOG_ENABLED path=%s", run_log_path.resolve())
+    return run_log_path
 
 
 @dataclass(frozen=True)
@@ -7723,6 +7747,141 @@ def print_phase_prompts(phases: List[str]) -> int:
     return 0
 
 
+_RUN_LOG_HMS_RE = re.compile(r"^(\d{2}:\d{2}:\d{2})\s+\[[A-Z]+\]\s+")
+_STEP_START_PROVIDER_RE = re.compile(r"STEP_START .* provider=([a-zA-Z0-9_-]+) model=([^\s]+)")
+_STEP_DONE_ROUTES_RE = re.compile(r"STEP_DONE .* routes=(\{.*\})")
+
+
+def _parse_since_epoch(since_token: str) -> Optional[float]:
+    raw = str(since_token or "").strip()
+    if not raw:
+        return None
+    suffix_map = {"s": 1, "m": 60, "h": 3600}
+    if raw[-1:].lower() in suffix_map and raw[:-1].isdigit():
+        seconds = int(raw[:-1]) * suffix_map[raw[-1:].lower()]
+        return time.time() - max(0, seconds)
+    if raw.isdigit():
+        return float(int(raw))
+    try:
+        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        return dt.timestamp()
+    except Exception:
+        return None
+
+
+def _run_log_line_epoch(line: str) -> Optional[float]:
+    match = _RUN_LOG_HMS_RE.match(line)
+    if not match:
+        return None
+    try:
+        now_dt = datetime.now(timezone.utc)
+        parsed = datetime.strptime(match.group(1), "%H:%M:%S").time()
+        with_date = datetime.combine(now_dt.date(), parsed, tzinfo=timezone.utc)
+        return with_date.timestamp()
+    except Exception:
+        return None
+
+
+def _filtered_run_log_lines(
+    run_log_path: Path,
+    *,
+    phase: Optional[str] = None,
+    step: Optional[str] = None,
+    since: Optional[str] = None,
+) -> List[str]:
+    if not run_log_path.exists():
+        raise FileNotFoundError(f"RUN log not found: {run_log_path}")
+    lines = run_log_path.read_text(encoding="utf-8").splitlines()
+    phase_token = str(phase or "").strip().upper()
+    step_token = str(step or "").strip().upper()
+    since_epoch = _parse_since_epoch(str(since or "").strip())
+    filtered: List[str] = []
+    for line in lines:
+        if phase_token and f"phase={phase_token}" not in line:
+            continue
+        if step_token and f"step={step_token}" not in line:
+            continue
+        if since_epoch is not None:
+            line_epoch = _run_log_line_epoch(line)
+            if line_epoch is None or line_epoch < since_epoch:
+                continue
+        filtered.append(line)
+    return filtered
+
+
+def tail_run_log(
+    run_id: str,
+    dirs: Dict[str, Path],
+    *,
+    phase: Optional[str] = None,
+    step: Optional[str] = None,
+    since: Optional[str] = None,
+    tail_lines: int = 200,
+) -> int:
+    del run_id
+    run_log_path = dirs["root"] / RUN_LOG_FILENAME
+    try:
+        lines = _filtered_run_log_lines(run_log_path, phase=phase, step=step, since=since)
+    except FileNotFoundError as exc:
+        logger.error("%s", exc)
+        return 1
+    limit = max(1, int(tail_lines))
+    for line in lines[-limit:]:
+        print(line)
+    return 0
+
+
+def show_provider_usage(
+    run_id: str,
+    dirs: Dict[str, Path],
+    *,
+    phase: Optional[str] = None,
+    step: Optional[str] = None,
+    since: Optional[str] = None,
+) -> int:
+    run_log_path = dirs["root"] / RUN_LOG_FILENAME
+    try:
+        lines = _filtered_run_log_lines(run_log_path, phase=phase, step=step, since=since)
+    except FileNotFoundError as exc:
+        logger.error("%s", exc)
+        return 1
+
+    starts: Counter[str] = Counter()
+    routes: Counter[str] = Counter()
+    for line in lines:
+        start_match = _STEP_START_PROVIDER_RE.search(line)
+        if start_match:
+            starts[f"{start_match.group(1)}/{start_match.group(2)}"] += 1
+            continue
+        done_match = _STEP_DONE_ROUTES_RE.search(line)
+        if done_match:
+            try:
+                payload = json.loads(done_match.group(1))
+            except Exception:
+                continue
+            if isinstance(payload, dict):
+                for key, value in payload.items():
+                    try:
+                        routes[str(key)] += int(value)
+                    except Exception:
+                        continue
+
+    payload = {
+        "generated_at": now_iso(),
+        "run_id": run_id,
+        "run_root": str(dirs["root"].resolve()),
+        "filters": {
+            "phase": str(phase or "").upper() or None,
+            "step": str(step or "").upper() or None,
+            "since": str(since or "").strip() or None,
+        },
+        "step_start_counts": dict(sorted(starts.items())),
+        "step_done_route_counts": dict(sorted(routes.items())),
+    }
+    print(json.dumps(payload, indent=2, ensure_ascii=True, sort_keys=True))
+    return 0
+
+
 def _load_json(path: Path) -> Dict[str, Any]:
     if not path.exists():
         return {}
@@ -9504,6 +9663,11 @@ def main() -> None:
     parser.add_argument("--print-promptpack", action="store_true")
     parser.add_argument("--print-run-order", action="store_true")
     parser.add_argument("--print-phase-routing", action="store_true")
+    parser.add_argument("--tail-run-log", action="store_true")
+    parser.add_argument("--tail-lines", type=int, default=200)
+    parser.add_argument("--since", type=str, default="")
+    parser.add_argument("--step", type=str)
+    parser.add_argument("--show-provider-usage", action="store_true")
     parser.add_argument(
         "--print-phase-prompts",
         nargs="?",
@@ -9569,6 +9733,8 @@ def main() -> None:
         or args.print_promptpack
         or args.print_run_order
         or args.print_phase_routing
+        or args.tail_run_log
+        or args.show_provider_usage
         or args.print_phase_prompts
         or args.promptgen_scan
         or args.gemini_list_models
@@ -9577,7 +9743,8 @@ def main() -> None:
             "--phase is required unless using --verify-phase-output, --print-config, "
             "--promptgen-scan, --doctor, --doctor-auth, --preflight-providers, --coverage-report, "
             "--status, --status-json, --print-promptpack, --print-run-order, "
-            "--print-phase-routing, --print-phase-prompts, or --gemini-list-models."
+            "--print-phase-routing, --tail-run-log, --show-provider-usage, "
+            "--print-phase-prompts, or --gemini-list-models."
         )
     if args.watch is not None and args.watch <= 0:
         parser.error("--watch must be > 0 when provided.")
@@ -9650,6 +9817,19 @@ def main() -> None:
         sys.exit(run_gemini_list_models(root, run_id, dirs))
     if args.status or args.status_json:
         sys.exit(run_status_loop(run_id, dirs, args, ui=ui))
+    if args.tail_run_log:
+        sys.exit(
+            tail_run_log(
+                run_id,
+                dirs,
+                phase=args.phase,
+                step=args.step,
+                since=args.since,
+                tail_lines=args.tail_lines,
+            )
+        )
+    if args.show_provider_usage:
+        sys.exit(show_provider_usage(run_id, dirs, phase=args.phase, step=args.step, since=args.since))
 
     cfg = RunnerConfig(
         dry_run=args.dry_run,
@@ -9692,6 +9872,7 @@ def main() -> None:
 
     phase_sequence = resolve_phase_list(args.phase)
     prompt_report = write_run_manifest(root, dirs, run_id, args, run_context, phase_sequence or PHASES)
+    configure_run_file_logger(dirs["root"])
     write_runner_identity(root, dirs["root"], run_id)
     if phase_sequence:
         write_run_routing_fingerprint(dirs["root"], run_id, cfg, phase_sequence)

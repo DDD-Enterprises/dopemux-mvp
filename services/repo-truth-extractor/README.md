@@ -29,6 +29,8 @@ dopemux extractor promptset audit --engine-version v4
 python services/repo-truth-extractor/run_extraction_v3.py --print-run-order
 python services/repo-truth-extractor/run_extraction_v3.py --print-phase-routing --phase Q --dry-run
 python services/repo-truth-extractor/run_extraction_v3.py --print-phase-prompts ALL
+python services/repo-truth-extractor/run_extraction_v3.py --tail-run-log --run-id <RUN_ID> --phase C --step C0 --tail-lines 100
+python services/repo-truth-extractor/run_extraction_v3.py --show-provider-usage --run-id <RUN_ID>
 
 # Async batch split mode (explicit)
 python services/repo-truth-extractor/run_extraction_v3.py --phase D --batch-mode --batch-submit-only --run-id <RUN_ID>

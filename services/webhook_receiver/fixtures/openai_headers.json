@@ -1,0 +1,6 @@
+{
+  "webhook-id": "wh_test_response_completed_001",
+  "webhook-timestamp": "1735689600",
+  "webhook-signature": "v1,placeholder-signature-for-replay-only",
+  "content-type": "application/json"
+}
