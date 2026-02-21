@@ -127,22 +127,8 @@ def test_server_invalid_signature_returns_401(tmp_path: Path, monkeypatch) -> No
     httpd = server_mod.WebhookServer("127.0.0.1", port, event_store)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
+    time.sleep(0.05)
 
-    # Wait for the server to start accepting connections instead of
-    # relying on a fixed sleep, which can be flaky on slow CI runners.
-    max_attempts = 50
-    for _ in range(max_attempts):
-        try:
-            _conn = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
-            _conn.connect()
-            _conn.close()
-            break
-        except OSError:
-            time.sleep(0.1)
-    else:
-        httpd.shutdown()
-        thread.join(timeout=1)
-        raise RuntimeError(f"WebhookServer did not start on port {port}")
     conn = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
     conn.request(
         "POST",
