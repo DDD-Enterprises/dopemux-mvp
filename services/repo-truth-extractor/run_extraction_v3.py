@@ -485,12 +485,12 @@ REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
     "G": {"G0", "G1", "G2", "G3", "G4", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9"},
+    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9", "Q11"},
     "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"},
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3"},
+    "S": {"S0", "S1", "S2", "S3", "S4", "S5"},
 }
 
 
@@ -8003,6 +8003,10 @@ def run_phase_S(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
         if norm_dir.exists():
             input_files.extend(sorted(norm_dir.glob("*.json")))
             input_files.extend(sorted(norm_dir.glob("*.md")))
+
+    manual_rulings_dir = dirs["root"] / "manual_rulings"
+    if manual_rulings_dir.exists():
+        input_files.extend(sorted(manual_rulings_dir.glob("PRO_*.json")))
 
     deduped_inputs = sorted(set(input_files), key=lambda path: str(path))
     _run_phase_inner("S", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs), ui=ui)
