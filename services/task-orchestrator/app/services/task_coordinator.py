@@ -485,26 +485,26 @@ class TaskCoordinator:
                 task.status = TaskStatus.IN_PROGRESS
                 results["in_progress"].append(task_id)
 
-                    # Simulate execution with monitoring
-                    # We await this to maintain sequential execution order
-                    await self._monitor_execution(task)
-                    
-                    # Mark task as completed after successful monitoring
-                    task.status = TaskStatus.COMPLETED
-                    results["completed"].append(task_id)
-                    results["in_progress"].remove(task_id)
+                # Simulate execution with monitoring
+                # We await this to maintain sequential execution order
+                await self._monitor_execution(task)
+
+                # Mark task as completed after successful monitoring
+                task.status = TaskStatus.COMPLETED
+                results["completed"].append(task_id)
+                results["in_progress"].remove(task_id)
 
                 # Sync to ConPort
                 await self.conport_adapter.update_task_in_conport(task)
 
-                except Exception as e:
-                    logger.error(f"❌ Task execution failed {task_id}: {e}")
-                    task.status = TaskStatus.FAILED
-                    # Remove from in_progress if it was added
-                    if task_id in results["in_progress"]:
-                        results["in_progress"].remove(task_id)
-                    results["failed"].append(task_id)
-                    break
+            except Exception as e:
+                logger.error(f"❌ Task execution failed {task_id}: {e}")
+                task.status = TaskStatus.FAILED
+                # Remove from in_progress if it was added
+                if task_id in results["in_progress"]:
+                    results["in_progress"].remove(task_id)
+                results["failed"].append(task_id)
+                break
 
         # Check for context switching
         await self.context_recovery.detect_context_switch()

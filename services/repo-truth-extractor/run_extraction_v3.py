@@ -68,7 +68,8 @@ except Exception:  # pragma: no cover - optional rich rendering
 
 PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
 PROMPT_HASH_MODE = "strict"
-PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
+PROMPT_ROOT_ENV_VAR = "REPO_TRUTH_EXTRACTOR_PROMPT_ROOT"
+LEGACY_PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
 COVERAGE_ROLLUP_FILENAME = "COVERAGE_ROLLUP.json"
@@ -150,7 +151,7 @@ PHASE_DIR_NAMES: Dict[str, str] = {
 LEGACY_PHASE_DIR_ALIASES: Dict[str, str] = {
     "R2_synthesis": "R_arbitration",
 }
-EXTRACTOR_SERVICE_DIR = Path("services/repo-truth-extractor")
+EXTRACTOR_SERVICE_DIR = RUNNER_SERVICE_DIR
 V3_EXTRACTION_ROOT = Path("extraction/repo-truth-extractor/v3")
 V3_RUNS_ROOT = V3_EXTRACTION_ROOT / "runs"
 V3_LATEST_RUN_FILE = V3_EXTRACTION_ROOT / "latest_run_id.txt"
@@ -339,8 +340,12 @@ TEXT_SUFFIXES = {
 
 
 def prompt_root() -> Path:
-    configured = os.getenv(PROMPT_ROOT_ENV_VAR, "UPGRADES").strip() or "UPGRADES"
-    return Path(configured)
+    configured = os.getenv(PROMPT_ROOT_ENV_VAR, "").strip()
+    if not configured:
+        configured = os.getenv(LEGACY_PROMPT_ROOT_ENV_VAR, "").strip()
+    if configured:
+        return Path(configured)
+    return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
 
 
 def step_sort_key(step_id: str) -> Tuple[str, int]:
@@ -1985,6 +1990,14 @@ def write_run_manifest(
 ) -> Dict[str, Any]:
     prompt_report = promptset_fingerprint(phases)
     run_blocked = bool(prompt_report.get("blocked_promptset"))
+    routing_policy = str(getattr(args, "routing_policy", DEFAULT_ROUTING_POLICY))
+    disable_escalation = bool(getattr(args, "disable_escalation", False))
+    escalation_max_hops = int(getattr(args, "escalation_max_hops", 2))
+    batch_mode = bool(getattr(args, "batch_mode", False))
+    batch_provider = str(getattr(args, "batch_provider", "auto"))
+    batch_poll_seconds = int(getattr(args, "batch_poll_seconds", 30))
+    batch_wait_timeout_seconds = int(getattr(args, "batch_wait_timeout_seconds", 86400))
+    batch_max_requests_per_job = int(getattr(args, "batch_max_requests_per_job", 2000))
     manifest = {
         "run_id": run_id,
         "generated_at": now_iso(),
@@ -2012,14 +2025,14 @@ def write_run_manifest(
             "retry_max_seconds": args.retry_max_seconds,
             "phase_auth_fail_threshold": args.phase_auth_fail_threshold,
             "partition_workers": args.partition_workers,
-            "routing_policy": args.routing_policy,
-            "disable_escalation": args.disable_escalation,
-            "escalation_max_hops": args.escalation_max_hops,
-            "batch_mode": args.batch_mode,
-            "batch_provider": args.batch_provider,
-            "batch_poll_seconds": args.batch_poll_seconds,
-            "batch_wait_timeout_seconds": args.batch_wait_timeout_seconds,
-            "batch_max_requests_per_job": args.batch_max_requests_per_job,
+            "routing_policy": routing_policy,
+            "disable_escalation": disable_escalation,
+            "escalation_max_hops": escalation_max_hops,
+            "batch_mode": batch_mode,
+            "batch_provider": batch_provider,
+            "batch_poll_seconds": batch_poll_seconds,
+            "batch_wait_timeout_seconds": batch_wait_timeout_seconds,
+            "batch_max_requests_per_job": batch_max_requests_per_job,
             "debug_phase_inputs": args.debug_phase_inputs,
             "fail_fast_missing_inputs": args.fail_fast_missing_inputs,
             "run_id_override": args.run_id,
@@ -2056,7 +2069,7 @@ def write_run_manifest(
         "run_status": "BLOCKED" if run_blocked else "OK",
         "phase_status": "blocked_promptset" if run_blocked else "ready",
         "blocked_promptset": run_blocked,
-        "routing_policy": args.routing_policy,
+        "routing_policy": routing_policy,
         "routing_policy_version": ROUTING_POLICY_VERSION,
         "routing_step_tiers": {
             phase: {
@@ -2067,11 +2080,11 @@ def write_run_manifest(
         },
         "routing_ladders": routing_ladders_payload(),
         "batch_config": {
-            "enabled": bool(args.batch_mode),
-            "provider": args.batch_provider,
-            "poll_seconds": int(args.batch_poll_seconds),
-            "wait_timeout_seconds": int(args.batch_wait_timeout_seconds),
-            "max_requests_per_job": int(args.batch_max_requests_per_job),
+            "enabled": batch_mode,
+            "provider": batch_provider,
+            "poll_seconds": batch_poll_seconds,
+            "wait_timeout_seconds": batch_wait_timeout_seconds,
+            "max_requests_per_job": batch_max_requests_per_job,
         },
         "effective_model_routing": effective_model_routing_payload(),
     }
@@ -2296,10 +2309,7 @@ def extract_output_artifacts(prompt_text: str, step_id: str) -> Tuple[str, ...]:
 
 
 def _resolve_prompt_root() -> Path:
-    override = os.environ.get("REPO_TRUTH_EXTRACTOR_PROMPT_ROOT", "").strip()
-    if override:
-        return Path(override)
-    return EXTRACTOR_SERVICE_DIR / "prompts" / "v3"
+    return prompt_root()
 
 
 def get_phase_prompts(phase: str) -> List[PromptSpec]:
@@ -6132,7 +6142,8 @@ def execute_step_for_partitions(
             schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts_local, output_artifacts)
             escalation_trigger: Optional[str] = None
             if not artifacts_local:
-                escalation_trigger = "parse_failure" if parse_retry_attempts > 0 else "parse_failure_no_retry"
+                if step_tier != "bulk":
+                    escalation_trigger = "parse_failure" if parse_retry_attempts > 0 else "parse_failure_no_retry"
             elif not schema_ok:
                 escalation_trigger = schema_reason or "schema_gate_failure"
             elif should_escalate_for_failure_type(request_meta_local.get("failure_type")):
@@ -6202,7 +6213,7 @@ def execute_step_for_partitions(
         auth_expired = is_auth_expired_failure(request_meta.get("failure_type"))
 
         if not artifacts:
-            if parse_retry_attempted:
+            if bool(request_meta.get("parse_retry_attempted")):
                 _append_log(logs, "info", f"Artifact parse retry exhausted for {step_id} {partition_id}")
             _append_log(logs, "error", f"Artifact parse failed for {step_id} {partition_id}")
             _op_write_text(write_ops, out_failed, response_text)
