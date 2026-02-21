@@ -16,6 +16,9 @@ jobs:
     name: "🤖 Claude Code Security Analysis"
     runs-on: ubuntu-latest
     timeout-minutes: 25  # ADHD-optimized: 25-minute chunks
+    if: github.repository == "DDD-Enterprises/dopemux-mvp" && (github.event_name == "push" || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.repository == "DDD-Enterprises/dopemux-mvp" && (github.event_name == "push" || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.repository == 'DDD-Enterprises/dopemux-mvp' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
 
     steps:
       - name: 📥 Checkout code
@@ -23,12 +26,17 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 2  # Get enough history for diff analysis
+        if: ${{ secrets.ANTHROPIC_API_KEY != "" }}
 
+        if: ${{ secrets.ANTHROPIC_API_KEY != "" }}
       - name: 🔐 ADHD-Optimized Security Review
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
         uses: anthropics/claude-code-security-review@main
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         with:
           comment-pr: true
-          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           upload-results: true
 
           # ADHD-optimized timeout (25-minute focus sessions)
@@ -67,6 +75,8 @@ jobs:
             echo "- No high-severity security issues detected" >> $GITHUB_STEP_SUMMARY
             echo "- Memory system components are safe" >> $GITHUB_STEP_SUMMARY
             echo "- Ready for merge when tests pass!" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.security-review.result }}" == "skipped" ]; then
+            echo "⏭️ **Security review skipped** (API key missing or not required)" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ **Security items need attention**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY

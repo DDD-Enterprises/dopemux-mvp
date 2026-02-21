@@ -1,0 +1,964 @@
+{
+  "generated_at_utc": "DETERMINISTIC",
+  "generated_by": "scripts/rewrite_repo_truth_extractor_v4_prompts.py",
+  "phases": {
+    "A": [
+      {
+        "outputs": [
+          "REPOCTRL_INVENTORY.json",
+          "REPOCTRL_PARTITIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+        "prompt_sha256": "a38f3e99885b31d1fbdccdbddb9d0f7aa4670d5d302fa9b7040f38d8aacc1e47",
+        "step_id": "A0"
+      },
+      {
+        "outputs": [
+          "REPO_INSTRUCTION_SURFACE.json",
+          "REPO_INSTRUCTION_REFERENCES.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md",
+        "prompt_sha256": "879493cea8ecfa33fe5b075d65bb92080d11b03bab3ea5f9ede98a0706f55ce1",
+        "step_id": "A1"
+      },
+      {
+        "outputs": [
+          "REPO_MCP_SERVER_DEFS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md",
+        "prompt_sha256": "33b12102c007ebd4a8a1d41c3726e82acd92c0c619ac66cd64f3215ed1cb50e9",
+        "step_id": "A2"
+      },
+      {
+        "outputs": [
+          "REPO_MCP_PROXY_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md",
+        "prompt_sha256": "f946f6104b8d87074f59c4cede310f859a4c607c6d7e4aa2d72d295e61bde0c5",
+        "step_id": "A3"
+      },
+      {
+        "outputs": [
+          "REPO_ROUTER_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
+        "prompt_sha256": "ff9e5bb2a2f474544d3b89a34ef611800dd8211464d9f7f6a3f2439b8fe852ab",
+        "step_id": "A4"
+      },
+      {
+        "outputs": [
+          "REPO_HOOKS_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
+        "prompt_sha256": "527990b4ae0071e495b9621884ed2cd8afecb85b208a41f1a60c6b83d7f38265",
+        "step_id": "A5"
+      },
+      {
+        "outputs": [
+          "REPO_COMPOSE_SERVICE_GRAPH.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+        "prompt_sha256": "d39af49c18e888fbf87abff2a36932105e5038e1794fe9c6fe112c860c75d86c",
+        "step_id": "A6"
+      },
+      {
+        "outputs": [
+          "REPO_LITELLM_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md",
+        "prompt_sha256": "be0b26148f84b04942020da97b35cdad36c19879a280a2a705f7406f958f7c9f",
+        "step_id": "A7"
+      },
+      {
+        "outputs": [
+          "REPO_TASKX_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md",
+        "prompt_sha256": "30853f19f43692d4ac1cfb0678265c874b6880c7f64862971aa991df330df093",
+        "step_id": "A8"
+      },
+      {
+        "outputs": [
+          "REPO_IMPLICIT_BEHAVIOR_HINTS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+        "prompt_sha256": "9e5806d7ccd4957a69eaff3656c8119c71122d5aafbf43db4f555cf13afa3312",
+        "step_id": "A9"
+      },
+      {
+        "outputs": [
+          "REPO_INSTRUCTION_SURFACE.json",
+          "REPO_INSTRUCTION_REFERENCES.json",
+          "REPO_MCP_SERVER_DEFS.json",
+          "REPO_MCP_PROXY_SURFACE.json",
+          "REPO_ROUTER_SURFACE.json",
+          "REPO_HOOKS_SURFACE.json",
+          "REPO_IMPLICIT_BEHAVIOR_HINTS.json",
+          "REPO_COMPOSE_SERVICE_GRAPH.json",
+          "REPO_LITELLM_SURFACE.json",
+          "REPO_TASKX_SURFACE.json",
+          "REPOCTRL_NORM_MANIFEST.json",
+          "REPOCTRL_QA.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md",
+        "prompt_sha256": "3fe7da63ca3532b44536f6549d113f867265c6e7d1b59c7de4b99afb3daa3d55",
+        "step_id": "A99"
+      }
+    ],
+    "B": [
+      {
+        "outputs": [
+          "BOUNDARY_INVENTORY.json",
+          "BOUNDARY_PARTITIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md",
+        "prompt_sha256": "e42f6106f19b1dca09dd2142193a43aa71e8b07a3f09bd0290f5704f1b394ccf",
+        "step_id": "B0"
+      },
+      {
+        "outputs": [
+          "BOUNDARY_ENFORCEMENT_POINTS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md",
+        "prompt_sha256": "56cb94dedd00d35c8116fe939337a7226bafbf126f2a9a3699ea0cc11c88d1fa",
+        "step_id": "B1"
+      },
+      {
+        "outputs": [
+          "REFUSAL_GUARDRAILS_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md",
+        "prompt_sha256": "f35846bf10d1668284fee494a5e29911193952057d3f5ab722f1eed44919deb1",
+        "step_id": "B2"
+      },
+      {
+        "outputs": [
+          "BOUNDARY_BYPASS_RISKS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md",
+        "prompt_sha256": "55cdff5e3f6a66a962a5a1aa0daeb2551a490a107937d66f89368408e3d42b7e",
+        "step_id": "B3"
+      },
+      {
+        "outputs": [
+          "BOUNDARY_MERGED.json",
+          "BOUNDARY_QA.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md",
+        "prompt_sha256": "258fa3e74c5c29ec069b3a0e26cc5fa5f0e3e13a76edcc3de9d8e84b9e36656a",
+        "step_id": "B9"
+      }
+    ],
+    "C": [
+      {
+        "outputs": [
+          "CODE_INVENTORY.json",
+          "CODE_PARTITIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md",
+        "prompt_sha256": "8b6520540e337960ab72a721c88cdac05516b7ea111d112087f38d20c1e1a285",
+        "step_id": "C0"
+      },
+      {
+        "outputs": [
+          "SERVICE_ENTRYPOINTS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md",
+        "prompt_sha256": "b90d74712158a4fd24b9ffaf4d064c8e6c0c3a894ba1da32945660f48bdae9fd",
+        "step_id": "C1"
+      },
+      {
+        "outputs": [
+          "EVENTBUS_SURFACE.json",
+          "EVENT_PRODUCERS.json",
+          "EVENT_CONSUMERS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md",
+        "prompt_sha256": "b098f453b5c207ccb65c1aabf79e3d26ae6a46597a55e4f1dc096b6d01bd95c5",
+        "step_id": "C2"
+      },
+      {
+        "outputs": [
+          "DOPE_MEMORY_CODE_SURFACE.json",
+          "DOPE_MEMORY_SCHEMAS.json",
+          "DOPE_MEMORY_DB_WRITES.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md",
+        "prompt_sha256": "202bfc84e3c5a81ee40169c6dfa4da23ecd531950e56c9770ba7cec39f441e7d",
+        "step_id": "C3"
+      },
+      {
+        "outputs": [
+          "TRINITY_ENFORCEMENT_SURFACE.json",
+          "REFUSAL_AND_GUARDRAILS_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md",
+        "prompt_sha256": "0bca51cbaa3422e28d4408ced84440a10c869008d023117b6983c4d376b40fcc",
+        "step_id": "C4"
+      },
+      {
+        "outputs": [
+          "TASKX_INTEGRATION_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
+        "prompt_sha256": "a19634b39418e4687a351c77e33ab6962b630323e1a02fe550484cc426fde0e6",
+        "step_id": "C5"
+      },
+      {
+        "outputs": [
+          "WORKFLOW_RUNNER_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md",
+        "prompt_sha256": "9f498f72a787076b09718d57cf1027ee061619fc419d6e93ba59e370892b8a35",
+        "step_id": "C6"
+      },
+      {
+        "outputs": [
+          "API_DASHBOARD_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md",
+        "prompt_sha256": "ceb746f3ec0816fed412f7858ba3c96e7536fa0b81862899584895c5084cbb00",
+        "step_id": "C7"
+      },
+      {
+        "outputs": [
+          "DETERMINISM_RISK_LOCATIONS.json",
+          "IDEMPOTENCY_RISK_LOCATIONS.json",
+          "CONCURRENCY_RISK_LOCATIONS.json",
+          "SECRETS_RISK_LOCATIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md",
+        "prompt_sha256": "56ed633931e065f1ec0908d284d3cac23d2ca6428ba55f8b14016a0aee160832",
+        "step_id": "C8"
+      },
+      {
+        "outputs": [
+          "SERVICE_ENTRYPOINTS.json",
+          "EVENTBUS_SURFACE.json",
+          "EVENT_PRODUCERS.json",
+          "EVENT_CONSUMERS.json",
+          "DOPE_MEMORY_CODE_SURFACE.json",
+          "DOPE_MEMORY_SCHEMAS.json",
+          "DOPE_MEMORY_DB_WRITES.json",
+          "TRINITY_ENFORCEMENT_SURFACE.json",
+          "REFUSAL_AND_GUARDRAILS_SURFACE.json",
+          "TASKX_INTEGRATION_SURFACE.json",
+          "WORKFLOW_RUNNER_SURFACE.json",
+          "DETERMINISM_RISK_LOCATIONS.json",
+          "IDEMPOTENCY_RISK_LOCATIONS.json",
+          "CONCURRENCY_RISK_LOCATIONS.json",
+          "CODE_SURFACES_QA.json",
+          "SERVICE_CATALOG.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md",
+        "prompt_sha256": "8c156e92534767f0adfb7e375e8bb18743cf0fe166da7f9da93d1aa9bfd92b76",
+        "step_id": "C9"
+      },
+      {
+        "outputs": [
+          "SERVICE_CATALOG.partX.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md",
+        "prompt_sha256": "1a4d8c5f23b7898a556b9796da73a91d3f36df82a86d8a7f8f76488052f92321",
+        "step_id": "C10"
+      }
+    ],
+    "D": [
+      {
+        "outputs": [
+          "DOC_INVENTORY.json",
+          "DOC_PARTITIONS.json",
+          "DOC_TODO_QUEUE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md",
+        "prompt_sha256": "1780244ff92bca0b8d73e193acffe015a4ed618f71fa6970af5499fdb1126bf3",
+        "step_id": "D0"
+      },
+      {
+        "outputs": [
+          "DOC_INDEX.partX.json",
+          "DOC_CONTRACT_CLAIMS.partX.json",
+          "DOC_BOUNDARIES.partX.json",
+          "DOC_SUPERSESSION.partX.json",
+          "CAP_NOTICES.partX.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md",
+        "prompt_sha256": "d9e318f4b34ed58b99c185ae3232c409396588d68b35ed8c58f36e11ac5c4839",
+        "step_id": "D1"
+      },
+      {
+        "outputs": [
+          "DOC_INTERFACES.partX.json",
+          "DOC_WORKFLOWS.partX.json",
+          "DOC_DECISIONS.partX.json",
+          "DOC_GLOSSARY.partX.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md",
+        "prompt_sha256": "a3dd609a00583e72a9b5595755086cee46b025e9a7db76f9d83f7a319638145f",
+        "step_id": "D2"
+      },
+      {
+        "outputs": [
+          "DOC_CITATION_GRAPH.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md",
+        "prompt_sha256": "15f9cea229b06cc5bb8bb0592a5bab0e601d9ba588c6c96ec53d49fbf7472b8c",
+        "step_id": "D3"
+      },
+      {
+        "outputs": [
+          "DOC_INDEX.json",
+          "DOC_CONTRACT_CLAIMS.json",
+          "DOC_SUPERSESSION.json",
+          "DOC_TOPIC_CLUSTERS.json",
+          "DUPLICATE_DRIFT_REPORT.json",
+          "DOC_RECENCY_DUPLICATE_REPORT.json",
+          "DOC_COVERAGE_REPORT.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md",
+        "prompt_sha256": "8fe9632e88add814b23206b3a19084e37fbad037bfd6ff3823be42e994e33587",
+        "step_id": "D4"
+      },
+      {
+        "outputs": [
+          "DOC_TOPIC_CLUSTERS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md",
+        "prompt_sha256": "bbacc224e2a60f3e8ba82d370eac4ae998ee6bbaf231ce13797247d3e059236c",
+        "step_id": "D5"
+      }
+    ],
+    "E": [
+      {
+        "outputs": [
+          "EXEC_INVENTORY.json",
+          "EXEC_PARTITIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md",
+        "prompt_sha256": "a24d4ac7be7a4ef668d6d5b030fdf55dd9b00d433c26e18dada2b71442e3f09d",
+        "step_id": "E0"
+      },
+      {
+        "outputs": [
+          "EXEC_BOOTSTRAP_COMMANDS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md",
+        "prompt_sha256": "36ef26ee992f395cdc8b3a22fc45a3d3c26c4e9d539adc63bf9a618c9cb5aa76",
+        "step_id": "E1"
+      },
+      {
+        "outputs": [
+          "EXEC_ENV_CHAIN.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md",
+        "prompt_sha256": "d3da56c4997149cb87718ae86d2968a06a31e070c2df894831ec31c7797d7d18",
+        "step_id": "E2"
+      },
+      {
+        "outputs": [
+          "EXEC_STARTUP_GRAPH.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md",
+        "prompt_sha256": "510359c6193b440ebd9d8cda5389b954e06224dada2f2cb800e083d4b06502ae",
+        "step_id": "E3"
+      },
+      {
+        "outputs": [
+          "EXEC_RUNTIME_MODES.json",
+          "EXEC_MODE_DELTA_REPORT.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md",
+        "prompt_sha256": "734c36cf0249f303fd2f8f31124f3ce0f7303285bfe6b46fe1081ad8b95fa19f",
+        "step_id": "E4"
+      },
+      {
+        "outputs": [
+          "EXEC_ARTIFACT_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md",
+        "prompt_sha256": "16f276161877bfdd9344aad2471acf3448d441bf66e4ad7735bf266da97a7962",
+        "step_id": "E5"
+      },
+      {
+        "outputs": [
+          "EXEC_RISK_FACTS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md",
+        "prompt_sha256": "d75a0709ee05977a834e1fb41b9c95b67698cad2db08b520621442368171b966",
+        "step_id": "E6"
+      },
+      {
+        "outputs": [
+          "EXEC_MERGED.json",
+          "EXEC_QA.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md",
+        "prompt_sha256": "4d45c5a29df54f58373df07ca03e40cb773250f0a1d0e803f6c8811b356b1a41",
+        "step_id": "E9"
+      }
+    ],
+    "G": [
+      {
+        "outputs": [
+          "GOV_INVENTORY.json",
+          "GOV_PARTITIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md",
+        "prompt_sha256": "d7cb60b0db2864520245581b666e1ab2d0fbf1d8093e24e8580b3063a6b8e546",
+        "step_id": "G0"
+      },
+      {
+        "outputs": [
+          "GOV_CI_GATES.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md",
+        "prompt_sha256": "5b969d3e0e33815f91a252152399694dc3f354fa81545bc82f40c2f288051263",
+        "step_id": "G1"
+      },
+      {
+        "outputs": [
+          "GOV_HYGIENE_POLICIES.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md",
+        "prompt_sha256": "72d901feb96ef45255d3247abc07b113ffb67b615290819ce8dfd276ad88dce8",
+        "step_id": "G2"
+      },
+      {
+        "outputs": [
+          "GOV_POLICIES.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md",
+        "prompt_sha256": "d04068163ce55124b4e7eab3e6a7900881a02516148601c46e7a3cecf7d6efd6",
+        "step_id": "G3"
+      },
+      {
+        "outputs": [
+          "GOV_SECRETS_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md",
+        "prompt_sha256": "45b3d21aae608d5917db51f1f3a8415a8cde66446b19d51ec2fff84f940912a9",
+        "step_id": "G4"
+      },
+      {
+        "outputs": [
+          "GOV_MERGED.json",
+          "GOV_QA.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md",
+        "prompt_sha256": "8c30a34bb7bf79817b3e00255be25b261a4df3ce296178224cf6b89b366477cc",
+        "step_id": "G9"
+      }
+    ],
+    "H": [
+      {
+        "outputs": [
+          "HOME_INVENTORY.json",
+          "HOME_PARTITIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md",
+        "prompt_sha256": "a962097fb9bc376513493c7cdc592c99ffb7839ec5179ed100633b5b56579648",
+        "step_id": "H0"
+      },
+      {
+        "outputs": [
+          "HOME_KEYS_SURFACE.json",
+          "HOME_REFERENCES.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md",
+        "prompt_sha256": "deb3a9a0fa5515f3605a4e5ba2c4e453c243ba43620d6d6167c26cb1001474de",
+        "step_id": "H1"
+      },
+      {
+        "outputs": [
+          "HOME_MCP_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md",
+        "prompt_sha256": "9ee30d624185d4644aa5b747c7fc066acf1ba70dc2c8fe4852c2ffc63b6151ac",
+        "step_id": "H2"
+      },
+      {
+        "outputs": [
+          "HOME_ROUTER_SURFACE.json",
+          "HOME_PROVIDER_LADDER_HINTS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md",
+        "prompt_sha256": "1df128dcd532f29d9fed9f6cb82a8ec0ca9ce1becd6b243cfe2798a809410c29",
+        "step_id": "H3"
+      },
+      {
+        "outputs": [
+          "HOME_LITELLM_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md",
+        "prompt_sha256": "fb1a94889c8a25b2aa4ec687aaa26363361377b74019f48adbeb3a3b07a49819",
+        "step_id": "H4"
+      },
+      {
+        "outputs": [
+          "HOME_PROFILES_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md",
+        "prompt_sha256": "610dc4d57f21c70a6f9691f625121abc25e361145f3eb6ab4b135d33add618b2",
+        "step_id": "H5"
+      },
+      {
+        "outputs": [
+          "HOME_TMUX_WORKFLOW_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md",
+        "prompt_sha256": "63cdb699bfc7a810cc0d653c0003e0b7f2a5619f3ae286ff3e81f025df521047",
+        "step_id": "H6"
+      },
+      {
+        "outputs": [
+          "HOME_SQLITE_SCHEMA.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md",
+        "prompt_sha256": "03467d0d7be4d6b2c73e0ed41163354b5caef384490ab2439d2173eee6ff6b93",
+        "step_id": "H7"
+      },
+      {
+        "outputs": [
+          "HOMECTRL_NORM_MANIFEST.json",
+          "HOMECTRL_QA.json",
+          "HOME_KEYS_SURFACE.json",
+          "HOME_REFERENCES.json",
+          "HOME_MCP_SURFACE.json",
+          "HOME_ROUTER_SURFACE.json",
+          "HOME_PROVIDER_LADDER_HINTS.json",
+          "HOME_LITELLM_SURFACE.json",
+          "HOME_PROFILES_SURFACE.json",
+          "HOME_TMUX_WORKFLOW_SURFACE.json",
+          "HOME_SQLITE_SCHEMA.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H9_MERGE___QA.md",
+        "prompt_sha256": "1c555aa8e68633aef261689dafff770e71c732165ff35feaf5ebf7f2aadb5d7e",
+        "step_id": "H9"
+      }
+    ],
+    "M": [
+      {
+        "outputs": [
+          "M0_RUNTIME_EXPORT_INVENTORY.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md",
+        "prompt_sha256": "ca6a7fe2ca07e663d29e6f47cba184e42af0eee4b61ff7993a76c14c498be013",
+        "step_id": "M0"
+      },
+      {
+        "outputs": [
+          "M1_SQLITE_SCHEMA_SNAPSHOTS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md",
+        "prompt_sha256": "2984f7e83574bf829c47f063dd63d0c8483fa7c165b47b065bc8ca917bd68904",
+        "step_id": "M1"
+      },
+      {
+        "outputs": [
+          "M2_SQLITE_TABLE_COUNTS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md",
+        "prompt_sha256": "a0229cbea6580bce1c95e18cc097623e79db34bb5c3bfcac8e73162b540becbb",
+        "step_id": "M2"
+      },
+      {
+        "outputs": [
+          "M3_CONPORT_EXPORT_SAFE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md",
+        "prompt_sha256": "a487d33bc8a7b24bc6f12cc8f1f77695e75be62b84bd0aceaa07b846f220945c",
+        "step_id": "M3"
+      },
+      {
+        "outputs": [
+          "M4_DOPE_CONTEXT_EXPORT_SAFE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md",
+        "prompt_sha256": "459bf74180e8ea0a1922709a6656b875c3347fa7b83e8194059a194e6ec8f8d1",
+        "step_id": "M4"
+      },
+      {
+        "outputs": [
+          "M5_MCP_HEALTH_EXPORT_SAFE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md",
+        "prompt_sha256": "327ad294efbbfc5f8431aca081031b1863031be5c73b3064388af9907d9b50b7",
+        "step_id": "M5"
+      },
+      {
+        "outputs": [
+          "M6_RUNTIME_EXPORT_INDEX.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md",
+        "prompt_sha256": "665e6ab3cd5c30ee51481a782833a9adb3bbe3f3c639e2bda5b89292f7c77351",
+        "step_id": "M6"
+      }
+    ],
+    "Q": [
+      {
+        "outputs": [
+          "QA_RUN_MANIFEST.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md",
+        "prompt_sha256": "864ba326bdba761394edcf01ad229597b76bf193f68de1151c106a0edbc2969a",
+        "step_id": "Q0"
+      },
+      {
+        "outputs": [
+          "QA_MISSING_ARTIFACTS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md",
+        "prompt_sha256": "36f198c6aaf53c1b13ab5312abf300f467f549009e553240f5d13d3ebf731912",
+        "step_id": "Q1"
+      },
+      {
+        "outputs": [
+          "QA_PROMPT_COLLISIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md",
+        "prompt_sha256": "95bcb88fa009bb5ce6b5a9b748828b28fc9b1371c87359237cf1b89a1867c065",
+        "step_id": "Q2"
+      },
+      {
+        "outputs": [
+          "QA_NORM_DRIFT_REPORT.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md",
+        "prompt_sha256": "054d36f8c9542d111fc2983d176f7099c96c9e578baf2172b48fc6ede63a4726",
+        "step_id": "Q3"
+      },
+      {
+        "outputs": [
+          "PIPELINE_DOCTOR_REPORT.json",
+          "QA_SERVICE_COVERAGE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md",
+        "prompt_sha256": "24b951db37c6d22de9a5fa080d4ef6ba052af37648e55afe72c47fdc8a3586d6",
+        "step_id": "Q9"
+      }
+    ],
+    "R": [
+      {
+        "outputs": [
+          "CONTROL_PLANE_TRUTH_MAP.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md",
+        "prompt_sha256": "df3135b94f118e7e2cd14038c23d00ed96d665dc11d25999a85d5353c2ec58bf",
+        "step_id": "R0"
+      },
+      {
+        "outputs": [
+          "DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+          "DOPE_MEMORY_SCHEMAS.json",
+          "DOPE_MEMORY_DB_WRITES.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+        "prompt_sha256": "b33ced3fc208bd2c4d88bd0114ea61f66f0bf1a5f31f9a9e50e938aa6a94645f",
+        "step_id": "R1"
+      },
+      {
+        "outputs": [
+          "EVENTBUS_WIRING_TRUTH.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md",
+        "prompt_sha256": "12d0c05d88b184bb8b1747b9c98e293d3bf10de528f63526f173b9150801ec8e",
+        "step_id": "R2"
+      },
+      {
+        "outputs": [
+          "TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
+        "prompt_sha256": "fb50479fca25c3d1b7be1440a179f115b8c7b0491051f35a5af40d2b984f211b",
+        "step_id": "R3"
+      },
+      {
+        "outputs": [
+          "TASKX_INTEGRATION_TRUTH.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md",
+        "prompt_sha256": "95e7bc9b9e10cd2f295d8df6040c34323c5a6cd4bf5e26d2f1d2a6e2a9bdfd30",
+        "step_id": "R4"
+      },
+      {
+        "outputs": [
+          "WORKFLOWS_TRUTH_GRAPH.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md",
+        "prompt_sha256": "8c9b62eb1c73451936a8069b5d3ed46730e401ca0157ec2d0841c76634c887f0",
+        "step_id": "R5"
+      },
+      {
+        "outputs": [
+          "PORTABILITY_AND_MIGRATION_RISK_LEDGER.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
+        "prompt_sha256": "682b576e69b4f852b2fdebcd6bd38ba079cf4df4838d374411a00e3a2f3e06ce",
+        "step_id": "R6"
+      },
+      {
+        "outputs": [
+          "CONFLICT_LEDGER.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md",
+        "prompt_sha256": "508346f31b32b1be5fa1206fd6fd4fc9203ecf1e37fa6d8f4556e93cb0fdeb6b",
+        "step_id": "R7"
+      },
+      {
+        "outputs": [
+          "RISK_REGISTER_TOP20.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md",
+        "prompt_sha256": "09bea772c6e32c4d115e12ac13a92b5de2560c594dba6e18b63806b223582e7d",
+        "step_id": "R8"
+      }
+    ],
+    "S": [
+      {
+        "outputs": [
+          "CONTROL_PLANE_TRUTH_MAP.md",
+          "DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+          "EVENTBUS_WIRING_TRUTH.md",
+          "TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
+          "TASKX_INTEGRATION_TRUTH.md",
+          "WORKFLOWS_TRUTH_GRAPH.md",
+          "PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
+          "CONFLICT_LEDGER.md",
+          "RISK_REGISTER_TOP20.md",
+          "ARCHITECTURE_SYNTHESIS_OPUS.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md",
+        "prompt_sha256": "794426e21ecfa73b1654dc788e5702e53736e74150ff3adb83ceceb69286a4cb",
+        "step_id": "S0"
+      },
+      {
+        "outputs": [
+          "MCP_TO_HOOKS_MIGRATION_OPUS.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md",
+        "prompt_sha256": "ccf1d2b3673afbb04347b298b1f6753359f0126e5b4d64ee90f385814176e8c0",
+        "step_id": "S1"
+      }
+    ],
+    "T": [
+      {
+        "outputs": [
+          "PROJECT_INSTRUCTIONS.md",
+          "TP_BACKLOG_TOPN.json",
+          "TP_INDEX.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T0_TASK_PACKET_FACTORY.md",
+        "prompt_sha256": "cab4941c5639e8c6e77fe2a9072c09211d01632ec38eab4542e32770bf15b46c",
+        "step_id": "T0"
+      },
+      {
+        "outputs": [
+          "TP_PACKETS_TOP10.partX.md",
+          "TP_PACKET_IMPLEMENTATION_INDEX.json",
+          "TP_BACKLOG_TOPN.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md",
+        "prompt_sha256": "faf4033d1c9c44b554349ef7f44beff4af47c1f74643d794fab8035a6a5b3308",
+        "step_id": "T1"
+      },
+      {
+        "outputs": [
+          "TP_SCHEMA.json",
+          "TP_AUTHORITY_RULES.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md",
+        "prompt_sha256": "b28756f1737cf34de08245822b83d07f20af5f780b6039bdf79913bd092865f2",
+        "step_id": "T2"
+      },
+      {
+        "outputs": [
+          "TP_BATCHED_PACKETS.partX.md",
+          "TP_BATCH_INDEX.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md",
+        "prompt_sha256": "efed4960f1f6e675a140a06525fdd08bc736b545731922ead54e42054b111507",
+        "step_id": "T3"
+      },
+      {
+        "outputs": [
+          "TP_DEDUPED.json",
+          "TP_COLLISIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md",
+        "prompt_sha256": "df59289078baed0280143154a40ca592e404bbea43d29233d99e23197431fe65",
+        "step_id": "T4"
+      },
+      {
+        "outputs": [
+          "TP_RUN_PLAN.json",
+          "TP_BACKLOG_TOPN.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md",
+        "prompt_sha256": "516cb72d3a6cceea2681edcfdfd1653a0a8980b43792530df200fd5bb71aa623",
+        "step_id": "T5"
+      },
+      {
+        "outputs": [
+          "TP_INDEX.json",
+          "TP_MERGED.json",
+          "TP_QA.json",
+          "TP_SUMMARY.md",
+          "TP_BACKLOG_TOPN.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md",
+        "prompt_sha256": "a24ff691edf416e533cd8a3ababa3b50b1b8a05ee487fe58be3463a14db1517b",
+        "step_id": "T9"
+      }
+    ],
+    "W": [
+      {
+        "outputs": [
+          "WORKFLOW_INVENTORY.json",
+          "WORKFLOW_PARTITIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md",
+        "prompt_sha256": "64a177df978045c479afe2529ef3276c4f22f790f6d8181acfb4b57b6fec13ee",
+        "step_id": "W0"
+      },
+      {
+        "outputs": [
+          "WORKFLOW_CATALOG.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md",
+        "prompt_sha256": "84d49091d0c7d0253026d6d41217203b77ecd68233bffca233446d9ca463b9ce",
+        "step_id": "W1"
+      },
+      {
+        "outputs": [
+          "WORKFLOW_IO_MAP.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md",
+        "prompt_sha256": "92b2fbfbd26c8663ad9746b41c3f7f230736ecc7b2a0289378eadb084a3b83d7",
+        "step_id": "W2"
+      },
+      {
+        "outputs": [
+          "WORKFLOW_COORDINATION_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md",
+        "prompt_sha256": "58530584ea7600733ac418e574f393dc1f634156467a8aad73cb1023cd345538",
+        "step_id": "W3"
+      },
+      {
+        "outputs": [
+          "WORKFLOW_FAILURE_RECOVERY.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md",
+        "prompt_sha256": "e58d994560ebb9639de18d944efc5cac89155053821469391756d9c416dd9c47",
+        "step_id": "W4"
+      },
+      {
+        "outputs": [
+          "WORKFLOW_STATE_COUPLING.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md",
+        "prompt_sha256": "a6b937a5377928f0ac8886f6a2ad746aab95de761e31693f3d224d6f664792f6",
+        "step_id": "W5"
+      },
+      {
+        "outputs": [
+          "WORKFLOW_MERGED.json",
+          "WORKFLOW_QA.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md",
+        "prompt_sha256": "0668662ef9aa9f3fc3184f7bea56e29fdab51c4812f9f25d74c907795939111c",
+        "step_id": "W9"
+      }
+    ],
+    "X": [
+      {
+        "outputs": [
+          "FEATURE_INDEX_INVENTORY.json",
+          "FEATURE_INDEX_PARTITIONS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md",
+        "prompt_sha256": "e3adc63a51ad4e17f678b985fa59efaf2e68acfb358d733a7222d797721f68cc",
+        "step_id": "X0"
+      },
+      {
+        "outputs": [
+          "FEATURE_SURFACE.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md",
+        "prompt_sha256": "75cc417a85932388c200c06efd1b8322a520333e19dc2a43e7081cf12f25caf4",
+        "step_id": "X1"
+      },
+      {
+        "outputs": [
+          "FEATURE_CODE_MAP.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md",
+        "prompt_sha256": "98a094adaf25ef5ea4b4c409b772d243a259e9eb49b931c3f01c6d8c1b02fc89",
+        "step_id": "X2"
+      },
+      {
+        "outputs": [
+          "FEATURE_DOC_MAP.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md",
+        "prompt_sha256": "8d4852acf03fad467c13b10b75bb24edb076882aa99230dabb7696d2f56dc1c2",
+        "step_id": "X3"
+      },
+      {
+        "outputs": [
+          "FEATURE_DEP_GRAPH.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md",
+        "prompt_sha256": "ccb286ec4da00fc2505127599d65511f63cc4ef96bb0f14f9d86a2b8b6891f9f",
+        "step_id": "X4"
+      },
+      {
+        "outputs": [
+          "FEATURE_INDEX_MERGED.json",
+          "FEATURE_INDEX_QA.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md",
+        "prompt_sha256": "0de27e463953347d439acc1ae1f75ac2792ec123997f8acfc281a1d2a1020806",
+        "step_id": "X9"
+      }
+    ],
+    "Z": [
+      {
+        "outputs": [
+          "FREEZE_FILE_INDEX.json",
+          "FREEZE_CHECKSUMS.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md",
+        "prompt_sha256": "52958fa930ae8cfb327a3aab14d2572876c966f51b8226bfeaa2659dbaf36a18",
+        "step_id": "Z0"
+      },
+      {
+        "outputs": [
+          "PROOF_PACK.md"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md",
+        "prompt_sha256": "6845a2f6783445b4f159d20414e47c1471dc9d9e31b97fe35f3435f3d20b618f",
+        "step_id": "Z1"
+      },
+      {
+        "outputs": [
+          "OPUS_INPUT_MANIFEST.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md",
+        "prompt_sha256": "66c9b72931d29f32b106bbbc51ce98e7d4d5dd9318f709f0e470a697a06a2da3",
+        "step_id": "Z2"
+      },
+      {
+        "outputs": [
+          "FREEZE_MANIFEST.json",
+          "FREEZE_README.md",
+          "FREEZE_QA.json"
+        ],
+        "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md",
+        "prompt_sha256": "6b111c9de5711e8fae924e42dcd592640ded22aeae21a0978e87862830a08c98",
+        "step_id": "Z9"
+      }
+    ]
+  },
+  "prompt_count": 103
+}

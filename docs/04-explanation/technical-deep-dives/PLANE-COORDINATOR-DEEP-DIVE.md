@@ -34,6 +34,7 @@ The service is a Python-based FastAPI/Uvicorn application running in a Docker co
 1. **`ConPortEventAdapter`**: Syncs coordination state back to the Knowledge Graph (ConPort).
 
 ### Failure Analysis: CRITICAL BUILD ERROR
+
 **Status**: The service is currently **CRASHING** (`Restarting (1)`).
 
 **Root Cause**:

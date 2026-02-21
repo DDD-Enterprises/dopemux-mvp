@@ -193,7 +193,7 @@ class ConfigLoader:
             # Check required environment variables
             for env_key, env_value in agent_config.get('env', {}).items():
                 # Check if it was a required variable that didn't get resolved
-                if env_value == '' and env_key in ['ANTHROPIC_API_KEY', 'GOOGLE_API_KEY', 'OPENAI_API_KEY']:
+                if env_value == '' and env_key in ['ANTHROPIC_API_KEY', 'GEMINI_API_KEY', 'OPENAI_API_KEY', 'GOOGLE_API_KEY']:
                     # Only warn, not error (could be optional)
                     warnings.append(f"⚠️  {agent_name}: {env_key} not set (may be optional)")
 

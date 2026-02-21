@@ -5,8 +5,8 @@ theme = "muted"
 
 [tmux.monitor_commands]
 # Monitor pane commands for dope layout
-"monitor:adhd" = "python dopemux_dashboard.py --view=compact"
-"monitor:system" = "python dopemux_dashboard.py --view=detail"
+"monitor:adhd" = "python scripts/dopemux_dashboard.py --view=compact"
+"monitor:system" = "python scripts/dopemux_dashboard.py --view=detail"
 "monitor:metrics" = "dopemux health"
 
 [tmux.pane_styles]

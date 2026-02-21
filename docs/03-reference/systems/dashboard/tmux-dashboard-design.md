@@ -158,7 +158,7 @@ fi
 ### Textual Implementation
 
 ```python
-# dopemux_dashboard.py
+# scripts/dopemux_dashboard.py
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Header, Footer, Static, DataTable, Sparkline

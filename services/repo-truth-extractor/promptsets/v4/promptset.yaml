@@ -1,0 +1,899 @@
+version: '4.0'
+name: repo-truth-extractor-v4
+all_phase_order:
+- A
+- H
+- D
+- C
+- E
+- W
+- B
+- G
+- Q
+- R
+- X
+- T
+- Z
+optional_phases:
+- M
+- S
+required_prompt_sections:
+- Goal
+- Inputs
+- Outputs
+- Schema
+- Extraction Procedure
+- Evidence Rules
+- Determinism Rules
+- Anti-Fabrication Rules
+- Failure Modes
+phases:
+  A:
+    required_steps:
+    - A0
+    - A1
+    - A2
+    - A3
+    - A4
+    - A5
+    - A6
+    - A7
+    - A8
+    - A9
+    - A99
+    steps:
+    - step_id: A0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPOCTRL_INVENTORY.json
+      - REPOCTRL_PARTITIONS.json
+    - step_id: A1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_INSTRUCTION_SURFACE.json
+      - REPO_INSTRUCTION_REFERENCES.json
+    - step_id: A2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_MCP_SERVER_DEFS.json
+    - step_id: A3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_MCP_PROXY_SURFACE.json
+    - step_id: A4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_ROUTER_SURFACE.json
+    - step_id: A5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_HOOKS_SURFACE.json
+    - step_id: A6
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_COMPOSE_SERVICE_GRAPH.json
+    - step_id: A7
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_LITELLM_SURFACE.json
+    - step_id: A8
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_TASKX_SURFACE.json
+    - step_id: A9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_IMPLICIT_BEHAVIOR_HINTS.json
+    - step_id: A99
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_INSTRUCTION_SURFACE.json
+      - REPO_INSTRUCTION_REFERENCES.json
+      - REPO_MCP_SERVER_DEFS.json
+      - REPO_MCP_PROXY_SURFACE.json
+      - REPO_ROUTER_SURFACE.json
+      - REPO_HOOKS_SURFACE.json
+      - REPO_IMPLICIT_BEHAVIOR_HINTS.json
+      - REPO_COMPOSE_SERVICE_GRAPH.json
+      - REPO_LITELLM_SURFACE.json
+      - REPO_TASKX_SURFACE.json
+      - REPOCTRL_NORM_MANIFEST.json
+      - REPOCTRL_QA.json
+  H:
+    required_steps:
+    - H0
+    - H1
+    - H2
+    - H3
+    - H4
+    - H5
+    - H6
+    - H7
+    - H9
+    steps:
+    - step_id: H0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - HOME_INVENTORY.json
+      - HOME_PARTITIONS.json
+    - step_id: H1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - HOME_KEYS_SURFACE.json
+      - HOME_REFERENCES.json
+    - step_id: H2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - HOME_MCP_SURFACE.json
+    - step_id: H3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - HOME_ROUTER_SURFACE.json
+      - HOME_PROVIDER_LADDER_HINTS.json
+    - step_id: H4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - HOME_LITELLM_SURFACE.json
+    - step_id: H5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - HOME_PROFILES_SURFACE.json
+    - step_id: H6
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - HOME_TMUX_WORKFLOW_SURFACE.json
+    - step_id: H7
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - HOME_SQLITE_SCHEMA.json
+    - step_id: H9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H9_MERGE___QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - HOMECTRL_NORM_MANIFEST.json
+      - HOMECTRL_QA.json
+      - HOME_KEYS_SURFACE.json
+      - HOME_REFERENCES.json
+      - HOME_MCP_SURFACE.json
+      - HOME_ROUTER_SURFACE.json
+      - HOME_PROVIDER_LADDER_HINTS.json
+      - HOME_LITELLM_SURFACE.json
+      - HOME_PROFILES_SURFACE.json
+      - HOME_TMUX_WORKFLOW_SURFACE.json
+      - HOME_SQLITE_SCHEMA.json
+  D:
+    required_steps:
+    - D0
+    - D1
+    - D2
+    - D3
+    - D4
+    - D5
+    steps:
+    - step_id: D0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DOC_INVENTORY.json
+      - DOC_PARTITIONS.json
+      - DOC_TODO_QUEUE.json
+    - step_id: D1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DOC_INDEX.partX.json
+      - DOC_CONTRACT_CLAIMS.partX.json
+      - DOC_BOUNDARIES.partX.json
+      - DOC_SUPERSESSION.partX.json
+      - CAP_NOTICES.partX.json
+    - step_id: D2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DOC_INTERFACES.partX.json
+      - DOC_WORKFLOWS.partX.json
+      - DOC_DECISIONS.partX.json
+      - DOC_GLOSSARY.partX.json
+    - step_id: D3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DOC_CITATION_GRAPH.json
+    - step_id: D4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DOC_INDEX.json
+      - DOC_CONTRACT_CLAIMS.json
+      - DOC_SUPERSESSION.json
+      - DOC_TOPIC_CLUSTERS.json
+      - DUPLICATE_DRIFT_REPORT.json
+      - DOC_RECENCY_DUPLICATE_REPORT.json
+      - DOC_COVERAGE_REPORT.json
+    - step_id: D5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DOC_TOPIC_CLUSTERS.json
+  C:
+    required_steps:
+    - C0
+    - C1
+    - C2
+    - C3
+    - C4
+    - C5
+    - C6
+    - C7
+    - C8
+    - C9
+    - C10
+    steps:
+    - step_id: C0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - CODE_INVENTORY.json
+      - CODE_PARTITIONS.json
+    - step_id: C1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - SERVICE_ENTRYPOINTS.json
+    - step_id: C2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EVENTBUS_SURFACE.json
+      - EVENT_PRODUCERS.json
+      - EVENT_CONSUMERS.json
+    - step_id: C3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DOPE_MEMORY_CODE_SURFACE.json
+      - DOPE_MEMORY_SCHEMAS.json
+      - DOPE_MEMORY_DB_WRITES.json
+    - step_id: C4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TRINITY_ENFORCEMENT_SURFACE.json
+      - REFUSAL_AND_GUARDRAILS_SURFACE.json
+    - step_id: C5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TASKX_INTEGRATION_SURFACE.json
+    - step_id: C6
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - WORKFLOW_RUNNER_SURFACE.json
+    - step_id: C7
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - API_DASHBOARD_SURFACE.json
+    - step_id: C8
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DETERMINISM_RISK_LOCATIONS.json
+      - IDEMPOTENCY_RISK_LOCATIONS.json
+      - CONCURRENCY_RISK_LOCATIONS.json
+      - SECRETS_RISK_LOCATIONS.json
+    - step_id: C9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - SERVICE_ENTRYPOINTS.json
+      - EVENTBUS_SURFACE.json
+      - EVENT_PRODUCERS.json
+      - EVENT_CONSUMERS.json
+      - DOPE_MEMORY_CODE_SURFACE.json
+      - DOPE_MEMORY_SCHEMAS.json
+      - DOPE_MEMORY_DB_WRITES.json
+      - TRINITY_ENFORCEMENT_SURFACE.json
+      - REFUSAL_AND_GUARDRAILS_SURFACE.json
+      - TASKX_INTEGRATION_SURFACE.json
+      - WORKFLOW_RUNNER_SURFACE.json
+      - DETERMINISM_RISK_LOCATIONS.json
+      - IDEMPOTENCY_RISK_LOCATIONS.json
+      - CONCURRENCY_RISK_LOCATIONS.json
+      - CODE_SURFACES_QA.json
+      - SERVICE_CATALOG.json
+    - step_id: C10
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - SERVICE_CATALOG.partX.json
+  E:
+    required_steps:
+    - E0
+    - E1
+    - E2
+    - E3
+    - E4
+    - E5
+    - E6
+    - E9
+    steps:
+    - step_id: E0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EXEC_INVENTORY.json
+      - EXEC_PARTITIONS.json
+    - step_id: E1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EXEC_BOOTSTRAP_COMMANDS.json
+    - step_id: E2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EXEC_ENV_CHAIN.json
+    - step_id: E3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EXEC_STARTUP_GRAPH.json
+    - step_id: E4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EXEC_RUNTIME_MODES.json
+      - EXEC_MODE_DELTA_REPORT.json
+    - step_id: E5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EXEC_ARTIFACT_SURFACE.json
+    - step_id: E6
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EXEC_RISK_FACTS.json
+    - step_id: E9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EXEC_MERGED.json
+      - EXEC_QA.json
+  W:
+    required_steps:
+    - W0
+    - W1
+    - W2
+    - W3
+    - W4
+    - W5
+    - W9
+    steps:
+    - step_id: W0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - WORKFLOW_INVENTORY.json
+      - WORKFLOW_PARTITIONS.json
+    - step_id: W1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - WORKFLOW_CATALOG.json
+    - step_id: W2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - WORKFLOW_IO_MAP.json
+    - step_id: W3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - WORKFLOW_COORDINATION_SURFACE.json
+    - step_id: W4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - WORKFLOW_FAILURE_RECOVERY.json
+    - step_id: W5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - WORKFLOW_STATE_COUPLING.json
+    - step_id: W9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - WORKFLOW_MERGED.json
+      - WORKFLOW_QA.json
+  B:
+    required_steps:
+    - B0
+    - B1
+    - B2
+    - B3
+    - B9
+    steps:
+    - step_id: B0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - BOUNDARY_INVENTORY.json
+      - BOUNDARY_PARTITIONS.json
+    - step_id: B1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - BOUNDARY_ENFORCEMENT_POINTS.json
+    - step_id: B2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - REFUSAL_GUARDRAILS_SURFACE.json
+    - step_id: B3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - BOUNDARY_BYPASS_RISKS.json
+    - step_id: B9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - BOUNDARY_MERGED.json
+      - BOUNDARY_QA.json
+  G:
+    required_steps:
+    - G0
+    - G1
+    - G2
+    - G3
+    - G4
+    - G9
+    steps:
+    - step_id: G0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - GOV_INVENTORY.json
+      - GOV_PARTITIONS.json
+    - step_id: G1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - GOV_CI_GATES.json
+    - step_id: G2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - GOV_HYGIENE_POLICIES.json
+    - step_id: G3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - GOV_POLICIES.json
+    - step_id: G4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - GOV_SECRETS_SURFACE.json
+    - step_id: G9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - GOV_MERGED.json
+      - GOV_QA.json
+  Q:
+    required_steps:
+    - Q0
+    - Q1
+    - Q2
+    - Q3
+    - Q9
+    steps:
+    - step_id: Q0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - QA_RUN_MANIFEST.json
+    - step_id: Q1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - QA_MISSING_ARTIFACTS.json
+    - step_id: Q2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - QA_PROMPT_COLLISIONS.json
+    - step_id: Q3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - QA_NORM_DRIFT_REPORT.json
+    - step_id: Q9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - PIPELINE_DOCTOR_REPORT.json
+      - QA_SERVICE_COVERAGE.json
+  R:
+    required_steps:
+    - R0
+    - R1
+    - R2
+    - R3
+    - R4
+    - R5
+    - R6
+    - R7
+    - R8
+    steps:
+    - step_id: R0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - CONTROL_PLANE_TRUTH_MAP.md
+    - step_id: R1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
+      - DOPE_MEMORY_SCHEMAS.json
+      - DOPE_MEMORY_DB_WRITES.json
+    - step_id: R2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - EVENTBUS_WIRING_TRUTH.md
+    - step_id: R3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
+    - step_id: R4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TASKX_INTEGRATION_TRUTH.md
+    - step_id: R5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - WORKFLOWS_TRUTH_GRAPH.md
+    - step_id: R6
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
+    - step_id: R7
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - CONFLICT_LEDGER.md
+    - step_id: R8
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - RISK_REGISTER_TOP20.md
+  X:
+    required_steps:
+    - X0
+    - X1
+    - X2
+    - X3
+    - X4
+    - X9
+    steps:
+    - step_id: X0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - FEATURE_INDEX_INVENTORY.json
+      - FEATURE_INDEX_PARTITIONS.json
+    - step_id: X1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - FEATURE_SURFACE.json
+    - step_id: X2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - FEATURE_CODE_MAP.json
+    - step_id: X3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - FEATURE_DOC_MAP.json
+    - step_id: X4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - FEATURE_DEP_GRAPH.json
+    - step_id: X9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - FEATURE_INDEX_MERGED.json
+      - FEATURE_INDEX_QA.json
+  T:
+    required_steps:
+    - T0
+    - T1
+    - T2
+    - T3
+    - T4
+    - T5
+    - T9
+    steps:
+    - step_id: T0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T0_TASK_PACKET_FACTORY.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - PROJECT_INSTRUCTIONS.md
+      - TP_BACKLOG_TOPN.json
+      - TP_INDEX.json
+    - step_id: T1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TP_PACKETS_TOP10.partX.md
+      - TP_PACKET_IMPLEMENTATION_INDEX.json
+      - TP_BACKLOG_TOPN.json
+    - step_id: T2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TP_SCHEMA.json
+      - TP_AUTHORITY_RULES.json
+    - step_id: T3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TP_BATCHED_PACKETS.partX.md
+      - TP_BATCH_INDEX.json
+    - step_id: T4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TP_DEDUPED.json
+      - TP_COLLISIONS.json
+    - step_id: T5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TP_RUN_PLAN.json
+      - TP_BACKLOG_TOPN.json
+    - step_id: T9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TP_INDEX.json
+      - TP_MERGED.json
+      - TP_QA.json
+      - TP_SUMMARY.md
+      - TP_BACKLOG_TOPN.json
+  Z:
+    required_steps:
+    - Z0
+    - Z1
+    - Z2
+    - Z9
+    steps:
+    - step_id: Z0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - FREEZE_FILE_INDEX.json
+      - FREEZE_CHECKSUMS.json
+    - step_id: Z1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - PROOF_PACK.md
+    - step_id: Z2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - OPUS_INPUT_MANIFEST.json
+    - step_id: Z9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - FREEZE_MANIFEST.json
+      - FREEZE_README.md
+      - FREEZE_QA.json
+  M:
+    required_steps:
+    - M0
+    - M1
+    - M2
+    - M3
+    - M4
+    - M5
+    - M6
+    steps:
+    - step_id: M0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - M0_RUNTIME_EXPORT_INVENTORY.json
+    - step_id: M1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - M1_SQLITE_SCHEMA_SNAPSHOTS.json
+    - step_id: M2
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - M2_SQLITE_TABLE_COUNTS.json
+    - step_id: M3
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - M3_CONPORT_EXPORT_SAFE.json
+    - step_id: M4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - M4_DOPE_CONTEXT_EXPORT_SAFE.json
+    - step_id: M5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - M5_MCP_HEALTH_EXPORT_SAFE.json
+    - step_id: M6
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - M6_RUNTIME_EXPORT_INDEX.json
+  S:
+    required_steps:
+    - S0
+    - S1
+    steps:
+    - step_id: S0
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - CONTROL_PLANE_TRUTH_MAP.md
+      - DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
+      - EVENTBUS_WIRING_TRUTH.md
+      - TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
+      - TASKX_INTEGRATION_TRUTH.md
+      - WORKFLOWS_TRUTH_GRAPH.md
+      - PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
+      - CONFLICT_LEDGER.md
+      - RISK_REGISTER_TOP20.md
+      - ARCHITECTURE_SYNTHESIS_OPUS.md
+    - step_id: S1
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - MCP_TO_HOOKS_MIGRATION_OPUS.md

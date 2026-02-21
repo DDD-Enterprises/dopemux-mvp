@@ -11,6 +11,8 @@ import {
   Chip,
   Divider,
   Tooltip,
+  LinearProgress,
+  alpha,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -150,7 +152,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   return (
     <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
-        <Timer size={24} />
+        <Timer size={24} aria-hidden="true" />
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
@@ -181,35 +183,73 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           <Typography variant="h5" sx={{ mb: 0.5 }}>
             {currentTask.title}
           </Typography>
-          <Typography variant="h3" sx={{ fontFamily: '"Space Grotesk", sans-serif', mb: 1 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontFamily: '"Space Grotesk", sans-serif',
+              mb: 1,
+              ...(isTimerRunning && {
+                animation: 'timer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                '@keyframes timer-pulse': {
+                  '0%, 100%': { opacity: 1 },
+                  '50%': { opacity: 0.6 },
+                },
+              }),
+            }}
+          >
             {formatTime(taskTimer)}
           </Typography>
+          <LinearProgress
+            variant="determinate"
+            value={Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100)}
+            sx={{
+              mb: 2.5,
+              height: 6,
+              borderRadius: 3,
+              bgcolor: alpha(brandTokens.colors.saintGold, 0.1),
+              '& .MuiLinearProgress-bar': {
+                bgcolor: brandTokens.colors.saintGold,
+                borderRadius: 3,
+              },
+            }}
+            aria-label="Current task progress"
+            aria-valuetext={`${Math.round(Math.min(100, (taskTimer / (currentTask.estimatedMinutes * 60)) * 100))}% of estimated time`}
+          />
           <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button
-              size="small"
-              variant="contained"
-              startIcon={isTimerRunning ? <Pause /> : <Play />}
-              onClick={() => setIsTimerRunning(!isTimerRunning)}
-            >
-              {isTimerRunning ? 'Pause' : 'Start'}
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<CheckCircle />}
-              onClick={() => completeTask(currentTask.id)}
-            >
-              Complete
-            </Button>
-            <Button
-              size="small"
-              variant="text"
-              startIcon={<SkipForward />}
-              onClick={() => skipTask(currentTask.id)}
-              sx={{ color: brandTokens.colors.gremlinPink }}
-            >
-              Skip
-            </Button>
+            <Tooltip title={isTimerRunning ? 'Pause Ritual' : 'Start Ritual'}>
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={isTimerRunning ? <Pause /> : <Play />}
+                onClick={() => setIsTimerRunning(!isTimerRunning)}
+                aria-label={isTimerRunning ? `Pause task: ${currentTask.title}` : `Start task: ${currentTask.title}`}
+              >
+                {isTimerRunning ? 'Pause' : 'Start'}
+              </Button>
+            </Tooltip>
+            <Tooltip title="Complete and Proceed">
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<CheckCircle />}
+                onClick={() => completeTask(currentTask.id)}
+                aria-label={`Complete task: ${currentTask.title}`}
+              >
+                Complete
+              </Button>
+            </Tooltip>
+            <Tooltip title="Skip for Now">
+              <Button
+                size="small"
+                variant="text"
+                startIcon={<SkipForward />}
+                onClick={() => skipTask(currentTask.id)}
+                sx={{ color: brandTokens.colors.gremlinPink }}
+                aria-label={`Skip task: ${currentTask.title}`}
+              >
+                Skip
+              </Button>
+            </Tooltip>
           </Box>
         </Box>
       )}
@@ -219,7 +259,9 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
         <Tooltip title="Consent → Calibration → Chaos → Care">
-          <Flame size={16} color={brandTokens.colors.gremlinPink} />
+          <Box component="span">
+            <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
+          </Box>
         </Tooltip>
       </Box>
 
@@ -241,11 +283,11 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
               >
                 <ListItemIcon>
                   {isCompleted ? (
-                    <CheckCircle color={brandTokens.colors.serumMint} size={20} />
+                    <CheckCircle color={brandTokens.colors.serumMint} size={20} aria-hidden="true" />
                   ) : isCurrent ? (
-                    <Play color={brandTokens.colors.ritualCyan} size={20} />
+                    <Play color={brandTokens.colors.ritualCyan} size={20} aria-hidden="true" />
                   ) : (
-                    <Circle color="rgba(255, 255, 255, 0.3)" size={18} />
+                    <Circle color="rgba(255, 255, 255, 0.3)" size={18} aria-hidden="true" />
                   )}
                 </ListItemIcon>
                 <ListItemText
@@ -275,7 +317,12 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   }
                 />
                 {!isCompleted && !isCurrent && (
-                  <Button size="small" variant="outlined" onClick={() => startTask(task.id)}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => startTask(task.id)}
+                    aria-label={`Start task: ${task.title}`}
+                  >
                     Start
                   </Button>
                 )}
@@ -301,7 +348,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           Sequencer calibrated for {cognitiveState.status.toUpperCase()} load.
         </Typography>
         <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
-          <Swords size={12} style={{ marginRight: 6 }} />
+          <Swords size={12} style={{ marginRight: 6 }} aria-hidden="true" />
           I reorder your chaos so you can stay feral on purpose.
         </Typography>
         <Typography className="dopemux-aftercare" sx={{ mt: 0.5 }}>
