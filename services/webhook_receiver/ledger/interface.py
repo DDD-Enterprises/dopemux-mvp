@@ -94,6 +94,10 @@ class EventStore(ABC):
     def list_completed_provider_refs(self, *, provider: str, run_id: str, phase: str) -> List[str]:
         raise NotImplementedError
 
+    @abstractmethod
+    def fetch_webhook_payload(self, *, provider: str, run_id: str, provider_ref: str) -> Optional[str]:
+        raise NotImplementedError
+
 
 def parse_db_url(raw_url: str) -> Dict[str, str]:
     value = (raw_url or "").strip()

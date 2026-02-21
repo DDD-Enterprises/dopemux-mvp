@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 
 
 def extract_run_mapping(payload: Dict[str, Any]) -> Dict[str, Optional[str]]:
+    """Extract run metadata (run_id, phase, step_id, partition_id, attempt, provider_ref) from OpenAI webhook payload structure."""
     data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
     metadata = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
     return {

@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 import socket
+import subprocess
 import sys
 import threading
 import time
@@ -77,17 +78,17 @@ def _free_port() -> int:
         return int(sock.getsockname()[1])
 
 
-def test_sqlite_event_store_idempotency(tmp_path: Path) -> None:
+def test_sqlite_event_store_idempotency(tmp_path: Path, monkeypatch) -> None:
     storage = _load_storage_module()
     interface_mod = _load_ledger_interface_module()
 
     db_url = f"sqlite:///{(tmp_path / 'events.db').as_posix()}"
-    os.environ["WEBHOOK_DB_URL"] = db_url
+    monkeypatch.setenv("WEBHOOK_DB_URL", db_url)
 
     # run migrations first
     migrate_script = Path(__file__).resolve().parents[2] / "scripts" / "webhook_migrate.py"
     assert migrate_script.exists()
-    assert os.system(f"python {migrate_script} --db {db_url}") == 0
+    subprocess.run([sys.executable, str(migrate_script), "--db", db_url], check=True)
 
     store = storage.build_event_store(db_url)
     payload = {"id": "evt_abc", "type": "response.completed", "data": {"id": "resp_1"}}
@@ -114,7 +115,7 @@ def test_server_invalid_signature_returns_401(tmp_path: Path, monkeypatch) -> No
 
     db_url = f"sqlite:///{(tmp_path / 'events.db').as_posix()}"
     migrate_script = Path(__file__).resolve().parents[2] / "scripts" / "webhook_migrate.py"
-    assert os.system(f"python {migrate_script} --db {db_url}") == 0
+    subprocess.run([sys.executable, str(migrate_script), "--db", db_url], check=True)
 
     monkeypatch.setenv("OPENAI_WEBHOOK_SECRET", "test_secret")
 
@@ -152,7 +153,7 @@ def test_server_duplicate_delivery_returns_204_and_no_second_insert(tmp_path: Pa
 
     db_url = f"sqlite:///{(tmp_path / 'events.db').as_posix()}"
     migrate_script = Path(__file__).resolve().parents[2] / "scripts" / "webhook_migrate.py"
-    assert os.system(f"python {migrate_script} --db {db_url}") == 0
+    subprocess.run([sys.executable, str(migrate_script), "--db", db_url], check=True)
 
     monkeypatch.setenv("OPENAI_WEBHOOK_SECRET", "test_secret")
 
@@ -201,15 +202,14 @@ def test_server_duplicate_delivery_returns_204_and_no_second_insert(tmp_path: Pa
 # --- TP-WEBHOOKS-0002 tests ---
 
 
-def _build_store_with_migrations(tmp_path: Path, db_name: str = "events.db"):
+def _build_store_with_migrations(tmp_path: Path, monkeypatch, db_name: str = "events.db"):
     """Helper: migrate + build SQLite EventStore."""
     storage = _load_storage_module()
     db_url = f"sqlite:///{(tmp_path / db_name).as_posix()}"
     migrate_script = Path(__file__).resolve().parents[2] / "scripts" / "webhook_migrate.py"
     assert migrate_script.exists()
-    rc = os.system(f"python {migrate_script} --db {db_url}")
-    assert rc == 0, f"migration failed with code {rc}"
-    os.environ["WEBHOOK_DB_URL"] = db_url
+    subprocess.run([sys.executable, str(migrate_script), "--db", db_url], check=True)
+    monkeypatch.setenv("WEBHOOK_DB_URL", db_url)
     return storage.build_event_store(db_url)
 
 
@@ -222,10 +222,10 @@ def _load_ledger_module(name: str):
     )
 
 
-def test_phase_r_async_submit_finalize_integration(tmp_path: Path) -> None:
+def test_phase_r_async_submit_finalize_integration(tmp_path: Path, monkeypatch) -> None:
     """End-to-end: submit pending -> simulate webhook ingestion -> finalize writes output."""
     interface_mod = _load_ledger_interface_module()
-    store = _build_store_with_migrations(tmp_path)
+    store = _build_store_with_migrations(tmp_path, monkeypatch)
 
     run_id = "run_test_async"
     step_id = "R1"
@@ -361,10 +361,10 @@ def test_phase_r_async_submit_finalize_integration(tmp_path: Path) -> None:
     assert len(still_pending) == 0
 
 
-def test_latest_attempt_reconciliation_stale_event_orphaned(tmp_path: Path) -> None:
+def test_latest_attempt_reconciliation_stale_event_orphaned(tmp_path: Path, monkeypatch) -> None:
     """Stale attempt: a superseded job should be marked orphaned, not trigger output."""
     interface_mod = _load_ledger_interface_module()
-    store = _build_store_with_migrations(tmp_path, "events2.db")
+    store = _build_store_with_migrations(tmp_path, monkeypatch, "events2.db")
 
     run_id = "run_stale"
     step_id = "R1"
