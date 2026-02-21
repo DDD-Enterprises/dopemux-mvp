@@ -15729,7 +15729,7 @@
       "size_bytes": 3352
     }
   ],
-  "artifacts_updated_at": "2026-02-20T14:16:18.111829+00:00",
+  "artifacts_updated_at": "2026-02-20T14:33:40.000318+00:00",
   "batch_config": {
     "enabled": false,
     "max_requests_per_job": 2000,
@@ -15748,7 +15748,7 @@
     "debug_phase_inputs": false,
     "disable_escalation": false,
     "doctor": false,
-    "doctor_auth": false,
+    "doctor_auth": true,
     "dry_run": false,
     "escalation_max_hops": 2,
     "fail_fast_auth": true,
@@ -15770,7 +15770,7 @@
     "partition_workers": 1,
     "phase": "ALL",
     "phase_auth_fail_threshold": 5,
-    "preflight_providers": true,
+    "preflight_providers": false,
     "pretty": false,
     "print_config": false,
     "print_promptpack": false,
@@ -15836,12 +15836,12 @@
     },
     "R": {
       "api_key_env": "OPENAI_API_KEY",
-      "model_id": "gpt-5.2-extended",
+      "model_id": "gpt-5.2",
       "provider": "openai"
     },
     "T": {
       "api_key_env": "OPENAI_API_KEY",
-      "model_id": "gpt-5.2-extended",
+      "model_id": "gpt-5.2",
       "provider": "openai"
     },
     "W": {
@@ -15851,7 +15851,7 @@
     },
     "X": {
       "api_key_env": "OPENAI_API_KEY",
-      "model_id": "gpt-5.2-extended",
+      "model_id": "gpt-5.2",
       "provider": "openai"
     },
     "Z": {
@@ -15860,8 +15860,8 @@
       "provider": "openai"
     }
   },
-  "generated_at": "2026-02-20T14:16:18.015493+00:00",
-  "git_sha": "8f31100c9333e37b19eb061a774fe4a8556eae18",
+  "generated_at": "2026-02-20T14:33:39.891022+00:00",
+  "git_sha": "c72ff4ab92d851ef71323506015729c39fefa4c4",
   "phase_status": "ready",
   "prompt_failures": [],
   "prompt_failures_count": 0,
@@ -16023,7 +16023,7 @@
       "synthesis": [
         {
           "api_key_env": "OPENAI_API_KEY",
-          "model_id": "gpt-5.2-extended",
+          "model_id": "gpt-5.2",
           "provider": "openai"
         },
         {
@@ -16086,14 +16086,14 @@
         },
         {
           "api_key_env": "OPENAI_API_KEY",
-          "model_id": "gpt-5.2-extended",
+          "model_id": "gpt-5.2",
           "provider": "openai"
         }
       ],
       "synthesis": [
         {
           "api_key_env": "OPENAI_API_KEY",
-          "model_id": "gpt-5.2-extended",
+          "model_id": "gpt-5.2",
           "provider": "openai"
         },
         {
@@ -16129,7 +16129,7 @@
       "extract": [
         {
           "api_key_env": "OPENAI_API_KEY",
-          "model_id": "gpt-5.2-extended",
+          "model_id": "gpt-5.2-pro",
           "provider": "openai"
         },
         {
@@ -16151,7 +16151,7 @@
         },
         {
           "api_key_env": "OPENAI_API_KEY",
-          "model_id": "gpt-5.2-extended",
+          "model_id": "gpt-5.2-pro",
           "provider": "openai"
         },
         {
@@ -16163,7 +16163,7 @@
       "synthesis": [
         {
           "api_key_env": "OPENAI_API_KEY",
-          "model_id": "gpt-5.2-extended",
+          "model_id": "gpt-5.2-pro",
           "provider": "openai"
         },
         {
