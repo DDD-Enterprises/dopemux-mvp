@@ -166,6 +166,25 @@ pm-down:
 pm-logs:
 	cd docker/leantime && docker-compose logs -f
 
+# ---- Webhook Receiver ----
+webhook-up:  ## Start webhook receiver
+	@docker compose up -d webhook_receiver
+
+webhook-down:  ## Stop webhook receiver
+	@docker compose stop webhook_receiver && docker compose rm -f webhook_receiver
+
+webhook-logs:  ## Tail webhook receiver logs
+	@docker compose logs -f webhook_receiver
+
+webhook-smoke:  ## Run full smoke tests for webhooks
+	@./scripts/webhooks/smoke.sh
+
+webhook-health:  ## Check webhook receiver health (local and public)
+	@echo "Checking local health..."
+	@curl -fsS http://localhost:8790/healthz && echo "" || echo "Local health check failed"
+	@echo "Checking public health..."
+	@curl -fsS https://webhooks.krohman.org/healthz && echo "" || echo "Public health check failed"
+
 # ============================================
 # ADHD Dashboard & Orchestrator
 # ============================================
