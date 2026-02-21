@@ -15,9 +15,9 @@
     <key>KeepAlive</key>
     <true/>
     <key>StandardErrorPath</key>
-    <string>/Users/hue/.cloudflared/dopemux-webhooks.log</string>
+    <string>$HOME/.cloudflared/dopemux-webhooks.log</string>
     <key>StandardOutPath</key>
-    <string>/Users/hue/.cloudflared/dopemux-webhooks.log</string>
+    <string>$HOME/.cloudflared/dopemux-webhooks.log</string>
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
