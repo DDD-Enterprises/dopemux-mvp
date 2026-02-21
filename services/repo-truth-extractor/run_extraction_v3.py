@@ -9106,7 +9106,9 @@ def _build_event_store_for_runner() -> Any:
                     migration_fn = getattr(storage, candidate)
                     break
 
-        if callable(migration_fn):
+        ran_migrations = False
+
+        if server is not None and hasattr(server, "ensure_migrations"):
             try:
                 # server.ensure_migrations doesn't take args, storage ones might
                 import inspect
