@@ -9086,18 +9086,15 @@ def _build_event_store_for_runner() -> Any:
         except Exception:
             server = None  # type: ignore[assignment]
 
-        ran_migrations = False
-
         if server is not None and hasattr(server, "ensure_migrations"):
             try:
                 server.ensure_migrations()  # type: ignore[call-arg]
-                ran_migrations = True
             except Exception:
                 logging.exception(
                     "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
                 )
 
-        if not ran_migrations:
+        if not (server is not None and hasattr(server, "ensure_migrations")):
             migrate_script = webhook_receiver_dir / "webhook_migrate.py"
             if migrate_script.is_file():
                 try:
@@ -9105,7 +9102,6 @@ def _build_event_store_for_runner() -> Any:
                         [sys.executable, str(migrate_script)],
                         check=True,
                     )
-                    ran_migrations = True
                 except Exception:
                     logging.exception(
                         "Failed to apply webhook event store migrations via webhook_migrate.py; proceeding without them."
