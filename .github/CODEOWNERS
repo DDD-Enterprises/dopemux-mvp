@@ -1,0 +1,18 @@
+# Global ownership
+* @hu3mann
+
+# Core platform
+/src/ @hu3mann
+/services/ @hu3mann
+/docker/ @hu3mann
+/compose.yml @hu3mann
+
+# CI/CD and governance
+/.github/ @hu3mann
+/config/repo_hygiene/ @hu3mann
+
+# Docs
+/docs/ @hu3mann
+/README.md @hu3mann
+/INSTALL.md @hu3mann
+/QUICK_START.md @hu3mann
