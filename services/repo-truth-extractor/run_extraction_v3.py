@@ -17,6 +17,7 @@ import platform
 import subprocess
 import sys
 import time
+import importlib.util
 from collections import Counter, defaultdict
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
@@ -30,15 +31,30 @@ if str(RUNNER_SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(RUNNER_SERVICE_DIR))
 
 import requests
-from lib.batch_clients import (
-    BatchClient,
-    BatchRequest,
-    BatchResult,
-    BatchRoute,
-    GeminiBatchClient,
-    OpenAIBatchClient,
-    XAIBatchClient,
-)
+try:
+    from lib.batch_clients import (
+        BatchClient,
+        BatchRequest,
+        BatchResult,
+        BatchRoute,
+        GeminiBatchClient,
+        OpenAIBatchClient,
+        XAIBatchClient,
+    )
+except ModuleNotFoundError:
+    batch_clients_path = RUNNER_SERVICE_DIR / "lib" / "batch_clients.py"
+    batch_clients_spec = importlib.util.spec_from_file_location("repo_truth_batch_clients", batch_clients_path)
+    if not batch_clients_spec or not batch_clients_spec.loader:
+        raise
+    batch_clients_module = importlib.util.module_from_spec(batch_clients_spec)
+    batch_clients_spec.loader.exec_module(batch_clients_module)
+    BatchClient = batch_clients_module.BatchClient
+    BatchRequest = batch_clients_module.BatchRequest
+    BatchResult = batch_clients_module.BatchResult
+    BatchRoute = batch_clients_module.BatchRoute
+    GeminiBatchClient = batch_clients_module.GeminiBatchClient
+    OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
+    XAIBatchClient = batch_clients_module.XAIBatchClient
 try:
     from rich.console import Console
     from rich.panel import Panel
