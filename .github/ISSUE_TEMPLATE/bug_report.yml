@@ -1,0 +1,51 @@
+name: Bug report
+description: Report a reproducible defect
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug report. Please include enough detail for deterministic reproduction.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide exact commands, inputs, and sequence.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and errors
+      description: Paste relevant logs/tracebacks (redact secrets).
+      render: shell
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, Docker version, and branch/commit.
+      placeholder: "Ubuntu 24.04, Python 3.11, Docker 28.x, main@<sha>"
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues first
+          required: true
+        - label: I removed secrets from logs and screenshots
+          required: true

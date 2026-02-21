@@ -18,6 +18,7 @@
 - [Coding Standards](#coding-standards)
 - [Testing](#testing)
 - [Contributing](#contributing)
+- [Security](#security)
 - [Community & Support](#community--support)
 - [License](#license)
 - [FAQ & Troubleshooting](#faq--troubleshooting)
@@ -234,15 +235,31 @@ See [docs/03-reference/03-testing.md](docs/03-reference/03-testing.md) for full 
 
 ## Contributing
 
-Contributions are welcome! Focus areas include ADHD accommodations, statusline, energy/attention tracking, and context preservation. Follow code exemplars in `src/dopemux/`, `services/`, and `tests/`. See [copilot-instructions.md](.github/copilot/copilot-instructions.md) for project-specific rules.
+Contributions are welcome. Start with the repository contribution guide:
+
+- [Contributing Guide](.github/CONTRIBUTING.md)
+- [Pull Request Template](.github/pull_request_template.md)
+- [Code Owners](.github/CODEOWNERS)
+
+Follow code exemplars in `src/dopemux/`, `services/`, and `tests/`. For repository-specific AI/automation instructions, see [copilot-instructions.md](.github/copilot-instructions.md).
+
+---
+
+## Security
+
+Use private disclosure for vulnerabilities:
+
+- [Security Policy](.github/SECURITY.md)
+- [Report a Vulnerability](https://github.com/DDD-Enterprises/dopemux-mvp/security/advisories/new)
 
 ---
 
 ## Community & Support
 
-- [GitHub Issues](https://github.com/DDD-Enterprises/dopemux-mvp/issues) — Bug reports & feature requests
-- [Issues](https://github.com/DDD-Enterprises/dopemux-mvp/issues) — Community Q&A
-- [Contact](mailto:support@dopemux.dev) — Direct support
+- [Support Guide](.github/SUPPORT.md)
+- [GitHub Issues](https://github.com/DDD-Enterprises/dopemux-mvp/issues) — Bug reports and feature requests
+- [Issue Templates](.github/ISSUE_TEMPLATE/) — Standardized bug/feature intake
+- [Code of Conduct](.github/CODE_OF_CONDUCT.md)
 
 ---
 
