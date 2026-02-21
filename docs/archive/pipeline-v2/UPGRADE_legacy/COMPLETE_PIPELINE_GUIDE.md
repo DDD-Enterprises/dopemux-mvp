@@ -1,3 +1,15 @@
+---
+id: COMPLETE_PIPELINE_GUIDE
+title: Complete Pipeline Guide
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Complete Pipeline Guide (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Complete Extraction Pipeline: Priority-First Run Order
 
 **Run this pipeline to extract ALL architectural truth with zero silent loss.**

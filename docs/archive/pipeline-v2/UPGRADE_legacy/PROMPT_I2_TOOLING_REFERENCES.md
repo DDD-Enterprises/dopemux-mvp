@@ -1,3 +1,15 @@
+---
+id: PROMPT_I2_TOOLING_REFERENCES
+title: Prompt I2 Tooling References
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Prompt I2 Tooling References (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Prompt I2 (v2): LLM Tooling & Server References
 
 **Outputs:** `LLM_TOOLING_REFERENCES.json`, `LLM_SERVER_CALL_SURFACE.json`

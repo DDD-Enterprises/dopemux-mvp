@@ -1,3 +1,15 @@
+---
+id: PROMPT_G_DOCS_DEEP_EXTRACTION
+title: Prompt G Docs Deep Extraction
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-20'
+last_review: '2026-02-20'
+next_review: '2026-05-21'
+prelude: Prompt G Docs Deep Extraction (explanation) for dopemux documentation and
+  developer workflows.
+---
 # Prompt G (v2): Docs deep extraction (claims, boundaries, workflows, supersession)
 
 > [!WARNING]

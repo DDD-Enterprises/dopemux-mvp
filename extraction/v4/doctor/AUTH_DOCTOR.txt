@@ -1,0 +1,14 @@
+PASS provider=gemini transport=openai_compat_http endpoint=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions response_received=True succeeded_modes=bearer,both failed_modes=query_key,api_key
+generated_at=2026-02-19T23:39:17.756714+00:00
+phase=A
+provider=gemini
+model_id=models/gemini-3-flash-preview
+api_key_env_name=GEMINI_API_KEY
+api_key_env_resolved=GEMINI_API_KEY
+api_key_present=true
+api_key_length=39
+transport=openai_compat_http
+gemini_auth_mode_requested=auto
+modes_tested=query_key,api_key,bearer,both
+succeeded_modes=bearer,both
+failed_modes=query_key,api_key

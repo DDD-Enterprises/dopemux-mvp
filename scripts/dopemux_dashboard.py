@@ -19,12 +19,13 @@ Usage:
 import asyncio
 import httpx
 import sys
+import shutil
 import subprocess
 import json
 import logging
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple, Union
 from dataclasses import dataclass
 from prometheus_client import PrometheusClient, PrometheusConfig
 from sparkline_generator import SparklineGenerator
@@ -69,9 +70,9 @@ ENDPOINTS = {
     "adhd_flow": "http://localhost:8095/api/v1/flow-state/default_user",  # Day 2: NEW
     "adhd_session": "http://localhost:8095/api/v1/session-time/default_user",  # Day 2: NEW
     "adhd_breaks": "http://localhost:8095/api/v1/breaks/default_user",  # Day 2: NEW
-    "tasks": "http://localhost:8001/api/v1/tasks",  # TODO: Add endpoint
+    "tasks": "http://localhost:8095/api/v1/tasks?user_id=default_user",
     "decisions": "http://localhost:8005/api/adhd/decisions/recent",  # ConPort (Day 2)
-    "services": "http://localhost:8002/health",  # TODO: Bridge
+    "services": "http://localhost:3016/health",
     "patterns": "http://localhost:8003/api/patterns/top",  # Serena (Day 2: NEW)
 }
 
@@ -181,7 +182,7 @@ async def trigger_break(duration_minutes: int = 5):
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://localhost:8000/api/v1/break/start",
+                "http://localhost:8095/api/v1/break/start",
                 json={"user_id": "default_user", "duration_minutes": duration_minutes},
                 timeout=2.0
             )
@@ -465,7 +466,7 @@ class MetricsManager:
         """Start WebSocket streaming"""
         self.streaming_client = StreamingClient(
             config=StreamingConfig(
-                url="ws://localhost:8000/api/v1/ws/stream",
+                url="ws://localhost:8095/api/v1/ws/stream",
                 user_id="default_user"
             ),
             on_state_update=self.handle_state_update,
@@ -603,9 +604,10 @@ class MetricsManager:
         """Fetch service health via HTTP"""
         services = {}
         for name, url in [
-            ("ADHD Engine", "http://localhost:8000/health"),
+            ("ADHD Engine", "http://localhost:8095/health"),
             ("ConPort", "http://localhost:8005/health"),
             ("Serena", "http://localhost:8003/health"),
+            ("MCP Bridge", "http://localhost:3016/health"),
         ]:
             try:
                 resp = await self.http_client.get(url)
@@ -726,9 +728,9 @@ class MetricsFetcher:
         """Get health status of all services"""
         services = {
             "ConPort": "http://localhost:8005/health",
-            "ADHD Engine": "http://localhost:8001/health",
+            "ADHD Engine": "http://localhost:8095/health",
             "Serena": "http://localhost:8003/health",
-            "MCP Bridge": "http://localhost:8002/health",
+            "MCP Bridge": "http://localhost:3016/health",
         }
         
         health = {}
@@ -1658,11 +1660,24 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
     class ServiceLogsModal(ModalView):
         """Live log viewer for services"""
         
+        # Map display names to docker compose service names
+        SERVICE_MAP = {
+            "ADHD Engine": "adhd-engine",
+            "ConPort": "conport",
+            "Serena": "serena",
+            "Zen MCP": "pal",
+            "Task Orchestrator": "task-orchestrator",
+            "Integration Bridge": "dopecon-bridge",
+            "Dope Context": "dope-context",
+            "Desktop Commander": "desktop-commander"
+        }
+
         def __init__(self, service_name: str):
             super().__init__()
             self.service_name = service_name
             self.auto_scroll = True
             self.filter_level = "ALL"
+            self.compose_service = self.SERVICE_MAP.get(service_name)
         
         def compose(self) -> ComposeResult:
             with Container(id="modal-container"):
@@ -1683,34 +1698,82 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
                 self.app.notify(f"❌ Error loading logs: {e}", severity="error")
         
         async def fetch_logs(self, lines: int = 50) -> List[Dict]:
-            """Fetch recent logs from service"""
-            # TODO: Fetch from real API
-            # For now, return mock logs
-            from datetime import datetime, timedelta
+            """Fetch recent logs from service via Docker"""
+            if not self.compose_service:
+                return [{"timestamp": "", "level": "ERROR", "message": f"Unknown service: {self.service_name}"}]
             
-            mock_logs = []
-            base_time = datetime.now()
+            # Determine project root (assuming script is in scripts/ or root)
+            script_path = Path(__file__).resolve()
+            if script_path.parent.name == "scripts":
+                project_root = script_path.parent.parent
+            else:
+                project_root = script_path.parent
             
-            levels = ["INFO", "DEBUG", "INFO", "INFO", "WARN", "INFO", "ERROR", "INFO"]
-            messages = [
-                "Starting session intelligence update",
-                "Fetching patterns from database",
-                "Found 23 active patterns",
-                "Pattern #15 has low confidence (0.45)",
-                "Session analysis complete (127ms)",
-                "Failed to connect to Redis: Connection timeout",
-                "Retrying Redis connection (attempt 1/3)",
-                "Redis connection restored",
-            ]
-            
-            for i in range(min(lines, len(levels))):
-                mock_logs.append({
-                    "timestamp": (base_time - timedelta(seconds=i*5)).strftime("%H:%M:%S"),
-                    "level": levels[i],
-                    "message": messages[i]
-                })
-            
-            return mock_logs
+            try:
+                # Check for docker
+                if not shutil.which("docker"):
+                     return [{"timestamp": "", "level": "ERROR", "message": "Docker executable not found"}]
+
+                # Run docker compose logs
+                cmd = [
+                    "docker", "compose", "logs",
+                    "--tail", str(lines),
+                    "--timestamps",
+                    "--no-log-prefix",
+                    "--no-color",
+                    self.compose_service
+                ]
+
+                process = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    cwd=str(project_root)
+                )
+
+                stdout, stderr = await process.communicate()
+
+                if process.returncode != 0:
+                     error_msg = stderr.decode().strip() or "Unknown error"
+                     return [{"timestamp": "", "level": "ERROR", "message": f"Docker error: {error_msg}"}]
+
+                logs = []
+                # Parse logs
+                # Format: 2023-10-27T10:00:00.123456789Z <content>
+                log_lines = stdout.decode().splitlines()
+
+                for line in log_lines:
+                    parts = line.split(" ", 1)
+                    if len(parts) < 2:
+                        continue
+
+                    timestamp_str, content = parts
+
+                    # Clean timestamp (remove Z and sub-seconds for display)
+                    # 2023-10-27T10:00:00.123456789Z -> 10:00:00
+                    try:
+                        timestamp = timestamp_str.split("T")[-1].replace("Z", "").split(".")[0]
+                    except:
+                        timestamp = timestamp_str
+
+                    # Detect level
+                    level = "INFO"
+                    content_upper = content.upper()
+                    if "ERROR" in content_upper: level = "ERROR"
+                    elif "WARN" in content_upper: level = "WARN"
+                    elif "DEBUG" in content_upper: level = "DEBUG"
+                    elif "CRITICAL" in content_upper: level = "ERROR"
+
+                    logs.append({
+                        "timestamp": timestamp,
+                        "level": level,
+                        "message": content.strip()
+                    })
+
+                return logs or [{"timestamp": "", "level": "INFO", "message": "No logs found"}]
+
+            except Exception as e:
+                return [{"timestamp": "", "level": "ERROR", "message": f"Failed to fetch logs: {e}"}]
         
         def render_logs(self, logs: List[Dict]) -> None:
             """Render logs in table"""
@@ -1764,7 +1827,7 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
     class PatternDetailModal(ModalView):
         """Detailed view of a behavioral pattern"""
         
-        def __init__(self, pattern_id: int, pattern_data: Optional[Dict] = None):
+        def __init__(self, pattern_id: Union[int, str], pattern_data: Optional[Dict] = None):
             super().__init__()
             self.pattern_id = pattern_id
             self._pattern_data = pattern_data
@@ -1789,18 +1852,30 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
         
         async def fetch_pattern_details(self) -> Dict:
             """Fetch pattern details from Serena"""
-            if self._pattern_data:
+            # If we have pre-loaded data AND it looks detailed (has history/tags), use it
+            if self._pattern_data and "success_rate" in self._pattern_data:
                 return self._pattern_data
             
-            # TODO: Fetch from real API
-            return {
+            # Fetch from real API
+            try:
+                url = f"http://localhost:8003/api/patterns/{self.pattern_id}"
+                async with httpx.AsyncClient(timeout=2.0) as client:
+                    response = await client.get(url)
+                    if response.status_code == 200:
+                        return response.json()
+            except Exception:
+                pass  # Fallback to mock if API fails
+
+            # Fallback (Mock)
+            return self._pattern_data if self._pattern_data else {
                 "id": self.pattern_id,
                 "name": "Deep Work Morning Block",
                 "occurrences": 47,
                 "success_rate": 0.89,
                 "avg_duration": "2h 15m",
                 "confidence": 0.92,
-                "tags": ["morning", "deep-work", "productive"]
+                "tags": ["morning", "deep-work", "productive"],
+                "history": [1, 1, 1, 0, 1, 1, 0]
             }
         
         def render_pattern_content(self, pattern: Dict) -> str:

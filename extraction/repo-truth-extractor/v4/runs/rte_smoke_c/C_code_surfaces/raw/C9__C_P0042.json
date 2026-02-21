@@ -1,0 +1,117 @@
+{
+  "artifacts": [
+    {
+      "artifact_name": "SERVICE_ENTRYPOINTS.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "EVENTBUS_SURFACE.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "EVENT_PRODUCERS.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "EVENT_CONSUMERS.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "DOPE_MEMORY_CODE_SURFACE.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "DOPE_MEMORY_SCHEMAS.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "DOPE_MEMORY_DB_WRITES.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "TRINITY_ENFORCEMENT_SURFACE.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "REFUSAL_AND_GUARDRAILS_SURFACE.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "TASKX_INTEGRATION_SURFACE.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "WORKFLOW_RUNNER_SURFACE.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "DETERMINISM_RISK_LOCATIONS.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "IDEMPOTENCY_RISK_LOCATIONS.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "CONCURRENCY_RISK_LOCATIONS.json",
+      "payload": []
+    },
+    {
+      "artifact_name": "CODE_SURFACES_QA.json",
+      "payload": []
+    }
+  ],
+  "dry_run": true,
+  "generated_at": "2026-02-20T14:03:39.603747+00:00",
+  "partition_id": "C_P0042",
+  "phase": "C",
+  "request_meta": {
+    "auth_present_flags": {
+      "has_auth": true,
+      "has_xgoog": false,
+      "sdk_api_key_present": true,
+      "used_query_key": false
+    },
+    "batch_job_id": null,
+    "batch_provider": null,
+    "endpoint_base_url": "https://api.openai.com/v1",
+    "endpoint_effective": "https://api.openai.com/v1/chat/completions",
+    "endpoint_host": "api.openai.com",
+    "endpoint_path": "/v1/chat/completions",
+    "endpoint_transport_signature": "eb6e206b622c8d013d702e059b4e74999e16104ea6a7d787b1a22c119435da0e",
+    "escalation_trigger": null,
+    "execution_mode": "sync",
+    "failure_type": null,
+    "gemini_auth_attempt_sequence": null,
+    "gemini_auth_mode_effective": null,
+    "gemini_auth_mode_requested": null,
+    "gemini_endpoint_family": null,
+    "model_id": "gpt-5-nano",
+    "partition_id": "C_P0042",
+    "phase": "C",
+    "provider": "openai",
+    "provider_error_reason": null,
+    "provider_signature": "provider=openai;model=gpt-5-nano;host=api.openai.com;path=/v1/chat/completions;auth_mode=bearer",
+    "request_payload_bytes": 105975,
+    "request_payload_bytes_mode": "sdk_estimate",
+    "route_attempts": [],
+    "route_hop_index": 1,
+    "route_hop_total": 1,
+    "routing_policy": "cost",
+    "routing_signature": "bfed139d41d2efa20e48b35f7bdfb150de9e1a06c1ed26ed0165f509d1bc17b9",
+    "routing_tier": "qa",
+    "run_id": "rte_smoke_c",
+    "runner_script_path": "/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/run_extraction_v3.py",
+    "runner_script_sha256": "ad1055ce0416fed1387b87292686afa56698ff620c3646ea5f940a453ebed197",
+    "sent_header_keys": [],
+    "status_code": null,
+    "step_id": "C9",
+    "structured_output": {
+      "enabled": false,
+      "mime_type": null,
+      "schema": null
+    },
+    "transport": "openai_sdk"
+  },
+  "step_id": "C9"
+}
