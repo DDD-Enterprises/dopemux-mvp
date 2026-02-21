@@ -9074,7 +9074,7 @@ WEBHOOK_DB_URL_ENV = "WEBHOOK_DB_URL"
 
 def _build_event_store_for_runner() -> Any:
     """Lazily import the webhook receiver ledger package and return a ready EventStore.
-
+ 
     This helper ensures (on a best-effort basis) that any pending DB migrations for the
     webhook event store have been applied before constructing the EventStore, mirroring
     the migration behavior used by the main server where possible.
@@ -9083,9 +9083,9 @@ def _build_event_store_for_runner() -> Any:
     if str(webhook_receiver_dir) not in sys.path:
         sys.path.insert(0, str(webhook_receiver_dir))
     import storage  # type: ignore[import]
-
+ 
     db_url = storage.resolve_webhook_db_url()
-
+ 
     # Best-effort: attempt to run migrations in the same way the main server does.
     # Prefer calling ensure_migrations() from server.py; if that is not available,
     # fall back to invoking webhook_migrate.py via subprocess. Any failures are
@@ -9095,7 +9095,7 @@ def _build_event_store_for_runner() -> Any:
             import server  # type: ignore[import]
         except Exception:
             server = None  # type: ignore[assignment]
-
+ 
         if server is not None and hasattr(server, "ensure_migrations"):
             try:
                 server.ensure_migrations()  # type: ignore[call-arg]
@@ -9103,7 +9103,7 @@ def _build_event_store_for_runner() -> Any:
                 logging.exception(
                     "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
                 )
-
+ 
         if not (server is not None and hasattr(server, "ensure_migrations")):
             migrate_script = webhook_receiver_dir / "webhook_migrate.py"
             if migrate_script.is_file():
@@ -9120,7 +9120,7 @@ def _build_event_store_for_runner() -> Any:
         # If migrations cannot be run in this context, fall back to the previous behavior
         # and let build_event_store handle any initialization.
         logging.debug("Migrations not available or failed in runner context; continuing without them.")
-
+ 
     return storage.build_event_store(db_url)
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
     """Extract plain text content from an OpenAI response.completed webhook payload."""
@@ -9218,12 +9218,11 @@ def run_phase_R_async_submit(
 
         for partition in partitions:
             partition_id = str(partition["id"])
-            
             latest_attempt = event_store.latest_attempt_for_tuple(
                 run_id=run_id, phase="R", step_id=step_id, partition_id=partition_id
             )
             attempt = (latest_attempt or 0) + 1
-            
+ 
             out_json = raw_dir / f"{step_id}__{partition_id}.json"
             pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
 
@@ -9353,22 +9352,22 @@ def _fetch_webhook_payload_for_job(event_store: Any, run_id: str, provider_ref: 
     fetch_fn = getattr(event_store, "fetch_webhook_payload", None)
     if not callable(fetch_fn):
         return {}
-
+ 
     try:
         # The EventStore is responsible for any backend-specific querying.
         payload = fetch_fn(provider="openai", run_id=run_id, provider_ref=provider_ref)
     except Exception:
         return {}
-
+ 
     if isinstance(payload, dict):
         return payload
-
+ 
     if isinstance(payload, str):
         payload_json = payload
     else:
         # Unsupported payload type
         return {}
-
+ 
     if not payload_json:
         return {}
     try:
