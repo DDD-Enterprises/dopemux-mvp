@@ -7,37 +7,37 @@ services:
   # === CRITICAL PATH SERVERS (Priority: High) ===
 
   # PAL - Multi-model orchestration and complex decision making
-  # pal:
-  #   build:
-  #     context: ./pal
-  #     dockerfile: Dockerfile
-  #   container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-pal"
-  #   restart: unless-stopped
-  #   networks:
-  #     - dopemux-network
-  #   environment:
-  #     - OPENAI_API_KEY="" # Disabled - no direct OpenAI calls
-  #     - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-  #     - GEMINI_API_KEY=${GEMINI_API_KEY}
-  #     - XAI_API_KEY=${XAI_API_KEY}
-  #     - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
-  #     - DEFAULT_MODEL=auto
-  #     - PAL_DEFAULT_PROVIDER=openrouter # Prefer OpenRouter for routing
-  #     - MCP_SERVER_PORT=3003
-  #     - MCP_TRANSPORT=http
-  #   ports:
-  #     - "3003:3003"
-  #   working_dir: /app
-  #   healthcheck:
-  #     test: [ "CMD", "python", "-c", "import sys; sys.exit(0)" ]
-  #     timeout: 10s
-  #     retries: 3
-  #     interval: 30s
-  #     start_period: 45s
-  #   labels:
-  #     - "mcp.role=critical_path"
-  #     - "mcp.priority=highest"
-  #     - "mcp.description=Multi-model orchestration"
+  pal:
+    build:
+      context: ./pal
+      dockerfile: Dockerfile
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-pal"
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    environment:
+      - OPENAI_API_KEY="" # Disabled - no direct OpenAI calls
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
+      - DEFAULT_MODEL=auto
+      - PAL_DEFAULT_PROVIDER=openrouter # Prefer OpenRouter for routing
+      - MCP_SERVER_PORT=3003
+      - MCP_TRANSPORT=http
+    ports:
+      - "3003:3003"
+    working_dir: /app
+    healthcheck:
+      test: [ "CMD", "curl", "-sf", "http://localhost:3003/health" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    labels:
+      - "mcp.role=critical_path"
+      - "mcp.priority=highest"
+      - "mcp.description=Multi-model orchestration"
 
   litellm:
     build:
@@ -60,7 +60,8 @@ services:
       - LITELLM_LOG=INFO
       - LITELLM_DROP_PARAMS=true
     healthcheck:
-      test: [ "CMD", "curl", "-sf", "http://localhost:4000/health" ]
+      # /health/liveliness does not require auth (unlike /health which returns 401)
+      test: [ "CMD", "curl", "-sf", "http://localhost:4000/health/liveliness" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -597,8 +598,8 @@ services:
     volumes:
       - mcp_qdrant_data:/qdrant/storage
     healthcheck:
-      # Use curl instead of wget (more commonly available)
-      test: [ "CMD-SHELL", "curl -f http://localhost:6333/readyz || exit 1" ]
+      # qdrant image has no curl/wget; use bash /dev/tcp built-in
+      test: [ "CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/6333' || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
