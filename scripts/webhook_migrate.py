@@ -5,13 +5,13 @@ import argparse
 import os
 import sqlite3
 from pathlib import Path
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 ROOT = Path(__file__).resolve().parents[1]
 LEDGER_ROOT = ROOT / "services" / "webhook_receiver"
 
 
-def _parse_db_url(db_url: str) -> dict:
+def _parse_db_url(db_url: str) -> Dict[str, str]:
     """
     Delegate DB URL parsing to the canonical implementation used by the webhook ledger.
 
