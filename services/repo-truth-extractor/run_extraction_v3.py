@@ -8904,15 +8904,44 @@ WEBHOOK_DB_URL_ENV = "WEBHOOK_DB_URL"
 
 
 def _build_event_store_for_runner() -> Any:
-    """Lazily import the webhook receiver ledger package and return a ready EventStore."""
+    """Lazily import the webhook receiver ledger package and return a ready EventStore.
+
+    This helper ensures (on a best-effort basis) that any pending DB migrations for the
+    webhook event store have been applied before constructing the EventStore, mirroring
+    the migration behavior used by the main server where possible.
+    """
     webhook_receiver_dir = RUNNER_SERVICE_DIR.parent / "webhook_receiver"
     if str(webhook_receiver_dir) not in sys.path:
         sys.path.insert(0, str(webhook_receiver_dir))
     from storage import build_event_store, resolve_webhook_db_url  # type: ignore[import]
 
-    return build_event_store(resolve_webhook_db_url())
+    db_url = resolve_webhook_db_url()
 
+    # Best-effort: attempt to run the same migration step the server uses, if exposed
+    # by the storage module. If no migration helper is available, or it fails, we log
+    # and continue so that existing behavior is preserved.
+    try:
+        import storage  # type: ignore[import]
 
+        migration_fn = None
+        for candidate in ("run_migrations", "migrate", "apply_migrations", "ensure_migrations_applied"):
+            if hasattr(storage, candidate):
+                migration_fn = getattr(storage, candidate)
+                break
+
+        if callable(migration_fn):
+            try:
+                migration_fn(db_url)  # type: ignore[call-arg]
+            except Exception:
+                logging.exception(
+                    "Failed to apply webhook event store migrations; proceeding without them."
+                )
+    except ImportError:
+        # If the storage module cannot be imported in this context, fall back to the
+        # previous behavior and let build_event_store handle any initialization.
+        logging.debug("storage module not available for migrations in runner context.")
+
+    return build_event_store(db_url)
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
     """Extract plain text content from an OpenAI response.completed webhook payload."""
     data = payload.get("data")
