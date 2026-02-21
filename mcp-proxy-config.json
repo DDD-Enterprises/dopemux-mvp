@@ -75,6 +75,7 @@
       "command": "docker",
       "args": [
         "exec",
+        "-i",
         "mcp-mas-sequential-thinking",
         "mcp-server-mas-sequential-thinking"
       ],
@@ -141,6 +142,19 @@
         "MORPH_API_KEY": "${MORPH_API_KEY}",
         "ALL_TOOLS": "false"
       },
+      "type": "stdio"
+    },
+    "leantime-bridge": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-leantime-bridge",
+        "python",
+        "-m",
+        "leantime_bridge.http_server"
+      ],
+      "env": {},
       "type": "stdio"
     }
   }

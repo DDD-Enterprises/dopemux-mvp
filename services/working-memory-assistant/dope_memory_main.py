@@ -56,6 +56,14 @@ DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memor
 DEFAULT_WORKSPACE_ID = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "default")
 DEFAULT_INSTANCE_ID = os.getenv("DOPE_MEMORY_INSTANCE_ID", "A")
 
+# CORS configuration
+ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097"
+    ).split(",") if o.strip()
+]
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MCP Server (Inline to avoid import issues)
@@ -1030,7 +1038,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

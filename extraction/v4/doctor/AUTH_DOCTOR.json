@@ -1,0 +1,131 @@
+{
+  "api_key_env_name": "GEMINI_API_KEY",
+  "api_key_env_resolved": "GEMINI_API_KEY",
+  "api_key_length": 39,
+  "api_key_present": true,
+  "checks": [
+    {
+      "auth_present_flags": {
+        "has_auth": false,
+        "has_xgoog": false,
+        "used_query_key": true
+      },
+      "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions?key=REDACTED",
+      "exception_message_excerpt": "400 Client Error: Bad Request for url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions?key=REDACTEDsd5H9_gonhEepQtWyOfUOo6A",
+      "exception_type": "HTTPError",
+      "failure_bucket": "missing_or_invalid",
+      "failure_type": "auth_missing",
+      "mode": "query_key",
+      "ok": false,
+      "provider_error_reason": "INVALID_ARGUMENT",
+      "provider_signature": "provider=gemini;model=models/gemini-3-flash-preview;host=generativelanguage.googleapis.com;path=/v1beta/openai/chat/completions;auth_mode=query_key",
+      "response_received": false,
+      "sdk_response_summary": null,
+      "sent_header_keys": [
+        "Content-Type"
+      ],
+      "status_code": 400,
+      "transport": "openai_compat_http"
+    },
+    {
+      "auth_present_flags": {
+        "has_auth": false,
+        "has_xgoog": true,
+        "used_query_key": false
+      },
+      "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      "exception_message_excerpt": "400 Client Error: Bad Request for url: https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      "exception_type": "HTTPError",
+      "failure_bucket": "missing_or_invalid",
+      "failure_type": "auth_missing",
+      "mode": "api_key",
+      "ok": false,
+      "provider_error_reason": "INVALID_ARGUMENT",
+      "provider_signature": "provider=gemini;model=models/gemini-3-flash-preview;host=generativelanguage.googleapis.com;path=/v1beta/openai/chat/completions;auth_mode=api_key",
+      "response_received": false,
+      "sdk_response_summary": null,
+      "sent_header_keys": [
+        "Content-Type",
+        "x-goog-api-key"
+      ],
+      "status_code": 400,
+      "transport": "openai_compat_http"
+    },
+    {
+      "auth_present_flags": {
+        "has_auth": true,
+        "has_xgoog": false,
+        "used_query_key": false
+      },
+      "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      "exception_message_excerpt": null,
+      "exception_type": null,
+      "failure_bucket": "none",
+      "failure_type": null,
+      "mode": "bearer",
+      "ok": true,
+      "provider_error_reason": null,
+      "provider_signature": "provider=gemini;model=models/gemini-3-flash-preview;host=generativelanguage.googleapis.com;path=/v1beta/openai/chat/completions;auth_mode=bearer",
+      "response_received": true,
+      "sdk_response_summary": {
+        "candidate_count": 0,
+        "text_length": 2
+      },
+      "sent_header_keys": [
+        "Authorization",
+        "Content-Type"
+      ],
+      "status_code": 200,
+      "transport": "openai_compat_http"
+    },
+    {
+      "auth_present_flags": {
+        "has_auth": true,
+        "has_xgoog": true,
+        "used_query_key": false
+      },
+      "endpoint_effective": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      "exception_message_excerpt": null,
+      "exception_type": null,
+      "failure_bucket": "none",
+      "failure_type": null,
+      "mode": "both",
+      "ok": true,
+      "provider_error_reason": null,
+      "provider_signature": "provider=gemini;model=models/gemini-3-flash-preview;host=generativelanguage.googleapis.com;path=/v1beta/openai/chat/completions;auth_mode=both",
+      "response_received": true,
+      "sdk_response_summary": {
+        "candidate_count": 0,
+        "text_length": 2
+      },
+      "sent_header_keys": [
+        "Authorization",
+        "Content-Type",
+        "x-goog-api-key"
+      ],
+      "status_code": 200,
+      "transport": "openai_compat_http"
+    }
+  ],
+  "failed_modes": [
+    "query_key",
+    "api_key"
+  ],
+  "gemini_auth_mode_requested": "auto",
+  "generated_at": "2026-02-19T23:39:17.756714+00:00",
+  "model_id": "models/gemini-3-flash-preview",
+  "modes_tested": [
+    "query_key",
+    "api_key",
+    "bearer",
+    "both"
+  ],
+  "phase": "A",
+  "provider": "gemini",
+  "succeeded_modes": [
+    "bearer",
+    "both"
+  ],
+  "summary": "PASS provider=gemini transport=openai_compat_http endpoint=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions response_received=True succeeded_modes=bearer,both failed_modes=query_key,api_key",
+  "transport": "openai_compat_http"
+}

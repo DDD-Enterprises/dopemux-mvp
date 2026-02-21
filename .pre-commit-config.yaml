@@ -102,17 +102,20 @@ repos:
 
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
-              if [[ "$normalized" =~ ^\./(reports/|quarantine/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|out/|_audit_out/|extraction/) ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
 
               # Config/state and tooling docs
               if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi
+              if [[ "$normalized" =~ /\.taskx/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.conport/|conport_export/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.github/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(examples/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(tests/resources/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(src/dopemux/templates/) ]]; then continue; fi
               if [[ "$normalized" =~ /\.pytest_cache/ ]]; then continue; fi
+              # UPGRADES directory is allowed
+              if [[ "$normalized" =~ ^\./(UPGRADES/) ]]; then continue; fi
 
 
               # Root project docs and common standards docs anywhere
@@ -143,6 +146,34 @@ repos:
         files: \.md$
         pass_filenames: true
 
+      # Legacy UPGRADES tree is docs-only.
+      - id: upgrades-docs-only-guard
+        name: Reject executable/config code under UPGRADES (docs-only legacy tree)
+        entry: bash -c
+        args:
+          - |
+            set -e
+            violations_found=false
+            for file in "$@"; do
+              normalized="./${file#./}"
+              if [[ ! "$normalized" =~ ^\./UPGRADES/ ]]; then
+                continue
+              fi
+              if [[ "$normalized" =~ \.md$ ]]; then
+                continue
+              fi
+              echo "❌ $file (UPGRADES is docs-only; move executable/config assets under services/repo-truth-extractor)"
+              violations_found=true
+            done
+            if [ "$violations_found" = true ]; then
+              exit 1
+            fi
+            echo "✅ UPGRADES docs-only guard passed"
+          - --
+        language: system
+        files: ^UPGRADES/
+        pass_filenames: true
+
       # Repo root hygiene enforcement
       - id: root-hygiene
         name: Enforce repository root hygiene (no random root files)
@@ -156,7 +187,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^docs/.*\.md$
-        exclude: node_modules/
+        exclude: ^docs/archive/|node_modules/|.*_opus_inputs/|.*archive/|.*ARCHIVE/
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
@@ -171,7 +202,9 @@ repos:
     hooks:
       - id: trailing-whitespace
         files: ^docs/.*\.md$
+        exclude: (.*_opus_inputs/|.*archive/|.*ARCHIVE/)
       - id: end-of-file-fixer
         files: ^docs/.*\.md$
+        exclude: (.*_opus_inputs/|.*archive/|.*ARCHIVE/)
       - id: check-yaml
         files: ^config/.*\.ya?ml$

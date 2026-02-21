@@ -3,8 +3,10 @@ set -euo pipefail
 
 # Sync known MCP docker-compose env vars from repo .env (and current shell)
 # Writes docker/mcp-servers/.env with only the keys we know/need.
+# Canonical Gemini key is GEMINI_API_KEY; GOOGLE_API_KEY is emitted as a
+# compatibility alias for tooling that still expects the legacy name.
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../.. && pwd)"
 DEST_DIR="$ROOT_DIR/docker/mcp-servers"
 DEST_FILE="$DEST_DIR/.env"
 
@@ -40,6 +42,13 @@ mkdir -p "$DEST_DIR"
       echo "# $key=   # not set"
     fi
   done
+  gemini_val=$(eval echo "\${GEMINI_API_KEY-}")
+  if [ -n "$gemini_val" ]; then
+    gv="$gemini_val"; gv="${gv%\"}"; gv="${gv#\"}"; gv="${gv%\'}"; gv="${gv#\'}"
+    echo "GOOGLE_API_KEY=$gv"
+  else
+    echo "# GOOGLE_API_KEY=   # compatibility alias from GEMINI_API_KEY"
+  fi
 } > "$DEST_FILE"
 
 echo "✅ Wrote $DEST_FILE"

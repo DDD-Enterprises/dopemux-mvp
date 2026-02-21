@@ -99,7 +99,7 @@ docker-compose.override.yml
 # Workspace files
 tmux-dopemux-orchestrator.yaml
 .tmux.conf
-dopemux_dashboard.py
+scripts/dopemux_dashboard.py
 dopemux.rb
 ADHD-DASHBOARD-SESSION-SUMMARY.md
 AG-master_plan.md

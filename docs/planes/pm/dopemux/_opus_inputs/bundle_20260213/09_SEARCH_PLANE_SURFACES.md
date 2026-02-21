@@ -1,3 +1,15 @@
+---
+id: 09_SEARCH_PLANE_SURFACES
+title: 09 Search Plane Surfaces
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-16'
+last_review: '2026-02-16'
+next_review: '2026-05-17'
+prelude: 09 Search Plane Surfaces (explanation) for dopemux documentation and developer
+  workflows.
+---
 # 09 Search Plane Surfaces
 
 ## Scope covered

@@ -1,6 +1,6 @@
 # Dopemux Development Makefile
 
-.PHONY: help install install-dev test test-unit test-integration test-coverage clean lint format type-check build docs serve-docs
+.PHONY: help install install-dev test test-unit test-integration test-coverage test-extractor test-extractor-smoke clean lint format type-check build docs serve-docs probe probe-c
 
 # Default target
 help:
@@ -16,6 +16,8 @@ help:
 	@echo "  test-integration  Run integration tests only"
 	@echo "  test-coverage  Run tests with coverage report"
 	@echo "  test-fast      Run tests without slow tests"
+	@echo "  test-extractor Run Repo Truth Extractor tests without global coverage gate"
+	@echo "  test-extractor-smoke  Run extractor rename-migration unit smoke tests without coverage gate"
 	@echo ""
 	@echo "Quality:"
 	@echo "  lint           Run linting checks (flake8)"
@@ -40,6 +42,15 @@ help:
 	@echo "  pm-up          Start PM stack (docker-compose up -d)"
 	@echo "  pm-down        Stop PM stack (docker-compose down)"
 	@echo "  pm-logs        Tail PM stack logs"
+	@echo ""
+	@echo "Extraction Pipeline (Upgrade Pipeline):"
+	@echo "  x-run-init RUN_ID=YYYYMMDD_HHMM_<slug>  Initialize new extraction run scaffolding"
+	@echo "  x-phase-dirs PHASE=<A|H|D|C|E|W|B|G|Q|R|X|T|Z>  Print target directories for a phase"
+	@echo "  x-status                                     Print file counts per phase"
+	@echo "  x-manifest                                   Update/generate MANIFEST.json for run"
+	@echo "  x-doctor                                     Run pipeline doctor on latest run"
+	@echo "  probe                                        Deterministic run/phase/step debug bundle"
+	@echo "  probe-c                                      Convenience probe for Phase C (default STEP=C0)"
 
 # Installation targets
 install:
@@ -66,6 +77,12 @@ test-fast:
 
 test-verbose:
 	pytest -v
+
+test-extractor:
+	pytest --no-cov services/repo-truth-extractor/tests
+
+test-extractor-smoke:
+	pytest --no-cov tests/unit/test_run_extraction_v3_phase_m.py tests/unit/test_run_extraction_v3_pipeline_controls.py
 
 # Quality targets
 lint:
@@ -177,3 +194,81 @@ kill-minimal:  ## Kill minimal session
 list-sessions:  ## List all tmux sessions
 	@tmux list-sessions 2>/dev/null || echo "No tmux sessions running"
 
+# ---- Extraction Pipeline (Upgrade Pipeline) ----
+LATEST_RUN := $(shell cat extraction/latest_run_id.txt 2>/dev/null)
+
+x-run-init:
+	@if [ -n "$(RUN_ID)" ]; then \
+		ID="$(RUN_ID)"; \
+	else \
+		SHA=$$(git rev-parse --short HEAD 2>/dev/null || echo nogit); \
+		ID=$$(date '+%Y%m%d_%H%M%S_PST')_$$SHA; \
+	fi; \
+	echo "Initializing run $$ID..."; \
+	mkdir -p "extraction/runs/$$ID/00_inputs"; \
+	for PHASE_DIR in \
+		A_repo_control_plane \
+		H_home_control_plane \
+		D_docs_pipeline \
+		C_code_surfaces \
+		E_execution_plane \
+		W_workflow_plane \
+		B_boundary_plane \
+		G_governance_plane \
+		Q_quality_assurance \
+		R_arbitration \
+		X_feature_index \
+		T_task_packets \
+		Z_handoff_freeze; do \
+		mkdir -p "extraction/runs/$$ID/$$PHASE_DIR/inputs"; \
+		mkdir -p "extraction/runs/$$ID/$$PHASE_DIR/raw"; \
+		mkdir -p "extraction/runs/$$ID/$$PHASE_DIR/norm"; \
+		mkdir -p "extraction/runs/$$ID/$$PHASE_DIR/qa"; \
+	done; \
+	echo "$$ID" > extraction/latest_run_id.txt; \
+	rm -f extraction/latest; \
+	ln -s "runs/$$ID" extraction/latest; \
+	echo "✓ Initialized run $$ID in extraction/latest"
+
+x-phase-dirs:
+	@if [ -z "$(PHASE)" ]; then echo "Usage: make x-phase-dirs PHASE=<A|H|D|C|E|W|B|G|Q|R|X|T|Z>"; exit 1; fi
+	@case $(PHASE) in \
+		A) echo "extraction/latest/A_repo_control_plane" ;; \
+		H) echo "extraction/latest/H_home_control_plane" ;; \
+		D) echo "extraction/latest/D_docs_pipeline" ;; \
+		C) echo "extraction/latest/C_code_surfaces" ;; \
+		E) echo "extraction/latest/E_execution_plane" ;; \
+		W) echo "extraction/latest/W_workflow_plane" ;; \
+		B) echo "extraction/latest/B_boundary_plane" ;; \
+		G) echo "extraction/latest/G_governance_plane" ;; \
+		Q) echo "extraction/latest/Q_quality_assurance" ;; \
+		R) echo "extraction/latest/R_arbitration" ;; \
+		X) echo "extraction/latest/X_feature_index" ;; \
+		T) echo "extraction/latest/T_task_packets" ;; \
+		Z) echo "extraction/latest/Z_handoff_freeze" ;; \
+		*) echo "Invalid phase $(PHASE)"; exit 1 ;; \
+	esac
+
+x-status:
+	@echo "Current Run: $(LATEST_RUN)"
+	@find extraction/latest -maxdepth 2 -not -path '*/.*' | sort
+
+x-manifest:
+	@python3 scripts/pipeline_manifest.py
+
+x-doctor:
+	@python3 scripts/pipeline_doctor.py
+
+probe:
+	@if [ -z "$(PHASE)" ]; then echo "Usage: make probe PHASE=<A|H|D|C|E|W|B|G|Q|R|X|T|Z> (RID=<rid> | RID_FROM_LATEST=1) [STEP=<step>]"; exit 1; fi
+	@if [ -n "$(RID)" ] && [ "$(RID_FROM_LATEST)" = "1" ]; then echo "Set either RID=<rid> or RID_FROM_LATEST=1, not both."; exit 1; fi
+	@if [ -z "$(RID)" ] && [ "$(RID_FROM_LATEST)" != "1" ]; then echo "Set RID=<rid> or RID_FROM_LATEST=1."; exit 1; fi
+	@python3 services/repo-truth-extractor/run_probe.py --phase "$(PHASE)" \
+		$(if $(RID),--rid "$(RID)",--rid-from-latest) \
+		$(if $(STEP),--step "$(STEP)",) \
+		$(if $(MAX_PARTITIONS),--max-partitions "$(MAX_PARTITIONS)",) \
+		$(if $(MAX_FAILURES),--max-failures "$(MAX_FAILURES)",) \
+		$(if $(SEARCH_ROOT),--search-root "$(SEARCH_ROOT)",)
+
+probe-c:
+	@$(MAKE) probe PHASE=C STEP=$(if $(STEP),$(STEP),C0) RID="$(RID)" RID_FROM_LATEST="$(RID_FROM_LATEST)" MAX_PARTITIONS="$(MAX_PARTITIONS)" MAX_FAILURES="$(MAX_FAILURES)" SEARCH_ROOT="$(SEARCH_ROOT)"
