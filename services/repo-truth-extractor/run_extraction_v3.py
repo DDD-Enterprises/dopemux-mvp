@@ -68,6 +68,7 @@ except Exception:  # pragma: no cover - optional rich rendering
 
 PHASES = ["A", "H", "D", "C", "E", "W", "B", "G", "Q", "R", "X", "T", "Z"]
 PROMPT_HASH_MODE = "strict"
+PROMPT_ROOT_ENV_VAR = "UPGRADES_PROMPT_ROOT"
 VERIFY_PHASE_CHOICES = PHASES + ["ALL"]
 PROOF_PACK_FILENAME = "PROOF_PACK.json"
 COVERAGE_ROLLUP_FILENAME = "COVERAGE_ROLLUP.json"
@@ -335,6 +336,18 @@ TEXT_SUFFIXES = {
     ".conf",
     ".env",
 }
+
+
+def prompt_root() -> Path:
+    configured = os.getenv(PROMPT_ROOT_ENV_VAR, "UPGRADES").strip() or "UPGRADES"
+    return Path(configured)
+
+
+def step_sort_key(step_id: str) -> Tuple[str, int]:
+    match = re.match(r"^([A-Z])(\d+)$", step_id)
+    if not match:
+        return (step_id[:1], 999999)
+    return (match.group(1), int(match.group(2)))
 
 TEXT_NAMES = {
     "Dockerfile",
@@ -2290,8 +2303,8 @@ def _resolve_prompt_root() -> Path:
 
 
 def get_phase_prompts(phase: str) -> List[PromptSpec]:
-    prompt_root = _resolve_prompt_root()
-    prompts = sorted(prompt_root.glob(f"PROMPT_{phase}*_*.md"))
+    root = prompt_root()
+    prompts = sorted(root.glob(f"PROMPT_{phase}*_*.md"))
     grouped: Dict[str, List[Path]] = {}
 
     for prompt_path in prompts:
@@ -2302,7 +2315,7 @@ def get_phase_prompts(phase: str) -> List[PromptSpec]:
         grouped.setdefault(step_id, []).append(prompt_path)
 
     specs: List[PromptSpec] = []
-    for step_id in sorted(grouped.keys()):
+    for step_id in sorted(grouped.keys(), key=step_sort_key):
         candidates = sorted(grouped[step_id], key=lambda p: p.name)
         if len(candidates) > 1:
             raise RuntimeError(
@@ -2334,7 +2347,7 @@ def get_phase_prompts(phase: str) -> List[PromptSpec]:
 
 
 def _missing_prompt_glob(step_id: str) -> str:
-    return str((_resolve_prompt_root() / f"PROMPT_{step_id}_*.md").resolve())
+    return str((prompt_root() / f"PROMPT_{step_id}_*.md").resolve())
 
 
 def _truncate_exception_message(message: str, limit: int = 500) -> str:
@@ -2635,7 +2648,7 @@ def resolve_phase_list(phase_arg: Optional[str]) -> List[str]:
 
 def collect_prompt_index() -> Tuple[Dict[str, Dict[str, List[Path]]], Dict[str, List[str]]]:
     step_map: Dict[str, List[Path]] = defaultdict(list)
-    prompt_paths = sorted(_resolve_prompt_root().glob("PROMPT_*.md"))
+    prompt_paths = sorted(prompt_root().glob("PROMPT_*.md"))
     for prompt_path in prompt_paths:
         match = re.match(r"PROMPT_([A-Z][0-9]+)_", prompt_path.name)
         if not match:
@@ -2645,7 +2658,7 @@ def collect_prompt_index() -> Tuple[Dict[str, Dict[str, List[Path]]], Dict[str, 
 
     phase_map: Dict[str, Dict[str, List[Path]]] = defaultdict(dict)
     duplicates: Dict[str, List[str]] = {}
-    for step_id in sorted(step_map.keys()):
+    for step_id in sorted(step_map.keys(), key=step_sort_key):
         paths = sorted(step_map[step_id], key=lambda p: p.name)
         phase = step_id[0]
         phase_map.setdefault(phase, {})
@@ -2713,8 +2726,7 @@ def run_doctor_checks(root: Path, dirs: Dict[str, Path], run_id: str, phase_arg:
         prompts = prompt_index.get(phase, {})
         if not prompts:
             errors.append(
-                f"No prompts found for phase {phase} "
-                f"({(EXTRACTOR_SERVICE_DIR / 'prompts' / 'v3').as_posix()}/PROMPT_{phase}*)."
+                f"No prompts found for phase {phase} ({prompt_root()}/PROMPT_{phase}*)."
             )
 
     run_root = dirs["root"]
@@ -6478,9 +6490,7 @@ def _run_phase_inner(
     phase_dir = dirs[phase]
     prompts = get_phase_prompts(phase)
     if not prompts:
-        raise RuntimeError(
-            f"No prompts found for phase {phase} in {(EXTRACTOR_SERVICE_DIR / 'prompts' / 'v3').as_posix()}/"
-        )
+        raise RuntimeError(f"No prompts found for phase {phase} in {prompt_root()}/")
     prompt_report = _prompt_hash_report_for_phase(phase, prompts)
     if prompt_report["blocked_promptset"]:
         update_run_manifest_promptset_block(phase_dir.parent, phase, prompt_report)

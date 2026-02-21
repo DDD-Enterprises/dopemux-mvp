@@ -12,6 +12,8 @@ from dataclasses import asdict
 from datetime import datetime
 from typing import Any, Dict, List
 
+from sqlalchemy import bindparam
+
 from ..clients import mcp_client
 from ..config import settings
 from ..core import cache_manager, db_manager
@@ -101,22 +103,41 @@ class TaskIntegrationService:
                 {"tasks": task_descriptions}
             )
 
-            # Update dependencies in shared database
+            dependencies = dependency_result.get("dependencies", [])
+            if not dependencies:
+                return
+
+            # Map for efficient lookup
+            task_map = {t.id: t for t in tasks}
+            update_params = []
+            now = datetime.utcnow()
+
+            for dep in dependencies:
+                task_id = dep.get("task_id")
+                depends_on = dep.get("depends_on", [])
+
+                # Collect for bulk update
+                update_params.append({
+                    "b_id": task_id,
+                    "b_dependencies": depends_on,
+                    "b_updated_at": now
+                })
+
+                # Update in-memory objects
+                if task_id in task_map:
+                    task_map[task_id].dependencies = depends_on
+
+            # Perform bulk update in shared database
             async with await self.db_manager.get_session() as session:
-                for dep in dependency_result.get("dependencies", []):
-                    task_id = dep.get("task_id")
-                    depends_on = dep.get("depends_on", [])
-
-                    await session.execute(
-                        TaskRecord.__table__.update()
-                        .where(TaskRecord.id == task_id)
-                        .values(dependencies=depends_on, updated_at=datetime.utcnow())
-                    )
-
-                    for task in tasks:
-                        if task.id == task_id:
-                            task.dependencies = depends_on
-
+                await session.execute(
+                    TaskRecord.__table__.update()
+                    .where(TaskRecord.id == bindparam("b_id"))
+                    .values(
+                        dependencies=bindparam("b_dependencies"),
+                        updated_at=bindparam("b_updated_at")
+                    ),
+                    update_params
+                )
                 await session.commit()
 
         except Exception as e:
@@ -125,6 +146,7 @@ class TaskIntegrationService:
     async def _sync_tasks_to_leantime(self, tasks: List[Task]):
         """Sync tasks to Leantime for project management tracking."""
         try:
+            update_params = []
             for task in tasks:
                 leantime_result = await self.mcp_manager.call_tool(
                     "leantime-bridge",
@@ -140,14 +162,24 @@ class TaskIntegrationService:
 
                 if "id" in leantime_result:
                     task.tags.append(f"leantime_id:{leantime_result['id']}")
+                    update_params.append({
+                        "b_id": task.id,
+                        "b_tags": task.tags,
+                        "b_updated_at": datetime.utcnow()
+                    })
 
-                    async with await self.db_manager.get_session() as session:
-                        await session.execute(
-                            TaskRecord.__table__.update()
-                            .where(TaskRecord.id == task.id)
-                            .values(tags=task.tags, updated_at=datetime.utcnow())
-                        )
-                        await session.commit()
+            if update_params:
+                async with await self.db_manager.get_session() as session:
+                    await session.execute(
+                        TaskRecord.__table__.update()
+                        .where(TaskRecord.id == bindparam("b_id"))
+                        .values(
+                            tags=bindparam("b_tags"),
+                            updated_at=bindparam("b_updated_at")
+                        ),
+                        update_params
+                    )
+                    await session.commit()
 
         except Exception as e:
             logger.warning(f"⚠️ Leantime sync failed: {e}")
