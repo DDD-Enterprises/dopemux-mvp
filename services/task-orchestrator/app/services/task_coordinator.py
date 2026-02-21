@@ -30,6 +30,7 @@ from enum import Enum
 
 import asyncio
 import logging
+import os
 
 import sys
 from pathlib import Path
@@ -475,11 +476,14 @@ class TaskCoordinator:
             # Execute task (placeholder - actual execution via agents)
             # Find the task object from internal storage
             task = self.tasks.get(task_id)
-            if task:
-                try:
-                    # Update status
-                    task.status = TaskStatus.IN_PROGRESS
-                    results["in_progress"].append(task_id)
+            if task is None:
+                logger.warning(f"⚠️ Task {task_id} not found in coordinator cache")
+                results["failed"].append(task_id)
+                continue
+            try:
+                # Update status
+                task.status = TaskStatus.IN_PROGRESS
+                results["in_progress"].append(task_id)
 
                     # Simulate execution with monitoring
                     # We await this to maintain sequential execution order
@@ -490,8 +494,8 @@ class TaskCoordinator:
                     results["completed"].append(task_id)
                     results["in_progress"].remove(task_id)
 
-                    # Sync to ConPort
-                    await self.conport_adapter.update_task_in_conport(task)
+                # Sync to ConPort
+                await self.conport_adapter.update_task_in_conport(task)
 
                 except Exception as e:
                     logger.error(f"❌ Task execution failed {task_id}: {e}")
@@ -538,6 +542,8 @@ class TaskCoordinator:
         # In a real system, this would monitor an actual agent's progress
         simulated_duration = 60  # 1 minute simulation per task
         start_time = datetime.now()
+        if self.coordination_state.session_start_time is None:
+            self.coordination_state.session_start_time = start_time
 
         # Check energy decay over time
         while (datetime.now() - start_time).total_seconds() < simulated_duration:
@@ -626,7 +632,8 @@ class TaskCoordinator:
 
 # Example usage
 async def main():
-    coordinator = TaskCoordinator(workspace_id="/Users/hue/code/dopemux-mvp")
+    workspace_id = os.getenv("WORKSPACE_ID", os.getenv("DOPEMUX_WORKSPACE_ROOT", str(Path.cwd())))
+    coordinator = TaskCoordinator(workspace_id=workspace_id)
 
     # Sample tasks
     tasks = [

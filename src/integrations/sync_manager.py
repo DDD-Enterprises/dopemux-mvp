@@ -18,7 +18,10 @@ from typing import Any, Dict, List, Optional
 from core.config import Config
 from core.exceptions import DopemuxIntegrationError, SyncError
 from core.monitoring import MetricsCollector
-from utils.adhd_optimizations import ADHDTaskOptimizer
+try:
+    from src.utils.adhd_optimizations import ADHDTaskOptimizer
+except ModuleNotFoundError:
+    from utils.adhd_optimizations import ADHDTaskOptimizer
 
 from .leantime_bridge import (
     LeantimeBridge,

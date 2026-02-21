@@ -1,0 +1,142 @@
+{
+  "phases": {
+    "A": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "A",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/A_repo_control_plane",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "B": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "B",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/B_boundary_plane",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "C": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "C",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/C_code_surfaces",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "D": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "D",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/D_docs_pipeline",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "E": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "E",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/E_execution_plane",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "G": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "G",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/G_governance_plane",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "H": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "H",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/H_home_control_plane",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "Q": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "Q",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/Q_quality_assurance",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "R": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "R",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/R_arbitration",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "T": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "T",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/T_task_packets",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "W": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "W",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/W_workflow_plane",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "X": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "X",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/X_feature_index",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    },
+    "Z": {
+      "action_histogram": {},
+      "final_failure_histogram": {},
+      "phase": "Z",
+      "phase_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local/Z_handoff_freeze",
+      "plan_rows": [],
+      "rerun_partitions": [],
+      "run_id": "test_v4_local",
+      "total_failures": 0
+    }
+  },
+  "run_dir": "/Users/hue/code/dopemux-mvp/extraction/runs/test_v4_local",
+  "run_id": "test_v4_local",
+  "summary": {
+    "action_histogram": {},
+    "phases_planned": 13,
+    "total_failures": 0,
+    "total_rerun_partitions": 0
+  }
+}
