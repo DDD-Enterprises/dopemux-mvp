@@ -10,7 +10,8 @@ import {
   Chip,
   Divider,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Link
 } from '@mui/material';
 import { Brain, Zap, Eye, TrendingUp, Droplet } from 'lucide-react';
 import theme, { brandTokens, statusStyles } from './theme';
@@ -127,25 +128,25 @@ function App() {
     {
       label: 'Energy Level',
       value: cognitiveState.energy,
-      icon: <Zap color={brandTokens.colors.serumMint} size={24} />,
+      icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
       roast: "You're sipping ambition like it's lukewarm coffee.",
     },
     {
       label: 'Attention Focus',
       value: cognitiveState.attention,
-      icon: <Eye color={brandTokens.colors.ritualCyan} size={24} />,
+      icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
       roast: "Focus is flirting with you; stop ghosting it.",
     },
     {
       label: 'Cognitive Load',
       value: cognitiveState.load,
-      icon: <Brain color={brandTokens.colors.saintGold} size={24} />,
+      icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
       roast: "Load creeping up like a brat testing limits.",
     },
     {
       label: '15-min Prediction',
       value: cognitiveState.prediction ?? null,
-      icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} />,
+      icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
       roast: "Future you is pacing. Hydrate before they mutiny.",
     },
   ];
@@ -153,8 +154,31 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Link
+        href="#main-dashboard"
+        sx={{
+          position: 'absolute',
+          top: -100,
+          left: 0,
+          backgroundColor: 'var(--serum-mint, #94fadb)',
+          color: 'black',
+          padding: '8px 16px',
+          zIndex: 9999,
+          borderRadius: '0 0 4px 0',
+          fontWeight: 'bold',
+          textDecoration: 'none',
+          transition: 'top 0.2s',
+          '&:focus': {
+            top: 0,
+            outline: '2px solid white',
+          },
+        }}
+      >
+        Skip to main content
+      </Link>
       <Container maxWidth="xl" sx={{ py: 3 }}>
         <Box
+          component="header"
           sx={{
             mb: 4,
             p: 3,
@@ -241,7 +265,14 @@ function App() {
         </Grid>
 
         {/* Main Dashboard */}
-        <Grid container spacing={3}>
+        <Grid
+          container
+          spacing={3}
+          id="main-dashboard"
+          component="main"
+          tabIndex={-1}
+          sx={{ outline: 'none' }}
+        >
           {/* Cognitive Load Gauge - Always visible */}
           <Grid item xs={12} lg={layout.compactMode ? 12 : 4}>
             <CognitiveLoadGauge
