@@ -112,7 +112,14 @@ repos:
               # Config/state and tooling docs
               if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi
               if [[ "$normalized" =~ /\.taskx/ ]]; then continue; fi
+<<<<<<< HEAD
+>>>>>>> origin/main
+              if [[ "$normalized" =~ /\.Jules/ ]]; then continue; fi
+=======
               if [[ "$normalized" =~ /\.vibe/ ]]; then continue; fi
+              if [[ "$normalized" =~ /\.Jules/ ]]; then continue; fi
+=======
+>>>>>>> origin/main
               if [[ "$normalized" =~ /\.Jules/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.conport/|conport_export/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(\.github/) ]]; then continue; fi

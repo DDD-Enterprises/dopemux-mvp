@@ -202,6 +202,42 @@ webhook-proof:  ## Generate proof bundle
 	@echo "\n--- webhook-db-tail-run ---"
 	@$(MAKE) webhook-db-tail-run
 
+# ---- Webhook Receiver ----
+webhook-up:  ## Start webhook receiver
+	@docker compose up -d webhook-receiver
+
+webhook-down:  ## Stop webhook receiver
+	@docker compose stop webhook-receiver && docker compose rm -f webhook-receiver
+
+webhook-logs:  ## Tail webhook receiver logs
+	@docker compose logs -f webhook-receiver
+
+webhook-smoke:  ## Run full smoke tests for webhooks
+	@./scripts/webhooks/smoke.sh
+
+webhook-health:  ## Check webhook receiver health (local and public)
+	@echo "Checking local health..."
+	@curl -fsS http://localhost:8790/healthz && echo "" || echo "Local health check failed"
+	@echo "Checking public health..."
+	@curl -fsS https://webhooks.krohman.org/healthz && echo "" || echo "Public health check failed"
+
+webhook-db-stats:  ## Print webhook receiver DB stats
+	@docker compose exec webhook-receiver python services/webhook_receiver/admin.py db stats
+
+webhook-db-tail:  ## Tail last 20 webhook events
+	@docker compose exec webhook-receiver python services/webhook_receiver/admin.py db tail --table provider_events --limit 20
+
+webhook-db-tail-run:  ## Tail last 20 run events
+	@docker compose exec webhook-receiver python services/webhook_receiver/admin.py db tail --table run_events --limit 20
+
+webhook-proof:  ## Generate proof bundle
+	@echo "--- webhook-db-stats ---"
+	@$(MAKE) webhook-db-stats
+	@echo "\n--- webhook-db-tail ---"
+	@$(MAKE) webhook-db-tail
+	@echo "\n--- webhook-db-tail-run ---"
+	@$(MAKE) webhook-db-tail-run
+
 # ============================================
 # ADHD Dashboard & Orchestrator
 # ============================================
