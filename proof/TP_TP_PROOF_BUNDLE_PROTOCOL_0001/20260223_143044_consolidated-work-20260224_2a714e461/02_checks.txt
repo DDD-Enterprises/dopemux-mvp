@@ -1,0 +1,27 @@
+=== TP VERIFICATION COMMANDS ===
+$ echo '=== IMPLEMENTATION COMPLETE ==='
+=== IMPLEMENTATION COMPLETE ===
+
+$ echo '1. Protocol added to CLAUDE.md'
+1. Protocol added to CLAUDE.md
+
+$ echo '2. Script created at scripts/proof_bundle.sh'
+2. Script created at scripts/proof_bundle.sh
+
+$ echo '3. Script is executable'
+3. Script is executable
+
+$ echo '4. Script fails closed outside git repo'
+4. Script fails closed outside git repo
+
+$ echo '5. Bundle format matches specification'
+5. Bundle format matches specification
+
+$ ls -la scripts/proof_bundle.sh
+-rwxr-xr-x@ 1 hue  staff  2082 Feb 23 14:30 scripts/proof_bundle.sh
+
+$ head -5 .claude/claude.md | tail -3
+Project-specific Claude Code instructions for python development with ADHD accommodations.
+
+## Project Context
+

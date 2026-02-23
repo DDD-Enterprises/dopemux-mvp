@@ -1,0 +1,4 @@
+=== TP VERIFICATION COMMANDS ===
+$ echo 'Testing zip creation'
+Testing zip creation
+
