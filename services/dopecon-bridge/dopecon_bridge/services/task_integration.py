@@ -5,6 +5,7 @@ Core business logic for task management, PRD parsing, and cross-system sync.
 Extracted from main.py lines 662-1318.
 """
 
+import asyncio
 import json
 import logging
 import uuid
@@ -145,10 +146,13 @@ class TaskIntegrationService:
 
     async def _sync_tasks_to_leantime(self, tasks: List[Task]):
         """Sync tasks to Leantime for project management tracking."""
+        if not tasks:
+            return
+
         try:
-            update_params = []
-            for task in tasks:
-                leantime_result = await self.mcp_manager.call_tool(
+            # Step 1: Prepare parallel tool calls
+            coros = [
+                self.mcp_manager.call_tool(
                     "leantime-bridge",
                     "create_ticket",
                     {
@@ -159,15 +163,28 @@ class TaskIntegrationService:
                         "type": "task"
                     }
                 )
+                for task in tasks
+            ]
 
-                if "id" in leantime_result:
+            # Step 2: Execute in parallel to avoid N+1 sequential waits
+            results = await asyncio.gather(*coros, return_exceptions=True)
+
+            update_params = []
+            now = datetime.utcnow()
+            for task, leantime_result in zip(tasks, results):
+                if isinstance(leantime_result, Exception):
+                    logger.error(f"❌ Failed to sync task {task.id} to Leantime: {leantime_result}")
+                    continue
+
+                if leantime_result and "id" in leantime_result:
                     task.tags.append(f"leantime_id:{leantime_result['id']}")
                     update_params.append({
                         "b_id": task.id,
                         "b_tags": task.tags,
-                        "b_updated_at": datetime.utcnow()
+                        "b_updated_at": now
                     })
 
+            # Step 3: Perform bulk update for all successful syncs
             if update_params:
                 async with await self.db_manager.get_session() as session:
                     await session.execute(
