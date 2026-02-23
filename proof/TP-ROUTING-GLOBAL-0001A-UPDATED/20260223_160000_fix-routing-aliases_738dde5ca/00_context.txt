@@ -1,0 +1,5 @@
+=== TP-ROUTING-GLOBAL-0001A Updated Proof Bundle ===
+Branch: fix/routing-aliases
+Commit: 738dde5ca
+Objective: Allow aliases to reference slots or models directly
+Status: Clean git status with proper .gitignore updates
