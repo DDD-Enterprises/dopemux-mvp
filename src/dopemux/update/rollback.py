@@ -319,7 +319,7 @@ class RollbackManager:
                 if not compose_file.exists():
                     continue
                 result = subprocess.run(
-                    ["docker-compose", "-f", str(compose_file), "stop"],
+                    ["docker", "compose", "-f", str(compose_file), "stop"],
                     capture_output=True, text=True, timeout=60
                 )
                 if result.returncode != 0:
@@ -434,7 +434,7 @@ class RollbackManager:
                 if not compose_file.exists():
                     continue
                 result = subprocess.run(
-                    ["docker-compose", "-f", str(compose_file), "up", "-d"],
+                    ["docker", "compose", "-f", str(compose_file), "up", "-d"],
                     capture_output=True, text=True, timeout=120
                 )
                 if result.returncode != 0:

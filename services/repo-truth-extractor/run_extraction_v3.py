@@ -8995,7 +8995,6 @@ def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
         "pyproject.toml",
         "dopemux.toml",
         "compose.yml",
-        "compose.yml",
         "Makefile",
         ".claude.json",
         ".taskxroot",
