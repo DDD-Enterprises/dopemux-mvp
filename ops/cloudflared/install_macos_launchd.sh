@@ -22,7 +22,7 @@ cp "$OPS_CFG" "$TARGET_CFG"
 
 echo "Copying plist to ~/Library/LaunchAgents/..."
 mkdir -p "$HOME/Library/LaunchAgents"
-sed "s|{{HOME}}|$HOME|g" "$PLIST_SRC" > "$PLIST_DST"
+cp "$PLIST_SRC" "$PLIST_DST"
 
 echo "Bootstrapping daemon..."
 launchctl unload "$PLIST_DST" 2>/dev/null || true

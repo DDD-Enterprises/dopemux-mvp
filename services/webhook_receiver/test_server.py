@@ -16,6 +16,7 @@ def _load_module(name: str, module_path: Path):
     Python 3.13 dataclasses can resolve forward-reference annotations."""
     if name in sys.modules:
         return sys.modules[name]
+
     # Temporarily adjust sys.path so that absolute imports within the loaded
     # module (e.g. `from ledger.interface ...`) resolve against this service
     # rather than an unrelated third-party package.
@@ -76,6 +77,17 @@ def _free_port() -> int:
         return int(sock.getsockname()[1])
 
 
+def _wait_for_server(host: str, port: int, max_attempts: int = 50, delay: float = 0.1) -> None:
+    """Wait until the server is accepting connections, up to max_attempts tries."""
+    for _ in range(max_attempts):
+        try:
+            with socket.create_connection((host, port), timeout=delay):
+                return
+        except (ConnectionRefusedError, OSError):
+            time.sleep(delay)
+    raise TimeoutError(f"Server on {host}:{port} did not become ready after {max_attempts} attempts")
+
+
 def test_sqlite_event_store_idempotency(tmp_path: Path, monkeypatch) -> None:
     storage = _load_storage_module()
     interface_mod = _load_ledger_interface_module()
@@ -126,7 +138,7 @@ def test_server_invalid_signature_returns_401(tmp_path: Path, monkeypatch) -> No
     httpd = server_mod.WebhookServer("127.0.0.1", port, event_store)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
-    time.sleep(0.05)
+    _wait_for_server("127.0.0.1", port)
 
     conn = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
     conn.request(
@@ -179,7 +191,7 @@ def test_server_duplicate_delivery_returns_204_and_no_second_insert(tmp_path: Pa
     httpd = server_mod.WebhookServer("127.0.0.1", port, event_store)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
-    time.sleep(0.05)
+    _wait_for_server("127.0.0.1", port)
 
     headers = {"Content-Type": "application/json", "webhook-id": "wh_dupe"}
     for _ in range(2):

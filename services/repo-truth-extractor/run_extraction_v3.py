@@ -9079,53 +9079,44 @@ def _build_event_store_for_runner() -> Any:
     webhook_receiver_dir = RUNNER_SERVICE_DIR.parent / "webhook_receiver"
     if str(webhook_receiver_dir) not in sys.path:
         sys.path.insert(0, str(webhook_receiver_dir))
+    import storage  # type: ignore[import]
 
-    from storage import build_event_store, resolve_webhook_db_url  # type: ignore[import]
-    db_url = resolve_webhook_db_url()
+    db_url = storage.resolve_webhook_db_url()
 
     # Best-effort: attempt to run migrations in the same way the main server does.
-    # Prefer calling ensure_migrations() if available in server or storage.
+    # Prefer calling ensure_migrations() from server.py; if that is not available,
+    # fall back to invoking webhook_migrate.py via subprocess. Any failures are
+    # logged but do not prevent the runner from continuing.
     try:
-        import storage  # type: ignore[import]
         try:
             import server  # type: ignore[import]
         except Exception:
             server = None  # type: ignore[assignment]
 
-        migration_fn = None
-        # Check server first (canonical)
-        if server is not None and hasattr(server, "ensure_migrations"):
-            migration_fn = getattr(server, "ensure_migrations")
-        # Then storage
-        if migration_fn is None:
-            for candidate in ("run_migrations", "migrate", "apply_migrations", "ensure_migrations_applied"):
-                if hasattr(storage, candidate):
-                    migration_fn = getattr(storage, candidate)
-                    break
-
-        ran_migrations = False
-
         if server is not None and hasattr(server, "ensure_migrations"):
             try:
-                # server.ensure_migrations doesn't take args, storage ones might
-                import inspect
-                sig = inspect.signature(migration_fn)
-                if len(sig.parameters) > 0:
-                    migration_fn(db_url)
-                else:
-                    migration_fn()
+                server.ensure_migrations()  # type: ignore[call-arg]
             except Exception:
-                logging.exception("Failed to apply migrations via function; proceeding.")
-        else:
-            # Fallback to script
+                logging.exception(
+                    "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
+                )
+
+        if not (server is not None and hasattr(server, "ensure_migrations")):
             migrate_script = webhook_receiver_dir / "webhook_migrate.py"
             if migrate_script.is_file():
                 try:
-                    subprocess.run([sys.executable, str(migrate_script)], check=True)
+                    subprocess.run(
+                        [sys.executable, str(migrate_script)],
+                        check=True,
+                    )
                 except Exception:
-                    logging.exception("Failed to apply migrations via script; proceeding.")
+                    logging.exception(
+                        "Failed to apply webhook event store migrations via webhook_migrate.py; proceeding without them."
+                    )
     except Exception:
-        logging.debug("Migration helper failed; continuing.")
+        # If migrations cannot be run in this context, fall back to the previous behavior
+        # and let build_event_store handle any initialization.
+        logging.debug("Migrations not available or failed in runner context; continuing without them.")
 
     return storage.build_event_store(db_url)
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
@@ -9224,11 +9215,12 @@ def run_phase_R_async_submit(
 
         for partition in partitions:
             partition_id = str(partition["id"])
+
             latest_attempt = event_store.latest_attempt_for_tuple(
                 run_id=run_id, phase="R", step_id=step_id, partition_id=partition_id
             )
             attempt = (latest_attempt or 0) + 1
- 
+
             out_json = raw_dir / f"{step_id}__{partition_id}.json"
             pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
 
@@ -9358,22 +9350,22 @@ def _fetch_webhook_payload_for_job(event_store: Any, run_id: str, provider_ref: 
     fetch_fn = getattr(event_store, "fetch_webhook_payload", None)
     if not callable(fetch_fn):
         return {}
- 
+
     try:
         # The EventStore is responsible for any backend-specific querying.
         payload = fetch_fn(provider="openai", run_id=run_id, provider_ref=provider_ref)
     except Exception:
         return {}
- 
+
     if isinstance(payload, dict):
         return payload
- 
+
     if isinstance(payload, str):
         payload_json = payload
     else:
         # Unsupported payload type
         return {}
- 
+
     if not payload_json:
         return {}
     try:

@@ -168,13 +168,13 @@ pm-logs:
 
 # ---- Webhook Receiver ----
 webhook-up:  ## Start webhook receiver
-	@docker compose up -d webhook-receiver
+	@docker compose up -d webhook_receiver
 
 webhook-down:  ## Stop webhook receiver
-	@docker compose stop webhook-receiver && docker compose rm -f webhook-receiver
+	@docker compose stop webhook_receiver && docker compose rm -f webhook_receiver
 
 webhook-logs:  ## Tail webhook receiver logs
-	@docker compose logs -f webhook-receiver
+	@docker compose logs -f webhook_receiver
 
 webhook-smoke:  ## Run full smoke tests for webhooks
 	@./scripts/webhooks/smoke.sh
@@ -186,13 +186,13 @@ webhook-health:  ## Check webhook receiver health (local and public)
 	@curl -fsS https://webhooks.krohman.org/healthz && echo "" || echo "Public health check failed"
 
 webhook-db-stats:  ## Print webhook receiver DB stats
-	@docker compose exec webhook-receiver python services/webhook_receiver/admin.py db stats
+	@docker compose exec webhook_receiver python services/webhook_receiver/admin.py db stats
 
 webhook-db-tail:  ## Tail last 20 webhook events
-	@docker compose exec webhook-receiver python services/webhook_receiver/admin.py db tail --table provider_events --limit 20
+	@docker compose exec webhook_receiver python services/webhook_receiver/admin.py db tail --table provider_events --limit 20
 
 webhook-db-tail-run:  ## Tail last 20 run events
-	@docker compose exec webhook-receiver python services/webhook_receiver/admin.py db tail --table run_events --limit 20
+	@docker compose exec webhook_receiver python services/webhook_receiver/admin.py db tail --table run_events --limit 20
 
 webhook-proof:  ## Generate proof bundle
 	@echo "--- webhook-db-stats ---"

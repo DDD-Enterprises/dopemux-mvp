@@ -69,6 +69,8 @@ class ChronicleIngester:
         skipped_count = 0
 
         cursor = self.connection.cursor()
+        batch_data = []
+        created_at_utc = datetime.utcnow().isoformat() + "Z"
 
         for event in events:
             try:
@@ -90,36 +92,45 @@ class ChronicleIngester:
                 # Generate event ID (content-addressed with copilot event ID)
                 event_id = event.get("id", str(uuid.uuid4()))
 
-                # Insert into raw_activity_events
-                cursor.execute(
-                    """
-                    INSERT INTO raw_activity_events (
-                        id, workspace_id, instance_id, session_id,
-                        ts_utc, event_type, source,
-                        payload_json, redaction_level,
-                        ttl_days, created_at_utc
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        event_id,
-                        self.workspace_id,
-                        self.instance_id,
-                        session_id,
-                        ts_utc,
-                        chronicle_type,
-                        source,
-                        json.dumps(payload),
-                        "strict",  # Default redaction level
-                        7,  # 7-day TTL for raw events
-                        datetime.utcnow().isoformat() + "Z",
-                    ),
-                )
-                inserted_count += 1
+                batch_data.append((
+                    event_id,
+                    self.workspace_id,
+                    self.instance_id,
+                    session_id,
+                    ts_utc,
+                    chronicle_type,
+                    source,
+                    json.dumps(payload),
+                    "strict",  # Default redaction level
+                    7,  # 7-day TTL for raw events
+                    created_at_utc,
+                ))
 
             except Exception as e:
-                print(f"Error ingesting event: {e}")
+                print(f"Error preparing event: {e}")
                 skipped_count += 1
                 continue
+
+        if batch_data:
+            cursor.executemany(
+                """
+                INSERT OR IGNORE INTO raw_activity_events (
+                    id, workspace_id, instance_id, session_id,
+                    ts_utc, event_type, source,
+                    payload_json, redaction_level,
+                    ttl_days, created_at_utc
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                batch_data,
+            )
+            # rowcount is the number of rows actually inserted (excluding ignored duplicates)
+            # if rowcount is -1 (unsupported), we fallback to len(batch_data)
+            affected = cursor.rowcount
+            if affected != -1:
+                inserted_count = affected
+                skipped_count += (len(batch_data) - affected)
+            else:
+                inserted_count = len(batch_data)
 
         # Commit transaction
         self.connection.commit()
