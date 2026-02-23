@@ -43,7 +43,7 @@ def resolve_threads(pr_number):
             thread_id = thread["id"]
             print(f"Resolving thread {thread_id}")
             resolve_result = subprocess.run(
-                ["gh", "api", "graphql", "-f", f'query=mutation {{resolveReviewThread(input: {{threadId: "{thread_id}"}}) {{clientMutationId}}}}"],
+                ["gh", "api", "graphql", "-f", f"query=mutation {{resolveReviewThread(input: {{threadId: '{thread_id}'}}) {{clientMutationId}}}}"],
                 capture_output=True,
                 text=True,
                 env={**os.environ, "GH_TOKEN": PAT}
