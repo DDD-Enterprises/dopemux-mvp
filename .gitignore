@@ -324,3 +324,9 @@ docs/planes/pm/_evidence/**.outputs/
 # Local/transient output
 pbcopy
 vibeOut.txt
+
+# Proof bundles
+proof/
+
+# Router artifacts
+services/router/
