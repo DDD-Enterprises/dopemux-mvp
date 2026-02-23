@@ -1,0 +1,4 @@
+=== Notes ===
+RoutingConfig class added with alias validation supporting both slots and direct model references.
+Validation passes for mixed alias types (slot-based and direct model references).
+Clean git status achieved by adding proper .gitignore entries for proof/ and services/router/.
