@@ -3692,12 +3692,13 @@ def mcp():
 def mcp_up_cmd(all_services: bool, services: str):
     """Start MCP servers via docker-compose."""
     try:
-        cmd = "cd docker/mcp-servers && "
         if all_services or not services:
-            cmd += "./start-all-mcp-servers.sh"
+            # When starting all, we use the root compose.yml
+            cmd = "docker compose -f compose.yml up -d --build"
         else:
+            # When starting specific services, also use the root compose.yml
             svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
-            cmd += f"docker compose -f compose.yml up -d --build {svc_list}"
+            cmd = f"docker compose -f compose.yml up -d --build {svc_list}"
         console.logger.info(f"[blue]🔌 {cmd}[/blue]")
         subprocess.run(["bash","-lc", cmd], check=True)
         console.logger.info("[green]✅ MCP servers started[/green]")
@@ -3778,7 +3779,7 @@ def mcp_start_all_cmd(verify: bool):
             subprocess.run(["docker","compose","-f","compose.yml","up","-d"], check=True)
 
             console.logger.info("[blue]Starting Integration Bridge...[/blue]")
-            subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"], check=True)
+            subprocess.run(["docker","compose","-f","compose.yml","up","-d","integration-bridge"], check=True)
 
             console.logger.info("[blue]Starting Task Orchestrator...[/blue]")
             subprocess.run(["docker","compose","-f","compose.yml","--profile","manual","up","-d","task-orchestrator"], check=True)
