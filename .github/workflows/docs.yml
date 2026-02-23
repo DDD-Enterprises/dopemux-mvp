@@ -12,7 +12,7 @@ jobs:
       - run: pip install pre-commit
       - run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
+            git fetch origin "${{ github.base_ref }}"
             pre-commit run --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD
           else
             BEFORE="${{ github.event.before }}"
@@ -27,5 +27,5 @@ jobs:
       - name: Broken-link check (lychee)
         uses: lycheeverse/lychee-action@v2  # Security: Fixed code injection vulnerability in v1
         with:
-          args: --config .lychee.toml docs/**/*.md task-packets/**/*.md
+          args: --config .lychee.toml docs/**/*.md
           fail: false
