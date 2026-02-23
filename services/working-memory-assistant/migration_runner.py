@@ -75,25 +75,18 @@ class WMAMigrationRunner:
             'wma_conport_links'
         ]
 
-        existing_tables = []
         try:
             with self.connection.cursor() as cursor:
-                for table in tables:
-                    cursor.execute("""
-                        SELECT EXISTS (
-                            SELECT 1 FROM information_schema.tables
-                            WHERE table_schema = 'public'
-                            AND table_name = %s
-                        );
-                    """, (table,))
-                    exists = cursor.fetchone()[0]
-                    if exists:
-                        existing_tables.append(table)
+                cursor.execute("""
+                    SELECT table_name FROM information_schema.tables
+                    WHERE table_schema = 'public'
+                    AND table_name IN %s;
+                """, (tuple(tables),))
+                results = cursor.fetchall()
+                return [row[0] for row in results]
         except psycopg2.Error as e:
             logger.error(f"Error checking existing tables: {e}")
             return []
-
-        return existing_tables
 
     def validate_database_connection(self):
         """Validate that we can connect to the WMA database."""
@@ -153,16 +146,16 @@ class WMAMigrationRunner:
 
         try:
             with self.connection.cursor() as cursor:
+                # Optimized existence check for all tables
+                cursor.execute("""
+                    SELECT table_name FROM information_schema.tables
+                    WHERE table_schema = 'public'
+                    AND table_name IN %s;
+                """, (tuple(expected_tables),))
+                existing_tables = {row[0] for row in cursor.fetchall()}
+
                 for table in expected_tables:
-                    cursor.execute("""
-                        SELECT EXISTS (
-                            SELECT 1 FROM information_schema.tables
-                            WHERE table_schema = 'public'
-                            AND table_name = %s
-                        );
-                    """, (table,))
-                    exists = cursor.fetchone()[0]
-                    if not exists:
+                    if table not in existing_tables:
                         logger.error(f"Table '{table}' was not created")
                         return False
 
@@ -171,21 +164,20 @@ class WMAMigrationRunner:
                     count = cursor.fetchone()[0]
                     logger.info(f"Table '{table}' created successfully (rows: {count})")
 
-            # Check views
-            views = ['wma_recovery_performance', 'wma_snapshot_analytics']
-            for view in views:
+                # Optimized check for views
+                views = ['wma_recovery_performance', 'wma_snapshot_analytics']
                 cursor.execute("""
-                    SELECT EXISTS (
-                        SELECT 1 FROM information_schema.views
-                        WHERE table_schema = 'public'
-                        AND table_name = %s
-                    );
-                """, (view,))
-                exists = cursor.fetchone()[0]
-                if not exists:
-                    logger.warning(f"View '{view}' was not created")
-                else:
-                    logger.info(f"View '{view}' created successfully")
+                    SELECT table_name FROM information_schema.views
+                    WHERE table_schema = 'public'
+                    AND table_name IN %s;
+                """, (tuple(views),))
+                existing_views = {row[0] for row in cursor.fetchall()}
+
+                for view in views:
+                    if view not in existing_views:
+                        logger.warning(f"View '{view}' was not created")
+                    else:
+                        logger.info(f"View '{view}' created successfully")
 
             logger.info("Migration verification completed successfully")
             return True
