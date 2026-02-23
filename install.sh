@@ -944,7 +944,7 @@ install_docker_services() {
     ensure_docker_networks "$stack"
 
     if [ "$INSTALLER_TEST_MODE" = "1" ]; then
-        warning "[test-mode] Skipping docker-compose pull/up"
+        warning "[test-mode] Skipping docker compose pull/up"
         SELECTED_COMPOSE_FILE="$compose_file"
         return 0
     fi
@@ -1298,9 +1298,9 @@ uninstall_dopemux() {
     fi
     
     # Stop Docker services
-    if [ -f "docker-compose.unified.yml" ]; then
+    if [ -f "docker compose.unified.yml" ]; then
         log "Removing old unified stack..."
-        docker compose -f docker-compose.unified.yml down -v 2>/dev/null || true
+        docker compose -f docker compose.unified.yml down -v 2>/dev/null || true
     fi
     if [ -f "compose.yml" ]; then
         log "Stopping current stack..."
