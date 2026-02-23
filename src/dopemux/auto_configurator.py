@@ -16,6 +16,7 @@ Target: Reduce cognitive load from 9/10 to 2/10 (78% improvement)
 """
 
 import logging
+
 import json
 import os
 import shutil
@@ -27,7 +28,6 @@ from .workspace_detection import get_workspace_root, get_workspace_info
 
 
 logger = logging.getLogger(__name__)
-
 
 class WorktreeAutoConfigurator:
     """
@@ -56,9 +56,7 @@ class WorktreeAutoConfigurator:
         Args:
             claude_config_path: Path to .claude.json (default: ~/.claude.json)
         """
-        self.claude_config_path = (
-            claude_config_path or Path.home() / ".claude.json"
-        )
+        self.claude_config_path = claude_config_path or Path.home() / ".claude.json"
         self.legacy_mode = os.getenv("DOPEMUX_LEGACY_DETECTION", "0") == "1"
 
     def needs_update(self, current_workspace: Path) -> bool:
@@ -92,10 +90,6 @@ class WorktreeAutoConfigurator:
                 conport_config = mcp_servers["conport"]
                 args = conport_config.get("args", [])
 
-                # Check if using old broken format (direct conport-mcp without uvx)
-                if "uvx" not in args:
-                    return True  # Old format needs complete rewrite to uvx
-
                 # Find --workspace_id arg
                 try:
                     workspace_id_idx = args.index("--workspace_id")
@@ -112,20 +106,15 @@ class WorktreeAutoConfigurator:
                 dope_context_config = mcp_servers["dope-context"]
                 command = dope_context_config.get("command", "")
 
-                # Only check path-based commands (script format), not docker exec format
-                # Docker exec commands pass workspace context via env vars,
-                # not command string
-                if command != "docker":  # Skip path check for docker commands
-                    if str(current_workspace) not in command:
-                        return True
+                # Check if command path matches current workspace
+                if str(current_workspace) not in command:
+                    return True
 
             return False
 
         except Exception as e:
             # On error, assume update needed for safety
-            logger.debug(f"Needs update check failed: {e}")
             return True
-
     def configure_workspace(
         self,
         workspace: Optional[Path] = None,
@@ -170,7 +159,7 @@ class WorktreeAutoConfigurator:
 
             # Create backup
             if not dry_run:
-                _ = self._create_backup()
+                backup_path = self._create_backup()
 
             # Get current MCP servers
             project_config = config["projects"][workspace_key]
@@ -179,37 +168,20 @@ class WorktreeAutoConfigurator:
             # Track changes
             changes = []
 
-            # Update ConPort workspace_id or rewrite if old format
+            # Update ConPort workspace_id
             if "conport" in mcp_servers:
                 old_args = mcp_servers["conport"].get("args", []).copy()
+                new_args = self._update_conport_args(old_args, workspace)
 
-                # Check if using old broken format (no uvx)
-                if "uvx" not in old_args:
-                    # Rewrite entire entry to correct uvx format
-                    instance_id = os.getenv("DOPEMUX_INSTANCE_ID", "")
+                if new_args != old_args:
                     if not dry_run:
-                        mcp_servers["conport"] = self._rewrite_conport_entry(
-                            workspace, instance_id
-                        )
-                    msg = f"ConPort format → uvx-based (workspace: {workspace})"
-                    changes.append(msg)
-                else:
-                    # Just update workspace_id in existing correct format
-                    new_args = self._update_conport_args(old_args, workspace)
-
-                    if new_args != old_args:
-                        if not dry_run:
-                            mcp_servers["conport"]["args"] = new_args
-                        changes.append(
-                            f"ConPort --workspace_id → {workspace}"
-                        )
+                        mcp_servers["conport"]["args"] = new_args
+                    changes.append(f"ConPort --workspace_id → {workspace}")
 
             # Update Dope-Context script path
             if "dope-context" in mcp_servers:
                 old_command = mcp_servers["dope-context"].get("command", "")
-                new_command = self._update_dope_context_command(
-                    old_command, workspace
-                )
+                new_command = self._update_dope_context_command(old_command, workspace)
 
                 if new_command != old_command:
                     if not dry_run:
@@ -230,7 +202,6 @@ class WorktreeAutoConfigurator:
 
         except Exception as e:
             return False, f"Configuration failed: {e}"
-
     def _load_config(self) -> Dict:
         """Load .claude.json configuration."""
         with open(self.claude_config_path, 'r') as f:
@@ -251,9 +222,7 @@ class WorktreeAutoConfigurator:
     def _create_backup(self) -> Path:
         """Create timestamped backup of .claude.json."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_path = self.claude_config_path.with_suffix(
-            f'.json.backup.{timestamp}'
-        )
+        backup_path = self.claude_config_path.with_suffix(f'.json.backup.{timestamp}')
         shutil.copy2(self.claude_config_path, backup_path)
         return backup_path
 
@@ -270,45 +239,6 @@ class WorktreeAutoConfigurator:
             new_args.extend(["--workspace_id", str(workspace)])
 
         return new_args
-
-    def _rewrite_conport_entry(self, workspace: Path, instance_id: str = "") -> Dict:
-        """
-        Generate the correct ConPort MCP entry using uvx format.
-
-        This replaces the broken direct conport-mcp format with the correct
-        uvx-based format.
-
-        Args:
-            workspace: Current workspace path
-            instance_id: Docker instance ID (empty for main/default)
-
-        Returns:
-            Dict with corrected conport MCP configuration
-        """
-        # Determine container name based on instance_id
-        container = (
-            "mcp-conport"
-            if instance_id in ("", "main")
-            else f"mcp-conport_{instance_id}"
-        )
-
-        return {
-            "type": "stdio",
-            "command": "docker",
-            "args": [
-                "exec",
-                "-i",
-                container,
-                "uvx",
-                "--from",
-                "context-portal-mcp",
-                "conport-mcp"
-            ],
-            "env": {
-                "DOPEMUX_WORKSPACE_ID": str(workspace),
-                "DOPEMUX_INSTANCE_ID": instance_id,
-            }
-        }
 
     def _update_dope_context_command(self, command: str, workspace: Path) -> str:
         """Update Dope-Context script path to match workspace."""

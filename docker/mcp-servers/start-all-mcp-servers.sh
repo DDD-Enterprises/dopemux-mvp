@@ -444,7 +444,7 @@ echo "🏥 Health check summary:"
 echo "========================"
 
 # Health check each critical server
-servers=("pal:3003" "litellm:4000" "conport:3004" "serena:3006" "dope-context:3010" "plane-coordinator:8090")
+servers=("pal:3003" "litellm:4000" "dope-context:3010" "plane-coordinator:8090")
 for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
