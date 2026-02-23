@@ -1,9 +1,12 @@
 """Tests for packet-oriented logging helpers."""
 
+import pytest
+
 from src.dopemux.logging import bind_log_context, current_log_context, reset_log_context
 from src.dopemux.logging.packet import (
     build_datadog_series,
     build_prometheus_export,
+    detect_level,
     normalize_error_signature,
     summarize_service_lines,
 )
@@ -76,3 +79,33 @@ def test_metrics_exports_include_packet_and_service_dimensions():
     assert "series" in datadog
     assert datadog["series"]
     assert any("packet_id:pkt-1" in point["tags"] for point in datadog["series"])
+
+
+@pytest.mark.parametrize(
+    "line,expected",
+    [
+        ("CRITICAL: everything is on fire", "critical"),
+        ("fatal system error", "critical"),
+        ("An error occurred here", "error"),
+        ("Exception in thread main", "error"),
+        ("Traceback (most recent call last):", "error"),
+        ("failed to connect to database", "error"),
+        ("failure in component A", "error"),
+        ("kernel panic!", "error"),
+        ("RuntimeError: something went wrong", "error"),
+        ("ValueERROR: bad value", "error"),
+        ("WARNING: disk space low", "warning"),
+        ("warn: possible issue", "warning"),
+        ("info: service started", "info"),
+        ("debug: internal state is 42", "debug"),
+        ("just some random text", "unknown"),
+        ("this is an informed decision", "unknown"),
+        ("debugging is fun", "unknown"),
+        ("information is power", "unknown"),
+        ("it failed", "error"),
+        ("ConnectionError", "error"),
+    ],
+)
+def test_detect_level(line: str, expected: str):
+    """It should correctly detect log levels from various string inputs."""
+    assert detect_level(line) == expected
