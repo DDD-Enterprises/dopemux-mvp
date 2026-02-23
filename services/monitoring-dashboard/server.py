@@ -192,10 +192,10 @@ class RecoveryManager:
             return False
 
         try:
-            # Use docker-compose to restart the service
+            # Use docker compose to restart the service
             import subprocess
             result = subprocess.run(
-                ['docker-compose', '-f', 'docker-compose.staging.yml', 'restart', service_id],
+                ['docker', 'compose', '-f', 'compose.yml', 'restart', service_id],
                 capture_output=True,
                 text=True,
                 timeout=30

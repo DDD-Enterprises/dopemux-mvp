@@ -608,7 +608,7 @@ class OrchestrationPhase(BasePhase):
         """Restart a group of services."""
         self.console.print(f"[dim]🔄 Restarting {group_name}...[/dim]")
 
-        # Try to restart via docker-compose
+        # Try to restart via docker compose
         compose_file = self.project_root / "compose.yml"
         if compose_file.exists():
             for service in services:

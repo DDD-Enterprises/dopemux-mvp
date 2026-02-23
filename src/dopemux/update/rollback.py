@@ -312,7 +312,7 @@ class RollbackManager:
     def _stop_services(self) -> bool:
         """Stop all dopemux services for rollback."""
         try:
-            # Stop via docker-compose
+            # Stop via docker compose
             compose_files = [self.project_root / "compose.yml"]
             
             for compose_file in compose_files:
@@ -427,7 +427,7 @@ class RollbackManager:
     def _restart_services(self) -> bool:
         """Restart services after rollback."""
         try:
-            # Restart via docker-compose
+            # Restart via docker compose
             compose_files = [self.project_root / "compose.yml"]
             
             for compose_file in compose_files:
