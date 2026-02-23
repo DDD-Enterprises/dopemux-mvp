@@ -644,7 +644,7 @@ services:
     networks:
       - dopemux-network
     environment:
-      - OPENAI_API_KEY=sk-master-dopemux-local-20251101
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - XAI_API_KEY=${XAI_API_KEY}

@@ -3710,7 +3710,9 @@ def mcp_up_cmd(all_services: bool, services: str):
 def mcp_down_cmd():
     """Stop all MCP servers."""
     try:
-        subprocess.run(["docker","compose","-f","compose.yml","down"], check=True)
+        # Stop and remove only the MCP-related services
+        mcp_services = ["conport", "pal", "litellm", "dope-context", "serena", "gptr-mcp", "desktop-commander", "leantime-bridge"]
+        subprocess.run(["docker", "compose", "-f", "compose.yml", "rm", "-f", "-s", "-v"] + mcp_services, check=True)
         console.logger.info("[green]✅ MCP servers stopped[/green]")
     except CalledProcessError:
         console.logger.error("[red]❌ Failed to stop MCP servers[/red]")

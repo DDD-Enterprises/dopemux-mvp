@@ -175,7 +175,7 @@ if [ "$SKIP_DOCKER" = false ]; then
 
     # Start MCP services
     echo -e "${CYAN}   🐳 Starting MCP services...${NC}"
-    if docker-compose -f docker/mcp-servers/docker-compose.yml up -d 2>&1 | tail -5; then
+    if docker compose -f compose.yml up -d 2>&1 | tail -5; then
         echo -e "${GREEN}   ✅ MCP services started${NC}"
     else
         echo -e "${RED}   ❌ Docker startup failed${NC}"

@@ -121,7 +121,6 @@ PROMPTGEN_DEFAULT_INCLUDE_GLOBS = [
     "pyproject.toml",
     "dopemux.toml",
     "compose.yml",
-    "compose.yml",
     ".claude/**",
     ".dopemux/**",
     ".taskx/**",

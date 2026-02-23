@@ -6,31 +6,19 @@ Vibe has been successfully configured to work with Dopemux MCP servers.
 
 ## 📁 Files Created
 
-- `.vibe/config.toml` - Main Vibe configuration with 8 MCP servers
+- `.vibe/config.toml` - Main Vibe configuration with MCP servers
 - `.vibe/README.md` - Documentation and usage guide
 - `.vibe/SUMMARY.md` - This summary file
 
-## 🔌 MCP Servers Configured (8 total)
+## 🔌 MCP Servers Configured
 
-### HTTP Servers (3)
-1. **dopemux_conport** - `http://localhost:3004`
-   - Context and decision logging
-   - ADHD-optimized workflow tracking
+Vibe is configured to connect to one or more Dopemux MCP servers as defined in `.vibe/config.toml`.
 
-2. **dopemux_serena** - `http://localhost:3006`
-   - ADHD-optimized code navigation
-   - LSP-enhanced development
-
-3. **dopemux_claude_context** - `http://localhost:3010`
-   - Semantic code search
-   - Context-aware documentation
-
-### STDIO Servers (5)
-4. **dopemux_pal** - API lookup and documentation
-5. **dopemux_exa** - Neural web search
-6. **dopemux_gpt_researcher** - Deep research capabilities
-7. **dopemux_desktop_commander** - Desktop automation
-8. **task_orchestrator** - ADHD task coordination
+The exact set of HTTP and STDIO MCP servers, along with their ports and capabilities, is controlled by that config file.
+Refer to `.vibe/config.toml` for the authoritative list of:
+- Enabled MCP servers
+- Connection types (HTTP / STDIO)
+- Endpoints and ports
 
 ## 🎛️ Configuration Details
 
