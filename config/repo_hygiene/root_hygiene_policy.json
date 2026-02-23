@@ -55,6 +55,7 @@
     ".markdownlint.jsonc",
     ".pre-commit-config.yaml",
     ".tmux.conf",
+    ".flake8",
     "ADHD-DASHBOARD-SESSION-SUMMARY.md",
     "AG-master_plan.md",
     "AGENTS.md",
