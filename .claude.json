@@ -43,7 +43,7 @@
       "args": [
         "exec",
         "-i",
-        "dopemux-gpt-researcher",
+        "dopemux-mcp-gptr-mcp",
         "python",
         "/app/server.py"
       ],
@@ -62,7 +62,7 @@
       "args": [
         "exec",
         "-i",
-        "dopemux-mcp-litellm",
+        "mcp-litellm",
         "python",
         "/app/exa_server.py"
       ],

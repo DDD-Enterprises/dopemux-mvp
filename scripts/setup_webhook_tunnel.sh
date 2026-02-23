@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script to setup a Cloudflare Tunnel for the webhook receiver.
 
-PORT=${1:-8000}
+PORT=${1:-8790}
 echo "Starting Cloudflare tunnel for localhost:$PORT..."
 
 # Start cloudflared in the background and capture output to a temp file
@@ -27,7 +27,7 @@ if [ -n "$URL" ]; then
     echo "------------------------------------------------"
     echo "Tunnel is UP!"
     echo "Public URL: $URL"
-    echo "Webhook URL: $URL/openai/webhooks"
+    echo "Webhook URL: $URL/webhook/openai"
     echo "------------------------------------------------"
     echo "Keep this script running to maintain the tunnel."
     echo "Press Ctrl+C to stop."
