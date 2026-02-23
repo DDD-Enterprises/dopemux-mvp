@@ -9,7 +9,3 @@
 ## 2025-05-15 - [ADHD-Aware Feedback Loops]
 **Learning:** For users with ADHD, static timers can sometimes be overlooked ("time blindness"). Adding a subtle, non-distracting animation (like a slow pulse) to an active timer provides a continuous "live" signal that the session is ongoing, reducing the chance of losing focus on the current task.
 **Action:** Use subtle animations or pulsing effects for active status indicators and timers to maintain user engagement without being intrusive.
-
-## 2025-05-20 - [Keyboard Navigation in Complex Dashboards]
-**Learning:** Complex single-page dashboards with many navigation items and widgets create a high "tab-cost" for keyboard users. Implementing a "Skip to main content" link and semantic HTML landmarks (`<header>`, `<main>`) is essential for allowing users to bypass repetitive navigation and reach the core content quickly.
-**Action:** Always implement a visible-on-focus skip link and wrap primary layout regions in semantic landmarks in dashboard-style applications.
