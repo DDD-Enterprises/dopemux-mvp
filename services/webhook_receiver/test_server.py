@@ -16,7 +16,6 @@ def _load_module(name: str, module_path: Path):
     Python 3.13 dataclasses can resolve forward-reference annotations."""
     if name in sys.modules:
         return sys.modules[name]
-
     # Temporarily adjust sys.path so that absolute imports within the loaded
     # module (e.g. `from ledger.interface ...`) resolve against this service
     # rather than an unrelated third-party package.
