@@ -37,14 +37,14 @@ jobs:
       - name: 🧹 Enforce repo root hygiene
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
+            git fetch origin "${{ github.base_ref }}"
             CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)"
           else
             BEFORE="${{ github.event.before }}"
             if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
               # Fallback to main if it's a new branch push
               echo "Fallback activated: github.event.before is unavailable in this checkout; diffing against origin/main."
-              git fetch origin main --depth=1
+              git fetch origin main
               CHANGED_FILES="$(git diff --name-only origin/main...HEAD)"
             else
               CHANGED_FILES="$(git diff --name-only "$BEFORE" "${{ github.sha }}")"
@@ -61,14 +61,14 @@ jobs:
       - name: 🔍 Run pre-commit (code quality)
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin "${{ github.base_ref }}" --depth=1
+            git fetch origin "${{ github.base_ref }}"
             pre-commit run --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD
           else
             BEFORE="${{ github.event.before }}"
             if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
               # Fallback to main if it's a new branch push
               echo "Fallback activated: github.event.before is unavailable in this checkout; running pre-commit from origin/main."
-              git fetch origin main --depth=1
+              git fetch origin main
               pre-commit run --from-ref origin/main --to-ref HEAD
             else
               pre-commit run --from-ref "$BEFORE" --to-ref "${{ github.sha }}"

@@ -27,5 +27,5 @@ jobs:
       - name: Broken-link check (lychee)
         uses: lycheeverse/lychee-action@v2  # Security: Fixed code injection vulnerability in v1
         with:
-          args: --config .lychee.toml docs/**/*.md task-packets/**/*.md
+          args: --config .lychee.toml docs/**/*.md
           fail: false

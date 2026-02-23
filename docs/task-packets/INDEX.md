@@ -31,26 +31,25 @@ A packet is superseded by another packet
 ────────────────────────────────────────────────────────────
 🟡 Active Task Packets
 
-| Packet ID                   | Subsystem | Title                                | Status        | Related ADR |
-| --------------------------- | --------- | ------------------------------------ | ------------- | ----------- |
-| PACKET_031                  | Memory    | Dual Capture Adapters, Single Ledger | Executing     | ADR-213     |
-| PACKET_032                  | Memory    | Chronicle Promotion Guards           | Pending Audit | ADR-214     |
-| TP-CLOUDFLARE-WEBHOOKS-0001 | Infra     | Cloudflare Webhook Receiver          | Executing     | -           |
+| Packet ID | Subsystem | Title | Status | Related ADR |
+| --- | --- | --- | --- | --- |
+| PACKET_031 | Memory | Dual Capture Adapters, Single Ledger | Executing | ADR-213 |
+| PACKET_032 | Memory | Chronicle Promotion Guards | Pending Audit | ADR-214 |
 
 ────────────────────────────────────────────────────────────
 🟢 Completed Task Packets
 
-| Packet ID  | Subsystem | Title                          | Completion Date | Outcome  |
-| ---------- | --------- | ------------------------------ | --------------- | -------- |
-| PACKET_021 | Memory    | Deterministic Chronicle Schema | 2026-01-18      | Accepted |
-| PACKET_024 | Infra     | MCP Health Surface Hardening   | 2026-01-26      | Accepted |
+| Packet ID | Subsystem | Title | Completion Date | Outcome |
+| --- | --- | --- | --- | --- |
+| PACKET_021 | Memory | Deterministic Chronicle Schema | 2026-01-18 | Accepted |
+| PACKET_024 | Infra | MCP Health Surface Hardening | 2026-01-26 | Accepted |
 
 ────────────────────────────────────────────────────────────
 ⚪ Superseded Task Packets
 
-| Packet ID  | Superseded By | Reason                            |
-| ---------- | ------------- | --------------------------------- |
-| PACKET_017 | PACKET_021    | Incomplete determinism guarantees |
+| Packet ID | Superseded By | Reason |
+| --- | --- | --- |
+| PACKET_017 | PACKET_021 | Incomplete determinism guarantees |
 
 ────────────────────────────────────────────────────────────
 🧠 Index Maintenance Rules
