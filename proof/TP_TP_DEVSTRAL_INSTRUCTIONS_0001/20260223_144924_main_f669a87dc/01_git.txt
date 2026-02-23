@@ -1,0 +1,12 @@
+=== GIT STATUS ===
+
+=== GIT DIFFSTAT ===
+
+=== GIT DIFF ===
+
+=== GIT LOG (last 5) ===
+f669a87dc chore(gitignore): ignore local router artifacts
+38ac63149 docs(claude): add devstral implementer contract
+b6cadabf5 chore(proof): add bundle harness and ignore proof output
+7f7be0a97 docs(claude): enforce proof bundle protocol
+fbf672998 fix(hygiene): move root files to proper locations to pass CI checks
