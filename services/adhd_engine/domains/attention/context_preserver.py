@@ -224,7 +224,7 @@ class ContextPreserver:
                 stderr=asyncio.subprocess.PIPE
             )
             try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=2)
+                stdout, _stderr = await asyncio.wait_for(process.communicate(), timeout=2)
                 if process.returncode == 0:
                     return stdout.decode().strip()
             except asyncio.TimeoutError:
