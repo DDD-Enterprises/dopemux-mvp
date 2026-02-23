@@ -233,6 +233,7 @@ class ContextPreserver:
                     await process.wait()
                 except Exception:
                     # Best-effort cleanup: ignore errors while attempting to kill the timed-out git process
+                    pass
                 logger.warning("Git branch command timed out")
         except Exception as e:
             logger.warning(f"Failed to get git branch: {e}")
