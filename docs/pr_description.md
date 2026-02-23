@@ -1,3 +1,14 @@
+---
+id: pr_description
+title: Pr Description
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-23'
+last_review: '2026-02-23'
+next_review: '2026-05-24'
+prelude: Pr Description (explanation) for dopemux documentation and developer workflows.
+---
 # 🚀 Mega PR: Consolidating 13 Open PRs
 
 This mega PR consolidates 13 open pull requests into a single, cohesive update that brings significant performance improvements, security enhancements, and code quality upgrades to the Dopemux MVP project.
