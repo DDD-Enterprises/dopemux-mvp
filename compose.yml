@@ -111,11 +111,13 @@ services:
       - MYSQL_USER=${MYSQL_USER:-leantime}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-leantime_dev_password}
     command: >
-      --character-set-server=UTF8MB4 --collation-server=UTF8MB4_unicode_ci --default-authentication-plugin=mysql_native_password
+      --character-set-server=UTF8MB4
+      --collation-server=UTF8MB4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
     volumes:
       - leantime_mysql_data:/var/lib/mysql
     healthcheck:
-      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD:-leantime_root_dev} || exit 1" ]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD:-leantime_root_dev} || exit 1"]
       timeout: 5s
       retries: 10
       interval: 10s
@@ -129,13 +131,17 @@ services:
     networks:
       - dopemux-network
     command: >
-      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"; else exec redis-server --appendonly yes; fi'
+      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then
+      exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+      else
+      exec redis-server --appendonly yes;
+      fi'
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
     volumes:
       - leantime_redis_data:/data
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       timeout: 3s
       retries: 5
       interval: 10s
@@ -182,7 +188,7 @@ services:
       - leantime_logs:/var/www/html/storage/logs
       - leantime_config:/var/www/html/config
     healthcheck:
-      test: [ "CMD-SHELL", "curl -fsS http://localhost:80/ >/dev/null || exit 1" ]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:80/ >/dev/null || exit 1"]
       timeout: 10s
       retries: 5
       interval: 30s
@@ -199,7 +205,7 @@ services:
       - "8081:5540"
     # Note: RedisInsight healthcheck disabled - app takes time to start and doesn't respond reliably to health checks
 
-    # Qdrant (vector database for embeddings)
+  # Qdrant (vector database for embeddings)
   mcp-qdrant:
     image: qdrant/qdrant:latest
     container_name: mcp-qdrant
@@ -238,7 +244,7 @@ services:
       - QDRANT_URL=http://mcp-qdrant:6333
     ports:
       - "3004:3004"
-      - "4004:4004" # Info server for service discovery
+      - "4004:4004"  # Info server for service discovery
     depends_on:
       - postgres
       - redis-primary
@@ -548,7 +554,7 @@ services:
       - HTTP_PORT=4006
       - WORKSPACE_ID=${WORKSPACE_ID:-/workspace}
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:4006/health || exit 1" ]
+      test: ["CMD-SHELL", "curl -f http://localhost:4006/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -571,7 +577,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - TAVILY_API_KEY=${TAVILY_API_KEY:-}
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:3009/health || exit 1" ]
+      test: ["CMD-SHELL", "curl -f http://localhost:3009/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -590,7 +596,7 @@ services:
       - MCP_SERVER_PORT=3012
       - DISPLAY=${DISPLAY:-:0}
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:3012/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:3012/health"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -618,7 +624,7 @@ services:
       - mcp-qdrant
       - leantime
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:3015/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:3015/health"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -638,10 +644,8 @@ services:
       - WEBHOOK_RECEIVER_HOST=0.0.0.0
       - WEBHOOK_RECEIVER_PORT=8790
       - WEBHOOK_DB_PATH=/data/webhook_receiver.db
-      - WEBHOOK_DB_URL=sqlite:////data/webhook_receiver.db
       - OPENAI_WEBHOOK_SECRET=${OPENAI_WEBHOOK_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - DPMX_ENV=${DPMX_ENV:-dev}
     volumes:
       - ./.dopemux/webhook_receiver:/data
     healthcheck:
@@ -666,4 +670,4 @@ services:
       - WEBHOOK_DB_PATH=/data/webhook_receiver.db
     volumes:
       - ./.dopemux/webhook_receiver:/data
-    command: [ "python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10" ]
+    command: ["python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10"]
