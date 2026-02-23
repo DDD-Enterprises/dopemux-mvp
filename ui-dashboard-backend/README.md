@@ -22,7 +22,7 @@ If upstream services are unavailable, the backend returns deterministic fallback
 
 ## Environment Variables
 
-- `DASHBOARD_BACKEND_HOST` (default: `0.0.0.0`)
+- `DASHBOARD_BACKEND_HOST` (default: `127.0.0.1`)
 - `DASHBOARD_BACKEND_PORT` (default: `3001`)
 - `ADHD_ENGINE_URL` (default: `http://localhost:8095`)
 - `ADHD_ENGINE_API_KEY` (optional)
@@ -31,7 +31,7 @@ If upstream services are unavailable, the backend returns deterministic fallback
 ## Run
 
 ```bash
-uvicorn app:app --host 0.0.0.0 --port 3001
+uvicorn app:app --host 127.0.0.1 --port 3001
 ```
 
 or:

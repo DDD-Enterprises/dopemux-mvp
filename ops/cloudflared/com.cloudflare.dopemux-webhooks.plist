@@ -8,16 +8,16 @@
     <array>
         <string>bash</string>
         <string>-c</string>
-        <string>PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin cloudflared tunnel --config {{HOME}}/.cloudflared/config.yml run</string>
+        <string>PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin cloudflared tunnel --config $HOME/.cloudflared/config.yml run</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>StandardErrorPath</key>
-    <string>{{HOME}}/.cloudflared/dopemux-webhooks.log</string>
+    <string>$HOME/.cloudflared/dopemux-webhooks.log</string>
     <key>StandardOutPath</key>
-    <string>{{HOME}}/.cloudflared/dopemux-webhooks.log</string>
+    <string>$HOME/.cloudflared/dopemux-webhooks.log</string>
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>

@@ -16,6 +16,7 @@ Target: Reduce cognitive load from 9/10 to 2/10 (78% improvement)
 """
 
 import logging
+
 import json
 import os
 import shutil
@@ -27,7 +28,6 @@ from .workspace_detection import get_workspace_root, get_workspace_info
 
 
 logger = logging.getLogger(__name__)
-
 
 class WorktreeAutoConfigurator:
     """
@@ -56,9 +56,7 @@ class WorktreeAutoConfigurator:
         Args:
             claude_config_path: Path to .claude.json (default: ~/.claude.json)
         """
-        self.claude_config_path = (
-            claude_config_path or Path.home() / ".claude.json"
-        )
+        self.claude_config_path = claude_config_path or Path.home() / ".claude.json"
         self.legacy_mode = os.getenv("DOPEMUX_LEGACY_DETECTION", "0") == "1"
 
     def needs_update(self, current_workspace: Path) -> bool:
@@ -113,8 +111,7 @@ class WorktreeAutoConfigurator:
                 command = dope_context_config.get("command", "")
 
                 # Only check path-based commands (script format), not docker exec format
-                # Docker exec commands pass workspace context via env vars,
-                # not command string
+                # Docker exec commands pass workspace context via env vars, not command string
                 if command != "docker":  # Skip path check for docker commands
                     if str(current_workspace) not in command:
                         return True
@@ -123,9 +120,7 @@ class WorktreeAutoConfigurator:
 
         except Exception as e:
             # On error, assume update needed for safety
-            logger.debug(f"Needs update check failed: {e}")
             return True
-
     def configure_workspace(
         self,
         workspace: Optional[Path] = None,
@@ -170,7 +165,7 @@ class WorktreeAutoConfigurator:
 
             # Create backup
             if not dry_run:
-                _ = self._create_backup()
+                backup_path = self._create_backup()
 
             # Get current MCP servers
             project_config = config["projects"][workspace_key]
@@ -188,11 +183,8 @@ class WorktreeAutoConfigurator:
                     # Rewrite entire entry to correct uvx format
                     instance_id = os.getenv("DOPEMUX_INSTANCE_ID", "")
                     if not dry_run:
-                        mcp_servers["conport"] = self._rewrite_conport_entry(
-                            workspace, instance_id
-                        )
-                    msg = f"ConPort format → uvx-based (workspace: {workspace})"
-                    changes.append(msg)
+                        mcp_servers["conport"] = self._rewrite_conport_entry(workspace, instance_id)
+                    changes.append(f"ConPort format → uvx-based (workspace: {workspace})")
                 else:
                     # Just update workspace_id in existing correct format
                     new_args = self._update_conport_args(old_args, workspace)
@@ -200,16 +192,12 @@ class WorktreeAutoConfigurator:
                     if new_args != old_args:
                         if not dry_run:
                             mcp_servers["conport"]["args"] = new_args
-                        changes.append(
-                            f"ConPort --workspace_id → {workspace}"
-                        )
+                        changes.append(f"ConPort --workspace_id → {workspace}")
 
             # Update Dope-Context script path
             if "dope-context" in mcp_servers:
                 old_command = mcp_servers["dope-context"].get("command", "")
-                new_command = self._update_dope_context_command(
-                    old_command, workspace
-                )
+                new_command = self._update_dope_context_command(old_command, workspace)
 
                 if new_command != old_command:
                     if not dry_run:
@@ -230,7 +218,6 @@ class WorktreeAutoConfigurator:
 
         except Exception as e:
             return False, f"Configuration failed: {e}"
-
     def _load_config(self) -> Dict:
         """Load .claude.json configuration."""
         with open(self.claude_config_path, 'r') as f:
@@ -251,9 +238,7 @@ class WorktreeAutoConfigurator:
     def _create_backup(self) -> Path:
         """Create timestamped backup of .claude.json."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_path = self.claude_config_path.with_suffix(
-            f'.json.backup.{timestamp}'
-        )
+        backup_path = self.claude_config_path.with_suffix(f'.json.backup.{timestamp}')
         shutil.copy2(self.claude_config_path, backup_path)
         return backup_path
 
@@ -275,8 +260,7 @@ class WorktreeAutoConfigurator:
         """
         Generate the correct ConPort MCP entry using uvx format.
 
-        This replaces the broken direct conport-mcp format with the correct
-        uvx-based format.
+        This replaces the broken direct conport-mcp format with the correct uvx-based format.
 
         Args:
             workspace: Current workspace path
@@ -286,11 +270,7 @@ class WorktreeAutoConfigurator:
             Dict with corrected conport MCP configuration
         """
         # Determine container name based on instance_id
-        container = (
-            "mcp-conport"
-            if instance_id in ("", "main")
-            else f"mcp-conport_{instance_id}"
-        )
+        container = "mcp-conport" if instance_id in ("", "main") else f"mcp-conport_{instance_id}"
 
         return {
             "type": "stdio",

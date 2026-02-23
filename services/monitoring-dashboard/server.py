@@ -30,6 +30,50 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+async def _run_subprocess_async(cmd: List[str], timeout: float = 10) -> subprocess.CompletedProcess:
+    """
+    Run a subprocess asynchronously and return a CompletedProcess-like object.
+
+    Prevents blocking the event loop during external command execution.
+    """
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+            return subprocess.CompletedProcess(
+                args=cmd,
+                returncode=proc.returncode,
+                stdout=stdout.decode() if stdout else "",
+                stderr=stderr.decode() if stderr else ""
+            )
+        except asyncio.TimeoutError:
+            try:
+                proc.kill()
+            except ProcessLookupError:
+                pass
+            await proc.wait()
+            # Create a CompletedProcess for timeout
+            return subprocess.CompletedProcess(
+                args=cmd,
+                returncode=1,
+                stdout="",
+                stderr="Subprocess timed out"
+            )
+    except Exception as e:
+        logger.error(f"Error running async subprocess {cmd}: {e}")
+        # Return a failed process instead of crashing
+        return subprocess.CompletedProcess(
+            args=cmd,
+            returncode=1,
+            stdout="",
+            stderr=str(e)
+        )
+
 # Import the global error handling framework
 from ..error_handling import (
     GlobalErrorHandler,
@@ -193,11 +237,8 @@ class RecoveryManager:
 
         try:
             # Use docker-compose to restart the service
-            import subprocess
-            result = subprocess.run(
+            result = await _run_subprocess_async(
                 ['docker-compose', '-f', 'docker-compose.staging.yml', 'restart', service_id],
-                capture_output=True,
-                text=True,
                 timeout=30
             )
 
@@ -432,10 +473,8 @@ class MonitoringDashboard:
 
         try:
             # Get running containers in JSON format
-            result = subprocess.run(
+            result = await _run_subprocess_async(
                 ['docker', 'ps', '--format', 'json'],
-                capture_output=True,
-                text=True,
                 timeout=10
             )
 
@@ -935,11 +974,8 @@ class MonitoringDashboard:
         if fallback_check == "process_check":
             # Check if PostgreSQL process is running (for ConPort)
             try:
-                import subprocess
-                result = subprocess.run(
+                result = await _run_subprocess_async(
                     ["pg_isready", "-h", "localhost", "-p", "5432"],
-                    capture_output=True,
-                    text=True,
                     timeout=5
                 )
                 if result.returncode == 0:
@@ -967,11 +1003,8 @@ class MonitoringDashboard:
         elif fallback_check == "docker_check":
             # Check if Docker container is running (for Leantime)
             try:
-                import subprocess
-                result = subprocess.run(
+                result = await _run_subprocess_async(
                     ["docker", "ps", "--filter", "name=leantime", "--format", "{{.Status}}"],
-                    capture_output=True,
-                    text=True,
                     timeout=5
                 )
                 if result.returncode == 0 and "Up" in result.stdout:
