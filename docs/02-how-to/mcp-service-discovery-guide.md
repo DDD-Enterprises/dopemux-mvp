@@ -79,7 +79,7 @@ add_info_endpoint(
 
 ```bash
 # Start all MCP servers
-docker-compose -f docker/mcp-servers/docker-compose.yml up -d
+docker-compose -f compose.yml up -d
 
 # Generate config
 python scripts/generate-claude-config.py > .claude.json

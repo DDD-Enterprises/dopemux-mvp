@@ -472,7 +472,7 @@ class UpdatePhase(BasePhase):
 
                 # Build only services that need rebuilding
                 build_result = subprocess.run(
-                    ["docker-compose", "-f", str(compose_file), "build", "--parallel"],
+                    ["docker", "compose", "-f", str(compose_file), "build", "--parallel"],
                     capture_output=True, text=True, timeout=600
                 )
 
@@ -615,13 +615,13 @@ class OrchestrationPhase(BasePhase):
                 try:
                     # Stop service
                     subprocess.run(
-                        ["docker-compose", "-f", str(compose_file), "stop", service],
+                        ["docker", "compose", "-f", str(compose_file), "stop", service],
                         capture_output=True, timeout=30
                     )
 
                     # Start service
                     subprocess.run(
-                        ["docker-compose", "-f", str(compose_file), "start", service],
+                        ["docker", "compose", "-f", str(compose_file), "start", service],
                         capture_output=True, timeout=60
                     )
 
