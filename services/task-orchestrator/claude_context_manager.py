@@ -142,9 +142,11 @@ class ClaudeContextManager:
     async def _load_base_claude_md(self) -> None:
         """Load base Claude.md content as template."""
         try:
-            if self.claude_md_path.exists():
-                with open(self.claude_md_path, 'r', encoding='utf-8') as f:
-                    self.base_claude_md = f.read()
+            if await asyncio.to_thread(self.claude_md_path.exists):
+                self.base_claude_md = await asyncio.to_thread(
+                    self.claude_md_path.read_text,
+                    encoding='utf-8'
+                )
 
                 logger.info(f"📄 Loaded base Claude.md from {self.claude_md_path}")
             else:
@@ -701,11 +703,18 @@ class ClaudeContextManager:
         """Write updated content to Claude.md."""
         try:
             # Ensure directory exists
-            self.claude_md_path.parent.mkdir(parents=True, exist_ok=True)
+            await asyncio.to_thread(
+                self.claude_md_path.parent.mkdir,
+                parents=True,
+                exist_ok=True
+            )
 
             # Write content
-            with open(self.claude_md_path, 'w', encoding='utf-8') as f:
-                f.write(content)
+            await asyncio.to_thread(
+                self.claude_md_path.write_text,
+                content,
+                encoding='utf-8'
+            )
 
             logger.debug(f"📝 Updated {self.claude_md_path}")
 
