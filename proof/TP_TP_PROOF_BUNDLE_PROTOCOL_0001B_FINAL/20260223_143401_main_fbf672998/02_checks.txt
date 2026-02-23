@@ -1,0 +1,37 @@
+=== TP VERIFICATION COMMANDS ===
+$ echo '=== ASCII VERIFICATION ==='
+=== ASCII VERIFICATION ===
+
+$ LC_ALL=C grep -n '[^[:print:][:space:]]' .claude/claude.md && echo 'NON_ASCII_FOUND' || echo 'ASCII_CLEAN'
+ASCII_CLEAN
+
+$ echo '=== SCRIPT VERIFICATION ==='
+=== SCRIPT VERIFICATION ===
+
+$ ls -la scripts/proof_bundle.sh
+-rwxr-xr-x@ 1 hue  staff  2330 Feb 23 14:31 scripts/proof_bundle.sh
+
+$ test -x scripts/proof_bundle.sh && echo 'SCRIPT_EXECUTABLE' || echo 'SCRIPT_NOT_EXECUTABLE'
+SCRIPT_EXECUTABLE
+
+$ echo '=== BUNDLE VERIFICATION ==='
+=== BUNDLE VERIFICATION ===
+
+$ ls -la proof/TP_TP_PROOF_BUNDLE_PROTOCOL_0001B/20260223_143338_main_fbf672998/
+total 24
+drwxr-xr-x@ 6 hue  staff   192 Feb 23 14:33 .
+drwxr-xr-x@ 4 hue  staff   128 Feb 23 14:33 ..
+-rw-r--r--@ 1 hue  staff   227 Feb 23 14:33 00_context.txt
+-rw-r--r--@ 1 hue  staff  1895 Feb 23 14:33 01_git.txt
+-rw-r--r--@ 1 hue  staff  1964 Feb 23 14:33 02_checks.txt
+-rw-r--r--@ 1 hue  staff     0 Feb 23 14:33 03_notes.txt
+
+$ echo '=== REAL COMMAND OUTPUTS VERIFICATION ==='
+=== REAL COMMAND OUTPUTS VERIFICATION ===
+
+$ grep -c 'git status' proof/TP_TP_PROOF_BUNDLE_PROTOCOL_0001B/20260223_143338_main_fbf672998/02_checks.txt
+1
+
+$ grep -c 'git diff' proof/TP_TP_PROOF_BUNDLE_PROTOCOL_0001B/20260223_143338_main_fbf672998/02_checks.txt
+2
+
