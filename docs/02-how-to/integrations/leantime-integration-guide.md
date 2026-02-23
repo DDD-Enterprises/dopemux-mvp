@@ -240,7 +240,7 @@ nano docker/mcp-servers/leantime-bridge/.env
 LEANTIME_API_TOKEN=lt_a1b2c_xyz789abc123def456...
 
 # Restart the bridge
-docker compose -f docker/mcp-servers/docker-compose.yml restart leantime-bridge
+docker compose -f compose.yml restart leantime-bridge
 ```
 
 ## Method 2: Create API Key via Database (Before Installation)
@@ -419,7 +419,7 @@ After creating your API key:
 echo "LEANTIME_API_TOKEN=lt_your_key_here" >> docker/mcp-servers/leantime-bridge/.env
 
 # 2. Restart bridge
-docker compose -f docker/mcp-servers/docker-compose.yml restart leantime-bridge
+docker compose -f compose.yml restart leantime-bridge
 
 # 3. Test from bridge container
 docker exec dopemux-mcp-leantime-bridge python -c "

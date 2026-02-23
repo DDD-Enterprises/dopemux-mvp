@@ -121,7 +121,6 @@ PROMPTGEN_DEFAULT_INCLUDE_GLOBS = [
     "pyproject.toml",
     "dopemux.toml",
     "compose.yml",
-    "docker-compose*.yml",
     ".claude/**",
     ".dopemux/**",
     ".taskx/**",
@@ -1312,7 +1311,7 @@ def _promptgen_excerpt_priority(relpath: str) -> int:
         or relpath.startswith(".github/")
         or relpath.startswith("config/")
         or relpath == "compose.yml"
-        or relpath.startswith("docker-compose")
+        or relpath.startswith("compose.yml")
     ):
         return 0
     if relpath in {"README.md", "QUICK_START.md", "INSTALL.md", "CHANGELOG.md"} or relpath.startswith("docs/"):
@@ -1448,7 +1447,7 @@ def _parse_compose_services(
         row
         for row in selected_files
         if row["relpath"] == "compose.yml"
-        or row["relpath"].startswith("docker-compose")
+        or row["relpath"].startswith("compose.yml")
         or (row["relpath"].startswith("compose/") and row["relpath"].endswith((".yml", ".yaml")))
     ]
     compose_rows = sorted(compose_rows, key=lambda row: row["relpath"])
@@ -1820,7 +1819,7 @@ def classify_surface(path_str: str) -> Dict[str, Any]:
 
     if (
         name.startswith("compose")
-        or name.startswith("docker-compose")
+        or name.startswith("compose.yml")
         or "/compose/" in lower
     ):
         return _result(0, "compose_bootstrap", "compose_bootstrap_surface")
@@ -8996,9 +8995,7 @@ def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
         "pyproject.toml",
         "dopemux.toml",
         "compose.yml",
-        "docker-compose.dev.yml",
-        "docker-compose.prod.yml",
-        "docker-compose.smoke.yml",
+        "compose.yml",
         "Makefile",
         ".claude.json",
         ".taskxroot",

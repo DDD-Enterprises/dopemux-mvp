@@ -1,0 +1,5 @@
+display_name = "Minimal"
+description = "Builtins-only debug agent"
+safety = "safe"
+agent_type = "subagent"
+enabled_tools = ["grep", "read_file"]
