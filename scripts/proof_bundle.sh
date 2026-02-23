@@ -5,6 +5,20 @@ set -e
 
 TP_ID="TP-WORKDIR-GATE-0001"
 OUTPUT_DIR="proof/${TP_ID}"
+
+# Parse --tp argument first
+while [ $# -gt 0 ]; do
+    if [ "$1" = "--tp" ]; then
+        shift
+        TP_ID="$1"
+        OUTPUT_DIR="proof/${TP_ID}"
+        shift
+        break
+    else
+        shift
+    fi
+done
+
 mkdir -p "${OUTPUT_DIR}"
 
 echo "=== Proof Bundle ${TP_ID} ===" > "${OUTPUT_DIR}/proof.txt"
@@ -12,10 +26,7 @@ echo "Commands executed:" >> "${OUTPUT_DIR}/proof.txt"
 
 # Run each command and capture output
 while [ $# -gt 0 ]; do
-    if [ "$1" = "--tp" ]; then
-        shift
-        continue
-    elif [ "$1" = "--cmd" ]; then
+    if [ "$1" = "--cmd" ]; then
         shift
         CMD="$1"
         shift
