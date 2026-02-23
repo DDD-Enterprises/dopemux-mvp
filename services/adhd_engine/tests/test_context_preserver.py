@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 import shutil
 import json
-from services.adhd_engine.context_preserver import ContextPreserver, PreservedContext
+from services.adhd_engine.domains.attention.context_preserver import ContextPreserver, PreservedContext
 
 class TestContextPreserver:
     @pytest.fixture
