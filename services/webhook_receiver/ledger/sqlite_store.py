@@ -255,7 +255,6 @@ class SQLiteEventStore(EventStore):
                 (provider, run_id, provider_ref),
             ).fetchone()
         return str(row["payload_json"]) if row else None
-
     def dump_recent_run_events(self, limit: int = 20) -> List[Dict[str, Any]]:
         with self._conn() as conn:
             rows = conn.execute(
