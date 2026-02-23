@@ -38,7 +38,9 @@
     "vendor",
     "UPGRADES",
     "_audit_out",
-    "review_artifacts"
+    "review_artifacts",
+    "claudedocs",
+    "templates"
   ],
   "allowed_root_files": [
     ".gitmodules",
