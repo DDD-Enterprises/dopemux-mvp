@@ -1,5 +1,3 @@
-import sys
-
 with open('compose.yml', 'r') as f:
     lines = f.readlines()
 
