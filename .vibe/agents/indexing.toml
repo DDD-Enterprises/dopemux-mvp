@@ -1,0 +1,8 @@
+active_model = "devstral-2"
+
+enabled_tools = [
+  "bash", "grep",
+  "dope_context_index_workspace",
+  "dope_context_index_docs",
+  "dope_context_get_index_status",
+]
