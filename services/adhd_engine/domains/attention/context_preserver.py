@@ -224,11 +224,16 @@ class ContextPreserver:
                 stderr=asyncio.subprocess.PIPE
             )
             try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=2.0)
+                stdout, _stderr = await asyncio.wait_for(process.communicate(), timeout=2)
                 if process.returncode == 0:
                     return stdout.decode().strip()
             except asyncio.TimeoutError:
-                process.kill()
+                try:
+                    process.kill()
+                    await process.wait()
+                except Exception:
+                    # Best-effort cleanup: ignore errors while attempting to kill the timed-out git process
+                    pass
                 logger.warning("Git branch command timed out")
         except Exception as e:
             logger.warning(f"Failed to get git branch: {e}")

@@ -158,13 +158,13 @@ pm-install-unattended:
 	python3 installers/leantime/install.py -u -c installers/leantime/configs/default.yaml
 
 pm-up:
-	cd docker/leantime && docker-compose up -d
+	docker compose -f compose.yml up -d leantime mysql_leantime redis_leantime
 
 pm-down:
-	cd docker/leantime && docker-compose down
+	docker compose -f compose.yml stop leantime mysql_leantime redis_leantime
 
 pm-logs:
-	cd docker/leantime && docker-compose logs -f
+	docker compose -f compose.yml logs -f leantime
 
 # ---- Webhook Receiver ----
 webhook-up:  ## Start webhook receiver

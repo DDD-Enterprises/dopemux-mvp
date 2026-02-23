@@ -2,7 +2,7 @@
 # Use this with the base docker-compose.yml to enable Leantime integration
 #
 # Usage:
-#   docker compose -f docker-compose.yml -f docker-compose.leantime.yml up -d
+#   docker compose -f compose.yml -f compose/legacy/leantime-overlay-docker-compose.yml up -d
 #
 # Prerequisites:
 #   - Leantime stack must be running (or leantime-net network must exist)
