@@ -1,3 +1,15 @@
+---
+id: TP-ROUTING-GLOBAL-0001-Commit1-SUMMARY
+title: Tp Routing Global 0001 Commit1 Summary
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-23'
+last_review: '2026-02-23'
+next_review: '2026-05-24'
+prelude: Tp Routing Global 0001 Commit1 Summary (explanation) for dopemux documentation
+  and developer workflows.
+---
 # TP-ROUTING-GLOBAL-0001 Commit 1 Summary
 
 ## Objective Status: ✅ COMPLETE
