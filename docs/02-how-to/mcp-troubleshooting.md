@@ -4,8 +4,12 @@ title: MCP Server Troubleshooting
 type: how-to
 owner: claude-code-framework
 date: 2026-02-21
+author: '@hu3mann'
+last_review: '2026-02-23'
+next_review: '2026-05-24'
+prelude: MCP Server Troubleshooting (how-to) for dopemux documentation and developer
+  workflows.
 ---
-
 # MCP Server Troubleshooting Guide
 
 ## Quick Diagnosis
