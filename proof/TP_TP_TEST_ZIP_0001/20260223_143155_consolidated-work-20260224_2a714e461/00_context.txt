@@ -1,0 +1,7 @@
+=== REPO CONTEXT ===
+/Users/hue/code/dopemux-mvp
+/Users/hue/code/dopemux-mvp
+consolidated-work-20260224
+2a714e46103369eb293af9d719c5f3966d3b973f
+/Users/hue/code/dopemux-mvp     2a714e461 [consolidated-work-20260224]
+/Users/hue/code/dopemux-router  2a714e461 [router-dev]

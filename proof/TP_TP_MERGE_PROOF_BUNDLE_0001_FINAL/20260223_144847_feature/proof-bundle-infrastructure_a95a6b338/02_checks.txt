@@ -1,0 +1,30 @@
+=== TP VERIFICATION COMMANDS ===
+$ echo '=== MERGE VERIFICATION ==='
+=== MERGE VERIFICATION ===
+
+$ git status --porcelain
+
+$ git rev-parse --abbrev-ref HEAD
+feature/proof-bundle-infrastructure
+
+$ git log --oneline -10
+a95a6b338 chore(gitignore): ignore local router artifacts
+ab325c188 docs(claude): add devstral implementer contract
+79276406e chore(proof): add bundle harness and ignore proof output
+7b63378f8 docs(claude): enforce proof bundle protocol
+f4759104f 🚀 Mega Consolidation: Merge 16 PRs with Worktree Cleanup and Stash Recovery (#105)
+0d5990cdf ⚡ Fix IndentationError and add _get_git_branch unit tests (PR #85 follow-up) (#97)
+2507a9a33 ⚡ Optimize blocking git branch call in ContextPreserver (#85)
+9b08b3c9d 🧪 [test] implement unit tests for TaskDecomposer.add_task (#84)
+a1169c657 🎨 Palette: Add skip link and semantic landmarks for keyboard accessibility (#81)
+425340542 build(deps): bump the npm_and_yarn group across 2 directories with 6 updates (#100)
+
+$ ls -la scripts/proof_bundle.sh
+-rwxr-xr-x@ 1 hue  staff  2330 Feb 23 14:48 scripts/proof_bundle.sh
+
+$ grep -c 'Proof Bundle Protocol' .claude/claude.md
+1
+
+$ grep -c 'Implementer Contract' .claude/claude.md
+1
+

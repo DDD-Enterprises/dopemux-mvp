@@ -1,0 +1,3 @@
+=== Notes ===
+RoutingConfig class added with alias validation supporting both slots and direct model references.
+Validation passes for mixed alias types (slot-based and direct model references).
