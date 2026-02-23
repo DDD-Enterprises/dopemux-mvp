@@ -1,0 +1,53 @@
+=== TP VERIFICATION COMMANDS ===
+$ git status --porcelain
+ M .claude/claude.md
+?? proof/
+?? scripts/proof_bundle.sh
+?? services/router/
+
+$ git rev-parse --abbrev-ref HEAD
+main
+
+$ git diff --stat
+ .claude/claude.md | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+$ git diff
+diff --git a/.claude/claude.md b/.claude/claude.md
+index 063ab634e..1200bf281 100644
+--- a/.claude/claude.md
++++ b/.claude/claude.md
+@@ -87,3 +87,25 @@ You are working on a **python project** with Dopemux ADHD optimizations enabled.
+ **Focus**: python development with ADHD accommodations
+ **Goal**: Maintain productivity while respecting neurodivergent needs
+ **Style**: Supportive, clear, action-oriented
++
++## Proof Bundle Protocol (mandatory)
++
++Every proof bundle MUST start with repo identity:
++- pwd
++- git rev-parse --show-toplevel
++- git rev-parse --abbrev-ref HEAD
++- git rev-parse HEAD
++- git worktree list
++If pwd is not under git rev-parse --show-toplevel, STOP.
++No simulated outputs:
++- If you cannot run a command, write UNKNOWN and STOP.
++- Do not estimate or "simulate" outputs.
++- 02_checks.txt must include verbatim outputs of real commands; echo-only bundles are invalid.
++Bundles MUST be written under:
++- proof/TP_<id>/<YYYYMMDD_HHMMSS>_<branch>_<shortsha>/
++Required files:
++- 00_context.txt (repo identity)
++- 01_git.txt (status, diffstat, diff, log)
++- 02_checks.txt (TP verification commands)
++- 03_notes.txt (only observed anomalies and stop conditions)
++Use scripts/proof_bundle.sh to generate bundles. Manual bundles are not accepted.
+
+$ git log -5 --oneline
+fbf672998 fix(hygiene): move root files to proper locations to pass CI checks
+0c046aca3 Merge branch 'mega-pr-merge' - resolve pre-commit linting and hygiene issues
+23f64323b Merge branch 'tp-vibe-mcp-truth-lockdown' into main (resolving conflicts)
+b78ae7e13 Merge branch 'codex/tp-pro-prompts-v1' into main (resolving conflicts)
+3373da2d2 Merge branch 'feature/new-worktree' into main
+
