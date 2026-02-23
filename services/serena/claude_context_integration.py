@@ -856,22 +856,20 @@ class ClaudeContextIntegration:
 
     async def _get_file_content_preview(self, file_path: str) -> str:
         """Get a brief preview of file content for search context."""
-        def _read_preview_sync():
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    # Read first few lines for context
-                    lines = []
-                    for i, line in enumerate(f):
-                        if i >= 10:  # First 10 lines max
-                            break
-                        if line.strip() and not line.strip().startswith('#'):
-                            lines.append(line.strip())
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                # Read first few lines for context
+                lines = []
+                for i, line in enumerate(f):
+                    if i >= 10:  # First 10 lines max
+                        break
+                    if line.strip() and not line.strip().startswith('#'):
+                        lines.append(line.strip())
 
-                    return ' '.join(lines)[:200]  # First 200 chars
-            except Exception:
-                return Path(file_path).stem  # Fallback to filename
+                return ' '.join(lines)[:200]  # First 200 chars
 
-        return await asyncio.to_thread(_read_preview_sync)
+        except Exception as e:
+            return Path(file_path).stem  # Fallback to filename
     # Health and Monitoring
 
     async def get_integration_health(self) -> Dict[str, Any]:
