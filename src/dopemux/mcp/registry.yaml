@@ -2,7 +2,7 @@
 # This file is the source of truth for MCP server naming and transport metadata.
 
 servers:
-  conport:
+  dopemux-conport:
     transport: http
     default_enabled: true
     required_for_auto: true
@@ -18,7 +18,7 @@ servers:
         - context-portal-mcp
         - conport-mcp
 
-  serena:
+  dopemux-serena:
     transport: http
     default_enabled: true
     required_for_auto: true
@@ -32,7 +32,7 @@ servers:
       args:
         - start-mcp-server
 
-  desktop-commander:
+  dopemux-desktop-commander:
     transport: http
     default_enabled: true
     required_for_auto: false
@@ -42,7 +42,7 @@ servers:
       port: 3012
       health_url: http://localhost:3012/health
 
-  gpt-researcher:
+  dopemux-gpt-researcher:
     transport: http
     default_enabled: true
     required_for_auto: false
@@ -52,7 +52,7 @@ servers:
       port: 3009
       health_url: http://localhost:3009/health
 
-  leantime-bridge:
+  dopemux-leantime-bridge:
     transport: http-sse
     default_enabled: true
     required_for_auto: false
@@ -62,7 +62,7 @@ servers:
       port: 3015
       health_url: http://localhost:3015/health
 
-  claude-context:
+  dopemux-claude-context:
     transport: http
     default_enabled: true
     required_for_auto: true
@@ -77,7 +77,7 @@ servers:
         - -y
         - "@zilliz/claude-context-mcp@latest"
 
-  dope-context:
+  dopemux-dope-context:
     transport: http
     default_enabled: false
     required_for_auto: false
@@ -87,7 +87,7 @@ servers:
       port: 3010
       health_url: http://localhost:3010/health
 
-  pal:
+  dopemux-pal:
     transport: stdio
     default_enabled: false
     required_for_auto: false
@@ -97,7 +97,7 @@ servers:
         - pal-mcp-server
         - start
 
-  zen:
+  dopemux-zen:
     transport: stdio
     default_enabled: false
     required_for_auto: false
@@ -107,7 +107,7 @@ servers:
         - -y
         - zen-mcp
 
-  mas-sequential-thinking:
+  dopemux-mas-sequential-thinking:
     transport: stdio
     default_enabled: false
     required_for_auto: false
@@ -117,7 +117,7 @@ servers:
         - -m
         - mcp_server_mas_sequential_thinking
 
-  exa:
+  dopemux-exa:
     transport: stdio
     default_enabled: false
     required_for_auto: false
@@ -127,7 +127,7 @@ servers:
         - -y
         - exa-mcp
 
-  morphllm-fast-apply:
+  dopemux-morphllm-fast-apply:
     transport: stdio
     default_enabled: false
     required_for_auto: false

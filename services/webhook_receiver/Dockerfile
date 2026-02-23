@@ -3,6 +3,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 COPY services/webhook_receiver/requirements.txt /app/services/webhook_receiver/requirements.txt
+RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir -r /app/services/webhook_receiver/requirements.txt
 
 COPY services/webhook_receiver /app/services/webhook_receiver
