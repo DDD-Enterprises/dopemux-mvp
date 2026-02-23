@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
-from ledger.interface import parse_db_url
 from storage import build_event_store
 
 from admin import cmd_dedupe_check, cmd_stats, cmd_tail, _get_connection
