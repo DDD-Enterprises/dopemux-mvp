@@ -313,9 +313,11 @@ class RollbackManager:
         """Stop all dopemux services for rollback."""
         try:
             # Stop via docker-compose
-            compose_files = list(self.project_root.glob("**/docker-compose*.yml"))
-
+            compose_files = [self.project_root / "compose.yml"]
+            
             for compose_file in compose_files:
+                if not compose_file.exists():
+                    continue
                 result = subprocess.run(
                     ["docker-compose", "-f", str(compose_file), "stop"],
                     capture_output=True, text=True, timeout=60
@@ -426,9 +428,11 @@ class RollbackManager:
         """Restart services after rollback."""
         try:
             # Restart via docker-compose
-            compose_files = list(self.project_root.glob("**/docker-compose*.yml"))
-
+            compose_files = [self.project_root / "compose.yml"]
+            
             for compose_file in compose_files:
+                if not compose_file.exists():
+                    continue
                 result = subprocess.run(
                     ["docker-compose", "-f", str(compose_file), "up", "-d"],
                     capture_output=True, text=True, timeout=120
