@@ -7,7 +7,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
-DEFAULT_COMPOSE_FILE = "docker/mcp-servers/docker-compose.yml"
+DEFAULT_COMPOSE_FILE = "compose.yml"
 MCPTransport = Literal["http", "http-sse", "stdio"]
 
 

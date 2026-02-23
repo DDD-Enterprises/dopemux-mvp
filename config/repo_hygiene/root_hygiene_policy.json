@@ -3,6 +3,7 @@
   "allowed_root_dirs": [
     ".taskx",
     ".claude",
+    ".vibe",
     ".Jules",
     ".githooks",
     ".github",

@@ -3697,7 +3697,7 @@ def mcp_up_cmd(all_services: bool, services: str):
             cmd += "./start-all-mcp-servers.sh"
         else:
             svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
-            cmd += f"docker-compose up -d --build {svc_list}"
+            cmd += f"docker compose -f compose.yml up -d --build {svc_list}"
         console.logger.info(f"[blue]🔌 {cmd}[/blue]")
         subprocess.run(["bash","-lc", cmd], check=True)
         console.logger.info("[green]✅ MCP servers started[/green]")
@@ -3710,7 +3710,9 @@ def mcp_up_cmd(all_services: bool, services: str):
 def mcp_down_cmd():
     """Stop all MCP servers."""
     try:
-        subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose down"], check=True)
+        # Stop and remove only the MCP-related services
+        mcp_services = ["conport", "pal", "litellm", "dope-context", "serena", "gptr-mcp", "desktop-commander", "leantime-bridge"]
+        subprocess.run(["docker", "compose", "-f", "compose.yml", "rm", "-f", "-s", "-v"] + mcp_services, check=True)
         console.logger.info("[green]✅ MCP servers stopped[/green]")
     except CalledProcessError:
         console.logger.error("[red]❌ Failed to stop MCP servers[/red]")
@@ -3721,7 +3723,7 @@ def mcp_down_cmd():
 def mcp_status_cmd():
     """Show docker-compose status for MCP servers."""
     try:
-        subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose ps"], check=False)
+        subprocess.run(["docker","compose","-f","compose.yml","ps"], check=False)
     except CalledProcessError:
         sys.exit(1)
 
@@ -3732,9 +3734,9 @@ def mcp_logs_cmd(service: str):
     """Tail logs for an MCP service or all."""
     try:
         if service:
-            cmd = f"cd docker/mcp-servers && docker-compose logs -f {service}"
+            cmd = f"docker compose -f compose.yml logs -f {service}"
         else:
-            cmd = "cd docker/mcp-servers && docker-compose logs -f"
+            cmd = "docker compose -f compose.yml logs -f"
         console.logger.info(f"[blue]📄 {cmd}[/blue]")
         subprocess.run(["bash","-lc", cmd], check=False)
     except CalledProcessError:
@@ -3773,13 +3775,13 @@ def mcp_start_all_cmd(verify: bool):
 
             # Fallback: manual startup
             console.logger.info("[blue]Starting MCP servers...[/blue]")
-            subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose up -d"], check=True)
+            subprocess.run(["docker","compose","-f","compose.yml","up","-d"], check=True)
 
             console.logger.info("[blue]Starting Integration Bridge...[/blue]")
             subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"], check=True)
 
             console.logger.info("[blue]Starting Task Orchestrator...[/blue]")
-            subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose --profile manual up -d task-orchestrator"], check=True)
+            subprocess.run(["docker","compose","-f","compose.yml","--profile","manual","up","-d","task-orchestrator"], check=True)
 
             console.logger.info("[green]✅ All services started[/green]")
         else:
@@ -4353,7 +4355,7 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
                         console.logger.info(f"  [red]❌ {name}[/red]")
                     else:
                         console.logger.info(f"  [green]✅ {name}[/green]")
-                console.logger.info("[dim]Tip: Check docker logs with: docker-compose -f docker/mcp-servers/docker-compose.yml logs[/dim]\n")
+                console.logger.info("[dim]Tip: Check docker logs with: docker compose -f compose.yml logs[/dim]\n")
         
         except Exception as e:
             console.logger.error(f"[yellow]⚠️  Error during health checks: {e}[/yellow]")
