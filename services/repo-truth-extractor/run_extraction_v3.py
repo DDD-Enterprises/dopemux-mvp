@@ -9231,7 +9231,7 @@ def run_phase_R_async_submit(
                 run_id=run_id, phase="R", step_id=step_id, partition_id=partition_id
             )
             attempt = (latest_attempt or 0) + 1
- 
+
             out_json = raw_dir / f"{step_id}__{partition_id}.json"
             pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
 
@@ -9361,22 +9361,22 @@ def _fetch_webhook_payload_for_job(event_store: Any, run_id: str, provider_ref: 
     fetch_fn = getattr(event_store, "fetch_webhook_payload", None)
     if not callable(fetch_fn):
         return {}
- 
+
     try:
         # The EventStore is responsible for any backend-specific querying.
         payload = fetch_fn(provider="openai", run_id=run_id, provider_ref=provider_ref)
     except Exception:
         return {}
- 
+
     if isinstance(payload, dict):
         return payload
- 
+
     if isinstance(payload, str):
         payload_json = payload
     else:
         # Unsupported payload type
         return {}
- 
+
     if not payload_json:
         return {}
     try:

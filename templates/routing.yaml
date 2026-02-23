@@ -27,7 +27,7 @@ providers:
     label: "xAI Grok"
     api_key_env: "XAI_API_KEY"
     base_url: "https://api.x.ai/v1"
-    
+
   - name: openrouter
     label: "OpenRouter"
     api_key_env: "OPENROUTER_API_KEY"
@@ -42,17 +42,17 @@ models:
     provider: xai
     model_id: "xai/grok-4-fast"
     max_tokens: 131072
-    
+
   - name: xai-grok-code-fast
     provider: xai
     model_id: "xai/grok-code-fast"
     max_tokens: 131072
-    
+
   - name: openrouter-gpt-5
     provider: openrouter
     model_id: "openrouter/openai/gpt-5"
     max_tokens: 32768
-    
+
   - name: openrouter-gpt-5-codex
     provider: openrouter
     model_id: "openrouter/openai/gpt-5-codex"
