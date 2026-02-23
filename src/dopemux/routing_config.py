@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import logging
-import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import yaml
 
@@ -20,11 +19,13 @@ class RoutingConfig:
     """Manage the global routing configuration for Dopemux."""
 
     DEFAULT_CONFIG_PATH = Path.home() / ".dopemux" / "routing.yaml"
-    TEMPLATE_PATH = Path(__file__).parent.parent.parent / "templates" / "routing.yaml"
+    TEMPLATE_PATH = (
+        Path(__file__).parent.parent.parent / "templates" / "routing.yaml"
+    )
 
     def __init__(self, config_path: Optional[Path] = None):
         """Initialize routing config manager.
-        
+
         Args:
             config_path: Path to routing.yaml. Defaults to ~/.dopemux/routing.yaml
         """
@@ -34,10 +35,10 @@ class RoutingConfig:
 
     def load(self) -> Dict[str, Any]:
         """Load and validate the routing configuration.
-        
+
         Returns:
             The parsed configuration dictionary
-            
+
         Raises:
             RoutingConfigError: If config cannot be loaded or is invalid
         """
@@ -47,7 +48,8 @@ class RoutingConfig:
                 self._copy_template()
             else:
                 raise RoutingConfigError(
-                    f"Routing config not found at {self.config_path} and no template available"
+                    f"Routing config not found at {self.config_path} "
+                    "and no template available"
                 )
 
         try:
@@ -69,20 +71,22 @@ class RoutingConfig:
                 content = src.read()
             with open(self.config_path, "w", encoding="utf-8") as dst:
                 dst.write(content)
-            logger.info(f"Initialized routing config from template at {self.config_path}")
+            logger.info(
+                f"Initialized routing config from template at {self.config_path}"
+            )
         except Exception as e:
             raise RoutingConfigError(f"Failed to copy template: {e}") from e
 
     def validate(self) -> None:
         """Validate the loaded configuration.
-        
+
         Checks:
         - Required top-level keys exist
         - Mode is valid
         - All model references are valid
         - All provider references are valid
         - Fallback chains are valid
-            
+
         Raises:
             RoutingConfigError: If validation fails
         """
@@ -91,10 +95,14 @@ class RoutingConfig:
 
         # Check version
         if self.config.get("version") != 1:
-            raise RoutingConfigError(f"Unsupported config version: {self.config.get('version')}")
+            raise RoutingConfigError(
+                f"Unsupported config version: {self.config.get('version')}"
+            )
 
-        # Check required sections
-        required_sections = ["mode", "ports", "providers", "models", "slots", "fallbacks", "default_fallbacks", "aliases"]
+        required_sections = [
+            "mode", "ports", "providers", "models", "slots", "fallbacks",
+            "default_fallbacks", "aliases"
+        ]
         for section in required_sections:
             if section not in self.config:
                 raise RoutingConfigError(f"Missing required section: {section}")
@@ -121,7 +129,9 @@ class RoutingConfig:
             if "name" not in provider:
                 raise RoutingConfigError("Provider missing 'name' field")
             if "api_key_env" not in provider:
-                raise RoutingConfigError(f"Provider {provider['name']} missing 'api_key_env' field")
+                raise RoutingConfigError(
+                    f"Provider {provider['name']} missing 'api_key_env' field"
+                )
             provider_names[provider["name"]] = provider
 
         # Validate models
@@ -134,16 +144,21 @@ class RoutingConfig:
             if "name" not in model:
                 raise RoutingConfigError("Model missing 'name' field")
             if "provider" not in model:
-                raise RoutingConfigError(f"Model {model['name']} missing 'provider' field")
+                raise RoutingConfigError(
+                    f"Model {model['name']} missing 'provider' field"
+                )
             if "model_id" not in model:
-                raise RoutingConfigError(f"Model {model['name']} missing 'model_id' field")
-            
+                raise RoutingConfigError(
+                    f"Model {model['name']} missing 'model_id' field"
+                )
+
             # Check provider exists
             if model["provider"] not in provider_names:
                 raise RoutingConfigError(
-                    f"Model {model['name']} references unknown provider: {model['provider']}"
+                    f"Model {model['name']} references unknown provider: "
+                    f"{model['provider']}"
                 )
-            
+
             model_names[model["name"]] = model
 
         # Validate slots
@@ -174,7 +189,8 @@ class RoutingConfig:
             for fb_model in fallback_list:
                 if fb_model not in model_names:
                     raise RoutingConfigError(
-                        f"Fallbacks for {model_name} references unknown model: {fb_model}"
+                        f"Fallbacks for {model_name} references unknown model: "
+                        f"{fb_model}"
                     )
 
         # Validate default_fallbacks
@@ -194,19 +210,18 @@ class RoutingConfig:
 
         for alias, target in aliases.items():
             if target not in slots:
-                raise RoutingConfigError(
-                    f"Alias {alias} references unknown slot: {target}"
-                )
+                msg = f"Alias {alias} references unknown slot: {target}"
+                raise RoutingConfigError(msg)
 
     def generate_litellm_config(self, master_key: str) -> Dict[str, Any]:
         """Generate LiteLLM configuration from routing config.
-        
+
         Args:
             master_key: The master key to use for LiteLLM
-            
+
         Returns:
             Dictionary containing LiteLLM configuration
-            
+
         Note:
             This does NOT include API keys - those must be set via environment variables
             referenced in the config.
@@ -224,20 +239,20 @@ class RoutingConfig:
         model_list = []
         for model in models:
             provider = self._get_provider_by_name(model["provider"])
-            
+
             litellm_params = {
                 "model": model["model_id"],
                 "api_key": f"os.environ/{provider['api_key_env']}",
                 "max_tokens": model.get("max_tokens", 131072),
             }
-            
+
             # Add provider-specific settings
             if "base_url" in provider:
                 litellm_params["api_base"] = provider["base_url"]
-            
+
             if "extra_headers" in provider:
                 litellm_params["extra_headers"] = provider["extra_headers"]
-            
+
             model_list.append({
                 "model_name": model["name"],
                 "litellm_params": litellm_params,
@@ -245,12 +260,12 @@ class RoutingConfig:
 
         # Build model_alias_map from slots and aliases
         model_alias_map = {}
-        
+
         # First, map all aliases to their slot targets
         for alias, slot_name in aliases.items():
             model_name = slots[slot_name]
             model_alias_map[alias] = model_name
-        
+
         # Then, add direct slot mappings for convenience
         for slot_name, model_name in slots.items():
             model_alias_map[slot_name] = model_name
@@ -281,26 +296,24 @@ class RoutingConfig:
         self, litellm_url: str, litellm_key: str, ccr_api_key: str
     ) -> Dict[str, Any]:
         """Generate Claude Code Router configuration.
-        
+
         Args:
             litellm_url: URL of the LiteLLM proxy
             litellm_key: Master key for LiteLLM
             ccr_api_key: API key for CCR itself
-            
+
         Returns:
             Dictionary containing CCR configuration
-            
-        Note:
-            This does NOT include upstream API keys - those are handled by environment variables.
-        """
-        if not self._loaded:
-            raise RoutingConfigError("Config not loaded - call load() first")
 
+        Note:
+            This does NOT include upstream API keys - those are handled by
+            environment variables.
+        """
         slots = self.config.get("slots", {})
-        
+
         # CCR exposes slot names as model names
         ccr_models = list(slots.keys())
-        
+
         return {
             "provider": "litellm",
             "upstream_url": litellm_url,
