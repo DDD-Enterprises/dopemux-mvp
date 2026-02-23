@@ -1,398 +1,148 @@
-"""Global routing configuration management for Dopemux."""
+#!/usr/bin/env python3
+"""
+Dopemux Routing Configuration
 
-from __future__ import annotations
+Handles alias resolution for routing requests to appropriate services.
+Aliases can reference either slot names or model IDs directly.
+"""
 
-import logging
+from typing import Dict, Any, Optional
 from pathlib import Path
-from typing import Any, Dict, Optional
-
 import yaml
+import sys
+import importlib
 
-logger = logging.getLogger(__name__)
+# Import standard library logging to avoid conflict with dopemux.logging
+import logging as std_logging
+logger = std_logging.getLogger(__name__)
 
 
-class RoutingConfigError(RuntimeError):
-    """Raised when routing configuration is invalid or cannot be loaded."""
+class RoutingValidationError(ValueError):
+    """Raised when routing configuration is invalid."""
+    pass
 
 
 class RoutingConfig:
-    """Manage the global routing configuration for Dopemux."""
-
-    DEFAULT_CONFIG_PATH = Path.home() / ".dopemux" / "routing.yaml"
-    TEMPLATE_PATH = (
-        Path(__file__).parent.parent.parent / "templates" / "routing.yaml"
-    )
-
-    def __init__(self, config_path: Optional[Path] = None):
-        """Initialize routing config manager.
-
-        Args:
-            config_path: Path to routing.yaml. Defaults to ~/.dopemux/routing.yaml
-        """
-        self.config_path = config_path or self.DEFAULT_CONFIG_PATH
-        self.config: Dict[str, Any] = {}
-        self._loaded = False
-        self._ports: Optional[Dict[str, int]] = None
-
-    def load(self) -> Dict[str, Any]:
-        """Load and validate the routing configuration.
-
-        Returns:
-            The parsed configuration dictionary
-
-        Raises:
-            RoutingConfigError: If config cannot be loaded or is invalid
-        """
-        if not self.config_path.exists():
-            if self.TEMPLATE_PATH.exists():
-                # Initialize from template
-                self._copy_template()
-            else:
-                raise RoutingConfigError(
-                    f"Routing config not found at {self.config_path} "
-                    "and no template available"
-                )
-
-        try:
-            with open(self.config_path, "r", encoding="utf-8") as f:
-                self.config = yaml.safe_load(f) or {}
-            self._loaded = True
-            self.validate()
-            return self.config
-        except yaml.YAMLError as e:
-            raise RoutingConfigError(f"Invalid YAML in routing config: {e}") from e
-        except Exception as e:
-            raise RoutingConfigError(f"Failed to load routing config: {e}") from e
-
-    def _copy_template(self) -> None:
-        """Copy template to default location if it doesn't exist."""
-        try:
-            self.config_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(self.TEMPLATE_PATH, "r", encoding="utf-8") as src:
-                content = src.read()
-            with open(self.config_path, "w", encoding="utf-8") as dst:
-                dst.write(content)
-            logger.info(
-                f"Initialized routing config from template at {self.config_path}"
-            )
-        except Exception as e:
-            raise RoutingConfigError(f"Failed to copy template: {e}") from e
-
-    @property
-    def ports(self) -> Dict[str, int]:
-        """Get the validated ports configuration.
-
-        Returns:
-            Dictionary with 'litellm' and 'ccr' ports
-
-        Raises:
-            RoutingConfigError: If ports are not available
-        """
-        if self._ports is None:
-            if not self._loaded:
-                raise RoutingConfigError("Configuration not loaded. Call load() first.")
-            # Try to validate if not already done
-            self.validate()
-        return self._ports
-
+    """Routing configuration with alias resolution."""
+    
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        self.config = config or {}
+        self.slots = self.config.get("slots", {})
+        self.models = self.config.get("models", {})
+        self.aliases = self.config.get("aliases", {})
+        
+    @classmethod
+    def load(cls, config_path: Optional[str] = None) -> "RoutingConfig":
+        """Load routing configuration from file or use defaults."""
+        config = {}
+        
+        # Try to load from default location if no path specified
+        if config_path is None:
+            default_path = Path("~/.dopemux/routing_config.yaml").expanduser()
+            if default_path.exists():
+                try:
+                    with open(default_path, 'r') as f:
+                        config = yaml.safe_load(f) or {}
+                except Exception as e:
+                    logger.warning(f"Failed to load routing config from {default_path}: {e}")
+        elif Path(config_path).exists():
+            try:
+                with open(config_path, 'r') as f:
+                    config = yaml.safe_load(f) or {}
+            except Exception as e:
+                logger.warning(f"Failed to load routing config from {config_path}: {e}")
+        
+        return cls(config)
+    
     def validate(self) -> None:
-        """Validate the loaded configuration.
-
-        Checks:
-        - Required top-level keys exist
-        - Mode is valid
-        - All model references are valid
-        - All provider references are valid
-        - Fallback chains are valid
-
-        Raises:
-            RoutingConfigError: If validation fails
+        """Validate that all aliases point to valid slots or models."""
+        errors = []
+        
+        for alias_name, alias_target in self.aliases.items():
+            # Check if alias points to a slot
+            if alias_target in self.slots:
+                logger.debug(f"Alias {alias_name} -> slot {alias_target}")
+                continue
+            
+            # Check if alias points to a model directly
+            if alias_target in self.models:
+                logger.debug(f"Alias {alias_name} -> model {alias_target}")
+                continue
+            
+            # Neither slot nor model - this is an error
+            errors.append(f"Alias '{alias_name}' points to '{alias_target}' which is neither a slot nor a model")
+        
+        if errors:
+            raise RoutingValidationError("\n".join(errors))
+        
+        logger.info(f"Routing configuration validated: {len(self.aliases)} aliases, "
+                   f"{len(self.slots)} slots, {len(self.models)} models")
+    
+    def resolve_alias(self, alias_name: str) -> str:
         """
-        if not self._loaded:
-            raise RoutingConfigError("Config not loaded - call load() first")
-
-        # Check version
-        if self.config.get("version") != 1:
-            raise RoutingConfigError(
-                f"Unsupported config version: {self.config.get('version')}"
-            )
-
-        required_sections = [
-            "mode", "ports", "providers", "models", "slots", "fallbacks",
-            "default_fallbacks", "aliases"
-        ]
-        for section in required_sections:
-            if section not in self.config:
-                raise RoutingConfigError(f"Missing required section: {section}")
-
-        # Validate mode
-        valid_modes = ["subscription", "api"]
-        if self.config["mode"] not in valid_modes:
-            raise RoutingConfigError(
-                f"Invalid mode: {self.config['mode']}. Must be one of: {valid_modes}"
-            )
-
-        # Validate ports
-        ports = self.config.get("ports", {})
-        if "litellm" not in ports or "ccr" not in ports:
-            raise RoutingConfigError("Ports section must contain 'litellm' and 'ccr'")
-
-        # Validate port values are integers in valid range
-        try:
-            litellm_port = int(ports["litellm"])
-            ccr_port = int(ports["ccr"])
-            if not (1 <= litellm_port <= 65535):
-                raise RoutingConfigError(f"litellm port {litellm_port} must be between 1-65535")
-            if not (1 <= ccr_port <= 65535):
-                raise RoutingConfigError(f"ccr port {ccr_port} must be between 1-65535")
-            self._ports = {"litellm": litellm_port, "ccr": ccr_port}
-        except ValueError as e:
-            raise RoutingConfigError(f"Port values must be integers: {e}") from e
-
-        # Validate providers
-        providers = self.config.get("providers", [])
-        if not isinstance(providers, list) or len(providers) == 0:
-            raise RoutingConfigError("Providers must be a non-empty list")
-
-        provider_names = {}
-        for provider in providers:
-            if "name" not in provider:
-                raise RoutingConfigError("Provider missing 'name' field")
-            if "api_key_env" not in provider:
-                raise RoutingConfigError(
-                    f"Provider {provider['name']} missing 'api_key_env' field"
-                )
-            provider_names[provider["name"]] = provider
-
-        # Validate models
-        models = self.config.get("models", [])
-        if not isinstance(models, list) or len(models) == 0:
-            raise RoutingConfigError("Models must be a non-empty list")
-
-        model_names = {}
-        for model in models:
-            if "name" not in model:
-                raise RoutingConfigError("Model missing 'name' field")
-            if "provider" not in model:
-                raise RoutingConfigError(
-                    f"Model {model['name']} missing 'provider' field"
-                )
-            if "model_id" not in model:
-                raise RoutingConfigError(
-                    f"Model {model['name']} missing 'model_id' field"
-                )
-
-            # Check provider exists
-            if model["provider"] not in provider_names:
-                raise RoutingConfigError(
-                    f"Model {model['name']} references unknown provider: "
-                    f"{model['provider']}"
-                )
-
-            model_names[model["name"]] = model
-
-        # Validate slots
-        slots = self.config.get("slots", {})
-        if not isinstance(slots, dict) or len(slots) == 0:
-            raise RoutingConfigError("Slots must be a non-empty dictionary")
-
-        for slot_name, model_name in slots.items():
-            if model_name not in model_names:
-                raise RoutingConfigError(
-                    f"Slot {slot_name} references unknown model: {model_name}"
-                )
-
-        # Validate fallbacks
-        fallbacks = self.config.get("fallbacks", {})
-        if not isinstance(fallbacks, dict):
-            raise RoutingConfigError("Fallbacks must be a dictionary")
-
-        for model_name, fallback_list in fallbacks.items():
-            if model_name not in model_names:
-                raise RoutingConfigError(
-                    f"Fallbacks contain unknown model: {model_name}"
-                )
-            if not isinstance(fallback_list, list):
-                raise RoutingConfigError(
-                    f"Fallbacks for {model_name} must be a list"
-                )
-            for fb_model in fallback_list:
-                if fb_model not in model_names:
-                    raise RoutingConfigError(
-                        f"Fallbacks for {model_name} references unknown model: "
-                        f"{fb_model}"
-                    )
-
-        # Validate default_fallbacks
-        default_fb = self.config.get("default_fallbacks", [])
-        if not isinstance(default_fb, list):
-            raise RoutingConfigError("default_fallbacks must be a list")
-        for model_name in default_fb:
-            if model_name not in model_names:
-                raise RoutingConfigError(
-                    f"default_fallbacks contains unknown model: {model_name}"
-                )
-
-        # Validate aliases
-        aliases = self.config.get("aliases", {})
-        if not isinstance(aliases, dict):
-            raise RoutingConfigError("Aliases must be a dictionary")
-
-        for alias, target in aliases.items():
-            # Allow aliases to reference either slots OR models directly
-            if target not in slots and target not in model_names:
-                msg = f"Alias {alias} references unknown slot or model: {target}"
-                raise RoutingConfigError(msg)
-
-    def generate_litellm_config(self, master_key: str) -> Dict[str, Any]:
-        """Generate LiteLLM configuration from routing config.
-
+        Resolve an alias to its final target (model ID).
+        
         Args:
-            master_key: The master key to use for LiteLLM
-
+            alias_name: Name of the alias to resolve
+            
         Returns:
-            Dictionary containing LiteLLM configuration
-
-        Note:
-            This does NOT include API keys - those must be set via environment variables
-            referenced in the config.
-        """
-        if not self._loaded:
-            raise RoutingConfigError("Config not loaded - call load() first")
-
-        models = self.config.get("models", [])
-        slots = self.config.get("slots", {})
-        fallbacks = self.config.get("fallbacks", {})
-        default_fb = self.config.get("default_fallbacks", [])
-        aliases = self.config.get("aliases", {})
-
-        # Build model_list
-        model_list = []
-        for model in models:
-            provider = self._get_provider_by_name(model["provider"])
-
-            litellm_params = {
-                "model": model["model_id"],
-                "api_key": f"os.environ/{provider['api_key_env']}",
-                "max_tokens": model.get("max_tokens", 131072),
-            }
-
-            # Add provider-specific settings
-            if "base_url" in provider:
-                litellm_params["api_base"] = provider["base_url"]
-
-            if "extra_headers" in provider:
-                litellm_params["extra_headers"] = provider["extra_headers"]
-
-            model_list.append({
-                "model_name": model["name"],
-                "litellm_params": litellm_params,
-            })
-
-        # Build model_alias_map from slots and aliases
-        model_alias_map = {}
-
-        # First, map all aliases to their slot targets
-        for alias, slot_name in aliases.items():
-            model_name = slots[slot_name]
-            model_alias_map[alias] = model_name
-
-        # Then, add direct slot mappings for convenience
-        for slot_name, model_name in slots.items():
-            model_alias_map[slot_name] = model_name
-
-        # Build fallbacks structure
-        fallback_dict = {}
-        for model_name, fb_list in fallbacks.items():
-            fallback_dict[model_name] = fb_list
-
-        config = {
-            "model_list": model_list,
-            "litellm_settings": {
-                "timeout": 90,
-                "max_retries": 2,
-                "drop_params": True,
-                "model_alias_map": model_alias_map,
-                "fallbacks": fallback_dict,
-                "default_fallbacks": default_fb,
-            },
-            "general_settings": {
-                "master_key": master_key,
-            },
-        }
-
-        return config
-
-    def generate_ccr_config(
-        self, litellm_url: str, litellm_key: str, ccr_api_key: str
-    ) -> Dict[str, Any]:
-        """Generate Claude Code Router configuration.
-
-        Args:
-            litellm_url: URL of the LiteLLM proxy
-            litellm_key: Master key for LiteLLM
-            ccr_api_key: API key for CCR itself
-
-        Returns:
-            Dictionary containing CCR configuration
-
-        Note:
-            This does NOT include upstream API keys - those are handled by
-            environment variables.
-        """
-        slots = self.config.get("slots", {})
-
-        # CCR exposes slot names as model names
-        ccr_models = list(slots.keys())
-
-        return {
-            "provider": "litellm",
-            "upstream_url": litellm_url,
-            "upstream_key_var": "DOPEMUX_LITELLM_MASTER_KEY",
-            "models": ccr_models,
-            "api_key": ccr_api_key,
-            "listen_port": self.config["ports"]["ccr"],
-        }
-
-    def _get_provider_by_name(self, name: str) -> Dict[str, Any]:
-        """Get provider by name."""
-        providers = self.config.get("providers", [])
-        for provider in providers:
-            if provider["name"] == name:
-                return provider
-        raise RoutingConfigError(f"Provider not found: {name}")
-
-    @classmethod
-    def load_default(cls) -> "RoutingConfig":
-        """Load the default routing configuration."""
-        config = cls()
-        config.load()
-        return config
-
-    def get_ports(self) -> Dict[str, int]:
-        """Get ports as a dictionary with 'litellm' and 'ccr' keys.
-
-        Returns:
-            Dictionary containing litellm and ccr ports
-
+            Final model ID that the alias points to
+            
         Raises:
-            RoutingConfigError: If ports are not available
+            KeyError: If alias doesn't exist
+            RoutingValidationError: If alias points to invalid target
         """
-        return self.ports
-
-    @classmethod
-    def get_mode(cls) -> str:
+        if alias_name not in self.aliases:
+            raise KeyError(f"Alias '{alias_name}' not found")
+        
+        alias_target = self.aliases[alias_name]
+        
+        # If alias points to a slot, resolve to the model ID
+        if alias_target in self.slots:
+            model_id = self.slots[alias_target]
+            logger.debug(f"Resolved alias {alias_name} -> slot {alias_target} -> model {model_id}")
+            return model_id
+        
+        # If alias points directly to a model, use it
+        if alias_target in self.models:
+            logger.debug(f"Resolved alias {alias_name} -> model {alias_target}")
+            return alias_target
+        
+        # This should have been caught by validate(), but just in case...
+        raise RoutingValidationError(f"Alias '{alias_name}' points to '{alias_target}' which is neither a slot nor a model")
+    
+    def get_mode(self) -> str:
         """Get the current routing mode."""
-        config = cls()
-        config.load()
-        return config.config["mode"]
+        return self.config.get("mode", "default")
 
-    @classmethod
-    def is_api_mode(cls) -> bool:
-        """Check if routing is in API mode (using LiteLLM proxy)."""
-        return cls.get_mode() == "api"
 
-    @classmethod
-    def is_subscription_mode(cls) -> bool:
-        """Check if routing is in subscription mode (direct to Anthropic)."""
-        return cls.get_mode() == "subscription"
+if __name__ == "__main__":
+    # Simple test
+    config = {
+        "mode": "test",
+        "slots": {
+            "fast": "gpt-4-turbo",
+            "smart": "claude-3-opus"
+        },
+        "models": {
+            "gpt-4-turbo": {"provider": "openai"},
+            "claude-3-opus": {"provider": "anthropic"}
+        },
+        "aliases": {
+            "/model/fast": "fast",           # alias -> slot
+            "/model/smart": "smart",         # alias -> slot  
+            "/model/direct": "gpt-4-turbo"  # alias -> model directly
+        }
+    }
+    
+    rc = RoutingConfig(config)
+    try:
+        rc.validate()
+        print("✅ Routing configuration validated successfully")
+        print(f"Mode: {rc.get_mode()}")
+        print(f"Alias /model/fast resolves to: {rc.resolve_alias('/model/fast')}")
+        print(f"Alias /model/smart resolves to: {rc.resolve_alias('/model/smart')}")
+        print(f"Alias /model/direct resolves to: {rc.resolve_alias('/model/direct')}")
+    except Exception as e:
+        print(f"❌ Validation failed: {e}")
+        exit(1)
