@@ -220,11 +220,10 @@ class WebhookHandler(BaseHTTPRequestHandler):
                 )
             )
             logger.info(
-                "Webhook accepted provider=openai delivery_id=%s event_type=%s event_id=%s linked_run_mapping_status=%s",
+                "Webhook accepted provider=openai delivery_id=%s event_type=%s event_id=%s",
                 webhook_id,
                 event_type,
                 event_id or "",
-                "orphaned" if orphaned else "mapped",
             )
         else:
             logger.info("Webhook duplicate ignored provider=openai delivery_id=%s", webhook_id)
@@ -243,12 +242,6 @@ class WebhookServer(ThreadingHTTPServer):
 
 
 def main() -> None:
-    env = os.getenv("DPMX_ENV", "dev").strip().lower()
-    secret = os.getenv("OPENAI_WEBHOOK_SECRET", "").strip()
-    if env == "prod" and not secret:
-        logger.error("DPMX_ENV is prod but OPENAI_WEBHOOK_SECRET is missing. Refusing to start.")
-        raise RuntimeError("OPENAI_WEBHOOK_SECRET is required in prod")
-
     host = os.getenv("WEBHOOK_RECEIVER_HOST", "0.0.0.0").strip() or "0.0.0.0"
     port = int(os.getenv("WEBHOOK_RECEIVER_PORT", "8790") or "8790")
     db_url = resolve_webhook_db_url()
