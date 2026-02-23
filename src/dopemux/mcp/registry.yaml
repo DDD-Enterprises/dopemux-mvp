@@ -2,13 +2,13 @@
 # This file is the source of truth for MCP server naming and transport metadata.
 
 servers:
-  dopemux-conport:
+  conport:
     transport: http
     default_enabled: true
     required_for_auto: true
     docker:
       service: conport
-      compose_file: docker/mcp-servers/docker-compose.yml
+      compose_file: compose.yml
       port: 3004
       health_url: http://localhost:3004/health
     local:
@@ -18,57 +18,57 @@ servers:
         - context-portal-mcp
         - conport-mcp
 
-  dopemux-serena:
+  serena:
     transport: http
     default_enabled: true
     required_for_auto: true
     docker:
       service: serena
-      compose_file: docker/mcp-servers/docker-compose.yml
+      compose_file: compose.yml
       port: 3006
-      health_url: http://localhost:3006/health
+      health_url: http://localhost:4006/health
     local:
       command: serena
       args:
         - start-mcp-server
 
-  dopemux-desktop-commander:
+  desktop-commander:
     transport: http
     default_enabled: true
     required_for_auto: false
     docker:
       service: desktop-commander
-      compose_file: docker/mcp-servers/docker-compose.yml
+      compose_file: compose.yml
       port: 3012
       health_url: http://localhost:3012/health
 
-  dopemux-gpt-researcher:
+  gpt-researcher:
     transport: http
     default_enabled: true
     required_for_auto: false
     docker:
-      service: dopemux-gpt-researcher
-      compose_file: docker/mcp-servers/docker-compose.yml
-      port: 8000
-      health_url: http://localhost:8000/health
+      service: gptr-mcp
+      compose_file: compose.yml
+      port: 3009
+      health_url: http://localhost:3009/health
 
-  dopemux-leantime-bridge:
+  leantime-bridge:
     transport: http-sse
     default_enabled: true
     required_for_auto: false
     docker:
       service: leantime-bridge
-      compose_file: docker/mcp-servers/docker-compose.yml
+      compose_file: compose.yml
       port: 3015
       health_url: http://localhost:3015/health
 
-  dopemux-claude-context:
+  claude-context:
     transport: http
     default_enabled: true
     required_for_auto: true
     docker:
       service: dope-context
-      compose_file: docker/mcp-servers/docker-compose.yml
+      compose_file: compose.yml
       port: 3010
       health_url: http://localhost:3010/health
     local:
@@ -77,17 +77,17 @@ servers:
         - -y
         - "@zilliz/claude-context-mcp@latest"
 
-  dopemux-dope-context:
+  dope-context:
     transport: http
     default_enabled: false
     required_for_auto: false
     docker:
       service: dope-context
-      compose_file: docker/mcp-servers/docker-compose.yml
+      compose_file: compose.yml
       port: 3010
       health_url: http://localhost:3010/health
 
-  dopemux-pal:
+  pal:
     transport: stdio
     default_enabled: false
     required_for_auto: false
@@ -97,7 +97,7 @@ servers:
         - pal-mcp-server
         - start
 
-  dopemux-zen:
+  zen:
     transport: stdio
     default_enabled: false
     required_for_auto: false
@@ -107,7 +107,7 @@ servers:
         - -y
         - zen-mcp
 
-  dopemux-mas-sequential-thinking:
+  mas-sequential-thinking:
     transport: stdio
     default_enabled: false
     required_for_auto: false
@@ -117,7 +117,7 @@ servers:
         - -m
         - mcp_server_mas_sequential_thinking
 
-  dopemux-exa:
+  exa:
     transport: stdio
     default_enabled: false
     required_for_auto: false
@@ -127,7 +127,7 @@ servers:
         - -y
         - exa-mcp
 
-  dopemux-morphllm-fast-apply:
+  morphllm-fast-apply:
     transport: stdio
     default_enabled: false
     required_for_auto: false
