@@ -949,13 +949,18 @@ install_docker_services() {
         return 0
     fi
     
+    local profile_arg=""
+    if [ "$stack" = "full" ]; then
+        profile_arg="--profile full"
+    fi
+    
     log "Pulling Docker images from $compose_file (this may take a few minutes)..."
-    docker-compose -f "$compose_file" pull &
+    docker compose $profile_arg -f "$compose_file" pull &
     spinner $!
     success "Docker images pulled"
     
     log "Starting Docker services..."
-    docker-compose -f "$compose_file" up -d || fatal "Failed to start Docker services"
+    docker compose $profile_arg -f "$compose_file" up -d || fatal "Failed to start Docker services"
     
     log "Waiting for services to be ready..."
     sleep 10
@@ -1079,7 +1084,11 @@ verify_installation() {
     fi
 
     for compose_file in "${compose_candidates[@]}"; do
-        if docker-compose -f "$compose_file" ps >/dev/null 2>&1 && docker-compose -f "$compose_file" ps | grep -q "Up"; then
+        local profile_arg=""
+        if [ "$stack" = "full" ]; then
+            profile_arg="--profile full"
+        fi
+        if docker compose $profile_arg -f "$compose_file" ps >/dev/null 2>&1 && docker compose $profile_arg -f "$compose_file" ps | grep -q "Up"; then
             success "Docker services OK ($compose_file)"
             docker_ok=true
             ((checks_passed++))
@@ -1290,8 +1299,12 @@ uninstall_dopemux() {
     
     # Stop Docker services
     if [ -f "docker-compose.unified.yml" ]; then
-        log "Stopping Docker services..."
-        docker-compose -f docker-compose.unified.yml down -v 2>/dev/null || true
+        log "Removing old unified stack..."
+        docker compose -f docker-compose.unified.yml down -v 2>/dev/null || true
+    fi
+    if [ -f "compose.yml" ]; then
+        log "Stopping current stack..."
+        docker compose --profile full -f compose.yml down -v 2>/dev/null || true
     fi
     
     # Remove directories
