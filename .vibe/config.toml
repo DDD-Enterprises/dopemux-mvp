@@ -1,0 +1,71 @@
+# =========================
+# Core
+# =========================
+active_model = "devstral-2"
+
+include_project_context = true
+include_prompt_detail = false
+include_commit_signature = false
+include_model_info = false
+instructions = ""
+
+# NOTE:
+# Start with tools OFF to confirm the model+key are good.
+# After that, flip ENABLE_TOOLS to true and restart vibe.
+ENABLE_TOOLS = false
+
+# Tools: keep defined, but gated by ENABLE_TOOLS.
+enabled_tools = [
+  "bash",
+  "grep",
+  "read_file",
+  "write_file",
+  "search_replace",
+  "mcp_*",
+]
+
+# Do NOT disable MCP if you want MCP.
+disabled_tools = []
+
+autocopy_to_clipboard = true
+
+# =========================
+# Models
+# =========================
+models = [
+  # Official-ish id format (no "+2")
+  { name = "devstral-2512", provider = "mistral", alias = "devstral-2", temperature = 0.2 },
+]
+
+# =========================
+# Project context
+# =========================
+[project_context]
+max_chars = 8000
+max_doc_bytes = 16384
+default_commit_count = 0
+max_depth = 2
+max_files = 200
+
+# =========================
+# MCP Servers
+# =========================
+[[mcp_servers]]
+name = "conport"
+transport = "http"
+url = "http://localhost:3004"
+
+[[mcp_servers]]
+name = "serena"
+transport = "http"
+url = "http://localhost:3006"
+
+[[mcp_servers]]
+name = "dope_context"
+transport = "http"
+url = "http://localhost:3010"
+
+[[mcp_servers]]
+name = "pal"
+transport = "http"
+url = "http://localhost:3003"

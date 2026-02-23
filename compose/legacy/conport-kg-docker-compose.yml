@@ -2,10 +2,10 @@
 # Production Docker Compose Configuration
 #
 # To deploy:
-#   docker-compose -f docker/conport-kg/docker-compose.yml up -d
+#   docker compose -f compose/legacy/conport-kg-docker-compose.yml up -d
 #
 # To stop:
-#   docker-compose -f docker/conport-kg/docker-compose.yml down
+#   docker compose -f compose/legacy/conport-kg-docker-compose.yml down
 
 version: '3.8'
 
@@ -19,14 +19,14 @@ services:
     environment:
       POSTGRES_DB: dopemux_knowledge_graph
       POSTGRES_USER: dopemux_age
-      POSTGRES_PASSWORD: ${AGE_PASSWORD:-dopemux_age_dev_password}
+      POSTGRES_PASSWORD: ${AGE_PASSWORD}
       # AGE extension configuration
       POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=age"
     volumes:
       - age-data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "dopemux_age", "-d", "dopemux_knowledge_graph"]
+      test: [ "CMD", "pg_isready", "-U", "dopemux_age", "-d", "dopemux_knowledge_graph" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,14 +50,14 @@ services:
       # Database connection (FIXED: Use DDG postgres)
       - AGE_HOST=dope-decision-graph-postgres
       - AGE_PORT=5432
-      - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - AGE_PASSWORD=${AGE_PASSWORD}
       # Qdrant (embeddings index - FIXED: Use existing Qdrant)
       - QDRANT_URL=http://mcp-qdrant:6333
       # Redis cache (FIXED: No password on dopemux-redis-events)
       - REDIS_URL=redis://dopemux-redis-events:6379
       - REDIS_PASSWORD=
       # Shared state DB URL (FIXED: Use DDG postgres)
-      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dope-decision-graph-postgres:5432/dopemux_knowledge_graph
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD}@dope-decision-graph-postgres:5432/dopemux_knowledge_graph
 
       # Embeddings (FIXED: Add Voyage API key)
       - VOYAGEAI_API_KEY=${VOYAGE_API_KEY}
@@ -75,7 +75,7 @@ services:
       qdrant:
         condition: service_started
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3016/kg/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:3016/kg/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -95,7 +95,7 @@ services:
       - redis-data:/data
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5

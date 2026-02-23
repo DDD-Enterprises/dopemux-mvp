@@ -27,7 +27,7 @@ curl http://localhost:8097/health    # ADHD Dashboard
 curl http://localhost:8095/health    # Legacy ADHD Engine
 
 # Docker service status
-docker compose ps -f "services/adhd_engine/docker/mcp-servers/docker-compose.yml"
+docker compose ps -f "services/adhd_engine/compose.yml"
 
 # Service logs
 docker compose logs -f adhd-dashboard
@@ -65,7 +65,7 @@ docker compose logs adhd-engine | tail -20
    lsof -ti:8080 | xargs kill -9
 
    # Or change port in docker-compose.yml
-   sed -i 's/8080/8081/' docker/mcp-servers/docker-compose.yml
+   sed -i 's/8080/8081/' compose.yml
    docker compose up -d adhd-engine
    ```
 
@@ -123,7 +123,7 @@ curl -H "Origin: http://localhost:3000" \
 1. **CORS Configuration Error**:
    ```bash
    # Check ALLOWED_ORIGINS
-   grep ALLOWED_ORIGINS docker/mcp-servers/docker-compose.yml
+   grep ALLOWED_ORIGINS compose.yml
 
    # Update if needed
    export ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097
@@ -327,7 +327,7 @@ docker exec -it dopemux-redis-primary \
 1. **Dashboard API Key Mismatch**:
    ```bash
    # Verify API keys match
-   grep API_KEY docker/mcp-servers/docker-compose.yml
+   grep API_KEY compose.yml
 
    # Update dashboard key
    export DASHBOARD_API_KEY=test-key-456
@@ -373,7 +373,7 @@ docker exec -it dopemux-redis-primary \
 1. **Configuration Issues**:
    ```bash
    # Check monitor intervals
-   grep MONITOR_INTERVAL docker/mcp-servers/docker-compose.yml
+   grep MONITOR_INTERVAL compose.yml
 
    # Reset to defaults if corrupted
    export ENERGY_MONITOR_INTERVAL=60
@@ -407,7 +407,7 @@ curl -H "Authorization: Bearer invalid.jwt.token" \
      http://localhost:8080/api/v1/assess-task
 
 # Verify API key configuration
-grep API_KEY docker/mcp-servers/docker-compose.yml
+grep API_KEY compose.yml
 ```
 
 **Solutions**:
@@ -489,7 +489,7 @@ docker exec -it dopemux-adhd-engine env | grep REDIS
 docker exec -it dopemux-adhd-dashboard env | grep API_KEY
 
 # Check docker-compose environment section
-grep -A 10 "environment:" docker/mcp-servers/docker-compose.yml
+grep -A 10 "environment:" compose.yml
 
 # Verify .env file
 cat .env | grep -v "^#"
