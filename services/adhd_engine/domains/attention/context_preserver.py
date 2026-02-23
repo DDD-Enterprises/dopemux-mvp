@@ -230,6 +230,7 @@ class ContextPreserver:
             except asyncio.TimeoutError:
                 try:
                     process.kill()
+                    await process.wait()
                 except Exception:
                     # Best-effort cleanup: ignore errors while attempting to kill the timed-out git process
                 logger.warning("Git branch command timed out")
