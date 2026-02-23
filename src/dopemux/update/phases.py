@@ -133,10 +133,11 @@ class DiscoveryPhase(BasePhase):
         """Check for Docker image changes."""
         changes = []
 
-        # Check docker-compose files for modifications
-        compose_files = list(self.project_root.glob("**/docker-compose*.yml"))
-
+        # Check compose.yml for modifications
+        compose_files = [self.project_root / "compose.yml"]
         for compose_file in compose_files:
+            if not compose_file.exists():
+                continue
             try:
                 with open(compose_file) as f:
                     compose_data = yaml.safe_load(f)
@@ -461,10 +462,12 @@ class UpdatePhase(BasePhase):
     async def _update_docker(self) -> bool:
         """Update Docker images and containers."""
         try:
-            # Find docker-compose files
-            compose_files = list(self.project_root.glob("**/docker-compose*.yml"))
-
+            # Find compose.yml
+            compose_files = [self.project_root / "compose.yml"]
+            
             for compose_file in compose_files:
+                if not compose_file.exists():
+                    continue
                 self.console.print(f"[dim]🐳 Updating Docker services in {compose_file.name}...[/dim]")
 
                 # Build only services that need rebuilding
@@ -606,7 +609,7 @@ class OrchestrationPhase(BasePhase):
         self.console.print(f"[dim]🔄 Restarting {group_name}...[/dim]")
 
         # Try to restart via docker-compose
-        compose_file = self.project_root / "docker" / "mcp-servers" / "docker-compose.yml"
+        compose_file = self.project_root / "compose.yml"
         if compose_file.exists():
             for service in services:
                 try:
