@@ -504,6 +504,40 @@ services:
       retries: 3
       start_period: 30s
 
+  # Genetic Agent - AI Code Repair with Genetic Programming
+  genetic-agent:
+    build:
+      context: ./services/genetic_agent
+      dockerfile: Dockerfile
+    container_name: dopemux-genetic-agent
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+
+    ports:
+      - "8000:8000"
+    environment:
+      - GENETIC_AGENT_PAL_URL=http://pal:3003
+      - GENETIC_AGENT_CONPORT_URL=http://conport:3004
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+      - GENETIC_AGENT_SERENA_URL=http://serena:3005
+      - GENETIC_AGENT_DOPE_CONTEXT_URL=http://dope-context:3006
+      - GENETIC_AGENT_WORKSPACE_ID=/workspace
+    depends_on:
+      - pal
+      - conport
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8000/health" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    labels:
+      - "dopemux.service=application"
+      - "dopemux.component=ai-code-repair"
+      - "dopemux.description=Intelligent code repair using hybrid LLM + genetic programming approach"
+
   # Serena v2 - ADHD Engine MCP
   serena:
     profiles: [ "full" ]
@@ -616,8 +650,10 @@ services:
       - WEBHOOK_RECEIVER_HOST=0.0.0.0
       - WEBHOOK_RECEIVER_PORT=8790
       - WEBHOOK_DB_PATH=/data/webhook_receiver.db
+      - WEBHOOK_DB_URL=sqlite:////data/webhook_receiver.db
       - OPENAI_WEBHOOK_SECRET=${OPENAI_WEBHOOK_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - DPMX_ENV=${DPMX_ENV:-dev}
     volumes:
       - ./.dopemux/webhook_receiver:/data
     healthcheck:
@@ -644,7 +680,6 @@ services:
     volumes:
       - ./.dopemux/webhook_receiver:/data
     command: [ "python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10" ]
-
   # MCP Client - Custom client for stdio MCP servers
   mcp-client:
     profiles: [ "full" ]

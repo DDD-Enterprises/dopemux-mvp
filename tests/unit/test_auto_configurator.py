@@ -1,7 +1,6 @@
 import json
-import os
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import pytest
 from dopemux.auto_configurator import WorktreeAutoConfigurator
 
@@ -23,7 +22,7 @@ class TestWorktreeAutoConfigurator:
                     "mcpServers": {
                         "conport": {
                             "type": "sse",
-                            "args": ["--workspace_id", "/work/project1"]
+                            "args": ["uvx", "--workspace_id", "/work/project1"]
                         },
                         "dope-context": {
                             "type": "sse",
@@ -71,7 +70,7 @@ class TestWorktreeAutoConfigurator:
         assert configurator.needs_update(Path("/work/project1")) is True
 
     def test_configure_workspace_dry_run(self, configurator, sample_config, config_path):
-        sample_config["projects"]["/work/project1"]["mcpServers"]["conport"]["args"] = ["--workspace_id", "/work/old_project"]
+        sample_config["projects"]["/work/project1"]["mcpServers"]["conport"]["args"] = ["uvx", "--workspace_id", "/work/old_project"]
         config_path.write_text(json.dumps(sample_config))
 
         success, message = configurator.configure_workspace(workspace=Path("/work/project1"), dry_run=True)
@@ -81,10 +80,11 @@ class TestWorktreeAutoConfigurator:
         # Verify file NOT changed
         with open(config_path) as f:
             data = json.load(f)
-            assert data["projects"]["/work/project1"]["mcpServers"]["conport"]["args"][1] == "/work/old_project"
+            args = data["projects"]["/work/project1"]["mcpServers"]["conport"]["args"]
+            assert args[args.index("--workspace_id") + 1] == "/work/old_project"
 
     def test_configure_workspace_success(self, configurator, sample_config, config_path):
-        sample_config["projects"]["/work/project1"]["mcpServers"]["conport"]["args"] = ["--workspace_id", "/work/old_project"]
+        sample_config["projects"]["/work/project1"]["mcpServers"]["conport"]["args"] = ["uvx", "--workspace_id", "/work/old_project"]
         config_path.write_text(json.dumps(sample_config))
 
         success, message = configurator.configure_workspace(workspace=Path("/work/project1"), dry_run=False)
@@ -94,7 +94,8 @@ class TestWorktreeAutoConfigurator:
         # Verify file CHANGED
         with open(config_path) as f:
             data = json.load(f)
-            assert data["projects"]["/work/project1"]["mcpServers"]["conport"]["args"][1] == "/work/project1"
+            args = data["projects"]["/work/project1"]["mcpServers"]["conport"]["args"]
+            assert args[args.index("--workspace_id") + 1] == "/work/project1"
 
         # Verify backup created
         backups = list(config_path.parent.glob(".claude.json.backup.*"))
