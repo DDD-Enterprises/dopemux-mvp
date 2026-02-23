@@ -7,7 +7,7 @@ repos:
         name: Validate YAML frontmatter in docs
         entry: python3 scripts/docs_frontmatter_guard.py --fix
         language: system
-        files: ^(docs/|task-packets/|UPGRADES/|services/[^/]+/docs/|docker/[^/]+/docs/).*\.md$
+        files: ^(docs/|UPGRADES/|services/[^/]+/docs/|docker/[^/]+/docs/).*\.md$
         exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md)
 
       # Graph schema validation
@@ -15,7 +15,7 @@ repos:
         name: Validate documentation against knowledge graph schema
         entry: python scripts/docs_validator.py
         language: system
-        files: ^(docs/|task-packets/).*\.md$
+        files: ^docs/.*\.md$
         exclude: ^docs/archive/
         pass_filenames: true
 
@@ -30,7 +30,7 @@ repos:
             # Evaluate only the changed docs files passed by pre-commit.
             for file in "$@"; do
               case "$file" in
-                docs/*|task-packets/*)
+                docs/*)
                   base="$(basename "$file")"
                   case "$base" in
                     TEMPLATE_*.md)
@@ -52,7 +52,7 @@ repos:
             echo "✅ No prohibited patterns found in changed docs"
           - --
         language: system
-        files: ^(docs/|task-packets/).*\.md$
+        files: ^docs/.*\.md$
         exclude: ^docs/archive/
         pass_filenames: true
 
@@ -85,7 +85,7 @@ repos:
                 sys.exit(1)
             print('✅ All preludes within token limit')
         language: system
-        files: ^(docs/|task-packets/).*\.md$
+        files: ^docs/.*\.md$
         exclude: ^docs/archive/
         pass_filenames: true
 
@@ -105,8 +105,7 @@ repos:
 
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
-              if [[ "$normalized" =~ ^\./(task-packets/) ]]; then continue; fi
-              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|out/|_audit_out/|extraction/|claudedocs/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|out/|_audit_out/|extraction/) ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
 
               # Config/state and tooling docs
@@ -194,7 +193,7 @@ repos:
     hooks:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
-        files: ^(docs/|task-packets/).*\.md$
+        files: ^docs/.*\.md$
         exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md)
 
   # Lychee link checking handled by separate GitHub Action (docs job)
@@ -209,10 +208,10 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
-        files: ^(docs/|task-packets/).*\.md$
+        files: ^docs/.*\.md$
         exclude: (^docs/archive/|docs/rgOutput\.md)
       - id: end-of-file-fixer
-        files: ^(docs/|task-packets/).*\.md$
+        files: ^docs/.*\.md$
         exclude: (^docs/archive/|docs/rgOutput\.md)
       - id: check-yaml
         files: ^config/.*\.ya?ml$
