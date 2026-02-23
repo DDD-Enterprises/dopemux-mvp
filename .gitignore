@@ -320,3 +320,7 @@ out/taskx_project_upgrade/
 
 # PM generated evidence outputs
 docs/planes/pm/_evidence/**.outputs/
+
+# Local/transient output
+pbcopy
+vibeOut.txt
