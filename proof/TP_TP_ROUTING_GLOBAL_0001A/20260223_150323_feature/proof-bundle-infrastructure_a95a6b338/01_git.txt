@@ -1,0 +1,13 @@
+=== GIT STATUS ===
+?? src/dopemux/routing_config.py
+
+=== GIT DIFFSTAT ===
+
+=== GIT DIFF ===
+
+=== GIT LOG (last 5) ===
+a95a6b338 chore(gitignore): ignore local router artifacts
+ab325c188 docs(claude): add devstral implementer contract
+79276406e chore(proof): add bundle harness and ignore proof output
+7b63378f8 docs(claude): enforce proof bundle protocol
+f4759104f 🚀 Mega Consolidation: Merge 16 PRs with Worktree Cleanup and Stash Recovery (#105)
