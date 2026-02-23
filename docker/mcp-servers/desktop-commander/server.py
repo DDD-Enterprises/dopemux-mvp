@@ -209,6 +209,7 @@ async def take_screenshot(filename: str) -> Dict[str, Any]:
         if IS_MACOS:
             # macOS: use screencapture
             # -x: no sound, -t: format (png default)
+            # screencapture doesn't consistently support -- for filenames
             result = subprocess.run(
                 ["screencapture", "-x", filename],
                 capture_output=True,
@@ -217,8 +218,9 @@ async def take_screenshot(filename: str) -> Dict[str, Any]:
             )
         else:
             # Linux: use scrot
+            # Use -- to prevent argument injection
             result = subprocess.run(
-                ["scrot", filename],
+                ["scrot", "--", filename],
                 capture_output=True,
                 text=True,
                 timeout=10
@@ -335,11 +337,11 @@ async def focus_window(title: str) -> Dict[str, Any]:
     try:
         if IS_MACOS:
             # macOS: use AppleScript to activate application
-            # Try treating 'title' as application name first
-            applescript = f'tell application "{title}" to activate'
+            # Use positional arguments to prevent command injection
+            applescript = 'on run {appName}\ntell application appName to activate\nend run'
 
             result = subprocess.run(
-                ["osascript", "-e", applescript],
+                ["osascript", "-e", applescript, title],
                 capture_output=True,
                 text=True,
                 timeout=5
@@ -353,13 +355,16 @@ async def focus_window(title: str) -> Dict[str, Any]:
                 }
             else:
                 # Try finding by window title if app name failed
-                applescript2 = f'''
-                tell application "System Events"
-                    set frontmost of first process whose name contains "{title}" to true
-                end tell
+                # Use positional arguments to prevent command injection
+                applescript2 = '''
+                on run {appName}
+                    tell application "System Events"
+                        set frontmost of first process whose name contains appName to true
+                    end tell
+                end run
                 '''
                 result2 = subprocess.run(
-                    ["osascript", "-e", applescript2],
+                    ["osascript", "-e", applescript2, title],
                     capture_output=True,
                     text=True,
                     timeout=5
@@ -379,6 +384,7 @@ async def focus_window(title: str) -> Dict[str, Any]:
                     }
         else:
             # Linux: use wmctrl
+            # wmctrl doesn't support -- before the title for -a
             result = subprocess.run(
                 ["wmctrl", "-a", title],
                 capture_output=True,
@@ -412,16 +418,17 @@ async def type_text(text: str) -> Dict[str, Any]:
     try:
         if IS_MACOS:
             # macOS: use AppleScript to type text
-            # Escape quotes in text
-            escaped_text = text.replace('"', '\\"')
-            applescript = f'''
-            tell application "System Events"
-                keystroke "{escaped_text}"
-            end tell
+            # Use positional arguments to prevent command injection
+            applescript = '''
+            on run {targetText}
+                tell application "System Events"
+                    keystroke targetText
+                end tell
+            end run
             '''
 
             result = subprocess.run(
-                ["osascript", "-e", applescript],
+                ["osascript", "-e", applescript, text],
                 capture_output=True,
                 text=True,
                 timeout=10
@@ -440,8 +447,9 @@ async def type_text(text: str) -> Dict[str, Any]:
                 }
         else:
             # Linux: use xdotool
+            # Use -- to prevent argument injection if text starts with -
             result = subprocess.run(
-                ["xdotool", "type", text],
+                ["xdotool", "type", "--", text],
                 capture_output=True,
                 text=True,
                 timeout=10
