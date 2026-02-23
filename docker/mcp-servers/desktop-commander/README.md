@@ -24,8 +24,23 @@ docker logs dopemux-mcp-desktop-commander
 
 Environment variables:
 - `DISPLAY` - X11 display (default: :0)
+- `MCP_SERVER_HOST` - MCP server bind address (default: 127.0.0.1 for local, 0.0.0.0 in Docker)
 - `MCP_SERVER_PORT` - MCP server port (default: 3012)
+- `DESKTOP_COMMANDER_API_KEY` - Optional API key for authentication (highly recommended if host is 0.0.0.0)
+- `ALLOWED_ORIGINS` - Comma-separated list of allowed CORS origins
 - `XAUTHORITY` - X11 authorization file
+
+## Security
+
+Desktop Commander includes several security features to protect your system:
+- **Host Binding**: Defaults to `127.0.0.1` when run locally to prevent unauthorized network access.
+- **Authentication**: Supports API key authentication via the `X-API-Key` header.
+- **CORS**: Configurable CORS policy to restrict browser-based access.
+
+To enable authentication, set the `DESKTOP_COMMANDER_API_KEY` environment variable and include it in your requests:
+```bash
+curl -H "X-API-Key: your-secret-key" http://localhost:3012/mcp
+```
 
 ## MCP Tools
 

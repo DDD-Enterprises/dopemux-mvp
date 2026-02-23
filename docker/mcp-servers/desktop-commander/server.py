@@ -11,8 +11,10 @@ import platform
 import subprocess
 import json
 import logging
-from typing import Dict, Any, List
-from fastapi import FastAPI, HTTPException
+from typing import Dict, Any, List, Optional
+from fastapi import FastAPI, HTTPException, Security, Depends, status
+from fastapi.security import APIKeyHeader
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
@@ -36,6 +38,42 @@ logger.info(f"   macOS mode: {IS_MACOS}, Linux mode: {IS_LINUX}")
 
 app = FastAPI(title="Desktop Commander MCP Server", version="2.0.0")
 
+# CORS Configuration
+ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097"
+    ).split(",") if o.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# API Key Security
+API_KEY_NAME = "X-API-Key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+async def get_api_key(
+    api_key: Optional[str] = Security(api_key_header),
+):
+    """Validate API key if DESKTOP_COMMANDER_API_KEY is set."""
+    required_key = os.getenv("DESKTOP_COMMANDER_API_KEY")
+    if not required_key:
+        return None
+
+    if api_key == required_key:
+        return api_key
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Invalid or missing API Key",
+    )
+
 class CommandRequest(BaseModel):
     method: str
     params: Dict[str, Any] = {}
@@ -55,7 +93,7 @@ async def health_check():
         "linux_mode": IS_LINUX
     }
 
-@app.get("/info")
+@app.get("/info", dependencies=[Depends(get_api_key)])
 async def service_info():
     """Service discovery endpoint - auto-config support (ADR-208)"""
     port = int(os.getenv("MCP_SERVER_PORT", 3012))
@@ -82,7 +120,7 @@ async def service_info():
         }
     }
 
-@app.post("/mcp")
+@app.post("/mcp", dependencies=[Depends(get_api_key)])
 async def handle_mcp_request(request: CommandRequest) -> CommandResponse:
     """Handle MCP protocol requests for desktop automation"""
     try:
@@ -432,14 +470,21 @@ async def type_text(text: str) -> Dict[str, Any]:
 
 def main():
     """Entry point for uvx/uv tool"""
+    # Use 127.0.0.1 by default for security, override via MCP_SERVER_HOST
+    host = os.getenv('MCP_SERVER_HOST', '127.0.0.1')
     port = int(os.getenv('MCP_SERVER_PORT', 3012))
+
     logger.info(f"🖥️  Desktop Commander MCP Server v2.0.0")
     logger.info(f"   Platform: {platform.system()}")
-    logger.info(f"   Starting on port {port}")
+    logger.info(f"   Starting on {host}:{port}")
+
+    if host == "0.0.0.0" and not os.getenv("DESKTOP_COMMANDER_API_KEY"):
+        logger.warning("⚠️  SECURITY WARNING: Server is exposed on all interfaces (0.0.0.0) without an API key.")
+        logger.warning("   It is highly recommended to set DESKTOP_COMMANDER_API_KEY.")
 
     uvicorn.run(
         app,
-        host="0.0.0.0",
+        host=host,
         port=port,
         log_level="info"
     )
