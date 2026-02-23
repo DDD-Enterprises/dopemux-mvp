@@ -38,11 +38,9 @@ def _get_connection(db_url: str) -> Any:
             except ImportError:
                 print("Error: Postgres backend requires 'psycopg2' or 'psycopg' module.")
                 sys.exit(1)
-                return None
     else:
         print(f"Error: Unsupported backend '{parsed['backend']}'")
         sys.exit(1)
-        return None
 
 
 def _execute(conn: Any, backend: str, query: str, params: tuple = ()) -> List[Dict[str, Any]]:
