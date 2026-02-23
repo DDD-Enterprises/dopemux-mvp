@@ -9,6 +9,7 @@ ADHD Benefit: Eliminates "what was I doing?" frustration after breaks
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
+import asyncio
 import logging
 import json
 
@@ -216,16 +217,19 @@ class ContextPreserver:
     async def _get_git_branch(self, workspace_path: str) -> Optional[str]:
         """Get current git branch."""
         try:
-            import subprocess
-            result = subprocess.run(
-                ['git', 'branch', '--show-current'],
+            process = await asyncio.create_subprocess_exec(
+                'git', 'branch', '--show-current',
                 cwd=workspace_path,
-                capture_output=True,
-                text=True,
-                timeout=2
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
             )
-            if result.returncode == 0:
-                return result.stdout.strip()
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=2.0)
+                if process.returncode == 0:
+                    return stdout.decode().strip()
+            except asyncio.TimeoutError:
+                process.kill()
+                logger.warning("Git branch command timed out")
         except Exception as e:
             logger.warning(f"Failed to get git branch: {e}")
         return None
