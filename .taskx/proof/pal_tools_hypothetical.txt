@@ -1,0 +1,20 @@
+# Hypothetical PAL tools (stdio transport, not HTTP)
+# These would need stdio MCP session to discover
+analyze
+apilookup
+chat
+challenge
+clink
+codereview
+consensus
+debug
+docgen
+listmodels
+planner
+precommit
+refactor
+secaudit
+testgen
+thinkdeep
+tracer
+version
