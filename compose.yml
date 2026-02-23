@@ -45,9 +45,9 @@ volumes:
 
 
 services:
-  # ========================================
+  # =================================
   # INFRASTRUCTURE SERVICES
-  # ========================================
+  # =================================
 
   # PostgreSQL with AGE (primary database)
   postgres:
@@ -194,7 +194,7 @@ services:
 
   # Redis UI (optional web interface)
   redis-ui:
-    profiles: [ "full" ]
+
     image: redislabs/redisinsight:latest
     container_name: dopemux-redis-ui
     restart: unless-stopped
@@ -217,9 +217,9 @@ services:
     volumes:
       - dope-decision-graph-qdrant-data:/qdrant/storage
 
-  # ========================================
+  # =================================
   # MCP SERVERS (Core Intelligence)
-  # ========================================
+  # =================================
 
   # ConPort - Knowledge Graph & Context Management
   conport:
@@ -258,7 +258,7 @@ services:
 
   # Zen - Multi-Model Reasoning
   pal:
-    profiles: [ "full" ]
+
     build:
       context: ./docker/mcp-servers/pal
       dockerfile: Dockerfile
@@ -281,7 +281,7 @@ services:
 
   # LiteLLM - Model Router
   litellm:
-    profiles: [ "full" ]
+
     build:
       context: .
       dockerfile: docker/mcp-servers/litellm/Dockerfile
@@ -309,7 +309,7 @@ services:
 
   # Dope-Context - Semantic Code & Docs Search
   dope-context:
-    profiles: [ "full" ]
+
     build:
       context: ./services/dope-context
       dockerfile: Dockerfile
@@ -339,9 +339,9 @@ services:
       interval: 30s
       start_period: 45s
 
-  # ========================================
+  # =================================
   # APPLICATION SERVICES (Event System)
-  # ========================================
+  # =================================
 
   # DopeconBridge - Event Processing & Pattern Detection
   dopecon-bridge:
@@ -464,7 +464,7 @@ services:
 
   # Dope-Memory - Temporal Chronicle and Working Context
   dope-memory:
-    profiles: [ "full" ]
+
     build:
       context: ./services/working-memory-assistant
       dockerfile: Dockerfile.dope-memory
@@ -540,7 +540,7 @@ services:
 
   # Serena v2 - ADHD Engine MCP
   serena:
-    profiles: [ "full" ]
+
     build:
       context: ./docker/mcp-servers/serena
       dockerfile: Dockerfile
@@ -564,7 +564,7 @@ services:
 
   # GPT Researcher - Deep research MCP
   gptr-mcp:
-    profiles: [ "full" ]
+
     build:
       context: ./docker/mcp-servers/gptr-mcp
       dockerfile: Dockerfile
@@ -586,7 +586,7 @@ services:
       interval: 30s
   # Desktop Commander - Desktop automation
   desktop-commander:
-    profiles: [ "full" ]
+
     build:
       context: ./docker/mcp-servers/desktop-commander
       dockerfile: Dockerfile
@@ -607,7 +607,7 @@ services:
 
   # Leantime Bridge - Project management integration
   leantime-bridge:
-    profiles: [ "full" ]
+
     build:
       context: ./docker/mcp-servers/leantime-bridge
       dockerfile: Dockerfile
@@ -636,7 +636,7 @@ services:
 
   # OpenAI Webhook Receiver Sidecar
   webhook-receiver:
-    profiles: [ "full" ]
+
     build:
       context: .
       dockerfile: services/webhook_receiver/Dockerfile
@@ -667,7 +667,7 @@ services:
       interval: 30s
 
   webhook-poller:
-    profiles: [ "full" ]
+
     build:
       context: .
       dockerfile: services/webhook_receiver/Dockerfile
@@ -682,7 +682,7 @@ services:
     command: [ "python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10" ]
   # MCP Client - Custom client for stdio MCP servers
   mcp-client:
-    profiles: [ "full" ]
+
     build:
       context: ./services/mcp-client
       dockerfile: Dockerfile
@@ -707,7 +707,7 @@ services:
 
   # Plane Coordinator - Two-plane architecture coordination service
   plane-coordinator:
-    profiles: [ "full" ]
+
     build:
       context: .
       dockerfile: services/task-orchestrator/Dockerfile.coordination
@@ -745,7 +745,7 @@ services:
 
   # Activity Capture - Automatic development activity tracking for ADHD Engine
   activity-capture:
-    profiles: [ "full" ]
+
     build:
       context: ./services/activity-capture
       dockerfile: Dockerfile
