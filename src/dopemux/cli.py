@@ -7422,8 +7422,17 @@ dopemux tmux theme neon
 
 
 # Register routing commands
-from .routing_cli import register_routing_commands
-register_routing_commands(cli)
+def _register_routing_commands():
+    try:
+        from .routing_cli import routing
+        cli.add_command(routing, "routing")
+    except Exception as e:
+        # Graceful degradation if routing module has issues
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to register routing commands: {e}")
+
+_register_routing_commands()
 
 def main():
     """Main entry point."""
