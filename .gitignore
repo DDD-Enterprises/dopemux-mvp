@@ -330,3 +330,7 @@ proof/
 
 # Router artifacts
 services/router/
+
+# Generated proof artifacts
+proof/
+.taskx/proof/

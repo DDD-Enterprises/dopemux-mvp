@@ -1,7 +1,0 @@
-738dde5ca chore(gitignore): ignore proof bundles and router artifacts
-ebab853d3 fix(routing): allow aliases to reference slots or models
-
- .gitignore                    |   6 ++
- scripts/proof_bundle.sh       |  42 ++++++++++++
- src/dopemux/routing_config.py | 148 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 196 insertions(+)
