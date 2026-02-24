@@ -345,3 +345,4 @@ services/router/
 # Generated proof artifacts
 proof/
 .taskx/proof/
+.dopetask/proof/
