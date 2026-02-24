@@ -33,13 +33,21 @@ while [ $# -gt 0 ]; do
         
         echo "" >> "${OUTPUT_DIR}/proof.txt"
         echo "Command: ${CMD}" >> "${OUTPUT_DIR}/proof.txt"
-        echo "Output:" >> "${OUTPUT_DIR}/proof.txt"
         
-        # Execute command and capture output
-        if eval "${CMD}" 2>&1 | tee -a "${OUTPUT_DIR}/proof.txt"; then
+        # Execute command and capture output verbatim
+        OUTPUT_FILE="${OUTPUT_DIR}/$(echo "${CMD}" | tr -s '[:space:]' '_' | sed 's/[^a-zA-Z0-9_]//g').txt"
+        eval "${CMD}" > "${OUTPUT_FILE}" 2>&1
+        EXIT_CODE=$?
+        
+        echo "Output:" >> "${OUTPUT_DIR}/proof.txt"
+        cat "${OUTPUT_FILE}" >> "${OUTPUT_DIR}/proof.txt"
+        echo "" >> "${OUTPUT_DIR}/proof.txt"
+        echo "[exit=${EXIT_CODE}]" >> "${OUTPUT_DIR}/proof.txt"
+        
+        if [ ${EXIT_CODE} -eq 0 ]; then
             echo "✅ Command succeeded" >> "${OUTPUT_DIR}/proof.txt"
         else
-            echo "❌ Command failed with exit code $?" >> "${OUTPUT_DIR}/proof.txt"
+            echo "❌ Command failed with exit code ${EXIT_CODE}" >> "${OUTPUT_DIR}/proof.txt"
         fi
     else
         shift
