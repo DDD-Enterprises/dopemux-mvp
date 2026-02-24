@@ -323,26 +323,52 @@ Alternative: Set CLAUDE_PATH environment variable
         
         # If routing mode is api, configure for proxy routing
         if routing_mode == "api":
-            # Use CCR as proxy - keep ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL
+            # Set CCR as the deterministic proxy target (no LiteLLM fallback)
+            ccr_port = routing_config.ports["ccr"]
+            ccr_url = f"http://127.0.0.1:{ccr_port}"
+            env["ANTHROPIC_BASE_URL"] = ccr_url
+            env["ANTHROPIC_API_BASE"] = ccr_url
+            
+            # Ensure API key is available
+            ccr_api_key = env.get("DOPEMUX_CCR_API_KEY")
+            if ccr_api_key:
+                env["ANTHROPIC_API_KEY"] = ccr_api_key
+                env["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
+            elif "ANTHROPIC_API_KEY" not in env:
+                raise RuntimeError(
+                    "CCR API key missing for api mode; "
+                    "run 'dopemux routing sync-keys' to configure routing.env"
+                )
+            
             via_litellm = True
-            console.logger.info("[blue]🔄 Routing mode 'api': Configuring Claude for CCR proxy[/blue]")
+            env["DOPEMUX_ROUTING_MODE"] = "api"
+            console.logger.info(f"[blue]🔄 Routing mode 'api': Claude → CCR (127.0.0.1:{ccr_port})[/blue]")
         # If routing mode is subscription, use direct OAuth
         elif routing_mode == "subscription":
+            # Ensure no stale proxy env vars
+            env.pop("ANTHROPIC_BASE_URL", None)
+            env.pop("ANTHROPIC_API_BASE", None)
+            env.pop("DOPEMUX_ROUTING_MODE", None)
+            
+            # Only unset ANTHROPIC_API_KEY if dopemux set it
+            if env.get("DOPEMUX_SET_ANTHROPIC_API_KEY") == "1":
+                env.pop("ANTHROPIC_API_KEY", None)
+            env.pop("DOPEMUX_SET_ANTHROPIC_API_KEY", None)
+            
             via_litellm = False
-            console.logger.info("[blue]📋 Routing mode 'subscription': Configuring Claude for direct OAuth[/blue]")
+            console.logger.info("[blue]📋 Routing mode 'subscription': Claude → Anthropic (direct OAuth)[/blue]")
         # Fallback to legacy behavior
         else:
             via_litellm = env.get("DOPEMUX_CLAUDE_VIA_LITELLM") in ("1", "true", "True")
             if via_litellm:
                 console.logger.info("[dim]Using legacy DOPEMUX_CLAUDE_VIA_LITELLM flag[/dim]")
-        if via_litellm:
-            # If ANTHROPIC_BASE_URL is already set (e.g., by CCR), keep it
-            # Otherwise, fall back to LITELLM_PROXY_URL
-            if not env.get("ANTHROPIC_BASE_URL"):
-                proxy_url = env.get("LITELLM_PROXY_URL") or env.get("OPENAI_API_BASE")
-                if proxy_url:
-                    env.setdefault("ANTHROPIC_API_BASE", proxy_url)
-                    env.setdefault("ANTHROPIC_BASE_URL", proxy_url)
+                # Keep legacy fallback behavior for now
+                if not env.get("ANTHROPIC_BASE_URL"):
+                    proxy_url = env.get("LITELLM_PROXY_URL") or env.get("OPENAI_API_BASE")
+                    if proxy_url:
+                        env.setdefault("ANTHROPIC_API_BASE", proxy_url)
+                        env.setdefault("ANTHROPIC_BASE_URL", proxy_url)
+            
             # Suppress browser/OAuth prompts in API-key proxy mode
             env.setdefault("CLAUDE_CODE_SKIP_PERMISSIONS", "true")
             env.setdefault("CLAUDE_NO_BROWSER", "1")
