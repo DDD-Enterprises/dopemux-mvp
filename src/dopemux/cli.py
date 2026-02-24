@@ -28,7 +28,16 @@ import click
 try:
     from dotenv import load_dotenv
     _DOTENV_AVAILABLE = True
-except ImportError:  # pragma: no cover
+except ImportError:
+    _DOTENV_AVAILABLE = False
+
+# Import RoutingConfig for mode-based behavior
+try:
+    from .routing_config import RoutingConfig
+except ImportError:
+    # Fallback for when routing_config is not available
+    RoutingConfig = None
+except ImportError:  # pragma: no cover - optional dependency
     _DOTENV_AVAILABLE = False
 
     def load_dotenv(*args, **kwargs):  # type: ignore[override]
@@ -816,8 +825,6 @@ def start(
             console.logger.error(f"[red]❌ Failed to start routing services: {e}[/red]")
             console.logger.info("[yellow]Falling back to direct Anthropic connection[/yellow]")
             routing_mode = "subscription"
-            # Ensure env vars are cleaned up immediately
-            _ensure_env_consistent_with_mode(routing_mode)
         
         # Configure environment for API mode
         if routing_mode == "api":
@@ -828,8 +835,6 @@ def start(
             os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{ccr_port}"
             if ccr_api_key:
                 os.environ["ANTHROPIC_API_KEY"] = ccr_api_key
-                # Mark that we set this key so we can clean it up if needed
-                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
                 console.logger.info(f"[dim]✓ CCR API key configured[/dim]")
             else:
                 console.logger.warning("[yellow]⚠️  DOPEMUX_CCR_API_KEY not set in routing.env[/yellow]")
@@ -843,10 +848,16 @@ def start(
     elif routing_mode == "subscription" and not deprecated_flags_used:
         console.logger.info("[blue]📋 Routing mode 'subscription': Direct Anthropic connection[/blue]")
         
-        # Ensure env vars are consistent with subscription mode
-        _ensure_env_consistent_with_mode(routing_mode)
+        # Ensure we don't have proxy env vars set
+        env_vars_to_unset = ["ANTHROPIC_BASE_URL", "DOPEMUX_ROUTING_MODE"]
+        for var in env_vars_to_unset:
+            if var in os.environ:
+                del os.environ[var]
+                console.logger.info(f"[dim]✓ Unset {var} (direct connection)[/dim]")
+        
+        # Let Anthropic OAuth/subscription flow work normally
         console.logger.info("[dim]✓ Claude Code → Anthropic (direct)[/dim]")
-
+    
     # ── Handle --grok / --codex / --altp provider routing ───────────────
     provider_proxy_started = False
     _provider_flags = sum([use_grok, use_codex, use_altp])
