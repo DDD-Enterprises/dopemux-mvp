@@ -119,22 +119,12 @@ def status():
         
         # Check health if services are running
         health = manager.check_health()
-        
-        # Check for config errors first
-        if "config" in health:
-            click.echo("\n🏥 Service Health:")
-            click.echo("-" * 50)
-            click.echo(f"❌ config: {health['config']['status']}")
-            click.echo(f"   Error: {health['config']['error']}")
-            return
-        
         click.echo("\n🏥 Service Health:")
         click.echo("-" * 50)
         
         for service_name, health_info in health.items():
             status_emoji = "✅" if health_info['status'] == 'healthy' else "❌"
-            port_info = f" (127.0.0.1:{health_info.get('port', 'unknown')})" if health_info.get('port') else ""
-            click.echo(f"{status_emoji} {service_name}: {health_info['status']}{port_info}")
+            click.echo(f"{status_emoji} {service_name}: {health_info['status']}")
             if health_info.get('error'):
                 click.echo(f"   Error: {health_info['error']}")
         
@@ -142,47 +132,6 @@ def status():
         logger.error(f"Failed to get service status: {e}")
         click.echo(f"❌ Error: {e}", err=True)
         raise
-
-
-@routing.command()
-def health():
-    """Check service health and exit with appropriate status code."""
-    try:
-        manager = LaunchdServiceManager.get_instance()
-        health = manager.check_health()
-        
-        # Check for config errors first
-        if "config" in health:
-            click.echo(f"❌ {health['config']['error']}", err=True)
-            raise SystemExit(2)
-        
-        # Check if we're in subscription mode
-        try:
-            mode = manager.routing_config.config.get('mode', 'subscription')
-            if mode == 'subscription':
-                click.echo("ℹ️  Routing mode is 'subscription' - service health checks not applicable")
-                raise SystemExit(0)
-        except Exception:
-            # If we can't determine mode, assume we need to check services
-            pass
-        
-        # Check service health
-        unhealthy_services = []
-        for service_name, health_info in health.items():
-            if health_info['status'] != 'healthy':
-                unhealthy_services.append(service_name)
-                click.echo(f"❌ {service_name}: {health_info.get('error', 'unhealthy')}", err=True)
-        
-        if unhealthy_services:
-            raise SystemExit(1)
-        else:
-            click.echo("✅ All services healthy")
-            raise SystemExit(0)
-            
-    except Exception as e:
-        logger.error(f"Failed to check service health: {e}")
-        click.echo(f"❌ Error: {e}", err=True)
-        raise SystemExit(2)
 
 
 @routing.command()
@@ -309,8 +258,3 @@ def repair(max_passes: int, allow_sync_keys: bool):
         logger.error(f"Failed to repair services: {e}")
         click.echo(f"❌ Error: {e}", err=True)
         raise
-
-
-def register_routing_commands(cli_group):
-    """Register routing commands with the main CLI."""
-    cli_group.add_command(routing, "routing")
