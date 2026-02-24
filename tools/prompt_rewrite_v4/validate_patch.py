@@ -166,27 +166,75 @@ def validate_patch(
             f"Diff targets do not match expected path. expected={expected_relpath} old={old_path} new={new_path}",
         )
 
-    # Determine allowed section body bounds in the ORIGINAL file.
-    ep_bounds = section_bounds(original_prompt_text, "Extraction Procedure")
-    fm_bounds = section_bounds(original_prompt_text, "Failure Modes")
-    if ep_bounds is None or fm_bounds is None:
+    # Determine allowed section body bounds in the ORIGINAL file (for deletions).
+    ep_bounds_old = section_bounds(original_prompt_text, "Extraction Procedure")
+    fm_bounds_old = section_bounds(original_prompt_text, "Failure Modes")
+    if ep_bounds_old is None or fm_bounds_old is None:
         return ValidationResult(False, "Missing required section headings for bounds check")
-
-    allowed = [ep_bounds, fm_bounds]
 
     old_changed, new_changed = changed_line_numbers(diff_text)
 
-    # Validate actual changed lines only (ignore context).
-    def in_allowed(line_no: int) -> bool:
-        return any(a[0] <= line_no <= a[1] for a in allowed)
+    # Apply patch in-memory to get patched content for new bounds
+    patched_lines = original_prompt_text.splitlines()
+    
+    # Parse and apply the diff
+    lines = diff_text.splitlines()
+    i = 0
+    while i < len(lines):
+        m = HUNK_RE.match(lines[i])
+        if not m:
+            i += 1
+            continue
+
+        old_start = int(m.group(1))
+        old_count = int(m.group(2) or "1")
+        new_start = int(m.group(3))
+        new_count = int(m.group(4) or "1")
+        i += 1
+
+        # Collect context and changes
+        context_and_changes = []
+        while i < len(lines) and not HUNK_RE.match(lines[i]):
+            context_and_changes.append(lines[i])
+            i += 1
+
+        # Apply this hunk
+        if old_count == 0:
+            # Pure addition
+            patched_lines[new_start-1:new_start-1] = [line[1:] for line in context_and_changes if line.startswith("+")]
+        elif new_count == 0:
+            # Pure deletion
+            del patched_lines[old_start-1:old_start-1+old_count]
+        else:
+            # Replace
+            patched_lines[old_start-1:old_start-1+old_count] = [
+                line[1:] if line.startswith("+") else line[1:] if line.startswith(" ") else "" 
+                for line in context_and_changes
+                if line.startswith(("+", " ", "-"))
+            ]
+
+    patched_text = "\n".join(patched_lines) + ("\n" if original_prompt_text.endswith("\n") else "")
+
+    # Determine allowed section body bounds in the PATCHED file (for additions).
+    ep_bounds_new = section_bounds(patched_text, "Extraction Procedure")
+    fm_bounds_new = section_bounds(patched_text, "Failure Modes")
+    if ep_bounds_new is None or fm_bounds_new is None:
+        return ValidationResult(False, "Missing required section headings in patched file")
+
+    # Validate deletions against original bounds, additions against new bounds.
+    def in_allowed_old(line_no: int) -> bool:
+        return any(a[0] <= line_no <= a[1] for a in [ep_bounds_old, fm_bounds_old])
+
+    def in_allowed_new(line_no: int) -> bool:
+        return any(a[0] <= line_no <= a[1] for a in [ep_bounds_new, fm_bounds_new])
 
     for ln in old_changed:
-        if not in_allowed(ln):
-            return ValidationResult(False, f"Deleted line {ln} outside allowed sections. allowed={allowed}")
+        if not in_allowed_old(ln):
+            return ValidationResult(False, f"Deleted line {ln} outside allowed sections. allowed_old={[ep_bounds_old, fm_bounds_old]}")
 
     for ln in new_changed:
-        if not in_allowed(ln):
-            return ValidationResult(False, f"Added line {ln} outside allowed sections. allowed={allowed}")
+        if not in_allowed_new(ln):
+            return ValidationResult(False, f"Added line {ln} outside allowed sections. allowed_new={[ep_bounds_new, fm_bounds_new]}")
 
     return ValidationResult(True, "OK")
 
