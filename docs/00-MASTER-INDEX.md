@@ -123,6 +123,10 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Untracked Work Detection](03-reference/F001-ENHANCED-untracked-work-system.md)
 - [Multi-Session Support](03-reference/F002-multi-session-support.md)
 
+### Governance
+- [Authority Map](03-reference/governance/AUTHORITY_MAP.md)
+- [Conflict Ledger](03-reference/governance/CONFLICT_LEDGER.md)
+
 ### Technical Deep Dives
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)
 - [ConPort Technical Deep Dive](04-explanation/technical-deep-dives/conport-technical-deep-dive.md)
