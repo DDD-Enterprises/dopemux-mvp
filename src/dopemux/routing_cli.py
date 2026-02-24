@@ -183,6 +183,27 @@ def docker():
         raise
 
 
+@routing.command()
+def sync_keys():
+    """Sync API keys from current environment to routing.env."""
+    try:
+        manager = LaunchdServiceManager.get_instance()
+        click.echo("🔑 Syncing API keys from environment...")
+        manager.sync_keys_from_environment()
+        click.echo("✅ API keys synced successfully!")
+        
+        # Show what was synced
+        env_path = manager.DOPEMUX_DIR / "routing.env"
+        if env_path.exists():
+            click.echo("\n📋 Synced keys in:")
+            click.echo(f"   {env_path}")
+            
+    except Exception as e:
+        logger.error(f"Failed to sync keys: {e}")
+        click.echo(f"❌ Error: {e}", err=True)
+        raise
+
+
 def register_routing_commands(cli_group):
     """Register routing commands with the main CLI."""
     cli_group.add_command(routing, "routing")
