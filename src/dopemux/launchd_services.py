@@ -177,7 +177,7 @@ echo "📝 Logging to: $LOG_FILE"
 # Start LiteLLM directly (no docker)
 exec "{litellm_bin}" --config "{home_dir}/.dopemux/litellm/litellm.config.yaml" \\
     --port "$LITELLM_PORT" \\
-    --host 0.0.0.0 \\
+    --host 127.0.0.1 \\
     >> "$LOG_FILE" 2>&1
 """
         
