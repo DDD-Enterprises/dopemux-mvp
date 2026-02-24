@@ -1,0 +1,65 @@
+{
+  "actions_taken": [
+    "mode_applied:both",
+    "supervisor_prompt_generated:SUPERVISOR_PRIMING_PROMPT.txt"
+  ],
+  "applied_mode": "both",
+  "checks": [
+    {
+      "files": [],
+      "id": "files_present",
+      "message": "All required project instruction files are present",
+      "status": "pass"
+    },
+    {
+      "files": [
+        "AGENTS.md",
+        "CLAUDE.md",
+        "CODEX.md",
+        "PROJECT_INSTRUCTIONS.md"
+      ],
+      "id": "sentinel_integrity",
+      "message": "TaskX/ChatX sentinel blocks are present and well-formed",
+      "status": "pass"
+    },
+    {
+      "files": [
+        "AGENTS.md",
+        "CLAUDE.md",
+        "CODEX.md",
+        "PROJECT_INSTRUCTIONS.md"
+      ],
+      "id": "pack_status_consistency",
+      "message": "Pack status is consistent (mode=both)",
+      "status": "pass"
+    },
+    {
+      "files": [
+        "/Users/hue/code/dopemux-mvp/.taskx/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt"
+      ],
+      "id": "supervisor_prompt",
+      "message": "Supervisor prompt matches mode 'both'",
+      "status": "pass"
+    }
+  ],
+  "detected_mode": "both",
+  "per_file_status": {
+    "AGENTS.md": {
+      "chatx": "enabled",
+      "taskx": "enabled"
+    },
+    "CLAUDE.md": {
+      "chatx": "enabled",
+      "taskx": "enabled"
+    },
+    "CODEX.md": {
+      "chatx": "enabled",
+      "taskx": "enabled"
+    },
+    "PROJECT_INSTRUCTIONS.md": {
+      "chatx": "enabled",
+      "taskx": "enabled"
+    }
+  },
+  "status": "pass"
+}
