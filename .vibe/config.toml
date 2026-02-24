@@ -56,7 +56,7 @@ RESPONSE FORMAT
     - git log -5 --oneline
     - and the full contents of 00_context.txt, 01_git.txt, 02_checks.txt from the proof bundle.
 No extra commentary unless a STOP condition triggers.
-"""
+ """
 
 # NOTE:
 # Start with tools OFF to confirm the model+key are good.
