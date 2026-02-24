@@ -119,22 +119,12 @@ def status():
         
         # Check health if services are running
         health = manager.check_health()
-        
-        # Check for config errors first
-        if "config" in health:
-            click.echo("\n🏥 Service Health:")
-            click.echo("-" * 50)
-            click.echo(f"❌ config: {health['config']['status']}")
-            click.echo(f"   Error: {health['config']['error']}")
-            return
-        
         click.echo("\n🏥 Service Health:")
         click.echo("-" * 50)
         
         for service_name, health_info in health.items():
             status_emoji = "✅" if health_info['status'] == 'healthy' else "❌"
-            port_info = f" (127.0.0.1:{health_info.get('port', 'unknown')})" if health_info.get('port') else ""
-            click.echo(f"{status_emoji} {service_name}: {health_info['status']}{port_info}")
+            click.echo(f"{status_emoji} {service_name}: {health_info['status']}")
             if health_info.get('error'):
                 click.echo(f"   Error: {health_info['error']}")
         
@@ -142,47 +132,6 @@ def status():
         logger.error(f"Failed to get service status: {e}")
         click.echo(f"❌ Error: {e}", err=True)
         raise
-
-
-@routing.command()
-def health():
-    """Check service health and exit with appropriate status code."""
-    try:
-        manager = LaunchdServiceManager.get_instance()
-        health = manager.check_health()
-        
-        # Check for config errors first
-        if "config" in health:
-            click.echo(f"❌ {health['config']['error']}", err=True)
-            raise SystemExit(2)
-        
-        # Check if we're in subscription mode
-        try:
-            mode = manager.routing_config.config.get('mode', 'subscription')
-            if mode == 'subscription':
-                click.echo("ℹ️  Routing mode is 'subscription' - service health checks not applicable")
-                raise SystemExit(0)
-        except Exception:
-            # If we can't determine mode, assume we need to check services
-            pass
-        
-        # Check service health
-        unhealthy_services = []
-        for service_name, health_info in health.items():
-            if health_info['status'] != 'healthy':
-                unhealthy_services.append(service_name)
-                click.echo(f"❌ {service_name}: {health_info.get('error', 'unhealthy')}", err=True)
-        
-        if unhealthy_services:
-            raise SystemExit(1)
-        else:
-            click.echo("✅ All services healthy")
-            raise SystemExit(0)
-            
-    except Exception as e:
-        logger.error(f"Failed to check service health: {e}")
-        click.echo(f"❌ Error: {e}", err=True)
-        raise SystemExit(2)
 
 
 @routing.command()
@@ -234,83 +183,4 @@ def docker():
         raise
 
 
-@routing.command()
-def sync_keys():
-    """Sync API keys from current environment to routing.env."""
-    try:
-        manager = LaunchdServiceManager.get_instance()
-        click.echo("🔑 Syncing API keys from environment...")
-        manager.sync_keys_from_environment()
-        click.echo("✅ API keys synced successfully!")
-        
-        # Show what was synced
-        env_path = manager.DOPEMUX_DIR / "routing.env"
-        if env_path.exists():
-            click.echo("\n📋 Synced keys in:")
-            click.echo(f"   {env_path}")
-            
-    except Exception as e:
-        logger.error(f"Failed to sync keys: {e}")
-        click.echo(f"❌ Error: {e}", err=True)
         raise
-
-
-@routing.command()
-@click.option("--max-passes", type=int, default=3, help="Maximum repair attempts (default: 3)")
-@click.option("--allow-sync-keys", is_flag=True, help="Allow API key syncing during repair")
-def repair(max_passes: int, allow_sync_keys: bool):
-    """Attempt to repair routing services."""
-    try:
-        manager = LaunchdServiceManager.get_instance()
-        click.echo("🔧 Attempting to repair routing services...")
-        
-        # Run repair
-        repair_result = manager.repair(
-            max_passes=max_passes,
-            allow_sync_keys=allow_sync_keys
-        )
-        
-        # Show results
-        if repair_result.get("healthy", False):
-            click.echo("✅ Routing services repaired successfully!")
-            
-            # Show final health
-            health = repair_result["health"]
-            click.echo("\n🏥 Final Health Status:")
-            for service, info in health.items():
-                if service == "mode":
-                    continue
-                status_emoji = "✅" if info.get("status") == "healthy" else "❌"
-                click.echo(f"  {status_emoji} {service}: {info.get('status')}")
-        else:
-            click.echo("❌ Failed to repair routing services")
-            
-            # Show repair attempts
-            click.echo("\n📋 Repair Attempts:")
-            for attempt in repair_result.get("attempts", []):
-                status = "✅" if attempt.get("result", {}).get("ok") else "❌"
-                click.echo(f"  {status} Pass {attempt['pass']}: {attempt['action']}")
-            
-            # Show diagnostics
-            click.echo("\n🔍 Diagnostics:")
-            log_paths = manager._get_log_paths()
-            click.echo(f"  LiteLLM launchd log: {log_paths['litellm_launchd']}")
-            click.echo(f"  CCR launchd log: {log_paths['ccr_launchd']}")
-            click.echo(f"  Latest LiteLLM log: {log_paths['litellm_latest']}")
-            
-            click.echo("\n💡 Next steps:")
-            click.echo("  • Check logs with: tail -f ~/.dopemux/logs/litellm_launchd.log")
-            click.echo("  • Run health check: dopemux routing health")
-            click.echo("  • Check service status: dopemux routing status")
-            
-            raise SystemExit(1)
-            
-    except Exception as e:
-        logger.error(f"Failed to repair services: {e}")
-        click.echo(f"❌ Error: {e}", err=True)
-        raise
-
-
-def register_routing_commands(cli_group):
-    """Register routing commands with the main CLI."""
-    cli_group.add_command(routing, "routing")
