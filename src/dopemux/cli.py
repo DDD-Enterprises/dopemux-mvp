@@ -7295,6 +7295,10 @@ dopemux tmux theme neon
     console.logger.info(Markdown(help_text))
 
 
+# Register routing commands
+from .routing_cli import register_routing_commands
+register_routing_commands(cli)
+
 def main():
     """Main entry point."""
     try:
