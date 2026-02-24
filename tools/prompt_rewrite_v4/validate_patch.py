@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import itertools
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -84,21 +85,59 @@ def section_bounds(prompt_text: str, section_name: str) -> Optional[Tuple[int, i
     return (body_start, body_end)
 
 
-def hunk_ranges(diff_text: str) -> List[Tuple[int, int]]:
+def changed_line_numbers(diff_text: str) -> Tuple[List[int], List[int]]:
     """
-    Returns list of new-file line ranges (start, end) affected by each hunk, 1-based inclusive.
-    Uses the +start,+count in the hunk header.
+    Return (changed_old_lines, changed_new_lines), 1-based line numbers for actual edits only.
+    Context lines are ignored.
     """
-    ranges: List[Tuple[int, int]] = []
-    for line in diff_text.splitlines():
-        m = HUNK_RE.match(line)
+    old_changed: List[int] = []
+    new_changed: List[int] = []
+
+    lines = diff_text.splitlines()
+    i = 0
+    while i < len(lines):
+        m = HUNK_RE.match(lines[i])
         if not m:
+            i += 1
             continue
-        new_start = int(m.group(3))
+
+        old_line = int(m.group(1))
+        old_count = int(m.group(2) or "1")
+        new_line = int(m.group(3))
         new_count = int(m.group(4) or "1")
-        new_end = new_start + max(new_count, 1) - 1
-        ranges.append((new_start, new_end))
-    return ranges
+        i += 1
+
+        # Walk hunk body until next hunk header or next file header.
+        while i < len(lines) and not HUNK_RE.match(lines[i]) and not DIFF_OLD_RE.match(lines[i]) and not DIFF_FILE_RE.match(lines[i]):
+            line = lines[i]
+            if not line:
+                # Empty context line still advances both if it's context.
+                old_line += 1
+                new_line += 1
+                i += 1
+                continue
+
+            if line.startswith("\\"):
+                # "\ No newline at end of file" marker
+                i += 1
+                continue
+
+            if line.startswith(" "):
+                old_line += 1
+                new_line += 1
+            elif line.startswith("+") and not line.startswith("+++"):
+                new_changed.append(new_line)
+                new_line += 1
+            elif line.startswith("-") and not line.startswith("---"):
+                old_changed.append(old_line)
+                old_line += 1
+            else:
+                # Unexpected line prefix; be conservative: treat as context.
+                old_line += 1
+                new_line += 1
+            i += 1
+
+    return old_changed, new_changed
 
 
 def ranges_within(outer: Tuple[int, int], inner: Tuple[int, int]) -> bool:
@@ -136,15 +175,19 @@ def validate_patch(
 
     allowed = [ep_bounds, fm_bounds]
 
-    # Check each hunk affects only allowed ranges in the new file.
-    # Conservative assumption: section headings are stable and line counts similar.
-    # This is fail-closed: if hunks are outside original section bounds, reject.
-    for r in hunk_ranges(diff_text):
-        if not any(ranges_within(a, r) for a in allowed):
-            return ValidationResult(
-                False,
-                f"Hunk range {r} touches outside allowed sections. allowed={allowed}",
-            )
+    old_changed, new_changed = changed_line_numbers(diff_text)
+
+    # Validate actual changed lines only (ignore context).
+    def in_allowed(line_no: int) -> bool:
+        return any(a[0] <= line_no <= a[1] for a in allowed)
+
+    for ln in old_changed:
+        if not in_allowed(ln):
+            return ValidationResult(False, f"Deleted line {ln} outside allowed sections. allowed={allowed}")
+
+    for ln in new_changed:
+        if not in_allowed(ln):
+            return ValidationResult(False, f"Added line {ln} outside allowed sections. allowed={allowed}")
 
     return ValidationResult(True, "OK")
 
