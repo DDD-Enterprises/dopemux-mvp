@@ -1,7 +1,7 @@
 {
   "repo_root": "..",
   "prompt_glob": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_*.md",
-  "heuristics_path": "HEURISTICS_LIBRARY_v1.txt",
+  "heuristics_path": "HEURISTICS_LIBRARY_v1.md",
   "system_prompt_path": "OPUS_SYSTEM_PROMPT.txt",
   "patch_prompt_path": "OPUS_PATCH_PROMPT.txt",
   "out_dir": "out",

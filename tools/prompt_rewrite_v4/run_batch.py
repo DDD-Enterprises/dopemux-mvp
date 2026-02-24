@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import subprocess
@@ -9,16 +8,7 @@ from pathlib import Path
 from typing import List
 
 from render_request import load_config, render_request
-from validate_patch import validate_patch, section_bounds
-
-
-def calculate_sha256(file_path: Path) -> str:
-    """Calculate SHA256 hash of file content."""
-    sha256_hash = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
-    return sha256_hash.hexdigest()
+from validate_patch import validate_patch
 
 
 def sh(cmd: List[str], cwd: Path) -> subprocess.CompletedProcess:
@@ -68,26 +58,10 @@ def render_one(repo_root: Path, cfg_path: Path, state_path: Path) -> None:
     prompt_path = files[cursor]
     prompt_rel = str(prompt_path.relative_to(repo_root))
 
-    # Pre-render validation: ensure target file has required sections
-    prompt_text = prompt_path.read_text(encoding="utf-8")
-    ep_bounds = section_bounds(prompt_text, "Extraction Procedure")
-    fm_bounds = section_bounds(prompt_text, "Failure Modes")
-    
-    if ep_bounds is None or fm_bounds is None:
-        state.setdefault("failed", []).append({
-            "cursor": cursor, 
-            "path": prompt_rel, 
-            "reason": f"Missing required sections. Extraction Procedure: {ep_bounds is not None}, Failure Modes: {fm_bounds is not None}"
-        })
-        save_state(state_path, state)
-        raise SystemExit(f"SKIP: {prompt_rel} missing required section headings")
-
     # Resolve heuristics path relative to cfg_path directory
-    # Calculate file hash for audit trail
-    sha256_before = calculate_sha256(prompt_path)
-
     heur_path = cfg_path.parent / cfg.heuristics_path
     heur_text = heur_path.read_text(encoding="utf-8")
+    prompt_text = prompt_path.read_text(encoding="utf-8")
 
     request_text = render_request(
         heuristics_text=heur_text,
@@ -99,19 +73,7 @@ def render_one(repo_root: Path, cfg_path: Path, state_path: Path) -> None:
     req_file = out_dir / f"request_{cursor}.txt"
     req_file.write_text(request_text, encoding="utf-8")
 
-    # Update state with file hash and request/response paths
-    state.setdefault("in_progress", []).append({
-        "cursor": cursor,
-        "path": prompt_rel,
-        "sha256_before": sha256_before,
-        "request_path": str(req_file.relative_to(repo_root)),
-        "response_path": str((out_dir / f"response_{cursor}.patch").relative_to(repo_root)),
-        "started_at": "2026-02-23T00:00:00Z"  # TODO: use actual timestamp
-    })
-    save_state(state_path, state)
-
     print(f"WROTE: {req_file}")
-    print(f"SHA256: {sha256_before}")
     print(f"NEXT: run Opus in Claude Code using {repo_root / cfg.system_prompt_path} + {req_file}")
     print(f"SAVE PATCH AS: {out_dir / f'response_{cursor}.patch'}")
 
@@ -162,30 +124,12 @@ def apply_one(repo_root: Path, cfg_path: Path, state_path: Path) -> None:
     # Lint gate (hard)
     lint_gate(repo_root, cfg.lint_cmd)
 
-    # Calculate after hash and update audit trail
-    sha256_after = calculate_sha256(prompt_path)
-    
-    # Find and update the in_progress entry
-    in_progress = state.get("in_progress", [])
-    updated_in_progress = []
-    completed_entry = None
-    for entry in in_progress:
-        if entry.get("cursor") == cursor and entry.get("path") == prompt_rel:
-            entry["sha256_after"] = sha256_after
-            entry["completed_at"] = "2026-02-23T00:00:00Z"  # TODO: use actual timestamp
-            completed_entry = entry
-            state.setdefault("completed", []).append(entry)
-        else:
-            updated_in_progress.append(entry)
-    state["in_progress"] = updated_in_progress
-
     # Mark done + advance
     state.setdefault("done", []).append({"cursor": cursor, "path": prompt_rel})
     state["cursor"] = cursor + 1
     save_state(state_path, state)
 
     print(f"APPLIED + LINT PASS: {prompt_rel}")
-    print(f"SHA256: {sha256_after}")
     print(f"ADVANCED CURSOR -> {state['cursor']}")
 
 
