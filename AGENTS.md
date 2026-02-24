@@ -242,10 +242,10 @@ MCP servers are configured in `.claude.json`. Active servers:
 
 ---
 
-## TaskX Rails (Repo Identity)
-This repo includes TaskX-style identity rails:
+## dopeTask Rails (Repo Identity)
+This repo includes dopeTask-style identity rails:
 
-- `.taskxroot` (repo marker)
-- `.taskx/project.json` (repo identity, packet header requirement)
+- `.dopetaskroot` (repo marker)
+- `.dopetask/project.json` (repo identity, packet header requirement)
 
 Any task-packet-driven automation should validate identity before executing.

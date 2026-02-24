@@ -1,50 +1,50 @@
 ---
-title: TaskX Integration
+title: dopeTask Integration
 plane: pm
 component: dopemux
 status: proposed
-id: 07_TASKX_INTEGRATION
+id: 07_DOPETASK_INTEGRATION
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-02-16'
 last_review: '2026-02-16'
 next_review: '2026-05-17'
-prelude: TaskX Integration (explanation) for dopemux documentation and developer workflows.
+prelude: dopeTask Integration (explanation) for dopemux documentation and developer workflows.
 ---
-# TaskX Integration Contract
+# dopeTask Integration Contract
 
 ## Purpose
-The seam between deterministic engine and stateful runtime. This defines the API between Supervisor (Brain) and TaskX (Muscle).
+The seam between deterministic engine and stateful runtime. This defines the API between Supervisor (Brain) and dopeTask (Muscle).
 
 ## Scope
-- The command-line interface to TaskX.
+- The command-line interface to dopeTask.
 - The artifact directory structure and schema.
 - The separation of concerns (Policy vs Execution).
-- The boundary between task-orchestrator (coordination layer) and TaskX (deterministic engine).
+- The boundary between task-orchestrator (coordination layer) and dopeTask (deterministic engine).
 
 ---
 
 ## Non-negotiable invariants
 
-### INV-TX-001: One-Way Call Direction
+### INV-DT-001: One-Way Call Direction
 
-**INV-ID**: INV-TX-001
-**Statement**: Supervisor calls TaskX. TaskX NEVER calls Supervisor API. The call direction is strictly Supervisor → TaskX. TaskX communicates back ONLY via file artifacts.
+**INV-ID**: INV-DT-001
+**Statement**: Supervisor calls dopeTask. dopeTask NEVER calls Supervisor API. The call direction is strictly Supervisor → dopeTask. dopeTask communicates back ONLY via file artifacts.
 **Scope**: per-run
 **Owner**: Architecture (boundary contract)
 **Enforcement Surface**:
-- `scripts/taskx` is a shell wrapper that `exec taskx "$@"` — it accepts arguments, it does not make HTTP calls back.
-- TaskX is invoked as a subprocess. It has no knowledge of Supervisor endpoints.
-- No Supervisor URL or callback endpoint is passed to TaskX in any argument or environment variable.
-**Violation Mode**: Bidirectional coupling — TaskX starts making decisions that belong to Supervisor (policy leak).
+- `scripts/dopetask` is a shell wrapper that `exec dopetask "$@"` — it accepts arguments, it does not make HTTP calls back.
+- dopeTask is invoked as a subprocess. It has no knowledge of Supervisor endpoints.
+- No Supervisor URL or callback endpoint is passed to dopeTask in any argument or environment variable.
+**Violation Mode**: Bidirectional coupling — dopeTask starts making decisions that belong to Supervisor (policy leak).
 **Detection Method**:
-- Code audit: TaskX codebase must contain zero HTTP client calls to Supervisor or task-orchestrator endpoints.
-- `grep -r "localhost:8000\|SUPERVISOR_URL\|callback" .taskx_venv/` must return zero matches in TaskX code.
-**Recovery Strategy**: If bidirectional call detected, it is a design violation. Remove the call path. TaskX must communicate only via artifacts.
+- Code audit: dopeTask codebase must contain zero HTTP client calls to Supervisor or task-orchestrator endpoints.
+- `grep -r "localhost:8000\|SUPERVISOR_URL\|callback" .dopetask_venv/` must return zero matches in dopeTask code.
+**Recovery Strategy**: If bidirectional call detected, it is a design violation. Remove the call path. dopeTask must communicate only via artifacts.
 **Evidence**:
-- `scripts/taskx` (lines 1-23): Pure wrapper. Activates venv, execs `taskx` binary. No callbacks.
-- `.taskx-pin`: `install=git repo=https://github.com/hu3mann/taskX.git ref=v0.1.2` — external repo, separate codebase.
+- `scripts/dopetask` (lines 1-23): Pure wrapper. Activates venv, execs `dopetask` binary. No callbacks.
+- `.dopetask-pin`: `install=pip dep=dopetask version=0.1.4` — pip package, separate codebase.
 
 ---
 
