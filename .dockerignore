@@ -48,6 +48,7 @@ build/
 *.egg
 .eggs/
 .venv-taskx
+.dopetask_venv
 .venv-*
 
 # Node specific
@@ -82,6 +83,9 @@ temp/
 .taskx
 .taskx-pin
 .taskxroot
+.dopetask
+.dopetask-pin
+.dopetaskroot
 
 # Project specific
 SYSTEM_ARCHIVE/
