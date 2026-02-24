@@ -24,6 +24,12 @@ from typing import Any, Dict, List, Optional
 from ..config import ConfigManager
 from ..console import console
 
+# Import RoutingConfig for mode-based environment preparation
+try:
+    from ..routing_config import RoutingConfig
+except ImportError:
+    RoutingConfig = None
+
 
 class ClaudeNotFoundError(Exception):
     """Raised when Claude Code executable is not found."""
@@ -304,9 +310,31 @@ Alternative: Set CLAUDE_PATH environment variable
         # Add Dopemux-specific variables
         env.update({"DOPEMUX_VERSION": "0.1.0", "DOPEMUX_ACTIVE": "true"})
 
-        # If Dopemux is routing Claude through LiteLLM, we intentionally keep
-        # ANTHROPIC_API_KEY and point Anthropic base to the proxy.
-        via_litellm = env.get("DOPEMUX_CLAUDE_VIA_LITELLM") in ("1", "true", "True")
+        # Determine routing mode from config (replaces legacy DOPEMUX_CLAUDE_VIA_LITELLM)
+        routing_mode = None
+        if RoutingConfig is not None:
+            try:
+                routing_config = RoutingConfig.load_default()
+                routing_mode = routing_config.get_mode()
+                console.logger.info(f"[blue]📋 Claude Launcher: Routing mode {routing_mode}[/blue]")
+            except Exception as e:
+                console.logger.warning(f"[yellow]⚠️  Could not load routing config: {e}[/yellow]")
+                console.logger.info("[dim]Falling back to legacy environment behavior[/dim]")
+        
+        # If routing mode is api, configure for proxy routing
+        if routing_mode == "api":
+            # Use CCR as proxy - keep ANTHROPIC_API_KEY and ANTHROPIC_BASE_URL
+            via_litellm = True
+            console.logger.info("[blue]🔄 Routing mode 'api': Configuring Claude for CCR proxy[/blue]")
+        # If routing mode is subscription, use direct OAuth
+        elif routing_mode == "subscription":
+            via_litellm = False
+            console.logger.info("[blue]📋 Routing mode 'subscription': Configuring Claude for direct OAuth[/blue]")
+        # Fallback to legacy behavior
+        else:
+            via_litellm = env.get("DOPEMUX_CLAUDE_VIA_LITELLM") in ("1", "true", "True")
+            if via_litellm:
+                console.logger.info("[dim]Using legacy DOPEMUX_CLAUDE_VIA_LITELLM flag[/dim]")
         if via_litellm:
             # If ANTHROPIC_BASE_URL is already set (e.g., by CCR), keep it
             # Otherwise, fall back to LITELLM_PROXY_URL
