@@ -98,20 +98,4 @@ else
   source "$VENV/bin/activate"
 fi
 
-if [[ "${1:-}" == "doctor" ]]; then
-  set +e
-  DOCTOR_OUTPUT="$("$VENV/bin/dopetask" "$@" 2>&1)"
-  DOCTOR_RC=$?
-  set -e
-  printf '%s\n' "$DOCTOR_OUTPUT"
-
-  # Upstream dopetask==0.1.4 can fail doctor due to a hard-coded taskx path check.
-  if [[ $DOCTOR_RC -ne 0 && "$DOCTOR_OUTPUT" == *"Expected locations: */site-packages/taskx/ or */code/taskX/"* ]]; then
-    echo "WARNING: dopetask doctor hit known taskx path check bug; continuing." >&2
-    exit 0
-  fi
-
-  exit $DOCTOR_RC
-fi
-
 exec "$VENV/bin/dopetask" "$@"
