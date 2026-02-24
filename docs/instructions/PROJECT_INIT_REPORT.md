@@ -1,15 +1,3 @@
----
-id: PROJECT_INIT_REPORT
-title: Project Init Report
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-25'
-last_review: '2026-02-25'
-next_review: '2026-05-26'
-prelude: Project Init Report (explanation) for dopemux documentation and developer
-  workflows.
----
 # PROJECT_INIT_REPORT
 
 - output_dir: .taskx/instructions

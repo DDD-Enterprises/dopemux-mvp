@@ -1,15 +1,3 @@
----
-id: PROJECT_INSTRUCTIONS
-title: Project Instructions
-type: explanation
-owner: '@hu3mann'
-author: '@hu3mann'
-date: '2026-02-25'
-last_review: '2026-02-25'
-next_review: '2026-05-26'
-prelude: Project Instructions (explanation) for dopemux documentation and developer
-  workflows.
----
 # Project Instructions
 
 ## Authority and Routing (Dopemux)
