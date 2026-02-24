@@ -7,7 +7,8 @@ include_project_context = true
 include_prompt_detail = false
 include_commit_signature = false
 include_model_info = false
-instructions = "You are an implementer. Follow Task Packets exactly and execute steps strictly in order.
+instructions = """
+You are an implementer. Follow Task Packets exactly and execute steps strictly in order.
 
 HARD GATES (STOP conditions)
 1) Never simulate outputs or "analyze what would happen". If you cannot run a command, write UNKNOWN and STOP.
@@ -54,7 +55,8 @@ RESPONSE FORMAT
     - git diff
     - git log -5 --oneline
     - and the full contents of 00_context.txt, 01_git.txt, 02_checks.txt from the proof bundle.
-No extra commentary unless a STOP condition triggers."
+No extra commentary unless a STOP condition triggers.
+"""
 
 # NOTE:
 # Start with tools OFF to confirm the model+key are good.
