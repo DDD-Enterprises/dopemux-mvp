@@ -14,7 +14,7 @@
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_DOPETASK_SURFACE.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md\n  Stubs: [('Outputs', 4)]",
@@ -29,7 +29,7 @@
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_DOPETASK_INTEGRATION_SURFACES.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md\n  Stubs: [('Outputs', 3)]",
@@ -67,7 +67,7 @@
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md\n  Stubs: [('Outputs', 2)]",
+    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_DOPETASK_INTEGRATION_TRUTH.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md\n  Stubs: [('Outputs', 2)]",
     "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md\n  Stubs: [('Outputs', 2)]",
@@ -152,7 +152,7 @@
       ]
     },
     {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md",
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_DOPETASK_SURFACE.md",
       "missing": [],
       "stubs": [
         "Outputs"
@@ -297,7 +297,7 @@
       ]
     },
     {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_DOPETASK_INTEGRATION_SURFACES.md",
       "missing": [],
       "stubs": [
         "Outputs"
@@ -578,7 +578,7 @@
       ]
     },
     {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md",
+      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_DOPETASK_INTEGRATION_TRUTH.md",
       "missing": [],
       "stubs": [
         "Outputs"
