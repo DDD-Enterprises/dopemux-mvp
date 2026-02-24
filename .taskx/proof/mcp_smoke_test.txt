@@ -1,7 +1,0 @@
-MCP Smoke Test Results - Mon Feb 23 06:47:39 PST 2026
-=================================
-
-Dope-Context MCP: PASS
-Dope-Memory MCP: PASS
-Dope-Memory REST: PASS
-ConPort HTTP: PASS (not MCP)

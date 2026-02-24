@@ -1,4 +1,0 @@
-=== TP-ROUTING-GLOBAL-0001A Proof Bundle ===
-Branch: fix/routing-aliases
-Commit: b491a9b35
-Objective: Allow aliases to reference slots or models directly
