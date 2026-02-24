@@ -1,0 +1,7 @@
+Task: Produce a minimal unified diff patch for the provided prompt file.
+
+Inputs:
+- Heuristics Library v1
+- Prompt file content
+
+Return unified diff only. No prose.
