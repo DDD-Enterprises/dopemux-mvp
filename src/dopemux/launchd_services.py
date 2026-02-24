@@ -231,12 +231,10 @@ LOG_FILE="$LOG_DIR/ccr_$(date +%Y%m%d_%H%M%S).log"
 echo "🚀 Starting CCR on port $CCR_PORT..."
 echo "📝 Logging to: $LOG_FILE"
 
-# Start CCR directly (no docker)
-exec "{ccr_bin}" --config "{home_dir}/.dopemux/ccr/config.json" \\
-    --port "$CCR_PORT" \\
-    --litellm-url "$LITELLM_URL" \\
-    --litellm-key "$DOPEMUX_LITELLM_MASTER_KEY" \\
-    >> "$LOG_FILE" 2>&1
+# Start CCR using the correct command format
+# CCR expects 'ccr start' rather than direct flags
+cd "{home_dir}/.dopemux/ccr"
+exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
 """
         
         with open(script_path, "w") as f:
@@ -706,9 +704,16 @@ exec "{ccr_bin}" --config "{home_dir}/.dopemux/ccr/config.json" \\
         """Check health of running services."""
         health = {}
         
-        # Ensure config is loaded
-        if not self.routing_config._loaded:
-            self.routing_config.load()
+        # Ensure config is loaded - fail closed if not available
+        try:
+            if not self.routing_config._loaded:
+                self.routing_config.load()
+        except Exception as e:
+            health["config"] = {
+                "status": "unhealthy",
+                "error": f"routing.yaml missing or invalid; cannot determine ports; refusing to guess: {e}",
+            }
+            return health
         
         # In subscription mode, services are not required
         try:
@@ -725,30 +730,35 @@ exec "{ccr_bin}" --config "{home_dir}/.dopemux/ccr/config.json" \\
         # Check LiteLLM health
         try:
             import requests
-            litellm_url = f"http://localhost:{self.routing_config.config['ports']['litellm']}/health/readiness"
+            litellm_port = self.routing_config.config['ports']['litellm']
+            litellm_url = f"http://localhost:{litellm_port}/health/readiness"
             response = requests.get(litellm_url, timeout=5)
             health["litellm"] = {
                 "status": "healthy" if response.status_code == 200 else "unhealthy",
+                "port": litellm_port,
                 "response": response.text,
             }
         except Exception as e:
             health["litellm"] = {
                 "status": "unhealthy",
+                "port": self.routing_config.config['ports']['litellm'],
                 "error": str(e),
             }
         
-        # Check CCR health
+        # Check CCR health using TCP connect (no HTTP endpoint assumptions)
         try:
-            ccr_url = f"http://localhost:{self.routing_config.config['ports']['ccr']}/health"
-            response = requests.get(ccr_url, timeout=5)
-            health["ccr"] = {
-                "status": "healthy" if response.status_code == 200 else "unhealthy",
-                "response": response.text,
-            }
+            import socket
+            ccr_port = self.routing_config.config['ports']['ccr']
+            with socket.create_connection(("127.0.0.1", ccr_port), timeout=1.0):
+                health["ccr"] = {
+                    "status": "healthy",
+                    "port": ccr_port,
+                }
         except Exception as e:
             health["ccr"] = {
                 "status": "unhealthy",
-                "error": str(e),
+                "port": self.routing_config.config['ports']['ccr'],
+                "error": f"connection failed: {str(e)}",
             }
         
         return health
