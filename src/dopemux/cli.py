@@ -916,34 +916,6 @@ def start(
         # Ensure env vars are consistent with subscription mode
         _ensure_env_consistent_with_mode(routing_mode)
         console.logger.info("[dim]✓ Claude Code → Anthropic (direct)[/dim]")
-    
-    def _ensure_env_consistent_with_mode(final_mode: str) -> None:
-        """Ensure environment variables are consistent with routing mode.
-        
-        Prevents stale proxy env vars when falling back to subscription mode.
-        """
-        if final_mode == "subscription":
-            # Unset proxy variables to ensure direct connection
-            env_vars_to_unset = ["ANTHROPIC_BASE_URL", "DOPEMUX_ROUTING_MODE"]
-            for var in env_vars_to_unset:
-                if var in os.environ:
-                    del os.environ[var]
-            
-            # Only unset ANTHROPIC_API_KEY if we set it (marked by DOPEMUX_SET_ANTHROPIC_API_KEY)
-            if os.environ.get("DOPEMUX_SET_ANTHROPIC_API_KEY") == "1":
-                if "ANTHROPIC_API_KEY" in os.environ:
-                    del os.environ["ANTHROPIC_API_KEY"]
-                if "DOPEMUX_SET_ANTHROPIC_API_KEY" in os.environ:
-                    del os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"]
-                    
-        elif final_mode == "api":
-            # Ensure API mode variables are set
-            if "DOPEMUX_ROUTING_MODE" not in os.environ:
-                os.environ["DOPEMUX_ROUTING_MODE"] = "api"
-            
-            # Mark that we're managing the API key
-            if "ANTHROPIC_API_KEY" in os.environ:
-                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
 
     # ── Handle --grok / --codex / --altp provider routing ───────────────
     provider_proxy_started = False
