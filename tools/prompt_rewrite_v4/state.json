@@ -1,5 +1,16 @@
 {
   "cursor": 0,
   "done": [],
-  "failed": []
+  "failed": [
+    {
+      "cursor": 0,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+      "reason": "Added line 60 outside allowed sections. allowed=[(53, 59), (89, 93)]"
+    },
+    {
+      "cursor": 0,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+      "reason": "Not a unified diff"
+    }
+  ]
 }
