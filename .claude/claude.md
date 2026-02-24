@@ -119,6 +119,14 @@ STATE AND EVIDENCE DISCIPLINE
   - diffstat + full diff for relevant commits
   - test/verification command outputs
 
+PLANNING GATE (mandatory for non-trivial changes)
+- Before editing any file, write proof/PLAN.txt containing:
+  - Objective (1-2 lines)
+  - Scope: allowed files (exact paths)
+  - Steps (numbered, <= 7)
+  - Verification commands
+- If a plan cannot be written, STOP.
+
 DEFAULT WORKDIR
 - Use one canonical repo directory per project.
 - If worktrees are used, every proof must include pwd + git rev-parse --show-toplevel.
