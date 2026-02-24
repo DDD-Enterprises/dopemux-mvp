@@ -32,6 +32,7 @@ class RoutingConfig:
         self.config_path = config_path or self.DEFAULT_CONFIG_PATH
         self.config: Dict[str, Any] = {}
         self._loaded = False
+        self._ports: Optional[Dict[str, int]] = None
 
     def load(self) -> Dict[str, Any]:
         """Load and validate the routing configuration.
@@ -77,6 +78,23 @@ class RoutingConfig:
         except Exception as e:
             raise RoutingConfigError(f"Failed to copy template: {e}") from e
 
+    @property
+    def ports(self) -> Dict[str, int]:
+        """Get the validated ports configuration.
+
+        Returns:
+            Dictionary with 'litellm' and 'ccr' ports
+
+        Raises:
+            RoutingConfigError: If ports are not available
+        """
+        if self._ports is None:
+            if not self._loaded:
+                raise RoutingConfigError("Configuration not loaded. Call load() first.")
+            # Try to validate if not already done
+            self.validate()
+        return self._ports
+
     def validate(self) -> None:
         """Validate the loaded configuration.
 
@@ -118,6 +136,18 @@ class RoutingConfig:
         ports = self.config.get("ports", {})
         if "litellm" not in ports or "ccr" not in ports:
             raise RoutingConfigError("Ports section must contain 'litellm' and 'ccr'")
+
+        # Validate port values are integers in valid range
+        try:
+            litellm_port = int(ports["litellm"])
+            ccr_port = int(ports["ccr"])
+            if not (1 <= litellm_port <= 65535):
+                raise RoutingConfigError(f"litellm port {litellm_port} must be between 1-65535")
+            if not (1 <= ccr_port <= 65535):
+                raise RoutingConfigError(f"ccr port {ccr_port} must be between 1-65535")
+            self._ports = {"litellm": litellm_port, "ccr": ccr_port}
+        except ValueError as e:
+            raise RoutingConfigError(f"Port values must be integers: {e}") from e
 
         # Validate providers
         providers = self.config.get("providers", [])
@@ -338,6 +368,17 @@ class RoutingConfig:
         config = cls()
         config.load()
         return config
+
+    def get_ports(self) -> Dict[str, int]:
+        """Get ports as a dictionary with 'litellm' and 'ccr' keys.
+
+        Returns:
+            Dictionary containing litellm and ccr ports
+
+        Raises:
+            RoutingConfigError: If ports are not available
+        """
+        return self.ports
 
     @classmethod
     def get_mode(cls) -> str:
