@@ -132,6 +132,8 @@ def apply_one(repo_root: Path, cfg_path: Path, state_path: Path) -> None:
     prompt_path = files[cursor]
     prompt_rel = str(prompt_path.relative_to(repo_root))
 
+    # Use repo_root for out_dir to match render_one behavior
+    out_dir = repo_root / cfg.out_dir
     patch_path = out_dir / f"response_{cursor}.patch"
     if not patch_path.exists():
         raise SystemExit(f"Missing patch file: {patch_path}")
