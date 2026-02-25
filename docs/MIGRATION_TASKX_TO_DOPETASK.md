@@ -4,7 +4,7 @@
 
 ✅ **MIGRATION COMPLETE** - This document outlines the completed migration from taskX to dopeTask in the dopemux-mvp codebase.
 
-**Status**: Fully migrated to dopeTask 0.1.4 via pip installation
+**Action**: Migrated to dopeTask 0.1.4 via pip installation
 **Date**: 2024
 **Approach**: Comprehensive cleanup with documentation updates
 
@@ -41,9 +41,9 @@
 ### 3. Script Updates
 
 #### `scripts/taskx` → `scripts/dopetask`
-- Updated all references from taskX to dopeTask
-- Changed environment variable names (TASKX_* → DOPETASK_*)
-- Updated executable name from `taskx` to `dopetask`
+- Updated reference from taskX to dopeTask
+- Changed environment variable names (TASKX_* -> DOPETASK_*)
+- Updated executable name from taskx to dopetask
 
 ### 4. Directory Structure Changes
 
@@ -57,6 +57,7 @@
 + .dopetask_venv/
 + vendor/dopetask/
 ```
+
 
 ### 5. Documentation Updates
 
@@ -107,27 +108,6 @@ The migration maintains the same core functionality:
 - File artifact communication
 - Same CLI interface and arguments
 
-## LLM Integration Updates
-
-For LLM configurations and prompts:
-
-1. **Update command references**:
-   ```diff
-   - "Run: taskx execute --plan=..."
-   + "Run: dopetask execute --plan=..."
-   ```
-
-2. **Update tool descriptions**:
-   ```diff
-   - "taskX: deterministic task execution engine"
-   + "dopetask: deterministic task execution engine"
-   ```
-
-3. **Update file path references**:
-   ```diff
-   - ".taskx_venv/bin/taskx"
-   + ".dopetask_venv/bin/dopetask"
-   ```
 
 ## Supervisor Instructions Update
 
@@ -138,10 +118,10 @@ For LLM configurations and prompts:
 
 ### Command Reference
 
-| Old Command | New Command |
-|-------------|-------------|
-| `taskx --version` | `dopetask --version` |
-| `taskx execute --plan=plan.yaml` | `dopetask execute --plan=plan.yaml` |
+| Old Command                       | New Command                          |
+| --------------------------------- | ------------------------------------ |
+| `taskx --version`                 | `dopetask --version`                 |
+| `taskx execute --plan=plan.yaml`  | `dopetask execute --plan=plan.yaml`  |
 | `taskx validate --plan=plan.yaml` | `dopetask validate --plan=plan.yaml` |
 
 ## Verification Checklist
