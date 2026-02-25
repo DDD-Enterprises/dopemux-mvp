@@ -60,7 +60,6 @@ class LaunchdServiceManager:
         
         # Load routing config to get provider info
         config = self.routing_config.load()
-        providers = config.get("providers", [])
         
         # Generate environment variables for each provider
         env_vars = {
