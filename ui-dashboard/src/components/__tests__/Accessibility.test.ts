@@ -45,3 +45,10 @@ test('Components have aria-hidden="true" on decorative icons', () => {
     expect(content).toContain('aria-hidden="true"');
   });
 });
+
+test('TaskSequencer.tsx has accessible timer with pluralization', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
+  expect(content).toContain('role="timer"');
+  expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
+  expect(content).toContain('const getTimerAriaLabel = (seconds: number): string =>');
+});

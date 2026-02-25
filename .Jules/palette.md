@@ -10,6 +10,10 @@
 **Learning:** For users with ADHD, static timers can sometimes be overlooked ("time blindness"). Adding a subtle, non-distracting animation (like a slow pulse) to an active timer provides a continuous "live" signal that the session is ongoing, reducing the chance of losing focus on the current task.
 **Action:** Use subtle animations or pulsing effects for active status indicators and timers to maintain user engagement without being intrusive.
 
+## 2026-02-25 - [Timer Accessibility Pluralization]
+**Learning:** For ADHD-focused dashboards, timers are critical components that require accurate screen reader feedback. Using pluralization logic in ARIA labels (e.g., '1 minute' vs '2 minutes') ensures the UI is accessible and professional for users relying on assistive technology.
+**Action:** Always implement a helper like `getTimerAriaLabel` for any duration-based displays and apply it to components with `role="timer"`.
+
 ## 2025-05-16 - [Contextual Status Indicators]
 **Learning:** High-density dashboards often use shorthand status chips (like "[LIVE]"). While visually efficient, they lack context for new users or when multiple systems are integrated. Adding a descriptive Tooltip to these chips explains *what* is live (e.g., "Real-time connection to ADHD Engine active"), bridging the gap between shorthand brevity and clarity.
 **Action:** Always wrap status indicators in descriptive Tooltips to provide context without cluttering the main UI.
