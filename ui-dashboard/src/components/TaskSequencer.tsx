@@ -185,6 +185,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           </Typography>
           <Typography
             variant="h3"
+            aria-label={`Time elapsed: ${Math.floor(taskTimer / 60)} ${Math.floor(taskTimer / 60) === 1 ? 'minute' : 'minutes'} and ${taskTimer % 60} ${taskTimer % 60 === 1 ? 'second' : 'seconds'}`}
             sx={{
               fontFamily: '"Space Grotesk", sans-serif',
               mb: 1,
