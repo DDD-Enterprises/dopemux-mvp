@@ -1,6 +1,1489 @@
 {
-  "cursor": 0,
-  "done": [],
+  "completed": [
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 1,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md",
+      "request_path": "out/request_1.txt",
+      "response_path": "out/response_1.patch",
+      "sha256_after": "d4c0a6432558790f354ee40423e151236385f3d5d0e48384c5a7c2da3ba97adf",
+      "sha256_before": "879493cea8ecfa33fe5b075d65bb92080d11b03bab3ea5f9ede98a0706f55ce1",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 1,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md",
+      "request_path": "out/request_1.txt",
+      "response_path": "out/response_1.patch",
+      "sha256_after": "d4c0a6432558790f354ee40423e151236385f3d5d0e48384c5a7c2da3ba97adf",
+      "sha256_before": "879493cea8ecfa33fe5b075d65bb92080d11b03bab3ea5f9ede98a0706f55ce1",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 2,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md",
+      "request_path": "out/request_2.txt",
+      "response_path": "out/response_2.patch",
+      "sha256_after": "de407e792326ef6b1ed1038ec19164db8ec4d7322e7cd8befa7cdb930f28d564",
+      "sha256_before": "33b12102c007ebd4a8a1d41c3726e82acd92c0c619ac66cd64f3215ed1cb50e9",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 3,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md",
+      "request_path": "out/request_3.txt",
+      "response_path": "out/response_3.patch",
+      "sha256_after": "fbafbd657a13e3510643913524e8e32e387dd995eac41db085e954fa6f5ca2f4",
+      "sha256_before": "f946f6104b8d87074f59c4cede310f859a4c607c6d7e4aa2d72d295e61bde0c5",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 3,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md",
+      "request_path": "out/request_3.txt",
+      "response_path": "out/response_3.patch",
+      "sha256_after": "fbafbd657a13e3510643913524e8e32e387dd995eac41db085e954fa6f5ca2f4",
+      "sha256_before": "f946f6104b8d87074f59c4cede310f859a4c607c6d7e4aa2d72d295e61bde0c5",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 6,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+      "request_path": "out/request_6.txt",
+      "response_path": "out/response_6.patch",
+      "sha256_after": "9f515d2cd6270871fb00f7d457ae965993eef4f413ebcf2bf38a79477aef8cd4",
+      "sha256_before": "d39af49c18e888fbf87abff2a36932105e5038e1794fe9c6fe112c860c75d86c",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 6,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+      "request_path": "out/request_6.txt",
+      "response_path": "out/response_6.patch",
+      "sha256_after": "9f515d2cd6270871fb00f7d457ae965993eef4f413ebcf2bf38a79477aef8cd4",
+      "sha256_before": "d39af49c18e888fbf87abff2a36932105e5038e1794fe9c6fe112c860c75d86c",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 7,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md",
+      "request_path": "out/request_7.txt",
+      "response_path": "out/response_7.patch",
+      "sha256_after": "859bc9dee643c030a6b38b12388415b1b26ea06c76646bd528b703174cae9071",
+      "sha256_before": "be0b26148f84b04942020da97b35cdad36c19879a280a2a705f7406f958f7c9f",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 8,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md",
+      "request_path": "out/request_8.txt",
+      "response_path": "out/response_8.patch",
+      "sha256_after": "51b798a29d13c84bec9ed80a1d3bc3aa1db851f4f1af6dd1c91df9c167402e7e",
+      "sha256_before": "30853f19f43692d4ac1cfb0678265c874b6880c7f64862971aa991df330df093",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 9,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md",
+      "request_path": "out/request_9.txt",
+      "response_path": "out/response_9.patch",
+      "sha256_after": "14f392739160b667a3a0a41bd1bc927b41ad5f41b54b2cd10b9d9dfe64130a6f",
+      "sha256_before": "3fe7da63ca3532b44536f6549d113f867265c6e7d1b59c7de4b99afb3daa3d55",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 10,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+      "request_path": "out/request_10.txt",
+      "response_path": "out/response_10.patch",
+      "sha256_after": "a8c679c7ea4d9a7805f45359d96090bbf96cd4d9e3efbb3c2be5c536d7dd5eb9",
+      "sha256_before": "9e5806d7ccd4957a69eaff3656c8119c71122d5aafbf43db4f555cf13afa3312",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 11,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md",
+      "request_path": "out/request_11.txt",
+      "response_path": "out/response_11.patch",
+      "sha256_after": "1fbb171b4cb427b5d0cec9e7b7243bf7b7cf15dfced0bc716b17ce4f93fb1609",
+      "sha256_before": "e42f6106f19b1dca09dd2142193a43aa71e8b07a3f09bd0290f5704f1b394ccf",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 12,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md",
+      "request_path": "out/request_12.txt",
+      "response_path": "out/response_12.patch",
+      "sha256_after": "0f40ebec631063b679f8000c13ab20a43b71bcd9d51ade64d5a3892abc62a1b6",
+      "sha256_before": "56cb94dedd00d35c8116fe939337a7226bafbf126f2a9a3699ea0cc11c88d1fa",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 13,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md",
+      "request_path": "out/request_13.txt",
+      "response_path": "out/response_13.patch",
+      "sha256_after": "47a7e303d0b1d764726d8b02ecf2007aebab6706cafb92c4a47b2ea604769280",
+      "sha256_before": "f35846bf10d1668284fee494a5e29911193952057d3f5ab722f1eed44919deb1",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 14,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md",
+      "request_path": "out/request_14.txt",
+      "response_path": "out/response_14.patch",
+      "sha256_after": "8eada8c190b46bf5057cac4fe39b680cda4215db6a65d14b027c3770f077a9ba",
+      "sha256_before": "55cdff5e3f6a66a962a5a1aa0daeb2551a490a107937d66f89368408e3d42b7e",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 15,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md",
+      "request_path": "out/request_15.txt",
+      "response_path": "out/response_15.patch",
+      "sha256_after": "0456caed18eedbf928779747cddd93a0258441a2ab59e7bf9b479beb16c57eb0",
+      "sha256_before": "258fa3e74c5c29ec069b3a0e26cc5fa5f0e3e13a76edcc3de9d8e84b9e36656a",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 16,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md",
+      "request_path": "out/request_16.txt",
+      "response_path": "out/response_16.patch",
+      "sha256_after": "a7e9113903fc2f792f7226df5e4f036001c4203e2c086e2b97314b53aee452e0",
+      "sha256_before": "8b6520540e337960ab72a721c88cdac05516b7ea111d112087f38d20c1e1a285",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 17,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md",
+      "request_path": "out/request_17.txt",
+      "response_path": "out/response_17.patch",
+      "sha256_after": "a372286e620d7932b8251626424fae39ed0ed5a0c979e9b8447bc053f43b524c",
+      "sha256_before": "1a4d8c5f23b7898a556b9796da73a91d3f36df82a86d8a7f8f76488052f92321",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 18,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md",
+      "request_path": "out/request_18.txt",
+      "response_path": "out/response_18.patch",
+      "sha256_after": "78fc8132cd6da925b7845a63ce3915565ee606f07307a396eabbc8f94d8bfa78",
+      "sha256_before": "b90d74712158a4fd24b9ffaf4d064c8e6c0c3a894ba1da32945660f48bdae9fd",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 19,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md",
+      "request_path": "out/request_19.txt",
+      "response_path": "out/response_19.patch",
+      "sha256_after": "83da31b12aa7a81c99d8c3230675c29f001c2b9a62a0c23946d66685145fc291",
+      "sha256_before": "b098f453b5c207ccb65c1aabf79e3d26ae6a46597a55e4f1dc096b6d01bd95c5",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 20,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md",
+      "request_path": "out/request_20.txt",
+      "response_path": "out/response_20.patch",
+      "sha256_after": "20308abc3e0c065598d969f5470ec0642d2808e2a89664bcc545e400e1289ca3",
+      "sha256_before": "202bfc84e3c5a81ee40169c6dfa4da23ecd531950e56c9770ba7cec39f441e7d",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 21,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md",
+      "request_path": "out/request_21.txt",
+      "response_path": "out/response_21.patch",
+      "sha256_after": "433d29ad4baeefa313ca46aaf89a5a297c6f780fe100218fb15a9f275f55e786",
+      "sha256_before": "0bca51cbaa3422e28d4408ced84440a10c869008d023117b6983c4d376b40fcc",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 22,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
+      "request_path": "out/request_22.txt",
+      "response_path": "out/response_22.patch",
+      "sha256_after": "bf86c445384a3135ec813642b91c92e3005b13782c57a10ada88e12a205486ed",
+      "sha256_before": "a19634b39418e4687a351c77e33ab6962b630323e1a02fe550484cc426fde0e6",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 22,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
+      "request_path": "out/request_22.txt",
+      "response_path": "out/response_22.patch",
+      "sha256_after": "bf86c445384a3135ec813642b91c92e3005b13782c57a10ada88e12a205486ed",
+      "sha256_before": "a19634b39418e4687a351c77e33ab6962b630323e1a02fe550484cc426fde0e6",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 23,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md",
+      "request_path": "out/request_23.txt",
+      "response_path": "out/response_23.patch",
+      "sha256_after": "0e5f1b8a507e7c6d8f9ca290f7a078e7b892a3c96fa5dacfb1abea6d0bf61238",
+      "sha256_before": "9f498f72a787076b09718d57cf1027ee061619fc419d6e93ba59e370892b8a35",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 24,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md",
+      "request_path": "out/request_24.txt",
+      "response_path": "out/response_24.patch",
+      "sha256_after": "fab49b5a23702658131ae9e6dec46c4b72e5030683be6464c2821c16cca1bfde",
+      "sha256_before": "ceb746f3ec0816fed412f7858ba3c96e7536fa0b81862899584895c5084cbb00",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 25,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md",
+      "request_path": "out/request_25.txt",
+      "response_path": "out/response_25.patch",
+      "sha256_after": "5c248848e33741064f61187f08c6f9d98d6298e0b2b00d552b82c72fa835ea2c",
+      "sha256_before": "56ed633931e065f1ec0908d284d3cac23d2ca6428ba55f8b14016a0aee160832",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 26,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md",
+      "request_path": "out/request_26.txt",
+      "response_path": "out/response_26.patch",
+      "sha256_after": "57f81797d04f13461edddd112c6da181f0bb6ae86499fe2aebca29829e9320d2",
+      "sha256_before": "8c156e92534767f0adfb7e375e8bb18743cf0fe166da7f9da93d1aa9bfd92b76",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 27,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md",
+      "request_path": "out/request_27.txt",
+      "response_path": "out/response_27.patch",
+      "sha256_after": "4311f5126bbd5470ed86871d2fd94b6e72557f795480a74bb09e466224d3dcc8",
+      "sha256_before": "1780244ff92bca0b8d73e193acffe015a4ed618f71fa6970af5499fdb1126bf3",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 28,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md",
+      "request_path": "out/request_28.txt",
+      "response_path": "out/response_28.patch",
+      "sha256_after": "673a53750d8f1566d4491a0ad71cae362dda5534a03becd63dea6b8098868de4",
+      "sha256_before": "d9e318f4b34ed58b99c185ae3232c409396588d68b35ed8c58f36e11ac5c4839",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 29,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md",
+      "request_path": "out/request_29.txt",
+      "response_path": "out/response_29.patch",
+      "sha256_after": "28b2fb17912c566d575244545cf4fcd682e4631f087e1b9e24e6df8a8f4f7b25",
+      "sha256_before": "a3dd609a00583e72a9b5595755086cee46b025e9a7db76f9d83f7a319638145f",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 30,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md",
+      "request_path": "out/request_30.txt",
+      "response_path": "out/response_30.patch",
+      "sha256_after": "df33c322245bf0eae94978f5ac2c80ee9f4b41386a6c1a90fc3005ca3da5f88b",
+      "sha256_before": "15f9cea229b06cc5bb8bb0592a5bab0e601d9ba588c6c96ec53d49fbf7472b8c",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 31,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md",
+      "request_path": "out/request_31.txt",
+      "response_path": "out/response_31.patch",
+      "sha256_after": "edc1cf52fb5937bd23ed60b48c7e55a9f6f0de21b2c3bcb451ba08e11b88ef8a",
+      "sha256_before": "8fe9632e88add814b23206b3a19084e37fbad037bfd6ff3823be42e994e33587",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 32,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md",
+      "request_path": "out/request_32.txt",
+      "response_path": "out/response_32.patch",
+      "sha256_after": "596295670f185c42c431985e6f20afd9c130d2c8ae17c182652c7c2241832b1c",
+      "sha256_before": "bbacc224e2a60f3e8ba82d370eac4ae998ee6bbaf231ce13797247d3e059236c",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 33,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md",
+      "request_path": "out/request_33.txt",
+      "response_path": "out/response_33.patch",
+      "sha256_after": "c65a7dc452d92607d50638a3e4a9918dc7b46fa11bb3c4f3e2040a080158dc36",
+      "sha256_before": "a24d4ac7be7a4ef668d6d5b030fdf55dd9b00d433c26e18dada2b71442e3f09d",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 34,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md",
+      "request_path": "out/request_34.txt",
+      "response_path": "out/response_34.patch",
+      "sha256_after": "f75c18cf7e1e47d9051a6239dd84a10012d890d9acbbc30797f4ba1055dd464e",
+      "sha256_before": "36ef26ee992f395cdc8b3a22fc45a3d3c26c4e9d539adc63bf9a618c9cb5aa76",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 35,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md",
+      "request_path": "out/request_35.txt",
+      "response_path": "out/response_35.patch",
+      "sha256_after": "653ba2a378512f71873d85a5396178a05e915ad5642d37841d2a4b9329915c5c",
+      "sha256_before": "d3da56c4997149cb87718ae86d2968a06a31e070c2df894831ec31c7797d7d18",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 36,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md",
+      "request_path": "out/request_36.txt",
+      "response_path": "out/response_36.patch",
+      "sha256_after": "4eb48907e23d065b128add61726f4c4eb6a2b72c26e8b87795bbd43be64b72ac",
+      "sha256_before": "510359c6193b440ebd9d8cda5389b954e06224dada2f2cb800e083d4b06502ae",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 37,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md",
+      "request_path": "out/request_37.txt",
+      "response_path": "out/response_37.patch",
+      "sha256_after": "b198701da437d0e6e4b0c7e61034a672543c1ca7bfe0f6279a6f57608ad44bf9",
+      "sha256_before": "734c36cf0249f303fd2f8f31124f3ce0f7303285bfe6b46fe1081ad8b95fa19f",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 38,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md",
+      "request_path": "out/request_38.txt",
+      "response_path": "out/response_38.patch",
+      "sha256_after": "4876586b6831036734fe5fd72d2368e306745e55d17493237099f7a13ade5377",
+      "sha256_before": "16f276161877bfdd9344aad2471acf3448d441bf66e4ad7735bf266da97a7962",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 39,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md",
+      "request_path": "out/request_39.txt",
+      "response_path": "out/response_39.patch",
+      "sha256_after": "9786f6e0a4fdc0f2f3517fcc132420908e7fb66046f60ac906b3065c36777524",
+      "sha256_before": "d75a0709ee05977a834e1fb41b9c95b67698cad2db08b520621442368171b966",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 40,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md",
+      "request_path": "out/request_40.txt",
+      "response_path": "out/response_40.patch",
+      "sha256_after": "18e1d075d966ae4f36217e6462f8c136b9a82ce789e3a2f422e0a1c42405ee48",
+      "sha256_before": "4d45c5a29df54f58373df07ca03e40cb773250f0a1d0e803f6c8811b356b1a41",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 41,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md",
+      "request_path": "out/request_41.txt",
+      "response_path": "out/response_41.patch",
+      "sha256_after": "ce64bf3a379fbb832e2a61ba54de6283a6797482d487cd973a464803edb96c33",
+      "sha256_before": "d7cb60b0db2864520245581b666e1ab2d0fbf1d8093e24e8580b3063a6b8e546",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 42,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md",
+      "request_path": "out/request_42.txt",
+      "response_path": "out/response_42.patch",
+      "sha256_after": "42c2a0f4cb38586a899630ffdb82d9edc13686277be9bca1f5716c1cb878cec6",
+      "sha256_before": "5b969d3e0e33815f91a252152399694dc3f354fa81545bc82f40c2f288051263",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 43,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md",
+      "request_path": "out/request_43.txt",
+      "response_path": "out/response_43.patch",
+      "sha256_after": "c3ef8414d8f88efcdf88f8fc3e3038eac96a6819c684dd1d268543dd14bd28f3",
+      "sha256_before": "72d901feb96ef45255d3247abc07b113ffb67b615290819ce8dfd276ad88dce8",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 44,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md",
+      "request_path": "out/request_44.txt",
+      "response_path": "out/response_44.patch",
+      "sha256_after": "f452338205c0d1d5f9c2f8078af4a060130de4259b0e20dc83777711480848c6",
+      "sha256_before": "d04068163ce55124b4e7eab3e6a7900881a02516148601c46e7a3cecf7d6efd6",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 45,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md",
+      "request_path": "out/request_45.txt",
+      "response_path": "out/response_45.patch",
+      "sha256_after": "79445cf9a75a8b191ae601e49cee6940cb7a97574e1decceac92003cb5d8c0fa",
+      "sha256_before": "45b3d21aae608d5917db51f1f3a8415a8cde66446b19d51ec2fff84f940912a9",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 46,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md",
+      "request_path": "out/request_46.txt",
+      "response_path": "out/response_46.patch",
+      "sha256_after": "62f0dc3aa8608103e7c10d0335ca7f07f1f91651a25b29a5c728492a74d5e063",
+      "sha256_before": "8c30a34bb7bf79817b3e00255be25b261a4df3ce296178224cf6b89b366477cc",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 47,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md",
+      "request_path": "out/request_47.txt",
+      "response_path": "out/response_47.patch",
+      "sha256_after": "33537828a8021746bfabd348ea7f84600d94ad86a327a729d66b31ea7baa0070",
+      "sha256_before": "a962097fb9bc376513493c7cdc592c99ffb7839ec5179ed100633b5b56579648",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 48,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md",
+      "request_path": "out/request_48.txt",
+      "response_path": "out/response_48.patch",
+      "sha256_after": "82337735941450773350bb640c18bd0da81dc7cf6e66fababe552c5a6b1ddbc4",
+      "sha256_before": "deb3a9a0fa5515f3605a4e5ba2c4e453c243ba43620d6d6167c26cb1001474de",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 49,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md",
+      "request_path": "out/request_49.txt",
+      "response_path": "out/response_49.patch",
+      "sha256_after": "996a6a15af23d505b137efd231dfc1d7bfdd44ed61e6c8b8e2a225dbfb06e5bf",
+      "sha256_before": "9ee30d624185d4644aa5b747c7fc066acf1ba70dc2c8fe4852c2ffc63b6151ac",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 50,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md",
+      "request_path": "out/request_50.txt",
+      "response_path": "out/response_50.patch",
+      "sha256_after": "b9a3e301d4361f9ea5768fb7a43bcfeaf73b98cf4b5a3ea368371cd632133068",
+      "sha256_before": "1df128dcd532f29d9fed9f6cb82a8ec0ca9ce1becd6b243cfe2798a809410c29",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 51,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md",
+      "request_path": "out/request_51.txt",
+      "response_path": "out/response_51.patch",
+      "sha256_after": "b5bc389f859a0c3f1feca85fc7a7243227eaec9067daac06adb3ddf3e6f758df",
+      "sha256_before": "fb1a94889c8a25b2aa4ec687aaa26363361377b74019f48adbeb3a3b07a49819",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 52,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md",
+      "request_path": "out/request_52.txt",
+      "response_path": "out/response_52.patch",
+      "sha256_after": "49e388c94ee69f8bee9e611dd2aa3fb8bbbd70bd95cb3cfb0a7fa4065d3d2275",
+      "sha256_before": "610dc4d57f21c70a6f9691f625121abc25e361145f3eb6ab4b135d33add618b2",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 53,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md",
+      "request_path": "out/request_53.txt",
+      "response_path": "out/response_53.patch",
+      "sha256_after": "0e2e3eb83dee5357ebce54d6c77c644686aa686f95d3ecee5e3be6a0d1d992cf",
+      "sha256_before": "63cdb699bfc7a810cc0d653c0003e0b7f2a5619f3ae286ff3e81f025df521047",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 54,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md",
+      "request_path": "out/request_54.txt",
+      "response_path": "out/response_54.patch",
+      "sha256_after": "45b8a43279f658e9c2c6270e35f2a46dc93eb36bab216ea7b216462a1f6198fd",
+      "sha256_before": "03467d0d7be4d6b2c73e0ed41163354b5caef384490ab2439d2173eee6ff6b93",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 55,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H9_MERGE___QA.md",
+      "request_path": "out/request_55.txt",
+      "response_path": "out/response_55.patch",
+      "sha256_after": "514b98014bbd9843dd5e772c3aea587543fc22e503c2c5d9cb53e764ac29c92f",
+      "sha256_before": "1c555aa8e68633aef261689dafff770e71c732165ff35feaf5ebf7f2aadb5d7e",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 56,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md",
+      "request_path": "out/request_56.txt",
+      "response_path": "out/response_56.patch",
+      "sha256_after": "5751496a13772348820c92834f7c5cb01492e54a2856f656daff82e1ab9f87b4",
+      "sha256_before": "ca6a7fe2ca07e663d29e6f47cba184e42af0eee4b61ff7993a76c14c498be013",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 57,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md",
+      "request_path": "out/request_57.txt",
+      "response_path": "out/response_57.patch",
+      "sha256_after": "b08c7fc81ec9d6af45ee18c1eb283eff555f476d700c326f6fed1424ca769186",
+      "sha256_before": "2984f7e83574bf829c47f063dd63d0c8483fa7c165b47b065bc8ca917bd68904",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 58,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md",
+      "request_path": "out/request_58.txt",
+      "response_path": "out/response_58.patch",
+      "sha256_after": "7a000d2ac339da3a6fda0208465d20e0d56977c76a5d4a62c30dcc700f7e352f",
+      "sha256_before": "a0229cbea6580bce1c95e18cc097623e79db34bb5c3bfcac8e73162b540becbb",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 59,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md",
+      "request_path": "out/request_59.txt",
+      "response_path": "out/response_59.patch",
+      "sha256_after": "b46585c790ba1e900ca01e768ab0e09989a8dac55b6d026d654feeef64dce199",
+      "sha256_before": "a487d33bc8a7b24bc6f12cc8f1f77695e75be62b84bd0aceaa07b846f220945c",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 60,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md",
+      "request_path": "out/request_60.txt",
+      "response_path": "out/response_60.patch",
+      "sha256_after": "8db3e89042449e2735c4446b765c38999c5c232f86b26aef1407569e7076898e",
+      "sha256_before": "459bf74180e8ea0a1922709a6656b875c3347fa7b83e8194059a194e6ec8f8d1",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 61,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md",
+      "request_path": "out/request_61.txt",
+      "response_path": "out/response_61.patch",
+      "sha256_after": "fe116d0acfb3baa71e58566a12c2a31cb7da32801ae8e261e6f4a4a9244ae18b",
+      "sha256_before": "327ad294efbbfc5f8431aca081031b1863031be5c73b3064388af9907d9b50b7",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 62,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md",
+      "request_path": "out/request_62.txt",
+      "response_path": "out/response_62.patch",
+      "sha256_after": "27416f54968e02f5d03ddda94f18e44187608bae654474d01ce00767384ad7c6",
+      "sha256_before": "665e6ab3cd5c30ee51481a782833a9adb3bbe3f3c639e2bda5b89292f7c77351",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 63,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md",
+      "request_path": "out/request_63.txt",
+      "response_path": "out/response_63.patch",
+      "sha256_after": "02ca4a82dbb59b99fdaa2a109995a79f934099793e3608ae9dd5723880faa4ab",
+      "sha256_before": "864ba326bdba761394edcf01ad229597b76bf193f68de1151c106a0edbc2969a",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 64,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md",
+      "request_path": "out/request_64.txt",
+      "response_path": "out/response_64.patch",
+      "sha256_after": "9a493e307534d33977b8b5067d41151c7dd886e8cdc369726bea35a5515f7d27",
+      "sha256_before": "36f198c6aaf53c1b13ab5312abf300f467f549009e553240f5d13d3ebf731912",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 65,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md",
+      "request_path": "out/request_65.txt",
+      "response_path": "out/response_65.patch",
+      "sha256_after": "4face7ca8ded5cd0c2d491dda1225acf47a5503cf8ab31ffe820c65cf596d157",
+      "sha256_before": "95bcb88fa009bb5ce6b5a9b748828b28fc9b1371c87359237cf1b89a1867c065",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 66,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md",
+      "request_path": "out/request_66.txt",
+      "response_path": "out/response_66.patch",
+      "sha256_after": "a9e883c670c25f15031630feb9885ded1912c45e65ab23c31a797230200c4230",
+      "sha256_before": "054d36f8c9542d111fc2983d176f7099c96c9e578baf2172b48fc6ede63a4726",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 67,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md",
+      "request_path": "out/request_67.txt",
+      "response_path": "out/response_67.patch",
+      "sha256_after": "25307384b87f1608c7252a568288cb0c0d5908ce492319784196fadff364c802",
+      "sha256_before": "24b951db37c6d22de9a5fa080d4ef6ba052af37648e55afe72c47fdc8a3586d6",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 68,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md",
+      "request_path": "out/request_68.txt",
+      "response_path": "out/response_68.patch",
+      "sha256_after": "7e3c92596b37045394e23d3d3b3f455f912b4c6aad50fb5ec70fc8b422988a43",
+      "sha256_before": "df3135b94f118e7e2cd14038c23d00ed96d665dc11d25999a85d5353c2ec58bf",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 69,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+      "request_path": "out/request_69.txt",
+      "response_path": "out/response_69.patch",
+      "sha256_after": "60fbc37fc61c9c85fb2e5b2378adde13ca7945a228d90feb9bf343d008887761",
+      "sha256_before": "b33ced3fc208bd2c4d88bd0114ea61f66f0bf1a5f31f9a9e50e938aa6a94645f",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 70,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md",
+      "request_path": "out/request_70.txt",
+      "response_path": "out/response_70.patch",
+      "sha256_after": "c97748de3b8136e29740e79030b61d7cc62ed46c48ad2d04318b1a000dc468b8",
+      "sha256_before": "12d0c05d88b184bb8b1747b9c98e293d3bf10de528f63526f173b9150801ec8e",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 71,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
+      "request_path": "out/request_71.txt",
+      "response_path": "out/response_71.patch",
+      "sha256_after": "8afd68cd343eadf965fe07b350bc18ee45cde80a3121bb3a5b57bc440e447bff",
+      "sha256_before": "fb50479fca25c3d1b7be1440a179f115b8c7b0491051f35a5af40d2b984f211b",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 72,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md",
+      "request_path": "out/request_72.txt",
+      "response_path": "out/response_72.patch",
+      "sha256_after": "9bacb6e653d10b7711c25fb359bb4429a6aab4ebe3a53dd0f486d1cbff48a28c",
+      "sha256_before": "95e7bc9b9e10cd2f295d8df6040c34323c5a6cd4bf5e26d2f1d2a6e2a9bdfd30",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 73,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md",
+      "request_path": "out/request_73.txt",
+      "response_path": "out/response_73.patch",
+      "sha256_after": "ca3e212a9e9d57f3f4ea9752ad06848974010ef0dc2106de1749ca6452e1ac47",
+      "sha256_before": "8c9b62eb1c73451936a8069b5d3ed46730e401ca0157ec2d0841c76634c887f0",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 74,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
+      "request_path": "out/request_74.txt",
+      "response_path": "out/response_74.patch",
+      "sha256_after": "b772bfe8859c060850d9d2c300721e3204c3c18fab68621bc4c9a3baedf90166",
+      "sha256_before": "682b576e69b4f852b2fdebcd6bd38ba079cf4df4838d374411a00e3a2f3e06ce",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 75,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md",
+      "request_path": "out/request_75.txt",
+      "response_path": "out/response_75.patch",
+      "sha256_after": "612ddb80fbf9abac442b1b7286b8bdcdebef4a681ef5bffb695375437396b078",
+      "sha256_before": "508346f31b32b1be5fa1206fd6fd4fc9203ecf1e37fa6d8f4556e93cb0fdeb6b",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 76,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md",
+      "request_path": "out/request_76.txt",
+      "response_path": "out/response_76.patch",
+      "sha256_after": "3fba73a9f0f3bdc90d6c80300bb5ea854f6c395ea75ba6e1f09dd93e030dfa42",
+      "sha256_before": "09bea772c6e32c4d115e12ac13a92b5de2560c594dba6e18b63806b223582e7d",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 77,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md",
+      "request_path": "out/request_77.txt",
+      "response_path": "out/response_77.patch",
+      "sha256_after": "4f3b601b44ca0080d00e2565408fb1523a922a380da9810ee922936faf0b5ca8",
+      "sha256_before": "403b1aab0c409557a19f068e8f546fa9fbf5228496e6ba74894ca4531038f44d",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 78,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md",
+      "request_path": "out/request_78.txt",
+      "response_path": "out/response_78.patch",
+      "sha256_after": "a007c43ee822ccf1d2ee2a4bedf8ccdfe8e7337b9ebead52ed7b947e8096c8e3",
+      "sha256_before": "a5f76bea1d0c074d34986240d37e13b8d34ed5bac96185869432472ca7c6fcc8",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 79,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S2_DECISION_DOSSIER.md",
+      "request_path": "out/request_79.txt",
+      "response_path": "out/response_79.patch",
+      "sha256_after": "4370d1f110a4ff00b5cb60fc8bc5ea5c60f094741c0a7b4b92797e60c47297e0",
+      "sha256_before": "e786ded949cb616182258cebf9332912e6e7df31b62d94c70b09713ac13df63d",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 80,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S3_ARCHITECTURE_PROOF_HOOKS.md",
+      "request_path": "out/request_80.txt",
+      "response_path": "out/response_80.patch",
+      "sha256_after": "0cf8af0b3163a9a7c2f6f4f8827a38d9d13a43290451745ac2328f66b083292f",
+      "sha256_before": "a05eae6a6598fee0225b355fdd3c57ed85edaa24a6187789ee855c5639b37570",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 81,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T0_TASK_PACKET_FACTORY.md",
+      "request_path": "out/request_81.txt",
+      "response_path": "out/response_81.patch",
+      "sha256_after": "b945a4a1021907484bf15ad58e52a9fd208825142c2a2416efed3a8e7bb3438c",
+      "sha256_before": "cab4941c5639e8c6e77fe2a9072c09211d01632ec38eab4542e32770bf15b46c",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 82,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md",
+      "request_path": "out/request_82.txt",
+      "response_path": "out/response_82.patch",
+      "sha256_after": "fc2776dbe312d56bdc89f62e21374bd368764f7d6f62b169c4dbd95e065a9d84",
+      "sha256_before": "faf4033d1c9c44b554349ef7f44beff4af47c1f74643d794fab8035a6a5b3308",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 83,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md",
+      "request_path": "out/request_83.txt",
+      "response_path": "out/response_83.patch",
+      "sha256_after": "8929dfa339a86544c9e09f25080c200311b3500eb860f3fb005c63a5ef5902b2",
+      "sha256_before": "b28756f1737cf34de08245822b83d07f20af5f780b6039bdf79913bd092865f2",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 84,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md",
+      "request_path": "out/request_84.txt",
+      "response_path": "out/response_84.patch",
+      "sha256_after": "98c19176827e650417b7e990d9481d3f0b35acb15b7120d3cbfd392061479374",
+      "sha256_before": "efed4960f1f6e675a140a06525fdd08bc736b545731922ead54e42054b111507",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 85,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md",
+      "request_path": "out/request_85.txt",
+      "response_path": "out/response_85.patch",
+      "sha256_after": "fb8b886c58ee05424909357bcff1e835e0ef0f23634caee7fde37ccfbe5fbf20",
+      "sha256_before": "df59289078baed0280143154a40ca592e404bbea43d29233d99e23197431fe65",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 86,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md",
+      "request_path": "out/request_86.txt",
+      "response_path": "out/response_86.patch",
+      "sha256_after": "7428626f895100e5a2576e51127962bebaf47542ebf5156299ceddfb745b8f53",
+      "sha256_before": "516cb72d3a6cceea2681edcfdfd1653a0a8980b43792530df200fd5bb71aa623",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 87,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md",
+      "request_path": "out/request_87.txt",
+      "response_path": "out/response_87.patch",
+      "sha256_after": "ed39c0ad499da4299cb98dfd5d54df8ad9c1dbcd4d118ab935f7698f68c5c91d",
+      "sha256_before": "a24ff691edf416e533cd8a3ababa3b50b1b8a05ee487fe58be3463a14db1517b",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 88,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md",
+      "request_path": "out/request_88.txt",
+      "response_path": "out/response_88.patch",
+      "sha256_after": "8fc2ab587851f3bb87faa7a84375a252d209641b2d6a7fdc4aa93f334b52c4f4",
+      "sha256_before": "64a177df978045c479afe2529ef3276c4f22f790f6d8181acfb4b57b6fec13ee",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 89,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md",
+      "request_path": "out/request_89.txt",
+      "response_path": "out/response_89.patch",
+      "sha256_after": "c0da5c755ce1bb35f9f0317a9d86fe1049511a3fce4f367b035d602e5a249e4e",
+      "sha256_before": "84d49091d0c7d0253026d6d41217203b77ecd68233bffca233446d9ca463b9ce",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 90,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md",
+      "request_path": "out/request_90.txt",
+      "response_path": "out/response_90.patch",
+      "sha256_after": "9596854abec8c2413e2dedf709b436e0c90a615317e9280dead7e1940ff217f0",
+      "sha256_before": "92b2fbfbd26c8663ad9746b41c3f7f230736ecc7b2a0289378eadb084a3b83d7",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 91,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md",
+      "request_path": "out/request_91.txt",
+      "response_path": "out/response_91.patch",
+      "sha256_after": "7437ec1bc9f15ad5624bdb69d4941b737d27de24fe605e76b8897c1f1fd93860",
+      "sha256_before": "58530584ea7600733ac418e574f393dc1f634156467a8aad73cb1023cd345538",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 92,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md",
+      "request_path": "out/request_92.txt",
+      "response_path": "out/response_92.patch",
+      "sha256_after": "613216ceac3c23962ab479913bb6331581ee699daab9e093c17d5b6c51dc6657",
+      "sha256_before": "e58d994560ebb9639de18d944efc5cac89155053821469391756d9c416dd9c47",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 93,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md",
+      "request_path": "out/request_93.txt",
+      "response_path": "out/response_93.patch",
+      "sha256_after": "8aed60af9e0ce2cd0d5dc72c54bb1a551267a550a39be01f2339403561249c51",
+      "sha256_before": "a6b937a5377928f0ac8886f6a2ad746aab95de761e31693f3d224d6f664792f6",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 94,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md",
+      "request_path": "out/request_94.txt",
+      "response_path": "out/response_94.patch",
+      "sha256_after": "f2c06df70a2345b2f5dff09ee7cd2dfc8968b2818b5ef93d4b429d1d81f5d07b",
+      "sha256_before": "0668662ef9aa9f3fc3184f7bea56e29fdab51c4812f9f25d74c907795939111c",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 95,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md",
+      "request_path": "out/request_95.txt",
+      "response_path": "out/response_95.patch",
+      "sha256_after": "b89510cdb12e6d0eec177648e8c10a87682bec55b428c8fc35413a6631168dba",
+      "sha256_before": "e3adc63a51ad4e17f678b985fa59efaf2e68acfb358d733a7222d797721f68cc",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 96,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md",
+      "request_path": "out/request_96.txt",
+      "response_path": "out/response_96.patch",
+      "sha256_after": "f0e167d3e54040d7784ed4f6d131d64e1d529c6115d5d2a03660a0f48a6c0312",
+      "sha256_before": "75cc417a85932388c200c06efd1b8322a520333e19dc2a43e7081cf12f25caf4",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 97,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md",
+      "request_path": "out/request_97.txt",
+      "response_path": "out/response_97.patch",
+      "sha256_after": "185637b891354b37eb59ad1ccadd560e97098347aa6d5284ce79c65e0db222ca",
+      "sha256_before": "98a094adaf25ef5ea4b4c409b772d243a259e9eb49b931c3f01c6d8c1b02fc89",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 98,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md",
+      "request_path": "out/request_98.txt",
+      "response_path": "out/response_98.patch",
+      "sha256_after": "02df1f011d75af141c042ece665ff666704bfd83dc577e8f3b6c06658f57f240",
+      "sha256_before": "8d4852acf03fad467c13b10b75bb24edb076882aa99230dabb7696d2f56dc1c2",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 99,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md",
+      "request_path": "out/request_99.txt",
+      "response_path": "out/response_99.patch",
+      "sha256_after": "4e6cf34ec2adb63f513ddff33be51c9d6a0a62ce63c4843850168419d2fac2d3",
+      "sha256_before": "ccb286ec4da00fc2505127599d65511f63cc4ef96bb0f14f9d86a2b8b6891f9f",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 100,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md",
+      "request_path": "out/request_100.txt",
+      "response_path": "out/response_100.patch",
+      "sha256_after": "d1fd35a8d000f8efa71b91d9e8ee86ddadef60c1e1ded9c43c7ea9699b03603f",
+      "sha256_before": "0de27e463953347d439acc1ae1f75ac2792ec123997f8acfc281a1d2a1020806",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 101,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md",
+      "request_path": "out/request_101.txt",
+      "response_path": "out/response_101.patch",
+      "sha256_after": "75e7d2253cd2f0c50dd12858f531bedc29c2bc75e8f0f90213337689b8939cb2",
+      "sha256_before": "52958fa930ae8cfb327a3aab14d2572876c966f51b8226bfeaa2659dbaf36a18",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 102,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md",
+      "request_path": "out/request_102.txt",
+      "response_path": "out/response_102.patch",
+      "sha256_after": "28af00cc5341ea7c541536e320f13a493fd2810745c612b7b99099b1b9bdddd5",
+      "sha256_before": "6845a2f6783445b4f159d20414e47c1471dc9d9e31b97fe35f3435f3d20b618f",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 103,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md",
+      "request_path": "out/request_103.txt",
+      "response_path": "out/response_103.patch",
+      "sha256_after": "106e61a8d9c39a23690ab37c61c0a587a72e9bb01a5b1946591d90c70b987c1b",
+      "sha256_before": "66c9b72931d29f32b106bbbc51ce98e7d4d5dd9318f709f0e470a697a06a2da3",
+      "started_at": "2026-02-23T00:00:00Z"
+    },
+    {
+      "completed_at": "2026-02-23T00:00:00Z",
+      "cursor": 104,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md",
+      "request_path": "out/request_104.txt",
+      "response_path": "out/response_104.patch",
+      "sha256_after": "daee92eae3446c734f6820407fad0c2cd2cb72e7735eaf694a75b3f19c770766",
+      "sha256_before": "6b111c9de5711e8fae924e42dcd592640ded22aeae21a0978e87862830a08c98",
+      "started_at": "2026-02-23T00:00:00Z"
+    }
+  ],
+  "cursor": 105,
+  "done": [
+    {
+      "cursor": 0,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "cursor": 1,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md"
+    },
+    {
+      "cursor": 2,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md"
+    },
+    {
+      "cursor": 3,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md"
+    },
+    {
+      "cursor": 4,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md"
+    },
+    {
+      "cursor": 5,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md"
+    },
+    {
+      "cursor": 6,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md"
+    },
+    {
+      "cursor": 7,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md"
+    },
+    {
+      "cursor": 8,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md"
+    },
+    {
+      "cursor": 9,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md"
+    },
+    {
+      "cursor": 10,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md"
+    },
+    {
+      "cursor": 11,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "cursor": 12,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md"
+    },
+    {
+      "cursor": 13,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md"
+    },
+    {
+      "cursor": 14,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md"
+    },
+    {
+      "cursor": 15,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md"
+    },
+    {
+      "cursor": 16,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "cursor": 17,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md"
+    },
+    {
+      "cursor": 18,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md"
+    },
+    {
+      "cursor": 19,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md"
+    },
+    {
+      "cursor": 20,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md"
+    },
+    {
+      "cursor": 21,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md"
+    },
+    {
+      "cursor": 22,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md"
+    },
+    {
+      "cursor": 23,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md"
+    },
+    {
+      "cursor": 24,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md"
+    },
+    {
+      "cursor": 25,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md"
+    },
+    {
+      "cursor": 26,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md"
+    },
+    {
+      "cursor": 27,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "cursor": 28,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md"
+    },
+    {
+      "cursor": 29,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md"
+    },
+    {
+      "cursor": 30,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md"
+    },
+    {
+      "cursor": 31,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md"
+    },
+    {
+      "cursor": 32,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md"
+    },
+    {
+      "cursor": 33,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "cursor": 34,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md"
+    },
+    {
+      "cursor": 35,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md"
+    },
+    {
+      "cursor": 36,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md"
+    },
+    {
+      "cursor": 37,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md"
+    },
+    {
+      "cursor": 38,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md"
+    },
+    {
+      "cursor": 39,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md"
+    },
+    {
+      "cursor": 40,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md"
+    },
+    {
+      "cursor": 41,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "cursor": 42,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md"
+    },
+    {
+      "cursor": 43,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md"
+    },
+    {
+      "cursor": 44,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md"
+    },
+    {
+      "cursor": 45,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md"
+    },
+    {
+      "cursor": 46,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md"
+    },
+    {
+      "cursor": 47,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "cursor": 48,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md"
+    },
+    {
+      "cursor": 49,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md"
+    },
+    {
+      "cursor": 50,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md"
+    },
+    {
+      "cursor": 51,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md"
+    },
+    {
+      "cursor": 52,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md"
+    },
+    {
+      "cursor": 53,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md"
+    },
+    {
+      "cursor": 54,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md"
+    },
+    {
+      "cursor": 55,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H9_MERGE___QA.md"
+    },
+    {
+      "cursor": 56,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md"
+    },
+    {
+      "cursor": 57,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md"
+    },
+    {
+      "cursor": 58,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md"
+    },
+    {
+      "cursor": 59,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md"
+    },
+    {
+      "cursor": 60,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md"
+    },
+    {
+      "cursor": 61,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md"
+    },
+    {
+      "cursor": 62,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md"
+    },
+    {
+      "cursor": 63,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md"
+    },
+    {
+      "cursor": 64,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md"
+    },
+    {
+      "cursor": 65,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md"
+    },
+    {
+      "cursor": 66,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md"
+    },
+    {
+      "cursor": 67,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md"
+    },
+    {
+      "cursor": 68,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md"
+    },
+    {
+      "cursor": 69,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md"
+    },
+    {
+      "cursor": 70,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md"
+    },
+    {
+      "cursor": 71,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md"
+    },
+    {
+      "cursor": 72,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md"
+    },
+    {
+      "cursor": 73,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md"
+    },
+    {
+      "cursor": 74,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md"
+    },
+    {
+      "cursor": 75,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md"
+    },
+    {
+      "cursor": 76,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md"
+    },
+    {
+      "cursor": 77,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md"
+    },
+    {
+      "cursor": 78,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md"
+    },
+    {
+      "cursor": 79,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S2_DECISION_DOSSIER.md"
+    },
+    {
+      "cursor": 80,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S3_ARCHITECTURE_PROOF_HOOKS.md"
+    },
+    {
+      "cursor": 81,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T0_TASK_PACKET_FACTORY.md"
+    },
+    {
+      "cursor": 82,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md"
+    },
+    {
+      "cursor": 83,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md"
+    },
+    {
+      "cursor": 84,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md"
+    },
+    {
+      "cursor": 85,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md"
+    },
+    {
+      "cursor": 86,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md"
+    },
+    {
+      "cursor": 87,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md"
+    },
+    {
+      "cursor": 88,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "cursor": 89,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md"
+    },
+    {
+      "cursor": 90,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md"
+    },
+    {
+      "cursor": 91,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md"
+    },
+    {
+      "cursor": 92,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md"
+    },
+    {
+      "cursor": 93,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md"
+    },
+    {
+      "cursor": 94,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md"
+    },
+    {
+      "cursor": 95,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md"
+    },
+    {
+      "cursor": 96,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md"
+    },
+    {
+      "cursor": 97,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md"
+    },
+    {
+      "cursor": 98,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md"
+    },
+    {
+      "cursor": 99,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md"
+    },
+    {
+      "cursor": 100,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md"
+    },
+    {
+      "cursor": 101,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md"
+    },
+    {
+      "cursor": 102,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md"
+    },
+    {
+      "cursor": 103,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md"
+    },
+    {
+      "cursor": 104,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md"
+    }
+  ],
   "failed": [
     {
       "cursor": 0,
@@ -11,6 +1494,62 @@
       "cursor": 0,
       "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
       "reason": "Not a unified diff"
+    },
+    {
+      "cursor": 3,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md",
+      "reason": "Added line 76 outside allowed sections. allowed_new=[(49, 63), (96, 100)]"
+    },
+    {
+      "cursor": 4,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
+      "reason": "git apply failed: error: patch with only garbage at line 4"
+    },
+    {
+      "cursor": 4,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
+      "reason": "Diff targets do not match expected path. expected=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md old=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md new=None"
+    },
+    {
+      "cursor": 4,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
+      "reason": "Diff targets do not match expected path. expected=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md old=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md new=None"
+    },
+    {
+      "cursor": 4,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
+      "reason": "git apply failed: error: patch failed: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md:47\nerror: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md: patch does not apply"
+    },
+    {
+      "cursor": 5,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
+      "reason": "Diff targets do not match expected path. expected=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md old=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md new=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md"
+    },
+    {
+      "cursor": 5,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
+      "reason": "Diff targets do not match expected path. expected=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md old=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md new=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md"
+    },
+    {
+      "cursor": 5,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
+      "reason": "Diff targets do not match expected path. expected=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md old=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md new=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md"
+    },
+    {
+      "cursor": 5,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
+      "reason": "git apply failed: error: patch with only garbage at line 4"
+    },
+    {
+      "cursor": 6,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+      "reason": "git apply failed: error: patch with only garbage at line 4"
+    },
+    {
+      "cursor": 9,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md",
+      "reason": "Diff targets do not match expected path. expected=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md old=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md new=services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md"
     }
-  ]
+  ],
+  "in_progress": []
 }

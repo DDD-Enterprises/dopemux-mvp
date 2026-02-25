@@ -1,0 +1,29 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md
+@@ -41,8 +41,13 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. Scan all execution files for `.env` loading patterns: `dotenv.load_dotenv()`, `source .env`, `env_file:` in compose, `--env-file` CLI flags. For each loading point, record the file being loaded, the loading mechanism, and the file path with line range evidence.
++2. Map the config precedence chain: identify the order in which config sources are consulted (CLI args > env vars > .env file > config file defaults > hardcoded defaults). Record each layer in the chain with evidence from the code that implements the precedence.
++3. Extract all environment variable names consumed by the project: scan for `os.getenv()`, `os.environ[]`, `process.env.`, `${VAR}` in shell scripts, and `environment:` sections in compose files. For each variable, record the consumer (file and function), the default value (if any), and whether it is required or optional.
++4. Cross-reference discovered env vars against upstream `SECRETS_RISK_LOCATIONS.json` to tag sensitive variables. Cross-reference against `EXEC_BOOTSTRAP_COMMANDS.json` to identify which bootstrap commands set or consume specific env vars.
++5. Legacy Context is intent guidance only and is never evidence.
++6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++8. Attach evidence to every non-derived field and every relationship edge.
++9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++11. Emit exactly the declared outputs and no additional files.
+ 
+@@ -80,3 +85,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- Env var name is constructed dynamically (e.g., `os.getenv(f"{service}_PORT")`): emit with `var_name: UNKNOWN` and `status: dynamic_var_name` with evidence citing the expression.
++- Multiple `.env` files with conflicting variable values: emit all sources with `status: conflicting_defaults` and evidence from each file.
+ 

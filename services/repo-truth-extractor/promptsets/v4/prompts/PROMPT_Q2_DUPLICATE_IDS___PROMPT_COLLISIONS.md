@@ -38,12 +38,17 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan all normalized artifacts for duplicate IDs: within each artifact, check that every `id` field is unique. Across artifacts that share the same `id_rule` prefix, check for cross-artifact ID collisions.
+2. Identify prompt collisions: cases where two different extraction prompts produce items with the same ID, indicating overlapping extraction scope or non-deterministic ID generation.
+3. For each collision, record: the colliding IDs, the source artifacts, the source prompts/steps, and whether the colliding items have identical or divergent content.
+4. Classify collisions by severity: `harmless` (identical content, merge-safe), `conflict` (different content for same ID, requires resolution), or `schema_error` (ID format violates the declared `id_rule`).
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -78,6 +83,8 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- ID collision involves items from different phases (e.g., A-phase and C-phase): flag with `status: cross_phase_collision` as this likely indicates an id_rule design issue.
+- Duplicate ID caused by non-deterministic ID generation (different runs produce different IDs for same content): flag with `status: nondeterministic_id` and cite the varying inputs.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
