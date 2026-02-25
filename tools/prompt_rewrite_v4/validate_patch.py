@@ -84,21 +84,59 @@ def section_bounds(prompt_text: str, section_name: str) -> Optional[Tuple[int, i
     return (body_start, body_end)
 
 
-def hunk_ranges(diff_text: str) -> List[Tuple[int, int]]:
+def changed_line_numbers(diff_text: str) -> Tuple[List[int], List[int]]:
     """
-    Returns list of new-file line ranges (start, end) affected by each hunk, 1-based inclusive.
-    Uses the +start,+count in the hunk header.
+    Return (changed_old_lines, changed_new_lines), 1-based line numbers for actual edits only.
+    Context lines are ignored.
     """
-    ranges: List[Tuple[int, int]] = []
-    for line in diff_text.splitlines():
-        m = HUNK_RE.match(line)
+    old_changed: List[int] = []
+    new_changed: List[int] = []
+
+    lines = diff_text.splitlines()
+    i = 0
+    while i < len(lines):
+        m = HUNK_RE.match(lines[i])
         if not m:
+            i += 1
             continue
-        new_start = int(m.group(3))
+
+        old_line = int(m.group(1))
+        old_count = int(m.group(2) or "1")
+        new_line = int(m.group(3))
         new_count = int(m.group(4) or "1")
-        new_end = new_start + max(new_count, 1) - 1
-        ranges.append((new_start, new_end))
-    return ranges
+        i += 1
+
+        # Walk hunk body until next hunk header or next file header.
+        while i < len(lines) and not HUNK_RE.match(lines[i]) and not DIFF_OLD_RE.match(lines[i]) and not DIFF_FILE_RE.match(lines[i]):
+            line = lines[i]
+            if not line:
+                # Empty context line still advances both if it's context.
+                old_line += 1
+                new_line += 1
+                i += 1
+                continue
+
+            if line.startswith("\\"):
+                # "\ No newline at end of file" marker
+                i += 1
+                continue
+
+            if line.startswith(" "):
+                old_line += 1
+                new_line += 1
+            elif line.startswith("+") and not line.startswith("+++"):
+                new_changed.append(new_line)
+                new_line += 1
+            elif line.startswith("-") and not line.startswith("---"):
+                old_changed.append(old_line)
+                old_line += 1
+            else:
+                # Unexpected line prefix; be conservative: treat as context.
+                old_line += 1
+                new_line += 1
+            i += 1
+
+    return old_changed, new_changed
 
 
 def ranges_within(outer: Tuple[int, int], inner: Tuple[int, int]) -> bool:
@@ -128,23 +166,98 @@ def validate_patch(
             f"Diff targets do not match expected path. expected={expected_relpath} old={old_path} new={new_path}",
         )
 
-    # Determine allowed section body bounds in the ORIGINAL file.
-    ep_bounds = section_bounds(original_prompt_text, "Extraction Procedure")
-    fm_bounds = section_bounds(original_prompt_text, "Failure Modes")
-    if ep_bounds is None or fm_bounds is None:
+    # Determine allowed section body bounds in the ORIGINAL file (for deletions).
+    ep_bounds_old = section_bounds(original_prompt_text, "Extraction Procedure")
+    fm_bounds_old = section_bounds(original_prompt_text, "Failure Modes")
+    if ep_bounds_old is None or fm_bounds_old is None:
         return ValidationResult(False, "Missing required section headings for bounds check")
 
-    allowed = [ep_bounds, fm_bounds]
+    old_changed, new_changed = changed_line_numbers(diff_text)
 
-    # Check each hunk affects only allowed ranges in the new file.
-    # Conservative assumption: section headings are stable and line counts similar.
-    # This is fail-closed: if hunks are outside original section bounds, reject.
-    for r in hunk_ranges(diff_text):
-        if not any(ranges_within(a, r) for a in allowed):
-            return ValidationResult(
-                False,
-                f"Hunk range {r} touches outside allowed sections. allowed={allowed}",
-            )
+    # Apply patch in-memory to get patched content for new bounds.
+    orig_lines = original_prompt_text.splitlines()
+    out_lines: List[str] = []
+
+    lines = diff_text.splitlines()
+    i = 0
+    old_idx = 0  # 0-based index into orig_lines
+
+    while i < len(lines):
+        m = HUNK_RE.match(lines[i])
+        if not m:
+            i += 1
+            continue
+
+        old_start = int(m.group(1))  # 1-based
+        old_count = int(m.group(2) or "1")
+        new_start = int(m.group(3))  # unused for apply; informational
+        new_count = int(m.group(4) or "1")
+        i += 1
+
+        # Copy unchanged lines before this hunk.
+        target_old_idx = old_start - 1
+        if target_old_idx < old_idx:
+            return ValidationResult(False, "Patch apply failed in-memory: overlapping hunks")
+        out_lines.extend(orig_lines[old_idx:target_old_idx])
+        old_idx = target_old_idx
+
+        # Apply hunk body.
+        while i < len(lines) and not HUNK_RE.match(lines[i]) and not DIFF_OLD_RE.match(lines[i]) and not DIFF_FILE_RE.match(lines[i]):
+            line = lines[i]
+            if line.startswith("\\"):
+                i += 1
+                continue
+
+            if line.startswith(" "):
+                # Context: must consume one original line and emit it.
+                if old_idx >= len(orig_lines):
+                    return ValidationResult(False, "Patch apply failed in-memory: context past EOF")
+                out_lines.append(line[1:])
+                old_idx += 1
+            elif line.startswith("-") and not line.startswith("---"):
+                # Deletion: consume one original line, emit nothing.
+                if old_idx >= len(orig_lines):
+                    return ValidationResult(False, "Patch apply failed in-memory: delete past EOF")
+                old_idx += 1
+            elif line.startswith("+") and not line.startswith("+++"):
+                # Addition: emit added line, do not consume original.
+                out_lines.append(line[1:])
+            elif line == "":
+                # Empty context line: treat as context.
+                if old_idx >= len(orig_lines):
+                    return ValidationResult(False, "Patch apply failed in-memory: empty context past EOF")
+                out_lines.append("")
+                old_idx += 1
+            else:
+                # Unexpected prefix; be conservative and fail.
+                return ValidationResult(False, f"Patch apply failed in-memory: unexpected line '{line[:20]}'")
+
+            i += 1
+
+    # Copy remaining original lines.
+    out_lines.extend(orig_lines[old_idx:])
+    patched_text = "\n".join(out_lines) + ("\n" if original_prompt_text.endswith("\n") else "")
+
+    # Determine allowed section body bounds in the PATCHED file (for additions).
+    ep_bounds_new = section_bounds(patched_text, "Extraction Procedure")
+    fm_bounds_new = section_bounds(patched_text, "Failure Modes")
+    if ep_bounds_new is None or fm_bounds_new is None:
+        return ValidationResult(False, "Missing required section headings in patched file")
+
+    # Validate deletions against original bounds, additions against new bounds.
+    def in_allowed_old(line_no: int) -> bool:
+        return any(a[0] <= line_no <= a[1] for a in [ep_bounds_old, fm_bounds_old])
+
+    def in_allowed_new(line_no: int) -> bool:
+        return any(a[0] <= line_no <= a[1] for a in [ep_bounds_new, fm_bounds_new])
+
+    for ln in old_changed:
+        if not in_allowed_old(ln):
+            return ValidationResult(False, f"Deleted line {ln} outside allowed sections. allowed_old={[ep_bounds_old, fm_bounds_old]}")
+
+    for ln in new_changed:
+        if not in_allowed_new(ln):
+            return ValidationResult(False, f"Added line {ln} outside allowed sections. allowed_new={[ep_bounds_new, fm_bounds_new]}")
 
     return ValidationResult(True, "OK")
 
