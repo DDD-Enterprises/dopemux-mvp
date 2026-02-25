@@ -34,6 +34,8 @@ test('TaskSequencer.tsx has contextual aria-labels for buttons', () => {
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label="Current task progress"');
+  // Timer accessibility
+  expect(content).toContain('aria-label={`Time elapsed: ${Math.floor(taskTimer / 60)} ${Math.floor(taskTimer / 60) === 1 ? \'minute\' : \'minutes\'} and ${taskTimer % 60} ${taskTimer % 60 === 1 ? \'second\' : \'seconds\'}`}');
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
