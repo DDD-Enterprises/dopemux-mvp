@@ -9,3 +9,6 @@
 ## 2025-05-15 - [ADHD-Aware Feedback Loops]
 **Learning:** For users with ADHD, static timers can sometimes be overlooked ("time blindness"). Adding a subtle, non-distracting animation (like a slow pulse) to an active timer provides a continuous "live" signal that the session is ongoing, reducing the chance of losing focus on the current task.
 **Action:** Use subtle animations or pulsing effects for active status indicators and timers to maintain user engagement without being intrusive.
+## 2026-02-25 - [Timer Accessibility Pluralization]
+**Learning:** For ADHD-focused dashboards, timers are critical components that require accurate screen reader feedback. Using pluralization logic in ARIA labels (e.g., '1 minute' vs '2 minutes') ensures the UI is accessible and professional for users relying on assistive technology.
+**Action:** Always implement a helper like `getTimerAriaLabel` for any duration-based displays and apply it to components with `role="timer"`.
