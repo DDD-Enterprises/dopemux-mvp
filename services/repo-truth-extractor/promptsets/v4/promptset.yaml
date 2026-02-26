@@ -877,6 +877,9 @@ phases:
     - S1
     - S2
     - S3
+    - S4
+    - S5
+    - S6
     steps:
     - step_id: S0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md
@@ -915,3 +918,24 @@ phases:
       outputs:
       - ARCHITECTURE_PROOF_HOOKS.md
       - S3_ARCH_PROOF_HOOKS.md
+    - step_id: S4
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S4_TWO_PLANE_ARCHITECTURE.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TWO_PLANE_ARCHITECTURE_ANALYSIS.md
+      - S4_TWO_PLANE_ARCHITECTURE.md
+    - step_id: S5
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S5_TASK_ORCHESTRATOR_ANALYSIS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TASK_ORCHESTRATOR_SYNTHESIS.md
+      - S5_TASK_ORCHESTRATOR.md
+    - step_id: S6
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S6_LEANTIME_ANALYSIS.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - LEANTIME_INTEGRATION_SYNTHESIS.md
+      - S6_LEANTIME_SYNTHESIS.md
