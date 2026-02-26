@@ -1,6 +1,7 @@
 {
   "version": 1,
   "allowed_root_dirs": [
+    ".dopetask",
     ".taskx",
     ".claude",
     ".vibe",
@@ -47,6 +48,8 @@
     ".dopetask"
   ],
   "allowed_root_files": [
+    ".dopetaskroot",
+    ".dopetask-pin",
     ".gitmodules",
     ".taskxroot",
     ".taskx-pin",
@@ -154,6 +157,8 @@
     "uv.lock",
     "audit_prompts.py",
     "TASKX_INTEGRATION_ANALYSIS.md",
+    "DOPETASK_INTEGRATION_ANALYSIS.md",
+    "SUPERVISOR_INSTRUCTIONS_CHATGPT.md",
     "AUDIT_RESULTS.json",
     "COMPLETE_PR_WORKFLOW.md",
     "EVIDENCE_BASED_VERIFICATION.md",
