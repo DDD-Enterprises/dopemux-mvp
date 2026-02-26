@@ -45,17 +45,18 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan `scripts/**`, `services/**`, `docs/02-how-to/**`, `docs/03-reference/**`, and `compose.yml` as specified in the inputs section. Build a workflow inventory by identifying shell scripts, Makefiles, docker-compose service definitions, tmux session configs, and documented runbook procedures.
-2. For each workflow candidate, extract: file path, workflow type (script/compose/tmux/runbook), entry command or trigger, and a one-line summary. Classify by automation level (fully-automated, semi-automated, manual).
-3. Partition workflows deterministically for downstream W1-W5 extraction steps, grouping by service boundary and coordination domain. Assign stable partition IDs.
-4. Structure the output with clear inventory entries with evidence citations, partition assignments with rationale, and an explicit UNKNOWN section for files that may contain workflows but cannot be classified from available evidence.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Scan workflow sources (orchestration scripts, runbooks, CI workflows, compose, tmux sessions) targets; collect path, type, and content metadata for each artifact
+2. Classify each artifact by category relevant to the workflow sources (orchestration scripts, runbooks, CI workflows, compose, tmux sessions) domain
+3. Build WORKFLOW_PARTITIONS by grouping files into logical categories with rationale
+4. For each WORKFLOW_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
+5. For each WORKFLOW_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -90,8 +91,8 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Script files contain no recognizable workflow patterns (no commands, no documented steps): classify as `type: unknown` with evidence excerpt showing ambiguous content.
-- Compose file references external services not in `services/registry.yaml`: record as external dependency with `status: unregistered` and available evidence.
+- Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`
+- Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

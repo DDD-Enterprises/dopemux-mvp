@@ -40,17 +40,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream X-phase artifacts (inventory through doc map) as specified in the inputs section. Build a feature dependency graph by analyzing: code-level imports and calls between feature implementations, shared data stores, event-based coupling, configuration dependencies, and runtime service dependencies.
-2. Emit directed dependency edges between features and between features and critical infrastructure/services. Include runtime-mode and environment dependencies where observable (e.g., feature X only available in dev mode).
-3. Preserve cycle information: do not collapse conflicting edges. If circular dependencies exist, record the full cycle with evidence. Identify strongly connected components in the dependency graph.
-4. Structure the output as a Graph container with nodes (features) and edges (dependencies), evidence citations per edge, and an explicit UNKNOWN section for dependency relationships that cannot be confirmed.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the feature dependency graph partition as primary scan surface
+2. Extract feature dependency graph facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted feature dependency graph elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each FEATURE_DEPS item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -85,8 +86,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Circular dependency detected between features: preserve the full cycle in the graph with `cycle: true` edge attribute and list all participating features with evidence.
-- Dependency exists only in specific runtime modes or environments: record with `condition` field specifying the mode/environment and evidence of the conditional activation.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

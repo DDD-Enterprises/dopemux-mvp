@@ -96,11 +96,11 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream D-phase partition artifacts (`DOC_INDEX.partX.json`, `DOC_CONTRACT_CLAIMS.partX.json`, and any per-partition outputs from D1-D3). Validate each against its declared schema contract; record schema violations as QA issues.
-2. Merge partition artifacts into unified outputs: `DOC_INDEX.json` (all documents), `DOC_CONTRACT_CLAIMS.json` (all claims), `DOC_SUPERSESSION.json` (all supersession chains). Apply `itemlist_by_id` merge strategy with deterministic conflict resolution.
-3. Run deduplication: when the same document appears in multiple partition outputs, prefer the entry with the newer modification timestamp. If content differs materially (different claims or boundaries extracted), preserve both entries with distinct IDs and `status: duplicate_divergent`.
-4. Perform coverage validation: verify that every document in `DOC_INVENTORY.json` has a corresponding entry in `DOC_INDEX.json`; verify that every partition has at least one document; verify no pending/incomplete partitions remain. Emit `DOC_COVERAGE_REPORT.json` with pass/fail status per check.
-5. Generate `DUPLICATE_DRIFT_REPORT.json` identifying documents with overlapping content: same headings, similar normative claims, or near-identical token sequences. Flag pairs with `drift_type: content_overlap` and evidence from both documents.
+1. Load all D-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all DOC_* artifacts into DOC_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all D-Phase artifacts present, coverage complete, sort order deterministic; emit DOC_QA
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -142,8 +142,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Partition artifact file missing entirely: emit merged output without that partition's data and add `missing_inputs` entry; set coverage status to `incomplete` with the missing partition name.
-- Conflicting supersession chains (document A supersedes B, but B also claims to supersede A): emit both chains with `status: circular_supersession` and evidence from each declaration.
+- Missing D-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -49,19 +49,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Locate all compose files (`compose.yml`, `docker-compose*.yml`) within in-scope source roots and extract the top-level `services` mapping from each.
-2. For each declared service, extract explicit properties: `image`, `build`, `environment`/`env_file`, `ports`, `volumes`, `depends_on`, `networks`, `command`, `entrypoint`, and `healthcheck`. Record the source file path and line range as evidence for every property.
-3. Extract top-level `networks` and `volumes` definitions as separate graph nodes; link each service node to the networks and volumes it references via graph edges.
-4. Build the service dependency DAG from `depends_on` declarations; create a directed edge for each dependency with the condition (e.g., `service_healthy`, `service_started`) attached as edge metadata.
-5. Cross-reference extracted service names against `services/registry.yaml` (when present) and upstream `REPOCTRL_INVENTORY.json` to validate service identity and detect compose files not covered by the scan scope.
-6. Resolve environment variable references (`${VAR}`, `${VAR:-default}`) to variable names only; do not resolve values. Record each variable name with evidence from the compose file line where it appears.
-7. Legacy Context is intent guidance only and is never evidence.
-8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-10. Attach evidence to every non-derived field and every relationship edge.
-11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-13. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the compose service graph partition as primary scan surface
+2. Extract compose service graph facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted compose service graph elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each COMPOSE_SERVICE_GRAPH item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -96,8 +95,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Circular `depends_on` references: detect cycles in the service DAG and emit all cycle-participant services with `status: circular_dependency` and evidence citing each `depends_on` declaration in the cycle.
-- Multiple compose files with conflicting service definitions: when the same service name appears in more than one compose file, emit both with distinct IDs incorporating the source path and mark `status: needs_review`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

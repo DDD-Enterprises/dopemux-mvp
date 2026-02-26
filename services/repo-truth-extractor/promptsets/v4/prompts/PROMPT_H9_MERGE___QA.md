@@ -127,17 +127,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream H-phase artifacts (`HOME_INVENTORY.json`, `HOME_PARTITIONS.json`, `HOME_KEYS_SURFACE.json`, `HOME_REFERENCES.json`, `HOME_MCP_SURFACE.json`, `HOME_ROUTER_SURFACE.json`, `HOME_PROVIDER_LADDER_HINTS.json`, `HOME_LITELLM_SURFACE.json`, `HOME_PROFILES_SURFACE.json`, `HOME_TMUX_WORKFLOW_SURFACE.json`, `HOME_SQLITE_SCHEMA.json`). Validate each against declared schema contracts.
-2. Merge into `HOMECTRL_NORM_MANIFEST.json` using deterministic merge: sort keys, stable array ordering, union evidence by `(path, line_range, excerpt)`.
-3. Generate `HOMECTRL_QA.json` with: missing expected artifacts, empty artifacts, evidence quality warnings (items with `UNKNOWN` fields), and cross-artifact consistency checks (referenced paths exist in inventory, MCP servers referenced in profiles are defined).
-4. Validate no secret values leaked into any output artifact; scan merged output for patterns matching API keys, tokens, or passwords and flag any findings.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all H-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all HOME_* artifacts into HOMECTRL_NORM_MANIFEST using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all H-Phase artifacts present, coverage complete, sort order deterministic; emit HOMECTRL_QA
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -172,8 +173,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Upstream artifact missing entirely: list in `missing_expected_outputs` and set QA status to `incomplete`.
-- Secret value detected in merged output: immediately flag with `status: secret_leak_detected`, redact the value, and emit a QA error with the artifact and field path.
+- Missing H-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

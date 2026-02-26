@@ -38,11 +38,11 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Parse `Makefile` and `*.mk` files to extract all Make targets: target name, recipe commands (exact strings), and dependencies (prerequisite targets). Record each target with file path and line range evidence.
-2. Parse `package.json` `scripts` section to extract all npm script names and their command strings. Record each with file path and line range evidence.
-3. Scan `pyproject.toml` and `setup.py`/`setup.cfg` for Python CLI entrypoints (`[project.scripts]`, `console_scripts`), and extract the module:function mapping. Record with evidence.
-4. Extract compose service commands: parse `compose.yml` and `docker-compose*.yml` for `command`, `entrypoint`, and `build` directives. Record the exact command string per service with evidence.
-5. Identify tmux/orchestrator wrapper scripts that invoke multiple services: scan `scripts/` for scripts containing `tmux`, `tmuxinator`, or equivalent session management commands. Extract the services/commands launched per pane/window.
+1. Load upstream inventory and partitions; use the bootstrap commands partition as primary scan surface
+2. Extract bootstrap commands facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted bootstrap commands elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each BOOTSTRAP_COMMANDS item, populate `id`, required fields, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -84,8 +84,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Make recipe uses shell variable expansion or conditional logic that prevents static extraction of the command string: emit with `command: UNKNOWN` and `status: dynamic_recipe` with evidence.
-- npm script delegates to another script via `npm run <other>`: emit both the delegating script and the chain, with `delegation_target` field linking them.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
