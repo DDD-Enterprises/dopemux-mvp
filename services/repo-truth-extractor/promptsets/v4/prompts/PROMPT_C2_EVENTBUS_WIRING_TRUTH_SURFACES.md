@@ -56,19 +56,18 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan `src/**` and `services/**` for event bus implementations and adapters: classes or modules that provide `publish`, `emit`, `send`, `subscribe`, `on`, `listen`, or `register_handler` methods. For each bus component, record the class/module name, transport mechanism (Redis Pub/Sub, in-process, HTTP webhook, etc.), and file path with line range evidence.
-2. Extract all literal event names and topic strings by scanning for string constants passed to publish/emit/subscribe calls, topic configuration in YAML/JSON files, and enum definitions of event types. Record each event name with the declaring file path and line range.
-3. Identify all producer call sites: locations where events are published or emitted. For each producer, record the caller function/method, the event name or topic, the payload shape (if inferable from arguments), and the file path with line range evidence. Emit these as `EVENT_PRODUCERS.json` items.
-4. Identify all consumer registrations: locations where event handlers are registered via decorators (`@on_event`, `@subscribe`), method calls (`bus.subscribe(topic, handler)`), or configuration entries. For each consumer, record the handler function, the subscribed event name, and the file path with line range evidence. Emit these as `EVENT_CONSUMERS.json` items.
-5. Cross-reference producers against consumers to identify orphaned events (produced but never consumed) and unproduced subscriptions (consumed but never produced). Flag these with `status: orphaned_producer` or `status: unmatched_consumer` respectively.
-6. Cross-reference discovered bus components and event wiring against upstream `SERVICE_ENTRYPOINTS.json` and `CODE_PARTITIONS.json` to tag each item with its owning service and partition.
-7. Legacy Context is intent guidance only and is never evidence.
-8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-10. Attach evidence to every non-derived field and every relationship edge.
-11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-13. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the eventbus wiring partition as primary scan surface
+2. Extract eventbus wiring facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted eventbus wiring elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each EVENTBUS_SURFACES item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -103,8 +102,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Event name used in a publish call is a dynamic expression (variable, f-string, or concatenation) rather than a literal string: emit with `event_name: UNKNOWN` and `status: dynamic_topic` with evidence citing the expression.
-- Consumer handler registered for a wildcard or pattern topic (e.g., `events.*`): emit with the pattern as `event_name` and `status: wildcard_subscription` with evidence.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

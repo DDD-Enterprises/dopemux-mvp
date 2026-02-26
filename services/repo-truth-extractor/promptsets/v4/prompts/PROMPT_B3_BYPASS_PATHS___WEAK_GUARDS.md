@@ -40,11 +40,11 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream B0, B1, and B2 artifacts to establish the full boundary enforcement landscape and guardrail surface.
-2. Identify potential bypass paths: locate code paths that reach sensitive operations without passing through a declared boundary enforcement point. Compare call graphs against B1 enforcement point locations.
-3. Detect weak guards: find enforcement points with catch-all exception handlers, overly broad conditions (e.g., `if True`, `pass`), or commented-out checks. Record the weakness type and evidence.
-4. Assess severity for each bypass or weak guard: classify as `critical` (authentication/authorization bypass), `high` (data validation skip), `medium` (rate limit circumvention), or `low` (logging gap) based on the sensitivity of the unguarded operation.
-5. Cross-reference against B2 guardrails to identify guardrails that can be circumvented by the discovered bypass paths.
+1. Load upstream B0-B2 artifacts; scan for paths that bypass boundary enforcement
+2. Identify weak guards: locate checks that can be circumvented via env vars, debug flags, or missing validation
+3. Trace bypass paths end-to-end: for each bypass, document the entry point, the skipped check, and the unguarded action
+4. Assess bypass severity: classify as critical (security bypass), high (auth bypass), medium (validation skip), or low (cosmetic)
+5. For each BYPASS_PATHS item, populate `id`, bypass description, severity, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -86,8 +86,8 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Bypass path inferred from missing enforcement without positive evidence of an alternate route: do not emit; only report bypass when there is evidenced alternate path or evidenced missing check near a sensitive operation.
-- Severity classification uncertain due to unclear sensitivity of the target operation: emit with `severity: UNKNOWN` and `status: needs_review`.
+- Intentional bypass: if a bypass is clearly intentional (e.g., admin override), emit with `status: intentional`
+- Test-only bypass: if a bypass only exists in test code, emit with `scope: test_only`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

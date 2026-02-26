@@ -43,11 +43,11 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 #### `.gitmodules`
 ```diff
 - [submodule "vendor/taskx"]
--    path = vendor/taskx
--    url = https://github.com/hu3mann/taskX.git
+-   path = vendor/taskx
+-   url = https://github.com/hu3mann/taskX.git
 + [submodule "vendor/dopetask"]
-+    path = vendor/dopetask
-+    url = https://github.com/hu3mann/dopetask.git
++   path = vendor/dopetask
++   url = https://github.com/hu3mann/dopetask.git
 ```
 
 ### 3. Script Updates

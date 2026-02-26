@@ -47,17 +47,18 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
     - `required_item_fields`: `id, status, checks, issues, evidence`
 
 ## Extraction Procedure
-1. Load all upstream Q-phase outputs (`QA_RUN_MANIFEST.json`, `QA_MISSING_ARTIFACTS.json`, `QA_PROMPT_COLLISIONS.json`, `QA_NORM_DRIFT_REPORT.json`). Merge into `PIPELINE_DOCTOR_REPORT.json` with deterministic ordering.
-2. Generate `QA_SERVICE_COVERAGE.json`: for each service in `services/registry.yaml`, determine which extraction phases produced artifacts referencing that service. Flag services with no coverage as `uncovered`.
-3. Compute pipeline health metrics: overall artifact completion rate, collision severity distribution, drift severity distribution, and recovery feasibility summary.
-4. Identify systemic issues: patterns across multiple Q-phase reports (e.g., all D-phase artifacts have truncation, all event-related artifacts have ID collisions) and aggregate into a `systemic_issues` section.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all Q-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all QA_* artifacts into PIPELINE_DOCTOR_REPORT using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all Q-Phase artifacts present, coverage complete, sort order deterministic; emit QA_SERVICE_COVERAGE
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -92,8 +93,8 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- All Q-phase inputs missing (no QA was run): emit empty doctor report with `status: no_qa_data` and `missing_inputs` listing all expected Q-phase artifacts.
-- Service coverage check finds services not referenced by any artifact: emit with `coverage_status: orphaned_service` and evidence from `registry.yaml`.
+- Missing Q-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

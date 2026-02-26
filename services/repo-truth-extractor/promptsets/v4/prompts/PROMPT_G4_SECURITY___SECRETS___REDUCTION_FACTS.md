@@ -41,17 +41,18 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan for secret storage patterns: `.env` files, `*.env.*` variants, credential configuration files, key stores, and vault references. Record the path patterns and loading mechanisms only (never actual secret values). Evidence must cite the file and line range of the storage reference.
-2. Extract secrets reduction facts: mechanisms that minimize secret exposure, including environment variable injection at runtime (compose `env_file`), secret rotation scripts, credential helper configurations, and vault integration patterns. Record each mechanism with evidence.
-3. Identify secret scanning configurations: `.gitleaks.toml`, `trufflehog` configs, GitHub secret scanning settings, and pre-commit hooks that detect leaked secrets. Record the tool, patterns scanned, and enforcement location.
-4. Cross-reference discovered secret patterns against upstream `SECRETS_RISK_LOCATIONS.json` to validate coverage: every secret risk location should have a corresponding reduction mechanism or a `status: unmitigated` flag.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the security, secrets, and reduction facts partition as primary scan surface
+2. Extract security, secrets, and reduction facts facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted security, secrets, and reduction facts elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each GOV_SECRETS_SURFACE item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -86,8 +87,8 @@ Focus on CI gates, policy enforcement, and governance drift risks.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Secret value accidentally appears in a non-secret file (e.g., hardcoded in source): do NOT emit the secret value; emit only the file path, line range, and `status: hardcoded_secret_detected` with a redacted excerpt.
-- Secret management uses an external vault service with no local configuration: emit with `storage_type: external_vault` and `config: UNKNOWN` with `missing_evidence_reason: external_service`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
