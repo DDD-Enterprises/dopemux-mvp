@@ -111,7 +111,7 @@ class EnhancedConPortServer:
         # Configuration
         self.postgres_url = os.getenv(
             'DATABASE_URL',
-            'postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/conport'  # pragma: allowlist secret
+            'postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph'  # pragma: allowlist secret
         )
         self.redis_url = os.getenv('REDIS_URL', 'redis://redis-primary:6379')
 

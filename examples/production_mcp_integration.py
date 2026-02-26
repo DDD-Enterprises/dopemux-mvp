@@ -34,7 +34,7 @@ class ProductionMCPEventIntegrator:
 
         # MCP service endpoints
         self.services = {
-            'conport': 'http://localhost:3004',
+            'conport': 'http://localhost:3005',
             'taskmaster': 'http://localhost:3005',
             'zen': 'http://localhost:3003',
             'pal': 'http://localhost:3003'
@@ -339,7 +339,7 @@ async def main():
     print("🏭 Production MCP Event Integration")
     print("=" * 50)
     print("This demo shows integration with real running MCP services:")
-    print("• ConPort memory system (localhost:3004)")
+    print("• ConPort memory system (localhost:3005)")
     print("• TaskMaster AI (localhost:3005)")
     print("• Zen multi-model (localhost:3003)")
     print("• PAL apilookup docs (localhost:3003)")

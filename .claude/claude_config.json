@@ -1,17 +1,8 @@
 {
   "mcpServers": {
     "conport": {
-      "type": "stdio",
-      "command": "docker",
-      "args": [
-        "exec",
-        "-i",
-        "mcp-conport",
-        "uvx",
-        "--from",
-        "context-portal-mcp",
-        "conport-mcp"
-      ],
+      "type": "sse",
+      "url": "http://localhost:3005/mcp",
       "env": {
         "DOPEMUX_INSTANCE_ID": "main",
         "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
@@ -120,7 +111,7 @@
         "/app/conport_mcp_stdio.py"
       ],
       "env": {
-        "CONPORT_URL": "http://localhost:3004"
+        "CONPORT_URL": "http://localhost:3005"
       }
     },
     "exa": {

@@ -60,7 +60,7 @@ class HealthChecker:
             },
             'conport': {
                 'type': 'http',
-                'url': 'http://localhost:3004/health',
+                'url': 'http://localhost:3005/health',
                 'container': 'conport'
             },
             'zen': {
@@ -282,10 +282,10 @@ class HealthChecker:
             # Try to connect via ConPort API if available
             try:
                 async with httpx.AsyncClient(timeout=5) as client:
-                    response = await client.get("http://localhost:3004/health")
+                    response = await client.get("http://localhost:3005/health")
                     if response.status_code == 200:
                         # Try a basic ConPort operation
-                        response = await client.get("http://localhost:3004/api/status")
+                        response = await client.get("http://localhost:3005/api/status")
                         return response.status_code in [200, 404]  # 404 is ok for basic connectivity
             except Exception as e:
                 pass

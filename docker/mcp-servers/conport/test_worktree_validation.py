@@ -19,7 +19,7 @@ import asyncpg
 # Database connection
 DATABASE_URL = os.getenv(
     'DATABASE_URL',
-    'postgresql://dopemux:dopemux_secure_2024_unified@localhost:5432/conport'
+    'postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph'
 )
 
 async def get_db_connection():
