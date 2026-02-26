@@ -1,3 +1,15 @@
+---
+id: TP-DOPECONTEXT-CTX3-0003
+title: Tp Dopecontext Ctx3 0003
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-26'
+last_review: '2026-02-26'
+next_review: '2026-05-27'
+prelude: Tp Dopecontext Ctx3 0003 (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Task Packet: TP-DOPECONTEXT-CTX3-0003 · Dope-Context · docs_search Embedding Space + Provenance
 
 ## Objective
