@@ -730,6 +730,8 @@ async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeyp
     _, kwargs = embed_mock.call_args
     assert kwargs["model"] == "voyage-context-3"
     assert kwargs["input_type"] == "query"
+    assert "chunks" in kwargs
+    assert len(kwargs["chunks"]) == 1
 
 
 @pytest.mark.anyio
