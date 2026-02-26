@@ -43,12 +43,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, risk, severity, location, evidence`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load all relevant merged phase artifacts as synthesis inputs for risk register top-20
+2. Synthesize RISK_REGISTER_TOP20: combine extracted facts into a coherent truth document organized by domain category
+3. For each element, produce prose summary with: what it does, where configured, dependencies, and risks
+4. Cross-reference with governance and QA artifacts to annotate enforcement and coverage status
+5. Embed evidence citations as inline references throughout the document
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -83,6 +89,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header
+- Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

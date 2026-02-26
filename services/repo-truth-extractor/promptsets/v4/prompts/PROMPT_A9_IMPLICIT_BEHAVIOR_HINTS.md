@@ -52,12 +52,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load all upstream A-Phase artifacts (A0-A8); use the full repo control inventory as scan surface for implicit behavior discovery
+2. Scan instruction files and config for implicit behaviors: defaults not documented, fallback chains, silent retries, auto-migrations
+3. Cross-reference declared behavior with actual code to find undocumented side effects
+4. For each implicit behavior, assess risk: classify impact if the behavior changes unexpectedly
+5. For each IMPLICIT_BEHAVIOR_HINTS item, populate `id`, behavior description, risk, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -92,6 +98,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Intentional undocumented behavior: if a behavior appears intentionally undocumented, emit with `status: likely_intentional`
+- Version-dependent behavior: if behavior depends on a specific version, emit with `version_constraint` and evidence
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
