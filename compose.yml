@@ -248,6 +248,8 @@ services:
       - QDRANT_URL=http://mcp-qdrant:6333
     ports:
       - "3004:3004"
+      - "3005:3005"
+      - "4004:4004"
       - "4004:4004"  # Info server for service discovery
     depends_on:
       - postgres
