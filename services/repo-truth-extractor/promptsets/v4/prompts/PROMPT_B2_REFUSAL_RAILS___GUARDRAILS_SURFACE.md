@@ -39,17 +39,18 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream B0 and B1 artifacts to identify known boundary enforcement points and their locations.
-2. Scan for refusal patterns: identify code paths that explicitly deny, reject, or refuse requests (HTTP 403/401, exception raises, early returns with error messages). Record the refusal condition and response with evidence.
-3. Extract guardrail configurations: rate limiters, input validators, size limits, content filters, and safety checks. Record threshold values, enforcement locations, and configuration sources.
-4. Map each guardrail to the boundary it enforces by cross-referencing with B1 enforcement points. Identify guardrails that operate independently of declared boundaries.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the refusal rails and guardrails partition as primary scan surface
+2. Extract refusal rails and guardrails facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted refusal rails and guardrails elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each REFUSAL_RAILS item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -84,8 +85,8 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Guardrail with configurable threshold but no evidence of the configured value: emit with threshold set to `UNKNOWN` and evidence citing the config reference without resolved value.
-- Refusal pattern detected in dead code or unreachable paths: emit with `status: unreachable` and evidence explaining why the path appears unused.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

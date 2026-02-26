@@ -43,17 +43,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan `extraction/**`, `docs/**`, and `services/repo-truth-extractor/**` as specified in the inputs section. Build a freeze file index by enumerating all norm and QA artifacts produced across all pipeline phases (A/H/D/C/E/W/B/G/Q/R/X/T/Z), recording file path, artifact name, writer step ID, and file size.
-2. Compute SHA-256 checksums for every artifact in the freeze index. Record the checksum alongside the artifact metadata for downstream verification. Use deterministic file reading (binary mode, no encoding normalization).
-3. Identify expected-but-missing artifacts by cross-referencing the `artifacts.yaml` manifest against actual files present. Record each missing artifact with its expected writer step ID and phase.
-4. Structure the output with clear per-artifact index entries with checksums, a missing-artifacts section with evidence of expected locations, and an explicit UNKNOWN section for files that cannot be classified as pipeline artifacts.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all finalized extraction artifacts as input for freeze inventory and checksums
+2. Compute checksums and integrity metadata for FREEZE_INVENTORY
+3. Build FREEZE_INVENTORY: compile all required components with provenance tracking
+4. Validate completeness: verify all expected artifacts are present and checksums match
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -88,8 +89,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Artifact file is present but has zero bytes or is corrupted (checksum of empty content): record with `status: empty_or_corrupt` and the computed checksum; do not silently exclude.
-- Expected phase directory does not exist (phase was not executed): record all expected artifacts for that phase as `status: phase_not_executed` with evidence from `artifacts.yaml`.
+- Missing artifact for freeze: if a required artifact is absent, record gap with `status: incomplete_freeze`
+- Checksum mismatch: if an artifact changed after freeze, flag with `status: post_freeze_mutation`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

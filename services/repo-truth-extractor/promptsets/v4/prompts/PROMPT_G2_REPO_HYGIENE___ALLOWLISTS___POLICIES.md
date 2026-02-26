@@ -39,17 +39,18 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan for allowlist and blocklist files: `.gitignore`, `.dockerignore`, `.eslintignore`, `.prettierignore`, `CODEOWNERS`, and any `*allowlist*` or `*blocklist*` files. Extract the patterns and their scope with file path and line range evidence.
-2. Extract repository hygiene policies: branch naming conventions, commit message requirements (conventional commits), PR template requirements, merge strategy (squash/rebase/merge), and any documented review requirements.
-3. Identify automated hygiene enforcement: bots (Dependabot, Renovate), scheduled workflows that clean up stale branches or PRs, and any scripts that enforce naming or formatting conventions.
-4. Cross-reference hygiene policies against actual CI enforcement to identify policies that are documented but not enforced (aspirational) vs actively enforced via gates.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the repo hygiene and allowlists partition as primary scan surface
+2. Extract repo hygiene and allowlists facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted repo hygiene and allowlists elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each GOV_HYGIENE_POLICIES item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -84,8 +85,8 @@ Focus on CI gates, policy enforcement, and governance drift risks.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Hygiene policy stated in documentation but no corresponding CI gate or hook enforces it: emit with `enforcement_status: unenforced` and evidence from the documentation.
-- Allowlist pattern uses regex or glob syntax that is ambiguous across tools: emit with the exact pattern and `status: needs_review` noting the potential interpretation differences.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -37,17 +37,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Aggregate ConPort-specific runtime data from M0 (file inventory), M1 (schema snapshots), and M2 (table counts) into a unified ConPort export summary. Reference each upstream item by its ID.
-2. Extract ConPort config surface: connection parameters (host, port, database name - never passwords), schema version references, and migration status indicators. Record with evidence from config files.
-3. Summarize ConPort operational state: total tables, total rows across tables, schema version, and last migration timestamp (if available from schema metadata).
-4. Cross-reference against upstream `REPO_COMPOSE_SERVICE_GRAPH.json` to validate ConPort service configuration consistency.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load runtime state and configuration as input for conport export (safe)
+2. Extract conport export (safe) data: query live state, sanitize sensitive values, and capture metadata
+3. Build CONPORT_EXPORT: compile extracted data with timestamps and provenance
+4. Validate export safety: ensure no secrets or sensitive data in output; redact if found
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -82,8 +83,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- ConPort database not found in M0 inventory: emit with `status: not_discovered` and `missing_evidence_reason: no_conport_db_in_inventory`.
-- ConPort schema version cannot be determined from metadata: emit with `schema_version: UNKNOWN` and evidence.
+- Runtime unavailable: if the target service is not running, emit with `status: service_offline` and skip
+- Sensitive data in export: if sensitive data is detected, replace with `REDACTED` and flag with `status: redacted`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

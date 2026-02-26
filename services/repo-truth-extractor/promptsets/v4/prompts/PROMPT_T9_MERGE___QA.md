@@ -77,17 +77,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream T-phase artifacts (T0-T5 outputs) as specified in the inputs section. Merge all Phase T packet artifacts into canonical outputs by deterministic union of items keyed by `tp_id`.
-2. Run QA validation: check required schema fields for every packet, validate implementer target, verify evidence paths exist in declared authority inputs, and confirm acceptance/rollback/stop-condition completeness.
-3. Emit missing-evidence list, unresolved-collision list, and packet counts by priority and dependency tier. Fail closed (emit error in QA output) if required canonical outputs cannot be produced.
-4. Structure the output with merged packet index, QA results by check type, summary statistics, and an explicit UNKNOWN/gaps section for areas where QA cannot be completed due to missing inputs.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all T-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all TASK_* artifacts into TASK_PACKETS_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all T-Phase artifacts present, coverage complete, sort order deterministic; emit TASK_PACKETS_QA
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -122,8 +123,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Merge produces duplicate `tp_id` values from different T-phase steps: apply T4 collision resolution rules and record the merge decision with evidence.
-- Required canonical outputs cannot be produced due to missing upstream artifacts: emit partial outputs with `status: incomplete` and detailed `missing_inputs` section per canonical output.
+- Missing T-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -46,20 +46,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan in-scope roots for proxy/gateway config files (nginx, envoy, traefik, caddy, MCP wrapper scripts).
-2. Cross-reference `REPO_MCP_SERVER_DEFS.json` to identify which MCP servers have an intermediary proxy layer.
-3. Extract endpoint URIs, listen ports, and route rules from each discovered proxy config with evidence.
-4. Map upstream targets by matching proxy backends to server defs or `services/registry.yaml` entries.
-5. Extract authentication method per route (API key, OAuth, mTLS, none) only when explicitly declared.
-6. Identify multiplexing or fan-out patterns where one proxy endpoint dispatches to multiple MCP servers.
-7. Resolve config layering: compose overrides, env-var substitution, and wrapper-script indirection.
-8. Legacy Context is intent guidance only and is never evidence.
-9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-10. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-11. Attach evidence to every non-derived field and every relationship edge.
-12. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-14. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the MCP proxy partition as primary scan surface
+2. Extract MCP proxy facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted MCP proxy elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each MCP_PROXY_SURFACE item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -94,6 +92,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
