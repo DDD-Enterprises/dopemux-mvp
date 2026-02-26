@@ -28,12 +28,18 @@ import click
 try:
     from dotenv import load_dotenv
     _DOTENV_AVAILABLE = True
-except ImportError:  # pragma: no cover - optional dependency
+except ImportError:  # pragma: no cover
     _DOTENV_AVAILABLE = False
 
     def load_dotenv(*args, **kwargs):  # type: ignore[override]
         """Fallback load_dotenv when python-dotenv is unavailable."""
         return False
+
+# Import RoutingConfig for mode-based behavior
+try:
+    from .routing_config import RoutingConfig
+except ImportError:  # pragma: no cover
+    RoutingConfig = None
 
 from rich.live import Live
 from rich.panel import Panel
@@ -706,6 +712,35 @@ def start(
         Automatically detects running instances and creates isolated worktrees
         for parallel ADHD-optimized development workflows.
     """
+    
+    def _ensure_env_consistent_with_mode(final_mode: str) -> None:
+        """Ensure environment variables are consistent with routing mode.
+        
+        Prevents stale proxy env vars when falling back to subscription mode.
+        """
+        if final_mode == "subscription":
+            # Unset proxy variables to ensure direct connection
+            env_vars_to_unset = ["ANTHROPIC_BASE_URL", "DOPEMUX_ROUTING_MODE"]
+            for var in env_vars_to_unset:
+                if var in os.environ:
+                    del os.environ[var]
+            
+            # Only unset ANTHROPIC_API_KEY if we set it (marked by DOPEMUX_SET_ANTHROPIC_API_KEY)
+            if os.environ.get("DOPEMUX_SET_ANTHROPIC_API_KEY") == "1":
+                if "ANTHROPIC_API_KEY" in os.environ:
+                    del os.environ["ANTHROPIC_API_KEY"]
+                if "DOPEMUX_SET_ANTHROPIC_API_KEY" in os.environ:
+                    del os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"]
+                    
+        elif final_mode == "api":
+            # Ensure API mode variables are set
+            if "DOPEMUX_ROUTING_MODE" not in os.environ:
+                os.environ["DOPEMUX_ROUTING_MODE"] = "api"
+            
+            # Mark that we're managing the API key
+            if "ANTHROPIC_API_KEY" in os.environ:
+                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
+    
     legacy_value = legacy_kwargs.get("claude_router")
     if legacy_value is not None:
         use_claude_router = legacy_value
@@ -720,6 +755,97 @@ def start(
             validate_agents_in_workspace(workspace_root)
     except Exception as e:
         console.logger.warning(f"Agent validation warning: {e}")
+
+    # ── Routing mode from config (replaces legacy flags) ───────────────
+    routing_mode = None
+    routing_ports = None
+    routing_config = None
+    
+    if RoutingConfig is not None:
+        try:
+            routing_config = RoutingConfig.load_default()
+            routing_mode = routing_config.get_mode()
+            routing_ports = routing_config.get_ports()
+            console.logger.info(f"[blue]📋 Routing mode: {routing_mode}[/blue]")
+        except Exception as e:
+            console.logger.warning(f"[yellow]⚠️  Could not load routing config: {e}[/yellow]")
+            console.logger.info("[dim]Falling back to legacy flag behavior[/dim]")
+    
+    # Warn about deprecated flags when routing mode is available
+    deprecated_flags_used = any([use_grok, use_codex, use_altp, use_alt_routing, use_claude_router])
+    if deprecated_flags_used and routing_mode is not None:
+        console.logger.warning("[yellow]⚠️  Deprecated flags detected (--grok/--codex/--altp/--alt-routing/--claude-router)[/yellow]")
+        console.logger.info("[dim]Prefer: dopemux routing mode api|subscription[/dim]")
+
+    # ── Handle routing mode: api (proxy through CCR/LiteLLM) ─────────
+    if routing_mode == "api" and not deprecated_flags_used:
+        console.logger.info("[blue]🔄 Routing mode 'api': Starting services and configuring proxy[/blue]")
+        
+        # Ensure services are installed and running
+        try:
+            from .launchd_services import LaunchdServiceManager
+            service_manager = LaunchdServiceManager.get_instance()
+            
+            # Check if services are running, start if not
+            status = service_manager.get_service_status()
+            litellm_running = status.get("litellm", {}).get("status") == "running"
+            ccr_running = status.get("ccr", {}).get("status") == "running"
+            
+            if not litellm_running or not ccr_running:
+                console.logger.info("[blue]🚀 Ensuring routing services are running...[/blue]")
+                service_manager.install_services()
+                service_manager.start_services()
+                time.sleep(2)  # Give services time to start
+            
+            # Verify services are healthy
+            health = service_manager.check_health()
+            litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
+            ccr_healthy = health.get("ccr", {}).get("status") == "healthy"
+            
+            if not litellm_healthy or not ccr_healthy:
+                error_msg = []
+                if not litellm_healthy:
+                    error_msg.append(f"LiteLLM unhealthy: {health.get('litellm', {}).get('error', 'unknown')}")
+                if not ccr_healthy:
+                    error_msg.append(f"CCR unhealthy: {health.get('ccr', {}).get('error', 'unknown')}")
+                raise click.ClickException(f"Routing services not healthy: {', '.join(error_msg)}")
+                
+            console.logger.info("[green]✅ Routing services healthy[/green]")
+            
+        except Exception as e:
+            console.logger.error(f"[red]❌ Failed to start routing services: {e}[/red]")
+            console.logger.info("[yellow]Falling back to direct Anthropic connection[/yellow]")
+            routing_mode = "subscription"
+            # Ensure env vars are cleaned up immediately
+            _ensure_env_consistent_with_mode(routing_mode)
+        
+        # Configure environment for API mode
+        if routing_mode == "api":
+            ccr_port = routing_ports["ccr"]
+            ccr_api_key = os.getenv("DOPEMUX_CCR_API_KEY")
+            
+            # Set environment variables for Claude Code to use CCR
+            os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{ccr_port}"
+            if ccr_api_key:
+                os.environ["ANTHROPIC_API_KEY"] = ccr_api_key
+                # Mark that we set this key so we can clean it up if needed
+                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
+                console.logger.info(f"[dim]✓ CCR API key configured[/dim]")
+            else:
+                console.logger.warning("[yellow]⚠️  DOPEMUX_CCR_API_KEY not set in routing.env[/yellow]")
+            
+            console.logger.info(f"[dim]✓ Claude Code → CCR (127.0.0.1:{ccr_port}) → LiteLLM[/dim]")
+            
+            # Mark that we're using routing
+            os.environ["DOPEMUX_ROUTING_MODE"] = "api"
+            
+    # ── Handle routing mode: subscription (direct to Anthropic) ──────
+    elif routing_mode == "subscription" and not deprecated_flags_used:
+        console.logger.info("[blue]📋 Routing mode 'subscription': Direct Anthropic connection[/blue]")
+        
+        # Ensure env vars are consistent with subscription mode
+        _ensure_env_consistent_with_mode(routing_mode)
+        console.logger.info("[dim]✓ Claude Code → Anthropic (direct)[/dim]")
 
     # ── Handle --grok / --codex / --altp provider routing ───────────────
     provider_proxy_started = False
@@ -7294,6 +7420,17 @@ dopemux tmux theme neon
     
     console.logger.info(Markdown(help_text))
 
+
+# Register routing commands
+def _register_routing_commands():
+    try:
+        from .routing_cli import routing
+        cli.add_command(routing, "routing")
+    except Exception as e:
+        # Graceful degradation if routing module has issues
+        logger.warning(f"Failed to register routing commands: {e}")
+
+_register_routing_commands()
 
 def main():
     """Main entry point."""

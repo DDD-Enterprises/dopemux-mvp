@@ -104,6 +104,7 @@ celerybeat.pid
 .env.conport
 .venv
 .taskx_venv
+.dopetask_venv
 .venv-litellm
 env/
 venv/
@@ -305,15 +306,25 @@ reports/g34/*.txt
 reports/g33/baseline_*.txt
 reports/g33/post_*.txt
 
-# TaskX generated outputs
+# TaskX generated outputs (legacy)
 out/taskx_doctor/
 out/taskx_project_shell/
 out/taskx_project_upgrade/
 
-# TaskX instruction generation artifacts
+# dopeTask generated outputs
+out/dopetask_doctor/
+out/dopetask_project_shell/
+out/dopetask_project_upgrade/
+
+# TaskX instruction generation artifacts (legacy)
 .taskx/instructions/PROJECT_INIT_REPORT.md
 .taskx/instructions/taskx_bundle.yaml
 .taskx/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt
+
+# dopeTask instruction generation artifacts
+.dopetask/instructions/PROJECT_INIT_REPORT.md
+.dopetask/instructions/dopetask_bundle.yaml
+.dopetask/instructions/generated/SUPERVISOR_PRIMING_PROMPT.txt
 
 # Local backups
 .claude/*.bak_*
@@ -324,3 +335,14 @@ docs/planes/pm/_evidence/**.outputs/
 # Local/transient output
 pbcopy
 vibeOut.txt
+
+# Proof bundles
+proof/
+
+# Router artifacts
+services/router/
+
+# Generated proof artifacts
+proof/
+.taskx/proof/
+.dopetask/proof/
