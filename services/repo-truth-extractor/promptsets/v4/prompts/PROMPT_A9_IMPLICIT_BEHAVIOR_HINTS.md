@@ -52,11 +52,11 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan all in-scope config files for if-file-exists toggles, config search order declarations, and default path fallback chains. Record each implicit behavior trigger with file path and line range evidence.
-2. Extract environment variable toggles that alter runtime behavior (e.g., `DEBUG=1`, `FEATURE_X_ENABLED`, `USE_LOCAL_DB`) by scanning shell scripts, Dockerfiles, compose files, and Python/JS entry points for conditional env-var checks.
-3. Identify hidden coupling points: cases where one component's behavior changes based on the presence or configuration of another component, as explicitly documented in comments, README, or config files.
-4. Extract default path assumptions (e.g., `~/.config/app/`, `/tmp/app-state/`, `./data/`) that are hardcoded or conditionally resolved, recording the exact code or config line as evidence.
-5. Cross-reference discovered hints against upstream artifacts (`REPO_HOOKS_SURFACE.json`, `REPO_COMPOSE_SERVICE_GRAPH.json`, `REPO_TASKX_SURFACE.json`) to identify implicit behaviors that span multiple components.
+1. Load all upstream A-Phase artifacts (A0-A8); use the full repo control inventory as scan surface for implicit behavior discovery
+2. Scan instruction files and config for implicit behaviors: defaults not documented, fallback chains, silent retries, auto-migrations
+3. Cross-reference declared behavior with actual code to find undocumented side effects
+4. For each implicit behavior, assess risk: classify impact if the behavior changes unexpectedly
+5. For each IMPLICIT_BEHAVIOR_HINTS item, populate `id`, behavior description, risk, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -98,8 +98,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Implicit behavior inferred from code patterns without explicit documentation: do not emit; only extract hints that are explicitly stated in comments, README, config files, or docstrings.
-- Ambiguous toggle semantics (unclear if env var enables or disables a feature): emit with `status: needs_review` and evidence citing the ambiguous source.
+- Intentional undocumented behavior: if a behavior appears intentionally undocumented, emit with `status: likely_intentional`
+- Version-dependent behavior: if behavior depends on a specific version, emit with `version_constraint` and evidence
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

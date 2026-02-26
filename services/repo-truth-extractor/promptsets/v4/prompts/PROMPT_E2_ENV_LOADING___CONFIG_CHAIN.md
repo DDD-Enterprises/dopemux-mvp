@@ -39,17 +39,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan all execution files for `.env` loading patterns: `dotenv.load_dotenv()`, `source .env`, `env_file:` in compose, `--env-file` CLI flags. For each loading point, record the file being loaded, the loading mechanism, and the file path with line range evidence.
-2. Map the config precedence chain: identify the order in which config sources are consulted (CLI args > env vars > .env file > config file defaults > hardcoded defaults). Record each layer in the chain with evidence from the code that implements the precedence.
-3. Extract all environment variable names consumed by the project: scan for `os.getenv()`, `os.environ[]`, `process.env.`, `${VAR}` in shell scripts, and `environment:` sections in compose files. For each variable, record the consumer (file and function), the default value (if any), and whether it is required or optional.
-4. Cross-reference discovered env vars against upstream `SECRETS_RISK_LOCATIONS.json` to tag sensitive variables. Cross-reference against `EXEC_BOOTSTRAP_COMMANDS.json` to identify which bootstrap commands set or consume specific env vars.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the env loading and config chain partition as primary scan surface
+2. Extract env loading and config chain facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted env loading and config chain elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each ENV_CHAIN item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -84,8 +85,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Env var name is constructed dynamically (e.g., `os.getenv(f"{service}_PORT")`): emit with `var_name: UNKNOWN` and `status: dynamic_var_name` with evidence citing the expression.
-- Multiple `.env` files with conflicting variable values: emit all sources with `status: conflicting_defaults` and evidence from each file.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
