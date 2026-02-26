@@ -1,0 +1,13 @@
+{
+  "repo_root": "..",
+  "prompt_glob": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_*.md",
+  "heuristics_path": "HEURISTICS_LIBRARY_v1.txt",
+  "system_prompt_path": "OPUS_SYSTEM_PROMPT.txt",
+  "patch_prompt_path": "OPUS_PATCH_PROMPT.txt",
+  "out_dir": "out",
+  "max_patch_lines": 350,
+  "batch_size": 1,
+  "lint_cmd": "python ../scripts/repo_truth_extractor_promptset_audit_v4.py --strict",
+  "commit_every": 10,
+  "commit_prefix": "chore(prompts): enrich extraction procedures (batch"
+}

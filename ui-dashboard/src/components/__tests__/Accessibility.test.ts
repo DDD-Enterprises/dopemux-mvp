@@ -18,6 +18,7 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('Prediction Loading...');
   // Indeterminate LinearProgress in loading state
   expect(content).toContain('aria-label="Loading prediction data"');
+  expect(content).toContain('<Tooltip title="Predictive LSTM model running on edge device"');
 });
 
 test('TeamDashboard.tsx has aria-labels for team and member progress bars', () => {
@@ -34,6 +35,9 @@ test('TaskSequencer.tsx has contextual aria-labels for buttons', () => {
   expect(content).toContain('aria-label={`Start task: ${task.title}`}');
   // New LinearProgress for task progress
   expect(content).toContain('aria-label="Current task progress"');
+  // Timer accessibility
+  expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
+  expect(content).toContain('<Tooltip title="Real-time task synchronization active"');
 });
 
 test('Components have aria-hidden="true" on decorative icons', () => {
@@ -42,4 +46,11 @@ test('Components have aria-hidden="true" on decorative icons', () => {
     const content = fs.readFileSync(path.join(componentsDir, file), 'utf8');
     expect(content).toContain('aria-hidden="true"');
   });
+});
+
+test('TaskSequencer.tsx has accessible timer with pluralization', () => {
+  const content = fs.readFileSync(path.join(componentsDir, 'TaskSequencer.tsx'), 'utf8');
+  expect(content).toContain('role="timer"');
+  expect(content).toContain('aria-label={getTimerAriaLabel(taskTimer)}');
+  expect(content).toContain('const getTimerAriaLabel = (seconds: number): string =>');
 });

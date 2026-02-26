@@ -1,10 +1,11 @@
+import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 import os
 import shutil
 import json
-from services.adhd_engine.context_preserver import ContextPreserver, PreservedContext
+from services.adhd_engine.domains.attention.context_preserver import ContextPreserver, PreservedContext
 
 class TestContextPreserver:
     @pytest.fixture
@@ -111,3 +112,45 @@ class TestContextPreserver:
         assert "Implementing generic tree" in summary
         assert "tree.py" in summary
         assert "feature/tree" in summary
+
+
+class TestGetGitBranch:
+    """Unit tests for the async _get_git_branch method."""
+
+    @pytest.fixture
+    def preserver(self, tmp_path):
+        storage_path = str(tmp_path / "snapshots")
+        os.makedirs(storage_path)
+        return ContextPreserver(
+            conport_client=AsyncMock(),
+            serena_client=AsyncMock(),
+            storage_path=storage_path,
+        )
+
+    @pytest.mark.asyncio
+    async def test_happy_path_returns_branch(self, preserver, tmp_path):
+        """_get_git_branch returns the branch name on success."""
+        mock_process = MagicMock()
+        mock_process.communicate = AsyncMock(return_value=(b"main\n", b""))
+        mock_process.returncode = 0
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+            branch = await preserver._get_git_branch(str(tmp_path))
+
+        assert branch == "main"
+
+    @pytest.mark.asyncio
+    async def test_timeout_kills_process_and_returns_none(self, preserver, tmp_path):
+        """_get_git_branch kills and reaps the process on timeout, then returns None."""
+        mock_process = MagicMock()
+        mock_process.communicate = AsyncMock(side_effect=asyncio.TimeoutError)
+        mock_process.kill = MagicMock()
+        mock_process.wait = AsyncMock()
+
+        with patch("asyncio.create_subprocess_exec", return_value=mock_process), \
+             patch("asyncio.wait_for", side_effect=asyncio.TimeoutError):
+            branch = await preserver._get_git_branch(str(tmp_path))
+
+        assert branch is None
+        mock_process.kill.assert_called_once()
+        mock_process.wait.assert_awaited_once()

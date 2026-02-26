@@ -1,0 +1,53 @@
+active_model = "devstral-2"
+
+enabled_tools = [
+  "bash", "read_file", "write_file", "search_replace", "grep", "todo", "ask_user_question",
+
+  # Dope Context: search + status only (avoid tool explosions)
+  "dope_context_search_all",
+  "dope_context_search_code",
+  "dope_context_docs_search",
+  "dope_context_get_index_status",
+
+  # Dope Memory
+  "dope_memory_memory_store",
+  "dope_memory_memory_recap",
+  "dope_memory_memory_search",
+
+  # PAL tools (to be discovered via MCP tools/list)
+  # "pal_*",
+
+  # ConPort tools (to be discovered via MCP tools/list)
+  # "conport_*",
+
+  # Serena tools (discovered via MCP tools/list; no prefix)
+  "read_file",
+  "create_text_file",
+  "list_dir",
+  "find_file",
+  "replace_content",
+  "search_for_pattern",
+  "get_symbols_overview",
+  "find_symbol",
+  "find_referencing_symbols",
+  "replace_symbol_body",
+  "insert_after_symbol",
+  "insert_before_symbol",
+  "rename_symbol",
+  "write_memory",
+  "read_memory",
+  "list_memories",
+  "delete_memory",
+  "edit_memory",
+  "execute_shell_command",
+  "activate_project",
+  "switch_modes",
+  "get_current_config",
+  "check_onboarding_performed",
+  "onboarding",
+  "think_about_collected_information",
+  "think_about_task_adherence",
+  "think_about_whether_you_are_done",
+  "prepare_for_new_conversation",
+  "initial_instructions",
+]

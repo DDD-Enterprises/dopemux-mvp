@@ -37,7 +37,7 @@ def test_config_generation_docker_http_uses_bridge():
         transport="http",
         docker={
             "service": "http-server",
-            "compose_file": "docker/mcp-servers/docker-compose.yml",
+            "compose_file": "compose.yml",
             "port": 8888,
         },
     )
@@ -69,7 +69,7 @@ def test_config_generation_docker_stdio_uses_compose_exec():
         transport="stdio",
         docker={
             "service": "stdio-service",
-            "compose_file": "docker/mcp-servers/docker-compose.yml",
+            "compose_file": "compose.yml",
             "exec": ["python", "-m", "stdio.server"],
         },
     )
@@ -88,7 +88,7 @@ def test_config_generation_docker_stdio_uses_compose_exec():
     assert config["args"] == [
         "compose",
         "-f",
-        "docker/mcp-servers/docker-compose.yml",
+        "compose.yml",
         "exec",
         "-T",
         "stdio-service",
