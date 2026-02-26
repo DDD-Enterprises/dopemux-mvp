@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Paper,
   Box,
@@ -94,7 +94,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     setIsTimerRunning(false);
   }, [currentTaskId]);
 
-  const getOptimizedSequence = (): Task[] => {
+  const optimizedTasks = useMemo(() => {
     const sortedTasks = [...tasks].filter((task) => task.status !== 'completed');
 
     if (cognitiveState.status === 'critical') {
@@ -106,7 +106,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
       );
     }
     return sortedTasks.sort((a, b) => a.complexity - b.complexity);
-  };
+  }, [tasks, cognitiveState.status]);
 
   const startTask = (taskId: string) => {
     setTasks((prev) =>
@@ -119,7 +119,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     setTasks((prev) =>
       prev.map((task) => (task.id === taskId ? { ...task, status: 'completed' } : task))
     );
-    const optimizedTasks = getOptimizedSequence();
     const currentIndex = optimizedTasks.findIndex((task) => task.id === taskId);
     if (currentIndex < optimizedTasks.length - 1) {
       setCurrentTaskId(optimizedTasks[currentIndex + 1].id);
@@ -127,7 +126,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   };
 
   const skipTask = (taskId: string) => {
-    const optimizedTasks = getOptimizedSequence();
     const currentIndex = optimizedTasks.findIndex((task) => task.id === taskId);
     if (currentIndex < optimizedTasks.length - 1) {
       setCurrentTaskId(optimizedTasks[currentIndex + 1].id);
@@ -152,7 +150,6 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return `Time elapsed: ${secLabel}`;
   };
 
-  const optimizedTasks = getOptimizedSequence();
   const currentTask = tasks.find((task) => task.id === currentTaskId);
 
   const complexityColor = (complexity: number) => {
