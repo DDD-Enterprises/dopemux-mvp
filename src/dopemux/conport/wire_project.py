@@ -92,17 +92,8 @@ def wire_conport_project(project: Optional[str] = None, instance: Optional[str] 
         mcp_servers = {}
 
     mcp_servers["conport"] = {
-        "type": "stdio",
-        "command": "docker",
-        "args": [
-            "exec",
-            "-i",
-            _container_name(instance_id),
-            "uvx",
-            "--from",
-            "context-portal-mcp",
-            "conport-mcp",
-        ],
+        "type": "sse",
+        "url": "http://localhost:3005/mcp",
         "env": {
             "DOPEMUX_INSTANCE_ID": instance_id,
             "DOPEMUX_WORKSPACE_ID": workspace_id,
