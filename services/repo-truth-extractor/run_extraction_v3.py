@@ -59,6 +59,7 @@ except ModuleNotFoundError:
     GeminiBatchClient = batch_clients_module.GeminiBatchClient
     OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
     XAIBatchClient = batch_clients_module.XAIBatchClient
+    OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
 try:
     from rich.console import Console
     from rich.panel import Panel
@@ -295,19 +296,45 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "extract": [
-            ("openai", "gpt-5.2-pro", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", "gpt-5.2-pro", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
             ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
-            ("openai", "gpt-5.2-pro", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+        ],
+    },
+    "openrouter": {
+        "bulk": [
+            ("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+        ],
+        "extract": [
+            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+        ],
+        "synthesis": [
+            ("openrouter", "openai/gpt-5.2-pro", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-pro", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+        ],
+        "qa": [
+            ("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
         ],
     },
 }
@@ -326,6 +353,7 @@ PROVIDER_BASE_URL = {
     "xai": "https://api.x.ai/v1",
     "gemini": "https://generativelanguage.googleapis.com",
     "openai": "https://api.openai.com/v1",
+    "openrouter": "https://openrouter.ai/api/v1",
 }
 
 GEMINI_OPENAI_COMPAT_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
@@ -500,20 +528,21 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "xai": "XAI_API_KEY",
 }
 REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
-    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A99"},
+    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A99"},
     "H": {"H0", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H9"},
     "D": {"D0", "D1", "D2", "D3", "D4", "D5"},
-    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"},
+    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11"},
     "E": {"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E9"},
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
     "G": {"G0", "G1", "G2", "G3", "G4", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9", "Q11"},
-    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"},
+    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9"},
+    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10"},
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3", "S4", "S5"},
+    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6"},
+    "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 
 
@@ -4382,6 +4411,10 @@ def get_xai_client(api_key: str) -> Any:
     return get_openai_client(base_url=PROVIDER_BASE_URL["xai"], api_key=api_key)
 
 
+def get_openrouter_client(api_key: str) -> Any:
+    return get_openai_client(base_url=PROVIDER_BASE_URL["openrouter"], api_key=api_key)
+
+
 def extract_text_from_chat_completion(response_obj: Any) -> str:
     choices = getattr(response_obj, "choices", None)
     if not choices:
@@ -4743,7 +4776,12 @@ def call_llm(
                 status_code = 200
                 response_text = extract_text_from_gemini_response(response)
             else:
-                client = get_xai_client(api_key) if provider == "xai" else get_openai_client(None, api_key)
+                if provider == "xai":
+                    client = get_xai_client(api_key)
+                elif provider == "openrouter":
+                    client = get_openrouter_client(api_key)
+                else:
+                    client = get_openai_client(None, api_key)
                 chat_kwargs: Dict[str, Any] = {
                     "model": model_id,
                     "messages": payload["messages"],
@@ -5701,6 +5739,8 @@ def build_batch_client(
         return GeminiBatchClient(api_key=api_key)
     if provider == "xai":
         return XAIBatchClient(api_key=api_key, base_url=llm_base_url(provider, cfg))
+    if provider == "openrouter":
+        return OpenRouterBatchClient(api_key=api_key, base_url=llm_base_url(provider, cfg))
     raise RuntimeError(f"Unsupported batch provider: {provider}")
 
 
@@ -9650,7 +9690,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--routing-policy",
-        choices=["cost", "balanced", "quality"],
+        choices=["cost", "balanced", "quality", "openrouter"],
         default=DEFAULT_ROUTING_POLICY,
     )
     parser.add_argument("--disable-escalation", action="store_true")
@@ -9674,6 +9714,17 @@ def main() -> None:
     parser.add_argument("--batch-poll-seconds", type=int, default=30)
     parser.add_argument("--batch-wait-timeout-seconds", type=int, default=86400)
     parser.add_argument("--batch-max-requests-per-job", type=int, default=2000)
+    parser.add_argument(
+        "--batch-retrieve",
+        action="store_true",
+        help="Retrieve OpenAI batch results and integrate with webhook system.",
+    )
+    parser.add_argument(
+        "--batch-ids",
+        type=str,
+        nargs="+",
+        help="List of OpenAI batch IDs to retrieve.",
+    )
     parser.add_argument(
         "--gemini-transport",
         choices=["sdk", "openai_compat_http"],
@@ -10037,6 +10088,27 @@ def main() -> None:
             logger.info(
                 "AUTO_CONTINUE phase=%s next_phase=%s",
                 watch_phase,
+            )
+            phase_sequence = [watch_result.next_phase]
+
+    if args.batch_retrieve:
+        if not args.batch_ids:
+            parser.error("--batch-retrieve requires --batch-ids.")
+        logger.info("Starting batch retrieval for %s batches", len(args.batch_ids))
+        integrated = run_batch_retrieval_and_integration(
+            run_id=run_id,
+            batch_ids=args.batch_ids,
+            cfg=cfg,
+        )
+        logger.info("Batch retrieval complete: %s events integrated", integrated)
+        if integrated > 0:
+            logger.info("You can now run --finalize to process the integrated batch results")
+        sys.exit(0 if integrated >= 0 else 1)
+
+        if watch_result.next_phase:
+            logger.info(
+                "AUTO_CONTINUE phase=%s next_phase=%s",
+                watch_phase,
                 watch_result.next_phase,
             )
             phase_sequence = [watch_result.next_phase]
@@ -10154,6 +10226,81 @@ def main() -> None:
         write_coverage_rollup(root, dirs, run_id)
         write_resume_proof(dirs, run_id, phases)
         update_proof_pack(root, dirs, run_id, run_started_at, phase, counts, phase_started_at, phase_finished_at)
+
+
+def run_batch_retrieval_and_integration(
+    run_id: str,
+    batch_ids: List[str],
+    cfg: RunnerConfig,
+) -> int:
+    """Retrieve OpenAI batches and integrate results with webhook system.
+    
+    This function:
+    1. Retrieves batch results using the batch retriever
+    2. Downloads output/error files
+    3. Creates synthetic webhook events for completed batches
+    4. Allows the existing webhook-based workflow to process them
+    
+    Args:
+        run_id: Run ID to associate with events
+        batch_ids: List of OpenAI batch IDs to retrieve
+        cfg: Runner configuration
+        
+    Returns:
+        Number of batches successfully integrated
+    """
+    try:
+        from lib.batch_retriever import retrieve_openai_batches, integrate_batch_results_with_webhook
+    except ImportError:
+        logger.error("Batch retriever module not available")
+        return 0
+    
+    # Resolve API key
+    api_key, api_key_env = resolve_api_key("openai", "OPENAI_API_KEY")
+    if not api_key:
+        logger.error("OpenAI API key not available")
+        return 0
+    
+    # Retrieve batches
+    output_dir = Path("batch_downloads")
+    output_dir.mkdir(exist_ok=True)
+    
+    logger.info("Retrieving %s batches...", len(batch_ids))
+    batch_results = retrieve_openai_batches(
+        api_key=api_key,
+        batch_ids=batch_ids,
+        output_dir=output_dir
+    )
+    
+    # Build event store for integration
+    try:
+        event_store = _build_event_store_for_runner()
+    except Exception as e:
+        logger.error("Failed to build event store: %s", e)
+        return 0
+    
+    # Integrate results with webhook system
+    # For now, we'll associate all batches with a generic phase/step/partition
+    # In a real implementation, this would be more sophisticated
+    events_integrated = 0
+    for batch_id, result in batch_results.items():
+        if result["status"] in ("completed", "failed", "expired"):
+            try:
+                # Create synthetic events for each batch
+                integrated = integrate_batch_results_with_webhook(
+                    batch_results={batch_id: result},
+                    event_store=event_store,
+                    run_id=run_id,
+                    phase="R",  # Default to phase R for batch processing
+                    step_id="batch_retrieval",
+                    partition_id=batch_id
+                )
+                events_integrated += integrated
+            except Exception as e:
+                logger.error("Failed to integrate batch %s: %s", batch_id, e)
+    
+    logger.info("Batch retrieval integration complete: %s events created", events_integrated)
+    return events_integrated
 
 
 if __name__ == "__main__":
