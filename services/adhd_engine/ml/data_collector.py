@@ -8,6 +8,7 @@ Feeds into: services/adhd_engine/ml/energy_predictor.py
 import os
 import json
 import logging
+import asyncio
 from datetime import datetime
 from typing import Dict, Any, Optional
 
@@ -45,9 +46,11 @@ class DataCollector:
                 **state_vector
             }
             
-            with open(self.file_path, "a", encoding="utf-8") as f:
-                f.write(json.dumps(entry) + "\n")
-                
+            def _write_sync():
+                with open(self.file_path, "a", encoding="utf-8") as f:
+                    f.write(json.dumps(entry) + "\n")
+
+            await asyncio.to_thread(_write_sync)
             return True
             
         except Exception as e:
@@ -61,13 +64,19 @@ class DataCollector:
         """
         history = []
         try:
-            if not os.path.exists(self.file_path):
+            def _read_sync():
+                if not os.path.exists(self.file_path):
+                    return []
+
+                # Read last N lines (inefficient but simple for MVP)
+                with open(self.file_path, "r", encoding="utf-8") as f:
+                    return f.readlines()
+
+            lines = await asyncio.to_thread(_read_sync)
+
+            if not lines:
                 return []
-                
-            # Read last N lines (inefficient but simple for MVP)
-            with open(self.file_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-                
+
             for line in reversed(lines):
                 if len(history) >= limit:
                     break
@@ -89,19 +98,22 @@ class DataCollector:
         Load all collected data for training (Phase 10.4).
         Returns a list of dictionaries, one per line of JSONL.
         """
-        data = []
         try:
-            if not os.path.exists(self.file_path):
-                return []
-                
-            with open(self.file_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    try:
-                        entry = json.loads(line)
-                        data.append(entry)
-                    except json.JSONDecodeError:
-                        continue
+            def _load_sync():
+                data = []
+                if not os.path.exists(self.file_path):
+                    return []
+
+                with open(self.file_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        try:
+                            entry = json.loads(line)
+                            data.append(entry)
+                        except json.JSONDecodeError:
+                            continue
+                return data
             
+            data = await asyncio.to_thread(_load_sync)
             logger.info(f"Loaded {len(data)} records for training")
             return data
             
