@@ -25,6 +25,9 @@ class TestDotenvLoader:
         mock_dotenv.load_dotenv.return_value = True
 
         with patch.dict(sys.modules, {"dotenv": mock_dotenv}):
+            # Ensure we import/reload while the mock is in place
+            import dopemux.utils.dotenv_loader
+            importlib.reload(dopemux.utils.dotenv_loader)
             from dopemux.utils import dotenv_loader
 
             assert dotenv_loader.is_dotenv_available() is True
@@ -35,7 +38,7 @@ class TestDotenvLoader:
             with warnings.catch_warnings(record=True) as record:
                 warnings.simplefilter("always")
                 dotenv_loader.check_dotenv_support()
-                # Filter out irrelevant warnings if any (e.g. from imports)
+                # Filter out irrelevant warnings if any
                 relevant = [w for w in record if "python-dotenv not installed" in str(w.message)]
                 assert len(relevant) == 0
 
@@ -59,8 +62,10 @@ class TestDotenvLoader:
 
             sys.meta_path.insert(0, ImportBlocker())
             try:
+                # Ensure we import/reload while the blocker is in place
+                import dopemux.utils.dotenv_loader
+                importlib.reload(dopemux.utils.dotenv_loader)
                 from dopemux.utils import dotenv_loader
-                importlib.reload(dotenv_loader)
 
                 assert dotenv_loader.is_dotenv_available() is False
                 assert dotenv_loader.load_dotenv() is False
