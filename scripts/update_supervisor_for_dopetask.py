@@ -96,19 +96,21 @@ def main():
         print("🎭 Migration cancelled.")
         return 0
     
-    # Perform updates
+    # Perform updates and track which files were actually changed.
     updated_count = 0
+    updated_set: set = set()
     for file_path in files_to_update:
         if update_file_content(file_path, replacements):
             print(f"✅ Updated: {file_path}")
             updated_count += 1
+            updated_set.add(file_path)
         else:
             print(f"⚠️  No changes needed: {file_path}")
     
     print(f"\n🎉 Migration complete!")
     print(f"📊 Updated {updated_count}/{len(files_to_update)} files")
     
-    # Generate migration report
+    # Generate migration report (use tracked set; do NOT re-run replacements)
     report_path = Path("dopetask_migration_report.txt")
     with report_path.open('w', encoding='utf-8') as f:
         f.write("dopeTask Migration Report\n")
@@ -119,7 +121,7 @@ def main():
         
         f.write("Updated files:\n")
         for file_path in files_to_update:
-            status = "UPDATED" if update_file_content(file_path, replacements) else "CHECKED"
+            status = "UPDATED" if file_path in updated_set else "CHECKED"
             f.write(f"  [{status}] {file_path}\n")
     
     print(f"📄 Migration report saved to: {report_path}")

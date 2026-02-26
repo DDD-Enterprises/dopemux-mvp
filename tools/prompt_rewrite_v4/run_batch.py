@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shlex
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -47,8 +48,8 @@ def ensure_out_dir(out_dir: Path) -> None:
 
 
 def lint_gate(repo_root: Path, lint_cmd: str) -> None:
-    # Run via shell for convenience; command is controlled by config.
-    proc = subprocess.run(lint_cmd, cwd=str(repo_root), shell=True, text=True)
+    # Split the command string into a list to avoid shell=True injection risk.
+    proc = subprocess.run(shlex.split(lint_cmd), cwd=str(repo_root), text=True)
     if proc.returncode != 0:
         raise SystemExit(proc.returncode)
 
@@ -239,7 +240,7 @@ def render_one(repo_root: Path, cfg_path: Path, state_path: Path, pending_only: 
 
 def apply_one(repo_root: Path, cfg_path: Path, state_path: Path, pending_only: bool = False) -> None:
     cfg = load_config(cfg_path)
-    out_dir = cfg_path.parent / cfg.out_dir
+    out_dir = repo_root / cfg.out_dir  # consistent with render_one: relative to repo_root
     ensure_out_dir(out_dir)
 
     state = load_state(state_path)

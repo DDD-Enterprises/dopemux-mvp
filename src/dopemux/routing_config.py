@@ -292,10 +292,15 @@ class RoutingConfig:
         # Build model_alias_map from slots and aliases
         model_alias_map = {}
 
-        # First, map all aliases to their slot targets
-        for alias, slot_name in aliases.items():
-            model_name = slots[slot_name]
-            model_alias_map[alias] = model_name
+        # First, map all aliases to their targets.
+        # An alias may point to a slot name OR directly to a model name.
+        for alias, target in aliases.items():
+            if target in slots:
+                # Slot reference → resolve to the underlying model name.
+                model_alias_map[alias] = slots[target]
+            else:
+                # Direct model reference (validate() already confirmed it exists).
+                model_alias_map[alias] = target
 
         # Then, add direct slot mappings for convenience
         for slot_name, model_name in slots.items():
@@ -330,15 +335,17 @@ class RoutingConfig:
 
         Args:
             litellm_url: URL of the LiteLLM proxy
-            litellm_key: Master key for LiteLLM
+            litellm_key: Master key for LiteLLM; stored in the generated config
+                as the value of ``upstream_key`` so CCR can authenticate with
+                the LiteLLM proxy at runtime.
             ccr_api_key: API key for CCR itself
 
         Returns:
             Dictionary containing CCR configuration
 
         Note:
-            This does NOT include upstream API keys - those are handled by
-            environment variables.
+            Upstream provider API keys are NOT included here — they are handled
+            by environment variables referenced by LiteLLM.
         """
         slots = self.config.get("slots", {})
 
@@ -348,7 +355,7 @@ class RoutingConfig:
         return {
             "provider": "litellm",
             "upstream_url": litellm_url,
-            "upstream_key_var": "DOPEMUX_LITELLM_MASTER_KEY",
+            "upstream_key": litellm_key,
             "models": ccr_models,
             "api_key": ccr_api_key,
             "listen_port": self.config["ports"]["ccr"],

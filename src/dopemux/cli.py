@@ -736,9 +736,12 @@ def start(
             # Ensure API mode variables are set
             if "DOPEMUX_ROUTING_MODE" not in os.environ:
                 os.environ["DOPEMUX_ROUTING_MODE"] = "api"
-            
-            # Mark that we're managing the API key
-            if "ANTHROPIC_API_KEY" in os.environ:
+
+            # Only mark the API key as Dopemux-managed when we inject it
+            # ourselves (from CCR key).  Never mark a user-supplied key.
+            ccr_key = os.environ.get("DOPEMUX_CCR_API_KEY")
+            if ccr_key and os.environ.get("ANTHROPIC_API_KEY") != ccr_key:
+                os.environ["ANTHROPIC_API_KEY"] = ccr_key
                 os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
     
     legacy_value = legacy_kwargs.get("claude_router")
