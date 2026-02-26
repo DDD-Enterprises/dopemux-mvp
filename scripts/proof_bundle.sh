@@ -83,7 +83,7 @@ for CMD in "${COMMANDS[@]}"; do
     
     # Execute command and capture output verbatim
     OUTPUT_FILE="${OUTPUT_DIR}/$(echo "${CMD}" | tr -s '[:space:]' '_' | sed 's/[^a-zA-Z0-9_]//g').txt"
-    eval "${CMD}" > "${OUTPUT_FILE}" 2>&1
+    bash -lc "${CMD}" > "${OUTPUT_FILE}" 2>&1
     EXIT_CODE=$?
     
     echo "Output:" >> "${OUTPUT_DIR}/proof.txt"

@@ -42,14 +42,11 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 ```
 
 #### `.gitmodules`
-```diff
-- [submodule "vendor/taskx"]
--  path = vendor/taskx
--  url = https://github.com/hu3mann/taskX.git
-+ [submodule "vendor/dopetask"]
-+  path = vendor/dopetask
-+  url = https://github.com/hu3mann/dopetask.git
-```
+
+The submodule entry for `vendor/taskx` has been **removed** entirely.
+`dopetask` is now installed as a pip package — no submodule or `vendor/`
+directory is required.  You may safely delete (or leave empty) `.gitmodules`
+if it still contains the old `[submodule "vendor/taskx"]` block.
 
 ### 3. Script Updates
 
@@ -68,8 +65,10 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 + .dopetaskroot
 + .dopetask/
 + .dopetask_venv/
-+ vendor/dopetask/
 ```
+
+Note: `vendor/dopetask/` is **not** created — dopetask is installed via pip,
+not as a submodule or vendored directory.
 
 ### 5. Documentation Updates
 
@@ -102,7 +101,7 @@ pip install dopetask==0.1.4
 ### 2. Update File References
 - Replace all `taskx` command calls with `dopetask`
 - Update any scripts that reference `.taskx_venv` to use `.dopetask_venv`
-- Update configuration files to reference `vendor/dopetask` instead of `vendor/taskx`
+- Remove any `vendor/taskx` directory references (dopetask is pip-installed, not vendored)
 
 ### 3. Verify Installation
 ```bash
