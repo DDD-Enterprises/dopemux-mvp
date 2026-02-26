@@ -1,0 +1,1367 @@
+{
+  "PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md": {
+    "steps": [
+      "Scan repo control-plane (`*.yaml`, `*.toml`, `*.json`, `docker-compose*`, `.claude/`) targets; collect path, type, and content metadata for each artifact",
+      "Classify each artifact by category relevant to the repo control-plane (`*.yaml`, `*.toml`, `*.json`, `docker-compose*`, `.claude/`) domain",
+      "Build REPO_CTRL_PARTITIONS by grouping files into logical categories with rationale",
+      "For each REPO_CTRL_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`",
+      "For each REPO_CTRL_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`"
+    ],
+    "failure_modes": [
+      "Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`",
+      "Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`"
+    ]
+  },
+  "PROMPT_A1_INSTRUCTION_SURFACES.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the instruction partition as primary scan surface",
+      "Extract instruction facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted instruction elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each INSTRUCTION_SURFACES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_A2_MCP_SERVER_DEFS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the MCP server definition partition as primary scan surface",
+      "Extract MCP server definition facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted MCP server definition elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each MCP_SERVER_DEFS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_A3_MCP_PROXY_SURFACE.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the MCP proxy partition as primary scan surface",
+      "Extract MCP proxy facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted MCP proxy elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each MCP_PROXY_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_A4_ROUTER_SURFACE.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the router partition as primary scan surface",
+      "Extract router facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted router elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each ROUTER_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_A5_HOOKS_SURFACE.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the hooks partition as primary scan surface",
+      "Extract hooks facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted hooks elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each HOOKS_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_A6_COMPOSE_SERVICE_GRAPH.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the compose service graph partition as primary scan surface",
+      "Extract compose service graph facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted compose service graph elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each COMPOSE_SERVICE_GRAPH item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_A7_LITELLM_SURFACE.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the LiteLLM partition as primary scan surface",
+      "Extract LiteLLM facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted LiteLLM elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each LITELLM_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_A8_TASKX_SURFACE.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the TaskX partition as primary scan surface",
+      "Extract TaskX facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted TaskX elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each TASKX_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md": {
+    "steps": [
+      "Load all upstream A-Phase artifacts (A0-A8); use the full repo control inventory as scan surface for implicit behavior discovery",
+      "Scan instruction files and config for implicit behaviors: defaults not documented, fallback chains, silent retries, auto-migrations",
+      "Cross-reference declared behavior with actual code to find undocumented side effects",
+      "For each implicit behavior, assess risk: classify impact if the behavior changes unexpectedly",
+      "For each IMPLICIT_BEHAVIOR_HINTS item, populate `id`, behavior description, risk, and `evidence`"
+    ],
+    "failure_modes": [
+      "Intentional undocumented behavior: if a behavior appears intentionally undocumented, emit with `status: likely_intentional`",
+      "Version-dependent behavior: if behavior depends on a specific version, emit with `version_constraint` and evidence"
+    ]
+  },
+  "PROMPT_A99_MERGE___QA.md": {
+    "steps": [
+      "Load all A-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all REPO_CTRL_* artifacts into REPO_CTRL_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all A-Phase artifacts present, coverage complete, sort order deterministic; emit REPO_CTRL_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing A-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md": {
+    "steps": [
+      "Scan boundary/guardrail files (permission checks, auth middleware, validation layers) targets; collect path, type, and content metadata for each artifact",
+      "Classify each artifact by category relevant to the boundary/guardrail files (permission checks, auth middleware, validation layers) domain",
+      "Build BOUNDARY_PARTITIONS by grouping files into logical categories with rationale",
+      "For each BOUNDARY_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`",
+      "For each BOUNDARY_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`"
+    ],
+    "failure_modes": [
+      "Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`",
+      "Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`"
+    ]
+  },
+  "PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the boundary assertion and code enforcement partition as primary scan surface",
+      "Extract boundary assertion and code enforcement facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted boundary assertion and code enforcement elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each BOUNDARY_ASSERTIONS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the refusal rails and guardrails partition as primary scan surface",
+      "Extract refusal rails and guardrails facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted refusal rails and guardrails elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each REFUSAL_RAILS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md": {
+    "steps": [
+      "Load upstream B0-B2 artifacts; scan for paths that bypass boundary enforcement",
+      "Identify weak guards: locate checks that can be circumvented via env vars, debug flags, or missing validation",
+      "Trace bypass paths end-to-end: for each bypass, document the entry point, the skipped check, and the unguarded action",
+      "Assess bypass severity: classify as critical (security bypass), high (auth bypass), medium (validation skip), or low (cosmetic)",
+      "For each BYPASS_PATHS item, populate `id`, bypass description, severity, and `evidence`"
+    ],
+    "failure_modes": [
+      "Intentional bypass: if a bypass is clearly intentional (e.g., admin override), emit with `status: intentional`",
+      "Test-only bypass: if a bypass only exists in test code, emit with `scope: test_only`"
+    ]
+  },
+  "PROMPT_B9_MERGE___QA.md": {
+    "steps": [
+      "Load all B-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all BOUNDARY_* artifacts into BOUNDARY_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all B-Phase artifacts present, coverage complete, sort order deterministic; emit BOUNDARY_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing B-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md": {
+    "steps": [
+      "Scan source code (`services/`, `src/`, `lib/`, `scripts/`, `tools/`) targets; collect path, type, and content metadata for each artifact",
+      "Classify each artifact by category relevant to the source code (`services/`, `src/`, `lib/`, `scripts/`, `tools/`) domain",
+      "Build CODE_PARTITIONS by grouping files into logical categories with rationale",
+      "For each CODE_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`",
+      "For each CODE_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`"
+    ],
+    "failure_modes": [
+      "Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`",
+      "Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`"
+    ]
+  },
+  "PROMPT_C1_SERVICE_ENTRYPOINTS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the service entrypoint partition as primary scan surface",
+      "Extract service entrypoint facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted service entrypoint elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each SERVICE_ENTRYPOINTS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the eventbus wiring partition as primary scan surface",
+      "Extract eventbus wiring facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted eventbus wiring elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each EVENTBUS_SURFACES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_C3_DOPE_MEMORY_SURFACES.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the dope memory storage partition as primary scan surface",
+      "Extract dope memory storage facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted dope memory storage elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each DOPE_MEMORY_SURFACES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the trinity boundary enforcement partition as primary scan surface",
+      "Extract trinity boundary enforcement facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted trinity boundary enforcement elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each TRINITY_SURFACES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_C5_TASKX_INTEGRATION_SURFACES.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the TaskX integration partition as primary scan surface",
+      "Extract TaskX integration facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted TaskX integration elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each TASKX_INTEGRATION_SURFACES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the workflow runner and multi-service coordination partition as primary scan surface",
+      "Extract workflow runner and multi-service coordination facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted workflow runner and multi-service coordination elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each WORKFLOW_RUNNER_SURFACES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_C7_API___DASHBOARDS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the API endpoint and dashboard partition as primary scan surface",
+      "Extract API endpoint and dashboard facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted API endpoint and dashboard elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each API_DASHBOARD_SURFACES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the determinism, idempotency, and concurrency partition as primary scan surface",
+      "Extract determinism, idempotency, and concurrency facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted determinism, idempotency, and concurrency elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each DETERMINISM_SURFACES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_C10_SERVICE_CATALOG_DEEP.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the deep service catalog partition as primary scan surface",
+      "Extract deep service catalog facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted deep service catalog elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each SERVICE_CATALOG_DEEP item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_C9_MERGE___NORMALIZE___QA.md": {
+    "steps": [
+      "Load all C-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all CODE_* artifacts into CODE_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all C-Phase artifacts present, coverage complete, sort order deterministic; emit CODE_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing C-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_D0_INVENTORY___PARTITION_PLAN.md": {
+    "steps": [
+      "Scan documentation (`docs/**`, archive dirs) targets; collect path, type, and content metadata for each artifact",
+      "Classify each artifact by category relevant to the documentation (`docs/**`, archive dirs) domain",
+      "Build DOC_PARTITIONS by grouping files into logical categories with rationale",
+      "For each DOC_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`",
+      "For each DOC_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`"
+    ],
+    "failure_modes": [
+      "Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`",
+      "Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`"
+    ]
+  },
+  "PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the doc claims, boundaries, and supersession partition as primary scan surface",
+      "Extract doc claims, boundaries, and supersession facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted doc claims, boundaries, and supersession elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each DOC_INDEX item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_D2_DEEP_EXTRACTION.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the deep doc extraction (interfaces, workflows, decisions) partition as primary scan surface",
+      "Extract deep doc extraction (interfaces, workflows, decisions) facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted deep doc extraction (interfaces, workflows, decisions) elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each DOC_DEEP item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_D3_CITATION___REFERENCE_GRAPH.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the citation and reference graph partition as primary scan surface",
+      "Extract citation and reference graph facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted citation and reference graph elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each DOC_CITATIONS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the doc topic clustering partition as primary scan surface",
+      "Extract doc topic clustering facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted doc topic clustering elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each DOC_TOPIC_CLUSTERS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md": {
+    "steps": [
+      "Load all D-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all DOC_* artifacts into DOC_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all D-Phase artifacts present, coverage complete, sort order deterministic; emit DOC_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing D-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md": {
+    "steps": [
+      "Scan execution-plane targets (`Makefile`, `scripts/`, `*.sh`, `.github/`, `docker*/`) targets; collect path, type, and content metadata for each artifact",
+      "Classify each artifact by category relevant to the execution-plane targets (`Makefile`, `scripts/`, `*.sh`, `.github/`, `docker*/`) domain",
+      "Build EXEC_PARTITIONS by grouping files into logical categories with rationale",
+      "For each EXEC_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`",
+      "For each EXEC_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`"
+    ],
+    "failure_modes": [
+      "Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`",
+      "Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`"
+    ]
+  },
+  "PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the bootstrap commands partition as primary scan surface",
+      "Extract bootstrap commands facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted bootstrap commands elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each BOOTSTRAP_COMMANDS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the env loading and config chain partition as primary scan surface",
+      "Extract env loading and config chain facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted env loading and config chain elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each ENV_CHAIN item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_E3_SERVICE_STARTUP_GRAPH.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the service startup graph partition as primary scan surface",
+      "Extract service startup graph facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted service startup graph elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each STARTUP_GRAPH item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the runtime modes and delta report partition as primary scan surface",
+      "Extract runtime modes and delta report facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted runtime modes and delta report elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each RUNTIME_MODES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the artifact outputs, logs, and state partition as primary scan surface",
+      "Extract artifact outputs, logs, and state facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted artifact outputs, logs, and state elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each ARTIFACT_OUTPUTS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the execution risks, ordering, and state dependency partition as primary scan surface",
+      "Extract execution risks, ordering, and state dependency facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted execution risks, ordering, and state dependency elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each EXEC_RISKS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_E9_MERGE___NORMALIZE___QA.md": {
+    "steps": [
+      "Load all E-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all EXEC_* artifacts into EXEC_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all E-Phase artifacts present, coverage complete, sort order deterministic; emit EXEC_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing E-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md": {
+    "steps": [
+      "Scan governance targets (`.github/workflows/`, `.pre-commit-config.yaml`, `CODEOWNERS`, `LICENSE`) targets; collect path, type, and content metadata for each artifact",
+      "Classify each artifact by category relevant to the governance targets (`.github/workflows/`, `.pre-commit-config.yaml`, `CODEOWNERS`, `LICENSE`) domain",
+      "Build GOV_PARTITIONS by grouping files into logical categories with rationale",
+      "For each GOV_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`",
+      "For each GOV_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`"
+    ],
+    "failure_modes": [
+      "Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`",
+      "Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`"
+    ]
+  },
+  "PROMPT_G1_CI_GATES___QUALITY_BARS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the CI gates and quality bars partition as primary scan surface",
+      "Extract CI gates and quality bars facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted CI gates and quality bars elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each GOV_CI_GATES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the repo hygiene and allowlists partition as primary scan surface",
+      "Extract repo hygiene and allowlists facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted repo hygiene and allowlists elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each GOV_HYGIENE_POLICIES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_G3_POLICY_FILES___ENFORCEMENT.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the policy files and enforcement partition as primary scan surface",
+      "Extract policy files and enforcement facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted policy files and enforcement elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each GOV_POLICIES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the security, secrets, and reduction facts partition as primary scan surface",
+      "Extract security, secrets, and reduction facts facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted security, secrets, and reduction facts elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each GOV_SECRETS_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_G9_MERGE___QA.md": {
+    "steps": [
+      "Load all G-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all GOV_* artifacts into GOV_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all G-Phase artifacts present, coverage complete, sort order deterministic; emit GOV_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing G-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_H0_INVENTORY___PARTITION_PLAN.md": {
+    "steps": [
+      "Scan home control-plane dirs (`~/.claude/`, `~/.config/`, shell profiles, dotfiles) targets; collect path, type, and content metadata for each artifact",
+      "Classify each artifact by category relevant to the home control-plane dirs (`~/.claude/`, `~/.config/`, shell profiles, dotfiles) domain",
+      "Build HOME_PARTITIONS by grouping files into logical categories with rationale",
+      "For each HOME_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`",
+      "For each HOME_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`"
+    ],
+    "failure_modes": [
+      "Sensitive file: if a home file may contain secrets, reference by path only; emit with `kind: sensitive` and `content: REDACTED`",
+      "Missing home dir: if the home scan target does not exist, emit with `status: inaccessible`"
+    ]
+  },
+  "PROMPT_H1_KEYS___REFERENCES.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the keys and credential references partition as primary scan surface",
+      "Extract keys and credential references facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted keys and credential references elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each HOME_KEYS_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_H2_MCP_SURFACE.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the MCP server definitions partition as primary scan surface",
+      "Extract MCP server definitions facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted MCP server definitions elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each HOME_MCP_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_H3_ROUTER___PROVIDER_LADDERS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the router and provider ladder partition as primary scan surface",
+      "Extract router and provider ladder facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted router and provider ladder elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each HOME_ROUTER_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_H4_LITELLM_SURFACES.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the LiteLLM config partition as primary scan surface",
+      "Extract LiteLLM config facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted LiteLLM config elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each HOME_LITELLM_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_H5_PROFILES___SESSIONS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the profiles and sessions partition as primary scan surface",
+      "Extract profiles and sessions facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted profiles and sessions elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each HOME_PROFILES_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_H6_TMUX___WORKFLOW_HELPERS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the tmux and workflow helpers partition as primary scan surface",
+      "Extract tmux and workflow helpers facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted tmux and workflow helpers elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each HOME_TMUX_WORKFLOW_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_H7_SQLITE___STATE_DB_METADATA.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the SQLite and state DB metadata partition as primary scan surface",
+      "Extract SQLite and state DB metadata facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted SQLite and state DB metadata elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each HOME_SQLITE_SCHEMA item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_H9_MERGE___QA.md": {
+    "steps": [
+      "Load all H-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all HOME_* artifacts into HOMECTRL_NORM_MANIFEST using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all H-Phase artifacts present, coverage complete, sort order deterministic; emit HOMECTRL_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing H-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md": {
+    "steps": [
+      "Scan workflow sources (orchestration scripts, runbooks, CI workflows, compose, tmux sessions) targets; collect path, type, and content metadata for each artifact",
+      "Classify each artifact by category relevant to the workflow sources (orchestration scripts, runbooks, CI workflows, compose, tmux sessions) domain",
+      "Build WORKFLOW_PARTITIONS by grouping files into logical categories with rationale",
+      "For each WORKFLOW_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`",
+      "For each WORKFLOW_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`"
+    ],
+    "failure_modes": [
+      "Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`",
+      "Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`"
+    ]
+  },
+  "PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the workflow catalog and runbook partition as primary scan surface",
+      "Extract workflow catalog and runbook facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted workflow catalog and runbook elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each WORKFLOW_CATALOG item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the workflow inputs/outputs/artifacts partition as primary scan surface",
+      "Extract workflow inputs/outputs/artifacts facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted workflow inputs/outputs/artifacts elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each WORKFLOW_IO_MAP item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the multi-service coordination (compose/tmux) partition as primary scan surface",
+      "Extract multi-service coordination (compose/tmux) facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted multi-service coordination (compose/tmux) elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each WORKFLOW_COORDINATION_SURFACE item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the workflow failure modes and recovery partition as primary scan surface",
+      "Extract workflow failure modes and recovery facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted workflow failure modes and recovery elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each WORKFLOW_FAILURE_RECOVERY item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the workflow state dependencies (home vs repo) partition as primary scan surface",
+      "Extract workflow state dependencies (home vs repo) facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted workflow state dependencies (home vs repo) elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each WORKFLOW_STATE_COUPLING item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_W9_MERGE___QA.md": {
+    "steps": [
+      "Load all W-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all WORKFLOW_* artifacts into WORKFLOW_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all W-Phase artifacts present, coverage complete, sort order deterministic; emit WORKFLOW_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing W-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the pipeline completeness and manifest partition as primary scan surface",
+      "Extract pipeline completeness and manifest facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted pipeline completeness and manifest elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each QA_RUN_MANIFEST item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the missing artifacts and recovery plan partition as primary scan surface",
+      "Extract missing artifacts and recovery plan facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted missing artifacts and recovery plan elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each QA_MISSING_ARTIFACTS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the duplicate IDs and prompt collisions partition as primary scan surface",
+      "Extract duplicate IDs and prompt collisions facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted duplicate IDs and prompt collisions elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each QA_PROMPT_COLLISIONS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the drift detection and norm diffs partition as primary scan surface",
+      "Extract drift detection and norm diffs facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted drift detection and norm diffs elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each QA_NORM_DRIFT_REPORT item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_Q9_MERGE___QA.md": {
+    "steps": [
+      "Load all Q-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all QA_* artifacts into PIPELINE_DOCTOR_REPORT using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all Q-Phase artifacts present, coverage complete, sort order deterministic; emit QA_SERVICE_COVERAGE",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing Q-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md": {
+    "steps": [
+      "Load all relevant merged phase artifacts as synthesis inputs for control plane truth map synthesis",
+      "Synthesize CONTROL_PLANE_TRUTH_MAP: combine extracted facts into a coherent truth document organized by domain category",
+      "For each element, produce prose summary with: what it does, where configured, dependencies, and risks",
+      "Cross-reference with governance and QA artifacts to annotate enforcement and coverage status",
+      "Embed evidence citations as inline references throughout the document"
+    ],
+    "failure_modes": [
+      "Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header",
+      "Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`"
+    ]
+  },
+  "PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md": {
+    "steps": [
+      "Load all relevant merged phase artifacts as synthesis inputs for dope memory implementation truth",
+      "Synthesize DOPE_MEMORY_IMPLEMENTATION_TRUTH: combine extracted facts into a coherent truth document organized by domain category",
+      "For each element, produce prose summary with: what it does, where configured, dependencies, and risks",
+      "Cross-reference with governance and QA artifacts to annotate enforcement and coverage status",
+      "Embed evidence citations as inline references throughout the document"
+    ],
+    "failure_modes": [
+      "Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header",
+      "Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`"
+    ]
+  },
+  "PROMPT_R2_EVENTBUS_WIRING_TRUTH.md": {
+    "steps": [
+      "Load all relevant merged phase artifacts as synthesis inputs for eventbus wiring truth",
+      "Synthesize EVENTBUS_WIRING_TRUTH: combine extracted facts into a coherent truth document organized by domain category",
+      "For each element, produce prose summary with: what it does, where configured, dependencies, and risks",
+      "Cross-reference with governance and QA artifacts to annotate enforcement and coverage status",
+      "Embed evidence citations as inline references throughout the document"
+    ],
+    "failure_modes": [
+      "Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header",
+      "Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`"
+    ]
+  },
+  "PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md": {
+    "steps": [
+      "Load all relevant merged phase artifacts as synthesis inputs for trinity boundary enforcement trace",
+      "Synthesize TRINITY_BOUNDARY_ENFORCEMENT_TRACE: combine extracted facts into a coherent truth document organized by domain category",
+      "For each element, produce prose summary with: what it does, where configured, dependencies, and risks",
+      "Cross-reference with governance and QA artifacts to annotate enforcement and coverage status",
+      "Embed evidence citations as inline references throughout the document"
+    ],
+    "failure_modes": [
+      "Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header",
+      "Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`"
+    ]
+  },
+  "PROMPT_R4_TASKX_INTEGRATION_TRUTH.md": {
+    "steps": [
+      "Load all relevant merged phase artifacts as synthesis inputs for TaskX integration truth",
+      "Synthesize TASKX_INTEGRATION_TRUTH: combine extracted facts into a coherent truth document organized by domain category",
+      "For each element, produce prose summary with: what it does, where configured, dependencies, and risks",
+      "Cross-reference with governance and QA artifacts to annotate enforcement and coverage status",
+      "Embed evidence citations as inline references throughout the document"
+    ],
+    "failure_modes": [
+      "Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header",
+      "Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`"
+    ]
+  },
+  "PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md": {
+    "steps": [
+      "Load all relevant merged phase artifacts as synthesis inputs for workflows truth graph",
+      "Synthesize WORKFLOWS_TRUTH_GRAPH: combine extracted facts into a coherent truth document organized by domain category",
+      "For each element, produce prose summary with: what it does, where configured, dependencies, and risks",
+      "Cross-reference with governance and QA artifacts to annotate enforcement and coverage status",
+      "Embed evidence citations as inline references throughout the document"
+    ],
+    "failure_modes": [
+      "Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header",
+      "Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`"
+    ]
+  },
+  "PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md": {
+    "steps": [
+      "Load all relevant merged phase artifacts as synthesis inputs for portability and migration risk ledger",
+      "Synthesize PORTABILITY_RISK_LEDGER: combine extracted facts into a coherent truth document organized by domain category",
+      "For each element, produce prose summary with: what it does, where configured, dependencies, and risks",
+      "Cross-reference with governance and QA artifacts to annotate enforcement and coverage status",
+      "Embed evidence citations as inline references throughout the document"
+    ],
+    "failure_modes": [
+      "Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header",
+      "Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`"
+    ]
+  },
+  "PROMPT_R7_CONFLICT_LEDGER.md": {
+    "steps": [
+      "Load all relevant merged phase artifacts as synthesis inputs for conflict ledger",
+      "Synthesize CONFLICT_LEDGER: combine extracted facts into a coherent truth document organized by domain category",
+      "For each element, produce prose summary with: what it does, where configured, dependencies, and risks",
+      "Cross-reference with governance and QA artifacts to annotate enforcement and coverage status",
+      "Embed evidence citations as inline references throughout the document"
+    ],
+    "failure_modes": [
+      "Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header",
+      "Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`"
+    ]
+  },
+  "PROMPT_R8_RISK_REGISTER_TOP20.md": {
+    "steps": [
+      "Load all relevant merged phase artifacts as synthesis inputs for risk register top-20",
+      "Synthesize RISK_REGISTER_TOP20: combine extracted facts into a coherent truth document organized by domain category",
+      "For each element, produce prose summary with: what it does, where configured, dependencies, and risks",
+      "Cross-reference with governance and QA artifacts to annotate enforcement and coverage status",
+      "Embed evidence citations as inline references throughout the document"
+    ],
+    "failure_modes": [
+      "Incomplete synthesis input: if key phase data is missing, produce partial document and note gaps in header",
+      "Conflicting truth: if sources contradict, present both versions with evidence and flag as `status: conflict`"
+    ]
+  },
+  "PROMPT_T0_TASK_PACKET_FACTORY.md": {
+    "steps": [
+      "Load all upstream extraction artifacts and synthesis reports as input for task packet factory design",
+      "Analyze extraction outputs to identify actionable work items for TASK_PACKET_FACTORY",
+      "For each task packet, determine scope, priority, dependencies, and acceptance criteria from evidence",
+      "Validate packet completeness: ensure each packet has sufficient context for execution",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Insufficient evidence for packet: if a task cannot be fully scoped from available data, emit with `status: needs_more_context`",
+      "Duplicate packet: if two packets cover the same work, flag with `status: potential_duplicate` and evidence"
+    ]
+  },
+  "PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md": {
+    "steps": [
+      "Load all upstream extraction artifacts and synthesis reports as input for top-10 task packet emission",
+      "Analyze extraction outputs to identify actionable work items for TASK_PACKETS_TOP10",
+      "For each task packet, determine scope, priority, dependencies, and acceptance criteria from evidence",
+      "Validate packet completeness: ensure each packet has sufficient context for execution",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Insufficient evidence for packet: if a task cannot be fully scoped from available data, emit with `status: needs_more_context`",
+      "Duplicate packet: if two packets cover the same work, flag with `status: potential_duplicate` and evidence"
+    ]
+  },
+  "PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md": {
+    "steps": [
+      "Load all upstream extraction artifacts and synthesis reports as input for packet schema and authority rules",
+      "Analyze extraction outputs to identify actionable work items for PACKET_SCHEMA_RULES",
+      "For each task packet, determine scope, priority, dependencies, and acceptance criteria from evidence",
+      "Validate packet completeness: ensure each packet has sufficient context for execution",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Insufficient evidence for packet: if a task cannot be fully scoped from available data, emit with `status: needs_more_context`",
+      "Duplicate packet: if two packets cover the same work, flag with `status: potential_duplicate` and evidence"
+    ]
+  },
+  "PROMPT_T3_PACKET_GENERATION___BATCHED.md": {
+    "steps": [
+      "Load all upstream extraction artifacts and synthesis reports as input for batched packet generation",
+      "Analyze extraction outputs to identify actionable work items for PACKET_BATCH",
+      "For each task packet, determine scope, priority, dependencies, and acceptance criteria from evidence",
+      "Validate packet completeness: ensure each packet has sufficient context for execution",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Insufficient evidence for packet: if a task cannot be fully scoped from available data, emit with `status: needs_more_context`",
+      "Duplicate packet: if two packets cover the same work, flag with `status: potential_duplicate` and evidence"
+    ]
+  },
+  "PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md": {
+    "steps": [
+      "Load all upstream extraction artifacts and synthesis reports as input for packet dedup and collision resolution",
+      "Analyze extraction outputs to identify actionable work items for PACKET_DEDUP",
+      "For each task packet, determine scope, priority, dependencies, and acceptance criteria from evidence",
+      "Validate packet completeness: ensure each packet has sufficient context for execution",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Insufficient evidence for packet: if a task cannot be fully scoped from available data, emit with `status: needs_more_context`",
+      "Duplicate packet: if two packets cover the same work, flag with `status: potential_duplicate` and evidence"
+    ]
+  },
+  "PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md": {
+    "steps": [
+      "Load all upstream extraction artifacts and synthesis reports as input for packet ordering and run plan",
+      "Analyze extraction outputs to identify actionable work items for PACKET_RUN_PLAN",
+      "For each task packet, determine scope, priority, dependencies, and acceptance criteria from evidence",
+      "Validate packet completeness: ensure each packet has sufficient context for execution",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Insufficient evidence for packet: if a task cannot be fully scoped from available data, emit with `status: needs_more_context`",
+      "Duplicate packet: if two packets cover the same work, flag with `status: potential_duplicate` and evidence"
+    ]
+  },
+  "PROMPT_T9_MERGE___QA.md": {
+    "steps": [
+      "Load all T-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all TASK_* artifacts into TASK_PACKETS_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all T-Phase artifacts present, coverage complete, sort order deterministic; emit TASK_PACKETS_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing T-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md": {
+    "steps": [
+      "Scan feature-relevant sources (user-facing code, docs, configs) targets; collect path, type, and content metadata for each artifact",
+      "Classify each artifact by category relevant to the feature-relevant sources (user-facing code, docs, configs) domain",
+      "Build FEATURE_PARTITIONS by grouping files into logical categories with rationale",
+      "For each FEATURE_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`",
+      "For each FEATURE_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`"
+    ],
+    "failure_modes": [
+      "Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`",
+      "Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`"
+    ]
+  },
+  "PROMPT_X1_FEATURE_SURFACE_EXTRACT.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the feature surface extraction partition as primary scan surface",
+      "Extract feature surface extraction facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted feature surface extraction elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each FEATURE_SURFACES item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_X2_FEATURE_TO_CODE_MAP.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the feature-to-code mapping partition as primary scan surface",
+      "Extract feature-to-code mapping facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted feature-to-code mapping elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each FEATURE_CODE_MAP item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_X3_FEATURE_TO_DOC_MAP.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the feature-to-doc mapping partition as primary scan surface",
+      "Extract feature-to-doc mapping facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted feature-to-doc mapping elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each FEATURE_DOC_MAP item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md": {
+    "steps": [
+      "Load upstream inventory and partitions; use the feature dependency graph partition as primary scan surface",
+      "Extract feature dependency graph facts: scan relevant files for domain-specific patterns and structures",
+      "Build relationship graph: trace connections between extracted feature dependency graph elements",
+      "Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts",
+      "For each FEATURE_DEPS item, populate `id`, required fields, and `evidence`"
+    ],
+    "failure_modes": [
+      "Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`",
+      "Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`"
+    ]
+  },
+  "PROMPT_X9_MERGE___QA.md": {
+    "steps": [
+      "Load all X-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all FEATURE_* artifacts into FEATURE_INDEX_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all X-Phase artifacts present, coverage complete, sort order deterministic; emit FEATURE_INDEX_QA",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing X-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md": {
+    "steps": [
+      "Load all finalized extraction artifacts as input for freeze inventory and checksums",
+      "Compute checksums and integrity metadata for FREEZE_INVENTORY",
+      "Build FREEZE_INVENTORY: compile all required components with provenance tracking",
+      "Validate completeness: verify all expected artifacts are present and checksums match",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing artifact for freeze: if a required artifact is absent, record gap with `status: incomplete_freeze`",
+      "Checksum mismatch: if an artifact changed after freeze, flag with `status: post_freeze_mutation`"
+    ]
+  },
+  "PROMPT_Z1_PROOF_PACK___RUNBOOK.md": {
+    "steps": [
+      "Load all finalized extraction artifacts as input for proof pack and runbook",
+      "Compute checksums and integrity metadata for PROOF_PACK",
+      "Build PROOF_PACK: compile all required components with provenance tracking",
+      "Validate completeness: verify all expected artifacts are present and checksums match",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing artifact for freeze: if a required artifact is absent, record gap with `status: incomplete_freeze`",
+      "Checksum mismatch: if an artifact changed after freeze, flag with `status: post_freeze_mutation`"
+    ]
+  },
+  "PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md": {
+    "steps": [
+      "Load all finalized extraction artifacts as input for opus input bundle and manifest",
+      "Compute checksums and integrity metadata for OPUS_INPUT_BUNDLE",
+      "Build OPUS_INPUT_BUNDLE: compile all required components with provenance tracking",
+      "Validate completeness: verify all expected artifacts are present and checksums match",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing artifact for freeze: if a required artifact is absent, record gap with `status: incomplete_freeze`",
+      "Checksum mismatch: if an artifact changed after freeze, flag with `status: post_freeze_mutation`"
+    ]
+  },
+  "PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md": {
+    "steps": [
+      "Load all Z-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging",
+      "Merge all FREEZE_* artifacts into FREEZE_MANIFEST using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts",
+      "Run QA checks: verify all Z-Phase artifacts present, coverage complete, sort order deterministic; emit FREEZE_CHECKSUMS",
+      "Cross-check coverage: verify every inventory item has corresponding extraction entries",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Missing Z-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`",
+      "Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`"
+    ]
+  },
+  "PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md": {
+    "steps": [
+      "Load runtime state and configuration as input for runtime export inventory",
+      "Extract runtime export inventory data: query live state, sanitize sensitive values, and capture metadata",
+      "Build RUNTIME_EXPORT_INVENTORY: compile extracted data with timestamps and provenance",
+      "Validate export safety: ensure no secrets or sensitive data in output; redact if found",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Runtime unavailable: if the target service is not running, emit with `status: service_offline` and skip",
+      "Sensitive data in export: if sensitive data is detected, replace with `REDACTED` and flag with `status: redacted`"
+    ]
+  },
+  "PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md": {
+    "steps": [
+      "Load runtime state and configuration as input for SQLite schema snapshots",
+      "Extract SQLite schema snapshots data: query live state, sanitize sensitive values, and capture metadata",
+      "Build SQLITE_SCHEMA_SNAPSHOTS: compile extracted data with timestamps and provenance",
+      "Validate export safety: ensure no secrets or sensitive data in output; redact if found",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Runtime unavailable: if the target service is not running, emit with `status: service_offline` and skip",
+      "Sensitive data in export: if sensitive data is detected, replace with `REDACTED` and flag with `status: redacted`"
+    ]
+  },
+  "PROMPT_M2_SQLITE_TABLE_COUNTS.md": {
+    "steps": [
+      "Load runtime state and configuration as input for SQLite table counts",
+      "Extract SQLite table counts data: query live state, sanitize sensitive values, and capture metadata",
+      "Build SQLITE_TABLE_COUNTS: compile extracted data with timestamps and provenance",
+      "Validate export safety: ensure no secrets or sensitive data in output; redact if found",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Runtime unavailable: if the target service is not running, emit with `status: service_offline` and skip",
+      "Sensitive data in export: if sensitive data is detected, replace with `REDACTED` and flag with `status: redacted`"
+    ]
+  },
+  "PROMPT_M3_CONPORT_EXPORT_SAFE.md": {
+    "steps": [
+      "Load runtime state and configuration as input for conport export (safe)",
+      "Extract conport export (safe) data: query live state, sanitize sensitive values, and capture metadata",
+      "Build CONPORT_EXPORT: compile extracted data with timestamps and provenance",
+      "Validate export safety: ensure no secrets or sensitive data in output; redact if found",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Runtime unavailable: if the target service is not running, emit with `status: service_offline` and skip",
+      "Sensitive data in export: if sensitive data is detected, replace with `REDACTED` and flag with `status: redacted`"
+    ]
+  },
+  "PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md": {
+    "steps": [
+      "Load runtime state and configuration as input for dope context export (safe)",
+      "Extract dope context export (safe) data: query live state, sanitize sensitive values, and capture metadata",
+      "Build DOPE_CONTEXT_EXPORT: compile extracted data with timestamps and provenance",
+      "Validate export safety: ensure no secrets or sensitive data in output; redact if found",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Runtime unavailable: if the target service is not running, emit with `status: service_offline` and skip",
+      "Sensitive data in export: if sensitive data is detected, replace with `REDACTED` and flag with `status: redacted`"
+    ]
+  },
+  "PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md": {
+    "steps": [
+      "Load runtime state and configuration as input for MCP health export (safe)",
+      "Extract MCP health export (safe) data: query live state, sanitize sensitive values, and capture metadata",
+      "Build MCP_HEALTH_EXPORT: compile extracted data with timestamps and provenance",
+      "Validate export safety: ensure no secrets or sensitive data in output; redact if found",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Runtime unavailable: if the target service is not running, emit with `status: service_offline` and skip",
+      "Sensitive data in export: if sensitive data is detected, replace with `REDACTED` and flag with `status: redacted`"
+    ]
+  },
+  "PROMPT_M6_RUNTIME_EXPORT_INDEX.md": {
+    "steps": [
+      "Load runtime state and configuration as input for runtime export index",
+      "Extract runtime export index data: query live state, sanitize sensitive values, and capture metadata",
+      "Build RUNTIME_EXPORT_INDEX: compile extracted data with timestamps and provenance",
+      "Validate export safety: ensure no secrets or sensitive data in output; redact if found",
+      "For each output item, populate `id`, required fields, and `evidence` per schema contracts"
+    ],
+    "failure_modes": [
+      "Runtime unavailable: if the target service is not running, emit with `status: service_offline` and skip",
+      "Sensitive data in export: if sensitive data is detected, replace with `REDACTED` and flag with `status: redacted`"
+    ]
+  },
+  "PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md": {
+    "steps": [
+      "Load all upstream extraction and synthesis artifacts as input for opus architecture synthesis",
+      "Synthesize ARCHITECTURE_SYNTHESIS: integrate findings across all phases into a cohesive analysis",
+      "For each finding, trace evidence chain back to source artifacts with inline citations",
+      "Identify architectural implications and recommend actionable next steps",
+      "For each output section, ensure evidence coverage and cite specific artifact IDs"
+    ],
+    "failure_modes": [
+      "Incomplete evidence chain: if a finding cannot be traced to source, emit with `status: unverified`",
+      "Contradictory findings: if synthesis reveals conflicts between phases, present both with evidence"
+    ]
+  },
+  "PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md": {
+    "steps": [
+      "Load all upstream extraction and synthesis artifacts as input for MCP-to-hooks migration plan",
+      "Synthesize MCP_HOOKS_MIGRATION: integrate findings across all phases into a cohesive analysis",
+      "For each finding, trace evidence chain back to source artifacts with inline citations",
+      "Identify architectural implications and recommend actionable next steps",
+      "For each output section, ensure evidence coverage and cite specific artifact IDs"
+    ],
+    "failure_modes": [
+      "Incomplete evidence chain: if a finding cannot be traced to source, emit with `status: unverified`",
+      "Contradictory findings: if synthesis reveals conflicts between phases, present both with evidence"
+    ]
+  },
+  "PROMPT_S2_DECISION_DOSSIER.md": {
+    "steps": [
+      "Load all upstream extraction and synthesis artifacts as input for decision dossier",
+      "Synthesize DECISION_DOSSIER: integrate findings across all phases into a cohesive analysis",
+      "For each finding, trace evidence chain back to source artifacts with inline citations",
+      "Identify architectural implications and recommend actionable next steps",
+      "For each output section, ensure evidence coverage and cite specific artifact IDs"
+    ],
+    "failure_modes": [
+      "Incomplete evidence chain: if a finding cannot be traced to source, emit with `status: unverified`",
+      "Contradictory findings: if synthesis reveals conflicts between phases, present both with evidence"
+    ]
+  },
+  "PROMPT_S3_ARCHITECTURE_PROOF_HOOKS.md": {
+    "steps": [
+      "Load all upstream extraction and synthesis artifacts as input for architecture proof hooks",
+      "Synthesize ARCHITECTURE_PROOF_HOOKS: integrate findings across all phases into a cohesive analysis",
+      "For each finding, trace evidence chain back to source artifacts with inline citations",
+      "Identify architectural implications and recommend actionable next steps",
+      "For each output section, ensure evidence coverage and cite specific artifact IDs"
+    ],
+    "failure_modes": [
+      "Incomplete evidence chain: if a finding cannot be traced to source, emit with `status: unverified`",
+      "Contradictory findings: if synthesis reveals conflicts between phases, present both with evidence"
+    ]
+  }
+}

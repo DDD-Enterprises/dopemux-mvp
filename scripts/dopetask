@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+EXPECTED_PROJECT_ID="dopemux-mvp"
+
+if [[ ! -f "$REPO_ROOT/.dopetaskroot" ]]; then
+  echo "Refusing: .dopetaskroot missing in repo root: $REPO_ROOT" >&2
+  exit 2
+fi
+
+if [[ ! -f "$REPO_ROOT/.repo_id" ]]; then
+  echo "Refusing: .repo_id missing in repo root: $REPO_ROOT" >&2
+  exit 2
+fi
+
+REPO_PROJECT_ID="$(sed -n 's/^project=//p' "$REPO_ROOT/.repo_id" | head -n 1)"
+if [[ "$REPO_PROJECT_ID" != "$EXPECTED_PROJECT_ID" ]]; then
+  echo "Refusing: wrong repo_id project. expected=$EXPECTED_PROJECT_ID got=${REPO_PROJECT_ID:-<missing>}" >&2
+  exit 2
+fi
+
+if [[ ! -f "$REPO_ROOT/.dopetask/project.json" ]]; then
+  echo "Refusing: .dopetask/project.json missing in repo root." >&2
+  exit 2
+fi
+
+DOPETASK_PROJECT_ID="$(python3 - "$REPO_ROOT/.dopetask/project.json" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+try:
+    with open(path, "r", encoding="utf-8") as fh:
+        payload = json.load(fh)
+except Exception:
+    print("")
+    raise SystemExit(0)
+
+print(str(payload.get("project_id", "")).strip())
+PY
+)"
+if [[ "$DOPETASK_PROJECT_ID" != "$EXPECTED_PROJECT_ID" ]]; then
+  echo "Refusing: .dopetask/project.json project_id mismatch. expected=$EXPECTED_PROJECT_ID got=${DOPETASK_PROJECT_ID:-<missing>}" >&2
+  exit 2
+fi
+
+# Read dopetask pin configuration
+DOPETASK_PIN="$REPO_ROOT/.dopetask-pin"
+if [[ ! -f "$DOPETASK_PIN" ]]; then
+  echo "Refusing: .dopetask-pin missing in repo root: $REPO_ROOT" >&2
+  exit 2
+fi
+
+# Parse pin file
+DOPETASK_INSTALL_METHOD=""
+DOPETASK_DEP=""
+DOPETASK_VERSION=""
+while IFS='=' read -r key value; do
+  case "$key" in
+    install) DOPETASK_INSTALL_METHOD="$value" ;;
+    dep) DOPETASK_DEP="$value" ;;
+    version) DOPETASK_VERSION="$value" ;;
+  esac
+done < "$DOPETASK_PIN"
+
+if [[ "$DOPETASK_INSTALL_METHOD" != "pip" ]]; then
+  echo "Refusing: .dopetask-pin must specify install=pip" >&2
+  exit 2
+fi
+
+if [[ -z "$DOPETASK_DEP" || -z "$DOPETASK_VERSION" ]]; then
+  echo "Refusing: .dopetask-pin missing dep or version" >&2
+  exit 2
+fi
+
+VENV="$REPO_ROOT/.dopetask_venv"
+if [[ ! -d "$VENV" ]]; then
+  python3 -m venv "$VENV"
+fi
+
+DOPETASK_VERSION_FILE="$VENV/.dopetask_version"
+INSTALLED_VERSION=""
+if [[ -f "$DOPETASK_VERSION_FILE" ]]; then
+  INSTALLED_VERSION="$(cat "$DOPETASK_VERSION_FILE" 2>/dev/null || true)"
+fi
+
+ensure_dopetask_installed() {
+  source "$VENV/bin/activate"
+  pip install --quiet --upgrade pip
+  pip install --quiet --upgrade "$DOPETASK_DEP==$DOPETASK_VERSION"
+  printf '%s\n' "$DOPETASK_VERSION" > "$DOPETASK_VERSION_FILE"
+}
+
+if [[ ! -x "$VENV/bin/dopetask" || "$INSTALLED_VERSION" != "$DOPETASK_VERSION" ]]; then
+  ensure_dopetask_installed
+else
+  source "$VENV/bin/activate"
+fi
+
+if [[ "${1:-}" == "doctor" ]]; then
+  set +e
+  DOCTOR_OUTPUT="$("$VENV/bin/dopetask" "$@" 2>&1)"
+  DOCTOR_RC=$?
+  set -e
+  printf '%s\n' "$DOCTOR_OUTPUT"
+
+  # Upstream dopetask==0.1.4 can fail doctor due to a hard-coded taskx path check.
+  if [[ $DOCTOR_RC -ne 0 && "$DOCTOR_OUTPUT" == *"Expected locations: */site-packages/taskx/ or */code/taskX/"* ]]; then
+    echo "WARNING: dopetask doctor hit known taskx path check bug; continuing." >&2
+    exit 0
+  fi
+
+  exit $DOCTOR_RC
+fi
+
+exec "$VENV/bin/dopetask" "$@"

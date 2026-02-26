@@ -133,6 +133,8 @@ repos:
               if [[ "$normalized" =~ ^\./(services|docker)/[^/]+/[A-Z_0-9-]+\.md$ ]]; then continue; fi
               # Repo-truth-extractor prompt assets are runtime inputs, not docs
               if [[ "$normalized" =~ ^\./services/repo-truth-extractor/(prompts|promptsets|tests/fixtures)/ ]]; then continue; fi
+              # Prompt rewrite benchmark prompts are runtime inputs, not docs
+              if [[ "$normalized" =~ ^\./tools/prompt_rewrite_v4/benchmark/prompts/ ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(docker/mcp-servers/pal/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(docker/mcp-servers/)[A-Z_0-9-]+\.md$ ]]; then continue; fi
 

@@ -10,6 +10,7 @@ Usage:
     console.print("Hello!")
     console.logger.info("Info message")
     console.logger.error("Error message")
+    console.logger.warning("Warning message")
 """
 
 from rich.console import Console
@@ -28,6 +29,10 @@ class _ConsoleAdapter:
     def error(self, *args, **kwargs) -> None:
         """Log error message to console with red styling."""
         self._console.print(*args, **kwargs, style="red")
+
+    def warning(self, *args, **kwargs) -> None:
+        """Log warning message to console with yellow styling."""
+        self._console.print(*args, **kwargs, style="yellow")
 
 
 # Single console instance with logger adapter - use this everywhere

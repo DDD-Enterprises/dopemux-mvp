@@ -87,3 +87,46 @@ You are working on a **python project** with Dopemux ADHD optimizations enabled.
 **Focus**: python development with ADHD accommodations
 **Goal**: Maintain productivity while respecting neurodivergent needs
 **Style**: Supportive, clear, action-oriented
+
+## General Implementation Invariants (all work)
+
+SERVICE MANAGEMENT (platform native)
+- Prefer the OS-native service manager for long-running daemons:
+  - macOS: launchd (LaunchAgents/LaunchDaemons)
+  - Linux: systemd
+  - Windows: SCM
+- Do not start critical daemons via subprocess.Popen from a CLI unless the Task Packet explicitly requires it.
+- Do not use Docker as a supervisor for local host services unless the Task Packet explicitly requires it.
+- Do not hardcode machine-specific paths (/Users/..., $HOME/code/...). Resolve paths dynamically.
+- Service configs must be generated from a single source of truth and must be rebuildable (idempotent).
+- Secrets must never be stored in service definition files (plists/unit files). Secrets must be loaded from a dedicated env/secret file or OS key store.
+If any of the above would be violated, STOP and request guidance.
+
+SHELL SAFETY
+- Avoid giant inline strings in shell commands. Use --body-file, heredocs, or temp files.
+- Never rely on eval for command execution. Prefer bash -lc "<cmd>" if a string must be executed.
+- When a command contains quotes/newlines/pipes, prefer a heredoc or a script file over escaping.
+- Always record exit codes for verification commands.
+If a shell command fails due to quoting, rewrite it using a file or heredoc, not more escaping.
+
+STATE AND EVIDENCE DISCIPLINE
+- Before work: git status --porcelain must be empty. If not, STOP.
+- After work: git status --porcelain must be empty. No untracked files allowed.
+- Any new file must be either committed or intentionally ignored via a narrow .gitignore rule committed separately.
+- Never simulate command output. If a command cannot be run, write UNKNOWN and STOP.
+- Evidence must be produced via the repo harness (if available) and must contain verbatim outputs including:
+  - repo identity (pwd, git rev-parse --show-toplevel, branch, sha)
+  - diffstat + full diff for relevant commits
+  - test/verification command outputs
+
+PLANNING GATE (mandatory for non-trivial changes)
+- Before editing any file, write proof/PLAN.txt containing:
+  - Objective (1-2 lines)
+  - Scope: allowed files (exact paths)
+  - Steps (numbered, <= 7)
+  - Verification commands
+- If a plan cannot be written, STOP.
+
+DEFAULT WORKDIR
+- Use one canonical repo directory per project.
+- If worktrees are used, every proof must include pwd + git rev-parse --show-toplevel.

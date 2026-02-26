@@ -43,16 +43,15 @@ export ANTHROPIC_API_KEY='<REDACTED_LITELLM_MASTER_KEY>'
 dopemux start
 ```
 
-### Step 4: Verify TaskX Kernel Wiring
+### Step 4: Verify dopeTask Kernel Wiring
 
 ```bash
-git submodule update --init --recursive vendor/taskx
-scripts/taskx --version
+scripts/dopetask --version
 dopemux kernel doctor --timestamp-mode deterministic
 ```
 
 Use `dopemux kernel --help` for full lifecycle commands (`compile`, `run`, `collect`, `gate`, `promote`, `feedback`, `loop`).
-`.taskx-pin` is deprecated for runtime and CI behavior.
+`.dopetask-pin` is used for runtime and CI behavior.
 
 ## Verify It's Working
 
