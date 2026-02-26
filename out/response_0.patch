@@ -1,0 +1,13 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md
+index 1ae9f88ba..75b64a009 100644
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md
+@@ -50,7 +50,7 @@ Focus on concrete, machine-verifiable implementation facts.
+     - `required_registry_fields`: `path, line_range, id`
+ 
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++1. Enumerate candidate facts only from in-scope inputs and upstream artifacts. Legacy Context is intent guidance only and is never evidence.
+ 2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+ 3. Attach evidence to every non-derived field and every relationship edge.
+ 4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).

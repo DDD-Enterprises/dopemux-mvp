@@ -38,12 +38,17 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Aggregate dope-context runtime data from M0 (file inventory), M1 (schema snapshots), and M2 (table counts) into a unified dope-context export summary. Reference each upstream item by its ID.
+2. Extract dope-context config surface: Qdrant connection references, embedding model references, index configuration (collection names, vector dimensions), and workspace isolation settings. Record with evidence.
+3. Summarize dope-context operational state: indexed collection names, document/chunk counts (from M2 if stored in SQLite), and embedding model version references.
+4. Cross-reference against upstream `HOME_MCP_SURFACE.json` to validate dope-context MCP server configuration matches runtime state.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -78,6 +83,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Dope-context uses Qdrant with no local SQLite state: emit config references only with `local_state: none` and evidence.
+- Embedding model reference points to a model not available locally: emit with `status: model_not_local` and evidence.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -49,12 +49,18 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan `scripts/`, `services/**/scripts/`, and project root for workflow orchestration files: shell scripts, Makefiles, tmux session configs (`*.tmux`, `*.tmux.conf`), and orchestrator YAML definitions. For each, record the file type, the services/processes it manages, and file path with line range evidence.
+2. Extract startup ordering: parse `depends_on`, `wait-for-it`, `sleep`, or sequential launch patterns to determine the order in which services are started. Build a startup DAG with edges representing "must start before" relationships, citing evidence from each orchestration file.
+3. Identify Make targets and their dependency chains: extract all targets from `Makefile` or `Makefile.*`, record what each target executes, and map target-to-target dependencies. Record with file path and line range evidence.
+4. Extract tmux/orchestrator session definitions: pane layouts, window names, commands assigned to each pane, and any environment variable setup. Record the session topology with evidence.
+5. Cross-reference discovered workflow runners against upstream `SERVICE_ENTRYPOINTS.json` and `EVENTBUS_SURFACE.json` to validate that every orchestrated service has a matching entrypoint and to detect services started by orchestrators but not registered in `services/registry.yaml`.
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -89,6 +95,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Orchestration script references a service or command that cannot be resolved to any known entrypoint: emit with `target_service: UNKNOWN` and `status: unresolved_reference` with evidence.
+- Circular startup dependency detected in orchestration DAG: emit all involved edges with `status: circular_dependency` and evidence from each ordering declaration.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

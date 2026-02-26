@@ -51,12 +51,17 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load all upstream T-phase packet artifacts (batched packets, batch index, backlog) as specified in the inputs section. Detect duplicate `tp_id` values, duplicate normalized titles, and materially overlapping scopes across all emitted packets.
+2. Resolve collisions with deterministic tie-breaks: prefer higher evidence density, then lower blast radius, then earlier dependency position. Preserve traceability from deduped packets to source packet IDs.
+3. Record all dropped/merged packets and reason codes in `TP_COLLISIONS.json` with full evidence chains showing which packets were merged and why.
+4. Structure the output with clear collision-detection methodology, resolution evidence, and an explicit UNKNOWN section for cases where collision resolution is ambiguous.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -91,6 +96,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Collision resolution tie-break cannot determine winner (identical evidence density and blast radius): retain both packets with `status: unresolved_collision` and flag for manual review.
+- Deduplication removes a packet that is a dependency of another: restore the dependency target and re-run collision detection on the affected subgraph.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

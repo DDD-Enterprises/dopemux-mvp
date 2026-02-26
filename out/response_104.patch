@@ -1,0 +1,29 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md
+@@ -55,8 +55,13 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. Load all upstream Z-phase artifacts (Z0-Z2 outputs) as specified in the inputs section. Produce a deterministic freeze handoff manifest including SHA-256 for every file in phase `norm/` and `qa/` outputs across all phases (A/H/D/C/E/W/B/G/Q/R/X/T/Z), plus prompt corpus fingerprints for active `PROMPT_*.md` files.
++2. Record missing expected artifacts and failure counts by phase. Cross-reference against `artifacts.yaml` to ensure completeness. Generate `FREEZE_README.md` with deterministic verification commands that a downstream consumer can run to validate the freeze.
++3. Run final QA: verify all checksums are consistent with file contents, all cross-references resolve, no duplicate artifact IDs exist, and the manifest is self-consistent. Emit `FREEZE_QA.json` with pass/fail per check.
++4. Structure the output with the complete freeze manifest, README with verification commands, QA results, and an explicit UNKNOWN section for any artifacts or checks that could not be completed.
++5. Legacy Context is intent guidance only and is never evidence.
++6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++8. Attach evidence to every non-derived field and every relationship edge.
++9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++11. Emit exactly the declared outputs and no additional files.
+ 
+@@ -94,3 +99,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- Final QA discovers inconsistency between manifest and actual files on disk: emit `FREEZE_QA.json` with `status: FAIL` for affected checks and detailed evidence of each inconsistency.
++- Prompt corpus fingerprints show uncommitted modifications to active prompt files: record the modified files with their dirty checksums and flag with `status: uncommitted_changes`.
+ 
