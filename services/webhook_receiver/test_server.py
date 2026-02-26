@@ -70,6 +70,14 @@ def _load_ledger_interface_module():
     )
 
 
+def _load_poller_module():
+    root = Path(__file__).resolve().parents[2]
+    return _load_module(
+        "webhook_receiver_poller",
+        root / "services" / "webhook_receiver" / "poller.py",
+    )
+
+
 def _free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind(("127.0.0.1", 0))
@@ -480,3 +488,84 @@ def test_storage_selects_postgres_backend_without_connecting(monkeypatch) -> Non
     monkeypatch.setenv("WEBHOOK_DB_URL", "postgresql://user:pass@localhost:5432/dopemux")
     event_store = storage.build_event_store()
     assert event_store.__class__.__name__ == "PostgresEventStore"
+
+
+def test_poller_cycle_idempotent_for_terminal_status(tmp_path: Path, monkeypatch) -> None:
+    interface_mod = _load_ledger_interface_module()
+    poller = _load_poller_module()
+    store = _build_store_with_migrations(tmp_path, monkeypatch, "poller.db")
+
+    store.register_async_job(
+        interface_mod.AsyncJobInsert(
+            provider="xai",
+            job_kind="responses_async",
+            external_job_id="job_xai_1",
+            run_id="run_poll",
+            phase="R",
+            step_id="R1",
+            partition_id="R_P0001",
+            attempt=1,
+            status="submitted",
+        )
+    )
+
+    first = poller.run_poll_cycle(store, ["xai"])
+    second = poller.run_poll_cycle(store, ["xai"])
+
+    assert first["jobs_seen"] == 1
+    assert first["jobs_processed"] == 1
+    assert first["events_inserted"] == 1
+    assert second["events_inserted"] == 0
+    assert store.count_webhook_events() == 1
+    assert store.count_run_events() == 1
+
+
+def test_poller_marks_stale_attempt_orphaned(tmp_path: Path, monkeypatch) -> None:
+    interface_mod = _load_ledger_interface_module()
+    poller = _load_poller_module()
+    store = _build_store_with_migrations(tmp_path, monkeypatch, "poller_orphaned.db")
+
+    # Two attempts for the same tuple: attempt=1 should be orphaned, attempt=2 should complete.
+    store.register_async_job(
+        interface_mod.AsyncJobInsert(
+            provider="xai",
+            job_kind="responses_async",
+            external_job_id="job_xai_stale",
+            run_id="run_orphan",
+            phase="R",
+            step_id="R1",
+            partition_id="R_P0001",
+            attempt=1,
+            status="submitted",
+        )
+    )
+    store.register_async_job(
+        interface_mod.AsyncJobInsert(
+            provider="xai",
+            job_kind="responses_async",
+            external_job_id="job_xai_latest",
+            run_id="run_orphan",
+            phase="R",
+            step_id="R1",
+            partition_id="R_P0001",
+            attempt=2,
+            status="submitted",
+        )
+    )
+
+    result = poller.run_poll_cycle(store, ["xai"])
+    assert result["events_inserted"] == 2
+
+    stale_job = store.find_async_job(provider="xai", external_job_id="job_xai_stale", attempt=1)
+    latest_job = store.find_async_job(provider="xai", external_job_id="job_xai_latest", attempt=2)
+    assert stale_job is not None and stale_job["status"] == "orphaned"
+    assert latest_job is not None and latest_job["status"] == "completed"
+
+
+def test_poller_rejects_unsupported_provider() -> None:
+    poller = _load_poller_module()
+    try:
+        poller._parse_provider_list("xai,unknown")
+        assert False, "Expected ValueError for unsupported provider"
+    except ValueError as exc:
+        assert "Unsupported providers" in str(exc)
