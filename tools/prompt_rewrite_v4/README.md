@@ -19,6 +19,16 @@ Workflow (one file per batch by default):
 4) Apply + validate + advance cursor:
    python tools/prompt_rewrite_v4/run_batch.py --apply
 
+Pending-only workflow (recommended when usage is limited):
+1) Show pending prompts and reasons:
+   python tools/prompt_rewrite_v4/run_batch.py --pending-report
+2) Render next pending prompt only:
+   python tools/prompt_rewrite_v4/run_batch.py --render --pending-only
+3) Save patch to:
+   tools/prompt_rewrite_v4/out/response_pending_<n>.patch
+4) Apply + validate next pending prompt:
+   python tools/prompt_rewrite_v4/run_batch.py --apply --pending-only
+
 Hard gate (lint-only):
 - python scripts/repo_truth_extractor_promptset_audit_v4.py --strict
 
