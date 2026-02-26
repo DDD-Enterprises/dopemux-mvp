@@ -115,6 +115,20 @@ class OpenAIBatchClient:
         batch_obj = self._client.batches.retrieve(job_id)
         return str(getattr(batch_obj, "status", "") or "").lower()
 
+    def get_batch_info(self, job_id: str) -> Dict[str, Any]:
+        """Retrieve batch information including status and file IDs."""
+        batch_obj = self._client.batches.retrieve(job_id)
+        return {
+            "id": str(getattr(batch_obj, "id", "")),
+            "status": str(getattr(batch_obj, "status", "") or "").lower(),
+            "output_file_id": str(getattr(batch_obj, "output_file_id", "") or ""),
+            "error_file_id": str(getattr(batch_obj, "error_file_id", "") or ""),
+            "created_at": str(getattr(batch_obj, "created_at", "")),
+            "completed_at": str(getattr(batch_obj, "completed_at", "")),
+            "failed_at": str(getattr(batch_obj, "failed_at", "")),
+            "expired_at": str(getattr(batch_obj, "expired_at", "")),
+        }
+
     def fetch_results(self, job_id: str) -> List[BatchResult]:
         batch_obj = self._client.batches.retrieve(job_id)
         output_file_id = getattr(batch_obj, "output_file_id", None)
@@ -160,6 +174,11 @@ class OpenAIBatchClient:
 
 class XAIBatchClient(OpenAIBatchClient):
     def __init__(self, api_key: str, base_url: str = "https://api.x.ai/v1") -> None:
+        super().__init__(api_key=api_key, base_url=base_url)
+
+
+class OpenRouterBatchClient(OpenAIBatchClient):
+    def __init__(self, api_key: str, base_url: str = "https://openrouter.ai/api/v1") -> None:
         super().__init__(api_key=api_key, base_url=base_url)
 
 
