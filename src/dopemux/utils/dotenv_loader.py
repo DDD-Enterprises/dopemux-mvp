@@ -3,7 +3,7 @@ Utility module for loading .env files safely.
 Handles cases where python-dotenv might not be installed.
 """
 import warnings
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 try:
     from dotenv import load_dotenv as _load_dotenv
