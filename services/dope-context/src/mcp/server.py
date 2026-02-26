@@ -495,8 +495,14 @@ def _workspace_snapshot_signature(workspace: Path) -> str:
         head = result.stdout.strip()
         if head:
             return f"git:{head}"
-    except Exception:
-        pass
+    except Exception as exc:
+        # Git may not be available or workspace may not be a git repository;
+        # fall back to filesystem-based signature instead.
+        logger.debug(
+            "Failed to obtain git-based workspace signature for %s: %s",
+            workspace,
+            exc,
+        )
     try:
         return f"mtime:{int(workspace.stat().st_mtime)}"
     except Exception:
