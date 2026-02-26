@@ -171,7 +171,9 @@
     ".dopetaskroot",
     ".dopetask-pin",
     "DOPETASK_INTEGRATION_ANALYSIS.md",
-    "SUPERVISOR_INSTRUCTIONS_CHATGPT.md"
+    "SUPERVISOR_INSTRUCTIONS_CHATGPT.md",
+    "patchit",
+    "CLAUDE_AUTOMATION_INSTRUCTIONS.md"
   ],
   "legacy_root_files": [],
   "blocked_root_file_patterns": [
