@@ -1,0 +1,134 @@
+# Dope Decision Graph Stack (formerly ConPort KG)
+# Production Docker Compose Configuration
+#
+# To deploy:
+#   docker compose -f compose/legacy/conport-kg-docker-compose.yml up -d
+#
+# To stop:
+#   docker compose -f compose/legacy/conport-kg-docker-compose.yml down
+
+version: '3.8'
+
+services:
+  # PostgreSQL AGE Database
+  postgres-age:
+    image: apache/age:latest
+    container_name: dope-decision-graph-postgres
+    ports:
+      - "5455:5432"
+    environment:
+      POSTGRES_DB: dopemux_knowledge_graph
+      POSTGRES_USER: dopemux_age
+      POSTGRES_PASSWORD: ${AGE_PASSWORD}
+      # AGE extension configuration
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=age"
+    volumes:
+      - age-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "dopemux_age", "-d", "dopemux_knowledge_graph" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - conport-kg-network
+
+  # DopeconBridge (HTTP API)
+  dopecon-bridge:
+    build:
+      context: ../../services/mcp-dopecon-bridge
+      dockerfile: Dockerfile
+    container_name: dope-decision-graph-bridge
+    ports:
+      - "3016:3016"
+    environment:
+      # Port configuration
+      - PORT_BASE=3000
+
+      # Database connection (FIXED: Use DDG postgres)
+      - AGE_HOST=dope-decision-graph-postgres
+      - AGE_PORT=5432
+      - AGE_PASSWORD=${AGE_PASSWORD}
+      # Qdrant (embeddings index - FIXED: Use existing Qdrant)
+      - QDRANT_URL=http://mcp-qdrant:6333
+      # Redis cache (FIXED: No password on dopemux-redis-events)
+      - REDIS_URL=redis://dopemux-redis-events:6379
+      - REDIS_PASSWORD=
+      # Shared state DB URL (FIXED: Use DDG postgres)
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD}@dope-decision-graph-postgres:5432/dopemux_knowledge_graph
+
+      # Embeddings (FIXED: Add Voyage API key)
+      - VOYAGEAI_API_KEY=${VOYAGE_API_KEY}
+      - EMBEDDINGS_PROVIDER=voyageai
+      - EMBEDDINGS_MODEL=voyage-3-large
+
+      # Feature flags
+      - KG_DIRECT_CONNECTION=true
+
+      # Instance configuration
+      - DOPEMUX_INSTANCE=production
+    depends_on:
+      postgres-age:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3016/kg/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - conport-kg-network
+    # Mount query API code (read-only)
+    volumes:
+      - ../../services/conport_kg:/app/services/conport_kg:ro
+
+  # Redis (OPTIONAL - for event bus and caching)
+  redis:
+    image: redis:7-alpine
+    container_name: dope-decision-graph-redis
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - conport-kg-network
+
+  # Qdrant (vector index for embeddings)
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: dope-decision-graph-qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    restart: unless-stopped
+    networks:
+      - conport-kg-network
+
+# Persistent volumes
+volumes:
+  age-data:
+    name: dope-decision-graph-age-data
+    driver: local
+  redis-data:
+    name: dope-decision-graph-redis-data
+    driver: local
+  qdrant-data:
+    name: dope-decision-graph-qdrant-data
+    driver: local
+
+# Network isolation
+networks:
+  conport-kg-network:
+    name: dope-decision-graph-network
+    driver: bridge

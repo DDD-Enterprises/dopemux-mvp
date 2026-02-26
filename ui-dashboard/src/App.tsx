@@ -10,7 +10,9 @@ import {
   Chip,
   Divider,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Link,
+  Tooltip
 } from '@mui/material';
 import { Brain, Zap, Eye, TrendingUp, Droplet } from 'lucide-react';
 import theme, { brandTokens, statusStyles } from './theme';
@@ -127,25 +129,25 @@ function App() {
     {
       label: 'Energy Level',
       value: cognitiveState.energy,
-      icon: <Zap color={brandTokens.colors.serumMint} size={24} />,
+      icon: <Zap color={brandTokens.colors.serumMint} size={24} aria-hidden="true" />,
       roast: "You're sipping ambition like it's lukewarm coffee.",
     },
     {
       label: 'Attention Focus',
       value: cognitiveState.attention,
-      icon: <Eye color={brandTokens.colors.ritualCyan} size={24} />,
+      icon: <Eye color={brandTokens.colors.ritualCyan} size={24} aria-hidden="true" />,
       roast: "Focus is flirting with you; stop ghosting it.",
     },
     {
       label: 'Cognitive Load',
       value: cognitiveState.load,
-      icon: <Brain color={brandTokens.colors.saintGold} size={24} />,
+      icon: <Brain color={brandTokens.colors.saintGold} size={24} aria-hidden="true" />,
       roast: "Load creeping up like a brat testing limits.",
     },
     {
       label: '15-min Prediction',
       value: cognitiveState.prediction ?? null,
-      icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} />,
+      icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} aria-hidden="true" />,
       roast: "Future you is pacing. Hydrate before they mutiny.",
     },
   ];
@@ -153,8 +155,31 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Link
+        href="#main-dashboard"
+        sx={{
+          position: 'absolute',
+          top: -100,
+          left: 0,
+          backgroundColor: 'var(--serum-mint, #94fadb)',
+          color: 'black',
+          padding: '8px 16px',
+          zIndex: 9999,
+          borderRadius: '0 0 4px 0',
+          fontWeight: 'bold',
+          textDecoration: 'none',
+          transition: 'top 0.2s',
+          '&:focus': {
+            top: 0,
+            outline: '2px solid white',
+          },
+        }}
+      >
+        Skip to main content
+      </Link>
       <Container maxWidth="xl" sx={{ py: 3 }}>
         <Box
+          component="header"
           sx={{
             mb: 4,
             p: 3,
@@ -165,23 +190,49 @@ function App() {
           }}
         >
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Chip
-              label={`${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
-              className="dopemux-chip"
-              color="primary"
-            />
-            <Chip
-              label={`${brandTokens.chips.consent}`}
-              className="dopemux-chip"
-              variant="outlined"
-              sx={{ borderColor: 'rgba(255, 207, 120, 0.9)', color: brandTokens.colors.saintGold }}
-            />
-            <Chip
-              icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} />}
-              label="[AFTERCARE] Logged. Hydrate."
-              className="dopemux-chip"
-              sx={{ borderColor: 'rgba(155, 120, 255, 0.8)', color: brandTokens.colors.aftercareViolet }}
-            />
+            <Tooltip title="Real-time connection to ADHD Engine active" arrow>
+              <Chip
+                icon={
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: brandTokens.colors.ritualCyan,
+                      ml: 1,
+                      animation: 'pulse 2s infinite',
+                      '@keyframes pulse': {
+                        '0%': { boxShadow: `0 0 0 0px rgba(125, 251, 246, 0.7)` },
+                        '70%': { boxShadow: `0 0 0 8px rgba(125, 251, 246, 0)` },
+                        '100%': { boxShadow: `0 0 0 0px rgba(125, 251, 246, 0)` },
+                      },
+                    }}
+                  />
+                }
+                label={`${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
+                className="dopemux-chip"
+                color="primary"
+                tabIndex={0}
+              />
+            </Tooltip>
+            <Tooltip title="User consent verified for cognitive monitoring" arrow>
+              <Chip
+                label={`${brandTokens.chips.consent}`}
+                className="dopemux-chip"
+                variant="outlined"
+                sx={{ borderColor: 'rgba(255, 207, 120, 0.9)', color: brandTokens.colors.saintGold }}
+                tabIndex={0}
+              />
+            </Tooltip>
+            <Tooltip title="Health and hydration status" arrow>
+              <Chip
+                icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} />}
+                label="[AFTERCARE] Logged. Hydrate."
+                className="dopemux-chip"
+                sx={{ borderColor: 'rgba(155, 120, 255, 0.8)', color: brandTokens.colors.aftercareViolet }}
+                tabIndex={0}
+              />
+            </Tooltip>
           </Box>
           <Typography variant="h2" sx={{ fontWeight: 600, mb: 1, letterSpacing: '0.08em' }}>
             Dopemux Ultra UI
@@ -241,7 +292,14 @@ function App() {
         </Grid>
 
         {/* Main Dashboard */}
-        <Grid container spacing={3}>
+        <Grid
+          container
+          spacing={3}
+          id="main-dashboard"
+          component="main"
+          tabIndex={-1}
+          sx={{ outline: 'none' }}
+        >
           {/* Cognitive Load Gauge - Always visible */}
           <Grid item xs={12} lg={layout.compactMode ? 12 : 4}>
             <CognitiveLoadGauge
