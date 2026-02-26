@@ -517,6 +517,189 @@ exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
                 "details": str(e),
             }
 
+    def kickstart(self, service: Optional[str] = None) -> Dict[str, Any]:
+        """Restart services using launchctl kickstart.
+        
+        Args:
+            service: Specific service to kickstart ('litellm', 'ccr'), or None for all
+            
+        Returns:
+            Dictionary with results for each service
+        """
+        results = {}
+        services_to_kick = []
+        
+        if service is None or service == "litellm":
+            services_to_kick.append(self.LITELLM_SERVICE_NAME)
+        if service is None or service == "ccr":
+            services_to_kick.append(self.CCR_SERVICE_NAME)
+        
+        for svc_name in services_to_kick:
+            try:
+                result = subprocess.run(
+                    ["launchctl", "kickstart", "-k", f"gui/{os.getuid()}/{svc_name}"],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+                results[svc_name] = {
+                    "ok": result.returncode == 0,
+                    "exit_code": result.returncode,
+                    "stderr_snippet": result.stderr[:200] if result.stderr else None
+                }
+                logger.info(f"Kickstarted service {svc_name}: {'ok' if result.returncode == 0 else 'failed'}")
+            except Exception as e:
+                results[svc_name] = {
+                    "ok": False,
+                    "exit_code": 1,
+                    "stderr_snippet": str(e)[:200]
+                }
+                logger.error(f"Failed to kickstart service {svc_name}: {e}")
+        
+        return results
+    
+    def _regenerate_configs(self) -> None:
+        """Regenerate configuration files for both services."""
+        logger.info("🔄 Regenerating configuration files...")
+        self._generate_litellm_config()
+        self._generate_ccr_config()
+        logger.info("✅ Configuration files regenerated")
+    
+    def _get_log_paths(self) -> Dict[str, str]:
+        """Get paths to relevant log files for diagnostics.
+        
+        Returns:
+            Dictionary with log file paths (names only, no sensitive content)
+        """
+        return {
+            "litellm_launchd": str(self.LOGS_DIR / "litellm_launchd.log"),
+            "ccr_launchd": str(self.LOGS_DIR / "ccr_launchd.log"),
+            "litellm_latest": self._get_latest_litellm_log()
+        }
+    
+    def _get_latest_litellm_log(self) -> str:
+        """Find the newest LiteLLM log file."""
+        try:
+            logs = list(self.LOGS_DIR.glob("litellm_*.log"))
+            if logs:
+                return str(max(logs, key=lambda f: f.stat().st_mtime))
+        except Exception:
+            pass
+        return "N/A (no logs found)"
+    
+    def repair(self, max_passes: int = 3, allow_sync_keys: bool = False) -> Dict[str, Any]:
+        """Attempt to repair routing services through multiple passes.
+        
+        Args:
+            max_passes: Maximum number of repair attempts (default 3)
+            allow_sync_keys: Whether to attempt key syncing in pass 3 (default False)
+            
+        Returns:
+            Dictionary with repair results and final health status
+        """
+        attempts = []
+        final_health = {}
+        
+        # Ensure we have the routing config loaded
+        try:
+            if not self.routing_config._loaded:
+                self.routing_config.load()
+        except Exception as e:
+            return {
+                "healthy": False,
+                "attempts": [],
+                "health": {
+                    "config": {
+                        "status": "unhealthy",
+                        "error": f"Cannot load routing config: {e}"
+                    }
+                }
+            }
+        
+        # Pass 1: Kickstart both services
+        logger.info("🔧 Repair Pass 1/3: Kickstarting services...")
+        pass1_result = self.kickstart()
+        attempts.append({
+            "pass": 1,
+            "action": "kickstart",
+            "result": pass1_result
+        })
+        
+        # Check health after pass 1
+        health = self.check_health()
+        if self._is_healthy(health):
+            final_health = health
+            logger.info("✅ Services healthy after pass 1")
+            return {"healthy": True, "attempts": attempts, "health": final_health}
+        
+        # Pass 2: Regenerate configs and kickstart
+        if max_passes >= 2:
+            logger.info("🔧 Repair Pass 2/3: Regenerating configs and kickstarting...")
+            self._regenerate_configs()
+            pass2_result = self.kickstart()
+            attempts.append({
+                "pass": 2,
+                "action": "regenerate_configs + kickstart",
+                "result": pass2_result
+            })
+            
+            # Check health after pass 2
+            health = self.check_health()
+            if self._is_healthy(health):
+                final_health = health
+                logger.info("✅ Services healthy after pass 2")
+                return {"healthy": True, "attempts": attempts, "health": final_health}
+        
+        # Pass 3: Sync keys and kickstart (if allowed)
+        if max_passes >= 3 and allow_sync_keys:
+            logger.info("🔧 Repair Pass 3/3: Syncing keys and kickstarting...")
+            try:
+                self.sync_keys_from_environment()
+                pass3_result = self.kickstart()
+                attempts.append({
+                    "pass": 3,
+                    "action": "sync_keys + kickstart",
+                    "result": pass3_result
+                })
+                
+                # Check health after pass 3
+                health = self.check_health()
+                if self._is_healthy(health):
+                    final_health = health
+                    logger.info("✅ Services healthy after pass 3")
+                    return {"healthy": True, "attempts": attempts, "health": final_health}
+            except Exception as e:
+                logger.error(f"Pass 3 failed: {e}")
+                attempts.append({
+                    "pass": 3,
+                    "action": "sync_keys + kickstart",
+                    "result": {"error": str(e)}
+                })
+        
+        # Final health check
+        final_health = self.check_health()
+        logger.info("❌ Services still unhealthy after all repair attempts")
+        return {"healthy": False, "attempts": attempts, "health": final_health}
+    
+    def _is_healthy(self, health: Dict[str, Any]) -> bool:
+        """Check if health status indicates all services are healthy."""
+        if "config" in health and health["config"]["status"] == "unhealthy":
+            return False
+        
+        # In subscription mode, we don't need services running
+        try:
+            mode = self.routing_config.config.get('mode', 'subscription')
+            if mode == 'subscription':
+                return True
+        except Exception:
+            pass
+        
+        # Check both services are healthy
+        litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
+        ccr_healthy = health.get("ccr", {}).get("status") == "healthy"
+        
+        return litellm_healthy and ccr_healthy
+    
     def check_health(self) -> Dict[str, Any]:
         """Check health of running services."""
         health = {}
@@ -531,6 +714,18 @@ exec "{ccr_bin}" start >> "$LOG_FILE" 2>&1
                 "error": f"routing.yaml missing or invalid; cannot determine ports; refusing to guess: {e}",
             }
             return health
+        
+        # In subscription mode, services are not required
+        try:
+            mode = self.routing_config.config.get('mode', 'subscription')
+            if mode == 'subscription':
+                health["mode"] = {
+                    "status": "healthy",
+                    "message": "subscription mode - no services required"
+                }
+                return health
+        except Exception:
+            pass
         
         # Check LiteLLM health
         try:
