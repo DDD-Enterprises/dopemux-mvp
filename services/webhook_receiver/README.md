@@ -13,7 +13,8 @@ OpenAI-first webhook sidecar with provider-agnostic event ledger and poller adap
 - `OPENAI_API_KEY` (required by OpenAI SDK init)
 - `WEBHOOK_RECEIVER_HOST` (default `0.0.0.0`)
 - `WEBHOOK_RECEIVER_PORT` (default `8790`)
-- `WEBHOOK_DB_PATH` (default `/data/webhook_receiver.db`)
+- `WEBHOOK_DB_URL` (`sqlite:////...` or `postgresql://...`; preferred)
+- `WEBHOOK_DB_PATH` (legacy SQLite fallback, default `/data/webhook_receiver.db`)
 
 ## Ledger Tables
 

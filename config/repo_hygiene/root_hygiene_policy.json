@@ -170,8 +170,6 @@
     "working_pr_merger.py",
     ".dopetaskroot",
     ".dopetask-pin",
-    "DOPETASK_INTEGRATION_ANALYSIS.md",
-    "SUPERVISOR_INSTRUCTIONS_CHATGPT.md",
     "patchit",
     "CLAUDE_AUTOMATION_INSTRUCTIONS.md"
   ],
