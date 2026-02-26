@@ -327,11 +327,15 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - QDRANT_URL=http://mcp-qdrant:6333
+      - HOST_CODE_PARENT_DIR=${HOST_CODE_PARENT_DIR}
+      - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
+      - DOPEMUX_WORKSPACE_ROOT=/workspaces/${HOST_PROJECT_RELATIVE_PATH}
     ports:
       - "3010:3010"
     volumes:
       - ./services/dope-context/data:/app/data
       - ./services/dope-context/logs:/app/logs
+      - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
     depends_on:
       - mcp-qdrant
     healthcheck:
@@ -521,6 +525,10 @@ services:
       - MCP_SERVER_PORT=3006
       - HTTP_PORT=4006
       - WORKSPACE_ID=${WORKSPACE_ID:-/workspace}
+      - HOST_CODE_PARENT_DIR=${HOST_CODE_PARENT_DIR}
+      - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
+    volumes:
+      - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4006/health || exit 1"]
       timeout: 10s
