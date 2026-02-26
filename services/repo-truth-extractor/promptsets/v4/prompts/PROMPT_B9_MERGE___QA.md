@@ -49,12 +49,17 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load all upstream B-phase artifacts (B0 through B3 outputs) and validate each against its declared schema. Record which artifacts are present, missing, or malformed.
+2. For each output artifact, merge items using `itemlist_by_id` strategy: union items by `id`, deduplicate evidence arrays by `(path, line_range, excerpt)`, resolve scalar conflicts by preferring non-empty values.
+3. Cross-validate boundary coverage: verify that every boundary in `BOUNDARY_INVENTORY.json` has at least one enforcement point in B1, one guardrail in B2, and has been assessed for bypass risk in B3.
+4. Build `BOUNDARY_QA.json` with checks for: expected artifacts present/missing, empty artifact detection, duplicate IDs, boundary coverage gaps, and severity distribution summary.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -89,6 +94,8 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Boundary item with no enforcement point, no guardrail, and no bypass assessment: emit in QA as `coverage: none` with the boundary ID and evidence from the inventory.
+- Merge produces conflicting severity for the same bypass across steps: keep the higher severity and note the conflict in QA.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -38,12 +38,17 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load `WORKFLOW_INVENTORY.json` and `WORKFLOW_PARTITIONS.json` as specified in the inputs section. For each workflow in the inventory, extract literal execution steps: commands, arguments, environment requirements, expected outputs, and success/failure indicators.
+2. For script-based workflows, parse the actual command sequences. For documented runbooks, extract the numbered procedure steps verbatim. For compose workflows, extract service definitions, depends_on chains, and health checks.
+3. Catalog each workflow with: `workflow_id`, `name`, `type`, `steps[]` (ordered literal commands), `prerequisites`, `expected_outputs`, and `post_conditions`. Do not infer steps not present in source evidence.
+4. Structure the output with clear per-workflow entries, evidence citations for each extracted step, and an explicit UNKNOWN section for workflows with incomplete or ambiguous step sequences.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -78,6 +83,8 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Script contains dynamic command generation (eval, variable expansion) preventing literal step extraction: record available static steps and flag dynamic segments with `status: dynamic_unresolvable`.
+- Documented runbook steps contradict actual script implementation: record both with evidence and flag with `status: doc_code_drift`.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

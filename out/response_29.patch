@@ -1,0 +1,30 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md
+@@ -65,8 +65,14 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. For each document flagged in D1 CAP_NOTICES or requiring deep extraction, parse structured interface definitions: service responsibility matrices, API endpoint tables, data flow diagrams described in text, and schema references. Record each interface with its declaring document and line range evidence.
++2. Extract workflow descriptions: multi-step procedures, operational runbooks, pipeline definitions, and state machine descriptions found in documentation. For each workflow, record the steps, the services involved, event names mentioned, and any referenced state databases or schemas.
++3. Locate decision records: sections titled `Decision`, `ADR`, `RFC`, or containing decision rationale language (`we chose X because`, `alternative considered`). Extract the decision summary, rationale, alternatives considered, and status (accepted/rejected/superseded).
++4. Build a glossary from explicitly defined terms: definitions following patterns like `**term**: definition`, `term - definition`, or glossary sections. Record each term, its definition, the defining document, and line range evidence.
++5. Cross-reference extracted interfaces and workflows against upstream C-phase artifacts (`SERVICE_ENTRYPOINTS.json`, `EVENTBUS_SURFACE.json`) to validate that documented interfaces match code reality. Flag discrepancies with `status: doc_code_mismatch`.
++6. Legacy Context is intent guidance only and is never evidence.
++7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++9. Attach evidence to every non-derived field and every relationship edge.
++10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++12. Emit exactly the declared outputs and no additional files.
+ 
+@@ -104,3 +110,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- Workflow description references services or events not found in any upstream artifact: emit with referenced names and `status: unresolved_reference` with evidence from the document.
++- Decision record has no explicit status (accepted/rejected): emit with `status: UNKNOWN` and `missing_evidence_reason: no_decision_status`.
+ 

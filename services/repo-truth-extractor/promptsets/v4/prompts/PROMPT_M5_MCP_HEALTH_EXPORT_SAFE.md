@@ -39,12 +39,17 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. For each MCP server definition discovered in H-phase (`HOME_MCP_SURFACE.json`), extract a health summary without making network calls: server name, command path, argument count, environment variable key names (never values), and config file presence/parseability.
+2. Check each MCP server command for local file existence: does the command binary exist at the specified path? Is the referenced config file present and parseable (valid JSON/YAML)? Record results with evidence.
+3. Classify each MCP server health status: `config_valid` (all referenced files present and parseable), `config_incomplete` (some references missing), or `config_invalid` (parse errors detected).
+4. Cross-reference against upstream `REPO_MCP_SERVER_DEFS.json` to identify home-level overrides of repo-defined MCP servers.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -79,6 +84,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- MCP server command references an absolute path that does not exist: emit with `status: command_not_found` and the path as evidence.
+- MCP server config file contains syntax errors: emit with `status: parse_error` and the error message as evidence (redact any secret-like values).
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

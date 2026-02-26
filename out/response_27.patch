@@ -1,0 +1,30 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md
+@@ -54,8 +54,14 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. Walk `docs/**`, `*.md` in project root, and any `archive/` directories to enumerate all documentation files. For each file, record: repo-relative path, file size, modification time (from git log or filesystem), and file extension. Tag files in archive directories as `status: archive`.
++2. For each documentation file, extract the top-level headings (H1, H2), the first 40 non-empty lines as a content preview, and estimate the token count (word count * 1.3). Record with file path evidence.
++3. Classify each document as `ACTIVE`, `ARCHIVE`, or `QUARANTINE` based on: path location (files under `archive/` or `deprecated/` → ARCHIVE), in-document markers (`DEPRECATED`, `SUPERSEDED`, `DRAFT` → appropriate tag), and recency (no commits touching file in 180+ days → candidate for QUARANTINE).
++4. Assign every document to exactly one partition using these categories (first match wins): core architecture docs, plane-specific docs (PM plane, memory plane, orchestrator plane, MCP plane, hooks plane), service-specific docs, task-packet and governance docs, research and audit docs. Record the partition assignment reason with evidence.
++5. Validate that every documentation file under scan scope appears in exactly one partition; emit `coverage_notes` for any file matching zero or multiple partitions.
++6. Legacy Context is intent guidance only and is never evidence.
++7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++9. Attach evidence to every non-derived field and every relationship edge.
++10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++12. Emit exactly the declared outputs and no additional files.
+ 
+@@ -93,3 +99,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- Documentation file is a symlink to a path outside the repository: skip the target, emit the symlink path with `status: external_symlink` and evidence.
++- Binary file (PDF, image) found in docs directory: emit inventory entry with `content_preview: BINARY` and `token_count: UNKNOWN`.
+ 

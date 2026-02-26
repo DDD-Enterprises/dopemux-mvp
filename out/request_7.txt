@@ -1,0 +1,426 @@
+Task: Produce a minimal unified diff patch for the provided prompt file.
+
+Output cap: If unified diff would exceed 350 lines, output exactly: OUTPUT_LIMIT_REACHED
+
+Inputs:
+- Heuristics Library v1
+- Prompt file content
+
+Heuristics Library v1:
+---BEGIN HEURISTICS---
+# Heuristics Library v1
+
+**Purpose**: Domain-agnostic discovery and extraction patterns for deterministic prompt engineering.
+**Scope**: v4 prompt files in Dopemux repo-truth-extractor system.
+**Version**: 1.0 (2026-02-23)
+
+## Core Principles
+
+### Determinism First
+1. **Stable Keys**: Always prefer path/symbol/name/service_id over generated IDs
+2. **Content Hashing**: Use SHA256 for deduplication when no natural key exists
+3. **Sort Order**: Normalize arrays by stable keys (alphanumeric, not insertion order)
+4. **Unknown Handling**: Emit UNKNOWN for missing data with evidence gap citation
+
+### Evidence Chain
+1. **Provenance**: Every fact must cite source (file:line or artifact_id)
+2. **Derivation**: Mark computed fields as DERIVED with algorithm reference
+3. **Validation**: Required fields must have explicit validation steps
+4. **Audit Trail**: Preserve original values when transforming data
+
+## Discovery Heuristics by Phase
+
+### C-Phase (Concurrency & Determinism)
+**Focus**: Thread safety, race conditions, atomic operations
+
+1. **Lock Analysis**: Enumerate all synchronization primitives (mutexes, semaphores, RW locks)
+2. **Critical Section Mapping**: Identify code regions protected by each lock
+3. **Deadlock Detection**: Trace lock acquisition order across call paths
+4. **Race Condition Surface**: Flag shared mutable state without synchronization
+5. **Atomic Operation Audit**: Verify proper use of atomic types/operations
+6. **Thread Pool Analysis**: Map worker threads to task queues and priorities
+7. **Memory Barrier Check**: Ensure proper memory visibility guarantees
+8. **Context Switch Points**: Identify yield/sleep/block operations
+
+**Failure Modes**:
+- Priority inversion scenarios
+- Lock convoy and contention hotspots
+- False sharing in concurrent data structures
+- Thread starvation conditions
+
+### W-Phase (Workflow & Orchestration)
+**Focus**: Task decomposition, dependency graphs, state machines
+
+1. **Entry Point Discovery**: Map all workflow triggers (API, event, cron, manual)
+2. **State Transition Graph**: Extract states, transitions, and guards
+3. **Dependency Analysis**: Build task DAG with edge conditions
+4. **Error Path Enumeration**: Trace all exception handling branches
+5. **Retry Policy Extraction**: Document backoff strategies and limits
+6. **Compensation Logic**: Identify rollback and cleanup handlers
+7. **Timeout Analysis**: Map all timeout values and cascading effects
+8. **Resource Allocation**: Trace resource acquisition/release lifecycle
+
+**Failure Modes**:
+- Orphaned resource leaks in error paths
+- Inconsistent state transition guards
+- Circular dependency deadlocks
+- Unbounded retry storms
+
+### B-Phase (Boundaries & Contracts)
+**Focus**: API surfaces, versioning, compatibility
+
+1. **Endpoint Catalog**: Extract all HTTP/gRPC/MCP service endpoints
+2. **Schema Evolution**: Trace versioned request/response schemas
+3. **Validation Rules**: Document all input validation constraints
+4. **Error Code Mapping**: Enumerate all possible error responses
+5. **Rate Limit Analysis**: Identify throttling mechanisms and limits
+6. **Authentication Flows**: Map authN/authZ decision points
+7. **Payload Size Analysis**: Document size limits and chunking
+8. **Idempotency Keys**: Identify operations with idempotency guarantees
+
+**Failure Modes**:
+- Breaking changes without version bump
+- Inconsistent error code usage
+- Missing input validation edges
+- Authentication bypass paths
+
+## Extraction Procedure Patterns
+
+### Input Processing
+1. **Schema Validation**: Validate against declared JSON Schema before processing
+2. **Normalization**: Convert to canonical format (trim strings, standardize dates)
+3. **Provenance Stamping**: Attach source metadata to every extracted fact
+4. **Deduplication**: Remove duplicates using stable content keys
+
+### Evidence Collection
+1. **Fact Enumeration**: Extract atomic facts from structured inputs
+2. **Relationship Mapping**: Build entity relationship graphs
+3. **Temporal Analysis**: Extract timestamps and duration calculations
+4. **Spatial Analysis**: Map physical/logical locations and hierarchies
+
+### Transformation Pipeline
+1. **Type Conversion**: Safe conversion with fallback to UNKNOWN
+2. **Unit Normalization**: Standardize measurements to base units
+3. **Derived Computation**: Calculate computed fields with formula citation
+4. **Threshold Application**: Apply business rule thresholds
+
+### Output Generation
+1. **Schema Validation**: Verify against output schema
+2. **Sorting**: Apply stable sort order to arrays
+3. **Pagination**: Implement consistent pagination when required
+4. **Provenance Preservation**: Maintain evidence chain in output
+
+## Failure Mode Taxonomy
+
+### Data Quality Issues
+- **Missing Required Fields**: Field marked required but absent from input
+- **Type Mismatch**: Value doesn't match declared schema type
+- **Format Violation**: String doesn't match expected format (UUID, email, etc.)
+- **Range Violation**: Numeric value outside valid range
+- **Enum Violation**: Value not in allowed enumeration
+
+### Processing Errors
+- **Transformation Failure**: Computation results in error or invalid state
+- **Memory Exhaustion**: Input size exceeds processing capacity
+- **Timeout Exceeded**: Processing takes longer than allowed threshold
+- **Circular Reference**: Graph contains cycles preventing traversal
+- **Stack Overflow**: Recursive processing exceeds depth limit
+
+### Integration Issues
+- **Endpoint Unavailable**: External service dependency unavailable
+- **Authentication Failure**: Credentials rejected by external service
+- **Rate Limit Exceeded**: Throttled by external service
+- **Schema Mismatch**: External service returns unexpected format
+- **Version Incompatibility**: API version not supported
+
+## Validation Patterns
+
+### Input Validation
+```
+1. Check presence of all required fields
+2. Validate field types match schema
+3. Verify string formats (UUID, email, URL, etc.)
+4. Confirm numeric ranges and precision
+5. Validate enumeration values
+6. Check array lengths and item types
+7. Verify object structure and nested properties
+```
+
+### Output Validation
+```
+1. Confirm all required output fields present
+2. Validate output schema compliance
+3. Verify derived field calculations
+4. Check sort order consistency
+5. Validate pagination metadata
+6. Confirm provenance chain completeness
+7. Verify deterministic ID generation
+```
+
+## Legacy Context Handling
+
+### Intent vs Evidence
+- **Legacy Context is intent guidance only and is never evidence**
+- Treat as supplementary information, not primary source
+- Use for disambiguation, not fact extraction
+- Document when legacy context influences decisions
+
+### Migration Patterns
+1. **Deprecation Mapping**: Identify deprecated fields and replacements
+2. **Version Translation**: Map legacy versions to current schemas
+3. **Behavioral Deltas**: Document changed behavior between versions
+4. **Compatibility Shims**: Identify backward compatibility layers
+
+## Performance Considerations
+
+### Memory Efficiency
+- Stream large inputs instead of loading entirely
+- Use generators for transformation pipelines
+- Implement incremental processing with checkpoints
+- Limit in-memory caching to essential data
+
+### Processing Optimization
+- Parallelize independent fact extraction
+- Cache repeated computations
+- Use efficient data structures (tries for prefix matching)
+- Batch I/O operations where possible
+
+### Error Handling
+- Fail fast on critical errors
+- Graceful degradation for non-critical failures
+- Comprehensive error context for debugging
+- Idempotent retry mechanisms
+
+## Security Guidelines
+
+### Input Sanitization
+- Escape special characters in generated output
+- Validate all external inputs
+- Prevent injection attacks (SQL, command, etc.)
+- Limit payload sizes to prevent DoS
+
+### Data Protection
+- Redact sensitive information from logs
+- Encrypt sensitive data at rest
+- Use secure protocols for data transmission
+- Implement proper access controls
+
+## Monitoring and Observability
+
+### Instrumentation Points
+1. **Input Reception**: Log receipt timestamp and size
+2. **Validation Results**: Record validation outcomes
+3. **Processing Milestones**: Track pipeline progress
+4. **Error Events**: Capture detailed error information
+5. **Output Generation**: Log completion timestamp
+
+### Metrics Collection
+- Processing duration by stage
+- Input/output size distributions
+- Validation failure rates
+- Error type frequencies
+- Resource utilization profiles
+
+## Documentation Requirements
+
+### Mandatory Sections
+1. **Goal**: Clear objective statement
+2. **Inputs**: Complete input specification
+3. **Outputs**: Detailed output schema
+4. **Extraction Procedure**: Step-by-step process
+5. **Failure Modes**: Comprehensive error cases
+6. **Legacy Context**: Historical context (non-authoritative)
+
+### Recommended Sections
+1. **Assumptions**: Explicit dependencies and constraints
+2. **Limitations**: Known boundaries and restrictions
+3. **Examples**: Illustrative input/output pairs
+4. **Performance**: Expected resource requirements
+5. **Security**: Sensitivity and protection requirements
+
+## Continuous Improvement
+
+### Feedback Loops
+1. **Error Analysis**: Review failure patterns regularly
+2. **Performance Tuning**: Optimize based on metrics
+3. **Schema Evolution**: Update for new requirements
+4. **Pattern Extraction**: Identify reusable components
+
+### Versioning Strategy
+- Incremental updates for bug fixes
+- Minor version for backward-compatible changes
+- Major version for breaking changes
+- Deprecation warnings for removed features
+
+## Compliance Checklist
+
+### Before Production Deployment
+- [ ] All required fields have validation
+- [ ] Error handling covers all failure modes
+- [ ] Performance meets SLAs
+- [ ] Security review completed
+- [ ] Documentation updated
+- [ ] Monitoring instrumented
+- [ ] Rollback procedure tested
+
+### For Each Release
+- [ ] Schema changes documented
+- [ ] Backward compatibility verified
+- [ ] Migration path provided
+- [ ] Deprecation warnings added
+- [ ] Changelog updated
+---END HEURISTICS---
+
+FILE: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md
+---BEGIN FILE---
+# PROMPT_A7
+
+## Goal
+Produce `A7` outputs for phase `A` with strict schema, explicit evidence, and deterministic normalization.
+Focus on concrete, machine-verifiable implementation facts.
+
+## Inputs
+- Source scope (scan these roots first):
+- `.claude/**`
+- `.github/**`
+- `.taskx/**`
+- `config/**`
+- `scripts/**`
+- `docker/**`
+- `compose.yml`
+- `docker-compose*.yml`
+- `README.md`
+- `AGENTS.md`
+- Upstream normalized artifacts available to this step:
+- `REPOCTRL_INVENTORY.json`
+- `REPOCTRL_PARTITIONS.json`
+- `REPO_INSTRUCTION_SURFACE.json`
+- `REPO_INSTRUCTION_REFERENCES.json`
+- `REPO_MCP_SERVER_DEFS.json`
+- `REPO_MCP_PROXY_SURFACE.json`
+- `REPO_ROUTER_SURFACE.json`
+- `REPO_HOOKS_SURFACE.json`
+- `REPO_COMPOSE_SERVICE_GRAPH.json`
+- Runner context artifacts:
+  - `extraction/*/inputs/INVENTORY.json`
+  - `extraction/*/inputs/PARTITIONS.json`
+  - `services/repo-truth-extractor/promptsets/v4/promptset.yaml`
+  - `services/repo-truth-extractor/promptsets/v4/artifacts.yaml`
+- When relevant, use `services/registry.yaml` as canonical service list.
+
+## Outputs
+- `REPO_LITELLM_SURFACE.json`
+
+## Schema
+- Use deterministic containers only:
+  - `ItemList`: `{"schema":"<schema_id>@v1","items":[...]}`
+  - `Graph`: `{"schema":"<schema_id>@v1","nodes":[...],"edges":[...]}`
+- Output contracts:
+  - `REPO_LITELLM_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `A99`
+    - `id_rule`: `REPO_LITELLM_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+
+## Extraction Procedure
+1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+3. Attach evidence to every non-derived field and every relationship edge.
+4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+6. Emit exactly the declared outputs and no additional files.
+
+## Evidence Rules
+- Every load-bearing value must carry at least one evidence object:
+```json
+{
+  "path": "<repo-relative-path>",
+  "line_range": [<start>, <end>],
+  "excerpt": "<exact substring <=200 chars>"
+}
+```
+- `path` must be repo-relative (never absolute in norm artifacts).
+- `excerpt` must be exact (no paraphrase) and <= 200 chars.
+- If the source is ambiguous, include multiple evidence objects and set value to `UNKNOWN`.
+
+## Determinism Rules
+- Norm outputs MUST NOT contain: `generated_at`, `timestamp`, `created_at`, `updated_at`, `run_id`.
+- Sort `items` by `(path, line_start, id)` when available; otherwise by `id` then stable JSON text.
+- Merge duplicates deterministically:
+  - union evidence by `(path,line_range,excerpt)`
+  - union arrays with stable sort
+  - choose scalar conflicts by non-empty, else lexicographically smallest stable value
+- Output byte content must be reproducible for same commit + same configuration.
+
+## Anti-Fabrication Rules
+- Do not invent endpoints, handlers, dependencies, env vars, commands, or policy claims.
+- Do not infer intent from filenames alone; require direct textual/code evidence.
+- If required evidence is missing, keep item with `UNKNOWN` fields and `missing_evidence_reason`.
+- Never copy unsupported keys from upstream QA artifacts into norm artifacts.
+
+## Failure Modes
+- Missing input files: emit valid empty containers plus `missing_inputs` list in output items.
+- Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
+- Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+- Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+
+## Legacy Context (for intent only; never as evidence)
+```markdown
+# PROMPT: A7 - Repo LiteLLM Surface
+
+Phase: A
+Step: A7
+
+Outputs:
+- REPO_LITELLM_SURFACE.json
+
+Mode: extraction
+Strict: evidence_only
+Format: JSON only (no markdown fences)
+
+Hard rules:
+1) Do NOT invent. If not present, write "UNKNOWN".
+2) Every non-trivial field must include "evidence" with source_path and either key_path or excerpt.
+3) Emit ONLY valid JSON. No commentary.
+
+Input:
+You will receive repo control-plane files. Extract only what is explicitly evidenced.
+
+Required JSON shape:
+{
+  "artifact": "REPO_LITELLM_SURFACE.json",
+  "phase": "A",
+  "step": "A7",
+  "generated_at": "<iso8601>",
+  "items": [
+    {
+      "id": "litellm:<stable_id>",
+      "config_file": "...",
+      "provider": "...",
+      "model": "...",
+      "env_var_requirements": ["..."],
+      "budgets": ["..."],
+      "rate_limits": ["..."],
+      "cache_settings": ["..."],
+      "logging_or_db": ["..."],
+      "evidence": [
+        {
+          "source_path": "...",
+          "key_path": "...",
+          "excerpt": "..."
+        }
+      ]
+    }
+  ],
+  "unknowns": ["..."]
+}
+
+Extract:
+- LiteLLM config files/references, model/provider declarations
+- Expected env var names only, budgets/rate limits/cache/logging/db settings if present
+```
+---END FILE---
+
+Return unified diff only. No prose.

@@ -38,12 +38,17 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load upstream X-phase artifacts (inventory, partitions, feature surface) as specified in the inputs section. For each feature surface, build a deterministic map to concrete code implementation loci: modules, functions, classes, scripts, and service entry points that implement the feature behavior.
+2. Include coupling points to control-plane configuration (settings, env vars, feature flags) and runtime config (compose services, tmux panes) where these affect feature behavior. Record the coupling type and evidence.
+3. For features spanning multiple services, map the call chain or event flow connecting implementation loci. Retain unresolved mappings in unknowns with explicit reasons for why the code locus could not be determined.
+4. Structure the output with clear per-feature code mappings, coupling point entries with evidence, and an explicit UNKNOWN section for features where code implementation cannot be fully traced.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -78,6 +83,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Feature implementation uses indirection (dependency injection, factory pattern) preventing direct code mapping: record the indirection mechanism with `status: indirect_mapping` and available evidence.
+- Control-plane coupling point references configuration not present in repo (external config service): record as `coupling_type: external_config` with available evidence.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

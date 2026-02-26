@@ -1,0 +1,29 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md
+@@ -42,8 +42,13 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. Load all required upstream normalized artifacts as specified in the inputs section. Validate each artifact's schema compliance before processing. Synthesize workflow truth graph from Phase C workflow runners, Phase E execution surfaces, and Phase A compose/startup artifacts. Build a complete DAG of workflow execution with evidence at each node and edge.
++2. For each synthesized fact or truth claim, require evidence from at least one normalized artifact. Chain evidence through multiple artifacts when the truth spans phases (e.g., doc claim → code implementation → runtime state).
++3. Identify gaps: areas where evidence is incomplete, artifacts are missing, or cross-phase consistency cannot be verified. Record each gap with `status: UNKNOWN` and `missing_evidence_reason`.
++4. Format the output as the declared artifact type (markdown for `.md` outputs, JSON for `.json` outputs). For markdown outputs, structure with clear sections, evidence citations, and an explicit UNKNOWN/gaps section at the end.
++5. Legacy Context is intent guidance only and is never evidence.
++6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++8. Attach evidence to every non-derived field and every relationship edge.
++9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++11. Emit exactly the declared outputs and no additional files.
+ 
+@@ -81,3 +86,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- Required upstream artifact missing: emit output with available data and add `missing_inputs` section listing unavailable artifacts with their expected phase/step.
++- Cross-phase evidence contradicts (e.g., docs say X, code does Y): emit both with `status: contradiction` and evidence from each source; do not resolve the contradiction, only document it.
+ 
