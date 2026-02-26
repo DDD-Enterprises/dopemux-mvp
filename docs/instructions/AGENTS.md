@@ -1,3 +1,14 @@
+---
+id: AGENTS
+title: Agents
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-25'
+last_review: '2026-02-25'
+next_review: '2026-05-26'
+prelude: Agents (explanation) for dopemux documentation and developer workflows.
+---
 # AGENTS Instructions
 
 ## Dopemux Instruction Source of Truth
