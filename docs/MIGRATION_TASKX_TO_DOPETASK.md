@@ -54,7 +54,7 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 
 #### `scripts/taskx` → `scripts/dopetask`
 - Updated reference from taskX to dopeTask
-- Changed environment variable names (TASKX_* -> DOPETASK_*)
+- Changed environment variable names (`TASKX_*` -> `DOPETASK_*`)
 - Updated executable name from taskx to dopetask
 
 ### 4. Directory Structure Changes
