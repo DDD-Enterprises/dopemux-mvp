@@ -42,12 +42,17 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load upstream W-phase artifacts (inventory through failure recovery) as specified in the inputs section. For each workflow, extract state coupling points: files read/written outside the repo (home directory configs, system paths, environment variables), database state dependencies, and runtime state assumptions.
+2. Classify each state dependency as: repo-local (committed files), repo-transient (gitignored files), home-directory (user config), system-level (OS services, ports), or external (network services, APIs). Record the exact paths and evidence.
+3. Identify portability risks: state dependencies that would break when cloning the repo to a different machine or user account. Flag hardcoded paths, user-specific configs, and machine-specific assumptions.
+4. Structure the output with clear per-workflow state coupling entries, portability risk assessments with evidence, and an explicit UNKNOWN section for state dependencies that cannot be fully traced from available sources.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -82,6 +87,8 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- State dependency path uses environment variable expansion that cannot be resolved statically: record the variable name and typical expansion with `status: env_dependent` and evidence.
+- Workflow depends on system services (databases, message queues) whose state is not captured in repo: record as `coupling_type: external_service` with connection details if available.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

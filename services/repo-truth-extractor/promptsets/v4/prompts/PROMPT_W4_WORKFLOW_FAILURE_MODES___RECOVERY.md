@@ -41,12 +41,17 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load upstream W-phase artifacts (inventory, catalog, I/O map, coordination surface) as specified in the inputs section. For each workflow, identify failure modes by analyzing: error handling in scripts (trap, set -e, exit codes), compose restart policies, retry logic, timeout configurations, and documented recovery procedures.
+2. For each failure mode, extract: trigger condition, observable symptoms, blast radius (which downstream workflows are affected), and recovery steps (if documented). Classify by severity (data-loss, service-down, degraded, cosmetic).
+3. Map failure propagation paths: how a failure in one workflow affects dependent workflows through the I/O and coordination graphs. Identify single points of failure.
+4. Structure the output with clear per-workflow failure entries, propagation graph edges with evidence, and an explicit UNKNOWN section for workflows with undocumented or unclear failure handling.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -81,6 +86,8 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Script has no error handling (no trap, no set -e, no exit code checks): record as `failure_handling: none` with evidence and classify all steps as `blast_radius: unknown`.
+- Recovery procedure references external systems or manual interventions not documented in repo: record as `recovery_type: external_manual` with available evidence.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

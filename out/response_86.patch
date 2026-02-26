@@ -1,0 +1,29 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md
+@@ -55,8 +55,13 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. Load all upstream T-phase artifacts (deduped packets, collisions, schema, authority rules) as specified in the inputs section. Build a dependency graph across packets using scope overlap, shared file paths, and authority input references, then topologically sort into an execution plan.
++2. Apply default precedence: control plane -> extraction -> arbitration -> synthesis. Produce a runnable sequence with blocking dependencies, parallel-safe groups, and gate checks between stages.
++3. Include explicit prerequisites and postconditions per packet. Mark cycles or unresolvable ordering constraints with `status: needs_review` and evidence of the conflict.
++4. Structure the output with the ordered run plan, dependency graph edges with evidence, and an explicit UNKNOWN section for ordering decisions that cannot be determined from available inputs.
++5. Legacy Context is intent guidance only and is never evidence.
++6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++8. Attach evidence to every non-derived field and every relationship edge.
++9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++11. Emit exactly the declared outputs and no additional files.
+ 
+@@ -94,3 +99,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- Dependency graph contains cycles preventing topological sort: identify all cycles, report them with evidence, and emit a best-effort partial order with cycle members grouped as `parallel_unsafe`.
++- Gate checks reference artifacts not yet produced by earlier packets: flag ordering constraint violation and suggest reordering with evidence.
+ 

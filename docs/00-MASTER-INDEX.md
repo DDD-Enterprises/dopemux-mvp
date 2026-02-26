@@ -126,6 +126,11 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 ### Governance
 - [Authority Map](03-reference/governance/AUTHORITY_MAP.md)
 - [Conflict Ledger](03-reference/governance/CONFLICT_LEDGER.md)
+- [CI Contract](03-reference/governance/CI_CONTRACT.md)
+- [Runtime Contract](03-reference/governance/RUNTIME_CONTRACT.md)
+- [Scoreboard](03-reference/governance/SCOREBOARD.md)
+- [Task Packet Standard](03-reference/governance/TASK_PACKET_STANDARD.md)
+- [Task Packet Template](03-reference/governance/TASK_PACKET_TEMPLATE.md)
 
 ### Technical Deep Dives
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)

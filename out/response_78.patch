@@ -1,0 +1,28 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md
+@@ -47,8 +47,13 @@
+ ## Extraction Procedure
+-1. Build a migration evidence map from required arbitration artifacts and optional control-surface artifacts.
+-2. Enumerate candidate surfaces and evaluate eligibility using the dual-evidence gate.
+-3. Reject ineligible candidates into `UNKNOWN` with explicit missing evidence references.
+-4. Create staged plan entries that remain mechanical and rollback-capable.
+-5. Derive no-go triggers from `R8` risk IDs and `R7` conflicts where relevant.
+-6. Write identical semantic content to both outputs to maintain compatibility and alias determinism.
++1. Load all required upstream artifacts as specified in the inputs section. Produce MCP-to-hooks migration plan by analyzing current MCP server configurations (from A-phase and H-phase) against hooks infrastructure (from A-phase hooks surface). Identify migration candidates, assess feasibility, and produce a prioritized migration sequence.
++2. For each synthesis claim or recommendation, require evidence chains tracing back to normalized extraction artifacts. Do not introduce claims unsupported by upstream evidence.
++3. Structure the output with clear sections, evidence citations (artifact ID, path, line range), and an explicit UNKNOWN/gaps section for areas where evidence is insufficient.
++4. Cross-reference the synthesis against upstream QA reports (`PIPELINE_DOCTOR_REPORT.json` if available) to validate that the synthesis does not depend on artifacts flagged as incomplete or corrupted.
++5. Legacy Context is intent guidance only and is never evidence.
++6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++8. Attach evidence to every non-derived field and every relationship edge.
++9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++11. Emit exactly the declared outputs and no additional files.
+ 
+@@ -86,2 +91,4 @@
+ - Alias output drift between two files: regenerate both from the same deterministic content template.
+ - Excessive optional-input dependence: downgrade confidence and keep stage progression conservative.
++- Multiple R-phase reports provide contradictory inputs to the synthesis: document both perspectives with evidence and flag with `status: unresolved_contradiction`.
++- Synthesis output would exceed the declared output format constraints: emit a complete-but-summarized version and note truncated sections in `coverage_notes`.

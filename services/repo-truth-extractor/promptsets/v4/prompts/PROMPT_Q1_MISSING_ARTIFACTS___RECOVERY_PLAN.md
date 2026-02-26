@@ -37,12 +37,17 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load `QA_RUN_MANIFEST.json` from Q0 and extract the list of missing artifacts. For each missing artifact, identify the producing step, the required inputs for that step, and whether those inputs are available.
+2. Classify each missing artifact by recovery feasibility: `recoverable` (all inputs available, can re-run step), `blocked` (missing upstream dependency), or `manual` (requires human intervention or external data).
+3. For recoverable artifacts, generate a recovery plan: the exact step command to re-run, the required inputs, and any prerequisites that must complete first.
+4. Build a dependency-ordered recovery sequence: sort recovery actions so that upstream artifacts are recovered before downstream ones that depend on them.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -77,6 +82,8 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Missing artifact's producing step also has missing inputs: classify as `blocked` and list the transitive dependency chain that must be resolved first.
+- Recovery plan would require re-running a step that modifies shared state: flag with `status: side_effect_risk` and recommend manual review.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

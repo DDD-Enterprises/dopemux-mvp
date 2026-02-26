@@ -1,0 +1,29 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md
+@@ -45,8 +45,13 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. Scan `extraction/**`, `docs/**`, and `services/repo-truth-extractor/**` as specified in the inputs section. Build a freeze file index by enumerating all norm and QA artifacts produced across all pipeline phases (A/H/D/C/E/W/B/G/Q/R/X/T/Z), recording file path, artifact name, writer step ID, and file size.
++2. Compute SHA-256 checksums for every artifact in the freeze index. Record the checksum alongside the artifact metadata for downstream verification. Use deterministic file reading (binary mode, no encoding normalization).
++3. Identify expected-but-missing artifacts by cross-referencing the `artifacts.yaml` manifest against actual files present. Record each missing artifact with its expected writer step ID and phase.
++4. Structure the output with clear per-artifact index entries with checksums, a missing-artifacts section with evidence of expected locations, and an explicit UNKNOWN section for files that cannot be classified as pipeline artifacts.
++5. Legacy Context is intent guidance only and is never evidence.
++6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++8. Attach evidence to every non-derived field and every relationship edge.
++9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++11. Emit exactly the declared outputs and no additional files.
+ 
+@@ -84,3 +89,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- Artifact file is present but has zero bytes or is corrupted (checksum of empty content): record with `status: empty_or_corrupt` and the computed checksum; do not silently exclude.
++- Expected phase directory does not exist (phase was not executed): record all expected artifacts for that phase as `status: phase_not_executed` with evidence from `artifacts.yaml`.
+ 

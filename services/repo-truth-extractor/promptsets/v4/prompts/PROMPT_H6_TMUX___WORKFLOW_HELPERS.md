@@ -45,12 +45,17 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan home control-plane files for tmux session definitions: `.tmux.conf`, tmux session scripts, tmuxinator configs, and shell aliases that launch tmux sessions. Record session names, window/pane layouts, and commands per pane with evidence.
+2. Extract workflow helper scripts: shell functions, aliases, and scripts that bootstrap Dopemux/TaskX workflows (e.g., `dopemux start`, `taskx init`). Record the command name, what it launches, and evidence.
+3. Identify automation shortcuts: keyboard bindings, shell aliases, or scripts that chain multiple operations (build → test → deploy). Record the shortcut, the chained commands, and evidence.
+4. Cross-reference workflow helpers against upstream `EXEC_BOOTSTRAP_COMMANDS.json` and `HOME_MCP_SURFACE.json` to map which helpers invoke which services and MCP servers.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -85,6 +90,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Tmux session definition uses variables or conditional logic for pane commands: emit with the static portions and `status: dynamic_layout` with evidence.
+- Workflow helper script sources a file that is not in the provided context: emit with `status: external_dependency` and evidence citing the source command.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
