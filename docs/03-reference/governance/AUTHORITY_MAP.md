@@ -1,3 +1,14 @@
+---
+id: AUTHORITY_MAP
+title: Authority Map
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-25'
+last_review: '2026-02-25'
+next_review: '2026-05-26'
+prelude: Authority Map (reference) for dopemux documentation and developer workflows.
+---
 # Authority Map
 
 ## Canonical Sources

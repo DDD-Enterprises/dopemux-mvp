@@ -1,3 +1,14 @@
+---
+id: CONFLICT_LEDGER
+title: Conflict Ledger
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-25'
+last_review: '2026-02-25'
+next_review: '2026-05-26'
+prelude: Conflict Ledger (reference) for dopemux documentation and developer workflows.
+---
 # Conflict Ledger
 
 ## Known Conflicts
