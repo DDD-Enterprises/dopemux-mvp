@@ -1,3 +1,10 @@
+OUTPUTS:
+- DOC_INDEX.partX.json
+- DOC_CONTRACT_CLAIMS.partX.json
+- DOC_BOUNDARIES.partX.json
+- DOC_SUPERSESSION.partX.json
+- CAP_NOTICES.partX.json
+
 Goal (per partition):
 - DOC_INDEX.partX.json
 - DOC_CONTRACT_CLAIMS.partX.json

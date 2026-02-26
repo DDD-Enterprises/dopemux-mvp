@@ -1,3 +1,9 @@
+OUTPUTS:
+- DOC_INTERFACES.partX.json
+- DOC_WORKFLOWS.partX.json
+- DOC_DECISIONS.partX.json
+- DOC_GLOSSARY.partX.json
+
 Goal (per partition):
 - DOC_INTERFACES.partX.json
 - DOC_WORKFLOWS.partX.json

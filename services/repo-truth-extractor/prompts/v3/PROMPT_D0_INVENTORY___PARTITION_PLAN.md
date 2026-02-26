@@ -1,3 +1,8 @@
+OUTPUTS:
+- DOC_INVENTORY.json
+- DOC_PARTITIONS.json
+- DOC_TODO_QUEUE.json
+
 Goal: DOC_INVENTORY.json, DOC_PARTITIONS.json, DOC_TODO_QUEUE.json
 
 Prompt:

@@ -1,3 +1,6 @@
+OUTPUTS:
+- SERVICE_ENTRYPOINTS.json
+
 Goal: SERVICE_ENTRYPOINTS.json
 
 Prompt:

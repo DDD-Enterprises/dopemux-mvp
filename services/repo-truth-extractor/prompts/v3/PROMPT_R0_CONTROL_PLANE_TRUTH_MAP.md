@@ -1,3 +1,6 @@
+OUTPUTS:
+- CONTROL_PLANE_TRUTH_MAP.md
+
 Goal: CONTROL_PLANE_TRUTH_MAP.md
 
 ROLE: Supervisor/Auditor. Evidence-first.

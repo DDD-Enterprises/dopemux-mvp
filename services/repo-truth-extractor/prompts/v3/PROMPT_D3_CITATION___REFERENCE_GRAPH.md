@@ -1,3 +1,6 @@
+OUTPUTS:
+- DOC_CITATION_GRAPH.json
+
 Goal: DOC_CITATION_GRAPH.json
 
 Prompt:
