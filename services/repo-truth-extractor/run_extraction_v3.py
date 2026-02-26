@@ -4151,8 +4151,11 @@ def build_chat_payload(
     }
     if temperature is not None:
         payload["temperature"] = temperature
-    if provider == "gemini" and force_json_output:
-        payload["response_format"] = {"type": "json_object"}
+    if force_json_output:
+        if provider == "gemini":
+            payload["response_format"] = {"type": "json_object"}
+        elif provider in {"openai", "xai"}:
+            payload["response_format"] = {"type": "json_object"}
     return payload
 
 
@@ -4747,6 +4750,8 @@ def call_llm(
                 }
                 if "temperature" in payload:
                     chat_kwargs["temperature"] = payload["temperature"]
+                if "response_format" in payload:
+                    chat_kwargs["response_format"] = payload["response_format"]
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = extract_text_from_chat_completion(response)
@@ -5776,6 +5781,10 @@ def validate_success_partition_output(
 
     if not has_expected_artifact:
         return False, "no_expected_artifacts"
+
+    schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts, expected_artifact_names)
+    if not schema_ok:
+        return False, f"invalid_schema:{schema_reason}"
 
     return True, "valid_success"
 
