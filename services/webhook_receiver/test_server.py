@@ -426,3 +426,57 @@ def test_latest_attempt_reconciliation_stale_event_orphaned(tmp_path: Path, monk
     orphaned_job = store.find_async_job(provider="openai", external_job_id="resp_1", attempt=1)
     assert orphaned_job is not None
     assert orphaned_job["status"] == "orphaned"
+
+
+def test_migration_sql_parity_logical_schema() -> None:
+    root = Path(__file__).resolve().parents[2]
+    sqlite_sql = (
+        root
+        / "services"
+        / "webhook_receiver"
+        / "migrations"
+        / "sqlite"
+        / "001_init_webhook_ledger.sql"
+    ).read_text(encoding="utf-8")
+    postgres_sql = (
+        root
+        / "services"
+        / "webhook_receiver"
+        / "migrations"
+        / "postgres"
+        / "001_init_webhook_ledger.sql"
+    ).read_text(encoding="utf-8")
+
+    required_logical_tokens = [
+        "CREATE TABLE IF NOT EXISTS webhook_events",
+        "provider",
+        "idempotency_key",
+        "event_type",
+        "event_id",
+        "received_at_utc",
+        "payload_json",
+        "CREATE TABLE IF NOT EXISTS run_events",
+        "run_id",
+        "phase",
+        "step_id",
+        "partition_id",
+        "provider_ref",
+        "webhook_event_id",
+        "dedupe_key",
+        "CREATE TABLE IF NOT EXISTS async_jobs",
+        "job_kind",
+        "external_job_id",
+        "attempt",
+        "status",
+        "last_error",
+    ]
+    for token in required_logical_tokens:
+        assert token in sqlite_sql
+        assert token in postgres_sql
+
+
+def test_storage_selects_postgres_backend_without_connecting(monkeypatch) -> None:
+    storage = _load_storage_module()
+    monkeypatch.setenv("WEBHOOK_DB_URL", "postgresql://user:pass@localhost:5432/dopemux")
+    event_store = storage.build_event_store()
+    assert event_store.__class__.__name__ == "PostgresEventStore"
