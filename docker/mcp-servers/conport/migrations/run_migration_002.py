@@ -5,7 +5,7 @@ import asyncio
 import asyncpg
 from pathlib import Path
 
-DATABASE_URL = "postgresql://dopemux_age:dopemux_age_dev_password@localhost:5455/dopemux_knowledge_graph"
+DATABASE_URL = "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph"
 
 async def run():
     migration_file = Path(__file__).parent / "002_decision_patterns_table.sql"
