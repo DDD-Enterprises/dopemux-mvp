@@ -11,7 +11,8 @@ import {
   Divider,
   useMediaQuery,
   useTheme,
-  Link
+  Link,
+  Tooltip
 } from '@mui/material';
 import { Brain, Zap, Eye, TrendingUp, Droplet } from 'lucide-react';
 import theme, { brandTokens, statusStyles } from './theme';
@@ -189,23 +190,49 @@ function App() {
           }}
         >
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Chip
-              label={`${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
-              className="dopemux-chip"
-              color="primary"
-            />
-            <Chip
-              label={`${brandTokens.chips.consent}`}
-              className="dopemux-chip"
-              variant="outlined"
-              sx={{ borderColor: 'rgba(255, 207, 120, 0.9)', color: brandTokens.colors.saintGold }}
-            />
-            <Chip
-              icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} />}
-              label="[AFTERCARE] Logged. Hydrate."
-              className="dopemux-chip"
-              sx={{ borderColor: 'rgba(155, 120, 255, 0.8)', color: brandTokens.colors.aftercareViolet }}
-            />
+            <Tooltip title="Real-time connection to ADHD Engine active" arrow>
+              <Chip
+                icon={
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: brandTokens.colors.ritualCyan,
+                      ml: 1,
+                      animation: 'pulse 2s infinite',
+                      '@keyframes pulse': {
+                        '0%': { boxShadow: `0 0 0 0px rgba(125, 251, 246, 0.7)` },
+                        '70%': { boxShadow: `0 0 0 8px rgba(125, 251, 246, 0)` },
+                        '100%': { boxShadow: `0 0 0 0px rgba(125, 251, 246, 0)` },
+                      },
+                    }}
+                  />
+                }
+                label={`${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
+                className="dopemux-chip"
+                color="primary"
+                tabIndex={0}
+              />
+            </Tooltip>
+            <Tooltip title="User consent verified for cognitive monitoring" arrow>
+              <Chip
+                label={`${brandTokens.chips.consent}`}
+                className="dopemux-chip"
+                variant="outlined"
+                sx={{ borderColor: 'rgba(255, 207, 120, 0.9)', color: brandTokens.colors.saintGold }}
+                tabIndex={0}
+              />
+            </Tooltip>
+            <Tooltip title="Health and hydration status" arrow>
+              <Chip
+                icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} />}
+                label="[AFTERCARE] Logged. Hydrate."
+                className="dopemux-chip"
+                sx={{ borderColor: 'rgba(155, 120, 255, 0.8)', color: brandTokens.colors.aftercareViolet }}
+                tabIndex={0}
+              />
+            </Tooltip>
           </Box>
           <Typography variant="h2" sx={{ fontWeight: 600, mb: 1, letterSpacing: '0.08em' }}>
             Dopemux Ultra UI
