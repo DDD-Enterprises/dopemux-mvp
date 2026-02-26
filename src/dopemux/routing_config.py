@@ -292,10 +292,18 @@ class RoutingConfig:
         # Build model_alias_map from slots and aliases
         model_alias_map = {}
 
-        # First, map all aliases to their slot targets
-        for alias, slot_name in aliases.items():
-            model_name = slots[slot_name]
-            model_alias_map[alias] = model_name
+        # Get all model names for direct resolution
+        known_model_names = {m["name"] for m in models}
+
+        # First, map all aliases to their targets (slots or models)
+        for alias, target in aliases.items():
+            if target in slots:
+                model_alias_map[alias] = slots[target]
+            elif target in known_model_names:
+                model_alias_map[alias] = target
+            else:
+                # Should have been caught by validation, but safety first
+                logger.warning(f"Alias {alias} references unknown target: {target}")
 
         # Then, add direct slot mappings for convenience
         for slot_name, model_name in slots.items():

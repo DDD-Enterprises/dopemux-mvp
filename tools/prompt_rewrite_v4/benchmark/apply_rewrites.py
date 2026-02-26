@@ -3,7 +3,7 @@
 import re, json, sys
 from pathlib import Path
 
-PROMPTS_DIR = Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts")
+PROMPTS_DIR = Path(__file__).parent.parent.parent.parent / "services" / "repo-truth-extractor" / "promptsets" / "v4" / "prompts"
 
 GENERIC_EP = """## Extraction Procedure
 1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
