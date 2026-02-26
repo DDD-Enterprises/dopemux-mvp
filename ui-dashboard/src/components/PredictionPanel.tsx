@@ -6,7 +6,8 @@ import {
   LinearProgress,
   Chip,
   Divider,
-  Alert
+  Alert,
+  Tooltip
 } from '@mui/material';
 import { TrendingUp, Clock, AlertCircle, Sparkles } from 'lucide-react';
 import { brandTokens } from '../theme';
@@ -61,12 +62,15 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
         <TrendingUp size={24} aria-hidden="true" />
         <Typography variant="h6" sx={{ letterSpacing: '0.12em' }}>15-Minute Prediction</Typography>
-        <Chip
-          size="small"
-          label="[EDGE]"
-          className="dopemux-chip"
-          sx={{ ml: 'auto', borderColor: 'rgba(255, 139, 209, 0.7)', color: brandTokens.colors.gremlinPink }}
-        />
+        <Tooltip title="Predictive LSTM model running on edge device" arrow>
+          <Chip
+            size="small"
+            label="[EDGE]"
+            className="dopemux-chip"
+            tabIndex={0}
+            sx={{ ml: 'auto', borderColor: 'rgba(255, 139, 209, 0.7)', color: brandTokens.colors.gremlinPink }}
+          />
+        </Tooltip>
       </Box>
       <Typography className="dopemux-roast" sx={{ mb: 2 }}>
         I edge your curiosity until the model finally spills percentages.
