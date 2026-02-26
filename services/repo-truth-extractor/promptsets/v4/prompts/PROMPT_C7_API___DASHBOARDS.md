@@ -50,12 +50,18 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan `src/**` and `services/**` for HTTP API route declarations: FastAPI `@app.get/post/put/delete`, Flask `@app.route`, Express `router.get/post`, or framework-equivalent decorators and method calls. For each route, record the HTTP method, path, handler function name, and file path with line range evidence.
+2. Extract dashboard and monitoring endpoint definitions: routes serving HTML templates, static file mounts for dashboard UIs, WebSocket endpoints for real-time monitoring, and health/metrics endpoints (e.g., `/metrics`, `/health`, `/status`). Record the endpoint type, served content, and evidence.
+3. For each API endpoint, extract request/response schemas where explicitly declared: Pydantic models, JSON Schema references, TypeScript interfaces, or OpenAPI annotations. Record the schema reference with evidence from the declaration site.
+4. Identify API versioning patterns: URL path versioning (`/v1/`, `/v2/`), header-based versioning, or query parameter versioning. Record the versioning strategy and all discovered version prefixes with evidence.
+5. Cross-reference discovered API surfaces against upstream `SERVICE_ENTRYPOINTS.json`, `TRINITY_ENFORCEMENT_SURFACE.json`, and `REFUSAL_AND_GUARDRAILS_SURFACE.json` to map which endpoints have enforcement coverage and which lack protection.
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -90,6 +96,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- API route uses dynamic path construction (e.g., f-string or variable interpolation for path prefix): emit with the static portion of the path and `status: dynamic_path` with evidence.
+- Dashboard endpoint serves content from an external URL or CDN with no local template: emit with `content_source: external` and evidence citing the redirect/proxy configuration.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

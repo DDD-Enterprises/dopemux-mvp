@@ -141,12 +141,19 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load all upstream A-phase artifacts (A1 through A9 outputs) and validate each against its declared schema. Record which artifacts are present, missing, or malformed.
+2. For each output artifact, merge items from upstream step outputs using `itemlist_by_id` strategy: union items by `id`, merge evidence arrays by `(path, line_range, excerpt)` deduplication, resolve scalar conflicts by preferring non-empty values.
+3. Detect and report duplicate IDs across artifacts: if two items share the same `id` but originate from different steps, flag as `duplicate_id` with evidence from both sources.
+4. Compute partition coverage: for each partition declared in `REPOCTRL_PARTITIONS.json`, verify that at least one artifact contains items covering that partition's scope.
+5. Build `REPOCTRL_NORM_MANIFEST.json` with one entry per output artifact containing `artifact_name`, `item_count`, and `sha256` of the final merged content.
+6. Build `REPOCTRL_QA.json` with checks for: expected artifacts present/missing, empty artifact detection (0 items), duplicate evidence entries, partition coverage counts, and parse failures.
+7. Legacy Context is intent guidance only and is never evidence.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -181,6 +188,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Upstream artifact missing entirely: emit `REPOCTRL_QA` check with `status: missing_artifact` and list the expected artifact name; continue merging remaining artifacts.
+- ID collision during merge with conflicting non-evidence fields: keep both items with suffixed IDs (`_stepA1`, `_stepA2`) and mark `status: merge_conflict` in QA output.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -96,12 +96,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load all upstream D-phase partition artifacts (`DOC_INDEX.partX.json`, `DOC_CONTRACT_CLAIMS.partX.json`, and any per-partition outputs from D1-D3). Validate each against its declared schema contract; record schema violations as QA issues.
+2. Merge partition artifacts into unified outputs: `DOC_INDEX.json` (all documents), `DOC_CONTRACT_CLAIMS.json` (all claims), `DOC_SUPERSESSION.json` (all supersession chains). Apply `itemlist_by_id` merge strategy with deterministic conflict resolution.
+3. Run deduplication: when the same document appears in multiple partition outputs, prefer the entry with the newer modification timestamp. If content differs materially (different claims or boundaries extracted), preserve both entries with distinct IDs and `status: duplicate_divergent`.
+4. Perform coverage validation: verify that every document in `DOC_INVENTORY.json` has a corresponding entry in `DOC_INDEX.json`; verify that every partition has at least one document; verify no pending/incomplete partitions remain. Emit `DOC_COVERAGE_REPORT.json` with pass/fail status per check.
+5. Generate `DUPLICATE_DRIFT_REPORT.json` identifying documents with overlapping content: same headings, similar normative claims, or near-identical token sequences. Flag pairs with `drift_type: content_overlap` and evidence from both documents.
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -136,6 +142,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Partition artifact file missing entirely: emit merged output without that partition's data and add `missing_inputs` entry; set coverage status to `incomplete` with the missing partition name.
+- Conflicting supersession chains (document A supersedes B, but B also claims to supersede A): emit both chains with `status: circular_supersession` and evidence from each declaration.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

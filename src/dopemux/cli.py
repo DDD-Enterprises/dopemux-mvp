@@ -7415,6 +7415,8 @@ def _register_routing_commands():
         cli.add_command(routing, "routing")
     except Exception as e:
         # Graceful degradation if routing module has issues
+        import logging
+        logger = logging.getLogger(__name__)
         logger.warning(f"Failed to register routing commands: {e}")
 
 _register_routing_commands()
