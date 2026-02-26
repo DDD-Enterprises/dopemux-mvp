@@ -680,30 +680,7 @@ class WMAService:
 
         return response
 
-# # Rate limiting middleware
-# @app.middleware("http")
-# async def rate_limiting_middleware(request: Request, call_next):
-#     """Rate limiting middleware"""
-#     client_ip = request.client.host if request.client else "unknown"
-# 
-#     # Different limits for different endpoints
-#     path = request.url.path
-#     if path.startswith("/snapshot"):
-#         max_requests = 50  # More restrictive for writes
-#     elif path.startswith("/recover"):
-#         max_requests = 100  # Moderate for reads
-#     else:
-#         max_requests = 200  # Generous for other endpoints
-# 
-#     if not check_rate_limit(client_ip, max_requests=max_requests):
-#         raise HTTPException(
-#             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-#             detail="Rate limit exceeded. Please try again later."
-#         )
-# 
-#     response = await call_next(request)
-#     return response
-# 
+
 # FastAPI Application
 @asynccontextmanager
 async def lifespan(app: FastAPI):
