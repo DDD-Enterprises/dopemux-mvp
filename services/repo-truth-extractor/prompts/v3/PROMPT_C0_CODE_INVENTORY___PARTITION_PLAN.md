@@ -10,3 +10,9 @@ Prompt:
   - dope-memory modules
   - boundary/guardrail modules
   - taskx bridges
+```markdown
+
+OUTPUTS:
+	•	CODE_INVENTORY.json
+	•	CODE_PARTITIONS.json
+```

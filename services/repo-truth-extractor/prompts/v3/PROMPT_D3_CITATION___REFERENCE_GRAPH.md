@@ -6,3 +6,8 @@ Prompt:
   - doc A references code path
   - doc A references service name/config name
 - Output top referenced docs, hub docs, cross-plane edges.
+```markdown
+
+OUTPUTS:
+	•	DOC_CITATION_GRAPH.json
+```

@@ -15,3 +15,9 @@ MUST INCLUDE:
 RULES:
 - Cite every risk item.
 - No large refactor recommendations.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```
