@@ -73,6 +73,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Repo Truth Extractor routing defaults now use `gpt-5.2` / `gpt-5.2-pro` model IDs for OpenAI ladders.
 - OpenAI GPT-5 requests omit custom temperature to avoid unsupported parameter errors.
+- Webhook receiver and poller now accept `WEBHOOK_DB_URL` in compose, enabling explicit SQLite or Postgres ledger selection.
+- Repo Truth Extractor Phase R async finalize now applies webhook migrations with the resolved DB URL and script fallback.
+- Local runner fallback DB path for webhook ledger now avoids container-only `/data` defaults when running outside Docker.
 
 ### Planned
 - Windows support (chocolatey package)

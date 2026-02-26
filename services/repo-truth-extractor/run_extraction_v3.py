@@ -9076,6 +9076,7 @@ def _build_event_store_for_runner() -> Any:
     webhook event store have been applied before constructing the EventStore, mirroring
     the migration behavior used by the main server where possible.
     """
+    repo_root = RUNNER_SERVICE_DIR.parents[1]
     webhook_receiver_dir = RUNNER_SERVICE_DIR.parent / "webhook_receiver"
     if str(webhook_receiver_dir) not in sys.path:
         sys.path.insert(0, str(webhook_receiver_dir))
@@ -9095,18 +9096,18 @@ def _build_event_store_for_runner() -> Any:
 
         if server is not None and hasattr(server, "ensure_migrations"):
             try:
-                server.ensure_migrations()  # type: ignore[call-arg]
+                server.ensure_migrations(db_url)  # type: ignore[call-arg]
             except Exception:
                 logging.exception(
                     "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
                 )
 
         if not (server is not None and hasattr(server, "ensure_migrations")):
-            migrate_script = webhook_receiver_dir / "webhook_migrate.py"
+            migrate_script = repo_root / "scripts" / "webhook_migrate.py"
             if migrate_script.is_file():
                 try:
                     subprocess.run(
-                        [sys.executable, str(migrate_script)],
+                        [sys.executable, str(migrate_script), "--db", db_url],
                         check=True,
                     )
                 except Exception:
@@ -9119,6 +9120,8 @@ def _build_event_store_for_runner() -> Any:
         logging.debug("Migrations not available or failed in runner context; continuing without them.")
 
     return storage.build_event_store(db_url)
+
+
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
     """Extract plain text content from an OpenAI response.completed webhook payload."""
     data = payload.get("data")

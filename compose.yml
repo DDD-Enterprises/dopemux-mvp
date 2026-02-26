@@ -621,6 +621,7 @@ services:
       - WEBHOOK_RECEIVER_PORT=8790
       # Default to SQLite at WEBHOOK_DB_PATH; set WEBHOOK_DB_URL to use PostgreSQL instead.
       - WEBHOOK_DB_PATH=/data/webhook_receiver.db
+      - WEBHOOK_DB_URL=${WEBHOOK_DB_URL:-}
       - DPMX_ENV=${DPMX_ENV:-development}
       - OPENAI_WEBHOOK_SECRET=${OPENAI_WEBHOOK_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
@@ -646,6 +647,7 @@ services:
       - dopemux-network
     environment:
       - WEBHOOK_DB_PATH=/data/webhook_receiver.db
+      - WEBHOOK_DB_URL=${WEBHOOK_DB_URL:-}
     volumes:
       - ./.dopemux/webhook_receiver:/data
     command: ["python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10"]
