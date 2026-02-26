@@ -50,6 +50,7 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - `REFUSAL_AND_GUARDRAILS_SURFACE.json`
 - `TASKX_INTEGRATION_SURFACE.json`
 - `WORKFLOW_RUNNER_SURFACE.json`
+- `LEANTIME_INTEGRATION_SURFACE.json`
 - `DETERMINISM_RISK_LOCATIONS.json`
 - `IDEMPOTENCY_RISK_LOCATIONS.json`
 - `CONCURRENCY_RISK_LOCATIONS.json`
@@ -136,6 +137,13 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `C9`
     - `id_rule`: `WORKFLOW_RUNNER_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+  - `LEANTIME_INTEGRATION_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `C11`
+    - `id_rule`: `LEANTIME_INTEGRATION_SURFACE:<stable-hash(path|symbol|name)>`
     - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `DETERMINISM_RISK_LOCATIONS.json`

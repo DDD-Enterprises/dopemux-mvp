@@ -40,6 +40,7 @@ phases:
     - A7
     - A8
     - A9
+    - A10
     - A99
     steps:
     - step_id: A0
@@ -104,6 +105,12 @@ phases:
       - repo_control_plane
       outputs:
       - REPO_IMPLICIT_BEHAVIOR_HINTS.json
+    - step_id: A10
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A10_LEANTIME_SURFACE.md
+      coverage_targets:
+      - repo_control_plane
+      outputs:
+      - REPO_LEANTIME_SURFACE.json
     - step_id: A99
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md
       coverage_targets:
@@ -119,6 +126,7 @@ phases:
       - REPO_COMPOSE_SERVICE_GRAPH.json
       - REPO_LITELLM_SURFACE.json
       - REPO_TASKX_SURFACE.json
+      - REPO_LEANTIME_SURFACE.json
       - REPOCTRL_NORM_MANIFEST.json
       - REPOCTRL_QA.json
   H:
@@ -273,6 +281,7 @@ phases:
     - C8
     - C9
     - C10
+    - C11
     steps:
     - step_id: C0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md
@@ -358,12 +367,19 @@ phases:
       - CONCURRENCY_RISK_LOCATIONS.json
       - CODE_SURFACES_QA.json
       - SERVICE_CATALOG.json
+      - LEANTIME_INTEGRATION_SURFACE.json
     - step_id: C10
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md
       coverage_targets:
       - phase_scope
       outputs:
       - SERVICE_CATALOG.partX.json
+    - step_id: C11
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C11_LEANTIME_INTEGRATION_SURFACES.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - LEANTIME_INTEGRATION_SURFACE.json
   E:
     required_steps:
     - E0
@@ -617,6 +633,8 @@ phases:
     - R6
     - R7
     - R8
+    - R9
+    - R10
     steps:
     - step_id: R0
       prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md
@@ -674,6 +692,18 @@ phases:
       - phase_scope
       outputs:
       - RISK_REGISTER_TOP20.md
+    - step_id: R9
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R9_LEANTIME_INTEGRATION_TRUTH.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - LEANTIME_INTEGRATION_TRUTH.md
+    - step_id: R10
+      prompt_file: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R10_TWO_PLANE_ARCHITECTURE_TRUTH.md
+      coverage_targets:
+      - phase_scope
+      outputs:
+      - TWO_PLANE_ARCHITECTURE_TRUTH.md
   X:
     required_steps:
     - X0
