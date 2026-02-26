@@ -397,7 +397,7 @@ class WorktreeRecoveryMenu:
         options = await self.find_recoverable_sessions()
 
         # Fallback to git worktree list if ConPort unavailable
-        if not options:
+        if not options and not self.manager.conport_available:
             logger.warning("⚠️ ConPort unavailable - trying git worktree fallback")
             options = await self.fallback_to_git_worktree_list()
 

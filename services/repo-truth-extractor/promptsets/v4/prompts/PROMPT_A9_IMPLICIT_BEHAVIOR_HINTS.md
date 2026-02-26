@@ -52,12 +52,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan all in-scope config files for if-file-exists toggles, config search order declarations, and default path fallback chains. Record each implicit behavior trigger with file path and line range evidence.
+2. Extract environment variable toggles that alter runtime behavior (e.g., `DEBUG=1`, `FEATURE_X_ENABLED`, `USE_LOCAL_DB`) by scanning shell scripts, Dockerfiles, compose files, and Python/JS entry points for conditional env-var checks.
+3. Identify hidden coupling points: cases where one component's behavior changes based on the presence or configuration of another component, as explicitly documented in comments, README, or config files.
+4. Extract default path assumptions (e.g., `~/.config/app/`, `/tmp/app-state/`, `./data/`) that are hardcoded or conditionally resolved, recording the exact code or config line as evidence.
+5. Cross-reference discovered hints against upstream artifacts (`REPO_HOOKS_SURFACE.json`, `REPO_COMPOSE_SERVICE_GRAPH.json`, `REPO_TASKX_SURFACE.json`) to identify implicit behaviors that span multiple components.
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -92,6 +98,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Implicit behavior inferred from code patterns without explicit documentation: do not emit; only extract hints that are explicitly stated in comments, README, config files, or docstrings.
+- Ambiguous toggle semantics (unclear if env var enables or disables a feature): emit with `status: needs_review` and evidence citing the ambiguous source.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

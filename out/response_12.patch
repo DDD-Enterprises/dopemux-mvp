@@ -1,0 +1,29 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md
+@@ -40,8 +40,13 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. Load `BOUNDARY_INVENTORY.json` and `BOUNDARY_PARTITIONS.json` from B0 upstream outputs to establish the scope of boundary items to investigate.
++2. For each boundary item in the inventory, locate the corresponding code enforcement point: find the function, middleware, decorator, or guard clause that implements the boundary check. Record symbol name, file path, and line range.
++3. Extract assertion logic: identify the condition being checked (e.g., role == admin, token.valid, rate < limit), the action on failure (raise, return 403, redirect), and any bypass conditions.
++4. Map enforcement points to their call sites: trace where each boundary check is invoked in request/response pipelines, middleware chains, or event handlers.
++5. Legacy Context is intent guidance only and is never evidence.
++6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++8. Attach evidence to every non-derived field and every relationship edge.
++9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++11. Emit exactly the declared outputs and no additional files.
+ 
+@@ -79,3 +84,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- Boundary item in inventory has no corresponding code enforcement: emit item with `enforcement: UNKNOWN` and `missing_evidence_reason` citing the inventory entry.
++- Multiple enforcement points for a single boundary item: emit all with distinct IDs linking back to the same inventory boundary ID.
+ 
