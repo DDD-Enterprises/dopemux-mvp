@@ -37,17 +37,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream Z-phase artifacts (freeze index, checksums, proof pack) as specified in the inputs section. Generate a deterministic export bundle manifest (`OPUS_INPUT_MANIFEST.json`) listing every artifact that Opus and Codex consumers need, with `artifact_name`, `sha256`, `writer_step_id`, `phase`, and `evidence` for each entry.
-2. Organize the manifest by consumer: which artifacts are needed for Opus synthesis (S-phase inputs) vs Codex implementation (T-phase packet inputs). Include dependency ordering so consumers can load artifacts in the correct sequence.
-3. Validate manifest completeness against `artifacts.yaml`: every artifact declared as an Opus/Codex input must appear in the manifest with a valid checksum. Record missing entries with reasons.
-4. Structure the output with clear per-artifact manifest entries, consumer groupings, dependency order, and an explicit UNKNOWN section for artifacts that cannot be verified or located.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all finalized extraction artifacts as input for opus input bundle and manifest
+2. Compute checksums and integrity metadata for OPUS_INPUT_BUNDLE
+3. Build OPUS_INPUT_BUNDLE: compile all required components with provenance tracking
+4. Validate completeness: verify all expected artifacts are present and checksums match
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -82,8 +83,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Manifest references an artifact whose checksum differs from `FREEZE_CHECKSUMS.json`: flag as `status: checksum_mismatch` with both checksums and do not include in validated bundle.
-- Consumer dependency ordering contains a cycle (artifact A needs B which needs A): document the cycle and emit a best-effort load order with the cycle broken at the lowest-priority edge.
+- Missing artifact for freeze: if a required artifact is absent, record gap with `status: incomplete_freeze`
+- Checksum mismatch: if an artifact changed after freeze, flag with `status: post_freeze_mutation`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

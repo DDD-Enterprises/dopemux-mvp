@@ -50,17 +50,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load R-phase norm artifacts (R0-R8) and X-phase feature/risk catalogs as specified in the inputs section. Produce a task packet factory by scanning `PROJECT_INSTRUCTIONS.md`, governance constraints from `AGENTS.md`, and upstream truth artifacts to build an implementation-ready top-10 TP backlog ranked by severity, blast radius, and dependency order.
-2. For each candidate task packet, require at least one R-phase evidence chain linking the problem statement to a specific risk ID, conflict entry, or truth-map gap. Do not fabricate problem statements unsupported by upstream artifacts.
-3. Validate that every packet includes: `tp_id`, `title`, `priority`, `problem_statement`, `authority_inputs` (paths to R/X norm artifacts), `invariants`, `scope_in`, `scope_out`, `acceptance_criteria`, `rollback`, and `stop_conditions`. Set `implementer_target` to the declared target from Legacy Context.
-4. Cross-reference the backlog against `PIPELINE_DOCTOR_REPORT.json` (if available) to exclude packets that depend on artifacts flagged as incomplete or corrupted.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all upstream extraction artifacts and synthesis reports as input for task packet factory design
+2. Analyze extraction outputs to identify actionable work items for TASK_PACKET_FACTORY
+3. For each task packet, determine scope, priority, dependencies, and acceptance criteria from evidence
+4. Validate packet completeness: ensure each packet has sufficient context for execution
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -95,8 +96,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- R-phase norm artifacts missing or incomplete: emit partial backlog with reduced confidence scores and add `missing_authority_inputs` section listing unavailable R/X artifacts.
-- Packet field validation fails against TP schema: retain packet with `status: schema_violation` and list specific failing fields with reasons.
+- Insufficient evidence for packet: if a task cannot be fully scoped from available data, emit with `status: needs_more_context`
+- Duplicate packet: if two packets cover the same work, flag with `status: potential_duplicate` and evidence
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

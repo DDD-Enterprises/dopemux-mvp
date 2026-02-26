@@ -57,20 +57,18 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `service_id, category, description, ports, health, repo_locations, entrypoints, interfaces, dependencies, config`
 
 ## Extraction Procedure
-1. Load `services/registry.yaml` as the canonical service list. For each registered service, create a catalog skeleton keyed by `service_id` and record the registry entry (port, transport, health_endpoint, category) with evidence citing `registry.yaml` line range.
-2. Walk `services/**/main.py`, `services/**/app.py`, and `services/**/server.*` to locate the primary entrypoint for each service. Extract the framework (FastAPI, Flask, Express, etc.), the `app` or `server` object construction, and any lifespan/startup handlers. Record each entrypoint with file path and line range evidence.
-3. For each service entrypoint, extract all route/endpoint declarations (HTTP methods, paths, handler function names) and MCP tool registrations. Cross-reference against upstream `SERVICE_ENTRYPOINTS.json` to validate completeness and detect unregistered endpoints.
-4. Extract service dependencies by scanning import statements, client instantiations (HTTP clients, database connections, Redis connections, MCP client calls), and compose service `depends_on` declarations. Build a dependency list per service with evidence from both code and compose files.
-5. Extract configuration surfaces: environment variables read (via `os.getenv`, `os.environ`, config loaders), config file paths loaded, default values, and required-vs-optional classification. Cross-reference against upstream `SECRETS_RISK_LOCATIONS.json` to flag sensitive config items.
-6. Extract health check details: health endpoint path, response schema, readiness vs liveness distinction, and any dependency checks performed within the health handler (database ping, upstream service check).
-7. Cross-reference discovered services against upstream artifacts (`EVENTBUS_SURFACE.json`, `DOPE_MEMORY_CODE_SURFACE.json`, `TRINITY_ENFORCEMENT_SURFACE.json`, `TASKX_INTEGRATION_SURFACE.json`) to enrich each catalog entry with event subscriptions, memory access patterns, enforcement hooks, and TaskX integrations.
-8. Legacy Context is intent guidance only and is never evidence.
-9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-10. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-11. Attach evidence to every non-derived field and every relationship edge.
-12. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-14. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the deep service catalog partition as primary scan surface
+2. Extract deep service catalog facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted deep service catalog elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each SERVICE_CATALOG_DEEP item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -105,6 +103,5 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Service registered in `registry.yaml` but no matching code directory found under `services/`: emit catalog entry with all code-derived fields set to `UNKNOWN` and `missing_evidence_reason: no_code_directory`.
-- Service code directory exists but is not registered in `registry.yaml`: include in catalog with `registry_status: unregistered` and evidence citing the directory path.
-- Conflicting port assignments between `registry.yaml` and compose service definitions: emit both values with `status: needs_review` and evidence from each source.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`

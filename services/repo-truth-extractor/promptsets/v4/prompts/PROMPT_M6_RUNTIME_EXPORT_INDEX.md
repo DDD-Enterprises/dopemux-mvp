@@ -40,17 +40,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Build the final runtime export index by aggregating all M-phase outputs (M0 through M5). For each upstream artifact, record: artifact name, output status (success/partial/failed), item count, and any warnings or errors encountered.
-2. Identify missing prerequisites: artifacts that were expected but not produced, and the reason (missing input, inaccessible database, parse error). Record each with the upstream step that should have produced it.
-3. Generate a summary of the runtime export coverage: total attempted exports, successful outputs, partial outputs, and completely missing outputs.
-4. Validate cross-artifact consistency: ensure all database references in M3-M5 trace back to databases inventoried in M0.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load runtime state and configuration as input for runtime export index
+2. Extract runtime export index data: query live state, sanitize sensitive values, and capture metadata
+3. Build RUNTIME_EXPORT_INDEX: compile extracted data with timestamps and provenance
+4. Validate export safety: ensure no secrets or sensitive data in output; redact if found
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -85,8 +86,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Upstream M-phase artifact missing entirely: include in `missing_prerequisites` with the expected step ID and reason.
-- Runtime export index itself exceeds expected size (>1000 items): emit with `status: oversized_index` and a count summary.
+- Runtime unavailable: if the target service is not running, emit with `status: service_offline` and skip
+- Sensitive data in export: if sensitive data is detected, replace with `REDACTED` and flag with `status: redacted`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
