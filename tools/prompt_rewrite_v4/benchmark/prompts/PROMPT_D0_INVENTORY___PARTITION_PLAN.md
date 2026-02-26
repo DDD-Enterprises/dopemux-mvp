@@ -55,15 +55,17 @@ Focus on concrete, machine-verifiable implementation facts.
 1. Scan documentation (`docs/**`, archive dirs) targets; collect path, type, and content metadata for each artifact
 2. Classify each artifact by category relevant to the documentation (`docs/**`, archive dirs) domain
 3. Build DOC_PARTITIONS by grouping files into logical categories with rationale
-4. For each DOC_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
-5. For each DOC_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+4. For each `DOC_INVENTORY` item, populate `id`, `path`, `line_range`, `kind`, `summary`, and `evidence`.
+5. For each `DOC_PARTITIONS` item, populate `id`, `partition_id`, `path`, `line_range`, `files` (sorted), `reason`, and `evidence`.
+6. For each `DOC_TODO_QUEUE` item, populate `id`, `path`, `line_range`, and `evidence`.
+7. Wrap all items in the `ItemList` envelope: `{"schema":"json_item_list@v1","items":[...]}`.
+8. Legacy Context is intent guidance only and is never evidence.
+9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+10. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+11. Attach evidence to every non-derived field and every relationship edge.
+12. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+14. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -103,19 +105,11 @@ Focus on concrete, machine-verifiable implementation facts.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
-Goal: DOC_INVENTORY.json, DOC_PARTITIONS.json, DOC_TODO_QUEUE.json
-
-Prompt:
-- Scan docs/** (include archive dirs but tag them as archive).
-- For each doc:
-  - path, size, mtime, top headings, first 40 non-empty lines, token count estimate.
-  - tag: ACTIVE vs ARCHIVE vs QUARANTINE based on path + in-doc markers.
-- Create partitions:
-  - core architecture
-  - planes (pm/memory/orchestrator/mcp/hooks)
-  - services (dope-memory, eventbus, dashboards, etc.)
-  - task-packets + governance
-  - research/audits
-  - archives (split into manageable buckets)
-- Output a queue of partitions with recommended run order.
+MODE: Mechanical extractor, zero interpretation.
+TASK: Build documentation inventory, partition plan, and TODO queue.
+GOAL:
+- DOC_INVENTORY.json (ItemList): List every documentation file (README, CHANGELOG, etc.).
+- DOC_PARTITIONS.json (ItemList): Group files into subsystems (architecture, planes, services, task-packets).
+- DOC_TODO_QUEUE.json (ItemList): Sequential list of partitions to process.
+RULES: JSON only. Follow the ItemList schema strictly. Use deterministic IDs.
 ```

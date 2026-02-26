@@ -46,6 +46,7 @@ Focus on concrete, machine-verifiable implementation facts.
 - `REPO_IMPLICIT_BEHAVIOR_HINTS.json`
 - `REPO_COMPOSE_SERVICE_GRAPH.json`
 - `REPO_LITELLM_SURFACE.json`
+- `REPO_LEANTIME_SURFACE.json`
 - `REPO_TASKX_SURFACE.json`
 - `REPOCTRL_NORM_MANIFEST.json`
 - `REPOCTRL_QA.json`
@@ -116,6 +117,13 @@ Focus on concrete, machine-verifiable implementation facts.
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `A99`
     - `id_rule`: `REPO_LITELLM_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
+  - `REPO_LEANTIME_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `A99`
+    - `id_rule`: `REPO_LEANTIME_SURFACE:<stable-hash(path|symbol|name)>`
     - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `REPO_TASKX_SURFACE.json`
