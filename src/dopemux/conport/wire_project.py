@@ -97,12 +97,20 @@ def wire_conport_project(project: Optional[str] = None, instance: Optional[str] 
         "args": [
             "exec",
             "-i",
+            "-e",
+            "DOPEMUX_INSTANCE_ID",
+            "-e",
+            "DOPEMUX_WORKSPACE_ID",
             _container_name(instance_id),
             "uvx",
             "--from",
             "context-portal-mcp",
             "conport-mcp",
         ],
+        "env": {
+            "DOPEMUX_INSTANCE_ID": instance_id,
+            "DOPEMUX_WORKSPACE_ID": workspace_id,
+        },
     }
     config["mcpServers"] = mcp_servers
 
