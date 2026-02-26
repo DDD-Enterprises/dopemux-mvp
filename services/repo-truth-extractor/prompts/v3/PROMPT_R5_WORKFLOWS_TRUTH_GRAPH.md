@@ -1,3 +1,6 @@
+OUTPUTS:
+- WORKFLOWS_TRUTH_GRAPH.md
+
 Goal: WORKFLOWS_TRUTH_GRAPH.md
 
 ROLE: Supervisor/Auditor.

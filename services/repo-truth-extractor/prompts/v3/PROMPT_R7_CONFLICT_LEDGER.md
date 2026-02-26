@@ -1,3 +1,6 @@
+OUTPUTS:
+- CONFLICT_LEDGER.md
+
 Goal: CONFLICT_LEDGER.md
 
 ROLE: Supervisor/Auditor.
