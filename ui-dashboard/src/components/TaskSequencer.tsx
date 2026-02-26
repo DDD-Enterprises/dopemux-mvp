@@ -168,12 +168,15 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
-        <Chip
-          size="small"
-          label="[LIVE]"
-          className="dopemux-chip"
-          sx={{ ml: 'auto', borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
-        />
+        <Tooltip title="Real-time task synchronization active" arrow>
+          <Chip
+            size="small"
+            label="[LIVE]"
+            className="dopemux-chip"
+            tabIndex={0}
+            sx={{ ml: 'auto', borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
+          />
+        </Tooltip>
       </Box>
       <Typography className="dopemux-roast" sx={{ mb: 2 }}>
         Your backlog is feral. I muzzle it with ritual order and velvet threats.
