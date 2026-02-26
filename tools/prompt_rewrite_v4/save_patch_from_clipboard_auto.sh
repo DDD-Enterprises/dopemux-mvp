@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Derive repo root dynamically so the script works on any machine
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 # Read cursor from state.json to determine correct filename
-STATE_FILE="/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/state.json"
+STATE_FILE="$REPO_ROOT/tools/prompt_rewrite_v4/state.json"
 if [[ ! -f "$STATE_FILE" ]]; then
   echo "ERROR: State file not found: $STATE_FILE"
   exit 1
@@ -14,7 +17,7 @@ if [[ -z "$CURSOR" ]]; then
   exit 2
 fi
 
-OUT="/Users/hue/code/dopemux-mvp/out/response_${CURSOR}.patch"
+OUT="$REPO_ROOT/out/response_${CURSOR}.patch"
 
 tmp="$(mktemp)"
 pbpaste > "$tmp"

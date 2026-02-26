@@ -793,9 +793,39 @@ def start(
             
             if not litellm_running or not ccr_running:
                 console.logger.info("[blue]🚀 Ensuring routing services are running...[/blue]")
-                service_manager.install_services()
+                # Only install if plists haven't been laid down yet; otherwise
+                # just start.  Automatic installation is disruptive if the user
+                # intentionally stopped these services.
+                litellm_plist = (
+                    service_manager.LAUNCHAGENTS_DIR
+                    / f"{service_manager.LITELLM_SERVICE_NAME}.plist"
+                )
+                ccr_plist = (
+                    service_manager.LAUNCHAGENTS_DIR
+                    / f"{service_manager.CCR_SERVICE_NAME}.plist"
+                )
+                if not litellm_plist.exists() or not ccr_plist.exists():
+                    console.logger.warning(
+                        "[yellow]⚠️  Routing services not installed. "
+                        "Run 'dopemux routing setup' to install them.[/yellow]"
+                    )
+                    raise click.ClickException(
+                        "Routing services not installed. Run: dopemux routing setup"
+                    )
                 service_manager.start_services()
-                time.sleep(2)  # Give services time to start
+                # Poll for healthy status (max 10 s, 500 ms interval)
+                console.logger.info("[blue]⏳ Waiting for routing services to become healthy...[/blue]")
+                deadline = time.monotonic() + 10
+                while time.monotonic() < deadline:
+                    health = service_manager.check_health()
+                    if (
+                        health.get("litellm", {}).get("status") == "healthy"
+                        and health.get("ccr", {}).get("status") == "healthy"
+                    ):
+                        break
+                    time.sleep(0.5)
+                else:
+                    console.logger.warning("[yellow]⚠️  Routing services did not become healthy within 10 s[/yellow]")
             
             # Verify services are healthy
             health = service_manager.check_health()

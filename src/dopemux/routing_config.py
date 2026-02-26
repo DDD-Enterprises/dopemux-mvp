@@ -292,10 +292,13 @@ class RoutingConfig:
         # Build model_alias_map from slots and aliases
         model_alias_map = {}
 
-        # First, map all aliases to their slot targets
-        for alias, slot_name in aliases.items():
-            model_name = slots[slot_name]
-            model_alias_map[alias] = model_name
+        # First, map all aliases to their slot targets (or direct model names)
+        for alias, target in aliases.items():
+            if target in slots:
+                model_alias_map[alias] = slots[target]
+            else:
+                # Alias references a model name directly (validated in validate())
+                model_alias_map[alias] = target
 
         # Then, add direct slot mappings for convenience
         for slot_name, model_name in slots.items():

@@ -220,11 +220,6 @@ def main():
     for i, line in enumerate(lines):
         if line.strip().startswith('@@'):
             hunk_count += 1
-            if hunk_count > 1:
-                # For subsequent hunks, we need to add context lines
-                # Since we don't have the actual file content, we'll add a placeholder
-                fixed_lines.append(' ...\n')
-                fixed_lines.append(' ...\n')
             in_hunk = True
             fixed_lines.append(line)
         elif in_hunk:

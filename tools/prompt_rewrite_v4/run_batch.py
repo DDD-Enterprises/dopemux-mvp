@@ -4,7 +4,9 @@ import argparse
 import hashlib
 import json
 import os
+import shlex
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
 
@@ -43,8 +45,9 @@ def ensure_out_dir(out_dir: Path) -> None:
 
 
 def lint_gate(repo_root: Path, lint_cmd: str) -> None:
-    # Run via shell for convenience; command is controlled by config.
-    proc = subprocess.run(lint_cmd, cwd=str(repo_root), shell=True, text=True)
+    # Split the command string into a list to avoid shell injection risks.
+    cmd_list = shlex.split(lint_cmd)
+    proc = subprocess.run(cmd_list, cwd=str(repo_root), text=True)
     if proc.returncode != 0:
         raise SystemExit(proc.returncode)
 
@@ -106,7 +109,7 @@ def render_one(repo_root: Path, cfg_path: Path, state_path: Path) -> None:
         "sha256_before": sha256_before,
         "request_path": str(req_file.relative_to(repo_root)),
         "response_path": str((out_dir / f"response_{cursor}.patch").relative_to(repo_root)),
-        "started_at": "2026-02-23T00:00:00Z"  # TODO: use actual timestamp
+        "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     })
     save_state(state_path, state)
 
@@ -174,7 +177,7 @@ def apply_one(repo_root: Path, cfg_path: Path, state_path: Path) -> None:
     for entry in in_progress:
         if entry.get("cursor") == cursor and entry.get("path") == prompt_rel:
             entry["sha256_after"] = sha256_after
-            entry["completed_at"] = "2026-02-23T00:00:00Z"  # TODO: use actual timestamp
+            entry["completed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
             completed_entry = entry
             state.setdefault("completed", []).append(entry)
         else:

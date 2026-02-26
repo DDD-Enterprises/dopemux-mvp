@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-OUT="/Users/hue/code/dopemux-mvp/out/response_0.patch"
+# Derive repo root dynamically so the script works on any machine
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+OUT="$REPO_ROOT/out/response_0.patch"
 
 tmp="$(mktemp)"
 pbpaste > "$tmp"
