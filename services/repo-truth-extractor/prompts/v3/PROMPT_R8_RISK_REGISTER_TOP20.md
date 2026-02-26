@@ -1,3 +1,6 @@
+OUTPUTS:
+- RISK_REGISTER_TOP20.md
+
 Goal: RISK_REGISTER_TOP20.md
 
 ROLE: Supervisor/Auditor.

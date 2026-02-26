@@ -1,3 +1,6 @@
+OUTPUTS:
+- EVENTBUS_WIRING_TRUTH.md
+
 Goal: EVENTBUS_WIRING_TRUTH.md
 
 ROLE: Supervisor/Auditor.

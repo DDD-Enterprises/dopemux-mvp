@@ -1,3 +1,6 @@
+OUTPUTS:
+- TASKX_INTEGRATION_TRUTH.md
+
 Goal: TASKX_INTEGRATION_TRUTH.md
 
 ROLE: Supervisor/Auditor.
