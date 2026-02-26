@@ -1,3 +1,15 @@
+---
+id: MIGRATION_TASKX_TO_DOPETASK
+title: Migration Taskx To Dopetask
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-25'
+last_review: '2026-02-25'
+next_review: '2026-05-26'
+prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and developer
+  workflows.
+---
 # TaskX to dopeTask Migration Guide
 
 ## Summary
@@ -31,18 +43,18 @@
 #### `.gitmodules`
 ```diff
 - [submodule "vendor/taskx"]
-- 	path = vendor/taskx
-- 	url = https://github.com/hu3mann/taskX.git
+-    path = vendor/taskx
+-    url = https://github.com/hu3mann/taskX.git
 + [submodule "vendor/dopetask"]
-+ 	path = vendor/dopetask
-+ 	url = https://github.com/hu3mann/dopetask.git
++    path = vendor/dopetask
++    url = https://github.com/hu3mann/dopetask.git
 ```
 
 ### 3. Script Updates
 
 #### `scripts/taskx` → `scripts/dopetask`
 - Updated all references from taskX to dopeTask
-- Changed environment variable names (TASKX_* → DOPETASK_*)
+- Changed environment variable names (`TASKX_*` -> `DOPETASK_*`)
 - Updated executable name from `taskx` to `dopetask`
 
 ### 4. Directory Structure Changes
