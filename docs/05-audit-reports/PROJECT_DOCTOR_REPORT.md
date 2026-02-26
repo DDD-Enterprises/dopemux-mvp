@@ -1,3 +1,15 @@
+---
+id: PROJECT_DOCTOR_REPORT
+title: Project Doctor Report
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-25'
+last_review: '2026-02-25'
+next_review: '2026-05-26'
+prelude: Project Doctor Report (reference) for dopemux documentation and developer
+  workflows.
+---
 # PROJECT_DOCTOR_REPORT
 
 - project_dir: /Users/hue/code/dopemux-mvp/.taskx/instructions
