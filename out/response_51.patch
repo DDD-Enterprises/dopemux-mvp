@@ -1,0 +1,29 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md
+@@ -45,8 +45,13 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. Scan home control-plane configs for LiteLLM-specific configuration: `litellm_config.yaml`, proxy settings, `model_list` entries, spend tracking database paths, and budget/rate-limit configurations. Record each config element with evidence.
++2. Extract provider entries from LiteLLM config: model name mappings, API base URLs, custom headers, and authentication references (key names only, never values). Record each provider with its configuration scope and evidence.
++3. Identify LiteLLM proxy configuration: proxy port, allowed models, spend log database path, callback configurations, and any custom middleware. Record with evidence.
++4. Cross-reference against upstream `REPO_LITELLM_SURFACE.json` to identify home-specific LiteLLM configs that override or extend repo-level settings.
++5. Legacy Context is intent guidance only and is never evidence.
++6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++8. Attach evidence to every non-derived field and every relationship edge.
++9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++11. Emit exactly the declared outputs and no additional files.
+ 
+@@ -84,3 +89,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- LiteLLM config references a spend database path that does not exist: emit with `status: db_not_found` and evidence.
++- Provider entry uses environment variable for API key with no default: emit with key name and `status: env_required` (never emit the actual key value).
+ 

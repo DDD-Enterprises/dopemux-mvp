@@ -39,12 +39,19 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan `services/**/main.py`, `services/**/app.py`, `services/**/server.*`, and `services/**/__main__.py` to locate primary entrypoint modules for each service. Record the file path, the top-level executable construct (e.g., `if __name__ == "__main__"`, `app = FastAPI(...)`, `uvicorn.run(...)`), and line range as evidence.
+2. Parse `compose.yml` and `docker-compose*.yml` for service `command` and `entrypoint` directives. Extract the exact invocation string (e.g., `uvicorn main:app --host 0.0.0.0 --port 8000`) and map it to the corresponding service directory. Record compose file path and line range.
+3. Scan `scripts/` and `services/**/scripts/` for shell scripts or Python CLI scripts that launch services (patterns: `uvicorn`, `gunicorn`, `python -m`, `node`, `npm start`). Extract the invocation command and the target module/symbol.
+4. For each discovered entrypoint, classify its `type` as one of: `python_module`, `cli_script`, `compose_command`, `dockerfile_cmd`, `shell_script`, or `other`. Record the classification evidence (the code pattern that determined the type).
+5. Cross-reference discovered entrypoints against upstream `CODE_INVENTORY.json` and `CODE_PARTITIONS.json` to validate that every entrypoint file appears in the inventory and to tag it with its partition assignment.
+6. Cross-reference against `services/registry.yaml` to validate service identity. Flag any entrypoint whose owning service is not registered with `registry_status: unregistered`.
+7. Legacy Context is intent guidance only and is never evidence.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -79,6 +86,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Service directory contains no recognizable entrypoint file (no `main.py`, `app.py`, `__main__.py`, or compose command): emit item with `type: UNKNOWN` and `missing_evidence_reason: no_entrypoint_detected`.
+- Multiple competing entrypoints found for same service (e.g., both a `main.py` and a compose `command` pointing to a different module): emit all with distinct IDs and `status: needs_review`.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
