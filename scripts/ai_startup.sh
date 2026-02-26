@@ -30,8 +30,8 @@ fi
 # Check for docker compose
 if docker compose version &> /dev/null; then
     DOCKER_COMPOSE="docker compose"
-elif command -v docker-compose &> /dev/null; then
-    DOCKER_COMPOSE="docker-compose"
+elif command -v docker compose &> /dev/null; then
+    DOCKER_COMPOSE="docker compose"
 else
     echo "❌ Docker Compose is not found."
     exit 1

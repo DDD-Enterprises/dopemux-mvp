@@ -1,0 +1,7 @@
+tunnel: dopemux-webhooks
+credentials-file: ~/.cloudflared/dopemux-webhooks.json
+
+ingress:
+  - hostname: webhooks.krohman.org
+    service: http://localhost:8790
+  - service: http_status:404

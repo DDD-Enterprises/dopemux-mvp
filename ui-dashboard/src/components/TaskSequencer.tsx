@@ -140,6 +140,18 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const getTimerAriaLabel = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    const minLabel = mins === 1 ? '1 minute' : `${mins} minutes`;
+    const secLabel = secs === 1 ? '1 second' : `${secs} seconds`;
+
+    if (mins > 0) {
+      return `Time elapsed: ${minLabel} and ${secLabel}`;
+    }
+    return `Time elapsed: ${secLabel}`;
+  };
+
   const optimizedTasks = getOptimizedSequence();
   const currentTask = tasks.find((task) => task.id === currentTaskId);
 
@@ -156,12 +168,15 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
         <Typography variant="h6" sx={{ letterSpacing: '0.16em' }}>
           Task Sequencer
         </Typography>
-        <Chip
-          size="small"
-          label="[LIVE]"
-          className="dopemux-chip"
-          sx={{ ml: 'auto', borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
-        />
+        <Tooltip title="Real-time task synchronization active" arrow>
+          <Chip
+            size="small"
+            label="[LIVE]"
+            className="dopemux-chip"
+            tabIndex={0}
+            sx={{ ml: 'auto', borderColor: 'rgba(125, 251, 246, 0.6)', color: brandTokens.colors.ritualCyan }}
+          />
+        </Tooltip>
       </Box>
       <Typography className="dopemux-roast" sx={{ mb: 2 }}>
         Your backlog is feral. I muzzle it with ritual order and velvet threats.
@@ -185,6 +200,8 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           </Typography>
           <Typography
             variant="h3"
+            role="timer"
+            aria-label={getTimerAriaLabel(taskTimer)}
             sx={{
               fontFamily: '"Space Grotesk", sans-serif',
               mb: 1,
@@ -259,7 +276,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
           Optimized Sequence ({optimizedTasks.length} tasks)
         </Typography>
         <Tooltip title="Consent → Calibration → Chaos → Care">
-          <Box component="span">
+          <Box component="span" tabIndex={0} sx={{ display: 'flex', alignItems: 'center' }}>
             <Flame size={16} color={brandTokens.colors.gremlinPink} aria-hidden="true" />
           </Box>
         </Tooltip>
@@ -296,15 +313,18 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                       <Typography variant="body2" sx={{ flexGrow: 1 }}>
                         {task.title}
                       </Typography>
-                      <Chip
-                        size="small"
-                        label={`${Math.round(task.complexity * 100)}% complex`}
-                        sx={{
-                          bgcolor: 'rgba(4,22,40,0.8)',
-                          color: complexityColor(task.complexity),
-                          border: `1px solid ${complexityColor(task.complexity)}`,
-                        }}
-                      />
+                      <Tooltip title={`Complexity: ${Math.round(task.complexity * 100)}% - used for ritual sequencing`}>
+                        <Chip
+                          size="small"
+                          label={`${Math.round(task.complexity * 100)}% complex`}
+                          tabIndex={0}
+                          sx={{
+                            bgcolor: 'rgba(4,22,40,0.8)',
+                            color: complexityColor(task.complexity),
+                            border: `1px solid ${complexityColor(task.complexity)}`,
+                          }}
+                        />
+                      </Tooltip>
                     </Box>
                   }
                   secondary={

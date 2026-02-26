@@ -79,7 +79,7 @@ ALLOWED_PATHS = [
     'docs/04-explanation/',
     'docs/05-audit-reports/',
     'docs/planes/',
-    'docs/task_packets/',
+    'task-packets/',
     'docs/'
 ]
 
@@ -312,16 +312,21 @@ class DocumentValidator:
 
     def validate_all_docs(self, fix: bool = False) -> bool:
         """Validate all documentation files in the project."""
-        docs_dir = self.project_root / 'docs'
-        if not docs_dir.exists():
-            self.add_error(str(docs_dir), "docs/ directory not found")
-            return False
-
         all_valid = True
-
-        for md_file in docs_dir.rglob('*.md'):
-            file_valid = self.validate_file(str(md_file), fix)
-            all_valid = all_valid and file_valid
+        
+        # Scan docs/ directory
+        docs_dir = self.project_root / 'docs'
+        if docs_dir.exists():
+            for md_file in docs_dir.rglob('*.md'):
+                file_valid = self.validate_file(str(md_file), fix)
+                all_valid = all_valid and file_valid
+        
+        # Scan root task-packets/ directory
+        tp_dir = self.project_root / 'task-packets'
+        if tp_dir.exists():
+            for md_file in tp_dir.rglob('*.md'):
+                file_valid = self.validate_file(str(md_file), fix)
+                all_valid = all_valid and file_valid
 
         return all_valid
 

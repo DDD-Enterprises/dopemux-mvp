@@ -1,0 +1,15 @@
+{
+  "cursor": 0,
+  "done": [],
+  "failed": [],
+  "in_progress": [
+    {
+      "cursor": 0,
+      "path": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+      "request_path": "out/request_0.txt",
+      "response_path": "out/response_0.patch",
+      "sha256_before": "a38f3e99885b31d1fbdccdbddb9d0f7aa4670d5d302fa9b7040f38d8aacc1e47",
+      "started_at": "2026-02-23T00:00:00Z"
+    }
+  ]
+}
