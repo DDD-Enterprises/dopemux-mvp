@@ -49,17 +49,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan compose files, Dockerfiles, `.env.*` files, and configuration directories for runtime mode indicators: file suffixes (`.dev`, `.prod`, `.smoke`, `.local`, `.test`), environment variable toggles (`NODE_ENV`, `APP_ENV`, `DOPEMUX_MODE`), and conditional configuration blocks. Record each mode name with evidence.
-2. For each discovered runtime mode, extract the configuration delta: which services are included/excluded, which env vars differ, which ports change, and which volumes or mounts are mode-specific. Build a comparison matrix across modes.
-3. Identify mode-switching mechanisms: make targets (`make dev`, `make prod`), compose profiles, script arguments, or env var values that select a mode. Record the switching mechanism with evidence.
-4. Generate `EXEC_MODE_DELTA_REPORT.json` showing pairwise differences between modes: added/removed services, changed env vars, different port mappings, and altered startup sequences.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the runtime modes and delta report partition as primary scan surface
+2. Extract runtime modes and delta report facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted runtime modes and delta report elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each RUNTIME_MODES item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -94,8 +95,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Runtime mode defined only in documentation but not enforced in code or compose: do not emit as a mode; note in `coverage_notes` with evidence from the documentation.
-- Mode delta cannot be computed because one mode's config is fully dynamic (loaded from external source): emit with `delta: UNKNOWN` and `missing_evidence_reason: external_config`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

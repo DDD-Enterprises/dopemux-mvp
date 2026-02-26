@@ -85,14 +85,23 @@ mcp__dope-context__docs_search(
 
 **Response**:
 ```json
-[{
-  "source_path": "/docs/architecture.md",
-  "text": "...coordination patterns between planes...",
-  "score": 0.91,
-  "doc_type": "md",
-  "hierarchy": "Architecture > Coordination > Two-Plane",
-  "complexity": 0.45
-}]
+{
+  "lane_used": "docs",
+  "fusion_strategy": "dense",
+  "rerank_used": false,
+  "embed_model_used": "voyage-context-3",
+  "timings_ms": {"embed": 12.0, "search": 8.0, "fuse": 0.0, "rerank": 0.0},
+  "results": [{
+    "rank": 1,
+    "source_uri": "/docs/architecture.md",
+    "source_path": "/docs/architecture.md",
+    "snippet": "...coordination patterns between planes...",
+    "text": "...coordination patterns between planes...",
+    "score": 0.91,
+    "doc_type": "md",
+    "chunk_id": "docs/architecture.md::chunk::1"
+  }]
+}
 ```
 
 ### Unified Search - `mcp__dope-context__search_all`
@@ -240,6 +249,27 @@ mcp__dope-context__start_autonomous_docs_indexing(
     periodic_interval=600
 )
 ```
+
+## 🚀 Startup Autoindex (Dopemux CLI)
+
+`dopemux start`, `dopemux launch`, and `dopemux dope` trigger an autoindex bootstrap for the current workspace:
+
+1. Batch bootstrap: `index_workspace` + `index_docs` (one-time per workspace snapshot by default)
+2. Ongoing updates: `start_autonomous_indexing` + `start_autonomous_docs_indexing`
+
+Control flags:
+
+- `DOPEMUX_AUTO_INDEX_ON_STARTUP=0` disables startup trigger
+- `DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS` overrides watcher debounce (default `5.0`)
+- `DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS` overrides periodic fallback (default `600`)
+
+## 🧱 Trinity Boundaries (Enforced)
+
+- Search plane authority: code/docs retrieval, fusion, rerank, and search provenance
+- Memory plane authority: decision lifecycle and decision truth records
+- `search_all` decision integration is read-only enrichment via dopecon-bridge
+- Decision enrichment defaults to Top-3 (`decision_limit=3`) and is clamped to max 10
+- Unified search responses include `trinity_boundaries` metadata to expose effective rails
 
 ## 📊 Management APIs
 

@@ -50,19 +50,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Locate LiteLLM configuration files (`litellm_config.yaml`, `litellm.yaml`, `config.yaml` containing LiteLLM keys) within in-scope source roots and upstream `REPOCTRL_INVENTORY.json`.
-2. For each configuration file, extract the `model_list` entries including `model_name`, `litellm_params.model`, `litellm_params.api_base`, and `litellm_params.api_key` variable references. Record file path and line range as evidence.
-3. Extract provider declarations (OpenAI, Anthropic, Azure, Bedrock, etc.) and map each model entry to its provider. Capture any provider-specific settings (API versions, regions, deployment names).
-4. Extract budget, rate limit, and spend tracking configurations (`max_budget`, `max_parallel_requests`, `tpm_limit`, `rpm_limit`) with evidence from the config file.
-5. Extract cache settings (`cache`, `cache_params`, Redis/in-memory config), logging callbacks, and database connection settings (`database_url`, `database_type`) with line-level evidence.
-6. Collect all environment variable names referenced in LiteLLM configs (e.g., `os.environ/`, `${...}` patterns) without resolving their values. Record each variable name with evidence.
-7. Legacy Context is intent guidance only and is never evidence.
-8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-10. Attach evidence to every non-derived field and every relationship edge.
-11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-13. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the LiteLLM partition as primary scan surface
+2. Extract LiteLLM facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted LiteLLM elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each LITELLM_SURFACE item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -97,8 +96,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- LiteLLM config references models or providers not present in any scanned config file: emit item with `status: unresolved_reference` and evidence citing the referencing line.
-- Multiple LiteLLM config files with overlapping model names: emit all with distinct IDs incorporating the source path and mark `status: needs_review`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

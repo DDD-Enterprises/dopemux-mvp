@@ -59,19 +59,18 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan `src/**` and `services/**` for storage backend implementations: classes or modules that wrap database clients (PostgreSQL, SQLite, Redis, Qdrant, file-based stores). For each backend, record the client library used, connection initialization pattern, and the file path with line range evidence. Emit these as `DOPE_MEMORY_CODE_SURFACE.json` items.
-2. Locate schema definition sources: SQL files (`*.sql`), migration scripts (Alembic, raw SQL migrations), ORM model definitions (SQLAlchemy, Pydantic models used for DB schemas), and JSON Schema files. For each schema source, record the table/collection name, column definitions (if explicit), and file path with line range.
-3. Extract all database write locations by scanning for SQL `INSERT`, `UPDATE`, `DELETE` statements (both raw and ORM-based), Redis `SET`/`HSET`/`LPUSH` calls, and Qdrant upsert operations. For each write site, record the target table/collection, the operation type, the calling function, and file path with line range evidence. Emit these as `DOPE_MEMORY_DB_WRITES.json` items.
-4. Identify TTL and retention enforcement points: scan for `EXPIRE`, `TTL`, `retention`, `cleanup`, `purge`, or `vacuum` patterns in code and configuration. Record the retention policy (duration, condition), the target data store, and evidence.
-5. Extract connection pooling and lifecycle management: pool size configuration, connection reuse patterns, graceful shutdown hooks that close database connections. Record with evidence from code or compose environment variables.
-6. Cross-reference discovered storage surfaces against upstream `SERVICE_ENTRYPOINTS.json` and `EVENTBUS_SURFACE.json` to identify which services own which storage backends and whether event-driven writes exist.
-7. Legacy Context is intent guidance only and is never evidence.
-8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-10. Attach evidence to every non-derived field and every relationship edge.
-11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-13. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the dope memory storage partition as primary scan surface
+2. Extract dope memory storage facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted dope memory storage elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each DOPE_MEMORY_SURFACES item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -106,8 +105,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Database write uses dynamically constructed table names or query strings: emit with `target_table: UNKNOWN` and `status: dynamic_query` with evidence citing the expression.
-- Schema definition split across multiple migration files with no single canonical source: emit all migration files as evidence and set `schema_completeness: partial` with `missing_evidence_reason: distributed_migrations`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

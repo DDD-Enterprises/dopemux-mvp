@@ -43,3 +43,4 @@ python /app/services/webhook_receiver/poller.py --providers xai,gemini --once
 ```
 
 The poller reads `async_jobs` in `submitted/running`, emits normalized completion/failure events idempotently, and updates job status.
+`--providers` is fail-closed: unsupported provider IDs exit with an error.

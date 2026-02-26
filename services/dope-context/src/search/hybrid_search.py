@@ -78,8 +78,11 @@ def reciprocal_rank_fusion(
 
             fused_scores[doc_id] = fused_scores.get(doc_id, 0.0) + rrf_score
 
-    # Sort by fused score (descending)
-    sorted_results = sorted(fused_scores.items(), key=lambda x: x[1], reverse=True)
+    # Sort deterministically by score desc, then doc_id asc for stable ties.
+    sorted_results = sorted(
+        fused_scores.items(),
+        key=lambda x: (-x[1], x[0]),
+    )
 
     return sorted_results
 
@@ -317,8 +320,8 @@ class HybridSearch:
                         )
                     )
 
-        # Sort by final hybrid score
-        results.sort(key=lambda r: r.score, reverse=True)
+        # Sort deterministically by final hybrid score, then stable ID tie-break.
+        results.sort(key=lambda r: (-r.score, r.id))
 
         logger.info(
             f"Hybrid search returned {len(results)} results "

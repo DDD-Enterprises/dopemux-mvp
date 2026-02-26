@@ -21,7 +21,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Database connection
-DATABASE_URL = "postgresql://dopemux_age:dopemux_age_dev_password@localhost:5455/dopemux_knowledge_graph"
+DATABASE_URL = "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph"
 
 async def backup_decisions_table(conn: asyncpg.Connection) -> str:
     """Create backup of decisions table before migration."""

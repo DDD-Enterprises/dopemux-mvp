@@ -39,17 +39,18 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream W-phase artifacts (inventory, partitions, catalog) as specified in the inputs section. For each cataloged workflow, extract concrete input files/artifacts consumed and output files/artifacts produced, with evidence from file I/O operations in scripts or documented expectations.
-2. Map artifact flows between workflows: identify producer-consumer relationships where one workflow's output is another's input. Record file paths, formats, and any schema expectations.
-3. Build a workflow I/O adjacency map showing artifact dependencies across the workflow graph. Flag orphan artifacts (produced but never consumed) and missing artifacts (consumed but never produced).
-4. Structure the output with clear per-workflow I/O entries, cross-workflow artifact flow edges with evidence, and an explicit UNKNOWN section for I/O relationships that cannot be determined from available sources.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the workflow inputs/outputs/artifacts partition as primary scan surface
+2. Extract workflow inputs/outputs/artifacts facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted workflow inputs/outputs/artifacts elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each WORKFLOW_IO_MAP item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -84,8 +85,8 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Workflow reads from or writes to paths constructed at runtime (variable interpolation): record the template pattern and flag with `status: dynamic_path` and evidence of the construction.
-- Artifact producer-consumer relationship is ambiguous (multiple possible producers): record all candidates with evidence and flag with `status: ambiguous_producer`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

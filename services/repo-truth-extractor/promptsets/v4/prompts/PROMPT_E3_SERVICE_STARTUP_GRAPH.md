@@ -40,11 +40,11 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Parse `compose.yml` and `docker-compose*.yml` for `depends_on` declarations between services. Build directed edges from dependency to dependent service. Record each edge with the compose file path and line range evidence.
-2. Scan startup scripts and orchestration files for explicit ordering constraints: `wait-for-it`, `sleep`, sequential launch patterns, health check gates before proceeding. Add ordering edges to the graph with evidence.
-3. Extract health check dependencies: services that poll another service's health endpoint before starting. Identify the health URL, timeout, and retry count from compose `healthcheck` or script logic.
-4. Merge edges from compose dependencies and script-based ordering into a single startup DAG. Detect cycles and flag them with `status: circular_dependency`. Compute topological sort order for acyclic portions.
-5. Cross-reference the startup graph against upstream `SERVICE_ENTRYPOINTS.json` to validate that every graph node corresponds to a known service entrypoint.
+1. Load upstream inventory and partitions; use the service startup graph partition as primary scan surface
+2. Extract service startup graph facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted service startup graph elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each STARTUP_GRAPH item, populate `id`, required fields, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -86,8 +86,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Service appears in compose `depends_on` but has no corresponding service definition in any compose file: emit node with `status: undefined_service` and evidence.
-- Startup ordering only inferable from comments or documentation (no code-level enforcement): do not emit as a graph edge; note in `coverage_notes` with evidence.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

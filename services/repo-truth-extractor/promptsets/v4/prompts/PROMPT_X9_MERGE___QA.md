@@ -49,17 +49,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream X-phase artifacts (X0-X4 outputs) as specified in the inputs section. Merge Feature Index outputs into canonical artifacts by deterministic union keyed by stable feature identity keys (feature_id or name+service_id hash).
-2. Run QA validation: check required schema fields, verify cross-references between surface/code-map/doc-map/dep-graph are consistent, and confirm no orphan features or dangling references exist. Report coverage by feature.
-3. Emit coverage report: features with complete vs incomplete extraction across all X-phase dimensions, per-field completeness, unresolved mappings count, and schema violation list.
-4. Structure the output with merged feature index, QA results by check type, coverage statistics, and an explicit UNKNOWN/gaps section for areas where QA cannot be completed due to missing inputs.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all X-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all FEATURE_* artifacts into FEATURE_INDEX_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all X-Phase artifacts present, coverage complete, sort order deterministic; emit FEATURE_INDEX_QA
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -94,8 +95,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Feature identity key collision during merge (different features with same computed ID): apply hash disambiguation and record the collision in QA output with evidence from both sources.
-- Cross-reference between X-phase artifacts inconsistent (feature in surface but not in code map): record as `status: incomplete_extraction` with the missing dimension and evidence.
+- Missing X-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

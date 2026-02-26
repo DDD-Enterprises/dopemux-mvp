@@ -78,6 +78,7 @@ how_to:
   multi_instance: "docs/02-how-to/multi-instance-workflow.md"
   orchestrator_dashboard: "docs/02-how-to/orchestrator-dashboard.md"
   workflow_idea_epic_lifecycle: "docs/02-how-to/operations/workflow-idea-epic-lifecycle.md"
+  dope_context_user_guide: "docs/02-how-to/dope-context/dope-context-user-guide.md"
   repo_truth_extractor_cli: "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md"
   repo_truth_extractor_cli_canonical_entrypoint: "docs/02-how-to/extraction/run-v4-from-dopemux-cli.md"
   repo_truth_extractor_user_guide: "docs/02-how-to/extraction/repo-truth-extractor-user-guide.md"
@@ -104,6 +105,8 @@ reference:
   repo_truth_extractor_pipeline_reliability: "docs/03-reference/extraction/pipeline-reliability.md"
   repo_truth_extractor_doctor_reprocess: "docs/03-reference/extraction/doctor-reprocess.md"
   repo_truth_extractor_prompt_contract: "docs/03-reference/extraction/prompt-contract-v4.md"
+  dope_context_docs_contextual_embedding_contract: "docs/03-reference/dope-context/DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md"
+  dope_context_architecture_and_boundaries: "docs/03-reference/dope-context/DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md"
 
 # Explanation & Deep Dives
 explanation:
