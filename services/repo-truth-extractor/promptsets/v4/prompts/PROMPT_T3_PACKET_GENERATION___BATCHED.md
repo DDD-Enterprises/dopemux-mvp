@@ -48,17 +48,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream T-phase artifacts (schema, authority rules, backlog) and R/X norm artifacts as specified in the inputs section. Generate implementation-ready Task Packets in deterministic batches, with each packet including objective, scope in/out, invariants, plan, exact commands, acceptance criteria, rollback, and stop conditions.
-2. Emit packets in stable order by priority then `tp_id`. Each packet must include a commit plan and explicit acceptance gates. Every load-bearing claim must cite `authority_inputs` paths from R/X norm artifacts.
-3. If output exceeds context limits, split into `.partX` artifacts with stable ordering and include full index references in `TP_BATCH_INDEX.json`. Validate each packet against `TP_SCHEMA.json` before emission.
-4. Structure the output with clear sections per batch, evidence citations (artifact ID, path, line range), and an explicit UNKNOWN/gaps section for packets where evidence is insufficient.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all upstream extraction artifacts and synthesis reports as input for batched packet generation
+2. Analyze extraction outputs to identify actionable work items for PACKET_BATCH
+3. For each task packet, determine scope, priority, dependencies, and acceptance criteria from evidence
+4. Validate packet completeness: ensure each packet has sufficient context for execution
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -93,8 +94,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Packet fails schema validation against `TP_SCHEMA.json`: emit packet with `status: schema_violation` and specific failing constraints; do not silently drop.
-- Batch splitting produces inconsistent cross-references between parts: regenerate batch boundaries at stable packet ID boundaries and re-validate references.
+- Insufficient evidence for packet: if a task cannot be fully scoped from available data, emit with `status: needs_more_context`
+- Duplicate packet: if two packets cover the same work, flag with `status: potential_duplicate` and evidence
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

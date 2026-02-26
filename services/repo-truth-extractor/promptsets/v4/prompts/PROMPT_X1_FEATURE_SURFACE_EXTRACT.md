@@ -37,17 +37,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load `FEATURE_INDEX_INVENTORY.json` and `FEATURE_INDEX_PARTITIONS.json` as specified in the inputs section. For each feature in the inventory, extract the feature surface: entry points (routes, CLI commands, event handlers), triggers (user actions, scheduled tasks, external events), service touchpoints, and user-visible outcomes.
-2. For each feature surface element, capture: component name, symbol (function/class/route), file path, line range, and evidence excerpt. Map which services participate in delivering the feature.
-3. Identify cross-cutting features that span multiple services or modules. Record the coordination points and shared state between participating components.
-4. Structure the output with clear per-feature surface entries, cross-service mappings with evidence, and an explicit UNKNOWN section for features with incomplete surface extraction.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the feature surface extraction partition as primary scan surface
+2. Extract feature surface extraction facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted feature surface extraction elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each FEATURE_SURFACES item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -82,8 +83,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Feature entry point is dynamically registered (plugin system, decorator pattern) preventing static extraction: record the registration mechanism with `status: dynamic_registration` and available evidence.
-- Feature surface spans services with no documented coordination protocol: record individual service surfaces and flag with `status: coordination_undocumented`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

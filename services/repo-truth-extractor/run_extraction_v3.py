@@ -4151,8 +4151,11 @@ def build_chat_payload(
     }
     if temperature is not None:
         payload["temperature"] = temperature
-    if provider == "gemini" and force_json_output:
-        payload["response_format"] = {"type": "json_object"}
+    if force_json_output:
+        if provider == "gemini":
+            payload["response_format"] = {"type": "json_object"}
+        elif provider in {"openai", "xai"}:
+            payload["response_format"] = {"type": "json_object"}
     return payload
 
 
@@ -4747,6 +4750,8 @@ def call_llm(
                 }
                 if "temperature" in payload:
                     chat_kwargs["temperature"] = payload["temperature"]
+                if "response_format" in payload:
+                    chat_kwargs["response_format"] = payload["response_format"]
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = extract_text_from_chat_completion(response)
@@ -5776,6 +5781,10 @@ def validate_success_partition_output(
 
     if not has_expected_artifact:
         return False, "no_expected_artifacts"
+
+    schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts, expected_artifact_names)
+    if not schema_ok:
+        return False, f"invalid_schema:{schema_reason}"
 
     return True, "valid_success"
 
@@ -7688,15 +7697,21 @@ def print_run_order(phases: List[str]) -> int:
     payload = {
         "generated_at": now_iso(),
         "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "phase_count": len(phases),
         "phase_order": [
             {
                 "phase_id": phase,
                 "phase_dir": PHASE_DIR_NAMES.get(phase, phase),
+                "required_steps": sorted(
+                    list(REQUIRED_PROMPT_STEP_IDS.get(phase, set())),
+                    key=step_sort_key,
+                ),
+                "prompt_count": len(get_phase_prompts(phase)),
             }
             for phase in phases
         ],
     }
-    print(json.dumps(payload, indent=2))
+    print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 
 
@@ -7705,9 +7720,18 @@ def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
         "generated_at": now_iso(),
         "runner_script_path": str(RUNNER_SCRIPT.resolve()),
         "routing_policy": cfg.routing_policy,
+        "routing_policy_version": ROUTING_POLICY_VERSION,
+        "phase_defaults": {},
         "phases": {},
     }
     for phase in phases:
+        provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
+        payload["phase_defaults"][phase] = {
+            "provider": provider,
+            "model_id": model_id,
+            "model": f"{provider}/{model_id}" if provider and model_id else "",
+            "api_key_env": api_key_env,
+        }
         entries: List[Dict[str, Any]] = []
         for spec in get_phase_prompts(phase):
             route = resolve_effective_step_route(phase, spec.step_id, cfg)
@@ -7732,7 +7756,7 @@ def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
             )
         entries.sort(key=lambda row: step_sort_key(str(row.get("step_id", ""))))
         payload["phases"][phase] = entries
-    print(json.dumps(payload, indent=2))
+    print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 
 
@@ -7740,6 +7764,7 @@ def print_phase_prompts(phases: List[str]) -> int:
     payload: Dict[str, Any] = {
         "generated_at": now_iso(),
         "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "phase_count": len(phases),
         "phases": {},
     }
     for phase in phases:
@@ -7753,7 +7778,7 @@ def print_phase_prompts(phases: List[str]) -> int:
             }
             for spec in specs
         ]
-    print(json.dumps(payload, indent=2))
+    print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 
 

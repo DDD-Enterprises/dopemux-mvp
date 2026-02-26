@@ -77,4 +77,33 @@ This pack does not override TaskX pack; if conflict, TaskX wins.
 22. Optional prompt-pack output is allowed only as additive guidance with no contract override.
 <!-- CHATX:END -->
 
+## Dopemux MCP Servers
+
+Codex interfaces with Dopemux via the local MCP fabric listed in `docker/mcp-servers/SERVER_REGISTRY.md`. The servers below are grouped by their defined roles so you can target the right authority when issuing MCP calls.
+
+### Critical Path
+- **PAL apilookup** (`mcp-pal`, port `3003`, `/health`): authoritative documentation + API reference tool; mandatory first call for anything code-related.
+- **PAL (multi-model orchestration)** (`mcp-pal`, port `3003`, `/health`): orchestrates GPT-5, Gemini, DeepSeek, and other models for complex reasoning and planning.
+- **Sequential Thinking** (`mcp-mas-sequential-thinking`, port `3001`, port liveness check): multi-agent reasoning engine for architectural analysis and debugging.
+
+### Workflow Servers
+- **ConPort** (`mcp-conport`, port `3004`, `/health`): project memory/knowledge graph + decision authority.
+- **Task Master AI** (`mcp-task-master-ai`, port `3005`, `/health`): PRD parsing, task breakdown, and requirements interpretation.
+- **Task Orchestrator** (`mcp-task-orchestrator`, port `3014`, `/health`): dependency analysis, scheduling, and task planning with 37 specialized tools.
+- **Serena** (`mcp-serena`, port `3006`, `/health`): ADHD-optimized LSP for code navigation, complexity scoring, and working memory.
+- **Claude Context** (`mcp-claude-context`, port `3007`, `/health`): semantic code search and vector-based context retrieval.
+
+### Research Servers
+- **GPT Researcher (MCP)** (`mcp-gptr-mcp`, port `3009`, `/health`): autonomous deep research with multi-agent exploration and report generation.
+- **GPT Researcher (STDIO proxy)** (`mcp-gptr-stdio`, stdio exec): lightweight helper container that spawns the STDIO-facing researcher MCP.
+- **Exa** (`mcp-exa`, port `3008`, `/health`): fallback web research provider (use only when PAL apilookup lacks info).
+- **MorphLLM Fast Apply** (`mcp-morphllm-fast-apply`, port `3011`, `/health`): pattern-based bulk edits and style/model migrations.
+- **Desktop Commander** (`dopemux-mcp-desktop-commander`, port `3012`, `/health`): desktop automation, window/focus control, and screenshot capture for ADHD workflows.
+
+### External Integrations
+- **DopeconBridge** (`mcp-dopecon-bridge`, port `3016`, `/health`): two-plane coordination layer linking PM-plane (Task Master/Orchestrator/Leantime) with the cognitive plane (Serena/ConPort).
+- **Leantime Bridge** (`dopemux-mcp-leantime-bridge`, port `3015`, `/health`): status authority and team coordination with the Leantime PM system.
+- **Plane Coordinator** (`dopemux-mcp-plane-coordinator`, port `8090`, `/health`): API surface for cross-plane coordination, conflict detection, and metrics.
+- **Leantime (project management)** (external network `leantime-net`, port `8080`): companion PM UI integrated through the Leantime Bridge.
+
 Agent-specific rules are inserted in sentinel blocks only.

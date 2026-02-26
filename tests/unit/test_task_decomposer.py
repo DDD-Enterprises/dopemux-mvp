@@ -29,7 +29,8 @@ class TestTaskDecomposer:
         decomposer = TaskDecomposer(temp_workspace)
         assert (temp_workspace / ".dopemux").exists()
         assert (temp_workspace / ".dopemux" / "tasks").exists()
-        assert decomposer.tasks_file == temp_workspace / ".dopemux" / "tasks" / "tasks.json"
+        expected_tasks_file = temp_workspace.resolve() / ".dopemux" / "tasks" / "tasks.json"
+        assert decomposer.tasks_file == expected_tasks_file
 
     def test_init_permission_error_fallback(self, temp_workspace):
         """Test that __init__ falls back to a temp directory on permission error."""

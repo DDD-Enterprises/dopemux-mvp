@@ -40,17 +40,18 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Catalog all policy files in the repository: `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.claude/CLAUDE.md`, `AGENTS.md`, and any files containing governance directives (MUST, SHALL, REQUIRED). Record each with its policy type and evidence.
-2. For each policy file, identify enforcement mechanisms: pre-commit hooks triggered by the policy, CI workflows that validate compliance, runtime checks that enforce policy rules, and any scripts that audit policy adherence.
-3. Extract policy-to-enforcement mappings: which specific rules in each policy file are actively enforced by which mechanisms. Record the mapping with evidence from both the policy declaration and the enforcement code.
-4. Identify orphaned enforcement (hooks/scripts with no corresponding policy) and orphaned policies (documented rules with no enforcement). Flag each with `status: orphaned_enforcement` or `status: orphaned_policy`.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the policy files and enforcement partition as primary scan surface
+2. Extract policy files and enforcement facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted policy files and enforcement elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each GOV_POLICIES item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -85,8 +86,8 @@ Focus on CI gates, policy enforcement, and governance drift risks.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Policy file uses natural language directives without machine-parseable rules: include with `enforcement_feasibility: manual_review_only` and evidence.
-- Enforcement mechanism references a policy file that has been deleted or moved: emit with `status: stale_reference` and evidence citing the broken path.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

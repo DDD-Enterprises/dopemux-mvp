@@ -46,6 +46,7 @@ Focus on concrete, machine-verifiable implementation facts.
 - `REPO_IMPLICIT_BEHAVIOR_HINTS.json`
 - `REPO_COMPOSE_SERVICE_GRAPH.json`
 - `REPO_LITELLM_SURFACE.json`
+- `REPO_LEANTIME_SURFACE.json`
 - `REPO_TASKX_SURFACE.json`
 - `REPOCTRL_NORM_MANIFEST.json`
 - `REPOCTRL_QA.json`
@@ -118,6 +119,13 @@ Focus on concrete, machine-verifiable implementation facts.
     - `id_rule`: `REPO_LITELLM_SURFACE:<stable-hash(path|symbol|name)>`
     - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
+  - `REPO_LEANTIME_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `A99`
+    - `id_rule`: `REPO_LEANTIME_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
   - `REPO_TASKX_SURFACE.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
@@ -141,19 +149,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream A-phase artifacts (A1 through A9 outputs) and validate each against its declared schema. Record which artifacts are present, missing, or malformed.
-2. For each output artifact, merge items from upstream step outputs using `itemlist_by_id` strategy: union items by `id`, merge evidence arrays by `(path, line_range, excerpt)` deduplication, resolve scalar conflicts by preferring non-empty values.
-3. Detect and report duplicate IDs across artifacts: if two items share the same `id` but originate from different steps, flag as `duplicate_id` with evidence from both sources.
-4. Compute partition coverage: for each partition declared in `REPOCTRL_PARTITIONS.json`, verify that at least one artifact contains items covering that partition's scope.
-5. Build `REPOCTRL_NORM_MANIFEST.json` with one entry per output artifact containing `artifact_name`, `item_count`, and `sha256` of the final merged content.
-6. Build `REPOCTRL_QA.json` with checks for: expected artifacts present/missing, empty artifact detection (0 items), duplicate evidence entries, partition coverage counts, and parse failures.
-7. Legacy Context is intent guidance only and is never evidence.
-8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-10. Attach evidence to every non-derived field and every relationship edge.
-11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-13. Emit exactly the declared outputs and no additional files.
+1. Load all A-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all REPO_CTRL_* artifacts into REPO_CTRL_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all A-Phase artifacts present, coverage complete, sort order deterministic; emit REPO_CTRL_QA
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -188,8 +195,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Upstream artifact missing entirely: emit `REPOCTRL_QA` check with `status: missing_artifact` and list the expected artifact name; continue merging remaining artifacts.
-- ID collision during merge with conflicting non-evidence fields: keep both items with suffixed IDs (`_stepA1`, `_stepA2`) and mark `status: merge_conflict` in QA output.
+- Missing A-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

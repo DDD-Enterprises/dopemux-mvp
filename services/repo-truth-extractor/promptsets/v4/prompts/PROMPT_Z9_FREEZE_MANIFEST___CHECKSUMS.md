@@ -53,17 +53,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream Z-phase artifacts (Z0-Z2 outputs) as specified in the inputs section. Produce a deterministic freeze handoff manifest including SHA-256 for every file in phase `norm/` and `qa/` outputs across all phases (A/H/D/C/E/W/B/G/Q/R/X/T/Z), plus prompt corpus fingerprints for active `PROMPT_*.md` files.
-2. Record missing expected artifacts and failure counts by phase. Cross-reference against `artifacts.yaml` to ensure completeness. Generate `FREEZE_README.md` with deterministic verification commands that a downstream consumer can run to validate the freeze.
-3. Run final QA: verify all checksums are consistent with file contents, all cross-references resolve, no duplicate artifact IDs exist, and the manifest is self-consistent. Emit `FREEZE_QA.json` with pass/fail per check.
-4. Structure the output with the complete freeze manifest, README with verification commands, QA results, and an explicit UNKNOWN section for any artifacts or checks that could not be completed.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all Z-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all FREEZE_* artifacts into FREEZE_MANIFEST using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all Z-Phase artifacts present, coverage complete, sort order deterministic; emit FREEZE_CHECKSUMS
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -98,8 +99,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Final QA discovers inconsistency between manifest and actual files on disk: emit `FREEZE_QA.json` with `status: FAIL` for affected checks and detailed evidence of each inconsistency.
-- Prompt corpus fingerprints show uncommitted modifications to active prompt files: record the modified files with their dirty checksums and flag with `status: uncommitted_changes`.
+- Missing Z-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

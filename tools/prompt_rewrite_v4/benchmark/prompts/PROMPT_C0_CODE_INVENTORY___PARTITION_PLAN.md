@@ -49,9 +49,10 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 1. Scan source code (`services/`, `src/`, `lib/`, `scripts/`, `tools/`) targets; collect path, type, and content metadata for each artifact
 2. Classify each artifact by category relevant to the source code (`services/`, `src/`, `lib/`, `scripts/`, `tools/`) domain
 3. Build CODE_PARTITIONS by grouping files into logical categories with rationale
-4. For each CODE_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
-5. For each CODE_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
+4. For each `CODE_INVENTORY` item, populate `id`, `path`, `line_range`, `kind`, `summary`, and `evidence`.
+5. For each `CODE_PARTITIONS` item, populate `id`, `partition_id`, `path`, `line_range`, `files` (sorted), `reason`, and `evidence`.
+6. Wrap all items in the `ItemList` envelope: `{"schema":"json_item_list@v1","items":[...]}`.
+7. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
 9. Attach evidence to every non-derived field and every relationship edge.

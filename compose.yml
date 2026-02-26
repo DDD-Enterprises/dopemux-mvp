@@ -237,7 +237,7 @@ services:
       - dopemux-network
 
     environment:
-      - MCP_SERVER_PORT=3004
+      - MCP_SERVER_PORT=3005
       - DOPECON_BRIDGE_URL=http://dope-decision-graph-bridge:3016
       - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
       - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
@@ -403,7 +403,7 @@ services:
       - LEANTIME_TOKEN=${LEANTIME_TOKEN}
       - REDIS_URL=redis://redis-primary:6379
       - WORKSPACE_ID=/Users/hue/code/dopemux-mvp
-      - CONPORT_URL=http://conport:3004
+      - CONPORT_URL=http://conport:3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY:-dev-key-456}
@@ -445,7 +445,7 @@ services:
       - HOST=0.0.0.0
       - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
       - REDIS_URL=redis://redis-primary:6379
-      - CONPORT_URL=http://conport:3004
+      - CONPORT_URL=http://conport:3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097

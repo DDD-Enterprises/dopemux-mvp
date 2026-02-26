@@ -39,17 +39,18 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Compare raw vs normalized artifact pairs: for each step that produces both raw and norm outputs, compare item counts, field completeness, and schema compliance. Record drift where norm count differs from raw count.
-2. Detect truncation: identify normalized artifacts where items appear to have been truncated (fields ending with `...`, missing `evidence` arrays, or `excerpt` fields shorter than expected). Flag with `status: suspected_truncation`.
-3. Validate schema consistency: check that every normalized artifact conforms to its declared schema contract (`kind`, `merge_strategy`, `id_rule`, `required_item_fields`). Record violations.
-4. Generate `QA_NORM_DRIFT_REPORT.json` with per-artifact comparison: raw_count, norm_count, drift_percentage, schema_violations, truncation_flags, and overall health status.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the drift detection and norm diffs partition as primary scan surface
+2. Extract drift detection and norm diffs facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted drift detection and norm diffs elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each QA_NORM_DRIFT_REPORT item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -84,8 +85,8 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Raw artifact exists but corresponding norm artifact is missing: emit with `status: normalization_failed` and the raw artifact path as evidence.
-- Schema contract itself is ambiguous or contradictory: emit with `status: schema_ambiguity` and cite the conflicting contract fields.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

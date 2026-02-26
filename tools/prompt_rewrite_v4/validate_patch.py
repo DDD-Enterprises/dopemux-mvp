@@ -191,7 +191,6 @@ def validate_patch(
         old_start = int(m.group(1))  # 1-based
         old_count = int(m.group(2) or "1")
         new_start = int(m.group(3))  # unused for apply; informational
-        new_count = int(m.group(4) or "1")
         i += 1
 
         # Copy unchanged lines before this hunk.

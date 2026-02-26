@@ -51,11 +51,11 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan `.taskx/` directory and all in-scope roots for TaskX configuration files (`.taskx.yaml`, `taskx.json`, `taskx_config.*`) and record each file path with line-level evidence.
-2. Extract task packet definitions: identify packet file paths, packet schemas, and instruction compilation surfaces. Record the invocation pattern and operator surface for each packet.
-3. Locate scripts and workflows that invoke TaskX (e.g., shell scripts calling `taskx run`, Python imports of TaskX modules) and extract the invocation command, arguments, and referenced packet paths with evidence.
-4. Extract operator profile surfaces: identify any operator-specific configuration, permission boundaries, or profile-based routing declared in TaskX configs.
-5. Cross-reference TaskX service entries against `services/registry.yaml` and upstream `REPO_COMPOSE_SERVICE_GRAPH.json` to validate service identity and detect orphaned TaskX references.
+1. Load upstream inventory and partitions; use the TaskX partition as primary scan surface
+2. Extract TaskX facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted TaskX elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each TASKX_SURFACE item, populate `id`, required fields, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -97,8 +97,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- TaskX config references packet paths that do not exist on disk: emit item with `status: missing_packet` and evidence citing the referencing config line.
-- Conflicting operator profiles across multiple TaskX configs: emit all with distinct IDs and mark `status: needs_review`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

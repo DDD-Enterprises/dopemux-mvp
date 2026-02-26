@@ -1,3 +1,6 @@
+OUTPUTS:
+- WORKFLOWS_TRUTH_GRAPH.md
+
 Goal: WORKFLOWS_TRUTH_GRAPH.md
 
 ROLE: Supervisor/Auditor.
@@ -20,3 +23,9 @@ OUTPUT:
 RULES:
 - No inferred steps.
 - Use WORKFLOW_RUNNER_SURFACE + HOME_TMUX_WORKFLOW_SURFACE + compose graph evidence.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```

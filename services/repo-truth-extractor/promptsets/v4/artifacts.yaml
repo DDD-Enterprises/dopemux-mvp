@@ -117,6 +117,17 @@ artifacts:
   - line_range
   - id
 - phase: A
+  artifact_name: REPO_LEANTIME_SURFACE.json
+  canonical_writer_step_id: A99
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: A
   artifact_name: REPO_MCP_PROXY_SURFACE.json
   canonical_writer_step_id: A99
   kind: json_item_list
@@ -372,6 +383,17 @@ artifacts:
 - phase: C
   artifact_name: IDEMPOTENCY_RISK_LOCATIONS.json
   canonical_writer_step_id: C9
+  kind: json_item_list
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: itemlist_by_id
+  required_fields:
+  - path
+  - line_range
+  - id
+- phase: C
+  artifact_name: LEANTIME_INTEGRATION_SURFACE.json
+  canonical_writer_step_id: C11
   kind: json_item_list
   norm_artifact: true
   allow_timestamp_keys: false
@@ -1137,6 +1159,14 @@ artifacts:
   merge_strategy: markdown_concat
   required_fields: []
 - phase: R
+  artifact_name: LEANTIME_INTEGRATION_TRUTH.md
+  canonical_writer_step_id: R9
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: R
   artifact_name: PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
   canonical_writer_step_id: R6
   kind: markdown
@@ -1171,6 +1201,14 @@ artifacts:
 - phase: R
   artifact_name: WORKFLOWS_TRUTH_GRAPH.md
   canonical_writer_step_id: R5
+  kind: markdown
+  norm_artifact: true
+  allow_timestamp_keys: false
+  merge_strategy: markdown_concat
+  required_fields: []
+- phase: R
+  artifact_name: TWO_PLANE_ARCHITECTURE_TRUTH.md
+  canonical_writer_step_id: R10
   kind: markdown
   norm_artifact: true
   allow_timestamp_keys: false

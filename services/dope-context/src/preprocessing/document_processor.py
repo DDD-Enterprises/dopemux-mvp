@@ -537,4 +537,12 @@ class DocumentProcessor:
 
                 document_chunks.append(DocumentChunk(text=chunk_text, metadata=metadata))
 
+        # Hard invariant: ordinals must be contiguous and deterministic.
+        observed = [chunk.metadata.chunk_index for chunk in document_chunks]
+        expected = list(range(len(document_chunks)))
+        if observed != expected:
+            raise ValueError(
+                f"Non-contiguous document chunk ordinals for {file_path}: {observed}"
+            )
+
         return document_chunks

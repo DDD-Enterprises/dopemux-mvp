@@ -45,38 +45,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Locate MCP server definition sources within the scan roots:
-   - .claude/**, config/**, scripts/**, docker/**, README.md, AGENTS.md
-   Include .github/** and .taskx/** only if they contain explicit MCP server blocks.
-2. Identify MCP server definitions only when explicitly structured in text:
-   - JSON/YAML/TOML keys like "mcp", "mcpServers", "servers", "transport"
-   - CLI invocations like "claude mcp add ..." or equivalent explicit add commands
-   Do not infer "MCP server" from filenames alone.
-3. For each server definition, extract only explicitly evidenced fields:
-   - server_name (or name/id), command, args, enabled/disabled
-   - env var NAMES only (never values)
-   - transport/url only if explicitly present
-   If a field is referenced but not defined, set it to UNKNOWN and record why.
-4. Evidence capture rule (strict):
-   - For every extracted field, attach evidence with (path, line_range, excerpt <=200 chars).
-   - Excerpts must be exact substrings; do not paraphrase.
-5. Normalize each server into an item with the artifact's id_rule:
-   - id = stable-hash(path|symbol|name) per schema
-   - path must be repo-relative
-   - line_range should cover the defining block or defining command line(s)
-6. Deduplicate servers deterministically:
-   - same stable id merges evidence by (path,line_range,excerpt)
-   - if conflicting scalar values exist, prefer non-empty; else lexicographically smallest
-7. Emit UNKNOWN safely:
-   - If a server is mentioned but no definition exists in-scope, emit an item with UNKNOWN
-     fields plus missing_evidence_reason and evidence for the mention.
-8. Legacy Context is intent guidance only and is never evidence.
-9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-10. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-11. Attach evidence to every non-derived field and every relationship edge.
-12. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-13. Validate required fields; emit UNKNOWN for unsatisfied values with evidence gaps.
-14. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the MCP server definition partition as primary scan surface
+2. Extract MCP server definition facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted MCP server definition elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each MCP_SERVER_DEFS item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -111,11 +91,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Ambiguous MCP definition blocks (multiple plausible "name"/"command" candidates): emit item
-  with UNKNOWN for ambiguous fields and include evidence for each candidate excerpt.
-- Secret leakage risk (env values, tokens, inline credentials): emit env var NAMES only; if a
-  value is present in the source, do not copy it into output; include evidence pointing to the
-  key name only and set missing_evidence_reason: "sensitive value redacted".
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

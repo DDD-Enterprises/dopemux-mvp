@@ -28,7 +28,7 @@
         "/app/conport_mcp_stdio.py"
       ],
       "env": {
-        "CONPORT_URL": "http://localhost:3004"
+        "CONPORT_URL": "http://localhost:3005"
       }
     }
   }

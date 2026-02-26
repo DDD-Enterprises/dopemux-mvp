@@ -1,3 +1,6 @@
+OUTPUTS:
+- EVENTBUS_WIRING_TRUTH.md
+
 Goal: EVENTBUS_WIRING_TRUTH.md
 
 ROLE: Supervisor/Auditor.
@@ -20,3 +23,9 @@ Event | Producers (CODE refs) | Consumers (CODE refs) | Adapter/Bus (CODE refs)
 RULES:
 - If event name is computed, mark as (computed) with evidence.
 - No guessing missing event names.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```

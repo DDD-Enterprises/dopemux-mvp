@@ -40,17 +40,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan home control-plane configs for MCP server definitions: `mcpServers` blocks in JSON configs, MCP transport declarations (stdio, SSE, HTTP), and server command/args entries. For each server, record the server name, transport type, command, and environment variables with evidence.
-2. Identify MCP client configurations: which tools or editors are configured to connect to MCP servers, connection parameters, and any proxy or middleware configurations.
-3. Distinguish between fully configured MCP servers (with command, transport, and args) and hint-only references (string mentions of MCP without structured config). Tag hint-only references with `status: hint_only`.
-4. Cross-reference MCP definitions against upstream repo-level `REPO_MCP_SERVER_DEFS.json` to identify home-specific MCP servers vs repo-defined ones.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the MCP server definitions partition as primary scan surface
+2. Extract MCP server definitions facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted MCP server definitions elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each HOME_MCP_SURFACE item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -85,8 +86,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- MCP server definition references a command that does not exist on the system path: emit with `status: command_not_found` and evidence citing the command string.
-- MCP config uses environment variable interpolation for server command or args: emit with the variable names and `status: dynamic_config` with evidence.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

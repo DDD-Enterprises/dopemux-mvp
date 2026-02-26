@@ -140,7 +140,11 @@ class _StubBM25:
 sys.modules.setdefault("rank_bm25", types.SimpleNamespace(BM25Okapi=_StubBM25))
 
 from src.mcp.server import (
+    _default_decision_sync_config,
+    _normalize_decision_limit,
     _search_all_impl,
+    _docs_search_impl,
+    _run_workspace_autoindex_bootstrap,
     _index_workspace_impl,
     _search_code_impl,
     _get_index_status_impl,
@@ -151,11 +155,22 @@ from src.mcp.server import (
     search_all,
     sync_workspace,
     sync_docs,
+    service_info,
 )
 from src.pipeline.indexing_pipeline import IndexingProgress
 from src.search.dense_search import SearchResult
 from src.rerank.voyage_reranker import RerankResult, RerankResponse
 from src.utils.workspace import workspace_to_hash
+
+
+def _response_payload(response):
+    """Decode JSONResponse payload for tests."""
+    if isinstance(response, dict):
+        return response
+    body = getattr(response, "body", b"{}")
+    if isinstance(body, (bytes, bytearray)):
+        return json.loads(body.decode("utf-8"))
+    return {}
 
 
 @pytest.fixture
@@ -604,6 +619,218 @@ async def test_search_all_includes_decisions_when_enabled(tmp_path, monkeypatch)
     assert len(result["docs_results"]) == 1
     assert len(result["decision_results"]) == 1
     assert result["total_results"] == 3
+    assert result["trinity_boundaries"]["decision_limit_effective"] <= 10
+
+
+def test_trinity_decision_limit_normalization_defaults_to_top3():
+    """Boundary helper should enforce top-3 default and max 10."""
+    defaults = _default_decision_sync_config()
+    assert defaults["limit"] == 3
+    assert _normalize_decision_limit(None) == 3
+    assert _normalize_decision_limit("bad") == 3
+    assert _normalize_decision_limit(0) == 1
+    assert _normalize_decision_limit(11) == 10
+
+
+@pytest.mark.anyio
+async def test_search_all_clamps_decision_limit_to_trinity_boundary(tmp_path, monkeypatch):
+    """Unified search must clamp decision retrieval at trinity max boundary."""
+    workspace = tmp_path / "ws"
+    workspace.mkdir()
+
+    captured = {}
+
+    async def _fake_decisions(query, top_k, workspace_path=None, bridge_url=None):
+        captured["top_k"] = top_k
+        return [{"id": f"d{i}", "summary": f"Decision {i}"} for i in range(top_k)]
+
+    monkeypatch.setattr(
+        "src.mcp.server._search_code_impl",
+        AsyncMock(return_value=[{"file_path": "src/a.py"}]),
+    )
+    monkeypatch.setattr(
+        "src.mcp.server._docs_search_impl",
+        AsyncMock(return_value=[{"source_path": "docs/a.md"}]),
+    )
+    monkeypatch.setattr(
+        "src.mcp.server._load_decision_sync_config",
+        lambda _ws: {
+            "enabled": True,
+            "bridge_url": "http://localhost:3016",
+            "limit": 999,
+            "auto_include_in_search_all": True,
+        },
+    )
+    monkeypatch.setattr("src.mcp.server._search_decisions_impl", _fake_decisions)
+
+    result = await _search_all_impl(
+        query="auth",
+        top_k=90,
+        workspace_path=str(workspace),
+        include_decisions=True,
+    )
+
+    assert captured["top_k"] == 10
+    assert result["trinity_boundaries"]["decision_limit_configured"] == 10
+    assert result["trinity_boundaries"]["decision_limit_effective"] == 10
+
+
+@pytest.mark.anyio
+async def test_docs_search_impl_uses_voyage_context_query_mode(tmp_path, monkeypatch):
+    """_docs_search_impl must embed queries with voyage-context-3 query mode."""
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+
+    embed_mock = AsyncMock(
+        return_value=types.SimpleNamespace(embeddings=[[0.2] * 4], total_tokens=1, cost_usd=0.0)
+    )
+
+    class _FakeDocsEmbedder:
+        embed_document = embed_mock
+
+    fake_result = SearchResult(
+        id="doc-1",
+        score=0.91,
+        payload={"doc_type": "md"},
+        file_path="docs/guide.md",
+        function_name=None,
+        language="md",
+        content="Decision details",
+        context_snippet=None,
+    )
+
+    class _FakeDocSearch:
+        async def search_documents(self, query_vectors, filter_by=None):
+            assert "content" in query_vectors
+            assert filter_by is None
+            return [fake_result]
+
+    monkeypatch.setattr("src.mcp.server._get_voyage_api_key", lambda required=False: "test-key")
+    monkeypatch.setattr("src.mcp.server._get_cached_contextualized_embedder", lambda api_key: _FakeDocsEmbedder())
+    monkeypatch.setattr("src.mcp.server._get_cached_document_search", lambda collection_name, url, port: _FakeDocSearch())
+
+    response = await _docs_search_impl(
+        query="auth decision",
+        workspace_path=str(workspace),
+        return_meta=True,
+    )
+
+    assert response["lane_used"] == "docs"
+    assert response["embed_model_used"] == "voyage-context-3"
+    assert response["fusion_strategy"] == "dense"
+    assert response["rerank_used"] is False
+    assert response["timings_ms"]["embed"] >= 0
+    assert response["timings_ms"]["search"] >= 0
+    assert response["timings_ms"]["fuse"] == 0
+    assert response["results"][0]["rank"] == 1
+    assert response["results"][0]["source_uri"] == "docs/guide.md"
+    assert response["results"][0]["snippet"] == "Decision details"
+
+    embed_mock.assert_awaited()
+    _, kwargs = embed_mock.call_args
+    assert kwargs["model"] == "voyage-context-3"
+    assert kwargs["input_type"] == "query"
+    assert "chunks" in kwargs
+    assert len(kwargs["chunks"]) == 1
+
+
+@pytest.mark.anyio
+async def test_service_info_includes_runtime_diagnostics(monkeypatch):
+    """Service info should expose canonical entrypoint and runtime diagnostics."""
+    monkeypatch.setenv("MCP_SERVER_PORT", "3010")
+    monkeypatch.delenv("MCP_TRANSPORT", raising=False)
+    monkeypatch.delenv("FASTMCP_TRANSPORT", raising=False)
+
+    response = await service_info(None)
+    payload = _response_payload(response)
+
+    assert payload["canonical_entrypoint"] == "python -m src.mcp.server"
+    assert "fastmcp_available" in payload
+    assert payload["runtime"]["transport"] in {"http", "sse", "streamable-http", "stdio"}
+    assert payload["runtime"]["canonical_entrypoint"] == "python -m src.mcp.server"
+    assert "url" in payload["mcp"]["connection"]
+
+
+@pytest.mark.anyio
+async def test_service_info_stdio_mode(monkeypatch):
+    """Service info should report stdio transport explicitly when configured."""
+    monkeypatch.setenv("MCP_TRANSPORT", "stdio")
+
+    response = await service_info(None)
+    payload = _response_payload(response)
+
+    assert payload["runtime"]["transport"] == "stdio"
+    assert payload["mcp"]["connection"]["type"] == "stdio"
+    assert payload["mcp"]["connection"]["url"] == "stdio://mcp"
+
+
+@pytest.mark.anyio
+async def test_autoindex_bootstrap_starts_autonomous(tmp_path, monkeypatch):
+    """Bootstrap runner should index once and start autonomous controllers."""
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+
+    index_code = AsyncMock(return_value={"status": "indexed"})
+    index_docs = AsyncMock(return_value={"status": "indexed"})
+    start_code_auto = AsyncMock(return_value={"status": "started"})
+    start_docs_auto = AsyncMock(return_value={"status": "started"})
+
+    monkeypatch.setattr("src.mcp.server._workspace_snapshot_signature", lambda ws: "sig-1")
+    monkeypatch.setattr("src.mcp.server._index_workspace_impl", index_code)
+    monkeypatch.setattr("src.mcp.server._index_docs_impl", index_docs)
+    monkeypatch.setattr("src.mcp.server._start_autonomous_indexing_single", start_code_auto)
+    monkeypatch.setattr("src.mcp.server._start_autonomous_docs_indexing_single", start_docs_auto)
+    monkeypatch.setattr("src.mcp.server._read_autoindex_marker", lambda ws: {})
+
+    result = await _run_workspace_autoindex_bootstrap(
+        workspace,
+        force=False,
+        debounce_seconds=5.0,
+        periodic_interval=600,
+    )
+
+    assert result["status"] == "completed"
+    assert result["bootstrap"]["status"] == "completed"
+    index_code.assert_awaited_once()
+    index_docs.assert_awaited_once()
+    start_code_auto.assert_awaited_once()
+    start_docs_auto.assert_awaited_once()
+
+
+@pytest.mark.anyio
+async def test_autoindex_bootstrap_idempotent_skip(tmp_path, monkeypatch):
+    """Bootstrap runner should skip reindex when snapshot signature already marked."""
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+
+    index_code = AsyncMock(return_value={"status": "indexed"})
+    index_docs = AsyncMock(return_value={"status": "indexed"})
+    start_code_auto = AsyncMock(return_value={"status": "started"})
+    start_docs_auto = AsyncMock(return_value={"status": "started"})
+
+    monkeypatch.setattr("src.mcp.server._workspace_snapshot_signature", lambda ws: "sig-2")
+    monkeypatch.setattr(
+        "src.mcp.server._read_autoindex_marker",
+        lambda ws: {"status": "completed", "snapshot_signature": "sig-2"},
+    )
+    monkeypatch.setattr("src.mcp.server._index_workspace_impl", index_code)
+    monkeypatch.setattr("src.mcp.server._index_docs_impl", index_docs)
+    monkeypatch.setattr("src.mcp.server._start_autonomous_indexing_single", start_code_auto)
+    monkeypatch.setattr("src.mcp.server._start_autonomous_docs_indexing_single", start_docs_auto)
+
+    result = await _run_workspace_autoindex_bootstrap(
+        workspace,
+        force=False,
+        debounce_seconds=5.0,
+        periodic_interval=600,
+    )
+
+    assert result["status"] == "completed"
+    assert result["bootstrap"]["status"] == "skipped"
+    index_code.assert_not_awaited()
+    index_docs.assert_not_awaited()
+    start_code_auto.assert_awaited_once()
+    start_docs_auto.assert_awaited_once()
 
 
 @pytest.mark.anyio
@@ -628,6 +855,8 @@ async def test_configure_decision_auto_indexing_persists_config(tmp_path, monkey
     assert payload["bridge_url"] == "http://localhost:3999"
     assert payload["limit"] == 7
     assert payload["auto_include_in_search_all"] is False
+    assert result["trinity_boundaries"]["decision_limit_default"] == 3
+    assert result["trinity_boundaries"]["decision_limit_max"] == 10
 
 
 @pytest.mark.anyio

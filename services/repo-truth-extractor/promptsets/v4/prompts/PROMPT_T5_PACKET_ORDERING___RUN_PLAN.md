@@ -53,17 +53,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream T-phase artifacts (deduped packets, collisions, schema, authority rules) as specified in the inputs section. Build a dependency graph across packets using scope overlap, shared file paths, and authority input references, then topologically sort into an execution plan.
-2. Apply default precedence: control plane -> extraction -> arbitration -> synthesis. Produce a runnable sequence with blocking dependencies, parallel-safe groups, and gate checks between stages.
-3. Include explicit prerequisites and postconditions per packet. Mark cycles or unresolvable ordering constraints with `status: needs_review` and evidence of the conflict.
-4. Structure the output with the ordered run plan, dependency graph edges with evidence, and an explicit UNKNOWN section for ordering decisions that cannot be determined from available inputs.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all upstream extraction artifacts and synthesis reports as input for packet ordering and run plan
+2. Analyze extraction outputs to identify actionable work items for PACKET_RUN_PLAN
+3. For each task packet, determine scope, priority, dependencies, and acceptance criteria from evidence
+4. Validate packet completeness: ensure each packet has sufficient context for execution
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -98,8 +99,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Dependency graph contains cycles preventing topological sort: identify all cycles, report them with evidence, and emit a best-effort partial order with cycle members grouped as `parallel_unsafe`.
-- Gate checks reference artifacts not yet produced by earlier packets: flag ordering constraint violation and suggest reordering with evidence.
+- Insufficient evidence for packet: if a task cannot be fully scoped from available data, emit with `status: needs_more_context`
+- Duplicate packet: if two packets cover the same work, flag with `status: potential_duplicate` and evidence
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

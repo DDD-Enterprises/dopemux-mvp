@@ -13,3 +13,15 @@ Prompt:
   - no pending partitions
   - all CAP_NOTICES resolved or explicitly waived
   - citation graph present
+
+```markdown
+
+OUTPUTS:
+	•	DOC_CONTRACT_CLAIMS.json
+	•	DOC_COVERAGE_REPORT.json
+	•	DOC_INDEX.json
+	•	DOC_RECENCY_DUPLICATE_REPORT.json
+	•	DOC_SUPERSESSION.json
+	•	DOC_TOPIC_CLUSTERS.json
+	•	DUPLICATE_DRIFT_REPORT.json
+```

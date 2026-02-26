@@ -1809,6 +1809,21 @@ def start(
         if not no_mcp:
             # CRITICAL FIX: Pass instance_env_vars so MCP servers get workspace isolation
             _start_mcp_servers_with_progress(project_path, instance_env=instance_env_vars)
+            startup_workspace = (worktree_path or project_path).resolve()
+            autoindex_result = _trigger_dope_context_autoindex_startup(startup_workspace)
+            if autoindex_result:
+                status = autoindex_result.get("status", "unknown")
+                if status in {"started", "already_running"}:
+                    progress.update(
+                        task,
+                        description=(
+                            f"Autoindex startup {status} for {startup_workspace.name}"
+                        ),
+                    )
+                elif status in {"request_failed", "http_error"}:
+                    console.logger.info(
+                        "[yellow]⚠️  Autoindex startup trigger failed; continuing without blocking.[/yellow]"
+                    )
         else:
             console.logger.info("[yellow]⚠️  Skipping MCP servers (reduced ADHD experience)[/yellow]")
 
@@ -4475,6 +4490,53 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
             console.logger.info("[dim]   Continuing anyway...[/dim]")
 
 
+def _trigger_dope_context_autoindex_startup(
+    workspace_path: Path,
+    *,
+    force: bool = False,
+) -> Optional[dict]:
+    """
+    Trigger dope-context startup autoindex bootstrap for the current workspace.
+    """
+    enabled = os.getenv("DOPEMUX_AUTO_INDEX_ON_STARTUP", "1").lower() not in {"0", "false", "no"}
+    if not enabled:
+        return None
+
+    base_url = os.getenv("DOPE_CONTEXT_URL", "http://localhost:3010").rstrip("/")
+    endpoint = f"{base_url}/autoindex/bootstrap"
+    payload = {
+        "workspace_path": str(workspace_path.resolve()),
+        "force": force,
+        "wait_for_completion": False,
+        "debounce_seconds": float(os.getenv("DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS", "5.0")),
+        "periodic_interval": int(os.getenv("DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS", "600")),
+        "trigger": "dopemux_cli_startup",
+    }
+
+    try:
+        import requests
+
+        response = requests.post(endpoint, json=payload, timeout=5)
+        if response.status_code >= 400:
+            console.logger.info(
+                f"[yellow]⚠️  Autoindex bootstrap request failed ({response.status_code})[/yellow]"
+            )
+            return {
+                "status": "http_error",
+                "status_code": response.status_code,
+                "endpoint": endpoint,
+            }
+        result = response.json()
+        return result if isinstance(result, dict) else {"status": "unknown_response"}
+    except Exception as exc:
+        logger.warning("Failed to trigger dope-context autoindex bootstrap: %s", exc)
+        return {
+            "status": "request_failed",
+            "error": str(exc),
+            "endpoint": endpoint,
+        }
+
+
 def _activate_dangerous_mode():
     """
     Activate dangerous mode with proper security safeguards.
@@ -6960,7 +7022,11 @@ def launch(ctx, preset: str, attach: bool):
     
     # Start the session
     subprocess.run(tmux_start_args, check=True)
-    
+
+    autoindex_result = _trigger_dope_context_autoindex_startup(Path.cwd())
+    if autoindex_result and autoindex_result.get("status") in {"started", "already_running"}:
+        console.logger.info("[dim]✅ Dope-context autoindex bootstrap triggered[/dim]")
+
     # Apply theme if specified
     if theme:
         console.logger.info(f"\n[magenta]🎨 Applying {theme} theme...[/magenta]")

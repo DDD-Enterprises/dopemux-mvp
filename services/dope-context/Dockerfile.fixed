@@ -53,4 +53,4 @@ LABEL mcp.role="search" \
       mcp.description="Semantic code and document search with AST-aware indexing"
 
 # Run the MCP server
-CMD ["python", "src/mcp/simple_server.py"]
+CMD ["python", "-m", "src.mcp.server"]

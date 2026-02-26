@@ -1,131 +1,91 @@
 #!/usr/bin/env python3
 """
-ConPort MCP Server with proper Streamable HTTP transport via mcp-proxy
-Uses proper MCP patterns following MetaMCP architecture with async subprocess handling
+ConPort MCP Server wrapper for Dopemux
+Converts stdio-based ConPort to HTTP server
 """
 
-import os
 import asyncio
-import sys
+import subprocess
+import json
+import os
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import logging
-import signal
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class ConPortServer:
-    def __init__(self):
-        self.process = None
-        self.port = int(os.getenv('MCP_PROXY_PORT', os.getenv('MCP_SERVER_PORT', 3005)))
-        self.shutdown_event = asyncio.Event()
+class ConPortMCPHandler(BaseHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        self.conport_process = None
+        super().__init__(*args, **kwargs)
 
-    async def start(self):
-        """Start the ConPort MCP server with async subprocess management"""
-        logger.info(f"🧠 Starting ConPort MCP Server with Streamable HTTP on port {self.port}")
-
-        # Build command for mcp-proxy with ConPort server
-        cmd = [
-            'mcp-proxy',
-            '--transport', 'streamablehttp',
-            '--port', str(self.port),
-            '--host', '0.0.0.0',
-            '--allow-origin', '*',
-            '--',
-            'conport-mcp', '--mode', 'stdio'
-        ]
-
-        logger.info(f"Running command: {' '.join(cmd)}")
-
+    def do_POST(self):
         try:
-            # Create async subprocess - non-blocking
-            self.process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                preexec_fn=os.setsid if hasattr(os, 'setsid') else None
-            )
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
 
-            logger.info(f"ConPort server started with PID {self.process.pid}")
+            # Forward to ConPort stdio process
+            if not hasattr(self.server, 'conport_process') or self.server.conport_process.poll() is not None:
+                self.server.start_conport_process()
 
-            # Wait for either process completion or shutdown signal
-            done, pending = await asyncio.wait([
-                asyncio.create_task(self.process.wait()),
-                asyncio.create_task(self.shutdown_event.wait())
-            ], return_when=asyncio.FIRST_COMPLETED)
+            # Send request to ConPort
+            self.server.conport_process.stdin.write(post_data + b'\n')
+            self.server.conport_process.stdin.flush()
 
-            # Cancel pending tasks
-            for task in pending:
-                task.cancel()
+            # Read response
+            response = self.server.conport_process.stdout.readline()
 
-            if self.process.returncode is not None:
-                if self.process.returncode == 0:
-                    logger.info("ConPort server completed successfully")
-                else:
-                    logger.error(f"ConPort server failed with exit code {self.process.returncode}")
-                    # Read error output for debugging
-                    if self.process.stderr:
-                        stderr = await self.process.stderr.read()
-                        if stderr:
-                            logger.error(f"Error output: {stderr.decode()}")
-                    return self.process.returncode
-            else:
-                logger.info("Shutdown requested, terminating ConPort server")
-                await self.cleanup()
-
-            return 0
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(response)
 
         except Exception as e:
-            logger.error(f"Failed to start ConPort server: {e}")
-            await self.cleanup()
-            raise
+            logger.error(f"Error handling request: {e}")
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
 
-    async def cleanup(self):
-        """Clean shutdown of the subprocess"""
-        if self.process and self.process.returncode is None:
-            logger.info("Terminating ConPort server process")
-            try:
-                # Try graceful shutdown first
-                self.process.terminate()
-                try:
-                    await asyncio.wait_for(self.process.wait(), timeout=5.0)
-                except asyncio.TimeoutError:
-                    # Force kill if graceful shutdown fails
-                    logger.warning("Graceful shutdown timed out, force killing")
-                    self.process.kill()
-                    await self.process.wait()
-                logger.info("ConPort server stopped")
-            except Exception as e:
-                logger.error(f"Error during cleanup: {e}")
+    def do_GET(self):
+        if self.path == '/health':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "healthy"}).encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
 
-    def signal_handler(self, signum, frame):
-        """Handle shutdown signals"""
-        logger.info(f"Received signal {signum}, initiating shutdown")
-        asyncio.create_task(self.shutdown())
+class ConPortMCPServer(HTTPServer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.conport_process = None
+        self.start_conport_process()
 
-    async def shutdown(self):
-        """Signal shutdown and cleanup"""
-        self.shutdown_event.set()
-
-async def main():
-    server = ConPortServer()
-
-    # Set up signal handlers for graceful shutdown
-    loop = asyncio.get_event_loop()
-    for sig in [signal.SIGTERM, signal.SIGINT]:
-        loop.add_signal_handler(sig, server.signal_handler, sig, None)
-
-    try:
-        exit_code = await server.start()
-        sys.exit(exit_code)
-    except KeyboardInterrupt:
-        logger.info("KeyboardInterrupt received, shutting down")
-        await server.cleanup()
-        sys.exit(0)
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        await server.cleanup()
-        sys.exit(1)
+    def start_conport_process(self):
+        try:
+            # Start ConPort MCP in stdio mode
+            self.conport_process = subprocess.Popen(
+                ['uvx', '--from', 'context-portal-mcp', 'conport-mcp', '--mode', 'stdio'],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=False
+            )
+            logger.info("ConPort MCP process started")
+        except Exception as e:
+            logger.error(f"Failed to start ConPort process: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    port = int(os.getenv('MCP_SERVER_PORT', 3004))
+    server = ConPortMCPServer(('0.0.0.0', port), ConPortMCPHandler)
 
+    logger.info(f"🧠 ConPort MCP Server starting on port {port}")
+
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        logger.info("Shutting down ConPort MCP Server")
+        if server.conport_process:
+            server.conport_process.terminate()
+        server.shutdown()

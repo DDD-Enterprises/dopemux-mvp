@@ -1,3 +1,6 @@
+OUTPUTS:
+- DOC_TOPIC_CLUSTERS.json
+
 Goal: DOC_TOPIC_CLUSTERS.json
 
 Prompt:
@@ -10,3 +13,8 @@ Prompt:
   - doc_count
   - newest_mtime + oldest_mtime (for recency awareness)
 - No "this cluster is architecture" labeling.
+```markdown
+
+OUTPUTS:
+	•	DOC_TOPIC_CLUSTERS.json
+```

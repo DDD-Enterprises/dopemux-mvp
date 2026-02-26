@@ -53,15 +53,16 @@ Focus on concrete, machine-verifiable implementation facts.
 1. Scan repo control-plane (`*.yaml`, `*.toml`, `*.json`, `docker-compose*`, `.claude/`) targets; collect path, type, and content metadata for each artifact
 2. Classify each artifact by category relevant to the repo control-plane (`*.yaml`, `*.toml`, `*.json`, `docker-compose*`, `.claude/`) domain
 3. Build REPO_CTRL_PARTITIONS by grouping files into logical categories with rationale
-4. For each REPO_CTRL_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
-5. For each REPO_CTRL_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
-6. Legacy Context is intent guidance only and is never evidence.
-7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-9. Attach evidence to every non-derived field and every relationship edge.
-10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-12. Emit exactly the declared outputs and no additional files.
+4. For each `REPOCTRL_INVENTORY` item, populate `id`, `path`, `line_range`, `kind`, `summary`, and `evidence`.
+5. For each `REPOCTRL_PARTITIONS` item, populate `id`, `partition_id`, `path`, `line_range`, `files` (sorted), `reason`, and `evidence`.
+6. Wrap all items in the `ItemList` envelope: `{"schema":"json_item_list@v1","items":[...]}`.
+7. Legacy Context is intent guidance only and is never evidence.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -102,16 +103,9 @@ Focus on concrete, machine-verifiable implementation facts.
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
 MODE: Mechanical extractor, zero interpretation.
-INPUT: repo working tree (top-level), include hidden dirs shown in ls -la (not .git contents).
-OUTPUT:
-- REPOCTRL_INVENTORY.json: list files (path, ext, size, mtime, sha256 if available), plus first 30 non-empty lines for text.
-- REPOCTRL_PARTITIONS.json: partitions by type:
-  - instructions/prompts (CLAUDE.md, AGENTS.md, .claude/**, docs/** instruction files)
-  - mcp/proxy configs (mcp-proxy-config*, start-mcp-servers.sh, compose/**)
-  - hooks (.githooks/**, scripts called by hooks)
-  - routers/provider ladders (litellm.config*, any router yaml/toml/json)
-  - compose/service graphs (compose.yml, docker-compose*.yml, compose/**)
-  - CI/gates (.github/**, pre-commit, ruff/mypy/pytest configs)
-  - taskx surfaces (.taskx/**, .taskx-pin, task packets in repo)
-RULES: JSON only. Every item must include path + line_range (or null if binary).
+TASK: Build inventory and partition plan for the repository control plane.
+GOAL:
+- REPOCTRL_INVENTORY.json (ItemList): List every file in scope that defines repo governance, instructions, or orchestration.
+- REPOCTRL_PARTITIONS.json (ItemList): Group the above files into partitions by functional category (e.g., instructions, mcp_config, hooks, routers, service_graph, ci_gates, taskx).
+RULES: JSON only. Follow the ItemList schema strictly. Use deterministic IDs.
 ```
