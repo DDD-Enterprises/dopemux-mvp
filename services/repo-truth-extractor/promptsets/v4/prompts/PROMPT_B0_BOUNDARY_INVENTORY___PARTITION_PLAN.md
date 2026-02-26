@@ -45,17 +45,18 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan `src/`, `services/`, `docs/90-adr/`, `.claude/`, and `AGENTS.md` for boundary-related declarations: access control checks, validation gates, permission assertions, and trust boundary annotations.
-2. Identify code-level boundary markers: function decorators, middleware chains, guard clauses, assertion statements, and policy enforcement points. Record each with file path, symbol name, and line range.
-3. Extract document-level boundary claims from ADRs, CLAUDE.md instructions, and AGENTS.md: stated security boundaries, trust zones, and access control policies.
-4. Build a partition plan that groups discovered boundaries by subsystem or service, assigning each boundary item to exactly one partition for downstream parallel processing.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Scan boundary/guardrail files (permission checks, auth middleware, validation layers) targets; collect path, type, and content metadata for each artifact
+2. Classify each artifact by category relevant to the boundary/guardrail files (permission checks, auth middleware, validation layers) domain
+3. Build BOUNDARY_PARTITIONS by grouping files into logical categories with rationale
+4. For each BOUNDARY_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
+5. For each BOUNDARY_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -90,8 +91,8 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Boundary declarations found only in documentation without corresponding code enforcement: emit with `hint_type: doc_only` and evidence from the document; do not fabricate code-level enforcement.
-- Overlapping partition assignments: if a boundary item could belong to multiple partitions, assign to the first matching partition by stable sort order and note the ambiguity in `coverage_notes`.
+- Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`
+- Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -63,11 +63,11 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_item_fields`: `id, evidence`
 
 ## Extraction Procedure
-1. For each document flagged in D1 CAP_NOTICES or requiring deep extraction, parse structured interface definitions: service responsibility matrices, API endpoint tables, data flow diagrams described in text, and schema references. Record each interface with its declaring document and line range evidence.
-2. Extract workflow descriptions: multi-step procedures, operational runbooks, pipeline definitions, and state machine descriptions found in documentation. For each workflow, record the steps, the services involved, event names mentioned, and any referenced state databases or schemas.
-3. Locate decision records: sections titled `Decision`, `ADR`, `RFC`, or containing decision rationale language (`we chose X because`, `alternative considered`). Extract the decision summary, rationale, alternatives considered, and status (accepted/rejected/superseded).
-4. Build a glossary from explicitly defined terms: definitions following patterns like `**term**: definition`, `term - definition`, or glossary sections. Record each term, its definition, the defining document, and line range evidence.
-5. Cross-reference extracted interfaces and workflows against upstream C-phase artifacts (`SERVICE_ENTRYPOINTS.json`, `EVENTBUS_SURFACE.json`) to validate that documented interfaces match code reality. Flag discrepancies with `status: doc_code_mismatch`.
+1. Load upstream inventory and partitions; use the deep doc extraction (interfaces, workflows, decisions) partition as primary scan surface
+2. Extract deep doc extraction (interfaces, workflows, decisions) facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted deep doc extraction (interfaces, workflows, decisions) elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each DOC_DEEP item, populate `id`, required fields, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -109,8 +109,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Workflow description references services or events not found in any upstream artifact: emit with referenced names and `status: unresolved_reference` with evidence from the document.
-- Decision record has no explicit status (accepted/rejected): emit with `status: UNKNOWN` and `missing_evidence_reason: no_decision_status`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

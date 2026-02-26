@@ -11,16 +11,20 @@ from pathlib import Path
 from typing import List, Tuple
 
 
+import argparse
+import subprocess
+
+
 def find_files_with_patterns(root_dir: str, patterns: List[str]) -> List[Path]:
-    """Find files containing any of the specified patterns."""
-    matches = []
-    root_path = Path(root_dir)
+    """Find files containing any of the specified patterns using grep for speed."""
+    matches = set()
+    root_path = Path(root_dir).resolve()
     
     for pattern in patterns:
-        # Use grep to find files efficiently
         try:
+            # -r recursive, -l list filenames only, -I ignore binary files
             result = subprocess.run(
-                ["grep", "-rl", pattern, str(root_path)],
+                ["grep", "-rlI", pattern, str(root_path)],
                 capture_output=True,
                 text=True,
                 check=True
@@ -28,16 +32,17 @@ def find_files_with_patterns(root_dir: str, patterns: List[str]) -> List[Path]:
             for line in result.stdout.strip().split('\n'):
                 if line:
                     file_path = Path(line)
-                    if file_path not in matches:
-                        matches.append(file_path)
+                    # Skip .git and other hidden metadata directories
+                    if any(part.startswith('.') and part != '.' for part in file_path.parts):
+                        continue
+                    matches.add(file_path)
         except subprocess.CalledProcessError:
-            # grep returned no matches, continue
             pass
     
-    return matches
+    return sorted(list(matches))
 
 
-def update_file_content(file_path: Path, replacements: List[Tuple[str, str]]) -> bool:
+def update_file_content(file_path: Path, replacements: List[Tuple[str, str]], dry_run: bool = False) -> bool:
     """Update file content with specified replacements."""
     try:
         content = file_path.read_text(encoding='utf-8')
@@ -47,28 +52,29 @@ def update_file_content(file_path: Path, replacements: List[Tuple[str, str]]) ->
             content = content.replace(old, new)
         
         if content != original_content:
-            file_path.write_text(content, encoding='utf-8')
+            if not dry_run:
+                file_path.write_text(content, encoding='utf-8')
             return True
         return False
     except Exception as e:
-        print(f"Error updating {file_path}: {e}")
+        print(f"  ❌ Error processing {file_path}: {e}")
         return False
 
 
 def main():
     """Main migration function."""
+    parser = argparse.ArgumentParser(description="dopeTask Supervisor Migration Script")
+    parser.add_argument("--dry-run", action="store_true", help="Show changes without applying them")
+    parser.add_argument("--root", default=".", help="Root directory to search (default: current)")
+    parser.add_argument("--no-confirm", action="store_true", help="Skip confirmation prompt")
+    args = parser.parse_args()
+
     print("🚀 dopeTask Supervisor Migration Script")
+    if args.dry_run:
+        print("🔍 RUNNING IN DRY-RUN MODE (No changes will be saved)")
     print("=" * 50)
     
-    # Define search patterns and replacements
-    search_patterns = [
-        "taskx",
-        ".taskx_venv",
-        "vendor/taskx",
-        "TASKX_",
-        "taskX"
-    ]
-    
+    search_patterns = ["taskx", ".taskx_venv", "vendor/taskx", "TASKX_", "taskX", "TaskX"]
     replacements = [
         ("taskx", "dopetask"),
         (".taskx_venv", ".dopetask_venv"),
@@ -78,55 +84,48 @@ def main():
         ("TaskX", "dopeTask"),
     ]
     
-    # Find files that need updating
-    print("🔍 Searching for files to update...")
-    files_to_update = find_files_with_patterns(".", search_patterns)
+    print(f"🔍 Searching for files in '{args.root}'...")
+    files_to_update = find_files_with_patterns(args.root, search_patterns)
     
     if not files_to_update:
         print("✅ No files found needing migration!")
         return 0
     
-    print(f"📁 Found {len(files_to_update)} files that may need updating:")
-    for i, file_path in enumerate(files_to_update, 1):
-        print(f"  {i}. {file_path}")
+    print(f"📁 Found {len(files_to_update)} files that may need updates")
     
-    # Ask for confirmation
-    confirm = input("\n🔧 Proceed with updates? (y/n): ").strip().lower()
-    if confirm != 'y':
-        print("🎭 Migration cancelled.")
-        return 0
+    if not args.no_confirm and not args.dry_run:
+        confirm = input("\n🔧 Proceed with updates? (y/n): ").strip().lower()
+        if confirm != 'y':
+            print("🎭 Migration cancelled.")
+            return 0
     
-    # Perform updates
+    # Perform updates and track results
+    results = []
     updated_count = 0
+    
     for file_path in files_to_update:
-        if update_file_content(file_path, replacements):
-            print(f"✅ Updated: {file_path}")
+        status = update_file_content(file_path, replacements, dry_run=args.dry_run)
+        if status:
+            print(f"  {'🔍' if args.dry_run else '✅'} {'Would update' if args.dry_run else 'Updated'}: {file_path}")
             updated_count += 1
+            results.append((file_path, "UPDATED"))
         else:
-            print(f"⚠️  No changes needed: {file_path}")
+            results.append((file_path, "NO_CHANGE"))
     
-    print(f"\n🎉 Migration complete!")
-    print(f"📊 Updated {updated_count}/{len(files_to_update)} files")
+    print(f"\n{'🏁 Dry run' if args.dry_run else '🎉 Migration'} complete!")
+    print(f"📊 {'Identified' if args.dry_run else 'Updated'} {updated_count}/{len(files_to_update)} files")
     
-    # Generate migration report
+    # Save report
     report_path = Path("dopetask_migration_report.txt")
     with report_path.open('w', encoding='utf-8') as f:
-        f.write("dopeTask Migration Report\n")
+        f.write(f"dopeTask Migration Report {'(DRY RUN)' if args.dry_run else ''}\n")
         f.write("=" * 40 + "\n\n")
-        f.write(f"Files processed: {len(files_to_update)}\n")
-        f.write(f"Files updated: {updated_count}\n")
-        f.write(f"Files unchanged: {len(files_to_update) - updated_count}\n\n")
-        
-        f.write("Updated files:\n")
-        for file_path in files_to_update:
-            status = "UPDATED" if update_file_content(file_path, replacements) else "CHECKED"
-            f.write(f"  [{status}] {file_path}\n")
+        for path, status in results:
+            f.write(f"[{status}] {path}\n")
     
-    print(f"📄 Migration report saved to: {report_path}")
-    
+    print(f"📄 Report saved to: {report_path}")
     return 0
 
 
 if __name__ == "__main__":
-    import subprocess
     sys.exit(main())

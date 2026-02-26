@@ -45,17 +45,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan home control-plane directories (`~/.claude/`, `~/.config/`, `~/.local/share/`) as represented in the provided context for configuration files, dotfiles, and state databases. For each, record the path, file kind, and content summary with evidence.
-2. Classify each home control-plane file by function: MCP server configs, editor settings, shell aliases, API key references, session state files, profile definitions, and SQLite databases.
-3. Assign every file to exactly one partition (first match wins): MCP/tool configs, credential references, session/profile state, workflow helpers, and database metadata.
-4. Validate partition completeness; emit `coverage_notes` for any file not matching a partition.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Scan home control-plane dirs (`~/.claude/`, `~/.config/`, shell profiles, dotfiles) targets; collect path, type, and content metadata for each artifact
+2. Classify each artifact by category relevant to the home control-plane dirs (`~/.claude/`, `~/.config/`, shell profiles, dotfiles) domain
+3. Build HOME_PARTITIONS by grouping files into logical categories with rationale
+4. For each HOME_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
+5. For each HOME_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -90,8 +91,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Home control-plane path references a file outside the provided context: emit with `status: context_boundary` and the referenced path as evidence.
-- File contains only binary data or is not human-readable: emit inventory entry with `content_summary: BINARY` and `status: binary_file`.
+- Sensitive file: if a home file may contain secrets, reference by path only; emit with `kind: sensitive` and `content: REDACTED`
+- Missing home dir: if the home scan target does not exist, emit with `status: inaccessible`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

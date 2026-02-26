@@ -43,7 +43,7 @@ D = {}
 D["PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md"] = {"steps": INVENTORY_STEPS("repo control-plane (`*.yaml`, `*.toml`, `*.json`, `docker-compose*`, `.claude/`)", "REPO_CTRL_INVENTORY", "REPO_CTRL_PARTITIONS"), "failure_modes": INV_FM()}
 for n, domain in [("A1","instruction"), ("A2","MCP server definition"), ("A3","MCP proxy"), ("A4","router"), ("A5","hooks"), ("A6","compose service graph"), ("A7","LiteLLM"), ("A8","TaskX")]:
     out = {"A1":"INSTRUCTION_SURFACES","A2":"MCP_SERVER_DEFS","A3":"MCP_PROXY_SURFACE","A4":"ROUTER_SURFACE","A5":"HOOKS_SURFACE","A6":"COMPOSE_SERVICE_GRAPH","A7":"LITELLM_SURFACE","A8":"TASKX_SURFACE"}[n]
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": EXTRACT_STEPS("A0", domain, out), "failure_modes": EXTRACT_FM()}
 D["PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md"] = {"steps": [
     "Load all upstream A-Phase artifacts (A0-A8); use the full repo control inventory as scan surface for implicit behavior discovery",
@@ -76,7 +76,7 @@ for n, domain, out in [("C1","service entrypoint","SERVICE_ENTRYPOINTS"),("C2","
     ("C5","TaskX integration","TASKX_INTEGRATION_SURFACES"),("C6","workflow runner and multi-service coordination","WORKFLOW_RUNNER_SURFACES"),
     ("C7","API endpoint and dashboard","API_DASHBOARD_SURFACES"),("C8","determinism, idempotency, and concurrency","DETERMINISM_SURFACES"),
     ("C10","deep service catalog","SERVICE_CATALOG_DEEP")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": EXTRACT_STEPS("C0", domain, out), "failure_modes": EXTRACT_FM()}
 D["PROMPT_C9_MERGE___NORMALIZE___QA.md"] = {"steps": MERGE_STEPS("C-Phase", "CODE_*", "CODE_MERGED", "CODE_QA"), "failure_modes": MERGE_FM("C-Phase")}
 
@@ -84,7 +84,7 @@ D["PROMPT_C9_MERGE___NORMALIZE___QA.md"] = {"steps": MERGE_STEPS("C-Phase", "COD
 D["PROMPT_D0_INVENTORY___PARTITION_PLAN.md"] = {"steps": INVENTORY_STEPS("documentation (`docs/**`, archive dirs)", "DOC_INVENTORY", "DOC_PARTITIONS"), "failure_modes": INV_FM()}
 for n, domain, out in [("D1","doc claims, boundaries, and supersession","DOC_INDEX"),("D2","deep doc extraction (interfaces, workflows, decisions)","DOC_DEEP"),
     ("D3","citation and reference graph","DOC_CITATIONS"),("D5","doc topic clustering","DOC_TOPIC_CLUSTERS")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": EXTRACT_STEPS("D0", domain, out), "failure_modes": EXTRACT_FM()}
 D["PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md"] = {"steps": MERGE_STEPS("D-Phase", "DOC_*", "DOC_MERGED", "DOC_QA"), "failure_modes": MERGE_FM("D-Phase")}
 
@@ -93,7 +93,7 @@ D["PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md"] = {"steps": INVENTORY_STE
 for n, domain, out in [("E1","bootstrap commands","BOOTSTRAP_COMMANDS"),("E2","env loading and config chain","ENV_CHAIN"),
     ("E3","service startup graph","STARTUP_GRAPH"),("E4","runtime modes and delta report","RUNTIME_MODES"),
     ("E5","artifact outputs, logs, and state","ARTIFACT_OUTPUTS"),("E6","execution risks, ordering, and state dependency","EXEC_RISKS")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": EXTRACT_STEPS("E0", domain, out), "failure_modes": EXTRACT_FM()}
 D["PROMPT_E9_MERGE___NORMALIZE___QA.md"] = {"steps": MERGE_STEPS("E-Phase", "EXEC_*", "EXEC_MERGED", "EXEC_QA"), "failure_modes": MERGE_FM("E-Phase")}
 
@@ -101,7 +101,7 @@ D["PROMPT_E9_MERGE___NORMALIZE___QA.md"] = {"steps": MERGE_STEPS("E-Phase", "EXE
 D["PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md"] = {"steps": INVENTORY_STEPS("governance targets (`.github/workflows/`, `.pre-commit-config.yaml`, `CODEOWNERS`, `LICENSE`)", "GOV_INVENTORY", "GOV_PARTITIONS"), "failure_modes": INV_FM()}
 for n, domain, out in [("G1","CI gates and quality bars","GOV_CI_GATES"),("G2","repo hygiene and allowlists","GOV_HYGIENE_POLICIES"),
     ("G3","policy files and enforcement","GOV_POLICIES"),("G4","security, secrets, and reduction facts","GOV_SECRETS_SURFACE")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": EXTRACT_STEPS("G0", domain, out), "failure_modes": EXTRACT_FM()}
 D["PROMPT_G9_MERGE___QA.md"] = {"steps": MERGE_STEPS("G-Phase", "GOV_*", "GOV_MERGED", "GOV_QA"), "failure_modes": MERGE_FM("G-Phase")}
 
@@ -113,7 +113,7 @@ for n, domain, out in [("H1","keys and credential references","HOME_KEYS_SURFACE
     ("H3","router and provider ladder","HOME_ROUTER_SURFACE"),("H4","LiteLLM config","HOME_LITELLM_SURFACE"),
     ("H5","profiles and sessions","HOME_PROFILES_SURFACE"),("H6","tmux and workflow helpers","HOME_TMUX_WORKFLOW_SURFACE"),
     ("H7","SQLite and state DB metadata","HOME_SQLITE_SCHEMA")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": EXTRACT_STEPS("H0", domain, out), "failure_modes": EXTRACT_FM()}
 D["PROMPT_H9_MERGE___QA.md"] = {"steps": MERGE_STEPS("H-Phase", "HOME_*", "HOMECTRL_NORM_MANIFEST", "HOMECTRL_QA"), "failure_modes": MERGE_FM("H-Phase")}
 
@@ -122,14 +122,14 @@ D["PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md"] = {"steps": INVENTORY_STEP
 for n, domain, out in [("W1","workflow catalog and runbook","WORKFLOW_CATALOG"),("W2","workflow inputs/outputs/artifacts","WORKFLOW_IO_MAP"),
     ("W3","multi-service coordination (compose/tmux)","WORKFLOW_COORDINATION_SURFACE"),("W4","workflow failure modes and recovery","WORKFLOW_FAILURE_RECOVERY"),
     ("W5","workflow state dependencies (home vs repo)","WORKFLOW_STATE_COUPLING")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": EXTRACT_STEPS("W0", domain, out), "failure_modes": EXTRACT_FM()}
 D["PROMPT_W9_MERGE___QA.md"] = {"steps": MERGE_STEPS("W-Phase", "WORKFLOW_*", "WORKFLOW_MERGED", "WORKFLOW_QA"), "failure_modes": MERGE_FM("W-Phase")}
 
 # Q-Phase
 for n, domain, out in [("Q0","pipeline completeness and manifest","QA_RUN_MANIFEST"),("Q1","missing artifacts and recovery plan","QA_MISSING_ARTIFACTS"),
     ("Q2","duplicate IDs and prompt collisions","QA_PROMPT_COLLISIONS"),("Q3","drift detection and norm diffs","QA_NORM_DRIFT_REPORT")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": EXTRACT_STEPS("all merged phase artifacts", domain, out), "failure_modes": EXTRACT_FM()}
 D["PROMPT_Q9_MERGE___QA.md"] = {"steps": MERGE_STEPS("Q-Phase", "QA_*", "PIPELINE_DOCTOR_REPORT", "QA_SERVICE_COVERAGE"), "failure_modes": MERGE_FM("Q-Phase")}
 
@@ -139,7 +139,7 @@ for n, domain, out in [("R0","control plane truth map synthesis","CONTROL_PLANE_
     ("R3","trinity boundary enforcement trace","TRINITY_BOUNDARY_ENFORCEMENT_TRACE"),("R4","TaskX integration truth","TASKX_INTEGRATION_TRUTH"),
     ("R5","workflows truth graph","WORKFLOWS_TRUTH_GRAPH"),("R6","portability and migration risk ledger","PORTABILITY_RISK_LEDGER"),
     ("R7","conflict ledger","CONFLICT_LEDGER"),("R8","risk register top-20","RISK_REGISTER_TOP20")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": [
         f"Load all relevant merged phase artifacts as synthesis inputs for {domain}",
         f"Synthesize {out}: combine extracted facts into a coherent truth document organized by domain category",
@@ -153,7 +153,7 @@ for n, domain, out in [("R0","control plane truth map synthesis","CONTROL_PLANE_
 for n, domain, out in [("T0","task packet factory design","TASK_PACKET_FACTORY"),("T1","top-10 task packet emission","TASK_PACKETS_TOP10"),
     ("T2","packet schema and authority rules","PACKET_SCHEMA_RULES"),("T3","batched packet generation","PACKET_BATCH"),
     ("T4","packet dedup and collision resolution","PACKET_DEDUP"),("T5","packet ordering and run plan","PACKET_RUN_PLAN")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": [
         f"Load all upstream extraction artifacts and synthesis reports as input for {domain}",
         f"Analyze extraction outputs to identify actionable work items for {out}",
@@ -168,14 +168,14 @@ D["PROMPT_T9_MERGE___QA.md"] = {"steps": MERGE_STEPS("T-Phase", "TASK_*", "TASK_
 D["PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md"] = {"steps": INVENTORY_STEPS("feature-relevant sources (user-facing code, docs, configs)", "FEATURE_INVENTORY", "FEATURE_PARTITIONS"), "failure_modes": INV_FM()}
 for n, domain, out in [("X1","feature surface extraction","FEATURE_SURFACES"),("X2","feature-to-code mapping","FEATURE_CODE_MAP"),
     ("X3","feature-to-doc mapping","FEATURE_DOC_MAP"),("X4","feature dependency graph","FEATURE_DEPS")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": EXTRACT_STEPS("X0", domain, out), "failure_modes": EXTRACT_FM()}
 D["PROMPT_X9_MERGE___QA.md"] = {"steps": MERGE_STEPS("X-Phase", "FEATURE_*", "FEATURE_INDEX_MERGED", "FEATURE_INDEX_QA"), "failure_modes": MERGE_FM("X-Phase")}
 
 # Z-Phase (freeze/proof)
 for n, domain, out in [("Z0","freeze inventory and checksums","FREEZE_INVENTORY"),("Z1","proof pack and runbook","PROOF_PACK"),
     ("Z2","opus input bundle and manifest","OPUS_INPUT_BUNDLE")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": [
         f"Load all finalized extraction artifacts as input for {domain}",
         f"Compute checksums and integrity metadata for {out}",
@@ -191,7 +191,7 @@ for n, domain, out in [("M0","runtime export inventory","RUNTIME_EXPORT_INVENTOR
     ("M2","SQLite table counts","SQLITE_TABLE_COUNTS"),("M3","conport export (safe)","CONPORT_EXPORT"),
     ("M4","dope context export (safe)","DOPE_CONTEXT_EXPORT"),("M5","MCP health export (safe)","MCP_HEALTH_EXPORT"),
     ("M6","runtime export index","RUNTIME_EXPORT_INDEX")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": [
         f"Load runtime state and configuration as input for {domain}",
         f"Extract {domain} data: query live state, sanitize sensitive values, and capture metadata",
@@ -204,7 +204,7 @@ for n, domain, out in [("M0","runtime export inventory","RUNTIME_EXPORT_INVENTOR
 # S-Phase (opus synthesis)
 for n, domain, out in [("S0","opus architecture synthesis","ARCHITECTURE_SYNTHESIS"),("S1","MCP-to-hooks migration plan","MCP_HOOKS_MIGRATION"),
     ("S2","decision dossier","DECISION_DOSSIER"),("S3","architecture proof hooks","ARCHITECTURE_PROOF_HOOKS")]:
-    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/benchmark/prompts").glob(f"PROMPT_{n}_*.md")][0].name
+    fname = [f for f in Path("/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/promptsets/v4/prompts").glob(f"PROMPT_{n}_*.md")][0].name
     D[fname] = {"steps": [
         f"Load all upstream extraction and synthesis artifacts as input for {domain}",
         f"Synthesize {out}: integrate findings across all phases into a cohesive analysis",

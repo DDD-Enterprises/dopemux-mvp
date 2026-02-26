@@ -59,9 +59,10 @@ fi
 
 # Plan gate: ensure plan exists unless explicitly bypassed
 if [ "${REQUIRE_PLAN}" = true ]; then
-    if [ ! -f "proof/PLAN.txt" ]; then
-        echo "❌ Plan gate failed: proof/PLAN.txt not found"
-        echo "Create a plan file first, or use --no-plan to bypass"
+    if [ ! -f "proof/PLAN.md" ]; then
+        echo "❌ Plan gate failed: proof/PLAN.md not found"
+        echo "A signed/vetted PLAN.md is required before generating a proof bundle."
+        echo "Create a plan file first, or use --no-plan to bypass if strictly necessary."
         exit 3
     fi
 fi
@@ -118,15 +119,16 @@ if [ -n "${ALLOW_FILES}" ]; then
         for file in ${CHANGED_FILES}; do
             ALLOWED_FILE=false
             for allowed in "${ALLOWED[@]}"; do
-                if [ "${file}" = "${allowed}" ]; then
+                # Check if file matches allowed exactly OR is within allowed directory
+                if [[ "${file}" == "${allowed}"* ]]; then
                     ALLOWED_FILE=true
                     break
                 fi
             done
             
             if [ "${ALLOWED_FILE}" = false ]; then
-                echo "❌ Scope gate failed: ${file} not in allowed files list" >> "${OUTPUT_DIR}/proof.txt"
-                echo "Allowed files: ${ALLOW_FILES}"
+                echo "❌ Scope gate failed: ${file} not in allowed scope (${ALLOW_FILES})" >> "${OUTPUT_DIR}/proof.txt"
+                echo "ERROR: Scope gate violation. File '${file}' is outside allowed scope '${ALLOW_FILES}'."
                 exit 4
             fi
         done

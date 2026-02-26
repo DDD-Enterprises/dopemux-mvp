@@ -53,17 +53,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream E-phase artifacts (`EXEC_INVENTORY.json`, `EXEC_PARTITIONS.json`, `EXEC_BOOTSTRAP_COMMANDS.json`, `EXEC_ENV_CHAIN.json`, `EXEC_STARTUP_GRAPH.json`, `EXEC_RUNTIME_MODES.json`, `EXEC_MODE_DELTA_REPORT.json`, `EXEC_ARTIFACT_SURFACE.json`, `EXEC_RISK_FACTS.json`). Validate each against its declared schema contract.
-2. Merge all artifacts into `EXEC_MERGED.json` using `itemlist_by_id` merge strategy. Normalize arrays by stable sort keys, remove duplicate rows, and preserve exact field names from upstream prompts.
-3. Generate `EXEC_QA.json` with: `counts_by_filekind` (how many execution files per type), `partitions_covered` (which E-phase partitions produced output), `missing_expected_outputs` (artifacts declared but not found), and `suspicious_empty` (artifacts with zero items).
-4. Run cross-artifact consistency checks: verify that every bootstrap command references files that exist in `EXEC_INVENTORY.json`; verify that every startup graph node has a corresponding bootstrap command; verify that every env var in `EXEC_ENV_CHAIN.json` has at least one consumer.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all E-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all EXEC_* artifacts into EXEC_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all E-Phase artifacts present, coverage complete, sort order deterministic; emit EXEC_QA
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -98,8 +99,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Upstream artifact missing entirely: include in `missing_expected_outputs` list and proceed with available data. Set overall QA status to `incomplete`.
-- Artifact contains items with `status: needs_review` from upstream: aggregate into a `pending_review_count` in QA report without re-evaluating the upstream decision.
+- Missing E-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

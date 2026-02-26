@@ -47,11 +47,11 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan all indexed documents for explicit cross-references: markdown links (`[text](path)`), file path mentions, `see also` directives, and citation patterns (`as described in <doc>`). For each reference edge, record the source document, target document or path, the reference type (link, mention, citation), and line range evidence.
-2. Extract code-path references: documentation that mentions specific source files, function names, class names, or module paths. Build edges from document nodes to code-path nodes with the reference type and evidence.
-3. Extract service and config references: documentation mentioning service names (matching `services/registry.yaml` entries), configuration file paths, environment variable names, or compose service names. Build edges to the referenced entities.
-4. Compute graph metrics: identify hub documents (highest in-degree), authority documents (highest out-degree), cross-plane edges (references spanning different architectural planes), and orphan documents (no incoming or outgoing references).
-5. Cross-reference the citation graph against upstream `DOC_INVENTORY.json` and `DOC_PARTITIONS.json` to validate that all referenced documents exist in the inventory. Flag broken links with `status: broken_reference`.
+1. Load upstream inventory and partitions; use the citation and reference graph partition as primary scan surface
+2. Extract citation and reference graph facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted citation and reference graph elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each DOC_CITATIONS item, populate `id`, required fields, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -93,8 +93,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Reference target is an external URL (not a repo-relative path): emit edge with `target_type: external_url` and the URL as target; do not attempt to validate existence.
-- Ambiguous reference that could resolve to multiple documents (e.g., `see the architecture doc`): emit with `target: UNKNOWN` and `status: ambiguous_reference` with evidence.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
