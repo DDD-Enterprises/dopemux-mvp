@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dope-context/search.response.schema.json",
+  "type": "object",
+  "required": [
+    "lane_used",
+    "fusion_strategy",
+    "rerank_used",
+    "results",
+    "timings_ms"
+  ],
+  "properties": {
+    "lane_used": {
+      "type": "string",
+      "enum": [
+        "docs",
+        "code",
+        "mixed"
+      ]
+    },
+    "fusion_strategy": {
+      "type": "string",
+      "enum": [
+        "dense",
+        "lexical",
+        "hybrid_rrf"
+      ]
+    },
+    "rerank_used": {
+      "type": "boolean"
+    },
+    "embed_model_used": {
+      "type": "string"
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "rank",
+          "score",
+          "source_uri",
+          "chunk_id",
+          "snippet"
+        ],
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "score": {
+            "type": "number"
+          },
+          "source_uri": {
+            "type": "string"
+          },
+          "chunk_id": {
+            "type": "string"
+          },
+          "snippet": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "timings_ms": {
+      "type": "object",
+      "required": [
+        "embed",
+        "search",
+        "fuse"
+      ],
+      "properties": {
+        "embed": {
+          "type": "number",
+          "minimum": 0
+        },
+        "search": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fuse": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rerank": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

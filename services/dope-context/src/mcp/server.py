@@ -15,7 +15,9 @@ import json
 import logging
 import os
 import pickle
+import subprocess
 import aiohttp
+from time import perf_counter
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -79,9 +81,65 @@ if not FASTMCP_AVAILABLE:
         "MCP tools remain importable but server.run() is a no-op."
     )
 
+TRINITY_DECISION_DEFAULT_LIMIT = 3
+TRINITY_DECISION_MAX_LIMIT = 10
+TRINITY_BOUNDARY_MARKER = "search-memory-authority-boundary-v1"
+
 
 # Initialize FastMCP server
 mcp = FastMCP("dope-context")
+
+
+def _resolve_transport_runtime() -> Tuple[str, str, int]:
+    """Resolve active MCP transport/host/port deterministically."""
+    transport_env = os.getenv("MCP_TRANSPORT") or os.getenv("FASTMCP_TRANSPORT")
+    if transport_env:
+        transport = transport_env.strip().lower()
+    elif os.getenv("MCP_SERVER_PORT"):
+        transport = "http"
+    else:
+        transport = "stdio"
+
+    valid_transports = {"stdio", "http", "sse", "streamable-http"}
+    if transport not in valid_transports:
+        logger.warning("Unknown MCP transport '%s'; defaulting to 'stdio'", transport)
+        transport = "stdio"
+
+    host = (
+        os.getenv("MCP_SERVER_HOST")
+        or os.getenv("FASTMCP_HOST")
+        or "0.0.0.0"
+    )
+    port_str = (
+        os.getenv("MCP_SERVER_PORT")
+        or os.getenv("FASTMCP_PORT")
+        or os.getenv("PORT")
+    )
+    try:
+        port = int(port_str) if port_str else 3010
+    except (TypeError, ValueError):
+        logger.warning("Invalid MCP_SERVER_PORT '%s'; defaulting to 3010", port_str)
+        port = 3010
+
+    if transport == "stdio":
+        return transport, "stdio", 0
+    return transport, host, port
+
+
+def _transport_connection_url(transport: str, host: str, port: int) -> str:
+    """Build user-facing MCP connection URL from runtime transport."""
+    if transport == "stdio":
+        return "stdio://mcp"
+    return f"http://localhost:{port}/mcp"
+
+
+def _normalize_decision_limit(limit_value: Any) -> int:
+    """Clamp cross-plane decision retrieval limits to Trinity boundary rails."""
+    try:
+        parsed = int(limit_value)
+    except (TypeError, ValueError):
+        parsed = TRINITY_DECISION_DEFAULT_LIMIT
+    return max(1, min(parsed, TRINITY_DECISION_MAX_LIMIT))
 
 
 @mcp.custom_route("/health", methods=["GET"])
@@ -93,21 +151,36 @@ async def health_check(_: Request) -> JSONResponse:
 @mcp.custom_route("/info", methods=["GET"])
 async def service_info(_: Request) -> JSONResponse:
     """Service discovery endpoint - auto-config support (ADR-208)"""
-    port = int(os.getenv("MCP_SERVER_PORT", 3010))
+    transport, host, port = _resolve_transport_runtime()
+    connection_url = _transport_connection_url(transport, host, port)
+    warning = (
+        "fastmcp package not installed; stub server active and MCP run loop is a no-op."
+        if not FASTMCP_AVAILABLE
+        else None
+    )
     return JSONResponse({
         "name": "dope-context",
         "version": "1.0.0",
+        "fastmcp_available": FASTMCP_AVAILABLE,
+        "canonical_entrypoint": "python -m src.mcp.server",
         "mcp": {
-            "protocol": "sse",
+            "protocol": "stdio" if transport == "stdio" else "sse",
             "connection": {
-                "type": "sse",
-                "url": f"http://localhost:{port}/mcp"
+                "type": "stdio" if transport == "stdio" else "sse",
+                "url": connection_url
             },
             "env": {
                 "VOYAGE_API_KEY": "${VOYAGEAI_API_KEY:-}",
                 "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
                 "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}"
             }
+        },
+        "runtime": {
+            "transport": transport,
+            "host": host,
+            "port": port,
+            "fastmcp_available": FASTMCP_AVAILABLE,
+            "canonical_entrypoint": "python -m src.mcp.server",
         },
         "health": "/health",
         "description": "Semantic code search and autonomous indexing",
@@ -116,9 +189,94 @@ async def service_info(_: Request) -> JSONResponse:
             "priority": "high",
             "adhd_integration": True,
             "autonomous_indexing": True,
-            "conport_integration": CONPORT_INTEGRATION_AVAILABLE
+            "conport_integration": CONPORT_INTEGRATION_AVAILABLE,
+            "warning": warning,
         }
     })
+
+
+@mcp.custom_route("/autoindex/bootstrap", methods=["POST"])
+async def autoindex_bootstrap(request: Request) -> JSONResponse:
+    """Trigger startup bootstrap indexing then autonomous watchers."""
+    payload: Dict[str, Any] = {}
+    try:
+        if hasattr(request, "json"):
+            maybe_payload = await request.json()
+            if isinstance(maybe_payload, dict):
+                payload = maybe_payload
+    except Exception:
+        payload = {}
+
+    workspace_path = payload.get("workspace_path")
+    force = bool(payload.get("force", False))
+    wait_for_completion = bool(payload.get("wait_for_completion", False))
+    debounce_seconds = float(payload.get("debounce_seconds", 5.0))
+    periodic_interval = int(payload.get("periodic_interval", 600))
+
+    workspace = Path(workspace_path).resolve() if workspace_path else get_workspace_root()
+    key = str(workspace)
+    running_task = _autoindex_bootstrap_tasks.get(key)
+
+    if running_task and not running_task.done():
+        return JSONResponse(
+            {
+                "status": "already_running",
+                "workspace": key,
+                "details": _autoindex_bootstrap_status.get(key, {}),
+            }
+        )
+
+    task = asyncio.create_task(
+        _run_workspace_autoindex_bootstrap(
+            workspace,
+            force=force,
+            debounce_seconds=debounce_seconds,
+            periodic_interval=periodic_interval,
+        )
+    )
+    _autoindex_bootstrap_tasks[key] = task
+
+    if wait_for_completion:
+        result = await task
+        return JSONResponse(result)
+
+    return JSONResponse(
+        {
+            "status": "started",
+            "workspace": key,
+            "wait_for_completion": False,
+            "message": "Bootstrap started in background; use /autoindex/status for progress.",
+        }
+    )
+
+
+@mcp.custom_route("/autoindex/status", methods=["GET"])
+async def autoindex_status(request: Request) -> JSONResponse:
+    """Return startup autoindex status for one or all tracked workspaces."""
+    workspace_path = None
+    try:
+        workspace_path = request.query_params.get("workspace_path")
+    except Exception:
+        workspace_path = None
+
+    if workspace_path:
+        key = str(Path(workspace_path).resolve())
+        return JSONResponse(
+            {
+                "workspace": key,
+                "status": _autoindex_bootstrap_status.get(
+                    key,
+                    {"status": "unknown", "message": "No autoindex run recorded."},
+                ),
+            }
+        )
+
+    return JSONResponse(
+        {
+            "workspace_count": len(_autoindex_bootstrap_status),
+            "statuses": _autoindex_bootstrap_status,
+        }
+    )
 
 
 # ============================================================================
@@ -301,6 +459,8 @@ _bm25_index: Optional[BM25Index] = None
 _docs_pipeline: Optional[DocIndexingPipeline] = None
 _docs_search: Optional[DocumentSearch] = None
 _docs_embedder: Optional[ContextualizedEmbedder] = None
+_autoindex_bootstrap_tasks: Dict[str, asyncio.Task] = {}
+_autoindex_bootstrap_status: Dict[str, Dict[str, Any]] = {}
 
 VOYAGE_KEY_ENV_VARS: Tuple[str, ...] = ("VOYAGE_API_KEY", "VOYAGEAI_API_KEY")
 
@@ -313,6 +473,53 @@ def _snapshot_root() -> Path:
 def _snapshot_dir_for_hash(workspace_hash: str) -> Path:
     """Get snapshot directory for a workspace hash."""
     return _snapshot_root() / workspace_hash
+
+
+def _autoindex_marker_path(workspace: Path) -> Path:
+    """Return marker file path used for bootstrap idempotence checks."""
+    workspace_hash = workspace_to_hash(workspace)
+    marker_dir = _snapshot_dir_for_hash(workspace_hash)
+    marker_dir.mkdir(parents=True, exist_ok=True)
+    return marker_dir / "autoindex_bootstrap.json"
+
+
+def _workspace_snapshot_signature(workspace: Path) -> str:
+    """Return deterministic signature of current workspace snapshot."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(workspace), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        head = result.stdout.strip()
+        if head:
+            return f"git:{head}"
+    except Exception:
+        pass
+    try:
+        return f"mtime:{int(workspace.stat().st_mtime)}"
+    except Exception:
+        return f"path:{workspace}"
+
+
+def _read_autoindex_marker(workspace: Path) -> Dict[str, Any]:
+    """Load previously stored bootstrap marker for workspace."""
+    marker_path = _autoindex_marker_path(workspace)
+    if not marker_path.exists():
+        return {}
+    try:
+        return json.loads(marker_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("Failed to parse autoindex marker %s: %s", marker_path, exc)
+        return {}
+
+
+def _write_autoindex_marker(workspace: Path, payload: Dict[str, Any]) -> None:
+    """Persist bootstrap marker for workspace."""
+    marker_path = _autoindex_marker_path(workspace)
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    marker_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
 def _load_snapshot_metadata(workspace: Path, workspace_hash: str) -> Dict[str, Any]:
@@ -449,6 +656,88 @@ def _resolve_explicit_workspaces(
             seen.add(key)
 
     return resolved
+
+
+async def _run_workspace_autoindex_bootstrap(
+    workspace: Path,
+    *,
+    force: bool,
+    debounce_seconds: float,
+    periodic_interval: int,
+) -> Dict[str, Any]:
+    """Run bootstrap indexing once per snapshot, then start autonomous indexing."""
+    workspace = workspace.resolve()
+    key = str(workspace)
+    snapshot_signature = _workspace_snapshot_signature(workspace)
+    started_at = datetime.utcnow().isoformat()
+    status: Dict[str, Any] = {
+        "workspace": key,
+        "status": "running",
+        "started_at": started_at,
+        "snapshot_signature": snapshot_signature,
+        "force": force,
+    }
+    _autoindex_bootstrap_status[key] = status
+
+    try:
+        marker = _read_autoindex_marker(workspace)
+        skip_bootstrap = (
+            not force
+            and marker.get("snapshot_signature") == snapshot_signature
+            and marker.get("status") == "completed"
+        )
+
+        if skip_bootstrap:
+            status["bootstrap"] = {
+                "status": "skipped",
+                "reason": "snapshot_signature_already_bootstrapped",
+                "marker_path": str(_autoindex_marker_path(workspace)),
+            }
+        else:
+            code_summary = await _index_workspace_impl(workspace_path=str(workspace))
+            docs_summary = await _index_docs_impl(workspace_path=str(workspace))
+            status["bootstrap"] = {
+                "status": "completed",
+                "code": code_summary,
+                "docs": docs_summary,
+            }
+            _write_autoindex_marker(
+                workspace,
+                {
+                    "status": "completed",
+                    "workspace": key,
+                    "snapshot_signature": snapshot_signature,
+                    "completed_at": datetime.utcnow().isoformat(),
+                    "trigger": "dopemux_cli_startup",
+                },
+            )
+
+        code_autonomous = await _start_autonomous_indexing_single(
+            workspace_override=workspace,
+            debounce_seconds=debounce_seconds,
+            periodic_interval=periodic_interval,
+        )
+        docs_autonomous = await _start_autonomous_docs_indexing_single(
+            workspace_override=workspace,
+            debounce_seconds=debounce_seconds,
+            periodic_interval=periodic_interval,
+        )
+
+        status["autonomous"] = {
+            "code": code_autonomous,
+            "docs": docs_autonomous,
+        }
+        status["status"] = "completed"
+        status["completed_at"] = datetime.utcnow().isoformat()
+        return status
+    except Exception as exc:
+        status["status"] = "failed"
+        status["error"] = str(exc)
+        status["failed_at"] = datetime.utcnow().isoformat()
+        logger.error("Autoindex bootstrap failed for %s: %s", workspace, exc, exc_info=True)
+        return status
+    finally:
+        _autoindex_bootstrap_tasks.pop(key, None)
 
 
 async def _describe_collection(collection_name: str, url: str, port: int) -> Dict[str, Any]:
@@ -1333,11 +1622,13 @@ async def _docs_search_impl(
     workspace_path: Optional[str] = None,
     max_content_length: int = 2000,
     budget_tokens: int = 9000,
-) -> List[Dict]:
+    return_meta: bool = False,
+) -> Any:
     """Implementation of docs_search tool."""
     # Detect workspace
     workspace = Path(workspace_path) if workspace_path else get_workspace_root()
     _, docs_collection = get_collection_names(workspace)
+    embed_model = "voyage-context-3"
 
     # Log metrics for benchmarking
     get_tracker().log_search(
@@ -1348,6 +1639,8 @@ async def _docs_search_impl(
     )
 
     logger.info(f"Searching docs: {workspace} → collection: {docs_collection}")
+    embed_duration_ms = 0.0
+    search_duration_ms = 0.0
 
     # Check API key
     voyage_key = _get_voyage_api_key(required=False)
@@ -1355,10 +1648,25 @@ async def _docs_search_impl(
         logger.error(
             "Voyage API key not set (expected VOYAGE_API_KEY or VOYAGEAI_API_KEY)"
         )
-        return [{
+        payload = [{
             "error": "Voyage API key environment variable not set",
             "help": "Set VOYAGE_API_KEY or VOYAGEAI_API_KEY in your environment"
         }]
+        if return_meta:
+            return {
+                "lane_used": "docs",
+                "fusion_strategy": "dense",
+                "rerank_used": False,
+                "embed_model_used": embed_model,
+                "timings_ms": {
+                    "embed": embed_duration_ms,
+                    "search": search_duration_ms,
+                    "fuse": 0.0,
+                    "rerank": 0.0,
+                },
+                "results": payload,
+            }
+        return payload
 
     # Get cached components (reuses HTTP clients and connections)
     qdrant_url = os.getenv("QDRANT_URL", "localhost")
@@ -1373,12 +1681,14 @@ async def _docs_search_impl(
     docs_embedder = _get_cached_contextualized_embedder(api_key=voyage_key)
 
     # Embed query with voyage-context-3 (contextualized)
+    embed_started = perf_counter()
     result = await docs_embedder.embed_document(
         chunks=[query],  # Single "chunk" for query
-        model="voyage-context-3",
+        model=embed_model,
         input_type="query",
         output_dimension=1024,
     )
+    embed_duration_ms = round((perf_counter() - embed_started) * 1000, 3)
 
     # Use same vector for all three (voyage-context-3 has full context)
     query_embedding = result.embeddings[0]
@@ -1394,10 +1704,12 @@ async def _docs_search_impl(
         filter_by["doc_type"] = filter_doc_type
 
     # Search
+    search_started = perf_counter()
     results = await docs_search.search_documents(
         query_vectors=query_vectors,
         filter_by=filter_by if filter_by else None,
     )
+    search_duration_ms = round((perf_counter() - search_started) * 1000, 3)
 
     # Build raw results with per-item truncation
     raw_results = [
@@ -1425,7 +1737,34 @@ async def _docs_search_impl(
             f"{trunc_info.estimated_tokens} tokens ({trunc_info.budget_used_pct:.1f}% of budget)"
         )
 
-    return truncated_results
+    enriched_results = []
+    for index, item in enumerate(truncated_results, start=1):
+        enriched_results.append(
+            {
+                **item,
+                "rank": index,
+                "source_uri": item.get("source_path", ""),
+                "chunk_id": item.get("chunk_id") or f"doc_chunk_{index}",
+                "snippet": item.get("text", ""),
+            }
+        )
+
+    if return_meta:
+        return {
+            "lane_used": "docs",
+            "fusion_strategy": "dense",
+            "rerank_used": False,
+            "embed_model_used": embed_model,
+            "timings_ms": {
+                "embed": embed_duration_ms,
+                "search": search_duration_ms,
+                "fuse": 0.0,
+                "rerank": 0.0,
+            },
+            "results": enriched_results,
+        }
+
+    return enriched_results
 
 
 @mcp.tool()
@@ -1478,15 +1817,20 @@ async def docs_search(
             filter_doc_type,
             str(workspace),
             max_content_length,
+            return_meta=True,
         )
+        if isinstance(workspace_results, dict):
+            result_items = workspace_results.get("results", [])
+        else:
+            result_items = workspace_results
         aggregated_results.append(
             {
                 "workspace": str(workspace),
                 "results": workspace_results,
-                "result_count": len(workspace_results),
+                "result_count": len(result_items),
             }
         )
-        total_results += len(workspace_results)
+        total_results += len(result_items)
 
     if not multi:
         return aggregated_results[0]["results"]
@@ -1508,7 +1852,7 @@ def _default_decision_sync_config() -> Dict[str, Any]:
     return {
         "enabled": False,
         "bridge_url": os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016"),
-        "limit": 6,
+        "limit": TRINITY_DECISION_DEFAULT_LIMIT,
         "auto_include_in_search_all": True,
         "updated_at": datetime.utcnow().isoformat(),
     }
@@ -1540,7 +1884,9 @@ def _save_decision_sync_config(workspace: Path, config: Dict[str, Any]) -> Path:
 
     normalized = _default_decision_sync_config()
     normalized.update(config)
-    normalized["limit"] = max(1, min(int(normalized.get("limit", 6)), 20))
+    normalized["limit"] = _normalize_decision_limit(
+        normalized.get("limit", TRINITY_DECISION_DEFAULT_LIMIT)
+    )
     normalized["updated_at"] = datetime.utcnow().isoformat()
 
     with open(config_path, "w", encoding="utf-8") as f:
@@ -1568,7 +1914,7 @@ async def _search_decisions_impl(
     if not target_url:
         return []
 
-    limit = max(1, min(int(top_k), 20))
+    limit = _normalize_decision_limit(top_k)
     params = {"text": query, "limit": limit}
 
     try:
@@ -1612,7 +1958,7 @@ async def configure_decision_auto_indexing(
     workspace_path: Optional[str] = None,
     enabled: bool = True,
     bridge_url: Optional[str] = None,
-    decision_limit: int = 6,
+    decision_limit: int = TRINITY_DECISION_DEFAULT_LIMIT,
     auto_include_in_search_all: bool = True,
 ) -> Dict[str, Any]:
     """
@@ -1627,7 +1973,7 @@ async def configure_decision_auto_indexing(
         {
             "enabled": enabled,
             "bridge_url": bridge_url or current.get("bridge_url"),
-            "limit": max(1, min(int(decision_limit), 20)),
+            "limit": _normalize_decision_limit(decision_limit),
             "auto_include_in_search_all": auto_include_in_search_all,
         }
     )
@@ -1637,6 +1983,14 @@ async def configure_decision_auto_indexing(
         "workspace": str(workspace),
         "config_path": str(config_path),
         "config": current,
+        "trinity_boundaries": {
+            "marker": TRINITY_BOUNDARY_MARKER,
+            "decision_limit_default": TRINITY_DECISION_DEFAULT_LIMIT,
+            "decision_limit_max": TRINITY_DECISION_MAX_LIMIT,
+            "decision_limit_effective": current["limit"],
+            "decision_authority": "memory_plane",
+            "code_docs_authority": "search_plane",
+        },
         "message": (
             "Decision retrieval enabled for search_all"
             if enabled
@@ -1652,24 +2006,32 @@ async def _search_all_impl(
     include_decisions: bool = True,
 ) -> Dict:
     """Implementation of unified search_all tool."""
+    search_started = perf_counter()
+    requested_top_k = max(1, int(top_k))
     workspace = Path(workspace_path) if workspace_path else get_workspace_root()
     decision_config = _load_decision_sync_config(workspace)
+    configured_decision_limit = _normalize_decision_limit(
+        decision_config.get("limit", TRINITY_DECISION_DEFAULT_LIMIT)
+    )
     decision_enabled = bool(
         include_decisions
         and decision_config.get("enabled", False)
         and decision_config.get("auto_include_in_search_all", True)
     )
+    if decision_enabled and requested_top_k < 3:
+        decision_enabled = False
 
-    code_top_k = max(1, top_k // 2)
-    docs_top_k = max(1, top_k // 2)
+    code_top_k = max(1, requested_top_k // 2)
+    docs_top_k = max(1, requested_top_k - code_top_k)
     decision_top_k = 0
     code_budget = 4000
     docs_budget = 4000
 
     if decision_enabled:
-        code_top_k = max(1, top_k // 3)
-        docs_top_k = max(1, top_k // 3)
-        decision_top_k = max(1, top_k - code_top_k - docs_top_k)
+        decision_top_k = min(configured_decision_limit, max(1, requested_top_k // 3))
+        remaining_budget = max(2, requested_top_k - decision_top_k)
+        code_top_k = max(1, remaining_budget // 2)
+        docs_top_k = max(1, remaining_budget - code_top_k)
         code_budget = 3200
         docs_budget = 3200
 
@@ -1678,7 +2040,7 @@ async def _search_all_impl(
         tool_name="search_all",
         query=query,
         workspace=str(workspace),
-        top_k=top_k
+        top_k=requested_top_k
     )
 
     logger.info(f"Unified search in workspace: {workspace}")
@@ -1718,12 +2080,34 @@ async def _search_all_impl(
         )
         decision_results = []
 
+    search_duration_ms = round((perf_counter() - search_started) * 1000, 3)
+
     return {
         "workspace": str(workspace),
+        "lane_used": "mixed",
+        "fusion_strategy": "hybrid_rrf",
+        "rerank_used": False,
+        "embed_model_used": "mixed",
+        "timings_ms": {
+            "embed": 0.0,
+            "search": search_duration_ms,
+            "fuse": 0.0,
+            "rerank": 0.0,
+        },
         "code_results": code_results,
         "docs_results": docs_results,
         "decision_results": decision_results,
         "decision_search_enabled": decision_enabled,
+        "trinity_boundaries": {
+            "marker": TRINITY_BOUNDARY_MARKER,
+            "decision_limit_default": TRINITY_DECISION_DEFAULT_LIMIT,
+            "decision_limit_max": TRINITY_DECISION_MAX_LIMIT,
+            "decision_limit_configured": configured_decision_limit,
+            "decision_limit_effective": decision_top_k,
+            "top_k_requested": requested_top_k,
+            "decision_authority": "memory_plane",
+            "code_docs_authority": "search_plane",
+        },
         "total_results": len(code_results) + len(docs_results) + len(decision_results),
     }
 
@@ -2640,44 +3024,10 @@ if __name__ == "__main__":
     # Run server
     logging.basicConfig(level=logging.INFO)
     logger.info("Dope-Context MCP server starting...")
-
-    transport_env = os.getenv("MCP_TRANSPORT") or os.getenv("FASTMCP_TRANSPORT")
-    if transport_env:
-        transport = transport_env.strip().lower()
-    elif os.getenv("MCP_SERVER_PORT"):
-        transport = "http"
-    else:
-        transport = "stdio"
-
-    valid_transports = {"stdio", "http", "sse", "streamable-http"}
-    if transport not in valid_transports:
-        logger.warning(
-            "Unknown MCP transport '%s'; defaulting to 'stdio'",
-            transport,
-        )
-        transport = "stdio"
+    transport, host, port = _resolve_transport_runtime()
 
     run_kwargs: Dict[str, Any] = {}
     if transport != "stdio":
-        host = (
-            os.getenv("MCP_SERVER_HOST")
-            or os.getenv("FASTMCP_HOST")
-            or "0.0.0.0"
-        )
-        port_str = (
-            os.getenv("MCP_SERVER_PORT")
-            or os.getenv("FASTMCP_PORT")
-            or os.getenv("PORT")
-        )
-        try:
-            port = int(port_str) if port_str else 3010
-        except (TypeError, ValueError):
-            logger.warning(
-                "Invalid MCP_SERVER_PORT '%s'; defaulting to 3010",
-                port_str,
-            )
-            port = 3010
-
         run_kwargs.update(host=host, port=port)
         logger.info("HTTP transport configured on %s:%s", host, port)
     else:

@@ -118,3 +118,25 @@ Use v3 fallback when needed:
 ```bash
 dopemux upgrades run --pipeline-version v3 --phase ALL --run-id rte_v3_legacy_001 --execute
 ```
+
+## 9) Dope-context startup autoindex (current workspace)
+
+Startup commands trigger dope-context bootstrap indexing plus async ongoing updates:
+
+```bash
+dopemux start
+dopemux launch --preset standard
+dopemux dope --theme muted
+```
+
+Behavior:
+
+- Bootstrap once per workspace snapshot: code + docs indexing batch pass
+- Ongoing updates: autonomous code + docs watchers
+
+Controls:
+
+```bash
+DOPEMUX_AUTO_INDEX_ON_STARTUP=0 dopemux start
+DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS=3 DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS=300 dopemux start
+```

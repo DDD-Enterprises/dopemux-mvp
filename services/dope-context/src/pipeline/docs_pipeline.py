@@ -1,6 +1,7 @@
 """Document indexing pipeline for dope-context docs search."""
 
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -95,6 +96,30 @@ class DocIndexingPipeline:
     def _should_exclude(self, path: Path) -> bool:
         return any(part in self.DEFAULT_EXCLUDED_SEGMENTS for part in path.parts)
 
+    def _source_uri(self, source: Path) -> str:
+        """Return stable workspace-relative URI when possible."""
+        try:
+            return source.relative_to(self.workspace_path).as_posix()
+        except ValueError:
+            return source.as_posix()
+
+    def _doc_id_for_source(self, source: Path) -> str:
+        """Return deterministic document ID for a source file."""
+        return self._source_uri(source)
+
+    def _chunk_id_for_doc(self, doc_id: str, ordinal: int) -> str:
+        """Return deterministic chunk identifier for a document ordinal."""
+        return f"{doc_id}::chunk::{ordinal}"
+
+    def _validate_chunk_ordinals(self, chunks: List[DocumentChunk], source: Path) -> None:
+        """Validate chunk ordinal continuity for fail-closed indexing."""
+        ordinals = [chunk.metadata.chunk_index for chunk in chunks]
+        expected = list(range(len(chunks)))
+        if ordinals != expected:
+            raise ValueError(
+                f"Chunk ordinal mismatch for {source}: expected {expected}, got {ordinals}"
+            )
+
     def _discover_documents(self, include_patterns: Optional[List[str]] = None) -> List[Path]:
         """Discover candidate docs files for indexing."""
         patterns = include_patterns or self.DEFAULT_INCLUDE_PATTERNS
@@ -109,17 +134,35 @@ class DocIndexingPipeline:
         logger.info("Discovered %s docs files in %s", len(discovered), self.workspace_path)
         return discovered
 
-    def _build_chunk_payload(self, source: Path, chunk: DocumentChunk) -> Dict[str, Any]:
+    def _build_chunk_payload(
+        self,
+        source: Path,
+        chunk: DocumentChunk,
+        *,
+        doc_id: str,
+    ) -> Dict[str, Any]:
         """Convert processed chunk metadata into Qdrant payload."""
         metadata = chunk.metadata
         source_path = source.as_posix()
+        source_uri = self._source_uri(source)
+        ordinal = int(metadata.chunk_index)
+        chunk_id = self._chunk_id_for_doc(doc_id, ordinal)
+        instance_id = os.getenv("DOPEMUX_WORKSPACE_ID", self.workspace_id)
         return {
             "source_path": source_path,
+            "source_uri": source_uri,
             "file_path": source_path,
             "text": chunk.text,
             "doc_type": metadata.document_type.value,
             "title": metadata.title or source.stem,
             "workspace_id": self.workspace_id,
+            "instance_id": instance_id,
+            "source_type": "doc",
+            "doc_id": doc_id,
+            "chunk_id": chunk_id,
+            "ordinal": ordinal,
+            "embed_model": "voyage-context-3",
+            "chunker_version": "document_processor.v1",
             "chunk_index": metadata.chunk_index,
             "char_count": metadata.char_count,
             "token_count": metadata.token_count,
@@ -186,6 +229,8 @@ class DocIndexingPipeline:
         if not chunks:
             return 0, 0.0
 
+        self._validate_chunk_ordinals(chunks, file_path)
+
         embed_response = await self.embedder.embed_document(
             chunks=[chunk.text for chunk in chunks],
             model="voyage-context-3",
@@ -200,8 +245,13 @@ class DocIndexingPipeline:
             )
 
         points = []
+        doc_id = self._doc_id_for_source(file_path)
         for chunk, embedding in zip(chunks, embed_response.embeddings):
-            payload = self._build_chunk_payload(file_path, chunk)
+            payload = self._build_chunk_payload(
+                file_path,
+                chunk,
+                doc_id=doc_id,
+            )
             # Docs currently use one contextualized embedding for all three vectors.
             points.append((embedding, embedding, embedding, payload, None))
 
