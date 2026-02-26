@@ -44,7 +44,8 @@
     "vendor",
     "UPGRADES",
     "_audit_out",
-    "review_artifacts"
+    "review_artifacts",
+    ".dopetask"
   ],
   "allowed_root_files": [
     ".dopetaskroot",
@@ -167,6 +168,8 @@
     "pr_merge_monitor.py",
     "test_mcp_tools.py",
     "working_pr_merger.py",
+    ".dopetaskroot",
+    ".dopetask-pin",
     "patchit",
     "CLAUDE_AUTOMATION_INSTRUCTIONS.md"
   ],

@@ -13,3 +13,11 @@ Prompt:
   - operational workflows, multi-service pipelines
   - instruction-file-driven workflows
 - Again: cite everything.
+```markdown
+
+OUTPUTS:
+	•	DOC_INTERFACES.partX.json
+	•	DOC_WORKFLOWS.partX.json
+	•	DOC_DECISIONS.partX.json
+	•	DOC_GLOSSARY.partX.json
+```

@@ -15,3 +15,9 @@ RULES:
 - Use DOC_SUPERSESSION first, then recency tie-breaker for doc-vs-doc only.
 - Never override code reality with docs.
 - Cite both sides for each conflict.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```

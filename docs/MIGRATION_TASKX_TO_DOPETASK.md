@@ -16,6 +16,7 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 
 ✅ **MIGRATION COMPLETE** - This document outlines the completed migration from taskX to dopeTask in the dopemux-mvp codebase.
 
+**Action**: Migrated to dopeTask 0.1.4 via pip installation
 **Status**: Fully migrated to dopeTask 0.1.4 via pip installation
 **Date**: 2024
 **Approach**: Comprehensive cleanup with documentation updates
@@ -53,9 +54,9 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 ### 3. Script Updates
 
 #### `scripts/taskx` → `scripts/dopetask`
-- Updated all references from taskX to dopeTask
-- Changed environment variable names (`TASKX_*` -> `DOPETASK_*`)
-- Updated executable name from `taskx` to `dopetask`
+- Updated references from `taskX` to `dopeTask`
+- Changed environment variable names (`TASKX_*` → `DOPETASK_*`)
+- Updated the executable name from `taskx` to `dopetask`
 
 ### 4. Directory Structure Changes
 
@@ -150,10 +151,10 @@ For LLM configurations and prompts:
 
 ### Command Reference
 
-| Old Command | New Command |
-|-------------|-------------|
-| `taskx --version` | `dopetask --version` |
-| `taskx execute --plan=plan.yaml` | `dopetask execute --plan=plan.yaml` |
+| Old Command                       | New Command                          |
+| --------------------------------- | ------------------------------------ |
+| `taskx --version`                 | `dopetask --version`                 |
+| `taskx execute --plan=plan.yaml`  | `dopetask execute --plan=plan.yaml`  |
 | `taskx validate --plan=plan.yaml` | `dopetask validate --plan=plan.yaml` |
 
 ## Verification Checklist

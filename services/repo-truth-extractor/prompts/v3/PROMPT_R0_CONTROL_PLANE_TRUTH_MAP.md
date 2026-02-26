@@ -17,3 +17,9 @@ RULES:
 - Cite every claim with REPOCTRL:/HOMECTRL:/CODE:/DOC references.
 - No repo rescans. No implementation changes.
 - Label unevidenced statements UNKNOWN.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```

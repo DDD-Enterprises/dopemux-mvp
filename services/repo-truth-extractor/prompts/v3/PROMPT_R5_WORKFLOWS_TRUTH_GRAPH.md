@@ -20,3 +20,9 @@ OUTPUT:
 RULES:
 - No inferred steps.
 - Use WORKFLOW_RUNNER_SURFACE + HOME_TMUX_WORKFLOW_SURFACE + compose graph evidence.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```

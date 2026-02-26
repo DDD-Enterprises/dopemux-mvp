@@ -11,3 +11,12 @@ Prompt:
   - plane boundaries and what enforces them (even if just planned)
   - supersession markers: ACTIVE/DEPRECATED, version headers, timestamps, "supersedes"
 - Cite everything: file + line_range + short quote.
+```markdown
+
+OUTPUTS:
+	•	DOC_INDEX.partX.json
+	•	DOC_CONTRACT_CLAIMS.partX.json
+	•	DOC_BOUNDARIES.partX.json
+	•	DOC_SUPERSESSION.partX.json
+	•	CAP_NOTICES.partX.json
+```

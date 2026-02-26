@@ -18,7 +18,7 @@ class ConPortClient:
     Provides immediate, reliable access to ADHD context preservation features
     """
 
-    def __init__(self, base_url: str = "http://localhost:3004"):
+    def __init__(self, base_url: str = "http://localhost:3005"):
         self.base_url = base_url
         self.session: Optional[aiohttp.ClientSession] = None
 
