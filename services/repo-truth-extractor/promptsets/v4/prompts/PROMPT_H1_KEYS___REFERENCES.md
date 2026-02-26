@@ -46,12 +46,17 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan all home control-plane files for environment variable references (`$VAR`, `${VAR}`, `os.getenv`), API key name patterns (`*_API_KEY`, `*_TOKEN`, `*_SECRET`), and credential file path references. Record only the key NAME and reference location, never the actual value.
+2. Extract configuration include-chains: files that source other files (`source ~/.env`, `include: path`), config inheritance patterns, and file-based credential loading. Record the chain with evidence from each link.
+3. Identify token and credential file path references: paths to SSH keys, GPG keys, OAuth tokens, and service account files. Record the path pattern and the referencing file with evidence. Redact any actual values in excerpts.
+4. Cross-reference discovered key references against upstream `HOME_INVENTORY.json` to validate that referenced credential files exist in the inventory.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -86,6 +91,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Credential reference points to a path that does not exist in the provided context: emit with `status: unresolvable_path` and evidence citing the reference.
+- Key name appears to be a placeholder or example (e.g., `YOUR_API_KEY_HERE`): emit with `status: placeholder` and evidence.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -1,0 +1,29 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md
+@@ -39,8 +39,13 @@
+ ## Extraction Procedure
+-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+-3. Attach evidence to every non-derived field and every relationship edge.
+-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+-6. Emit exactly the declared outputs and no additional files.
++1. Scan all extraction run directories (`*/raw`, `*/norm`, `*/qa`) to enumerate every artifact file produced by the pipeline. For each, record: artifact name, phase, step, file size, and presence status (exists/missing).
++2. Cross-reference discovered artifacts against the expected artifact manifest from `artifacts.yaml`. Identify expected-but-missing artifacts and unexpected extra artifacts.
++3. For each present artifact, validate basic structural integrity: is it valid JSON? Does it contain the required top-level schema fields (`schema`, `items` or `nodes`/`edges`)? Record pass/fail per artifact.
++4. Build `QA_RUN_MANIFEST.json` summarizing: total expected artifacts, total present, total missing, total with schema violations, and per-phase completion percentages.
++5. Legacy Context is intent guidance only and is never evidence.
++6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
++7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
++8. Attach evidence to every non-derived field and every relationship edge.
++9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
++10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
++11. Emit exactly the declared outputs and no additional files.
+ 
+@@ -78,3 +83,5 @@
+ - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
+ - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
++- Run directory structure does not match expected layout (`*/raw`, `*/norm`, `*/qa`): emit with `status: unexpected_layout` and evidence of the actual structure.
++- Artifact file exists but is empty (0 bytes): include in manifest with `status: empty_file` and flag for recovery.
+ 

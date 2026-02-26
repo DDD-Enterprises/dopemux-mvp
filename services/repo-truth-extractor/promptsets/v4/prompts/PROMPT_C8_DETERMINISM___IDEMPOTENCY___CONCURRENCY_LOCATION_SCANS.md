@@ -75,12 +75,19 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan `src/**` and `services/**` for non-deterministic function calls in critical paths: `random.*`, `uuid.uuid4()`, `time.time()`, `datetime.now()`, `os.urandom()`, and equivalent. For each occurrence, record the function, its calling context (is it in a pure computation or side-effect path?), and file path with line range. Emit as `DETERMINISM_RISK_LOCATIONS.json` items.
+2. Identify idempotency risks: database write operations (`INSERT`, `UPDATE`, `cursor.execute`) without idempotency keys or `ON CONFLICT` clauses, retry logic that re-executes side effects, and API handlers that mutate state without deduplication guards. Record the risk pattern, severity (high/medium/low), and evidence. Emit as `IDEMPOTENCY_RISK_LOCATIONS.json` items.
+3. Scan for concurrency risks: global mutable state accessed without locks, shared file handles, thread-unsafe singleton patterns, `asyncio` tasks modifying shared dictionaries, and missing `await` on coroutines. Cross-reference against C-Phase heuristics (lock analysis, critical section mapping, race condition surface). Emit as `CONCURRENCY_RISK_LOCATIONS.json` items.
+4. Extract secrets patterns: hardcoded API keys, tokens, passwords, or connection strings in source code; `os.getenv` calls for sensitive variables (`*_KEY`, `*_SECRET`, `*_TOKEN`, `*_PASSWORD`); `.env` file references. For each, classify as `hardcoded` (critical) or `env_var` (informational) and record with evidence. Emit as `SECRETS_RISK_LOCATIONS.json` items.
+5. For each risk location, assign a severity level: `critical` (production data corruption or security breach), `high` (intermittent failures under load), `medium` (edge-case issues), `low` (code smell). Base severity on the calling context and potential blast radius.
+6. Cross-reference discovered risk locations against upstream `WORKFLOW_RUNNER_SURFACE.json` and `API_DASHBOARD_SURFACE.json` to identify risks in hot paths (frequently executed workflows or high-traffic API endpoints).
+7. Legacy Context is intent guidance only and is never evidence.
+8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+10. Attach evidence to every non-derived field and every relationship edge.
+11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+13. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -115,6 +122,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Non-deterministic call wrapped in a deterministic context manager or seeded RNG: do not flag as risk; emit with `status: mitigated` and evidence citing the seed or context manager.
+- Secret-like string detected but actually a placeholder or test fixture (e.g., `sk-test-xxx`, `CHANGEME`): emit with `status: test_fixture` and evidence; do not classify as `critical`.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

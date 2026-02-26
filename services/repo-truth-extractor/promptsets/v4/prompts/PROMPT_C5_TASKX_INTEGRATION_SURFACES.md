@@ -48,12 +48,18 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan `src/**` and `services/**` for TaskX client calls: imports of TaskX modules, invocations of `taskx.run`, `taskx.submit`, `taskx.get_result`, or equivalent API calls. For each call site, record the calling function, the packet reference, and file path with line range evidence.
+2. Locate TaskX packet read/write paths: files that define, load, or serialize task packets (JSON, YAML, or Python dataclass definitions). Extract the packet schema fields, file format, and storage location with evidence.
+3. Identify operator instruction compilation and injection points: code that assembles operator-specific instructions, merges prompt templates with operator context, or injects configuration into TaskX packets before submission. Record the compilation logic and injection target with evidence.
+4. Extract TaskX configuration surfaces: connection strings, queue names, worker pool sizes, timeout values, and retry policies declared in config files or environment variables. Cross-reference against upstream `TRINITY_ENFORCEMENT_SURFACE.json` to identify any enforcement applied to TaskX operations.
+5. Cross-reference discovered TaskX integration points against upstream `SERVICE_ENTRYPOINTS.json` and `EVENTBUS_SURFACE.json` to map which services invoke TaskX and whether event-driven TaskX submissions exist.
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -88,6 +94,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- TaskX packet path referenced in code does not exist on disk: emit item with `status: missing_packet` and evidence citing the referencing code line.
+- Operator instruction injection uses dynamic template rendering with no static schema: emit with `packet_schema: UNKNOWN` and `status: dynamic_template` with evidence.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

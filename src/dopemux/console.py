@@ -35,6 +35,11 @@ class _ConsoleAdapter:
         self._console.print(*args, **kwargs, style="yellow")
 
 
+    def warning(self, *args, **kwargs) -> None:
+        """Log warning message to console with yellow styling."""
+        self._console.print(*args, **kwargs, style="yellow")
+
+
 # Single console instance with logger adapter - use this everywhere
 console = Console()
 console.logger = _ConsoleAdapter(console)

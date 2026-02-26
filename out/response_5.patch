@@ -1,0 +1,54 @@
+diff --git a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md
+--- a/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md
++++ b/services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md
+  @@ -36,12 +36,19 @@                                                                            
+   - `required_registry_fields`: `path, line_range, id`
+                                                                                                 
+   ## Extraction Procedure                                                         
+  -1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+  -2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+  -3. Attach evidence to every non-derived field and every relationship edge.
+  -4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+  -5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+  -6. Emit exactly the declared outputs and no additional files.
+  +1. Scan `.git/hooks/`, `.husky/`, and `scripts/` for git hook definitions (pre-commit,
+  pre-push, post-merge, commit-msg, etc.) and record each hook file path and executable command.
+  +2. Parse pre-commit configuration files (`.pre-commit-config.yaml`, `.pre-commit-hooks.yaml`)
+  for declared hook entries including repo, rev, hook id, language, and entry command.
+  +3. Scan CI workflow files (`.github/workflows/*.yml`, `.github/actions/`) for lifecycle hooks
+  extracting trigger events (`on.push`, `on.pull_request`, `workflow_dispatch`) and step-level
+  `run` commands.
+  +4. Search `.taskx/` and `config/` directories for taskx or dopemux hook definitions,
+  extracting trigger conditions, invoked commands, and ordering constraints.
+  +5. Extract literal command strings from each discovered hook, resolving script references
+  (e.g., `./scripts/lint.sh`) to concrete repo-relative paths and recording line ranges.
+  +6. Cross-reference hook `invoked_paths` against `REPOCTRL_INVENTORY.json` to validate that
+  referenced files exist in the repo; flag missing targets with `UNKNOWN`.
+  +7. Legacy Context is intent guidance only and is never evidence.
+  +8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+  +9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+  +10. Attach evidence to every non-derived field and every relationship edge.
+  +11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+  +12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+  +13. Emit exactly the declared outputs and no additional files.
+
+   ## Evidence Rules
+   - Every load-bearing value must carry at least one evidence object:
+ ...
+
+ ...
+
+  @@ -75,6 +82,8 @@
+   - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence
+  gaps.
+   - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN`
+  placeholders.
+   - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with
+  evidence.
+  +- Hook script references unresolvable path: emit item with `invoked_paths` set to `UNKNOWN`
+  and `missing_evidence_reason` citing the dangling reference.
+  +- Ambiguous hook trigger scope (e.g., glob pattern matching multiple events): retain all
+  plausible trigger values and mark `status: needs_review` with evidence for each candidate.
+
+   ## Legacy Context (for intent only; never as evidence)
+   ```markdown
