@@ -166,7 +166,9 @@
     "comprehensive_pr_processor.py",
     "pr_merge_monitor.py",
     "test_mcp_tools.py",
-    "working_pr_merger.py"
+    "working_pr_merger.py",
+    "patchit",
+    "CLAUDE_AUTOMATION_INSTRUCTIONS.md"
   ],
   "legacy_root_files": [],
   "blocked_root_file_patterns": [
