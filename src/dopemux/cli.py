@@ -25,15 +25,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Sequence
 import warnings
 
 import click
-try:
-    from dotenv import load_dotenv
-    _DOTENV_AVAILABLE = True
-except ImportError:  # pragma: no cover
-    _DOTENV_AVAILABLE = False
-
-    def load_dotenv(*args, **kwargs):  # type: ignore[override]
-        """Fallback load_dotenv when python-dotenv is unavailable."""
-        return False
+from .utils.dotenv_loader import load_dotenv, check_dotenv_support
 
 # Import RoutingConfig for mode-based behavior
 try:
@@ -53,6 +45,7 @@ from .console import console
 
 # Load environment variables from .env file
 load_dotenv()
+check_dotenv_support()
 from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
 from .claude import ClaudeConfigurator, ClaudeLauncher
 from .dope_brainz_router import (
@@ -114,12 +107,6 @@ from .extractor.runner import PipelineRunner
 if "-litellm" in sys.argv:
     sys.argv = ["--litellm" if arg == "-litellm" else arg for arg in sys.argv]
 
-if not _DOTENV_AVAILABLE:  # pragma: no cover - environment warning
-    warnings.warn(
-        "python-dotenv not installed; environment variables from .env files "
-        "will not be auto-loaded. Install python-dotenv to enable this feature.",
-        RuntimeWarning,
-    )
 
 
 ROLE_SERVER_SERVICE_MAP = {

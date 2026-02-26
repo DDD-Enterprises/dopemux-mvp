@@ -123,10 +123,11 @@ class TestCLI:
         """Test init command with force flag."""
 
         # Mock that project is already initialized
-        def side_effect(self):
-            if ".dopemux" in str(self):
+        def side_effect(*args, **kwargs):
+            path_str = str(args[0]) if args else ""
+            if ".dopemux" in path_str:
                 return True
-            if "project" in str(self):
+            if "project" in path_str:
                 return True
             return False
 
