@@ -46,10 +46,11 @@ python /Users/hue/code/dopemux-mvp/scripts/webhook_replay.py \
 ```
 
 Replay the same command a second time to verify dedupe.
+The replay tool sends payload bytes exactly as stored in `--payload` and prints `payload_sha256`.
 
 ## 5. Verify ledger
 
 ```bash
 sqlite3 /Users/hue/code/dopemux-mvp/.dopemux/webhook_receiver/webhook_receiver.db \
-  "select provider, delivery_id, event_type from provider_events order by id desc limit 10;"
+  "select provider, idempotency_key, event_type from webhook_events order by id desc limit 10;"
 ```

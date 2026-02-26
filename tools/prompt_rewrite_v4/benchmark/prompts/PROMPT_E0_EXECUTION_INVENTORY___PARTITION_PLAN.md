@@ -34,14 +34,14 @@ Focus on concrete, machine-verifiable implementation facts.
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `E0`
     - `id_rule`: `EXEC_INVENTORY:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, path, kind, summary, evidence`
+    - `required_item_fields`: `id, path, line_range, kind, summary, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `EXEC_PARTITIONS.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `E0`
     - `id_rule`: `EXEC_PARTITIONS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, partition_id, files, reason, evidence`
+    - `required_item_fields`: `id, partition_id, path, line_range, files, reason, evidence`
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure

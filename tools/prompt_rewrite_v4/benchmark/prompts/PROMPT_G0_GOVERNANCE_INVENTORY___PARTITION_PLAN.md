@@ -34,14 +34,14 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `G0`
     - `id_rule`: `GOV_INVENTORY:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, path, kind, summary, evidence`
+    - `required_item_fields`: `id, path, line_range, kind, summary, evidence`
     - `required_registry_fields`: `path, line_range, id`
   - `GOV_PARTITIONS.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
     - `canonical_writer_step_id`: `G0`
     - `id_rule`: `GOV_PARTITIONS:<stable-hash(path|symbol|name)>`
-    - `required_item_fields`: `id, partition_id, files, reason, evidence`
+    - `required_item_fields`: `id, partition_id, path, line_range, files, reason, evidence`
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
