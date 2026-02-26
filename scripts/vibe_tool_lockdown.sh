@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # vibe_tool_lockdown.sh - Create minimal allowlists for Vibe agents
-# Input: .taskx/proof/vibe_tools.txt
+# Input: .dopetask/proof/vibe_tools.txt
 # Output: Updated ~/.vibe/agents/tp-dev.toml and ~/.vibe/agents/indexing.toml
 
 set -e
@@ -14,7 +14,7 @@ if [ ! -f ".taskx/proof/vibe_tools.txt" ]; then
 fi
 
 # Read the tool registry
-TOOL_REGISTRY=".taskx/proof/vibe_tools.txt"
+TOOL_REGISTRY=".dopetask/proof/vibe_tools.txt"
 
 # Check for required tool patterns
 MISSING_TOOLS=()
