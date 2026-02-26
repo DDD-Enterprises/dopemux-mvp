@@ -43,18 +43,18 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 #### `.gitmodules`
 ```diff
 - [submodule "vendor/taskx"]
--    path = vendor/taskx
--    url = https://github.com/hu3mann/taskX.git
+-  path = vendor/taskx
+-  url = https://github.com/hu3mann/taskX.git
 + [submodule "vendor/dopetask"]
-+    path = vendor/dopetask
-+    url = https://github.com/hu3mann/dopetask.git
++  path = vendor/dopetask
++  url = https://github.com/hu3mann/dopetask.git
 ```
 
 ### 3. Script Updates
 
 #### `scripts/taskx` → `scripts/dopetask`
 - Updated reference from taskX to dopeTask
-- Changed environment variable names (`TASKX_*` -> `DOPETASK_*`)
+- Changed environment variable names (`TASKX_*` → `DOPETASK_*`)
 - Updated executable name from taskx to dopetask
 
 ### 4. Directory Structure Changes
