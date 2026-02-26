@@ -42,17 +42,18 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load upstream W-phase artifacts (inventory through failure recovery) as specified in the inputs section. For each workflow, extract state coupling points: files read/written outside the repo (home directory configs, system paths, environment variables), database state dependencies, and runtime state assumptions.
-2. Classify each state dependency as: repo-local (committed files), repo-transient (gitignored files), home-directory (user config), system-level (OS services, ports), or external (network services, APIs). Record the exact paths and evidence.
-3. Identify portability risks: state dependencies that would break when cloning the repo to a different machine or user account. Flag hardcoded paths, user-specific configs, and machine-specific assumptions.
-4. Structure the output with clear per-workflow state coupling entries, portability risk assessments with evidence, and an explicit UNKNOWN section for state dependencies that cannot be fully traced from available sources.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the workflow state dependencies (home vs repo) partition as primary scan surface
+2. Extract workflow state dependencies (home vs repo) facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted workflow state dependencies (home vs repo) elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each WORKFLOW_STATE_COUPLING item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -87,8 +88,8 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- State dependency path uses environment variable expansion that cannot be resolved statically: record the variable name and typical expansion with `status: env_dependent` and evidence.
-- Workflow depends on system services (databases, message queues) whose state is not captured in repo: record as `coupling_type: external_service` with connection details if available.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

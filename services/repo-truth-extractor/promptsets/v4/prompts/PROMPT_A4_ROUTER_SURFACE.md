@@ -47,41 +47,19 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan in-scope roots for routing config files,
-   provider tables, and model selection logic
-   (YAML maps, JSON configs, Python dispatch code).
-2. Cross-reference `REPO_MCP_SERVER_DEFS.json` and
-   `REPO_MCP_PROXY_SURFACE.json` to identify which
-   servers participate in routed request paths.
-3. Extract provider/model pairs with their trigger
-   conditions (command prefix, profile name, regex)
-   and attach file:line evidence for each.
-4. Build fallback ladders by tracing ordered lists
-   of alternative providers per route entry; record
-   the declared order as evidence.
-5. Extract retry policies (max retries, backoff
-   strategy, timeout) and rate-limit policies
-   (requests/window, burst) only when explicit.
-6. Identify routing profiles that group multiple
-   route entries under a named configuration.
-7. Legacy Context is intent guidance only and is
-   never evidence.
-8. Enumerate candidate facts only from in-scope
-   inputs and upstream artifacts.
-9. Build deterministic IDs using stable content keys
-   (path/symbol/name/service_id).
-10. Attach evidence to every non-derived field and
-    every relationship edge.
-11. Normalize arrays by stable sort keys; deduplicate
-    by ID (or stable content hash).
-12. Validate required fields; emit `UNKNOWN` for
-    unsatisfied values with evidence gaps.
-13. Emit exactly the declared outputs and no
-    additional files.
-  is implicit, preserve source order and mark
-  `status: needs_review` with evidence of ambiguous ranking.
-  match the same trigger pattern, emit all candidates
-  with `status: needs_review` and cross-reference IDs.
+1. Load upstream inventory and partitions; use the router partition as primary scan surface
+2. Extract router facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted router elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each ROUTER_SURFACE item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
+
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
 ```json
@@ -115,6 +93,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

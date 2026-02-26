@@ -38,17 +38,18 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load `BOUNDARY_INVENTORY.json` and `BOUNDARY_PARTITIONS.json` from B0 upstream outputs to establish the scope of boundary items to investigate.
-2. For each boundary item in the inventory, locate the corresponding code enforcement point: find the function, middleware, decorator, or guard clause that implements the boundary check. Record symbol name, file path, and line range.
-3. Extract assertion logic: identify the condition being checked (e.g., role == admin, token.valid, rate < limit), the action on failure (raise, return 403, redirect), and any bypass conditions.
-4. Map enforcement points to their call sites: trace where each boundary check is invoked in request/response pipelines, middleware chains, or event handlers.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the boundary assertion and code enforcement partition as primary scan surface
+2. Extract boundary assertion and code enforcement facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted boundary assertion and code enforcement elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each BOUNDARY_ASSERTIONS item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -83,8 +84,8 @@ Focus on boundary enforcement points, refusal rails, and concrete bypass evidenc
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Boundary item in inventory has no corresponding code enforcement: emit item with `enforcement: UNKNOWN` and `missing_evidence_reason` citing the inventory entry.
-- Multiple enforcement points for a single boundary item: emit all with distinct IDs linking back to the same inventory boundary ID.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

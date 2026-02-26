@@ -51,17 +51,18 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load all upstream W-phase artifacts (W0-W5 outputs) as specified in the inputs section. Merge workflow artifacts into canonical outputs by deterministic union of items keyed by `workflow_id`, resolving conflicts by evidence density.
-2. Run QA validation: check required schema fields for every workflow entry, verify cross-references between catalog/IO/coordination/failure/state artifacts are consistent, and confirm no orphan or dangling references exist.
-3. Emit coverage report: workflows with complete vs incomplete extraction, per-field completeness percentages, and unresolved cross-reference issues. Report any schema violations or missing required fields.
-4. Structure the output with merged workflow data, QA results by check type, coverage statistics, and an explicit UNKNOWN/gaps section for areas where QA cannot be completed due to missing inputs.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load all W-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all WORKFLOW_* artifacts into WORKFLOW_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all W-Phase artifacts present, coverage complete, sort order deterministic; emit WORKFLOW_QA
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -96,8 +97,8 @@ Focus on executable workflows, runbooks, and multi-service coordination boundari
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Cross-reference between W-phase artifacts produces dangling references (workflow ID in one artifact not found in another): record as `status: dangling_reference` with the source and target artifact names.
-- Merge produces schema violations in canonical outputs: apply field-level fixes where possible, record unfixable violations in QA output with evidence.
+- Missing W-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

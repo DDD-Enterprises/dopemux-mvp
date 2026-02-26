@@ -46,11 +46,11 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Walk `src/**`, `services/**`, `docker/**`, `compose.yml`, and `docker-compose*.yml` to enumerate every code module, entry-point script, Dockerfile, and compose service definition. For each item record the repo-relative path, file kind (Python module, shell script, Dockerfile, YAML config, etc.), and the line range of the first meaningful declaration.
-2. For each Python file, extract the top-level module docstring (if any) as `summary`; for shell scripts use the first comment block; for YAML/JSON use the top-level keys. If no summary is discoverable, set `summary` to `UNKNOWN` with `missing_evidence_reason`.
-3. Cross-reference discovered files against `services/registry.yaml` to tag each item with its owning service (if registered). Items not matching any registry entry receive `owner: UNKNOWN`.
-4. Assign every inventory item to exactly one partition using the following subsystem heuristic order (first match wins): `services/**/` entrypoints, `shared/**/`, `src/**/`, workflow scripts, eventbus modules, dope-memory modules, boundary/guardrail modules, taskx bridge modules. Record the partition assignment reason and the evidence (path prefix or import pattern) that determined the assignment.
-5. Validate that every file under scan scope appears in exactly one partition; emit a `coverage_notes` warning for any file that matches zero or multiple partitions.
+1. Scan source code (`services/`, `src/`, `lib/`, `scripts/`, `tools/`) targets; collect path, type, and content metadata for each artifact
+2. Classify each artifact by category relevant to the source code (`services/`, `src/`, `lib/`, `scripts/`, `tools/`) domain
+3. Build CODE_PARTITIONS by grouping files into logical categories with rationale
+4. For each CODE_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
+5. For each CODE_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -92,8 +92,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Symlinks or mount points inside scan scope that resolve to paths outside the repository: skip the target, emit the symlink path with `status: external_symlink` and evidence citing the link source.
-- Service directory present in scan scope but absent from `services/registry.yaml`: include in inventory with `owner: UNKNOWN` and `missing_evidence_reason: not_in_registry`.
+- Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`
+- Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

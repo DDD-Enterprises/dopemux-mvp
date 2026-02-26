@@ -54,19 +54,18 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan `src/**` and `services/**` for trinity boundary enforcement components: classes, decorators, or middleware that implement access control checks, role-based gating, permission validation, or trust-zone boundary assertions. For each component, record the enforcement mechanism (decorator, middleware, inline check), the protected resource, and file path with line range evidence.
-2. Identify refusal artifacts: functions or handlers that return denial responses (HTTP 403/401, error objects, refusal messages). Extract the refusal condition, the response payload pattern, and the triggering check. Record file path and line range for each.
-3. Trace gating chains: follow the call path from request entry (router/endpoint) through middleware, validators, and enforcement points to the final authorization decision. For each chain, record the ordered sequence of checks, the enforcement point names, and evidence from each link in the chain.
-4. Extract guardrail configurations: rate limiters, input size validators, content filters, prompt injection detectors, and output sanitizers. For each guardrail, record the configuration parameters (limits, thresholds), the enforcement location, and file path with line range evidence.
-5. Cross-reference discovered enforcement surfaces against upstream `SERVICE_ENTRYPOINTS.json` to map which endpoints are protected by which enforcement points, and against `EVENTBUS_SURFACE.json` to identify event-driven enforcement triggers.
-6. Validate coverage: check that every public endpoint discovered in upstream artifacts has at least one enforcement point in its call chain. Flag unprotected endpoints with `status: no_enforcement_detected`.
-7. Legacy Context is intent guidance only and is never evidence.
-8. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-9. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-10. Attach evidence to every non-derived field and every relationship edge.
-11. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-12. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-13. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the trinity boundary enforcement partition as primary scan surface
+2. Extract trinity boundary enforcement facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted trinity boundary enforcement elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each TRINITY_SURFACES item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -101,8 +100,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Enforcement logic embedded in dynamically loaded plugins or middleware registered at runtime: emit with `enforcement_type: dynamic` and `status: needs_review` with evidence citing the registration pattern.
-- Guardrail configuration loaded from external source (environment variable, remote config) with no default visible in code: emit with configuration values set to `UNKNOWN` and `missing_evidence_reason: external_config`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

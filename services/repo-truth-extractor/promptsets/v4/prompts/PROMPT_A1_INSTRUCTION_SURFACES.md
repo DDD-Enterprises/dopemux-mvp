@@ -51,31 +51,18 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Use REPOCTRL_PARTITIONS.json (A0 upstream) to find the instructions/prompts partition items.
-2. For each candidate path, verify it exists within the source scope roots before processing.
-3. Classify each instruction file kind using direct textual markers in file content:
-   - claude_system, agent_profile, tooling_instructions, prompt_template, workflow_playbook, other
-   Attach evidence for the marker used (path, line_range, excerpt <=200 chars).
-4. Extract declared behaviors, boundaries, and dataflows as literal statements from the file.
-   Record each statement with evidence (path, line_range, excerpt <=200 chars).
-5. Scan instruction files for literal references to:
-   - services (conport, serena, dope-context, dashboard, orchestrator, proxy)
-   - MCP servers/tools
-   - router/provider ladders
-   - scripts/commands
-   Record each mention with evidence (path, line_range, excerpt <=200 chars).
-6. Build REPO_INSTRUCTION_REFERENCES.json by linking each mention back to its source file and
-   forward to the referenced target when the target string is literal and unambiguous.
-   If the target cannot be resolved, keep target as UNKNOWN and include evidence of ambiguity.
-7. Determine scope only when explicitly declared in file content (e.g., "repo-wide",
-   "project-specific", "tool-specific"). If not explicitly declared, set scope to UNKNOWN.
-8. Legacy Context is intent guidance only and is never evidence.
-9. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-10. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-11. Attach evidence to every non-derived field and every relationship edge.
-12. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-13. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-14. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the instruction partition as primary scan surface
+2. Extract instruction facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted instruction elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each INSTRUCTION_SURFACES item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -110,11 +97,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Upstream A0 partitions missing or empty for instructions/prompts: emit valid empty containers
-  with missing_inputs referencing the absent upstream artifact; skip instruction extraction.
-- Truncated or malformed instruction sources (e.g., incomplete markdown fences): record the item
-  with available evidence and mark missing fields as UNKNOWN with missing_evidence_reason:
-  "source content truncated".
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

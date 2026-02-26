@@ -55,11 +55,11 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Load the merged `DOC_INDEX.json` and extract the content preview (first 40 lines or full text if available) for each indexed document. Tokenize each document's content into word-level tokens, lowercased and stripped of punctuation.
-2. Build a term-frequency matrix across all documents. Compute token overlap scores between document pairs using Jaccard similarity on the top-100 tokens per document. No semantic labeling or LLM-based clustering is permitted.
-3. Cluster documents by token overlap using agglomerative grouping: documents with Jaccard similarity > 0.3 are candidates for the same cluster. Assign each document to exactly one cluster (highest similarity wins for border cases).
-4. For each cluster, compute: `cluster_id` (deterministic hash of sorted document paths), `doc_paths` (sorted list), `top_tokens` (top 20 tokens by aggregate TF across cluster members, with weights), `doc_count`, `newest_mtime`, and `oldest_mtime`.
-5. Validate that every document in the index appears in exactly one cluster. Singleton clusters (one document) are valid but should be flagged with `cluster_note: singleton`.
+1. Load upstream inventory and partitions; use the doc topic clustering partition as primary scan surface
+2. Extract doc topic clustering facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted doc topic clustering elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each DOC_TOPIC_CLUSTERS item, populate `id`, required fields, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -101,8 +101,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Document content too short for meaningful clustering (fewer than 10 tokens after filtering): place in a dedicated `sparse_content` cluster with `cluster_note: insufficient_tokens`.
-- All documents have low pairwise similarity (no pair exceeds 0.3 threshold): emit each document as a singleton cluster and add `coverage_notes: no_natural_clusters_detected`.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

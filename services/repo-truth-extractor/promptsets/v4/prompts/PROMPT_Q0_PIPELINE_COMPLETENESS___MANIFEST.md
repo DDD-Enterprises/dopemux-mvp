@@ -37,17 +37,18 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Scan all extraction run directories (`*/raw`, `*/norm`, `*/qa`) to enumerate every artifact file produced by the pipeline. For each, record: artifact name, phase, step, file size, and presence status (exists/missing).
-2. Cross-reference discovered artifacts against the expected artifact manifest from `artifacts.yaml`. Identify expected-but-missing artifacts and unexpected extra artifacts.
-3. For each present artifact, validate basic structural integrity: is it valid JSON? Does it contain the required top-level schema fields (`schema`, `items` or `nodes`/`edges`)? Record pass/fail per artifact.
-4. Build `QA_RUN_MANIFEST.json` summarizing: total expected artifacts, total present, total missing, total with schema violations, and per-phase completion percentages.
-5. Legacy Context is intent guidance only and is never evidence.
-6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-8. Attach evidence to every non-derived field and every relationship edge.
-9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-11. Emit exactly the declared outputs and no additional files.
+1. Load upstream inventory and partitions; use the pipeline completeness and manifest partition as primary scan surface
+2. Extract pipeline completeness and manifest facts: scan relevant files for domain-specific patterns and structures
+3. Build relationship graph: trace connections between extracted pipeline completeness and manifest elements
+4. Cross-reference with upstream artifacts to identify overrides, shadows, and conflicts
+5. For each QA_RUN_MANIFEST item, populate `id`, required fields, and `evidence`
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -82,8 +83,8 @@ Focus on coverage, collisions, determinism drift, and recovery actions.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Run directory structure does not match expected layout (`*/raw`, `*/norm`, `*/qa`): emit with `status: unexpected_layout` and evidence of the actual structure.
-- Artifact file exists but is empty (0 bytes): include in manifest with `status: empty_file` and flag for recovery.
+- Hidden dependency: if an element depends on something not explicitly documented, emit with `status: implicit_dependency`
+- Shadowed config: if a config overrides another at a different level, emit both with `status: shadow`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

@@ -52,11 +52,11 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Walk `docs/**`, `*.md` in project root, and any `archive/` directories to enumerate all documentation files. For each file, record: repo-relative path, file size, modification time (from git log or filesystem), and file extension. Tag files in archive directories as `status: archive`.
-2. For each documentation file, extract the top-level headings (H1, H2), the first 40 non-empty lines as a content preview, and estimate the token count (word count * 1.3). Record with file path evidence.
-3. Classify each document as `ACTIVE`, `ARCHIVE`, or `QUARANTINE` based on: path location (files under `archive/` or `deprecated/` → ARCHIVE), in-document markers (`DEPRECATED`, `SUPERSEDED`, `DRAFT` → appropriate tag), and recency (no commits touching file in 180+ days → candidate for QUARANTINE).
-4. Assign every document to exactly one partition using these categories (first match wins): core architecture docs, plane-specific docs (PM plane, memory plane, orchestrator plane, MCP plane, hooks plane), service-specific docs, task-packet and governance docs, research and audit docs. Record the partition assignment reason with evidence.
-5. Validate that every documentation file under scan scope appears in exactly one partition; emit `coverage_notes` for any file matching zero or multiple partitions.
+1. Scan documentation (`docs/**`, archive dirs) targets; collect path, type, and content metadata for each artifact
+2. Classify each artifact by category relevant to the documentation (`docs/**`, archive dirs) domain
+3. Build DOC_PARTITIONS by grouping files into logical categories with rationale
+4. For each DOC_INVENTORY item, populate `id`, `path`, `kind`, `summary`, and `evidence`
+5. For each DOC_PARTITIONS item, populate `id`, `partition_id`, `files` (sorted), `reason`, and `evidence`
 6. Legacy Context is intent guidance only and is never evidence.
 7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
 8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
@@ -98,8 +98,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
-- Documentation file is a symlink to a path outside the repository: skip the target, emit the symlink path with `status: external_symlink` and evidence.
-- Binary file (PDF, image) found in docs directory: emit inventory entry with `content_preview: BINARY` and `token_count: UNKNOWN`.
+- Policy without enforcement: if a policy exists but nothing enforces it, emit with `status: unenforced`
+- Overlapping artifacts: if multiple files cover the same concern, emit all with `status: overlapping`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
