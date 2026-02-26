@@ -17,7 +17,12 @@ def resolve_webhook_db_url() -> str:
     if legacy:
         path = Path(legacy).resolve()
         return f"sqlite:///{path.as_posix()}"
-    return "sqlite:////data/webhook_receiver.db"
+    default_container = Path("/data/webhook_receiver.db")
+    parent = default_container.parent
+    if parent.exists() and os.access(parent, os.W_OK):
+        return "sqlite:////data/webhook_receiver.db"
+    local_default = (Path.cwd() / ".dopemux" / "webhook_receiver" / "webhook_receiver.db").resolve()
+    return f"sqlite:///{local_default.as_posix()}"
 
 
 def build_event_store(db_url: Optional[str] = None) -> EventStore:
