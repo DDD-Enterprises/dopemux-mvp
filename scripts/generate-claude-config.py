@@ -97,7 +97,8 @@ def extract_primary_port(ports: Dict) -> Optional[int]:
     # Prefer common MCP ports
     for port_key in ports.keys():
         port_num = int(port_key.split('/')[0])
-        if 3000 <= port_num <= 3020 or port_num in [8000, 8001, 8005, 8080]:
+        # conport uses 4004 for its info server
+        if 3000 <= port_num <= 3020 or port_num in [4004, 4006, 8000, 8001, 8005, 8080]:
             bindings = ports[port_key]
             if bindings:
                 return int(bindings[0]['HostPort'])
@@ -151,7 +152,7 @@ def build_claude_config_entry(info: MCPServerInfo) -> Dict[str, Any]:
         "description": info.description
     }
     
-    if protocol == 'sse':
+    if protocol in ['sse', 'streamablehttp']:
         entry.update({
             "type": "sse",
             "url": connection.get('url', '')
