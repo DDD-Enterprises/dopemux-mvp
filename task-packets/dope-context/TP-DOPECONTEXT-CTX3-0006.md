@@ -1,3 +1,15 @@
+---
+id: TP-DOPECONTEXT-CTX3-0006
+title: Tp Dopecontext Ctx3 0006
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-26'
+last_review: '2026-02-26'
+next_review: '2026-05-27'
+prelude: Tp Dopecontext Ctx3 0006 (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Task Packet: TP-DOPECONTEXT-CTX3-0006 · Dope-Context · Startup Autoindex
 
 ## Objective
