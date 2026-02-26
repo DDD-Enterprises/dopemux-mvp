@@ -9,7 +9,6 @@ import subprocess
 import json
 import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from threading import Thread
 import logging
 
 logging.basicConfig(level=logging.INFO)
