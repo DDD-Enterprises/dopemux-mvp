@@ -255,6 +255,62 @@ def sync_keys():
         raise
 
 
+@routing.command()
+@click.option("--max-passes", type=int, default=3, help="Maximum repair attempts (default: 3)")
+@click.option("--allow-sync-keys", is_flag=True, help="Allow API key syncing during repair")
+def repair(max_passes: int, allow_sync_keys: bool):
+    """Attempt to repair routing services."""
+    try:
+        manager = LaunchdServiceManager.get_instance()
+        click.echo("🔧 Attempting to repair routing services...")
+        
+        # Run repair
+        repair_result = manager.repair(
+            max_passes=max_passes,
+            allow_sync_keys=allow_sync_keys
+        )
+        
+        # Show results
+        if repair_result.get("healthy", False):
+            click.echo("✅ Routing services repaired successfully!")
+            
+            # Show final health
+            health = repair_result["health"]
+            click.echo("\n🏥 Final Health Status:")
+            for service, info in health.items():
+                if service == "mode":
+                    continue
+                status_emoji = "✅" if info.get("status") == "healthy" else "❌"
+                click.echo(f"  {status_emoji} {service}: {info.get('status')}")
+        else:
+            click.echo("❌ Failed to repair routing services")
+            
+            # Show repair attempts
+            click.echo("\n📋 Repair Attempts:")
+            for attempt in repair_result.get("attempts", []):
+                status = "✅" if attempt.get("result", {}).get("ok") else "❌"
+                click.echo(f"  {status} Pass {attempt['pass']}: {attempt['action']}")
+            
+            # Show diagnostics
+            click.echo("\n🔍 Diagnostics:")
+            log_paths = manager._get_log_paths()
+            click.echo(f"  LiteLLM launchd log: {log_paths['litellm_launchd']}")
+            click.echo(f"  CCR launchd log: {log_paths['ccr_launchd']}")
+            click.echo(f"  Latest LiteLLM log: {log_paths['litellm_latest']}")
+            
+            click.echo("\n💡 Next steps:")
+            click.echo("  • Check logs with: tail -f ~/.dopemux/logs/litellm_launchd.log")
+            click.echo("  • Run health check: dopemux routing health")
+            click.echo("  • Check service status: dopemux routing status")
+            
+            raise SystemExit(1)
+            
+    except Exception as e:
+        logger.error(f"Failed to repair services: {e}")
+        click.echo(f"❌ Error: {e}", err=True)
+        raise
+
+
 def register_routing_commands(cli_group):
     """Register routing commands with the main CLI."""
     cli_group.add_command(routing, "routing")
