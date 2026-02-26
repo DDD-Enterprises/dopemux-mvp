@@ -10,6 +10,7 @@ Usage:
     console.print("Hello!")
     console.logger.info("Info message")
     console.logger.error("Error message")
+    console.logger.warning("Warning message")
 """
 
 from rich.console import Console

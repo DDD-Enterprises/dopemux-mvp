@@ -281,6 +281,10 @@ class InstanceManager:
             "DOPEMUX_MAIN_REPO": str(self.workspace_root),  # Main repo root for reference
             "DOPEMUX_PORT_BASE": str(port_base),
 
+            # Host path mapping for Docker containers (Serena/dope-context symlink fix)
+            "HOST_CODE_PARENT_DIR": str(actual_workspace.parent),
+            "HOST_PROJECT_RELATIVE_PATH": actual_workspace.name,
+
             # Service ports
             "TASK_MASTER_PORT": str(port_base + 5),
             "SERENA_PORT": str(port_base + 6),

@@ -4,6 +4,7 @@ from dataclasses import replace
 import importlib.util
 import json
 from pathlib import Path
+from typing import Any, Dict, List
 
 
 def _load_runner_module():
@@ -272,3 +273,152 @@ def test_run_batch_watch_auto_continue_blocked_without_live_guard(tmp_path: Path
     assert result.exit_code == 0
     assert result.auto_continue_blocked is True
     assert result.next_phase is None
+
+
+class _FakeFinalizeStore:
+    def __init__(
+        self,
+        *,
+        pending_jobs: List[Dict[str, Any]],
+        completed_refs: List[str],
+        latest_attempt: int | None = 1,
+    ) -> None:
+        self._pending_jobs = pending_jobs
+        self._completed_refs = completed_refs
+        self._latest_attempt = latest_attempt
+        self.status_updates: List[Dict[str, Any]] = []
+
+    def list_pending_jobs(self, provider: str, run_id: str, phase: str) -> List[Dict[str, Any]]:
+        return list(self._pending_jobs)
+
+    def list_completed_provider_refs(self, provider: str, run_id: str, phase: str) -> List[str]:
+        return list(self._completed_refs)
+
+    def latest_attempt_for_tuple(
+        self, run_id: str, phase: str, step_id: str, partition_id: str
+    ) -> int | None:
+        return self._latest_attempt
+
+    def update_async_job_status(
+        self, provider: str, external_job_id: str, attempt: int, status: str, last_error: str | None
+    ) -> None:
+        self.status_updates.append(
+            {
+                "provider": provider,
+                "external_job_id": external_job_id,
+                "attempt": attempt,
+                "status": status,
+                "last_error": last_error,
+            }
+        )
+
+
+def test_run_phase_r_finalize_no_pending_jobs_returns_zero(monkeypatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "R_arbitration"
+    phase_dir.mkdir(parents=True, exist_ok=True)
+
+    fake_store = _FakeFinalizeStore(pending_jobs=[], completed_refs=[])
+    monkeypatch.setattr(runner, "_build_event_store_for_runner", lambda: fake_store)
+
+    finalized = runner.run_phase_R_finalize(
+        run_id="rid-finalize-empty",
+        dirs={"R": phase_dir},
+        cfg=_make_cfg(runner),
+    )
+
+    assert finalized == 0
+    assert fake_store.status_updates == []
+
+
+def test_run_phase_r_finalize_writes_output_and_marks_completed(monkeypatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "R_arbitration"
+    raw_dir = phase_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+
+    pending = {
+        "step_id": "R1",
+        "partition_id": "R_P0001",
+        "attempt": 1,
+        "external_job_id": "resp_1",
+    }
+    pending_placeholder = raw_dir / "R1__R_P0001.PENDING.json"
+    pending_placeholder.write_text("{\"status\":\"pending\"}\n", encoding="utf-8")
+
+    fake_store = _FakeFinalizeStore(
+        pending_jobs=[pending],
+        completed_refs=["resp_1"],
+        latest_attempt=1,
+    )
+    monkeypatch.setattr(runner, "_build_event_store_for_runner", lambda: fake_store)
+
+    prompt_path = tmp_path / "PROMPT_R1_TEST.md"
+    prompt_path.write_text("Goal: R1_OUT.json\n", encoding="utf-8")
+    monkeypatch.setattr(
+        runner,
+        "get_phase_prompts",
+        lambda phase: [runner.PromptSpec(step_id="R1", prompt_path=prompt_path, output_artifacts=("R1_OUT.json",))]
+        if phase == "R"
+        else [],
+    )
+    monkeypatch.setattr(runner, "_fetch_webhook_payload_for_job", lambda event_store, run_id, provider_ref: {})
+    monkeypatch.setattr(
+        runner,
+        "_extract_openai_response_text",
+        lambda payload: json.dumps(
+            {"artifacts": [{"artifact_name": "R1_OUT.json", "payload": {"value": 1}}]}
+        ),
+    )
+
+    finalized = runner.run_phase_R_finalize(
+        run_id="rid-finalize-write",
+        dirs={"R": phase_dir},
+        cfg=_make_cfg(runner),
+    )
+
+    assert finalized == 1
+    out_json = raw_dir / "R1__R_P0001.json"
+    assert out_json.exists()
+    payload = json.loads(out_json.read_text(encoding="utf-8"))
+    assert payload["phase"] == "R"
+    assert payload["step_id"] == "R1"
+    assert payload["request_meta"]["execution_mode"] == "async"
+    assert payload["request_meta"]["external_job_id"] == "resp_1"
+    assert not pending_placeholder.exists()
+    assert any(update["status"] == "completed" for update in fake_store.status_updates)
+
+
+def test_run_phase_r_finalize_orphans_stale_attempt(monkeypatch, tmp_path: Path) -> None:
+    runner = _load_runner_module()
+    phase_dir = tmp_path / "R_arbitration"
+    raw_dir = phase_dir / "raw"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+
+    pending = {
+        "step_id": "R1",
+        "partition_id": "R_P0001",
+        "attempt": 1,
+        "external_job_id": "resp_old",
+    }
+    fake_store = _FakeFinalizeStore(
+        pending_jobs=[pending],
+        completed_refs=["resp_old"],
+        latest_attempt=2,
+    )
+    monkeypatch.setattr(runner, "_build_event_store_for_runner", lambda: fake_store)
+    monkeypatch.setattr(runner, "get_phase_prompts", lambda phase: [])
+
+    finalized = runner.run_phase_R_finalize(
+        run_id="rid-finalize-stale",
+        dirs={"R": phase_dir},
+        cfg=_make_cfg(runner),
+    )
+
+    assert finalized == 0
+    out_json = raw_dir / "R1__R_P0001.json"
+    assert not out_json.exists()
+    assert any(
+        update["status"] == "orphaned" and update["last_error"] == "stale_attempt"
+        for update in fake_store.status_updates
+    )
