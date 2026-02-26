@@ -44,12 +44,17 @@ Focus on concrete, machine-verifiable implementation facts.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Scan `src/**`, `services/**`, `docs/**`, and `README.md` as specified in the inputs section. Build a feature index inventory by identifying user-visible features, internal capabilities, and integration points from code entry points, API routes, CLI commands, UI components, and documented feature descriptions.
+2. For each feature candidate, extract: feature name, type (user-facing/internal/integration), owning service or module, primary entry points, and a one-line summary with evidence from code or documentation.
+3. Partition features deterministically for downstream X1-X4 extraction steps, grouping by service boundary and feature domain. Assign stable partition IDs based on service_id and feature name.
+4. Structure the output with clear inventory entries with evidence citations, partition assignments with rationale, and an explicit UNKNOWN section for code or doc references that may indicate features but cannot be confirmed.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -84,6 +89,8 @@ Focus on concrete, machine-verifiable implementation facts.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Feature candidate identified from documentation only with no corresponding code entry point: classify as `status: doc_only` with evidence and flag for verification against code.
+- Service boundary for feature partitioning is ambiguous (feature spans multiple services): assign to primary service by evidence density and record secondary services in `cross_service_refs`.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

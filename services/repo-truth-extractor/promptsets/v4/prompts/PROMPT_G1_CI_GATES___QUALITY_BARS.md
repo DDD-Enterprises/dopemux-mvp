@@ -38,12 +38,17 @@ Focus on CI gates, policy enforcement, and governance drift risks.
     - `required_registry_fields`: `path, line_range, id`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Parse `.github/workflows/*.yml` and any CI configuration files for gate definitions: required checks, status checks, branch protection rules, and quality thresholds (coverage minimums, lint pass requirements). Record each gate with its triggering event, conditions, and file path with line range evidence.
+2. Extract quality bar definitions from linter configs (`.eslintrc*`, `.flake8`, `pyproject.toml [tool.ruff]`), type checker configs (`tsconfig.json`, `mypy.ini`), and test coverage configs. Record the tool, the threshold, and whether it blocks merge.
+3. Identify pre-commit hooks and their enforcement: parse `.pre-commit-config.yaml` for hook definitions, stages, and the validators they run. Record each hook with its repo source and evidence.
+4. Cross-reference CI gates against upstream `GOV_INVENTORY.json` to validate that every governance config referenced in CI workflows exists in the inventory.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -78,6 +83,8 @@ Focus on CI gates, policy enforcement, and governance drift risks.
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- CI workflow references an external action or reusable workflow not in the repository: emit with `action_source: external` and the action reference as evidence.
+- Quality bar threshold defined in multiple locations with conflicting values: emit all with `status: conflicting_threshold` and evidence from each source.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown

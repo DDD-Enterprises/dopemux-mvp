@@ -175,12 +175,18 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `service_id, category, description, ports, health, repo_locations, entrypoints, interfaces, dependencies, config`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load all upstream C-phase artifacts (`SERVICE_ENTRYPOINTS.json`, `EVENTBUS_SURFACE.json`, `EVENT_PRODUCERS.json`, `EVENT_CONSUMERS.json`, `DOPE_MEMORY_CODE_SURFACE.json`, `DOPE_MEMORY_SCHEMAS.json`, `DOPE_MEMORY_DB_WRITES.json`, `TRINITY_ENFORCEMENT_SURFACE.json`, `REFUSAL_AND_GUARDRAILS_SURFACE.json`, `TASKX_INTEGRATION_SURFACE.json`, `WORKFLOW_RUNNER_SURFACE.json`, `API_DASHBOARD_SURFACE.json`, `DETERMINISM_RISK_LOCATIONS.json`, `IDEMPOTENCY_RISK_LOCATIONS.json`, `CONCURRENCY_RISK_LOCATIONS.json`, `SECRETS_RISK_LOCATIONS.json`). Validate each against its declared schema contract; record any schema violations as QA issues.
+2. Merge artifacts that share the same `merge_strategy`: for `itemlist_by_id`, union items by `id` and merge evidence arrays. For `itemlist_by_service_id`, merge by `service_id`. Resolve field conflicts deterministically (non-empty wins, then lexicographically smallest).
+3. Build the merged `SERVICE_CATALOG.json` by joining service-level data from all upstream artifacts keyed by `service_id`. For each service, assemble: entrypoints, event subscriptions, memory surfaces, enforcement points, TaskX integrations, workflow runners, API surfaces, and risk locations.
+4. Run cross-artifact consistency checks: verify that every `service_id` referenced in entrypoints, events, and risk locations exists in `services/registry.yaml`; verify that every event producer has at least one consumer (flag orphans); verify that every API endpoint has enforcement coverage.
+5. Emit `CODE_SURFACES_QA.json` with per-artifact validation results: schema compliance status, item count, duplicate detection results, cross-reference integrity checks, and any `needs_review` items aggregated from upstream.
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -215,6 +221,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Upstream artifact missing entirely (file not found): emit merged output without that artifact's data and add `missing_inputs` entry with the artifact name and expected path.
+- Duplicate IDs across different upstream artifacts with conflicting field values: merge deterministically (non-empty wins, then lexicographic) and emit `status: merged_conflict` with evidence from both sources.
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
