@@ -1,3 +1,6 @@
+OUTPUTS:
+- DOC_TOPIC_CLUSTERS.json
+
 Goal: DOC_TOPIC_CLUSTERS.json
 
 Prompt:

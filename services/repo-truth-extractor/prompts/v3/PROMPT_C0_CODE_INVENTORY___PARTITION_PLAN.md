@@ -1,3 +1,7 @@
+OUTPUTS:
+- CODE_INVENTORY.json
+- CODE_PARTITIONS.json
+
 Goal: CODE_INVENTORY.json, CODE_PARTITIONS.json
 
 Prompt:

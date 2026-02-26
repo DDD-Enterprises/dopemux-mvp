@@ -1,3 +1,6 @@
+OUTPUTS:
+- API_DASHBOARD_SURFACE.json
+
 Goal: API_DASHBOARD_SURFACE.json
 
 Prompt:
