@@ -1918,7 +1918,7 @@ def start_tmux(
         console.print("[cyan]🚀 Alternative routing enabled - starting LiteLLM automatically...[/cyan]")
 
         from pathlib import Path as EnvPath
-        from dotenv import load_dotenv
+        from ..utils.dotenv_loader import load_dotenv
         import time
         import httpx
 
