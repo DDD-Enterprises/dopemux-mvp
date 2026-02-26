@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Compatibility shim during taskx -> dopetask transition.
+exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/dopetask" "$@"
