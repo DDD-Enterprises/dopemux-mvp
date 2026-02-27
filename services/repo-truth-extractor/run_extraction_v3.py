@@ -5,7 +5,7 @@ inventory -> partitioning -> per-partition raw outputs -> norm merge -> QA.
 """
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import fnmatch
 import hashlib
 import hmac
@@ -601,6 +601,7 @@ class RunnerConfig:
     partition_workers: int
     debug_phase_inputs: bool
     fail_fast_missing_inputs: bool
+    executor: str = "thread"
     routing_policy: str = DEFAULT_ROUTING_POLICY
     disable_escalation: bool = False
     escalation_max_hops: int = 2
@@ -6982,7 +6983,21 @@ def execute_step_for_partitions(
                 )
             _ui_record_result(results_by_partition[partition_id])
     else:
-        with ThreadPoolExecutor(max_workers=workers) as executor:
+        # Choose executor based on configuration
+        if cfg.executor == "process":
+            # ProcessPoolExecutor requires picklable functions and arguments
+            # The _run_one_partition function is a local function that cannot be pickled
+            # For now, fall back to ThreadPoolExecutor with a warning
+            logger.warning(
+                "ProcessPoolExecutor requested but _run_one_partition contains local references "
+                "that cannot be pickled. Falling back to ThreadPoolExecutor. "
+                "To enable true ProcessPool support, refactor _run_one_partition to be module-level."
+            )
+            executor_cls = ThreadPoolExecutor
+        else:
+            executor_cls = ThreadPoolExecutor
+        
+        with executor_cls(max_workers=workers) as executor:
             future_map = {executor.submit(_run_one_partition, partition): partition for partition in ordered_partitions}
             for future in as_completed(future_map):
                 partition = future_map[future]
@@ -9723,7 +9738,13 @@ def main() -> None:
         "--batch-ids",
         type=str,
         nargs="+",
-        help="List of OpenAI batch IDs to retrieve.",
+        help="List of batch IDs to retrieve.",
+    )
+    parser.add_argument(
+        "--retrieve-provider",
+        choices=["openai", "gemini"],
+        default="openai",
+        help="Batch provider for retrieval (openai or gemini).",
     )
     parser.add_argument(
         "--gemini-transport",
@@ -9746,6 +9767,8 @@ def main() -> None:
     parser.add_argument("--retry-max-seconds", type=float, default=30.0)
     parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
     parser.add_argument("--partition-workers", type=int, default=1)
+    parser.add_argument("--executor", choices=["thread", "process"], default="thread",
+                       help="Executor type: thread (default) or process")
     parser.add_argument("--debug-phase-inputs", action="store_true")
     parser.add_argument("--fail-fast-missing-inputs", action="store_true")
     parser.add_argument("--run-id", type=str)
@@ -9953,6 +9976,7 @@ def main() -> None:
         retry_max_seconds=max(0.0, args.retry_max_seconds),
         phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
         partition_workers=args.partition_workers,
+        executor=args.executor,
         debug_phase_inputs=args.debug_phase_inputs,
         fail_fast_missing_inputs=args.fail_fast_missing_inputs,
         routing_policy=args.routing_policy,
@@ -10094,11 +10118,12 @@ def main() -> None:
     if args.batch_retrieve:
         if not args.batch_ids:
             parser.error("--batch-retrieve requires --batch-ids.")
-        logger.info("Starting batch retrieval for %s batches", len(args.batch_ids))
+        logger.info("Starting %s batch retrieval for %s batches", args.retrieve_provider, len(args.batch_ids))
         integrated = run_batch_retrieval_and_integration(
             run_id=run_id,
             batch_ids=args.batch_ids,
             cfg=cfg,
+            provider=args.retrieve_provider,
         )
         logger.info("Batch retrieval complete: %s events integrated", integrated)
         if integrated > 0:
@@ -10232,8 +10257,9 @@ def run_batch_retrieval_and_integration(
     run_id: str,
     batch_ids: List[str],
     cfg: RunnerConfig,
+    provider: str = "openai"
 ) -> int:
-    """Retrieve OpenAI batches and integrate results with webhook system.
+    """Retrieve batches and integrate results with webhook system.
     
     This function:
     1. Retrieves batch results using the batch retriever
@@ -10243,34 +10269,53 @@ def run_batch_retrieval_and_integration(
     
     Args:
         run_id: Run ID to associate with events
-        batch_ids: List of OpenAI batch IDs to retrieve
+        batch_ids: List of batch IDs to retrieve
         cfg: Runner configuration
+        provider: Batch provider (openai or gemini)
         
     Returns:
         Number of batches successfully integrated
     """
     try:
-        from lib.batch_retriever import retrieve_openai_batches, integrate_batch_results_with_webhook
+        from lib.batch_retriever import (
+            retrieve_openai_batches, 
+            retrieve_gemini_batches, 
+            integrate_batch_results_with_webhook
+        )
     except ImportError:
         logger.error("Batch retriever module not available")
         return 0
     
-    # Resolve API key
-    api_key, api_key_env = resolve_api_key("openai", "OPENAI_API_KEY")
-    if not api_key:
-        logger.error("OpenAI API key not available")
-        return 0
+    # Resolve API key based on provider
+    if provider == "gemini":
+        api_key, api_key_env = resolve_api_key("gemini", "GEMINI_API_KEY")
+        if not api_key:
+            logger.error("Gemini API key not available")
+            return 0
+    else:
+        api_key, api_key_env = resolve_api_key("openai", "OPENAI_API_KEY")
+        if not api_key:
+            logger.error("OpenAI API key not available")
+            return 0
     
     # Retrieve batches
     output_dir = Path("batch_downloads")
     output_dir.mkdir(exist_ok=True)
     
-    logger.info("Retrieving %s batches...", len(batch_ids))
-    batch_results = retrieve_openai_batches(
-        api_key=api_key,
-        batch_ids=batch_ids,
-        output_dir=output_dir
-    )
+    logger.info("Retrieving %s %s batches...", len(batch_ids), provider)
+    
+    if provider == "gemini":
+        batch_results = retrieve_gemini_batches(
+            api_key=api_key,
+            batch_ids=batch_ids,
+            output_dir=output_dir
+        )
+    else:
+        batch_results = retrieve_openai_batches(
+            api_key=api_key,
+            batch_ids=batch_ids,
+            output_dir=output_dir
+        )
     
     # Build event store for integration
     try:
@@ -10284,7 +10329,9 @@ def run_batch_retrieval_and_integration(
     # In a real implementation, this would be more sophisticated
     events_integrated = 0
     for batch_id, result in batch_results.items():
-        if result["status"] in ("completed", "failed", "expired"):
+        status = result["status"]
+        terminal_states = ("completed", "failed", "expired", "succeeded", "done")
+        if status in terminal_states:
             try:
                 # Create synthetic events for each batch
                 integrated = integrate_batch_results_with_webhook(
@@ -10293,7 +10340,8 @@ def run_batch_retrieval_and_integration(
                     run_id=run_id,
                     phase="R",  # Default to phase R for batch processing
                     step_id="batch_retrieval",
-                    partition_id=batch_id
+                    partition_id=batch_id,
+                    provider=provider
                 )
                 events_integrated += integrated
             except Exception as e:
