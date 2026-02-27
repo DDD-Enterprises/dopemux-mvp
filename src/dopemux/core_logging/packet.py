@@ -22,7 +22,8 @@ LEVEL_PATTERNS: List[Tuple[str, re.Pattern[str]]] = [
 ]
 
 TIMESTAMP_PREFIX = re.compile(
-    r"^\s*(?P<ts>\d{4}-\d{2}-\d{2}[T ][0-9:.]+(?:Z|[+-]\d{2}:?\d{2})?)"
+    r"^\s*(?P<ts>\d{4}-\d{2}-\d{2}[T ][0-9:.]+(?:Z|[+-]\d{2}:?\d{2})?)",
+    re.IGNORECASE,
 )
 TIMESTAMP_ANY = re.compile(
     r"\b\d{4}-\d{2}-\d{2}[T ][0-9:.]+(?:Z|[+-]\d{2}:?\d{2})?\b",
