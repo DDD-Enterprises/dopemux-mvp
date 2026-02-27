@@ -1,12 +1,14 @@
-Objective: Phase 0C - prove determinism between workers=1 and workers=N runs.
+Objective: Add ProcessPoolExecutor support behind --executor flag.
 Scope:
-- services/repo-truth-extractor/tools/phase0_determinism_check.py
-- proof/PHASE0_DETERMINISM_REPORT.md
+- services/repo-truth-extractor/run_extraction_v3.py
 - proof/PLAN.txt
 Steps:
-1) Run extractor twice with identical inputs/config: workers=1 and workers=N.
-2) Collect output directories A and B.
-3) Normalize JSON outputs and hash them (sha256).
-4) Compare hash manifests and report mismatches.
+1) Add --executor flag with choices thread|process (default thread).
+2) Route partition execution through ThreadPoolExecutor or ProcessPoolExecutor based on flag.
+3) Ensure work unit submission remains executor.submit(_run_one_partition, partition).
+4) Verify: run determinism test under process executor (workers=1 vs 4) and compare outputs with phase0 checker.
 Verification:
-- script exits 0 if identical, else 2 with mismatch report
+- python -m compileall -q services
+- run_extraction_v3.py with --executor thread (baseline)
+- run_extraction_v3.py with --executor process (workers=1 and 4)
+- phase0_determinism_check.py returns exit 0
