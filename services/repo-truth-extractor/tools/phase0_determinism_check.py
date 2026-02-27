@@ -17,9 +17,19 @@ import traceback
 def normalize_json_content(content: str) -> str:
     """
     Normalize JSON content for deterministic comparison.
+    Removes known non-deterministic fields like timestamps and run IDs.
     """
     try:
         parsed = json.loads(content)
+        
+        # Remove non-deterministic fields
+        if isinstance(parsed, dict):
+            # Remove generated_at timestamp
+            parsed.pop('generated_at', None)
+            # Remove run_id from request_meta if present
+            if 'request_meta' in parsed and isinstance(parsed['request_meta'], dict):
+                parsed['request_meta'].pop('run_id', None)
+        
         # Sort keys and use consistent separators for deterministic output
         normalized = json.dumps(
             parsed, 
