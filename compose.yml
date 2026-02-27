@@ -38,6 +38,10 @@ volumes:
   leantime_userfiles:
   leantime_logs:
   leantime_config:
+  mcp_client_data:
+  mcp_client_logs:
+  mcp_plane_coordinator_data:
+  mcp_plane_coordinator_logs:
 
 
 services:
@@ -52,7 +56,7 @@ services:
     restart: unless-stopped
     networks:
       - dopemux-network
-      
+
     environment:
       - POSTGRES_USER=dopemux_age
       - POSTGRES_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
@@ -76,7 +80,7 @@ services:
     restart: unless-stopped
     networks:
       - dopemux-network
-      
+
     ports:
       - "6379:6379"
     healthcheck:
@@ -231,9 +235,9 @@ services:
     restart: unless-stopped
     networks:
       - dopemux-network
-      
+
     environment:
-      - MCP_SERVER_PORT=3004
+      - MCP_SERVER_PORT=3005
       - DOPECON_BRIDGE_URL=http://dope-decision-graph-bridge:3016
       - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
       - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
@@ -244,6 +248,8 @@ services:
       - QDRANT_URL=http://mcp-qdrant:6333
     ports:
       - "3004:3004"
+      - "3005:3005"
+      - "4004:4004"
       - "4004:4004"  # Info server for service discovery
     depends_on:
       - postgres
@@ -288,7 +294,7 @@ services:
     restart: unless-stopped
     networks:
       - dopemux-network
-      
+
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -315,7 +321,7 @@ services:
     restart: unless-stopped
     networks:
       - dopemux-network
-      
+
     environment:
       - MCP_SERVER_PORT=3010
       - VOYAGE_API_KEY=${VOYAGE_API_KEY}
@@ -323,11 +329,15 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - QDRANT_URL=http://mcp-qdrant:6333
+      - HOST_CODE_PARENT_DIR=${HOST_CODE_PARENT_DIR}
+      - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
+      - DOPEMUX_WORKSPACE_ROOT=/workspaces/${HOST_PROJECT_RELATIVE_PATH}
     ports:
       - "3010:3010"
     volumes:
       - ./services/dope-context/data:/app/data
       - ./services/dope-context/logs:/app/logs
+      - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
     depends_on:
       - mcp-qdrant
     healthcheck:
@@ -350,7 +360,7 @@ services:
     restart: unless-stopped
     networks:
       - dopemux-network
-      
+
     ports:
       - "3016:3016"
     environment:
@@ -387,13 +397,13 @@ services:
     restart: unless-stopped
     networks:
       - dopemux-network
-      
+
     environment:
       - LEANTIME_URL=${LEANTIME_URL:-http://leantime:80}
       - LEANTIME_TOKEN=${LEANTIME_TOKEN}
       - REDIS_URL=redis://redis-primary:6379
       - WORKSPACE_ID=/Users/hue/code/dopemux-mvp
-      - CONPORT_URL=http://conport:3004
+      - CONPORT_URL=http://conport:3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY:-dev-key-456}
@@ -429,13 +439,13 @@ services:
     restart: unless-stopped
     networks:
       - dopemux-network
-      
+
     environment:
       - API_PORT=8095
       - HOST=0.0.0.0
       - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
       - REDIS_URL=redis://redis-primary:6379
-      - CONPORT_URL=http://conport:3004
+      - CONPORT_URL=http://conport:3005
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097
@@ -487,8 +497,6 @@ services:
       - DOPEMUX_CAPTURE_LEDGER_PATH=/data/chronicle.sqlite
       - DOPEMUX_SQLITE_JOURNAL_MODE=DELETE
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097}
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097}
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097}
     volumes:
       - ./.dopemux:/data
     depends_on:
@@ -502,40 +510,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-
-  # Genetic Agent - AI Code Repair with Genetic Programming
-  genetic-agent:
-    build:
-      context: ./services/genetic_agent
-      dockerfile: Dockerfile
-    container_name: dopemux-genetic-agent
-    restart: unless-stopped
-    networks:
-      - dopemux-network
-      
-    ports:
-      - "8000:8000"
-    environment:
-      - GENETIC_AGENT_PAL_URL=http://pal:3003
-      - GENETIC_AGENT_CONPORT_URL=http://conport:3004
-      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
-      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
-      - GENETIC_AGENT_SERENA_URL=http://serena:3005
-      - GENETIC_AGENT_DOPE_CONTEXT_URL=http://dope-context:3006
-      - GENETIC_AGENT_WORKSPACE_ID=/workspace
-    depends_on:
-      - pal
-      - conport
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8000/health" ]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 30s
-    labels:
-      - "dopemux.service=application"
-      - "dopemux.component=ai-code-repair"
-      - "dopemux.description=Intelligent code repair using hybrid LLM + genetic programming approach"
 
   # Serena v2 - ADHD Engine MCP
   serena:
@@ -553,6 +527,10 @@ services:
       - MCP_SERVER_PORT=3006
       - HTTP_PORT=4006
       - WORKSPACE_ID=${WORKSPACE_ID:-/workspace}
+      - HOST_CODE_PARENT_DIR=${HOST_CODE_PARENT_DIR}
+      - HOST_PROJECT_RELATIVE_PATH=${HOST_PROJECT_RELATIVE_PATH}
+    volumes:
+      - ${HOST_CODE_PARENT_DIR:-/tmp}:/workspaces
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4006/health || exit 1"]
       timeout: 10s
@@ -643,7 +621,10 @@ services:
     environment:
       - WEBHOOK_RECEIVER_HOST=0.0.0.0
       - WEBHOOK_RECEIVER_PORT=8790
+      # Default to SQLite at WEBHOOK_DB_PATH; set WEBHOOK_DB_URL to use PostgreSQL instead.
       - WEBHOOK_DB_PATH=/data/webhook_receiver.db
+      - WEBHOOK_DB_URL=${WEBHOOK_DB_URL:-}
+      - DPMX_ENV=${DPMX_ENV:-development}
       - OPENAI_WEBHOOK_SECRET=${OPENAI_WEBHOOK_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
     volumes:
@@ -668,6 +649,7 @@ services:
       - dopemux-network
     environment:
       - WEBHOOK_DB_PATH=/data/webhook_receiver.db
+      - WEBHOOK_DB_URL=${WEBHOOK_DB_URL:-}
     volumes:
       - ./.dopemux/webhook_receiver:/data
     command: ["python", "/app/services/webhook_receiver/poller.py", "--providers", "xai,gemini", "--interval-seconds", "10"]

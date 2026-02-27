@@ -1,0 +1,3 @@
+#!/bin/bash
+# Wrapper script for PATCHIT functionality
+python /Users/hue/code/dopemux-mvp/tools/prompt_rewrite_v4/clipboard_to_patch.py "$@"

@@ -42,12 +42,17 @@ Produce phase `S3` proof-hook artifacts that transform architecture and migratio
   - `ARCHITECTURE_PROOF_HOOKS.md` and `S3_ARCH_PROOF_HOOKS.md` must remain semantically aligned.
 
 ## Extraction Procedure
-1. Extract major claims from S0, S1, and S2 outputs.
-2. Map each claim to one or more verification suggestions with expected pass/fail signals.
-3. Tie each hook to relevant risk IDs from R8.
-4. Assign deterministic confidence values based on evidence completeness.
-5. Separate unresolved hooks into an explicit unknown section.
-6. Write the same hook corpus into both output aliases with stable ordering.
+1. Load all required upstream artifacts as specified in the inputs section. Produce architecture proof hooks by identifying verification points where automated checks can validate architectural invariants. Map each proof hook to the architectural claim it validates, the enforcement mechanism, and the evidence source.
+2. For each synthesis claim or recommendation, require evidence chains tracing back to normalized extraction artifacts. Do not introduce claims unsupported by upstream evidence.
+3. Structure the output with clear sections, evidence citations (artifact ID, path, line range), and an explicit UNKNOWN/gaps section for areas where evidence is insufficient.
+4. Cross-reference the synthesis against upstream QA reports (`PIPELINE_DOCTOR_REPORT.json` if available) to validate that the synthesis does not depend on artifacts flagged as incomplete or corrupted.
+5. Legacy Context is intent guidance only and is never evidence.
+6. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+7. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+8. Attach evidence to every non-derived field and every relationship edge.
+9. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+10. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+11. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Each hook row must include evidence anchors for the source claim.
@@ -81,3 +86,5 @@ Produce phase `S3` proof-hook artifacts that transform architecture and migratio
 - Duplicate claim IDs: merge evidence deterministically and preserve strongest expected signal text.
 - Alias output mismatch: regenerate both outputs from one normalized hook table.
 - Overly broad command suggestions: reduce to minimal bounded checks and note limitations.
+- Multiple R-phase reports provide contradictory inputs to the synthesis: document both perspectives with evidence and flag with `status: unresolved_contradiction`.
+- Synthesis output would exceed the declared output format constraints: emit a complete-but-summarized version and note truncated sections in `coverage_notes`.

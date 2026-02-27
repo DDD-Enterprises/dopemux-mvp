@@ -70,11 +70,30 @@ def _load_ledger_interface_module():
     )
 
 
+def _load_poller_module():
+    root = Path(__file__).resolve().parents[2]
+    return _load_module(
+        "webhook_receiver_poller",
+        root / "services" / "webhook_receiver" / "poller.py",
+    )
+
+
 def _free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind(("127.0.0.1", 0))
         sock.listen(1)
         return int(sock.getsockname()[1])
+
+
+def _wait_for_server(host: str, port: int, max_attempts: int = 50, delay: float = 0.1) -> None:
+    """Wait until the server is accepting connections, up to max_attempts tries."""
+    for _ in range(max_attempts):
+        try:
+            with socket.create_connection((host, port), timeout=delay):
+                return
+        except (ConnectionRefusedError, OSError):
+            time.sleep(delay)
+    raise TimeoutError(f"Server on {host}:{port} did not become ready after {max_attempts} attempts")
 
 
 def test_sqlite_event_store_idempotency(tmp_path: Path, monkeypatch) -> None:
@@ -127,7 +146,7 @@ def test_server_invalid_signature_returns_401(tmp_path: Path, monkeypatch) -> No
     httpd = server_mod.WebhookServer("127.0.0.1", port, event_store)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
-    time.sleep(0.05)
+    _wait_for_server("127.0.0.1", port)
 
     conn = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
     conn.request(
@@ -180,7 +199,7 @@ def test_server_duplicate_delivery_returns_204_and_no_second_insert(tmp_path: Pa
     httpd = server_mod.WebhookServer("127.0.0.1", port, event_store)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
-    time.sleep(0.05)
+    _wait_for_server("127.0.0.1", port)
 
     headers = {"Content-Type": "application/json", "webhook-id": "wh_dupe"}
     for _ in range(2):
@@ -415,3 +434,138 @@ def test_latest_attempt_reconciliation_stale_event_orphaned(tmp_path: Path, monk
     orphaned_job = store.find_async_job(provider="openai", external_job_id="resp_1", attempt=1)
     assert orphaned_job is not None
     assert orphaned_job["status"] == "orphaned"
+
+
+def test_migration_sql_parity_logical_schema() -> None:
+    root = Path(__file__).resolve().parents[2]
+    sqlite_sql = (
+        root
+        / "services"
+        / "webhook_receiver"
+        / "migrations"
+        / "sqlite"
+        / "001_init_webhook_ledger.sql"
+    ).read_text(encoding="utf-8")
+    postgres_sql = (
+        root
+        / "services"
+        / "webhook_receiver"
+        / "migrations"
+        / "postgres"
+        / "001_init_webhook_ledger.sql"
+    ).read_text(encoding="utf-8")
+
+    required_logical_tokens = [
+        "CREATE TABLE IF NOT EXISTS webhook_events",
+        "provider",
+        "idempotency_key",
+        "event_type",
+        "event_id",
+        "received_at_utc",
+        "payload_json",
+        "CREATE TABLE IF NOT EXISTS run_events",
+        "run_id",
+        "phase",
+        "step_id",
+        "partition_id",
+        "provider_ref",
+        "webhook_event_id",
+        "dedupe_key",
+        "CREATE TABLE IF NOT EXISTS async_jobs",
+        "job_kind",
+        "external_job_id",
+        "attempt",
+        "status",
+        "last_error",
+    ]
+    for token in required_logical_tokens:
+        assert token in sqlite_sql
+        assert token in postgres_sql
+
+
+def test_storage_selects_postgres_backend_without_connecting(monkeypatch) -> None:
+    storage = _load_storage_module()
+    monkeypatch.setenv("WEBHOOK_DB_URL", "postgresql://user:pass@localhost:5432/dopemux")
+    event_store = storage.build_event_store()
+    assert event_store.__class__.__name__ == "PostgresEventStore"
+
+
+def test_poller_cycle_idempotent_for_terminal_status(tmp_path: Path, monkeypatch) -> None:
+    interface_mod = _load_ledger_interface_module()
+    poller = _load_poller_module()
+    store = _build_store_with_migrations(tmp_path, monkeypatch, "poller.db")
+
+    store.register_async_job(
+        interface_mod.AsyncJobInsert(
+            provider="xai",
+            job_kind="responses_async",
+            external_job_id="job_xai_1",
+            run_id="run_poll",
+            phase="R",
+            step_id="R1",
+            partition_id="R_P0001",
+            attempt=1,
+            status="submitted",
+        )
+    )
+
+    first = poller.run_poll_cycle(store, ["xai"])
+    second = poller.run_poll_cycle(store, ["xai"])
+
+    assert first["jobs_seen"] == 1
+    assert first["jobs_processed"] == 1
+    assert first["events_inserted"] == 1
+    assert second["events_inserted"] == 0
+    assert store.count_webhook_events() == 1
+    assert store.count_run_events() == 1
+
+
+def test_poller_marks_stale_attempt_orphaned(tmp_path: Path, monkeypatch) -> None:
+    interface_mod = _load_ledger_interface_module()
+    poller = _load_poller_module()
+    store = _build_store_with_migrations(tmp_path, monkeypatch, "poller_orphaned.db")
+
+    # Two attempts for the same tuple: attempt=1 should be orphaned, attempt=2 should complete.
+    store.register_async_job(
+        interface_mod.AsyncJobInsert(
+            provider="xai",
+            job_kind="responses_async",
+            external_job_id="job_xai_stale",
+            run_id="run_orphan",
+            phase="R",
+            step_id="R1",
+            partition_id="R_P0001",
+            attempt=1,
+            status="submitted",
+        )
+    )
+    store.register_async_job(
+        interface_mod.AsyncJobInsert(
+            provider="xai",
+            job_kind="responses_async",
+            external_job_id="job_xai_latest",
+            run_id="run_orphan",
+            phase="R",
+            step_id="R1",
+            partition_id="R_P0001",
+            attempt=2,
+            status="submitted",
+        )
+    )
+
+    result = poller.run_poll_cycle(store, ["xai"])
+    assert result["events_inserted"] == 2
+
+    stale_job = store.find_async_job(provider="xai", external_job_id="job_xai_stale", attempt=1)
+    latest_job = store.find_async_job(provider="xai", external_job_id="job_xai_latest", attempt=2)
+    assert stale_job is not None and stale_job["status"] == "orphaned"
+    assert latest_job is not None and latest_job["status"] == "completed"
+
+
+def test_poller_rejects_unsupported_provider() -> None:
+    poller = _load_poller_module()
+    try:
+        poller._parse_provider_list("xai,unknown")
+        assert False, "Expected ValueError for unsupported provider"
+    except ValueError as exc:
+        assert "Unsupported providers" in str(exc)

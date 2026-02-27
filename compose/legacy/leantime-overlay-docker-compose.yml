@@ -1,0 +1,65 @@
+# Leantime Integration Overlay for Dopemux MCP Stack
+# Use this with the base docker-compose.yml to enable Leantime integration
+#
+# Usage:
+#   docker compose -f compose.yml -f compose/legacy/leantime-overlay-docker-compose.yml up -d
+#
+# Prerequisites:
+#   - Leantime stack must be running (or leantime-net network must exist)
+#   - Check: docker network ls | grep leantime-net
+
+name: dopemux
+
+services:
+  # Leantime Bridge - Connects existing Leantime to MCP network (HTTP/SSE transport)
+  leantime-bridge:
+    build:
+      context: ./leantime-bridge
+      dockerfile: Dockerfile
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-leantime-bridge"
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+      - leantime-net
+    env_file:
+      - ./leantime-bridge/.env
+    environment:
+      - MCP_SERVER_HOST=0.0.0.0
+      - MCP_SERVER_PORT=3015
+      - LEANTIME_API_URL=${LEANTIME_API_URL:-${LEANTIME_URL:-http://leantime:80}}
+      - LEANTIME_API_TOKEN=${LEANTIME_API_TOKEN:-${LEANTIME_TOKEN:-}}
+      - LEAN_TIME_RATE_LIMIT_SECONDS=${LEAN_TIME_RATE_LIMIT_SECONDS:-1.0}
+      - REDIS_URL=redis://dopemux-redis-primary:6379
+    ports:
+      - "3015:3015"
+    depends_on:
+      - redis-primary
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3015/health || exit 1" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - mcp_leantime_bridge_data:/app/data
+      - mcp_leantime_bridge_logs:/app/logs
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=high"
+      - "mcp.transport=http-sse"
+      - "mcp.description=Leantime project management integration bridge (HTTP/SSE)"
+
+networks:
+  dopemux-network:
+    external: true
+  leantime-net:
+    external: true
+    name: leantime-net
+
+volumes:
+  mcp_leantime_bridge_data:
+    driver: local
+    name: mcp_leantime_bridge_data
+  mcp_leantime_bridge_logs:
+    driver: local
+    name: mcp_leantime_bridge_logs

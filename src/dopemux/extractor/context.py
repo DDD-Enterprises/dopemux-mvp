@@ -92,7 +92,7 @@ class ContextGatherer:
             # Repo Control Plane
             patterns = [
                 ".github/workflows/*.yml",
-                "docker-compose*.yml",
+                "compose.yml",
                 "litellm.config.yaml",
                 "mcp-proxy-config.yaml",
                 ".pre-commit-config.yaml",

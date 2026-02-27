@@ -1,3 +1,6 @@
+OUTPUTS:
+- PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
+
 Goal: PORTABILITY_AND_MIGRATION_RISK_LEDGER.md
 
 ROLE: Supervisor/Auditor.
@@ -15,3 +18,9 @@ MUST INCLUDE:
 RULES:
 - Cite every risk.
 - No broad refactor proposals.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```

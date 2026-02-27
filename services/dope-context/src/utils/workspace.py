@@ -40,6 +40,17 @@ except ModuleNotFoundError:
     def _get_workspace_root(start_path: Optional[Path] = None) -> Path:
         current = Path(start_path or os.getcwd()).resolve()
 
+        # Check for dynamic relative path from Docker environment
+        host_relative_path = os.getenv("HOST_PROJECT_RELATIVE_PATH")
+        if host_relative_path:
+            # If we are in docker and have this var, we expect code at /workspaces/<name>
+            candidate = Path(f"/workspaces/{host_relative_path}")
+            if candidate.exists():
+                _logger.debug(
+                    "Workspace detected via HOST_PROJECT_RELATIVE_PATH: %s", candidate
+                )
+                return candidate
+
         env_workspace = os.getenv("DOPEMUX_WORKSPACE_ROOT")
         if env_workspace:
             workspace_path = Path(env_workspace).resolve()

@@ -25,15 +25,13 @@ from typing import Callable, Dict, Iterable, List, Optional, Sequence
 import warnings
 
 import click
-try:
-    from dotenv import load_dotenv
-    _DOTENV_AVAILABLE = True
-except ImportError:  # pragma: no cover - optional dependency
-    _DOTENV_AVAILABLE = False
+from .utils.dotenv_loader import load_dotenv, check_dotenv_support
 
-    def load_dotenv(*args, **kwargs):  # type: ignore[override]
-        """Fallback load_dotenv when python-dotenv is unavailable."""
-        return False
+# Import RoutingConfig for mode-based behavior
+try:
+    from .routing_config import RoutingConfig
+except ImportError:  # pragma: no cover
+    RoutingConfig = None
 
 from rich.live import Live
 from rich.panel import Panel
@@ -47,6 +45,7 @@ from .console import console
 
 # Load environment variables from .env file
 load_dotenv()
+check_dotenv_support()
 from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
 from .claude import ClaudeConfigurator, ClaudeLauncher
 from .dope_brainz_router import (
@@ -108,12 +107,6 @@ from .extractor.runner import PipelineRunner
 if "-litellm" in sys.argv:
     sys.argv = ["--litellm" if arg == "-litellm" else arg for arg in sys.argv]
 
-if not _DOTENV_AVAILABLE:  # pragma: no cover - environment warning
-    warnings.warn(
-        "python-dotenv not installed; environment variables from .env files "
-        "will not be auto-loaded. Install python-dotenv to enable this feature.",
-        RuntimeWarning,
-    )
 
 
 ROLE_SERVER_SERVICE_MAP = {
@@ -706,6 +699,35 @@ def start(
         Automatically detects running instances and creates isolated worktrees
         for parallel ADHD-optimized development workflows.
     """
+    
+    def _ensure_env_consistent_with_mode(final_mode: str) -> None:
+        """Ensure environment variables are consistent with routing mode.
+        
+        Prevents stale proxy env vars when falling back to subscription mode.
+        """
+        if final_mode == "subscription":
+            # Unset proxy variables to ensure direct connection
+            env_vars_to_unset = ["ANTHROPIC_BASE_URL", "DOPEMUX_ROUTING_MODE"]
+            for var in env_vars_to_unset:
+                if var in os.environ:
+                    del os.environ[var]
+            
+            # Only unset ANTHROPIC_API_KEY if we set it (marked by DOPEMUX_SET_ANTHROPIC_API_KEY)
+            if os.environ.get("DOPEMUX_SET_ANTHROPIC_API_KEY") == "1":
+                if "ANTHROPIC_API_KEY" in os.environ:
+                    del os.environ["ANTHROPIC_API_KEY"]
+                if "DOPEMUX_SET_ANTHROPIC_API_KEY" in os.environ:
+                    del os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"]
+                    
+        elif final_mode == "api":
+            # Ensure API mode variables are set
+            if "DOPEMUX_ROUTING_MODE" not in os.environ:
+                os.environ["DOPEMUX_ROUTING_MODE"] = "api"
+            
+            # Mark that we're managing the API key
+            if "ANTHROPIC_API_KEY" in os.environ:
+                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
+    
     legacy_value = legacy_kwargs.get("claude_router")
     if legacy_value is not None:
         use_claude_router = legacy_value
@@ -720,6 +742,97 @@ def start(
             validate_agents_in_workspace(workspace_root)
     except Exception as e:
         console.logger.warning(f"Agent validation warning: {e}")
+
+    # ── Routing mode from config (replaces legacy flags) ───────────────
+    routing_mode = None
+    routing_ports = None
+    routing_config = None
+    
+    if RoutingConfig is not None:
+        try:
+            routing_config = RoutingConfig.load_default()
+            routing_mode = routing_config.get_mode()
+            routing_ports = routing_config.get_ports()
+            console.logger.info(f"[blue]📋 Routing mode: {routing_mode}[/blue]")
+        except Exception as e:
+            console.logger.warning(f"[yellow]⚠️  Could not load routing config: {e}[/yellow]")
+            console.logger.info("[dim]Falling back to legacy flag behavior[/dim]")
+    
+    # Warn about deprecated flags when routing mode is available
+    deprecated_flags_used = any([use_grok, use_codex, use_altp, use_alt_routing, use_claude_router])
+    if deprecated_flags_used and routing_mode is not None:
+        console.logger.warning("[yellow]⚠️  Deprecated flags detected (--grok/--codex/--altp/--alt-routing/--claude-router)[/yellow]")
+        console.logger.info("[dim]Prefer: dopemux routing mode api|subscription[/dim]")
+
+    # ── Handle routing mode: api (proxy through CCR/LiteLLM) ─────────
+    if routing_mode == "api" and not deprecated_flags_used:
+        console.logger.info("[blue]🔄 Routing mode 'api': Starting services and configuring proxy[/blue]")
+        
+        # Ensure services are installed and running
+        try:
+            from .launchd_services import LaunchdServiceManager
+            service_manager = LaunchdServiceManager.get_instance()
+            
+            # Check if services are running, start if not
+            status = service_manager.get_service_status()
+            litellm_running = status.get("litellm", {}).get("status") == "running"
+            ccr_running = status.get("ccr", {}).get("status") == "running"
+            
+            if not litellm_running or not ccr_running:
+                console.logger.info("[blue]🚀 Ensuring routing services are running...[/blue]")
+                service_manager.install_services()
+                service_manager.start_services()
+                time.sleep(2)  # Give services time to start
+            
+            # Verify services are healthy
+            health = service_manager.check_health()
+            litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
+            ccr_healthy = health.get("ccr", {}).get("status") == "healthy"
+            
+            if not litellm_healthy or not ccr_healthy:
+                error_msg = []
+                if not litellm_healthy:
+                    error_msg.append(f"LiteLLM unhealthy: {health.get('litellm', {}).get('error', 'unknown')}")
+                if not ccr_healthy:
+                    error_msg.append(f"CCR unhealthy: {health.get('ccr', {}).get('error', 'unknown')}")
+                raise click.ClickException(f"Routing services not healthy: {', '.join(error_msg)}")
+                
+            console.logger.info("[green]✅ Routing services healthy[/green]")
+            
+        except Exception as e:
+            console.logger.error(f"[red]❌ Failed to start routing services: {e}[/red]")
+            console.logger.info("[yellow]Falling back to direct Anthropic connection[/yellow]")
+            routing_mode = "subscription"
+            # Ensure env vars are cleaned up immediately
+            _ensure_env_consistent_with_mode(routing_mode)
+        
+        # Configure environment for API mode
+        if routing_mode == "api":
+            ccr_port = routing_ports["ccr"]
+            ccr_api_key = os.getenv("DOPEMUX_CCR_API_KEY")
+            
+            # Set environment variables for Claude Code to use CCR
+            os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{ccr_port}"
+            if ccr_api_key:
+                os.environ["ANTHROPIC_API_KEY"] = ccr_api_key
+                # Mark that we set this key so we can clean it up if needed
+                os.environ["DOPEMUX_SET_ANTHROPIC_API_KEY"] = "1"
+                console.logger.info(f"[dim]✓ CCR API key configured[/dim]")
+            else:
+                console.logger.warning("[yellow]⚠️  DOPEMUX_CCR_API_KEY not set in routing.env[/yellow]")
+            
+            console.logger.info(f"[dim]✓ Claude Code → CCR (127.0.0.1:{ccr_port}) → LiteLLM[/dim]")
+            
+            # Mark that we're using routing
+            os.environ["DOPEMUX_ROUTING_MODE"] = "api"
+            
+    # ── Handle routing mode: subscription (direct to Anthropic) ──────
+    elif routing_mode == "subscription" and not deprecated_flags_used:
+        console.logger.info("[blue]📋 Routing mode 'subscription': Direct Anthropic connection[/blue]")
+        
+        # Ensure env vars are consistent with subscription mode
+        _ensure_env_consistent_with_mode(routing_mode)
+        console.logger.info("[dim]✓ Claude Code → Anthropic (direct)[/dim]")
 
     # ── Handle --grok / --codex / --altp provider routing ───────────────
     provider_proxy_started = False
@@ -1696,6 +1809,21 @@ def start(
         if not no_mcp:
             # CRITICAL FIX: Pass instance_env_vars so MCP servers get workspace isolation
             _start_mcp_servers_with_progress(project_path, instance_env=instance_env_vars)
+            startup_workspace = (worktree_path or project_path).resolve()
+            autoindex_result = _trigger_dope_context_autoindex_startup(startup_workspace)
+            if autoindex_result:
+                status = autoindex_result.get("status", "unknown")
+                if status in {"started", "already_running"}:
+                    progress.update(
+                        task,
+                        description=(
+                            f"Autoindex startup {status} for {startup_workspace.name}"
+                        ),
+                    )
+                elif status in {"request_failed", "http_error"}:
+                    console.logger.info(
+                        "[yellow]⚠️  Autoindex startup trigger failed; continuing without blocking.[/yellow]"
+                    )
         else:
             console.logger.info("[yellow]⚠️  Skipping MCP servers (reduced ADHD experience)[/yellow]")
 
@@ -3697,7 +3825,7 @@ def mcp_up_cmd(all_services: bool, services: str):
             cmd += "./start-all-mcp-servers.sh"
         else:
             svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
-            cmd += f"docker-compose up -d --build {svc_list}"
+            cmd += f"docker compose -f compose.yml up -d --build {svc_list}"
         console.logger.info(f"[blue]🔌 {cmd}[/blue]")
         subprocess.run(["bash","-lc", cmd], check=True)
         console.logger.info("[green]✅ MCP servers started[/green]")
@@ -3710,7 +3838,9 @@ def mcp_up_cmd(all_services: bool, services: str):
 def mcp_down_cmd():
     """Stop all MCP servers."""
     try:
-        subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose down"], check=True)
+        # Stop and remove only the MCP-related services
+        mcp_services = ["conport", "pal", "litellm", "dope-context", "serena", "gptr-mcp", "desktop-commander", "leantime-bridge"]
+        subprocess.run(["docker", "compose", "-f", "compose.yml", "rm", "-f", "-s", "-v"] + mcp_services, check=True)
         console.logger.info("[green]✅ MCP servers stopped[/green]")
     except CalledProcessError:
         console.logger.error("[red]❌ Failed to stop MCP servers[/red]")
@@ -3721,7 +3851,7 @@ def mcp_down_cmd():
 def mcp_status_cmd():
     """Show docker-compose status for MCP servers."""
     try:
-        subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose ps"], check=False)
+        subprocess.run(["docker","compose","-f","compose.yml","ps"], check=False)
     except CalledProcessError:
         sys.exit(1)
 
@@ -3732,9 +3862,9 @@ def mcp_logs_cmd(service: str):
     """Tail logs for an MCP service or all."""
     try:
         if service:
-            cmd = f"cd docker/mcp-servers && docker-compose logs -f {service}"
+            cmd = f"docker compose -f compose.yml logs -f {service}"
         else:
-            cmd = "cd docker/mcp-servers && docker-compose logs -f"
+            cmd = "docker compose -f compose.yml logs -f"
         console.logger.info(f"[blue]📄 {cmd}[/blue]")
         subprocess.run(["bash","-lc", cmd], check=False)
     except CalledProcessError:
@@ -3773,13 +3903,13 @@ def mcp_start_all_cmd(verify: bool):
 
             # Fallback: manual startup
             console.logger.info("[blue]Starting MCP servers...[/blue]")
-            subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose up -d"], check=True)
+            subprocess.run(["docker","compose","-f","compose.yml","up","-d"], check=True)
 
             console.logger.info("[blue]Starting Integration Bridge...[/blue]")
             subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"], check=True)
 
             console.logger.info("[blue]Starting Task Orchestrator...[/blue]")
-            subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose --profile manual up -d task-orchestrator"], check=True)
+            subprocess.run(["docker","compose","-f","compose.yml","--profile","manual","up","-d","task-orchestrator"], check=True)
 
             console.logger.info("[green]✅ All services started[/green]")
         else:
@@ -4353,11 +4483,58 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
                         console.logger.info(f"  [red]❌ {name}[/red]")
                     else:
                         console.logger.info(f"  [green]✅ {name}[/green]")
-                console.logger.info("[dim]Tip: Check docker logs with: docker-compose -f docker/mcp-servers/docker-compose.yml logs[/dim]\n")
+                console.logger.info("[dim]Tip: Check docker logs with: docker compose -f compose.yml logs[/dim]\n")
         
         except Exception as e:
             console.logger.error(f"[yellow]⚠️  Error during health checks: {e}[/yellow]")
             console.logger.info("[dim]   Continuing anyway...[/dim]")
+
+
+def _trigger_dope_context_autoindex_startup(
+    workspace_path: Path,
+    *,
+    force: bool = False,
+) -> Optional[dict]:
+    """
+    Trigger dope-context startup autoindex bootstrap for the current workspace.
+    """
+    enabled = os.getenv("DOPEMUX_AUTO_INDEX_ON_STARTUP", "1").lower() not in {"0", "false", "no"}
+    if not enabled:
+        return None
+
+    base_url = os.getenv("DOPE_CONTEXT_URL", "http://localhost:3010").rstrip("/")
+    endpoint = f"{base_url}/autoindex/bootstrap"
+    payload = {
+        "workspace_path": str(workspace_path.resolve()),
+        "force": force,
+        "wait_for_completion": False,
+        "debounce_seconds": float(os.getenv("DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS", "5.0")),
+        "periodic_interval": int(os.getenv("DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS", "600")),
+        "trigger": "dopemux_cli_startup",
+    }
+
+    try:
+        import requests
+
+        response = requests.post(endpoint, json=payload, timeout=5)
+        if response.status_code >= 400:
+            console.logger.info(
+                f"[yellow]⚠️  Autoindex bootstrap request failed ({response.status_code})[/yellow]"
+            )
+            return {
+                "status": "http_error",
+                "status_code": response.status_code,
+                "endpoint": endpoint,
+            }
+        result = response.json()
+        return result if isinstance(result, dict) else {"status": "unknown_response"}
+    except Exception as exc:
+        logger.warning("Failed to trigger dope-context autoindex bootstrap: %s", exc)
+        return {
+            "status": "request_failed",
+            "error": str(exc),
+            "endpoint": endpoint,
+        }
 
 
 def _activate_dangerous_mode():
@@ -6845,7 +7022,11 @@ def launch(ctx, preset: str, attach: bool):
     
     # Start the session
     subprocess.run(tmux_start_args, check=True)
-    
+
+    autoindex_result = _trigger_dope_context_autoindex_startup(Path.cwd())
+    if autoindex_result and autoindex_result.get("status") in {"started", "already_running"}:
+        console.logger.info("[dim]✅ Dope-context autoindex bootstrap triggered[/dim]")
+
     # Apply theme if specified
     if theme:
         console.logger.info(f"\n[magenta]🎨 Applying {theme} theme...[/magenta]")
@@ -7292,6 +7473,19 @@ dopemux tmux theme neon
     
     console.logger.info(Markdown(help_text))
 
+
+# Register routing commands
+def _register_routing_commands():
+    try:
+        from .routing_cli import routing
+        cli.add_command(routing, "routing")
+    except Exception as e:
+        # Graceful degradation if routing module has issues
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to register routing commands: {e}")
+
+_register_routing_commands()
 
 def main():
     """Main entry point."""

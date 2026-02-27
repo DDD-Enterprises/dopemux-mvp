@@ -121,7 +121,6 @@ PROMPTGEN_DEFAULT_INCLUDE_GLOBS = [
     "pyproject.toml",
     "dopemux.toml",
     "compose.yml",
-    "docker-compose*.yml",
     ".claude/**",
     ".dopemux/**",
     ".taskx/**",
@@ -1312,7 +1311,7 @@ def _promptgen_excerpt_priority(relpath: str) -> int:
         or relpath.startswith(".github/")
         or relpath.startswith("config/")
         or relpath == "compose.yml"
-        or relpath.startswith("docker-compose")
+        or relpath.startswith("compose.yml")
     ):
         return 0
     if relpath in {"README.md", "QUICK_START.md", "INSTALL.md", "CHANGELOG.md"} or relpath.startswith("docs/"):
@@ -1448,7 +1447,7 @@ def _parse_compose_services(
         row
         for row in selected_files
         if row["relpath"] == "compose.yml"
-        or row["relpath"].startswith("docker-compose")
+        or row["relpath"].startswith("compose.yml")
         or (row["relpath"].startswith("compose/") and row["relpath"].endswith((".yml", ".yaml")))
     ]
     compose_rows = sorted(compose_rows, key=lambda row: row["relpath"])
@@ -1820,7 +1819,7 @@ def classify_surface(path_str: str) -> Dict[str, Any]:
 
     if (
         name.startswith("compose")
-        or name.startswith("docker-compose")
+        or name.startswith("compose.yml")
         or "/compose/" in lower
     ):
         return _result(0, "compose_bootstrap", "compose_bootstrap_surface")
@@ -4152,8 +4151,11 @@ def build_chat_payload(
     }
     if temperature is not None:
         payload["temperature"] = temperature
-    if provider == "gemini" and force_json_output:
-        payload["response_format"] = {"type": "json_object"}
+    if force_json_output:
+        if provider == "gemini":
+            payload["response_format"] = {"type": "json_object"}
+        elif provider in {"openai", "xai"}:
+            payload["response_format"] = {"type": "json_object"}
     return payload
 
 
@@ -4748,6 +4750,8 @@ def call_llm(
                 }
                 if "temperature" in payload:
                     chat_kwargs["temperature"] = payload["temperature"]
+                if "response_format" in payload:
+                    chat_kwargs["response_format"] = payload["response_format"]
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = extract_text_from_chat_completion(response)
@@ -5777,6 +5781,10 @@ def validate_success_partition_output(
 
     if not has_expected_artifact:
         return False, "no_expected_artifacts"
+
+    schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts, expected_artifact_names)
+    if not schema_ok:
+        return False, f"invalid_schema:{schema_reason}"
 
     return True, "valid_success"
 
@@ -7689,15 +7697,21 @@ def print_run_order(phases: List[str]) -> int:
     payload = {
         "generated_at": now_iso(),
         "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "phase_count": len(phases),
         "phase_order": [
             {
                 "phase_id": phase,
                 "phase_dir": PHASE_DIR_NAMES.get(phase, phase),
+                "required_steps": sorted(
+                    list(REQUIRED_PROMPT_STEP_IDS.get(phase, set())),
+                    key=step_sort_key,
+                ),
+                "prompt_count": len(get_phase_prompts(phase)),
             }
             for phase in phases
         ],
     }
-    print(json.dumps(payload, indent=2))
+    print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 
 
@@ -7706,9 +7720,18 @@ def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
         "generated_at": now_iso(),
         "runner_script_path": str(RUNNER_SCRIPT.resolve()),
         "routing_policy": cfg.routing_policy,
+        "routing_policy_version": ROUTING_POLICY_VERSION,
+        "phase_defaults": {},
         "phases": {},
     }
     for phase in phases:
+        provider, model_id, api_key_env = MODEL_ROUTING.get(phase, ("", "", ""))
+        payload["phase_defaults"][phase] = {
+            "provider": provider,
+            "model_id": model_id,
+            "model": f"{provider}/{model_id}" if provider and model_id else "",
+            "api_key_env": api_key_env,
+        }
         entries: List[Dict[str, Any]] = []
         for spec in get_phase_prompts(phase):
             route = resolve_effective_step_route(phase, spec.step_id, cfg)
@@ -7733,7 +7756,7 @@ def print_phase_routing(phases: List[str], cfg: RunnerConfig) -> int:
             )
         entries.sort(key=lambda row: step_sort_key(str(row.get("step_id", ""))))
         payload["phases"][phase] = entries
-    print(json.dumps(payload, indent=2))
+    print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 
 
@@ -7741,6 +7764,7 @@ def print_phase_prompts(phases: List[str]) -> int:
     payload: Dict[str, Any] = {
         "generated_at": now_iso(),
         "runner_script_path": str(RUNNER_SCRIPT.resolve()),
+        "phase_count": len(phases),
         "phases": {},
     }
     for phase in phases:
@@ -7754,7 +7778,7 @@ def print_phase_prompts(phases: List[str]) -> int:
             }
             for spec in specs
         ]
-    print(json.dumps(payload, indent=2))
+    print(json.dumps(payload, indent=2, sort_keys=True))
     return 0
 
 
@@ -8996,9 +9020,7 @@ def run_phase_A(dirs: Dict[str, Path], cfg: RunnerConfig, ui: Optional[UI] = Non
         "pyproject.toml",
         "dopemux.toml",
         "compose.yml",
-        "docker-compose.dev.yml",
-        "docker-compose.prod.yml",
-        "docker-compose.smoke.yml",
+        "compose.yml",
         "Makefile",
         ".claude.json",
         ".taskxroot",
@@ -9079,6 +9101,7 @@ def _build_event_store_for_runner() -> Any:
     webhook event store have been applied before constructing the EventStore, mirroring
     the migration behavior used by the main server where possible.
     """
+    repo_root = RUNNER_SERVICE_DIR.parents[1]
     webhook_receiver_dir = RUNNER_SERVICE_DIR.parent / "webhook_receiver"
     if str(webhook_receiver_dir) not in sys.path:
         sys.path.insert(0, str(webhook_receiver_dir))
@@ -9098,18 +9121,18 @@ def _build_event_store_for_runner() -> Any:
 
         if server is not None and hasattr(server, "ensure_migrations"):
             try:
-                server.ensure_migrations()  # type: ignore[call-arg]
+                server.ensure_migrations(db_url)  # type: ignore[call-arg]
             except Exception:
                 logging.exception(
                     "Failed to apply webhook event store migrations via server.ensure_migrations(); proceeding without them."
                 )
 
         if not (server is not None and hasattr(server, "ensure_migrations")):
-            migrate_script = webhook_receiver_dir / "webhook_migrate.py"
+            migrate_script = repo_root / "scripts" / "webhook_migrate.py"
             if migrate_script.is_file():
                 try:
                     subprocess.run(
-                        [sys.executable, str(migrate_script)],
+                        [sys.executable, str(migrate_script), "--db", db_url],
                         check=True,
                     )
                 except Exception:
@@ -9122,6 +9145,8 @@ def _build_event_store_for_runner() -> Any:
         logging.debug("Migrations not available or failed in runner context; continuing without them.")
 
     return storage.build_event_store(db_url)
+
+
 def _extract_openai_response_text(payload: Dict[str, Any]) -> str:
     """Extract plain text content from an OpenAI response.completed webhook payload."""
     data = payload.get("data")
@@ -9218,12 +9243,12 @@ def run_phase_R_async_submit(
 
         for partition in partitions:
             partition_id = str(partition["id"])
-            
+
             latest_attempt = event_store.latest_attempt_for_tuple(
                 run_id=run_id, phase="R", step_id=step_id, partition_id=partition_id
             )
             attempt = (latest_attempt or 0) + 1
-            
+
             out_json = raw_dir / f"{step_id}__{partition_id}.json"
             pending_path = raw_dir / f"{step_id}__{partition_id}.PENDING.json"
 

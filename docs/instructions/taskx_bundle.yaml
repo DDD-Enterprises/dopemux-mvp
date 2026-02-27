@@ -1,0 +1,26 @@
+# TaskX Bundle Configuration
+# Controls what gets included in 'taskx bundle export'
+
+logs:
+  globs:
+    - "**/*.log"
+    - "**/*.out"
+    - "**/*.err"
+    - "**/logs/**"
+    - "**/log/**"
+    - "**/reports/**"
+    - "**/*.trace"
+    - "**/*.jsonl"
+
+  caps:
+    per_file_max_mb: 25
+    total_logs_max_mb: 250
+    max_files: 10000
+
+  excludes:
+    - "**/node_modules/**"
+    - "**/.git/**"
+    - "**/.venv/**"
+    - "**/__pycache__/**"
+    - "**/dist/**"
+

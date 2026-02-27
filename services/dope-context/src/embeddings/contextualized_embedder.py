@@ -108,6 +108,13 @@ class ContextualizedEmbedder:
         content = f"{model}:{input_type}:" + "|".join(document_chunks)
         return hashlib.sha256(content.encode()).hexdigest()
 
+    def _validate_model(self, model: str) -> None:
+        """Fail closed if model drifts from contextualized contract."""
+        if model != "voyage-context-3":
+            raise ValueError(
+                f"ContextualizedEmbedder requires model='voyage-context-3', got '{model}'"
+            )
+
     async def _check_rate_limit(self):
         """Enforce rate limiting."""
         async with self._rate_limit_lock:
@@ -172,6 +179,8 @@ class ContextualizedEmbedder:
         Returns:
             ContextualizedEmbeddingResponse with embeddings for each chunk
         """
+        self._validate_model(model)
+
         # Check cache
         cache_key = self._cache_key(chunks, model, input_type)
         cached = self._get_cached(cache_key)
@@ -240,6 +249,8 @@ class ContextualizedEmbedder:
         Returns:
             List of ContextualizedEmbeddingResponse (one per document)
         """
+        self._validate_model(model)
+
         # Check cache for all documents
         responses: List[Optional[ContextualizedEmbeddingResponse]] = []
         uncached_indices: List[int] = []
@@ -313,6 +324,23 @@ class ContextualizedEmbedder:
         except Exception as e:
             logger.error(f"Batch contextualized embedding failed: {e}")
             raise
+
+    async def embed_documents_grouped(
+        self,
+        documents: List[List[str]],
+        model: str = "voyage-context-3",
+        input_type: str = "document",
+        output_dimension: int = 1024,
+    ) -> List[ContextualizedEmbeddingResponse]:
+        """
+        Contract alias: embed ordered chunk lists grouped by document.
+        """
+        return await self.embed_documents_batch(
+            documents=documents,
+            model=model,
+            input_type=input_type,
+            output_dimension=output_dimension,
+        )
 
     def clear_cache(self):
         """Clear embedding cache."""
