@@ -1,13 +1,12 @@
-Objective: Phase 0B - verify partition work-unit payloads are pickle-safe for ProcessPool.
+Objective: Phase 0C - prove determinism between workers=1 and workers=N runs.
 Scope:
-- services/repo-truth-extractor/tools/phase0_serialize_partitions.py
-- proof/PHASE0_SERIALIZATION_REPORT.md
+- services/repo-truth-extractor/tools/phase0_determinism_check.py
+- proof/PHASE0_DETERMINISM_REPORT.md
 - proof/PLAN.txt
 Steps:
-1) Load/generate ordered_partitions the same way run_extraction_v3 does.
-2) For each partition, attempt pickle.dumps(partition).
-3) On failure: record partition_id, failing key path, type, repr snippet.
-4) Write report with summary counts and top offenders.
+1) Run extractor twice with identical inputs/config: workers=1 and workers=N.
+2) Collect output directories A and B.
+3) Normalize JSON outputs and hash them (sha256).
+4) Compare hash manifests and report mismatches.
 Verification:
-- python script exits 0 if all pickle ok, else exits 2
-- report is generated and deterministic
+- script exits 0 if identical, else 2 with mismatch report
