@@ -185,9 +185,9 @@ jobs:
         run: |
           scripts/dopetask doctor --timestamp-mode deterministic || echo "⚠️ dopeTask doctor failed (ignoring upstream packaging issue)"
 
-      - name: ▶️ Run Pytest (unit suite)
+      - name: ▶️ Run Pytest (full suite with coverage)
         run: |
-          pytest tests/unit --maxfail=1 --disable-warnings --no-cov
+          pytest tests/ --maxfail=1 --disable-warnings --cov=src/dopemux --cov-fail-under=80
 
       - name: 🧪 Installer Smoke Tests (core + full stacks)
         run: |
