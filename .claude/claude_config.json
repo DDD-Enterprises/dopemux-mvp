@@ -1,11 +1,24 @@
 {
   "mcpServers": {
     "conport": {
-      "type": "sse",
-      "url": "http://localhost:3005/mcp",
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "-e",
+        "DOPEMUX_INSTANCE_ID",
+        "-e",
+        "DOPEMUX_WORKSPACE_ID",
+        "mcp-conport_jules-17149033826856315260-786e9fc7",
+        "uvx",
+        "--from",
+        "context-portal-mcp",
+        "conport-mcp"
+      ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "main",
-        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
+        "DOPEMUX_INSTANCE_ID": "jules-17149033826856315260-786e9fc7",
+        "DOPEMUX_WORKSPACE_ID": "/app"
       }
     },
     "gpt-researcher_wrapped": {

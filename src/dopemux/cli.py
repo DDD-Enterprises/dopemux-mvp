@@ -7487,6 +7487,7 @@ def _register_routing_commands():
 
 _register_routing_commands()
 
+
 def main():
     """Main entry point."""
     try:
