@@ -6,194 +6,62 @@ import shutil
 import sys
 import tempfile
 import types
-import importlib
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 import pytest
 
-# Provide a lightweight pydantic stub when the library is unavailable.
+# Provide lightweight stubs for heavy/external dependencies ONLY.
+# Core dependencies like click, pydantic, yaml, toml should be installed in the test env.
+
+# Provide a lightweight asyncpg stub when the library is unavailable.
 try:
-    import pydantic
+    import asyncpg
 except ImportError:
-    pydantic_stub = types.ModuleType("pydantic")
-    pydantic_stub.BaseModel = MagicMock
-    pydantic_stub.Field = MagicMock
-    pydantic_stub.ConfigDict = MagicMock
-    class ValidationError(Exception): pass
-    pydantic_stub.ValidationError = ValidationError
-    pydantic_stub.field_validator = lambda *args, **kwargs: lambda f: f
-    pydantic_stub.model_validator = lambda *args, **kwargs: lambda f: f
-    pydantic_stub.root_validator = lambda *args, **kwargs: lambda f: f
-    pydantic_stub.validator = lambda *args, **kwargs: lambda f: f
-    sys.modules["pydantic"] = pydantic_stub
+    asyncpg_stub = types.ModuleType("asyncpg")
+    class Connection:
+        pass
+    asyncpg_stub.Connection = Connection
+    sys.modules["asyncpg"] = asyncpg_stub
 
-# Provide a lightweight yaml stub when the library is unavailable.
+# Provide a lightweight litellm stub when the library is unavailable.
 try:
-    import yaml
+    import litellm
 except ImportError:
-    yaml_stub = types.ModuleType("yaml")
-    yaml_stub.safe_load = MagicMock(return_value={})
-    yaml_stub.dump = MagicMock()
-    sys.modules["yaml"] = yaml_stub
+    litellm_stub = types.ModuleType("litellm")
+    litellm_stub.completion = MagicMock()
+    litellm_stub.embedding = MagicMock()
+    sys.modules["litellm"] = litellm_stub
 
-# Provide a lightweight rich stub when the library is unavailable.
+# Provide a lightweight psutil stub when the library is unavailable.
 try:
-    import rich
+    import psutil
 except ImportError:
-    rich_stub = MagicMock()
-    sys.modules["rich"] = rich_stub
-    for sub in ["console", "logging", "table", "panel", "live", "progress", "theme", "prompt", "text", "box"]:
-        sys.modules[f"rich.{sub}"] = MagicMock()
+    psutil_stub = types.ModuleType("psutil")
+    psutil_stub.cpu_percent = MagicMock(return_value=0.0)
+    psutil_stub.virtual_memory = MagicMock(return_value=MagicMock(percent=0.0))
+    psutil_stub.disk_usage = MagicMock(return_value=MagicMock(percent=0.0))
+    psutil_stub.process_iter = MagicMock(return_value=[])
+    sys.modules["psutil"] = psutil_stub
 
-# Provide a lightweight toml stub when the library is unavailable.
+# Provide a lightweight httpx stub when the library is unavailable.
 try:
-    import toml
+    import httpx
 except ImportError:
-    toml_stub = types.ModuleType("toml")
-    toml_stub.load = MagicMock(return_value={})
-    toml_stub.loads = MagicMock(return_value={})
-    toml_stub.dump = MagicMock()
-    toml_stub.dumps = MagicMock(return_value="")
-    sys.modules["toml"] = toml_stub
+    httpx_stub = types.ModuleType("httpx")
+    httpx_stub.get = MagicMock()
+    httpx_stub.post = MagicMock()
+    httpx_stub.AsyncClient = MagicMock
+    sys.modules["httpx"] = httpx_stub
 
-# Provide a lightweight click stub when the library is unavailable.
+# Provide a lightweight requests stub when the library is unavailable.
 try:
-    import click
+    import requests
 except ImportError:
-    click_stub = types.ModuleType("click")
-    click_stub.group = lambda *args, **kwargs: lambda f: f
-    click_stub.command = lambda *args, **kwargs: lambda f: f
-    click_stub.option = lambda *args, **kwargs: lambda f: f
-    click_stub.argument = lambda *args, **kwargs: lambda f: f
-    click_stub.pass_context = lambda f: f
-    click_stub.echo = MagicMock()
-    click_stub.style = lambda text, **kwargs: text
-    click_stub.confirm = MagicMock(return_value=True)
-    click_stub.prompt = MagicMock(return_value="")
-    class CliRunner:
-        def invoke(self, *args, **kwargs): return MagicMock()
-    click_stub.testing = types.ModuleType("click.testing")
-    click_stub.testing.CliRunner = CliRunner
-    sys.modules["click"] = click_stub
-    sys.modules["click.testing"] = click_stub.testing
-
-# Provide a lightweight fastapi stub when the library is unavailable.
-try:
-    import fastapi
-except ImportError:
-    fastapi_stub = types.ModuleType("fastapi")
-    fastapi_stub.FastAPI = MagicMock
-    fastapi_stub.APIRouter = MagicMock
-    fastapi_stub.Depends = MagicMock
-    fastapi_stub.HTTPException = Exception
-    fastapi_stub.Query = MagicMock
-    fastapi_stub.Body = MagicMock
-    fastapi_stub.Path = MagicMock
-    fastapi_stub.testclient = types.ModuleType("fastapi.testclient")
-    fastapi_stub.testclient.TestClient = MagicMock
-    sys.modules["fastapi"] = fastapi_stub
-    sys.modules["fastapi.testclient"] = fastapi_stub.testclient
-
-# Provide a lightweight aiohttp stub when the library is unavailable.
-try:  # pragma: no cover - exercised indirectly during import
-    import aiohttp  # type: ignore  # noqa: F401
-except ImportError:  # pragma: no cover - fallback
-    aiohttp_stub = types.ModuleType("aiohttp")
-    aiohttp_stub.__dopemux_stub__ = True
-
-    class ClientError(Exception):
-        """Base client error placeholder."""
-
-    class ClientResponseError(ClientError):
-        """Response error placeholder for compatibility."""
-
-        def __init__(self, request_info=None, history=None, *, status=None, message=None, headers=None):
-            super().__init__(message or "Client response error")
-            self.status = status
-            self.headers = headers or {}
-
-    class ClientTimeout:
-        """Minimal timeout configuration stub."""
-
-        def __init__(self, total=None, connect=None, sock_connect=None, sock_read=None):
-            self.total = total
-            self.connect = connect
-            self.sock_connect = sock_connect
-            self.sock_read = sock_read
-
-    class TCPConnector:
-        """Stub TCP connector."""
-
-        def __init__(self, limit=None, limit_per_host=None):
-            self.limit = limit
-            self.limit_per_host = limit_per_host
-
-        async def close(self):
-            return None
-
-    class _StubResponse:
-        """Async context manager mimicking aiohttp responses."""
-
-        def __init__(self, status=503, data=None, text_data=""):
-            self.status = status
-            self._data = data or {}
-            self._text = text_data
-            self.headers = {}
-
-        async def __aenter__(self):
-            raise ClientError("aiohttp stub cannot perform real HTTP requests")
-
-        async def __aexit__(self, exc_type, exc, tb):
-            return False
-
-        async def json(self):
-            return self._data
-
-        async def text(self):
-            return self._text
-
-        def raise_for_status(self):
-            raise ClientError("aiohttp stub response")
-
-    class ClientSession:
-        """Minimal async session stub that signals missing dependency."""
-
-        def __init__(self, *args, **kwargs):
-            self._closed = False
-
-        async def __aenter__(self):
-            return self
-
-        async def __aexit__(self, exc_type, exc, tb):
-            await self.close()
-            return False
-
-        async def close(self):
-            self._closed = True
-
-        def _request(self, *args, **kwargs):
-            return _StubResponse()
-
-        def get(self, *args, **kwargs):
-            return self._request(*args, **kwargs)
-
-        def post(self, *args, **kwargs):
-            return self._request(*args, **kwargs)
-
-        def patch(self, *args, **kwargs):
-            return self._request(*args, **kwargs)
-
-        def delete(self, *args, **kwargs):
-            return self._request(*args, **kwargs)
-
-    aiohttp_stub.ClientError = ClientError
-    aiohttp_stub.ClientResponseError = ClientResponseError
-    aiohttp_stub.ClientSession = ClientSession
-    aiohttp_stub.ClientTimeout = ClientTimeout
-    aiohttp_stub.TCPConnector = TCPConnector
-
-    sys.modules["aiohttp"] = aiohttp_stub
+    requests_stub = types.ModuleType("requests")
+    requests_stub.get = MagicMock()
+    requests_stub.post = MagicMock()
+    sys.modules["requests"] = requests_stub
 
 # Now import dopemux modules after stubs are in place
 from dopemux.adhd.attention_monitor import AttentionMonitor
@@ -213,12 +81,6 @@ except ImportError:  # pragma: no cover - fallback
                 "pytest-asyncio is not installed in this environment",
                 allow_module_level=False,
             )
-
-# Legacy imports - commenting out as these modules have been refactored
-# from dopemux.event_bus import RedisStreamsAdapter, InMemoryAdapter
-# from dopemux.attention_mediator import AttentionMediator
-# from dopemux.instance_registry import InstanceRegistry
-
 
 @pytest.fixture
 def temp_project_dir():
