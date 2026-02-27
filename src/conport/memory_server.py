@@ -307,8 +307,18 @@ class PostgreSQLManager:
     async def connect(self):
         """Connect to PostgreSQL."""
         if not self.config.database_url:
-            logger.error("DATABASE_URL environment variable is not set")
-            raise ValueError("DATABASE_URL environment variable is not set")
+            logger.error(
+                "DATABASE_URL environment variable is not set. "
+                "It must be a PostgreSQL DSN like "
+                "'postgresql://user:pass@host:port/dbname'. "
+                "The memory server cannot start without this configuration."
+            )
+            raise ValueError(
+                "DATABASE_URL environment variable is not set. "
+                "It must be a PostgreSQL DSN like "
+                "'postgresql://user:pass@host:port/dbname'. "
+                "The memory server cannot start without this configuration."
+            )
         try:
             self.pool = await asyncpg.create_pool(self.config.database_url)
             logger.info("Connected to PostgreSQL")
