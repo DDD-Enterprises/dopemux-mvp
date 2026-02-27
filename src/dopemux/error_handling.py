@@ -47,7 +47,7 @@ class ErrorSeverity(Enum):
     CRITICAL = "critical"  # Immediate intervention required
 
 @dataclass
-class DopemuxError:
+class DopemuxError(Exception):
     """Standardized error representation with ADHD-friendly messaging."""
     error_type: ErrorType
     severity: ErrorSeverity
