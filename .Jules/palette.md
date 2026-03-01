@@ -17,3 +17,7 @@
 ## 2025-05-17 - [Contextual Shorthand Indicators]
 **Learning:** High-density dashboards often use shorthand status chips (like "[LIVE]" or "[EDGE]") to save space. While visually efficient, they lack context for new users and are inaccessible to keyboard users if they are not focusable. Adding a descriptive Tooltip and `tabIndex={0}` bridges the gap between shorthand brevity and clarity while ensuring accessibility.
 **Action:** Always wrap shorthand status indicators in descriptive Tooltips and ensure they have `tabIndex={0}` to be keyboard focusable.
+
+## 2025-05-18 - [Descriptive Avatar Accessibility]
+**Learning:** Avatars without descriptive labels are identified only as "image" or by their fallback initials by screen readers. Providing an `aria-label` with the user's name (e.g., "Profile picture of Alice") provides essential social context in collaborative interfaces.
+**Action:** Always include a descriptive `aria-label` for Avatar components that represent specific individuals.

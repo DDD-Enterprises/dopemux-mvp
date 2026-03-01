@@ -6,7 +6,8 @@ import {
   Grid,
   Avatar,
   Chip,
-  LinearProgress
+  LinearProgress,
+  Tooltip
 } from '@mui/material';
 import { Users } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
@@ -24,6 +25,16 @@ interface TeamMember {
 }
 
 const TeamDashboard: React.FC = () => {
+  const getStatusDescription = (status: string) => {
+    switch (status) {
+      case 'low': return 'Low Load - Ready for Complex Tasks';
+      case 'optimal': return 'Optimal Zone - Flow State Active';
+      case 'high': return 'High Load - Consider Simplification';
+      case 'critical': return 'Critical Load - Break Required';
+      default: return 'Unknown Status';
+    }
+  };
+
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
     {
       id: '1',
@@ -99,15 +110,18 @@ const TeamDashboard: React.FC = () => {
         <Typography variant="h6" sx={{ letterSpacing: '0.15em' }}>
           Team Cognitive Status
         </Typography>
-        <Chip
-          label={`${(teamLoadAvg * 100).toFixed(0)}% Average Load`}
-          sx={{
-            ml: 'auto',
-            bgcolor: 'rgba(148, 250, 219, 0.08)',
-            color: brandTokens.colors.serumMint,
-            border: '1px solid rgba(148, 250, 219, 0.4)'
-          }}
-        />
+        <Tooltip title="Aggregated cognitive load across all active team members" arrow>
+          <Chip
+            label={`${(teamLoadAvg * 100).toFixed(0)}% Average Load`}
+            tabIndex={0}
+            sx={{
+              ml: 'auto',
+              bgcolor: 'rgba(148, 250, 219, 0.08)',
+              color: brandTokens.colors.serumMint,
+              border: '1px solid rgba(148, 250, 219, 0.4)'
+            }}
+          />
+        </Tooltip>
       </Box>
       <Typography className="dopemux-roast" sx={{ mb: 2 }}>
         Your team is a choir of gremlins; I keep them harmonized with status chips and thinly veiled threats.
@@ -147,7 +161,10 @@ const TeamDashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3} key={member.id}>
             <Paper sx={{ p: 2, height: 220, borderRadius: 3 }} className="dopemux-panel">
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}>
+                <Avatar
+                  sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}
+                  aria-label={member.name}
+                >
                   {member.avatar}
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
@@ -158,15 +175,18 @@ const TeamDashboard: React.FC = () => {
                     {member.role}
                   </Typography>
                 </Box>
-                <Chip
-                  size="small"
-                  label={member.status.toUpperCase()}
-                  sx={{
-                    bgcolor: `${statusStyles[member.status].color}22`,
-                    color: statusStyles[member.status].color,
-                    border: `1px solid ${statusStyles[member.status].color}`
-                  }}
-                />
+                <Tooltip title={getStatusDescription(member.status)} arrow>
+                  <Chip
+                    size="small"
+                    label={member.status.toUpperCase()}
+                    tabIndex={0}
+                    sx={{
+                      bgcolor: `${statusStyles[member.status].color}22`,
+                      color: statusStyles[member.status].color,
+                      border: `1px solid ${statusStyles[member.status].color}`
+                    }}
+                  />
+                </Tooltip>
               </Box>
 
               <Typography variant="body2" sx={{ mb: 1 }}>
