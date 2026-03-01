@@ -87,9 +87,21 @@ services:
         reason: "Qdrant provides native HTTP health endpoint at /"
 
   # MCP Services
+  - name: pal
+    port: 3003
+    container_port: 3003
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: pal
+    enabled_in_smoke: true
+    category: mcp
+    description: "PAL MCP - Multi-model reasoning server"
+
   - name: dope-query
-    port: 3004
-    container_port: 3004
+    port: 3005
+    container_port: 3005
     health_path: /health
     health_method: GET
     health_timeout_ms: 10000
@@ -101,6 +113,42 @@ services:
     env_contract_exceptions:
       - variable: MCP_SERVER_PORT
         reason: "DopeQuery uses PORT directly; MCP_SERVER_PORT is redundant"
+
+  - name: serena
+    port: 3006
+    container_port: 3006
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: serena
+    enabled_in_smoke: true
+    category: mcp
+    description: "Serena MCP - ADHD accommodation server"
+
+  - name: gpt-researcher
+    port: 3009
+    container_port: 3009
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: gptr-mcp
+    enabled_in_smoke: true
+    category: mcp
+    description: "GPT Researcher MCP - Deep research agent"
+
+  - name: dope-context
+    port: 3010
+    container_port: 3010
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: dope-context
+    enabled_in_smoke: true
+    category: mcp
+    description: "Dope-Context MCP - Semantic code and documentation search"
 
   # Coordination Layer
   - name: dopecon-bridge
@@ -293,8 +341,8 @@ services:
     description: "LiteLLM Proxy - Unified OpenAI-compatible interface for all LLM providers (GPT, Grok, Claude)"
 
   - name: exa
-    port: 3008
-    container_port: 3008
+    port: 3011
+    container_port: 3011
     health_path: /
     health_method: GET
     health_timeout_ms: 5000

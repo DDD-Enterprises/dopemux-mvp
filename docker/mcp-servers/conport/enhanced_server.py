@@ -48,7 +48,7 @@ except ImportError:
 
 # DopeconBridge event publishing
 try:
-    from dopecon_bridge_client import DopeconBridgeClient
+    from integration_bridge_client import DopeconBridgeClient
 except ImportError:
     logger.warning("⚠️ DopeconBridge client not available")
     DopeconBridgeClient = None

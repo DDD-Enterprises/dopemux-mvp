@@ -17,6 +17,7 @@ RUN python -m venv /app/venv && /app/venv/bin/pip install --no-cache-dir -r /app
 
 # Copy code + shared libs
 COPY services/adhd_engine /app/services/adhd_engine
+COPY services/adhd_engine/mcp_stdio.py /app/mcp_stdio.py
 COPY services/shared /app/services/shared
 # Copy repo root shared/ for monitoring module
 COPY shared /app/shared
@@ -38,6 +39,7 @@ RUN apk add --no-cache curl
 COPY --from=builder /app/venv /app/venv
 COPY --from=builder /app/services /app/services
 COPY --from=builder /app/shared /app/shared
+COPY --from=builder /app/mcp_stdio.py /app/mcp_stdio.py
 ENV PATH="/app/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

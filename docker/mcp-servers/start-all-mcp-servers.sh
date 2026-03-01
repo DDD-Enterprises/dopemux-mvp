@@ -328,6 +328,9 @@ echo "🔄 Starting workflow servers..."
 # dope-context (formerly conport for this stack)
 safe_up dope-context dopemux-mcp-dope-context
 
+# Dope-Memory - Temporal chronicle and working-context manager
+safe_up dope-memory dopemux-mcp-dope-memory
+
 # ConPort dashboard & API
 safe_up conport mcp-conport
 # serena
@@ -444,7 +447,7 @@ echo "🏥 Health check summary:"
 echo "========================"
 
 # Health check each critical server
-servers=("pal:3003" "litellm:4000" "conport:3004" "serena:3006" "dope-context:3010" "plane-coordinator:8090")
+servers=("pal:3003" "litellm:4000" "conport:3004" "serena:3006" "dope-context:3010" "dope-memory:3020" "plane-coordinator:8090")
 for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
@@ -493,6 +496,7 @@ echo "   LiteLLM:      http://localhost:4000"
 echo ""
 echo "🔄 Workflow Servers:"
 echo "   Dope-Context: http://localhost:3010"
+echo "   Dope-Memory:  http://localhost:3020"
 echo "   Serena:       http://localhost:3006"
 echo "   Plane Coord:  http://localhost:8090"
 echo ""

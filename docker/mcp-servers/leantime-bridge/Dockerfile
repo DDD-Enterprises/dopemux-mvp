@@ -15,6 +15,7 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY leantime_bridge /app/leantime_bridge
+COPY mcp_stdio.py /app/mcp_stdio.py
 
 RUN mkdir -p /app/data /app/logs && \
     useradd --create-home --shell /bin/bash mcp && \
