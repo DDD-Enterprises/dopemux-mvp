@@ -9,8 +9,8 @@ servers:
     docker:
       service: conport
       compose_file: compose.yml
-      port: 3004
-      health_url: http://localhost:3004/health
+      port: 3005
+      health_url: http://localhost:3005/health
     local:
       command: uvx
       args:

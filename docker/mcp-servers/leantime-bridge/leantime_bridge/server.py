@@ -13,7 +13,7 @@ import aiohttp
 from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.server.sse import sse_server
+# from mcp.server.sse import sse_server
 from pydantic import BaseModel
 from jsonrpcclient import request, parse, Ok
 
@@ -333,12 +333,12 @@ async def main():
     logger.info(f"Starting Leantime MCP Bridge HTTP/SSE Server on port {MCP_SERVER_PORT}")
     logger.info(f"Connecting to Leantime at: {LEANTIME_API_URL}")
 
-    async with sse_server() as (read_stream, write_stream):
-        await app.run(
-            read_stream,
-            write_stream,
-            app.create_initialization_options()
-        )
+    # async with sse_server() as (read_stream, write_stream):
+    #    await app.run(
+    #        read_stream,
+    #        write_stream,
+    #        app.create_initialization_options()
+    #    )
 
 if __name__ == "__main__":
     asyncio.run(main())

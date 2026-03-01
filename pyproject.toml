@@ -79,6 +79,8 @@ Documentation = "https://docs.dopemux.dev"
 
 [project.scripts]
 dopemux = "dopemux.cli:main"
+dopemux-mobile = "dopemux.mobile.main:main"
+dopemux-github = "dopemux_github_specialist.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

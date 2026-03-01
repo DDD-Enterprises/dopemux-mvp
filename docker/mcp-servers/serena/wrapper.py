@@ -24,11 +24,10 @@ class SerenaServer:
         logger.info(f"🔧 Starting Serena MCP Server with Streamable HTTP on port {self.port}")
 
         # Build command for mcp-proxy with Serena server
-        # Build command for mcp-proxy with Serena server
         # Uses pre-installed packages from Dockerfile
         cmd = [
             'mcp-proxy',
-            '--transport', 'streamablehttp',
+            '--transport', 'sse',
             '--port', str(self.port),
             '--host', '0.0.0.0',
             '--allow-origin', '*',
