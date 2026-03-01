@@ -79,6 +79,7 @@ from subprocess import CalledProcessError
 from urllib.parse import urlparse
 import yaml
 from .mobile import mobile as mobile_commands
+from .mobile.main import main as mobile_env_commands
 from .mobile.hooks import mobile_task_notification
 from .mobile.runtime import update_tmux_mobile_indicator
 from .tmux import tmux as tmux_commands
@@ -689,6 +690,12 @@ def start(
     use_altp: bool,
     **legacy_kwargs,
 ):
+    # Track original flag values for subscription mode warnings
+    original_grok = use_grok
+    original_codex = use_codex
+    original_altp = use_altp
+    original_litellm = use_litellm
+
     """
     🚀 Start Claude Code with ADHD-optimized configuration
 
@@ -763,6 +770,10 @@ def start(
     if deprecated_flags_used and routing_mode is not None:
         console.logger.warning("[yellow]⚠️  Deprecated flags detected (--grok/--codex/--altp/--alt-routing/--claude-router)[/yellow]")
         console.logger.info("[dim]Prefer: dopemux routing mode api|subscription[/dim]")
+
+    # Check if provider flags were disabled due to subscription mode
+    if not (use_grok or use_codex or use_altp or use_litellm) and (original_grok or original_codex or original_altp or original_litellm):
+        console.logger.info("[blue]📋 Using direct Anthropic connection (subscription mode)[/blue]")
 
     # ── Handle routing mode: api (proxy through CCR/LiteLLM) ─────────
     if routing_mode == "api" and not deprecated_flags_used:
@@ -869,14 +880,30 @@ def start(
 
         else:
             # ── Multi-target tier-matched routing (--altp) ──────────────
-            missing_keys = [
-                k for k in ALTP_PROVIDER["required_keys"] if not os.getenv(k)
-            ]
-            if missing_keys:
-                raise click.ClickException(
-                    f"--altp requires: {', '.join('$' + k for k in missing_keys)}. "
-                    f"Set them in your environment or .env file."
-                )
+            # Check if we should warn about proxy usage
+            current_routing_mode = "subscription"  # Default to subscription
+            try:
+                from .routing_config import RoutingConfig
+                routing_config = RoutingConfig.load_default()
+                current_routing_mode = routing_config.get_mode()
+            except Exception:
+                pass
+
+            if current_routing_mode != "api":
+                console.logger.warning("[yellow]⚠️  --altp flag ignored in subscription mode[/yellow]")
+                console.logger.info("[dim]   Use 'dopemux routing mode api' to enable proxy routing[/dim]")
+                # Fall through to default behavior (direct connection)
+                use_altp = False
+                use_litellm = False
+            else:
+                missing_keys = [
+                    k for k in ALTP_PROVIDER["required_keys"] if not os.getenv(k)
+                ]
+                if missing_keys:
+                    raise click.ClickException(
+                        f"--altp requires: {', '.join('$' + k for k in missing_keys)}. "
+                        f"Set them in your environment or .env file."
+                    )
 
             console.logger.info("[cyan]🎯 --altp: Tier-matched alternative provider routing[/cyan]")
             for t in ALTP_PROVIDER["targets"]:
@@ -6370,6 +6397,7 @@ except ImportError as e:
 
 # Register mobile integration commands
 cli.add_command(mobile_commands, "mobile")
+cli.add_command(mobile_env_commands, "mobile-env")
 
 
 # Add genetic agent CLI group

@@ -17,6 +17,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY services/task-orchestrator/app /app/app
 COPY services/task-orchestrator/intelligence /app/intelligence
 COPY services/task-orchestrator/task_orchestrator /app/task_orchestrator
+COPY services/task-orchestrator/mcp_stdio.py /app/mcp_stdio.py
 COPY services/task-orchestrator/task_decomposition_endpoint.py /app/task_decomposition_endpoint.py
 COPY services/task-orchestrator/pal_client.py /app/pal_client.py
 COPY services/shared /app/services/shared

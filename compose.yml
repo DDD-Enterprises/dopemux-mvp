@@ -408,6 +408,8 @@ services:
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY:-dev-key-456}
       - DOPECON_BRIDGE_REDIS_URL=redis://redis-primary:6379
+    ports:
+      - "8000:8000"
     depends_on:
       - redis-primary
       - conport
@@ -449,6 +451,8 @@ services:
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097
+    ports:
+      - "8095:8095"
     depends_on:
       - redis-primary
     labels:
@@ -479,7 +483,7 @@ services:
     networks:
       - dopemux-network
     ports:
-      - "8096:3020"
+      - "3020:3020"
     environment:
       - WMA_SECRET_KEY=${WMA_SECRET_KEY:-dev-only-change-me}
       - WMA_ENCRYPTION_KEY=${WMA_ENCRYPTION_KEY:-dev-only-change-me}
@@ -580,6 +584,25 @@ services:
       interval: 30s
 
   # Leantime Bridge - Project management integration
+  exa:
+    build:
+      context: ./docker/mcp-servers/exa
+      dockerfile: Dockerfile
+    container_name: mcp-exa
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    ports:
+      - "3011:3011"
+    environment:
+      - EXA_API_KEY=${EXA_API_KEY:-}
+      - MCP_SERVER_PORT=3011
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
+      timeout: 5s
+      retries: 3
+      interval: 30s
+
   leantime-bridge:
     build:
       context: ./docker/mcp-servers/leantime-bridge

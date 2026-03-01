@@ -1,0 +1,5 @@
+import asyncio
+from services.adhd_engine.main import mcp
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
