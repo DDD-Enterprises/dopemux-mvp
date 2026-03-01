@@ -12,7 +12,7 @@ MCP_SERVER_PORT=3004 python enhanced_server.py &
 REST_PID=$!
 
 # Start MCP protocol server on port 3005 (for Claude Code)
-MCP_SERVER_PORT=3005 python server.py &
+MCP_SERVER_PORT=3005 python server.py sse &
 PROXY_PID=$!
 
 # Wait for all processes
