@@ -13,7 +13,17 @@ Routes Claude Code requests through LiteLLM to use:
 
 ## 3-Step Setup
 
-### Step 1: Set Your OpenRouter Key
+### Step 1: Start Dopemux Services
+
+Ensure all background services (ConPort, Task Orchestrator, etc.) are running:
+
+```bash
+dopemux mcp up --all
+# or manually
+./scripts/start-all-mcp-servers.sh
+```
+
+### Step 2: Set Your OpenRouter Key
 
 ```bash
 # Option A: Add to .env file
