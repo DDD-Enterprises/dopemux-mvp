@@ -3847,12 +3847,15 @@ def mcp():
 def mcp_up_cmd(all_services: bool, services: str):
     """Start MCP servers via docker-compose."""
     try:
-        cmd = "cd docker/mcp-servers && "
+        # Resolve script path
+        script_dir = Path(__file__).parent.parent.parent / "scripts"
+        script_path = script_dir / "start-all-mcp-servers.sh"
+        
         if all_services or not services:
-            cmd += "./start-all-mcp-servers.sh"
+            cmd = f"bash {script_path}"
         else:
             svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
-            cmd += f"docker compose -f compose.yml up -d --build {svc_list}"
+            cmd = f"docker compose -f compose.yml up -d --build {svc_list}"
         console.logger.info(f"[blue]🔌 {cmd}[/blue]")
         subprocess.run(["bash","-lc", cmd], check=True)
         console.logger.info("[green]✅ MCP servers started[/green]")
