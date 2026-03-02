@@ -6402,6 +6402,8 @@ except ImportError as e:
 cli.add_command(mobile_commands, "mobile")
 cli.add_command(mobile_env_commands, "mobile-env")
 
+# Register extract command group
+cli.add_command(extract, "extract")
 
 # Add genetic agent CLI group
 if genetic_group:

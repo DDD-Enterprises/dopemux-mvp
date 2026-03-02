@@ -189,6 +189,37 @@ class RoutingConfig:
                     f"{model['provider']}"
                 )
 
+            # Validate litellm_model prefix matches provider (for direct supported providers)
+            provider_name = model["provider"]
+            model_id = model["model_id"]
+            if provider_name in ["gemini", "xai", "openai"]:
+                expected_prefix = f"{provider_name}/"
+                if not model_id.startswith(expected_prefix):
+                    raise RoutingConfigError(
+                        f"Model {model['name']} has invalid model_id '{model_id}' "
+                        f"for provider '{provider_name}'. It must start with '{expected_prefix}'"
+                    )
+
+            # Warn on Gemini preview models
+            if provider_name == "gemini" and "preview" in model_id:
+                logger.warning(
+                    f"Model {model['name']} uses a preview Gemini model: {model_id}. "
+                    "Preview models may have more restrictive limits and can change."
+                )
+
+            # Validate optional params
+            params = model.get("params", {})
+            if not isinstance(params, dict):
+                raise RoutingConfigError(f"Model {model['name']} params must be a dictionary")
+                
+            allowed_params = {"thinking"}
+            for key in params:
+                if key not in allowed_params:
+                    raise RoutingConfigError(
+                        f"Model {model['name']} has unsupported param key '{key}'. "
+                        f"Allowed keys are: {', '.join(allowed_params)}"
+                    )
+
             model_names[model["name"]] = model
 
         # Validate slots
@@ -283,6 +314,11 @@ class RoutingConfig:
 
             if "extra_headers" in provider:
                 litellm_params["extra_headers"] = provider["extra_headers"]
+
+            # Add optional params (already validated)
+            params = model.get("params", {})
+            for key, value in params.items():
+                litellm_params[key] = value
 
             model_list.append({
                 "model_name": model["name"],

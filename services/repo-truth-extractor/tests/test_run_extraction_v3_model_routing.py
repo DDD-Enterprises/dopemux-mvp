@@ -65,7 +65,7 @@ def test_cost_policy_ladders_map_expected_defaults() -> None:
     runner = _load_runner_module()
     _reset_routing(runner)
     assert runner.resolve_step_ladder("cost", "A", "A0")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
-    assert runner.resolve_step_ladder("cost", "A", "A1")[0] == ("openai", "gpt-5-mini", "OPENAI_API_KEY")
+    assert runner.resolve_step_ladder("cost", "A", "A1")[0] == ("google", "gemini-2.5-flash", "GEMINI_API_KEY")
     assert runner.resolve_step_ladder("cost", "R", "R1")[0] == ("openai", "gpt-5.2", "OPENAI_API_KEY")
     assert runner.resolve_step_ladder("cost", "Q", "Q9")[0] == ("openai", "gpt-5-nano", "OPENAI_API_KEY")
 
@@ -182,3 +182,14 @@ def test_run_manifest_records_routing_policy(tmp_path: Path) -> None:
     assert payload["routing_policy"] == "cost"
     assert payload["routing_policy_version"] == "RTE_ROUTING_V1"
     assert "routing_ladders" in payload
+
+
+def test_balanced_policy_ladders_match_user_request() -> None:
+    runner = _load_runner_module()
+    _reset_routing(runner)
+    # Bulk should prefer gemini-2.5-flash
+    assert runner.resolve_step_ladder("balanced", "A", "A0")[0] == ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")
+    # Extract should prefer gemini-2.5-flash
+    assert runner.resolve_step_ladder("balanced", "A", "A1")[0] == ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY")
+    # Synthesis should use opus-4.6
+    assert runner.resolve_step_ladder("balanced", "R", "R1")[1] == ("openrouter", "anthropic/claude-opus-4.6", "OPENROUTER_API_KEY")

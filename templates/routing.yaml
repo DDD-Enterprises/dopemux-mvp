@@ -38,54 +38,92 @@ providers:
 
 # Model definitions - reference providers by name
 models:
+  # GEMINI (direct)
+  - name: gemini-2.5-flash-lite
+    provider: gemini
+    litellm_model: "gemini/gemini-2.5-flash-lite"
+    params:
+      thinking: { type: "disabled", budget_tokens: 0 }
+
+  - name: gemini-2.5-flash
+    provider: gemini
+    litellm_model: "gemini/gemini-2.5-flash"
+    params:
+      thinking: { type: "disabled", budget_tokens: 0 }
+
+  - name: gemini-2.5-pro
+    provider: gemini
+    litellm_model: "gemini/gemini-2.5-pro"
+    params:
+      thinking: { type: "enabled", budget_tokens: 1024 }
+
+  # XAI (direct)
+  - name: grok-4.1-fast-reasoning
+    provider: xai
+    litellm_model: "xai/grok-4-1-fast-reasoning"
+
+  - name: grok-4.1-fast
+    provider: xai
+    litellm_model: "xai/grok-4-1-fast-non-reasoning"
+
+  - name: grok-4-fast-reasoning
+    provider: xai
+    litellm_model: "xai/grok-4-fast-reasoning"
+
   - name: grok-4-fast
     provider: xai
-    model_id: "xai/grok-4-fast"
-    max_tokens: 131072
-    
-  - name: xai-grok-code-fast
+    litellm_model: "xai/grok-4-fast-non-reasoning"
+
+  - name: grok-code-fast-1
     provider: xai
-    model_id: "xai/grok-code-fast"
-    max_tokens: 131072
-    
-  - name: openrouter-gpt-5
-    provider: openrouter
-    model_id: "openrouter/openai/gpt-5"
-    max_tokens: 32768
-    
-  - name: openrouter-gpt-5-codex
-    provider: openrouter
-    model_id: "openrouter/openai/gpt-5-codex"
-    max_tokens: 32768
+    litellm_model: "xai/grok-code-fast-1"
+
+  # OPENAI (direct)
+  - name: gpt-5.2
+    provider: openai
+    litellm_model: "openai/gpt-5.2"
+
+  - name: gpt-5.2-codex
+    provider: openai
+    litellm_model: "openai/gpt-5.2-codex"
+
+  - name: gpt-5-mini
+    provider: openai
+    litellm_model: "openai/gpt-5-mini"
+
+  - name: gpt-5-nano
+    provider: openai
+    litellm_model: "openai/gpt-5-nano"
 
 # Slot definitions - assign models to usage slots
 # These are exposed to Claude Code via CCR
 slots:
-  default: grok-4-fast
-  codex: xai-grok-code-fast
-  opus: openrouter-gpt-5-codex
-  sonnet: xai-grok-code-fast
-  haiku: grok-4-fast
+  default: gemini-2.5-flash-lite
+  think: grok-4.1-fast-reasoning
+  background: gemini-2.5-flash-lite
+  longContext: grok-4.1-fast
+  arbiter: gpt-5.2
+  codex: grok-code-fast-1
+  opus: gpt-5.2-codex
+  sonnet: grok-4.1-fast-reasoning
+  haiku: gemini-2.5-flash-lite
 
 # Fallback chain for resilience
 fallbacks:
-  grok-4-fast:
-    - xai-grok-code-fast
-    - openrouter-gpt-5
-  xai-grok-code-fast:
-    - grok-4-fast
-    - openrouter-gpt-5-codex
-  openrouter-gpt-5:
-    - grok-4-fast
-    - openrouter-gpt-5-codex
-  openrouter-gpt-5-codex:
-    - openrouter-gpt-5
-    - grok-4-fast
+  gemini-2.5-flash-lite:
+    - grok-4.1-fast
+    - grok-4.1-fast-reasoning
+    - gpt-5.2
+  grok-4.1-fast:
+    - grok-4.1-fast-reasoning
+    - gpt-5.2
+  grok-4.1-fast-reasoning:
+    - gpt-5.2
 
 # Default fallback list (ordered)
 default_fallbacks:
-  - xai-grok-code-fast
-  - grok-4-fast
+  - grok-4.1-fast
+  - gpt-5.2
 
 # Model alias map for compatibility
 # Maps common model names to Dopemux slot names

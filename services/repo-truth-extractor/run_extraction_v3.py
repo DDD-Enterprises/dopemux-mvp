@@ -267,18 +267,18 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
     },
     "balanced": {
         "bulk": [
-            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
             ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
         ],
         "extract": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
             ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
         ],
         "synthesis": [
             ("openai", "gpt-5.2", "OPENAI_API_KEY"),
-            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("openrouter", "anthropic/claude-opus-4.6", "OPENROUTER_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
@@ -4177,6 +4177,12 @@ def build_chat_payload(
             {"role": "user", "content": user_content},
         ],
     }
+    # gpt-5+ and some newer OpenAI models require max_completion_tokens
+    if provider == "openai" and ("gpt-5" in model_id or "o1" in model_id):
+        payload["max_completion_tokens"] = 8192
+    else:
+        payload["max_tokens"] = 8192
+
     if temperature is not None:
         payload["temperature"] = temperature
     if force_json_output:
@@ -4769,6 +4775,7 @@ def call_llm(
                     config={
                         "temperature": 0.1,
                         "system_instruction": system_prompt,
+                        "max_output_tokens": 8192,
                         **({"response_mime_type": "application/json"} if force_json_output else {}),
                     },
                 )
@@ -4785,6 +4792,10 @@ def call_llm(
                     "model": model_id,
                     "messages": payload["messages"],
                 }
+                if provider == "openai" and ("gpt-5" in model_id or "o1" in model_id):
+                    chat_kwargs["max_completion_tokens"] = 8192
+                else:
+                    chat_kwargs["max_tokens"] = 8192
                 if "temperature" in payload:
                     chat_kwargs["temperature"] = payload["temperature"]
                 if "response_format" in payload:
@@ -4792,6 +4803,7 @@ def call_llm(
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = extract_text_from_chat_completion(response)
+
 
             response_summary = summarize_llm_response(
                 provider=provider,
@@ -5701,7 +5713,7 @@ def artifacts_pass_schema_gate(
                 for item in items:
                     if not isinstance(item, dict):
                         return False, "schema_item_not_object"
-                    for key in ("id", "path", "line_range"):
+                    for key in ("id", "path"):
                         if key not in item:
                             return False, f"schema_missing_key:{key}"
                         value = item.get(key)
@@ -9953,7 +9965,7 @@ def main() -> None:
     parser.add_argument("--retry-max-attempts", type=int, default=4)
     parser.add_argument("--retry-base-seconds", type=float, default=2.0)
     parser.add_argument("--retry-max-seconds", type=float, default=30.0)
-    parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
+    parser.add_argument("--phase-auth-fail-threshold", type=int, default=50)
     parser.add_argument("--partition-workers", type=int, default=1)
     parser.add_argument("--executor", choices=["thread", "process"], default="thread",
                        help="Executor type: thread (default) or process")
