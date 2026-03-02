@@ -99,6 +99,8 @@ models:
 # These are exposed to Claude Code via CCR
 slots:
   default: gemini-2.5-flash-lite
+  bulk: gemini-2.5-flash-lite
+  format: grok-4.1-fast
   think: grok-4.1-fast-reasoning
   background: gemini-2.5-flash-lite
   longContext: grok-4.1-fast
@@ -111,6 +113,10 @@ slots:
 # Fallback chain for resilience
 fallbacks:
   gemini-2.5-flash-lite:
+    - grok-4.1-fast
+    - grok-4.1-fast-reasoning
+    - gpt-5.2
+  gemini-2.5-flash:
     - grok-4.1-fast
     - grok-4.1-fast-reasoning
     - gpt-5.2
