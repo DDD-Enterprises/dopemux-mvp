@@ -62,25 +62,10 @@ servers:
       port: 3015
       health_url: http://localhost:3015/health
 
-  dopemux-claude-context:
+  dopemux-dope-context:
     transport: http
     default_enabled: true
     required_for_auto: true
-    docker:
-      service: dope-context
-      compose_file: compose.yml
-      port: 3010
-      health_url: http://localhost:3010/health
-    local:
-      command: npx
-      args:
-        - -y
-        - "@zilliz/claude-context-mcp@latest"
-
-  dopemux-dope-context:
-    transport: http
-    default_enabled: false
-    required_for_auto: false
     docker:
       service: dope-context
       compose_file: compose.yml
@@ -91,48 +76,58 @@ servers:
     transport: stdio
     default_enabled: false
     required_for_auto: false
+    docker:
+      service: pal
+      compose_file: compose.yml
+      port: 3003
     local:
       command: uvx
       args:
         - pal-mcp-server
         - start
 
-  dopemux-zen:
-    transport: stdio
-    default_enabled: false
-    required_for_auto: false
-    local:
-      command: npx
-      args:
-        - -y
-        - zen-mcp
-
-  dopemux-mas-sequential-thinking:
-    transport: stdio
-    default_enabled: false
-    required_for_auto: false
-    local:
-      command: python
-      args:
-        - -m
-        - mcp_server_mas_sequential_thinking
-
   dopemux-exa:
-    transport: stdio
-    default_enabled: false
+    transport: http
+    default_enabled: true
     required_for_auto: false
+    docker:
+      service: exa
+      compose_file: compose.yml
+      port: 3011
+      health_url: http://localhost:3011/health
     local:
       command: npx
       args:
         - -y
         - exa-mcp
 
-  dopemux-morphllm-fast-apply:
-    transport: stdio
-    default_enabled: false
+  dopemux-task-orchestrator:
+    transport: http
+    default_enabled: true
     required_for_auto: false
-    local:
-      command: npx
-      args:
-        - -y
-        - morphllm-fast-apply-mcp
+    docker:
+      service: task-orchestrator
+      compose_file: compose.yml
+      port: 3014
+      health_url: http://localhost:8000/health
+
+  dopemux-adhd-engine:
+    transport: http
+    default_enabled: true
+    required_for_auto: false
+    docker:
+      service: adhd-engine
+      compose_file: compose.yml
+      port: 3025
+      health_url: http://localhost:8095/health
+
+  dopemux-dopecon-bridge:
+    transport: stdio
+    default_enabled: true
+    required_for_auto: false
+    docker:
+      service: dopecon-bridge
+      compose_file: compose.yml
+      exec:
+        - python
+        - /app/ddg_mcp_stdio.py
