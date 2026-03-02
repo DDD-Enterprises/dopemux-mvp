@@ -101,6 +101,12 @@ async def type_text(text: str) -> Dict[str, Any]:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@mcp.router.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     port = int(os.getenv("MCP_SERVER_PORT", "3012"))
     logger.info(f"🚀 Starting Desktop Commander MCP Server on port {port} (SSE)")

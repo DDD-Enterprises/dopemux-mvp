@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from typing import Optional
+from typing import Optional, List
 
 import aiohttp
 from mcp.server.fastmcp import FastMCP
@@ -68,7 +68,7 @@ async def log_decision(workspace_id: str, topic: str, decision: str, rationale: 
     """Log an architectural or technical decision to the workspace graph."""
     payload = {
         "workspace_id": workspace_id,
-        "topic": topic,
+        "summary": f"[{topic}] {decision}",
         "decision": decision,
         "rationale": rationale,
         "tags": tags or []

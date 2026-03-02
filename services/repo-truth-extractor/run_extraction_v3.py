@@ -252,18 +252,16 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "extract": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
-            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+            ("google", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", "gpt-5.1-codex-mini", "OPENAI_API_KEY"),
+            ("xai", "grok-4.1-fast", "XAI_API_KEY"),
         ],
         "synthesis": [
             ("openai", "gpt-5.2", "OPENAI_API_KEY"),
-            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
-            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+            ("openrouter", "anthropic/claude-opus-4.5", "OPENROUTER_API_KEY"),
         ],
         "qa": [
-            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("google", "gemini-2.5-flash", "GEMINI_API_KEY"),
             ("openai", "gpt-5.2", "OPENAI_API_KEY"),
         ],
     },
