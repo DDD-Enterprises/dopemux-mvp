@@ -1,3 +1,14 @@
+---
+id: PLAN
+title: Plan
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Plan (reference) for dopemux documentation and developer workflows.
+---
 # TP1 + TP2 Execution Plan
 
 ## Goal

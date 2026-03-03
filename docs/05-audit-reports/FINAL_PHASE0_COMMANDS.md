@@ -1,3 +1,15 @@
+---
+id: FINAL_PHASE0_COMMANDS
+title: Final Phase0 Commands
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Final Phase0 Commands (reference) for dopemux documentation and developer
+  workflows.
+---
 # 🎯 Phase 0 Gate Commands - Ready to Execute
 
 ## ✅ Gate 0B: Serialization - COMPLETE
@@ -102,7 +114,7 @@ echo "Report: proof/PHASE0_DETERMINISM_REPORT.md"
 ## 📋 What These Commands Do
 
 1. **Run A**: Executes extraction with 1 worker (sequential)
-2. **Run B**: Executes extraction with 4 workers (concurrent)  
+2. **Run B**: Executes extraction with 4 workers (concurrent)
 3. **Compare**: Uses SHA256 hashing to verify outputs are identical
 
 ## 🎯 Expected Outcomes
@@ -128,7 +140,7 @@ echo "Report: proof/PHASE0_DETERMINISM_REPORT.md"
 ## 🚀 Next Steps After Running
 
 1. **If PASS (exit 0)**: Commit the report and proceed to next phase
-2. **If FAIL (exit 2)**: 
+2. **If FAIL (exit 2)**:
    - Analyze `proof/PHASE0_DETERMINISM_REPORT.md`
    - Identify sources of non-determinism
    - Fix issues (remove timestamps, randomness, etc.)

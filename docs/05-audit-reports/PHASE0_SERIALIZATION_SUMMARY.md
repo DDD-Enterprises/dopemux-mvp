@@ -1,3 +1,15 @@
+---
+id: PHASE0_SERIALIZATION_SUMMARY
+title: Phase0 Serialization Summary
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Phase0 Serialization Summary (reference) for dopemux documentation and developer
+  workflows.
+---
 # Phase 0B Serialization - Implementation Summary
 
 ## Objective
@@ -25,7 +37,7 @@ Prove that work-unit payloads submitted to the executor are pickle-safe for Proc
 
 ### Test Results
 - **Total Partitions Tested**: 1054
-- **Pass Count**: 1054  
+- **Pass Count**: 1054
 - **Fail Count**: 0
 - **Result**: ✅ All partitions are pickle-safe!
 

@@ -1,6 +1,18 @@
+---
+id: TP-AUDIT-DOCS-FIXPACK-0001_PROOF
+title: Tp Audit Docs Fixpack 0001 Proof
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Tp Audit Docs Fixpack 0001 Proof (reference) for dopemux documentation and
+  developer workflows.
+---
 # TP-AUDIT-DOCS-FIXPACK-0001_PROOF.md
-**Title:** ConPort Diátaxis Docs FixPack Proof Bundle  
-**Date:** 2026-02-26  
+**Title:** ConPort Diátaxis Docs FixPack Proof Bundle
+**Date:** 2026-02-26
 **Status:** ❌ NOT VERIFIED IN THIS ARTIFACT (requires operator command outputs)
 
 This file is a **fail-closed proof bundle template**. It contains the exact commands that must be run and the exact places to paste the output.

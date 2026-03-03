@@ -1,3 +1,15 @@
+---
+id: VERIFICATION_SUMMARY
+title: Verification Summary
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Verification Summary (reference) for dopemux documentation and developer
+  workflows.
+---
 # Verification Summary - TP-EXTR-001C-PROCESSPOOL-STABILIZE-0002
 
 ## 🎯 Task Packet Status: VERIFIED ✅
@@ -14,7 +26,7 @@
 rg -n "kind = op.get" services/repo-truth-extractor/run_extraction_v3.py
 # ✅ Output: 6183:                kind = op.get("kind")
 
-# 2. Per-partition logging  
+# 2. Per-partition logging
 rg -n "Processing completed future for partition" services/repo-truth-extractor/run_extraction_v3.py
 # ✅ Output: 7185:                logger.info("Processing completed future for partition %s", partition_id)
 
@@ -89,7 +101,7 @@ tests/unit/test_run_extraction_v3_processpool_stability.py
 - Documentation: COMPLETE
 - Risk assessment: LOW RISK
 
-### ✅ Business Readiness  
+### ✅ Business Readiness
 - Acceptance criteria: ALL MET
 - Determinism: VERIFIED
 - Performance: IMPROVED (workers=4 now works)

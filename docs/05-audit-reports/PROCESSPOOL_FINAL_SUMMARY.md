@@ -1,3 +1,15 @@
+---
+id: PROCESSPOOL_FINAL_SUMMARY
+title: Processpool Final Summary
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Processpool Final Summary (reference) for dopemux documentation and developer
+  workflows.
+---
 # ProcessPoolExecutor Implementation - Final Summary
 
 ## 🎯 Objective: Real Multiprocessing Support
@@ -34,7 +46,7 @@ def _run_one_partition_worker(
 
 ### Execution Flow
 1. `--executor process` → Uses `ProcessPoolExecutor`
-2. `--executor thread` (default) → Uses `ThreadPoolExecutor`  
+2. `--executor thread` (default) → Uses `ThreadPoolExecutor`
 3. Worker function → Module-level, picklable
 4. PID logging → Verifies separate processes
 
@@ -50,7 +62,7 @@ python services/repo-truth-extractor/run_extraction_v3.py \
 
 ### Multi-Worker ProcessPool (PARTIAL)
 ```bash
-RUN_ID_B="proc_det_b_tp_20260226_192549"  
+RUN_ID_B="proc_det_b_tp_20260226_192549"
 python services/repo-truth-extractor/run_extraction_v3.py \
   --run-id "$RUN_ID_B" --phase A --partition-workers 4 --executor process --dry-run
 # Result: PHASE_DONE status=FAIL raw_ok=21 raw_failed=0

@@ -1,3 +1,15 @@
+---
+id: PROCESSPOOL_IMPLEMENTATION_SUMMARY
+title: Processpool Implementation Summary
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Processpool Implementation Summary (reference) for dopemux documentation
+  and developer workflows.
+---
 # ProcessPoolExecutor Implementation Summary
 
 ## ✅ Objective Completed
@@ -59,7 +71,7 @@ RUN_ID_A="proc_det_a_20260226_191914"
 python services/repo-truth-extractor/run_extraction_v3.py \
   --run-id "$RUN_ID_A" --phase A --partition-workers 1 --executor process --dry-run
 
-# Run B (workers=4 with process flag)  
+# Run B (workers=4 with process flag)
 RUN_ID_B="proc_det_b_20260226_191914"
 python services/repo-truth-extractor/run_extraction_v3.py \
   --run-id "$RUN_ID_B" --phase A --partition-workers 4 --executor process --dry-run
@@ -112,13 +124,13 @@ def execute_step_for_partitions(...):
         # Uses phase, step_id, cfg, etc. from outer scope
         ...
 
-# Future: Module-level function with explicit parameters  
+# Future: Module-level function with explicit parameters
 def _run_one_partition_module_level(
-    partition, 
-    phase, 
-    step_id, 
-    cfg, 
-    raw_dir, 
+    partition,
+    phase,
+    step_id,
+    cfg,
+    raw_dir,
     ...  # All required context
 ):
     # Can be pickled for ProcessPoolExecutor

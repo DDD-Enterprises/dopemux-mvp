@@ -1,3 +1,15 @@
+---
+id: INTEGRATION_TEST_RESULTS
+title: Integration Test Results
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Integration Test Results (reference) for dopemux documentation and developer
+  workflows.
+---
 # Integration Test Results - TP-EXTR-001C-PROCESSPOOL-STABILIZE-0002
 
 ## Executive Summary
@@ -81,7 +93,7 @@ python services/repo-truth-extractor/run_extraction_v3.py --phase A --partition-
 - `raw_total`: 504
 - `status`: PASS
 
-### Workers=4 Results  
+### Workers=4 Results
 - `raw_ok`: 252
 - `raw_total`: 504
 - `status`: PASS
@@ -95,7 +107,7 @@ python services/repo-truth-extractor/run_extraction_v3.py --phase A --partition-
 3. **Partition Logging**: Individual partition processing logged as required
 4. **Defensive Programming**: Missing 'kind' fields handled gracefully
 5. **Performance**: Concurrent processing works without errors
-6. **Counting Clarity**: 
+6. **Counting Clarity**:
    - `raw_ok` and `raw_failed` count **partitions** (252 total)
    - `raw_total` counts **artifacts** (504 = 2 per partition)
    - Partition invariant: `raw_ok + raw_failed = 252` ✅
@@ -130,7 +142,7 @@ python services/repo-truth-extractor/run_extraction_v3.py --phase A --partition-
 ## Sign-off
 
 **Implementation**: Mistral Vibe
-**Testing**: Mistral Vibe  
+**Testing**: Mistral Vibe
 **Status**: VERIFIED AND READY FOR DEPLOYMENT
 **Date**: 2024-02-26
 **Confidence**: HIGH

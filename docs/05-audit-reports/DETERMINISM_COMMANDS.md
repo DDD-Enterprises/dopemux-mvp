@@ -1,3 +1,15 @@
+---
+id: DETERMINISM_COMMANDS
+title: Determinism Commands
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Determinism Commands (reference) for dopemux documentation and developer
+  workflows.
+---
 # Phase 0C Determinism Test - Exact Commands
 
 ## Current Extraction Command Template
@@ -39,7 +51,7 @@ python services/repo-truth-extractor/tools/phase0_determinism_check.py \
 # Run A
 RUN_ID_A="determinism_a_$(date +%Y%m%d_%H%M%S)" && python services/repo-truth-extractor/run_extraction_v3.py --run-id "$RUN_ID_A" --phase A --partition-workers 1
 
-# Run B  
+# Run B
 RUN_ID_B="determinism_b_$(date +%Y%m%d_%H%M%S)" && python services/repo-truth-extractor/run_extraction_v3.py --run-id "$RUN_ID_B" --phase A --partition-workers 4
 
 # Compare
