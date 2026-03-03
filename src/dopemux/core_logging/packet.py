@@ -12,7 +12,7 @@ LEVEL_PATTERNS: List[Tuple[str, re.Pattern[str]]] = [
     (
         "error",
         re.compile(
-            r"\b(error|exception|traceback|failed?|failure|panic)\b|\b[A-Za-z]+Error\b",
+            r"\b(error|exception|traceback|fail(ed)?|failure|panic)\b|[A-Za-z]+Error\b",
             re.IGNORECASE,
         ),
     ),
