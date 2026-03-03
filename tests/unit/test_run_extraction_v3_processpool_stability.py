@@ -12,7 +12,8 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
-from unittest.mock import patch
+from typing import Any, Dict, List, Tuple, Optional
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -171,7 +172,7 @@ class TestProcessPoolStabilityRegression:
             else:
                 raise
     
-    def test_per_partition_error_containment():
+    def test_per_partition_error_containment(self):
         """
         Test that one bad partition doesn't kill the entire phase.
         """
