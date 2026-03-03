@@ -6,8 +6,7 @@ import {
   Grid,
   Avatar,
   Chip,
-  LinearProgress,
-  Tooltip
+  LinearProgress
 } from '@mui/material';
 import { Users } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
@@ -100,18 +99,15 @@ const TeamDashboard: React.FC = () => {
         <Typography variant="h6" sx={{ letterSpacing: '0.15em' }}>
           Team Cognitive Status
         </Typography>
-        <Tooltip title="Aggregated cognitive load across all active team members" arrow>
-          <Chip
-            label={`${(teamLoadAvg * 100).toFixed(0)}% Average Load`}
-            tabIndex={0}
-            sx={{
-              ml: 'auto',
-              bgcolor: 'rgba(148, 250, 219, 0.08)',
-              color: brandTokens.colors.serumMint,
-              border: '1px solid rgba(148, 250, 219, 0.4)'
-            }}
-          />
-        </Tooltip>
+        <Chip
+          label={`${(teamLoadAvg * 100).toFixed(0)}% Average Load`}
+          sx={{
+            ml: 'auto',
+            bgcolor: 'rgba(148, 250, 219, 0.08)',
+            color: brandTokens.colors.serumMint,
+            border: '1px solid rgba(148, 250, 219, 0.4)'
+          }}
+        />
       </Box>
       <Typography className="dopemux-roast" sx={{ mb: 2 }}>
         Your team is a choir of gremlins; I keep them harmonized with status chips and thinly veiled threats.
@@ -151,11 +147,7 @@ const TeamDashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3} key={member.id}>
             <Paper sx={{ p: 2, height: 220, borderRadius: 3 }} className="dopemux-panel">
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar
-                  sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}
-                  role="img"
-                  aria-label={member.avatar ? `Avatar for ${member.name}` : `Initials for ${member.name}`}
-                >
+                <Avatar sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}>
                   {member.avatar}
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
@@ -166,18 +158,15 @@ const TeamDashboard: React.FC = () => {
                     {member.role}
                   </Typography>
                 </Box>
-                <Tooltip title={statusStyles[member.status].label} arrow>
-                  <Chip
-                    size="small"
-                    label={member.status.toUpperCase()}
-                    tabIndex={0}
-                    sx={{
-                      bgcolor: `${statusStyles[member.status].color}22`,
-                      color: statusStyles[member.status].color,
-                      border: `1px solid ${statusStyles[member.status].color}`
-                    }}
-                  />
-                </Tooltip>
+                <Chip
+                  size="small"
+                  label={member.status.toUpperCase()}
+                  sx={{
+                    bgcolor: `${statusStyles[member.status].color}22`,
+                    color: statusStyles[member.status].color,
+                    border: `1px solid ${statusStyles[member.status].color}`
+                  }}
+                />
               </Box>
 
               <Typography variant="body2" sx={{ mb: 1 }}>
@@ -201,34 +190,28 @@ const TeamDashboard: React.FC = () => {
               />
 
               <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                <Tooltip title="Current physical and mental energy reserves" arrow>
-                  <Chip
-                    size="small"
-                    label={`${(member.energy * 100).toFixed(0)}% Energy`}
-                    tabIndex={0}
-                    sx={{
-                      bgcolor: 'rgba(4,22,40,0.7)',
-                      color: member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge,
-                      border: `1px solid ${
-                        member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge
-                      }`
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip title="Real-time focus and attention stability" arrow>
-                  <Chip
-                    size="small"
-                    label={`${(member.attention * 100).toFixed(0)}% Attention`}
-                    tabIndex={0}
-                    sx={{
-                      bgcolor: 'rgba(4,22,40,0.7)',
-                      color: member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge,
-                      border: `1px solid ${
-                        member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge
-                      }`
-                    }}
-                  />
-                </Tooltip>
+                <Chip
+                  size="small"
+                  label={`${(member.energy * 100).toFixed(0)}% Energy`}
+                  sx={{
+                    bgcolor: 'rgba(4,22,40,0.7)',
+                    color: member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge,
+                    border: `1px solid ${
+                      member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge
+                    }`
+                  }}
+                />
+                <Chip
+                  size="small"
+                  label={`${(member.attention * 100).toFixed(0)}% Attention`}
+                  sx={{
+                    bgcolor: 'rgba(4,22,40,0.7)',
+                    color: member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge,
+                    border: `1px solid ${
+                      member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge
+                    }`
+                  }}
+                />
               </Box>
 
               <Typography className="dopemux-roast" sx={{ mt: 1 }}>
