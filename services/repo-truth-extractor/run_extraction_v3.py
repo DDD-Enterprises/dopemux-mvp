@@ -5,7 +5,6 @@ inventory -> partitioning -> per-partition raw outputs -> norm merge -> QA.
 """
 
 import argparse
-import copy
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import fnmatch
 import hashlib
@@ -244,86 +243,98 @@ MAGIC_SUBTYPE_ORDER = {
     "other": 7,
 }
 
-# Direct provider model IDs (canonical)
-DEFAULT_GEMINI_BULK_MODEL = "gemini-2.5-flash-lite"
-DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-2.5-flash"
-DEFAULT_GEMINI_SYNTH_MODEL = "gemini-2.5-pro"
-
-DEFAULT_XAI_BULK_MODEL = "grok-4-1-fast-non-reasoning"
-DEFAULT_XAI_EXTRACT_MODEL = "grok-4-1-fast-non-reasoning"
-DEFAULT_XAI_THINK_MODEL = "grok-4-1-fast-reasoning"
-
-DEFAULT_OPENAI_BULK_MODEL = "gpt-5-nano"
-DEFAULT_OPENAI_EXTRACT_MODEL = "gpt-5-mini"
-DEFAULT_OPENAI_SYNTH_MODEL = "gpt-5.2"
-DEFAULT_OPENAI_CODE_SYNTH_MODEL = "gpt-5.2"  # codex is a completions-only model; use chat model
-
 # Route tuple: provider, model_id, api_key_env
 ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
     "cost": {
         "bulk": [
-            ("gemini", DEFAULT_GEMINI_BULK_MODEL, "GEMINI_API_KEY"),
-            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
-            ("openai", DEFAULT_OPENAI_BULK_MODEL, "OPENAI_API_KEY"),
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "extract": [
-            ("xai", DEFAULT_XAI_EXTRACT_MODEL, "XAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_EXTRACT_MODEL, "GEMINI_API_KEY"),
-            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
-            ("xai", DEFAULT_XAI_THINK_MODEL, "XAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
-            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_BULK_MODEL, "GEMINI_API_KEY"),
-            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
         ],
     },
     "balanced": {
         "bulk": [
-            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
-            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
         ],
         "extract": [
-            ("xai", DEFAULT_XAI_EXTRACT_MODEL, "XAI_API_KEY"),
-            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_EXTRACT_MODEL, "GEMINI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", DEFAULT_OPENAI_CODE_SYNTH_MODEL, "OPENAI_API_KEY"),
-            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
-            ("xai", DEFAULT_XAI_THINK_MODEL, "XAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
-            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
-            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
         ],
     },
     "quality": {
         "bulk": [
-            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
-            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "extract": [
-            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
-            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
-            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
-            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
-            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+        ],
+    },
+    "openrouter": {
+        "bulk": [
+            ("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+        ],
+        "extract": [
+            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+        ],
+        "synthesis": [
+            ("openrouter", "openai/gpt-5.2-pro", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-pro", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+        ],
+        "qa": [
+            ("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
         ],
     },
 }
@@ -2494,26 +2505,6 @@ def resolve_step_ladder(
     return [tuple(route) for route in routes]
 
 
-def validate_routing_ladders() -> None:
-    required_tiers = {"bulk", "extract", "synthesis", "qa"}
-    allowed_providers = {"openai", "gemini", "xai"}
-    for policy_name, tiers in ACTIVE_ROUTING_LADDERS.items():
-        missing = required_tiers - set(tiers.keys())
-        if missing:
-            raise ValueError(f"Routing policy '{policy_name}' is missing required tiers: {missing}")
-        for tier_name, routes in tiers.items():
-            if not isinstance(routes, list):
-                raise ValueError(f"Routing policy '{policy_name}' tier '{tier_name}' must be a list of tuples.")
-            for route in routes:
-                if len(route) != 3:
-                    raise ValueError(f"Route {route} in policy '{policy_name}' tier '{tier_name}' must be a tuple of (provider, model_id, api_key_env)")
-                provider, model_id, api_key_env = route
-                if provider not in allowed_providers:
-                    raise ValueError(f"Unsupported provider '{provider}' in policy '{policy_name}' tier '{tier_name}'. Allowed: {allowed_providers}")
-                if not isinstance(model_id, str) or not model_id.strip():
-                    raise ValueError(f"Invalid model_id '{model_id}' in policy '{policy_name}' tier '{tier_name}'. Must be a non-empty string.")
-
-
 def routing_ladders_payload() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
     payload: Dict[str, Dict[str, List[Dict[str, str]]]] = {}
     for policy, tiers in ACTIVE_ROUTING_LADDERS.items():
@@ -2544,7 +2535,6 @@ def effective_model_routing_payload() -> Dict[str, Dict[str, str]]:
 
 # Initialize routing state on module load.
 apply_model_overrides(DEFAULT_GEMINI_MODEL_ID, DEFAULT_ROUTING_POLICY)
-validate_routing_ladders()
 
 
 def write_run_manifest(
@@ -3458,110 +3448,7 @@ def run_provider_doctor_probe(provider: str, model_id: str, api_key_env: str, cf
     }
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Key hygiene preflight — TP-ENV-KEY-HYGIENE-PREFLIGHT-0003
-# ──────────────────────────────────────────────────────────────────────────────
-
-
-# Known provider key prefixes (heuristics only — not a guarantee of validity).
-_PROVIDER_KEY_HINTS: Dict[str, Optional[str]] = {
-    "openai": "sk-",      # OpenAI keys typically start with sk-
-    "gemini": "AIza",    # Google API keys typically start with AIza
-    "xai": None,         # xAI key format is not reliably standardized; skip check
-}
-
-
-def _safe_key_fingerprint(value: str) -> str:
-    """Return the first 8 hex chars of sha256(value).  Never logs the secret."""
-    return hashlib.sha256(value.encode()).hexdigest()[:8]
-
-
-def _collect_required_key_envs(active_policy: str) -> Dict[str, Set[str]]:
-    """Return {provider: {env_var_names}} required by the given active routing policy.
-
-    Pure dict inspection — no IO, no network, no env access.
-    """
-    result: Dict[str, Set[str]] = {}
-    policy_tiers = ACTIVE_ROUTING_LADDERS.get(active_policy, {})
-    for _tier, routes in policy_tiers.items():
-        for provider, _model_id, api_key_env in routes:
-            result.setdefault(provider, set()).add(api_key_env)
-    return result
-
-
-def preflight_keys(active_policy: str, strict: bool = False) -> Dict[str, Any]:
-    """Validate provider API keys referenced by the active routing policy.
-
-    Rules:
-    - Missing key → error (always fail-closed).
-    - Heuristic prefix mismatch → warning normally; error in strict mode.
-    - Never prints or stores key values; only fingerprints + presence.
-
-    Returns a report dict with:
-      - provider_checks: list of per-provider results
-      - errors: list of error strings
-      - warnings: list of warning strings
-      - overall_status: "PASS" | "WARN" | "FAIL"
-      - exit_code: 0 (pass) | 2 (warnings) | 3 (errors)
-    """
-    required = _collect_required_key_envs(active_policy)
-    errors: List[str] = []
-    warnings: List[str] = []
-    provider_checks: List[Dict[str, Any]] = []
-
-    for provider, env_names in sorted(required.items()):
-        expected_prefix = _PROVIDER_KEY_HINTS.get(provider)  # None = no check
-        for env_name in sorted(env_names):
-            raw_value = os.environ.get(env_name, "")
-            present = bool(raw_value)
-            check: Dict[str, Any] = {
-                "provider": provider,
-                "env_var": env_name,
-                "present": present,
-                "length": len(raw_value) if present else 0,
-                "fingerprint": _safe_key_fingerprint(raw_value) if present else None,
-                "warning": None,
-                "error": None,
-            }
-
-            if not present:
-                msg = f"Missing required env var '{env_name}' for provider '{provider}'"
-                check["error"] = msg
-                errors.append(msg)
-            elif expected_prefix and not raw_value.startswith(expected_prefix):
-                msg = (
-                    f"Key in '{env_name}' (provider={provider}) does not start with "
-                    f"expected prefix '{expected_prefix}' — possible key swap"
-                )
-                check["warning"] = msg
-                if strict:
-                    check["error"] = msg
-                    errors.append(msg)
-                else:
-                    warnings.append(msg)
-
-            provider_checks.append(check)
-
-    if errors:
-        status, exit_code = "FAIL", 3
-    elif warnings:
-        status, exit_code = "WARN", 2
-    else:
-        status, exit_code = "PASS", 0
-
-    return {
-        "overall_status": status,
-        "exit_code": exit_code,
-        "active_policy": active_policy,
-        "strict": strict,
-        "provider_checks": provider_checks,
-        "errors": errors,
-        "warnings": warnings,
-    }
-
-
 def run_provider_preflight(root: Path, run_id: str, cfg: RunnerConfig, phases: List[str]) -> Tuple[bool, Dict[str, Any]]:
-
     provider_routes = collect_provider_routes(phases=phases, routing_policy=cfg.routing_policy)
     provider_probes = [
         run_provider_doctor_probe(
@@ -4292,12 +4179,6 @@ def build_chat_payload(
             {"role": "user", "content": user_content},
         ],
     }
-    # gpt-5+ and some newer OpenAI models require max_completion_tokens
-    if provider == "openai" and ("gpt-5" in model_id or "o1" in model_id):
-        payload["max_completion_tokens"] = 8192
-    else:
-        payload["max_tokens"] = 8192
-
     if temperature is not None:
         payload["temperature"] = temperature
     if force_json_output:
@@ -4514,38 +4395,6 @@ def get_gemini_client(api_key: str) -> Any:
     # google-genai from preferring the legacy env var when both are present.
     os.environ.pop("GOOGLE_API_KEY", None)
     return genai.Client(api_key=api_key)
-
-
-def _build_gemini_config_for_model(
-    model_id: str,
-    system_prompt: str,
-    force_json_output: bool,
-) -> Dict[str, Any]:
-    """Build the GenerateContentConfig dict for a Gemini model call.
-
-    Deterministic, network-free, env-free — safe to call in tests.
-    Disables thinking (budget=0) for bulk and extract models to control
-    cost and latency.  For all other models thinking is left at SDK default.
-    """
-    config: Dict[str, Any] = {
-        "temperature": 0.1,
-        "system_instruction": system_prompt,
-        "max_output_tokens": 8192,
-    }
-    if force_json_output:
-        config["response_mime_type"] = "application/json"
-
-    if model_id in (DEFAULT_GEMINI_BULK_MODEL, DEFAULT_GEMINI_EXTRACT_MODEL):
-        try:
-            from google.genai import types as _genai_types
-            config["thinking_config"] = _genai_types.ThinkingConfig(thinking_budget=0)
-        except ImportError:
-            # Fail closed: do NOT substitute an invented dict key.
-            raise ValueError(
-                "google-genai SDK not available; cannot safely disable Gemini thinking. "
-                "Install google-genai>=0.8 to proceed."
-            )
-    return config
 
 
 def get_openai_client(base_url: Optional[str], api_key: str) -> Any:
@@ -4916,15 +4765,14 @@ def call_llm(
                 response_text = response_json["choices"][0]["message"]["content"]
             elif provider == "gemini":
                 client = get_gemini_client(api_key)
-                gemini_config = _build_gemini_config_for_model(
-                    model_id=model_id,
-                    system_prompt=system_prompt,
-                    force_json_output=force_json_output,
-                )
                 response = client.models.generate_content(
                     model=model_id,
                     contents=user_content,
-                    config=gemini_config,
+                    config={
+                        "temperature": 0.1,
+                        "system_instruction": system_prompt,
+                        **({"response_mime_type": "application/json"} if force_json_output else {}),
+                    },
                 )
                 status_code = 200
                 response_text = extract_text_from_gemini_response(response)
@@ -4939,10 +4787,6 @@ def call_llm(
                     "model": model_id,
                     "messages": payload["messages"],
                 }
-                if provider == "openai" and ("gpt-5" in model_id or "o1" in model_id):
-                    chat_kwargs["max_completion_tokens"] = 8192
-                else:
-                    chat_kwargs["max_tokens"] = 8192
                 if "temperature" in payload:
                     chat_kwargs["temperature"] = payload["temperature"]
                 if "response_format" in payload:
@@ -4950,7 +4794,6 @@ def call_llm(
                 response = client.chat.completions.create(**chat_kwargs)
                 status_code = 200
                 response_text = extract_text_from_chat_completion(response)
-
 
             response_summary = summarize_llm_response(
                 provider=provider,
@@ -5860,139 +5703,13 @@ def artifacts_pass_schema_gate(
                 for item in items:
                     if not isinstance(item, dict):
                         return False, "schema_item_not_object"
-                    for key in ("id", "path"):
+                    for key in ("id", "path", "line_range"):
                         if key not in item:
                             return False, f"schema_missing_key:{key}"
                         value = item.get(key)
                         if value in (None, "", []):
                             return False, f"schema_empty_key:{key}"
     return True, None
-
-
-# Counters for schema repair events — visible in phase summary logs.
-_REPAIR_COUNTERS: Dict[str, int] = {"attempted": 0, "succeeded": 0, "failed_ambiguous": 0}
-
-
-def _attempt_schema_repair_path_items(
-    artifacts: List[Dict[str, Any]],
-    schema_reason: str,
-    partition_files: List[str],
-) -> Tuple[List[Dict[str, Any]], bool, str]:
-    """Deterministic repair of items[*].path before escalating.
-
-    Only activates for schema_missing_key:path or schema_empty_key:path.
-    Only touches the ``path`` field inside each element of artifact["payload"]["items"].
-    Never invents a value: if a unique mapping cannot be established, returns did_repair=False.
-    Never uses UNKNOWN or any sentinel that could corrupt provenance.
-
-    Inference rules (applied in priority order, require uniqueness):
-    1. One artifact, one item, one file → path = partition_files[0]
-    2. Item has a string field whose value exactly equals one partition_file → that file
-    3. Item has a string field whose basename exactly matches the basename of exactly
-       one partition_file (unique) → that file
-    4. Item's ``id`` value contains a basename that matches exactly one partition_file → that file
-
-    Returns (repaired_artifacts, did_repair, repair_method).
-    """
-    _REPAIR_COUNTERS["attempted"] += 1
-
-    # Guard: only attempt for the supported failure classes
-    if not schema_reason or not (
-        schema_reason.startswith("schema_missing_key:path")
-        or schema_reason.startswith("schema_empty_key:path")
-    ):
-        _REPAIR_COUNTERS["failed_ambiguous"] += 1
-        return artifacts, False, "not_applicable"
-
-    # Guard: partition_files must be non-empty
-    if not partition_files:
-        _REPAIR_COUNTERS["failed_ambiguous"] += 1
-        return artifacts, False, "no_partition_files"
-
-    basenames: List[str] = [os.path.basename(f) for f in partition_files]
-
-    def _unique_file_for_basename(bn: str) -> Optional[str]:
-        """Return the single partition_file whose basename matches bn, or None if ambiguous."""
-        matches = [f for f, b in zip(partition_files, basenames) if b == bn]
-        return matches[0] if len(matches) == 1 else None
-
-    def _infer_path_for_item(item: Dict[str, Any]) -> Optional[str]:
-        """Return deterministically inferred path for a single item, or None if ambiguous."""
-        # Rule 1 is handled at the artifacts level before calling this helper.
-
-        # Rule 2: exact full-path match in any string field
-        for v in item.values():
-            if isinstance(v, str) and v in partition_files:
-                return v
-
-        # Rule 3: basename match across any string field
-        candidates: Set[str] = set()
-        for v in item.values():
-            if isinstance(v, str):
-                bn = os.path.basename(v)
-                m = _unique_file_for_basename(bn)
-                if m:
-                    candidates.add(m)
-        if len(candidates) == 1:
-            return candidates.pop()
-
-        # Rule 4: item["id"] contains a basename that uniquely matches
-        item_id = str(item.get("id", ""))
-        if item_id:
-            id_bn = os.path.basename(item_id)
-            m = _unique_file_for_basename(id_bn)
-            if m:
-                return m
-
-        return None
-
-    repaired = copy.deepcopy(artifacts)
-    repair_method = "unknown"
-    all_filled = True
-
-    for artifact in repaired:
-        if not isinstance(artifact, dict):
-            all_filled = False
-            break
-        payload = artifact.get("payload")
-        if not isinstance(payload, dict):
-            continue
-        items = payload.get("items")
-        if not isinstance(items, list):
-            all_filled = False
-            break
-
-        # Rule 1: trivial single-item / single-file case
-        if len(items) == 1 and len(partition_files) == 1:
-            item = items[0]
-            if isinstance(item, dict) and (not item.get("path") or item.get("path") in (None, "", [])):
-                item["path"] = partition_files[0]
-                repair_method = "single_item_single_file"
-            continue
-
-        # Rules 2-4 per item
-        for item in items:
-            if not isinstance(item, dict):
-                all_filled = False
-                break
-            if item.get("path") and item["path"] not in (None, "", []):
-                continue  # already has a valid path
-            inferred = _infer_path_for_item(item)
-            if inferred is None:
-                all_filled = False
-                break
-            item["path"] = inferred
-            repair_method = "field_or_basename_match"
-
-        if not all_filled:
-            break
-
-    if not all_filled:
-        _REPAIR_COUNTERS["failed_ambiguous"] += 1
-        return artifacts, False, "ambiguous"
-
-    _REPAIR_COUNTERS["succeeded"] += 1
-    return repaired, True, repair_method
 
 
 def should_escalate_for_failure_type(failure_type: Optional[str]) -> bool:
@@ -6236,22 +5953,20 @@ def _run_one_partition_worker(
     Module-level worker function for ProcessPoolExecutor.
     All parameters are explicit to ensure picklability.
     """
-    import logging
     from pathlib import Path
-    from typing import Any, Dict, List, Tuple, Optional
     
     # Recreate local objects that can't be pickled
     raw_dir = Path(raw_dir_str)
-    prompt_text = safe_read(prompt_path)
+    safe_read(prompt_path)
     
     # Reconstruct cfg-like dict access
     max_request_bytes = int(cfg_dict.get('max_request_bytes', 200000))
-    file_truncate_chars = int(cfg_dict.get('file_truncate_chars', 70000))
-    home_scan_mode = str(cfg_dict.get('home_scan_mode', 'safe'))
+    int(cfg_dict.get('file_truncate_chars', 70000))
+    str(cfg_dict.get('home_scan_mode', 'safe'))
     routing_policy = str(cfg_dict.get('routing_policy', 'cost'))
-    batch_mode = bool(cfg_dict.get('batch_mode', False))
-    batch_provider = str(cfg_dict.get('batch_provider', 'auto'))
-    gemini_auth_mode = str(cfg_dict.get('gemini_auth_mode', 'auto'))
+    bool(cfg_dict.get('batch_mode', False))
+    str(cfg_dict.get('batch_provider', 'auto'))
+    str(cfg_dict.get('gemini_auth_mode', 'auto'))
     
     # Define local helper functions (can't use closures from outer scope)
     def _append_log(local_logs, level, message):
@@ -6260,7 +5975,6 @@ def _run_one_partition_worker(
     
     def _op_write_json(local_ops, local_path, local_payload):
         """Local version of _op_write_json for worker function."""
-        import json
         local_path.parent.mkdir(parents=True, exist_ok=True)
         local_path.write_text(json.dumps(local_payload, indent=2), encoding='utf-8')
         local_ops.append({
@@ -6279,9 +5993,9 @@ def _run_one_partition_worker(
     # Main execution logic (simplified version of original)
     partition_id = str(partition["id"])
     out_json = raw_dir / f"{step_id}__{partition_id}.json"
-    out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
-    out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
-    out_trace = raw_dir / f"{step_id}__{partition_id}.TRACE.md"
+    raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+    raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+    raw_dir / f"{step_id}__{partition_id}.TRACE.md"
     logs: List[Tuple[str, str]] = []
     write_ops: List[Dict[str, Any]] = []
     
@@ -7248,27 +6962,6 @@ def execute_step_for_partitions(
                 response_text_local, request_meta_local = _execute_llm_call()
 
             schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts_local, output_artifacts)
-
-            # TP-EXTR-REPAIR-BEFORE-ESCALATE-0001: attempt deterministic repair before consuming next hop.
-            if not schema_ok and schema_reason and (
-                schema_reason.startswith("schema_missing_key:path")
-                or schema_reason.startswith("schema_empty_key:path")
-            ):
-                _partition_files: List[str] = [str(p) for p in partition.get("paths", [])]
-                _repaired, _did_repair, _repair_method = _attempt_schema_repair_path_items(
-                    artifacts_local, schema_reason, _partition_files
-                )
-                if _did_repair:
-                    schema_ok_after, schema_reason_after = artifacts_pass_schema_gate(_repaired, output_artifacts)
-                    if schema_ok_after:
-                        artifacts_local = _repaired
-                        schema_ok = schema_ok_after
-                        schema_reason = schema_reason_after
-                        logger.info(
-                            "REPAIR phase=%s step=%s partition=%s repaired=path method=%s",
-                            phase, step_id, partition_id, _repair_method,
-                        )
-
             escalation_trigger: Optional[str] = None
             if not artifacts_local:
                 if step_tier != "bulk":
@@ -7279,7 +6972,6 @@ def execute_step_for_partitions(
                 escalation_trigger = "provider_failure"
             if escalation_trigger and cfg.disable_escalation:
                 escalation_trigger = None
-
             request_meta_local = {
                 **request_meta_local,
                 "parse_retry_attempted": parse_retry_attempted,
@@ -7562,15 +7254,18 @@ def execute_step_for_partitions(
                 )
 
         # Validate write_ops before applying them
+        valid_write_ops: List[Dict[str, Any]] = []
         for i, op in enumerate(result.write_ops):
             if "kind" not in op:
                 logger.error("Write operation at index %s missing 'kind' field: %s", i, op)
-                result.write_ops[i]["kind"] = "unknown"
+                continue
             if "path" not in op:
                 logger.error("Write operation at index %s missing 'path' field: %s", i, op)
-                result.write_ops[i]["path"] = "/dev/null"
+                continue
+            valid_write_ops.append(op)
                 
-        _apply_write_ops(result.write_ops)
+        if valid_write_ops:
+            _apply_write_ops(valid_write_ops)
         for level, message in result.logs:
             if level == "error":
                 logger.error("%s", message)
@@ -10260,7 +9955,7 @@ def main() -> None:
     parser.add_argument("--retry-max-attempts", type=int, default=4)
     parser.add_argument("--retry-base-seconds", type=float, default=2.0)
     parser.add_argument("--retry-max-seconds", type=float, default=30.0)
-    parser.add_argument("--phase-auth-fail-threshold", type=int, default=50)
+    parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
     parser.add_argument("--partition-workers", type=int, default=1)
     parser.add_argument("--executor", choices=["thread", "process"], default="thread",
                        help="Executor type: thread (default) or process")
@@ -10272,10 +9967,6 @@ def main() -> None:
     parser.add_argument("--doctor", action="store_true")
     parser.add_argument("--doctor-auth", action="store_true")
     parser.add_argument("--preflight-providers", action="store_true")
-    parser.add_argument("--preflight-keys", action="store_true",
-                        help="After --preflight-providers, also validate API key presence and prefix heuristics.")
-    parser.add_argument("--strict-keys", action="store_true",
-                        help="Treat key prefix heuristic mismatches as errors (exit 3) instead of warnings (exit 2).")
     parser.add_argument("--coverage-report", action="store_true")
     parser.add_argument("--ui", choices=["auto", "rich", "plain"], default="auto")
     parser.add_argument("--status", action="store_true")
@@ -10554,14 +10245,6 @@ def main() -> None:
         targets = phase_sequence if phase_sequence else PHASES
         ok, payload = run_provider_preflight(root, run_id, cfg, targets)
         print(json.dumps(payload, indent=2))
-        if args.preflight_keys:
-            key_report = preflight_keys(
-                active_policy=cfg.routing_policy,
-                strict=getattr(args, "strict_keys", False),
-            )
-            print(json.dumps(key_report, indent=2))
-            if key_report["exit_code"] != 0:
-                sys.exit(key_report["exit_code"])
         sys.exit(0 if ok else 1)
     if args.print_promptpack:
         targets = phase_sequence if phase_sequence else PHASES
@@ -10636,16 +10319,6 @@ def main() -> None:
         if integrated > 0:
             logger.info("You can now run --finalize to process the integrated batch results")
         sys.exit(0 if integrated >= 0 else 1)
-
-        if watch_result.next_phase:
-            logger.info(
-                "AUTO_CONTINUE phase=%s next_phase=%s",
-                watch_phase,
-                watch_result.next_phase,
-            )
-            phase_sequence = [watch_result.next_phase]
-        else:
-            sys.exit(watch_result.exit_code)
 
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
