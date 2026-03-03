@@ -1835,7 +1835,7 @@ def start(
         # Start MCP servers by default (ADHD-optimized experience)
         if not no_mcp:
             # CRITICAL FIX: Pass instance_env_vars so MCP servers get workspace isolation
-            _start_mcp_servers_with_progress(project_path, instance_env=instance_env_vars)
+            _start_mcp_servers_with_progress(project_path, instance_id=instance_id or "A", instance_env=instance_env_vars)
             startup_workspace = (worktree_path or project_path).resolve()
             autoindex_result = _trigger_dope_context_autoindex_startup(startup_workspace)
             if autoindex_result:
@@ -4296,228 +4296,138 @@ def _configure_openrouter_litellm():
 
 def _resolve_mcp_dir(project_path: Path) -> Optional[Path]:
     """
-    Resolve MCP stack location deterministically.
-
-    Resolution order:
-    1. DOPEMUX_MCP_DIR (explicit override)
-    2. project_path/docker/mcp-servers (local project assets)
-    3. dopemux repo root (fallback for editable installs)
+    Resolve MCP stack directory using MCPProvisioner.
+    Auto-provisions if missing.
     """
-    # 1. Explicit override
-    if env_dir := os.getenv("DOPEMUX_MCP_DIR"):
-        path = Path(env_dir).resolve()
-        if (path / "start-all-mcp-servers.sh").exists():
-            return path
-
-    # 2. Local project
-    local_path = project_path / "docker" / "mcp-servers"
-    if (local_path / "start-all-mcp-servers.sh").exists():
-        return local_path
-
-    # 3. Inferred package root (editable install)
-    # cli.py is at src/dopemux/cli.py -> parents[2] is repo root
+    from .mcp.provision import MCPProvisioner
+    
+    provisioner = MCPProvisioner(project_path)
     try:
-        source_root = Path(__file__).resolve().parents[2]
-        pkg_path = source_root / "docker" / "mcp-servers"
-        if (pkg_path / "start-all-mcp-servers.sh").exists():
-            return pkg_path
-    except Exception:
-        pass
-
-    return None
+        return provisioner.ensure_stack_present()
+    except Exception as e:
+        console.logger.error(f"[red]❌ MCP Provisioning failed: {e}[/red]")
+        return None
 
 
-def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[dict] = None):
+def _start_mcp_servers_with_progress(project_path: Path, instance_id: str = "A", instance_env: Optional[dict] = None):
     """
-    Start MCP servers with real-time output streaming and health check waiting.
-
-    CRITICAL: Passes instance environment variables to MCP servers for workspace isolation.
-    Without this, all instances share the same workspace = broken ADHD context preservation!
-
-    Args:
-        project_path: Project root path
-        instance_env: Instance-specific environment variables (DOPEMUX_WORKSPACE_ID, etc.)
-
-    ADHD-optimized:
-    - Real-time visual feedback reduces anxiety
-    - Clear status updates maintain engagement
-    - Health check waiting ensures everything is ready
+    Start MCP servers with auto-provisioning, instance-scoped overlays, and Phase 0 gate.
     """
     if os.getenv("DOPEMUX_SKIP_MCP_START", "0").lower() in {"1", "true", "yes"}:
         console.logger.info("[yellow]⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)[/yellow]")
         return
 
-    import requests
-
-    # Resolve MCP stack location
+    # 1. Provision stack if missing
     mcp_dir = _resolve_mcp_dir(project_path)
-    
     if not mcp_dir:
-        console.print()
-        console.logger.error("[red]❌ Required MCP startup assets not found.[/red]")
-        console.print("[dim]   (Checked: DOPEMUX_MCP_DIR, local project, and dopemux package root)[/dim]")
-        
-        console.print("\n[bold]Remedies:[/bold]")
-        console.print("  1. Set DOPEMUX_MCP_DIR to the location of 'docker/mcp-servers'")
-        console.print("     [green]export DOPEMUX_MCP_DIR=/path/to/dopemux/docker/mcp-servers[/green]")
-        console.print("  2. Symlink the docker stack to your project:")
-        console.print(f"     [green]cd {project_path} && mkdir -p docker && ln -s .../dopemux/docker/mcp-servers docker/mcp-servers[/green]")
-        console.print("  3. Skip MCP requirement (functionality will be reduced):")
-        console.print("     [green]dopemux start --no-mcp[/green]")
-        
-        raise click.ClickException("MCP stack required but not found. See remedies above.")
-    
-    # We found it - ensure script exists (double-check, though resolver checks it)
-    script_path = mcp_dir / "start-all-mcp-servers.sh"
+        raise click.ClickException("MCP stack provisioning failed.")
 
-    # CRITICAL FIX: Merge instance env with current environment
-    # This ensures MCP servers get DOPEMUX_WORKSPACE_ID and other instance vars
+    # 2. Materialize instance overlay
+    from .mcp.instance_overlay import InstanceOverlayManager
+    overlay_manager = InstanceOverlayManager(project_path, instance_id)
+    overlay = overlay_manager.materialize()
+    
+    # 3. Prepare environment
     env_for_subprocess = os.environ.copy()
     if instance_env:
         env_for_subprocess.update(instance_env)
+    
+    # Load mcp.env values into subprocess env
+    try:
+        import dotenv
+        env_vars = dotenv.dotenv_values(overlay["env_path"])
+        env_for_subprocess.update({k: v for k, v in env_vars.items() if v is not None})
+    except ImportError:
+        # Fallback if python-dotenv not installed (unlikely but safe)
+        pass
 
-    # Critical servers to health check
-    critical_servers = [
-        ("ConPort", "http://localhost:3004/health"),
-        ("PAL", "http://localhost:3003/health"),
-        ("LiteLLM", "http://localhost:4000/health/readiness"),
-    ]
+    console.logger.info(f"\n[bold blue]🔌 Starting MCP Servers (Instance {instance_id})[/bold blue]")
+    console.logger.info(f"[dim]Project: {overlay['compose_project_name']}[/dim]")
+    console.logger.info(f"[dim]Ports: PAL={overlay['port_map']['PAL']}, ConPort={overlay['port_map']['ConPort']}[/dim]\n")
 
-    console.logger.info("\n[bold blue]🔌 Starting MCP Servers[/bold blue]")
-    console.logger.info("[dim]This may take 30-60 seconds for first-time setup...[/dim]\n")
-
-    # Start docker-compose with real-time output
+    # Start docker-compose with overlay
     status_text = Text()
     status_text.append("🚀 ", style="bold blue")
     status_text.append("Launching containers...")
 
     startup_successful = False
     output_lines = []
-    
+
     try:
         with Live(status_text, console=console, refresh_per_second=4) as live:
-            # Start the containers with instance environment
-            # CRITICAL FIX: Pass env_for_subprocess so docker-compose gets DOPEMUX_WORKSPACE_ID
-            # Use absolute path with cwd to avoid 'cd' failures from symlinked directories
-            script_path = mcp_dir / "start-all-mcp-servers.sh"
-            if not script_path.exists():
-                console.logger.error(f"[red]❌ MCP startup script not found at {script_path}[/red]")
-                console.logger.info(f"[dim]Expected: {script_path}[/dim]")
-                raise FileNotFoundError(f"start-all-mcp-servers.sh not found at {script_path}")
+            # We use docker-compose with the generated override
+            compose_file = mcp_dir / "compose.yml"
+            if not compose_file.exists():
+                # Try legacy name
+                compose_file = mcp_dir / "docker-compose.yml"
 
+            cmd = [
+                "docker", "compose",
+                "-f", str(compose_file),
+                "-f", overlay["compose_path"],
+                "--project-name", overlay["compose_project_name"],
+                "up", "-d", "--remove-orphans"
+            ]
+            
             process = subprocess.Popen(
-                ["bash", str(script_path)],
+                cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
-                bufsize=1,
-                cwd=str(mcp_dir),  # Set working directory explicitly instead of 'cd'
-                env=env_for_subprocess  # ← THE FIX! Passes instance vars to MCP servers
+                env=env_for_subprocess,
+                cwd=str(mcp_dir)
             )
 
-            # Stream output line by line
             for line in process.stdout:
-                line = line.rstrip()
+                line = line.strip()
                 if line:
-                    # Update status with last meaningful line
-                    if "Starting" in line:
-                        status_text = Text()
-                        status_text.append("🔨 ", style="bold blue")
-                        status_text.append(line)
-                        live.update(status_text)
-                    elif "✅" in line or "Healthy" in line:
-                        status_text = Text()
-                        status_text.append("✅ ", style="bold green")
-                        status_text.append(line)
-                        live.update(status_text)
-                    elif "⚡" in line:
-                        status_text = Text()
-                        status_text.append("⚡ ", style="bold yellow")
-                        status_text.append(line)
-                        live.update(status_text)
-
                     output_lines.append(line)
+                    if len(output_lines) > 5:
+                        output_lines.pop(0)
+                    
+                    status_text = Text()
+                    status_text.append("🚀 ", style="bold blue")
+                    status_text.append("Launching containers...\n")
+                    for out in output_lines:
+                        status_text.append(f"  [dim]{out}[/dim]\n")
+                    live.update(status_text)
 
             process.wait()
-
-            if process.returncode != 0:
-                console.logger.error("\n[red]❌ MCP server startup failed[/red]")
-                console.logger.info("[dim]Last 10 lines of output:[/dim]")
-                for line in output_lines[-10:]:
-                    console.logger.info(f"[dim]{line}[/dim]")
-                raise CalledProcessError(process.returncode, process.args)
-        
-        # Mark startup as successful only after the first Live context has fully exited
-        startup_successful = True
-
-    except CalledProcessError as e:
-        console.logger.error("[yellow]⚠️  Failed to start MCP servers (continuing with reduced functionality)[/yellow]")
-        console.logger.info("[dim]   Tip: Run 'dopemux start --no-mcp' to skip this step[/dim]")
-        return  # Exit early to avoid starting the second Live context
-    except Exception as e:
-        console.logger.error(f"[yellow]⚠️  Error during MCP startup: {e}[/yellow]")
-        console.logger.info("[dim]   Continuing with reduced functionality...[/dim]")
-        return  # Exit early to avoid starting the second Live context
-
-    # Only proceed with health checks if startup was successful
-    if startup_successful:
-        # Wait for health checks
-        console.logger.info("\n[bold blue]🏥 Waiting for services to become healthy...[/bold blue]")
-
-        max_wait = 45  # seconds
-        start_time = time.time()
-        all_healthy = False
-
-        health_status = {name: False for name, _ in critical_servers}
-
-        try:
-            with Live(console=console, refresh_per_second=2) as live:
-                while time.time() - start_time < max_wait:
-                    status_text = Text()
-                    all_healthy = True
-
-                    for name, url in critical_servers:
-                        is_healthy = False
-                        try:
-                            response = requests.get(url, timeout=2)
-                            is_healthy = response.status_code == 200
-                        except requests.RequestException:
-                            is_healthy = False
-
-                        health_status[name] = is_healthy
-                        if is_healthy:
-                            status_text.append("✅ ", style="bold green")
-                        else:
-                            status_text.append("⏳ ", style="bold yellow")
-                            all_healthy = False
-                        status_text.append(f"{name}\n")
-
-                    # Add elapsed time
-                    elapsed = int(time.time() - start_time)
-                    status_text.append(f"\n[dim]⏱️  {elapsed}s / {max_wait}s[/dim]")
-
-                    live.update(Panel(status_text, title="[bold]Health Check Status[/bold]", border_style="blue"))
-
-                    if all_healthy:
-                        break
-
-                    time.sleep(2)
-
-            if all_healthy:
-                console.logger.info("\n[bold green]✅ All MCP servers are healthy and ready![/bold green]\n")
+            if process.returncode == 0:
+                startup_successful = True
+                status_text.append("\n✅ Containers launched!", style="bold green")
+                live.update(status_text)
             else:
-                # Show which services failed
-                console.logger.info("\n[yellow]⚠️  Some services are not healthy (continuing anyway):[/yellow]")
-                for name, is_healthy in health_status.items():
-                    if not is_healthy:
-                        console.logger.info(f"  [red]❌ {name}[/red]")
-                    else:
-                        console.logger.info(f"  [green]✅ {name}[/green]")
-                console.logger.info("[dim]Tip: Check docker logs with: docker compose -f compose.yml logs[/dim]\n")
+                status_text.append(f"\n❌ Startup failed (exit {process.returncode})", style="bold red")
+                live.update(status_text)
+                raise RuntimeError(f"Docker compose failed with exit code {process.returncode}")
+
+        # 4. Phase 0 Discovery Gate
+        console.logger.info("[blue]🛡️ Running Phase 0 Discovery Gate...[/blue]")
+        from .mcp.gate import DiscoveryGate
         
-        except Exception as e:
-            console.logger.error(f"[yellow]⚠️  Error during health checks: {e}[/yellow]")
-            console.logger.info("[dim]   Continuing anyway...[/dim]")
+        # We need to wait a few seconds for servers to actually start listening
+        time.sleep(3)
+        
+        # Point the gate to use the resolved ports for this instance
+        for srv_name, port in overlay["port_map"].items():
+            env_var = f"DOPMUX_{srv_name.upper().replace('-', '_')}_URL"
+            os.environ[env_var] = f"http://127.0.0.1:{port}/mcp" if srv_name != "LiteLLM" else f"http://127.0.0.1:{port}"
+
+        gate = DiscoveryGate(project_path, run_id=f"start-{instance_id}-{int(time.time())}")
+        if not asyncio.run(gate.run()):
+            gate.print_block_report()
+            raise click.ClickException("MCP Phase 0 Discovery Gate failed. Mandatory tools not available.")
+        
+        console.logger.info("[green]✅ Phase 0 Discovery Gate passed![/green]")
+
+    except Exception as e:
+        console.logger.error(f"[red]❌ MCP Startup failed: {e}[/red]")
+        if output_lines:
+            console.print("[dim]Last output lines:[/dim]")
+            for line in output_lines[-10:]:
+                console.print(f"  [dim]{line}[/dim]")
+        raise click.ClickException(f"Failed to start MCP stack: {e}")
 
 
 def _trigger_dope_context_autoindex_startup(

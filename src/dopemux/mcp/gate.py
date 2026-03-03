@@ -10,9 +10,9 @@ class DiscoveryGate:
     """
     Phase 0 Tool Discovery Gate:
     - Runs Instance Resolver
-    - Runs Tool Discovery
+    - Runs Tool Discovery (JSON-RPC POST tools/list)
     - Validates required tool globs are satisfied
-    - Blocks if missing/unreachable
+    - Fails closed with structured report
     """
     def __init__(self, project_root: Optional[Path] = None, run_id: str = "latest"):
         self.project_root = project_root or Path.cwd()
@@ -20,45 +20,37 @@ class DiscoveryGate:
         self.resolver = InstanceResolver(self.project_root)
         self.discovery = ToolDiscoveryClient()
         self.proof_dir = self.project_root / "proof" / run_id
-        self.gate_report = {
+        self.report = {
             "status": "INIT",
-            "missing_required_servers": [],
+            "reachable_transport": [],
+            "unreachable_transport": [],
+            "tools_discoverable": {},
             "missing_required_tools": {},
             "resolved_endpoints": {},
-            "reachable_servers": [],
-            "unreachable_servers": []
+            "provenance": {}
         }
 
     async def run(self, profile_name: str = "default") -> bool:
         # 1. Resolve
         resolution = self.resolver.resolve(profile_name)
-        self.resolver.save_report(self.proof_dir / "INSTANCE_RESOLUTION.json")
+        self.report["resolved_endpoints"] = resolution["servers"]
+        self.report["provenance"] = resolution["provenance"]
         
         # 2. Discover
         discovery_report = await self.discovery.discover(resolution["servers"])
-        self.discovery.save_report(self.proof_dir / "DISCOVERY_REPORT.json")
         
         # 3. Validate
-        self.gate_report["resolved_endpoints"] = resolution["servers"]
         passed = True
-        
-        # Servers defined in repo profile are considered REQUIRED by default
-        repo_servers = resolution.get("servers", {})
-        
-        for name, config in repo_servers.items():
-            required_globs = config.get("required_tool_globs", [])
-            discovered_tools = discovery_report["tools"].get(name, [])
-            status = discovery_report["status"].get(name)
+        for name, config in resolution["servers"].items():
+            srv_discovery = next((s for s in discovery_report["servers"] if s["name"] == name), None)
             
-            if status != "ok":
-                # Check if it was resolved from repo profile
-                if resolution["provenance"].get(name) == "repo_profile":
-                    self.gate_report["unreachable_servers"].append(name)
-                    passed = False
-            else:
-                self.gate_report["reachable_servers"].append(name)
+            if srv_discovery and srv_discovery["reachable"]:
+                self.report["reachable_transport"].append(name)
+                discovered_tools = srv_discovery.get("tools", [])
+                self.report["tools_discoverable"][name] = len(discovered_tools)
                 
-                # Check tool globs
+                # Validate globs
+                required_globs = config.get("required_tool_globs", [])
                 missing_globs = []
                 for glob in required_globs:
                     matches = fnmatch.filter(discovered_tools, glob)
@@ -66,29 +58,40 @@ class DiscoveryGate:
                         missing_globs.append(glob)
                 
                 if missing_globs:
-                    self.gate_report["missing_required_tools"][name] = missing_globs
+                    self.report["missing_required_tools"][name] = missing_globs
+                    passed = False
+            else:
+                self.report["unreachable_transport"].append(name)
+                # If it's in repo profile, it's mandatory
+                if resolution["provenance"].get(name) == "repo_profile":
                     passed = False
 
-        self.gate_report["status"] = "PASS" if passed else "BLOCK"
-        self._save_gate_report()
+        self.report["status"] = "PASS" if passed else "BLOCK"
+        self._save_report()
         return passed
 
-    def _save_gate_report(self):
+    def _save_report(self):
         self.proof_dir.mkdir(parents=True, exist_ok=True)
+        # Standard filename per TP
+        with open(self.proof_dir / "PHASE0_REPORT.json", "w") as f:
+            json.dump(self.report, f, indent=2, sort_keys=True)
+        
+        # Also save legacy for compatibility if needed
         with open(self.proof_dir / "GATE_RESULT.json", "w") as f:
-            json.dump(self.gate_report, f, indent=2, sort_keys=True)
+            json.dump(self.report, f, indent=2, sort_keys=True)
 
     def print_block_report(self):
         print("\n" + "="*60)
-        print("MCP PHASE 0 DISCOVERY GATE: BLOCK")
+        print(f"MCP PHASE 0 DISCOVERY GATE: {self.report['status']}")
         print("="*60)
-        if self.gate_report["unreachable_servers"]:
-            print(f"Unreachable required servers: {', '.join(self.gate_report['unreachable_servers'])}")
         
-        if self.gate_report["missing_required_tools"]:
+        if self.report["unreachable_transport"]:
+            print(f"Unreachable transport (JSON-RPC failed): {', '.join(self.report['unreachable_transport'])}")
+        
+        if self.report["missing_required_tools"]:
             print("Missing required tools (globs not satisfied):")
-            for srv, globs in self.gate_report["missing_required_tools"].items():
+            for srv, globs in self.report["missing_required_tools"].items():
                 print(f"  - {srv}: {', '.join(globs)}")
         
-        print(f"\nSee full reports in: {self.proof_dir}")
+        print(f"\nSee full report in: {self.proof_dir}/PHASE0_REPORT.json")
         print("="*60 + "\n")
