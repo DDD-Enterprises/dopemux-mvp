@@ -4,9 +4,9 @@ title: Setup
 type: explanation
 owner: '@hu3mann'
 author: '@hu3mann'
-date: '2026-03-02'
-last_review: '2026-03-02'
-next_review: '2026-05-31'
+date: '2026-03-03'
+last_review: '2026-03-03'
+next_review: '2026-06-01'
 prelude: Setup (explanation) for dopemux documentation and developer workflows.
 ---
 # Mobile-First Dopemux Setup (Blink Shell / iOS)

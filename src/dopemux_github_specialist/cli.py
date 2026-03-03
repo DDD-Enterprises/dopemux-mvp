@@ -5,6 +5,7 @@ import json
 import sys
 import time
 from pathlib import Path
+
 from .schema import Report
 from .github.render import render_report_md
 from .errors import RedactionError, SchemaError

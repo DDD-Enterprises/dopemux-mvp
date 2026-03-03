@@ -715,6 +715,14 @@ def start(
     routing_fallback_subscription: bool,
     **legacy_kwargs,
 ):
+    # Track original flag values for subscription mode warnings
+    original_grok = use_grok
+    original_codex = use_codex
+    original_altp = use_altp
+    original_litellm = use_litellm
+    global RoutingConfig
+    provider = None
+
     """
     🚀 Start Claude Code with ADHD-optimized configuration
 
@@ -725,13 +733,6 @@ def start(
         Automatically detects running instances and creates isolated worktrees
         for parallel ADHD-optimized development workflows.
     """
-    # Track original flag values for subscription mode warnings
-    original_grok = use_grok
-    original_codex = use_codex
-    original_altp = use_altp
-    original_litellm = use_litellm
-    global RoutingConfig
-    provider = None
     
     def _ensure_env_consistent_with_mode(final_mode: str) -> None:
         """Ensure environment variables are consistent with routing mode.
@@ -954,9 +955,9 @@ def start(
             # Check if we should warn about proxy usage
             current_routing_mode = "subscription"  # Default to subscription
             try:
-                if RoutingConfig is not None:
-                    routing_config = RoutingConfig.load_default()
-                    current_routing_mode = routing_config.get_mode()
+                from .routing_config import RoutingConfig
+                routing_config = RoutingConfig.load_default()
+                current_routing_mode = routing_config.get_mode()
             except Exception:
                 pass
 
@@ -989,43 +990,43 @@ def start(
                 
                 _routing_summary = "Claude Code → CCR → LiteLLM → tier-matched providers"
 
-        if use_litellm:
-            console.logger.info("[blue]🔄 Starting LiteLLM proxy (no DB required)...[/blue]")
-            try:
-                litellm_port, litellm_master_key = start_simple_proxy(
-                    project_root=Path.cwd(),
-                    config_data=config_data,
-                )
-                provider_proxy_started = True
-            except LiteLLMProxyError as exc:
-                raise click.ClickException(str(exc))
+        console.logger.info("[blue]🔄 Starting LiteLLM proxy (no DB required)...[/blue]")
+        try:
+            litellm_port, litellm_master_key = start_simple_proxy(
+                project_root=Path.cwd(),
+                config_data=config_data,
+            )
+            provider_proxy_started = True
+        except LiteLLMProxyError as exc:
+            raise click.ClickException(str(exc))
 
-            console.logger.info(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
+        console.logger.info(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
 
-            # Wire Claude Code to use the proxy
-            os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
-            os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-            os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
-            os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
-            os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
-            os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+        # Wire Claude Code to use the proxy
+        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
+        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
+        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
+        os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+        os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
+        os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
 
-            # Export CCR upstream env vars so Claude Code Router uses the new proxy
-            os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
-            os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
-            os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
-            
-            if use_altp:
-                # For --altp, we map to the tier names defined in generate_multi_target_config
-                # CCR will expose these exact model names to Claude Code
-                os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
-            elif provider is not None:
-                os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
+        # Export CCR upstream env vars so Claude Code Router uses the new proxy
+        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+        
+        if use_altp:
+            # For --altp, we map to the tier names defined in generate_multi_target_config
+            # CCR will expose these exact model names to Claude Code
+            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
+        elif provider:
+            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
 
-            use_alt_routing = False  # Skip the full alt-routing block below
+        use_litellm = True
+        use_alt_routing = False  # Skip the full alt-routing block below
 
-            console.logger.info(f"[dim]✓ {_routing_summary} (:{litellm_port})[/dim]")
-            console.logger.info("")
+        console.logger.info(f"[dim]✓ {_routing_summary} (:{litellm_port})[/dim]")
+        console.logger.info("")
 
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
