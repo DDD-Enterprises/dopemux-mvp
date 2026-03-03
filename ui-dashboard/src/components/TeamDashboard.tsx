@@ -6,7 +6,8 @@ import {
   Grid,
   Avatar,
   Chip,
-  LinearProgress
+  LinearProgress,
+  Tooltip
 } from '@mui/material';
 import { Users } from 'lucide-react';
 import { brandTokens, statusStyles } from '../theme';
@@ -99,15 +100,18 @@ const TeamDashboard: React.FC = () => {
         <Typography variant="h6" sx={{ letterSpacing: '0.15em' }}>
           Team Cognitive Status
         </Typography>
-        <Chip
-          label={`${(teamLoadAvg * 100).toFixed(0)}% Average Load`}
-          sx={{
-            ml: 'auto',
-            bgcolor: 'rgba(148, 250, 219, 0.08)',
-            color: brandTokens.colors.serumMint,
-            border: '1px solid rgba(148, 250, 219, 0.4)'
-          }}
-        />
+        <Tooltip title="Aggregate cognitive load across all active team members" arrow>
+          <Chip
+            label={`${(teamLoadAvg * 100).toFixed(0)}% Average Load`}
+            tabIndex={0}
+            sx={{
+              ml: 'auto',
+              bgcolor: 'rgba(148, 250, 219, 0.08)',
+              color: brandTokens.colors.serumMint,
+              border: '1px solid rgba(148, 250, 219, 0.4)'
+            }}
+          />
+        </Tooltip>
       </Box>
       <Typography className="dopemux-roast" sx={{ mb: 2 }}>
         Your team is a choir of gremlins; I keep them harmonized with status chips and thinly veiled threats.
@@ -158,15 +162,18 @@ const TeamDashboard: React.FC = () => {
                     {member.role}
                   </Typography>
                 </Box>
-                <Chip
-                  size="small"
-                  label={member.status.toUpperCase()}
-                  sx={{
-                    bgcolor: `${statusStyles[member.status].color}22`,
-                    color: statusStyles[member.status].color,
-                    border: `1px solid ${statusStyles[member.status].color}`
-                  }}
-                />
+                <Tooltip title="Current cognitive state" arrow>
+                  <Chip
+                    size="small"
+                    label={member.status.toUpperCase()}
+                    tabIndex={0}
+                    sx={{
+                      bgcolor: `${statusStyles[member.status].color}22`,
+                      color: statusStyles[member.status].color,
+                      border: `1px solid ${statusStyles[member.status].color}`
+                    }}
+                  />
+                </Tooltip>
               </Box>
 
               <Typography variant="body2" sx={{ mb: 1 }}>
@@ -190,28 +197,34 @@ const TeamDashboard: React.FC = () => {
               />
 
               <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                <Chip
-                  size="small"
-                  label={`${(member.energy * 100).toFixed(0)}% Energy`}
-                  sx={{
-                    bgcolor: 'rgba(4,22,40,0.7)',
-                    color: member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge,
-                    border: `1px solid ${
-                      member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge
-                    }`
-                  }}
-                />
-                <Chip
-                  size="small"
-                  label={`${(member.attention * 100).toFixed(0)}% Attention`}
-                  sx={{
-                    bgcolor: 'rgba(4,22,40,0.7)',
-                    color: member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge,
-                    border: `1px solid ${
-                      member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge
-                    }`
-                  }}
-                />
+                <Tooltip title="Real-time energy levels" arrow>
+                  <Chip
+                    size="small"
+                    label={`${(member.energy * 100).toFixed(0)}% Energy`}
+                    tabIndex={0}
+                    sx={{
+                      bgcolor: 'rgba(4,22,40,0.7)',
+                      color: member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge,
+                      border: `1px solid ${
+                        member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge
+                      }`
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip title="Current focus and attention state" arrow>
+                  <Chip
+                    size="small"
+                    label={`${(member.attention * 100).toFixed(0)}% Attention`}
+                    tabIndex={0}
+                    sx={{
+                      bgcolor: 'rgba(4,22,40,0.7)',
+                      color: member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge,
+                      border: `1px solid ${
+                        member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge
+                      }`
+                    }}
+                  />
+                </Tooltip>
               </Box>
 
               <Typography className="dopemux-roast" sx={{ mt: 1 }}>
