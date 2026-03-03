@@ -46,28 +46,31 @@ class ErrorSeverity(Enum):
     HIGH = "high"        # Circuit breaker activation
     CRITICAL = "critical"  # Immediate intervention required
 
-@dataclass
 class DopemuxError(Exception):
     """Standardized error representation with ADHD-friendly messaging."""
-    error_type: ErrorType
-    severity: ErrorSeverity
-    message: str
-    metadata: Optional[Dict[str, Any]] = None
 
-    def __post_init__(self):
-        """Initialize base Exception with the error message."""
-        super().__init__(self.message)
-
-    service_name: Optional[str] = None
-    operation: Optional[str] = None
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    retry_count: int = 0
-    adhd_friendly_message: Optional[str] = None
-
-    def __post_init__(self):
-        """Generate ADHD-friendly error message if not provided."""
-        if not self.adhd_friendly_message:
-            self.adhd_friendly_message = self._generate_adhd_message()
+    def __init__(
+        self,
+        error_type: ErrorType,
+        severity: ErrorSeverity,
+        message: str,
+        details: Optional[Dict[str, Any]] = None,
+        service_name: Optional[str] = None,
+        operation: Optional[str] = None,
+        timestamp: Optional[datetime] = None,
+        retry_count: int = 0,
+        adhd_friendly_message: Optional[str] = None
+    ):
+        super().__init__(message)
+        self.error_type = error_type
+        self.severity = severity
+        self.message = message
+        self.details = details
+        self.service_name = service_name
+        self.operation = operation
+        self.timestamp = timestamp or datetime.now(timezone.utc)
+        self.retry_count = retry_count
+        self.adhd_friendly_message = adhd_friendly_message or self._generate_adhd_message()
 
     def _generate_adhd_message(self) -> str:
         """Generate gentle, actionable error messages for ADHD users."""
