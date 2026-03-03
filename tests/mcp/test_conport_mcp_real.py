@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, AsyncMock, patch
 
 # Add the directory containing enhanced_server.py to sys.path
 project_root = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(project_root / "docker/mcp-servers/conport"))
+sys.path.insert(0, str(project_root / "docker/mcp-servers-source/conport"))
 
 from enhanced_server import EnhancedConPortServer
 
