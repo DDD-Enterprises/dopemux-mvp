@@ -2,7 +2,7 @@ import os
 import json
 import tomllib
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 
 class InstanceResolver:
     """

@@ -1,9 +1,8 @@
 import asyncio
 import aiohttp
 import json
-import fnmatch
 from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 class ToolDiscoveryClient:
     """
@@ -64,7 +63,8 @@ class ToolDiscoveryClient:
 
         errors = []
         for endpoint in probe_endpoints:
-            if not endpoint: continue
+            if not endpoint:
+                continue
             try:
                 # Use a POST JSON-RPC probe
                 payload = {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
