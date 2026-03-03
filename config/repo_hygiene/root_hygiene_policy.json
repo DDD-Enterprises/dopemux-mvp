@@ -46,7 +46,8 @@
     "UPGRADES",
     "_audit_out",
     "review_artifacts",
-    ".dopetask"
+    ".dopetask",
+    "proof"
   ],
   "allowed_root_files": [
     ".dopetaskroot",
