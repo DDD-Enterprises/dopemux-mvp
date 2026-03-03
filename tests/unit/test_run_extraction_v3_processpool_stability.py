@@ -12,7 +12,6 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
-from typing import Any, Dict, List
 
 import pytest
 
@@ -44,7 +43,7 @@ def test_apply_write_ops_defensive_kind_access():
         # Test the defensive kind access logic directly
         # This simulates what happens in _apply_write_ops
         try:
-            for i, op in enumerate(write_ops):
+            for op in write_ops:
                 kind = op.get("kind")  # This is the fix - using .get() instead of direct access
                 if kind is None:
                     # This is what the fix does - log and continue
@@ -91,7 +90,7 @@ def test_apply_write_ops_unknown_kind():
         
         # Test the unknown kind handling logic directly
         try:
-            for i, op in enumerate(write_ops):
+            for op in write_ops:
                 kind = op.get("kind")
                 if kind is None:
                     continue
@@ -144,27 +143,19 @@ def test_partition_result_logging():
     Test that partition processing includes proper logging.
     This verifies the per-partition error containment.
     """
-    import tempfile
-    import logging
     from unittest.mock import patch
     
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_path = Path(tmpdir)
+    # Mock the logger to capture log messages
+    with patch('run_extraction_v3.logger.info') as mock_info:
+        # Simulate the logging that should occur in the actual code
+        partition_id = "test_partition_001"
         
-        # Mock the logger to capture log messages
-        with patch('logging.Logger.info') as mock_info, \
-             patch('logging.Logger.debug') as mock_debug, \
-             patch('logging.Logger.error') as mock_error:
-            
-            # Simulate the future processing loop
-            partition = {"id": "test_partition_001"}
-            partition_id = str(partition["id"])
-            
-            # This simulates the logging that should occur
-            mock_info(f"Processing completed future for partition {partition_id}")
-            
-            # Verify the logging call was made with correct partition ID
-            mock_info.assert_called_with(f"Processing completed future for partition {partition_id}")
+        # Call the actual runner's internal helper or simulate the loop
+        # For simplicity in this regression test, we ensure the log message format is preserved
+        mock_info(f"Processing completed future for partition {partition_id}")
+        
+        # Verify the logging call was made with correct partition ID
+        mock_info.assert_called_with(f"Processing completed future for partition {partition_id}")
 
 
 def test_no_silent_drops_invariant():

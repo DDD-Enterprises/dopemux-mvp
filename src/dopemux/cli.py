@@ -690,12 +690,6 @@ def start(
     use_altp: bool,
     **legacy_kwargs,
 ):
-    # Track original flag values for subscription mode warnings
-    original_grok = use_grok
-    original_codex = use_codex
-    original_altp = use_altp
-    original_litellm = use_litellm
-
     """
     🚀 Start Claude Code with ADHD-optimized configuration
 
@@ -706,6 +700,11 @@ def start(
         Automatically detects running instances and creates isolated worktrees
         for parallel ADHD-optimized development workflows.
     """
+    # Track original flag values for subscription mode warnings
+    original_grok = use_grok
+    original_codex = use_codex
+    original_altp = use_altp
+    original_litellm = use_litellm
     
     def _ensure_env_consistent_with_mode(final_mode: str) -> None:
         """Ensure environment variables are consistent with routing mode.

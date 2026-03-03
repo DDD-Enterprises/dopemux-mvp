@@ -32,26 +32,25 @@ def find_unpicklable_path(obj: Any, path: str = "") -> Optional[str]:
     try:
         pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
         return None
-    except (pickle.PicklingError, TypeError) as e:
+    except (pickle.PicklingError, TypeError):
+        # If it's a container, recurse to find the specific unpicklable item
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                key_path = f"{path}.{key}" if path else str(key)
+                result = find_unpicklable_path(value, key_path)
+                if result:
+                    return result
+        elif isinstance(obj, (list, tuple)):
+            for i, item in enumerate(obj):
+                item_path = f"{path}[{i}]" if path else f"[{i}]"
+                result = find_unpicklable_path(item, item_path)
+                if result:
+                    return result
+        
+        # If no children are unpicklable or it's not a container, this object is the culprit
         if path:
             return path
         return "<root>"
-    
-    # Check container types
-    if isinstance(obj, dict):
-        for key, value in obj.items():
-            key_path = f"{path}.{key}" if path else str(key)
-            result = find_unpicklable_path(value, key_path)
-            if result:
-                return result
-    elif isinstance(obj, (list, tuple)):
-        for i, item in enumerate(obj):
-            item_path = f"{path}[{i}]" if path else f"[{i}]"
-            result = find_unpicklable_path(item, item_path)
-            if result:
-                return result
-    
-    return None
 
 
 def test_partition_pickle(partition: Dict[str, Any]) -> Optional[Dict[str, Any]]:

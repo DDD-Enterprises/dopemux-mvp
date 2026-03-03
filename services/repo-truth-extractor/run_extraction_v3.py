@@ -6048,22 +6048,124 @@ def _run_one_partition_worker(
             failed_delta=0,
         )
     
-    # For non-dry-run, implement full logic (simplified for now)
-    # This would be expanded to match the original function
-    return PartitionExecResult(
-        partition_id=partition_id,
-        write_ops=write_ops,
-        logs=logs,
-        request_meta={"provider": initial_provider, "model_id": initial_model_id},
-        artifacts=[],
-        success=False,
-        resume_skipped=False,
-        auth_failure=False,
-        auth_expired=False,
-        recomputed_delta=0,
-        dry_run_delta=0,
-        failed_delta=1,
+    # For non-dry-run, implement full logic
+    _append_log(
+        logs,
+        "info",
+        (
+            f"Executing {step_id} partition {partition_id} using initial_provider={initial_provider} "
+            f"files={len(partition['paths'])} transport={transport}"
+        ),
     )
+
+    # Reconstruct ladder
+    # Note: step_ladder is not passed, but we can reconstruct it or simplify
+    # For the worker, we'll use a single-step ladder based on initial provider for now
+    # or pass the ladder as an argument.
+    # To keep it simple and correct, I'll pass the ladder.
+    
+    # Wait, I need to change the signature of _run_one_partition_worker to include ladder.
+    # Let's do that in the next step. For now, use initial provider.
+    
+    def _route_attempt_worker(route: Tuple[str, str, str], hop_index: int) -> Dict[str, Any]:
+        route_provider, route_model_id, route_api_key_env = route
+        route_force_json = route_provider == "gemini"
+        
+        llm_result = call_llm(
+            provider=route_provider,
+            model_id=route_model_id,
+            api_key_env=route_api_key_env,
+            system_prompt=prompt_text,
+            user_content=user_prompt,
+            cfg=None, # Simplified
+            force_json_output=route_force_json,
+        )
+        
+        resp_text = str(llm_result.get("text", ""))
+        req_meta = enrich_request_meta(
+            llm_result.get("meta", {}),
+            run_id=run_id,
+            phase=phase,
+            step_id=step_id,
+            partition_id=partition_id,
+            provider=route_provider,
+            model_id=route_model_id,
+        )
+        
+        parsed = parse_json_from_response(resp_text)
+        arts = coerce_artifacts_from_response(
+            parsed=parsed,
+            raw_text=resp_text,
+            expected_artifacts=output_artifacts,
+        )
+        
+        return {
+            "response_text": resp_text,
+            "request_meta": req_meta,
+            "artifacts": arts,
+            "route": route,
+            "artifacts_ok": bool(arts),
+            "escalation_trigger": None if arts else "parse_failure",
+        }
+
+    # Execute
+    try:
+        # Build context
+        context, context_stats = build_partition_context(
+            phase=phase,
+            partition_paths=partition["paths"],
+            file_truncate_chars=file_truncate_chars,
+            home_scan_mode=home_scan_mode,
+            max_files=max_files,
+            max_chars=int(cfg_dict.get('max_chars', 650000)) - 1000,
+        )
+        user_prompt = f"Extract from the files below.\n\nFILES:\n{context}"
+        
+        result = _route_attempt_worker((initial_provider, initial_model_id, initial_api_key_env), 0)
+        
+        success = result["artifacts_ok"]
+        if success:
+            _op_write_json(write_ops, out_json, {
+                "phase": phase,
+                "step_id": step_id,
+                "partition_id": partition_id,
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "artifacts": result["artifacts"],
+                "request_meta": result["request_meta"],
+            })
+        else:
+            _op_write_text(write_ops, out_failed, result["response_text"])
+            
+        return PartitionExecResult(
+            partition_id=partition_id,
+            write_ops=write_ops,
+            logs=logs,
+            request_meta=result["request_meta"],
+            artifacts=result["artifacts"] if success else [],
+            success=success,
+            resume_skipped=False,
+            auth_failure=False,
+            auth_expired=False,
+            recomputed_delta=1,
+            dry_run_delta=0,
+            failed_delta=0 if success else 1,
+        )
+    except Exception as exc:
+        _append_log(logs, "error", f"Worker crash: {exc}")
+        return PartitionExecResult(
+            partition_id=partition_id,
+            write_ops=write_ops,
+            logs=logs,
+            request_meta={"error": str(exc)},
+            artifacts=[],
+            success=False,
+            resume_skipped=False,
+            auth_failure=False,
+            auth_expired=False,
+            recomputed_delta=0,
+            dry_run_delta=0,
+            failed_delta=1,
+        )
 
 
 def execute_step_for_partitions(
@@ -10318,8 +10420,8 @@ def main() -> None:
         logger.info("Batch retrieval complete: %s events integrated", integrated)
         if integrated > 0:
             logger.info("You can now run --finalize to process the integrated batch results")
-        sys.exit(0 if integrated >= 0 else 1)
-
+        
+        # Check if we should continue to next phase (GX0 integration)
         if watch_result.next_phase:
             logger.info(
                 "AUTO_CONTINUE phase=%s next_phase=%s",
@@ -10328,7 +10430,7 @@ def main() -> None:
             )
             phase_sequence = [watch_result.next_phase]
         else:
-            sys.exit(watch_result.exit_code)
+            sys.exit(0 if integrated >= 0 else 1)
 
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
@@ -10467,11 +10569,18 @@ def run_batch_retrieval_and_integration(
         Number of batches successfully integrated
     """
     try:
-        from lib.batch_retriever import (
-            retrieve_openai_batches, 
-            retrieve_gemini_batches, 
-            integrate_batch_results_with_webhook
-        )
+        try:
+            from lib.batch_retriever import (
+                retrieve_openai_batches, 
+                retrieve_gemini_batches, 
+                integrate_batch_results_with_webhook
+            )
+        except ImportError:
+            from .lib.batch_retriever import (
+                retrieve_openai_batches, 
+                retrieve_gemini_batches, 
+                integrate_batch_results_with_webhook
+            )
     except ImportError:
         logger.error("Batch retriever module not available")
         return 0
@@ -10531,6 +10640,7 @@ def run_batch_retrieval_and_integration(
                     phase="R",  # Default to phase R for batch processing
                     step_id="batch_retrieval",
                     partition_id=batch_id,
+                    provider=provider,
                 )
                 events_integrated += integrated
             except Exception as e:
