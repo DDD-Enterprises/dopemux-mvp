@@ -331,12 +331,44 @@ class MCPServerManager:
     # Private helper methods
 
     async def _load_configuration(self) -> None:
-        """Load server configuration from YAML file"""
+        """Load server configuration from YAML file and InstanceResolver"""
         try:
-            with open(self.config_path, "r") as f:
-                self.config = yaml.safe_load(f)
+            # 1. Load from primary YAML config if it exists
+            if self.config_path and os.path.exists(self.config_path):
+                with open(self.config_path, "r") as f:
+                    self.config = yaml.safe_load(f)
+            
+            if not self.config:
+                self.config = {"servers": {}}
+            elif "servers" not in self.config:
+                self.config["servers"] = {}
+
+            # 2. Overlay with InstanceResolver (Project-Scoped)
+            # This ensures that tools are project-scoped and deterministic
+            from .resolver import InstanceResolver
+            resolver = InstanceResolver()  # Uses CWD project root by default
+            resolution = resolver.resolve()
+            
+            for srv_name, res_config in resolution.get("servers", {}).items():
+                # We normalize server names to match (some might use dopemux- prefix in registry)
+                # But here we assume srv_name matches registry names
+                target_name = srv_name
+                # Optional: if srv_name not in config, check with dopemux- prefix
+                if target_name not in self.config["servers"] and f"dopemux-{target_name}" in self.config["servers"]:
+                    target_name = f"dopemux-{target_name}"
+
+                if target_name not in self.config["servers"]:
+                    self.config["servers"][target_name] = {}
+                
+                # Explicitly override with resolved endpoints and provenance
+                for k, v in res_config.items():
+                    self.config["servers"][target_name][k] = v
+                
+                # Track provenance for debugging
+                self.config["servers"][target_name]["_provenance"] = resolution["provenance"].get(srv_name)
+
             logger.info(
-                f"Loaded server configuration: {len(self.config.get('servers', {}))} servers"
+                f"Loaded server configuration: {len(self.config.get('servers', {}))} servers (with project overrides)"
             )
         except Exception as e:
             logger.error(f"Failed to load server configuration: {e}")
