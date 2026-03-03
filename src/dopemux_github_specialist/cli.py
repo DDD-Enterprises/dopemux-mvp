@@ -5,11 +5,8 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Optional
-
 from .schema import Report
 from .github.render import render_report_md
-from .redaction import RedactionPolicy
 from .errors import RedactionError, SchemaError
 from .gemini.adapter import run_extraction_adapter
 
