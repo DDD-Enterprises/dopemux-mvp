@@ -86,16 +86,23 @@ class InMemoryAdapter(EventBus):
 
     async def publish(self, event: DopemuxEvent) -> bool:
         # Dispatch to all subscribers
-        for sub_id, pattern in self._patterns.items():
+        # Use list() to allow subscribers to unsubscribe during iteration
+        for sub_id, pattern in list(self._patterns.items()):
+            # Verify subscriber still exists (in case it was removed by another callback)
+            if sub_id not in self._patterns:
+                continue
+
             if self._matches(pattern, event):
-                callback = self._subscribers[pattern][sub_id]
-                try:
-                    if asyncio.iscoroutinefunction(callback):
-                        await callback(event)
-                    else:
-                        callback(event)
-                except Exception as e:
-                    logger.error(f"Error in subscriber {sub_id}: {e}")
+                # Check consistency between _patterns and _subscribers
+                if pattern in self._subscribers and sub_id in self._subscribers[pattern]:
+                    callback = self._subscribers[pattern][sub_id]
+                    try:
+                        if asyncio.iscoroutinefunction(callback):
+                            await callback(event)
+                        else:
+                            callback(event)
+                    except Exception as e:
+                        logger.error(f"Error in subscriber {sub_id}: {e}")
         return True
 
     def _matches(self, pattern: str, event: Any) -> bool:
