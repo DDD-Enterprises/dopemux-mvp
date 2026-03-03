@@ -672,7 +672,6 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
 )
 @click.pass_context
 def start(
-    global RoutingConfig
     ctx,
     session: Optional[str],
     background: bool,
@@ -706,6 +705,7 @@ def start(
     original_codex = use_codex
     original_altp = use_altp
     original_litellm = use_litellm
+    global RoutingConfig
     
     def _ensure_env_consistent_with_mode(final_mode: str) -> None:
         """Ensure environment variables are consistent with routing mode.
