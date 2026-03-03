@@ -46,7 +46,9 @@
     "UPGRADES",
     "_audit_out",
     "review_artifacts",
-    ".dopetask"
+    ".dopetask",
+    "proof",
+    "configs"
   ],
   "allowed_root_files": [
     ".dopetaskroot",
@@ -172,7 +174,12 @@
     ".dopetaskroot",
     ".dopetask-pin",
     "patchit",
-    "CLAUDE_AUTOMATION_INSTRUCTIONS.md"
+    "CLAUDE_AUTOMATION_INSTRUCTIONS.md",
+    ".env.template",
+    "GEMINI.md",
+    "AUDIT_INITIAL_FINDINGS.md",
+    "DOPE_MEMORY_INTEGRATION.md",
+    "test_batch_integration.py"
   ],
   "legacy_root_files": [],
   "blocked_root_file_patterns": [
