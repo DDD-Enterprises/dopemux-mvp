@@ -20,7 +20,7 @@ rich>=13.0.0
 textual>=0.54.0
 
 # Document Processing Pipeline
-charset-normalizer>=3
+chardet>=5.0.0
 pymilvus>=2.3.0
 chromadb>=0.4.0
 voyageai>=0.2.0
