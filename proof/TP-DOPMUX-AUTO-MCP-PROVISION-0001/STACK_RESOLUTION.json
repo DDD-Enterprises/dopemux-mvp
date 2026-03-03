@@ -1,0 +1,6 @@
+{
+  "source_resolved": "project_source",
+  "target_path": "/Users/hue/code/dopemux-mvp/docker/mcp-servers",
+  "method": "symlink",
+  "version": "0.1.0"
+}
