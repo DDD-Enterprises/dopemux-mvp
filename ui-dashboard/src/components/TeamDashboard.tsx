@@ -151,7 +151,11 @@ const TeamDashboard: React.FC = () => {
           <Grid item xs={12} sm={6} md={3} key={member.id}>
             <Paper sx={{ p: 2, height: 220, borderRadius: 3 }} className="dopemux-panel">
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}>
+                <Avatar
+                  sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}
+                  role="img"
+                  aria-label={member.avatar ? `Avatar for ${member.name}` : `Initials for ${member.name}`}
+                >
                   {member.avatar}
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
