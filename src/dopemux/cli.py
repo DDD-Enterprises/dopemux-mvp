@@ -731,6 +731,7 @@ def start(
     original_altp = use_altp
     original_litellm = use_litellm
     global RoutingConfig
+    provider = None
     
     def _ensure_env_consistent_with_mode(final_mode: str) -> None:
         """Ensure environment variables are consistent with routing mode.
