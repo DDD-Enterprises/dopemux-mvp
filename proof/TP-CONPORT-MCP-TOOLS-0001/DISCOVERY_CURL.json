@@ -1,0 +1,244 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tools": [
+      {
+        "name": "conport_get_active_work",
+        "description": "Get prioritized active work items",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspace_id"
+          ]
+        }
+      },
+      {
+        "name": "conport_get_context",
+        "description": "Get active context for a workspace",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspace_id"
+          ]
+        }
+      },
+      {
+        "name": "conport_get_decisions",
+        "description": "Retrieve recent decisions for a workspace",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          "required": [
+            "workspace_id"
+          ]
+        }
+      },
+      {
+        "name": "conport_get_progress",
+        "description": "Retrieve progress entries for a workspace",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 20
+            }
+          },
+          "required": [
+            "workspace_id"
+          ]
+        }
+      },
+      {
+        "name": "conport_get_recent_activity",
+        "description": "Get recent activity for a workspace (last 24h by default)",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string"
+            },
+            "hours": {
+              "type": "integer",
+              "default": 24
+            }
+          },
+          "required": [
+            "workspace_id"
+          ]
+        }
+      },
+      {
+        "name": "conport_log_decision",
+        "description": "Log an architectural or technical decision",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "alternatives": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "confidence_level": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "decision_type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspace_id",
+            "summary",
+            "rationale"
+          ]
+        }
+      },
+      {
+        "name": "conport_log_progress",
+        "description": "Log a new progress entry or task",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "default": "IN_PROGRESS"
+            },
+            "percentage": {
+              "type": "integer",
+              "default": 0
+            },
+            "priority": {
+              "type": "string",
+              "default": "medium"
+            },
+            "estimated_hours": {
+              "type": "number"
+            },
+            "actual_hours": {
+              "type": "number"
+            },
+            "linked_decision_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspace_id",
+            "description"
+          ]
+        }
+      },
+      {
+        "name": "conport_update_context",
+        "description": "Update active context for a workspace",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string"
+            },
+            "active_context": {
+              "type": "string"
+            },
+            "last_activity": {
+              "type": "string"
+            },
+            "session_time": {
+              "type": "string"
+            },
+            "focus_state": {
+              "type": "string"
+            },
+            "session_milestone": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspace_id"
+          ]
+        }
+      },
+      {
+        "name": "conport_update_progress",
+        "description": "Update an existing progress entry",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "progress_id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "percentage": {
+              "type": "integer"
+            },
+            "description": {
+              "type": "string"
+            },
+            "priority": {
+              "type": "string"
+            },
+            "actual_hours": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "progress_id"
+          ]
+        }
+      }
+    ]
+  }
+}

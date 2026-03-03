@@ -30,7 +30,6 @@ class DopemuxHelloFlow:
         self.conport_session = None
         self.task_orchestrator_session = None
         self.playwright_session = None
-        self.morph_session = None
 
     async def initialize_mcp_sessions(self):
         """Initialize all required MCP server connections"""
@@ -55,13 +54,6 @@ class DopemuxHelloFlow:
             args=["@playwright/mcp@latest"]
         )
 
-        # Morph - Code Edits
-        morph_params = StdioServerParameters(
-            command="npx",
-            args=["@morph-llm/morph-fast-apply@latest"],
-            env={"MORPH_API_KEY": "${MORPH_API_KEY}", "ALL_TOOLS": "false"}
-        )
-
         # Initialize sessions
         async with stdio_client(conport_params) as (read, write):
             self.conport_session = ClientSession(read, write)
@@ -74,10 +66,6 @@ class DopemuxHelloFlow:
         async with stdio_client(playwright_params) as (read, write):
             self.playwright_session = ClientSession(read, write)
             await self.playwright_session.initialize()
-
-        async with stdio_client(morph_params) as (read, write):
-            self.morph_session = ClientSession(read, write)
-            await self.morph_session.initialize()
 
         logger.info("All MCP sessions initialized")
 
@@ -137,7 +125,7 @@ class DopemuxHelloFlow:
     # =====================================================
 
     async def step2_plan_and_execute(self, task: Dict) -> Dict:
-        """Step 2: Plan with Task Orchestrator, execute with Morph"""
+        """Step 2: Plan with Task Orchestrator and complete subtasks"""
 
         logger.info("Step 2: Planning and executing task...")
 
@@ -156,18 +144,12 @@ class DopemuxHelloFlow:
 
             logger.info(f"Executing subtask: {subtask['title']}")
 
-            # For code changes, use Morph Fast-Apply
-            if "code" in subtask.get("type", "").lower() or "implement" in subtask.get("description", "").lower():
-
-                # Generate code change using Morph
-                await self._execute_with_morph(subtask)
-
-                # Mark subtask complete in Task Orchestrator
-                await self.task_orchestrator_session.call_tool(
-                    "task_orchestrator_set_status",
-                    id=subtask["id"],
-                    status="done"
-                )
+            # Mark subtask complete in Task Orchestrator
+            await self.task_orchestrator_session.call_tool(
+                "task_orchestrator_set_status",
+                id=subtask["id"],
+                status="done"
+            )
 
             completed_subtasks.append(subtask)
 
@@ -177,9 +159,9 @@ class DopemuxHelloFlow:
         # Log completion decision
         await self._log_decision(
             title=f"Completed task planning and execution: {task['title']}",
-            rationale=f"Successfully executed {len(completed_subtasks)} subtasks using Task Orchestrator + Morph",
+            rationale=f"Successfully executed {len(completed_subtasks)} subtasks using Task Orchestrator",
             implementation_details=f"Subtasks: {', '.join([s['title'] for s in completed_subtasks])}",
-            tags=["task-execution", "morph-integration", "implementation"],
+            tags=["task-execution", "implementation"],
             links=[{"type": "work_item", "id": self.current_task_id}]
         )
 
@@ -188,28 +170,6 @@ class DopemuxHelloFlow:
             "subtasks_completed": len(completed_subtasks),
             "subtasks": completed_subtasks
         }
-
-    async def _execute_with_morph(self, subtask: Dict):
-        """Execute code changes using Morph Fast-Apply"""
-
-        # This is a simplified implementation
-        # In practice, you'd analyze the subtask to determine what file to edit
-
-        # Example: Assume we know the target file (in practice, this would be determined from context)
-        target_file = "src/example.ts"  # This would be determined from the subtask
-
-        # Create edit snippet (simplified)
-        edit_snippet = f"""// ... existing code ...
-// Implementation for: {subtask['title']}
-// {subtask.get('description', '')}
-// ... existing code ..."""
-
-        await self.morph_session.call_tool(
-            "morph_edit_file",
-            file_path=target_file,
-            instruction=f"Implement: {subtask['title']}",
-            editSnippet=edit_snippet
-        )
 
     # =====================================================
     # STEP 3: VALIDATE

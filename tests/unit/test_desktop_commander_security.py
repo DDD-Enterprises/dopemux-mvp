@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 server_dir = os.path.abspath(
     os.path.join(
         os.path.dirname(__file__),
-        "../../docker/mcp-servers/desktop-commander",
+        "../../docker/mcp-servers-source/desktop-commander",
     )
 )
 if server_dir not in sys.path:

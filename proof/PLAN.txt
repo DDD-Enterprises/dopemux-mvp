@@ -1,3 +1,18 @@
+Objective: Add deterministic schema repair for missing/empty items[*].path before escalation.
+Scope:
+- services/repo-truth-extractor/run_extraction_v3.py
+- tests/unit/test_extractor_schema_repair.py
+- proof/PLAN.txt
+Steps:
+1) Implement _attempt_schema_repair_path_items() that fills items[*].path using partition_files when unique mapping exists.
+2) Intercept schema_missing_key:path / schema_empty_key:path after schema gate and attempt repair, then re-check schema gate.
+3) Add unit tests covering single-item/single-file and ambiguous cases (must fail-closed).
+Verification:
+- python -m compileall -q services tests
+- pytest -q tests/unit/test_extractor_schema_repair.py
+
+---
+
 # ProcessPool Stability Fix - Implementation Plan
 
 ## Problem Analysis

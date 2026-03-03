@@ -6,6 +6,7 @@ inventory -> partitioning -> per-partition raw outputs -> norm merge -> QA.
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+import copy
 import fnmatch
 import hashlib
 import hmac
@@ -230,6 +231,9 @@ R_REQUIRED_ARTIFACT_GROUPS: Dict[str, List[Tuple[str, ...]]] = {
 ROUTING_POLICY_VERSION = "RTE_ROUTING_V1"
 DEFAULT_ROUTING_POLICY = "cost"
 DEFAULT_GEMINI_MODEL_ID = "gemini-2.5-flash"
+DEFAULT_GEMINI_BULK_MODEL = "gemini-2.5-flash-lite"
+DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_SYNTH_MODEL = "gemini-2.5-pro"
 STEP_TIERS = ("bulk", "extract", "synthesis", "qa")
 
 MAGIC_SUBTYPE_ORDER = {
@@ -344,6 +348,69 @@ ACTIVE_ROUTING_LADDERS = {
     policy: {tier: list(routes) for tier, routes in tiers.items()}
     for policy, tiers in ROUTING_LADDERS.items()
 }
+
+
+def _safe_key_fingerprint(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()[:8]
+
+
+def _collect_required_key_envs(routing_policy: str) -> Dict[str, Set[str]]:
+    ladders = ACTIVE_ROUTING_LADDERS.get(routing_policy) or ROUTING_LADDERS.get(routing_policy) or {}
+    provider_envs: Dict[str, Set[str]] = defaultdict(set)
+    for routes in ladders.values():
+        for provider, _model_id, api_key_env in routes:
+            provider_envs[provider].add(api_key_env)
+    return dict(provider_envs)
+
+
+def preflight_keys(routing_policy: str, strict: bool = False) -> Dict[str, Any]:
+    report: Dict[str, Any] = {
+        "routing_policy": routing_policy,
+        "overall_status": "PASS",
+        "exit_code": 0,
+        "errors": [],
+        "warnings": [],
+        "providers": {},
+    }
+    prefix_rules = {
+        "GEMINI_API_KEY": "AIza",
+        "OPENAI_API_KEY": "sk-",
+    }
+    provider_envs = _collect_required_key_envs(routing_policy)
+
+    for provider, env_names in sorted(provider_envs.items()):
+        provider_report = report["providers"].setdefault(provider, {})
+        for env_name in sorted(env_names):
+            value = os.getenv(env_name, "")
+            if not value:
+                report["errors"].append(f"Missing required API key: {env_name}")
+                provider_report[env_name] = {"present": False}
+                continue
+
+            provider_report[env_name] = {
+                "present": True,
+                "fingerprint": _safe_key_fingerprint(value),
+            }
+
+            expected_prefix = prefix_rules.get(env_name)
+            if expected_prefix and not value.startswith(expected_prefix):
+                msg = (
+                    f"{env_name} has unexpected prefix for {provider} "
+                    f"(fingerprint={_safe_key_fingerprint(value)})"
+                )
+                if strict:
+                    report["errors"].append(msg)
+                else:
+                    report["warnings"].append(msg)
+
+    if report["errors"]:
+        report["overall_status"] = "FAIL"
+        report["exit_code"] = 3
+    elif report["warnings"]:
+        report["overall_status"] = "WARN"
+        report["exit_code"] = 2
+
+    return report
 
 # Phase-level summary route is retained for compatibility surfaces and manifests.
 MODEL_ROUTING: Dict[str, Tuple[str, str, str]] = {}
@@ -4386,6 +4453,37 @@ def sdk_auth_present_flags(provider: str, api_key_present: bool) -> Dict[str, bo
     return flags
 
 
+
+def _build_gemini_config_for_model(
+    model_id: str,
+    system_prompt: str,
+    force_json_output: bool,
+) -> Dict[str, Any]:
+    """Build the GenerateContentConfig dict for a Gemini model call.
+
+    Deterministic, network-free, env-free — safe to call in tests.
+    Disables thinking (budget=0) for bulk and extract models to control
+    cost and latency.  For all other models thinking is left at SDK default.
+    """
+    config: Dict[str, Any] = {
+        "temperature": 0.1,
+        "system_instruction": system_prompt,
+        "max_output_tokens": 8192,
+    }
+    if force_json_output:
+        config["response_mime_type"] = "application/json"
+
+    if model_id in (DEFAULT_GEMINI_BULK_MODEL, DEFAULT_GEMINI_EXTRACT_MODEL):
+        try:
+            from google.genai import types as _genai_types
+            config["thinking_config"] = _genai_types.ThinkingConfig(thinking_budget=0)
+        except ImportError:
+            # Fail closed: do NOT substitute an invented dict key.
+            raise ValueError(
+                "google-genai SDK not available; cannot safely disable Gemini thinking. "
+                "Install google-genai>=0.8 to proceed."
+            )
+    return config
 def get_gemini_client(api_key: str) -> Any:
     try:
         from google import genai
@@ -5711,6 +5809,130 @@ def artifacts_pass_schema_gate(
                             return False, f"schema_empty_key:{key}"
     return True, None
 
+
+
+_REPAIR_COUNTERS: Dict[str, int] = {"attempted": 0, "succeeded": 0, "failed_ambiguous": 0}
+
+def _attempt_schema_repair_path_items(
+    artifacts: List[Dict[str, Any]],
+    schema_reason: str,
+    partition_files: List[str],
+) -> Tuple[List[Dict[str, Any]], bool, str]:
+    """Deterministic repair of items[*].path before escalating.
+
+    Only activates for schema_missing_key:path or schema_empty_key:path.
+    Only touches the ``path`` field inside each element of artifact["payload"]["items"].
+    Never invents a value: if a unique mapping cannot be established, returns did_repair=False.
+    Never uses UNKNOWN or any sentinel that could corrupt provenance.
+
+    Inference rules (applied in priority order, require uniqueness):
+    1. One artifact, one item, one file → path = partition_files[0]
+    2. Item has a string field whose value exactly equals one partition_file → that file
+    3. Item has a string field whose basename exactly matches the basename of exactly
+       one partition_file (unique) → that file
+    4. Item's ``id`` value contains a basename that matches exactly one partition_file → that file
+
+    Returns (repaired_artifacts, did_repair, repair_method).
+    """
+    _REPAIR_COUNTERS["attempted"] += 1
+
+    # Guard: only attempt for the supported failure classes
+    if not schema_reason or not (
+        schema_reason.startswith("schema_missing_key:path")
+        or schema_reason.startswith("schema_empty_key:path")
+    ):
+        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        return artifacts, False, "not_applicable"
+
+    # Guard: partition_files must be non-empty
+    if not partition_files:
+        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        return artifacts, False, "no_partition_files"
+
+    basenames: List[str] = [os.path.basename(f) for f in partition_files]
+
+    def _unique_file_for_basename(bn: str) -> Optional[str]:
+        """Return the single partition_file whose basename matches bn, or None if ambiguous."""
+        matches = [f for f, b in zip(partition_files, basenames) if b == bn]
+        return matches[0] if len(matches) == 1 else None
+
+    def _infer_path_for_item(item: Dict[str, Any]) -> Optional[str]:
+        """Return deterministically inferred path for a single item, or None if ambiguous."""
+        # Rule 1 is handled at the artifacts level before calling this helper.
+
+        # Rule 2: exact full-path match in any string field
+        for v in item.values():
+            if isinstance(v, str) and v in partition_files:
+                return v
+
+        # Rule 3: basename match across any string field
+        candidates: Set[str] = set()
+        for v in item.values():
+            if isinstance(v, str):
+                bn = os.path.basename(v)
+                m = _unique_file_for_basename(bn)
+                if m:
+                    candidates.add(m)
+        if len(candidates) == 1:
+            return candidates.pop()
+
+        # Rule 4: item["id"] contains a basename that uniquely matches
+        item_id = str(item.get("id", ""))
+        if item_id:
+            id_bn = os.path.basename(item_id)
+            m = _unique_file_for_basename(id_bn)
+            if m:
+                return m
+
+        return None
+
+    repaired = copy.deepcopy(artifacts)
+    repair_method = "unknown"
+    all_filled = True
+
+    for artifact in repaired:
+        if not isinstance(artifact, dict):
+            all_filled = False
+            break
+        payload = artifact.get("payload")
+        if not isinstance(payload, dict):
+            continue
+        items = payload.get("items")
+        if not isinstance(items, list):
+            all_filled = False
+            break
+
+        # Rule 1: trivial single-item / single-file case
+        if len(items) == 1 and len(partition_files) == 1:
+            item = items[0]
+            if isinstance(item, dict) and (not item.get("path") or item.get("path") in (None, "", [])):
+                item["path"] = partition_files[0]
+                repair_method = "single_item_single_file"
+            continue
+
+        # Rules 2-4 per item
+        for item in items:
+            if not isinstance(item, dict):
+                all_filled = False
+                break
+            if item.get("path") and item["path"] not in (None, "", []):
+                continue  # already has a valid path
+            inferred = _infer_path_for_item(item)
+            if inferred is None:
+                all_filled = False
+                break
+            item["path"] = inferred
+            repair_method = "field_or_basename_match"
+
+        if not all_filled:
+            break
+
+    if not all_filled:
+        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        return artifacts, False, "ambiguous"
+
+    _REPAIR_COUNTERS["succeeded"] += 1
+    return repaired, True, repair_method
 
 def should_escalate_for_failure_type(failure_type: Optional[str]) -> bool:
     token = str(failure_type or "").strip()

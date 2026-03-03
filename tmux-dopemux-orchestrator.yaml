@@ -29,19 +29,15 @@ windows:
       - shell_command:
           - watch -n 30 './scripts/pm-dashboard.sh validation'
         start_directory: .
-      # Pane 4: Morph Code Apply (With Task Links)
-      - shell_command:
-          - watch -n 30 './scripts/pm-dashboard.sh morph'
-        start_directory: .
-      # Pane 5: Zen Reasoning (Background with PM Context)
+      # Pane 4: Zen Reasoning (Background with PM Context)
       - shell_command:
           - watch -n 30 './scripts/pm-dashboard.sh zen'
         start_directory: .
-      # Pane 6: ADHD Metrics Dashboard
+      # Pane 5: ADHD Metrics Dashboard
       - shell_command:
           - watch -n 30 './scripts/pm-dashboard.sh adhd'
         start_directory: .
-      # Pane 7: System Health Monitor
+      # Pane 6: System Health Monitor
       - shell_command:
           - watch -n 30 './scripts/pm-dashboard.sh health'
         start_directory: .

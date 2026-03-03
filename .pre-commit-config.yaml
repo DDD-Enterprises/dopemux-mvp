@@ -8,7 +8,7 @@ repos:
         entry: python3 scripts/docs_frontmatter_guard.py --fix
         language: system
         files: ^(docs/|task-packets/|UPGRADES/|services/[^/]+/docs/|docker/[^/]+/docs/).*\.md$
-        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md)
+        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/04-explanation/history/sourceFiles/)
 
       # Graph schema validation
       - id: docs-graph-validator
@@ -16,7 +16,7 @@ repos:
         entry: python scripts/docs_validator.py
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: ^docs/archive/
+        exclude: (^docs/archive/|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Prohibited file pattern check
@@ -31,6 +31,10 @@ repos:
             for file in "$@"; do
               case "$file" in
                 docs/*|task-packets/*)
+                  # Skip quarantined files
+                  if [[ "$file" =~ ^docs/04-explanation/history/sourceFiles/ ]]; then
+                    continue
+                  fi
                   base="$(basename "$file")"
                   case "$base" in
                     TEMPLATE_*.md)
@@ -53,7 +57,7 @@ repos:
           - --
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: ^docs/archive/
+        exclude: (^docs/archive/|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Prelude token count validation for embeddings
@@ -66,6 +70,9 @@ repos:
             errors = []
             for file in sys.argv[1:]:
                 if not file.endswith('.md'): continue
+                # Skip quarantined files
+                if file.startswith('docs/04-explanation/history/sourceFiles/'):
+                    continue
                 try:
                     with open(file, 'r') as f: content = f.read()
                     if not content.startswith('---'): continue
@@ -86,7 +93,7 @@ repos:
             print('✅ All preludes within token limit')
         language: system
         files: ^(docs/|task-packets/).*\.md$
-        exclude: ^docs/archive/
+        exclude: (^docs/archive/|^docs/04-explanation/history/sourceFiles/)
         pass_filenames: true
 
       # Markdown file location enforcement
@@ -106,7 +113,7 @@ repos:
               # Canonical docs locations
               if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
               if [[ "$normalized" =~ ^\./(task-packets/) ]]; then continue; fi
-              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|out/|_audit_out/|extraction/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(reports/|quarantine/|UPGRADES/|out/|_audit_out/|extraction/|proof/) ]]; then continue; fi
               if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
 
               # Config/state and tooling docs
@@ -129,8 +136,8 @@ repos:
               if [[ "$normalized" =~ /(README|CHANGELOG|CONTRIBUTING|LICENSE|CODE_OF_CONDUCT|SECURITY)\.md$ ]]; then continue; fi
 
               # Service/container docs and research
-              if [[ "$normalized" =~ ^\./(services|docker)/[^/]+/(docs|research|intelligence|archive|migrations)/ ]]; then continue; fi
-              if [[ "$normalized" =~ ^\./(services|docker)/[^/]+/[A-Z_0-9-]+\.md$ ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(services|docker)/.*/(docs|research|intelligence|archive|migrations)/ ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(services|docker)/.*/[A-Z_0-9-]+\.md$ ]]; then continue; fi
               # Repo-truth-extractor prompt assets are runtime inputs, not docs
               if [[ "$normalized" =~ ^\./services/repo-truth-extractor/(prompts|promptsets|tests/fixtures)/ ]]; then continue; fi
               # Prompt rewrite benchmark prompts are runtime inputs, not docs
@@ -197,7 +204,7 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc"]
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md)
+        exclude: (^docs/archive/|node_modules/|docs/rgOutput\.md|^docs/04-explanation/history/sourceFiles/)
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
@@ -212,9 +219,9 @@ repos:
     hooks:
       - id: trailing-whitespace
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|docs/rgOutput\.md)
+        exclude: (^docs/archive/|docs/rgOutput\.md|^docs/04-explanation/history/sourceFiles/)
       - id: end-of-file-fixer
         files: ^(docs/|task-packets/).*\.md$
-        exclude: (^docs/archive/|docs/rgOutput\.md)
+        exclude: (^docs/archive/|docs/rgOutput\.md|^docs/04-explanation/history/sourceFiles/)
       - id: check-yaml
         files: ^config/.*\.ya?ml$

@@ -1,0 +1,25 @@
+[project]
+project_id = "dopemux-mvp"
+instance_profile = "default"
+instance_id = "dev-local"
+allow_global_fallback = false
+
+[mcp.conport]
+url = "http://127.0.0.1:3004/mcp"
+transport = "http"
+required_tool_globs = ["conport_*"]
+
+[mcp.dope_context]
+url = "http://127.0.0.1:3010/mcp"
+transport = "http"
+required_tool_globs = ["context_*"]
+
+[mcp.serena]
+url = "http://127.0.0.1:3006/mcp"
+transport = "streamable-http"
+required_tool_globs = ["serena_*"]
+
+[mcp.dope_memory]
+url = "http://127.0.0.1:3020"
+transport = "http"
+required_tool_globs = ["memory_*"]

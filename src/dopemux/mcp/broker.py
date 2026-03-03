@@ -257,12 +257,21 @@ class MetaMCPBroker:
         return app
 
     async def start(self) -> None:
-        """Start the MetaMCP broker and all subsystems"""
-        try:
-            logger.info("Starting MetaMCP Broker...")
+        """Start the MetaMCP broker and all components"""
+        logger.info("Starting MetaMCP Broker...")
 
-            # Load configurations
+        try:
+            # Phase 0: Tool Discovery Gate
+            # Enforce project-scoped tool availability and fail closed
+            from .gate import DiscoveryGate
+            gate = DiscoveryGate(run_id=f"broker-{int(time.time())}")
+            if not await gate.run():
+                gate.print_block_report()
+                raise RuntimeError("MCP Phase 0 Discovery Gate failed. Mandatory tool globs not satisfied.")
+
+            # 1. Load configurations
             await self._load_configurations()
+
 
             # Initialize core components
             await self._initialize_components()
