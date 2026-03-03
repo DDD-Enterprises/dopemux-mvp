@@ -1,6 +1,5 @@
 import json
 import tempfile
-import uuid
 from pathlib import Path
 import pytest
 from dopemux.adhd.task_decomposer import TaskDecomposer, TaskStatus
