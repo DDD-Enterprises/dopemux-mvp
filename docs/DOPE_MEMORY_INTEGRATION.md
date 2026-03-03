@@ -1,3 +1,15 @@
+---
+id: DOPE_MEMORY_INTEGRATION
+title: Dope Memory Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-03'
+last_review: '2026-03-03'
+next_review: '2026-06-01'
+prelude: Dope Memory Integration (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Dope-Memory Integration Guide
 
 ## Overview
@@ -142,15 +154,15 @@ services:
   memory:
     provider: "dopemux-dope-memory"
     tools: ["memory_search", "memory_store", "memory_recap"]
-  
+
   decisions:
     provider: "dopemux-conport"
     tools: ["log_decision", "search_decisions"]
-  
+
   code_nav:
     provider: "dopemux-serena"
     tools: ["code_nav", "get_project_context"]
-  
+
   semantic_search:
     provider: "dopemux-claude-context"
     tools: ["semantic_search", "context_aware_search"]

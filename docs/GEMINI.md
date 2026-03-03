@@ -1,3 +1,14 @@
+---
+id: GEMINI
+title: Gemini
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-03'
+last_review: '2026-03-03'
+next_review: '2026-06-01'
+prelude: Gemini (explanation) for dopemux documentation and developer workflows.
+---
 # Gemini CLI - Workspace Configuration & MCP Usage
 
 This workspace integrates custom MCP servers inherited from the `dopemux-mvp` project. These tools power a **Two-Plane Architecture** combining Project Management (PM Plane) with Cognitive accommodations (Cognitive Plane). Below are detailed instructions on how to use them implicitly during tasks:
@@ -6,12 +17,12 @@ This workspace integrates custom MCP servers inherited from the `dopemux-mvp` pr
 
 ### 1. Task Orchestrator (`task-orchestrator`)
 **Purpose:** The central coordination hub linking human project management (Leantime) with AI agents and knowledge graphs. It manages ADHD-optimized workflows.
-**Architecture:** 
+**Architecture:**
 - Acts as the "PlaneCoordinator".
 - Handles task assessment: assigns complexity scores (0.0-1.0), energy requirements (low/medium/high), and calculates cognitive load.
 - Enforces user state tracking and 25-minute focus session boundaries.
 - Routes tasks based on complexity: High complexity (>0.8) goes to Zen, implementation to Serena, research to Taskmaster.
-**Implicit Usage:** 
+**Implicit Usage:**
 - Use the orchestrator to break down work. If a task feels overwhelming or complex, delegate the breakdown to the task-orchestrator.
 - Obey cognitive load constraints. Keep focus windows strict and summarize progress often.
 
@@ -22,7 +33,7 @@ This workspace integrates custom MCP servers inherited from the `dopemux-mvp` pr
 - **Append-Only Ledger (INV-MEM-003):** All events, decisions, and tool outputs are written to an append-only Chronicle Ledger (via Dope Memory).
 - **Promotion (INV-MEM-004):** Raw logs aren't truth; the Supervisor "promotes" summaries to truth. Promoted content must cite source event IDs.
 - Tracks project progress, architectural decisions (ADRs), and relationships across files.
-**Implicit Usage:** 
+**Implicit Usage:**
 - **Read:** Use ConPort (`semantic_search`, `get_decisions`) before making architectural changes to ensure you don't violate past decisions.
 - **Write:** After completing a milestone or making a major structural decision, use ConPort (`log_progress`, `update_progress`) to store the outcome permanently. Provide metadata like `tags=["energy-medium", "complexity-3"]`.
 
@@ -35,7 +46,7 @@ This workspace integrates custom MCP servers inherited from the `dopemux-mvp` pr
 **Implicit Usage:** Use this to query large codebases, retrieve related documentation, or find specific code patterns quickly.
 
 ### 5. PAL MCP (`pal`)
-**Purpose:** Provider-Agnostic LLM Server. 
+**Purpose:** Provider-Agnostic LLM Server.
 **Implicit Usage:** Offload specific sub-tasks to other LLMs (like Devstral, Claude, etc.) when you need parallel reasoning or specialized models without consuming your own main context thread.
 
 ## Operational Invariants

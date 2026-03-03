@@ -1,3 +1,15 @@
+---
+id: PROCESSPOOL_STABILITY_REPORT
+title: Processpool Stability Report
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-03'
+last_review: '2026-03-03'
+next_review: '2026-06-01'
+prelude: Processpool Stability Report (reference) for dopemux documentation and developer
+  workflows.
+---
 # ProcessPool Stability Fix - Proof Bundle
 
 ## TP-EXTR-001C-PROCESSPOOL-STABILIZE-0002
@@ -61,7 +73,7 @@ for future in as_completed(future_map):
         results_by_partition[partition_id] = _worker_exception_result(...)
 ```
 
-**Impact**: 
+**Impact**:
 - Identifies exactly which partition is being processed
 - Provides success confirmation for each partition
 - Full stack trace logging on failures
@@ -90,7 +102,7 @@ for i, op in enumerate(result.write_ops):
 _apply_write_ops(result.write_ops)  # Now safe to call
 ```
 
-**Impact**: 
+**Impact**:
 - Catches malformed write operations before they cause crashes
 - Provides defensive defaults to ensure processing can continue
 - Logs detailed information about problematic operations

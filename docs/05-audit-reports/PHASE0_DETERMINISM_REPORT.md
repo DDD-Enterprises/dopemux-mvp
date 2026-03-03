@@ -1,3 +1,15 @@
+---
+id: PHASE0_DETERMINISM_REPORT
+title: Phase0 Determinism Report
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-03'
+last_review: '2026-03-03'
+next_review: '2026-06-01'
+prelude: Phase0 Determinism Report (reference) for dopemux documentation and developer
+  workflows.
+---
 # Phase 0C Determinism Report
 
 **Generated**: 2026-02-26 19:12:44
