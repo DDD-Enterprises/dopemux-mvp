@@ -105,17 +105,17 @@ def test_metrics_exports_include_packet_and_service_dimensions():
         ("it failed", "error"),
         ("ConnectionError", "error"),
         # New test cases below
-        ("Critical Error: Database down", "critical"), # Priority: Critical > Error
-        ("Error: Critical failure", "critical"), # Priority: Critical > Error (regex order)
-        ("Warning: This is an error", "error"), # Priority: Error > Warning
-        ("Info: but there was a warning", "warning"), # Priority: Warning > Info
-        ("Debug info", "info"), # Priority: Info > Debug
-        ("erroring", "unknown"), # Word boundary check
-        ("failures", "unknown"), # Word boundary check
-        ("warned", "unknown"), # Word boundary check
-        ("fail", "error"), # "fail" should match
-        ("failed", "error"), # "failed" should match
-        ("failure", "error"), # "failure" should match
+        ("Critical Error: Database down", "critical"),  # Priority: Critical > Error
+        ("Error: Critical failure", "critical"),  # Priority: Critical > Error (regex order)
+        ("Warning: This is an error", "error"),  # Priority: Error > Warning
+        ("Info: but there was a warning", "warning"),  # Priority: Warning > Info
+        ("Debug info", "info"),  # Priority: Info > Debug
+        ("erroring", "unknown"),  # Word boundary check
+        ("failures", "unknown"),  # Word boundary check
+        ("warned", "unknown"),  # Word boundary check
+        ("fail", "error"),  # "fail" should match
+        ("failed", "error"),  # "failed" should match
+        ("failure", "error"),  # "failure" should match
     ],
 )
 def test_detect_level(line: str, expected: str):
