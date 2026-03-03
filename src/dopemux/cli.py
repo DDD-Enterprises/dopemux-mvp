@@ -977,18 +977,18 @@ def start(
                         f"Set them in your environment or .env file."
                     )
 
-            console.logger.info("[cyan]🎯 --altp: Tier-matched alternative provider routing[/cyan]")
-            for t in ALTP_PROVIDER["targets"]:
-                tier = t["name"].replace("altp-", "")
-                console.logger.info(f"[dim]   {tier:>6s} → {t['label']} ({t['model']})[/dim]")
+                console.logger.info("[cyan]🎯 --altp: Tier-matched alternative provider routing[/cyan]")
+                for t in ALTP_PROVIDER["targets"]:
+                    tier = t["name"].replace("altp-", "")
+                    console.logger.info(f"[dim]   {tier:>6s} → {t['label']} ({t['model']})[/dim]")
 
-            config_data = generate_multi_target_config(ALTP_PROVIDER["targets"])
-            
-            # Auto-enable Claude Code Router for API translation
-            use_claude_router = True
-            console.logger.info("[dim]   Enabling Claude Code Router for API translation (responses → completions)[/dim]")
-            
-            _routing_summary = "Claude Code → CCR → LiteLLM → tier-matched providers"
+                config_data = generate_multi_target_config(ALTP_PROVIDER["targets"])
+                
+                # Auto-enable Claude Code Router for API translation
+                use_claude_router = True
+                console.logger.info("[dim]   Enabling Claude Code Router for API translation (responses → completions)[/dim]")
+                
+                _routing_summary = "Claude Code → CCR → LiteLLM → tier-matched providers"
 
         console.logger.info("[blue]🔄 Starting LiteLLM proxy (no DB required)...[/blue]")
         try:
