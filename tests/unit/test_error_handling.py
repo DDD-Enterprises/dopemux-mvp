@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from dopemux.error_handling import RetryPolicy, DopemuxError, ErrorType, ErrorSeverity
 
 def test_retry_policy_get_delay_no_jitter():
@@ -37,27 +38,49 @@ def test_retry_policy_get_delay_max_cap():
     # Attempt 10: Much larger than max_delay -> capped at 10.0
     assert policy.get_delay(10) == 10.0
 
-def test_retry_policy_get_delay_with_jitter():
-    """Test that jitter stays within expected range (±25%)."""
-    initial_delay = 2.0
-    backoff_factor = 2.0
-    max_delay = 100.0
+@patch('random.uniform')
+def test_retry_policy_get_delay_with_jitter(mock_uniform):
+    """Test jitter calculation deterministically."""
     policy = RetryPolicy(
-        initial_delay=initial_delay,
-        backoff_factor=backoff_factor,
-        max_delay=max_delay,
+        initial_delay=2.0,
+        backoff_factor=2.0,
+        max_delay=100.0,
         jitter=True
     )
 
-    for attempt in range(5):
-        base_delay = initial_delay * (backoff_factor ** attempt)
-        base_delay = min(base_delay, max_delay)
+    # Test with jitter factor 1.0 (no change)
+    mock_uniform.return_value = 1.0
+    # Attempt 0: 2.0 * (2.0 ** 0) = 2.0 -> * 1.0 = 2.0
+    assert policy.get_delay(0) == 2.0
+    mock_uniform.assert_called_with(0.75, 1.25)
 
-        # Run multiple times to increase confidence in jitter range
-        for _ in range(100):
-            delay = policy.get_delay(attempt)
-            # Jitter is ±25%, so 0.75 * base to 1.25 * base
-            assert base_delay * 0.75 <= delay <= base_delay * 1.25
+    # Test with jitter factor 0.75 (minimum)
+    mock_uniform.return_value = 0.75
+    # Attempt 1: 2.0 * (2.0 ** 1) = 4.0 -> * 0.75 = 3.0
+    assert policy.get_delay(1) == 3.0
+
+    # Test with jitter factor 1.25 (maximum)
+    mock_uniform.return_value = 1.25
+    # Attempt 2: 2.0 * (2.0 ** 2) = 8.0 -> * 1.25 = 10.0
+    assert policy.get_delay(2) == 10.0
+
+@patch('random.uniform')
+def test_retry_policy_get_delay_jitter_limit_behavior(mock_uniform):
+    """Test that jitter is applied after max_delay cap."""
+    policy = RetryPolicy(
+        initial_delay=1.0,
+        backoff_factor=2.0,
+        max_delay=10.0,
+        jitter=True
+    )
+
+    # Mock jitter to maximum
+    mock_uniform.return_value = 1.25
+
+    # Base calculation: 1.0 * (2.0 ** 10) = 1024 -> capped at 10.0
+    # Jitter applied: 10.0 * 1.25 = 12.5
+    # This confirms jitter can exceed max_delay
+    assert policy.get_delay(10) == 12.5
 
 def test_retry_policy_get_delay_different_factors():
     """Test with different initial delay and backoff factor."""
@@ -83,7 +106,7 @@ def test_retry_policy_get_delay_different_factors():
     # Attempt 4: 0.5 * (3.0 ** 4) = 40.5 -> capped at 20.0
     assert policy.get_delay(4) == 20.0
 
-def test_retry_policy_get_delay_edge_cases():
+def test_retry_policy_edge_cases():
     """Test edge cases for get_delay."""
     # Zero initial delay
     policy = RetryPolicy(initial_delay=0.0, jitter=False)
@@ -94,6 +117,11 @@ def test_retry_policy_get_delay_edge_cases():
     # 1.0 * (2.0 ** -1) = 0.5
     policy = RetryPolicy(initial_delay=1.0, backoff_factor=2.0, jitter=False)
     assert policy.get_delay(-1) == 0.5
+
+    # Large attempt number
+    policy = RetryPolicy(initial_delay=1.0, max_delay=10.0, jitter=False)
+    # Python handles large exponents, but min() caps it
+    assert policy.get_delay(100) == 10.0
 
 def test_retry_policy_should_retry():
     """Improve overall coverage by testing should_retry as well."""
