@@ -5,6 +5,7 @@ inventory -> partitioning -> per-partition raw outputs -> norm merge -> QA.
 """
 
 import argparse
+import copy
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import fnmatch
 import hashlib
@@ -5868,6 +5869,132 @@ def artifacts_pass_schema_gate(
     return True, None
 
 
+# Counters for schema repair events — visible in phase summary logs.
+_REPAIR_COUNTERS: Dict[str, int] = {"attempted": 0, "succeeded": 0, "failed_ambiguous": 0}
+
+
+def _attempt_schema_repair_path_items(
+    artifacts: List[Dict[str, Any]],
+    schema_reason: str,
+    partition_files: List[str],
+) -> Tuple[List[Dict[str, Any]], bool, str]:
+    """Deterministic repair of items[*].path before escalating.
+
+    Only activates for schema_missing_key:path or schema_empty_key:path.
+    Only touches the ``path`` field inside each element of artifact["payload"]["items"].
+    Never invents a value: if a unique mapping cannot be established, returns did_repair=False.
+    Never uses UNKNOWN or any sentinel that could corrupt provenance.
+
+    Inference rules (applied in priority order, require uniqueness):
+    1. One artifact, one item, one file → path = partition_files[0]
+    2. Item has a string field whose value exactly equals one partition_file → that file
+    3. Item has a string field whose basename exactly matches the basename of exactly
+       one partition_file (unique) → that file
+    4. Item's ``id`` value contains a basename that matches exactly one partition_file → that file
+
+    Returns (repaired_artifacts, did_repair, repair_method).
+    """
+    _REPAIR_COUNTERS["attempted"] += 1
+
+    # Guard: only attempt for the supported failure classes
+    if not schema_reason or not (
+        schema_reason.startswith("schema_missing_key:path")
+        or schema_reason.startswith("schema_empty_key:path")
+    ):
+        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        return artifacts, False, "not_applicable"
+
+    # Guard: partition_files must be non-empty
+    if not partition_files:
+        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        return artifacts, False, "no_partition_files"
+
+    basenames: List[str] = [os.path.basename(f) for f in partition_files]
+
+    def _unique_file_for_basename(bn: str) -> Optional[str]:
+        """Return the single partition_file whose basename matches bn, or None if ambiguous."""
+        matches = [f for f, b in zip(partition_files, basenames) if b == bn]
+        return matches[0] if len(matches) == 1 else None
+
+    def _infer_path_for_item(item: Dict[str, Any]) -> Optional[str]:
+        """Return deterministically inferred path for a single item, or None if ambiguous."""
+        # Rule 1 is handled at the artifacts level before calling this helper.
+
+        # Rule 2: exact full-path match in any string field
+        for v in item.values():
+            if isinstance(v, str) and v in partition_files:
+                return v
+
+        # Rule 3: basename match across any string field
+        candidates: Set[str] = set()
+        for v in item.values():
+            if isinstance(v, str):
+                bn = os.path.basename(v)
+                m = _unique_file_for_basename(bn)
+                if m:
+                    candidates.add(m)
+        if len(candidates) == 1:
+            return candidates.pop()
+
+        # Rule 4: item["id"] contains a basename that uniquely matches
+        item_id = str(item.get("id", ""))
+        if item_id:
+            id_bn = os.path.basename(item_id)
+            m = _unique_file_for_basename(id_bn)
+            if m:
+                return m
+
+        return None
+
+    repaired = copy.deepcopy(artifacts)
+    repair_method = "unknown"
+    all_filled = True
+
+    for artifact in repaired:
+        if not isinstance(artifact, dict):
+            all_filled = False
+            break
+        payload = artifact.get("payload")
+        if not isinstance(payload, dict):
+            continue
+        items = payload.get("items")
+        if not isinstance(items, list):
+            all_filled = False
+            break
+
+        # Rule 1: trivial single-item / single-file case
+        if len(items) == 1 and len(partition_files) == 1:
+            item = items[0]
+            if isinstance(item, dict) and (not item.get("path") or item.get("path") in (None, "", [])):
+                item["path"] = partition_files[0]
+                repair_method = "single_item_single_file"
+            continue
+
+        # Rules 2-4 per item
+        for item in items:
+            if not isinstance(item, dict):
+                all_filled = False
+                break
+            if item.get("path") and item["path"] not in (None, "", []):
+                continue  # already has a valid path
+            inferred = _infer_path_for_item(item)
+            if inferred is None:
+                all_filled = False
+                break
+            item["path"] = inferred
+            repair_method = "field_or_basename_match"
+
+        if not all_filled:
+            break
+
+    if not all_filled:
+        _REPAIR_COUNTERS["failed_ambiguous"] += 1
+        return artifacts, False, "ambiguous"
+
+    _REPAIR_COUNTERS["succeeded"] += 1
+    return repaired, True, repair_method
+
+
 def should_escalate_for_failure_type(failure_type: Optional[str]) -> bool:
     token = str(failure_type or "").strip()
     if not token:
@@ -7121,6 +7248,27 @@ def execute_step_for_partitions(
                 response_text_local, request_meta_local = _execute_llm_call()
 
             schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts_local, output_artifacts)
+
+            # TP-EXTR-REPAIR-BEFORE-ESCALATE-0001: attempt deterministic repair before consuming next hop.
+            if not schema_ok and schema_reason and (
+                schema_reason.startswith("schema_missing_key:path")
+                or schema_reason.startswith("schema_empty_key:path")
+            ):
+                _partition_files: List[str] = [str(p) for p in partition.get("paths", [])]
+                _repaired, _did_repair, _repair_method = _attempt_schema_repair_path_items(
+                    artifacts_local, schema_reason, _partition_files
+                )
+                if _did_repair:
+                    schema_ok_after, schema_reason_after = artifacts_pass_schema_gate(_repaired, output_artifacts)
+                    if schema_ok_after:
+                        artifacts_local = _repaired
+                        schema_ok = schema_ok_after
+                        schema_reason = schema_reason_after
+                        logger.info(
+                            "REPAIR phase=%s step=%s partition=%s repaired=path method=%s",
+                            phase, step_id, partition_id, _repair_method,
+                        )
+
             escalation_trigger: Optional[str] = None
             if not artifacts_local:
                 if step_tier != "bulk":
@@ -7131,6 +7279,7 @@ def execute_step_for_partitions(
                 escalation_trigger = "provider_failure"
             if escalation_trigger and cfg.disable_escalation:
                 escalation_trigger = None
+
             request_meta_local = {
                 **request_meta_local,
                 "parse_retry_attempted": parse_retry_attempted,
