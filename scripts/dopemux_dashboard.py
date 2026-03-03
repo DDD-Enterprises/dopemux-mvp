@@ -70,6 +70,7 @@ ENDPOINTS = {
     "adhd_flow": "http://localhost:8095/api/v1/flow-state/default_user",  # Day 2: NEW
     "adhd_session": "http://localhost:8095/api/v1/session-time/default_user",  # Day 2: NEW
     "adhd_breaks": "http://localhost:8095/api/v1/breaks/default_user",  # Day 2: NEW
+    "unfinished_work": "http://localhost:8095/api/v1/unfinished-work?user_id=default_user", # Day 8: NEW
     "tasks": "http://localhost:8095/api/v1/tasks",  # ✅ Added endpoint
     "decisions": "http://localhost:8005/api/adhd/decisions/recent",  # ConPort (Day 2)
     "services": "http://localhost:3016/health",
@@ -715,6 +716,15 @@ class MetricsFetcher:
             return resp.json()
         except Exception:
             return {"completed": 0, "total": 0, "rate": 0.0}
+
+    async def get_unfinished_work(self) -> Dict[str, Any]:
+        """Get list of unfinished tasks"""
+        try:
+            resp = await self.client.get(ENDPOINTS["unfinished_work"])
+            return resp.json()
+        except Exception as e:
+            logger.warning(f"Unfinished work fetch failed: {e}")
+            return {"count": 0, "items": []}
     
     async def get_decisions(self) -> Dict[str, Any]:
         """Get recent decisions logged"""
@@ -1015,6 +1025,53 @@ if TEXTUAL_AVAILABLE:
             return Panel(table, title="🔧 Services", border_style="cyan")
     
     
+    class TasksWidget(Static):
+        """Live list of unfinished tasks with selection support"""
+
+        def __init__(self, fetcher: MetricsFetcher, **kwargs):
+            super().__init__(**kwargs)
+            self.fetcher = fetcher
+
+        def compose(self) -> ComposeResult:
+            yield Label("📝 Unfinished Work (Select with 'd')")
+            yield DataTable(id="tasks-table")
+
+        async def on_mount(self) -> None:
+            table = self.query_one(DataTable)
+            table.add_columns("ID", "Task", "Status")
+            table.cursor_type = "row"
+            self.set_interval(30.0, self.update_tasks)
+            await self.update_tasks()
+
+        async def update_tasks(self) -> None:
+            try:
+                data = await self.fetcher.get_unfinished_work()
+                items = data.get("items", [])
+                table = self.query_one(DataTable)
+
+                # Remember selection if possible
+                cursor_row = table.cursor_row
+
+                table.clear()
+                for item in items:
+                    # Truncate title if too long
+                    title = item.get("title", "Unknown")
+                    if len(title) > 40:
+                        title = title[:37] + "..."
+
+                    table.add_row(
+                        str(item.get("id", "")),
+                        title,
+                        item.get("status", "unknown")
+                    )
+
+                # Restore cursor position
+                if cursor_row is not None and cursor_row < len(table.rows):
+                    table.move_cursor(row=cursor_row)
+            except Exception as e:
+                logger.debug(f"Tasks widget update failed: {e}")
+
+
     class TrendsWidget(Static):
         """Historical trends with sparklines"""
         
@@ -1184,6 +1241,21 @@ Run: docker start dopemux-prometheus
         #services {
             height: 10;
         }
+
+        #tasks-list {
+            height: 12;
+            border: tall $blue;
+            background: $surface;
+            margin: 1 0;
+        }
+
+        #tasks-list Label {
+            width: 100%;
+            content-align: center middle;
+            background: $blue;
+            color: $surface;
+            text-style: bold;
+        }
         
         #trends {
             height: 12;
@@ -1249,6 +1321,7 @@ Run: docker start dopemux-prometheus
             yield Header(show_clock=True)
             yield ADHDStateWidget(None, id="adhd-state")  # No fetcher - uses WebSocket!
             yield MetricsWidget(self.fetcher, id="metrics")
+            yield TasksWidget(self.fetcher, id="tasks-list")
             yield ServicesWidget(self.fetcher, id="services")
             yield TrendsWidget(id="trends")
             yield Footer()
@@ -1411,11 +1484,24 @@ Run: docker start dopemux-prometheus
             save_config(self.config)
         
         def action_show_task_detail(self) -> None:
-            """Show detailed view of current/sample task"""
-            # For now, show a sample task
-            # TODO: Get currently selected task from UI
-            task_id = 1
-            self.push_screen(TaskDetailModal(task_id))
+            """Show detailed view of current/selected task"""
+            try:
+                # Try to get the selected task from the TasksWidget
+                tasks_widget = self.query_one("#tasks-list", TasksWidget)
+                table = tasks_widget.query_one(DataTable)
+
+                if table.cursor_row is not None:
+                    # Get the ID from the first column of the selected row
+                    row_key = table.coordinate_to_row_key(table.cursor_coordinate)
+                    row_data = table.get_row(row_key)
+                    task_id = row_data[0]
+                    self.push_screen(TaskDetailModal(task_id))
+                else:
+                    self.notify("Please select a task from the list first", severity="warning")
+            except Exception as e:
+                # Fallback to sample task if selection fails
+                logger.debug(f"Failed to get selected task: {e}")
+                self.push_screen(TaskDetailModal(1))
         
         def action_show_service_logs(self) -> None:
             """Show live logs for a service"""
@@ -1524,7 +1610,7 @@ Run: docker start dopemux-prometheus
     class TaskDetailModal(ModalView):
         """Detailed view of a single task with full context"""
         
-        def __init__(self, task_id: int, task_data: Optional[Dict] = None):
+        def __init__(self, task_id: Union[int, str], task_data: Optional[Dict] = None):
             super().__init__()
             self.task_id = task_id
             self._task_data = task_data
