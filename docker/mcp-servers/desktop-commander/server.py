@@ -336,15 +336,16 @@ async def focus_window(title: str) -> Dict[str, Any]:
     """Focus a window by title using platform-appropriate tool"""
     try:
         if IS_MACOS:
-            # macOS: use AppleScript to activate application
-            # Use positional arguments to prevent command injection
-            applescript = 'on run {appName}\ntell application appName to activate\nend run'
-
+            applescript = (
+                'on run argv\n'
+                '  tell application (item 1 of argv) to activate\n'
+                'end run'
+            )
             result = subprocess.run(
                 ["osascript", "-e", applescript, title],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=5,
             )
 
             if result.returncode == 0:
@@ -353,35 +354,33 @@ async def focus_window(title: str) -> Dict[str, Any]:
                     "message": f"Focused application: {title}",
                     "platform": "macOS"
                 }
-            else:
-                # Try finding by window title if app name failed
-                # Use positional arguments to prevent command injection
-                applescript2 = '''
-                on run {appName}
-                    tell application "System Events"
-                        set frontmost of first process whose name contains appName to true
-                    end tell
-                end run
-                '''
-                result2 = subprocess.run(
-                    ["osascript", "-e", applescript2, title],
-                    capture_output=True,
-                    text=True,
-                    timeout=5
-                )
 
-                if result2.returncode == 0:
-                    return {
-                        "success": True,
-                        "message": f"Focused process containing: {title}",
-                        "platform": "macOS"
-                    }
-                else:
-                    return {
-                        "success": False,
-                        "error": f"Could not find application or window: {title}",
-                        "details": result.stderr or result2.stderr
-                    }
+            applescript2 = (
+                'on run argv\n'
+                '  tell application "System Events"\n'
+                '    set frontmost of first process whose name contains (item 1 of argv) to true\n'
+                '  end tell\n'
+                'end run'
+            )
+            result2 = subprocess.run(
+                ["osascript", "-e", applescript2, title],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if result2.returncode == 0:
+                return {
+                    "success": True,
+                    "message": f"Focused process containing: {title}",
+                    "platform": "macOS"
+                }
+
+            return {
+                "success": False,
+                "error": f"Could not find application or window: {title}",
+                "details": result.stderr or result2.stderr
+            }
         else:
             # Linux: use wmctrl
             # wmctrl doesn't support -- before the title for -a
