@@ -20,9 +20,9 @@ assert SPEC and SPEC.loader
 runner = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(runner)
 
-BULK_MODEL = runner.DEFAULT_GEMINI_BULK_MODEL      # gemini-2.5-flash-lite
-EXTRACT_MODEL = runner.DEFAULT_GEMINI_EXTRACT_MODEL  # gemini-2.5-flash
-SYNTH_MODEL = runner.DEFAULT_GEMINI_SYNTH_MODEL    # gemini-2.5-pro
+BULK_MODEL = runner.DEFAULT_GEMINI_MODEL_ID      # gemini-2.5-flash
+EXTRACT_MODEL = runner.DEFAULT_GEMINI_MODEL_ID   # gemini-2.5-flash
+SYNTH_MODEL = "gemini-2.5-pro"                   # gemini-2.5-pro
 
 
 # ──────────────────────────────────────────────────────────────────────────────
