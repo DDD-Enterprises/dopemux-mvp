@@ -52,20 +52,23 @@ class ToolDiscoveryClient:
         base_url = url.rstrip('/')
         
         # Priority 1: Standard MCP JSON-RPC over HTTP
-        # If the URL ends with /mcp, POST there. Otherwise try appending /mcp.
+        # Determine probe endpoints - avoid double-joins if URL already has /mcp
         probe_endpoints = []
         if base_url.endswith('/mcp'):
             probe_endpoints.append(base_url)
+            # Also try the base in case it's actually a prefix
+            probe_endpoints.append(base_url[:-4])
         else:
             probe_endpoints.append(f"{base_url}/mcp")
             probe_endpoints.append(base_url)
 
         errors = []
         for endpoint in probe_endpoints:
+            if not endpoint: continue
             try:
                 # Use a POST JSON-RPC probe
                 payload = {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
-                headers = {"Content-Type": "application/json"}
+                headers = {"Content-Type": "application/json", "Accept": "application/json"}
                 
                 async with session.post(endpoint, json=payload, headers=headers, timeout=self.timeout) as resp:
                     # Reachability signal: 200 OK OR any status with a valid JSON-RPC body
@@ -73,7 +76,13 @@ class ToolDiscoveryClient:
                     try:
                         data = await resp.json()
                     except Exception:
-                        pass
+                        # Fallback: try reading as text if JSON decode fails to see if it's at least responding
+                        try:
+                            text = await resp.text()
+                            if "jsonrpc" in text:
+                                data = json.loads(text)
+                        except Exception:
+                            pass
 
                     is_jsonrpc = isinstance(data, dict) and "jsonrpc" in data
                     
@@ -88,9 +97,11 @@ class ToolDiscoveryClient:
                                 return {"name": name, "reachable": True, "status": "ok", "tools": [], "endpoint": endpoint, "warning": "tools/list not supported"}
                             
                             errors.append(f"{endpoint}: JSON-RPC Error {err_code}: {data['error'].get('message')}")
-                            # Keep trying other endpoints if this one gave a generic JSON-RPC error
+                            # If it's a real JSON-RPC error, it's still "reachable" but maybe not "functional"
+                            # We'll continue to see if another endpoint works better
                             continue
 
+                        # Success! We found tools or a functional JSON-RPC endpoint
                         return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": endpoint}
                     else:
                         errors.append(f"{endpoint}: HTTP {resp.status}")
@@ -99,14 +110,15 @@ class ToolDiscoveryClient:
                 continue
 
         # Fallback to GET for non-standard servers (legacy)
-        try:
-            async with session.get(f"{base_url}/tools", timeout=self.timeout) as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    tools = self._extract_tools(data)
-                    return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": f"{base_url}/tools"}
-        except Exception:
-            pass
+        for suffix in ["/tools", "/health", ""]:
+            try:
+                async with session.get(f"{base_url}{suffix}", timeout=self.timeout) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        tools = self._extract_tools(data)
+                        return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": f"{base_url}{suffix}"}
+            except Exception:
+                pass
         
         return {
             "name": name, 

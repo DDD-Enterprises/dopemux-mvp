@@ -9,16 +9,16 @@ transport = "http"
 required_tool_globs = ["conport_*"]
 
 [mcp.dope_context]
-url = "http://127.0.0.1:3010"
+url = "http://127.0.0.1:3010/mcp"
 transport = "http"
 required_tool_globs = ["dope_context_*"]
 
 [mcp.serena]
-url = "http://127.0.0.1:3006"
+url = "http://127.0.0.1:3006/mcp"
 transport = "streamable-http"
 required_tool_globs = ["serena_*"]
 
 [mcp.dope_memory]
-url = "http://127.0.0.1:3020"
+url = "http://127.0.0.1:3020/mcp"
 transport = "http"
 required_tool_globs = ["dope_memory_*"]
