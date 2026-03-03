@@ -27,7 +27,11 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars', () =
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
   expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
   expect(content).toContain('<Tooltip title={statusStyles[member.status].label}');
-  expect(content).toContain('tabIndex={0}');
+  const tooltipLine = content
+    .split('\n')
+    .find(line => line.includes('<Tooltip title={statusStyles[member.status].label}'));
+  expect(tooltipLine).toBeDefined();
+  expect(tooltipLine).toContain('tabIndex={0}');
 });
 
 test('TaskSequencer.tsx has contextual aria-labels for buttons', () => {
