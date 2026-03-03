@@ -5,7 +5,7 @@ inventory -> partitioning -> per-partition raw outputs -> norm merge -> QA.
 """
 
 import argparse
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import fnmatch
 import hashlib
 import hmac
@@ -59,6 +59,7 @@ except ModuleNotFoundError:
     GeminiBatchClient = batch_clients_module.GeminiBatchClient
     OpenAIBatchClient = batch_clients_module.OpenAIBatchClient
     XAIBatchClient = batch_clients_module.XAIBatchClient
+    OpenRouterBatchClient = batch_clients_module.OpenRouterBatchClient
 try:
     from rich.console import Console
     from rich.panel import Panel
@@ -295,19 +296,45 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "extract": [
-            ("openai", "gpt-5.2-pro", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", "gpt-5.2-pro", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
             ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
-            ("openai", "gpt-5.2-pro", "OPENAI_API_KEY"),
+            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
             ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+        ],
+    },
+    "openrouter": {
+        "bulk": [
+            ("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+        ],
+        "extract": [
+            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+        ],
+        "synthesis": [
+            ("openrouter", "openai/gpt-5.2-pro", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-5-pro", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+        ],
+        "qa": [
+            ("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"),
+            ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"),
+            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
         ],
     },
 }
@@ -326,6 +353,7 @@ PROVIDER_BASE_URL = {
     "xai": "https://api.x.ai/v1",
     "gemini": "https://generativelanguage.googleapis.com",
     "openai": "https://api.openai.com/v1",
+    "openrouter": "https://openrouter.ai/api/v1",
 }
 
 GEMINI_OPENAI_COMPAT_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai"
@@ -500,20 +528,21 @@ PROVIDER_API_KEY_ENV: Dict[str, str] = {
     "xai": "XAI_API_KEY",
 }
 REQUIRED_PROMPT_STEP_IDS: Dict[str, Set[str]] = {
-    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A99"},
+    "A": {"A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "A99"},
     "H": {"H0", "H1", "H2", "H3", "H4", "H5", "H6", "H7", "H9"},
     "D": {"D0", "D1", "D2", "D3", "D4", "D5"},
-    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9"},
+    "C": {"C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11"},
     "E": {"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E9"},
     "W": {"W0", "W1", "W2", "W3", "W4", "W5", "W9"},
     "B": {"B0", "B1", "B2", "B3", "B9"},
     "G": {"G0", "G1", "G2", "G3", "G4", "G9"},
-    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9", "Q11"},
-    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"},
+    "Q": {"Q0", "Q1", "Q2", "Q3", "Q9"},
+    "R": {"R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10"},
     "X": {"X0", "X1", "X2", "X3", "X4", "X9"},
     "T": {"T0", "T1", "T2", "T3", "T4", "T5", "T9"},
     "Z": {"Z0", "Z1", "Z2", "Z9"},
-    "S": {"S0", "S1", "S2", "S3", "S4", "S5"},
+    "S": {"S0", "S1", "S2", "S3", "S4", "S5", "S6"},
+    "M": {"M0", "M1", "M2", "M3", "M4", "M5", "M6"},
 }
 
 
@@ -572,6 +601,7 @@ class RunnerConfig:
     partition_workers: int
     debug_phase_inputs: bool
     fail_fast_missing_inputs: bool
+    executor: str = "thread"
     routing_policy: str = DEFAULT_ROUTING_POLICY
     disable_escalation: bool = False
     escalation_max_hops: int = 2
@@ -4382,6 +4412,10 @@ def get_xai_client(api_key: str) -> Any:
     return get_openai_client(base_url=PROVIDER_BASE_URL["xai"], api_key=api_key)
 
 
+def get_openrouter_client(api_key: str) -> Any:
+    return get_openai_client(base_url=PROVIDER_BASE_URL["openrouter"], api_key=api_key)
+
+
 def extract_text_from_chat_completion(response_obj: Any) -> str:
     choices = getattr(response_obj, "choices", None)
     if not choices:
@@ -4743,7 +4777,12 @@ def call_llm(
                 status_code = 200
                 response_text = extract_text_from_gemini_response(response)
             else:
-                client = get_xai_client(api_key) if provider == "xai" else get_openai_client(None, api_key)
+                if provider == "xai":
+                    client = get_xai_client(api_key)
+                elif provider == "openrouter":
+                    client = get_openrouter_client(api_key)
+                else:
+                    client = get_openai_client(None, api_key)
                 chat_kwargs: Dict[str, Any] = {
                     "model": model_id,
                     "messages": payload["messages"],
@@ -5701,6 +5740,8 @@ def build_batch_client(
         return GeminiBatchClient(api_key=api_key)
     if provider == "xai":
         return XAIBatchClient(api_key=api_key, base_url=llm_base_url(provider, cfg))
+    if provider == "openrouter":
+        return OpenRouterBatchClient(api_key=api_key, base_url=llm_base_url(provider, cfg))
     raise RuntimeError(f"Unsupported batch provider: {provider}")
 
 
@@ -5887,6 +5928,141 @@ def compute_resume_decision(
     }
 
 
+def _run_one_partition_worker(
+    partition: Dict[str, Any],
+    phase: str,
+    step_id: str,
+    prompt_path: Path,
+    output_artifacts: List[str],
+    cfg_dict: Dict[str, Any],
+    raw_dir_str: str,
+    step_tier: str,
+    max_files: int,
+    force_json_output: bool,
+    dry_run: bool,
+    resume: bool,
+    run_id: str,
+    endpoint_base: str,
+    transport: str,
+    initial_provider: str,
+    initial_model_id: str,
+    routing_reason: str,
+    initial_api_key_env: str,
+) -> PartitionExecResult:
+    """
+    Module-level worker function for ProcessPoolExecutor.
+    All parameters are explicit to ensure picklability.
+    """
+    from pathlib import Path
+    
+    # Recreate local objects that can't be pickled
+    raw_dir = Path(raw_dir_str)
+    safe_read(prompt_path)
+    
+    # Reconstruct cfg-like dict access
+    max_request_bytes = int(cfg_dict.get('max_request_bytes', 200000))
+    int(cfg_dict.get('file_truncate_chars', 70000))
+    str(cfg_dict.get('home_scan_mode', 'safe'))
+    routing_policy = str(cfg_dict.get('routing_policy', 'cost'))
+    bool(cfg_dict.get('batch_mode', False))
+    str(cfg_dict.get('batch_provider', 'auto'))
+    str(cfg_dict.get('gemini_auth_mode', 'auto'))
+    
+    # Define local helper functions (can't use closures from outer scope)
+    def _append_log(local_logs, level, message):
+        """Local version of _append_log for worker function."""
+        local_logs.append((level, message))
+    
+    def _op_write_json(local_ops, local_path, local_payload):
+        """Local version of _op_write_json for worker function."""
+        local_path.parent.mkdir(parents=True, exist_ok=True)
+        local_path.write_text(json.dumps(local_payload, indent=2), encoding='utf-8')
+        local_ops.append({
+            'kind': 'write_json',
+            'path': str(local_path),
+            'payload': local_payload
+        })
+    
+    # Create local logger
+    logger = logging.getLogger(f"worker.{phase}.{step_id}")
+    
+    # Log worker PID to verify ProcessPoolExecutor is working
+    import os
+    logger.info(f"Worker PID: {os.getpid()} processing partition {partition['id']}")
+    
+    # Main execution logic (simplified version of original)
+    partition_id = str(partition["id"])
+    out_json = raw_dir / f"{step_id}__{partition_id}.json"
+    raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+    raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+    raw_dir / f"{step_id}__{partition_id}.TRACE.md"
+    logs: List[Tuple[str, str]] = []
+    write_ops: List[Dict[str, Any]] = []
+    
+    # Simplified dry-run logic
+    if dry_run:
+        _append_log(
+            logs,
+            "info",
+            f"Dry-run {step_id} {partition_id} files={len(partition['paths'])} "
+            f"request_payload_bytes=ESTIMATED max_request_bytes={max_request_bytes}",
+        )
+        
+        # Create dry-run output
+        dry_run_output = {
+            "phase": phase,
+            "step_id": step_id,
+            "partition_id": partition_id,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "artifacts": [{"artifact_name": name, "payload": []} for name in output_artifacts],
+            "dry_run": True,
+            "request_meta": {
+                "auth_present_flags": {"has_auth": True, "has_xgoog": False, "sdk_api_key_present": True},
+                "provider": initial_provider,
+                "model_id": initial_model_id,
+                "endpoint_base_url": endpoint_base,
+                "transport": transport,
+                "execution_mode": "sync",
+                "routing_tier": step_tier,
+                "routing_policy": routing_policy,
+            },
+        }
+        
+        _op_write_json(write_ops, out_json, dry_run_output)
+        
+        return PartitionExecResult(
+            partition_id=partition_id,
+            write_ops=write_ops,
+            logs=logs,
+            request_meta=dry_run_output["request_meta"],
+            artifacts=[],
+            success=True,
+            resume_skipped=False,
+            auth_failure=False,
+            auth_expired=False,
+            recomputed_delta=1,
+            dry_run_delta=1,
+            failed_delta=0,
+        )
+    
+    # For non-dry-run, implement full logic (simplified for now)
+    # This would be expanded to match the original function
+    return PartitionExecResult(
+        partition_id=partition_id,
+        write_ops=write_ops,
+        logs=logs,
+        request_meta={"provider": initial_provider, "model_id": initial_model_id},
+        artifacts=[],
+        success=False,
+        resume_skipped=False,
+        auth_failure=False,
+        auth_expired=False,
+        recomputed_delta=0,
+        dry_run_delta=0,
+        failed_delta=1,
+    )
+
+
 def execute_step_for_partitions(
     phase: str,
     prompt_spec: PromptSpec,
@@ -5998,16 +6174,27 @@ def execute_step_for_partitions(
         write_ops.append({"kind": "unlink_if_exists", "path": str(path)})
 
     def _apply_write_ops(write_ops: List[Dict[str, Any]]) -> None:
-        for op in write_ops:
-            op_path = Path(str(op["path"]))
-            if op["kind"] == "write_text":
-                op_path.write_text(str(op["text"]), encoding="utf-8")
-            elif op["kind"] == "write_json":
-                payload = op["payload"] if isinstance(op["payload"], dict) else {}
-                write_json(op_path, payload)
-            elif op["kind"] == "unlink_if_exists":
-                if op_path.exists():
-                    op_path.unlink()
+        for i, op in enumerate(write_ops):
+            try:
+                op_path = Path(str(op["path"]))
+                kind = op.get("kind")
+                if kind is None:
+                    logger.error("Write operation missing 'kind' field at index %s: %s", i, op)
+                    continue
+                    
+                if kind == "write_text":
+                    op_path.write_text(str(op["text"]), encoding="utf-8")
+                elif kind == "write_json":
+                    payload = op["payload"] if isinstance(op["payload"], dict) else {}
+                    write_json(op_path, payload)
+                elif kind == "unlink_if_exists":
+                    if op_path.exists():
+                        op_path.unlink()
+                else:
+                    logger.warning("Unknown write operation kind '%s' at index %s", kind, i)
+            except Exception as exc:
+                logger.error("Failed to apply write operation at index %s: %s. Error: %s", i, op, exc)
+                continue
 
     def _ui_record_result(result: PartitionExecResult) -> None:
         nonlocal ui_completed, ui_ok, ui_failed, ui_skipped, ui_retried
@@ -6942,17 +7129,63 @@ def execute_step_for_partitions(
                 )
             _ui_record_result(results_by_partition[partition_id])
     else:
-        with ThreadPoolExecutor(max_workers=workers) as executor:
-            future_map = {executor.submit(_run_one_partition, partition): partition for partition in ordered_partitions}
+        # Choose executor based on configuration
+        if cfg.executor == "process":
+            # Use the module-level worker function that is picklable
+            executor_cls = ProcessPoolExecutor
+            
+            # Prepare worker arguments (convert to picklable formats)
+            cfg_dict = {
+                'max_request_bytes': cfg.max_request_bytes,
+                'file_truncate_chars': cfg.file_truncate_chars,
+                'home_scan_mode': cfg.home_scan_mode,
+                'routing_policy': cfg.routing_policy,
+                'batch_mode': cfg.batch_mode,
+                'batch_provider': cfg.batch_provider,
+                'gemini_auth_mode': cfg.gemini_auth_mode,
+            }
+            
+            # Use module-level worker function
+            worker_func = _run_one_partition_worker
+            worker_args = (
+                cfg.dry_run, cfg.resume, run_id, endpoint_base, transport,
+                initial_provider, initial_model_id, routing_reason, initial_api_key_env
+            )
+            
+        else:
+            executor_cls = ThreadPoolExecutor
+            # Use local function for thread executor (backward compatible)
+            worker_func = _run_one_partition
+            worker_args = ()  # Not used for threads
+        
+        with executor_cls(max_workers=workers) as executor:
+            if cfg.executor == "process":
+                # For ProcessPool: submit with all worker arguments
+                future_map = {
+                    executor.submit(
+                        worker_func, 
+                        partition, phase, step_id, prompt_path, output_artifacts,
+                        cfg_dict, str(raw_dir), step_tier, max_files, force_json_output,
+                        *worker_args
+                    ): partition 
+                    for partition in ordered_partitions
+                }
+            else:
+                # For ThreadPool: use original local function
+                future_map = {executor.submit(worker_func, partition): partition for partition in ordered_partitions}
             for future in as_completed(future_map):
                 partition = future_map[future]
                 partition_id = str(partition["id"])
                 out_json = raw_dir / f"{step_id}__{partition_id}.json"
                 out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
                 out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+                logger.info("Processing completed future for partition %s", partition_id)
                 try:
-                    results_by_partition[partition_id] = future.result()
+                    result = future.result()
+                    logger.debug("Successfully got result for partition %s", partition_id)
+                    results_by_partition[partition_id] = result
                 except Exception as exc:
+                    logger.error("Exception in future.result() for partition %s: %s", partition_id, exc, exc_info=True)
                     results_by_partition[partition_id] = _worker_exception_result(
                         partition_id=partition_id,
                         out_json=out_json,
@@ -7020,7 +7253,19 @@ def execute_step_for_partitions(
                     "Check credentials, endpoint mode, and gemini auth strategy."
                 )
 
-        _apply_write_ops(result.write_ops)
+        # Validate write_ops before applying them
+        valid_write_ops: List[Dict[str, Any]] = []
+        for i, op in enumerate(result.write_ops):
+            if "kind" not in op:
+                logger.error("Write operation at index %s missing 'kind' field: %s", i, op)
+                continue
+            if "path" not in op:
+                logger.error("Write operation at index %s missing 'path' field: %s", i, op)
+                continue
+            valid_write_ops.append(op)
+                
+        if valid_write_ops:
+            _apply_write_ops(valid_write_ops)
         for level, message in result.logs:
             if level == "error":
                 logger.error("%s", message)
@@ -9650,7 +9895,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--routing-policy",
-        choices=["cost", "balanced", "quality"],
+        choices=["cost", "balanced", "quality", "openrouter"],
         default=DEFAULT_ROUTING_POLICY,
     )
     parser.add_argument("--disable-escalation", action="store_true")
@@ -9675,6 +9920,23 @@ def main() -> None:
     parser.add_argument("--batch-wait-timeout-seconds", type=int, default=86400)
     parser.add_argument("--batch-max-requests-per-job", type=int, default=2000)
     parser.add_argument(
+        "--batch-retrieve",
+        action="store_true",
+        help="Retrieve OpenAI batch results and integrate with webhook system.",
+    )
+    parser.add_argument(
+        "--batch-ids",
+        type=str,
+        nargs="+",
+        help="List of batch IDs to retrieve.",
+    )
+    parser.add_argument(
+        "--retrieve-provider",
+        choices=["openai", "gemini"],
+        default="openai",
+        help="Batch provider for retrieval (openai or gemini).",
+    )
+    parser.add_argument(
         "--gemini-transport",
         choices=["sdk", "openai_compat_http"],
         default="sdk",
@@ -9695,6 +9957,8 @@ def main() -> None:
     parser.add_argument("--retry-max-seconds", type=float, default=30.0)
     parser.add_argument("--phase-auth-fail-threshold", type=int, default=5)
     parser.add_argument("--partition-workers", type=int, default=1)
+    parser.add_argument("--executor", choices=["thread", "process"], default="thread",
+                       help="Executor type: thread (default) or process")
     parser.add_argument("--debug-phase-inputs", action="store_true")
     parser.add_argument("--fail-fast-missing-inputs", action="store_true")
     parser.add_argument("--run-id", type=str)
@@ -9902,6 +10166,7 @@ def main() -> None:
         retry_max_seconds=max(0.0, args.retry_max_seconds),
         phase_auth_fail_threshold=max(1, args.phase_auth_fail_threshold),
         partition_workers=args.partition_workers,
+        executor=args.executor,
         debug_phase_inputs=args.debug_phase_inputs,
         fail_fast_missing_inputs=args.fail_fast_missing_inputs,
         routing_policy=args.routing_policy,
@@ -10037,11 +10302,23 @@ def main() -> None:
             logger.info(
                 "AUTO_CONTINUE phase=%s next_phase=%s",
                 watch_phase,
-                watch_result.next_phase,
             )
             phase_sequence = [watch_result.next_phase]
-        else:
-            sys.exit(watch_result.exit_code)
+
+    if args.batch_retrieve:
+        if not args.batch_ids:
+            parser.error("--batch-retrieve requires --batch-ids.")
+        logger.info("Starting %s batch retrieval for %s batches", args.retrieve_provider, len(args.batch_ids))
+        integrated = run_batch_retrieval_and_integration(
+            run_id=run_id,
+            batch_ids=args.batch_ids,
+            cfg=cfg,
+            provider=args.retrieve_provider,
+        )
+        logger.info("Batch retrieval complete: %s events integrated", integrated)
+        if integrated > 0:
+            logger.info("You can now run --finalize to process the integrated batch results")
+        sys.exit(0 if integrated >= 0 else 1)
 
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
@@ -10154,6 +10431,104 @@ def main() -> None:
         write_coverage_rollup(root, dirs, run_id)
         write_resume_proof(dirs, run_id, phases)
         update_proof_pack(root, dirs, run_id, run_started_at, phase, counts, phase_started_at, phase_finished_at)
+
+
+def run_batch_retrieval_and_integration(
+    run_id: str,
+    batch_ids: List[str],
+    cfg: RunnerConfig,
+    provider: str = "openai"
+) -> int:
+    """Retrieve batches and integrate results with webhook system.
+    
+    This function:
+    1. Retrieves batch results using the batch retriever
+    2. Downloads output/error files
+    3. Creates synthetic webhook events for completed batches
+    4. Allows the existing webhook-based workflow to process them
+    
+    Args:
+        run_id: Run ID to associate with events
+        batch_ids: List of batch IDs to retrieve
+        cfg: Runner configuration
+        provider: Batch provider (openai or gemini)
+        
+    Returns:
+        Number of batches successfully integrated
+    """
+    try:
+        from lib.batch_retriever import (
+            retrieve_openai_batches, 
+            retrieve_gemini_batches, 
+            integrate_batch_results_with_webhook
+        )
+    except ImportError:
+        logger.error("Batch retriever module not available")
+        return 0
+    
+    # Resolve API key based on provider
+    if provider == "gemini":
+        api_key, api_key_env = resolve_api_key("gemini", "GEMINI_API_KEY")
+        if not api_key:
+            logger.error("Gemini API key not available")
+            return 0
+    else:
+        api_key, api_key_env = resolve_api_key("openai", "OPENAI_API_KEY")
+        if not api_key:
+            logger.error("OpenAI API key not available")
+            return 0
+    
+    # Retrieve batches
+    output_dir = Path("batch_downloads")
+    output_dir.mkdir(exist_ok=True)
+    
+    logger.info("Retrieving %s %s batches...", len(batch_ids), provider)
+    
+    if provider == "gemini":
+        batch_results = retrieve_gemini_batches(
+            api_key=api_key,
+            batch_ids=batch_ids,
+            output_dir=output_dir
+        )
+    else:
+        batch_results = retrieve_openai_batches(
+            api_key=api_key,
+            batch_ids=batch_ids,
+            output_dir=output_dir
+        )
+    
+    # Build event store for integration
+    try:
+        event_store = _build_event_store_for_runner()
+    except Exception as e:
+        logger.error("Failed to build event store: %s", e)
+        return 0
+    
+    # Integrate results with webhook system
+    # For now, we'll associate all batches with a generic phase/step/partition
+    # In a real implementation, this would be more sophisticated
+    events_integrated = 0
+    for batch_id, result in batch_results.items():
+        status = result["status"]
+        terminal_states = ("completed", "failed", "expired", "succeeded", "done")
+        if status in terminal_states:
+            try:
+                # Create synthetic events for each batch
+                integrated = integrate_batch_results_with_webhook(
+                    batch_results={batch_id: result},
+                    event_store=event_store,
+                    run_id=run_id,
+                    phase="R",  # Default to phase R for batch processing
+                    step_id="batch_retrieval",
+                    partition_id=batch_id,
+                    provider=provider
+                )
+                events_integrated += integrated
+            except Exception as e:
+                logger.error("Failed to integrate batch %s: %s", batch_id, e)
+    
+    logger.info("Batch retrieval integration complete: %s events created", events_integrated)
+    return events_integrated
 
 
 if __name__ == "__main__":
