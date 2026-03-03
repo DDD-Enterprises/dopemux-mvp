@@ -47,7 +47,8 @@
     "_audit_out",
     "review_artifacts",
     ".dopetask",
-    "proof"
+    "proof",
+    ".dopemux"
   ],
   "allowed_root_files": [
     ".dopetaskroot",
@@ -61,6 +62,7 @@
     ".claude.json.template",
     ".dockerignore",
     ".env.example",
+    ".env.template",
     ".flake8",
     ".gitignore",
     ".lychee.toml",
