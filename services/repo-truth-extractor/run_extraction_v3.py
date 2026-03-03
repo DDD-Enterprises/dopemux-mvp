@@ -284,7 +284,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
     "balanced": {
         "bulk": [
             ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_BULK_MODEL, "GEMINI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
             ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
         ],
         "extract": [
@@ -300,7 +300,7 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         "qa": [
             ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
             ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
-            ("gemini", DEFAULT_GEMINI_BULK_MODEL, "GEMINI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
         ],
     },
     "quality": {
