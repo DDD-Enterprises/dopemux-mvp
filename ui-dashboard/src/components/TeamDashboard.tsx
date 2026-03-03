@@ -149,7 +149,8 @@ const TeamDashboard: React.FC = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar
                   sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}
-                  aria-label={`Profile picture of ${member.name}`}
+                  role="img"
+                  aria-label={member.avatar ? `Avatar for ${member.name}` : `Initials for ${member.name}`}
                 >
                   {member.avatar}
                 </Avatar>
