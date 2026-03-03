@@ -4,12 +4,11 @@ Phase 0B Serialization Test: Verify partition work-unit payloads are pickle-safe
 """
 
 import argparse
-import json
 import pickle
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import traceback
 
 # Add the service directory to path to import from run_extraction_v3
@@ -18,7 +17,7 @@ if str(SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(SERVICE_DIR))
 
 try:
-    from run_extraction_v3 import build_partitions, build_inventory
+    from run_extraction_v3 import build_partitions
 except ImportError as e:
     print(f"Error importing from run_extraction_v3: {e}")
     sys.exit(1)
@@ -33,24 +32,25 @@ def find_unpicklable_path(obj: Any, path: str = "") -> Optional[str]:
         pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
         return None
     except (pickle.PicklingError, TypeError):
-        # If it's a container, recurse to find the specific unpicklable item
-        if isinstance(obj, dict):
-            for key, value in obj.items():
-                key_path = f"{path}.{key}" if path else str(key)
-                result = find_unpicklable_path(value, key_path)
-                if result:
-                    return result
-        elif isinstance(obj, (list, tuple)):
-            for i, item in enumerate(obj):
-                item_path = f"{path}[{i}]" if path else f"[{i}]"
-                result = find_unpicklable_path(item, item_path)
-                if result:
-                    return result
-        
-        # If no children are unpicklable or it's not a container, this object is the culprit
         if path:
             return path
         return "<root>"
+    
+    # Check container types
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            key_path = f"{path}.{key}" if path else str(key)
+            result = find_unpicklable_path(value, key_path)
+            if result:
+                return result
+    elif isinstance(obj, (list, tuple)):
+        for i, item in enumerate(obj):
+            item_path = f"{path}[{i}]" if path else f"[{i}]"
+            result = find_unpicklable_path(item, item_path)
+            if result:
+                return result
+    
+    return None
 
 
 def test_partition_pickle(partition: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -99,8 +99,7 @@ def generate_real_inventory() -> List[Dict[str, Any]]:
     Generate a real inventory by scanning actual files in the repo.
     """
     try:
-        from run_extraction_v3 import Collector, is_text_candidate, safe_read, sha256_text, classify_kind
-        import os
+        from run_extraction_v3 import Collector, safe_read, sha256_text, classify_kind
         from pathlib import Path
         
         # Use the same collector logic as the main extraction
