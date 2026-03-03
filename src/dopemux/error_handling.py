@@ -47,7 +47,7 @@ class ErrorSeverity(Enum):
     CRITICAL = "critical"  # Immediate intervention required
 
 @dataclass
-class DopemuxError:
+class DopemuxError(Exception):
     """Standardized error representation with ADHD-friendly messaging."""
     error_type: ErrorType
     severity: ErrorSeverity
@@ -60,7 +60,8 @@ class DopemuxError:
     adhd_friendly_message: Optional[str] = None
 
     def __post_init__(self):
-        """Generate ADHD-friendly error message if not provided."""
+        """Initialize base Exception and generate ADHD-friendly error message."""
+        super().__init__(self.message)
         if not self.adhd_friendly_message:
             self.adhd_friendly_message = self._generate_adhd_message()
 
