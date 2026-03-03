@@ -72,8 +72,17 @@ async def focus_window(title: str) -> Dict[str, Any]:
     """
     try:
         if IS_MACOS:
-            applescript = f'tell application "{title}" to activate'
-            result = subprocess.run(["osascript", "-e", applescript], capture_output=True, text=True, timeout=5)
+            applescript = (
+                'on run argv\n'
+                '  tell application (item 1 of argv) to activate\n'
+                'end run'
+            )
+            result = subprocess.run(
+                ["osascript", "-e", applescript, title],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
             return {"success": result.returncode == 0, "message": f"Focusing {title}"}
         else:
             result = subprocess.run(["wmctrl", "-a", title], capture_output=True, text=True, timeout=5)
