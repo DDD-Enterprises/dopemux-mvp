@@ -13,12 +13,14 @@ import dopemux
 @patch("dopemux.cli.LiteLLMProxyManager")
 @patch("dopemux.cli.DopeBrainzRouterManager")
 @patch("dopemux.cli.start_simple_proxy")
+@patch("dopemux.cli.RoutingConfig")
 @patch("shutil.which")
-def test_ccr_models_env_for_altp(mock_which, mock_start_proxy, mock_router_cls, mock_litellm_cls, mock_monitor_cls, mock_launcher_cls, mock_ctx_mgr, mock_load_state, mock_save_state):
+def test_ccr_models_env_for_altp(mock_which, mock_routing_config_cls, mock_start_proxy, mock_router_cls, mock_litellm_cls, mock_monitor_cls, mock_launcher_cls, mock_ctx_mgr, mock_load_state, mock_save_state):
     """
     Verify that --altp sets CLAUDE_CODE_ROUTER_MODELS to "altp-opus,altp-sonnet,altp-haiku".
     """
     mock_which.return_value = "/bin/claude"
+    mock_routing_config_cls.load_default.return_value.get_mode.return_value = "api"
     mock_start_proxy.return_value = (4000, "sk-test")
 
     # Mock Router manager
