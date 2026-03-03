@@ -39,7 +39,9 @@ This workspace integrates custom MCP servers inherited from the `dopemux-mvp` pr
 **Implicit Usage:** Offload specific sub-tasks to other LLMs (like Devstral, Claude, etc.) when you need parallel reasoning or specialized models without consuming your own main context thread.
 
 ## Operational Invariants
-- **Worktree Isolation (INV-MEM-001):** Never cross-contaminate state between different project roots.
+- **Worktree Isolation (INV-MEM-001):** Never cross-contaminate state between different project roots. Project-specific endpoints must be defined in `.dopemux/mcp.instances.toml`.
+- **Deterministic Routing (INV-MEM-008):** All MCP connections must be resolved through the `InstanceResolver` using the priority: Repo Profile > Env Vars > Global Fallback.
+- **Fail Closed (INV-MEM-009):** The Phase 0 Discovery Gate must validate all required tool globs (e.g. `conport_*`) before any agent work starts. If required tools are unreachable or missing, the process must BLOCK.
 - **Stale Read Prevention (INV-MEM-007):** Always operate on the latest state. If a file changes out from under you, refresh your context.
 - **Redaction (INV-MEM-005):** Never persist API keys, secrets, or PII into ConPort, Dope Memory, or task logs.
 
