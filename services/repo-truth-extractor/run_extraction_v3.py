@@ -243,96 +243,86 @@ MAGIC_SUBTYPE_ORDER = {
     "other": 7,
 }
 
+# Direct provider model IDs (canonical)
+DEFAULT_GEMINI_BULK_MODEL = "gemini-2.5-flash-lite"
+DEFAULT_GEMINI_EXTRACT_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_SYNTH_MODEL = "gemini-2.5-pro"
+
+DEFAULT_XAI_BULK_MODEL = "grok-4-1-fast-non-reasoning"
+DEFAULT_XAI_EXTRACT_MODEL = "grok-4-1-fast-non-reasoning"
+DEFAULT_XAI_THINK_MODEL = "grok-4-1-fast-reasoning"
+
+DEFAULT_OPENAI_BULK_MODEL = "gpt-5-nano"
+DEFAULT_OPENAI_EXTRACT_MODEL = "gpt-5-mini"
+DEFAULT_OPENAI_SYNTH_MODEL = "gpt-5.2"
+DEFAULT_OPENAI_CODE_SYNTH_MODEL = "gpt-5.2-codex"
+
 # Route tuple: provider, model_id, api_key_env
 ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
     "cost": {
         "bulk": [
-            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
-            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_BULK_MODEL, "GEMINI_API_KEY"),
+            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_BULK_MODEL, "OPENAI_API_KEY"),
         ],
         "extract": [
-            ("google", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("openai", "gpt-5.1-codex-mini", "OPENAI_API_KEY"),
-            ("xai", "grok-4.1-fast", "XAI_API_KEY"),
+            ("xai", DEFAULT_XAI_EXTRACT_MODEL, "XAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_EXTRACT_MODEL, "GEMINI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
-            ("openrouter", "anthropic/claude-opus-4.5", "OPENROUTER_API_KEY"),
+            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
+            ("xai", DEFAULT_XAI_THINK_MODEL, "XAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
         ],
         "qa": [
-            ("google", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_BULK_MODEL, "GEMINI_API_KEY"),
+            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
         ],
     },
     "balanced": {
         "bulk": [
-            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_BULK_MODEL, "GEMINI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
         ],
         "extract": [
-            ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
-            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
+            ("xai", DEFAULT_XAI_EXTRACT_MODEL, "XAI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_EXTRACT_MODEL, "GEMINI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
-            ("openrouter", "anthropic/claude-opus-4.6", "OPENROUTER_API_KEY"),
-            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_CODE_SYNTH_MODEL, "OPENAI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
+            ("xai", DEFAULT_XAI_THINK_MODEL, "XAI_API_KEY"),
         ],
         "qa": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
-            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
-            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
+            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_BULK_MODEL, "GEMINI_API_KEY"),
         ],
     },
     "quality": {
         "bulk": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
-            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "extract": [
-            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
-            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "synthesis": [
-            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
-            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
             ("xai", "grok-code-fast-1", "XAI_API_KEY"),
         ],
         "qa": [
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
-            ("openai", "gpt-5.2", "OPENAI_API_KEY"),
-            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
-        ],
-    },
-    "openrouter": {
-        "bulk": [
-            ("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
-            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-        ],
-        "extract": [
-            ("openrouter", "openai/gpt-5-nano", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
-            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("openai", "gpt-5-mini", "OPENAI_API_KEY"),
-        ],
-        "synthesis": [
-            ("openrouter", "openai/gpt-5.2-pro", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5.2-chat", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-5-pro", "OPENROUTER_API_KEY"),
-            ("gemini", "gemini-2.5-pro", "GEMINI_API_KEY"),
-        ],
-        "qa": [
-            ("openrouter", "openai/gpt-4.1-nano", "OPENROUTER_API_KEY"),
-            ("openrouter", "openai/gpt-4o-mini", "OPENROUTER_API_KEY"),
-            ("gemini", "gemini-2.5-flash", "GEMINI_API_KEY"),
-            ("openai", "gpt-5-nano", "OPENAI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
+            ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
+            ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
         ],
     },
 }
@@ -2503,6 +2493,26 @@ def resolve_step_ladder(
     return [tuple(route) for route in routes]
 
 
+def validate_routing_ladders() -> None:
+    required_tiers = {"bulk", "extract", "synthesis", "qa"}
+    allowed_providers = {"openai", "gemini", "xai"}
+    for policy_name, tiers in ACTIVE_ROUTING_LADDERS.items():
+        missing = required_tiers - set(tiers.keys())
+        if missing:
+            raise ValueError(f"Routing policy '{policy_name}' is missing required tiers: {missing}")
+        for tier_name, routes in tiers.items():
+            if not isinstance(routes, list):
+                raise ValueError(f"Routing policy '{policy_name}' tier '{tier_name}' must be a list of tuples.")
+            for route in routes:
+                if len(route) != 3:
+                    raise ValueError(f"Route {route} in policy '{policy_name}' tier '{tier_name}' must be a tuple of (provider, model_id, api_key_env)")
+                provider, model_id, api_key_env = route
+                if provider not in allowed_providers:
+                    raise ValueError(f"Unsupported provider '{provider}' in policy '{policy_name}' tier '{tier_name}'. Allowed: {allowed_providers}")
+                if not isinstance(model_id, str) or not model_id.strip():
+                    raise ValueError(f"Invalid model_id '{model_id}' in policy '{policy_name}' tier '{tier_name}'. Must be a non-empty string.")
+
+
 def routing_ladders_payload() -> Dict[str, Dict[str, List[Dict[str, str]]]]:
     payload: Dict[str, Dict[str, List[Dict[str, str]]]] = {}
     for policy, tiers in ACTIVE_ROUTING_LADDERS.items():
@@ -2533,6 +2543,7 @@ def effective_model_routing_payload() -> Dict[str, Dict[str, str]]:
 
 # Initialize routing state on module load.
 apply_model_overrides(DEFAULT_GEMINI_MODEL_ID, DEFAULT_ROUTING_POLICY)
+validate_routing_ladders()
 
 
 def write_run_manifest(
@@ -4767,17 +4778,21 @@ def call_llm(
                 status_code = response.status_code
                 response_json = response.json()
                 response_text = response_json["choices"][0]["message"]["content"]
-            elif provider == "gemini":
                 client = get_gemini_client(api_key)
+                gemini_config: Dict[str, Any] = {
+                    "temperature": 0.1,
+                    "system_instruction": system_prompt,
+                    "max_output_tokens": 8192,
+                }
+                if force_json_output:
+                    gemini_config["response_mime_type"] = "application/json"
+                if model_id in (DEFAULT_GEMINI_BULK_MODEL, DEFAULT_GEMINI_EXTRACT_MODEL):
+                    gemini_config["thinking_config"] = {"thinking_budget_tokens": 0}
+
                 response = client.models.generate_content(
                     model=model_id,
                     contents=user_content,
-                    config={
-                        "temperature": 0.1,
-                        "system_instruction": system_prompt,
-                        "max_output_tokens": 8192,
-                        **({"response_mime_type": "application/json"} if force_json_output else {}),
-                    },
+                    config=gemini_config,
                 )
                 status_code = 200
                 response_text = extract_text_from_gemini_response(response)
