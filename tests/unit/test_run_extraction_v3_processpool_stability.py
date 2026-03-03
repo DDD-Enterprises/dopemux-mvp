@@ -136,7 +136,8 @@ def test_write_ops_validation_before_apply():
     # Verify that write_ops validation is present
     assert "Validate write_ops before applying them" in source
     assert 'if "kind" not in op:' in source
-    assert 'result.write_ops[i]["kind"] = "unknown"' in source
+    assert 'logger.error("Write operation at index %s missing \'kind\' field: %s", i, op)' in source
+    assert 'valid_write_ops.append(op)' in source
 
 
 def test_partition_result_logging():

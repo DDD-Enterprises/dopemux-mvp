@@ -349,6 +349,69 @@ ACTIVE_ROUTING_LADDERS = {
     for policy, tiers in ROUTING_LADDERS.items()
 }
 
+
+def _safe_key_fingerprint(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()[:8]
+
+
+def _collect_required_key_envs(routing_policy: str) -> Dict[str, Set[str]]:
+    ladders = ACTIVE_ROUTING_LADDERS.get(routing_policy) or ROUTING_LADDERS.get(routing_policy) or {}
+    provider_envs: Dict[str, Set[str]] = defaultdict(set)
+    for routes in ladders.values():
+        for provider, _model_id, api_key_env in routes:
+            provider_envs[provider].add(api_key_env)
+    return dict(provider_envs)
+
+
+def preflight_keys(routing_policy: str, strict: bool = False) -> Dict[str, Any]:
+    report: Dict[str, Any] = {
+        "routing_policy": routing_policy,
+        "overall_status": "PASS",
+        "exit_code": 0,
+        "errors": [],
+        "warnings": [],
+        "providers": {},
+    }
+    prefix_rules = {
+        "GEMINI_API_KEY": "AIza",
+        "OPENAI_API_KEY": "sk-",
+    }
+    provider_envs = _collect_required_key_envs(routing_policy)
+
+    for provider, env_names in sorted(provider_envs.items()):
+        provider_report = report["providers"].setdefault(provider, {})
+        for env_name in sorted(env_names):
+            value = os.getenv(env_name, "")
+            if not value:
+                report["errors"].append(f"Missing required API key: {env_name}")
+                provider_report[env_name] = {"present": False}
+                continue
+
+            provider_report[env_name] = {
+                "present": True,
+                "fingerprint": _safe_key_fingerprint(value),
+            }
+
+            expected_prefix = prefix_rules.get(env_name)
+            if expected_prefix and not value.startswith(expected_prefix):
+                msg = (
+                    f"{env_name} has unexpected prefix for {provider} "
+                    f"(fingerprint={_safe_key_fingerprint(value)})"
+                )
+                if strict:
+                    report["errors"].append(msg)
+                else:
+                    report["warnings"].append(msg)
+
+    if report["errors"]:
+        report["overall_status"] = "FAIL"
+        report["exit_code"] = 3
+    elif report["warnings"]:
+        report["overall_status"] = "WARN"
+        report["exit_code"] = 2
+
+    return report
+
 # Phase-level summary route is retained for compatibility surfaces and manifests.
 MODEL_ROUTING: Dict[str, Tuple[str, str, str]] = {}
 DEFAULT_MODEL_ROUTING: Dict[str, Tuple[str, str, str]] = {}
