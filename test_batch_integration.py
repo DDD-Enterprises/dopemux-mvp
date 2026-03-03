@@ -3,7 +3,6 @@
 Test script to verify the OpenAI batch retrieval integration.
 """
 
-import os
 import sys
 import tempfile
 from pathlib import Path

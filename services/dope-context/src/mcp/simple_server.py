@@ -6,7 +6,7 @@ Exposes semantic code search and documentation search tools via MCP SSE
 
 import os
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from fastmcp import FastMCP
 
 # Configure logging
