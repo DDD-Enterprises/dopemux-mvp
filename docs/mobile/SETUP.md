@@ -1,3 +1,14 @@
+---
+id: SETUP
+title: Setup
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Setup (explanation) for dopemux documentation and developer workflows.
+---
 # Mobile-First Dopemux Setup (Blink Shell / iOS)
 
 This guide details how to set up and use the mobile-optimized `tmux` environment for Dopemux.

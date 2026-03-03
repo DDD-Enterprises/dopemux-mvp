@@ -1,3 +1,14 @@
+---
+id: IMPLEMENTATION
+title: Implementation
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Implementation (explanation) for dopemux documentation and developer workflows.
+---
 # Implementation Overview: Mobile-First tmux for Dopemux
 
 This document outlines the architecture and components of the mobile-first tmux environment, optimized for **Blink Shell (iOS)** and intended for integration into the core `dopemux` platform.

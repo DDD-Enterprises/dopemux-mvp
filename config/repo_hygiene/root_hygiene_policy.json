@@ -143,6 +143,7 @@
     "ENV_VARS.json",
     "POSTGRES_DDL.json",
     "SQLITE_DDL.json",
+    ".env.template",
     "CONCURRENCY_RISK_LOCATIONS.json",
     "DETERMINISM_RISK_LOCATIONS.json",
     "IDEMPOTENCY_RISK_LOCATIONS.json",
