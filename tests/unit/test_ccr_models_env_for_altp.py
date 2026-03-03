@@ -77,7 +77,7 @@ def test_ccr_models_env_for_altp(
     env = os.environ.copy()
     env["OPENROUTER_API_KEY"] = "sk-openrouter"
     env["XAI_API_KEY"] = "sk-xai"
-    
+ 
     with patch("dopemux.cli.Path.cwd", return_value=workspace), \
          patch("dopemux.workspace_utils.get_workspace_root") as mock_get_root, \
          patch("dopemux.auto_configurator.WorktreeAutoConfigurator") as mock_auto_config, \

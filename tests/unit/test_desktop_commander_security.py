@@ -18,15 +18,15 @@ if server_dir not in sys.path:
 
 def _import_server_module():
     sys.modules.pop("server", None)
-    fastmcp_module = MagicMock()
-    fastmcp_module.FastMCP.return_value.tool.side_effect = lambda: (lambda func: func)
     with patch.dict(
         sys.modules,
         {
             "uvicorn": MagicMock(),
             "fastapi": MagicMock(),
+            "fastapi.security": MagicMock(),
+            "fastapi.middleware": MagicMock(),
+            "fastapi.middleware.cors": MagicMock(),
             "pydantic": MagicMock(),
-            "fastmcp": fastmcp_module,
         },
     ):
         return importlib.import_module("server")
@@ -52,7 +52,7 @@ class TestDesktopCommanderSecurity(unittest.TestCase):
             self.assertEqual(cmd_list[:2], ["osascript", "-e"])
             applescript = cmd_list[2]
             self.assertNotIn(malicious_input, applescript)
-            self.assertIn('\\"', applescript)
+            self.assertEqual(cmd_list[3], malicious_input)
             self.assertEqual(kwargs["timeout"], 10)
 
     def test_focus_window_macos_security(self):
@@ -88,7 +88,7 @@ class TestDesktopCommanderSecurity(unittest.TestCase):
             args, kwargs = mock_run.call_args
             cmd_list = args[0]
 
-            self.assertEqual(cmd_list, ["xdotool", "type", input_with_dash])
+            self.assertEqual(cmd_list, ["xdotool", "type", "--", input_with_dash])
             self.assertEqual(kwargs["timeout"], 10)
 
     def test_screenshot_linux_argument_passthrough(self):
@@ -99,12 +99,12 @@ class TestDesktopCommanderSecurity(unittest.TestCase):
             mock_run.return_value = MagicMock(returncode=0, stdout="")
 
             input_with_dash = "-h"
-            self.run_async(server.screenshot(input_with_dash))
+            self.run_async(server.take_screenshot(input_with_dash))
 
             args, kwargs = mock_run.call_args
             cmd_list = args[0]
 
-            self.assertEqual(cmd_list, ["scrot", input_with_dash])
+            self.assertEqual(cmd_list, ["scrot", "--", input_with_dash])
             self.assertEqual(kwargs["timeout"], 10)
 
 
