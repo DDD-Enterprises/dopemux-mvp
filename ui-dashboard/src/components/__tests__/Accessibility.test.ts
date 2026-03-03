@@ -5,10 +5,12 @@ import path from 'path';
 
 const componentsDir = path.resolve(__dirname, '..');
 
-test('CognitiveLoadGauge.tsx has aria-label for LinearProgress', () => {
+test('CognitiveLoadGauge.tsx has aria-label for LinearProgress and keyboard focusable chip', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'CognitiveLoadGauge.tsx'), 'utf8');
   expect(content).toContain('aria-label="Cognitive Load Percentage"');
   expect(content).toContain('aria-valuetext');
+  expect(content).toContain('<Tooltip title="Current cognitive state based on real-time bio-metrics"');
+  expect(content).toContain('tabIndex={0}');
 });
 
 test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', () => {
@@ -21,10 +23,17 @@ test('PredictionPanel.tsx has aria-label for LinearProgress and loading state', 
   expect(content).toContain('<Tooltip title="Predictive LSTM model running on edge device"');
 });
 
-test('TeamDashboard.tsx has aria-labels for team and member progress bars', () => {
+test('TeamDashboard.tsx has aria-labels for team and member progress bars and keyboard focusable chips', () => {
   const content = fs.readFileSync(path.join(componentsDir, 'TeamDashboard.tsx'), 'utf8');
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
+  expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
+  expect(content).toContain('<Tooltip title={statusStyles[member.status].label}');
+  const tooltipLine = content
+    .split('\n')
+    .find(line => line.includes('<Tooltip title={statusStyles[member.status].label}'));
+  expect(tooltipLine).toBeDefined();
+  expect(tooltipLine).toContain('tabIndex={0}');
 });
 
 test('TaskSequencer.tsx has contextual aria-labels for buttons', () => {
