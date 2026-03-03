@@ -63,16 +63,114 @@ def test_instance_overlay_uniqueness(temp_project):
     assert overlay_a["compose_project_name"] != overlay_b["compose_project_name"]
     assert overlay_a["instance_dir"] != overlay_b["instance_dir"]
 
-def test_instance_overlay_idempotency(temp_project):
-    manager = InstanceOverlayManager(temp_project, "A")
+def test_provision_vendor_fallback(temp_project):
+    # Setup vendor path
+    vendor_mcp = temp_project / ".dopemux" / "vendor" / "mcp-servers" / PINNED_VERSION
+    vendor_mcp.mkdir(parents=True)
+    (vendor_mcp / "start-all-mcp-servers.sh").touch()
     
-    # Run 1
-    overlay1 = manager.materialize()
-    env_content1 = Path(overlay1["env_path"]).read_text()
+    provisioner = MCPProvisioner(temp_project)
+    # resolve_stack_source should find it
+    path = provisioner.resolve_stack_source()
+    assert path == vendor_mcp
+    assert provisioner.report["source_resolved"] == "project_vendor"
+
+def test_provision_cache_fallback(temp_project):
+    home = temp_project / "home"
+    cache_mcp = home / ".cache" / "dopemux" / "mcp-servers" / PINNED_VERSION
+    cache_mcp.mkdir(parents=True)
+    (cache_mcp / "start-all-mcp-servers.sh").touch()
     
-    # Run 2
-    overlay2 = manager.materialize()
-    env_content2 = Path(overlay2["env_path"]).read_text()
+    with patch("dopemux.mcp.provision.Path.home", return_value=home):
+        provisioner = MCPProvisioner(temp_project)
+        path = provisioner.resolve_stack_source()
+        assert path == cache_mcp
+        assert provisioner.report["source_resolved"] == "user_cache"
+
+def test_provision_invalid_target_cleanup(temp_project):
+    target = temp_project / "docker" / "mcp-servers"
+    target.mkdir(parents=True)
+    # Exists but no script
     
-    assert env_content1 == env_content2
-    assert overlay1["port_map"] == overlay2["port_map"]
+    pkg_mcp = temp_project / "pkg" / "docker" / "mcp-servers"
+    pkg_mcp.mkdir(parents=True)
+    (pkg_mcp / "start-all-mcp-servers.sh").touch()
+    
+    provisioner = MCPProvisioner(temp_project)
+    with patch.object(provisioner, "resolve_stack_source", return_value=pkg_mcp):
+        path = provisioner.ensure_stack_present()
+        assert path.exists()
+        assert path.is_symlink()
+        # Backup should exist
+        assert (temp_project / "docker" / "mcp-servers.bak").exists()
+
+def test_provision_fail_raises(temp_project):
+    provisioner = MCPProvisioner(temp_project)
+    with patch.object(provisioner, "resolve_stack_source", return_value=None):
+        with pytest.raises(RuntimeError, match="Could not resolve MCP stack source"):
+            provisioner.ensure_stack_present()
+
+def test_provision_project_local(temp_project):
+    local_path = temp_project / "docker" / "mcp-servers"
+    local_path.mkdir(parents=True)
+    (local_path / "start-all-mcp-servers.sh").touch()
+    
+    provisioner = MCPProvisioner(temp_project)
+    path = provisioner.resolve_stack_source()
+    assert path == local_path
+    assert provisioner.report["source_resolved"] == "project_local"
+
+def test_provision_project_source(temp_project):
+    source_path = temp_project / "docker" / "mcp-servers-source"
+    source_path.mkdir(parents=True)
+    (source_path / "start-all-mcp-servers.sh").touch()
+    
+    provisioner = MCPProvisioner(temp_project)
+    path = provisioner.resolve_stack_source()
+    assert path == source_path
+    assert provisioner.report["source_resolved"] == "project_source"
+
+def test_provision_copy_fallback(temp_project):
+    pkg_mcp = temp_project / "pkg" / "docker" / "mcp-servers"
+    pkg_mcp.mkdir(parents=True)
+    (pkg_mcp / "start-all-mcp-servers.sh").touch()
+    
+    provisioner = MCPProvisioner(temp_project)
+    with patch.object(provisioner, "resolve_stack_source", return_value=pkg_mcp):
+        # Mock os.symlink to fail
+        with patch("os.symlink", side_effect=OSError):
+            path = provisioner.ensure_stack_present()
+            assert path.exists()
+            assert not path.is_symlink()
+            assert (path / "start-all-mcp-servers.sh").exists()
+            assert provisioner.report["method"] == "copy"
+
+def test_provision_already_present(temp_project):
+    target = temp_project / "docker" / "mcp-servers"
+    target.mkdir(parents=True)
+    (target / "start-all-mcp-servers.sh").touch()
+    
+    provisioner = MCPProvisioner(temp_project)
+    path = provisioner.ensure_stack_present()
+    assert provisioner.report["method"] == "already_present"
+
+def test_provision_broken_symlink_cleanup(temp_project):
+    target = temp_project / "docker" / "mcp-servers"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    # Use os.symlink directly to allow creating broken links easily
+    os.symlink(str(temp_project / "non-existent"), str(target))
+    
+    pkg_mcp = temp_project / "pkg" / "docker" / "mcp-servers"
+    pkg_mcp.mkdir(parents=True)
+    (pkg_mcp / "start-all-mcp-servers.sh").touch()
+    
+    provisioner = MCPProvisioner(temp_project)
+    with patch.object(provisioner, "resolve_stack_source", return_value=pkg_mcp):
+        path = provisioner.ensure_stack_present()
+        assert path.exists()
+        assert path.is_symlink()
+        assert os.readlink(path) == str(pkg_mcp)
+
+def test_instance_overlay_no_id(temp_project):
+    manager = InstanceOverlayManager(temp_project, "")
+    assert manager.base_port == 3000

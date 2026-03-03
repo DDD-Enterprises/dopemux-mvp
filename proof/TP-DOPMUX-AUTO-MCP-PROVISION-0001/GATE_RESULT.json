@@ -1,5 +1,9 @@
 {
-  "missing_required_tools": {},
+  "missing_required_tools": {
+    "conport": [
+      "conport_*"
+    ]
+  },
   "provenance": {
     "conport": "repo_profile",
     "docker_mcp_gateway": "global_fallback",
@@ -7,7 +11,9 @@
     "dope_memory": "repo_profile",
     "serena": "repo_profile"
   },
-  "reachable_transport": [],
+  "reachable_transport": [
+    "conport"
+  ],
   "resolved_endpoints": {
     "conport": {
       "required_tool_globs": [
@@ -43,9 +49,10 @@
     }
   },
   "status": "BLOCK",
-  "tools_discoverable": {},
+  "tools_discoverable": {
+    "conport": 0
+  },
   "unreachable_transport": [
-    "conport",
     "docker_mcp_gateway",
     "dope_context",
     "dope_memory",

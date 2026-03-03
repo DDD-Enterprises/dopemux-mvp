@@ -49,56 +49,64 @@ class ToolDiscoveryClient:
         if not url:
             return {"name": name, "reachable": False, "status": "missing_url", "tools": []}
 
-        # Priority 1: Standard MCP JSON-RPC over HTTP (POST /mcp or direct URL if it's already the endpoint)
-        # We try the URL as provided first, then append /mcp if it fails or if it looks like a base URL.
         base_url = url.rstrip('/')
-        endpoints = []
         
+        # Priority 1: Standard MCP JSON-RPC over HTTP
+        # If the URL ends with /mcp, POST there. Otherwise try appending /mcp.
+        probe_endpoints = []
         if base_url.endswith('/mcp'):
-            endpoints.append((base_url, "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}))
+            probe_endpoints.append(base_url)
         else:
-            endpoints.append((f"{base_url}/mcp", "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}))
-            endpoints.append((base_url, "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}))
+            probe_endpoints.append(f"{base_url}/mcp")
+            probe_endpoints.append(base_url)
 
-        # Priority 2: Fallback aliases or GET endpoints (less preferred but kept for compatibility)
-        endpoints.extend([
-            (f"{base_url}/tools", "GET", None),
-            (f"{base_url}/", "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}),
-        ])
-        
         errors = []
-        for endpoint, method, payload in endpoints:
+        for endpoint in probe_endpoints:
             try:
-                if method == "POST":
-                    async with session.post(endpoint, json=payload, timeout=self.timeout) as resp:
-                        if resp.status == 200:
-                            data = await resp.json()
-                            # Check for JSON-RPC error
-                            if isinstance(data, dict) and "error" in data:
-                                errors.append(f"{endpoint}: JSON-RPC Error {data['error'].get('code')}: {data['error'].get('message')}")
-                                continue
+                # Use a POST JSON-RPC probe
+                payload = {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
+                headers = {"Content-Type": "application/json"}
+                
+                async with session.post(endpoint, json=payload, headers=headers, timeout=self.timeout) as resp:
+                    # Reachability signal: 200 OK OR any status with a valid JSON-RPC body
+                    data = None
+                    try:
+                        data = await resp.json()
+                    except Exception:
+                        pass
+
+                    is_jsonrpc = isinstance(data, dict) and "jsonrpc" in data
+                    
+                    if resp.status == 200 or is_jsonrpc:
+                        # Server is REACHABLE because it responded with JSON-RPC (even if error)
+                        tools = self._extract_tools(data) if data else []
+                        
+                        # If we have an error but it's "Method not found", the server IS reachable
+                        if isinstance(data, dict) and "error" in data:
+                            err_code = data["error"].get("code")
+                            if err_code == -32601: # Method not found
+                                return {"name": name, "reachable": True, "status": "ok", "tools": [], "endpoint": endpoint, "warning": "tools/list not supported"}
                             
-                            tools = self._extract_tools(data)
-                            if tools:
-                                return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": endpoint}
-                            else:
-                                errors.append(f"{endpoint}: No tools returned")
-                        else:
-                            errors.append(f"{endpoint}: HTTP {resp.status}")
-                else:
-                    async with session.get(endpoint, timeout=self.timeout) as resp:
-                        if resp.status == 200:
-                            data = await resp.json()
-                            tools = self._extract_tools(data)
-                            if tools:
-                                return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": endpoint}
-                            else:
-                                errors.append(f"{endpoint}: No tools returned")
-                        else:
-                            errors.append(f"{endpoint}: HTTP {resp.status}")
+                            errors.append(f"{endpoint}: JSON-RPC Error {err_code}: {data['error'].get('message')}")
+                            # Keep trying other endpoints if this one gave a generic JSON-RPC error
+                            continue
+
+                        return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": endpoint}
+                    else:
+                        errors.append(f"{endpoint}: HTTP {resp.status}")
             except Exception as e:
                 errors.append(f"{endpoint}: {str(e)}")
                 continue
+
+        # Fallback to GET for non-standard servers (legacy)
+        try:
+            async with session.get(f"{base_url}/tools", timeout=self.timeout) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    tools = self._extract_tools(data)
+                    return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": f"{base_url}/tools"}
+        except Exception:
+            pass
         
         return {
             "name": name, 

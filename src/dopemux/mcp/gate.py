@@ -44,6 +44,10 @@ class DiscoveryGate:
         for name, config in resolution["servers"].items():
             srv_discovery = next((s for s in discovery_report["servers"] if s["name"] == name), None)
             
+            # If server is unreachable AND it was sourced from repo profile, it's a hard FAIL.
+            # If it was from global fallback or env var, it's considered OPTIONAL/AUXILIARY.
+            is_mandatory = resolution["provenance"].get(name) == "repo_profile"
+
             if srv_discovery and srv_discovery["reachable"]:
                 self.report["reachable_transport"].append(name)
                 discovered_tools = srv_discovery.get("tools", [])
@@ -59,11 +63,11 @@ class DiscoveryGate:
                 
                 if missing_globs:
                     self.report["missing_required_tools"][name] = missing_globs
-                    passed = False
+                    if is_mandatory:
+                        passed = False
             else:
                 self.report["unreachable_transport"].append(name)
-                # If it's in repo profile, it's mandatory
-                if resolution["provenance"].get(name) == "repo_profile":
+                if is_mandatory:
                     passed = False
 
         self.report["status"] = "PASS" if passed else "BLOCK"

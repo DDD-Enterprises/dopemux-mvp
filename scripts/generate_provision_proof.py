@@ -38,13 +38,13 @@ async def main():
     # 3. Phase 0 Report (Simulation since we might not have docker running)
     # We run the gate and it will fail if servers are offline, which is fine for the report.
     gate = DiscoveryGate(project_root, run_id=run_id)
-    await gate.run()
-    print("✓ Generated PHASE0_REPORT.json")
+    passed = await gate.run()
+    print(f"✓ Generated PHASE0_REPORT.json (Passed: {passed})")
 
     # 4. Manifest
     manifest = {
         "run_id": run_id,
-        "status": "PASS",
+        "status": "PASS" if passed else "BLOCK",
         "method": "Auto-Provisioning",
         "instance_id": "A"
     }

@@ -1,6 +1,6 @@
 {
   "run_id": "TP-DOPMUX-AUTO-MCP-PROVISION-0001",
-  "status": "PASS",
+  "status": "BLOCK",
   "method": "Auto-Provisioning",
   "instance_id": "A"
 }

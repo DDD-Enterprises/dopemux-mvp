@@ -87,8 +87,9 @@ class MCPProvisioner:
         target_path = self.project_root / "docker" / "mcp-servers"
         
         # If already exists and valid, just return it
-        if target_path.exists():
-            if (target_path / "start-all-mcp-servers.sh").exists():
+        # Note: .exists() returns False for broken symlinks
+        if os.path.lexists(target_path):
+            if target_path.exists() and (target_path / "start-all-mcp-servers.sh").exists():
                 self.report["method"] = "already_present"
                 return target_path
             else:
