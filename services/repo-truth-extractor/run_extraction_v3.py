@@ -10531,7 +10531,6 @@ def run_batch_retrieval_and_integration(
                     phase="R",  # Default to phase R for batch processing
                     step_id="batch_retrieval",
                     partition_id=batch_id,
-                    provider=provider
                 )
                 events_integrated += integrated
             except Exception as e:
