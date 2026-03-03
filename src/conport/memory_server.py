@@ -37,10 +37,7 @@ class MemoryConfig:
     """Configuration for ConPort memory system."""
 
     def __init__(self):
-        self.database_url = os.getenv(
-            "DATABASE_URL",
-            "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory",  # pragma: allowlist secret
-        )
+        self.database_url = os.getenv("DATABASE_URL")
         self.milvus_host = os.getenv("MILVUS_HOST", "localhost")
         self.milvus_port = int(os.getenv("MILVUS_PORT", "19530"))
         self.zep_api_url = os.getenv("ZEP_API_URL", "http://localhost:8000")
@@ -309,6 +306,19 @@ class PostgreSQLManager:
 
     async def connect(self):
         """Connect to PostgreSQL."""
+        if not self.config.database_url:
+            logger.error(
+                "DATABASE_URL environment variable is not set. "
+                "It must be a PostgreSQL DSN like "
+                "'postgresql://user:pass@host:port/dbname'. "
+                "The memory server cannot start without this configuration."
+            )
+            raise ValueError(
+                "DATABASE_URL environment variable is not set. "
+                "It must be a PostgreSQL DSN like "
+                "'postgresql://user:pass@host:port/dbname'. "
+                "The memory server cannot start without this configuration."
+            )
         try:
             self.pool = await asyncpg.create_pool(self.config.database_url)
             logger.info("Connected to PostgreSQL")
