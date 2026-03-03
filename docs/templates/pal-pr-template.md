@@ -1,3 +1,15 @@
+---
+id: pal-pr-template
+title: PAL PR Template
+type: template
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-03'
+last_review: '2026-03-03'
+next_review: '2026-06-01'
+prelude: Standard Pull Request template for PAL (Provider-Agnostic LLM) integrations.
+---
+
 ## PR Title Format
 
 **Please ensure your PR title follows [Conventional Commits](https://www.conventionalcommits.org/) format:**

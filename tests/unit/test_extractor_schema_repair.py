@@ -29,6 +29,9 @@ schema_gate = runner.artifacts_pass_schema_gate
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _artifact(items):
+    for item in items:
+        if "line_range" not in item:
+            item["line_range"] = [1, 10]
     return [{"artifact_name": "TEST.json", "payload": {"items": items}}]
 
 
