@@ -13,14 +13,12 @@ import dopemux
 @patch("dopemux.cli.LiteLLMProxyManager")
 @patch("dopemux.cli.DopeBrainzRouterManager")
 @patch("dopemux.cli.start_simple_proxy")
-@patch("dopemux.cli.RoutingConfig")
 @patch("shutil.which")
-def test_ccr_models_env_for_altp(mock_which, mock_routing_config_cls, mock_start_proxy, mock_router_cls, mock_litellm_cls, mock_monitor_cls, mock_launcher_cls, mock_ctx_mgr, mock_load_state, mock_save_state):
+def test_ccr_models_env_for_altp(mock_which, mock_start_proxy, mock_router_cls, mock_litellm_cls, mock_monitor_cls, mock_launcher_cls, mock_ctx_mgr, mock_load_state, mock_save_state):
     """
     Verify that --altp sets CLAUDE_CODE_ROUTER_MODELS to "altp-opus,altp-sonnet,altp-haiku".
     """
     mock_which.return_value = "/bin/claude"
-    mock_routing_config_cls.load_default.return_value.get_mode.return_value = "api"
     mock_start_proxy.return_value = (4000, "sk-test")
 
     # Mock Router manager
@@ -45,7 +43,8 @@ def test_ccr_models_env_for_altp(mock_which, mock_routing_config_cls, mock_start
          patch("dopemux.cli.check_and_protect_main", return_value=False) as mock_protect, \
          patch("dopemux.cli.consume_last_created_worktree", return_value=None) as mock_consume, \
          patch("dopemux.cli.InstanceManager") as mock_instance_mgr, \
-         patch("dopemux.worktree_recovery.show_recovery_menu_sync", return_value=None) as mock_recovery:
+         patch("dopemux.worktree_recovery.show_recovery_menu_sync", return_value=None) as mock_recovery, \
+         patch("dopemux.cli.RoutingConfig") as mock_routing_config_cls:
         
         mock_path.cwd.return_value = MagicMock()
         mock_path.exists.return_value = True
@@ -53,6 +52,8 @@ def test_ccr_models_env_for_altp(mock_which, mock_routing_config_cls, mock_start
         mock_get_root.return_value = MagicMock()
         mock_auto_config.return_value.configure_workspace.return_value = (True, "Mocked AutoConfig")
         mock_isdir.return_value = True
+        mock_routing_config_cls.load_default.return_value.get_mode.return_value = "api"
+        mock_routing_config_cls.load_default.return_value.get_ports.return_value = {"ccr": 8000, "litellm": 4000}
 
         # We must NOT use --dry-run because it skips the router logic we want to test.
         # Instead we rely on mocks to prevent side effects.
