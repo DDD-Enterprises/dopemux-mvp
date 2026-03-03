@@ -1,13 +1,13 @@
 ---
 id: pal-pr-layout
-title: PAL PR Template
+title: PAL PR Layout
 type: template
 owner: '@hu3mann'
 author: '@hu3mann'
 date: '2026-03-03'
 last_review: '2026-03-03'
 next_review: '2026-06-01'
-prelude: Standard Pull Request template for PAL (Provider-Agnostic LLM) integrations.
+prelude: Standard Pull Request layout for PAL (Provider-Agnostic LLM) integrations.
 ---
 
 ## PR Title Format
@@ -16,7 +16,7 @@ prelude: Standard Pull Request template for PAL (Provider-Agnostic LLM) integrat
 
 ### Version Bumping Types (trigger semantic release):
 - `feat: <description>` - New features → **MINOR** version bump (1.1.0 → 1.2.0)
-- `fix: <description>` - Bug fixes → **PATCH** version bump (1.1.0 → 1.1.1) 
+- `fix: <description>` - Bug fixes → **PATCH** version bump (1.1.0 → 1.1.1)
 - `perf: <description>` - Performance improvements → **PATCH** version bump (1.1.0 → 1.1.1)
 
 ### Breaking Changes (trigger MAJOR version bump):
