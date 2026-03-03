@@ -1,3 +1,6 @@
+OUTPUTS:
+- TASKX_INTEGRATION_TRUTH.md
+
 Goal: TASKX_INTEGRATION_TRUTH.md
 
 ROLE: Supervisor/Auditor.
@@ -19,3 +22,9 @@ OUTPUT:
 
 RULES:
 - Cite REPO_TASKX_SURFACE and TASKX_INTEGRATION_SURFACE evidence.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```

@@ -54,6 +54,7 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Repo Truth Extractor Batch Quickstart](02-how-to/extraction/batch-quickstart.md)
 - [Repo Truth Extractor Reference](03-reference/extraction/pipeline-reliability.md)
 - [Repo Truth Extractor Phase Map](03-reference/extraction/pipeline-phases.md)
+- [Dope-Context User Guide](02-how-to/dope-context/dope-context-user-guide.md)
 
 ---
 
@@ -117,11 +118,22 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 - [Profile YAML Schema](03-reference/configuration/PROFILE-YAML-SCHEMA.md)
 - [MCP Tools Overview](03-reference/mcp-tools-overview.md)
 - [Task Orchestrator Service Reference](03-reference/services/task-orchestrator.md)
+- [Dope-Context Docs Contextual Embedding Contract](03-reference/dope-context/DOPE_CONTEXT_DOCS_CONTEXTUAL_EMBEDDING_v1.md)
+- [Dope-Context Architecture and Trinity Boundaries](03-reference/dope-context/DOPE_CONTEXT_ARCHITECTURE_AND_BOUNDARIES_v1.md)
 
 ### Features
 - [Features Index](03-reference/features/features-index.md)
 - [Untracked Work Detection](03-reference/F001-ENHANCED-untracked-work-system.md)
 - [Multi-Session Support](03-reference/F002-multi-session-support.md)
+
+### Governance
+- [Authority Map](03-reference/governance/AUTHORITY_MAP.md)
+- [Conflict Ledger](03-reference/governance/CONFLICT_LEDGER.md)
+- [CI Contract](03-reference/governance/CI_CONTRACT.md)
+- [Runtime Contract](03-reference/governance/RUNTIME_CONTRACT.md)
+- [Scoreboard](03-reference/governance/SCOREBOARD.md)
+- [Task Packet Standard](03-reference/governance/TASK_PACKET_STANDARD.md)
+- [Task Packet Template](03-reference/governance/TASK_PACKET_TEMPLATE.md)
 
 ### Technical Deep Dives
 - [Serena V2 Technical Deep Dive](04-explanation/technical-deep-dives/serena-v2-technical-deep-dive.md)

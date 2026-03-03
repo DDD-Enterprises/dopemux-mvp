@@ -22,7 +22,7 @@
     },
     "dopemux-conport": {
       "type": "sse",
-      "url": "http://localhost:3004/sse",
+      "url": "http://localhost:3005/mcp",
       "env": {
         "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp",
         "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
@@ -43,7 +43,7 @@
       "args": [
         "exec",
         "-i",
-        "dopemux-gpt-researcher",
+        "dopemux-mcp-gptr-mcp",
         "python",
         "/app/server.py"
       ],
@@ -62,7 +62,7 @@
       "args": [
         "exec",
         "-i",
-        "dopemux-mcp-litellm",
+        "mcp-litellm",
         "python",
         "/app/exa_server.py"
       ],

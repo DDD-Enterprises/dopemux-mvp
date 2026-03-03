@@ -3,7 +3,11 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, Mock
 import click
-from dopemux.cli import _resolve_mcp_dir, _start_mcp_servers_with_progress
+from dopemux.cli import (
+    _resolve_mcp_dir,
+    _start_mcp_servers_with_progress,
+    _trigger_dope_context_autoindex_startup,
+)
 
 # Fixture for creating a mock MCP stack
 @pytest.fixture
@@ -99,3 +103,35 @@ def test_start_uses_resolved_dir(mock_mcp_stack):
                 args, _ = mock_popen.call_args
                 cmd = args[0]
                 assert str(script_path) == cmd[1]
+
+
+def test_trigger_dope_context_autoindex_startup_calls_endpoint(tmp_path):
+    """Startup autoindex helper should post to dope-context bootstrap endpoint."""
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+
+    response = Mock()
+    response.status_code = 200
+    response.json.return_value = {"status": "started"}
+
+    with patch("requests.post", return_value=response) as mock_post:
+        with patch.dict(os.environ, {"DOPEMUX_AUTO_INDEX_ON_STARTUP": "1"}, clear=False):
+            result = _trigger_dope_context_autoindex_startup(workspace)
+
+    assert result["status"] == "started"
+    mock_post.assert_called_once()
+    called_endpoint = mock_post.call_args.args[0]
+    assert called_endpoint.endswith("/autoindex/bootstrap")
+
+
+def test_trigger_dope_context_autoindex_startup_can_be_disabled(tmp_path):
+    """Autoindex helper should no-op when startup autoindex is disabled."""
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+
+    with patch("requests.post") as mock_post:
+        with patch.dict(os.environ, {"DOPEMUX_AUTO_INDEX_ON_STARTUP": "0"}, clear=False):
+            result = _trigger_dope_context_autoindex_startup(workspace)
+
+    assert result is None
+    mock_post.assert_not_called()

@@ -440,7 +440,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "app:app",
-        host=os.getenv("DASHBOARD_BACKEND_HOST", "0.0.0.0"),
+        host=os.getenv("DASHBOARD_BACKEND_HOST", "127.0.0.1"),
         port=int(os.getenv("DASHBOARD_BACKEND_PORT", "3001")),
         reload=False,
     )

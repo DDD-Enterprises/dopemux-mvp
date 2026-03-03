@@ -10,7 +10,7 @@
 - [Why Dopemux?](#why-dopemux)
 - [Project Name and Description](#project-name-and-description)
 - [Quick Start](#quick-start)
-- [TaskX Kernel Integration](#taskx-kernel-integration)
+- [dopeTask Kernel Integration](#dopetask-kernel-integration)
 - [Technology Stack](#technology-stack)
 - [Project Architecture](#project-architecture)
 - [Project Structure](#project-structure)
@@ -80,21 +80,20 @@ See [docs/04-installation.md](docs/04-installation.md), [INSTALL.md](INSTALL.md)
 
 ---
 
-## TaskX Kernel Integration
+## dopeTask Kernel Integration
 
-Dopemux consumes TaskX via a vendored submodule (`vendor/taskx`) and wrapper (`scripts/taskx`).
+Dopemux consumes dopeTask via pip installation and wrapper (`scripts/dopetask`).
 
 ```bash
-git submodule update --init --recursive vendor/taskx
-scripts/taskx --version
+scripts/dopetask --version
 dopemux kernel doctor --timestamp-mode deterministic
 ```
 
-- Runtime and CI are submodule-first.
-- `.taskx-pin` is deprecated for runtime/CI behavior.
+- Runtime and CI use pip installation.
+- `.dopetask-pin` is used for runtime/CI behavior.
 - Use `dopemux kernel <lifecycle-command>` for kernel lifecycle operations.
 
-See [docs/TASKX_KERNEL_INTEGRATION.md](docs/TASKX_KERNEL_INTEGRATION.md) for the full contract and update/rollback process.
+See [docs/DOPETASK_KERNEL_INTEGRATION.md](docs/DOPETASK_KERNEL_INTEGRATION.md) for the full contract and update/rollback process.
 
 ---
 

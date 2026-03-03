@@ -1,3 +1,6 @@
+OUTPUTS:
+- RISK_REGISTER_TOP20.md
+
 Goal: RISK_REGISTER_TOP20.md
 
 ROLE: Supervisor/Auditor.
@@ -15,3 +18,9 @@ MUST INCLUDE:
 RULES:
 - Cite every risk item.
 - No large refactor recommendations.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```

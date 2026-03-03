@@ -50,6 +50,7 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - `REFUSAL_AND_GUARDRAILS_SURFACE.json`
 - `TASKX_INTEGRATION_SURFACE.json`
 - `WORKFLOW_RUNNER_SURFACE.json`
+- `LEANTIME_INTEGRATION_SURFACE.json`
 - `DETERMINISM_RISK_LOCATIONS.json`
 - `IDEMPOTENCY_RISK_LOCATIONS.json`
 - `CONCURRENCY_RISK_LOCATIONS.json`
@@ -138,6 +139,13 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `id_rule`: `WORKFLOW_RUNNER_SURFACE:<stable-hash(path|symbol|name)>`
     - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
     - `required_registry_fields`: `path, line_range, id`
+  - `LEANTIME_INTEGRATION_SURFACE.json`
+    - `kind`: `json_item_list`
+    - `merge_strategy`: `itemlist_by_id`
+    - `canonical_writer_step_id`: `C11`
+    - `id_rule`: `LEANTIME_INTEGRATION_SURFACE:<stable-hash(path|symbol|name)>`
+    - `required_item_fields`: `id, component, symbol, path, line_range, evidence`
+    - `required_registry_fields`: `path, line_range, id`
   - `DETERMINISM_RISK_LOCATIONS.json`
     - `kind`: `json_item_list`
     - `merge_strategy`: `itemlist_by_id`
@@ -175,12 +183,18 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
     - `required_registry_fields`: `service_id, category, description, ports, health, repo_locations, entrypoints, interfaces, dependencies, config`
 
 ## Extraction Procedure
-1. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
-2. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
-3. Attach evidence to every non-derived field and every relationship edge.
-4. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
-5. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
-6. Emit exactly the declared outputs and no additional files.
+1. Load all C-Phase upstream artifacts; verify schema compliance, required fields, and sort order before merging
+2. Merge all CODE_* artifacts into CODE_MERGED using `itemlist_by_id` strategy: union items by `id`, union evidence arrays, resolve scalar conflicts
+3. Run QA checks: verify all C-Phase artifacts present, coverage complete, sort order deterministic; emit CODE_QA
+4. Cross-check coverage: verify every inventory item has corresponding extraction entries
+5. For each output item, populate `id`, required fields, and `evidence` per schema contracts
+6. Legacy Context is intent guidance only and is never evidence.
+7. Enumerate candidate facts only from in-scope inputs and upstream artifacts.
+8. Build deterministic IDs using stable content keys (path/symbol/name/service_id).
+9. Attach evidence to every non-derived field and every relationship edge.
+10. Normalize arrays by stable sort keys; deduplicate by ID (or stable content hash).
+11. Validate required fields; emit `UNKNOWN` for unsatisfied values with evidence gaps.
+12. Emit exactly the declared outputs and no additional files.
 
 ## Evidence Rules
 - Every load-bearing value must carry at least one evidence object:
@@ -215,6 +229,8 @@ Focus on service runtime truths, interfaces, dependencies, and code-level owners
 - Partial scan coverage: emit partial results with explicit `coverage_notes` and evidence gaps.
 - Schema violation risk: drop unverifiable fields, keep item `id` + `evidence` + `UNKNOWN` placeholders.
 - Parse/runtime ambiguity: keep all plausible candidates but mark `status: needs_review` with evidence.
+- Missing C-Phase artifact: if any upstream artifact is absent, proceed with available and record gap with `status: incomplete_merge`
+- Suspicious gap: if an inventory item has no extraction entry, flag with `status: uncovered`
 
 ## Legacy Context (for intent only; never as evidence)
 ```markdown
