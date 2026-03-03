@@ -6,10 +6,11 @@ Phase 0C Determinism Check: Compare outputs from workers=1 vs workers=N runs.
 import argparse
 import hashlib
 import json
+import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 import traceback
 
 
@@ -269,7 +270,7 @@ def main() -> int:
     dir_b = Path(args.out_b)
     report_path = Path(args.report)
     
-    print("Comparing directories:")
+    print(f"Comparing directories:")
     print(f"  A (workers=1): {dir_a}")
     print(f"  B (workers=N): {dir_b}")
     print(f"  Include: {args.include_glob}")

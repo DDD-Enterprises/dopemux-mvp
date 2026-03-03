@@ -881,7 +881,7 @@ class ConfigManager:
                     ".claude/context.md",
                     ".claude/llms.md",
                 ],
-                "mcp_servers": ["conport", "claude-context", "pal", "morphllm-fast-apply"],
+                "mcp_servers": ["conport", "claude-context", "pal"],
                 "adhd_adaptations": {
                     "focus_duration_avg": 25,
                     "visual_complexity": "minimal",

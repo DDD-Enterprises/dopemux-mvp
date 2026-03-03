@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  conport:
+    ports:
+      - "3004:3004"
+  pal:
+    ports:
+      - "3003:3003"
+  serena:
+    ports:
+      - "3006:3006"
+  dope-context:
+    ports:
+      - "3010:3010"
+  dope-memory:
+    ports:
+      - "3020:3020"
+  litellm:
+    ports:
+      - "4000:4000"

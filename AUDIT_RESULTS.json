@@ -1,788 +1,1594 @@
 {
-  "counts": {
-    "complete": 16,
-    "partial": 0,
-    "stub": 87,
-    "missing_file": 0
-  },
-  "issues": [
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_DOPETASK_SURFACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_DOPETASK_INTEGRATION_SURFACES.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md\n  Stubs: [('Outputs', 3)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_DOPETASK_INTEGRATION_TRUTH.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md\n  Stubs: [('Outputs', 5)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md\n  Stubs: [('Outputs', 4)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md\n  Stubs: [('Outputs', 2)]",
-    "STUB: services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md\n  Stubs: [('Outputs', 2)]"
+  "forbidden_norm_keys": [
+    "generated_at",
+    "timestamp",
+    "created_at",
+    "updated_at",
+    "run_id"
   ],
-  "results": [
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_DOPETASK_SURFACE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H9_MERGE___QA.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_DOPETASK_INTEGRATION_SURFACES.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_DOPETASK_INTEGRATION_TRUTH.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T0_TASK_PACKET_FACTORY.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md",
-      "missing": [],
-      "stubs": []
-    },
-    {
-      "file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md",
-      "missing": [],
-      "stubs": [
-        "Outputs"
-      ]
+  "required_prompt_sections": [
+    "Goal",
+    "Inputs",
+    "Outputs",
+    "Schema",
+    "Extraction Procedure",
+    "Evidence Rules",
+    "Determinism Rules",
+    "Anti-Fabrication Rules",
+    "Failure Modes"
+  ],
+  "rows": [
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPOCTRL_INVENTORY.json",
+        "REPOCTRL_PARTITIONS.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A0_REPO_CONTROL_INVENTORY___PARTITION_PLAN.md",
+      "rating": "complete",
+      "step_id": "A0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_INSTRUCTION_SURFACE.json",
+        "REPO_INSTRUCTION_REFERENCES.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A1_INSTRUCTION_SURFACES.md",
+      "rating": "complete",
+      "step_id": "A1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_MCP_SERVER_DEFS.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A2_MCP_SERVER_DEFS.md",
+      "rating": "complete",
+      "step_id": "A2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_MCP_PROXY_SURFACE.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A3_MCP_PROXY_SURFACE.md",
+      "rating": "complete",
+      "step_id": "A3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_ROUTER_SURFACE.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A4_ROUTER_SURFACE.md",
+      "rating": "complete",
+      "step_id": "A4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_HOOKS_SURFACE.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A5_HOOKS_SURFACE.md",
+      "rating": "complete",
+      "step_id": "A5"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_COMPOSE_SERVICE_GRAPH.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A6_COMPOSE_SERVICE_GRAPH.md",
+      "rating": "complete",
+      "step_id": "A6"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_LITELLM_SURFACE.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A7_LITELLM_SURFACE.md",
+      "rating": "complete",
+      "step_id": "A7"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_TASKX_SURFACE.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A8_TASKX_SURFACE.md",
+      "rating": "complete",
+      "step_id": "A8"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_IMPLICIT_BEHAVIOR_HINTS.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A9_IMPLICIT_BEHAVIOR_HINTS.md",
+      "rating": "complete",
+      "step_id": "A9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_LEANTIME_SURFACE.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A10_LEANTIME_SURFACE.md",
+      "rating": "complete",
+      "step_id": "A10"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REPO_INSTRUCTION_SURFACE.json",
+        "REPO_INSTRUCTION_REFERENCES.json",
+        "REPO_MCP_SERVER_DEFS.json",
+        "REPO_MCP_PROXY_SURFACE.json",
+        "REPO_ROUTER_SURFACE.json",
+        "REPO_HOOKS_SURFACE.json",
+        "REPO_IMPLICIT_BEHAVIOR_HINTS.json",
+        "REPO_COMPOSE_SERVICE_GRAPH.json",
+        "REPO_LITELLM_SURFACE.json",
+        "REPO_TASKX_SURFACE.json",
+        "REPO_LEANTIME_SURFACE.json",
+        "REPOCTRL_NORM_MANIFEST.json",
+        "REPOCTRL_QA.json"
+      ],
+      "phase": "A",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_A99_MERGE___QA.md",
+      "rating": "complete",
+      "step_id": "A99"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "BOUNDARY_INVENTORY.json",
+        "BOUNDARY_PARTITIONS.json"
+      ],
+      "phase": "B",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B0_BOUNDARY_INVENTORY___PARTITION_PLAN.md",
+      "rating": "complete",
+      "step_id": "B0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "BOUNDARY_ENFORCEMENT_POINTS.json"
+      ],
+      "phase": "B",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B1_BOUNDARY_ASSERTIONS___CODE_ENFORCEMENT_POINTS.md",
+      "rating": "complete",
+      "step_id": "B1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "REFUSAL_GUARDRAILS_SURFACE.json"
+      ],
+      "phase": "B",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B2_REFUSAL_RAILS___GUARDRAILS_SURFACE.md",
+      "rating": "complete",
+      "step_id": "B2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "BOUNDARY_BYPASS_RISKS.json"
+      ],
+      "phase": "B",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B3_BYPASS_PATHS___WEAK_GUARDS.md",
+      "rating": "complete",
+      "step_id": "B3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "BOUNDARY_MERGED.json",
+        "BOUNDARY_QA.json"
+      ],
+      "phase": "B",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_B9_MERGE___QA.md",
+      "rating": "complete",
+      "step_id": "B9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "CODE_INVENTORY.json",
+        "CODE_PARTITIONS.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C0_CODE_INVENTORY___PARTITION_PLAN.md",
+      "rating": "complete",
+      "step_id": "C0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "SERVICE_ENTRYPOINTS.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C1_SERVICE_ENTRYPOINTS.md",
+      "rating": "complete",
+      "step_id": "C1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EVENTBUS_SURFACE.json",
+        "EVENT_PRODUCERS.json",
+        "EVENT_CONSUMERS.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C2_EVENTBUS_WIRING_TRUTH_SURFACES.md",
+      "rating": "complete",
+      "step_id": "C2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DOPE_MEMORY_CODE_SURFACE.json",
+        "DOPE_MEMORY_SCHEMAS.json",
+        "DOPE_MEMORY_DB_WRITES.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C3_DOPE_MEMORY_SURFACES.md",
+      "rating": "complete",
+      "step_id": "C3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TRINITY_ENFORCEMENT_SURFACE.json",
+        "REFUSAL_AND_GUARDRAILS_SURFACE.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C4_TRINITY_BOUNDARY_ENFORCEMENT_SURFACES.md",
+      "rating": "complete",
+      "step_id": "C4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TASKX_INTEGRATION_SURFACE.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C5_TASKX_INTEGRATION_SURFACES.md",
+      "rating": "complete",
+      "step_id": "C5"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "WORKFLOW_RUNNER_SURFACE.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C6_WORKFLOW_RUNNERS___MULTI_SERVICE_COORDINATION.md",
+      "rating": "complete",
+      "step_id": "C6"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "API_DASHBOARD_SURFACE.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C7_API___DASHBOARDS.md",
+      "rating": "complete",
+      "step_id": "C7"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DETERMINISM_RISK_LOCATIONS.json",
+        "IDEMPOTENCY_RISK_LOCATIONS.json",
+        "CONCURRENCY_RISK_LOCATIONS.json",
+        "SECRETS_RISK_LOCATIONS.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C8_DETERMINISM___IDEMPOTENCY___CONCURRENCY_LOCATION_SCANS.md",
+      "rating": "complete",
+      "step_id": "C8"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "SERVICE_ENTRYPOINTS.json",
+        "EVENTBUS_SURFACE.json",
+        "EVENT_PRODUCERS.json",
+        "EVENT_CONSUMERS.json",
+        "DOPE_MEMORY_CODE_SURFACE.json",
+        "DOPE_MEMORY_SCHEMAS.json",
+        "DOPE_MEMORY_DB_WRITES.json",
+        "TRINITY_ENFORCEMENT_SURFACE.json",
+        "REFUSAL_AND_GUARDRAILS_SURFACE.json",
+        "TASKX_INTEGRATION_SURFACE.json",
+        "WORKFLOW_RUNNER_SURFACE.json",
+        "DETERMINISM_RISK_LOCATIONS.json",
+        "IDEMPOTENCY_RISK_LOCATIONS.json",
+        "CONCURRENCY_RISK_LOCATIONS.json",
+        "CODE_SURFACES_QA.json",
+        "SERVICE_CATALOG.json",
+        "LEANTIME_INTEGRATION_SURFACE.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C9_MERGE___NORMALIZE___QA.md",
+      "rating": "complete",
+      "step_id": "C9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "SERVICE_CATALOG.partX.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C10_SERVICE_CATALOG_DEEP.md",
+      "rating": "complete",
+      "step_id": "C10"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "LEANTIME_INTEGRATION_SURFACE.json"
+      ],
+      "phase": "C",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_C11_LEANTIME_INTEGRATION_SURFACES.md",
+      "rating": "complete",
+      "step_id": "C11"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DOC_INVENTORY.json",
+        "DOC_PARTITIONS.json",
+        "DOC_TODO_QUEUE.json"
+      ],
+      "phase": "D",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D0_INVENTORY___PARTITION_PLAN.md",
+      "rating": "complete",
+      "step_id": "D0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DOC_INDEX.partX.json",
+        "DOC_CONTRACT_CLAIMS.partX.json",
+        "DOC_BOUNDARIES.partX.json",
+        "DOC_SUPERSESSION.partX.json",
+        "CAP_NOTICES.partX.json"
+      ],
+      "phase": "D",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D1_CLAIMS___BOUNDARIES___SUPERSESSION.md",
+      "rating": "complete",
+      "step_id": "D1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DOC_INTERFACES.partX.json",
+        "DOC_WORKFLOWS.partX.json",
+        "DOC_DECISIONS.partX.json",
+        "DOC_GLOSSARY.partX.json"
+      ],
+      "phase": "D",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D2_DEEP_EXTRACTION.md",
+      "rating": "complete",
+      "step_id": "D2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DOC_CITATION_GRAPH.json"
+      ],
+      "phase": "D",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D3_CITATION___REFERENCE_GRAPH.md",
+      "rating": "complete",
+      "step_id": "D3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DOC_INDEX.json",
+        "DOC_CONTRACT_CLAIMS.json",
+        "DOC_SUPERSESSION.json",
+        "DOC_TOPIC_CLUSTERS.json",
+        "DUPLICATE_DRIFT_REPORT.json",
+        "DOC_RECENCY_DUPLICATE_REPORT.json",
+        "DOC_COVERAGE_REPORT.json"
+      ],
+      "phase": "D",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D4_MERGE___NORMALIZE___COVERAGE_QA.md",
+      "rating": "complete",
+      "step_id": "D4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DOC_TOPIC_CLUSTERS.json"
+      ],
+      "phase": "D",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_D5_DOC_TOPIC_CLUSTERS_JSON.md",
+      "rating": "complete",
+      "step_id": "D5"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EXEC_INVENTORY.json",
+        "EXEC_PARTITIONS.json"
+      ],
+      "phase": "E",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E0_EXECUTION_INVENTORY___PARTITION_PLAN.md",
+      "rating": "complete",
+      "step_id": "E0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EXEC_BOOTSTRAP_COMMANDS.json"
+      ],
+      "phase": "E",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E1_BOOTSTRAP_COMMANDS_SURFACE.md",
+      "rating": "complete",
+      "step_id": "E1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EXEC_ENV_CHAIN.json"
+      ],
+      "phase": "E",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E2_ENV_LOADING___CONFIG_CHAIN.md",
+      "rating": "complete",
+      "step_id": "E2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EXEC_STARTUP_GRAPH.json"
+      ],
+      "phase": "E",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E3_SERVICE_STARTUP_GRAPH.md",
+      "rating": "complete",
+      "step_id": "E3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EXEC_RUNTIME_MODES.json",
+        "EXEC_MODE_DELTA_REPORT.json"
+      ],
+      "phase": "E",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E4_RUNTIME_MODES___DELTA_REPORT.md",
+      "rating": "complete",
+      "step_id": "E4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EXEC_ARTIFACT_SURFACE.json"
+      ],
+      "phase": "E",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E5_ARTIFACT_OUTPUTS___LOGS___STATE.md",
+      "rating": "complete",
+      "step_id": "E5"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EXEC_RISK_FACTS.json"
+      ],
+      "phase": "E",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E6_EXECUTION_RISKS___ORDERING___STATE_DEPENDENCY.md",
+      "rating": "complete",
+      "step_id": "E6"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EXEC_MERGED.json",
+        "EXEC_QA.json"
+      ],
+      "phase": "E",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_E9_MERGE___NORMALIZE___QA.md",
+      "rating": "complete",
+      "step_id": "E9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "GOV_INVENTORY.json",
+        "GOV_PARTITIONS.json"
+      ],
+      "phase": "G",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G0_GOVERNANCE_INVENTORY___PARTITION_PLAN.md",
+      "rating": "complete",
+      "step_id": "G0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "GOV_CI_GATES.json"
+      ],
+      "phase": "G",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G1_CI_GATES___QUALITY_BARS.md",
+      "rating": "complete",
+      "step_id": "G1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "GOV_HYGIENE_POLICIES.json"
+      ],
+      "phase": "G",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G2_REPO_HYGIENE___ALLOWLISTS___POLICIES.md",
+      "rating": "complete",
+      "step_id": "G2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "GOV_POLICIES.json"
+      ],
+      "phase": "G",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G3_POLICY_FILES___ENFORCEMENT.md",
+      "rating": "complete",
+      "step_id": "G3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "GOV_SECRETS_SURFACE.json"
+      ],
+      "phase": "G",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G4_SECURITY___SECRETS___REDUCTION_FACTS.md",
+      "rating": "complete",
+      "step_id": "G4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "GOV_MERGED.json",
+        "GOV_QA.json"
+      ],
+      "phase": "G",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_G9_MERGE___QA.md",
+      "rating": "complete",
+      "step_id": "G9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "HOME_INVENTORY.json",
+        "HOME_PARTITIONS.json"
+      ],
+      "phase": "H",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H0_INVENTORY___PARTITION_PLAN.md",
+      "rating": "complete",
+      "step_id": "H0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "HOME_KEYS_SURFACE.json",
+        "HOME_REFERENCES.json"
+      ],
+      "phase": "H",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H1_KEYS___REFERENCES.md",
+      "rating": "complete",
+      "step_id": "H1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "HOME_MCP_SURFACE.json"
+      ],
+      "phase": "H",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H2_MCP_SURFACE.md",
+      "rating": "complete",
+      "step_id": "H2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "HOME_ROUTER_SURFACE.json",
+        "HOME_PROVIDER_LADDER_HINTS.json"
+      ],
+      "phase": "H",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H3_ROUTER___PROVIDER_LADDERS.md",
+      "rating": "complete",
+      "step_id": "H3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "HOME_LITELLM_SURFACE.json"
+      ],
+      "phase": "H",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H4_LITELLM_SURFACES.md",
+      "rating": "complete",
+      "step_id": "H4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "HOME_PROFILES_SURFACE.json"
+      ],
+      "phase": "H",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H5_PROFILES___SESSIONS.md",
+      "rating": "complete",
+      "step_id": "H5"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "HOME_TMUX_WORKFLOW_SURFACE.json"
+      ],
+      "phase": "H",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H6_TMUX___WORKFLOW_HELPERS.md",
+      "rating": "complete",
+      "step_id": "H6"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "HOME_SQLITE_SCHEMA.json"
+      ],
+      "phase": "H",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H7_SQLITE___STATE_DB_METADATA.md",
+      "rating": "complete",
+      "step_id": "H7"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "HOMECTRL_NORM_MANIFEST.json",
+        "HOMECTRL_QA.json",
+        "HOME_KEYS_SURFACE.json",
+        "HOME_REFERENCES.json",
+        "HOME_MCP_SURFACE.json",
+        "HOME_ROUTER_SURFACE.json",
+        "HOME_PROVIDER_LADDER_HINTS.json",
+        "HOME_LITELLM_SURFACE.json",
+        "HOME_PROFILES_SURFACE.json",
+        "HOME_TMUX_WORKFLOW_SURFACE.json",
+        "HOME_SQLITE_SCHEMA.json"
+      ],
+      "phase": "H",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_H9_MERGE___QA.md",
+      "rating": "complete",
+      "step_id": "H9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "M0_RUNTIME_EXPORT_INVENTORY.json"
+      ],
+      "phase": "M",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M0_RUNTIME_EXPORT_INVENTORY.md",
+      "rating": "complete",
+      "step_id": "M0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "M1_SQLITE_SCHEMA_SNAPSHOTS.json"
+      ],
+      "phase": "M",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M1_SQLITE_SCHEMA_SNAPSHOTS.md",
+      "rating": "complete",
+      "step_id": "M1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "M2_SQLITE_TABLE_COUNTS.json"
+      ],
+      "phase": "M",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M2_SQLITE_TABLE_COUNTS.md",
+      "rating": "complete",
+      "step_id": "M2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "M3_CONPORT_EXPORT_SAFE.json"
+      ],
+      "phase": "M",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M3_CONPORT_EXPORT_SAFE.md",
+      "rating": "complete",
+      "step_id": "M3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "M4_DOPE_CONTEXT_EXPORT_SAFE.json"
+      ],
+      "phase": "M",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M4_DOPE_CONTEXT_EXPORT_SAFE.md",
+      "rating": "complete",
+      "step_id": "M4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "M5_MCP_HEALTH_EXPORT_SAFE.json"
+      ],
+      "phase": "M",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M5_MCP_HEALTH_EXPORT_SAFE.md",
+      "rating": "complete",
+      "step_id": "M5"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "M6_RUNTIME_EXPORT_INDEX.json"
+      ],
+      "phase": "M",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_M6_RUNTIME_EXPORT_INDEX.md",
+      "rating": "complete",
+      "step_id": "M6"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "QA_RUN_MANIFEST.json"
+      ],
+      "phase": "Q",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q0_PIPELINE_COMPLETENESS___MANIFEST.md",
+      "rating": "complete",
+      "step_id": "Q0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "QA_MISSING_ARTIFACTS.json"
+      ],
+      "phase": "Q",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q1_MISSING_ARTIFACTS___RECOVERY_PLAN.md",
+      "rating": "complete",
+      "step_id": "Q1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "QA_PROMPT_COLLISIONS.json"
+      ],
+      "phase": "Q",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q2_DUPLICATE_IDS___PROMPT_COLLISIONS.md",
+      "rating": "complete",
+      "step_id": "Q2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "QA_NORM_DRIFT_REPORT.json"
+      ],
+      "phase": "Q",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q3_DRIFT_DETECTION___NORM_DIFFS.md",
+      "rating": "complete",
+      "step_id": "Q3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "PIPELINE_DOCTOR_REPORT.json",
+        "QA_SERVICE_COVERAGE.json"
+      ],
+      "phase": "Q",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Q9_MERGE___QA.md",
+      "rating": "complete",
+      "step_id": "Q9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "CONTROL_PLANE_TRUTH_MAP.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R0_CONTROL_PLANE_TRUTH_MAP.md",
+      "rating": "complete",
+      "step_id": "R0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+        "DOPE_MEMORY_SCHEMAS.json",
+        "DOPE_MEMORY_DB_WRITES.json"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R1_DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+      "rating": "complete",
+      "step_id": "R1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "EVENTBUS_WIRING_TRUTH.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R2_EVENTBUS_WIRING_TRUTH.md",
+      "rating": "complete",
+      "step_id": "R2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R3_TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
+      "rating": "complete",
+      "step_id": "R3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TASKX_INTEGRATION_TRUTH.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R4_TASKX_INTEGRATION_TRUTH.md",
+      "rating": "complete",
+      "step_id": "R4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "WORKFLOWS_TRUTH_GRAPH.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R5_WORKFLOWS_TRUTH_GRAPH.md",
+      "rating": "complete",
+      "step_id": "R5"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "PORTABILITY_AND_MIGRATION_RISK_LEDGER.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R6_PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
+      "rating": "complete",
+      "step_id": "R6"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "CONFLICT_LEDGER.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R7_CONFLICT_LEDGER.md",
+      "rating": "complete",
+      "step_id": "R7"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "RISK_REGISTER_TOP20.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R8_RISK_REGISTER_TOP20.md",
+      "rating": "complete",
+      "step_id": "R8"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "LEANTIME_INTEGRATION_TRUTH.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R9_LEANTIME_INTEGRATION_TRUTH.md",
+      "rating": "complete",
+      "step_id": "R9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TWO_PLANE_ARCHITECTURE_TRUTH.md"
+      ],
+      "phase": "R",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_R10_TWO_PLANE_ARCHITECTURE_TRUTH.md",
+      "rating": "complete",
+      "step_id": "R10"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "CONTROL_PLANE_TRUTH_MAP.md",
+        "DOPE_MEMORY_IMPLEMENTATION_TRUTH.md",
+        "EVENTBUS_WIRING_TRUTH.md",
+        "TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md",
+        "TASKX_INTEGRATION_TRUTH.md",
+        "WORKFLOWS_TRUTH_GRAPH.md",
+        "PORTABILITY_AND_MIGRATION_RISK_LEDGER.md",
+        "CONFLICT_LEDGER.md",
+        "RISK_REGISTER_TOP20.md",
+        "ARCHITECTURE_SYNTHESIS_OPUS.md",
+        "S0_ARCHITECTURE_SYNTHESIS_OPUS.md"
+      ],
+      "phase": "S",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S0_OPUS_ARCHITECTURE_SYNTHESIS.md",
+      "rating": "complete",
+      "step_id": "S0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "MCP_TO_HOOKS_MIGRATION_OPUS.md",
+        "S1_MCP_TO_HOOKS_MIGRATION_PLAN.md"
+      ],
+      "phase": "S",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S1_OPUS_MCP_TO_HOOKS_MIGRATION_PLAN.md",
+      "rating": "complete",
+      "step_id": "S1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "DECISION_DOSSIER_OPUS.md",
+        "S2_DECISION_DOSSIER.md"
+      ],
+      "phase": "S",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S2_DECISION_DOSSIER.md",
+      "rating": "complete",
+      "step_id": "S2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "ARCHITECTURE_PROOF_HOOKS.md",
+        "S3_ARCH_PROOF_HOOKS.md"
+      ],
+      "phase": "S",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S3_ARCHITECTURE_PROOF_HOOKS.md",
+      "rating": "complete",
+      "step_id": "S3"
+    },
+    {
+      "missing_outputs_in_registry": [
+        "TWO_PLANE_ARCHITECTURE_ANALYSIS.md",
+        "S4_TWO_PLANE_ARCHITECTURE.md"
+      ],
+      "missing_sections": [],
+      "notes": [
+        "lint:section_too_short:Determinism Rules",
+        "lint:evidence_missing_key:path",
+        "lint:evidence_missing_key:line_range",
+        "lint:evidence_missing_key:excerpt",
+        "lint:missing_artifact_registry_entries"
+      ],
+      "outputs": [
+        "TWO_PLANE_ARCHITECTURE_ANALYSIS.md",
+        "S4_TWO_PLANE_ARCHITECTURE.md"
+      ],
+      "phase": "S",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S4_TWO_PLANE_ARCHITECTURE.md",
+      "rating": "complete",
+      "step_id": "S4"
+    },
+    {
+      "missing_outputs_in_registry": [
+        "TASK_ORCHESTRATOR_SYNTHESIS.md",
+        "S5_TASK_ORCHESTRATOR.md"
+      ],
+      "missing_sections": [],
+      "notes": [
+        "lint:section_too_short:Determinism Rules",
+        "lint:evidence_missing_key:path",
+        "lint:evidence_missing_key:line_range",
+        "lint:evidence_missing_key:excerpt",
+        "lint:missing_artifact_registry_entries"
+      ],
+      "outputs": [
+        "TASK_ORCHESTRATOR_SYNTHESIS.md",
+        "S5_TASK_ORCHESTRATOR.md"
+      ],
+      "phase": "S",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S5_TASK_ORCHESTRATOR_ANALYSIS.md",
+      "rating": "complete",
+      "step_id": "S5"
+    },
+    {
+      "missing_outputs_in_registry": [
+        "LEANTIME_INTEGRATION_SYNTHESIS.md",
+        "S6_LEANTIME_SYNTHESIS.md"
+      ],
+      "missing_sections": [],
+      "notes": [
+        "lint:section_too_short:Determinism Rules",
+        "lint:evidence_missing_key:line_range",
+        "lint:evidence_missing_key:excerpt",
+        "lint:determinism_forbidden_keys_unspecified",
+        "lint:missing_artifact_registry_entries"
+      ],
+      "outputs": [
+        "LEANTIME_INTEGRATION_SYNTHESIS.md",
+        "S6_LEANTIME_SYNTHESIS.md"
+      ],
+      "phase": "S",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_S6_LEANTIME_ANALYSIS.md",
+      "rating": "complete",
+      "step_id": "S6"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "PROJECT_INSTRUCTIONS.md",
+        "TP_BACKLOG_TOPN.json",
+        "TP_INDEX.json"
+      ],
+      "phase": "T",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T0_TASK_PACKET_FACTORY.md",
+      "rating": "complete",
+      "step_id": "T0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TP_PACKETS_TOP10.partX.md",
+        "TP_PACKET_IMPLEMENTATION_INDEX.json",
+        "TP_BACKLOG_TOPN.json"
+      ],
+      "phase": "T",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T1_EMIT_TASK_PACKETS___TOP10.md",
+      "rating": "complete",
+      "step_id": "T1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TP_SCHEMA.json",
+        "TP_AUTHORITY_RULES.json"
+      ],
+      "phase": "T",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T2_PACKET_SCHEMA___AUTHORITY_RULES.md",
+      "rating": "complete",
+      "step_id": "T2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TP_BATCHED_PACKETS.partX.md",
+        "TP_BATCH_INDEX.json"
+      ],
+      "phase": "T",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T3_PACKET_GENERATION___BATCHED.md",
+      "rating": "complete",
+      "step_id": "T3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TP_DEDUPED.json",
+        "TP_COLLISIONS.json"
+      ],
+      "phase": "T",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T4_PACKET_DEDUP___COLLISION_RESOLUTION.md",
+      "rating": "complete",
+      "step_id": "T4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TP_RUN_PLAN.json",
+        "TP_BACKLOG_TOPN.json"
+      ],
+      "phase": "T",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T5_PACKET_ORDERING___RUN_PLAN.md",
+      "rating": "complete",
+      "step_id": "T5"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "TP_INDEX.json",
+        "TP_MERGED.json",
+        "TP_QA.json",
+        "TP_SUMMARY.md",
+        "TP_BACKLOG_TOPN.json"
+      ],
+      "phase": "T",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_T9_MERGE___QA.md",
+      "rating": "complete",
+      "step_id": "T9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "WORKFLOW_INVENTORY.json",
+        "WORKFLOW_PARTITIONS.json"
+      ],
+      "phase": "W",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W0_WORKFLOW_INVENTORY___PARTITION_PLAN.md",
+      "rating": "complete",
+      "step_id": "W0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "WORKFLOW_CATALOG.json"
+      ],
+      "phase": "W",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W1_WORKFLOW_CATALOG___RUNBOOK_FACTS.md",
+      "rating": "complete",
+      "step_id": "W1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "WORKFLOW_IO_MAP.json"
+      ],
+      "phase": "W",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W2_WORKFLOW_INPUTS_OUTPUTS___ARTIFACTS.md",
+      "rating": "complete",
+      "step_id": "W2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "WORKFLOW_COORDINATION_SURFACE.json"
+      ],
+      "phase": "W",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W3_MULTI_SERVICE_COORDINATION___COMPOSE_TMUX.md",
+      "rating": "complete",
+      "step_id": "W3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "WORKFLOW_FAILURE_RECOVERY.json"
+      ],
+      "phase": "W",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W4_WORKFLOW_FAILURE_MODES___RECOVERY.md",
+      "rating": "complete",
+      "step_id": "W4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "WORKFLOW_STATE_COUPLING.json"
+      ],
+      "phase": "W",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W5_WORKFLOW_STATE_DEPENDENCIES___HOME_VS_REPO.md",
+      "rating": "complete",
+      "step_id": "W5"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "WORKFLOW_MERGED.json",
+        "WORKFLOW_QA.json"
+      ],
+      "phase": "W",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_W9_MERGE___QA.md",
+      "rating": "complete",
+      "step_id": "W9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "FEATURE_INDEX_INVENTORY.json",
+        "FEATURE_INDEX_PARTITIONS.json"
+      ],
+      "phase": "X",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X0_FEATURE_INDEX_INVENTORY___PARTITION_PLAN.md",
+      "rating": "complete",
+      "step_id": "X0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "FEATURE_SURFACE.json"
+      ],
+      "phase": "X",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X1_FEATURE_SURFACE_EXTRACT.md",
+      "rating": "complete",
+      "step_id": "X1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "FEATURE_CODE_MAP.json"
+      ],
+      "phase": "X",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X2_FEATURE_TO_CODE_MAP.md",
+      "rating": "complete",
+      "step_id": "X2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "FEATURE_DOC_MAP.json"
+      ],
+      "phase": "X",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X3_FEATURE_TO_DOC_MAP.md",
+      "rating": "complete",
+      "step_id": "X3"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "FEATURE_DEP_GRAPH.json"
+      ],
+      "phase": "X",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X4_FEATURE_DEPENDENCY_GRAPH.md",
+      "rating": "complete",
+      "step_id": "X4"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "FEATURE_INDEX_MERGED.json",
+        "FEATURE_INDEX_QA.json"
+      ],
+      "phase": "X",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_X9_MERGE___QA.md",
+      "rating": "complete",
+      "step_id": "X9"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "FREEZE_FILE_INDEX.json",
+        "FREEZE_CHECKSUMS.json"
+      ],
+      "phase": "Z",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z0_FREEZE_INVENTORY___CHECKSUMS.md",
+      "rating": "complete",
+      "step_id": "Z0"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "PROOF_PACK.md"
+      ],
+      "phase": "Z",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z1_PROOF_PACK___RUNBOOK.md",
+      "rating": "complete",
+      "step_id": "Z1"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "OPUS_INPUT_MANIFEST.json"
+      ],
+      "phase": "Z",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z2_OPUS_INPUT_BUNDLE___MANIFEST.md",
+      "rating": "complete",
+      "step_id": "Z2"
+    },
+    {
+      "missing_outputs_in_registry": [],
+      "missing_sections": [],
+      "notes": [],
+      "outputs": [
+        "FREEZE_MANIFEST.json",
+        "FREEZE_README.md",
+        "FREEZE_QA.json"
+      ],
+      "phase": "Z",
+      "prompt_file": "services/repo-truth-extractor/promptsets/v4/prompts/PROMPT_Z9_FREEZE_MANIFEST___CHECKSUMS.md",
+      "rating": "complete",
+      "step_id": "Z9"
     }
-  ]
+  ],
+  "summary": {
+    "global_issues": [],
+    "global_issues_count": 0,
+    "lint_failures": 3,
+    "phase_rating_counts": {
+      "A": {
+        "complete": 12,
+        "partial": 0,
+        "stub": 0
+      },
+      "B": {
+        "complete": 5,
+        "partial": 0,
+        "stub": 0
+      },
+      "C": {
+        "complete": 12,
+        "partial": 0,
+        "stub": 0
+      },
+      "D": {
+        "complete": 6,
+        "partial": 0,
+        "stub": 0
+      },
+      "E": {
+        "complete": 8,
+        "partial": 0,
+        "stub": 0
+      },
+      "G": {
+        "complete": 6,
+        "partial": 0,
+        "stub": 0
+      },
+      "H": {
+        "complete": 9,
+        "partial": 0,
+        "stub": 0
+      },
+      "M": {
+        "complete": 7,
+        "partial": 0,
+        "stub": 0
+      },
+      "Q": {
+        "complete": 5,
+        "partial": 0,
+        "stub": 0
+      },
+      "R": {
+        "complete": 11,
+        "partial": 0,
+        "stub": 0
+      },
+      "S": {
+        "complete": 7,
+        "partial": 0,
+        "stub": 0
+      },
+      "T": {
+        "complete": 7,
+        "partial": 0,
+        "stub": 0
+      },
+      "W": {
+        "complete": 7,
+        "partial": 0,
+        "stub": 0
+      },
+      "X": {
+        "complete": 6,
+        "partial": 0,
+        "stub": 0
+      },
+      "Z": {
+        "complete": 4,
+        "partial": 0,
+        "stub": 0
+      }
+    },
+    "prompt_count": 112,
+    "rating_counts": {
+      "complete": 112,
+      "partial": 0,
+      "stub": 0
+    },
+    "status": "FAIL"
+  }
 }

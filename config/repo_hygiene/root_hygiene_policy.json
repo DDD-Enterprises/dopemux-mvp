@@ -3,6 +3,7 @@
   "allowed_root_dirs": [
     "docs",
     "_audit_out",
+    ".dopemux",
     ".dopetask",
     ".Jules",
     ".github",

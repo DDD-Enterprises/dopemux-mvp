@@ -105,7 +105,7 @@ url = "http://localhost:3003"
 [[mcp_servers]]
 name = "conport"
 transport = "http"
-url = "http://localhost:3004"
+url = "http://localhost:3005"
 
 [[mcp_servers]]
 name = "serena"
@@ -113,6 +113,41 @@ transport = "http"
 url = "http://localhost:3006"
 
 [[mcp_servers]]
-name = "dope_context"
+name = "gpt-researcher"
+transport = "http"
+url = "http://localhost:3009"
+
+[[mcp_servers]]
+name = "desktop-commander"
+transport = "http"
+url = "http://localhost:3012"
+
+[[mcp_servers]]
+name = "exa"
+transport = "http"
+url = "http://localhost:3007"
+
+[[mcp_servers]]
+name = "task-orchestrator"
+transport = "http"
+url = "http://localhost:8000"
+
+[[mcp_servers]]
+name = "dope-context"
 transport = "http"
 url = "http://localhost:3010"
+
+[[mcp_servers]]
+name = "leantime-bridge"
+transport = "http"
+url = "http://localhost:3014"
+
+[[mcp_servers]]
+name = "adhd-engine"
+transport = "http"
+url = "http://localhost:8095"
+
+[[mcp_servers]]
+name = "dope-memory"
+transport = "http"
+url = "http://localhost:3020"

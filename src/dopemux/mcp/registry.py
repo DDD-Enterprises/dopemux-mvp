@@ -35,14 +35,15 @@ class LocalConfig(BaseModel):
 class MCPServerDefinition(BaseModel):
     """Canonical MCP server definition."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="allow")
 
     name: str = ""
-    transport: MCPTransport
+    transport: str
     docker: Optional[DockerConfig] = None
     local: Optional[LocalConfig] = None
     default_enabled: bool = True
     required_for_auto: bool = False
+    required_tool_globs: List[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_transport_requirements(self) -> "MCPServerDefinition":

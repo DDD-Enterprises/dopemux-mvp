@@ -1,0 +1,13 @@
+Running scoped coverage for: dopemux.mcp.provision,dopemux.mcp.instance_overlay
+....................                                                     [100%]
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.13.6-final-0 _______________
+
+Name                                  Stmts   Miss Branch BrPart  Cover   Missing
+---------------------------------------------------------------------------------
+src/dopemux/mcp/instance_overlay.py      52      4      6      1    91%   44-47
+src/dopemux/mcp/provision.py             73     17     30      6    74%   38->43, 45->50, 51->56, 62-80, 103, 125
+---------------------------------------------------------------------------------
+TOTAL                                   125     21     36      7    80%
+Required test coverage of 80% reached. Total coverage: 80.12%
+✅ Scoped coverage PASS

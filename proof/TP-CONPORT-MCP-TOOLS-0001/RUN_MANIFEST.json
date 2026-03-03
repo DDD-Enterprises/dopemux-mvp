@@ -1,0 +1,15 @@
+{
+  "run_id": "TP-CONPORT-MCP-TOOLS-0001",
+  "status": "PASS",
+  "tools_implemented": [
+    "conport_get_active_work",
+    "conport_get_context",
+    "conport_get_decisions",
+    "conport_get_progress",
+    "conport_get_recent_activity",
+    "conport_log_decision",
+    "conport_log_progress",
+    "conport_update_context",
+    "conport_update_progress"
+  ]
+}

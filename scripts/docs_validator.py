@@ -108,8 +108,12 @@ class DocumentValidator:
             self.add_error(file_path, "File does not exist")
             return False
 
+        # Check if file is quarantined
+        rel_path = os.path.relpath(file_path, self.project_root)
+        if rel_path.startswith('docs/04-explanation/history/sourceFiles/'):
+            return True
+
         # Check if file is in allowed location
-        if not self._is_allowed_path(file_path):
             self.add_warning(
                 file_path,
                 f"Documentation file not in canonical path. Prefer: {', '.join(ALLOWED_PATHS)}",

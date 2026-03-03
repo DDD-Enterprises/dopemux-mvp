@@ -37,7 +37,7 @@ mcp_servers:
     workspace_param: "workspace_id"
 
   conport:
-    command: ["docker", "exec", "-i", "mcp-conport_main", "python", "/app/conport_mcp_stdio.py"]
+    command: ["docker", "exec", "-i", "mcp-conport", "python", "/app/conport_mcp_stdio.py"]
     port: 3004
     supports_workspace: true
     workspace_param: "workspace_id"

@@ -1,0 +1,397 @@
+........................................................................ [ 14%]
+..............................................F....................F.... [ 28%]
+.......................................................FFFF............. [ 42%]
+........................................................................ [ 57%]
+........................................................................ [ 71%]
+....................................F................................... [ 85%]
+........................................................................ [100%]
+=================================== FAILURES ===================================
+_______________________ test_altp_skips_openrouter_gate ________________________
+
+mock_which = <MagicMock name='which' id='4669988816'>
+mock_start_proxy = <MagicMock name='start_simple_proxy' id='4669987808'>
+mock_router_cls = <MagicMock name='DopeBrainzRouterManager' id='4669989152'>
+mock_litellm_cls = <MagicMock name='LiteLLMProxyManager' id='4669983440'>
+
+    @patch("dopemux.cli.LiteLLMProxyManager")
+    @patch("dopemux.cli.DopeBrainzRouterManager")
+    @patch("dopemux.cli.start_simple_proxy")
+    @patch("shutil.which")
+    def test_altp_skips_openrouter_gate(mock_which, mock_start_proxy, mock_router_cls, mock_litellm_cls):
+        """
+        Verify that ALTP routing works correctly when provider-based API keys
+        (OPENROUTER_API_KEY and XAI_API_KEY) are configured.
+        """
+        mock_which.return_value = "/bin/claude"
+        mock_start_proxy.return_value = (4000, "sk-test")
+    
+        # Mock LiteLLM manager
+        mock_litellm_instance = mock_litellm_cls.return_value
+        mock_litellm_instance.ensure_started.return_value = LiteLLMProxyInfo(
+            host="127.0.0.1",
+            port=4000,
+            config_path=MagicMock(),
+            master_key="sk-test",
+            log_path=MagicMock(),
+            already_running=False,
+            db_enabled=True,
+        )
+        mock_litellm_instance.build_client_env.return_value = {}
+    
+        # Mock Router manager
+        mock_router_instance = mock_router_cls.return_value
+        mock_router_instance.ensure_started.return_value = MagicMock(
+            base_url="http://127.0.0.1:8000",
+            already_running=False
+        )
+        mock_router_instance.build_client_env.return_value = {
+            "ANTHROPIC_BASE_URL": "http://127.0.0.1:8000"
+        }
+    
+        # Setup environment
+        env = os.environ.copy()
+        env.pop("DOPEMUX_AGENT_ROLE", None)
+    
+        env["OPENROUTER_API_KEY"] = "sk-openrouter"
+        env["XAI_API_KEY"] = "sk-xai"
+    
+        runner = CliRunner(env=env)
+    
+        # Patch at the source of import
+        with patch("dopemux.workspace_utils.get_workspace_root") as mock_get_root, \
+             patch("pathlib.Path.exists") as mock_exists, \
+             patch("pathlib.Path.mkdir") as mock_mkdir, \
+             patch("pathlib.Path.cwd") as mock_cwd:
+    
+            mock_get_root.return_value = MagicMock()
+            mock_exists.return_value = True
+            mock_cwd.return_value = MagicMock()
+            mock_mkdir.return_value = None
+    
+            # Mock suffix for config loading
+            mock_cwd.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".yaml"
+    
+            result = runner.invoke(cli, ["start", "--altp", "--dry-run"])
+    
+            if result.exit_code != 0:
+                print(f"EXIT CODE: {result.exit_code}")
+                print(f"OUTPUT: {result.output}")
+                if result.exception:
+                     import traceback
+                     traceback.print_exception(type(result.exception), result.exception, result.exception.__traceback__)
+    
+>           assert result.exit_code == 0
+E           assert 1 == 0
+E            +  where 1 = <Result UnboundLocalError("cannot access local variable 'provider' where it is not associated with a value")>.exit_code
+
+tests/unit/test_altp_skips_openrouter_gate.py:75: AssertionError
+----------------------------- Captured stdout call -----------------------------
+EXIT CODE: 1
+OUTPUT: 📋 Routing mode: subscription
+⚠️  Deprecated flags detected 
+(--grok/--codex/--altp/--alt-routing/--claude-router)
+Prefer: dopemux routing mode api|subscription
+⚠️  --altp flag ignored in subscription mode
+   Use 'dopemux routing mode api' to enable proxy routing
+🎯 --altp: Tier-matched alternative provider routing
+     opus → GPT-5.2 Codex (High Thinking) (openrouter/openai/gpt-5.2-codex)
+   sonnet → Grok Code Fast 1 (xai/grok-code-fast-1)
+    haiku → Grok 4 Thinking (xai/grok-4-thinking)
+   Enabling Claude Code Router for API translation (responses → completions)
+🔄 Starting LiteLLM proxy (no DB required)...
+✅ LiteLLM proxy ready on port 4000
+
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "/Users/hue/.pyenv/versions/3.13.6/lib/python3.13/site-packages/click/testing.py", line 504, in invoke
+    return_value = cli.main(args=args or (), prog_name=prog_name, **extra)
+  File "/Users/hue/.pyenv/versions/3.13.6/lib/python3.13/site-packages/click/core.py", line 1406, in main
+    rv = self.invoke(ctx)
+  File "/Users/hue/.pyenv/versions/3.13.6/lib/python3.13/site-packages/click/core.py", line 1873, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/hue/.pyenv/versions/3.13.6/lib/python3.13/site-packages/click/core.py", line 1269, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/hue/.pyenv/versions/3.13.6/lib/python3.13/site-packages/click/core.py", line 824, in invoke
+    return callback(*args, **kwargs)
+  File "/Users/hue/.pyenv/versions/3.13.6/lib/python3.13/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/Users/hue/code/dopemux-mvp/src/dopemux/cli.py", line 951, in start
+    os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
+                                              ^^^^^^^^
+UnboundLocalError: cannot access local variable 'provider' where it is not associated with a value
+_________________________ test_ccr_models_env_for_altp _________________________
+
+mock_which = <MagicMock name='which' id='4671198208'>
+mock_start_proxy = <MagicMock name='start_simple_proxy' id='4671198544'>
+mock_router_cls = <MagicMock name='DopeBrainzRouterManager' id='4671198880'>
+mock_litellm_cls = <MagicMock name='LiteLLMProxyManager' id='4671199216'>
+mock_monitor_cls = <MagicMock name='AttentionMonitor' id='4671199552'>
+mock_launcher_cls = <MagicMock name='ClaudeLauncher' id='4671199888'>
+mock_ctx_mgr = <MagicMock name='ContextManager' id='4671200224'>
+mock_load_state = <MagicMock name='load_instance_state_sync' id='4671200896'>
+mock_save_state = <MagicMock name='save_instance_state_sync' id='4671201232'>
+
+    @patch("dopemux.instance_state.save_instance_state_sync")
+    @patch("dopemux.instance_state.load_instance_state_sync")
+    @patch("dopemux.cli.ContextManager")
+    @patch("dopemux.cli.ClaudeLauncher")
+    @patch("dopemux.cli.AttentionMonitor")
+    @patch("dopemux.cli.LiteLLMProxyManager")
+    @patch("dopemux.cli.DopeBrainzRouterManager")
+    @patch("dopemux.cli.start_simple_proxy")
+    @patch("shutil.which")
+    def test_ccr_models_env_for_altp(mock_which, mock_start_proxy, mock_router_cls, mock_litellm_cls, mock_monitor_cls, mock_launcher_cls, mock_ctx_mgr, mock_load_state, mock_save_state):
+        """
+        Verify that --altp sets CLAUDE_CODE_ROUTER_MODELS to "altp-opus,altp-sonnet,altp-haiku".
+        """
+        mock_which.return_value = "/bin/claude"
+        mock_start_proxy.return_value = (4000, "sk-test")
+    
+        # Mock Router manager
+        mock_router_instance = mock_router_cls.return_value
+        mock_router_instance.ensure_started.return_value = MagicMock(
+            base_url="http://127.0.0.1:8000",
+            already_running=False
+        )
+        mock_router_instance.build_client_env.return_value = {}
+    
+        runner = CliRunner()
+        env = os.environ.copy()
+        env["OPENROUTER_API_KEY"] = "sk-openrouter"
+        env["XAI_API_KEY"] = "sk-xai"
+    
+        with patch("dopemux.cli.Path") as mock_path, \
+             patch("dopemux.workspace_utils.get_workspace_root") as mock_get_root, \
+             patch("dopemux.auto_configurator.WorktreeAutoConfigurator") as mock_auto_config, \
+             patch("dopemux.cli.os.path.isdir") as mock_isdir, \
+             patch("subprocess.check_call") as mock_check_call, \
+             patch("dopemux.cli.detect_instances_sync", return_value=[]) as mock_detect, \
+             patch("dopemux.cli.check_and_protect_main", return_value=False) as mock_protect, \
+             patch("dopemux.cli.consume_last_created_worktree", return_value=None) as mock_consume, \
+             patch("dopemux.cli.InstanceManager") as mock_instance_mgr, \
+             patch("dopemux.worktree_recovery.show_recovery_menu_sync", return_value=None) as mock_recovery:
+    
+            mock_path.cwd.return_value = MagicMock()
+            mock_path.exists.return_value = True
+            mock_path.return_value.exists.return_value = True
+            mock_get_root.return_value = MagicMock()
+            mock_auto_config.return_value.configure_workspace.return_value = (True, "Mocked AutoConfig")
+            mock_isdir.return_value = True
+    
+            # We must NOT use --dry-run because it skips the router logic we want to test.
+            # Instead we rely on mocks to prevent side effects.
+            with patch.dict(os.environ, env):
+                result = runner.invoke(cli, ["start", "--altp", "--no-mcp"])
+    
+                print(f"OUTPUT: {result.output}")
+                if result.exception:
+                    print(f"EXCEPTION: {result.exception}")
+    
+>               assert result.exit_code == 0
+E               assert 1 == 0
+E                +  where 1 = <Result UnboundLocalError("cannot access local variable 'provider' where it is not associated with a value")>.exit_code
+
+tests/unit/test_ccr_models_env_for_altp.py:64: AssertionError
+----------------------------- Captured stdout call -----------------------------
+OUTPUT: 📋 Routing mode: subscription
+⚠️  Deprecated flags detected 
+(--grok/--codex/--altp/--alt-routing/--claude-router)
+Prefer: dopemux routing mode api|subscription
+⚠️  --altp flag ignored in subscription mode
+   Use 'dopemux routing mode api' to enable proxy routing
+🎯 --altp: Tier-matched alternative provider routing
+     opus → GPT-5.2 Codex (High Thinking) (openrouter/openai/gpt-5.2-codex)
+   sonnet → Grok Code Fast 1 (xai/grok-code-fast-1)
+    haiku → Grok 4 Thinking (xai/grok-4-thinking)
+   Enabling Claude Code Router for API translation (responses → completions)
+🔄 Starting LiteLLM proxy (no DB required)...
+✅ LiteLLM proxy ready on port 4000
+
+EXCEPTION: cannot access local variable 'provider' where it is not associated with a value
+________ TestDesktopCommanderSecurity.test_focus_window_macos_security _________
+
+self = <test_desktop_commander_security.TestDesktopCommanderSecurity testMethod=test_focus_window_macos_security>
+
+    def test_focus_window_macos_security(self):
+        with patch.dict(sys.modules, {
+            "uvicorn": MagicMock(),
+            "fastapi": MagicMock(),
+            "pydantic": MagicMock()
+        }):
+>           import server
+
+tests/unit/test_desktop_commander_security.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    #!/usr/bin/env python3
+    """
+    FastMCP Server for Desktop Commander
+    Provides desktop automation and system control capabilities via MCP SSE
+    """
+    
+    import os
+    import subprocess
+    import logging
+    import platform
+    from typing import Dict, Any
+>   from fastmcp import FastMCP
+E   ModuleNotFoundError: No module named 'fastmcp'
+
+docker/mcp-servers/desktop-commander/server.py:12: ModuleNotFoundError
+__ TestDesktopCommanderSecurity.test_take_screenshot_linux_argument_injection __
+
+self = <test_desktop_commander_security.TestDesktopCommanderSecurity testMethod=test_take_screenshot_linux_argument_injection>
+
+    def test_take_screenshot_linux_argument_injection(self):
+        with patch.dict(sys.modules, {
+            "uvicorn": MagicMock(),
+            "fastapi": MagicMock(),
+            "pydantic": MagicMock()
+        }):
+>           import server
+
+tests/unit/test_desktop_commander_security.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    #!/usr/bin/env python3
+    """
+    FastMCP Server for Desktop Commander
+    Provides desktop automation and system control capabilities via MCP SSE
+    """
+    
+    import os
+    import subprocess
+    import logging
+    import platform
+    from typing import Dict, Any
+>   from fastmcp import FastMCP
+E   ModuleNotFoundError: No module named 'fastmcp'
+
+docker/mcp-servers/desktop-commander/server.py:12: ModuleNotFoundError
+_____ TestDesktopCommanderSecurity.test_type_text_linux_argument_injection _____
+
+self = <test_desktop_commander_security.TestDesktopCommanderSecurity testMethod=test_type_text_linux_argument_injection>
+
+    def test_type_text_linux_argument_injection(self):
+        with patch.dict(sys.modules, {
+            "uvicorn": MagicMock(),
+            "fastapi": MagicMock(),
+            "pydantic": MagicMock()
+        }):
+>           import server
+
+tests/unit/test_desktop_commander_security.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    #!/usr/bin/env python3
+    """
+    FastMCP Server for Desktop Commander
+    Provides desktop automation and system control capabilities via MCP SSE
+    """
+    
+    import os
+    import subprocess
+    import logging
+    import platform
+    from typing import Dict, Any
+>   from fastmcp import FastMCP
+E   ModuleNotFoundError: No module named 'fastmcp'
+
+docker/mcp-servers/desktop-commander/server.py:12: ModuleNotFoundError
+__________ TestDesktopCommanderSecurity.test_type_text_macos_security __________
+
+self = <test_desktop_commander_security.TestDesktopCommanderSecurity testMethod=test_type_text_macos_security>
+
+    def test_type_text_macos_security(self):
+        with patch.dict(sys.modules, {
+            "uvicorn": MagicMock(),
+            "fastapi": MagicMock(),
+            "pydantic": MagicMock()
+        }):
+>           import server
+
+tests/unit/test_desktop_commander_security.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    #!/usr/bin/env python3
+    """
+    FastMCP Server for Desktop Commander
+    Provides desktop automation and system control capabilities via MCP SSE
+    """
+    
+    import os
+    import subprocess
+    import logging
+    import platform
+    from typing import Dict, Any
+>   from fastmcp import FastMCP
+E   ModuleNotFoundError: No module named 'fastmcp'
+
+docker/mcp-servers/desktop-commander/server.py:12: ModuleNotFoundError
+______________ test_run_phase_r_gates_on_required_norm_artifacts _______________
+
+tmp_path = PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-79/test_run_phase_r_gates_on_requ0')
+
+    def test_run_phase_r_gates_on_required_norm_artifacts(tmp_path: Path) -> None:
+        dirs = make_dirs(tmp_path)
+    
+        with pytest.raises(RuntimeError, match="Phase R requires normalized inputs"):
+            runner.run_phase_R(dirs, make_cfg())
+    
+        materialize_required_artifacts(dirs, phases=runner.R_REQUIRED_INPUT_PHASES)
+>       runner.run_phase_R(dirs, make_cfg())
+
+tests/unit/test_run_extraction_v3_phase_m.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+services/repo-truth-extractor/run_extraction_v3.py:10116: in run_phase_R
+    _run_phase_inner("R", dirs, cfg, None, None, precollected_items=to_items(deduped_inputs), ui=ui)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+phase = 'R'
+dirs = {'A': PosixPath('/private/var/folders/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-79/test_run_phase_r_gat...ers/dy/k9c_fpxn5h5cbb9hdsj3zzkm0000gn/T/pytest-of-hue/pytest-79/test_run_phase_r_gates_on_requ0/D_docs_pipeline'), ...}
+cfg = RunnerConfig(dry_run=True, max_files_docs=10, max_files_code=10, max_chars=100000, max_request_bytes=200000, file_trun...l='', webhook_secret='', webhook_timeout_seconds=5, webhook_required=False, webhook_auto_continue=False, live_ok=False)
+collector = None, targets = None
+precollected_items = [{'mtime': 1772504813.3508534, 'name': 'REPO_COMPOSE_SERVICE_GRAPH.json', 'path': '/private/var/folders/dy/k9c_fpxn5h5...of-hue/pytest-79/test_run_phase_r_gates_on_requ0/A_repo_control_plane/norm/REPO_LITELLM_SURFACE.json', 'size': 3}, ...]
+ui = None
+
+    def _run_phase_inner(
+        phase: str,
+        dirs: Dict[str, Path],
+        cfg: RunnerConfig,
+        collector: Optional[Collector],
+        targets: Optional[List[str]],
+        precollected_items: Optional[List[Dict[str, Any]]] = None,
+        ui: Optional[UI] = None,
+    ) -> None:
+        phase_started_epoch = time.time()
+        logger.info("--- Phase %s ---", phase)
+        phase_dir = dirs[phase]
+        prompts = get_phase_prompts(phase)
+        if not prompts:
+            raise RuntimeError(f"No prompts found for phase {phase} in {prompt_root()}/")
+        prompt_report = _prompt_hash_report_for_phase(phase, prompts)
+        if prompt_report["blocked_promptset"]:
+            update_run_manifest_promptset_block(phase_dir.parent, phase, prompt_report)
+            write_promptset_blocked_marker(phase, phase_dir, prompt_report)
+            bad_paths = prompt_report["prompt_missing"] + [
+                row.get("path", "") for row in prompt_report["prompt_unreadable"]
+            ]
+            preview = ", ".join(bad_paths[:3]) if bad_paths else f"phase={phase}"
+            if len(bad_paths) > 3:
+                preview += ", ..."
+>           raise PromptsetBlockedError(
+                f"Promptset blocked for phase {phase}: invalid promptset ({preview})"
+            )
+E           run_extraction_v3.PromptsetBlockedError: Promptset blocked for phase R: invalid promptset (/Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_R10_*.md, /Users/hue/code/dopemux-mvp/services/repo-truth-extractor/prompts/v3/PROMPT_R9_*.md)
+
+services/repo-truth-extractor/run_extraction_v3.py:7710: PromptsetBlockedError
+=========================== short test summary info ============================
+FAILED tests/unit/test_altp_skips_openrouter_gate.py::test_altp_skips_openrouter_gate
+FAILED tests/unit/test_ccr_models_env_for_altp.py::test_ccr_models_env_for_altp
+FAILED tests/unit/test_desktop_commander_security.py::TestDesktopCommanderSecurity::test_focus_window_macos_security
+FAILED tests/unit/test_desktop_commander_security.py::TestDesktopCommanderSecurity::test_take_screenshot_linux_argument_injection
+FAILED tests/unit/test_desktop_commander_security.py::TestDesktopCommanderSecurity::test_type_text_linux_argument_injection
+FAILED tests/unit/test_desktop_commander_security.py::TestDesktopCommanderSecurity::test_type_text_macos_security
+FAILED tests/unit/test_run_extraction_v3_phase_m.py::test_run_phase_r_gates_on_required_norm_artifacts

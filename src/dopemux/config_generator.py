@@ -292,7 +292,6 @@ class ConfigGenerator:
             "gpt-researcher": 5,
             "dope-context": 8,
             "desktop-commander": 10,
-            "morph-llm": 5,
             "magic-mcp": 3,
             "playwright": 15,
             "tavily": 1,

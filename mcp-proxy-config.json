@@ -16,7 +16,7 @@
       "args": [
         "exec",
         "-i",
-        "mcp-conport_main",
+        "mcp-conport",
         "python",
         "/app/conport_mcp_stdio.py"
       ],
@@ -133,15 +133,6 @@
       "command": "npx",
       "args": ["@playwright/mcp@latest"],
       "env": {},
-      "type": "stdio"
-    },
-    "morph": {
-      "command": "npx",
-      "args": ["@morph-llm/morph-fast-apply@latest"],
-      "env": {
-        "MORPH_API_KEY": "${MORPH_API_KEY}",
-        "ALL_TOOLS": "false"
-      },
       "type": "stdio"
     },
     "leantime-bridge": {

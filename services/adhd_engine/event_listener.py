@@ -455,7 +455,7 @@ class ADHDEventListener:
         tool_name = data.get("tool")
         
         # Complex tools during low energy warning
-        if tool_name in ["thinkdeep", "morph", "batch_edit", "refactor"]:
+        if tool_name in ["thinkdeep", "batch_edit", "refactor"]:
             # Energy check would happen in PreToolUse hook
             pass
     

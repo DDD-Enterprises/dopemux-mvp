@@ -1,0 +1,60 @@
+{
+  "missing_required_tools": {},
+  "provenance": {
+    "conport": "repo_profile",
+    "docker_mcp_gateway": "global_fallback",
+    "dope_context": "repo_profile",
+    "dope_memory": "repo_profile",
+    "serena": "repo_profile"
+  },
+  "reachable_transport": [
+    "conport",
+    "docker_mcp_gateway",
+    "dope_context",
+    "dope_memory",
+    "serena"
+  ],
+  "resolved_endpoints": {
+    "conport": {
+      "required_tool_globs": [
+        "conport_*"
+      ],
+      "transport": "http",
+      "url": "http://127.0.0.1:3004/mcp"
+    },
+    "docker_mcp_gateway": {
+      "transport": "streamable-http",
+      "url": "http://localhost:3020"
+    },
+    "dope_context": {
+      "required_tool_globs": [
+        "context_*"
+      ],
+      "transport": "http",
+      "url": "http://127.0.0.1:3010/mcp"
+    },
+    "dope_memory": {
+      "required_tool_globs": [
+        "memory_*"
+      ],
+      "transport": "http",
+      "url": "http://127.0.0.1:3020"
+    },
+    "serena": {
+      "required_tool_globs": [
+        "serena_*"
+      ],
+      "transport": "streamable-http",
+      "url": "http://127.0.0.1:3006/mcp"
+    }
+  },
+  "status": "PASS",
+  "tools_discoverable": {
+    "conport": 9,
+    "docker_mcp_gateway": 7,
+    "dope_context": 0,
+    "dope_memory": 7,
+    "serena": 0
+  },
+  "unreachable_transport": []
+}

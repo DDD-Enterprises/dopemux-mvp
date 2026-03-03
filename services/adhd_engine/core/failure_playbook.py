@@ -7,7 +7,6 @@ Recovery strategies:
 - ConPort down → Local spooling with background replay
 - Task Orchestrator ambiguity → Zen escalation for consensus
 - Playwright flake → Retry with increased timeout
-- Morph apply mismatch → Revert and re-apply with expanded context
 """
 
 import asyncio
@@ -64,7 +63,6 @@ class FailurePlaybook:
             "conport_down": self._recover_conport_down,
             "task_orchestrator_ambiguous": self._recover_task_ambiguity,
             "playwright_flake": self._recover_playwright_flake,
-            "morph_mismatch": self._recover_morph_mismatch,
             "validation_failure": self._recover_validation_failure
         }
 
@@ -285,112 +283,6 @@ class FailurePlaybook:
                         "final_error": str(retry_error),
                         "recovery_success": False
                     }
-
-    # =====================================================
-    # MORPH MISMATCH → REVERT AND RE-APPLY
-    # =====================================================
-
-    async def _recover_morph_mismatch(self, context: FailureContext) -> Dict[str, Any]:
-        """Recover from Morph edit mismatch by reverting and re-applying with expanded context"""
-
-        logger.info("Recovering from Morph edit mismatch")
-
-        # Initialize Morph session
-        morph_params = StdioServerParameters(
-            command="npx",
-            args=["@morph-llm/morph-fast-apply@latest"],
-            env={"MORPH_API_KEY": os.getenv("MORPH_API_KEY"), "ALL_TOOLS": "false"}
-        )
-
-        async with stdio_client(morph_params) as (read, write):
-            morph_session = ClientSession(read, write)
-            await morph_session.initialize()
-
-            try:
-                # First, read the current file to see what Morph actually did
-                file_read_result = await morph_session.call_tool(
-                    "morph_read_file",
-                    file_path=context.operation  # Assuming operation contains file path
-                )
-
-                current_content = file_read_result.content[0].text
-
-                # Check if the edit looks reasonable (simplified check)
-                if self._validate_morph_edit(current_content):
-
-                    logger.info("Morph edit appears correct on re-examination")
-                    return {
-                        "strategy": "edit_validated",
-                        "recovery_success": True,
-                        "validation_method": "content_check"
-                    }
-
-                else:
-                    # Edit looks wrong - revert and try again with expanded context
-
-                    # Get git to revert the file
-                    revert_result = await self._run_shell_command(
-                        f"git checkout HEAD -- {context.operation}"
-                    )
-
-                    if revert_result["success"]:
-                        # Re-apply with expanded context snippet
-                        expanded_snippet = await self._expand_edit_context(context)
-
-                        await morph_session.call_tool(
-                            "morph_edit_file",
-                            file_path=context.operation,
-                            instruction=f"Re-apply with expanded context: {context.error_message}",
-                            editSnippet=expanded_snippet
-                        )
-
-                        # Verify the new edit
-                        verify_result = await morph_session.call_tool("morph_read_file", file_path=context.operation)
-                        new_content = verify_result.content[0].text
-
-                        if self._validate_morph_edit(new_content):
-                            await self._log_recovery_decision(
-                                context,
-                                "Morph edit recovered via revert and re-apply",
-                                "File reverted to HEAD, re-applied with expanded context snippet",
-                                ["morph-recovery", "revert-reapply", "expanded-context"]
-                            )
-
-                            return {
-                                "strategy": "revert_and_reapply",
-                                "expanded_context_used": True,
-                                "recovery_success": True
-                            }
-                        else:
-                            raise Exception("Re-applied edit still invalid")
-
-                    else:
-                        raise Exception(f"Git revert failed: {revert_result['error']}")
-
-            except Exception as recovery_error:
-                await self._log_recovery_decision(
-                    context,
-                    "Morph edit recovery failed",
-                    f"Unable to recover from edit mismatch: {str(recovery_error)}",
-                    ["morph-failure", "recovery-failed", "manual-intervention-needed"]
-                )
-
-                return {
-                    "strategy": "recovery_failed",
-                    "error": str(recovery_error),
-                    "recovery_success": False,
-                    "manual_intervention_required": True
-                }
-
-    def _validate_morph_edit(self, content: str) -> bool:
-        """Simple validation of Morph edit (would be more sophisticated in practice)"""
-        # Check for basic syntax issues, truncated content, etc.
-        return len(content) > 100 and not content.endswith("// ... existing code ...")
-
-    async def _expand_edit_context(self, context: FailureContext) -> str:
-        """Expand edit context with more surrounding code"""
-        # In practice, this would read more lines around the edit area
-        return "// ... expanded existing code context ...\n// [original edit content]\n// ... more existing code ..."
 
     # =====================================================
     # CONPORT DOWN → SPOOL MODE
@@ -666,7 +558,7 @@ async def main():
     parser.add_argument("--workspace", default="/Users/hue/code/dopemux-mvp")
     parser.add_argument("--failure-type", choices=[
         "conport_down", "task_orchestrator_ambiguous",
-        "playwright_flake", "morph_mismatch", "validation_failure"
+        "playwright_flake", "validation_failure"
     ], required=True)
     parser.add_argument("--component", required=True)
     parser.add_argument("--operation", required=True)

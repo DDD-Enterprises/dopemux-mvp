@@ -1,0 +1,11 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "status": "logged",
+    "progress": {
+      "id": "test-123",
+      "description": "mcp smoke"
+    }
+  }
+}

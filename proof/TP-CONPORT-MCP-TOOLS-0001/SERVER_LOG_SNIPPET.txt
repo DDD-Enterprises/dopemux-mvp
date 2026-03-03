@@ -1,0 +1,3 @@
+INFO:enhanced_server:📋 Context cache hit for workspace: ws-test
+INFO:enhanced_server:💡 Logged decision: test decision
+INFO:enhanced_server:🆕 Progress logged: mcp smoke [IN_PROGRESS]
