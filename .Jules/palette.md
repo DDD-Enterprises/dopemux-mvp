@@ -18,6 +18,8 @@
 **Learning:** High-density dashboards often use shorthand status chips (like "[LIVE]" or "[EDGE]") to save space. While visually efficient, they lack context for new users and are inaccessible to keyboard users if they are not focusable. Adding a descriptive Tooltip and `tabIndex={0}` bridges the gap between shorthand brevity and clarity while ensuring accessibility.
 **Action:** Always wrap shorthand status indicators in descriptive Tooltips and ensure they have `tabIndex={0}` to be keyboard focusable.
 
-## 2025-05-18 - [Descriptive Avatar Accessibility]
-**Learning:** Avatars without descriptive labels are identified only as "image" or by their fallback initials by screen readers. Providing an `aria-label` with the user's name (e.g., "Profile picture of Alice") provides essential social context in collaborative interfaces.
-**Action:** Always include a descriptive `aria-label` for Avatar components that represent specific individuals.
+**Learning:** `Avatar` components representing specific users in a list or dashboard must have an accessible name to identify the person to screen reader users, as icons alone are not descriptive.
+**Action:** When possible, render `Avatar` as an image with `component="img"` and an `alt` using the user's name (e.g., `alt={`Profile picture of ${member.name}`}`); otherwise, ensure the default `Avatar` has `role="img"` and an `aria-label` with the user's name.
+## 2025-05-18 - [Accessible Avatars]
+**Learning:** `Avatar` components representing specific users in a list or dashboard must have an `aria-label` to identify the person to screen reader users, as icons alone are not descriptive.
+**Action:** Always add an `aria-label` to `Avatar` components using the user's name (e.g., `aria-label={\`Profile picture of \${member.name}\`}`).
