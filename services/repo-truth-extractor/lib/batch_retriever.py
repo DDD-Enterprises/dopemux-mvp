@@ -13,7 +13,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 try:
     from .batch_clients import OpenAIBatchClient
@@ -160,7 +160,7 @@ def retrieve_openai_batches(
     failed = sum(1 for r in results.values() if r["status"] in ("failed", "expired"))
     errors = sum(1 for r in results.values() if r["error"])
     
-    logger.info(f"\nBatch Retrieval Summary:")
+    logger.info("\nBatch Retrieval Summary:")
     logger.info(f"  Completed: {completed}")
     logger.info(f"  Failed/Expired: {failed}")
     logger.info(f"  Errors: {errors}")
