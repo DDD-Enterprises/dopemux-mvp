@@ -1,3 +1,15 @@
+---
+id: PHASE0_DETERMINISM_REPORT_PROCESSPOOL
+title: Phase0 Determinism Report Processpool
+type: reference
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Phase0 Determinism Report Processpool (reference) for dopemux documentation
+  and developer workflows.
+---
 # Phase 0C Determinism Report
 
 **Generated**: 2026-02-26 19:19:22

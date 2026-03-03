@@ -5953,22 +5953,20 @@ def _run_one_partition_worker(
     Module-level worker function for ProcessPoolExecutor.
     All parameters are explicit to ensure picklability.
     """
-    import logging
     from pathlib import Path
-    from typing import Any, Dict, List, Tuple, Optional
     
     # Recreate local objects that can't be pickled
     raw_dir = Path(raw_dir_str)
-    prompt_text = safe_read(prompt_path)
+    safe_read(prompt_path)
     
     # Reconstruct cfg-like dict access
     max_request_bytes = int(cfg_dict.get('max_request_bytes', 200000))
-    file_truncate_chars = int(cfg_dict.get('file_truncate_chars', 70000))
-    home_scan_mode = str(cfg_dict.get('home_scan_mode', 'safe'))
+    int(cfg_dict.get('file_truncate_chars', 70000))
+    str(cfg_dict.get('home_scan_mode', 'safe'))
     routing_policy = str(cfg_dict.get('routing_policy', 'cost'))
-    batch_mode = bool(cfg_dict.get('batch_mode', False))
-    batch_provider = str(cfg_dict.get('batch_provider', 'auto'))
-    gemini_auth_mode = str(cfg_dict.get('gemini_auth_mode', 'auto'))
+    bool(cfg_dict.get('batch_mode', False))
+    str(cfg_dict.get('batch_provider', 'auto'))
+    str(cfg_dict.get('gemini_auth_mode', 'auto'))
     
     # Define local helper functions (can't use closures from outer scope)
     def _append_log(local_logs, level, message):
@@ -5977,7 +5975,6 @@ def _run_one_partition_worker(
     
     def _op_write_json(local_ops, local_path, local_payload):
         """Local version of _op_write_json for worker function."""
-        import json
         local_path.parent.mkdir(parents=True, exist_ok=True)
         local_path.write_text(json.dumps(local_payload, indent=2), encoding='utf-8')
         local_ops.append({
@@ -5996,9 +5993,9 @@ def _run_one_partition_worker(
     # Main execution logic (simplified version of original)
     partition_id = str(partition["id"])
     out_json = raw_dir / f"{step_id}__{partition_id}.json"
-    out_failed = raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
-    out_failed_json = raw_dir / f"{step_id}__{partition_id}.FAILED.json"
-    out_trace = raw_dir / f"{step_id}__{partition_id}.TRACE.md"
+    raw_dir / f"{step_id}__{partition_id}.FAILED.txt"
+    raw_dir / f"{step_id}__{partition_id}.FAILED.json"
+    raw_dir / f"{step_id}__{partition_id}.TRACE.md"
     logs: List[Tuple[str, str]] = []
     write_ops: List[Dict[str, Any]] = []
     
@@ -7257,15 +7254,18 @@ def execute_step_for_partitions(
                 )
 
         # Validate write_ops before applying them
+        valid_write_ops: List[Dict[str, Any]] = []
         for i, op in enumerate(result.write_ops):
             if "kind" not in op:
                 logger.error("Write operation at index %s missing 'kind' field: %s", i, op)
-                result.write_ops[i]["kind"] = "unknown"
+                continue
             if "path" not in op:
                 logger.error("Write operation at index %s missing 'path' field: %s", i, op)
-                result.write_ops[i]["path"] = "/dev/null"
+                continue
+            valid_write_ops.append(op)
                 
-        _apply_write_ops(result.write_ops)
+        if valid_write_ops:
+            _apply_write_ops(valid_write_ops)
         for level, message in result.logs:
             if level == "error":
                 logger.error("%s", message)
@@ -10319,16 +10319,6 @@ def main() -> None:
         if integrated > 0:
             logger.info("You can now run --finalize to process the integrated batch results")
         sys.exit(0 if integrated >= 0 else 1)
-
-        if watch_result.next_phase:
-            logger.info(
-                "AUTO_CONTINUE phase=%s next_phase=%s",
-                watch_phase,
-                watch_result.next_phase,
-            )
-            phase_sequence = [watch_result.next_phase]
-        else:
-            sys.exit(watch_result.exit_code)
 
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
