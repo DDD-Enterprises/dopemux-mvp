@@ -1,3 +1,15 @@
+---
+id: DOPE_MEMORY_INTEGRATION
+title: Dope Memory Integration
+type: explanation
+owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-03-02'
+last_review: '2026-03-02'
+next_review: '2026-05-31'
+prelude: Dope Memory Integration (explanation) for dopemux documentation and developer
+  workflows.
+---
 # Dope-Memory Integration Guide
 
 ## Overview
@@ -142,15 +154,15 @@ services:
   memory:
     provider: "dopemux-dope-memory"
     tools: ["memory_search", "memory_store", "memory_recap"]
-  
+
   decisions:
     provider: "dopemux-conport"
     tools: ["log_decision", "search_decisions"]
-  
+
   code_nav:
     provider: "dopemux-serena"
     tools: ["code_nav", "get_project_context"]
-  
+
   semantic_search:
     provider: "dopemux-claude-context"
     tools: ["semantic_search", "context_aware_search"]
@@ -162,6 +174,73 @@ task_routing:
   code_analysis: "dopemux-serena"
   context_search: "dopemux-claude-context"
 ```
+
+## Multi-Instance MCP Wiring (Deterministic Routing)
+
+Dopemux now supports project-scoped MCP instances to prevent state contamination between different worktrees or projects. This is managed by the **Instance Resolver** and enforced by the **Phase 0 Discovery Gate**.
+
+### 1. Instance Configuration
+
+Project-specific endpoints are defined in `.dopemux/mcp.instances.toml`.
+
+**Priority Order for Resolution**:
+1.  **Repo Profile**: `.dopemux/mcp.instances.toml` (or specific profile via `--profile`)
+2.  **Environment Variables**: `DOPMUX_CONPORT_URL`, `DOPMUX_SERENA_URL`, etc.
+3.  **Global Fallback**: `~/.vibe/config.toml`
+
+**Schema Example (`.dopemux/mcp.instances.toml`)**:
+```toml
+[project]
+project_id = "my-project"
+instance_profile = "default"
+
+[mcp.conport]
+url = "http://127.0.0.1:3004/mcp"
+transport = "http"
+required_tool_globs = ["conport_*"]
+```
+
+### 2. Auto-Provisioning (dopemux start)
+
+When running `dopemux start`, the system automatically ensures the MCP stack is ready:
+1.  **Provider Resolution**: Resolves the MCP stack source from project local, vendor, user cache, or package data.
+2.  **Materialization**: Creates a symlink or copy of the MCP servers in `docker/mcp-servers`.
+3.  **Instance Overlay**: Generates deterministic port allocations and instance-scoped environment/compose overrides in `.dopemux/instances/<instance_id>/`.
+4.  **Deterministic Ports**: Each instance gets a dedicated port range (e.g., Instance A starts at 3000, B at 3100) to prevent collisions.
+
+### 3. Phase 0 Discovery Gate (Fail-Closed)
+
+Before any work begins, Dopemux runs a discovery gate that:
+1.  **Resolves** endpoints based on priority.
+2.  **Probes** endpoints via JSON-RPC POST `tools/list`.
+3.  **Validates** that required tool globs (e.g., `conport_*`, `serena_*`) are satisfied.
+4.  **Blocks** execution if mandatory tools are missing or unreachable.
+
+**Proof Artifacts**:
+Each run generates reports in `proof/latest/`:
+- `INSTANCE_RESOLUTION.json`: Provenance of resolved endpoints.
+- `DISCOVERY_REPORT.json`: List of available tools per server.
+- `PHASE0_REPORT.json`: Final transport reachability and tool count.
+- `GATE_RESULT.json`: Final PASS/BLOCK status.
+
+## Enhanced ConPort MCP Implementation
+
+ConPort has been upgraded from a static status shim to a full JSON-RPC tool server.
+
+### 1. Unified Logic
+All business logic is now extracted into pure async internal methods, shared between legacy HTTP endpoints and the new MCP interface.
+
+### 2. Supported Discovery Aliases
+The `/mcp` endpoint supports multiple discovery method names for compatibility:
+- `tools/list` (Canonical)
+- `list_tools`, `mcp.listTools`, `tools.list`, `listTools`
+
+### 3. Tool Surface
+- **Context**: `conport_get_context`, `conport_update_context`
+- **Decisions**: `conport_log_decision`, `conport_get_decisions`
+- **Progress**: `conport_log_progress`, `conport_get_progress`, `conport_update_progress`
+- **Activity**: `conport_get_recent_activity`, `conport_get_active_work`
+- **Instance Management**: `conport_fork_instance`, `conport_promote`, `conport_promote_all`
 
 ## Service Integration Architecture
 

@@ -883,9 +883,9 @@ def start(
             # Check if we should warn about proxy usage
             current_routing_mode = "subscription"  # Default to subscription
             try:
-                from .routing_config import RoutingConfig
-                routing_config = RoutingConfig.load_default()
-                current_routing_mode = routing_config.get_mode()
+                if RoutingConfig is not None:
+                    routing_config = RoutingConfig.load_default()
+                    current_routing_mode = routing_config.get_mode()
             except Exception:
                 pass
 
