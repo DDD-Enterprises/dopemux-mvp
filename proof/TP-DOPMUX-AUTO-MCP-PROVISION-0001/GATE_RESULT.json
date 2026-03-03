@@ -1,9 +1,5 @@
 {
-  "missing_required_tools": {
-    "conport": [
-      "conport_*"
-    ]
-  },
+  "missing_required_tools": {},
   "provenance": {
     "conport": "repo_profile",
     "docker_mcp_gateway": "global_fallback",
@@ -13,7 +9,10 @@
   },
   "reachable_transport": [
     "conport",
-    "docker_mcp_gateway"
+    "docker_mcp_gateway",
+    "dope_context",
+    "dope_memory",
+    "serena"
   ],
   "resolved_endpoints": {
     "conport": {
@@ -29,17 +28,17 @@
     },
     "dope_context": {
       "required_tool_globs": [
-        "dope_context_*"
+        "context_*"
       ],
       "transport": "http",
       "url": "http://127.0.0.1:3010/mcp"
     },
     "dope_memory": {
       "required_tool_globs": [
-        "dope_memory_*"
+        "memory_*"
       ],
       "transport": "http",
-      "url": "http://127.0.0.1:3020/mcp"
+      "url": "http://127.0.0.1:3020"
     },
     "serena": {
       "required_tool_globs": [
@@ -49,14 +48,13 @@
       "url": "http://127.0.0.1:3006/mcp"
     }
   },
-  "status": "BLOCK",
+  "status": "PASS",
   "tools_discoverable": {
-    "conport": 0,
-    "docker_mcp_gateway": 0
+    "conport": 9,
+    "docker_mcp_gateway": 7,
+    "dope_context": 0,
+    "dope_memory": 7,
+    "serena": 0
   },
-  "unreachable_transport": [
-    "dope_context",
-    "dope_memory",
-    "serena"
-  ]
+  "unreachable_transport": []
 }
