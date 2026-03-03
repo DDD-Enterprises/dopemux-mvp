@@ -25,15 +25,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Sequence
 import warnings
 
 import click
-try:
-    from dotenv import load_dotenv
-    _DOTENV_AVAILABLE = True
-except ImportError:  # pragma: no cover
-    _DOTENV_AVAILABLE = False
-
-    def load_dotenv(*args, **kwargs):  # type: ignore[override]
-        """Fallback load_dotenv when python-dotenv is unavailable."""
-        return False
+from .utils.dotenv_loader import load_dotenv, check_dotenv_support
 
 # Import RoutingConfig for mode-based behavior
 try:
@@ -53,6 +45,7 @@ from .console import console
 
 # Load environment variables from .env file
 load_dotenv()
+check_dotenv_support()
 from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
 from .claude import ClaudeConfigurator, ClaudeLauncher
 from .dope_brainz_router import (
@@ -114,12 +107,6 @@ from .extractor.runner import PipelineRunner
 if "-litellm" in sys.argv:
     sys.argv = ["--litellm" if arg == "-litellm" else arg for arg in sys.argv]
 
-if not _DOTENV_AVAILABLE:  # pragma: no cover - environment warning
-    warnings.warn(
-        "python-dotenv not installed; environment variables from .env files "
-        "will not be auto-loaded. Install python-dotenv to enable this feature.",
-        RuntimeWarning,
-    )
 
 
 ROLE_SERVER_SERVICE_MAP = {
@@ -682,27 +669,6 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
     is_flag=True,
     help="🎯 Tier-matched routing: opus→GPT-5.2-Codex, sonnet→GPT-5-Mini, haiku→Grok Code Fast 1",
 )
-@click.option(
-    "--no-routing-repair",
-    is_flag=True,
-    help="Disable automatic routing repair loop (health check only)",
-)
-@click.option(
-    "--routing-repair-max",
-    type=int,
-    default=3,
-    help="Maximum number of repair attempts (default: 3)",
-)
-@click.option(
-    "--routing-repair-no-sync-keys",
-    is_flag=True,
-    help="Do not attempt API key syncing during repair (default: no sync)",
-)
-@click.option(
-    "--routing-fallback-subscription",
-    is_flag=True,
-    help="Fall back to subscription mode if routing repair fails (opt-in)",
-)
 @click.pass_context
 def start(
     ctx,
@@ -721,10 +687,6 @@ def start(
     use_grok: bool,
     use_codex: bool,
     use_altp: bool,
-    no_routing_repair: bool,
-    routing_repair_max: int,
-    routing_repair_no_sync_keys: bool,
-    routing_fallback_subscription: bool,
     **legacy_kwargs,
 ):
     """
@@ -806,81 +768,36 @@ def start(
     if routing_mode == "api" and not deprecated_flags_used:
         console.logger.info("[blue]🔄 Routing mode 'api': Starting services and configuring proxy[/blue]")
         
-        # Run health check and repair if needed
+        # Ensure services are installed and running
         try:
             from .launchd_services import LaunchdServiceManager
             service_manager = LaunchdServiceManager.get_instance()
             
-            # Check health first
-            console.logger.info("[blue]🏥 Checking routing service health...[/blue]")
-            health = service_manager.check_health()
+            # Check if services are running, start if not
+            status = service_manager.get_service_status()
+            litellm_running = status.get("litellm", {}).get("status") == "running"
+            ccr_running = status.get("ccr", {}).get("status") == "running"
             
-            # Check if services are healthy
+            if not litellm_running or not ccr_running:
+                console.logger.info("[blue]🚀 Ensuring routing services are running...[/blue]")
+                service_manager.install_services()
+                service_manager.start_services()
+                time.sleep(2)  # Give services time to start
+            
+            # Verify services are healthy
+            health = service_manager.check_health()
             litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
             ccr_healthy = health.get("ccr", {}).get("status") == "healthy"
             
-            if litellm_healthy and ccr_healthy:
-                console.logger.info("[green]✅ Routing services healthy[/green]")
-            else:
-                # Services are unhealthy - attempt repair
-                if no_routing_repair:
-                    console.logger.info("[yellow]⚠️  Routing services unhealthy, repair disabled[/yellow]")
-                    error_msg = []
-                    if not litellm_healthy:
-                        error_msg.append(f"LiteLLM: {health.get('litellm', {}).get('error', 'unhealthy')}")
-                    if not ccr_healthy:
-                        error_msg.append(f"CCR: {health.get('ccr', {}).get('error', 'unhealthy')}")
-                    raise click.ClickException(f"Routing services unhealthy: {', '.join(error_msg)}")
+            if not litellm_healthy or not ccr_healthy:
+                error_msg = []
+                if not litellm_healthy:
+                    error_msg.append(f"LiteLLM unhealthy: {health.get('litellm', {}).get('error', 'unknown')}")
+                if not ccr_healthy:
+                    error_msg.append(f"CCR unhealthy: {health.get('ccr', {}).get('error', 'unknown')}")
+                raise click.ClickException(f"Routing services not healthy: {', '.join(error_msg)}")
                 
-                console.logger.info("[yellow]⚠️  Routing services unhealthy - attempting repair[/yellow]")
-                
-                # Run repair loop
-                allow_sync_keys = not routing_repair_no_sync_keys
-                repair_result = service_manager.repair(
-                    max_passes=routing_repair_max,
-                    allow_sync_keys=allow_sync_keys
-                )
-                
-                # Check if repair was successful
-                if repair_result.get("healthy", False):
-                    console.logger.info("[green]✅ Routing services repaired successfully[/green]")
-                    health = repair_result["health"]
-                    litellm_healthy = True
-                    ccr_healthy = True
-                else:
-                    # Repair failed - provide diagnostics
-                    console.logger.error("[red]❌ Failed to repair routing services[/red]")
-                    
-                    # Show repair attempts
-                    console.logger.info("[yellow]Repair attempts:[/yellow]")
-                    for attempt in repair_result.get("attempts", []):
-                        console.logger.info(f"  Pass {attempt['pass']}: {attempt['action']}")
-                    
-                    # Show log paths
-                    log_paths = service_manager._get_log_paths()
-                    console.logger.info("[yellow]Check logs for details:[/yellow]")
-                    console.logger.info(f"  LiteLLM launchd: {log_paths['litellm_launchd']}")
-                    console.logger.info(f"  CCR launchd: {log_paths['ccr_launchd']}")
-                    console.logger.info(f"  LiteLLM latest: {log_paths['litellm_latest']}")
-                    
-                    # Show diagnostic commands
-                    console.logger.info("[yellow]Diagnostic commands:[/yellow]")
-                    console.logger.info("  dopemux routing health")
-                    console.logger.info("  dopemux routing status")
-                    console.logger.info("  tail -f ~/.dopemux/logs/litellm_launchd.log")
-                    
-                    # Determine if we should fall back to subscription mode
-                    if routing_fallback_subscription:
-                        console.logger.info("[yellow]🔄 Falling back to subscription mode as requested[/yellow]")
-                        routing_mode = "subscription"
-                        _ensure_env_consistent_with_mode(routing_mode)
-                    else:
-                        error_msg = []
-                        if not litellm_healthy:
-                            error_msg.append(f"LiteLLM: {health.get('litellm', {}).get('error', 'unhealthy')}")
-                        if not ccr_healthy:
-                            error_msg.append(f"CCR: {health.get('ccr', {}).get('error', 'unhealthy')}")
-                        raise click.ClickException(f"Routing services unhealthy after repair: {', '.join(error_msg)}")
+            console.logger.info("[green]✅ Routing services healthy[/green]")
             
         except Exception as e:
             console.logger.error(f"[red]❌ Failed to start routing services: {e}[/red]")
@@ -1892,6 +1809,21 @@ def start(
         if not no_mcp:
             # CRITICAL FIX: Pass instance_env_vars so MCP servers get workspace isolation
             _start_mcp_servers_with_progress(project_path, instance_env=instance_env_vars)
+            startup_workspace = (worktree_path or project_path).resolve()
+            autoindex_result = _trigger_dope_context_autoindex_startup(startup_workspace)
+            if autoindex_result:
+                status = autoindex_result.get("status", "unknown")
+                if status in {"started", "already_running"}:
+                    progress.update(
+                        task,
+                        description=(
+                            f"Autoindex startup {status} for {startup_workspace.name}"
+                        ),
+                    )
+                elif status in {"request_failed", "http_error"}:
+                    console.logger.info(
+                        "[yellow]⚠️  Autoindex startup trigger failed; continuing without blocking.[/yellow]"
+                    )
         else:
             console.logger.info("[yellow]⚠️  Skipping MCP servers (reduced ADHD experience)[/yellow]")
 
@@ -4558,6 +4490,53 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
             console.logger.info("[dim]   Continuing anyway...[/dim]")
 
 
+def _trigger_dope_context_autoindex_startup(
+    workspace_path: Path,
+    *,
+    force: bool = False,
+) -> Optional[dict]:
+    """
+    Trigger dope-context startup autoindex bootstrap for the current workspace.
+    """
+    enabled = os.getenv("DOPEMUX_AUTO_INDEX_ON_STARTUP", "1").lower() not in {"0", "false", "no"}
+    if not enabled:
+        return None
+
+    base_url = os.getenv("DOPE_CONTEXT_URL", "http://localhost:3010").rstrip("/")
+    endpoint = f"{base_url}/autoindex/bootstrap"
+    payload = {
+        "workspace_path": str(workspace_path.resolve()),
+        "force": force,
+        "wait_for_completion": False,
+        "debounce_seconds": float(os.getenv("DOPEMUX_AUTO_INDEX_DEBOUNCE_SECONDS", "5.0")),
+        "periodic_interval": int(os.getenv("DOPEMUX_AUTO_INDEX_PERIODIC_SECONDS", "600")),
+        "trigger": "dopemux_cli_startup",
+    }
+
+    try:
+        import requests
+
+        response = requests.post(endpoint, json=payload, timeout=5)
+        if response.status_code >= 400:
+            console.logger.info(
+                f"[yellow]⚠️  Autoindex bootstrap request failed ({response.status_code})[/yellow]"
+            )
+            return {
+                "status": "http_error",
+                "status_code": response.status_code,
+                "endpoint": endpoint,
+            }
+        result = response.json()
+        return result if isinstance(result, dict) else {"status": "unknown_response"}
+    except Exception as exc:
+        logger.warning("Failed to trigger dope-context autoindex bootstrap: %s", exc)
+        return {
+            "status": "request_failed",
+            "error": str(exc),
+            "endpoint": endpoint,
+        }
+
+
 def _activate_dangerous_mode():
     """
     Activate dangerous mode with proper security safeguards.
@@ -7043,7 +7022,11 @@ def launch(ctx, preset: str, attach: bool):
     
     # Start the session
     subprocess.run(tmux_start_args, check=True)
-    
+
+    autoindex_result = _trigger_dope_context_autoindex_startup(Path.cwd())
+    if autoindex_result and autoindex_result.get("status") in {"started", "already_running"}:
+        console.logger.info("[dim]✅ Dope-context autoindex bootstrap triggered[/dim]")
+
     # Apply theme if specified
     if theme:
         console.logger.info(f"\n[magenta]🎨 Applying {theme} theme...[/magenta]")

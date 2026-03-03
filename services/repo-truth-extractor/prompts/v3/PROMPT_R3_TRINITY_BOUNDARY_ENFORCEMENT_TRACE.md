@@ -1,3 +1,6 @@
+OUTPUTS:
+- TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
+
 Goal: TRINITY_BOUNDARY_ENFORCEMENT_TRACE.md
 
 ROLE: Supervisor/Auditor.
@@ -20,3 +23,9 @@ OUTPUT:
 RULES:
 - Separate IMPLEMENTED checks from PLANNED doc rules.
 - Do not invent boundaries.
+
+```markdown
+
+OUTPUTS:
+	•	TRUTH_MAP.json
+```

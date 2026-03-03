@@ -1,3 +1,8 @@
+OUTPUTS:
+- DOC_INVENTORY.json
+- DOC_PARTITIONS.json
+- DOC_TODO_QUEUE.json
+
 Goal: DOC_INVENTORY.json, DOC_PARTITIONS.json, DOC_TODO_QUEUE.json
 
 Prompt:
@@ -13,3 +18,10 @@ Prompt:
   - research/audits
   - archives (split into manageable buckets)
 - Output a queue of partitions with recommended run order.
+```markdown
+
+OUTPUTS:
+	•	DOC_INVENTORY.json
+	•	DOC_PARTITIONS.json
+	•	DOC_TODO_QUEUE.json
+```

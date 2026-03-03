@@ -1,3 +1,6 @@
+OUTPUTS:
+- DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
+
 Goal: DOPE_MEMORY_IMPLEMENTATION_TRUTH.md
 
 ROLE: Supervisor/Auditor.
@@ -23,3 +26,10 @@ FORMAT:
 RULES:
 - Cite statements for tables/triggers/enforcement points.
 - If docs conflict, use DOC_SUPERSESSION then recency tie-breaker.
+
+```markdown
+
+OUTPUTS:
+	•	DOPE_MEMORY_DB_WRITES.json
+	•	DOPE_MEMORY_SCHEMAS.json
+```
