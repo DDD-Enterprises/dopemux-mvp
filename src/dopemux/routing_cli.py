@@ -309,3 +309,8 @@ def repair(max_passes: int, allow_sync_keys: bool):
         logger.error(f"Failed to repair services: {e}")
         click.echo(f"❌ Error: {e}", err=True)
         raise
+
+
+def register_routing_commands(cli_group):
+    """Register routing commands with the main CLI."""
+    cli_group.add_command(routing, "routing")
