@@ -485,10 +485,20 @@ class EnhancedConPortServer:
     async def get_context(self, request):
         """Get active context for workspace with worktree instance support"""
         workspace_id = request.match_info['workspace_id']
+        try:
+            result = await self._get_context(workspace_id)
+            if "error" in result:
+                return web.json_response(result, status=500)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in get_context: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
+    async def _get_context(self, workspace_id: str) -> Dict[str, Any]:
+        """Internal logic for get_context"""
         try:
             # Worktree multi-instance: Get instance-specific context
-            current_instance_id = SimpleInstanceDetector.get_instance_id()
+            current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
 
             # Try Redis cache first (ADHD speed optimization)
             cache_key = f"context:{workspace_id}:{current_instance_id}"
@@ -496,14 +506,14 @@ class EnhancedConPortServer:
 
             if cached:
                 logger.info(f"📋 Context cache hit for workspace: {workspace_id} (instance: {current_instance_id})")
-                return web.json_response(json.loads(cached))
+                return json.loads(cached)
 
             # Check query result cache first (Phase 3 optimization)
             query_cache_key = f"query:context:{workspace_id}:{current_instance_id}"
             cached_query_result = await self.redis.get(query_cache_key)
             if cached_query_result:
                 logger.debug(f"💾 Query cache hit for context: {workspace_id}")
-                return web.json_response(json.loads(cached_query_result))
+                return json.loads(cached_query_result)
 
             # Fetch from database (instance-aware query)
             async with self.db_pool.acquire() as conn:
@@ -561,20 +571,30 @@ class EnhancedConPortServer:
             await self.redis.setex(query_cache_key, self.query_cache_ttl, json.dumps(context))
 
             logger.info(f"📋 Retrieved context for workspace: {workspace_id}")
-            return web.json_response(context)
+            return context
 
         except Exception as e:
-            logger.error(f"❌ Error getting context: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Error getting context internal: {e}")
+            return {'error': str(e)}
 
     async def update_context(self, request):
         """Update active context for workspace with worktree instance support"""
         workspace_id = request.match_info['workspace_id']
         data = await request.json()
+        try:
+            result = await self._update_context(workspace_id, data)
+            if "error" in result:
+                return web.json_response(result, status=500)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in update_context: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
+    async def _update_context(self, workspace_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Internal logic for update_context"""
         try:
             # Worktree multi-instance: Update instance-specific context
-            current_instance_id = SimpleInstanceDetector.get_instance_id()
+            current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
 
             async with self.db_pool.acquire() as conn:
                 # Update database (instance-aware)
@@ -621,20 +641,30 @@ class EnhancedConPortServer:
 
             logger.info(f"📝 Updated context for workspace {workspace_id} (instance: {current_instance_id})")
 
-            return web.json_response({
+            return {
                 'status': 'success',
                 'workspace_id': workspace_id,
                 'updated': updated_context
-            })
+            }
 
         except Exception as e:
-            logger.error(f"❌ Error updating context: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Error updating context internal: {e}")
+            return {'error': str(e)}
 
     async def log_decision(self, request):
         """Log a decision with rationale to database"""
-        data = await request.json()
+        try:
+            data = await request.json()
+            result = await self._log_decision(data)
+            if "error" in result:
+                return web.json_response(result, status=500)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in log_decision: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
+    async def _log_decision(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Internal logic for log_decision"""
         try:
             decision_id = str(uuid.uuid4())
 
@@ -672,7 +702,7 @@ class EnhancedConPortServer:
 
             # Publish decision_logged event to DopeconBridge
             if self.dopecon_bridge:
-                current_instance_id = SimpleInstanceDetector.get_instance_id()
+                current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
                 await self.dopecon_bridge.publish_decision_logged(
                     decision_id=decision_id,
                     summary=data.get('summary'),
@@ -683,14 +713,14 @@ class EnhancedConPortServer:
 
             logger.info(f"💡 Logged decision: {data.get('summary')}")
 
-            return web.json_response({
+            return {
                 'status': 'logged',
                 'decision': decision_entry
-            })
+            }
 
         except Exception as e:
-            logger.error(f"❌ Error logging decision: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Error logging decision internal: {e}")
+            return {'error': str(e)}
 
     def _estimate_tokens(self, text: str) -> int:
         """Conservative token estimation: 1 token ≈ 4 chars."""
@@ -758,20 +788,31 @@ class EnhancedConPortServer:
 
     async def get_decisions(self, request):
         """Get decision history for a workspace (or all if not specified) with caching."""
-        workspace_id = request.query.get('workspace_id')
-        limit = int(request.query.get('limit', 10))
+        try:
+            workspace_id = request.query.get('workspace_id')
+            limit = int(request.query.get('limit', 10))
+            result = await self._get_decisions(workspace_id, limit)
+            if "error" in result:
+                return web.json_response(result, status=500)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in get_decisions: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
+    async def _get_decisions(self, workspace_id: Optional[str], limit: int = 10) -> Dict[str, Any]:
+        """Internal logic for get_decisions"""
         try:
             # Check query result cache (Phase 3 optimization)
             cache_key = f"query:decisions:{workspace_id or 'all'}:{limit}"
             cached_result = await self.redis.get(cache_key)
             if cached_result:
                 logger.debug(f"💾 Query cache hit for decisions: {workspace_id or 'all'}")
-                return web.json_response(json.loads(cached_result))
-            cache_key = f"decisions:{workspace_id or 'ALL'}:{limit}"
-            cached = await self.redis.get(cache_key)
+                return json.loads(cached_result)
+            
+            cache_key_old = f"decisions:{workspace_id or 'ALL'}:{limit}"
+            cached = await self.redis.get(cache_key_old)
             if cached:
-                return web.json_response(json.loads(cached))
+                return json.loads(cached)
 
             async with self.db_pool.acquire() as conn:
                 rows = await conn.fetch(
@@ -804,28 +845,38 @@ class EnhancedConPortServer:
                 'truncation_stats': trunc_stats if trunc_stats.get('truncated') else None,
             }
 
-            await self.redis.setex(cache_key, 300, json.dumps(result))
+            await self.redis.setex(cache_key_old, 300, json.dumps(result))
 
             # Cache query result for Phase 3 optimization
-            await self.redis.setex(f"query:decisions:{workspace_id or 'all'}:{limit}", self.query_cache_ttl, json.dumps(result))
+            await self.redis.setex(cache_key, self.query_cache_ttl, json.dumps(result))
 
-            return web.json_response(result)
+            return result
 
         except Exception as e:
-            logger.error(f"❌ Error getting decisions: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Error getting decisions internal: {e}")
+            return {'error': str(e)}
 
     async def get_progress(self, request):
         """Get progress entries for a workspace, optionally filtered by status."""
-        workspace_id = request.query.get('workspace_id')
-        status = request.query.get('status')  # e.g., IN_PROGRESS, COMPLETED
-        limit = int(request.query.get('limit', 20))
+        try:
+            workspace_id = request.query.get('workspace_id')
+            status = request.query.get('status')  # e.g., IN_PROGRESS, COMPLETED
+            limit = int(request.query.get('limit', 20))
+            result = await self._get_progress(workspace_id, status, limit)
+            if "error" in result:
+                return web.json_response(result, status=500)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in get_progress: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
+    async def _get_progress(self, workspace_id: Optional[str], status: Optional[str] = None, limit: int = 20) -> Dict[str, Any]:
+        """Internal logic for get_progress"""
         try:
             cache_key = f"progress:{workspace_id or 'ALL'}:{status or 'ALL'}:{limit}"
             cached = await self.redis.get(cache_key)
             if cached:
-                return web.json_response(json.loads(cached))
+                return json.loads(cached)
 
             async with self.db_pool.acquire() as conn:
                 rows = await conn.fetch(
@@ -858,7 +909,7 @@ class EnhancedConPortServer:
 
             # Auto-fork from shared if empty and enabled
             if not items and self.auto_fork_progress and workspace_id:
-                current_instance_id = SimpleInstanceDetector.get_instance_id()
+                current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
                 try:
                     forked = await self._fork_progress_from_shared(workspace_id, current_instance_id)
                     if forked:
@@ -902,22 +953,33 @@ class EnhancedConPortServer:
             }
 
             await self.redis.setex(cache_key, 300, json.dumps(result))
-            return web.json_response(result)
+            return result
 
         except Exception as e:
-            logger.error(f"❌ Error getting progress: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Error getting progress internal: {e}")
+            return {'error': str(e)}
 
     async def fork_instance(self, request):
         """Fork active progress from a source instance to target (current) instance."""
-        data = await request.json()
+        try:
+            data = await request.json()
+            result = await self._fork_instance(data)
+            if "error" in result:
+                return web.json_response(result, status=500 if result.get('error') != 'workspace_id required' else 400)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in fork_instance: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def _fork_instance(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Internal logic for fork_instance"""
         workspace_id = data.get('workspace_id')
         source_instance = data.get('source_instance')  # None or '' means shared
-        target_instance = data.get('target_instance') or SimpleInstanceDetector.get_instance_id()
+        target_instance = data.get('target_instance') or (SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None)
         if not workspace_id:
-            return web.json_response({'error': 'workspace_id required'}, status=400)
+            return {'error': 'workspace_id required'}
         if not target_instance:
-            return web.json_response({'error': 'target_instance not detected'}, status=400)
+            return {'error': 'target_instance not detected'}
         try:
             count = 0
             async with self.db_pool.acquire() as conn:
@@ -954,22 +1016,36 @@ class EnhancedConPortServer:
                         target_instance,
                     )
                     count += 1
-            return web.json_response({'status': 'forked', 'workspace_id': workspace_id, 'source_instance': source_instance, 'target_instance': target_instance, 'count': count})
+            return {'status': 'forked', 'workspace_id': workspace_id, 'source_instance': source_instance, 'target_instance': target_instance, 'count': count}
         except Exception as e:
-            logger.error(f"❌ Fork instance failed: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Fork instance internal failed: {e}")
+            return {'error': str(e)}
 
     async def promote_progress(self, request):
         """Promote an instance-local progress entry to shared (instance_id=NULL)."""
-        data = await request.json()
+        try:
+            data = await request.json()
+            result = await self._promote_progress(data)
+            if "error" in result:
+                status = 500
+                if result['error'] == 'progress_id required': status = 400
+                if result['error'] == 'not found': status = 404
+                return web.json_response(result, status=status)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in promote_progress: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def _promote_progress(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Internal logic for promote_progress"""
         progress_id = data.get('progress_id')
         if not progress_id:
-            return web.json_response({'error': 'progress_id required'}, status=400)
+            return {'error': 'progress_id required'}
         try:
             async with self.db_pool.acquire() as conn:
                 row = await conn.fetchrow("SELECT * FROM progress_entries WHERE id = $1", progress_id)
                 if not row:
-                    return web.json_response({'error': 'not found'}, status=404)
+                    return {'error': 'not found'}
                 await conn.execute(
                     """
                     UPDATE progress_entries
@@ -991,21 +1067,32 @@ class EnhancedConPortServer:
                     extra={"instance_id": None},
                 )
 
-            return web.json_response({'status': 'promoted', 'progress_id': progress_id})
+            return {'status': 'promoted', 'progress_id': progress_id}
         except Exception as e:
-            logger.error(f"❌ Promote progress failed: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Promote progress internal failed: {e}")
+            return {'error': str(e)}
 
     async def promote_all(self, request):
         """Promote all instance-local PLANNED/IN_PROGRESS entries to shared for a workspace."""
-        data = await request.json()
+        try:
+            data = await request.json()
+            result = await self._promote_all(data)
+            if "error" in result:
+                return web.json_response(result, status=400)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in promote_all: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def _promote_all(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Internal logic for promote_all"""
         workspace_id = data.get('workspace_id')
         if not workspace_id:
-            return web.json_response({'error': 'workspace_id required'}, status=400)
+            return {'error': 'workspace_id required'}
         try:
-            current_instance_id = SimpleInstanceDetector.get_instance_id()
+            current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
             if not current_instance_id:
-                return web.json_response({'error': 'No current instance detected'}, status=400)
+                return {'error': 'No current instance detected'}
             count = 0
             async with self.db_pool.acquire() as conn:
                 rows = await conn.fetch(
@@ -1034,21 +1121,31 @@ class EnhancedConPortServer:
                             percentage=0,
                             extra={"instance_id": None},
                         )
-            return web.json_response({'status': 'promoted_all', 'workspace_id': workspace_id, 'instance_id': current_instance_id, 'count': count})
+            return {'status': 'promoted_all', 'workspace_id': workspace_id, 'instance_id': current_instance_id, 'count': count}
         except Exception as e:
-            logger.error(f"❌ Promote all failed: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Promote all internal failed: {e}")
+            return {'error': str(e)}
 
     async def log_progress(self, request):
         """Create a new progress entry."""
-        data = await request.json()
+        try:
+            data = await request.json()
+            result = await self._log_progress(data)
+            if "error" in result:
+                return web.json_response(result, status=400 if 'required' in result['error'] else 500)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in log_progress: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
+    async def _log_progress(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Internal logic for log_progress"""
         try:
             pid = str(uuid.uuid4())
             workspace_id = data.get('workspace_id')
             description = data.get('description')
             if not workspace_id or not description:
-                return web.json_response({'error': 'workspace_id and description are required'}, status=400)
+                return {'error': 'workspace_id and description are required'}
 
             status = data.get('status', 'IN_PROGRESS')
             percentage = int(data.get('percentage', 0))
@@ -1104,29 +1201,35 @@ class EnhancedConPortServer:
 
             logger.info(f"🆕 Progress logged: {description} [{status}]")
 
-            return web.json_response({'status': 'logged', 'progress': entry})
+            return {'status': 'logged', 'progress': entry}
 
         except Exception as e:
-            logger.error(f"❌ Error logging progress: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Error logging progress internal: {e}")
+            return {'error': str(e)}
 
     async def update_progress(self, request):
         """Update existing progress entry with worktree instance transition handling"""
         progress_id = request.match_info['progress_id']
         data = await request.json()
+        try:
+            result = await self._update_progress(progress_id, data)
+            if "error" in result:
+                return web.json_response(result, status=404 if result['error'] == 'Progress entry not found' else 500)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in update_progress: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
+    async def _update_progress(self, progress_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Internal logic for update_progress"""
         try:
             new_status = data.get('status')
 
             # Worktree multi-instance: Handle status transitions
-            # When transitioning TO shared status (COMPLETED/BLOCKED):
-            #   → Clear instance_id (make visible to all worktrees)
-            # When transitioning TO isolated status (IN_PROGRESS/PLANNED):
-            #   → Set instance_id (make visible only in this worktree)
             if new_status:
-                current_instance_id = SimpleInstanceDetector.get_instance_id()
+                current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
 
-                if SimpleInstanceDetector.is_isolated_status(new_status):
+                if SimpleInstanceDetector and SimpleInstanceDetector.is_isolated_status(new_status):
                     # Transitioning to isolated status
                     final_instance_id = current_instance_id
                 else:
@@ -1169,22 +1272,23 @@ class EnhancedConPortServer:
                         data.get('priority'),
                         data.get('actual_hours'))
 
-                # Get updated progress entry
+            # Get updated progress entry
+            async with self.db_pool.acquire() as conn:
                 row = await conn.fetchrow("""
                     SELECT * FROM progress_entries WHERE id = $1
                 """, progress_id)
 
-                if not row:
-                    return web.json_response({'error': 'Progress entry not found'}, status=404)
+            if not row:
+                return {'error': 'Progress entry not found'}
 
-                progress_entry = dict(row)
-                progress_entry['id'] = str(progress_entry['id'])  # Convert UUID to string
-                if progress_entry['linked_decision_id']:
-                    progress_entry['linked_decision_id'] = str(progress_entry['linked_decision_id'])
-                progress_entry['created_at'] = progress_entry['created_at'].isoformat()
-                progress_entry['updated_at'] = progress_entry['updated_at'].isoformat()
-                if progress_entry['completed_at']:
-                    progress_entry['completed_at'] = progress_entry['completed_at'].isoformat()
+            progress_entry = dict(row)
+            progress_entry['id'] = str(progress_entry['id'])  # Convert UUID to string
+            if progress_entry['linked_decision_id']:
+                progress_entry['linked_decision_id'] = str(progress_entry['linked_decision_id'])
+            progress_entry['created_at'] = progress_entry['created_at'].isoformat()
+            progress_entry['updated_at'] = progress_entry['updated_at'].isoformat()
+            if progress_entry['completed_at']:
+                progress_entry['completed_at'] = progress_entry['completed_at'].isoformat()
 
             # Invalidate caches
             workspace_id = progress_entry.get('workspace_id')
@@ -1194,7 +1298,7 @@ class EnhancedConPortServer:
 
             # Publish progress_updated event to DopeconBridge
             if self.dopecon_bridge:
-                current_instance_id = SimpleInstanceDetector.get_instance_id()
+                current_instance_id = SimpleInstanceDetector.get_instance_id() if SimpleInstanceDetector else None
                 await self.dopecon_bridge.publish_progress_updated(
                     progress_id=progress_id,
                     status=progress_entry['status'],
@@ -1206,26 +1310,36 @@ class EnhancedConPortServer:
 
             logger.info(f"📊 Progress updated: {progress_entry['description']} → {progress_entry['status']}")
 
-            return web.json_response({
+            return {
                 'status': 'updated',
                 'progress': progress_entry
-            })
+            }
 
         except Exception as e:
-            logger.error(f"❌ Error updating progress: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Error updating progress internal: {e}")
+            return {'error': str(e)}
 
     async def get_recent_activity(self, request):
         """Get recent activity for ADHD context awareness"""
-        workspace_id = request.match_info['workspace_id']
-        hours = int(request.query.get('hours', 24))
+        try:
+            workspace_id = request.match_info['workspace_id']
+            hours = int(request.query.get('hours', 24))
+            result = await self._get_recent_activity(workspace_id, hours)
+            if "error" in result:
+                return web.json_response(result, status=500)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in get_recent_activity: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
+    async def _get_recent_activity(self, workspace_id: str, hours: int = 24) -> Dict[str, Any]:
+        """Internal logic for get_recent_activity"""
         try:
             cache_key = f"recent_activity:{workspace_id}:{hours}"
             cached = await self.redis.get(cache_key)
 
             if cached:
-                return web.json_response(json.loads(cached))
+                return json.loads(cached)
 
             async with self.db_pool.acquire() as conn:
                 rows = await conn.fetch("""
@@ -1250,22 +1364,32 @@ class EnhancedConPortServer:
 
             await self.redis.setex(cache_key, 180, json.dumps(result))  # 3 min cache
 
-            return web.json_response(result)
+            return result
 
         except Exception as e:
-            logger.error(f"❌ Error getting recent activity: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Error getting recent activity internal: {e}")
+            return {'error': str(e)}
 
     async def get_active_work(self, request):
         """Get active work items for ADHD focus"""
-        workspace_id = request.match_info['workspace_id']
+        try:
+            workspace_id = request.match_info['workspace_id']
+            result = await self._get_active_work(workspace_id)
+            if "error" in result:
+                return web.json_response(result, status=500)
+            return web.json_response(result)
+        except Exception as e:
+            logger.error(f"❌ Error in get_active_work: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
+    async def _get_active_work(self, workspace_id: str) -> Dict[str, Any]:
+        """Internal logic for get_active_work"""
         try:
             cache_key = f"active_work:{workspace_id}"
             cached = await self.redis.get(cache_key)
 
             if cached:
-                return web.json_response(json.loads(cached))
+                return json.loads(cached)
 
             async with self.db_pool.acquire() as conn:
                 rows = await conn.fetch("""
@@ -1295,11 +1419,11 @@ class EnhancedConPortServer:
 
             await self.redis.setex(cache_key, 180, json.dumps(result))
 
-            return web.json_response(result)
+            return result
 
         except Exception as e:
-            logger.error(f"❌ Error getting active work: {e}")
-            return web.json_response({'error': str(e)}, status=500)
+            logger.error(f"❌ Error getting active work internal: {e}")
+            return {'error': str(e)}
 
     async def search_content(self, request):
         """Search decisions and progress entries"""
@@ -1555,32 +1679,242 @@ class EnhancedConPortServer:
             return web.json_response({'error': str(e)}, status=500)
 
     async def mcp_endpoint(self, request):
-        """MCP compatibility endpoint for future integration"""
+        """Full MCP Tool Server implementation via JSON-RPC"""
         try:
             mcp_request = await request.json()
+            method = mcp_request.get('method')
+            params = mcp_request.get('params', {})
+            req_id = mcp_request.get('id')
 
-            response = {
-                'jsonrpc': '2.0',
-                'id': mcp_request.get('id'),
-                'result': {
-                    'status': 'enhanced_persistence_active',
-                    'message': 'ConPort enhanced server with PostgreSQL + Redis persistence',
-                    'features': ['context_persistence', 'decision_tracking', 'progress_monitoring', 'adhd_optimization']
-                }
-            }
+            if not method:
+                return self._jsonrpc_error(req_id, -32600, "Invalid Request: missing method")
 
-            return web.json_response(response)
+            # 1. Discovery Aliases
+            discovery_methods = ['tools/list', 'list_tools', 'mcp.listTools', 'tools.list', 'listTools']
+            if method in discovery_methods:
+                return self._jsonrpc_result(req_id, {"tools": self._get_tool_schemas()})
+
+            # 2. Tool Invocation (tools/call or direct)
+            if method == 'tools/call' or method == 'tool/call':
+                tool_name = params.get('name')
+                arguments = params.get('arguments', {})
+                return await self._dispatch_tool(req_id, tool_name, arguments)
+            
+            if method.startswith('conport_'):
+                return await self._dispatch_tool(req_id, method, params)
+
+            # 3. Method Not Found
+            return self._jsonrpc_error(req_id, -32601, f"Method not found: {method}")
 
         except Exception as e:
             logger.error(f"MCP endpoint error: {e}")
-            return web.json_response({
-                'jsonrpc': '2.0',
-                'id': request.get('id'),
-                'error': {
-                    'code': -32603,
-                    'message': f'Internal error: {str(e)}'
+            return self._jsonrpc_error(None, -32603, f"Internal error: {str(e)}")
+
+    def _jsonrpc_result(self, req_id: Any, result: Any):
+        return web.json_response({
+            'jsonrpc': '2.0',
+            'id': req_id,
+            'result': result
+        })
+
+    def _jsonrpc_error(self, req_id: Any, code: int, message: str, data: Any = None):
+        error_obj = {'code': code, 'message': message}
+        if data:
+            error_obj['data'] = data
+        return web.json_response({
+            'jsonrpc': '2.0',
+            'id': req_id,
+            'error': error_obj
+        }, status=200) # JSON-RPC errors are usually 200 OK at HTTP level
+
+    async def _dispatch_tool(self, req_id: Any, tool_name: str, arguments: Dict[str, Any]):
+        """Routes tool calls to the correct internal method"""
+        if not tool_name:
+            return self._jsonrpc_error(req_id, -32602, "Invalid params: missing tool name")
+
+        # Map tool names to internal methods
+        dispatch_map = {
+            'conport_get_context': self._get_context_tool,
+            'conport_update_context': self._update_context_tool,
+            'conport_log_decision': self._log_decision,
+            'conport_get_decisions': self._get_decisions_tool,
+            'conport_log_progress': self._log_progress,
+            'conport_get_progress': self._get_progress_tool,
+            'conport_update_progress': self._update_progress_tool,
+            'conport_get_recent_activity': self._get_recent_activity_tool,
+            'conport_get_active_work': self._get_active_work_tool,
+            # Instance management
+            'conport_fork_instance': self._fork_instance,
+            'conport_promote': self._promote_progress,
+            'conport_promote_all': self._promote_all
+        }
+
+        handler = dispatch_map.get(tool_name)
+        if not handler:
+            return self._jsonrpc_error(req_id, -32601, f"Tool not found: {tool_name}")
+
+        try:
+            result = await handler(arguments)
+            if isinstance(result, dict) and "error" in result:
+                return self._jsonrpc_error(req_id, -32000, result["error"])
+            return self._jsonrpc_result(req_id, result)
+        except Exception as e:
+            logger.error(f"Tool execution error ({tool_name}): {e}")
+            return self._jsonrpc_error(req_id, -32603, str(e))
+
+    # Adapter methods for tools that expect positional args or specific dict keys
+    async def _get_context_tool(self, args):
+        return await self._get_context(args.get('workspace_id'))
+
+    async def _update_context_tool(self, args):
+        return await self._update_context(args.get('workspace_id'), args)
+
+    async def _get_decisions_tool(self, args):
+        return await self._get_decisions(args.get('workspace_id'), int(args.get('limit', 10)))
+
+    async def _get_progress_tool(self, args):
+        return await self._get_progress(args.get('workspace_id'), args.get('status'), int(args.get('limit', 20)))
+
+    async def _update_progress_tool(self, args):
+        return await self._update_progress(args.get('progress_id'), args)
+
+    async def _get_recent_activity_tool(self, args):
+        return await self._get_recent_activity(args.get('workspace_id'), int(args.get('hours', 24)))
+
+    async def _get_active_work_tool(self, args):
+        return await self._get_active_work(args.get('workspace_id'))
+
+    def _get_tool_schemas(self) -> List[Dict[str, Any]]:
+        """Returns the list of supported tools with their JSON schemas"""
+        tools = [
+            {
+                "name": "conport_get_context",
+                "description": "Get active context for a workspace",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"}
+                    },
+                    "required": ["workspace_id"]
                 }
-            }, status=500)
+            },
+            {
+                "name": "conport_update_context",
+                "description": "Update active context for a workspace",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "active_context": {"type": "string"},
+                        "last_activity": {"type": "string"},
+                        "session_time": {"type": "string"},
+                        "focus_state": {"type": "string"},
+                        "session_milestone": {"type": "string"}
+                    },
+                    "required": ["workspace_id"]
+                }
+            },
+            {
+                "name": "conport_log_decision",
+                "description": "Log an architectural or technical decision",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "summary": {"type": "string"},
+                        "rationale": {"type": "string"},
+                        "alternatives": {"type": "array", "items": {"type": "string"}},
+                        "tags": {"type": "array", "items": {"type": "string"}},
+                        "confidence_level": {"type": "string", "enum": ["low", "medium", "high"]},
+                        "decision_type": {"type": "string"}
+                    },
+                    "required": ["workspace_id", "summary", "rationale"]
+                }
+            },
+            {
+                "name": "conport_get_decisions",
+                "description": "Retrieve recent decisions for a workspace",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "limit": {"type": "integer", "default": 10}
+                    },
+                    "required": ["workspace_id"]
+                }
+            },
+            {
+                "name": "conport_log_progress",
+                "description": "Log a new progress entry or task",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "description": {"type": "string"},
+                        "status": {"type": "string", "default": "IN_PROGRESS"},
+                        "percentage": {"type": "integer", "default": 0},
+                        "priority": {"type": "string", "default": "medium"},
+                        "estimated_hours": {"type": "number"},
+                        "actual_hours": {"type": "number"},
+                        "linked_decision_id": {"type": "string"}
+                    },
+                    "required": ["workspace_id", "description"]
+                }
+            },
+            {
+                "name": "conport_get_progress",
+                "description": "Retrieve progress entries for a workspace",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "status": {"type": "string"},
+                        "limit": {"type": "integer", "default": 20}
+                    },
+                    "required": ["workspace_id"]
+                }
+            },
+            {
+                "name": "conport_update_progress",
+                "description": "Update an existing progress entry",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "progress_id": {"type": "string"},
+                        "status": {"type": "string"},
+                        "percentage": {"type": "integer"},
+                        "description": {"type": "string"},
+                        "priority": {"type": "string"},
+                        "actual_hours": {"type": "number"}
+                    },
+                    "required": ["progress_id"]
+                }
+            },
+            {
+                "name": "conport_get_recent_activity",
+                "description": "Get recent activity for a workspace (last 24h by default)",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"},
+                        "hours": {"type": "integer", "default": 24}
+                    },
+                    "required": ["workspace_id"]
+                }
+            },
+            {
+                "name": "conport_get_active_work",
+                "description": "Get prioritized active work items",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "workspace_id": {"type": "string"}
+                    },
+                    "required": ["workspace_id"]
+                }
+            }
+        ]
+        return sorted(tools, key=lambda x: x["name"])
 
     # =====================================================================
     # F-NEW-7 Phase 2: Unified Query Endpoints
