@@ -152,7 +152,7 @@ const TeamDashboard: React.FC = () => {
             <Paper sx={{ p: 2, height: 220, borderRadius: 3 }} className="dopemux-panel">
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Avatar
-                  aria-label={`Profile picture of ${member.name}`}
+                  aria-hidden="true"
                   sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}
                 >
                   {member.avatar}
