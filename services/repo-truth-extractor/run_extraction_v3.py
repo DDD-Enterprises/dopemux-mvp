@@ -10320,16 +10320,6 @@ def main() -> None:
             logger.info("You can now run --finalize to process the integrated batch results")
         sys.exit(0 if integrated >= 0 else 1)
 
-        if watch_result.next_phase:
-            logger.info(
-                "AUTO_CONTINUE phase=%s next_phase=%s",
-                watch_phase,
-                watch_result.next_phase,
-            )
-            phase_sequence = [watch_result.next_phase]
-        else:
-            sys.exit(watch_result.exit_code)
-
     logger.info("Target Run ID: %s", run_id)
     logger.info("Home scan mode: %s", cfg.home_scan_mode)
 
