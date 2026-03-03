@@ -8,13 +8,15 @@ from dopemux.litellm_proxy import LiteLLMProxyInfo
 @patch("dopemux.cli.LiteLLMProxyManager")
 @patch("dopemux.cli.DopeBrainzRouterManager")
 @patch("dopemux.cli.start_simple_proxy")
+@patch("dopemux.cli.RoutingConfig")
 @patch("shutil.which")
-def test_altp_skips_openrouter_gate(mock_which, mock_start_proxy, mock_router_cls, mock_litellm_cls):
+def test_altp_skips_openrouter_gate(mock_which, mock_routing_config_cls, mock_start_proxy, mock_router_cls, mock_litellm_cls):
     """
     Verify that ALTP routing works correctly when provider-based API keys
     (OPENROUTER_API_KEY and XAI_API_KEY) are configured.
     """
     mock_which.return_value = "/bin/claude"
+    mock_routing_config_cls.load_default.return_value.get_mode.return_value = "api"
     mock_start_proxy.return_value = (4000, "sk-test")
     
     # Mock LiteLLM manager
