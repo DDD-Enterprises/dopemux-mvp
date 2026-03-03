@@ -38,20 +38,17 @@ def parse_and_validate_report(raw_json: str, run_id: str) -> Report:
 
     validated_actions = []
     for a_raw in actions_raw:
-        if not isinstance(a_raw, dict):
-            continue
+        if not isinstance(a_raw, dict): continue
         
         suggestions_raw = a_raw.get("suggestions", [])
         validated_suggestions = []
         for s_raw in suggestions_raw:
-            if not isinstance(s_raw, dict):
-                continue
+            if not isinstance(s_raw, dict): continue
             
             evidence_raw = s_raw.get("evidence", [])
             validated_evidence = []
             for e_raw in evidence_raw:
-                if not isinstance(e_raw, dict):
-                    continue
+                if not isinstance(e_raw, dict): continue
                 validated_evidence.append(EvidenceRef(
                     kind=e_raw.get("kind", "link"),
                     ref=e_raw.get("ref", "unknown"),

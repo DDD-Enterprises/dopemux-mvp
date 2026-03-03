@@ -2,7 +2,6 @@
 
 import sys
 from pathlib import Path
-from unittest.mock import Mock, patch
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_PATH = PROJECT_ROOT / "src"
@@ -1209,12 +1208,12 @@ def test_agent_workflow_execution_flow():
     # Mock the agent manager to track execution order
     execution_order = []
     
-    def mock_submit(agent_id, input_data, priority=1):
+    def record_submit(agent_id, input_data, priority=1):
         execution_order.append((agent_id, input_data))
         return f"task-{len(execution_order)}"
     
     with patch.object(manager, 'submit_task') as mock_submit:
-        mock_submit.side_effect = mock_submit
+        mock_submit.side_effect = record_submit
         
         result = workflow.execute()
         
