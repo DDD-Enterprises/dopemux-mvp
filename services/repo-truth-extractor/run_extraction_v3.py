@@ -3457,7 +3457,110 @@ def run_provider_doctor_probe(provider: str, model_id: str, api_key_env: str, cf
     }
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Key hygiene preflight — TP-ENV-KEY-HYGIENE-PREFLIGHT-0003
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+# Known provider key prefixes (heuristics only — not a guarantee of validity).
+_PROVIDER_KEY_HINTS: Dict[str, Optional[str]] = {
+    "openai": "sk-",      # OpenAI keys typically start with sk-
+    "gemini": "AIza",    # Google API keys typically start with AIza
+    "xai": None,         # xAI key format is not reliably standardized; skip check
+}
+
+
+def _safe_key_fingerprint(value: str) -> str:
+    """Return the first 8 hex chars of sha256(value).  Never logs the secret."""
+    return hashlib.sha256(value.encode()).hexdigest()[:8]
+
+
+def _collect_required_key_envs(active_policy: str) -> Dict[str, Set[str]]:
+    """Return {provider: {env_var_names}} required by the given active routing policy.
+
+    Pure dict inspection — no IO, no network, no env access.
+    """
+    result: Dict[str, Set[str]] = {}
+    policy_tiers = ACTIVE_ROUTING_LADDERS.get(active_policy, {})
+    for _tier, routes in policy_tiers.items():
+        for provider, _model_id, api_key_env in routes:
+            result.setdefault(provider, set()).add(api_key_env)
+    return result
+
+
+def preflight_keys(active_policy: str, strict: bool = False) -> Dict[str, Any]:
+    """Validate provider API keys referenced by the active routing policy.
+
+    Rules:
+    - Missing key → error (always fail-closed).
+    - Heuristic prefix mismatch → warning normally; error in strict mode.
+    - Never prints or stores key values; only fingerprints + presence.
+
+    Returns a report dict with:
+      - provider_checks: list of per-provider results
+      - errors: list of error strings
+      - warnings: list of warning strings
+      - overall_status: "PASS" | "WARN" | "FAIL"
+      - exit_code: 0 (pass) | 2 (warnings) | 3 (errors)
+    """
+    required = _collect_required_key_envs(active_policy)
+    errors: List[str] = []
+    warnings: List[str] = []
+    provider_checks: List[Dict[str, Any]] = []
+
+    for provider, env_names in sorted(required.items()):
+        expected_prefix = _PROVIDER_KEY_HINTS.get(provider)  # None = no check
+        for env_name in sorted(env_names):
+            raw_value = os.environ.get(env_name, "")
+            present = bool(raw_value)
+            check: Dict[str, Any] = {
+                "provider": provider,
+                "env_var": env_name,
+                "present": present,
+                "length": len(raw_value) if present else 0,
+                "fingerprint": _safe_key_fingerprint(raw_value) if present else None,
+                "warning": None,
+                "error": None,
+            }
+
+            if not present:
+                msg = f"Missing required env var '{env_name}' for provider '{provider}'"
+                check["error"] = msg
+                errors.append(msg)
+            elif expected_prefix and not raw_value.startswith(expected_prefix):
+                msg = (
+                    f"Key in '{env_name}' (provider={provider}) does not start with "
+                    f"expected prefix '{expected_prefix}' — possible key swap"
+                )
+                check["warning"] = msg
+                if strict:
+                    check["error"] = msg
+                    errors.append(msg)
+                else:
+                    warnings.append(msg)
+
+            provider_checks.append(check)
+
+    if errors:
+        status, exit_code = "FAIL", 3
+    elif warnings:
+        status, exit_code = "WARN", 2
+    else:
+        status, exit_code = "PASS", 0
+
+    return {
+        "overall_status": status,
+        "exit_code": exit_code,
+        "active_policy": active_policy,
+        "strict": strict,
+        "provider_checks": provider_checks,
+        "errors": errors,
+        "warnings": warnings,
+    }
+
+
 def run_provider_preflight(root: Path, run_id: str, cfg: RunnerConfig, phases: List[str]) -> Tuple[bool, Dict[str, Any]]:
+
     provider_routes = collect_provider_routes(phases=phases, routing_policy=cfg.routing_policy)
     provider_probes = [
         run_provider_doctor_probe(
@@ -10020,6 +10123,10 @@ def main() -> None:
     parser.add_argument("--doctor", action="store_true")
     parser.add_argument("--doctor-auth", action="store_true")
     parser.add_argument("--preflight-providers", action="store_true")
+    parser.add_argument("--preflight-keys", action="store_true",
+                        help="After --preflight-providers, also validate API key presence and prefix heuristics.")
+    parser.add_argument("--strict-keys", action="store_true",
+                        help="Treat key prefix heuristic mismatches as errors (exit 3) instead of warnings (exit 2).")
     parser.add_argument("--coverage-report", action="store_true")
     parser.add_argument("--ui", choices=["auto", "rich", "plain"], default="auto")
     parser.add_argument("--status", action="store_true")
@@ -10298,6 +10405,14 @@ def main() -> None:
         targets = phase_sequence if phase_sequence else PHASES
         ok, payload = run_provider_preflight(root, run_id, cfg, targets)
         print(json.dumps(payload, indent=2))
+        if args.preflight_keys:
+            key_report = preflight_keys(
+                active_policy=cfg.routing_policy,
+                strict=getattr(args, "strict_keys", False),
+            )
+            print(json.dumps(key_report, indent=2))
+            if key_report["exit_code"] != 0:
+                sys.exit(key_report["exit_code"])
         sys.exit(0 if ok else 1)
     if args.print_promptpack:
         targets = phase_sequence if phase_sequence else PHASES

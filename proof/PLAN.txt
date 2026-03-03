@@ -1,12 +1,15 @@
-Objective: Fix Gemini thinking disablement config to use valid Google GenAI SDK shape and add unit test.
+Objective: Add no-secrets key hygiene preflight to detect missing/swapped provider keys.
 Scope:
 - services/repo-truth-extractor/run_extraction_v3.py
-- tests/unit/test_extractor_gemini_thinking_config.py
+- tests/unit/test_extractor_key_hygiene.py
 - proof/PLAN.txt
 Steps:
-1) Replace incorrect gemini_config["thinking_config"] dict with SDK types.ThinkingConfig(thinking_budget=0) where SDK is present.
-2) Extract _build_gemini_config_for_model() helper for deterministic testability.
-3) Add unit test that builds Gemini config in a network-free way and asserts thinking_budget=0 is set in the correct field/type.
+1) Add _safe_key_fingerprint() - sha256 prefix, never the secret.
+2) Add _collect_required_key_envs() - reads ladder routes, returns {provider: {env_names}}.
+3) Add preflight_keys() - validates presence + prefix heuristics, fail-closed.
+4) Add --preflight-keys / --strict-keys CLI flags.
+5) Wire into --preflight-providers handler.
+6) Add unit tests: missing key, swapped prefix, strict mode, fingerprint stability.
 Verification:
 - python -m compileall -q services tests
-- pytest -q tests/unit/test_extractor_gemini_thinking_config.py
+- pytest -q tests/unit/test_extractor_key_hygiene.py
