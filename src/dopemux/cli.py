@@ -669,6 +669,27 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
     is_flag=True,
     help="🎯 Tier-matched routing: opus→GPT-5.2-Codex, sonnet→GPT-5-Mini, haiku→Grok Code Fast 1",
 )
+@click.option(
+    "--no-routing-repair",
+    is_flag=True,
+    help="Disable automatic routing repair loop (health check only)",
+)
+@click.option(
+    "--routing-repair-max",
+    type=int,
+    default=3,
+    help="Maximum number of repair attempts (default: 3)",
+)
+@click.option(
+    "--routing-repair-no-sync-keys",
+    is_flag=True,
+    help="Do not attempt API key syncing during repair (default: no sync)",
+)
+@click.option(
+    "--routing-fallback-subscription",
+    is_flag=True,
+    help="Fall back to subscription mode if routing repair fails (opt-in)",
+)
 @click.pass_context
 def start(
     ctx,
@@ -687,6 +708,10 @@ def start(
     use_grok: bool,
     use_codex: bool,
     use_altp: bool,
+    no_routing_repair: bool,
+    routing_repair_max: int,
+    routing_repair_no_sync_keys: bool,
+    routing_fallback_subscription: bool,
     **legacy_kwargs,
 ):
     """
@@ -768,36 +793,81 @@ def start(
     if routing_mode == "api" and not deprecated_flags_used:
         console.logger.info("[blue]🔄 Routing mode 'api': Starting services and configuring proxy[/blue]")
         
-        # Ensure services are installed and running
+        # Run health check and repair if needed
         try:
             from .launchd_services import LaunchdServiceManager
             service_manager = LaunchdServiceManager.get_instance()
             
-            # Check if services are running, start if not
-            status = service_manager.get_service_status()
-            litellm_running = status.get("litellm", {}).get("status") == "running"
-            ccr_running = status.get("ccr", {}).get("status") == "running"
-            
-            if not litellm_running or not ccr_running:
-                console.logger.info("[blue]🚀 Ensuring routing services are running...[/blue]")
-                service_manager.install_services()
-                service_manager.start_services()
-                time.sleep(2)  # Give services time to start
-            
-            # Verify services are healthy
+            # Check health first
+            console.logger.info("[blue]🏥 Checking routing service health...[/blue]")
             health = service_manager.check_health()
+            
+            # Check if services are healthy
             litellm_healthy = health.get("litellm", {}).get("status") == "healthy"
             ccr_healthy = health.get("ccr", {}).get("status") == "healthy"
             
-            if not litellm_healthy or not ccr_healthy:
-                error_msg = []
-                if not litellm_healthy:
-                    error_msg.append(f"LiteLLM unhealthy: {health.get('litellm', {}).get('error', 'unknown')}")
-                if not ccr_healthy:
-                    error_msg.append(f"CCR unhealthy: {health.get('ccr', {}).get('error', 'unknown')}")
-                raise click.ClickException(f"Routing services not healthy: {', '.join(error_msg)}")
+            if litellm_healthy and ccr_healthy:
+                console.logger.info("[green]✅ Routing services healthy[/green]")
+            else:
+                # Services are unhealthy - attempt repair
+                if no_routing_repair:
+                    console.logger.info("[yellow]⚠️  Routing services unhealthy, repair disabled[/yellow]")
+                    error_msg = []
+                    if not litellm_healthy:
+                        error_msg.append(f"LiteLLM: {health.get('litellm', {}).get('error', 'unhealthy')}")
+                    if not ccr_healthy:
+                        error_msg.append(f"CCR: {health.get('ccr', {}).get('error', 'unhealthy')}")
+                    raise click.ClickException(f"Routing services unhealthy: {', '.join(error_msg)}")
                 
-            console.logger.info("[green]✅ Routing services healthy[/green]")
+                console.logger.info("[yellow]⚠️  Routing services unhealthy - attempting repair[/yellow]")
+                
+                # Run repair loop
+                allow_sync_keys = not routing_repair_no_sync_keys
+                repair_result = service_manager.repair(
+                    max_passes=routing_repair_max,
+                    allow_sync_keys=allow_sync_keys
+                )
+                
+                # Check if repair was successful
+                if repair_result.get("healthy", False):
+                    console.logger.info("[green]✅ Routing services repaired successfully[/green]")
+                    health = repair_result["health"]
+                    litellm_healthy = True
+                    ccr_healthy = True
+                else:
+                    # Repair failed - provide diagnostics
+                    console.logger.error("[red]❌ Failed to repair routing services[/red]")
+                    
+                    # Show repair attempts
+                    console.logger.info("[yellow]Repair attempts:[/yellow]")
+                    for attempt in repair_result.get("attempts", []):
+                        console.logger.info(f"  Pass {attempt['pass']}: {attempt['action']}")
+                    
+                    # Show log paths
+                    log_paths = service_manager._get_log_paths()
+                    console.logger.info("[yellow]Check logs for details:[/yellow]")
+                    console.logger.info(f"  LiteLLM launchd: {log_paths['litellm_launchd']}")
+                    console.logger.info(f"  CCR launchd: {log_paths['ccr_launchd']}")
+                    console.logger.info(f"  LiteLLM latest: {log_paths['litellm_latest']}")
+                    
+                    # Show diagnostic commands
+                    console.logger.info("[yellow]Diagnostic commands:[/yellow]")
+                    console.logger.info("  dopemux routing health")
+                    console.logger.info("  dopemux routing status")
+                    console.logger.info("  tail -f ~/.dopemux/logs/litellm_launchd.log")
+                    
+                    # Determine if we should fall back to subscription mode
+                    if routing_fallback_subscription:
+                        console.logger.info("[yellow]🔄 Falling back to subscription mode as requested[/yellow]")
+                        routing_mode = "subscription"
+                        _ensure_env_consistent_with_mode(routing_mode)
+                    else:
+                        error_msg = []
+                        if not litellm_healthy:
+                            error_msg.append(f"LiteLLM: {health.get('litellm', {}).get('error', 'unhealthy')}")
+                        if not ccr_healthy:
+                            error_msg.append(f"CCR: {health.get('ccr', {}).get('error', 'unhealthy')}")
+                        raise click.ClickException(f"Routing services unhealthy after repair: {', '.join(error_msg)}")
             
         except Exception as e:
             console.logger.error(f"[red]❌ Failed to start routing services: {e}[/red]")
