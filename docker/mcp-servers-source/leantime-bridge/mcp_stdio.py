@@ -1,4 +1,6 @@
-from leantime_bridge.server import app; import asyncio; from mcp.server.stdio import stdio_server;
+from leantime_bridge.server import app
+import asyncio
+from mcp.server.stdio import stdio_server
 
 async def run():
     async with stdio_server() as (read_stream, write_stream):
