@@ -90,6 +90,7 @@ dopemux kernel doctor --timestamp-mode deterministic
 ```
 
 - Runtime and CI use pip installation.
+- The current repo pin is `dopetask==0.2.0`.
 - `.dopetask-pin` is used for runtime/CI behavior.
 - Use `dopemux kernel <lifecycle-command>` for kernel lifecycle operations.
 

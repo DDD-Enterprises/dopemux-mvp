@@ -58,10 +58,8 @@ RESPONSE FORMAT
 No extra commentary unless a STOP condition triggers.
  """
 
-# NOTE:
-# Start with tools OFF to confirm the model+key are good.
-# After that, flip ENABLE_TOOLS to true and restart vibe.
-ENABLE_TOOLS = false
+# Enable tools for this project
+ENABLE_TOOLS = true
 
 # Tools: keep defined, but gated by ENABLE_TOOLS.
 enabled_tools = [
@@ -100,6 +98,11 @@ max_files = 200
 # MCP Servers
 # =========================
 [[mcp_servers]]
+name = "pal"
+transport = "http"
+url = "http://localhost:3003"
+
+[[mcp_servers]]
 name = "conport"
 transport = "http"
 url = "http://localhost:3004"
@@ -113,8 +116,3 @@ url = "http://localhost:3006"
 name = "dope_context"
 transport = "http"
 url = "http://localhost:3010"
-
-[[mcp_servers]]
-name = "pal"
-transport = "http"
-url = "http://localhost:3003"

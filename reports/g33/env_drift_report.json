@@ -1,0 +1,234 @@
+{
+  "summary": {
+    "total_services": 7,
+    "compliant": 2,
+    "violations": 2,
+    "errors": 3,
+    "compliance_rate": "28.6%"
+  },
+  "services": [
+    {
+      "service": "postgres",
+      "status": "ERROR",
+      "error": "Service directory not found: /Users/hue/code/dopemux-mvp/services/postgres"
+    },
+    {
+      "service": "redis",
+      "status": "ERROR",
+      "error": "Service directory not found: /Users/hue/code/dopemux-mvp/services/redis"
+    },
+    {
+      "service": "qdrant",
+      "status": "ERROR",
+      "error": "Service directory not found: /Users/hue/code/dopemux-mvp/services/qdrant"
+    },
+    {
+      "service": "dope-query",
+      "category": "mcp",
+      "status": "VIOLATION",
+      "env_vars_found": [],
+      "env_vars_count": 0,
+      "missing_mandatory": [
+        "PORT",
+        "LOG_LEVEL",
+        "ENVIRONMENT",
+        "HEALTH_CHECK_PATH",
+        "SERVICE_NAME"
+      ],
+      "missing_category": [],
+      "undocumented": [],
+      "exceptions": [
+        "MCP_SERVER_PORT"
+      ],
+      "recommendation": "Add mandatory env vars to service config: PORT, LOG_LEVEL, ENVIRONMENT, HEALTH_CHECK_PATH, SERVICE_NAME | See migration guide: docs/engineering/service_env_contract.md"
+    },
+    {
+      "service": "dopecon-bridge",
+      "category": "coordination",
+      "status": "COMPLIANT",
+      "env_vars_found": [
+        "AGE_DATABASE",
+        "AGE_HOST",
+        "AGE_PASSWORD",
+        "AGE_PORT",
+        "AGE_USER",
+        "ALLOWED_ORIGINS",
+        "BRIDGE_URL",
+        "CONPORT_URL",
+        "CONTAINER_PREFIX",
+        "DOPEMUX_INSTANCE",
+        "ENVIRONMENT",
+        "HEALTH_CHECK_PATH",
+        "HOST",
+        "LOG_LEVEL",
+        "MCP_INTEGRATION_PORT",
+        "NETWORK_NAME",
+        "OPENAI_API_KEY",
+        "PORT",
+        "PORT_BASE",
+        "PYTHONPATH",
+        "PYTHONUNBUFFERED",
+        "QDRANT_ENABLED",
+        "QDRANT_URL",
+        "REDIS_PASSWORD",
+        "REDIS_URL",
+        "SECRET_KEY",
+        "SERVICE_NAME",
+        "USE_MOCK_FALLBACK",
+        "WORKSPACE_ID"
+      ],
+      "env_vars_count": 29,
+      "missing_mandatory": [],
+      "missing_category": [],
+      "undocumented": [
+        "HOST",
+        "REDIS_PASSWORD",
+        "AGE_PASSWORD",
+        "PYTHONUNBUFFERED",
+        "PORT_BASE",
+        "AGE_DATABASE",
+        "QDRANT_ENABLED",
+        "AGE_PORT",
+        "CONTAINER_PREFIX",
+        "AGE_HOST"
+      ],
+      "exceptions": [],
+      "recommendation": "Service is compliant with env contract"
+    },
+    {
+      "service": "task-orchestrator",
+      "category": "cognitive",
+      "status": "COMPLIANT",
+      "env_vars_found": [
+        "CONPORT_URL",
+        "DOPECON_BRIDGE_SOURCE_PLANE",
+        "DOPECON_BRIDGE_TOKEN",
+        "DOPECON_BRIDGE_URL",
+        "DOPEMUX_INSTANCE",
+        "DOPEMUX_WORKSPACE_ROOT",
+        "DOPMUX_WORKFLOW_DEFAULT_EPIC_LIMIT",
+        "DOPMUX_WORKFLOW_DEFAULT_IDEA_LIMIT",
+        "DOPMUX_WORKFLOW_ENABLE",
+        "DOPMUX_WORKFLOW_PROMOTION_SYNC_LEANTIME",
+        "ENVIRONMENT",
+        "HEALTH_CHECK_PATH",
+        "LEANTIME_TOKEN",
+        "LEANTIME_URL",
+        "LOG_LEVEL",
+        "MCP_SERVER_PORT",
+        "PORT",
+        "PORT_BASE",
+        "PYTHONPATH",
+        "REDIS_PASSWORD",
+        "REDIS_URL",
+        "SERVICE_NAME",
+        "WORKSPACE_ID"
+      ],
+      "env_vars_count": 23,
+      "missing_mandatory": [],
+      "missing_category": [],
+      "undocumented": [
+        "REDIS_PASSWORD",
+        "DOPECON_BRIDGE_SOURCE_PLANE",
+        "DOPECON_BRIDGE_TOKEN",
+        "PORT_BASE",
+        "DOPEMUX_WORKSPACE_ROOT",
+        "DOPMUX_WORKFLOW_ENABLE",
+        "DOPMUX_WORKFLOW_PROMOTION_SYNC_LEANTIME",
+        "LEANTIME_TOKEN",
+        "PYTHONPATH",
+        "DOPEMUX_INSTANCE"
+      ],
+      "exceptions": [
+        "DATABASE_URL"
+      ],
+      "recommendation": "Service is compliant with env contract"
+    },
+    {
+      "service": "dope-memory",
+      "category": "mcp",
+      "status": "VIOLATION",
+      "env_vars_found": [],
+      "env_vars_count": 0,
+      "missing_mandatory": [
+        "PORT",
+        "LOG_LEVEL",
+        "ENVIRONMENT",
+        "HEALTH_CHECK_PATH",
+        "SERVICE_NAME"
+      ],
+      "missing_category": [
+        "MCP_SERVER_PORT"
+      ],
+      "undocumented": [],
+      "exceptions": [],
+      "recommendation": "Add mandatory env vars to service config: PORT, LOG_LEVEL, ENVIRONMENT, HEALTH_CHECK_PATH, SERVICE_NAME | Add category-specific env vars: MCP_SERVER_PORT | See migration guide: docs/engineering/service_env_contract.md"
+    }
+  ],
+  "violations": [
+    {
+      "service": "dope-query",
+      "category": "mcp",
+      "status": "VIOLATION",
+      "env_vars_found": [],
+      "env_vars_count": 0,
+      "missing_mandatory": [
+        "PORT",
+        "LOG_LEVEL",
+        "ENVIRONMENT",
+        "HEALTH_CHECK_PATH",
+        "SERVICE_NAME"
+      ],
+      "missing_category": [],
+      "undocumented": [],
+      "exceptions": [
+        "MCP_SERVER_PORT"
+      ],
+      "recommendation": "Add mandatory env vars to service config: PORT, LOG_LEVEL, ENVIRONMENT, HEALTH_CHECK_PATH, SERVICE_NAME | See migration guide: docs/engineering/service_env_contract.md"
+    },
+    {
+      "service": "dope-memory",
+      "category": "mcp",
+      "status": "VIOLATION",
+      "env_vars_found": [],
+      "env_vars_count": 0,
+      "missing_mandatory": [
+        "PORT",
+        "LOG_LEVEL",
+        "ENVIRONMENT",
+        "HEALTH_CHECK_PATH",
+        "SERVICE_NAME"
+      ],
+      "missing_category": [
+        "MCP_SERVER_PORT"
+      ],
+      "undocumented": [],
+      "exceptions": [],
+      "recommendation": "Add mandatory env vars to service config: PORT, LOG_LEVEL, ENVIRONMENT, HEALTH_CHECK_PATH, SERVICE_NAME | Add category-specific env vars: MCP_SERVER_PORT | See migration guide: docs/engineering/service_env_contract.md"
+    }
+  ],
+  "warnings": [
+    {
+      "service": "dopecon-bridge",
+      "undocumented_count": 20,
+      "vars": [
+        "HOST",
+        "REDIS_PASSWORD",
+        "AGE_PASSWORD",
+        "PYTHONUNBUFFERED",
+        "PORT_BASE"
+      ]
+    },
+    {
+      "service": "task-orchestrator",
+      "undocumented_count": 13,
+      "vars": [
+        "REDIS_PASSWORD",
+        "DOPECON_BRIDGE_SOURCE_PLANE",
+        "DOPECON_BRIDGE_TOKEN",
+        "PORT_BASE",
+        "DOPEMUX_WORKSPACE_ROOT"
+      ]
+    }
+  ]
+}

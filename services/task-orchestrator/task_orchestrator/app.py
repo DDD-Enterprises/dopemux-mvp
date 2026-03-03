@@ -22,6 +22,40 @@ from task_orchestrator.agents import agent_coordinator
 from task_orchestrator.config import settings
 from task_orchestrator.core import leantime_client, redis_manager
 from task_orchestrator.mcp import handle_tool_call, MCP_TOOLS
+from fastmcp import FastMCP
+
+# Initialize FastMCP
+mcp = FastMCP("Task-Orchestrator")
+
+# Register tools from MCP_TOOLS to FastMCP
+for tool_def in MCP_TOOLS:
+    name = tool_def["name"]
+    desc = tool_def["description"]
+    
+    if name == "analyze_dependencies":
+        @mcp.tool(name=name, description=desc)
+        async def analyze_dependencies(tasks: list) -> dict:
+            return await handle_tool_call("analyze_dependencies", {"tasks": tasks})
+    elif name == "batch_tasks":
+        @mcp.tool(name=name, description=desc)
+        async def batch_tasks(task_ids: list, session_minutes: int = 25) -> dict:
+            return await handle_tool_call("batch_tasks", {"task_ids": task_ids, "session_minutes": session_minutes})
+    elif name == "get_adhd_state":
+        @mcp.tool(name=name, description=desc)
+        async def get_adhd_state() -> dict:
+            return await handle_tool_call("get_adhd_state", {})
+    elif name == "get_task_recommendations":
+        @mcp.tool(name=name, description=desc)
+        async def get_task_recommendations(limit: int = 5, energy_level: str = "medium") -> dict:
+            return await handle_tool_call("get_task_recommendations", {"limit": limit, "energy_level": energy_level})
+    elif name == "record_break":
+        @mcp.tool(name=name, description=desc)
+        async def record_break() -> dict:
+            return await handle_tool_call("record_break", {})
+    elif name == "get_agent_status":
+        @mcp.tool(name=name, description=desc)
+        async def get_agent_status() -> dict:
+            return await handle_tool_call("get_agent_status", {})
 
 # Import decomposition endpoint
 from task_decomposition_endpoint import (
@@ -81,6 +115,9 @@ app = FastAPI(
     description="Intelligent PM automation middleware",
     lifespan=lifespan
 )
+
+# Mount FastMCP HTTP app
+app.mount("/mcp", mcp.http_app)
 
 # CORS middleware
 app.add_middleware(

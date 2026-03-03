@@ -1,0 +1,14 @@
+{
+  "scope": "pr",
+  "target": "PR#124",
+  "repo": "dopemux/dopemux-mvp",
+  "pr": {
+    "title": "feat: add neural search to adhd-engine",
+    "body": "This PR adds neural search capabilities but is missing tests for the new search module.\\n\\n### Checklist\\n- [x] Code built successfully\\n- [ ] Added unit tests\\n- [ ] Updated README",
+    "files_changed": [
+      "src/dopemux/adhd/neural_search.py",
+      "src/dopemux/adhd/attention_monitor.py"
+    ],
+    "diffstat": "+450 -20"
+  }
+}

@@ -285,16 +285,27 @@ class InstanceManager:
             "HOST_CODE_PARENT_DIR": str(actual_workspace.parent),
             "HOST_PROJECT_RELATIVE_PATH": actual_workspace.name,
 
-            # Service ports
-            "TASK_MASTER_PORT": str(port_base + 5),
+            # Service ports (port_base + offset)
+            "DOPECON_BRIDGE_PORT": str(port_base + 0),
+            "PAL_PORT": str(port_base + 3),
+            "CONPORT_HTTP_PORT": str(port_base + 4),
+            "CONPORT_MCP_PORT": str(port_base + 5),
             "SERENA_PORT": str(port_base + 6),
+            "GPT_RESEARCHER_PORT": str(port_base + 9),
+            "DOPE_CONTEXT_PORT": str(port_base + 10),
+            "EXA_PORT": str(port_base + 11),
+            "DESKTOP_COMMANDER_PORT": str(port_base + 12),
+            "TASK_ORCHESTRATOR_PORT": str(port_base + 14),
+            "LEANTIME_BRIDGE_PORT": str(port_base + 15),
+            "DOPE_MEMORY_PORT": str(port_base + 20),
+            "ADHD_ENGINE_PORT": str(port_base + 25),
+
+            # Backward compatibility
+            "TASK_MASTER_PORT": str(port_base + 14),
             "CONPORT_PORT": str(conport_port),
 
-            # DopeconBridge
-            "DOPECON_BRIDGE_PORT": str(port_base + 16),
-
-            # Leantime (shared, always on port 3001)
-            "LEANTIME_URL": "http://localhost:3001",
+            # Leantime (shared, always on port 8080)
+            "LEANTIME_URL": "http://localhost:8080",
         }
 
         return env_vars

@@ -1,0 +1,21 @@
+{
+  "scope": "repo",
+  "target": "dopemux-mvp",
+  "repo": "DDD-Enterprises/dopemux-mvp",
+  "commits": [
+    {
+      "hash": "HEAD",
+      "title": "feat: unify service registry, ports, and multi-instance orchestration",
+      "body": "This commit aligns the Service Registry, Docker Compose, and Dopemux CLI with consistent ports and implements multi-instance support.\\n\\n- Unified Service Registry (services/registry.yaml) with canonical offset pattern.\\n- Refactored compose.yml to use environment variables for ports.\\n- Updated instance_manager.py and port_config.py for platform-wide consistency.\\n- Consolidated startup logic into scripts/start-all-mcp-servers.sh.\\n- Integrated dopecon-bridge into the MCP registry.\\n- Fixed conport to run as a proper MCP SSE server from Docker."
+    }
+  ],
+  "files_changed": [
+    "compose.yml",
+    "services/registry.yaml",
+    "src/dopemux/cli.py",
+    "src/dopemux/instance_manager.py",
+    "src/dopemux/mcp/registry.yaml",
+    "src/dopemux/port_config.py",
+    "scripts/start-all-mcp-servers.sh"
+  ]
+}

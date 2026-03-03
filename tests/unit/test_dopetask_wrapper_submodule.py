@@ -60,11 +60,11 @@ def test_wrapper_executes_when_pin_and_venv_are_ready(tmp_path: Path) -> None:
     _write_wrapper(tmp_path)
     
     # Create .dopetask-pin
-    (tmp_path / ".dopetask-pin").write_text("install=pip\ndep=dopetask\nversion=0.1.4\n", encoding="utf-8")
+    (tmp_path / ".dopetask-pin").write_text("install=pip\ndep=dopetask\nversion=0.2.0\n", encoding="utf-8")
 
     venv_bin = tmp_path / ".dopetask_venv" / "bin"
     venv_bin.mkdir(parents=True, exist_ok=True)
-    (tmp_path / ".dopetask_venv" / ".dopetask_version").write_text("0.1.4\n", encoding="utf-8")
+    (tmp_path / ".dopetask_venv" / ".dopetask_version").write_text("0.2.0\n", encoding="utf-8")
     (venv_bin / "activate").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
     stub_dopetask = venv_bin / "dopetask"
     stub_dopetask.write_text("#!/usr/bin/env bash\necho STUB_DOPETASK_OK\n", encoding="utf-8")
@@ -73,3 +73,31 @@ def test_wrapper_executes_when_pin_and_venv_are_ready(tmp_path: Path) -> None:
     result = _run_wrapper(tmp_path, "--version")
     assert result.returncode == 0
     assert "STUB_DOPETASK_OK" in result.stdout
+
+
+def test_wrapper_uses_installed_version_when_marker_is_stale(tmp_path: Path) -> None:
+    _write_identity_rails(tmp_path)
+    _write_wrapper(tmp_path)
+    (tmp_path / ".dopetask-pin").write_text("install=pip\ndep=dopetask\nversion=0.2.0\n", encoding="utf-8")
+
+    venv_bin = tmp_path / ".dopetask_venv" / "bin"
+    venv_bin.mkdir(parents=True, exist_ok=True)
+    (tmp_path / ".dopetask_venv" / ".dopetask_version").write_text("0.1.4\n", encoding="utf-8")
+    (venv_bin / "activate").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    stub_python = venv_bin / "python"
+    stub_python.write_text(
+        "#!/usr/bin/env bash\n"
+        "cat <<'EOF'\n"
+        "0.2.0\n"
+        "EOF\n",
+        encoding="utf-8",
+    )
+    stub_python.chmod(0o755)
+    stub_dopetask = venv_bin / "dopetask"
+    stub_dopetask.write_text("#!/usr/bin/env bash\necho STUB_DOPETASK_OK\n", encoding="utf-8")
+    stub_dopetask.chmod(0o755)
+
+    result = _run_wrapper(tmp_path, "--version")
+    assert result.returncode == 0
+    assert "STUB_DOPETASK_OK" in result.stdout
+    assert (tmp_path / ".dopetask_venv" / ".dopetask_version").read_text(encoding="utf-8").strip() == "0.2.0"

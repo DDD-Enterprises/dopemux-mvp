@@ -69,8 +69,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Repo Truth Extractor operator documentation
   - user guide and batch quickstart
   - CLI runbook cross-links
+- dopeTask upgrade notes in kernel integration, migration, quick-start, and supervisor docs
 
 ### Fixed
+- Pinned dopeTask runtime/dev/CI dependency to `dopetask==0.2.0`.
+- Updated CI dopeTask bootstrap and version verification to match the `0.2.0` pin.
+- Replaced stale TaskX submodule guidance in the dopeTask kernel integration contract with the current pip-pinned workflow.
 - Repo Truth Extractor routing defaults now use `gpt-5.2` / `gpt-5.2-pro` model IDs for OpenAI ladders.
 - OpenAI GPT-5 requests omit custom temperature to avoid unsupported parameter errors.
 - Webhook poller now uses the shared EventStore ledger interface (instead of removed legacy DB helpers) and writes idempotent normalized poll events.

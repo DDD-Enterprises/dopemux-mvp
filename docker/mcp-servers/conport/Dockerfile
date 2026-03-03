@@ -19,6 +19,7 @@ COPY shared_monitoring.py /app/shared/monitoring/base.py
 COPY shared_monitoring_init.py /app/shared/monitoring/__init__.py
 
 # Copy the enhanced server with PostgreSQL + Redis persistence
+COPY server.py .
 COPY enhanced_server.py .
 COPY instance_detector.py .
 COPY integration_bridge_client.py .

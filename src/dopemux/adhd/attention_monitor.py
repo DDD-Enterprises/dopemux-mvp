@@ -6,11 +6,6 @@ attention states to provide adaptive interface adjustments.
 """
 
 import json
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 import threading
 import time
 from collections import deque
@@ -18,10 +13,13 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+
+import logging
+
+logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from ..config.manager import AttentionConfig
 
-from ..console_utils import console
 
 
 @dataclass

@@ -1,0 +1,4 @@
+fastmcp>=0.1.0
+exa-py>=1.0.0
+uvicorn[standard]>=0.32.0
+starlette>=0.40.0

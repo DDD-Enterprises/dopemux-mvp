@@ -44,14 +44,15 @@ def get_conport_port(instance_id: Optional[str] = None) -> int:
 
     # Multi-instance support: Calculate from instance ID
     if instance_id and instance_id != 'A':
+        from pathlib import Path
         from .instance_manager import InstanceManager
         # Port bases: A=3000, B=3030, C=3060, D=3090, E=3120
-        manager = InstanceManager(workspace_root=None)  # Just for ID mapping
+        manager = InstanceManager(workspace_root=Path.cwd())  # Just for ID mapping
         port_base = manager._instance_id_to_port(instance_id)
-        return port_base + 7  # ConPort offset is +7
+        return port_base + 4  # ConPort offset is +4
 
     # Default: Instance A ConPort on port 3004
-    # (DopeconBridge at 3000, ConPort MCP at 3007, HTTP API at 3004)
+    # (DopeconBridge at 3016, ConPort MCP at 3005, HTTP API at 3004)
     return 3004
 
 

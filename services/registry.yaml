@@ -15,7 +15,7 @@
 #   description: string - brief service description
 
 version: "1.0"
-last_updated: "2026-02-21"
+last_updated: "2026-03-01"
 
 services:
   # Infrastructure Services
@@ -23,283 +23,191 @@ services:
     port: 5432
     container_port: 5432
     health_path: null  # Uses pg_isready command
-    health_method: null
-    health_timeout_ms: 5000
     compose_service_name: postgres
     enabled_in_smoke: true
     category: infrastructure
     description: "PostgreSQL database with AGE extension for knowledge graph"
-    env_contract_exceptions:
-      - variable: PORT
-        reason: "PostgreSQL uses native POSTGRES_PORT configuration"
-      - variable: LOG_LEVEL
-        reason: "PostgreSQL logging configured via postgresql.conf"
-      - variable: ENVIRONMENT
-        reason: "Infrastructure service, not application code"
-      - variable: SERVICE_NAME
-        reason: "PostgreSQL is a third-party database system"
-      - variable: HEALTH_CHECK_PATH
-        reason: "Uses pg_isready command instead of HTTP endpoint"
 
-  - name: redis
+  - name: redis-events
     port: 6379
     container_port: 6379
     health_path: null  # Uses redis-cli ping
-    health_method: null
-    health_timeout_ms: 3000
-    compose_service_name: redis
+    compose_service_name: redis-events
     enabled_in_smoke: true
     category: infrastructure
-    description: "Redis for caching and event streaming"
-    env_contract_exceptions:
-      - variable: PORT
-        reason: "Redis uses native REDIS_PORT configuration"
-      - variable: LOG_LEVEL
-        reason: "Redis logging configured via redis.conf"
-      - variable: ENVIRONMENT
-        reason: "Infrastructure service, not application code"
-      - variable: SERVICE_NAME
-        reason: "Redis is a third-party cache system"
-      - variable: HEALTH_CHECK_PATH
-        reason: "Uses redis-cli ping instead of HTTP endpoint"
+    description: "Redis for event streaming"
+
+  - name: redis-primary
+    port: 6380
+    container_port: 6379
+    health_path: null
+    compose_service_name: redis-primary
+    enabled_in_smoke: true
+    category: infrastructure
+    description: "Redis for caching"
 
   - name: qdrant
     port: 6333
     container_port: 6333
-    health_path: /  # Qdrant root endpoint
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
-    compose_service_name: qdrant
+    health_path: /
+    compose_service_name: mcp-qdrant
     enabled_in_smoke: true
     category: infrastructure
-    description: "Qdrant vector database for semantic search"
-    env_contract_exceptions:
-      - variable: PORT
-        reason: "Qdrant uses native QDRANT_PORT configuration"
-      - variable: LOG_LEVEL
-        reason: "Qdrant logging configured via config.yaml"
-      - variable: ENVIRONMENT
-        reason: "Infrastructure service, not application code"
-      - variable: SERVICE_NAME
-        reason: "Qdrant is a third-party vector database"
-      - variable: HEALTH_CHECK_PATH
-        reason: "Qdrant provides native HTTP health endpoint at /"
+    description: "Qdrant vector database"
 
-  # MCP Services
-  - name: dope-query
-    port: 3004
-    container_port: 3004
-    health_path: /health
-    health_method: GET
-    health_timeout_ms: 10000
-    health_expected_status: 200
-    compose_service_name: conport
-    enabled_in_smoke: true
-    category: mcp
-    description: "DopeQuery (ConPort runtime) - Knowledge graph and context management MCP server"
-    env_contract_exceptions:
-      - variable: MCP_SERVER_PORT
-        reason: "DopeQuery uses PORT directly; MCP_SERVER_PORT is redundant"
-
-  # Coordination Layer
+  # Coordination Layer (Port Base + 0 and + 16)
   - name: dopecon-bridge
     port: 3016
     container_port: 3016
     health_path: /health
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
     compose_service_name: dopecon-bridge
     enabled_in_smoke: true
     category: coordination
-    description: "DopeconBridge - Central coordination and event routing layer"
+    description: "DopeconBridge - Central coordination layer"
 
-  - name: webhook-receiver
-    port: 8790
-    container_port: 8790
-    health_path: /healthz
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
-    compose_service_name: webhook-receiver
+  - name: dopecon-bridge-alt
+    port: 3000
+    container_port: 3016
+    health_path: /health
+    compose_service_name: dopecon-bridge
     enabled_in_smoke: false
     category: coordination
-    description: "OpenAI webhook receiver sidecar for signed event ingestion and deduplicated ledger writes"
+    description: "DopeconBridge Alternate Port"
 
-  # Cognitive Services
-  - name: task-orchestrator
-    port: 8000
-    container_port: 8000
+  # MCP Services (Port Base + 3 to + 15)
+  - name: pal
+    port: 3003
+    container_port: 3003
     health_path: /health
-    health_method: GET
-    health_timeout_ms: 10000
-    health_expected_status: 200
-    compose_service_name: task-orchestrator
-    enabled_in_smoke: true
-    category: cognitive
-    description: "Task Orchestrator - ADHD-aware task coordination service"
-    env_contract_exceptions:
-      - variable: DATABASE_URL
-        reason: "Task Orchestrator is a wrapper service, delegates DB access to ConPort"
-
-  - name: adhd-engine
-    port: 8095
-    container_port: 8095
-    health_path: /health
-    health_method: GET
-    health_timeout_ms: 10000
-    health_expected_status: 200
-    compose_service_name: adhd-engine
-    enabled_in_smoke: false  # Optional for minimal smoke stack
-    category: cognitive
-    description: "ADHD Engine (Serena) - Real-time ADHD accommodation service"
-
-  - name: dope-memory
-    port: 3020
-    container_port: 3020
-    health_path: /health
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
-    compose_service_name: dope-memory
+    compose_service_name: pal
     enabled_in_smoke: true
     category: mcp
-    description: "Dope-Memory - Temporal chronicle and working-context manager"
-    spec_version: "v1"
-    spec_path: "docs/spec/dope-memory/v1/"
+    description: "PAL MCP - Multi-model reasoning server"
+
+  - name: conport-http
+    port: 3004
+    container_port: 3004
+    health_path: /health
+    compose_service_name: conport
+    enabled_in_smoke: true
+    category: mcp
+    description: "ConPort HTTP API"
+
+  - name: conport-mcp
+    port: 3005
+    container_port: 3005
+    health_path: /health
+    compose_service_name: conport
+    enabled_in_smoke: true
+    category: mcp
+    description: "ConPort MCP (SSE)"
+
+  - name: serena
+    port: 3006
+    container_port: 3006
+    health_path: /health
+    compose_service_name: serena
+    enabled_in_smoke: true
+    category: mcp
+    description: "Serena MCP - ADHD accommodation server"
+
+  - name: gpt-researcher
+    port: 3009
+    container_port: 3009
+    health_path: /health
+    compose_service_name: gptr-mcp
+    enabled_in_smoke: true
+    category: mcp
+    description: "GPT Researcher MCP"
+
+  - name: dope-context
+    port: 3010
+    container_port: 3010
+    health_path: /health
+    compose_service_name: dope-context
+    enabled_in_smoke: true
+    category: mcp
+    description: "Dope-Context MCP"
+
+  - name: exa
+    port: 3011
+    container_port: 3011
+    health_path: /health
+    compose_service_name: exa
+    enabled_in_smoke: false
+    category: mcp
+    description: "Exa Search MCP"
 
   - name: desktop-commander
     port: 3012
     container_port: 3012
     health_path: /health
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
     compose_service_name: desktop-commander
     enabled_in_smoke: false
     category: mcp
-    description: "Desktop Commander MCP - desktop automation and window control"
+    description: "Desktop Commander MCP"
+
+  - name: task-orchestrator
+    port: 3014
+    container_port: 8000
+    health_path: /health
+    compose_service_name: task-orchestrator
+    enabled_in_smoke: true
+    category: cognitive
+    description: "Task Orchestrator (Multi-instance)"
 
   - name: leantime-bridge
     port: 3015
     container_port: 3015
     health_path: /health
-    health_method: GET
-    health_timeout_ms: 10000
-    health_expected_status: 200
     compose_service_name: leantime-bridge
     enabled_in_smoke: false
     category: coordination
-    description: "Leantime Bridge MCP - project management integration over HTTP/SSE"
+    description: "Leantime Bridge MCP"
 
+  # Temporal Services (Port Base + 20+)
+  - name: dope-memory
+    port: 3020
+    container_port: 3020
+    health_path: /health
+    compose_service_name: dope-memory
+    enabled_in_smoke: true
+    category: mcp
+    description: "Dope-Memory"
+
+  - name: adhd-engine
+    port: 3025
+    container_port: 8095
+    health_path: /health
+    compose_service_name: adhd-engine
+    enabled_in_smoke: false
+    category: cognitive
+    description: "ADHD Engine (Multi-instance)"
+
+  # Shared Legacy/Static Services
   - name: leantime
     port: 8080
     container_port: 80
     health_path: /
-    health_method: GET
-    health_timeout_ms: 10000
-    health_expected_status: 200
     compose_service_name: leantime
     enabled_in_smoke: false
     category: coordination
-    description: "Leantime PM application container for strategic planning and ticket workflows"
+    description: "Leantime PM application"
 
-  - name: plane-coordinator
-    port: 8090
-    container_port: 8090
-    health_path: /health
-    health_method: GET
-    health_timeout_ms: 10000
-    health_expected_status: 200
-    compose_service_name: plane-coordinator
+  - name: webhook-receiver
+    port: 8790
+    container_port: 8790
+    health_path: /healthz
+    compose_service_name: webhook-receiver
     enabled_in_smoke: false
     category: coordination
-    description: "Plane Coordinator - two-plane coordination API between PM and cognitive systems"
+    description: "OpenAI webhook receiver"
 
-  # Environment & Sensory Services
-  - name: workspace-watcher
-    port: 8100
-    container_port: 8100
-    health_path: /health
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
-    compose_service_name: workspace-watcher
-    enabled_in_smoke: false
-    category: sensory
-    description: "Workspace Watcher - Real-time file system monitoring and change detection"
-
-  - name: activity-capture
-    port: 8096
-    container_port: 8096
-    health_path: /health
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
-    compose_service_name: activity-capture
-    enabled_in_smoke: false
-    category: sensory
-    description: "Activity Capture - Passive development activity tracking and logging"
-
-  - name: voice-commands
-    port: 3007
-    container_port: 3007
-    health_path: /health
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
-    compose_service_name: voice-commands
-    enabled_in_smoke: false
-    category: sensory
-    description: "Voice Commands - Voice-to-text task decomposition API"
-
-  # Notification & UI Services
-  - name: adhd-notifier
-    port: 8098
-    container_port: 8098
-    health_path: /health
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
-    compose_service_name: adhd-notifier
-    enabled_in_smoke: false
-    category: cognitive
-    description: "ADHD Notifier - Context-aware notification routing and break management"
-
-  - name: adhd-dashboard
-    port: 8097
-    container_port: 8097
-    health_path: /health
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
-    compose_service_name: adhd-dashboard
-    enabled_in_smoke: false
-    category: cognitive
-    description: "ADHD Dashboard - Specific visualization of energy, attention, and cognitive load"
-
-  # Integrations
   - name: litellm
     port: 4000
     container_port: 4000
     health_path: /health
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
     compose_service_name: litellm
     enabled_in_smoke: false
     category: infrastructure
-    description: "LiteLLM Proxy - Unified OpenAI-compatible interface for all LLM providers (GPT, Grok, Claude)"
-
-  - name: exa
-    port: 3008
-    container_port: 3008
-    health_path: /
-    health_method: GET
-    health_timeout_ms: 5000
-    health_expected_status: 200
-    compose_service_name: exa
-    enabled_in_smoke: false
-    category: mcp
-    description: "Exa Search MCP - Neural semantic web search integration"
+    description: "LiteLLM Proxy"

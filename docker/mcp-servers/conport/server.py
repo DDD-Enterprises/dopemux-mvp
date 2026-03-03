@@ -1,91 +1,177 @@
-#!/usr/bin/env python3
-"""
-ConPort MCP Server wrapper for Dopemux
-Converts stdio-based ConPort to HTTP server
-"""
-
 import asyncio
-import subprocess
 import json
 import os
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import logging
+from typing import Optional, List
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import aiohttp
+from mcp.server.fastmcp import FastMCP
 
-class ConPortMCPHandler(BaseHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        self.conport_process = None
-        super().__init__(*args, **kwargs)
+CONPORT_URL = os.getenv("CONPORT_URL", "http://localhost:3004")
+MCP_PORT = int(os.getenv("MCP_SERVER_PORT", 3005))
 
-    def do_POST(self):
-        try:
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
+mcp = FastMCP("conport")
 
-            # Forward to ConPort stdio process
-            if not hasattr(self.server, 'conport_process') or self.server.conport_process.poll() is not None:
-                self.server.start_conport_process()
 
-            # Send request to ConPort
-            self.server.conport_process.stdin.write(post_data + b'\n')
-            self.server.conport_process.stdin.flush()
+async def _get_json(session: aiohttp.ClientSession, url: str):
+    async with session.get(url) as resp:
+        resp.raise_for_status()
+        return await resp.json()
 
-            # Read response
-            response = self.server.conport_process.stdout.readline()
 
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(response)
+async def _post_json(url: str, payload: dict):
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        async with session.post(url, json=payload) as resp:
+            resp.raise_for_status()
+            return await resp.json()
 
-        except Exception as e:
-            logger.error(f"Error handling request: {e}")
-            self.send_response(500)
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
 
-    def do_GET(self):
-        if self.path == '/health':
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps({"status": "healthy"}).encode())
-        else:
-            self.send_response(404)
-            self.end_headers()
+async def _put_json(url: str, payload: dict):
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        async with session.put(url, json=payload) as resp:
+            resp.raise_for_status()
+            return await resp.json()
 
-class ConPortMCPServer(HTTPServer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.conport_process = None
-        self.start_conport_process()
 
-    def start_conport_process(self):
-        try:
-            # Start ConPort MCP in stdio mode
-            self.conport_process = subprocess.Popen(
-                ['uvx', '--from', 'context-portal-mcp', 'conport-mcp', '--mode', 'stdio'],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=False
-            )
-            logger.info("ConPort MCP process started")
-        except Exception as e:
-            logger.error(f"Failed to start ConPort process: {e}")
+@mcp.tool()
+async def get_progress(workspace_id: str, status: Optional[str] = None, limit: int = 20) -> str:
+    """Get progress entries for a workspace (optionally filter by status)."""
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        url = f"{CONPORT_URL}/api/progress?workspace_id={workspace_id}&limit={limit}"
+        if status:
+            url += f"&status={status}"
+        data = await _get_json(session, url)
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def update_progress(progress_id: str, updates: dict) -> str:
+    """Update an existing progress entry. Pass a dict with fields like status (e.g. COMPLETED), percentage, etc."""
+    url = f"{CONPORT_URL}/api/progress/{progress_id}"
+    data = await _put_json(url, updates)
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def get_decisions(workspace_id: Optional[str] = None, limit: int = 10) -> str:
+    """Get recent decisions (optionally filter by workspace)."""
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        url = f"{CONPORT_URL}/api/decisions?limit={limit}"
+        if workspace_id:
+            url += f"&workspace_id={workspace_id}"
+        data = await _get_json(session, url)
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def log_decision(workspace_id: str, topic: str, decision: str, rationale: str, tags: Optional[List[str]] = None) -> str:
+    """Log an architectural or technical decision to the workspace graph."""
+    payload = {
+        "workspace_id": workspace_id,
+        "topic": topic,
+        "decision": decision,
+        "rationale": rationale,
+        "tags": tags or []
+    }
+    url = f"{CONPORT_URL}/api/decisions"
+    data = await _post_json(url, payload)
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def get_recent_activity(workspace_id: str, hours: int = 24) -> str:
+    """Get recent activity to rebuild context."""
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        url = f"{CONPORT_URL}/api/recent-activity/{workspace_id}?hours={hours}"
+        data = await _get_json(session, url)
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def get_active_work(workspace_id: str) -> str:
+    """Get currently active work items to maintain focus."""
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        url = f"{CONPORT_URL}/api/active-work/{workspace_id}"
+        data = await _get_json(session, url)
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def workspace_summary(user_id: str) -> str:
+    """Get an aggregated summary across all workspaces for a user."""
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        url = f"{CONPORT_URL}/api/workspace-summary?user_id={user_id}"
+        data = await _get_json(session, url)
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def fork_instance(workspace_id: str, source_instance: Optional[str] = None, target_instance: Optional[str] = None) -> str:
+    """Fork PLANNED/IN_PROGRESS progress from shared/source into target instance."""
+    data = await _post_json(f"{CONPORT_URL}/api/instance/fork", {
+        "workspace_id": workspace_id,
+        "source_instance": source_instance,
+        "target_instance": target_instance,
+    })
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def promote(progress_id: str) -> str:
+    """Promote a progress entry to shared (clear instance_id)."""
+    data = await _post_json(f"{CONPORT_URL}/api/progress/promote", {"progress_id": progress_id})
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def promote_all(workspace_id: str) -> str:
+    """Promote all instance-local PLANNED/IN_PROGRESS entries in current instance to shared."""
+    data = await _post_json(f"{CONPORT_URL}/api/progress/promote_all", {"workspace_id": workspace_id})
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def get_context(workspace_id: str) -> str:
+    """Get active context for a workspace, including instance-specific data."""
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+        url = f"{CONPORT_URL}/api/context/{workspace_id}"
+        data = await _get_json(session, url)
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def update_context(workspace_id: str, context_data: dict) -> str:
+    """Update active context for a workspace."""
+    url = f"{CONPORT_URL}/api/context/{workspace_id}"
+    data = await _post_json(url, context_data)
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
+
+@mcp.tool()
+async def log_progress(workspace_id: str, description: str, status: str = "PLANNED", priority: str = "medium", linked_decision_id: Optional[str] = None) -> str:
+    """Log a new progress item or task in the workspace."""
+    payload = {
+        "workspace_id": workspace_id,
+        "description": description,
+        "status": status,
+        "priority": priority
+    }
+    if linked_decision_id:
+        payload["linked_decision_id"] = linked_decision_id
+        
+    url = f"{CONPORT_URL}/api/progress"
+    data = await _post_json(url, payload)
+    return json.dumps(data, ensure_ascii=False, indent=2)
+
 
 if __name__ == "__main__":
-    port = int(os.getenv('MCP_SERVER_PORT', 3004))
-    server = ConPortMCPServer(('0.0.0.0', port), ConPortMCPHandler)
-
-    logger.info(f"🧠 ConPort MCP Server starting on port {port}")
-
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        logger.info("Shutting down ConPort MCP Server")
-        if server.conport_process:
-            server.conport_process.terminate()
-        server.shutdown()
+    import sys
+    import uvicorn
+    transport = "stdio"
+    if len(sys.argv) > 1:
+        transport = sys.argv[1]
+    
+    if transport == "sse":
+        app = mcp.sse_app()
+        uvicorn.run(app, host="0.0.0.0", port=MCP_PORT)
+    else:
+        mcp.run(transport="stdio")

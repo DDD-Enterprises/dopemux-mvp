@@ -21,7 +21,6 @@ from click.shell_completion import CompletionItem
 from ..config import ConfigManager
 from ..console import console
 from .controller import TmuxController, PaneInfo
-from ..mobile.runtime import ensure_dependency, env_for_happy
 from ..mobile import tmux_utils
 from ..roles.catalog import available_roles, resolve_role, RoleNotFoundError
 from ..litellm_proxy import (
@@ -334,6 +333,7 @@ def _launch_happy_for_targets(
    focus_flag: bool,
     popup_override: Optional[bool] = None,
 ) -> None:
+    from ..mobile.runtime import env_for_happy
     mobile_cfg = cfg_manager.get_mobile_config()
     env = env_for_happy(mobile_cfg)
     all_panes = controller.backend.list_panes()
@@ -1612,6 +1612,7 @@ def launch_happy(
     controller = _get_controller(ctx)
     cfg_manager = _resolve_config_manager(ctx)
 
+    from ..mobile.runtime import ensure_dependency
     ok, _ = ensure_dependency("happy")
     if not ok:
         click.echo("❌ Happy CLI not found. Install with: npm i -g happy-coder")
@@ -2325,6 +2326,7 @@ def start_tmux(
         )
 
     if happy:
+        from ..mobile.runtime import ensure_dependency
         ok, _ = ensure_dependency("happy")
         if ok:
             targets = []

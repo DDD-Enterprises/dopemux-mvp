@@ -1090,11 +1090,11 @@ sudo systemctl start docker  # Linux
 ### 2. Start Core Services
 
 ```bash
-# Start infrastructure
-docker-compose -f docker-compose.unified.yml up -d
+# Start all platform services and infrastructure
+./scripts/start-all-mcp-servers.sh
 
-# Wait for services
-sleep 30
+# Or via Dopemux CLI
+dopemux mcp up --all
 ```
 
 ### 3. Initialize Services

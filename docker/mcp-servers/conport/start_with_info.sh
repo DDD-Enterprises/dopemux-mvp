@@ -8,11 +8,11 @@ python info_server.py &
 INFO_PID=$!
 
 # Start REST API server on port 3004 (for Docker service-to-service)
-python enhanced_server.py &
+MCP_SERVER_PORT=3004 python enhanced_server.py &
 REST_PID=$!
 
 # Start MCP protocol server on port 3005 (for Claude Code)
-MCP_PROXY_PORT=3005 python server.py &
+MCP_SERVER_PORT=3005 python server.py sse &
 PROXY_PID=$!
 
 # Wait for all processes

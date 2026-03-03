@@ -68,7 +68,7 @@ dev = [
     "flake8>=6.0.0",
     "mypy>=1.0.0",
     "pre-commit>=3.0.0",
-    "dopetask==0.1.4",
+    "dopetask==0.2.0",
 ]
 
 [project.urls]
@@ -79,6 +79,9 @@ Documentation = "https://docs.dopemux.dev"
 
 [project.scripts]
 dopemux = "dopemux.cli:main"
+dopemux-mobile = "dopemux.mobile.main:main"
+dopemux-github = "dopemux_github_specialist.cli:main"
+dopemux-pr-merge = "dopemux_pr_merge_specialist.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

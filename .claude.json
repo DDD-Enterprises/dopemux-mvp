@@ -80,6 +80,15 @@
         "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}"
       }
     },
+    "dopemux-dope-memory": {
+      "type": "sse",
+      "url": "http://localhost:3020/mcp",
+      "env": {
+        "DOPE_MEMORY_WORKSPACE_ID": "dopemux",
+        "DOPE_MEMORY_INSTANCE_ID": "A"
+      },
+      "description": "Temporal chronicle and working-context manager"
+    },
     "dopemux-desktop-commander": {
       "type": "stdio",
       "command": "docker",
