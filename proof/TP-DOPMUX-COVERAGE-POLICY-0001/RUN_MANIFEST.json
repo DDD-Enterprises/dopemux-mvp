@@ -1,0 +1,11 @@
+{
+  "run_id": "TP-DOPMUX-COVERAGE-POLICY-0001",
+  "status": "PASS",
+  "summary": "Standardized coverage policy to enforce scoped thresholds (>=80%) while allowing repo-wide tests to pass without global gate.",
+  "artifacts": {
+    "pytest_config": ["pytest.ini", "pyproject.toml"],
+    "ci_workflow": ".github/workflows/ci-complete.yml",
+    "canonical_script": "scripts/check_coverage.sh",
+    "documentation": "docs/COVERAGE_POLICY.md"
+  }
+}
