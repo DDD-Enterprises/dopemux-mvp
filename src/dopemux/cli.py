@@ -1021,7 +1021,7 @@ def start(
                 # For --altp, we map to the tier names defined in generate_multi_target_config
                 # CCR will expose these exact model names to Claude Code
                 os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
-            elif 'provider' in locals():
+            elif provider is not None:
                 os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
 
             use_alt_routing = False  # Skip the full alt-routing block below
