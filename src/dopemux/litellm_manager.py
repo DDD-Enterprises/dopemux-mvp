@@ -104,11 +104,7 @@ class LiteLLMHealthMonitor:
     
     def _check_all_processes(self) -> None:
         """Check health of all managed LiteLLM processes."""
-        processes = []
-        with self.manager._lock:
-            processes = list(self.manager._processes.items())
-            
-        for instance_id, process_info in processes:
+        for instance_id, process_info in list(self.manager._processes.items()):
             try:
                 is_healthy = self._check_process_health(process_info)
                 process_info.update_health(is_healthy)
@@ -141,39 +137,20 @@ class LiteLLMHealthMonitor:
             
             # Terminate the unhealthy process
             if process_info.process.poll() is None:
-                try:
-                    process_info.process.terminate()
-                    process_info.process.wait(timeout=5)
-                except Exception as te:
-                    logger.warning(f"Error terminating process during recovery: {te}")
+                process_info.process.terminate()
+                process_info.process.wait(timeout=5)
             
-            # Use manager's lock for consistent state
-            with self.manager._lock:
-                # Remove from active processes if still there
-                if self.manager._processes.get(process_info.instance_id) is process_info:
-                    del self.manager._processes[process_info.instance_id]
-                
-                # Load configuration data back from the file if we want to restart
-                # But wait, start_instance handles everything including config preparation.
-                # However, start_instance expects config_data (dict), not config_path.
-                # Let's read the existing config file back into a dict.
-                try:
-                    with open(process_info.config_path, 'r') as f:
-                        config_data = yaml.safe_load(f)
-                except Exception as ce:
-                    logger.error(f"Failed to load config for recovery: {ce}")
-                    return
-
-                # Attempt to restart - we must not hold the lock while calling start_instance
-                # because start_instance will try to acquire it.
+            # Remove from active processes
+            if process_info.instance_id in self.manager._processes:
+                del self.manager._processes[process_info.instance_id]
             
-            # Restart outside the lock
+            # Attempt to restart
             self.manager.start_instance(
-                instance_id=process_info.instance_id,
-                port=process_info.port,
-                config_data=config_data,
-                db_enabled=process_info.db_enabled,
-                db_url=process_info.db_url
+                process_info.instance_id,
+                process_info.port,
+                process_info.config_path,
+                process_info.db_enabled,
+                process_info.db_url
             )
             
         except Exception as e:
@@ -529,7 +506,6 @@ class LiteLLMManager:
 
 # Global singleton instance
 _litellm_manager: Optional[LiteLLMManager] = None
-_manager_lock = threading.Lock()
 
 
 def get_litellm_manager(project_root: Optional[Path] = None) -> LiteLLMManager:
@@ -543,10 +519,9 @@ def get_litellm_manager(project_root: Optional[Path] = None) -> LiteLLMManager:
     """
     global _litellm_manager
     
-    with _manager_lock:
-        if _litellm_manager is None:
-            if project_root is None:
-                project_root = Path.cwd()
-            _litellm_manager = LiteLLMManager(project_root)
+    if _litellm_manager is None:
+        if project_root is None:
+            project_root = Path.cwd()
+        _litellm_manager = LiteLLMManager(project_root)
     
     return _litellm_manager

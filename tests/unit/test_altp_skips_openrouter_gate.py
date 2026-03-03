@@ -55,12 +55,15 @@ def test_altp_skips_openrouter_gate(mock_which, mock_routing_config_cls, mock_st
     with patch("dopemux.workspace_utils.get_workspace_root") as mock_get_root, \
          patch("pathlib.Path.exists") as mock_exists, \
          patch("pathlib.Path.mkdir") as mock_mkdir, \
-         patch("pathlib.Path.cwd") as mock_cwd:
+         patch("pathlib.Path.cwd") as mock_cwd, \
+         patch("dopemux.routing_config.RoutingConfig.load_default") as mock_routing_load_default:
         
         mock_get_root.return_value = MagicMock()
         mock_exists.return_value = True
         mock_cwd.return_value = MagicMock()
         mock_mkdir.return_value = None
+        mock_routing_load_default.return_value.get_mode.return_value = "api"
+        mock_routing_load_default.return_value.get_ports.return_value = {"ccr": 8000, "litellm": 4000}
         
         # Mock suffix for config loading
         mock_cwd.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".yaml"
