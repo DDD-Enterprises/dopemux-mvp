@@ -255,7 +255,7 @@ DEFAULT_XAI_THINK_MODEL = "grok-4-1-fast-reasoning"
 DEFAULT_OPENAI_BULK_MODEL = "gpt-5-nano"
 DEFAULT_OPENAI_EXTRACT_MODEL = "gpt-5-mini"
 DEFAULT_OPENAI_SYNTH_MODEL = "gpt-5.2"
-DEFAULT_OPENAI_CODE_SYNTH_MODEL = "gpt-5.2-codex"
+DEFAULT_OPENAI_CODE_SYNTH_MODEL = "gpt-5.2"  # codex is a completions-only model; use chat model
 
 # Route tuple: provider, model_id, api_key_env
 ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
@@ -307,17 +307,17 @@ ROUTING_LADDERS: Dict[str, Dict[str, List[Tuple[str, str, str]]]] = {
         "bulk": [
             ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
             ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
-            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
         ],
         "extract": [
             ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
             ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
-            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
         ],
         "synthesis": [
             ("openai", DEFAULT_OPENAI_SYNTH_MODEL, "OPENAI_API_KEY"),
             ("gemini", DEFAULT_GEMINI_SYNTH_MODEL, "GEMINI_API_KEY"),
-            ("xai", "grok-code-fast-1", "XAI_API_KEY"),
+            ("xai", DEFAULT_XAI_BULK_MODEL, "XAI_API_KEY"),
         ],
         "qa": [
             ("openai", DEFAULT_OPENAI_EXTRACT_MODEL, "OPENAI_API_KEY"),
