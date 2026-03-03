@@ -16,8 +16,8 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 
 ✅ **MIGRATION COMPLETE** - This document outlines the completed migration from taskX to dopeTask in the dopemux-mvp codebase.
 
-**Action**: Migrated to dopeTask 0.1.4 via pip installation
-**Status**: Fully migrated to dopeTask 0.1.4 via pip installation
+**Action**: Migrated to dopeTask 0.2.0 via pip installation
+**Status**: Fully migrated to dopeTask 0.2.0 via pip installation
 **Date**: 2024
 **Approach**: Comprehensive cleanup with documentation updates
 
@@ -25,7 +25,7 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 
 ### 1. Package Migration
 - **Before**: taskX 0.1.0 (git submodule)
-- **After**: dopetask 0.1.4 (pip package)
+- **After**: dopetask 0.2.0 (pip package)
 - **Action**: Uninstalled taskX, using dopetask pip package
 
 ### 2. Configuration Files Updated
@@ -38,7 +38,7 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 - commit=f5bd9e390cd485a0cd4db93f8dc5def59ef12a15
 + install=pip
 + dep=dopetask
-+ version=0.1.4
++ version=0.2.0
 ```
 
 #### `.gitmodules`
@@ -96,7 +96,7 @@ prelude: Migration Taskx To Dopetask (explanation) for dopemux documentation and
 pip uninstall taskx -y
 
 # Ensure dopetask is installed
-pip install dopetask==0.1.4
+pip install dopetask==0.2.0
 ```
 
 ### 2. Update File References
@@ -109,7 +109,7 @@ pip install dopetask==0.1.4
 # Check dopetask is available
 dopetask --version
 
-# Should output: 0.1.4
+# Should output: 0.2.0
 ```
 
 ## Backward Compatibility
@@ -159,7 +159,7 @@ For LLM configurations and prompts:
 
 ## Verification Checklist
 
-- [x] dopetask package installed (0.1.4)
+- [x] dopetask package installed (0.2.0)
 - [x] taskX package uninstalled
 - [x] Configuration files updated
 - [x] Scripts updated

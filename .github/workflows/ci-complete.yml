@@ -171,7 +171,7 @@ jobs:
             python -m venv .dopetask_venv
           fi
           .dopetask_venv/bin/pip install --upgrade pip
-          .dopetask_venv/bin/pip install --upgrade dopetask==0.1.4
+          .dopetask_venv/bin/pip install --upgrade dopetask==0.2.0
 
       - name: ✅ Verify dopeTask wiring
         run: |
@@ -179,7 +179,7 @@ jobs:
           test -f .dopetaskroot
           test -d .dopetask_venv
           test -x scripts/dopetask
-          .dopetask_venv/bin/dopetask --version | grep -q "0.1.4"
+          .dopetask_venv/bin/dopetask --version | grep -q "0.2.0"
 
       - name: 🧠 dopeTask doctor
         run: |

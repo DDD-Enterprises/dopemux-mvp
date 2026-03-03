@@ -44,7 +44,7 @@ The seam between deterministic engine and stateful runtime. This defines the API
 **Recovery Strategy**: If bidirectional call detected, it is a design violation. Remove the call path. dopeTask must communicate only via artifacts.
 **Evidence**:
 - `scripts/dopetask` (lines 1-23): Pure wrapper. Activates venv, execs `dopetask` binary. No callbacks.
-- `.dopetask-pin`: `install=pip dep=dopetask version=0.1.4` — pip package, separate codebase.
+- `.dopetask-pin`: `install=pip dep=dopetask version=0.2.0` — pip package, separate codebase.
 
 ---
 

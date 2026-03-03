@@ -61,6 +61,7 @@ dopemux kernel doctor --timestamp-mode deterministic
 ```
 
 Use `dopemux kernel --help` for full lifecycle commands (`compile`, `run`, `collect`, `gate`, `promote`, `feedback`, `loop`).
+The current repo pin is `dopetask==0.2.0`.
 `.dopetask-pin` is used for runtime and CI behavior.
 
 ## Verify It's Working
