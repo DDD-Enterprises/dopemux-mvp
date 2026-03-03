@@ -1,9 +1,9 @@
 import os
-import pytest
-from unittest.mock import patch, MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 from click.testing import CliRunner
 from dopemux.cli import cli
-import dopemux
 
 @patch("dopemux.instance_state.save_instance_state_sync")
 @patch("dopemux.instance_state.load_instance_state_sync")
@@ -14,7 +14,18 @@ import dopemux
 @patch("dopemux.cli.DopeBrainzRouterManager")
 @patch("dopemux.cli.start_simple_proxy")
 @patch("shutil.which")
-def test_ccr_models_env_for_altp(mock_which, mock_start_proxy, mock_router_cls, mock_litellm_cls, mock_monitor_cls, mock_launcher_cls, mock_ctx_mgr, mock_load_state, mock_save_state):
+def test_ccr_models_env_for_altp(
+    mock_which,
+    mock_start_proxy,
+    mock_router_cls,
+    mock_litellm_cls,
+    mock_monitor_cls,
+    mock_launcher_cls,
+    mock_ctx_mgr,
+    mock_load_state,
+    mock_save_state,
+    tmp_path,
+):
     """
     Verify that --altp sets CLAUDE_CODE_ROUTER_MODELS to "altp-opus,altp-sonnet,altp-haiku".
     """
@@ -29,12 +40,45 @@ def test_ccr_models_env_for_altp(mock_which, mock_start_proxy, mock_router_cls, 
     )
     mock_router_instance.build_client_env.return_value = {}
 
+    mock_launcher_instance = mock_launcher_cls.return_value
+    mock_launcher_instance.launch.return_value = MagicMock()
+
+    mock_monitor_instance = mock_monitor_cls.return_value
+    mock_monitor_instance.start_monitoring.return_value = None
+
+    workspace = Path(tmp_path)
+    (workspace / ".dopemux").mkdir()
+    (workspace / ".repo_id").write_text("project=dopemux-mvp\n", encoding="utf-8")
+
+    litellm_config = workspace / "litellm.config.yaml"
+    litellm_config.write_text(
+        "model_list:\n"
+        "  - model_name: altp-opus\n"
+        "  - model_name: altp-sonnet\n"
+        "  - model_name: altp-haiku\n",
+        encoding="utf-8",
+    )
+
+    mock_litellm_info = MagicMock(
+        base_url="http://127.0.0.1:4000",
+        config_path=litellm_config,
+        already_running=False,
+        db_enabled=True,
+        db_status="ok",
+        log_path=workspace / "litellm.log",
+    )
+    mock_litellm_instance = mock_litellm_cls.return_value
+    mock_litellm_instance.ensure_started.return_value = mock_litellm_info
+    mock_litellm_instance.build_client_env.return_value = {
+        "DOPEMUX_LITELLM_MASTER_KEY": "sk-test",
+    }
+
     runner = CliRunner()
     env = os.environ.copy()
     env["OPENROUTER_API_KEY"] = "sk-openrouter"
     env["XAI_API_KEY"] = "sk-xai"
     
-    with patch("dopemux.cli.Path") as mock_path, \
+    with patch("dopemux.cli.Path.cwd", return_value=workspace), \
          patch("dopemux.workspace_utils.get_workspace_root") as mock_get_root, \
          patch("dopemux.auto_configurator.WorktreeAutoConfigurator") as mock_auto_config, \
          patch("dopemux.cli.os.path.isdir") as mock_isdir, \
@@ -45,11 +89,8 @@ def test_ccr_models_env_for_altp(mock_which, mock_start_proxy, mock_router_cls, 
          patch("dopemux.cli.InstanceManager") as mock_instance_mgr, \
          patch("dopemux.worktree_recovery.show_recovery_menu_sync", return_value=None) as mock_recovery, \
          patch("dopemux.cli.RoutingConfig") as mock_routing_config_cls:
-        
-        mock_path.cwd.return_value = MagicMock()
-        mock_path.exists.return_value = True
-        mock_path.return_value.exists.return_value = True
-        mock_get_root.return_value = MagicMock()
+
+        mock_get_root.return_value = workspace
         mock_auto_config.return_value.configure_workspace.return_value = (True, "Mocked AutoConfig")
         mock_isdir.return_value = True
         mock_routing_config_cls.load_default.return_value.get_mode.return_value = "api"
