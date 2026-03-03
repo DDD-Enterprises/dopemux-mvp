@@ -49,15 +49,22 @@ class ToolDiscoveryClient:
         if not url:
             return {"name": name, "reachable": False, "status": "missing_url", "tools": []}
 
-        # Common MCP-over-HTTP patterns
-        endpoints = [
-            # 1. Standard bridge endpoint (POST /mcp)
-            (f"{url.rstrip('/')}/mcp", "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}),
-            # 2. Simple list tools endpoint (GET /tools)
-            (f"{url.rstrip('/')}/tools", "GET", None),
-            # 3. Direct JSON-RPC endpoint (POST /)
-            (f"{url.rstrip('/')}/", "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}),
-        ]
+        # Priority 1: Standard MCP JSON-RPC over HTTP (POST /mcp or direct URL if it's already the endpoint)
+        # We try the URL as provided first, then append /mcp if it fails or if it looks like a base URL.
+        base_url = url.rstrip('/')
+        endpoints = []
+        
+        if base_url.endswith('/mcp'):
+            endpoints.append((base_url, "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}))
+        else:
+            endpoints.append((f"{base_url}/mcp", "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}))
+            endpoints.append((base_url, "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}))
+
+        # Priority 2: Fallback aliases or GET endpoints (less preferred but kept for compatibility)
+        endpoints.extend([
+            (f"{base_url}/tools", "GET", None),
+            (f"{base_url}/", "POST", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}),
+        ])
         
         errors = []
         for endpoint, method, payload in endpoints:
@@ -66,8 +73,16 @@ class ToolDiscoveryClient:
                     async with session.post(endpoint, json=payload, timeout=self.timeout) as resp:
                         if resp.status == 200:
                             data = await resp.json()
+                            # Check for JSON-RPC error
+                            if isinstance(data, dict) and "error" in data:
+                                errors.append(f"{endpoint}: JSON-RPC Error {data['error'].get('code')}: {data['error'].get('message')}")
+                                continue
+                            
                             tools = self._extract_tools(data)
-                            return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": endpoint}
+                            if tools:
+                                return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": endpoint}
+                            else:
+                                errors.append(f"{endpoint}: No tools returned")
                         else:
                             errors.append(f"{endpoint}: HTTP {resp.status}")
                 else:
@@ -75,7 +90,10 @@ class ToolDiscoveryClient:
                         if resp.status == 200:
                             data = await resp.json()
                             tools = self._extract_tools(data)
-                            return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": endpoint}
+                            if tools:
+                                return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": endpoint}
+                            else:
+                                errors.append(f"{endpoint}: No tools returned")
                         else:
                             errors.append(f"{endpoint}: HTTP {resp.status}")
             except Exception as e:
@@ -95,18 +113,36 @@ class ToolDiscoveryClient:
         # MCP style: {"result": {"tools": [{"name": "..."}]}}
         if isinstance(data, dict):
             # Try JSON-RPC result format
-            res = data.get("result", data)
-            if isinstance(res, dict):
-                tools_data = res.get("tools", [])
-                if isinstance(tools_data, list):
-                    if tools_data and isinstance(tools_data[0], dict):
-                        return [t.get("name") for t in tools_data if t.get("name")]
-                    return [str(t) for t in tools_data]
-            # Try list format
-            if isinstance(data, list):
-                if data and isinstance(data[0], dict):
-                    return [t.get("name") for t in data if t.get("name")]
-                return [str(t) for t in data]
+            res = data.get("result")
+            if res:
+                if isinstance(res, dict):
+                    tools_data = res.get("tools", [])
+                    if isinstance(tools_data, list):
+                        if tools_data and isinstance(tools_data[0], dict):
+                            return [t.get("name") for t in tools_data if t.get("name")]
+                        return [str(t) for t in tools_data]
+                elif isinstance(res, list):
+                    if res and isinstance(res[0], dict):
+                        return [t.get("name") for t in res if t.get("name")]
+                    return [str(t) for t in res]
+            
+            # Try direct fields
+            tools_data = data.get("tools")
+            if isinstance(tools_data, list):
+                if tools_data and isinstance(tools_data[0], dict):
+                    return [t.get("name") for t in tools_data if t.get("name")]
+                return [str(t) for t in tools_data]
+                
+            # If it's just a dict with names
+            if not res and not tools_data:
+                # Some servers might just return the list of tools directly if not JSON-RPC
+                pass
+
+        if isinstance(data, list):
+            if data and isinstance(data[0], dict):
+                return [t.get("name") for t in data if t.get("name")]
+            return [str(t) for t in data]
+            
         return []
 
     def save_report(self, output_path: Path):

@@ -3,19 +3,20 @@
   "servers": [
     {
       "errors": [
-        "http://127.0.0.1:3005/mcp: HTTP 404",
-        "http://127.0.0.1:3005/tools: HTTP 404",
-        "http://127.0.0.1:3005/: HTTP 404"
+        "http://127.0.0.1:3004/mcp: No tools returned",
+        "http://127.0.0.1:3004/mcp/tools: HTTP 404",
+        "http://127.0.0.1:3004/mcp/: HTTP 404"
       ],
       "name": "conport",
       "reachable": false,
       "status": "unreachable",
       "tools": [],
-      "url": "http://127.0.0.1:3005"
+      "url": "http://127.0.0.1:3004/mcp"
     },
     {
       "errors": [
         "http://localhost:3020/mcp: HTTP 404",
+        "http://localhost:3020: HTTP 405",
         "http://localhost:3020/tools: HTTP 404",
         "http://localhost:3020/: HTTP 405"
       ],
@@ -28,6 +29,7 @@
     {
       "errors": [
         "http://127.0.0.1:3010/mcp: HTTP 406",
+        "http://127.0.0.1:3010: HTTP 404",
         "http://127.0.0.1:3010/tools: HTTP 404",
         "http://127.0.0.1:3010/: HTTP 404"
       ],
@@ -40,6 +42,7 @@
     {
       "errors": [
         "http://127.0.0.1:3020/mcp: HTTP 404",
+        "http://127.0.0.1:3020: HTTP 405",
         "http://127.0.0.1:3020/tools: HTTP 404",
         "http://127.0.0.1:3020/: HTTP 405"
       ],
@@ -52,6 +55,7 @@
     {
       "errors": [
         "http://127.0.0.1:3006/mcp: HTTP 406",
+        "http://127.0.0.1:3006: HTTP 404",
         "http://127.0.0.1:3006/tools: HTTP 404",
         "http://127.0.0.1:3006/: HTTP 404"
       ],

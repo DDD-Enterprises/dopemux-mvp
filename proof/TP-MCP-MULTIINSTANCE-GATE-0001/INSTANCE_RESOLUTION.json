@@ -14,7 +14,7 @@
         "conport_*"
       ],
       "transport": "http",
-      "url": "http://127.0.0.1:3005"
+      "url": "http://127.0.0.1:3004/mcp"
     },
     "docker_mcp_gateway": {
       "transport": "streamable-http",

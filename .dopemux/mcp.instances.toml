@@ -4,7 +4,7 @@ instance_profile = "default"
 instance_id = "dev-local"
 
 [mcp.conport]
-url = "http://127.0.0.1:3005"
+url = "http://127.0.0.1:3004/mcp"
 transport = "http"
 required_tool_globs = ["conport_*"]
 
