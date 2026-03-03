@@ -1,5 +1,5 @@
 ---
-id: pal-pr-template
+id: pal-pr-layout
 title: PAL PR Template
 type: template
 owner: '@hu3mann'
