@@ -37,7 +37,7 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
   };
 
   return (
-    <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }}>
+    <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <Brain size={24} style={{ marginRight: 8 }} aria-hidden="true" />
         <Typography variant="h6">Cognitive Load</Typography>
