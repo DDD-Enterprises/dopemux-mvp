@@ -721,6 +721,7 @@ def start(
     original_altp = use_altp
     original_litellm = use_litellm
     global RoutingConfig
+    provider = None
 
     """
     🚀 Start Claude Code with ADHD-optimized configuration
