@@ -14,7 +14,7 @@ class TestTaskDecomposer:
 
     def test_initialization_creates_directories(self, tmp_path):
         """Test that initialization creates the necessary directory structure."""
-        decomposer = TaskDecomposer(tmp_path)
+        TaskDecomposer(tmp_path)
 
         expected_dir = tmp_path / ".dopemux" / "tasks"
 
