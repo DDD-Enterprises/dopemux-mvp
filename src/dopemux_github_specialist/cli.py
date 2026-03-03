@@ -5,7 +5,6 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 from .schema import Report
 from .github.render import render_report_md
