@@ -133,7 +133,7 @@ def test_partition_result_logging():
     """
     Test that partition processing includes proper logging.
     """
-    with patch('services.repo-truth-extractor.run_extraction_v3.logger.info') as mock_info:
+    with patch.object(runner.logger, 'info') as mock_info:
         # Simulate logging that occurs in the future processing loop
         partition_id = "test_partition_001"
         mock_info(f"Processing completed future for partition {partition_id}")
