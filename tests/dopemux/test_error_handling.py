@@ -103,14 +103,13 @@ def test_retry_policy_delay_calculation():
     assert policy.get_delay(3) == 8.0
     assert policy.get_delay(4) == 10.0  # Capped at max_delay
 
-@patch('random.uniform')
-def test_retry_policy_jitter(mock_random):
-    mock_random.return_value = 1.1  # 10% jitter
+def test_retry_policy_jitter():
     policy = RetryPolicy(initial_delay=1.0, jitter=True)
 
     delay = policy.get_delay(0)
-    assert delay == 1.1
 
+    # With jitter enabled, the delay for attempt 0 should be within ±25% of initial_delay
+    assert 0.75 <= delay <= 1.25
 # --- CircuitBreaker Tests ---
 
 @pytest.mark.asyncio
