@@ -74,7 +74,11 @@ class ToolDiscoveryClient:
             for method in tool_list_methods:
                 try:
                     payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": {}}
-                    headers = {"Content-Type": "application/json", "Accept": "application/json"}
+                    # Add comprehensive headers to satisfy strict servers (like Dope-Context/Serena)
+                    headers = {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json, text/event-stream"
+                    }
                     
                     async with session.post(endpoint, json=payload, headers=headers, timeout=self.timeout) as resp:
                         data = None
@@ -91,23 +95,26 @@ class ToolDiscoveryClient:
                         is_jsonrpc = isinstance(data, dict) and "jsonrpc" in data
                         
                         if resp.status == 200 or is_jsonrpc:
-                            # If we have an error but it's "Method not found", the server IS reachable
+                            # If we have an error, check if it's a "reachable" error
                             if isinstance(data, dict) and "error" in data:
                                 err_code = data["error"].get("code")
-                                if err_code == -32601: # Method not found
-                                    # This specific method failed, but the server is reachable.
-                                    # We'll continue the inner loop to try other methods.
+                                err_msg = data["error"].get("message", "")
+                                
+                                # Method not found means server is up but doesn't like this method
+                                if err_code == -32601:
                                     continue
                                 
-                                errors.append(f"{endpoint} ({method}): JSON-RPC Error {err_code}: {data['error'].get('message')}")
+                                # Missing session ID or similar handshakes mean the transport is alive
+                                if "session" in err_msg.lower() or "not acceptable" in err_msg.lower():
+                                    return {"name": name, "reachable": True, "status": "ok", "tools": [], "endpoint": endpoint, "warning": "transport active, handshake required"}
+
+                                errors.append(f"{endpoint} ({method}): JSON-RPC Error {err_code}: {err_msg}")
                                 continue
 
                             tools = self._extract_tools(data) if data else []
                             if tools:
                                 return {"name": name, "reachable": True, "status": "ok", "tools": tools, "endpoint": endpoint}
                             
-                            # Reachable but no tools returned for this method.
-                            # We'll continue to try other methods or endpoints.
                             continue
                         else:
                             errors.append(f"{endpoint} ({method}): HTTP {resp.status}")

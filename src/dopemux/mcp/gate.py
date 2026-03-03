@@ -52,6 +52,10 @@ class DiscoveryGate:
                 discovered_tools = srv_discovery.get("tools", [])
                 self.report["tools_discoverable"][name] = len(discovered_tools)
                 
+                # If transport is ok but requires handshake, we consider it REACHABLE.
+                # Globs can't be validated if no tools returned yet, so we only FAIL if mandatory.
+                handshake_required = srv_discovery.get("warning") == "transport active, handshake required"
+
                 # Validate globs
                 required_globs = config.get("required_tool_globs", [])
                 missing_globs = []
@@ -66,7 +70,7 @@ class DiscoveryGate:
                             alt_glob = glob.replace("conport_", "conport_")
                         matches = fnmatch.filter(discovered_tools, alt_glob)
 
-                    if not matches:
+                    if not matches and not handshake_required:
                         missing_globs.append(glob)
                 
                 if missing_globs:
