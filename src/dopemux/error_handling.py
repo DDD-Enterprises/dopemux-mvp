@@ -52,7 +52,12 @@ class DopemuxError(Exception):
     error_type: ErrorType
     severity: ErrorSeverity
     message: str
-    details: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+    def __post_init__(self):
+        """Initialize base Exception with the error message."""
+        super().__init__(self.message)
+
     service_name: Optional[str] = None
     operation: Optional[str] = None
     timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
