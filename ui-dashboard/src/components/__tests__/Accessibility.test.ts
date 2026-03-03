@@ -25,6 +25,7 @@ test('TeamDashboard.tsx has aria-labels for team and member progress bars', () =
   const content = fs.readFileSync(path.join(componentsDir, 'TeamDashboard.tsx'), 'utf8');
   expect(content).toContain('aria-label="Team Average Cognitive Load Percentage"');
   expect(content).toContain('aria-label={`${member.name}\'s Cognitive Load Percentage`}');
+  expect(content).toContain('aria-label={`Profile picture of ${member.name}`}');
 });
 
 test('TaskSequencer.tsx has contextual aria-labels for buttons', () => {
