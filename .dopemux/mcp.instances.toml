@@ -2,6 +2,7 @@
 project_id = "dopemux-mvp"
 instance_profile = "default"
 instance_id = "dev-local"
+allow_global_fallback = false
 
 [mcp.conport]
 url = "http://127.0.0.1:3004/mcp"

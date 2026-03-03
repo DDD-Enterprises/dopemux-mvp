@@ -38,6 +38,9 @@ class InstanceResolver:
                     self.resolution_report["project_id"] = proj.get("project_id", "unknown")
                     self.resolution_report["instance_profile"] = proj.get("instance_profile", profile_name)
                     
+                    # New: Opt-in global fallback to prevent cross-project contamination
+                    allow_global = proj.get("allow_global_fallback", False)
+                    
                     if "mcp" in config:
                         for name, details in config["mcp"].items():
                             self.resolution_report["servers"][name] = details.copy()
@@ -45,6 +48,9 @@ class InstanceResolver:
                 except Exception as e:
                     # If repo profile fails to parse, we should probably know
                     self.resolution_report["error"] = f"Failed to parse repo profile: {str(e)}"
+                    allow_global = False # Default safe
+        else:
+            allow_global = False # No repo profile, don't guess global
 
         # 2. Env vars override
         for env_key, env_val in os.environ.items():
@@ -57,23 +63,24 @@ class InstanceResolver:
                 self.resolution_report["servers"][name]["url"] = env_val
                 self.resolution_report["provenance"][name] = "env_var"
 
-        # 3. Global fallback (~/.vibe/config.toml)
-        global_config_path = Path.home() / ".vibe" / "config.toml"
-        if global_config_path.exists():
-            try:
-                with open(global_config_path, "rb") as f:
-                    global_config = tomllib.load(f)
-                    if "mcp_servers" in global_config:
-                        for srv in global_config["mcp_servers"]:
-                            name = srv.get("name")
-                            if name and name not in self.resolution_report["servers"]:
-                                self.resolution_report["servers"][name] = {
-                                    "url": srv.get("url"),
-                                    "transport": srv.get("transport", "http"),
-                                }
-                                self.resolution_report["provenance"][name] = "global_fallback"
-            except Exception:
-                pass
+        # 3. Global fallback (~/.vibe/config.toml) - ONLY if allowed
+        if allow_global:
+            global_config_path = Path.home() / ".vibe" / "config.toml"
+            if global_config_path.exists():
+                try:
+                    with open(global_config_path, "rb") as f:
+                        global_config = tomllib.load(f)
+                        if "mcp_servers" in global_config:
+                            for srv in global_config["mcp_servers"]:
+                                name = srv.get("name")
+                                if name and name not in self.resolution_report["servers"]:
+                                    self.resolution_report["servers"][name] = {
+                                        "url": srv.get("url"),
+                                        "transport": srv.get("transport", "http"),
+                                    }
+                                    self.resolution_report["provenance"][name] = "global_fallback"
+                except Exception:
+                    pass
 
         # Normalize and sort
         self.resolution_report["servers"] = dict(sorted(self.resolution_report["servers"].items()))
