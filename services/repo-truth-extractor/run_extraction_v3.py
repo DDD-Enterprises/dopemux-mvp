@@ -4412,6 +4412,38 @@ def get_gemini_client(api_key: str) -> Any:
     return genai.Client(api_key=api_key)
 
 
+def _build_gemini_config_for_model(
+    model_id: str,
+    system_prompt: str,
+    force_json_output: bool,
+) -> Dict[str, Any]:
+    """Build the GenerateContentConfig dict for a Gemini model call.
+
+    Deterministic, network-free, env-free — safe to call in tests.
+    Disables thinking (budget=0) for bulk and extract models to control
+    cost and latency.  For all other models thinking is left at SDK default.
+    """
+    config: Dict[str, Any] = {
+        "temperature": 0.1,
+        "system_instruction": system_prompt,
+        "max_output_tokens": 8192,
+    }
+    if force_json_output:
+        config["response_mime_type"] = "application/json"
+
+    if model_id in (DEFAULT_GEMINI_BULK_MODEL, DEFAULT_GEMINI_EXTRACT_MODEL):
+        try:
+            from google.genai import types as _genai_types
+            config["thinking_config"] = _genai_types.ThinkingConfig(thinking_budget=0)
+        except ImportError:
+            # Fail closed: do NOT substitute an invented dict key.
+            raise ValueError(
+                "google-genai SDK not available; cannot safely disable Gemini thinking. "
+                "Install google-genai>=0.8 to proceed."
+            )
+    return config
+
+
 def get_openai_client(base_url: Optional[str], api_key: str) -> Any:
     try:
         from openai import OpenAI
@@ -4779,20 +4811,12 @@ def call_llm(
                 response_json = response.json()
                 response_text = response_json["choices"][0]["message"]["content"]
             elif provider == "gemini":
-                from google import genai as _genai
                 client = get_gemini_client(api_key)
-                gemini_config: Dict[str, Any] = {
-                    "temperature": 0.1,
-                    "system_instruction": system_prompt,
-                    "max_output_tokens": 8192,
-                }
-                if force_json_output:
-                    gemini_config["response_mime_type"] = "application/json"
-                if model_id in (DEFAULT_GEMINI_BULK_MODEL, DEFAULT_GEMINI_EXTRACT_MODEL):
-                    gemini_config["thinking_config"] = _genai.types.ThinkingConfig(
-                        thinking_budget=0
-                    )
-
+                gemini_config = _build_gemini_config_for_model(
+                    model_id=model_id,
+                    system_prompt=system_prompt,
+                    force_json_output=force_json_output,
+                )
                 response = client.models.generate_content(
                     model=model_id,
                     contents=user_content,

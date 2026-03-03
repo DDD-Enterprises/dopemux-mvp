@@ -1,14 +1,12 @@
-Objective: Fix extractor routing ladders to use direct providers (openai/gemini/xai) with correct model IDs for all tiers (bulk/extract/synthesis/qa).
+Objective: Fix Gemini thinking disablement config to use valid Google GenAI SDK shape and add unit test.
 Scope:
 - services/repo-truth-extractor/run_extraction_v3.py
-- tests/unit/test_extractor_routing_ladders.py
+- tests/unit/test_extractor_gemini_thinking_config.py
 - proof/PLAN.txt
 Steps:
-1) Replace ROUTING_LADDERS entries to use only provider IDs: openai, gemini, xai.
-2) Replace model IDs with direct-provider IDs (no openrouter/google aliases).
-3) Add preflight validation: every ladder route provider/model must be recognized.
-4) Add unit tests ensuring no unsupported providers and all required tiers exist.
+1) Replace incorrect gemini_config["thinking_config"] dict with SDK types.ThinkingConfig(thinking_budget=0) where SDK is present.
+2) Extract _build_gemini_config_for_model() helper for deterministic testability.
+3) Add unit test that builds Gemini config in a network-free way and asserts thinking_budget=0 is set in the correct field/type.
 Verification:
 - python -m compileall -q services tests
-- pytest -q tests/unit/test_extractor_routing_ladders.py
-- python services/repo-truth-extractor/run_extraction_v3.py --phase D --preflight-providers
+- pytest -q tests/unit/test_extractor_gemini_thinking_config.py
