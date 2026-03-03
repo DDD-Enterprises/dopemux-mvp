@@ -672,6 +672,7 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
 )
 @click.pass_context
 def start(
+    global RoutingConfig
     ctx,
     session: Optional[str],
     background: bool,
