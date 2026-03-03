@@ -4778,6 +4778,8 @@ def call_llm(
                 status_code = response.status_code
                 response_json = response.json()
                 response_text = response_json["choices"][0]["message"]["content"]
+            elif provider == "gemini":
+                from google import genai as _genai
                 client = get_gemini_client(api_key)
                 gemini_config: Dict[str, Any] = {
                     "temperature": 0.1,
@@ -4787,7 +4789,9 @@ def call_llm(
                 if force_json_output:
                     gemini_config["response_mime_type"] = "application/json"
                 if model_id in (DEFAULT_GEMINI_BULK_MODEL, DEFAULT_GEMINI_EXTRACT_MODEL):
-                    gemini_config["thinking_config"] = {"thinking_budget_tokens": 0}
+                    gemini_config["thinking_config"] = _genai.types.ThinkingConfig(
+                        thinking_budget=0
+                    )
 
                 response = client.models.generate_content(
                     model=model_id,
