@@ -720,6 +720,7 @@ def start(
     original_codex = use_codex
     original_altp = use_altp
     original_litellm = use_litellm
+    global RoutingConfig
 
     """
     🚀 Start Claude Code with ADHD-optimized configuration
