@@ -79,6 +79,7 @@ from subprocess import CalledProcessError
 from urllib.parse import urlparse
 import yaml
 from .mobile import mobile as mobile_commands
+from .mobile.main import main as mobile_env_commands
 from .mobile.hooks import mobile_task_notification
 from .mobile.runtime import update_tmux_mobile_indicator
 from .tmux import tmux as tmux_commands
@@ -724,6 +725,13 @@ def start(
         Automatically detects running instances and creates isolated worktrees
         for parallel ADHD-optimized development workflows.
     """
+    # Track original flag values for subscription mode warnings
+    original_grok = use_grok
+    original_codex = use_codex
+    original_altp = use_altp
+    original_litellm = use_litellm
+    global RoutingConfig
+    provider = None
     
     def _ensure_env_consistent_with_mode(final_mode: str) -> None:
         """Ensure environment variables are consistent with routing mode.
@@ -788,6 +796,10 @@ def start(
     if deprecated_flags_used and routing_mode is not None:
         console.logger.warning("[yellow]⚠️  Deprecated flags detected (--grok/--codex/--altp/--alt-routing/--claude-router)[/yellow]")
         console.logger.info("[dim]Prefer: dopemux routing mode api|subscription[/dim]")
+
+    # Check if provider flags were disabled due to subscription mode
+    if not (use_grok or use_codex or use_altp or use_litellm) and (original_grok or original_codex or original_altp or original_litellm):
+        console.logger.info("[blue]📋 Using direct Anthropic connection (subscription mode)[/blue]")
 
     # ── Handle routing mode: api (proxy through CCR/LiteLLM) ─────────
     if routing_mode == "api" and not deprecated_flags_used:
@@ -939,65 +951,81 @@ def start(
 
         else:
             # ── Multi-target tier-matched routing (--altp) ──────────────
-            missing_keys = [
-                k for k in ALTP_PROVIDER["required_keys"] if not os.getenv(k)
-            ]
-            if missing_keys:
-                raise click.ClickException(
-                    f"--altp requires: {', '.join('$' + k for k in missing_keys)}. "
-                    f"Set them in your environment or .env file."
+            # Check if we should warn about proxy usage
+            current_routing_mode = "subscription"  # Default to subscription
+            try:
+                if RoutingConfig is not None:
+                    routing_config = RoutingConfig.load_default()
+                    current_routing_mode = routing_config.get_mode()
+            except Exception:
+                pass
+
+            if current_routing_mode != "api":
+                console.logger.warning("[yellow]⚠️  --altp flag ignored in subscription mode[/yellow]")
+                console.logger.info("[dim]   Use 'dopemux routing mode api' to enable proxy routing[/dim]")
+                # Fall through to default behavior (direct connection)
+                use_altp = False
+                use_litellm = False
+            else:
+                missing_keys = [
+                    k for k in ALTP_PROVIDER["required_keys"] if not os.getenv(k)
+                ]
+                if missing_keys:
+                    raise click.ClickException(
+                        f"--altp requires: {', '.join('$' + k for k in missing_keys)}. "
+                        f"Set them in your environment or .env file."
+                    )
+
+                console.logger.info("[cyan]🎯 --altp: Tier-matched alternative provider routing[/cyan]")
+                for t in ALTP_PROVIDER["targets"]:
+                    tier = t["name"].replace("altp-", "")
+                    console.logger.info(f"[dim]   {tier:>6s} → {t['label']} ({t['model']})[/dim]")
+
+                config_data = generate_multi_target_config(ALTP_PROVIDER["targets"])
+                
+                # Auto-enable Claude Code Router for API translation
+                use_claude_router = True
+                console.logger.info("[dim]   Enabling Claude Code Router for API translation (responses → completions)[/dim]")
+                
+                _routing_summary = "Claude Code → CCR → LiteLLM → tier-matched providers"
+
+        if use_litellm:
+            console.logger.info("[blue]🔄 Starting LiteLLM proxy (no DB required)...[/blue]")
+            try:
+                litellm_port, litellm_master_key = start_simple_proxy(
+                    project_root=Path.cwd(),
+                    config_data=config_data,
                 )
+                provider_proxy_started = True
+            except LiteLLMProxyError as exc:
+                raise click.ClickException(str(exc))
 
-            console.logger.info("[cyan]🎯 --altp: Tier-matched alternative provider routing[/cyan]")
-            for t in ALTP_PROVIDER["targets"]:
-                tier = t["name"].replace("altp-", "")
-                console.logger.info(f"[dim]   {tier:>6s} → {t['label']} ({t['model']})[/dim]")
+            console.logger.info(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
 
-            config_data = generate_multi_target_config(ALTP_PROVIDER["targets"])
+            # Wire Claude Code to use the proxy
+            os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
+            os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
+            os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
+            os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+            os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
+            os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+
+            # Export CCR upstream env vars so Claude Code Router uses the new proxy
+            os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+            os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
+            os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
             
-            # Auto-enable Claude Code Router for API translation
-            use_claude_router = True
-            console.logger.info("[dim]   Enabling Claude Code Router for API translation (responses → completions)[/dim]")
-            
-            _routing_summary = "Claude Code → CCR → LiteLLM → tier-matched providers"
+            if use_altp:
+                # For --altp, we map to the tier names defined in generate_multi_target_config
+                # CCR will expose these exact model names to Claude Code
+                os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
+            elif provider is not None:
+                os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
 
-        console.logger.info("[blue]🔄 Starting LiteLLM proxy (no DB required)...[/blue]")
-        try:
-            litellm_port, litellm_master_key = start_simple_proxy(
-                project_root=Path.cwd(),
-                config_data=config_data,
-            )
-            provider_proxy_started = True
-        except LiteLLMProxyError as exc:
-            raise click.ClickException(str(exc))
+            use_alt_routing = False  # Skip the full alt-routing block below
 
-        console.logger.info(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
-
-        # Wire Claude Code to use the proxy
-        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
-        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-        os.environ["ANTHROPIC_BASE_URL"] = f"http://127.0.0.1:{litellm_port}"
-        os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
-        os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
-        os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
-
-        # Export CCR upstream env vars so Claude Code Router uses the new proxy
-        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
-        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://127.0.0.1:{litellm_port}/v1/chat/completions"
-        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
-        
-        if use_altp:
-            # For --altp, we map to the tier names defined in generate_multi_target_config
-            # CCR will expose these exact model names to Claude Code
-            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = "altp-opus,altp-sonnet,altp-haiku"
-        else:
-            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = provider["name"]
-
-        use_litellm = True
-        use_alt_routing = False  # Skip the full alt-routing block below
-
-        console.logger.info(f"[dim]✓ {_routing_summary} (:{litellm_port})[/dim]")
-        console.logger.info("")
+            console.logger.info(f"[dim]✓ {_routing_summary} (:{litellm_port})[/dim]")
+            console.logger.info("")
 
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
@@ -3890,12 +3918,15 @@ def mcp():
 def mcp_up_cmd(all_services: bool, services: str):
     """Start MCP servers via docker-compose."""
     try:
-        cmd = "cd docker/mcp-servers && "
+        # Resolve script path
+        script_dir = Path(__file__).parent.parent.parent / "scripts"
+        script_path = script_dir / "start-all-mcp-servers.sh"
+        
         if all_services or not services:
-            cmd += "./start-all-mcp-servers.sh"
+            cmd = f"bash {script_path}"
         else:
             svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
-            cmd += f"docker compose -f compose.yml up -d --build {svc_list}"
+            cmd = f"docker compose -f compose.yml up -d --build {svc_list}"
         console.logger.info(f"[blue]🔌 {cmd}[/blue]")
         subprocess.run(["bash","-lc", cmd], check=True)
         console.logger.info("[green]✅ MCP servers started[/green]")
@@ -6440,6 +6471,7 @@ except ImportError as e:
 
 # Register mobile integration commands
 cli.add_command(mobile_commands, "mobile")
+cli.add_command(mobile_env_commands, "mobile-env")
 
 
 # Add genetic agent CLI group

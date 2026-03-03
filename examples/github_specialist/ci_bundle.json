@@ -1,0 +1,13 @@
+{
+  "scope": "ci",
+  "target": "CI:run/abc123",
+  "repo": "dopemux/dopemux-mvp",
+  "ci": {
+    "job": "tests",
+    "step": "pytest",
+    "log_excerpt": "___________________________ test_circular_import ___________________________
+E   ImportError: cannot import name 'ensure_dependency' from partially initialized module 'dopemux.mobile.runtime' (most likely due to a circular import)
+
+FAILED tests/test_mobile_env_migration.py::test_circular_import - ImportError"
+  }
+}

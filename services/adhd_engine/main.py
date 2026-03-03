@@ -39,6 +39,37 @@ from .api import routes
 from .config import settings
 from .middleware.rate_limit import RateLimitMiddleware
 from .core.error_handling import with_error_handling
+from fastmcp import FastMCP
+
+# Initialize FastMCP
+mcp = FastMCP("ADHD-Engine")
+
+@mcp.tool()
+async def get_cognitive_state(user_id: str = "default") -> dict:
+    """Get current cognitive state (energy, attention, load)."""
+    if not engine:
+        return {"error": "Engine not initialized"}
+
+    # We call the engine directly for speed
+    energy = await engine.get_energy_level(user_id)
+    attention = await engine.get_attention_state(user_id)
+    load = await engine.get_cognitive_load(user_id)
+
+    return {
+        "energy_level": energy.level,
+        "energy_score": energy.score,
+        "attention_state": attention.state,
+        "cognitive_load": load
+    }
+
+@mcp.tool()
+async def assess_task_complexity(title: str, description: str = "") -> dict:
+    """Assess task complexity and ADHD impact."""
+    if not engine:
+        return {"error": "Engine not initialized"}
+
+    assessment = await engine.assess_task(title, description)
+    return assessment.dict()
 
 # Import shared Redis pool and cache for performance optimization
 import sys
@@ -292,6 +323,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc"
 )
+
+# Mount FastMCP HTTP app
+app.mount("/mcp", mcp.http_app)
 
 # CORS middleware for browser access
 # Security: Use environment-based origin whitelist with secure defaults and validation

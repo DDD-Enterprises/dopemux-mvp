@@ -4,7 +4,7 @@
 
 **Project**: dopemux-mvp (ADHD-optimized development platform)
 **Current State**: TaskX → dopeTask migration COMPLETE ✅
-**Version**: 0.1.4 (pip-only installation)
+**Version**: 0.2.0 (pip-only installation)
 **Last Updated**: 2024
 
 ## 📋 Current Architecture
@@ -17,9 +17,9 @@
 - **ConPort**: Knowledge graph and context management
 
 ### Key Files
-- `.dopetask-pin`: Pip configuration (`install=pip`, `dep=dopetask`, `version=0.1.4`)
+- `.dopetask-pin`: Pip configuration (`install=pip`, `dep=dopetask`, `version=0.2.0`)
 - `scripts/dopetask`: Pip-based wrapper script
-- `pyproject.toml`: Includes `dopetask==0.1.4` in dev dependencies
+- `pyproject.toml`: Includes `dopetask==0.2.0` in dev dependencies
 - `docs/DOPETASK_INTEGRATION.md`: Integration guide
 
 ## 🔧 Development Workflow
@@ -33,7 +33,7 @@ scripts/dopetask execute --plan=plan.yaml
 scripts/dopetask validate --plan=plan.yaml
 
 # Check version
-scripts/dopetask --version  # Should show 0.1.4
+scripts/dopetask --version  # Should show 0.2.0
 ```
 
 ### Common Commands
@@ -89,7 +89,7 @@ pytest tests/arch/test_dopetask_submodule_contract.py tests/unit/test_dopetask_w
 
 ### TaskX → dopeTask Changes
 - **Submodule removed**: No `vendor/taskx` or `vendor/dopetask`
-- **Pip-only**: All dependencies via `pip install dopetask==0.1.4`
+- **Pip-only**: All dependencies via `pip install dopetask==0.2.0`
 - **Configuration**: `.dopetask-pin` replaces `.taskx-pin`
 - **Scripts**: `scripts/dopetask` replaces `scripts/taskx`
 - **Environment**: `.dopetask_venv` replaces `.taskx_venv`
