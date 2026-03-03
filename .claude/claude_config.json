@@ -17,14 +17,14 @@
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "main",
-        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
+        "DOPEMUX_INSTANCE_ID": "${DOPEMUX_INSTANCE_ID:-main}",
+        "DOPEMUX_WORKSPACE_ID": "."
       }
     },
     "gpt-researcher_wrapped": {
       "command": "python",
       "args": [
-        "/Users/hue/code/dopemux-mvp/scripts/mcp_event_wrapper.py",
+        "scripts/mcp/mcp_event_wrapper.py",
         "--server",
         "gpt-researcher",
         "--instance",
@@ -35,7 +35,7 @@
         "6379"
       ],
       "env": {
-        "WORKSPACE_PATH": "/Users/hue/code/dopemux-mvp",
+        "WORKSPACE_PATH": ".",
         "EXA_API_KEY": "${EXA_API_KEY}",
         "TAVILY_API_KEY": "${TAVILY_API_KEY}",
         "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
@@ -103,7 +103,7 @@
     "gpt-researcher": {
       "command": "python",
       "args": [
-        "/Users/hue/code/dopemux-mvp/scripts/gpt-researcher/mcp_server.py"
+        "docker/mcp-servers/gpt-researcher/scripts/mcp_server.py"
       ],
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
