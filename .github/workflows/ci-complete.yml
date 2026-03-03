@@ -56,7 +56,7 @@ jobs:
             exit 0
           fi
 
-          echo "$CHANGED_FILES" | xargs -r python scripts/check_root_hygiene.py --quiet
+          echo "$CHANGED_FILES" | tr '\n' '\0' | xargs -0 -r python scripts/check_root_hygiene.py --quiet
 
       - name: 🔍 Run pre-commit (code quality)
         run: |
