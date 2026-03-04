@@ -254,19 +254,31 @@ def test_balanced_grok_openrouter_policy_is_accepted_by_cli(tmp_path: Path) -> N
     payload = json.loads(result.stdout)
     assert payload["cli"]["routing_policy"] == "balanced_grok_openrouter"
     assert payload["effective_model_routing"]["D"]["provider"] == "xai"
-    assert payload["effective_model_routing"]["D"]["model_id"] == "grok-4-1-fast-non-reasoning"
+    assert payload["effective_model_routing"]["D"]["model_id"] == "grok-4-1-fast-reasoning"
 
 
 def test_balanced_grok_openrouter_docs_governance_routes_are_short_and_non_codex() -> None:
     runner = _load_runner_module()
     _reset_routing(runner)
-    for phase, step_id in [("A", "A1"), ("H", "H1"), ("D", "D1"), ("W", "W1"), ("B", "B1"), ("G", "G1")]:
+    for phase, step_id in [("A", "A1"), ("H", "H1"), ("W", "W1"), ("B", "B1"), ("G", "G1"), ("D", "D2")]:
         routes = runner.resolve_step_ladder("balanced_grok_openrouter", phase, step_id)
         assert routes == [
             ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
             ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
         ]
         assert all("codex" not in route[1].lower() for route in routes)
+
+
+def test_balanced_grok_openrouter_d_strict_steps_use_reasoning_and_stronger_fallbacks() -> None:
+    runner = _load_runner_module()
+    _reset_routing(runner)
+    expected = [
+        ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
+        ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+        ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+    ]
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D0") == expected
+    assert runner.resolve_step_ladder("balanced_grok_openrouter", "D", "D1") == expected
 
 
 def test_balanced_grok_openrouter_code_phases_keep_codex_variants() -> None:

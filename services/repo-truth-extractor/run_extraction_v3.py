@@ -403,6 +403,12 @@ BALANCED_GROK_OPENROUTER_DOCS_LADDER: List[Tuple[str, str, str]] = [
     ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
     ("openrouter", "openai/gpt-5-mini", "OPENROUTER_API_KEY"),
 ]
+BALANCED_GROK_OPENROUTER_D_STRICT_STEPS: Set[str] = {"D0", "D1"}
+BALANCED_GROK_OPENROUTER_DOCS_STRICT_LADDER: List[Tuple[str, str, str]] = [
+    ("xai", "grok-4-1-fast-reasoning", "XAI_API_KEY"),
+    ("openrouter", "openai/gpt-5.3-codex", "OPENROUTER_API_KEY"),
+    ("openrouter", "openai/gpt-5.2", "OPENROUTER_API_KEY"),
+]
 BALANCED_GROK_OPENROUTER_CODE_LADDERS: Dict[str, List[Tuple[str, str, str]]] = {
     "bulk": [
         ("xai", "grok-4-1-fast-non-reasoning", "XAI_API_KEY"),
@@ -2722,10 +2728,13 @@ def _clone_ladders(policy: str) -> Dict[str, List[Tuple[str, str, str]]]:
 
 def _balanced_grok_openrouter_routes(phase: str, step_id: str) -> Optional[List[Tuple[str, str, str]]]:
     phase_code = str(phase or "").upper()
+    step_code = str(step_id or "").upper()
     effective_tier = resolve_effective_step_tier("balanced_grok_openrouter", phase_code, step_id)
     if phase_code in PREMIUM_SYNTHESIS_PHASES:
         return list(BALANCED_GROK_OPENROUTER_SYNTHESIS_LADDER)
     if phase_code in DOCS_GOVERNANCE_PHASES:
+        if phase_code == "D" and step_code in BALANCED_GROK_OPENROUTER_D_STRICT_STEPS:
+            return list(BALANCED_GROK_OPENROUTER_DOCS_STRICT_LADDER)
         return list(BALANCED_GROK_OPENROUTER_DOCS_LADDER)
     if phase_code in CODE_HEAVY_PHASES:
         routes = BALANCED_GROK_OPENROUTER_CODE_LADDERS.get(
@@ -5936,24 +5945,22 @@ def _parse_retry_reason(
     if request_meta.get("response_received") is False:
         return None
 
+    strict_candidate = response_text.strip()
+    if not strict_candidate or not _contains_json_anchor(strict_candidate):
+        return None
+
     response_summary = request_meta.get("response_summary")
     finish_reason = ""
     if isinstance(response_summary, dict):
         finish_reason = str(response_summary.get("finish_reason") or "").upper()
-    if finish_reason != "MAX_TOKENS":
-        return None
-
-    strict_candidate = response_text.strip()
-    if not strict_candidate:
-        return None
-    trimmed = strict_candidate.rstrip()
-    if not trimmed:
-        return None
-    pos = int(strict_decode_error.pos)
-    eof_index = len(trimmed)
-    if not (pos >= eof_index or pos == eof_index - 1):
-        return None
-    return "max_tokens_string_eof_parse_failure"
+    if finish_reason == "MAX_TOKENS":
+        trimmed = strict_candidate.rstrip()
+        if trimmed:
+            pos = int(strict_decode_error.pos)
+            eof_index = len(trimmed)
+            if pos >= eof_index or pos == eof_index - 1:
+                return "max_tokens_string_eof_parse_failure"
+    return "json_contract_parse_failure"
 
 
 def try_repair_json_truncation(text: str, exc: Optional[json.JSONDecodeError]) -> Optional[str]:
@@ -7359,7 +7366,16 @@ def execute_step_for_partitions(
             route_provider, route_model_id, route_api_key_env = route
             route_force_json = route_provider == "gemini"
 
-            def _execute_llm_call() -> Tuple[str, Dict[str, Any]]:
+            def _execute_llm_call(parse_retry_reason_override: Optional[str] = None) -> Tuple[str, Dict[str, Any]]:
+                effective_user_prompt = user_prompt
+                if parse_retry_reason_override:
+                    effective_user_prompt = (
+                        f"{user_prompt}\n\n"
+                        "FORMAT CORRECTION RETRY:\n"
+                        "Return exactly one valid JSON object or array and nothing else.\n"
+                        "Do not include markdown, code fences, commentary, or explanations.\n"
+                        "The response must start with { or [ and end with } or ].\n"
+                    )
                 if cfg.batch_mode:
                     batch_provider = cfg.batch_provider if cfg.batch_provider != "auto" else route_provider
                     selected_route = (route_provider, route_model_id, route_api_key_env)
@@ -7395,7 +7411,7 @@ def execute_step_for_partitions(
                             custom_id=partition_id,
                             model_id=batch_model_id,
                             system_prompt=prompt_text,
-                            user_content=user_prompt,
+                            user_content=effective_user_prompt,
                             force_json_output=(batch_provider == "gemini"),
                             metadata={
                                 "phase": phase,
@@ -7627,7 +7643,7 @@ def execute_step_for_partitions(
                     model_id=route_model_id,
                     api_key_env=route_api_key_env,
                     system_prompt=prompt_text,
-                    user_content=user_prompt,
+                    user_content=effective_user_prompt,
                     cfg=cfg,
                     force_json_output=route_force_json,
                 )
@@ -7690,7 +7706,9 @@ def execute_step_for_partitions(
                 parse_retry_attempted = True
                 parse_retry_attempts += 1
                 parse_retry_reason = eligible_reason
-                response_text_local, request_meta_local = _execute_llm_call()
+                response_text_local, request_meta_local = _execute_llm_call(
+                    parse_retry_reason_override=eligible_reason,
+                )
 
             schema_ok, schema_reason = artifacts_pass_schema_gate(artifacts_local, output_artifacts)
             escalation_trigger: Optional[str] = None
