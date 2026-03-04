@@ -336,7 +336,6 @@ VALID_MCP_SERVERS = [
     "gpt-researcher",   # Deep web research
     "dope-context",     # Hybrid code search
     "desktop-commander", # Desktop automation and control
-    "morph-llm",        # Code transformation and bulk edits
     "magic-mcp",        # UI component generation
     "playwright",       # Browser automation and testing
     "tavily",           # Web search API

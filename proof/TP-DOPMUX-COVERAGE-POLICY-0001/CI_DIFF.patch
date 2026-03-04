@@ -1,0 +1,16 @@
+diff --git a/.github/workflows/ci-complete.yml b/.github/workflows/ci-complete.yml
+index 94e541330..f16f2438f 100644
+--- a/.github/workflows/ci-complete.yml
++++ b/.github/workflows/ci-complete.yml
+@@ -189,6 +189,11 @@ jobs:
+         run: |
+           pytest tests/unit --maxfail=1 --disable-warnings --no-cov
+ 
++      - name: 📊 Scoped Coverage (New/Active Modules)
++        run: |
++          chmod +x scripts/check_coverage.sh
++          ./scripts/check_coverage.sh
++
+       - name: 🧪 Installer Smoke Tests (core + full stacks)
+         run: |
+           cd /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}

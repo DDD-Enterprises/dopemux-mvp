@@ -166,6 +166,10 @@ def ensure_type_specific_fields(data: Dict, path: Path) -> bool:
 
 
 def ensure_frontmatter(path: Path, fix: bool = False) -> bool:
+    # Skip quarantined files
+    if "docs/04-explanation/history/sourceFiles/" in str(path).replace("\\", "/"):
+        return False
+
     text = path.read_text(encoding="utf-8")
     data, body, repaired = parse_frontmatter(text)
     changed = bool(repaired)

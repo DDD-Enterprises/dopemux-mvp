@@ -45,12 +45,13 @@ Produce phase `S6` synthesis artifacts detailing the Leantime integration footpr
 ## Evidence Rules
 - Mapped events must be strictly sourced from `EVENTBUS_WIRING_TRUTH.md` or equivalent inputs.
 - Omit hypothetical webhook configurations; only quote evidenced syncs.
-- Require `path`/`range` or explicitly cited sections for all security properties.
+- Require `path`, `line_range`, and `excerpt` keys or explicitly cited sections for all security properties.
 
 ## Determinism Rules
-- Fix the heading order.
+- Fix the heading order to ensure consistency between runs.
 - Alphabetize all event maps by topic or endpoint name.
-- Produce no temporary state IDs. Ensure output hashes are invariant for the same input.
+- Produce no temporary state IDs, run IDs, or timestamps (e.g. `generated_at`).
+- Ensure output hashes are invariant for the same input; the synthesis must be reproducible.
 
 ## Anti-Fabrication Rules
 - Do not list Leantime API endpoints that are not explicitly present in provided artifacts.

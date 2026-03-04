@@ -524,7 +524,6 @@ Alternative: Set CLAUDE_PATH environment variable
             node_packages = [
                 "@zilliz/claude-context-mcp",
                 "pal",
-                "morphllm-fast-apply-mcp",
                 "exa-mcp",
             ]
 

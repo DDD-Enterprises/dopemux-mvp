@@ -47,10 +47,13 @@ Produce phase `S5` synthesis artifacts analyzing the Task Orchestrator. This ste
 - Every mechanism (e.g., routing algorithm, dependency check) must cite the provided extraction file.
 - Fallback behaviors must explicitly reference code or control truth evidence.
 - Do not cite files outside of the provided scope.
+- All evidence citations must include `path`, `line_range`, and `excerpt` keys.
 
 ## Determinism Rules
 - Fix the output structure and sort lists lexicographically by dependency name.
-- Avoid runtime elements like timestamps or generic speculative language.
+- Avoid runtime elements like timestamps, run IDs, or `generated_at` fields.
+- Ensure the output is stable and invariant; the exact same input must yield the exact same output bytes.
+- Speculative language or varying descriptions are forbidden.
 
 ## Anti-Fabrication Rules
 - Do not infer orchestrator plugins or modules that have no presence in the artifacts.

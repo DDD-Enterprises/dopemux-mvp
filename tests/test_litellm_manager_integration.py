@@ -21,24 +21,24 @@ from dopemux.litellm_manager import get_litellm_manager
 def reset_manager():
     """Reset the global LiteLLM manager singleton before each test."""
     from dopemux import litellm_manager
+
     litellm_manager._litellm_manager = None
     yield
-    # Also stop any running processes
     if litellm_manager._litellm_manager:
         litellm_manager._litellm_manager.stop()
     litellm_manager._litellm_manager = None
 
 
-def test_singleton_behavior(tmp_path):
+def test_singleton_behavior():
     """Test that the manager singleton works correctly."""
-    manager1 = get_litellm_manager(tmp_path)
-    manager2 = get_litellm_manager(tmp_path / "other")
+    manager1 = get_litellm_manager(Path("/test/path1"))
+    manager2 = get_litellm_manager(Path("/test/path2"))
     
     # Should return the same instance
     assert manager1 is manager2
     
     # First call should determine the project root
-    assert manager1.project_root == tmp_path
+    assert manager1.project_root == Path("/test/path1")
 
 
 def test_manager_lifecycle(tmp_path):

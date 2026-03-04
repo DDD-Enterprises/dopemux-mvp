@@ -4,11 +4,12 @@ Phase 0B Serialization Test: Verify partition work-unit payloads are pickle-safe
 """
 
 import argparse
+import json
 import pickle
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import traceback
 
 # Add the service directory to path to import from run_extraction_v3
@@ -17,7 +18,7 @@ if str(SERVICE_DIR) not in sys.path:
     sys.path.insert(0, str(SERVICE_DIR))
 
 try:
-    from run_extraction_v3 import build_partitions
+    from run_extraction_v3 import build_partitions, build_inventory
 except ImportError as e:
     print(f"Error importing from run_extraction_v3: {e}")
     sys.exit(1)
@@ -31,7 +32,7 @@ def find_unpicklable_path(obj: Any, path: str = "") -> Optional[str]:
     try:
         pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
         return None
-    except (pickle.PicklingError, TypeError):
+    except (pickle.PicklingError, TypeError) as e:
         if path:
             return path
         return "<root>"
@@ -99,7 +100,8 @@ def generate_real_inventory() -> List[Dict[str, Any]]:
     Generate a real inventory by scanning actual files in the repo.
     """
     try:
-        from run_extraction_v3 import Collector, safe_read, sha256_text, classify_kind
+        from run_extraction_v3 import Collector, is_text_candidate, safe_read, sha256_text, classify_kind
+        import os
         from pathlib import Path
         
         # Use the same collector logic as the main extraction

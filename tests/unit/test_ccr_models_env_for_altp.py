@@ -89,7 +89,8 @@ def test_ccr_models_env_for_altp(
          patch("dopemux.cli.consume_last_created_worktree", return_value=None) as mock_consume, \
          patch("dopemux.cli.InstanceManager") as mock_instance_mgr, \
          patch("dopemux.worktree_recovery.show_recovery_menu_sync", return_value=None) as mock_recovery, \
-         patch("dopemux.cli.RoutingConfig") as mock_routing_config_cls:
+         patch("dopemux.cli.RoutingConfig") as mock_routing_config_cls, \
+         patch("dopemux.routing_config.RoutingConfig.load_default") as mock_routing_load_default:
 
         mock_get_root.return_value = workspace
         mock_ensure_role_profile.return_value = MagicMock()
@@ -97,6 +98,8 @@ def test_ccr_models_env_for_altp(
         mock_isdir.return_value = True
         mock_routing_config_cls.load_default.return_value.get_mode.return_value = "api"
         mock_routing_config_cls.load_default.return_value.get_ports.return_value = {"ccr": 8000, "litellm": 4000}
+        mock_routing_load_default.return_value.get_mode.return_value = "api"
+        mock_routing_load_default.return_value.get_ports.return_value = {"ccr": 8000, "litellm": 4000}
 
         # We must NOT use --dry-run because it skips the router logic we want to test.
         # Instead we rely on mocks to prevent side effects.
