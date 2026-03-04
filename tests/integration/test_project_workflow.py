@@ -15,6 +15,11 @@ from dopemux.cli import cli
 from dopemux.config import ConfigManager
 
 
+def _mock_init_project(workspace: Path, profile, force: bool) -> bool:
+    (workspace / ".dopemux").mkdir(exist_ok=True)
+    return True
+
+
 @pytest.mark.integration
 class TestProjectInitializationWorkflow:
     """Test complete project initialization workflow."""
@@ -35,7 +40,10 @@ class TestProjectInitializationWorkflow:
                             with patch(
                                 "dopemux.cli.AttentionMonitor"
                             ) as mock_attention:
-                                with patch("dopemux.cli.init_project", return_value=True):
+                                with patch(
+                                    "dopemux.cli.init_project",
+                                    side_effect=_mock_init_project,
+                                ):
                                 # Setup mocks
                                     mock_context_instance = Mock()
                                     mock_context.return_value = mock_context_instance
@@ -499,94 +507,98 @@ class TestCLIIntegrationWorkflow:
                                 with patch(
                                     "dopemux.cli.TaskDecomposer"
                                 ) as mock_decomposer:
-                                    # Setup mocks
-                                    mock_context_instance = Mock()
-                                    mock_context.return_value = mock_context_instance
-                                    mock_context_instance.save_context.return_value = (
-                                        "session-123"
-                                    )
-
-                                    mock_decomposer_instance = Mock()
-                                    mock_decomposer.return_value = (
-                                        mock_decomposer_instance
-                                    )
-                                    mock_decomposer_instance.add_task.return_value = (
-                                        "task-123"
-                                    )
-
-                                    # 1. Initialize project
-                                    result = runner.invoke(
-                                        cli, ["init", str(project_path)]
-                                    )
-                                    assert result.exit_code == 0
-
-                                    # 2. Add a task
                                     with patch(
-                                        "dopemux.cli.Path.cwd",
-                                        return_value=project_path,
+                                        "dopemux.cli.init_project",
+                                        side_effect=_mock_init_project,
                                     ):
+                                        # Setup mocks
+                                        mock_context_instance = Mock()
+                                        mock_context.return_value = mock_context_instance
+                                        mock_context_instance.save_context.return_value = (
+                                            "session-123"
+                                        )
+
+                                        mock_decomposer_instance = Mock()
+                                        mock_decomposer.return_value = (
+                                            mock_decomposer_instance
+                                        )
+                                        mock_decomposer_instance.add_task.return_value = (
+                                            "task-123"
+                                        )
+
+                                        # 1. Initialize project
                                         result = runner.invoke(
-                                            cli,
-                                            [
-                                                "task",
-                                                "Implement authentication",
-                                                "--priority",
-                                                "high",
-                                                "--duration",
-                                                "45",
-                                            ],
+                                            cli, ["init", str(project_path)]
                                         )
                                         assert result.exit_code == 0
 
-                                    # 3. Save context
-                                    with patch(
-                                        "dopemux.cli.Path.cwd",
-                                        return_value=project_path,
-                                    ):
-                                        result = runner.invoke(
-                                            cli,
-                                            ["save", "--message", "Starting auth work"],
-                                        )
-                                        assert result.exit_code == 0
-
-                                    # 4. Check status
-                                    mock_context_instance.get_current_context.return_value = {
-                                        "current_goal": "Implement authentication",
-                                        "open_files": [],
-                                        "last_save": "Just now",
-                                        "git_branch": "feature/auth",
-                                    }
-
-                                    with patch(
-                                        "dopemux.cli.AttentionMonitor"
-                                    ) as mock_attention:
+                                        # 2. Add a task
                                         with patch(
-                                            "dopemux.cli.TaskDecomposer"
-                                        ) as mock_task:
-                                            mock_attention.return_value.get_current_metrics.return_value = {
-                                                "attention_state": "focused",
-                                                "focus_score": 0.8,
-                                                "session_duration": 25,
-                                                "context_switches": 2,
-                                            }
+                                            "dopemux.cli.Path.cwd",
+                                            return_value=project_path,
+                                        ):
+                                            result = runner.invoke(
+                                                cli,
+                                                [
+                                                    "task",
+                                                    "Implement authentication",
+                                                    "--priority",
+                                                    "high",
+                                                    "--duration",
+                                                    "45",
+                                                ],
+                                            )
+                                            assert result.exit_code == 0
 
-                                            mock_task.return_value.get_progress.return_value = {
-                                                "tasks": [
-                                                    {
-                                                        "name": "Implement authentication",
-                                                        "completed": False,
-                                                        "in_progress": True,
-                                                        "progress": 0.3,
-                                                    }
-                                                ]
-                                            }
+                                        # 3. Save context
+                                        with patch(
+                                            "dopemux.cli.Path.cwd",
+                                            return_value=project_path,
+                                        ):
+                                            result = runner.invoke(
+                                                cli,
+                                                ["save", "--message", "Starting auth work"],
+                                            )
+                                            assert result.exit_code == 0
 
+                                        # 4. Check status
+                                        mock_context_instance.get_current_context.return_value = {
+                                            "current_goal": "Implement authentication",
+                                            "open_files": [],
+                                            "last_save": "Just now",
+                                            "git_branch": "feature/auth",
+                                        }
+
+                                        with patch(
+                                            "dopemux.cli.AttentionMonitor"
+                                        ) as mock_attention:
                                             with patch(
-                                                "dopemux.cli.Path.cwd",
-                                                return_value=project_path,
-                                            ):
-                                                result = runner.invoke(cli, ["status"])
-                                                assert result.exit_code == 0
-                                                assert (
-                                                    "Attention Metrics" in result.output
-                                                )
+                                                "dopemux.cli.TaskDecomposer"
+                                            ) as mock_task:
+                                                mock_attention.return_value.get_current_metrics.return_value = {
+                                                    "attention_state": "focused",
+                                                    "focus_score": 0.8,
+                                                    "session_duration": 25,
+                                                    "context_switches": 2,
+                                                }
+
+                                                mock_task.return_value.get_progress.return_value = {
+                                                    "tasks": [
+                                                        {
+                                                            "name": "Implement authentication",
+                                                            "completed": False,
+                                                            "in_progress": True,
+                                                            "progress": 0.3,
+                                                        }
+                                                    ]
+                                                }
+
+                                                with patch(
+                                                    "dopemux.cli.Path.cwd",
+                                                    return_value=project_path,
+                                                ):
+                                                    result = runner.invoke(cli, ["status"])
+                                                    assert result.exit_code == 0
+                                                    assert (
+                                                        "Attention Metrics" in result.output
+                                                    )

@@ -12,7 +12,6 @@ import pytest
 from click.testing import CliRunner
 
 import dopemux.tmux.cli as tmux_cli
-from dopemux.tmux.cli import OrchestratorLayout, PaneInfo, tmux
 from dopemux.config.manager import DopemuxConfig, MCPServerConfig
 
 
@@ -28,8 +27,8 @@ class _FakeTmuxConfig:
     agent_command = "dopemux start --role agent"
 
 
-def _fake_pane(pane_id: str) -> PaneInfo:
-    return PaneInfo(
+def _fake_pane(pane_id: str) -> tmux_cli.PaneInfo:
+    return tmux_cli.PaneInfo(
         pane_id=pane_id,
         title="",
         command="zsh",
@@ -65,7 +64,7 @@ def test_start_tmux_dope_layout_invokes_setup(monkeypatch):
     monkeypatch.setattr(
         tmux_cli,
         "_prepare_orchestrator_base",
-        lambda controller, session, start_dir, window_name, created_new_session: PaneInfo(
+        lambda controller, session, start_dir, window_name, created_new_session: tmux_cli.PaneInfo(
             pane_id="%base",
             title="",
             command="zsh",
@@ -80,7 +79,7 @@ def test_start_tmux_dope_layout_invokes_setup(monkeypatch):
 
     def _fake_setup(controller, session, base_pane, start_dir, config, dual_agent, bootstrap):
         setup_calls.append((controller, session, base_pane, start_dir, config, dual_agent, bootstrap))
-        return OrchestratorLayout(
+        return tmux_cli.OrchestratorLayout(
             monitors=["%m1", "%m2"],
             orchestrator="%orc",
             agent="%agent",
@@ -106,7 +105,7 @@ def test_start_tmux_dope_layout_invokes_setup(monkeypatch):
     monkeypatch.setattr(tmux_cli.tmux_utils, "switch_client", lambda *args, **kwargs: None)
 
     result = runner.invoke(
-        tmux,
+        tmux_cli.tmux,
         ["start", "--layout", "dope", "--no-happy", "--no-attach"],
     )
 
@@ -161,7 +160,7 @@ def _dummy_controller_for_agent(pane_title="agent:primary", pane_id="%1"):
         def __init__(self):
             self.sent_keys = []
             self.sent_ctrl = []
-            pane = PaneInfo(
+            pane = tmux_cli.PaneInfo(
                 pane_id=pane_id,
                 title=pane_title,
                 command="zsh",
@@ -203,7 +202,7 @@ def test_agent_switch_role_primary(monkeypatch):
     monkeypatch.setattr(tmux_cli, "_get_controller", lambda ctx: dummy_controller)
     monkeypatch.setattr(tmux_cli.tmux_utils, "focus_pane", lambda pane_id: None)
 
-    result = runner.invoke(tmux, ["agent", "switch-role", "act"])
+    result = runner.invoke(tmux_cli.tmux, ["agent", "switch-role", "act"])
 
     assert result.exit_code == 0, result.output
     assert dummy_controller.sent_keys, "Command not sent to pane"
@@ -228,7 +227,7 @@ def test_agent_switch_role_unknown(monkeypatch):
     monkeypatch.setattr(tmux_cli, "_get_controller", lambda ctx: dummy_controller)
     monkeypatch.setattr(tmux_cli.tmux_utils, "focus_pane", lambda pane_id: None)
 
-    result = runner.invoke(tmux, ["agent", "switch-role", "unknown"])
+    result = runner.invoke(tmux_cli.tmux, ["agent", "switch-role", "unknown"])
 
     assert result.exit_code == 0
     assert "Unknown role" in result.output
@@ -255,7 +254,7 @@ def test_agent_switch_role_missing_services(monkeypatch):
     monkeypatch.setattr(tmux_cli, "_get_controller", lambda ctx: dummy_controller)
     monkeypatch.setattr(tmux_cli.tmux_utils, "focus_pane", lambda pane_id: None)
 
-    result = runner.invoke(tmux, ["agent", "switch-role", "act"])
+    result = runner.invoke(tmux_cli.tmux, ["agent", "switch-role", "act"])
 
     assert result.exit_code == 0
     assert "dopemux mcp up --services" in result.output

@@ -1,10 +1,14 @@
 import os
-import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 from click.testing import CliRunner
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from dopemux.cli import cli
 
+
+@pytest.mark.integration
 class TestStartCommandIntegration:
     """Integration tests for start command environment and process launching."""
 
@@ -71,7 +75,7 @@ class TestStartCommandIntegration:
             # Mock env builder
             mock_proxy_mgr.return_value.build_client_env.return_value = {
                 "ANTHROPIC_BASE_URL": "http://127.0.0.1:4000",
-                "DOPEMUX_CLAUDE_VIA_LITELLM": "1"
+                "DOPEMUX_CLAUDE_VIA_LITELLM": "1",
             }
 
             mock_router_info = MagicMock()
@@ -103,15 +107,15 @@ class TestStartCommandIntegration:
              patch("dopemux.cli.AttentionMonitor"), \
              patch("dopemux.cli.ContextManager"), \
              patch("dopemux.cli.click.confirm", return_value=True):  # Auto-confirm dangerous prompts
+            with patch.dict(os.environ, {}, clear=False):
+                result = runner.invoke(cli, ["start", "--dangerous", "--no-mcp"])
 
-            result = runner.invoke(cli, ["start", "--dangerous", "--no-mcp"])
+                assert result.exit_code == 0
 
-            assert result.exit_code == 0
-
-            # Verify dangerous flags
-            assert os.environ.get("DOPEMUX_DANGEROUS_MODE") == "true"
-            assert os.environ.get("CLAUDE_CODE_SKIP_PERMISSIONS") == "true"
-            assert os.environ.get("HOOKS_ENABLE_ADAPTIVE_SECURITY") == "0"
+                # Verify dangerous flags
+                assert os.environ.get("DOPEMUX_DANGEROUS_MODE") == "true"
+                assert os.environ.get("CLAUDE_CODE_SKIP_PERMISSIONS") == "true"
+                assert os.environ.get("HOOKS_ENABLE_ADAPTIVE_SECURITY") == "0"
 
     def test_start_no_mcp(self, runner, mock_project, mock_launcher):
         """Test --no-mcp flag behavior."""

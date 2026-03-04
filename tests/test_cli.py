@@ -273,17 +273,7 @@ class TestCLI:
         monkeypatch.setattr(dopemux_cli, "ProfileManager", lambda: DummyProfileManager())
         monkeypatch.setattr(dopemux_cli, "ClaudeConfig", lambda *a, **k: dummy_config)
 
-        # --profile flag was removed, use --role which loads profile
-        result = runner.invoke(cli, ["start", "--role", "developer", "--dry-run"])
-
-        # Role not found (since we didn't mock role catalog), but it should exit gracefully
-        # Wait, if role is not found, it exits with 1.
-        # We need to mock activate_role or resolve_role if we want to test profile logic via --role
-        # Or check if --role accepts profile name directly (legacy behavior)?
-        # Code: requested_role = role ... activate_role(requested_role)
-        # activate_role raises RoleNotFoundError.
-
-        # Let's mock resolve_role/activate_role to return a spec that points to our profile
+        # Mock role activation to return a spec that points to our profile.
         from collections import namedtuple
         RoleSpec = namedtuple("RoleSpec", ["label", "key", "description", "profile_name", "required_servers", "optional_servers", "attention_state"])
         mock_spec = RoleSpec("Developer", "developer", "Dev mode", "developer", [], [], "variable")

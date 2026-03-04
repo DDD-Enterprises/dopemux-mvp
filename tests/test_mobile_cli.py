@@ -5,7 +5,6 @@ from dopemux.cli import cli
 import dopemux.mobile.cli as mobile_cli
 import dopemux.mobile.hooks as mobile_hooks
 import dopemux.mobile.runtime as mobile_runtime
-from dopemux.mobile.cli import mobile
 from dopemux.tmux.common import PaneInfo
 from dopemux.mobile.runtime import MobileStatus
 from dopemux.config.manager import MobileConfig
@@ -55,7 +54,7 @@ def test_mobile_status_lists_sessions(monkeypatch):
     # Mock window creation sequence
     monkeypatch.setattr(mobile_cli, "_get_controller", lambda ctx: controller)
     
-    result = _runner().invoke(mobile, ["status"])
+    result = _runner().invoke(mobile_cli.mobile, ["status"])
 
     assert result.exit_code == 0
     assert "Active sessions" in result.output
@@ -77,7 +76,7 @@ def test_mobile_status_json_monkeypatch(monkeypatch):
     monkeypatch.setattr(mobile_cli, "update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
     monkeypatch.setattr(mobile_cli, "_get_controller", lambda ctx: MagicMock(spec=TmuxController))
 
-    result = _runner().invoke(mobile, ["status", "--json"])
+    result = _runner().invoke(mobile_cli.mobile, ["status", "--json"])
 
     assert result.exit_code == 0
     assert '"mobile_enabled": false' in result.output.lower()
@@ -98,7 +97,7 @@ def test_mobile_status_watch_json_conflict(monkeypatch):
     monkeypatch.setattr(mobile_cli, "update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
     monkeypatch.setattr(mobile_cli, "_get_controller", lambda ctx: MagicMock(spec=TmuxController))
 
-    result = _runner().invoke(mobile, ["status", "--json", "--watch"], catch_exceptions=False)
+    result = _runner().invoke(mobile_cli.mobile, ["status", "--json", "--watch"], catch_exceptions=False)
 
     assert result.exit_code == 1
     assert "cannot be combined" in result.output

@@ -1,13 +1,13 @@
 import importlib
 import importlib.util
-import importlib
-import importlib.util
 import os
-import pytest
 from pathlib import Path
-from unittest.mock import patch, Mock
-import click
 import sys
+from unittest.mock import Mock, patch
+
+import click
+import pytest
+
 from dopemux.cli import (
     _resolve_mcp_dir,
     _start_mcp_servers_with_progress,
@@ -23,6 +23,7 @@ def mock_mcp_stack(tmp_path):
     docker_dir.mkdir(parents=True)
     (docker_dir / "start-all-mcp-servers.sh").touch()
     return docker_dir
+
 
 def test_resolve_mcp_dir_env_override(mock_mcp_stack):
     """Verify stack resolution respects MCPProvisioner when available."""
@@ -40,6 +41,7 @@ def test_resolve_mcp_dir_env_override(mock_mcp_stack):
             assert resolved == mock_mcp_stack
             assert resolved.exists()
 
+
 def test_resolve_mcp_dir_project_local(mock_mcp_stack, tmp_path):
     """Strategy 2: Resolves from project_path/docker/mcp-servers."""
     # Ensure no env var
@@ -47,6 +49,7 @@ def test_resolve_mcp_dir_project_local(mock_mcp_stack, tmp_path):
         # tmp_path has the 'docker/mcp-servers' created by fixture
         resolved = _resolve_mcp_dir(tmp_path)
         assert resolved == mock_mcp_stack
+
 
 def test_resolve_mcp_dir_from_package_root_editable(tmp_path):
     """Strategy 3: Fallback to package root (simulated for running in this repo)."""
@@ -61,6 +64,7 @@ def test_resolve_mcp_dir_from_package_root_editable(tmp_path):
             assert resolved == repo_fallback
         else:
             assert resolved is None
+
 
 def test_start_requires_mcp_raises_when_missing():
     """Verify hard failure when resolution returns None."""

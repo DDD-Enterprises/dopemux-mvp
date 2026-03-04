@@ -1,9 +1,12 @@
 import pytest
 from click.testing import CliRunner
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
 from dopemux.cli import cli
 
+
+@pytest.mark.integration
 class TestTaskIntegration:
     """Integration tests for task commands."""
 
@@ -46,7 +49,7 @@ class TestTaskIntegration:
             mock_task_decomposer.add_task.assert_called_with(
                 description="Implement features",
                 duration=45,
-                priority="high"
+                priority="high",
             )
 
     def test_task_list_populated(self, runner, mock_task_decomposer, tmp_path):
@@ -60,7 +63,7 @@ class TestTaskIntegration:
                 "description": "Existing Task",
                 "priority": "medium",
                 "estimated_duration": 30,
-                "status": "pending"
+                "status": "pending",
             }
         ]
 
@@ -79,10 +82,10 @@ class TestTaskIntegration:
                     "name": "Integration Test Task",
                     "completed": False,
                     "in_progress": True,
-                    "progress": 0.5
+                    "progress": 0.5,
                 }
             ],
-            "summary": {"total": 1, "completed": 0, "in_progress": 1}
+            "summary": {"total": 1, "completed": 0, "in_progress": 1},
         }
 
         # Mock other dependencies required for status
